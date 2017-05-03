@@ -1,0 +1,27 @@
+# Ignore folders
+target/
+bin/
+/config
+/.idea
+/out
+
+# Do not ignore them
+!.idea/copyright
+!.idea/inspectionProfiles
+!.idea/scopes
+!.idea/codeStyleSettings.xml
+!.idea/vcs.xml
+
+# Ignore files
+access.properties
+mail.properties
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+
+# Because re-configuring the directory in the share plugin leads to side effect we ignore the file
+dependency-reduced-pom.xml
+.factorypath
