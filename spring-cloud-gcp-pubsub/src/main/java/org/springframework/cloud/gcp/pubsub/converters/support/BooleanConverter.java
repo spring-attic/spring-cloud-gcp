@@ -1,7 +1,5 @@
 package org.springframework.cloud.gcp.pubsub.converters.support;
 
-import com.sun.tools.javac.util.Convert;
-
 import org.springframework.cloud.gcp.pubsub.converters.HeaderConverter;
 
 /**
