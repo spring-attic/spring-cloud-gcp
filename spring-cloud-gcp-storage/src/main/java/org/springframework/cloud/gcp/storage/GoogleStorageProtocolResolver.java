@@ -12,12 +12,10 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
 package org.springframework.cloud.gcp.storage;
 
-import com.google.cloud.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,39 +26,42 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
 
+import com.google.cloud.storage.Storage;
+
 /**
  * @author Vinicius Carvalho
  */
 public class GoogleStorageProtocolResolver implements ProtocolResolver, InitializingBean {
 
-	private ResourceLoader delegate;
+	private final ResourceLoader delegate;
 
-	private Storage storage;
+	private final Storage storage;
 
-	private Logger logger = LoggerFactory.getLogger(GoogleStorageProtocolResolver.class);
+	private final Logger logger = LoggerFactory.getLogger(GoogleStorageProtocolResolver.class);
 
 	public GoogleStorageProtocolResolver(ResourceLoader delegate, Storage storage) {
-		Assert.notNull(delegate,"Parent resource loader can not be null");
-		Assert.notNull(storage,"Storage client can not be null");
+		Assert.notNull(delegate, "Parent resource loader can not be null");
+		Assert.notNull(storage, "Storage client can not be null");
 		this.delegate = delegate;
 		this.storage = storage;
-
-	}
-
-	@Override
-	public Resource resolve(String location, ResourceLoader resourceLoader) {
-		if(location.startsWith("gs://")){
-			return new GoogleStorageResource(storage,location);
-		}
-		return delegate.getResource(location);
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if(DefaultResourceLoader.class.isAssignableFrom(this.delegate.getClass())){
-			((DefaultResourceLoader)delegate).addProtocolResolver(this);
-		}else{
-			logger.warn("The provided delegate resource loader is not an implementation of DefaultResourceLoader. Custom Protocol using gs:// suffix will not be enabled");
+		if (DefaultResourceLoader.class.isAssignableFrom(this.delegate.getClass())) {
+			((DefaultResourceLoader) this.delegate).addProtocolResolver(this);
 		}
+		else {
+			logger.warn("The provided delegate resource loader is not an implementation of DefaultResourceLoader. "
+					+ "Custom Protocol using gs:// prefix will not be enabled.");
+		}
+	}
+
+	@Override
+	public Resource resolve(String location, ResourceLoader resourceLoader) {
+		if (location.startsWith("gs://")) {
+			return new GoogleStorageResource(this.storage, location);
+		}
+		return this.delegate.getResource(location);
 	}
 }

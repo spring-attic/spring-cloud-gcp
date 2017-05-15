@@ -12,14 +12,9 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
-package org.springframework.cloud.gcp.autoconfigure.storage;
-
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
+package org.springframework.cloud.gcp.storage.autoconfig;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -29,28 +24,32 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
 
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
+
 /**
  * @author Vinicius Carvalho
  */
 @Configuration
 @ConditionalOnClass(Storage.class)
-public class StorageAutoConfiguration implements ResourceLoaderAware{
+public class StorageAutoConfiguration implements ResourceLoaderAware {
 
 	private ResourceLoader defaultResourceLoader;
 
+	@Override
+	public void setResourceLoader(ResourceLoader resourceLoader) {
+		this.defaultResourceLoader = resourceLoader;
+	}
+
 	@Bean
 	@ConditionalOnMissingBean(Storage.class)
-	public Storage storage(GoogleCredentials credentials) throws Exception{
+	public Storage storage(GoogleCredentials credentials) throws Exception {
 		return StorageOptions.newBuilder().setCredentials(credentials).build().getService();
 	}
 
 	@Bean
-	public GoogleStorageProtocolResolver googleStorageProtocolResolver(Storage storage){
-		return new GoogleStorageProtocolResolver(this.defaultResourceLoader,storage);
-	}
-
-	@Override
-	public void setResourceLoader(ResourceLoader resourceLoader) {
-		this.defaultResourceLoader =resourceLoader;
+	public GoogleStorageProtocolResolver googleStorageProtocolResolver(Storage storage) {
+		return new GoogleStorageProtocolResolver(this.defaultResourceLoader, storage);
 	}
 }

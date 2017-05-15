@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-build</artifactId>
@@ -22,7 +22,6 @@
 		<developerConnection>scm:git:ssh://git@github.com/spring-cloud/spring-cloud-gcp.git</developerConnection>
 		<tag>HEAD</tag>
 	</scm>
-
 
 	<modules>
 		<module>spring-cloud-gcp-dependencies</module>
@@ -63,7 +62,6 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
 
 	<build>
@@ -116,6 +114,9 @@
 	<profiles>
 		<profile>
 			<id>spring</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 			<repositories>
 				<repository>
 					<id>spring-snapshots</id>

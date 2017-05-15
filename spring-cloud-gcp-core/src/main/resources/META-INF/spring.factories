@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  org.springframework.cloud.gcp.autoconfigure.auth.CredentialsAutoConfiguration
+org.springframework.cloud.gcp.core.autoconfig.CredentialsAutoConfiguration

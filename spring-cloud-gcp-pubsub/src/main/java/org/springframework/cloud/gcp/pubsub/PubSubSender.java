@@ -12,11 +12,9 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
 package org.springframework.cloud.gcp.pubsub;
-
 
 import java.util.Map;
 
@@ -25,11 +23,13 @@ import org.springframework.messaging.Message;
 /**
  * @author Vinicius Carvalho
  */
-public interface PubSender<S,M,F> {
+public interface PubSubSender<S, M, F> {
 
-	S send(Object payload, String destination);
-	S send(Object payload, String destination, Map<String,Object> headers);
-	S send(Message<?> message, String destination);
+	S send(String destination, Object payload);
 
-	M sendAll(F messages, String destination);
+	S send(String destination, Object payload, Map<String,Object> headers);
+
+	S send(String destination, Message<?> message);
+
+	M sendAll(String destination, F messages);
 }

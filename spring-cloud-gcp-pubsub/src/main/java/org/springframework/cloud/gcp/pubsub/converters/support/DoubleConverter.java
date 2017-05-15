@@ -12,7 +12,6 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
 package org.springframework.cloud.gcp.pubsub.converters.support;
@@ -23,6 +22,7 @@ import org.springframework.cloud.gcp.pubsub.converters.HeaderConverter;
  * @author Vinicius Carvalho
  */
 public class DoubleConverter implements HeaderConverter<Double> {
+
 	@Override
 	public String encode(Double value) {
 		return value.toString();
@@ -31,9 +31,11 @@ public class DoubleConverter implements HeaderConverter<Double> {
 	@Override
 	public Double decode(String value) {
 		Double result = null;
-		try{
+		try {
 			result = Double.valueOf(value);
-		}catch (NumberFormatException nfe){}
+		}
+		catch (NumberFormatException nfe) {
+		}
 		return result;
 	}
 }

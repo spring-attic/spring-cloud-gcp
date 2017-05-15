@@ -12,13 +12,11 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
 package org.springframework.cloud.gcp.storage;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -26,26 +24,28 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 
+import org.springframework.core.io.Resource;
+import org.springframework.util.Assert;
+
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
-
-import org.springframework.core.io.Resource;
-import org.springframework.util.Assert;
 
 /**
  * @author Vinicius Carvalho
  */
 public class GoogleStorageResource implements Resource {
 
-	private Storage storage;
+	private final Storage storage;
 
-	private String location;
+	private final String location;
 
 	private Blob blob;
 
+	private final Object monitor = new Object();
+
 	public GoogleStorageResource(Storage storage, String location) {
-		Assert.notNull(storage,"Storage object can not be null");
+		Assert.notNull(storage, "Storage object can not be null");
 		this.storage = storage;
 		this.location = location;
 	}
@@ -82,22 +82,22 @@ public class GoogleStorageResource implements Resource {
 			uri = new URI(this.location);
 		}
 		catch (URISyntaxException e) {
-			throw new IOException("Invalid URI syntax");
+			throw new IOException("Invalid URI syntax", e);
 		}
 		return uri;
 	}
 
-	private Blob resolve() throws IOException{
-		synchronized (this){
-			if(this.blob == null) {
+	private Blob resolve() throws IOException {
+		synchronized (this.monitor) {
+			if (this.blob == null) {
 				try {
 					URI uri = getURI();
-					BlobId blobId = BlobId.of(uri.getHost(), uri.getPath().substring(1, uri.getRawPath().length()));
+					BlobId blobId = BlobId.of(uri.getHost(), uri.getPath().substring(1, uri.getPath().length()));
 					this.blob = this.storage.get(blobId);
 					return this.blob;
 				}
-				catch (Exception ex) {
-					throw new IOException("Failed to open remote connection to " + location, ex);
+				catch (Exception e) {
+					throw new IOException("Failed to open remote connection to " + location, e);
 				}
 			}
 		}
@@ -106,7 +106,7 @@ public class GoogleStorageResource implements Resource {
 
 	@Override
 	public File getFile() throws IOException {
-		throw new FileNotFoundException(getDescription() + " cannot be resolved to absolute file path");
+		throw new UnsupportedOperationException(getDescription() + " cannot be resolved to absolute file path");
 	}
 
 	@Override
@@ -121,7 +121,7 @@ public class GoogleStorageResource implements Resource {
 
 	@Override
 	public Resource createRelative(String relativePath) throws IOException {
-		throw new UnsupportedOperationException("Directory creation still not supported");
+		throw new UnsupportedOperationException("Directory creation not supported");
 	}
 
 	@Override

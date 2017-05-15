@@ -12,21 +12,17 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
 package org.springframework.cloud.gcp.pubsub;
 
+import org.springframework.messaging.Message;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import org.springframework.messaging.Message;
-
-
 /**
  * @author Vinicius Carvalho
  */
-public interface ReactivePubSubSender extends PubSender<Mono<String>, Flux<String>, Flux<? extends Message>>{
-
+public interface ReactivePubSubSender extends PubSubSender<Mono<String>, Flux<String>, Flux<? extends Message<?>>> {
 }

@@ -12,7 +12,6 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
 package org.springframework.cloud.gcp.pubsub;
@@ -24,53 +23,25 @@ import org.springframework.context.Lifecycle;
 
 /**
  * @author Vinicius Carvalho
+ * @author Mark Fisher
  */
-public abstract class AbstractPubSender implements ReactivePubSubSender, Lifecycle{
+public abstract class AbstractPubSubSender implements ReactivePubSubSender, Lifecycle {
 
-	protected final String project;
+	private final String project;
 
-	protected final Credentials credentials;
+	private final Credentials credentials;
 
-	protected volatile boolean running = false;
+	private final String baseTopicName;
 
-	protected final String BASE_NAME;
+	private PubSubHeaderMapper headerMapper;
 
-	protected final String BASE_TOPIC_NAME;
+	private volatile boolean running = false;
 
-	protected PubSubHeaderMapper headerMapper;
-
-	private final String PUBSUB_ENDPOINT = "pubsub.googleapis.com";
-
-	private final int PUBUSUB_PORT = 443;
-
-
-	public AbstractPubSender(String project, Credentials credentials) {
+	public AbstractPubSubSender(String project, Credentials credentials) {
 		this.project = project;
 		this.credentials = credentials;
-		this.BASE_NAME = String.format("projects/%s/",this.project);
-		this.BASE_TOPIC_NAME = BASE_NAME + "topics/";
+		this.baseTopicName = String.format("projects/%s/topics/", this.project);
 	}
-
-	@Override
-	public void start() {
-		this.running = true;
-		doStart();
-	}
-
-	@Override
-	public void stop() {
-
-		doStop();
-	}
-
-	@Override
-	public boolean isRunning() {
-		return running;
-	}
-
-	abstract void doStart();
-
-	abstract void doStop();
 
 	public PubSubHeaderMapper getHeaderMapper() {
 		return headerMapper;
@@ -79,4 +50,25 @@ public abstract class AbstractPubSender implements ReactivePubSubSender, Lifecyc
 	public void setHeaderMapper(PubSubHeaderMapper headerMapper) {
 		this.headerMapper = headerMapper;
 	}
+
+	@Override
+	public final void start() {
+		this.running = true;
+		doStart();
+	}
+
+	@Override
+	public final void stop() {
+		doStop();
+		this.running = false;
+	}
+
+	@Override
+	public final boolean isRunning() {
+		return this.running;
+	}
+
+	protected abstract void doStart();
+
+	protected abstract void doStop();
 }

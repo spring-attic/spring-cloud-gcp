@@ -12,26 +12,24 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
 package org.springframework.cloud.gcp.pubsub.converters;
 
-import com.google.pubsub.v1.PubsubMessage;
-
 import org.springframework.messaging.Message;
+
+import com.google.pubsub.v1.PubsubMessage;
 
 /**
  * @author Vinicius Carvalho
  */
 public class PubSubMessagingConverter {
 
-	public Message toInternal(PubsubMessage pubsubMessage){
-
-		return null;
+	public Message<?> toInternal(PubsubMessage pubsubMessage) {
+		throw new UnsupportedOperationException("not yet implemented");
 	}
 
-	public PubsubMessage fromInternal(Message message) {
-		return null;
+	public PubsubMessage fromInternal(Message<?> message) {
+		throw new UnsupportedOperationException("not yet implemented");
 	}
 }

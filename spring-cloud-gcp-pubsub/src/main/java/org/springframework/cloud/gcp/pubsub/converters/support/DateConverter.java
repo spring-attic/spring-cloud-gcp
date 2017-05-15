@@ -12,7 +12,6 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
 package org.springframework.cloud.gcp.pubsub.converters.support;
@@ -30,29 +29,30 @@ import org.springframework.cloud.gcp.pubsub.converters.HeaderConverter;
 public class DateConverter implements HeaderConverter<Date> {
 
 	private String datePattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-	private DateFormat df;
 
-	public DateConverter(){
+	private DateFormat dateFormat;
+
+	public DateConverter() {
 		this(null);
 	}
 
 	public DateConverter(String datePattern) {
-		if(datePattern != null){
+		if (datePattern != null) {
 			this.datePattern = datePattern;
 		}
-		this.df = new SimpleDateFormat(this.datePattern);
+		this.dateFormat = new SimpleDateFormat(this.datePattern);
 	}
 
 	@Override
 	public String encode(Date value) {
-		return this.df.format(value);
+		return this.dateFormat.format(value);
 	}
 
 	@Override
 	public Date decode(String value) {
 		Date result = null;
-		try{
-			result = df.parse(value);
+		try {
+			result = dateFormat.parse(value);
 		}
 		catch (ParseException e) {
 		}
