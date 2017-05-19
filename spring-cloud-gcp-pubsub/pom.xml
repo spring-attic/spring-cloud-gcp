@@ -42,5 +42,20 @@
 			<artifactId>spring-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- SI channel adapters -->
+		<dependency>
+			<groupId>org.springframework.integration</groupId>
+			<artifactId>spring-integration-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.api</groupId>
+			<artifactId>api-common</artifactId>
+			<!-- This shouldn't be required here. -->
+      <version>1.0.0</version>
+    </dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-gcp-core</artifactId>
+		</dependency>
 	</dependencies>
 </project>
