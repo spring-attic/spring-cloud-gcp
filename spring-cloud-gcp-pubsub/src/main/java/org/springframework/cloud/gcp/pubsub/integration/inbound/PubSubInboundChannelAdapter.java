@@ -6,6 +6,7 @@ import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.SubscriptionName;
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.cloud.gcp.support.GcpHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.messaging.MessageHeaders;
 
@@ -24,8 +25,8 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
   }
 
   @Override
-  protected void onInit() {
-    super.onInit();
+  protected void doStart() {
+    super.doStart();
 
     subscriber = Subscriber.defaultBuilder(SubscriptionName.create(
         projectId, this.subscriptionName), this::receiveMessage).build();
@@ -34,20 +35,22 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
   private void receiveMessage(PubsubMessage message, AckReplyConsumer consumer) {
     Map<String, Object> messageHeaders = new HashMap<>();
-    message.getAttributesMap().forEach(messageHeaders::put);
 
-    sendMessage(getMessagingTemplate().getMessageConverter().toMessage(
-        message.getData(),
-        new MessageHeaders(messageHeaders)));
-    consumer.ack();
+    message.getAttributesMap().forEach(messageHeaders::put);
+    // Send the consumer downstream so user decides on when to ack/nack.
+    messageHeaders.put(GcpHeaders.CONSUMER, consumer);
+
+    sendMessage(
+        getMessagingTemplate().getMessageConverter().toMessage(message.getData(),
+            new MessageHeaders(messageHeaders)));
   }
 
   @Override
   protected void doStop() {
     if (subscriber != null) {
-      // TODO(joaomartins): This doesn't seem like the best place to stop.
       subscriber.stopAsync();
     }
+
     super.doStop();
   }
 }

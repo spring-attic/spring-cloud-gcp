@@ -53,6 +53,10 @@
 			<!-- This shouldn't be required here. -->
       <version>1.0.0</version>
     </dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-gcp-core</artifactId>
+		</dependency>
 	</dependencies>
 
 	<!-- Must also get rid of this -->
