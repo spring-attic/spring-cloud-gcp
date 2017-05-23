@@ -31,7 +31,6 @@ public class PubSubOutboundMessageHandler extends AbstractMessageHandler {
 
   @Override
   protected void handleMessageInternal(Message<?> message) throws Exception {
-//    messageConverter.toMessage(message.getPayload(), message.getHeaders());
     Object pubsubMessageObject = messageConverter.fromMessage(message, PubsubMessage.class);
 
     if (!(pubsubMessageObject instanceof PubsubMessage)) {
