@@ -13,16 +13,16 @@ import org.springframework.messaging.converter.MessageConverter;
 /**
  * Created by joaomartins on 5/19/17.
  */
-public class PubSubOutboundMessageHandler extends AbstractMessageHandler {
+public class PubSubMessageHandler extends AbstractMessageHandler {
 
   private Publisher publisher;
   private MessageConverter messageConverter;
 
-  public PubSubOutboundMessageHandler(String projectId, String topicName) throws IOException {
+  public PubSubMessageHandler(String projectId, String topicName) throws IOException {
     this(projectId, topicName, new SimpleMessageConverter());
   }
 
-  public PubSubOutboundMessageHandler(String projectId, String topicName,
+  public PubSubMessageHandler(String projectId, String topicName,
       MessageConverter messageConverter) throws IOException {
     publisher = Publisher.defaultBuilder(TopicName.create(
         projectId, topicName)).build();
