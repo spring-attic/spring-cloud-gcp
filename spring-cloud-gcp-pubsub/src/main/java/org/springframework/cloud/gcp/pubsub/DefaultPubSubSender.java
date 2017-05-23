@@ -41,7 +41,8 @@ public class DefaultPubSubSender extends AbstractPubSubSender {
 	}
 
 	@Override
-	public Mono<String> send(String destination, Object payload, Map<String, Object> headers) {
+	public Mono<String> send(String destination, Object payload,
+			Map<String, Object> headers) {
 		throw new UnsupportedOperationException("not yet implemented");
 	}
 
@@ -63,7 +64,6 @@ public class DefaultPubSubSender extends AbstractPubSubSender {
 	protected void doStop() {
 	}
 
-
 	class DefaultBlockingPubSubSender implements BlockingPubSubSender {
 
 		@Override
@@ -72,7 +72,8 @@ public class DefaultPubSubSender extends AbstractPubSubSender {
 		}
 
 		@Override
-		public String send(String destination, Object payload, Map<String, Object> headers) {
+		public String send(String destination, Object payload,
+				Map<String, Object> headers) {
 			return DefaultPubSubSender.this.send(destination, payload, headers).block();
 		}
 
@@ -82,8 +83,10 @@ public class DefaultPubSubSender extends AbstractPubSubSender {
 		}
 
 		@Override
-		public Iterable<String> sendAll(String destination, Collection<? extends Message<?>> messages) {
-			return DefaultPubSubSender.this.sendAll(destination, Flux.fromIterable(messages)).toIterable();
+		public Iterable<String> sendAll(String destination,
+				Collection<? extends Message<?>> messages) {
+			return DefaultPubSubSender.this
+					.sendAll(destination, Flux.fromIterable(messages)).toIterable();
 		}
 	}
 }

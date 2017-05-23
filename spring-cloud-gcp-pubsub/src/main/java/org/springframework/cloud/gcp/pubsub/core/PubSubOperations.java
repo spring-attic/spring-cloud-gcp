@@ -12,24 +12,18 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
  */
 
-package org.springframework.cloud.gcp.pubsub;
-
-import java.util.Map;
+package org.springframework.cloud.gcp.pubsub.core;
 
 import org.springframework.messaging.Message;
 
 /**
  * @author Vinicius Carvalho
  */
-public interface PubSubSender<S, M, F> {
+public interface PubSubOperations {
 
-	S send(String destination, Object payload);
+	String send(String topic, Message message);
 
-	S send(String destination, Object payload, Map<String, Object> headers);
-
-	S send(String destination, Message<?> message);
-
-	M sendAll(String destination, F messages);
 }

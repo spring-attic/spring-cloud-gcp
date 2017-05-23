@@ -37,7 +37,8 @@ public class GoogleStorageProtocolResolver implements ProtocolResolver, Initiali
 
 	private final Storage storage;
 
-	private final Logger logger = LoggerFactory.getLogger(GoogleStorageProtocolResolver.class);
+	private final Logger logger = LoggerFactory
+			.getLogger(GoogleStorageProtocolResolver.class);
 
 	public GoogleStorageProtocolResolver(ResourceLoader delegate, Storage storage) {
 		Assert.notNull(delegate, "Parent resource loader can not be null");
@@ -52,8 +53,9 @@ public class GoogleStorageProtocolResolver implements ProtocolResolver, Initiali
 			((DefaultResourceLoader) this.delegate).addProtocolResolver(this);
 		}
 		else {
-			logger.warn("The provided delegate resource loader is not an implementation of DefaultResourceLoader. "
-					+ "Custom Protocol using gs:// prefix will not be enabled.");
+			logger.warn(
+					"The provided delegate resource loader is not an implementation of DefaultResourceLoader. "
+							+ "Custom Protocol using gs:// prefix will not be enabled.");
 		}
 	}
 

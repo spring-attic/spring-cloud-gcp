@@ -16,9 +16,7 @@
 	<description>Spring Cloud GCP Dependencies</description>
 
 	<properties>
-		<google-cloud-java.version>0.17.2-alpha</google-cloud-java.version>
-		<grpc.version>1.2.0</grpc.version>
-		<google-pubsub.api>0.1.5</google-pubsub.api>
+		<google-cloud-java.version>0.18.0-alpha</google-cloud-java.version>
 	</properties>
 
 	<dependencyManagement>
@@ -33,52 +31,7 @@
 				<artifactId>google-cloud</artifactId>
 				<version>${google-cloud-java.version}</version>
 			</dependency>
-			<dependency>
-				<groupId>io.netty</groupId>
-				<artifactId>netty-tcnative-boringssl-static</artifactId>
-				<version>1.1.33.Fork19</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-pubsub</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.api.grpc</groupId>
-				<artifactId>grpc-google-cloud-pubsub-v1</artifactId>
-				<version>${google-pubsub.api}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>io.grpc</groupId>
-						<artifactId>grpc-all</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-			<dependency>
-				<groupId>com.google.auth</groupId>
-				<artifactId>google-auth-library-oauth2-http</artifactId>
-				<version>0.6.0</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.cloud</groupId>
-				<artifactId>google-cloud-storage</artifactId>
-				<version>1.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>io.grpc</groupId>
-				<artifactId>grpc-netty</artifactId>
-				<version>${grpc.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.grpc</groupId>
-				<artifactId>grpc-stub</artifactId>
-				<version>${grpc.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>io.grpc</groupId>
-				<artifactId>grpc-auth</artifactId>
-				<version>${grpc.version}</version>
-			</dependency>
+
 			<dependency>
 				<groupId>io.projectreactor</groupId>
 				<artifactId>reactor-core</artifactId>

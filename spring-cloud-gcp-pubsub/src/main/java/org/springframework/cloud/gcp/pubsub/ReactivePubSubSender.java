@@ -24,5 +24,6 @@ import reactor.core.publisher.Mono;
 /**
  * @author Vinicius Carvalho
  */
-public interface ReactivePubSubSender extends PubSubSender<Mono<String>, Flux<String>, Flux<? extends Message<?>>> {
+public interface ReactivePubSubSender
+		extends PubSubSender<Mono<String>, Flux<String>, Flux<? extends Message<?>>> {
 }

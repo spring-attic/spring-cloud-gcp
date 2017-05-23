@@ -45,7 +45,8 @@ public class StorageAutoConfiguration implements ResourceLoaderAware {
 	@Bean
 	@ConditionalOnMissingBean(Storage.class)
 	public Storage storage(GoogleCredentials credentials) throws Exception {
-		return StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+		return StorageOptions.newBuilder().setCredentials(credentials).build()
+				.getService();
 	}
 
 	@Bean

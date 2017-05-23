@@ -68,23 +68,25 @@ public class StorageAutoConfigurationTests {
 	static class StorageApplication {
 
 		public static void main(String[] args) {
-			SpringApplication.run(StorageApplication.class,args);
+			SpringApplication.run(StorageApplication.class, args);
 		}
 
 		@Bean
-		public Storage mockStorage() throws Exception{
+		public Storage mockStorage() throws Exception {
 			Storage storage = Mockito.mock(Storage.class);
 			BlobId validBlob = BlobId.of("test-spring", "images/spring.png");
 			Blob mockedBlob = Mockito.mock(Blob.class);
 			Mockito.when(mockedBlob.exists()).thenReturn(true);
 			Mockito.when(mockedBlob.getSize()).thenReturn(4096L);
 			ReadChannel readChannel = Mockito.mock(ReadChannel.class);
-			Mockito.when(readChannel.read(Mockito.any(ByteBuffer.class))).thenAnswer(new Answer<Object>() {
-				@Override
-				public Object answer(InvocationOnMock invocation) throws Throwable {
-					return new Integer(-1);
-				}
-			});
+			Mockito.when(readChannel.read(Mockito.any(ByteBuffer.class)))
+					.thenAnswer(new Answer<Object>() {
+						@Override
+						public Object answer(InvocationOnMock invocation)
+								throws Throwable {
+							return new Integer(-1);
+						}
+					});
 			Mockito.when(mockedBlob.reader()).thenReturn(readChannel);
 			Mockito.when(storage.get(Mockito.eq(validBlob))).thenReturn(mockedBlob);
 			return storage;

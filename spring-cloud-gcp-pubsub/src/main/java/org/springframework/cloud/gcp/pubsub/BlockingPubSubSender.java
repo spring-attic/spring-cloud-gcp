@@ -23,5 +23,6 @@ import org.springframework.messaging.Message;
 /**
  * @author Vinicius Carvalho
  */
-public interface BlockingPubSubSender extends PubSubSender<String, Iterable<String>, Collection<? extends Message<?>>> {
+public interface BlockingPubSubSender
+		extends PubSubSender<String, Iterable<String>, Collection<? extends Message<?>>> {
 }

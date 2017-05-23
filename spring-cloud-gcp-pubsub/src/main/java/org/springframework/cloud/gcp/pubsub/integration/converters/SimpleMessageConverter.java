@@ -31,34 +31,34 @@ import org.springframework.messaging.support.GenericMessage;
  */
 public class SimpleMessageConverter implements MessageConverter {
 
-  @Override
-  public Object fromMessage(Message<?> message, Class<?> aClass) {
-    if (!aClass.equals(PubsubMessage.class)) {
-      throw new MessageConversionException("This converter can only convert to or from "
-          + "PubsubMessages.");
-    }
+	@Override
+	public Object fromMessage(Message<?> message, Class<?> aClass) {
+		if (!aClass.equals(PubsubMessage.class)) {
+			throw new MessageConversionException(
+					"This converter can only convert to or from " + "PubsubMessages.");
+		}
 
-    PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder();
+		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder();
 
-    message.getHeaders().forEach(
-        (key, value) -> pubsubMessageBuilder.putAttributes(key, value.toString())
-    );
+		message.getHeaders().forEach((key, value) -> pubsubMessageBuilder
+				.putAttributes(key, value.toString()));
 
-    pubsubMessageBuilder.setData(ByteString.copyFrom(message.getPayload().toString().getBytes()));
+		pubsubMessageBuilder
+				.setData(ByteString.copyFrom(message.getPayload().toString().getBytes()));
 
-    return pubsubMessageBuilder.build();
-  }
+		return pubsubMessageBuilder.build();
+	}
 
-  @Override
-  public Message<?> toMessage(Object o, MessageHeaders messageHeaders) {
-    if (!(o instanceof String)) {
-      throw new MessageConversionException("Only String payloads are supported.");
-    }
+	@Override
+	public Message<?> toMessage(Object o, MessageHeaders messageHeaders) {
+		if (!(o instanceof String)) {
+			throw new MessageConversionException("Only String payloads are supported.");
+		}
 
-    if (messageHeaders == null) {
-      return new GenericMessage<>((String) o);
-    }
+		if (messageHeaders == null) {
+			return new GenericMessage<>((String) o);
+		}
 
-    return new GenericMessage<>((String) o, messageHeaders);
-  }
+		return new GenericMessage<>((String) o, messageHeaders);
+	}
 }

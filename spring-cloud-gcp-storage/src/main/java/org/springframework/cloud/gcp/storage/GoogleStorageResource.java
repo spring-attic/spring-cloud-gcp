@@ -40,9 +40,9 @@ public class GoogleStorageResource implements Resource {
 
 	private final String location;
 
-	private Blob blob;
-
 	private final Object monitor = new Object();
+
+	private Blob blob;
 
 	public GoogleStorageResource(Storage storage, String location) {
 		Assert.notNull(storage, "Storage object can not be null");
@@ -92,12 +92,14 @@ public class GoogleStorageResource implements Resource {
 			if (this.blob == null) {
 				try {
 					URI uri = getURI();
-					BlobId blobId = BlobId.of(uri.getHost(), uri.getPath().substring(1, uri.getPath().length()));
+					BlobId blobId = BlobId.of(uri.getHost(),
+							uri.getPath().substring(1, uri.getPath().length()));
 					this.blob = this.storage.get(blobId);
 					return this.blob;
 				}
 				catch (Exception e) {
-					throw new IOException("Failed to open remote connection to " + location, e);
+					throw new IOException(
+							"Failed to open remote connection to " + location, e);
 				}
 			}
 		}
@@ -106,7 +108,8 @@ public class GoogleStorageResource implements Resource {
 
 	@Override
 	public File getFile() throws IOException {
-		throw new UnsupportedOperationException(getDescription() + " cannot be resolved to absolute file path");
+		throw new UnsupportedOperationException(
+				getDescription() + " cannot be resolved to absolute file path");
 	}
 
 	@Override

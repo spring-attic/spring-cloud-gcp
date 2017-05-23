@@ -32,38 +32,39 @@ import org.springframework.messaging.MessageHeaders;
  */
 public class PubSubHeaderMapperTests {
 
-	private final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+	private final DateFormat dateFormat = new SimpleDateFormat(
+			"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
 	@Test
-	public void toHeaders() throws Exception{
+	public void toHeaders() throws Exception {
 		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
 		mapper.afterPropertiesSet();
-		Map<String,String> source = new HashMap<>();
+		Map<String, String> source = new HashMap<>();
 		source.put("bool", "false");
 		source.put("int", "42");
 		source.put("float", "1.0");
-		source.put("double", Double.MAX_VALUE+"");
-		source.put("long", Long.MAX_VALUE+"");
+		source.put("double", Double.MAX_VALUE + "");
+		source.put("long", Long.MAX_VALUE + "");
 		source.put("string", "foo");
 		source.put("date", dateFormat.format(new Date()));
 		source.put("objectToString", "http://www.spring.io");
 		MessageHeaders result = mapper.toHeaders(source);
-		Assert.assertEquals(Boolean.class,result.get("bool").getClass());
-		Assert.assertEquals(Integer.class,result.get("int").getClass());
-		Assert.assertEquals(Float.class,result.get("float").getClass());
-		Assert.assertEquals(Double.class,result.get("double").getClass());
-		Assert.assertEquals(Long.class,result.get("long").getClass());
-		Assert.assertEquals(String.class,result.get("string").getClass());
-		Assert.assertEquals(String.class,result.get("objectToString").getClass());
-		Assert.assertEquals(Date.class,result.get("date").getClass());
+		Assert.assertEquals(Boolean.class, result.get("bool").getClass());
+		Assert.assertEquals(Integer.class, result.get("int").getClass());
+		Assert.assertEquals(Float.class, result.get("float").getClass());
+		Assert.assertEquals(Double.class, result.get("double").getClass());
+		Assert.assertEquals(Long.class, result.get("long").getClass());
+		Assert.assertEquals(String.class, result.get("string").getClass());
+		Assert.assertEquals(String.class, result.get("objectToString").getClass());
+		Assert.assertEquals(Date.class, result.get("date").getClass());
 	}
 
 	@Test
-	public void fromHeaders() throws Exception{
+	public void fromHeaders() throws Exception {
 		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
 		mapper.afterPropertiesSet();
-		Map<String,Object> headerMap = new HashMap<>();
-		Map<String,String> source = new HashMap<>();
+		Map<String, Object> headerMap = new HashMap<>();
+		Map<String, String> source = new HashMap<>();
 		Date date = new Date();
 		Object o = new Object();
 		headerMap.put("bool", true);

@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.converters.support.BooleanConverter;
 import org.springframework.cloud.gcp.pubsub.converters.support.DateConverter;
@@ -35,11 +34,12 @@ import org.springframework.messaging.support.HeaderMapper;
 /**
  * @author Vinicius Carvalho
  */
-public class PubSubHeaderMapper implements HeaderMapper<Map<String,String>>, InitializingBean{
-
-	private String datePattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+public class PubSubHeaderMapper
+		implements HeaderMapper<Map<String, String>>, InitializingBean {
 
 	private final Map<Class<?>, HeaderConverter<?>> converterMap = new LinkedHashMap<>();
+
+	private String datePattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
 	public String getDatePattern() {
 		return datePattern;
@@ -55,27 +55,27 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String,String>>, Ini
 		converterMap.put(Integer.class, new IntegerConverter());
 		converterMap.put(Long.class, new LongConverter());
 		converterMap.put(Float.class, new FloatConverter());
-		converterMap.put(Double.class,new DoubleConverter());
+		converterMap.put(Double.class, new DoubleConverter());
 		converterMap.put(Date.class, new DateConverter(datePattern));
 	}
 
 	@Override
 	public void fromHeaders(MessageHeaders headers, Map<String, String> target) {
-		for (Map.Entry<String,Object> entry : headers.entrySet()) {
-			target.put(entry.getKey(),encode(entry.getValue()));
+		for (Map.Entry<String, Object> entry : headers.entrySet()) {
+			target.put(entry.getKey(), encode(entry.getValue()));
 		}
 	}
 
 	@Override
 	public MessageHeaders toHeaders(Map<String, String> source) {
 		Map<String, Object> headerMap = new HashMap<>();
-		for (Map.Entry<String,String> entry : source.entrySet()) {
-			headerMap.put(entry.getKey(),decode(entry.getValue()));
+		for (Map.Entry<String, String> entry : source.entrySet()) {
+			headerMap.put(entry.getKey(), decode(entry.getValue()));
 		}
 		return new MessageHeaders(headerMap);
 	}
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private String encode(Object value) {
 		if (value instanceof String) {
 			return (String) value;

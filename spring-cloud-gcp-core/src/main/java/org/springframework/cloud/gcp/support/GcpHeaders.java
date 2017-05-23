@@ -23,7 +23,7 @@ package org.springframework.cloud.gcp.support;
  */
 public abstract class GcpHeaders {
 
-  private static final String PREFIX = "gcp_";
+	private static final String PREFIX = "gcp_";
 
-  public static final String CONSUMER = PREFIX + "pub_sub_consumer";
+	public static final String CONSUMER = PREFIX + "pub_sub_consumer";
 }

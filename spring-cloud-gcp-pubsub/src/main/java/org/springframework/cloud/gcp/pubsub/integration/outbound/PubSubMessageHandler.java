@@ -34,29 +34,30 @@ import org.springframework.messaging.converter.MessageConverter;
  */
 public class PubSubMessageHandler extends AbstractMessageHandler {
 
-  private Publisher publisher;
-  private MessageConverter messageConverter;
+	private Publisher publisher;
+	private MessageConverter messageConverter;
 
-  public PubSubMessageHandler(String projectId, String topicName) throws IOException {
-    this(projectId, topicName, new SimpleMessageConverter());
-  }
+	public PubSubMessageHandler(String projectId, String topicName) throws IOException {
+		this(projectId, topicName, new SimpleMessageConverter());
+	}
 
-  public PubSubMessageHandler(String projectId, String topicName,
-      MessageConverter messageConverter) throws IOException {
-    publisher = Publisher.defaultBuilder(TopicName.create(
-        projectId, topicName)).build();
-    this.messageConverter = messageConverter;
-  }
+	public PubSubMessageHandler(String projectId, String topicName,
+			MessageConverter messageConverter) throws IOException {
+		publisher = Publisher.defaultBuilder(TopicName.create(projectId, topicName))
+				.build();
+		this.messageConverter = messageConverter;
+	}
 
-  @Override
-  protected void handleMessageInternal(Message<?> message) throws Exception {
-    Object pubsubMessageObject = messageConverter.fromMessage(message, PubsubMessage.class);
+	@Override
+	protected void handleMessageInternal(Message<?> message) throws Exception {
+		Object pubsubMessageObject = messageConverter.fromMessage(message,
+				PubsubMessage.class);
 
-    if (!(pubsubMessageObject instanceof PubsubMessage)) {
-      throw new MessageConversionException("The specified converter must produce"
-          + "PubsubMessages to send to Google Cloud Pub/Sub.");
-    }
+		if (!(pubsubMessageObject instanceof PubsubMessage)) {
+			throw new MessageConversionException("The specified converter must produce"
+					+ "PubsubMessages to send to Google Cloud Pub/Sub.");
+		}
 
-    publisher.publish((PubsubMessage) pubsubMessageObject);
-  }
+		publisher.publish((PubsubMessage) pubsubMessageObject);
+	}
 }
