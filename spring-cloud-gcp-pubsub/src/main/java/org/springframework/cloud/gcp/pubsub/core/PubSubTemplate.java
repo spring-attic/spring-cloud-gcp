@@ -24,13 +24,13 @@ import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.api.gax.grpc.InstantiatingExecutorProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.spi.v1.Publisher;
-import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.converters.SimpleMessageConverter;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.messaging.converter.MessageConverter;
 
 /**
@@ -46,7 +46,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private ExecutorProvider executorProvider;
 
-	private MessageConverter converter;
+	private MessageConverter messageConverter = new SimpleMessageConverter();
 
 	private int concurrentProducers = 1;
 
@@ -55,7 +55,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		this.credentials = credentials;
 		this.executorProvider = InstantiatingExecutorProvider.newBuilder()
 				.setExecutorThreadCount(concurrentProducers).build();
-		this.converter = new SimpleMessageConverter();
 	}
 
 	@Override
@@ -65,20 +64,22 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 			try {
 				return Publisher.defaultBuilder(TopicName.create(projectId, topic))
 						.setExecutorProvider(executorProvider).build();
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			return null;
 		});
 
-		try {
-			return publisher.publish(PubsubMessage.newBuilder()
-					.setData(ByteString
-							.copyFrom(message.getPayload().toString().getBytes()))
-					.build()).get();
+		Object pubsubMessageObject = messageConverter.fromMessage(message, PubsubMessage.class);
+
+		if (!(pubsubMessageObject instanceof PubsubMessage)) {
+			throw new MessageConversionException("The specified converter must produce"
+					+ "PubsubMessages to send to Google Cloud Pub/Sub.");
 		}
-		catch (Exception e) {
+
+		try {
+			return publisher.publish((PubsubMessage) pubsubMessageObject).get();
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -86,5 +87,13 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 
+	}
+
+	public MessageConverter getMessageConverter() {
+		return messageConverter;
+	}
+
+	public void setMessageConverter(MessageConverter messageConverter) {
+		this.messageConverter = messageConverter;
 	}
 }
