@@ -47,6 +47,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
   protected void doStart() {
     super.doStart();
 
+    // TODO(joaomartins): Allow user to pass in receiveMessage.
     subscriber = Subscriber.defaultBuilder(SubscriptionName.create(
         projectId, this.subscriptionName), this::receiveMessage).build();
     subscriber.startAsync();
