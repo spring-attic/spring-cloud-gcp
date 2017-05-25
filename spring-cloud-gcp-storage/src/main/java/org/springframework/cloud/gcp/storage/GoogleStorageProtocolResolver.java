@@ -64,6 +64,6 @@ public class GoogleStorageProtocolResolver implements ProtocolResolver, Initiali
 		if (location.startsWith("gs://")) {
 			return new GoogleStorageResource(this.storage, location);
 		}
-		return this.delegate.getResource(location);
+		return null;
 	}
 }

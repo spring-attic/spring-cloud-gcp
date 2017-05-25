@@ -29,7 +29,7 @@ import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
 
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cloud.gcp.pubsub.integration.converters.SimpleMessageConverter;
+import org.springframework.cloud.gcp.pubsub.converters.SimpleMessageConverter;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.converter.MessageConverter;
 

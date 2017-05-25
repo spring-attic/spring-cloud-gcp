@@ -12,9 +12,10 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
+ *
  */
 
-package org.springframework.cloud.gcp;
+package org.springframework.cloud.gcp.storage;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -31,8 +32,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.cloud.ReadChannel;
@@ -45,7 +49,7 @@ import com.google.cloud.storage.Storage;
  */
 @SpringBootTest()
 @RunWith(SpringRunner.class)
-public class StorageAutoConfigurationTests {
+public class GoogleStorageTests {
 
 	@Value("gs://test-spring/images/spring.png")
 	private Resource remoteResource;
@@ -71,25 +75,41 @@ public class StorageAutoConfigurationTests {
 			SpringApplication.run(StorageApplication.class, args);
 		}
 
-		@Bean
-		public Storage mockStorage() throws Exception {
-			Storage storage = Mockito.mock(Storage.class);
-			BlobId validBlob = BlobId.of("test-spring", "images/spring.png");
-			Blob mockedBlob = Mockito.mock(Blob.class);
-			Mockito.when(mockedBlob.exists()).thenReturn(true);
-			Mockito.when(mockedBlob.getSize()).thenReturn(4096L);
-			ReadChannel readChannel = Mockito.mock(ReadChannel.class);
-			Mockito.when(readChannel.read(Mockito.any(ByteBuffer.class)))
-					.thenAnswer(new Answer<Object>() {
-						@Override
-						public Object answer(InvocationOnMock invocation)
-								throws Throwable {
-							return new Integer(-1);
-						}
-					});
-			Mockito.when(mockedBlob.reader()).thenReturn(readChannel);
-			Mockito.when(storage.get(Mockito.eq(validBlob))).thenReturn(mockedBlob);
-			return storage;
+		@Configuration
+		static class GoogleStorageTestsConfiguration implements ResourceLoaderAware{
+
+			private ResourceLoader defaultResourceLoader;
+
+			@Override
+			public void setResourceLoader(ResourceLoader resourceLoader) {
+				this.defaultResourceLoader = resourceLoader;
+			}
+
+			@Bean
+			public Storage mockStorage() throws Exception {
+				Storage storage = Mockito.mock(Storage.class);
+				BlobId validBlob = BlobId.of("test-spring", "images/spring.png");
+				Blob mockedBlob = Mockito.mock(Blob.class);
+				Mockito.when(mockedBlob.exists()).thenReturn(true);
+				Mockito.when(mockedBlob.getSize()).thenReturn(4096L);
+				ReadChannel readChannel = Mockito.mock(ReadChannel.class);
+				Mockito.when(readChannel.read(Mockito.any(ByteBuffer.class)))
+						.thenAnswer(new Answer<Object>() {
+							@Override
+							public Object answer(InvocationOnMock invocation)
+									throws Throwable {
+								return new Integer(-1);
+							}
+						});
+				Mockito.when(mockedBlob.reader()).thenReturn(readChannel);
+				Mockito.when(storage.get(Mockito.eq(validBlob))).thenReturn(mockedBlob);
+				return storage;
+			}
+
+			@Bean
+			public GoogleStorageProtocolResolver googleStorageProtocolResolver(Storage storage) {
+				return new GoogleStorageProtocolResolver(this.defaultResourceLoader, storage);
+			}
 		}
 	}
 }
