@@ -20,9 +20,9 @@
 		<main.basedir>${basedir}/..</main.basedir>
 	</properties>
 	<modules>
-		<module>spring-cloud-gcp-starters-pubsub</module>
-		<module>spring-cloud-gcp-starters-core</module>
-		<module>spring-cloud-gcp-starters-storage</module>
+		<module>spring-cloud-gcp-starter-pubsub</module>
+		<module>spring-cloud-gcp-starter-core</module>
+		<module>spring-cloud-gcp-starter-storage</module>
 	</modules>
 
 	<dependencies>

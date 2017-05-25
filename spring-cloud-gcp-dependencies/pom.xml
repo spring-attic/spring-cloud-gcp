@@ -37,6 +37,11 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-integration-gcp</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>com.google.cloud</groupId>
 				<artifactId>google-cloud</artifactId>
 				<version>${google-cloud-java.version}</version>
@@ -57,13 +62,18 @@
 
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starters-pubsub</artifactId>
-				<version>1.0.0.BUILD-SNAPSHOT</version>
+				<artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starters-core</artifactId>
-				<version>1.0.0.BUILD-SNAPSHOT</version>
+				<artifactId>spring-cloud-gcp-starter-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-starter-storage</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 
 		</dependencies>

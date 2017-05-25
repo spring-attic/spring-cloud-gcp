@@ -6,9 +6,9 @@
 		<artifactId>spring-cloud-gcp-starters</artifactId>
 		<version>1.0.0.BUILD-SNAPSHOT</version>
 	</parent>
-	<artifactId>spring-cloud-gcp-starters-core</artifactId>
-	<name>Spring Cloud GCP Core Starter</name>
-	<description>Starter for Google Cloud</description>
+	<artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
+	<name>Spring Cloud GCP Pubsub Starter</name>
+	<description>Starter for Google Cloud Pubsub messaging</description>
 	<organization>
 		<name>Pivotal Software, Inc.</name>
 		<url>http://www.spring.io</url>
@@ -16,4 +16,10 @@
 	<properties>
 		<main.basedir>${basedir}/../..</main.basedir>
 	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-gcp-starter-core</artifactId>
+		</dependency>
+	</dependencies>
 </project>

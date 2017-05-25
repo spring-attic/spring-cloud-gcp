@@ -10,6 +10,7 @@
 	</parent>
 
 	<artifactId>spring-cloud-gcp-core</artifactId>
+	<description>Spring Cloud GCP Core Module</description>
 
 	<dependencies>
 		<dependency>
