@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xmlns="http://maven.apache.org/POM/4.0.0"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>spring-cloud-gcp</artifactId>
+		<groupId>org.springframework.cloud</groupId>
+		<version>1.0.0.BUILD-SNAPSHOT</version>
+	</parent>
+	<packaging>pom</packaging>
+	<name>Spring Cloud GCP Starters</name>
+	<description>Spring Cloud GCP Starters</description>
+	<artifactId>spring-cloud-gcp-starters</artifactId>
+	<organization>
+		<name>Pivotal Software, Inc.</name>
+		<url>http://www.spring.io</url>
+	</organization>
+	<properties>
+		<main.basedir>${basedir}/..</main.basedir>
+	</properties>
+	<modules>
+		<module>spring-cloud-gcp-starter-pubsub</module>
+		<module>spring-cloud-gcp-starter-core</module>
+		<module>spring-cloud-gcp-starter-storage</module>
+	</modules>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-autoconfigure</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+		</dependency>
+	</dependencies>
+</project>
