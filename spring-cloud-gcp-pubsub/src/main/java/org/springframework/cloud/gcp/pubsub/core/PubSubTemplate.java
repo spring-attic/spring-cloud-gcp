@@ -24,6 +24,7 @@ import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.api.gax.grpc.InstantiatingExecutorProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.spi.v1.Publisher;
+import com.google.cloud.pubsub.spi.v1.TopicAdminSettings;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
@@ -35,6 +36,7 @@ import org.springframework.messaging.converter.MessageConverter;
 
 /**
  * @author Vinicius Carvalho
+ * @author João André Martins
  */
 public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
@@ -64,9 +66,14 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		Publisher publisher = publishers.computeIfAbsent(topic, s -> {
 			try {
 				return Publisher.defaultBuilder(TopicName.create(projectId, topic))
-						.setExecutorProvider(executorProvider).build();
-			}
-			catch (IOException e) {
+						.setExecutorProvider(executorProvider)
+						.setChannelProvider(
+								TopicAdminSettings
+										.defaultChannelProviderBuilder()
+										.setCredentialsProvider(() -> credentials)
+										.build())
+						.build();
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			return null;
