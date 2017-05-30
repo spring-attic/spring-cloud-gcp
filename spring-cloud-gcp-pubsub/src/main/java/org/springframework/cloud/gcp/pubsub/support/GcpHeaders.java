@@ -26,5 +26,5 @@ public abstract class GcpHeaders {
 
 	private static final String PREFIX = "gcp_";
 
-	public static final String CONSUMER = PREFIX + "pub_sub_consumer";
+	public static final String ACKNOWLEDGEMENT = PREFIX + "pub_sub_acknowledgement";
 }

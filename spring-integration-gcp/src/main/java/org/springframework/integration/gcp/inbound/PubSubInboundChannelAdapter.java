@@ -63,7 +63,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 		message.getAttributesMap().forEach(messageHeaders::put);
 		// Send the consumer downstream so user decides on when to ack/nack.
-		messageHeaders.put(GcpHeaders.CONSUMER, consumer);
+		messageHeaders.put(GcpHeaders.ACKNOWLEDGEMENT, consumer);
 
 		sendMessage(getMessagingTemplate().getMessageConverter()
 				.toMessage(message.getData(), new MessageHeaders(messageHeaders)));
