@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.storage;
 
+import com.google.cloud.storage.Storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +26,6 @@ import org.springframework.core.io.ProtocolResolver;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
-
-import com.google.cloud.storage.Storage;
 
 /**
  * @author Vinicius Carvalho
