@@ -18,6 +18,7 @@
 package org.springframework.cloud.gcp.core;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.core.io.Resource;
 
 /**
  * @author Vinicius Carvalho
@@ -27,7 +28,7 @@ public class GcpProperties {
 
 	private String projectId;
 
-	private String jsonKeyFile;
+	private Resource credentialsLocation;
 
 	public String getProjectId() {
 		return this.projectId;
@@ -37,12 +38,12 @@ public class GcpProperties {
 		this.projectId = projectId;
 	}
 
-	public String getJsonKeyFile() {
-		return this.jsonKeyFile;
+	public Resource getCredentialsLocation() {
+		return this.credentialsLocation;
 	}
 
-	public void setJsonKeyFile(String jsonKeyFile) {
-		this.jsonKeyFile = jsonKeyFile;
+	public void setCredentialsLocation(Resource credentialsLocation) {
+		this.credentialsLocation = credentialsLocation;
 	}
 
 }
