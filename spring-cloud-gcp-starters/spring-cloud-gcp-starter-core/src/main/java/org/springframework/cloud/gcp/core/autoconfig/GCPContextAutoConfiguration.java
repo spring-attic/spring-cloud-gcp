@@ -6,7 +6,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.core.GCPProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.StringUtils;
 
 import com.google.auth.oauth2.GoogleCredentials;
@@ -23,16 +22,14 @@ import com.google.auth.oauth2.GoogleCredentials;
 @EnableConfigurationProperties(GCPProperties.class)
 public class GCPContextAutoConfiguration {
 
-
 	@Autowired
 	private GCPProperties gcpProperties;
 
 	@Bean
-	public GoogleCredentials googleCredentials(ResourceLoader resourceLoader) throws Exception {
-		if (!StringUtils.isEmpty(this.gcpProperties.getJsonKeyFile())) {
+	public GoogleCredentials googleCredentials() throws Exception {
+		if (!StringUtils.isEmpty(this.gcpProperties.getCredentialsLocation())) {
 			return GoogleCredentials.fromStream(
-					resourceLoader.getResource(this.gcpProperties.getJsonKeyFile())
-							.getInputStream());
+					this.gcpProperties.getCredentialsLocation().getInputStream());
 		}
 		else {
 			return GoogleCredentials.getApplicationDefault();
