@@ -17,8 +17,6 @@
 
 package org.springframework.integration.gcp.outbound;
 
-import java.io.IOException;
-
 import com.google.auth.oauth2.GoogleCredentials;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
@@ -34,10 +32,6 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private PubSubTemplate pubsubTemplate;
 	private String topic;
-
-	public PubSubMessageHandler(String projectId, String topic) throws IOException {
-		this(projectId, topic, GoogleCredentials.getApplicationDefault());
-	}
 
 	public PubSubMessageHandler(String projectId, String topic, GoogleCredentials credentials) {
 		pubsubTemplate = new PubSubTemplate(credentials, projectId);
