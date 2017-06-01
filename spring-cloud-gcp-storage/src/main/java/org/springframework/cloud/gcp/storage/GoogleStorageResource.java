@@ -24,12 +24,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 
-import org.springframework.core.io.Resource;
-import org.springframework.util.Assert;
-
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
+
+import org.springframework.core.io.Resource;
+import org.springframework.util.Assert;
 
 /**
  * @author Vinicius Carvalho
@@ -99,7 +99,7 @@ public class GoogleStorageResource implements Resource {
 				}
 				catch (Exception e) {
 					throw new IOException(
-							"Failed to open remote connection to " + location, e);
+							"Failed to open remote connection to " + this.location, e);
 				}
 			}
 		}

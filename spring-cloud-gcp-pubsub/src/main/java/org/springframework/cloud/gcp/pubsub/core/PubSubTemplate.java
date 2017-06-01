@@ -12,21 +12,12 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
 package org.springframework.cloud.gcp.pubsub.core;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cloud.gcp.pubsub.converters.SimpleMessageConverter;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.converter.MessageConversionException;
-import org.springframework.messaging.converter.MessageConverter;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.SettableListenableFuture;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
@@ -38,6 +29,14 @@ import com.google.cloud.pubsub.spi.v1.Publisher;
 import com.google.cloud.pubsub.spi.v1.TopicAdminSettings;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
+
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cloud.gcp.pubsub.converters.SimpleMessageConverter;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.converter.MessageConversionException;
+import org.springframework.messaging.converter.MessageConverter;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.SettableListenableFuture;
 
 /**
  * @author Vinicius Carvalho

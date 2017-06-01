@@ -52,7 +52,7 @@ public class DateConverter implements HeaderConverter<Date> {
 	public Date decode(String value) {
 		Date result = null;
 		try {
-			result = dateFormat.parse(value);
+			result = this.dateFormat.parse(value);
 		}
 		catch (ParseException e) {
 		}

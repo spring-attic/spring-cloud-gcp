@@ -42,7 +42,7 @@ public class PubSubHeaderMapper
 	private String datePattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
 	public String getDatePattern() {
-		return datePattern;
+		return this.datePattern;
 	}
 
 	public void setDatePattern(String datePattern) {
@@ -51,12 +51,12 @@ public class PubSubHeaderMapper
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		converterMap.put(Boolean.class, new BooleanConverter());
-		converterMap.put(Integer.class, new IntegerConverter());
-		converterMap.put(Long.class, new LongConverter());
-		converterMap.put(Float.class, new FloatConverter());
-		converterMap.put(Double.class, new DoubleConverter());
-		converterMap.put(Date.class, new DateConverter(datePattern));
+		this.converterMap.put(Boolean.class, new BooleanConverter());
+		this.converterMap.put(Integer.class, new IntegerConverter());
+		this.converterMap.put(Long.class, new LongConverter());
+		this.converterMap.put(Float.class, new FloatConverter());
+		this.converterMap.put(Double.class, new DoubleConverter());
+		this.converterMap.put(Date.class, new DateConverter(this.datePattern));
 	}
 
 	@Override
@@ -80,14 +80,14 @@ public class PubSubHeaderMapper
 		if (value instanceof String) {
 			return (String) value;
 		}
-		HeaderConverter converter = converterMap.get(value.getClass());
+		HeaderConverter converter = this.converterMap.get(value.getClass());
 		return (converter != null) ? converter.encode(value) : value.toString();
 	}
 
 	@SuppressWarnings("rawtypes")
 	private Object decode(String value) {
 		Object result = null;
-		for (HeaderConverter converter : converterMap.values()) {
+		for (HeaderConverter converter : this.converterMap.values()) {
 			result = converter.decode(value);
 			if (result != null) {
 				break;

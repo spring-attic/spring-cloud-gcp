@@ -12,7 +12,6 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
 package org.springframework.cloud.gcp.storage;
@@ -21,6 +20,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
+import com.google.cloud.ReadChannel;
+import com.google.cloud.storage.Blob;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.Storage;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,15 +42,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.cloud.ReadChannel;
-import com.google.cloud.storage.Blob;
-import com.google.cloud.storage.BlobId;
-import com.google.cloud.storage.Storage;
-
 /**
  * @author Vinicius Carvalho
  */
-@SpringBootTest()
+@SpringBootTest
 @RunWith(SpringRunner.class)
 public class GoogleStorageTests {
 
@@ -56,11 +54,11 @@ public class GoogleStorageTests {
 
 	@Test
 	public void testValidObject() throws Exception {
-		Assert.assertTrue(remoteResource.exists());
-		Assert.assertEquals(4096L, remoteResource.contentLength());
+		Assert.assertTrue(this.remoteResource.exists());
+		Assert.assertEquals(4096L, this.remoteResource.contentLength());
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		InputStream is = remoteResource.getInputStream();
-		byte[] data = new byte[(int) remoteResource.contentLength()];
+		InputStream is = this.remoteResource.getInputStream();
+		byte[] data = new byte[(int) this.remoteResource.contentLength()];
 		int read = 0;
 		while ((read = is.read(data, 0, data.length)) != -1) {
 			baos.write(data, 0, read);
@@ -76,7 +74,7 @@ public class GoogleStorageTests {
 		}
 
 		@Configuration
-		static class GoogleStorageTestsConfiguration implements ResourceLoaderAware{
+		static class GoogleStorageTestsConfiguration implements ResourceLoaderAware {
 
 			private ResourceLoader defaultResourceLoader;
 

@@ -12,7 +12,6 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
 
 package org.springframework.integration.gcp.inbound;
@@ -45,7 +44,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	private Subscriber subscriber;
 
 	public PubSubInboundChannelAdapter(String projectId, String subscriptionName,
-									   GoogleCredentials credentials) {
+			GoogleCredentials credentials) {
 		this.projectId = projectId;
 		this.subscriptionName = subscriptionName;
 		this.credentials = credentials;
@@ -56,15 +55,15 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		super.doStart();
 
 		// TODO(joaomartins): Allow user to pass in receiveMessage.
-		subscriber = Subscriber
-				.defaultBuilder(SubscriptionName.create(projectId, this.subscriptionName),
+		this.subscriber = Subscriber
+				.defaultBuilder(SubscriptionName.create(this.projectId, this.subscriptionName),
 						this::receiveMessage)
 				.setChannelProvider(
 						SubscriptionAdminSettings.defaultChannelProviderBuilder()
-								.setCredentialsProvider(() -> credentials)
+								.setCredentialsProvider(() -> this.credentials)
 								.build())
 				.build();
-		subscriber.startAsync();
+		this.subscriber.startAsync();
 	}
 
 	private void receiveMessage(PubsubMessage message, AckReplyConsumer consumer) {
@@ -80,8 +79,8 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	@Override
 	protected void doStop() {
-		if (subscriber != null) {
-			subscriber.stopAsync();
+		if (this.subscriber != null) {
+			this.subscriber.stopAsync();
 		}
 
 		super.doStop();

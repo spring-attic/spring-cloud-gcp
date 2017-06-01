@@ -46,7 +46,7 @@ public class PubSubHeaderMapperTests {
 		source.put("double", Double.MAX_VALUE + "");
 		source.put("long", Long.MAX_VALUE + "");
 		source.put("string", "foo");
-		source.put("date", dateFormat.format(new Date()));
+		source.put("date", this.dateFormat.format(new Date()));
 		source.put("objectToString", "http://www.spring.io");
 		MessageHeaders result = mapper.toHeaders(source);
 		Assert.assertEquals(Boolean.class, result.get("bool").getClass());
@@ -78,7 +78,7 @@ public class PubSubHeaderMapperTests {
 		Assert.assertEquals("1", source.get("int"));
 		Assert.assertEquals("3.0", source.get("float"));
 		Assert.assertEquals("2.010012", source.get("double"));
-		Assert.assertEquals(dateFormat.format(date), source.get("date"));
+		Assert.assertEquals(this.dateFormat.format(date), source.get("date"));
 		Assert.assertEquals(o.toString(), source.get("object"));
 	}
 }
