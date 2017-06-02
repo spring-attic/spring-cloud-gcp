@@ -16,9 +16,9 @@
 
 package org.springframework.cloud.gcp.pubsub.converters;
 
-import org.springframework.messaging.Message;
-
 import com.google.pubsub.v1.PubsubMessage;
+
+import org.springframework.messaging.Message;
 
 /**
  * @author Vinicius Carvalho

@@ -19,12 +19,11 @@ package org.springframework.cloud.gcp.pubsub;
 import java.util.Collection;
 import java.util.Map;
 
-import org.springframework.messaging.Message;
-
 import com.google.auth.Credentials;
-
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import org.springframework.messaging.Message;
 
 /**
  * @author Vinicius Carvalho
