@@ -30,16 +30,23 @@ import org.springframework.messaging.Message;
  */
 public class PubSubMessageHandler extends AbstractMessageHandler {
 
-	private PubSubTemplate pubsubTemplate;
+	private final PubSubTemplate pubsubTemplate;
 	private String topic;
 
-	public PubSubMessageHandler(String projectId, String topic, GoogleCredentials credentials) {
-		pubsubTemplate = new PubSubTemplate(credentials, projectId);
-		this.topic = topic;
+	public PubSubMessageHandler(String projectId, GoogleCredentials credentials) {
+		this.pubsubTemplate = new PubSubTemplate(credentials, projectId);
 	}
 
 	@Override
 	protected void handleMessageInternal(Message<?> message) throws Exception {
-		pubsubTemplate.send(topic, message);
+		this.pubsubTemplate.send(this.topic, message);
+	}
+
+	public String getTopic() {
+		return this.topic;
+	}
+
+	public void setTopic(String topic) {
+		this.topic = topic;
 	}
 }

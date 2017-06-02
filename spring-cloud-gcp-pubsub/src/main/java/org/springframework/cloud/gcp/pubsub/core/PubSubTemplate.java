@@ -56,20 +56,20 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		this.projectId = projectId;
 		this.credentials = credentials;
 		this.executorProvider = InstantiatingExecutorProvider.newBuilder()
-				.setExecutorThreadCount(concurrentProducers).build();
+				.setExecutorThreadCount(this.concurrentProducers).build();
 	}
 
 	@Override
 	public String send(final String topic, Message message) throws RuntimeException {
 
-		Publisher publisher = publishers.computeIfAbsent(topic, s -> {
+		Publisher publisher = this.publishers.computeIfAbsent(topic, s -> {
 			try {
-				return Publisher.defaultBuilder(TopicName.create(projectId, topic))
-						.setExecutorProvider(executorProvider)
+				return Publisher.defaultBuilder(TopicName.create(this.projectId, topic))
+						.setExecutorProvider(this.executorProvider)
 						.setChannelProvider(
 								TopicAdminSettings
 										.defaultChannelProviderBuilder()
-										.setCredentialsProvider(() -> credentials)
+										.setCredentialsProvider(() -> this.credentials)
 										.build())
 						.build();
 			} catch (IOException e) {
@@ -78,10 +78,11 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 			return null;
 		});
 
-		Object pubsubMessageObject = messageConverter.fromMessage(message, PubsubMessage.class);
+		Object pubsubMessageObject =
+				this.messageConverter.fromMessage(message, PubsubMessage.class);
 
 		if (!(pubsubMessageObject instanceof PubsubMessage)) {
-			throw new MessageConversionException("The specified converter must produce"
+			throw new MessageConversionException("The specified converter must produce "
 					+ "PubsubMessages to send to Google Cloud Pub/Sub.");
 		}
 
@@ -98,7 +99,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	public MessageConverter getMessageConverter() {
-		return messageConverter;
+		return this.messageConverter;
 	}
 
 	public void setMessageConverter(MessageConverter messageConverter) {
