@@ -17,50 +17,36 @@
 
 package org.springframework.integration.gcp.outbound;
 
-import java.io.IOException;
+import com.google.auth.oauth2.GoogleCredentials;
 
-import com.google.cloud.pubsub.spi.v1.Publisher;
-import com.google.pubsub.v1.PubsubMessage;
-import com.google.pubsub.v1.TopicName;
-
-import org.springframework.cloud.gcp.pubsub.converters.SimpleMessageConverter;
+import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.converter.MessageConversionException;
-import org.springframework.messaging.converter.MessageConverter;
 
 /**
- * Converts from internal Spring message to GCP Pub/Sub message and publishes the Pub/Sub
- * message to a Pub/Sub topic.
+ * Sends messages to Google Cloud Pub/Sub by delegating to {@link PubSubTemplate}.
  *
  * @author João André Martins
  */
 public class PubSubMessageHandler extends AbstractMessageHandler {
 
-	private Publisher publisher;
-	private MessageConverter messageConverter;
+	private final PubSubTemplate pubsubTemplate;
+	private String topic;
 
-	public PubSubMessageHandler(String projectId, String topicName) throws IOException {
-		this(projectId, topicName, new SimpleMessageConverter());
-	}
-
-	public PubSubMessageHandler(String projectId, String topicName,
-			MessageConverter messageConverter) throws IOException {
-		publisher = Publisher.defaultBuilder(TopicName.create(projectId, topicName))
-				.build();
-		this.messageConverter = messageConverter;
+	public PubSubMessageHandler(String projectId, GoogleCredentials credentials) {
+		this.pubsubTemplate = new PubSubTemplate(credentials, projectId);
 	}
 
 	@Override
 	protected void handleMessageInternal(Message<?> message) throws Exception {
-		Object pubsubMessageObject = messageConverter.fromMessage(message,
-				PubsubMessage.class);
+		this.pubsubTemplate.send(this.topic, message);
+	}
 
-		if (!(pubsubMessageObject instanceof PubsubMessage)) {
-			throw new MessageConversionException("The specified converter must produce"
-					+ "PubsubMessages to send to Google Cloud Pub/Sub.");
-		}
+	public String getTopic() {
+		return this.topic;
+	}
 
-		publisher.publish((PubsubMessage) pubsubMessageObject);
+	public void setTopic(String topic) {
+		this.topic = topic;
 	}
 }
