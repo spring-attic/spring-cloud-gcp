@@ -23,7 +23,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Vinicius Carvalho
  */
 @ConfigurationProperties("spring.cloud.gcp")
-public class GCPProperties {
+public class GcpProperties {
 
 	private String projectId;
 
