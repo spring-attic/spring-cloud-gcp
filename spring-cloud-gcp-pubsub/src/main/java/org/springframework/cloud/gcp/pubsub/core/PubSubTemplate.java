@@ -19,22 +19,25 @@ package org.springframework.cloud.gcp.pubsub.core;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-
-import com.google.api.gax.grpc.ExecutorProvider;
-import com.google.api.gax.grpc.InstantiatingExecutorProvider;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.pubsub.spi.v1.Publisher;
-import com.google.cloud.pubsub.spi.v1.TopicAdminSettings;
-import com.google.protobuf.ByteString;
-import com.google.pubsub.v1.PubsubMessage;
-import com.google.pubsub.v1.TopicName;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.converters.SimpleMessageConverter;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.messaging.converter.MessageConverter;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.SettableListenableFuture;
+
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutureCallback;
+import com.google.api.core.ApiFutures;
+import com.google.api.gax.grpc.ExecutorProvider;
+import com.google.api.gax.grpc.InstantiatingExecutorProvider;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.pubsub.spi.v1.Publisher;
+import com.google.cloud.pubsub.spi.v1.TopicAdminSettings;
+import com.google.pubsub.v1.PubsubMessage;
+import com.google.pubsub.v1.TopicName;
 
 /**
  * @author Vinicius Carvalho
@@ -62,7 +65,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public String send(final String topic, Message message) {
+	public ListenableFuture<String> send(final String topic, Message message) {
 
 		Publisher publisher = this.publishers.computeIfAbsent(topic, s -> {
 			try {
@@ -74,26 +77,38 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 										.setCredentialsProvider(() -> this.credentials)
 										.build())
 						.build();
-			} catch (IOException ioe) {
+			}
+			catch (IOException ioe) {
 				throw new PubSubException("An error creating the Google Cloud Pub/Sub publisher " +
 						"occurred.", ioe);
 			}
 		});
 
-		Object pubsubMessageObject =
-				this.messageConverter.fromMessage(message, PubsubMessage.class);
+		Object pubsubMessageObject = this.messageConverter.fromMessage(message, PubsubMessage.class);
 
 		if (!(pubsubMessageObject instanceof PubsubMessage)) {
 			throw new MessageConversionException("The specified converter must produce "
 					+ "PubsubMessages to send to Google Cloud Pub/Sub.");
 		}
 
-		try {
-			return publisher.publish((PubsubMessage) pubsubMessageObject).get();
-		} catch (InterruptedException | ExecutionException e) {
-			throw new PubSubException("An error publishing the message to the Google Cloud " +
-					"Pub/Sub topic occurred.", e);
-		}
+		ApiFuture<String> publishFuture = publisher.publish((PubsubMessage) pubsubMessageObject);
+
+		final SettableListenableFuture<String> settableFuture = new SettableListenableFuture<>();
+		ApiFutures.addCallback(publishFuture, new ApiFutureCallback<String>() {
+
+			@Override
+			public void onFailure(Throwable throwable) {
+				settableFuture.setException(throwable);
+			}
+
+			@Override
+			public void onSuccess(String result) {
+				settableFuture.set(result);
+			}
+
+		});
+
+		return settableFuture;
 	}
 
 	@Override
@@ -108,4 +123,5 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	public void setMessageConverter(MessageConverter messageConverter) {
 		this.messageConverter = messageConverter;
 	}
+
 }
