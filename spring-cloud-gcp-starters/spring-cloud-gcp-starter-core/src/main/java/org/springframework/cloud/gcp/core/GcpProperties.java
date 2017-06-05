@@ -24,7 +24,7 @@ import org.springframework.core.io.Resource;
  * @author Vinicius Carvalho
  */
 @ConfigurationProperties("spring.cloud.gcp")
-public class GCPProperties {
+public class GcpProperties {
 
 	private String projectId;
 
