@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.springframework.cloud.gcp.core.autoconfig.GCPContextAutoConfiguration
+org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration
