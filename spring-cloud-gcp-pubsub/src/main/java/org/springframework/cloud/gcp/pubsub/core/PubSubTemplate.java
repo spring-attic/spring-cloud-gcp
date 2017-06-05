@@ -51,30 +51,56 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private ConcurrentHashMap<String, Publisher> publishers = new ConcurrentHashMap<>();
 
-	private ExecutorProvider executorProvider;
-
 	private MessageConverter messageConverter = new SimpleMessageConverter();
 
-	private int concurrentProducers = 1;
+	/**
+	 * The Spring component a Google Cloud Pub/Sub call is originated from.
+	 *
+	 * <p>Spring Integration callers should set this to "spring-integration", Spring Cloud to
+	 * "spring-cloud", etc.
+	 */
+	private String sourceName = "spring";
+
+	/**
+	 * The version of the Spring component a Google Cloud Pub/Sub call is originated from.
+	 *
+	 * <p>By default, the version is obtained from this package's manifest file, which is mirrored
+	 * from this package's pom.xml file. Ideally, this would be the version of the library invoking
+	 * this call (e.g., Spring Integration, Spring Cloud, etc.).
+	 */
+	private String sourceVersion;
+
+	/**
+	 * Aimed at reusing the same executor across every {@link Publisher}, so the number of allocated
+	 * threads doesn't blow out of proportion.
+	 */
+	private ExecutorProvider executorProvider;
+
+	/**
+	 * Number of threads to be used by the shared executor.
+	 *
+	 * <p>If not set, uses the default value from the gax library.
+	 */
+	private Integer executorThreadCount;
 
 	public PubSubTemplate(GoogleCredentials credentials, String projectId) {
 		this.projectId = projectId;
 		this.credentials = credentials;
-		this.executorProvider = InstantiatingExecutorProvider.newBuilder()
-				.setExecutorThreadCount(this.concurrentProducers).build();
+		this.sourceVersion = this.getClass().getPackage().getImplementationVersion();
 	}
 
 	@Override
 	public ListenableFuture<String> send(final String topic, Message message) {
-
-		Publisher publisher = this.publishers.computeIfAbsent(topic, s -> {
+		// Reuse existing publisher if one already exists.
+		Publisher publisher = this.publishers.computeIfAbsent(topic, key -> {
 			try {
-				return Publisher.defaultBuilder(TopicName.create(this.projectId, topic))
+				return Publisher.defaultBuilder(TopicName.create(this.projectId, key))
 						.setExecutorProvider(this.executorProvider)
 						.setChannelProvider(
 								TopicAdminSettings
 										.defaultChannelProviderBuilder()
 										.setCredentialsProvider(() -> this.credentials)
+										.setClientLibHeader(this.sourceName, this.sourceVersion)
 										.build())
 						.build();
 			}
@@ -84,13 +110,16 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 			}
 		});
 
-		Object pubsubMessageObject = this.messageConverter.fromMessage(message, PubsubMessage.class);
+		// Convert from payload into PubsubMessage.
+		Object pubsubMessageObject =
+				this.messageConverter.fromMessage(message, PubsubMessage.class);
 
 		if (!(pubsubMessageObject instanceof PubsubMessage)) {
 			throw new MessageConversionException("The specified converter must produce "
 					+ "PubsubMessages to send to Google Cloud Pub/Sub.");
 		}
 
+		// Send message to Google Cloud Pub/Sub.
 		ApiFuture<String> publishFuture = publisher.publish((PubsubMessage) pubsubMessageObject);
 
 		final SettableListenableFuture<String> settableFuture = new SettableListenableFuture<>();
@@ -113,7 +142,14 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		InstantiatingExecutorProvider.Builder executorProviderBuilder =
+				InstantiatingExecutorProvider.newBuilder();
 
+		if (this.executorThreadCount != null) {
+			executorProviderBuilder.setExecutorThreadCount(this.executorThreadCount);
+		}
+
+		this.executorProvider =	executorProviderBuilder.build();
 	}
 
 	public MessageConverter getMessageConverter() {
@@ -124,4 +160,11 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		this.messageConverter = messageConverter;
 	}
 
+	public int getExecutorThreadCount() {
+		return this.executorThreadCount;
+	}
+
+	public void setExecutorThreadCount(int executorThreadCount) {
+		this.executorThreadCount = executorThreadCount;
+	}
 }
