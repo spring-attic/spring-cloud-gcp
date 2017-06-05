@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.pubsub.core;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.api.gax.grpc.InstantiatingExecutorProvider;
@@ -61,7 +62,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public String send(final String topic, Message message) throws RuntimeException {
+	public String send(final String topic, Message message) {
 
 		Publisher publisher = this.publishers.computeIfAbsent(topic, s -> {
 			try {
@@ -73,10 +74,10 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 										.setCredentialsProvider(() -> this.credentials)
 										.build())
 						.build();
-			} catch (IOException e) {
-				e.printStackTrace();
+			} catch (IOException ioe) {
+				throw new PubSubException("An error creating the Google Cloud Pub/Sub publisher " +
+						"occurred.", ioe);
 			}
-			return null;
 		});
 
 		Object pubsubMessageObject =
@@ -89,8 +90,9 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 		try {
 			return publisher.publish((PubsubMessage) pubsubMessageObject).get();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+		} catch (InterruptedException | ExecutionException e) {
+			throw new PubSubException("An error publishing the message to the Google Cloud " +
+					"Pub/Sub topic occurred.", e);
 		}
 	}
 
