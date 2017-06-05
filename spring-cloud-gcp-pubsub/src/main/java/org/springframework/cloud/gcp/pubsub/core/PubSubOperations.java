@@ -18,12 +18,13 @@
 package org.springframework.cloud.gcp.pubsub.core;
 
 import org.springframework.messaging.Message;
+import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * @author Vinicius Carvalho
  */
 public interface PubSubOperations {
 
-	String send(String topic, Message message);
+	ListenableFuture<String> send(String topic, Message message);
 
 }
