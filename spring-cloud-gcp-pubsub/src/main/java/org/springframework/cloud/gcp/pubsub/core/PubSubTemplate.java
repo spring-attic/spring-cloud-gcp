@@ -20,6 +20,9 @@ package org.springframework.cloud.gcp.pubsub.core;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.api.core.ApiFuture;
+import com.google.api.core.ApiFutureCallback;
+import com.google.api.core.ApiFutures;
 import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.api.gax.grpc.InstantiatingExecutorProvider;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -34,6 +37,8 @@ import org.springframework.cloud.gcp.pubsub.converters.SimpleMessageConverter;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.messaging.converter.MessageConverter;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.SettableListenableFuture;
 
 /**
  * @author Vinicius Carvalho
@@ -61,7 +66,8 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public String send(final String topic, Message message) throws RuntimeException {
+	public ListenableFuture<String> send(final String topic, Message message)
+			throws RuntimeException {
 
 		Publisher publisher = this.publishers.computeIfAbsent(topic, s -> {
 			try {
@@ -88,7 +94,21 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		}
 
 		try {
-			return publisher.publish((PubsubMessage) pubsubMessageObject).get();
+			ApiFuture<String> pubsubFuture = publisher.publish((PubsubMessage) pubsubMessageObject);
+			final SettableListenableFuture<String> springFuture = new SettableListenableFuture<>();
+			ApiFutures.addCallback(pubsubFuture, new ApiFutureCallback<String>() {
+				@Override
+				public void onFailure(Throwable throwable) {
+					springFuture.setException(throwable);
+				}
+
+				@Override
+				public void onSuccess(String result) {
+					springFuture.set(result);
+				}
+			});
+
+			return springFuture;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
