@@ -45,11 +45,19 @@ import com.google.pubsub.v1.TopicName;
  */
 public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
+	private static final String DEFAULT_SOURCE_NAME = "spring";
+
 	private final String projectId;
 
 	private final GoogleCredentials credentials;
 
 	private ConcurrentHashMap<String, Publisher> publishers = new ConcurrentHashMap<>();
+
+	/**
+	 * Aimed at reusing the same executor across every {@link Publisher}, so the number of allocated
+	 * threads doesn't blow out of proportion.
+	 */
+	private ExecutorProvider executorProvider;
 
 	private MessageConverter messageConverter = new SimpleMessageConverter();
 
@@ -59,7 +67,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 * <p>Spring Integration callers should set this to "spring-integration", Spring Cloud to
 	 * "spring-cloud", etc.
 	 */
-	private String sourceName = "spring";
+	private String sourceName = DEFAULT_SOURCE_NAME;
 
 	/**
 	 * The version of the Spring component a Google Cloud Pub/Sub call is originated from.
@@ -70,23 +78,14 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 */
 	private String sourceVersion;
 
-	/**
-	 * Aimed at reusing the same executor across every {@link Publisher}, so the number of allocated
-	 * threads doesn't blow out of proportion.
-	 */
-	private ExecutorProvider executorProvider;
-
-	/**
-	 * Number of threads to be used by the shared executor.
-	 *
-	 * <p>If not set, uses the default value from the gax library.
-	 */
-	private Integer executorThreadCount;
+	private int concurrentProducers = 1;
 
 	public PubSubTemplate(GoogleCredentials credentials, String projectId) {
 		this.projectId = projectId;
 		this.credentials = credentials;
 		this.sourceVersion = this.getClass().getPackage().getImplementationVersion();
+		this.executorProvider = InstantiatingExecutorProvider.newBuilder()
+				.setExecutorThreadCount(concurrentProducers).build();
 	}
 
 	@Override
@@ -142,14 +141,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		InstantiatingExecutorProvider.Builder executorProviderBuilder =
-				InstantiatingExecutorProvider.newBuilder();
-
-		if (this.executorThreadCount != null) {
-			executorProviderBuilder.setExecutorThreadCount(this.executorThreadCount);
-		}
-
-		this.executorProvider =	executorProviderBuilder.build();
 	}
 
 	public MessageConverter getMessageConverter() {
@@ -158,13 +149,5 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	public void setMessageConverter(MessageConverter messageConverter) {
 		this.messageConverter = messageConverter;
-	}
-
-	public int getExecutorThreadCount() {
-		return this.executorThreadCount;
-	}
-
-	public void setExecutorThreadCount(int executorThreadCount) {
-		this.executorThreadCount = executorThreadCount;
 	}
 }
