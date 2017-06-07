@@ -85,7 +85,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		this.credentials = credentials;
 		this.sourceVersion = this.getClass().getPackage().getImplementationVersion();
 		this.executorProvider = InstantiatingExecutorProvider.newBuilder()
-				.setExecutorThreadCount(concurrentProducers).build();
+				.setExecutorThreadCount(this.concurrentProducers).build();
 	}
 
 	@Override
