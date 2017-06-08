@@ -28,6 +28,7 @@ import com.google.pubsub.v1.SubscriptionName;
 
 import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
+import org.springframework.integration.gcp.AckMode;
 import org.springframework.messaging.MessageHeaders;
 
 /**
@@ -39,9 +40,14 @@ import org.springframework.messaging.MessageHeaders;
 public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private String projectId;
+
 	private String subscriptionName;
+
 	private GoogleCredentials credentials;
+
 	private Subscriber subscriber;
+
+	private AckMode ackMode = AckMode.AUTO;
 
 	public PubSubInboundChannelAdapter(String projectId, String subscriptionName,
 			GoogleCredentials credentials) {
@@ -54,7 +60,6 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	protected void doStart() {
 		super.doStart();
 
-		// TODO(joaomartins): Allow user to pass in receiveMessage.
 		this.subscriber = Subscriber
 				.defaultBuilder(SubscriptionName.create(this.projectId, this.subscriptionName),
 						this::receiveMessage)
@@ -70,11 +75,19 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		Map<String, Object> messageHeaders = new HashMap<>();
 
 		message.getAttributesMap().forEach(messageHeaders::put);
-		// Send the consumer downstream so user decides on when to ack/nack.
-		messageHeaders.put(GcpHeaders.ACKNOWLEDGEMENT, consumer);
+
+		if (this.ackMode == AckMode.MANUAL) {
+			// Send the consumer downstream so user decides on when to ack/nack.
+			messageHeaders.put(GcpHeaders.ACKNOWLEDGEMENT, consumer);
+		}
+
 
 		sendMessage(getMessagingTemplate().getMessageConverter()
 				.toMessage(message.getData(), new MessageHeaders(messageHeaders)));
+
+		if (this.ackMode == AckMode.AUTO) {
+			consumer.ack();
+		}
 	}
 
 	@Override
@@ -84,5 +97,13 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 
 		super.doStop();
+	}
+
+	public AckMode getAckMode() {
+		return this.ackMode;
+	}
+
+	public void setAckMode(AckMode ackMode) {
+		this.ackMode = ackMode;
 	}
 }
