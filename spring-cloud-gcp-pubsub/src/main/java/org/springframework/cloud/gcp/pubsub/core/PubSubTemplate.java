@@ -45,36 +45,61 @@ import com.google.pubsub.v1.TopicName;
  */
 public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
+	private static final String DEFAULT_SOURCE_NAME = "spring";
+
 	private final String projectId;
 
 	private final GoogleCredentials credentials;
 
 	private ConcurrentHashMap<String, Publisher> publishers = new ConcurrentHashMap<>();
 
+	/**
+	 * Aimed at reusing the same executor across every {@link Publisher}, so the number of allocated
+	 * threads doesn't blow out of proportion.
+	 */
 	private ExecutorProvider executorProvider;
 
 	private MessageConverter messageConverter = new SimpleMessageConverter();
+
+	/**
+	 * The Spring component a Google Cloud Pub/Sub call is originated from.
+	 *
+	 * <p>Spring Integration callers should set this to "spring-integration", Spring Cloud to
+	 * "spring-cloud", etc.
+	 */
+	private String sourceName = DEFAULT_SOURCE_NAME;
+
+	/**
+	 * The version of the Spring component a Google Cloud Pub/Sub call is originated from.
+	 *
+	 * <p>By default, the version is obtained from this package's manifest file, which is mirrored
+	 * from this package's pom.xml file. Ideally, this would be the version of the library invoking
+	 * this call (e.g., Spring Integration, Spring Cloud, etc.).
+	 */
+	private String sourceVersion;
 
 	private int concurrentProducers = 1;
 
 	public PubSubTemplate(GoogleCredentials credentials, String projectId) {
 		this.projectId = projectId;
 		this.credentials = credentials;
+		this.sourceVersion = this.getClass().getPackage().getImplementationVersion();
 		this.executorProvider = InstantiatingExecutorProvider.newBuilder()
 				.setExecutorThreadCount(this.concurrentProducers).build();
 	}
 
 	@Override
 	public ListenableFuture<String> send(final String topic, Message message) {
-
-		Publisher publisher = this.publishers.computeIfAbsent(topic, s -> {
+		// Reuse existing publisher if one already exists.
+		Publisher publisher = this.publishers.computeIfAbsent(topic, key -> {
 			try {
-				return Publisher.defaultBuilder(TopicName.create(this.projectId, topic))
+				return Publisher.defaultBuilder(TopicName.create(this.projectId, key))
 						.setExecutorProvider(this.executorProvider)
 						.setChannelProvider(
 								TopicAdminSettings
 										.defaultChannelProviderBuilder()
 										.setCredentialsProvider(() -> this.credentials)
+										.setClientLibHeader(this.sourceName, this.sourceVersion)
 										.build())
 						.build();
 			}
@@ -84,13 +109,16 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 			}
 		});
 
-		Object pubsubMessageObject = this.messageConverter.fromMessage(message, PubsubMessage.class);
+		// Convert from payload into PubsubMessage.
+		Object pubsubMessageObject =
+				this.messageConverter.fromMessage(message, PubsubMessage.class);
 
 		if (!(pubsubMessageObject instanceof PubsubMessage)) {
 			throw new MessageConversionException("The specified converter must produce "
 					+ "PubsubMessages to send to Google Cloud Pub/Sub.");
 		}
 
+		// Send message to Google Cloud Pub/Sub.
 		ApiFuture<String> publishFuture = publisher.publish((PubsubMessage) pubsubMessageObject);
 
 		final SettableListenableFuture<String> settableFuture = new SettableListenableFuture<>();
@@ -113,7 +141,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-
 	}
 
 	public MessageConverter getMessageConverter() {
@@ -123,5 +150,4 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	public void setMessageConverter(MessageConverter messageConverter) {
 		this.messageConverter = messageConverter;
 	}
-
 }
