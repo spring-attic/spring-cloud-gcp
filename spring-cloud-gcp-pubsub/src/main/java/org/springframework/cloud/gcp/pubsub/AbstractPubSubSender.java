@@ -35,7 +35,7 @@ public abstract class AbstractPubSubSender implements ReactivePubSubSender, Life
 
 	private PubSubHeaderMapper headerMapper;
 
-	private volatile boolean running = false;
+	private volatile boolean running;
 
 	public AbstractPubSubSender(String project, Credentials credentials) {
 		this.project = project;
@@ -44,7 +44,7 @@ public abstract class AbstractPubSubSender implements ReactivePubSubSender, Life
 	}
 
 	public PubSubHeaderMapper getHeaderMapper() {
-		return headerMapper;
+		return this.headerMapper;
 	}
 
 	public void setHeaderMapper(PubSubHeaderMapper headerMapper) {

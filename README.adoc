@@ -1,0 +1,16 @@
+= Spring Framework on Google Cloud Platform
+
+This project aims at making it as seamless as possible for Spring users to run their applications on
+Google Cloud Platform. The project website is http://cloud.spring.io/spring-cloud-gcp/ (under
+development).
+
+Currently, this repository contains Spring Integration inbound and outbound channel adapters which
+use Google Cloud Pub/Sub, as well as a Google Cloud Pub/Sub Spring abstraction, i.e.,
+`PubSubTemplate`.
+
+If you have any other ideas, suggestions or bug reports, please use our
+link:https://github.com/spring-cloud/spring-cloud-gcp/issues[GitHub issue tracker] and let us know!
+We would love to hear from you.
+
+If you want to collaborate in the project, we would also love to get your Pull Requests. Before you
+start working on one, please take a look at our link:CONTRIBUTING.adoc[collaboration manual].
