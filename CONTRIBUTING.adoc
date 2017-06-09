@@ -11,9 +11,9 @@ Organize Imports` respectively.
 * In IntelliJ IDEA, install the plugin `Eclipse Code Formatter`.  You can find it by searching in
 "Browse Repositories", under `Settings > Plugins` within IDEA (Once installed, you will need to
 reboot IDEA for it to take effect).
-Then navigate to `IntelliJ IDEA > Preferences` and select the Eclipse Code Formatter.
-Select the `eclipse-code-formatter.xml` file for the field `Eclipse Java Formatter config file`
-and the file `eclipse.importorder` for the field `Import order`.
+Then navigate to `Settings > Other Settings` (this might be under `Preferences` on Mac) and select
+the Eclipse Code Formatter. Select the `eclipse-code-formatter.xml` file for the field `Eclipse Java
+Formatter config file` and the file `eclipse.importorder` for the field `Import order`.
 Enable the `Eclipse code formatter` by clicking `Use the Eclipse code formatter` radio button at the
 top of the page, then click the *OK* button.
 

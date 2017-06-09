@@ -16,9 +16,9 @@
 
 package org.springframework.cloud.gcp.storage;
 
-import java.util.logging.Logger;
-
 import com.google.cloud.storage.Storage;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -36,7 +36,7 @@ public class GoogleStorageProtocolResolver implements ProtocolResolver, Initiali
 
 	private final Storage storage;
 
-	private final Logger logger = Logger.getLogger(GoogleStorageProtocolResolver.class.getName());
+	private final Log logger = LogFactory.getLog(this.getClass());
 
 	public GoogleStorageProtocolResolver(ResourceLoader delegate, Storage storage) {
 		Assert.notNull(delegate, "Parent resource loader can not be null");
@@ -51,7 +51,7 @@ public class GoogleStorageProtocolResolver implements ProtocolResolver, Initiali
 			((DefaultResourceLoader) this.delegate).addProtocolResolver(this);
 		}
 		else {
-			this.logger.warning("The provided delegate resource loader is not an implementation " +
+			this.logger.warn("The provided delegate resource loader is not an implementation " +
 					"of DefaultResourceLoader. Custom Protocol using gs:// prefix will not be " +
 					"enabled.");
 		}
