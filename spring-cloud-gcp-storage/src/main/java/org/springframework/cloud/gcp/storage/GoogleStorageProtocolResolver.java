@@ -17,51 +17,35 @@
 package org.springframework.cloud.gcp.storage;
 
 import com.google.cloud.storage.Storage;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ProtocolResolver;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.util.Assert;
 
 /**
+ * A {@link ProtocolResolver} implementation for the {@code gs://} protocol.
+ * 
  * @author Vinicius Carvalho
+ * @author Artem Bilan
  */
-public class GoogleStorageProtocolResolver implements ProtocolResolver, InitializingBean {
+class GoogleStorageProtocolResolver implements ProtocolResolver {
 
-	private final ResourceLoader delegate;
+	private static final String PROTOCOL = "gs://";
 
 	private final Storage storage;
 
-	private final Log logger = LogFactory.getLog(this.getClass());
-
-	public GoogleStorageProtocolResolver(ResourceLoader delegate, Storage storage) {
-		Assert.notNull(delegate, "Parent resource loader can not be null");
+	GoogleStorageProtocolResolver(Storage storage) {
 		Assert.notNull(storage, "Storage client can not be null");
-		this.delegate = delegate;
 		this.storage = storage;
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
-		if (DefaultResourceLoader.class.isAssignableFrom(this.delegate.getClass())) {
-			((DefaultResourceLoader) this.delegate).addProtocolResolver(this);
-		}
-		else {
-			this.logger.warn("The provided delegate resource loader is not an implementation " +
-					"of DefaultResourceLoader. Custom Protocol using gs:// prefix will not be " +
-					"enabled.");
-		}
-	}
-
-	@Override
 	public Resource resolve(String location, ResourceLoader resourceLoader) {
-		if (location.startsWith("gs://")) {
+		if (location.startsWith(PROTOCOL)) {
 			return new GoogleStorageResource(this.storage, location);
 		}
 		return null;
 	}
+
 }

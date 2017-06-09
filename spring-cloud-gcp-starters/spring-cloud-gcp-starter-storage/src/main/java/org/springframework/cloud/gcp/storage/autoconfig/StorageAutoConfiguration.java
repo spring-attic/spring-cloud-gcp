@@ -22,35 +22,33 @@ import com.google.cloud.storage.StorageOptions;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolver;
-import org.springframework.context.ResourceLoaderAware;
+import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolverBeanFactoryPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ResourceLoader;
+import org.springframework.context.annotation.Import;
 
 /**
+ * An auto-configuration for Google {@link Storage} bean definition. Also it
+ * {@link Import} a {@link GoogleStorageProtocolResolverBeanFactoryPostProcessor} to
+ * register {@code GoogleStorageProtocolResolver} with the {@code DefaultResourceLoader}.
+ * 
  * @author Vinicius Carvalho
+ * @author Artem Bilan
+ * 
+ * @see GoogleStorageProtocolResolverBeanFactoryPostProcessor
  */
 @Configuration
 @ConditionalOnClass(Storage.class)
-public class StorageAutoConfiguration implements ResourceLoaderAware {
-
-	private ResourceLoader defaultResourceLoader;
-
-	@Override
-	public void setResourceLoader(ResourceLoader resourceLoader) {
-		this.defaultResourceLoader = resourceLoader;
-	}
+@Import(GoogleStorageProtocolResolverBeanFactoryPostProcessor.class)
+public class StorageAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(Storage.class)
-	public Storage storage(GoogleCredentials credentials) throws Exception {
-		return StorageOptions.newBuilder().setCredentials(credentials).build()
+	public static Storage storage(GoogleCredentials credentials) {
+		return StorageOptions.newBuilder()
+				.setCredentials(credentials)
+				.build()
 				.getService();
 	}
 
-	@Bean
-	public GoogleStorageProtocolResolver googleStorageProtocolResolver(Storage storage) {
-		return new GoogleStorageProtocolResolver(this.defaultResourceLoader, storage);
-	}
 }
