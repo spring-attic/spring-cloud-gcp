@@ -20,6 +20,6 @@ top of the page, then click the *OK* button.
 ** NOTE: If you configure the `Eclipse Code Formatter` from `File > Other Settings > Default
 Settings`, it will set this policy across all of your IDEA projects.
 
-** IDEA'S "Optimize imports on the fly" option turned on interferes with the Eclipse code formatter
+** IDEA's "Optimize imports on the fly" option turned on interferes with the Eclipse code formatter
 import optimization. Consider disabling the option if optimization does not yield the expected
 results.
