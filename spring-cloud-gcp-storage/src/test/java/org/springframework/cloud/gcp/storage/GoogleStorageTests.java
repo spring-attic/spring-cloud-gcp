@@ -51,7 +51,7 @@ public class GoogleStorageTests {
 	}
 
 	@Configuration
-	@Import(GoogleStorageProtocolResolverBeanFactoryPostProcessor.class)
+	@Import(GoogleStorageProtocolResolver.class)
 	static class StorageApplication {
 
 		@Bean

@@ -22,28 +22,31 @@ import com.google.cloud.storage.StorageOptions;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolverBeanFactoryPostProcessor;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.core.GcpProperties;
+import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
  * An auto-configuration for Google {@link Storage} bean definition. Also it
- * {@link Import} a {@link GoogleStorageProtocolResolverBeanFactoryPostProcessor} to
- * register {@code GoogleStorageProtocolResolver} with the {@code DefaultResourceLoader}.
- * 
+ * {@link Import} a {@link GoogleStorageProtocolResolver} to register it
+ * with the {@code DefaultResourceLoader}.
+ *
  * @author Vinicius Carvalho
  * @author Artem Bilan
- * 
- * @see GoogleStorageProtocolResolverBeanFactoryPostProcessor
+ *
+ * @see GoogleStorageProtocolResolver
  */
 @Configuration
 @ConditionalOnClass(Storage.class)
-@Import(GoogleStorageProtocolResolverBeanFactoryPostProcessor.class)
+@EnableConfigurationProperties(GcpProperties.class)
+@Import(GoogleStorageProtocolResolver.class)
 public class StorageAutoConfiguration {
 
 	@Bean
-	@ConditionalOnMissingBean(Storage.class)
+	@ConditionalOnMissingBean
 	public static Storage storage(GoogleCredentials credentials) {
 		return StorageOptions.newBuilder()
 				.setCredentials(credentials)
