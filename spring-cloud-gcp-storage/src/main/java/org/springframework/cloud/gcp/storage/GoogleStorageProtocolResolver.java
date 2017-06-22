@@ -17,51 +17,63 @@
 package org.springframework.cloud.gcp.storage;
 
 import com.google.cloud.storage.Storage;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ProtocolResolver;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.util.Assert;
 
 /**
+ * A {@link ProtocolResolver} implementation for the {@code gs://} protocol.
+ *
  * @author Vinicius Carvalho
+ * @author Artem Bilan
  */
-public class GoogleStorageProtocolResolver implements ProtocolResolver, InitializingBean {
+public class GoogleStorageProtocolResolver implements ProtocolResolver, BeanFactoryPostProcessor, ResourceLoaderAware {
 
-	private final ResourceLoader delegate;
+	private static final Log logger = LogFactory.getLog(GoogleStorageProtocolResolver.class);
 
-	private final Storage storage;
+	private static final String PROTOCOL = "gs://";
 
-	private final Log logger = LogFactory.getLog(this.getClass());
+	private ConfigurableListableBeanFactory beanFactory;
 
-	public GoogleStorageProtocolResolver(ResourceLoader delegate, Storage storage) {
-		Assert.notNull(delegate, "Parent resource loader can not be null");
-		Assert.notNull(storage, "Storage client can not be null");
-		this.delegate = delegate;
-		this.storage = storage;
+	private volatile Storage storage;
+
+	GoogleStorageProtocolResolver() {
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception {
-		if (DefaultResourceLoader.class.isAssignableFrom(this.delegate.getClass())) {
-			((DefaultResourceLoader) this.delegate).addProtocolResolver(this);
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
+	}
+
+	@Override
+	public void setResourceLoader(ResourceLoader resourceLoader) {
+		if (DefaultResourceLoader.class.isAssignableFrom(resourceLoader.getClass())) {
+			((DefaultResourceLoader) resourceLoader).addProtocolResolver(this);
 		}
 		else {
-			this.logger.warn("The provided delegate resource loader is not an implementation " +
-					"of DefaultResourceLoader. Custom Protocol using gs:// prefix will not be " +
-					"enabled.");
+			logger.warn("The provided delegate resource loader is not an implementation " +
+					"of DefaultResourceLoader. Custom Protocol using gs:// prefix will not be enabled.");
 		}
 	}
 
 	@Override
 	public Resource resolve(String location, ResourceLoader resourceLoader) {
-		if (location.startsWith("gs://")) {
+		if (location.startsWith(PROTOCOL)) {
+			if (this.storage == null) {
+				this.storage = this.beanFactory.getBean(Storage.class);
+			}
 			return new GoogleStorageResource(this.storage, location);
 		}
 		return null;
 	}
+
 }

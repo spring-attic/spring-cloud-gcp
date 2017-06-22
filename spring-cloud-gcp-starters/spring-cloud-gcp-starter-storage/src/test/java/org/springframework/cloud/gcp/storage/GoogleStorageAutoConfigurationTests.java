@@ -16,43 +16,58 @@
 
 package org.springframework.cloud.gcp.storage;
 
+import java.io.IOException;
+
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * @author Vinicius Carvalho
  * @author Artem Bilan
  */
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
-public class GoogleStorageTests {
+public class GoogleStorageAutoConfigurationTests {
 
-	@Value("gs://test-spring/images/spring.png")
-	private Resource remoteResource;
+	@LocalServerPort
+	private int port;
 
 	@Test
 	public void testValidObject() throws Exception {
-		Assert.assertTrue(this.remoteResource.exists());
-		Assert.assertEquals(4096L, this.remoteResource.contentLength());
+		TestRestTemplate testRestTemplate = new TestRestTemplate();
+		Long actual = testRestTemplate.getForObject("http://localhost:" + this.port + "/resource", Long.class);
+		assertEquals(new Long(4096L), actual);
 	}
 
-	@Configuration
-	@Import(GoogleStorageProtocolResolver.class)
+	@SpringBootApplication(exclude = GcpContextAutoConfiguration.class)
+	@RestController
 	static class StorageApplication {
+
+		@Value("gs://test-spring/images/spring.png")
+		private Resource remoteResource;
+
+		@GetMapping("/resource")
+		public long getResource() throws IOException {
+			return this.remoteResource.contentLength();
+		}
 
 		@Bean
 		public static Storage mockStorage() throws Exception {
