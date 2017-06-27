@@ -20,6 +20,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.context.annotation.Bean;
@@ -42,6 +43,7 @@ public class GcpContextAutoConfiguration {
 	private GcpProperties gcpProperties;
 
 	@Bean
+	@ConditionalOnMissingBean
 	public GoogleCredentials googleCredentials() throws Exception {
 		if (!StringUtils.isEmpty(this.gcpProperties.getCredentialsLocation())) {
 			return GoogleCredentials.fromStream(
