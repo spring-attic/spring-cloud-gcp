@@ -30,6 +30,7 @@ import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.gcp.AckMode;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.util.Assert;
 
 /**
  * Converts from GCP Pub/Sub message to Spring message and sends the Spring message to the
@@ -104,6 +105,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	}
 
 	public void setAckMode(AckMode ackMode) {
+		Assert.notNull(ackMode, "The acknowledgement mode can't be null.");
 		this.ackMode = ackMode;
 	}
 }
