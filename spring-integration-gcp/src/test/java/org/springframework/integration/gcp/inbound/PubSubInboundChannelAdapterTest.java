@@ -16,11 +16,12 @@
 
 package org.springframework.integration.gcp.inbound;
 
-import com.google.auth.oauth2.GoogleCredentials;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 
 /**
  * {@link PubSubInboundChannelAdapter} unit tests.
@@ -31,12 +32,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class PubSubInboundChannelAdapterTest {
 
 	@Mock
-	private GoogleCredentials mockCredentials;
+	private SubscriberFactory subscriberFactory;
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testNonNullAckMode() {
 		PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(
-				"projectId", "testSubscription", this.mockCredentials);
+				this.subscriberFactory, "testSubscription");
 		adapter.setAckMode(null);
 	}
 }

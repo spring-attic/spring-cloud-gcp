@@ -14,55 +14,51 @@
  *  limitations under the License.
  */
 
-package org.springframework.integration.gcp.outbound;
+package org.springframework.cloud.gcp.pubsub.autoconfig;
 
 import com.google.api.gax.grpc.ExecutorProvider;
+import com.google.api.gax.grpc.InstantiatingExecutorProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.spi.v1.TopicAdminSettings;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
-import org.springframework.integration.handler.AbstractMessageHandler;
-import org.springframework.messaging.Message;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * Sends messages to Google Cloud Pub/Sub by delegating to {@link PubSubTemplate}.
- *
  * @author João André Martins
  */
-public class PubSubMessageHandler extends AbstractMessageHandler {
+@Configuration
+@ComponentScan(basePackages = "org.springframework.cloud.gcp.core.autoconfig")
+public class GcpPubsubAutoConfiguration {
 
-	private static final String SPRING_INTEGRATION_SOURCE_NAME =
-			"integration\\" + PubSubMessageHandler.class.getPackage().getImplementationVersion();
+	@Bean
+	@ConditionalOnMissingBean
+	public ExecutorProvider getExecutorProvider() {
+		return InstantiatingExecutorProvider.newBuilder().setExecutorThreadCount(1).build();
+	}
 
-	private final PubSubTemplate pubsubTemplate;
-	private String topic;
-
-	public PubSubMessageHandler(String projectId, GoogleCredentials credentials,
-			ExecutorProvider executorProvider) {
-		PublisherFactory factory = new DefaultPublisherFactory(projectId,
+	@Bean
+	@ConditionalOnClass({GcpProperties.class, GoogleCredentials.class})
+	@ConditionalOnMissingBean
+	public PubSubTemplate getPubSubTemplate(GcpProperties gcpProperties,
+			ExecutorProvider executorProvider,
+			GoogleCredentials credentials) {
+		PublisherFactory factory = new DefaultPublisherFactory(gcpProperties.getProjectId(),
 				executorProvider,
 				TopicAdminSettings
 						.defaultChannelProviderBuilder()
 						.setCredentialsProvider(() -> credentials)
 						.setClientLibHeader(
 								DefaultPublisherFactory.DEFAULT_SOURCE_NAME,
-								SPRING_INTEGRATION_SOURCE_NAME)
+								"boot\\" + this.getClass().getPackage().getImplementationVersion())
 						.build());
-		this.pubsubTemplate = new PubSubTemplate(factory);
-	}
-
-	@Override
-	protected void handleMessageInternal(Message<?> message) throws Exception {
-		this.pubsubTemplate.send(this.topic, message);
-	}
-
-	public String getTopic() {
-		return this.topic;
-	}
-
-	public void setTopic(String topic) {
-		this.topic = topic;
+		return new PubSubTemplate(factory);
 	}
 }
