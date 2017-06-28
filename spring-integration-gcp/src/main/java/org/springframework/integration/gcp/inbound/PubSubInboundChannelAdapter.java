@@ -82,11 +82,11 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 			messageHeaders.put(GcpHeaders.ACKNOWLEDGEMENT, consumer);
 		}
 
-
 		try {
 			sendMessage(getMessagingTemplate().getMessageConverter()
 					.toMessage(message.getData(), new MessageHeaders(messageHeaders)));
-		} catch (RuntimeException re) {
+		}
+		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
 				consumer.nack();
 			}

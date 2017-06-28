@@ -24,6 +24,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 /**
  * {@link PubSubInboundChannelAdapter} unit tests.
+ *
+ * @author João André Martins
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubInboundChannelAdapterTest {

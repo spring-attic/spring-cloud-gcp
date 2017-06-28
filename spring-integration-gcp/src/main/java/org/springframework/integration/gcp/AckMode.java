@@ -18,6 +18,8 @@ package org.springframework.integration.gcp;
 
 /**
  * Determines acknowledgement policy for incoming messages from Google Cloud Pub/Sub.
+ *
+ * @author João André Martins
  */
 public enum AckMode {
 
