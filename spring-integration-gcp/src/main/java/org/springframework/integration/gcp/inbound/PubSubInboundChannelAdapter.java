@@ -83,8 +83,15 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 
 
-		sendMessage(getMessagingTemplate().getMessageConverter()
-				.toMessage(message.getData(), new MessageHeaders(messageHeaders)));
+		try {
+			sendMessage(getMessagingTemplate().getMessageConverter()
+					.toMessage(message.getData(), new MessageHeaders(messageHeaders)));
+		} catch (RuntimeException re) {
+			if (this.ackMode == AckMode.AUTO) {
+				consumer.nack();
+			}
+			throw re;
+		}
 
 		if (this.ackMode == AckMode.AUTO) {
 			consumer.ack();
