@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
  */
 public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
-	private String subscriptionName;
+	private final String subscriptionName;
 
 	private final SubscriberFactory subscriberFactory;
 
