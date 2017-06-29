@@ -42,8 +42,6 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubException;
  */
 public class DefaultPublisherFactory implements PublisherFactory {
 
-	public static final String DEFAULT_SOURCE_NAME = "spring";
-
 	private final String projectId;
 
 	/**
