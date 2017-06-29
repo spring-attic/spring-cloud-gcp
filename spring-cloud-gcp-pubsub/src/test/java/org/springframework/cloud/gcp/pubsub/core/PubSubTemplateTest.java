@@ -77,7 +77,7 @@ public class PubSubTemplateTest {
 		ListenableFuture<String> future = this.pubSubTemplate.send("testTopic", this.siMessage);
 		this.settableApiFuture.set("result");
 
-		assertEquals(future.get(), "result");
+		assertEquals("result", future.get());
 	}
 
 	@Test(expected = MessageConversionException.class)
