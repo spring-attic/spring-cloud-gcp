@@ -16,11 +16,10 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.spi.v1.MessageReceiver;
 import com.google.cloud.pubsub.spi.v1.Subscriber;
-import com.google.cloud.pubsub.spi.v1.SubscriptionAdminSettings;
 import com.google.pubsub.v1.SubscriptionName;
 
 /**
@@ -33,25 +32,22 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	private String projectId;
 
-	private GoogleCredentials credentials;
-
 	private ExecutorProvider executorProvider;
 
-	public DefaultSubscriberFactory(String projectId, GoogleCredentials credentials,
-			ExecutorProvider executorProvider) {
+	private ChannelProvider channelProvider;
+
+	public DefaultSubscriberFactory(String projectId, ExecutorProvider executorProvider,
+			ChannelProvider channelProvider) {
 		this.projectId = projectId;
-		this.credentials = credentials;
 		this.executorProvider = executorProvider;
+		this.channelProvider = channelProvider;
 	}
 
 	@Override
 	public Subscriber getSubscriber(String subscriptionName, MessageReceiver receiver) {
 		return Subscriber.defaultBuilder(
 				SubscriptionName.create(this.projectId, subscriptionName), receiver)
-				.setChannelProvider(
-						SubscriptionAdminSettings.defaultChannelProviderBuilder()
-								.setCredentialsProvider(() -> this.credentials)
-								.build())
+				.setChannelProvider(this.channelProvider)
 				.setExecutorProvider(this.executorProvider)
 				.build();
 	}

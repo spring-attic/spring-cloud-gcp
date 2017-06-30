@@ -33,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
-public class SimpleMessageConverterTest {
+public class SimpleMessageConverterTests {
 
 	@Test
 	public void testFromMessage() {
@@ -48,6 +48,7 @@ public class SimpleMessageConverterTest {
 		assertEquals("test payload", pubsubMessage.getData().toStringUtf8());
 		assertEquals("value", pubsubMessage.getAttributesOrDefault("h1", "def"));
 		assertEquals("23", pubsubMessage.getAttributesOrDefault("h2", "def"));
+		assertEquals(4, pubsubMessage.getAttributesCount());
 	}
 
 	@Test(expected = MessageConversionException.class)

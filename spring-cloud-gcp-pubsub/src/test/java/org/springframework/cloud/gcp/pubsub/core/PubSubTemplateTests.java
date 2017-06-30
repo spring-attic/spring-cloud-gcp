@@ -23,7 +23,6 @@ import java.util.concurrent.ExecutionException;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.pubsub.spi.v1.Publisher;
 import com.google.pubsub.v1.PubsubMessage;
-import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,6 +38,7 @@ import org.springframework.messaging.support.GenericMessage;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.when;
 
@@ -46,7 +46,7 @@ import static org.mockito.Mockito.when;
  * @author João André Martins
  */
 @RunWith(MockitoJUnitRunner.class)
-public class PubSubTemplateTest {
+public class PubSubTemplateTests {
 
 	@Mock
 	private PublisherFactory mockPublisherFactory;
@@ -74,8 +74,8 @@ public class PubSubTemplateTest {
 
 	@Test
 	public void testSend() throws ExecutionException, InterruptedException {
-		ListenableFuture<String> future = this.pubSubTemplate.send("testTopic", this.siMessage);
 		this.settableApiFuture.set("result");
+		ListenableFuture<String> future = this.pubSubTemplate.send("testTopic", this.siMessage);
 
 		assertEquals("result", future.get());
 	}
@@ -112,10 +112,10 @@ public class PubSubTemplateTest {
 
 		try {
 			future.get();
-			TestCase.fail("Test should fail.");
+			fail("Test should fail.");
 		}
 		catch (InterruptedException ie) {
-			TestCase.fail("get() should fail with an ExecutionException.");
+			fail("get() should fail with an ExecutionException.");
 		}
 		catch (ExecutionException ee) {
 			assertEquals("future failed.", ee.getCause().getMessage());

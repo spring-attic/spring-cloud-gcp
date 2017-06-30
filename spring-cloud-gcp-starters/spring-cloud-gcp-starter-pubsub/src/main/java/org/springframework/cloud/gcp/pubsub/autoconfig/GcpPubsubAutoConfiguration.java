@@ -18,15 +18,17 @@ package org.springframework.cloud.gcp.pubsub.autoconfig;
 
 import java.util.concurrent.Executors;
 
+import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.api.gax.grpc.FixedExecutorProvider;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.pubsub.spi.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.spi.v1.TopicAdminSettings;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.gcp.core.GcpProperties;
+import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
@@ -40,6 +42,7 @@ import org.springframework.context.annotation.Configuration;
  * @author João André Martins
  */
 @Configuration
+@AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @ComponentScan(basePackageClasses =
 		org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration.class)
 public class GcpPubsubAutoConfiguration {
@@ -48,49 +51,55 @@ public class GcpPubsubAutoConfiguration {
 	public static final int DEFAULT_EXECUTOR_THREADS = 4;
 
 	@Bean
-	@ConditionalOnMissingBean
-	public ExecutorProvider executorProviderForPublisher() {
+	public ExecutorProvider publisherExecutorProvider() {
 		return FixedExecutorProvider.create(
 				Executors.newScheduledThreadPool(DEFAULT_EXECUTOR_THREADS));
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
-	public ExecutorProvider executorProviderForSubscriber() {
+	public ExecutorProvider subscriberExecutorProvider() {
 		return FixedExecutorProvider.create(
 				Executors.newScheduledThreadPool(DEFAULT_EXECUTOR_THREADS));
 	}
 
 	@Bean
-	@ConditionalOnClass({GcpProperties.class, GoogleCredentials.class})
+	public ChannelProvider subscriberChannelProvider(GoogleCredentials credentials) {
+		return SubscriptionAdminSettings.defaultChannelProviderBuilder()
+				.setCredentialsProvider(() -> credentials)
+				.setClientLibHeader(DEFAULT_SOURCE_NAME,
+						this.getClass().getPackage().getImplementationVersion())
+				.build();
+	}
+
+	@Bean
+	public ChannelProvider publisherChannelProvider(GoogleCredentials credentials) {
+		return TopicAdminSettings
+				.defaultChannelProviderBuilder()
+				.setCredentialsProvider(() -> credentials)
+				.setClientLibHeader(DEFAULT_SOURCE_NAME,
+						this.getClass().getPackage().getImplementationVersion())
+				.build();
+	}
+
+	@Bean
 	@ConditionalOnMissingBean
 	public PubSubTemplate pubsubTemplate(PublisherFactory publisherFactory) {
 		return new PubSubTemplate(publisherFactory);
 	}
 
 	@Bean
-	@ConditionalOnClass({GcpProperties.class, GoogleCredentials.class})
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(GcpProperties gcpProperties,
-			GoogleCredentials credentials,
-			@Qualifier("executorProviderForSubscriber") ExecutorProvider executorProvider) {
-		return new DefaultSubscriberFactory(
-				gcpProperties.getProjectId(), credentials, executorProvider);
+			GoogleCredentials credentials) {
+		return new DefaultSubscriberFactory(gcpProperties.getProjectId(),
+				subscriberExecutorProvider(), subscriberChannelProvider(credentials));
 	}
 
 	@Bean
-	@ConditionalOnClass({GcpProperties.class, GoogleCredentials.class})
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(GcpProperties gcpProperties,
-			GoogleCredentials credentials,
-			@Qualifier("executorProviderForPublisher") ExecutorProvider executorProvider) {
+			GoogleCredentials credentials) {
 		return new DefaultPublisherFactory(gcpProperties.getProjectId(),
-				executorProvider,
-				TopicAdminSettings
-						.defaultChannelProviderBuilder()
-						.setCredentialsProvider(() -> credentials)
-						.setClientLibHeader(DEFAULT_SOURCE_NAME,
-								this.getClass().getPackage().getImplementationVersion())
-						.build());
+				publisherExecutorProvider(), publisherChannelProvider(credentials));
 	}
 }

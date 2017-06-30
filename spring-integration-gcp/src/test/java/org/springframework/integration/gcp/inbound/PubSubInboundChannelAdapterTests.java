@@ -29,7 +29,7 @@ import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
  * @author João André Martins
  */
 @RunWith(MockitoJUnitRunner.class)
-public class PubSubInboundChannelAdapterTest {
+public class PubSubInboundChannelAdapterTests {
 
 	@Mock
 	private SubscriberFactory subscriberFactory;

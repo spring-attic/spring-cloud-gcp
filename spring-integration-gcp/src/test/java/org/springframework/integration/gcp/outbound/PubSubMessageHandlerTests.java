@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
  * @author João André Martins
  */
 @RunWith(MockitoJUnitRunner.class)
-public class PubSubMessageHandlerTest {
+public class PubSubMessageHandlerTests {
 
 	@Mock
 	private PubSubTemplate pubsubTemplate;

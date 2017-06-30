@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
  * @author João André Martins
  */
 @RunWith(MockitoJUnitRunner.class)
-public class DefaultPublisherFactoryTest {
+public class DefaultPublisherFactoryTests {
 
 	private DefaultPublisherFactory factory;
 	@Mock
