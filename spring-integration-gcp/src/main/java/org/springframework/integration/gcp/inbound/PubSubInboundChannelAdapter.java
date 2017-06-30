@@ -20,9 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.pubsub.spi.v1.AckReplyConsumer;
-import com.google.cloud.pubsub.spi.v1.Subscriber;
-import com.google.cloud.pubsub.spi.v1.SubscriptionAdminSettings;
+import com.google.cloud.pubsub.v1.AckReplyConsumer;
+import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.SubscriptionName;
 
