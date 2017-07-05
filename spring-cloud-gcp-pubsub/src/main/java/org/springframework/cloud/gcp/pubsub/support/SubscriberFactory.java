@@ -16,8 +16,8 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
-import com.google.cloud.pubsub.spi.v1.MessageReceiver;
-import com.google.cloud.pubsub.spi.v1.Subscriber;
+import com.google.cloud.pubsub.v1.MessageReceiver;
+import com.google.cloud.pubsub.v1.Subscriber;
 
 /**
  * Generates {@link Subscriber} objects.

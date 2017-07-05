@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
-import com.google.cloud.pubsub.spi.v1.Publisher;
+import com.google.cloud.pubsub.v1.Publisher;
 
 /**
  * @author João André Martins

@@ -22,9 +22,11 @@ import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.api.gax.grpc.FixedExecutorProvider;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.pubsub.spi.v1.SubscriptionAdminSettings;
-import com.google.cloud.pubsub.spi.v1.TopicAdminSettings;
+import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
+import com.google.cloud.pubsub.v1.TopicAdminSettings;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.gcp.core.GcpProperties;
@@ -35,7 +37,6 @@ import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -43,23 +44,26 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
-@ComponentScan(basePackageClasses =
-		org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration.class)
 public class GcpPubsubAutoConfiguration {
 
 	public static final String DEFAULT_SOURCE_NAME = "spring";
-	public static final int DEFAULT_EXECUTOR_THREADS = 4;
+
+	@Value("${spring.cloud.gcp.pubsub.subscriber.executorThreads:4}")
+	private int subscriberExecutorThreads;
+
+	@Value("${spring.cloud.gcp.pubsub.publisher.executorThreads:4}")
+	private int publisherExecutorThreads;
 
 	@Bean
 	public ExecutorProvider publisherExecutorProvider() {
 		return FixedExecutorProvider.create(
-				Executors.newScheduledThreadPool(DEFAULT_EXECUTOR_THREADS));
+				Executors.newScheduledThreadPool(this.publisherExecutorThreads));
 	}
 
 	@Bean
 	public ExecutorProvider subscriberExecutorProvider() {
 		return FixedExecutorProvider.create(
-				Executors.newScheduledThreadPool(DEFAULT_EXECUTOR_THREADS));
+				Executors.newScheduledThreadPool(this.subscriberExecutorThreads));
 	}
 
 	@Bean
@@ -90,16 +94,18 @@ public class GcpPubsubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(GcpProperties gcpProperties,
-			GoogleCredentials credentials) {
+			GoogleCredentials credentials,
+			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider) {
 		return new DefaultSubscriberFactory(gcpProperties.getProjectId(),
-				subscriberExecutorProvider(), subscriberChannelProvider(credentials));
+				executorProvider, subscriberChannelProvider(credentials));
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(GcpProperties gcpProperties,
-			GoogleCredentials credentials) {
+			GoogleCredentials credentials,
+			@Qualifier("subscriberExecutorProvider") ExecutorProvider subscriberProvider) {
 		return new DefaultPublisherFactory(gcpProperties.getProjectId(),
-				publisherExecutorProvider(), publisherChannelProvider(credentials));
+				subscriberProvider, publisherChannelProvider(credentials));
 	}
 }
