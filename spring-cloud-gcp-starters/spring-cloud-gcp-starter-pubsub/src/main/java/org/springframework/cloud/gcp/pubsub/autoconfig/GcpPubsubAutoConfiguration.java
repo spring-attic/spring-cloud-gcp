@@ -55,18 +55,21 @@ public class GcpPubsubAutoConfiguration {
 	private int publisherExecutorThreads;
 
 	@Bean
+	@ConditionalOnMissingBean(name = "publisherExecutorProvider")
 	public ExecutorProvider publisherExecutorProvider() {
 		return FixedExecutorProvider.create(
 				Executors.newScheduledThreadPool(this.publisherExecutorThreads));
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(name = "subscriberExecutorProvider")
 	public ExecutorProvider subscriberExecutorProvider() {
 		return FixedExecutorProvider.create(
 				Executors.newScheduledThreadPool(this.subscriberExecutorThreads));
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(name = "subscriberChannelProvider")
 	public ChannelProvider subscriberChannelProvider(GoogleCredentials credentials) {
 		return SubscriptionAdminSettings.defaultChannelProviderBuilder()
 				.setCredentialsProvider(() -> credentials)
@@ -76,6 +79,7 @@ public class GcpPubsubAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(name = "publisherChannelProvider")
 	public ChannelProvider publisherChannelProvider(GoogleCredentials credentials) {
 		return TopicAdminSettings
 				.defaultChannelProviderBuilder()
