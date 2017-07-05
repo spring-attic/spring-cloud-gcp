@@ -94,18 +94,18 @@ public class GcpPubsubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(GcpProperties gcpProperties,
-			GoogleCredentials credentials,
-			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider) {
+			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
+			@Qualifier("publisherChannelProvider") ChannelProvider channelProvider) {
 		return new DefaultSubscriberFactory(gcpProperties.getProjectId(),
-				executorProvider, subscriberChannelProvider(credentials));
+				executorProvider, channelProvider);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(GcpProperties gcpProperties,
-			GoogleCredentials credentials,
-			@Qualifier("subscriberExecutorProvider") ExecutorProvider subscriberProvider) {
+			@Qualifier("subscriberExecutorProvider") ExecutorProvider subscriberProvider,
+			@Qualifier("subscriberChannelProvider") ChannelProvider channelProvider) {
 		return new DefaultPublisherFactory(gcpProperties.getProjectId(),
-				subscriberProvider, publisherChannelProvider(credentials));
+				subscriberProvider, channelProvider);
 	}
 }
