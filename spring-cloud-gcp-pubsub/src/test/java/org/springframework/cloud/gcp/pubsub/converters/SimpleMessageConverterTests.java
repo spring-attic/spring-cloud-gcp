@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.pubsub.integration.converters;
+package org.springframework.cloud.gcp.pubsub.converters;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import org.springframework.cloud.gcp.pubsub.converters.SimpleMessageConverter;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.MessageConversionException;
@@ -34,15 +33,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
-public class SimpleMessageConverterTest {
+public class SimpleMessageConverterTests {
 
 	@Test
 	public void testFromMessage() {
 		SimpleMessageConverter converter = new SimpleMessageConverter();
-		Message<?> message = new GenericMessage<Object>("test payload");
+
+		Map<String, Object> headers = new HashMap<>();
+		headers.put("h1", "value");
+		headers.put("h2", 23);
+		Message<?> message = new GenericMessage<Object>("test payload", headers);
 		PubsubMessage pubsubMessage = (PubsubMessage) converter.fromMessage(message,
 				PubsubMessage.class);
 		assertEquals("test payload", pubsubMessage.getData().toStringUtf8());
+		assertEquals("value", pubsubMessage.getAttributesOrDefault("h1", "def"));
+		assertEquals("23", pubsubMessage.getAttributesOrDefault("h2", "def"));
+		assertEquals(4, pubsubMessage.getAttributesCount());
 	}
 
 	@Test(expected = MessageConversionException.class)

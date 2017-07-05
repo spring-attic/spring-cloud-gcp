@@ -16,11 +16,10 @@
 
 package org.springframework.integration.gcp.outbound;
 
-import com.google.auth.oauth2.GoogleCredentials;
-
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.messaging.Message;
+import org.springframework.util.Assert;
 
 /**
  * Sends messages to Google Cloud Pub/Sub by delegating to {@link PubSubTemplate}.
@@ -30,10 +29,11 @@ import org.springframework.messaging.Message;
 public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private final PubSubTemplate pubsubTemplate;
+
 	private String topic;
 
-	public PubSubMessageHandler(String projectId, GoogleCredentials credentials) {
-		this.pubsubTemplate = new PubSubTemplate(credentials, projectId);
+	public PubSubMessageHandler(PubSubTemplate pubsubTemplate) {
+		this.pubsubTemplate = pubsubTemplate;
 	}
 
 	@Override
@@ -46,6 +46,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	}
 
 	public void setTopic(String topic) {
+		Assert.notNull(topic, "The topic can't be null.");
 		this.topic = topic;
 	}
 }
