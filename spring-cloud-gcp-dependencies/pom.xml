@@ -16,7 +16,7 @@
 	<description>Spring Cloud GCP Dependencies</description>
 
 	<properties>
-		<google-cloud-java.version>0.17.2-alpha</google-cloud-java.version>
+		<google-cloud-java.version>0.20.1-alpha</google-cloud-java.version>
 	</properties>
 
 	<dependencyManagement>
