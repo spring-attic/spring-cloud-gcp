@@ -19,8 +19,8 @@ package org.springframework.integration.gcp.inbound;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.cloud.pubsub.spi.v1.AckReplyConsumer;
-import com.google.cloud.pubsub.spi.v1.Subscriber;
+import com.google.cloud.pubsub.v1.AckReplyConsumer;
+import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
