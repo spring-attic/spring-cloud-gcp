@@ -24,6 +24,6 @@ import org.springframework.messaging.Message;
 /**
  * @author Vinicius Carvalho
  */
-public interface ReactivePubSubSender
-		extends PubSubSender<Mono<String>, Flux<String>, Flux<? extends Message<?>>> {
+public interface ReactivePubsubSender
+		extends PubsubSender<Mono<String>, Flux<String>, Flux<? extends Message<?>>> {
 }

@@ -25,7 +25,7 @@ import org.springframework.context.Lifecycle;
  * @author Vinicius Carvalho
  * @author Mark Fisher
  */
-public abstract class AbstractPubSubSender implements ReactivePubSubSender, Lifecycle {
+public abstract class AbstractPubsubSender implements ReactivePubsubSender, Lifecycle {
 
 	private final String project;
 
@@ -37,7 +37,7 @@ public abstract class AbstractPubSubSender implements ReactivePubSubSender, Life
 
 	private volatile boolean running;
 
-	public AbstractPubSubSender(String project, Credentials credentials) {
+	public AbstractPubsubSender(String project, Credentials credentials) {
 		this.project = project;
 		this.credentials = credentials;
 		this.baseTopicName = String.format("projects/%s/topics/", this.project);

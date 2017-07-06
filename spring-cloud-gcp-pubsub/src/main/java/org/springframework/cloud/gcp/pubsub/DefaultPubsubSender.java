@@ -28,9 +28,9 @@ import org.springframework.messaging.Message;
 /**
  * @author Vinicius Carvalho
  */
-public class DefaultPubSubSender extends AbstractPubSubSender {
+public class DefaultPubsubSender extends AbstractPubsubSender {
 
-	public DefaultPubSubSender(String project, Credentials credentials) {
+	public DefaultPubsubSender(String project, Credentials credentials) {
 		super(project, credentials);
 	}
 
@@ -63,28 +63,28 @@ public class DefaultPubSubSender extends AbstractPubSubSender {
 	protected void doStop() {
 	}
 
-	class DefaultBlockingPubSubSender implements BlockingPubSubSender {
+	class DefaultBlockingPubsubSender implements BlockingPubsubSender {
 
 		@Override
 		public String send(String destination, Object payload) {
-			return DefaultPubSubSender.this.send(destination, payload).block();
+			return DefaultPubsubSender.this.send(destination, payload).block();
 		}
 
 		@Override
 		public String send(String destination, Object payload,
 				Map<String, Object> headers) {
-			return DefaultPubSubSender.this.send(destination, payload, headers).block();
+			return DefaultPubsubSender.this.send(destination, payload, headers).block();
 		}
 
 		@Override
 		public String send(String destination, Message<?> message) {
-			return DefaultPubSubSender.this.send(destination, message).block();
+			return DefaultPubsubSender.this.send(destination, message).block();
 		}
 
 		@Override
 		public Iterable<String> sendAll(String destination,
 				Collection<? extends Message<?>> messages) {
-			return DefaultPubSubSender.this
+			return DefaultPubsubSender.this
 					.sendAll(destination, Flux.fromIterable(messages)).toIterable();
 		}
 	}

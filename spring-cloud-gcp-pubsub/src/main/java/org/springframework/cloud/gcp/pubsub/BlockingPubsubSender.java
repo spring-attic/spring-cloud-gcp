@@ -16,20 +16,13 @@
 
 package org.springframework.cloud.gcp.pubsub;
 
-import java.util.Map;
+import java.util.Collection;
 
 import org.springframework.messaging.Message;
 
 /**
  * @author Vinicius Carvalho
  */
-public interface PubSubSender<S, M, F> {
-
-	S send(String destination, Object payload);
-
-	S send(String destination, Object payload, Map<String, Object> headers);
-
-	S send(String destination, Message<?> message);
-
-	M sendAll(String destination, F messages);
+public interface BlockingPubsubSender
+		extends PubsubSender<String, Iterable<String>, Collection<? extends Message<?>>> {
 }
