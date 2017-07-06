@@ -14,22 +14,22 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.pubsub.core;
+package org.springframework.cloud.gcp.pubsub.converters;
 
-import org.springframework.core.NestedRuntimeException;
+import com.google.pubsub.v1.PubsubMessage;
+
+import org.springframework.messaging.Message;
 
 /**
- * The Spring Google Cloud Pub/Sub specific {@link NestedRuntimeException}.
- *
- * @author João André Martins
+ * @author Vinicius Carvalho
  */
-public class PubSubException extends NestedRuntimeException {
+public class PubsubMessagingConverter {
 
-	public PubSubException(String msg) {
-		super(msg);
+	public Message<?> toInternal(PubsubMessage pubsubMessage) {
+		throw new UnsupportedOperationException("not yet implemented");
 	}
 
-	public PubSubException(String msg, Throwable cause) {
-		super(msg, cause);
+	public PubsubMessage fromInternal(Message<?> message) {
+		throw new UnsupportedOperationException("not yet implemented");
 	}
 }

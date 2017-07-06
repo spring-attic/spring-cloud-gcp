@@ -22,7 +22,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.cloud.gcp.pubsub.core.PubsubTemplate;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -36,12 +36,12 @@ import static org.mockito.Mockito.when;
  * @author João André Martins
  */
 @RunWith(MockitoJUnitRunner.class)
-public class PubSubMessageHandlerTests {
+public class PubsubMessageHandlerTests {
 
 	@Mock
-	private PubSubTemplate pubsubTemplate;
+	private PubsubTemplate pubsubTemplate;
 
-	private PubSubMessageHandler adapter;
+	private PubsubMessageHandler adapter;
 	private Message<?> message;
 
 	@Before
@@ -49,7 +49,7 @@ public class PubSubMessageHandlerTests {
 		this.message = new GenericMessage<>("testPayload");
 		when(this.pubsubTemplate.send(eq("testTopic"), eq(this.message)))
 				.thenReturn(new SettableListenableFuture<>());
-		this.adapter = new PubSubMessageHandler(this.pubsubTemplate);
+		this.adapter = new PubsubMessageHandler(this.pubsubTemplate);
 		this.adapter.setTopic("testTopic");
 	}
 

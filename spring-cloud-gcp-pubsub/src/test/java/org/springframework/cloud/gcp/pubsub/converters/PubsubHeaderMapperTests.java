@@ -30,14 +30,14 @@ import org.springframework.messaging.MessageHeaders;
 /**
  * @author Vinicius Carvalho
  */
-public class PubSubHeaderMapperTests {
+public class PubsubHeaderMapperTests {
 
 	private final DateFormat dateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
 	@Test
 	public void toHeaders() throws Exception {
-		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
+		PubsubHeaderMapper mapper = new PubsubHeaderMapper();
 		mapper.afterPropertiesSet();
 		Map<String, String> source = new HashMap<>();
 		source.put("bool", "false");
@@ -61,7 +61,7 @@ public class PubSubHeaderMapperTests {
 
 	@Test
 	public void fromHeaders() throws Exception {
-		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
+		PubsubHeaderMapper mapper = new PubsubHeaderMapper();
 		mapper.afterPropertiesSet();
 		Map<String, Object> headerMap = new HashMap<>();
 		Map<String, String> source = new HashMap<>();

@@ -46,20 +46,20 @@ import static org.mockito.Mockito.when;
  * @author João André Martins
  */
 @RunWith(MockitoJUnitRunner.class)
-public class PubSubTemplateTests {
+public class PubsubTemplateTests {
 
 	@Mock
 	private PublisherFactory mockPublisherFactory;
 	@Mock
 	private Publisher mockPublisher;
 
-	private PubSubTemplate pubSubTemplate;
+	private PubsubTemplate pubSubTemplate;
 	private Message<String> siMessage;
 	private SettableApiFuture<String> settableApiFuture;
 
 	@Before
 	public void setUp() throws ExecutionException, InterruptedException {
-		this.pubSubTemplate = new PubSubTemplate(this.mockPublisherFactory);
+		this.pubSubTemplate = new PubsubTemplate(this.mockPublisherFactory);
 		when(this.mockPublisherFactory.getPublisher("testTopic")).thenReturn(this.mockPublisher);
 		this.settableApiFuture = SettableApiFuture.create();
 		when(this.mockPublisher.publish(isA(PubsubMessage.class)))
@@ -97,10 +97,10 @@ public class PubSubTemplateTests {
 		this.pubSubTemplate.send("testTopic", this.siMessage);
 	}
 
-	@Test(expected = PubSubException.class)
+	@Test(expected = PubsubException.class)
 	public void testSend_noPublisher() {
 		when(this.mockPublisherFactory.getPublisher("testTopic"))
-				.thenThrow(new PubSubException("couldn't create the publisher."));
+				.thenThrow(new PubsubException("couldn't create the publisher."));
 
 		this.pubSubTemplate.send("testTopic", this.siMessage);
 	}

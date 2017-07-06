@@ -16,23 +16,23 @@
 
 package org.springframework.integration.gcp.outbound;
 
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.cloud.gcp.pubsub.core.PubsubTemplate;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 /**
- * Sends messages to Google Cloud Pub/Sub by delegating to {@link PubSubTemplate}.
+ * Sends messages to Google Cloud Pub/Sub by delegating to {@link PubsubTemplate}.
  *
  * @author João André Martins
  */
-public class PubSubMessageHandler extends AbstractMessageHandler {
+public class PubsubMessageHandler extends AbstractMessageHandler {
 
-	private final PubSubTemplate pubsubTemplate;
+	private final PubsubTemplate pubsubTemplate;
 
 	private String topic;
 
-	public PubSubMessageHandler(PubSubTemplate pubsubTemplate) {
+	public PubsubMessageHandler(PubsubTemplate pubsubTemplate) {
 		this.pubsubTemplate = pubsubTemplate;
 	}
 

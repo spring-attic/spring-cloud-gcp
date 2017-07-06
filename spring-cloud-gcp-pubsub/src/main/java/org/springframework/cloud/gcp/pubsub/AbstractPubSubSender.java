@@ -18,7 +18,7 @@ package org.springframework.cloud.gcp.pubsub;
 
 import com.google.auth.Credentials;
 
-import org.springframework.cloud.gcp.pubsub.converters.PubSubHeaderMapper;
+import org.springframework.cloud.gcp.pubsub.converters.PubsubHeaderMapper;
 import org.springframework.context.Lifecycle;
 
 /**
@@ -33,7 +33,7 @@ public abstract class AbstractPubSubSender implements ReactivePubSubSender, Life
 
 	private final String baseTopicName;
 
-	private PubSubHeaderMapper headerMapper;
+	private PubsubHeaderMapper headerMapper;
 
 	private volatile boolean running;
 
@@ -43,11 +43,11 @@ public abstract class AbstractPubSubSender implements ReactivePubSubSender, Life
 		this.baseTopicName = String.format("projects/%s/topics/", this.project);
 	}
 
-	public PubSubHeaderMapper getHeaderMapper() {
+	public PubsubHeaderMapper getHeaderMapper() {
 		return this.headerMapper;
 	}
 
-	public void setHeaderMapper(PubSubHeaderMapper headerMapper) {
+	public void setHeaderMapper(PubsubHeaderMapper headerMapper) {
 		this.headerMapper = headerMapper;
 	}
 

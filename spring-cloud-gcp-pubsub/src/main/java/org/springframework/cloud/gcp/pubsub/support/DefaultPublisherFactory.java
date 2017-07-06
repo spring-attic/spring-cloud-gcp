@@ -26,7 +26,7 @@ import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.pubsub.v1.TopicName;
 
-import org.springframework.cloud.gcp.pubsub.core.PubSubException;
+import org.springframework.cloud.gcp.pubsub.core.PubsubException;
 
 /**
  * The default {@link PublisherFactory} implementation.
@@ -70,7 +70,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 						.build();
 			}
 			catch (IOException ioe) {
-				throw new PubSubException("An error creating the Google Cloud Pub/Sub publisher " +
+				throw new PubsubException("An error creating the Google Cloud Pub/Sub publisher " +
 						"occurred.", ioe);
 			}
 		});

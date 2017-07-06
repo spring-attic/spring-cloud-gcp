@@ -35,13 +35,13 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @author Vinicius Carvalho
  * @author João André Martins
  */
-public class PubSubTemplate implements PubSubOperations, InitializingBean {
+public class PubsubTemplate implements PubsubOperations, InitializingBean {
 
 	private MessageConverter messageConverter = new SimpleMessageConverter();
 
 	private final PublisherFactory publisherFactory;
 
-	public PubSubTemplate(PublisherFactory publisherFactory) {
+	public PubsubTemplate(PublisherFactory publisherFactory) {
 		this.publisherFactory = publisherFactory;
 	}
 
