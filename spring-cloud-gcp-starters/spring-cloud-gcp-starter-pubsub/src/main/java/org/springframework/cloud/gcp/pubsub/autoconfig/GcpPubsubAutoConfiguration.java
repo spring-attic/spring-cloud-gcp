@@ -31,7 +31,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.cloud.gcp.pubsub.core.PubsubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
@@ -91,8 +91,8 @@ public class GcpPubsubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PubSubTemplate pubsubTemplate(PublisherFactory publisherFactory) {
-		return new PubSubTemplate(publisherFactory);
+	public PubsubTemplate pubsubTemplate(PublisherFactory publisherFactory) {
+		return new PubsubTemplate(publisherFactory);
 	}
 
 	@Bean

@@ -22,7 +22,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 /**
  * @author Vinicius Carvalho
  */
-public interface PubSubOperations {
+public interface PubsubOperations {
 
 	ListenableFuture<String> send(String topic, Message message);
 

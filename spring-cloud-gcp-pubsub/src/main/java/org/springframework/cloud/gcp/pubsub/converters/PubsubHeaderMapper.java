@@ -34,7 +34,7 @@ import org.springframework.messaging.support.HeaderMapper;
 /**
  * @author Vinicius Carvalho
  */
-public class PubSubHeaderMapper
+public class PubsubHeaderMapper
 		implements HeaderMapper<Map<String, String>>, InitializingBean {
 
 	private final Map<Class<?>, HeaderConverter<?>> converterMap = new LinkedHashMap<>();

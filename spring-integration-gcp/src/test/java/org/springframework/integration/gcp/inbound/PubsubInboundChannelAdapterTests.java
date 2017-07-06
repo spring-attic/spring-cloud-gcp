@@ -24,19 +24,19 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 
 /**
- * {@link PubSubInboundChannelAdapter} unit tests.
+ * {@link PubsubInboundChannelAdapter} unit tests.
  *
  * @author João André Martins
  */
 @RunWith(MockitoJUnitRunner.class)
-public class PubSubInboundChannelAdapterTests {
+public class PubsubInboundChannelAdapterTests {
 
 	@Mock
 	private SubscriberFactory subscriberFactory;
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testNonNullAckMode() {
-		PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(
+		PubsubInboundChannelAdapter adapter = new PubsubInboundChannelAdapter(
 				this.subscriberFactory, "testSubscription");
 		adapter.setAckMode(null);
 	}

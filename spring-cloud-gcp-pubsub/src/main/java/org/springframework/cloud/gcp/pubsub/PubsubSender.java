@@ -14,22 +14,22 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.pubsub.converters;
+package org.springframework.cloud.gcp.pubsub;
 
-import com.google.pubsub.v1.PubsubMessage;
+import java.util.Map;
 
 import org.springframework.messaging.Message;
 
 /**
  * @author Vinicius Carvalho
  */
-public class PubSubMessagingConverter {
+public interface PubsubSender<S, M, F> {
 
-	public Message<?> toInternal(PubsubMessage pubsubMessage) {
-		throw new UnsupportedOperationException("not yet implemented");
-	}
+	S send(String destination, Object payload);
 
-	public PubsubMessage fromInternal(Message<?> message) {
-		throw new UnsupportedOperationException("not yet implemented");
-	}
+	S send(String destination, Object payload, Map<String, Object> headers);
+
+	S send(String destination, Message<?> message);
+
+	M sendAll(String destination, F messages);
 }

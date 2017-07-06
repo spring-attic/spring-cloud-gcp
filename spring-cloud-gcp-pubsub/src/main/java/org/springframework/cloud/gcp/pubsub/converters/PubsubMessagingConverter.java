@@ -14,16 +14,22 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.pubsub;
+package org.springframework.cloud.gcp.pubsub.converters;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.messaging.Message;
 
 /**
  * @author Vinicius Carvalho
  */
-public interface ReactivePubSubSender
-		extends PubSubSender<Mono<String>, Flux<String>, Flux<? extends Message<?>>> {
+public class PubsubMessagingConverter {
+
+	public Message<?> toInternal(PubsubMessage pubsubMessage) {
+		throw new UnsupportedOperationException("not yet implemented");
+	}
+
+	public PubsubMessage fromInternal(Message<?> message) {
+		throw new UnsupportedOperationException("not yet implemented");
+	}
 }

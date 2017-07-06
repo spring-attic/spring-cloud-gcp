@@ -14,22 +14,16 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.pubsub.core;
+package org.springframework.cloud.gcp.pubsub;
 
-import org.springframework.core.NestedRuntimeException;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import org.springframework.messaging.Message;
 
 /**
- * The Spring Google Cloud Pub/Sub specific {@link NestedRuntimeException}.
- *
- * @author João André Martins
+ * @author Vinicius Carvalho
  */
-public class PubSubException extends NestedRuntimeException {
-
-	public PubSubException(String msg) {
-		super(msg);
-	}
-
-	public PubSubException(String msg, Throwable cause) {
-		super(msg, cause);
-	}
+public interface ReactivePubsubSender
+		extends PubsubSender<Mono<String>, Flux<String>, Flux<? extends Message<?>>> {
 }

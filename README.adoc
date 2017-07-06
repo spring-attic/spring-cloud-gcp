@@ -6,7 +6,7 @@ development).
 
 Currently, this repository contains Spring Integration inbound and outbound channel adapters which
 use Google Cloud Pub/Sub, as well as a Google Cloud Pub/Sub Spring abstraction, i.e.,
-`PubSubTemplate`.
+`PubsubTemplate`.
 
 If you have any other ideas, suggestions or bug reports, please use our
 link:https://github.com/spring-cloud/spring-cloud-gcp/issues[GitHub issue tracker] and let us know!
