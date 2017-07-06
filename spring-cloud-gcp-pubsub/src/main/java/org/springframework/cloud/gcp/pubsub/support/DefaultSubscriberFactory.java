@@ -23,6 +23,9 @@ import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.SubscriptionName;
 
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.UnexistingProjectIdException;
+
 /**
  *
  * The default {@link SubscriberFactory} implementation.
@@ -39,9 +42,12 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	private final CredentialsProvider credentialsProvider;
 
-	public DefaultSubscriberFactory(String projectId, ExecutorProvider executorProvider,
-			ChannelProvider channelProvider, CredentialsProvider credentialsProvider) {
-		this.projectId = projectId;
+	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider,
+			ExecutorProvider executorProvider,
+			ChannelProvider channelProvider,
+			CredentialsProvider credentialsProvider) {
+		this.projectId = projectIdProvider.getProjectId()
+				.orElseThrow(UnexistingProjectIdException::new);
 		this.executorProvider = executorProvider;
 		this.channelProvider = channelProvider;
 		this.credentialsProvider = credentialsProvider;

@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,4 +55,9 @@ public class GcpContextAutoConfiguration {
 		}
 	}
 
+	@Bean
+	@ConditionalOnMissingBean
+	public GcpProjectIdProvider gcpProjectIdProvider() {
+		return new DefaultGcpProjectIdProvider(this.gcpProperties);
+	}
 }

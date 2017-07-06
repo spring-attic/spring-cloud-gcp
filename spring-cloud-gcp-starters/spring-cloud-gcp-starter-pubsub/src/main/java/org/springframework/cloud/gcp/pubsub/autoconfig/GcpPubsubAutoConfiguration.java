@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.cloud.gcp.core.GcpProperties;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.pubsub.core.PubsubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
@@ -95,21 +95,21 @@ public class GcpPubsubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SubscriberFactory defaultSubscriberFactory(GcpProperties gcpProperties,
+	public SubscriberFactory defaultSubscriberFactory(GcpProjectIdProvider projectIdProvider,
 			GoogleCredentials credentials,
 			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
 			@Qualifier("publisherChannelProvider") ChannelProvider channelProvider) {
-		return new DefaultSubscriberFactory(gcpProperties.getProjectId(),
-				executorProvider, channelProvider, () -> credentials);
+		return new DefaultSubscriberFactory(projectIdProvider, executorProvider, channelProvider,
+				() -> credentials);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PublisherFactory defaultPublisherFactory(GcpProperties gcpProperties,
+	public PublisherFactory defaultPublisherFactory(GcpProjectIdProvider projectIdProvider,
 			GoogleCredentials credentials,
 			@Qualifier("subscriberExecutorProvider") ExecutorProvider subscriberProvider,
 			@Qualifier("subscriberChannelProvider") ChannelProvider channelProvider) {
-		return new DefaultPublisherFactory(gcpProperties.getProjectId(),
-				subscriberProvider, channelProvider, () -> credentials);
+		return new DefaultPublisherFactory(projectIdProvider, subscriberProvider, channelProvider,
+				() -> credentials);
 	}
 }

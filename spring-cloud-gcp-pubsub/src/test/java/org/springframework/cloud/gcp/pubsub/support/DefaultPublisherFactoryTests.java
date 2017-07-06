@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import java.util.Optional;
+
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
@@ -46,7 +48,7 @@ public class DefaultPublisherFactoryTests {
 	@Before
 	public void setUp() {
 		this.factory = new DefaultPublisherFactory(
-				"projectId", this.executorProvider, this.channelProvider,
+				() -> Optional.of("projectId"), this.executorProvider, this.channelProvider,
 				this.credentialsProvider);
 	}
 
