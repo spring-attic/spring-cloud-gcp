@@ -1,0 +1,138 @@
+/*
+ *  Copyright 2017 original author or authors.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+package org.springframework.cloud.gcp.pubsub;
+
+import java.io.IOException;
+
+import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
+import com.google.cloud.pubsub.v1.TopicAdminClient;
+import com.google.pubsub.v1.PushConfig;
+import com.google.pubsub.v1.Subscription;
+import com.google.pubsub.v1.SubscriptionName;
+import com.google.pubsub.v1.Topic;
+import com.google.pubsub.v1.TopicName;
+import org.apache.commons.validator.UrlValidator;
+
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.util.Assert;
+
+/**
+ * Pub/Sub admin utility that creates new topics and subscriptions on Google Cloud Pub/Sub.
+ *
+ * @author João André Martins
+ */
+public class PubsubAdmin {
+
+	private final String projectId;
+
+	private TopicAdminClient topicAdminClient;
+
+	private SubscriptionAdminClient subscriptionAdminClient;
+
+	/** Default inspired in the subscription creation web UI. */
+	private static final int DEFAULT_ACK_DEADLINE = 10;
+
+	public PubsubAdmin(GcpProjectIdProvider projectIdProvider) throws IOException {
+		this(projectIdProvider, TopicAdminClient.create(), SubscriptionAdminClient.create());
+	}
+
+	public PubsubAdmin(GcpProjectIdProvider projectIdProvider, TopicAdminClient topicAdminClient)
+			throws IOException {
+		this(projectIdProvider, topicAdminClient, SubscriptionAdminClient.create());
+	}
+
+	public PubsubAdmin(GcpProjectIdProvider projectIdProvider,
+			SubscriptionAdminClient subscriptionAdminClient) throws IOException {
+		this (projectIdProvider, TopicAdminClient.create(), subscriptionAdminClient);
+	}
+
+	public PubsubAdmin(GcpProjectIdProvider projectIdProvider, TopicAdminClient topicAdminClient,
+			SubscriptionAdminClient subscriptionAdminClient) {
+		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
+		Assert.notNull(topicAdminClient, "The topic administration client can't be null");
+		Assert.notNull(subscriptionAdminClient,
+				"The subscription administration client can't be null");
+
+		this.projectId = projectIdProvider.getProjectId();
+		Assert.hasText(this.projectId, "The project ID can't be null or empty.");
+		this.topicAdminClient = topicAdminClient;
+		this.subscriptionAdminClient = subscriptionAdminClient;
+	}
+
+	/**
+	 * Creates a new topic on Google Cloud Pub/Sub.
+	 *
+	 * @param topicName the name for the new topic
+	 * @return the created topic
+	 */
+	public Topic createTopic(String topicName) {
+		Assert.hasText(topicName, "The topic name wasn't specified.");
+
+		return this.topicAdminClient.createTopic(TopicName.create(this.projectId, topicName));
+	}
+
+	public Subscription createSubscription(String subscriptionName, String topicName) {
+		return createSubscription(subscriptionName, topicName, null, null);
+	}
+
+	public Subscription createSubscription(String subscriptionName, String topicName,
+			Integer ackDeadline) {
+		return createSubscription(subscriptionName, topicName, ackDeadline, null);
+	}
+
+	public Subscription createSubscription(String subscriptionName, String topicName,
+			String pushEndpoint) {
+		return createSubscription(subscriptionName, topicName, null, pushEndpoint);
+	}
+
+	/**
+	 * Creates a new subscription on Google Cloud Pub/Sub.
+	 *
+	 * @param subscriptionName the name of the new subscription
+	 * @param topicName the name of the topic being subscribed to
+	 * @param ackDeadline deadline in seconds before a message is resent. If not provided, set to
+	 *                    default of 10 seconds
+	 * @param pushEndpoint URL of the service receiving the push messages. If not provided, set to
+	 *                    Google Cloud Pub/Sub default
+	 * @return the created subscription
+	 */
+	public Subscription createSubscription(String subscriptionName, String topicName,
+			Integer ackDeadline, String pushEndpoint) {
+		Assert.hasText(subscriptionName, "The subscription name wasn't specified.");
+		Assert.hasText(topicName, "The topic name wasn't specified.");
+
+		int finalAckDeadline = DEFAULT_ACK_DEADLINE;
+		if (ackDeadline != null) {
+			Assert.isTrue(ackDeadline >= 0,
+					"The acknowledgement deadline value can't be negative.");
+			finalAckDeadline = ackDeadline;
+		}
+
+		PushConfig.Builder pushConfigBuilder = PushConfig.newBuilder();
+		if (pushEndpoint != null) {
+			Assert.isTrue(new UrlValidator().isValid(pushEndpoint),
+					"The specified URL is invalid.");
+			pushConfigBuilder.setPushEndpoint(pushEndpoint);
+		}
+
+		return this.subscriptionAdminClient.createSubscription(
+				SubscriptionName.create(this.projectId, subscriptionName),
+				TopicName.create(this.projectId, topicName),
+				pushConfigBuilder.build(),
+				finalAckDeadline);
+	}
+}
