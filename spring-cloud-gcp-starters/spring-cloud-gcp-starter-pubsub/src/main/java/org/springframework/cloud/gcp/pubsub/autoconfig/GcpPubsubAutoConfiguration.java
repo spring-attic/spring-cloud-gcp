@@ -70,9 +70,8 @@ public class GcpPubsubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(name = "subscriberChannelProvider")
-	public ChannelProvider subscriberChannelProvider(GoogleCredentials credentials) {
+	public ChannelProvider subscriberChannelProvider() {
 		return SubscriptionAdminSettings.defaultChannelProviderBuilder()
-				.setCredentialsProvider(() -> credentials)
 				.setClientLibHeader(DEFAULT_SOURCE_NAME,
 						this.getClass().getPackage().getImplementationVersion())
 				.build();
@@ -80,10 +79,9 @@ public class GcpPubsubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(name = "publisherChannelProvider")
-	public ChannelProvider publisherChannelProvider(GoogleCredentials credentials) {
+	public ChannelProvider publisherChannelProvider() {
 		return TopicAdminSettings
 				.defaultChannelProviderBuilder()
-				.setCredentialsProvider(() -> credentials)
 				.setClientLibHeader(DEFAULT_SOURCE_NAME,
 						this.getClass().getPackage().getImplementationVersion())
 				.build();
@@ -98,18 +96,20 @@ public class GcpPubsubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(GcpProperties gcpProperties,
+			GoogleCredentials credentials,
 			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
 			@Qualifier("publisherChannelProvider") ChannelProvider channelProvider) {
 		return new DefaultSubscriberFactory(gcpProperties.getProjectId(),
-				executorProvider, channelProvider);
+				executorProvider, channelProvider, () -> credentials);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(GcpProperties gcpProperties,
+			GoogleCredentials credentials,
 			@Qualifier("subscriberExecutorProvider") ExecutorProvider subscriberProvider,
 			@Qualifier("subscriberChannelProvider") ChannelProvider channelProvider) {
 		return new DefaultPublisherFactory(gcpProperties.getProjectId(),
-				subscriberProvider, channelProvider);
+				subscriberProvider, channelProvider, () -> credentials);
 	}
 }

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.cloud.pubsub.v1.Publisher;
@@ -53,11 +54,14 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 	private final ChannelProvider channelProvider;
 
+	private final CredentialsProvider credentialsProvider;
+
 	public DefaultPublisherFactory(String projectId, ExecutorProvider executorProvider,
-			ChannelProvider channelProvider) {
+			ChannelProvider channelProvider, CredentialsProvider credentialsProvider) {
 		this.projectId = projectId;
 		this.executorProvider = executorProvider;
 		this.channelProvider = channelProvider;
+		this.credentialsProvider = credentialsProvider;
 	}
 
 	@Override
@@ -67,6 +71,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 				return Publisher.defaultBuilder(TopicName.create(this.projectId, key))
 						.setExecutorProvider(this.executorProvider)
 						.setChannelProvider(this.channelProvider)
+						.setCredentialsProvider(this.credentialsProvider)
 						.build();
 			}
 			catch (IOException ioe) {

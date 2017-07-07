@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.cloud.pubsub.v1.MessageReceiver;
@@ -32,15 +33,18 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	private String projectId;
 
-	private ExecutorProvider executorProvider;
+	private final ExecutorProvider executorProvider;
 
-	private ChannelProvider channelProvider;
+	private final ChannelProvider channelProvider;
+
+	private final CredentialsProvider credentialsProvider;
 
 	public DefaultSubscriberFactory(String projectId, ExecutorProvider executorProvider,
-			ChannelProvider channelProvider) {
+			ChannelProvider channelProvider, CredentialsProvider credentialsProvider) {
 		this.projectId = projectId;
 		this.executorProvider = executorProvider;
 		this.channelProvider = channelProvider;
+		this.credentialsProvider = credentialsProvider;
 	}
 
 	@Override
@@ -49,6 +53,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 				SubscriptionName.create(this.projectId, subscriptionName), receiver)
 				.setChannelProvider(this.channelProvider)
 				.setExecutorProvider(this.executorProvider)
+				.setCredentialsProvider(this.credentialsProvider)
 				.build();
 	}
 }
