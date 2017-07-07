@@ -23,7 +23,7 @@ name: Spring Cloud GCP
 
 # ID of the project in the metadata API at spring.io (if this is not a
 # valid project ID the javascript widgets in the home page will not work)
-project: spring-Cloud GCP
+project: spring-cloud-gcp
 
 # Project github URL
 github_repo_url: http://github.com/spring-cloud/spring-cloud-gcp
