@@ -21,8 +21,6 @@ import java.util.Optional;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
-import com.google.cloud.pubsub.v1.Publisher;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -30,16 +28,12 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import org.springframework.cloud.gcp.core.MissingProjectIdException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 /**
  * @author João André Martins
  */
 @RunWith(MockitoJUnitRunner.class)
-public class DefaultPublisherFactoryTests {
+public class DefaultSubscriberFactoryTests {
 
-	private DefaultPublisherFactory factory;
 	@Mock
 	private ExecutorProvider executorProvider;
 	@Mock
@@ -47,24 +41,9 @@ public class DefaultPublisherFactoryTests {
 	@Mock
 	private CredentialsProvider credentialsProvider;
 
-	@Before
-	public void setUp() {
-		this.factory = new DefaultPublisherFactory(
-				() -> Optional.of("projectId"), this.executorProvider, this.channelProvider,
-				this.credentialsProvider);
-	}
-
-	@Test
-	public void testGetPublisher() {
-		Publisher publisher = this.factory.getPublisher("testTopic");
-
-		assertEquals(this.factory.getCache().size(), 1);
-		assertTrue(this.factory.getCache().get("testTopic") == publisher);
-	}
-
 	@Test(expected = MissingProjectIdException.class)
-	public void testNewDefaultPublisherFactory_emptyProjectId() {
-		new DefaultPublisherFactory(Optional::empty, this.executorProvider, this.channelProvider,
+	public void testNewDefaultSubscriberFactory_emptyProject() {
+		new DefaultSubscriberFactory(Optional::empty, this.executorProvider, this.channelProvider,
 				this.credentialsProvider);
 	}
 }

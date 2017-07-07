@@ -16,9 +16,10 @@
 
 package org.springframework.cloud.gcp.core.autoconfig;
 
+import java.util.Optional;
+
 import com.google.auth.oauth2.GoogleCredentials;
 
-import com.google.cloud.ServiceOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -30,14 +31,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
-import java.util.Optional;
-
 /**
  *
  * Base starter for Google Cloud Projects. Provide defaults for {@link GoogleCredentials}.
  * Binds properties from {@link GcpProperties}
  *
  * @author Vinicius Carvalho
+ * @author João André Martins
  */
 @Configuration
 @ConditionalOnClass(GoogleCredentials.class)
@@ -66,8 +66,8 @@ public class GcpContextAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public GcpProjectIdProvider gcpProjectIdProvider() {
-		return () -> gcpProperties.getProjectId() != null
-				? Optional.of(gcpProperties.getProjectId())
-				: Optional.ofNullable(ServiceOptions.getDefaultProjectId());
+		return this.gcpProperties.getProjectId() != null
+				? () -> Optional.of(this.gcpProperties.getProjectId())
+				: new DefaultGcpProjectIdProvider();
 	}
 }
