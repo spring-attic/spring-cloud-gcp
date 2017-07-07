@@ -28,7 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.pubsub.v1.TopicName;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.UnexistingProjectIdException;
+import org.springframework.cloud.gcp.core.MissingProjectIdException;
 import org.springframework.cloud.gcp.pubsub.core.PubsubException;
 
 /**
@@ -63,7 +63,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 			ChannelProvider channelProvider,
 			CredentialsProvider credentialsProvider) {
 		this.projectId = projectIdProvider.getProjectId()
-				.orElseThrow(UnexistingProjectIdException::new);
+				.orElseThrow(MissingProjectIdException::new);
 		this.executorProvider = executorProvider;
 		this.channelProvider = channelProvider;
 		this.credentialsProvider = credentialsProvider;

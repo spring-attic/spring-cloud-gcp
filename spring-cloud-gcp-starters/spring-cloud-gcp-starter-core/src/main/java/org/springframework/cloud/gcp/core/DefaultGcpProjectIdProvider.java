@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.core.autoconfig;
+package org.springframework.cloud.gcp.core;
 
 import java.util.Optional;
 
@@ -46,17 +46,9 @@ public class DefaultGcpProjectIdProvider implements GcpProjectIdProvider {
 	@Override
 	public Optional<String> getProjectId() {
 		if (this.gcpProperties != null) {
-			String propertiesProjectId = this.gcpProperties.getProjectId();
-			if (propertiesProjectId != null) {
-				return Optional.of(propertiesProjectId);
-			}
+			return Optional.ofNullable(this.gcpProperties.getProjectId());
 		}
 
-		String serviceOptionsProjectId = ServiceOptions.getDefaultProjectId();
-		if (serviceOptionsProjectId != null) {
-			return Optional.of(serviceOptionsProjectId);
-		}
-
-		return Optional.empty();
+		return Optional.ofNullable(ServiceOptions.getDefaultProjectId());
 	}
 }

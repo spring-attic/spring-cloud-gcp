@@ -23,9 +23,9 @@ import org.springframework.core.NestedRuntimeException;
  *
  * @author João André Martins
  */
-public class UnexistingProjectIdException extends NestedRuntimeException {
+public class MissingProjectIdException extends NestedRuntimeException {
 
-	public UnexistingProjectIdException() {
+	public MissingProjectIdException() {
 		super("No project ID is configured.");
 	}
 }
