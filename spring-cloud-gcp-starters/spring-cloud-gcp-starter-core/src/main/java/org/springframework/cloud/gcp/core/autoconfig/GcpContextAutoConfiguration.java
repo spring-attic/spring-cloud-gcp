@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.core.autoconfig;
 
 import com.google.auth.oauth2.GoogleCredentials;
 
+import com.google.cloud.ServiceOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -28,6 +29,8 @@ import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
+
+import java.util.Optional;
 
 /**
  *
@@ -56,9 +59,15 @@ public class GcpContextAutoConfiguration {
 		}
 	}
 
+	/**
+	 * @return a {@link GcpProjectIdProvider} that returns the project ID in the properties or, if
+	 * none, the project ID from the GOOGLE_CLOUD_PROJECT envvar and Metadata Server
+	 */
 	@Bean
 	@ConditionalOnMissingBean
 	public GcpProjectIdProvider gcpProjectIdProvider() {
-		return new DefaultGcpProjectIdProvider(this.gcpProperties);
+		return () -> gcpProperties.getProjectId() != null
+				? Optional.of(gcpProperties.getProjectId())
+				: Optional.ofNullable(ServiceOptions.getDefaultProjectId());
 	}
 }

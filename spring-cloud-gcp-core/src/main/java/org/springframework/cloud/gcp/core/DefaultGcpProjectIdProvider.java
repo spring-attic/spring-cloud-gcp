@@ -20,22 +20,12 @@ import java.util.Optional;
 
 import com.google.cloud.ServiceOptions;
 
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.GcpProperties;
-
 /**
- * A project ID provider that wraps {@link GcpProperties} and
- * {@link ServiceOptions#getDefaultProjectId()}.
+ * A project ID provider that wraps {@link ServiceOptions#getDefaultProjectId()}.
  *
  * @author João André Martins
  */
 public class DefaultGcpProjectIdProvider implements GcpProjectIdProvider {
-
-	private GcpProperties gcpProperties;
-
-	public DefaultGcpProjectIdProvider(GcpProperties gcpProperties) {
-		this.gcpProperties = gcpProperties;
-	}
 
 	/**
 	 * {@link ServiceOptions#getDefaultProjectId()} checks for the project ID in the
@@ -45,10 +35,6 @@ public class DefaultGcpProjectIdProvider implements GcpProjectIdProvider {
 	 */
 	@Override
 	public Optional<String> getProjectId() {
-		if (this.gcpProperties != null) {
-			return Optional.ofNullable(this.gcpProperties.getProjectId());
-		}
-
 		return Optional.ofNullable(ServiceOptions.getDefaultProjectId());
 	}
 }
