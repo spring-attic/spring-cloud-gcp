@@ -21,7 +21,6 @@ import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
-import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.pubsub.v1.SubscriptionName;
 
 /**
@@ -41,13 +40,10 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	private final CredentialsProvider credentialsProvider;
 
 	public DefaultSubscriberFactory(String projectId, ExecutorProvider executorProvider,
-			CredentialsProvider credentialsProvider) {
+			ChannelProvider channelProvider, CredentialsProvider credentialsProvider) {
 		this.projectId = projectId;
 		this.executorProvider = executorProvider;
-		this.channelProvider = SubscriptionAdminSettings.defaultChannelProviderBuilder()
-				.setClientLibHeader("spring",
-						this.getClass().getPackage().getImplementationVersion())
-				.build();
+		this.channelProvider = channelProvider;
 		this.credentialsProvider = credentialsProvider;
 	}
 

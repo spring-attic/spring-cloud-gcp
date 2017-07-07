@@ -18,9 +18,12 @@ package org.springframework.cloud.gcp.pubsub.autoconfig;
 
 import java.util.concurrent.Executors;
 
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.api.gax.grpc.FixedExecutorProvider;
-import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
+import com.google.cloud.pubsub.v1.TopicAdminSettings;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +46,8 @@ import org.springframework.context.annotation.Configuration;
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpPubsubAutoConfiguration {
 
+	public static final String DEFAULT_SOURCE_NAME = "spring";
+
 	@Value("${spring.cloud.gcp.pubsub.subscriber.executorThreads:4}")
 	private int subscriberExecutorThreads;
 
@@ -64,6 +69,25 @@ public class GcpPubsubAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(name = "subscriberChannelProvider")
+	public ChannelProvider subscriberChannelProvider() {
+		return SubscriptionAdminSettings.defaultChannelProviderBuilder()
+				.setClientLibHeader(DEFAULT_SOURCE_NAME,
+						this.getClass().getPackage().getImplementationVersion())
+				.build();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(name = "publisherChannelProvider")
+	public ChannelProvider publisherChannelProvider() {
+		return TopicAdminSettings
+				.defaultChannelProviderBuilder()
+				.setClientLibHeader(DEFAULT_SOURCE_NAME,
+						this.getClass().getPackage().getImplementationVersion())
+				.build();
+	}
+
+	@Bean
 	@ConditionalOnMissingBean
 	public PubSubTemplate pubsubTemplate(PublisherFactory publisherFactory) {
 		return new PubSubTemplate(publisherFactory);
@@ -72,18 +96,20 @@ public class GcpPubsubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(GcpProperties gcpProperties,
-			GoogleCredentials credentials,
-			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider) {
+			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
+			@Qualifier("publisherChannelProvider") ChannelProvider channelProvider,
+			CredentialsProvider credentialsProvider) {
 		return new DefaultSubscriberFactory(gcpProperties.getProjectId(),
-				executorProvider, () -> credentials);
+				executorProvider, channelProvider, credentialsProvider);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(GcpProperties gcpProperties,
-			GoogleCredentials credentials,
-			@Qualifier("subscriberExecutorProvider") ExecutorProvider subscriberProvider) {
+			@Qualifier("subscriberExecutorProvider") ExecutorProvider subscriberProvider,
+			@Qualifier("subscriberChannelProvider") ChannelProvider channelProvider,
+			CredentialsProvider credentialsProvider) {
 		return new DefaultPublisherFactory(gcpProperties.getProjectId(),
-				subscriberProvider, () -> credentials);
+				subscriberProvider, channelProvider, credentialsProvider);
 	}
 }

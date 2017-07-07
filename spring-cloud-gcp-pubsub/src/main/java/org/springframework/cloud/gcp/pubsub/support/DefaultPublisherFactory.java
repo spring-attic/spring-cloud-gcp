@@ -24,7 +24,6 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.cloud.pubsub.v1.Publisher;
-import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.pubsub.v1.TopicName;
 
@@ -58,13 +57,10 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	private final CredentialsProvider credentialsProvider;
 
 	public DefaultPublisherFactory(String projectId, ExecutorProvider executorProvider,
-			CredentialsProvider credentialsProvider) {
+			ChannelProvider channelProvider, CredentialsProvider credentialsProvider) {
 		this.projectId = projectId;
 		this.executorProvider = executorProvider;
-		this.channelProvider = TopicAdminSettings.defaultChannelProviderBuilder()
-				.setClientLibHeader("spring",
-						this.getClass().getPackage().getImplementationVersion())
-				.build();
+		this.channelProvider = channelProvider;
 		this.credentialsProvider = credentialsProvider;
 	}
 
