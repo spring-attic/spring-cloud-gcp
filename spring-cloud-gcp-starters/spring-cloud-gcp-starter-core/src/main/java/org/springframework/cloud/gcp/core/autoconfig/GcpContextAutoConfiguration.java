@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.core.autoconfig;
 
 import java.util.Optional;
 
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,14 +50,13 @@ public class GcpContextAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public GoogleCredentials googleCredentials() throws Exception {
+	public CredentialsProvider googleCredentials() throws Exception {
 		if (!StringUtils.isEmpty(this.gcpProperties.getCredentialsLocation())) {
-			return GoogleCredentials.fromStream(
+			return () -> GoogleCredentials.fromStream(
 					this.gcpProperties.getCredentialsLocation().getInputStream());
 		}
-		else {
-			return GoogleCredentials.getApplicationDefault();
-		}
+
+		return GoogleCredentials::getApplicationDefault;
 	}
 
 	/**
