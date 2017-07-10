@@ -24,8 +24,6 @@ import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import org.springframework.boot.context.properties.sour
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -62,6 +60,7 @@ public class GcpContextAutoConfigurationTests {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		context.register(GcpContextAutoConfiguration.class);
 		TestPropertyValues.of(environment).applyTo(context);
+		context.refresh();
 		this.context = context;
 	}
 }
