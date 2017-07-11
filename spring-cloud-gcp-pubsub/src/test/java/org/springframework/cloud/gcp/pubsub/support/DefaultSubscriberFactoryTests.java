@@ -36,8 +36,10 @@ public class DefaultSubscriberFactoryTests {
 
 	@Mock
 	private ExecutorProvider executorProvider;
+
 	@Mock
 	private ChannelProvider channelProvider;
+
 	@Mock
 	private CredentialsProvider credentialsProvider;
 

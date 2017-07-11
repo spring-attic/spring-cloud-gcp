@@ -30,6 +30,7 @@ import com.google.pubsub.v1.TopicName;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.MissingProjectIdException;
 import org.springframework.cloud.gcp.pubsub.core.PubsubException;
+import org.springframework.util.Assert;
 
 /**
  * The default {@link PublisherFactory} implementation.
@@ -62,6 +63,11 @@ public class DefaultPublisherFactory implements PublisherFactory {
 			ExecutorProvider executorProvider,
 			ChannelProvider channelProvider,
 			CredentialsProvider credentialsProvider) {
+		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
+		Assert.notNull(executorProvider, "The executor provider can't be null.");
+		Assert.notNull(channelProvider, "The channel provider can't be null.");
+		Assert.notNull(credentialsProvider, "The credentials provider can't be null.");
+
 		this.projectId = projectIdProvider.getProjectId()
 				.orElseThrow(MissingProjectIdException::new);
 		this.executorProvider = executorProvider;
