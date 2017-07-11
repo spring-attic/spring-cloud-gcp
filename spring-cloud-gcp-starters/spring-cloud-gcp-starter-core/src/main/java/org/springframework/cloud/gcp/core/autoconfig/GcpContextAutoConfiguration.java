@@ -22,6 +22,7 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.common.collect.ImmutableList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -47,6 +48,8 @@ import org.springframework.util.StringUtils;
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {
 
+	private static final String GCP_PUBSUB_SCOPE = "https://www.googleapis.com/auth/pubsub";
+
 	@Autowired
 	private GcpProperties gcpProperties;
 
@@ -58,7 +61,9 @@ public class GcpContextAutoConfiguration {
 					this.gcpProperties.getCredentialsLocation().getInputStream()));
 		}
 
-		return GoogleCredentialsProvider.newBuilder().build();
+		return GoogleCredentialsProvider.newBuilder()
+				.setScopesToApply(ImmutableList.of(GCP_PUBSUB_SCOPE))
+				.build();
 	}
 
 	/**
