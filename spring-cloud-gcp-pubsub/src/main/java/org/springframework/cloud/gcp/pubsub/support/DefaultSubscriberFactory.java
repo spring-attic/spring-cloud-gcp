@@ -51,6 +51,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 		Assert.notNull(executorProvider, "The executor provider can't be null.");
 		Assert.notNull(channelProvider, "The channel provider can't be null.");
 		Assert.notNull(credentialsProvider, "The credentials provider can't be null.");
+		Assert.notNull(projectIdProvider.getProjectId(),
+				"The project ID provider can't return null.");
 
 		this.projectId = projectIdProvider.getProjectId()
 				.orElseThrow(MissingProjectIdException::new);
