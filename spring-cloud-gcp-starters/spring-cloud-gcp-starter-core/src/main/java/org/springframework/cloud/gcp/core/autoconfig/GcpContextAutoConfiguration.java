@@ -16,11 +16,12 @@
 
 package org.springframework.cloud.gcp.core.autoconfig;
 
+import java.util.Collections;
+
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.common.collect.ImmutableList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -60,7 +61,7 @@ public class GcpContextAutoConfiguration {
 		}
 
 		return GoogleCredentialsProvider.newBuilder()
-				.setScopesToApply(ImmutableList.of(GCP_PUBSUB_SCOPE))
+				.setScopesToApply(Collections.singletonList(GCP_PUBSUB_SCOPE))
 				.build();
 	}
 

@@ -40,8 +40,14 @@ public class DefaultSubscriberFactoryTests {
 	private CredentialsProvider credentialsProvider;
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testNewDefaultSubscriberFactory_nullProject() {
+	public void testNewDefaultSubscriberFactory_nullProjectProvider() {
 		new DefaultSubscriberFactory(null, this.executorProvider, this.channelProvider,
+				this.credentialsProvider);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testNewDefaultSubscriberFactory_nullProject() {
+		new DefaultSubscriberFactory(() -> null, this.executorProvider, this.channelProvider,
 				this.credentialsProvider);
 	}
 }

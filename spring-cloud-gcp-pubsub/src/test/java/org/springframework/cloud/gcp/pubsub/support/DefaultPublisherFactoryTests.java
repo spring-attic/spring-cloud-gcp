@@ -59,8 +59,14 @@ public class DefaultPublisherFactoryTests {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testNewDefaultPublisherFactory_emptyProjectId() {
+	public void testNewDefaultPublisherFactory_nullProjectIdProvider() {
 		new DefaultPublisherFactory(null, this.executorProvider, this.channelProvider,
+				this.credentialsProvider);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testNewDefaultPublisherFactory_nullProjectId() {
+		new DefaultPublisherFactory(() -> null, this.executorProvider, this.channelProvider,
 				this.credentialsProvider);
 	}
 }
