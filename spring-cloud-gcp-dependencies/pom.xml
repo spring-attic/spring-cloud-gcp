@@ -75,7 +75,6 @@
 				<artifactId>spring-cloud-gcp-starter-storage</artifactId>
 				<version>${project.version}</version>
 			</dependency>
-
 		</dependencies>
 	</dependencyManagement>
 

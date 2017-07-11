@@ -19,54 +19,35 @@ package org.springframework.cloud.gcp.pubsub.support;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
-import com.google.cloud.pubsub.v1.Publisher;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 /**
  * @author João André Martins
  */
 @RunWith(MockitoJUnitRunner.class)
-public class DefaultPublisherFactoryTests {
+public class DefaultSubscriberFactoryTests {
 
-	private DefaultPublisherFactory factory;
 	@Mock
 	private ExecutorProvider executorProvider;
+
 	@Mock
 	private ChannelProvider channelProvider;
+
 	@Mock
 	private CredentialsProvider credentialsProvider;
 
-	@Before
-	public void setUp() {
-		this.factory = new DefaultPublisherFactory(
-				() -> "projectId", this.executorProvider, this.channelProvider,
-				this.credentialsProvider);
-	}
-
-	@Test
-	public void testGetPublisher() {
-		Publisher publisher = this.factory.getPublisher("testTopic");
-
-		assertEquals(this.factory.getCache().size(), 1);
-		assertTrue(this.factory.getCache().get("testTopic") == publisher);
-	}
-
 	@Test(expected = IllegalArgumentException.class)
-	public void testNewDefaultPublisherFactory_nullProjectIdProvider() {
-		new DefaultPublisherFactory(null, this.executorProvider, this.channelProvider,
+	public void testNewDefaultSubscriberFactory_nullProjectProvider() {
+		new DefaultSubscriberFactory(null, this.executorProvider, this.channelProvider,
 				this.credentialsProvider);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testNewDefaultPublisherFactory_nullProjectId() {
-		new DefaultPublisherFactory(() -> null, this.executorProvider, this.channelProvider,
+	public void testNewDefaultSubscriberFactory_nullProject() {
+		new DefaultSubscriberFactory(() -> null, this.executorProvider, this.channelProvider,
 				this.credentialsProvider);
 	}
 }

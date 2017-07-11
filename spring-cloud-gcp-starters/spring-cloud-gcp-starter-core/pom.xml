@@ -16,4 +16,10 @@
 	<properties>
 		<main.basedir>${basedir}/../..</main.basedir>
 	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-gcp-core</artifactId>
+		</dependency>
+	</dependencies>
 </project>

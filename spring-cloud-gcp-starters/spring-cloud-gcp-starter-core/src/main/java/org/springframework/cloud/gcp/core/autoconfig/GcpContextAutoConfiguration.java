@@ -16,12 +16,19 @@
 
 package org.springframework.cloud.gcp.core.autoconfig;
 
+import java.util.Collections;
+
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,25 +40,40 @@ import org.springframework.util.StringUtils;
  * Binds properties from {@link GcpProperties}
  *
  * @author Vinicius Carvalho
+ * @author João André Martins
  */
 @Configuration
 @ConditionalOnClass(GoogleCredentials.class)
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {
 
+	private static final String GCP_PUBSUB_SCOPE = "https://www.googleapis.com/auth/pubsub";
+
 	@Autowired
 	private GcpProperties gcpProperties;
 
 	@Bean
 	@ConditionalOnMissingBean
-	public GoogleCredentials googleCredentials() throws Exception {
+	public CredentialsProvider googleCredentials() throws Exception {
 		if (!StringUtils.isEmpty(this.gcpProperties.getCredentialsLocation())) {
-			return GoogleCredentials.fromStream(
-					this.gcpProperties.getCredentialsLocation().getInputStream());
+			return FixedCredentialsProvider.create(GoogleCredentials.fromStream(
+					this.gcpProperties.getCredentialsLocation().getInputStream()));
 		}
-		else {
-			return GoogleCredentials.getApplicationDefault();
-		}
+
+		return GoogleCredentialsProvider.newBuilder()
+				.setScopesToApply(Collections.singletonList(GCP_PUBSUB_SCOPE))
+				.build();
 	}
 
+	/**
+	 * @return a {@link GcpProjectIdProvider} that returns the project ID in the properties or, if
+	 * none, the project ID from the GOOGLE_CLOUD_PROJECT envvar and Metadata Server
+	 */
+	@Bean
+	@ConditionalOnMissingBean
+	public GcpProjectIdProvider gcpProjectIdProvider() {
+		return this.gcpProperties.getProjectId() != null
+				? () -> this.gcpProperties.getProjectId()
+				: new DefaultGcpProjectIdProvider();
+	}
 }

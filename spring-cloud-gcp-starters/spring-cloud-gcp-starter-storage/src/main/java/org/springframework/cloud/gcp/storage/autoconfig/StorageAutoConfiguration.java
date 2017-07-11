@@ -16,7 +16,9 @@
 
 package org.springframework.cloud.gcp.storage.autoconfig;
 
-import com.google.auth.oauth2.GoogleCredentials;
+import java.io.IOException;
+
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
@@ -47,9 +49,9 @@ public class StorageAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public static Storage storage(GoogleCredentials credentials) {
+	public static Storage storage(CredentialsProvider credentialsProvider) throws IOException {
 		return StorageOptions.newBuilder()
-				.setCredentials(credentials)
+				.setCredentials(credentialsProvider.getCredentials())
 				.build()
 				.getService();
 	}
