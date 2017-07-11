@@ -80,9 +80,15 @@ public class PubsubAdmin {
 	 * @return the created topic
 	 */
 	public Topic createTopic(String topicName) {
-		Assert.hasText(topicName, "The topic name wasn't specified.");
+		Assert.hasText(topicName, "No topic name was specified.");
 
 		return this.topicAdminClient.createTopic(TopicName.create(this.projectId, topicName));
+	}
+
+	public void deleteTopic(String topicName) {
+		Assert.hasText(topicName, "No topic name was specified.");
+
+		this.topicAdminClient.deleteTopic(TopicName.create(this.projectId, topicName));
 	}
 
 	public Subscription createSubscription(String subscriptionName, String topicName) {
@@ -112,8 +118,8 @@ public class PubsubAdmin {
 	 */
 	public Subscription createSubscription(String subscriptionName, String topicName,
 			Integer ackDeadline, String pushEndpoint) {
-		Assert.hasText(subscriptionName, "The subscription name wasn't specified.");
-		Assert.hasText(topicName, "The topic name wasn't specified.");
+		Assert.hasText(subscriptionName, "No subscription name was specified.");
+		Assert.hasText(topicName, "No topic name was specified.");
 
 		int finalAckDeadline = DEFAULT_ACK_DEADLINE;
 		if (ackDeadline != null) {
@@ -134,5 +140,12 @@ public class PubsubAdmin {
 				TopicName.create(this.projectId, topicName),
 				pushConfigBuilder.build(),
 				finalAckDeadline);
+	}
+
+	public void deleteSubscription(String subscriptionName) {
+		Assert.hasText(subscriptionName, "No subscription name was specified");
+
+		this.subscriptionAdminClient.deleteSubscription(
+				SubscriptionName.create(this.projectId, subscriptionName));
 	}
 }
