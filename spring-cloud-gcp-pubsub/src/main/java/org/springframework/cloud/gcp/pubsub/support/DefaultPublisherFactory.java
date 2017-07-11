@@ -66,9 +66,9 @@ public class DefaultPublisherFactory implements PublisherFactory {
 		Assert.notNull(executorProvider, "The executor provider can't be null.");
 		Assert.notNull(channelProvider, "The channel provider can't be null.");
 		Assert.notNull(credentialsProvider, "The credentials provider can't be null.");
-		Assert.hasText(projectIdProvider.getProjectId(), "The project ID can't be null or empty.");
 
 		this.projectId = projectIdProvider.getProjectId();
+		Assert.hasText(this.projectId, "The project ID can't be null or empty.");
 		this.executorProvider = executorProvider;
 		this.channelProvider = channelProvider;
 		this.credentialsProvider = credentialsProvider;
