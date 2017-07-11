@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
-import java.util.Optional;
-
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
@@ -25,8 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import org.springframework.cloud.gcp.core.MissingProjectIdException;
 
 /**
  * @author João André Martins
@@ -43,9 +39,9 @@ public class DefaultSubscriberFactoryTests {
 	@Mock
 	private CredentialsProvider credentialsProvider;
 
-	@Test(expected = MissingProjectIdException.class)
-	public void testNewDefaultSubscriberFactory_emptyProject() {
-		new DefaultSubscriberFactory(Optional::empty, this.executorProvider, this.channelProvider,
+	@Test(expected = IllegalArgumentException.class)
+	public void testNewDefaultSubscriberFactory_nullProject() {
+		new DefaultSubscriberFactory(null, this.executorProvider, this.channelProvider,
 				this.credentialsProvider);
 	}
 }

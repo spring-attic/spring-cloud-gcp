@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.core;
 
-import java.util.Optional;
-
 import com.google.cloud.ServiceOptions;
 
 /**
@@ -34,7 +32,7 @@ public class DefaultGcpProjectIdProvider implements GcpProjectIdProvider {
 	 * @return the project ID in the context
 	 */
 	@Override
-	public Optional<String> getProjectId() {
-		return Optional.ofNullable(ServiceOptions.getDefaultProjectId());
+	public String getProjectId() {
+		return ServiceOptions.getDefaultProjectId();
 	}
 }

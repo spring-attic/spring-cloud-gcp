@@ -46,7 +46,7 @@ public class GcpContextAutoConfigurationTests {
 		loadEnvironment("spring.cloud.gcp.projectId=test-project");
 		GcpProjectIdProvider provider = this.context.getBean(GcpProjectIdProvider.class);
 
-		assertEquals("test-project", provider.getProjectId().get());
+		assertEquals("test-project", provider.getProjectId());
 	}
 
 	@Test

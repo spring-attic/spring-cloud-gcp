@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
-import java.util.Optional;
-
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
@@ -27,8 +25,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import org.springframework.cloud.gcp.core.MissingProjectIdException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -50,7 +46,7 @@ public class DefaultPublisherFactoryTests {
 	@Before
 	public void setUp() {
 		this.factory = new DefaultPublisherFactory(
-				() -> Optional.of("projectId"), this.executorProvider, this.channelProvider,
+				() -> "projectId", this.executorProvider, this.channelProvider,
 				this.credentialsProvider);
 	}
 
@@ -62,9 +58,9 @@ public class DefaultPublisherFactoryTests {
 		assertTrue(this.factory.getCache().get("testTopic") == publisher);
 	}
 
-	@Test(expected = MissingProjectIdException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testNewDefaultPublisherFactory_emptyProjectId() {
-		new DefaultPublisherFactory(Optional::empty, this.executorProvider, this.channelProvider,
+		new DefaultPublisherFactory(null, this.executorProvider, this.channelProvider,
 				this.credentialsProvider);
 	}
 }

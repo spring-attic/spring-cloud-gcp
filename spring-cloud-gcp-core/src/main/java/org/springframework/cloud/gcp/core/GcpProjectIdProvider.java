@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.core;
 
-import java.util.Optional;
-
 /**
  * Functional interface to provide GCP project IDs.
  *
@@ -26,5 +24,5 @@ import java.util.Optional;
 @FunctionalInterface
 public interface GcpProjectIdProvider {
 
-	Optional<String> getProjectId();
+	String getProjectId();
 }

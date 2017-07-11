@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.core.autoconfig;
 
-import java.util.Optional;
-
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.GoogleCredentialsProvider;
@@ -74,7 +72,7 @@ public class GcpContextAutoConfiguration {
 	@ConditionalOnMissingBean
 	public GcpProjectIdProvider gcpProjectIdProvider() {
 		return this.gcpProperties.getProjectId() != null
-				? () -> Optional.of(this.gcpProperties.getProjectId())
+				? () -> this.gcpProperties.getProjectId()
 				: new DefaultGcpProjectIdProvider();
 	}
 }
