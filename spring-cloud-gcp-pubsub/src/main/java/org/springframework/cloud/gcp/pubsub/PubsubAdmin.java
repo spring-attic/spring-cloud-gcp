@@ -17,9 +17,13 @@
 package org.springframework.cloud.gcp.pubsub;
 
 import java.io.IOException;
+import java.util.List;
 
+import com.google.cloud.pubsub.v1.PagedResponseWrappers;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
+import com.google.common.collect.Lists;
+import com.google.pubsub.v1.ProjectName;
 import com.google.pubsub.v1.PushConfig;
 import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.SubscriptionName;
@@ -91,6 +95,18 @@ public class PubsubAdmin {
 		this.topicAdminClient.deleteTopic(TopicName.create(this.projectId, topicName));
 	}
 
+	/**
+	 * Returns every topic in a project.
+	 *
+	 * <p>If there are multiple pages, they will all be merged into the same result.
+	 */
+	public List<Topic> listTopics() {
+		PagedResponseWrappers.ListTopicsPagedResponse topicListPage =
+				this.topicAdminClient.listTopics(ProjectName.create(this.projectId));
+
+		return Lists.newArrayList(topicListPage.iterateAll());
+	}
+
 	public Subscription createSubscription(String subscriptionName, String topicName) {
 		return createSubscription(subscriptionName, topicName, null, null);
 	}
@@ -147,5 +163,17 @@ public class PubsubAdmin {
 
 		this.subscriptionAdminClient.deleteSubscription(
 				SubscriptionName.create(this.projectId, subscriptionName));
+	}
+
+	/**
+	 * Returns every subscription in a project.
+	 *
+	 * <p>If there are multiple pages, they will all be merged into the same result.
+	 */
+	public List<Subscription> listSubscriptions() {
+		PagedResponseWrappers.ListSubscriptionsPagedResponse subscriptionsPage =
+				this.subscriptionAdminClient.listSubscriptions(ProjectName.create(this.projectId));
+
+		return Lists.newArrayList(subscriptionsPage.iterateAll());
 	}
 }
