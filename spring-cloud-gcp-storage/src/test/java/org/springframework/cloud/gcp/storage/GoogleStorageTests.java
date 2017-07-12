@@ -16,10 +16,13 @@
 
 package org.springframework.cloud.gcp.storage;
 
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+
+import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +34,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.WritableResource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
@@ -50,6 +54,32 @@ public class GoogleStorageTests {
 		Assert.assertEquals(4096L, this.remoteResource.contentLength());
 	}
 
+	@Test
+	public void testWritable() throws Exception {
+		Assert.assertTrue(this.remoteResource instanceof WritableResource);
+		WritableResource writableResource = (WritableResource) this.remoteResource;
+		Assert.assertTrue(writableResource.isWritable());
+		OutputStream os = writableResource.getOutputStream();
+		Assert.assertTrue(os instanceof GoogleStorageOutputStream);
+	}
+
+	@Test
+	public void testGcsOutputStream() throws Exception {
+		Blob blob = Mockito.mock(Blob.class);
+		WriteChannel writeChannel = Mockito.mock(WriteChannel.class);
+		Mockito.when(blob.writer()).thenReturn(writeChannel);
+
+		GoogleStorageOutputStream os = new GoogleStorageOutputStream(blob);
+
+		// test single byte
+		os.write(99);
+		Mockito.verify(writeChannel).write(ByteBuffer.wrap(new byte[] { 99 }));
+
+		// test multiple bytes
+		os.write("test".getBytes());
+		Mockito.verify(writeChannel).write(ByteBuffer.wrap("test".getBytes()));
+	}
+
 	@Configuration
 	@Import(GoogleStorageProtocolResolver.class)
 	static class StorageApplication {
@@ -59,9 +89,11 @@ public class GoogleStorageTests {
 			Storage storage = Mockito.mock(Storage.class);
 			BlobId validBlob = BlobId.of("test-spring", "images/spring.png");
 			Blob mockedBlob = Mockito.mock(Blob.class);
+			WriteChannel writeChannel = Mockito.mock(WriteChannel.class);
 			Mockito.when(mockedBlob.exists()).thenReturn(true);
 			Mockito.when(mockedBlob.getSize()).thenReturn(4096L);
 			Mockito.when(storage.get(Mockito.eq(validBlob))).thenReturn(mockedBlob);
+			Mockito.when(mockedBlob.writer()).thenReturn(writeChannel);
 			return storage;
 		}
 
