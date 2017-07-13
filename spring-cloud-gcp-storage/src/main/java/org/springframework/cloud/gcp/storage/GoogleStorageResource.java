@@ -144,6 +144,6 @@ public class GoogleStorageResource implements WritableResource {
 
 	@Override
 	public OutputStream getOutputStream() throws IOException {
-		return new GoogleStorageOutputStream(resolve());
+		return Channels.newOutputStream(resolve().writer());
 	}
 }

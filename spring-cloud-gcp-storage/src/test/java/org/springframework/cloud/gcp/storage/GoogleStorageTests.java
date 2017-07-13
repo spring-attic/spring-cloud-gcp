@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.storage;
 
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 
 import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.Blob;
@@ -61,24 +60,20 @@ public class GoogleStorageTests {
 		WritableResource writableResource = (WritableResource) this.remoteResource;
 		Assert.assertTrue(writableResource.isWritable());
 		OutputStream os = writableResource.getOutputStream();
-		Assert.assertTrue(os instanceof GoogleStorageOutputStream);
 	}
 
 	@Test
-	public void testGcsOutputStream() throws Exception {
+	public void testWritableOutputStream() throws Exception {
+		String location = "gs://test-spring/test";
+		Storage storage = Mockito.mock(Storage.class);
 		Blob blob = Mockito.mock(Blob.class);
 		WriteChannel writeChannel = Mockito.mock(WriteChannel.class);
 		Mockito.when(blob.writer()).thenReturn(writeChannel);
+		Mockito.when(storage.get(BlobId.of("test-spring", "test"))).thenReturn(blob);
 
-		GoogleStorageOutputStream os = new GoogleStorageOutputStream(blob);
-
-		// test single byte
-		os.write(99);
-		Mockito.verify(writeChannel).write(ByteBuffer.wrap(new byte[] { 99 }));
-
-		// test multiple bytes
-		os.write("test".getBytes());
-		Mockito.verify(writeChannel).write(ByteBuffer.wrap("test".getBytes()));
+		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
+		OutputStream os = resource.getOutputStream();
+		Assert.assertNotNull(os);
 	}
 
 	@Configuration
