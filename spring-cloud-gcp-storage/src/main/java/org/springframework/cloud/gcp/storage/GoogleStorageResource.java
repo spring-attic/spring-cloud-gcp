@@ -90,16 +90,10 @@ public class GoogleStorageResource implements WritableResource {
 	}
 
 	private Blob resolve() throws IOException {
-		try {
-			URI uri = getURI();
-			BlobId blobId = BlobId.of(uri.getHost(),
-					uri.getPath().substring(1, uri.getPath().length()));
-			return this.storage.get(blobId);
-		}
-		catch (Exception e) {
-			throw new IOException(
-					"Failed to open remote connection to " + this.location, e);
-		}
+		URI uri = getURI();
+		BlobId blobId = BlobId.of(uri.getHost(),
+				uri.getPath().substring(1, uri.getPath().length()));
+		return this.storage.get(blobId);
 	}
 
 	@Override
