@@ -16,21 +16,19 @@
 
 package org.springframework.cloud.gcp.pubsub;
 
-import java.io.IOException;
 import java.util.List;
 
 import com.google.cloud.pubsub.v1.PagedResponseWrappers;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.common.collect.Lists;
+
 import com.google.pubsub.v1.ProjectName;
 import com.google.pubsub.v1.PushConfig;
 import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.SubscriptionName;
 import com.google.pubsub.v1.Topic;
 import com.google.pubsub.v1.TopicName;
-import org.apache.commons.validator.UrlValidator;
-
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.Assert;
 
@@ -49,20 +47,6 @@ public class PubsubAdmin {
 
 	/** Default inspired in the subscription creation web UI. */
 	private static final int DEFAULT_ACK_DEADLINE = 10;
-
-	public PubsubAdmin(GcpProjectIdProvider projectIdProvider) throws IOException {
-		this(projectIdProvider, TopicAdminClient.create(), SubscriptionAdminClient.create());
-	}
-
-	public PubsubAdmin(GcpProjectIdProvider projectIdProvider, TopicAdminClient topicAdminClient)
-			throws IOException {
-		this(projectIdProvider, topicAdminClient, SubscriptionAdminClient.create());
-	}
-
-	public PubsubAdmin(GcpProjectIdProvider projectIdProvider,
-			SubscriptionAdminClient subscriptionAdminClient) throws IOException {
-		this (projectIdProvider, TopicAdminClient.create(), subscriptionAdminClient);
-	}
 
 	public PubsubAdmin(GcpProjectIdProvider projectIdProvider, TopicAdminClient topicAdminClient,
 			SubscriptionAdminClient subscriptionAdminClient) {
@@ -89,6 +73,11 @@ public class PubsubAdmin {
 		return this.topicAdminClient.createTopic(TopicName.create(this.projectId, topicName));
 	}
 
+	/**
+	 * Deletes a topic from Google Cloud Pub/Sub.
+	 *
+	 * @param topicName the name of the topic to be deleted
+	 */
 	public void deleteTopic(String topicName) {
 		Assert.hasText(topicName, "No topic name was specified.");
 
@@ -107,15 +96,40 @@ public class PubsubAdmin {
 		return Lists.newArrayList(topicListPage.iterateAll());
 	}
 
+	/**
+	 * Creates a new subscription on Google Cloud Pub/Sub.
+	 *
+	 * @param subscriptionName the name of the new subscription
+	 * @param topicName the name of the topic being subscribed to
+	 * @return the created subscription
+	 */
 	public Subscription createSubscription(String subscriptionName, String topicName) {
 		return createSubscription(subscriptionName, topicName, null, null);
 	}
 
+	/**
+	 * Creates a new subscription on Google Cloud Pub/Sub.
+	 *
+	 * @param subscriptionName the name of the new subscription
+	 * @param topicName the name of the topic being subscribed to
+	 * @param ackDeadline deadline in seconds before a message is resent. If not provided, set to
+	 *                    default of 10 seconds
+	 * @return the created subscription
+	 */
 	public Subscription createSubscription(String subscriptionName, String topicName,
 			Integer ackDeadline) {
 		return createSubscription(subscriptionName, topicName, ackDeadline, null);
 	}
 
+	/**
+	 * Creates a new subscription on Google Cloud Pub/Sub.
+	 *
+	 * @param subscriptionName the name of the new subscription
+	 * @param topicName the name of the topic being subscribed to
+	 * @param pushEndpoint URL of the service receiving the push messages. If not provided, uses
+	 *                     message pulling by default
+	 * @return the created subscription
+	 */
 	public Subscription createSubscription(String subscriptionName, String topicName,
 			String pushEndpoint) {
 		return createSubscription(subscriptionName, topicName, null, pushEndpoint);
@@ -128,8 +142,8 @@ public class PubsubAdmin {
 	 * @param topicName the name of the topic being subscribed to
 	 * @param ackDeadline deadline in seconds before a message is resent. If not provided, set to
 	 *                    default of 10 seconds
-	 * @param pushEndpoint URL of the service receiving the push messages. If not provided, set to
-	 *                    Google Cloud Pub/Sub default
+	 * @param pushEndpoint URL of the service receiving the push messages. If not provided, uses
+	 *                     message pulling by default
 	 * @return the created subscription
 	 */
 	public Subscription createSubscription(String subscriptionName, String topicName,
@@ -146,8 +160,6 @@ public class PubsubAdmin {
 
 		PushConfig.Builder pushConfigBuilder = PushConfig.newBuilder();
 		if (pushEndpoint != null) {
-			Assert.isTrue(new UrlValidator().isValid(pushEndpoint),
-					"The specified URL is invalid.");
 			pushConfigBuilder.setPushEndpoint(pushEndpoint);
 		}
 
@@ -158,6 +170,11 @@ public class PubsubAdmin {
 				finalAckDeadline);
 	}
 
+	/**
+	 * Deletes a subscription from Google Cloud Pub/Sub.
+	 *
+	 * @param subscriptionName
+	 */
 	public void deleteSubscription(String subscriptionName) {
 		Assert.hasText(subscriptionName, "No subscription name was specified");
 
