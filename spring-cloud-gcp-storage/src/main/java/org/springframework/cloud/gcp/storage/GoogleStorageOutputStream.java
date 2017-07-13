@@ -24,6 +24,11 @@ import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.Blob;
 
 /**
+ * Wraps Google Cloud Storage blob into an {@link OutputStream} to allow writing.
+ *
+ * Note that {@link #flush()} is not supported, and written data will only be visible
+ * after calling {@link #close()} .
+ *
  * @author Mike Eltsufin
  */
 class GoogleStorageOutputStream extends OutputStream {

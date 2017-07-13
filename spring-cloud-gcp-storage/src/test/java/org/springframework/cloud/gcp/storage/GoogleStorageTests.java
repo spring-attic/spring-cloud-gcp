@@ -40,6 +40,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 /**
  * @author Vinicius Carvalho
  * @author Artem Bilan
+ * @author Mike Eltsufin
  */
 @SpringBootTest
 @RunWith(SpringRunner.class)

@@ -34,7 +34,7 @@ import org.springframework.core.io.WritableResource;
 import org.springframework.util.Assert;
 
 /**
- * Implements {link WritableResource} for reading and writing objects in Google Cloud
+ * Implements {@link WritableResource} for reading and writing objects in Google Cloud
  * Storage.
  *
  * @author Vinicius Carvalho
