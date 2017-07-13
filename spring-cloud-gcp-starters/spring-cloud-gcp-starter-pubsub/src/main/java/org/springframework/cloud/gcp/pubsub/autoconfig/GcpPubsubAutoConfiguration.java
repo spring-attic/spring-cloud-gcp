@@ -23,7 +23,9 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.api.gax.grpc.FixedExecutorProvider;
+import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
+import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -120,7 +122,8 @@ public class GcpPubsubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public PubsubAdmin pubsubAdmin(GcpProjectIdProvider projectIdProvider) {
 		try {
-			return new PubsubAdmin(projectIdProvider);
+			return new PubsubAdmin(projectIdProvider, TopicAdminClient.create(),
+					SubscriptionAdminClient.create());
 		}
 		catch (IOException ioe) {
 			throw new PubsubException("An error occurred while creating PubsubAdmin.", ioe);
