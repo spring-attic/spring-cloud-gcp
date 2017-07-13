@@ -120,13 +120,39 @@ public class GcpPubsubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PubsubAdmin pubsubAdmin(GcpProjectIdProvider projectIdProvider) {
+	public PubsubAdmin pubsubAdmin(GcpProjectIdProvider projectIdProvider,
+			TopicAdminClient topicAdminClient,
+			SubscriptionAdminClient subscriptionAdminClient) {
+		return new PubsubAdmin(projectIdProvider, topicAdminClient, subscriptionAdminClient);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public TopicAdminClient topicAdminClient(CredentialsProvider credentialsProvider) {
 		try {
-			return new PubsubAdmin(projectIdProvider, TopicAdminClient.create(),
-					SubscriptionAdminClient.create());
+			return TopicAdminClient.create(
+					TopicAdminSettings.defaultBuilder()
+							.setCredentialsProvider(credentialsProvider)
+							.build());
 		}
 		catch (IOException ioe) {
-			throw new PubsubException("An error occurred while creating PubsubAdmin.", ioe);
+			throw new PubsubException("An error occurred while creating TopicAdminClient.", ioe);
+		}
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public SubscriptionAdminClient subscriptionAdminClient(
+			CredentialsProvider credentialsProvider) {
+		try {
+			return SubscriptionAdminClient.create(
+					SubscriptionAdminSettings.defaultBuilder()
+							.setCredentialsProvider(credentialsProvider)
+							.build());
+		}
+		catch (IOException ioe) {
+			throw new PubsubException("An error occurred while creating SubscriptionAdminClient.",
+					ioe);
 		}
 	}
 }
