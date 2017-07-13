@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.storage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -29,20 +30,21 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
 
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.WritableResource;
 import org.springframework.util.Assert;
 
 /**
+ * Implements {@link WritableResource} for reading and writing objects in Google Cloud
+ * Storage.
+ *
  * @author Vinicius Carvalho
+ * @author Mike Eltsufin
  */
-public class GoogleStorageResource implements Resource {
+public class GoogleStorageResource implements WritableResource {
 
 	private final Storage storage;
 
 	private final String location;
-
-	private final Object monitor = new Object();
-
-	private Blob blob;
 
 	public GoogleStorageResource(Storage storage, String location) {
 		Assert.notNull(storage, "Storage object can not be null");
@@ -88,22 +90,10 @@ public class GoogleStorageResource implements Resource {
 	}
 
 	private Blob resolve() throws IOException {
-		synchronized (this.monitor) {
-			if (this.blob == null) {
-				try {
-					URI uri = getURI();
-					BlobId blobId = BlobId.of(uri.getHost(),
-							uri.getPath().substring(1, uri.getPath().length()));
-					this.blob = this.storage.get(blobId);
-					return this.blob;
-				}
-				catch (Exception e) {
-					throw new IOException(
-							"Failed to open remote connection to " + this.location, e);
-				}
-			}
-		}
-		return this.blob;
+		URI uri = getURI();
+		BlobId blobId = BlobId.of(uri.getHost(),
+				uri.getPath().substring(1, uri.getPath().length()));
+		return this.storage.get(blobId);
 	}
 
 	@Override
@@ -145,5 +135,15 @@ public class GoogleStorageResource implements Resource {
 	@Override
 	public InputStream getInputStream() throws IOException {
 		return Channels.newInputStream(resolve().reader());
+	}
+
+	@Override
+	public boolean isWritable() {
+		return true;
+	}
+
+	@Override
+	public OutputStream getOutputStream() throws IOException {
+		return Channels.newOutputStream(resolve().writer());
 	}
 }
