@@ -22,13 +22,13 @@ import com.google.cloud.pubsub.v1.PagedResponseWrappers;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.common.collect.Lists;
-
 import com.google.pubsub.v1.ProjectName;
 import com.google.pubsub.v1.PushConfig;
 import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.SubscriptionName;
 import com.google.pubsub.v1.Topic;
 import com.google.pubsub.v1.TopicName;
+
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.Assert;
 
