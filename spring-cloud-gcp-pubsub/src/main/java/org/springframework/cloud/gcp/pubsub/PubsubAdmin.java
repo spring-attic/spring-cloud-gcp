@@ -16,11 +16,15 @@
 
 package org.springframework.cloud.gcp.pubsub;
 
+import java.io.IOException;
 import java.util.List;
 
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.pubsub.v1.PagedResponseWrappers;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
+import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
+import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import com.google.common.collect.Lists;
 import com.google.pubsub.v1.ProjectName;
 import com.google.pubsub.v1.PushConfig;
@@ -41,12 +45,29 @@ public class PubsubAdmin {
 
 	private final String projectId;
 
-	private TopicAdminClient topicAdminClient;
+	private final TopicAdminClient topicAdminClient;
 
-	private SubscriptionAdminClient subscriptionAdminClient;
+	private final SubscriptionAdminClient subscriptionAdminClient;
 
 	/** Default inspired in the subscription creation web UI. */
 	private int defaultAckDeadline = 10;
+
+	/**
+	 * This constructor instantiates TopicAdminClient and SubscriptionAdminClient with all their
+	 * defaults and the provided credentials provider.
+	 */
+	public PubsubAdmin(GcpProjectIdProvider projectIdProvider,
+			CredentialsProvider credentialsProvider) throws IOException {
+		this(projectIdProvider,
+				TopicAdminClient.create(
+						TopicAdminSettings.defaultBuilder()
+								.setCredentialsProvider(credentialsProvider)
+								.build()),
+				SubscriptionAdminClient.create(
+						SubscriptionAdminSettings.defaultBuilder()
+						.setCredentialsProvider(credentialsProvider)
+						.build()));
+	}
 
 	public PubsubAdmin(GcpProjectIdProvider projectIdProvider, TopicAdminClient topicAdminClient,
 			SubscriptionAdminClient subscriptionAdminClient) {
