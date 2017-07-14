@@ -62,7 +62,7 @@ public class PubsubAdmin {
 	}
 
 	/**
-	 * Creates a new topic on Google Cloud Pub/Sub.
+	 * Create a new topic on Google Cloud Pub/Sub.
 	 *
 	 * @param topicName the name for the new topic
 	 * @return the created topic
@@ -74,7 +74,7 @@ public class PubsubAdmin {
 	}
 
 	/**
-	 * Deletes a topic from Google Cloud Pub/Sub.
+	 * Delete a topic from Google Cloud Pub/Sub.
 	 *
 	 * @param topicName the name of the topic to be deleted
 	 */
@@ -85,7 +85,7 @@ public class PubsubAdmin {
 	}
 
 	/**
-	 * Returns every topic in a project.
+	 * Return every topic in a project.
 	 *
 	 * <p>If there are multiple pages, they will all be merged into the same result.
 	 */
@@ -97,7 +97,7 @@ public class PubsubAdmin {
 	}
 
 	/**
-	 * Creates a new subscription on Google Cloud Pub/Sub.
+	 * Create a new subscription on Google Cloud Pub/Sub.
 	 *
 	 * @param subscriptionName the name of the new subscription
 	 * @param topicName the name of the topic being subscribed to
@@ -108,7 +108,7 @@ public class PubsubAdmin {
 	}
 
 	/**
-	 * Creates a new subscription on Google Cloud Pub/Sub.
+	 * Create a new subscription on Google Cloud Pub/Sub.
 	 *
 	 * @param subscriptionName the name of the new subscription
 	 * @param topicName the name of the topic being subscribed to
@@ -122,7 +122,7 @@ public class PubsubAdmin {
 	}
 
 	/**
-	 * Creates a new subscription on Google Cloud Pub/Sub.
+	 * Create a new subscription on Google Cloud Pub/Sub.
 	 *
 	 * @param subscriptionName the name of the new subscription
 	 * @param topicName the name of the topic being subscribed to
@@ -136,7 +136,7 @@ public class PubsubAdmin {
 	}
 
 	/**
-	 * Creates a new subscription on Google Cloud Pub/Sub.
+	 * Create a new subscription on Google Cloud Pub/Sub.
 	 *
 	 * @param subscriptionName the name of the new subscription
 	 * @param topicName the name of the topic being subscribed to
@@ -171,7 +171,7 @@ public class PubsubAdmin {
 	}
 
 	/**
-	 * Deletes a subscription from Google Cloud Pub/Sub.
+	 * Delete a subscription from Google Cloud Pub/Sub.
 	 *
 	 * @param subscriptionName
 	 */
@@ -183,7 +183,7 @@ public class PubsubAdmin {
 	}
 
 	/**
-	 * Returns every subscription in a project.
+	 * Return every subscription in a project.
 	 *
 	 * <p>If there are multiple pages, they will all be merged into the same result.
 	 */
@@ -202,7 +202,7 @@ public class PubsubAdmin {
 	}
 
 	/**
-	 * Sets the default acknowledgement deadline value.
+	 * Set the default acknowledgement deadline value.
 	 *
 	 * @param defaultAckDeadline default acknowledgement deadline value in seconds
 	 */
