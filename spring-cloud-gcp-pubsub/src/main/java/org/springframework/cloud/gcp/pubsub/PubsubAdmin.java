@@ -195,7 +195,7 @@ public class PubsubAdmin {
 	}
 
 	public int getDefaultAckDeadline() {
-		return defaultAckDeadline;
+		return this.defaultAckDeadline;
 	}
 
 	public void setDefaultAckDeadline(int defaultAckDeadline) {
