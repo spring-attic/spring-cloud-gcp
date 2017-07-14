@@ -29,7 +29,6 @@ import com.google.pubsub.v1.SubscriptionName;
 import com.google.pubsub.v1.Topic;
 import com.google.pubsub.v1.TopicName;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.Assert;
 
@@ -47,8 +46,7 @@ public class PubsubAdmin {
 	private SubscriptionAdminClient subscriptionAdminClient;
 
 	/** Default inspired in the subscription creation web UI. */
-	@Value("${spring.cloud.gcp.pubsub.subscriber.ackDeadline:10}")
-	private int defaultAckDeadline;
+	private int defaultAckDeadline = 10;
 
 	public PubsubAdmin(GcpProjectIdProvider projectIdProvider, TopicAdminClient topicAdminClient,
 			SubscriptionAdminClient subscriptionAdminClient) {
@@ -194,5 +192,16 @@ public class PubsubAdmin {
 				this.subscriptionAdminClient.listSubscriptions(ProjectName.create(this.projectId));
 
 		return Lists.newArrayList(subscriptionsPage.iterateAll());
+	}
+
+	public int getDefaultAckDeadline() {
+		return defaultAckDeadline;
+	}
+
+	public void setDefaultAckDeadline(int defaultAckDeadline) {
+		Assert.isTrue(defaultAckDeadline >= 0,
+				"The acknowledgement deadline value can't be negative.");
+
+		this.defaultAckDeadline = defaultAckDeadline;
 	}
 }
