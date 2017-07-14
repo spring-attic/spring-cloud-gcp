@@ -16,13 +16,16 @@
 
 package org.springframework.cloud.gcp.pubsub.autoconfig;
 
+import java.io.IOException;
 import java.util.concurrent.Executors;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.api.gax.grpc.FixedExecutorProvider;
+import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
+import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,6 +34,8 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.pubsub.PubsubAdmin;
+import org.springframework.cloud.gcp.pubsub.core.PubsubException;
 import org.springframework.cloud.gcp.pubsub.core.PubsubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
@@ -111,5 +116,43 @@ public class GcpPubsubAutoConfiguration {
 			@Qualifier("subscriberChannelProvider") ChannelProvider channelProvider) {
 		return new DefaultPublisherFactory(projectIdProvider, subscriberProvider, channelProvider,
 				credentialsProvider);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public PubsubAdmin pubsubAdmin(GcpProjectIdProvider projectIdProvider,
+			TopicAdminClient topicAdminClient,
+			SubscriptionAdminClient subscriptionAdminClient) {
+		return new PubsubAdmin(projectIdProvider, topicAdminClient, subscriptionAdminClient);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public TopicAdminClient topicAdminClient(CredentialsProvider credentialsProvider) {
+		try {
+			return TopicAdminClient.create(
+					TopicAdminSettings.defaultBuilder()
+							.setCredentialsProvider(credentialsProvider)
+							.build());
+		}
+		catch (IOException ioe) {
+			throw new PubsubException("An error occurred while creating TopicAdminClient.", ioe);
+		}
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public SubscriptionAdminClient subscriptionAdminClient(
+			CredentialsProvider credentialsProvider) {
+		try {
+			return SubscriptionAdminClient.create(
+					SubscriptionAdminSettings.defaultBuilder()
+							.setCredentialsProvider(credentialsProvider)
+							.build());
+		}
+		catch (IOException ioe) {
+			throw new PubsubException("An error occurred while creating SubscriptionAdminClient.",
+					ioe);
+		}
 	}
 }
