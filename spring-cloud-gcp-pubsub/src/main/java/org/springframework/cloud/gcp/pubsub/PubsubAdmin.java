@@ -194,10 +194,18 @@ public class PubsubAdmin {
 		return Lists.newArrayList(subscriptionsPage.iterateAll());
 	}
 
+	/**
+	 * @return the default acknowledgement deadline value in seconds
+	 */
 	public int getDefaultAckDeadline() {
 		return this.defaultAckDeadline;
 	}
 
+	/**
+	 * Sets the default acknowledgement deadline value.
+	 *
+	 * @param defaultAckDeadline default acknowledgement deadline value in seconds
+	 */
 	public void setDefaultAckDeadline(int defaultAckDeadline) {
 		Assert.isTrue(defaultAckDeadline >= 0,
 				"The acknowledgement deadline value can't be negative.");
