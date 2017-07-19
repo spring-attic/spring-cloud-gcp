@@ -16,8 +16,11 @@
 
 package org.springframework.cloud.gcp.core.autoconfig;
 
+import java.io.IOException;
 import java.util.Collections;
+import java.util.function.Supplier;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.GoogleCredentialsProvider;
@@ -75,5 +78,20 @@ public class GcpContextAutoConfiguration {
 		return this.gcpProperties.getProjectId() != null
 				? () -> this.gcpProperties.getProjectId()
 				: new DefaultGcpProjectIdProvider();
+	}
+
+	/**
+	 * Google Client Library APIs (i.e., non-Veneer/google-cloud-java) require
+	 * {@link GoogleCredential} instead of {@link GoogleCredentials}.
+	 */
+	@Bean
+	@ConditionalOnMissingBean
+	public Supplier<GoogleCredential> googleCredentialSupplier() throws IOException {
+		GoogleCredential credential = this.gcpProperties.getCredentialsLocation() != null
+				? GoogleCredential.fromStream(
+				this.gcpProperties.getCredentialsLocation().getInputStream())
+				: GoogleCredential.getApplicationDefault();
+
+		return () -> credential;
 	}
 }
