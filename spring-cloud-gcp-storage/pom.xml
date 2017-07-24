@@ -9,6 +9,7 @@
 		<version>1.0.0.BUILD-SNAPSHOT</version>
 	</parent>
 	<artifactId>spring-cloud-gcp-storage</artifactId>
+	<name>Spring Cloud GCP Storage Module</name>
 	<description>Spring Cloud GCP Storage Module</description>
 	<properties>
 		<main.basedir>${basedir}/../..</main.basedir>
@@ -24,7 +25,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud</artifactId>
+			<artifactId>google-cloud-storage</artifactId>
 		</dependency>
 	</dependencies>
 </project>

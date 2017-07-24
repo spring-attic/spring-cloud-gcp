@@ -10,12 +10,13 @@
 	</parent>
 
 	<artifactId>spring-cloud-gcp-core</artifactId>
+	<name>Spring Cloud GCP Core Module</name>
 	<description>Spring Cloud GCP Core Module</description>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud</artifactId>
+			<artifactId>google-cloud-core</artifactId>
 		</dependency>
 	</dependencies>
 </project>

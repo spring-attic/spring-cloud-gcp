@@ -10,13 +10,15 @@
 	</parent>
 
 	<artifactId>spring-cloud-gcp-dependencies</artifactId>
+	<name>Spring Cloud GCP Dependencies</name>
+	<description>Spring Cloud GCP Dependencies</description>
 	<version>1.0.0.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>spring-cloud-gcp-dependencies</name>
-	<description>Spring Cloud GCP Dependencies</description>
 
 	<properties>
-		<google-cloud-java.version>0.20.1-alpha</google-cloud-java.version>
+		<google-cloud-core.version>1.2.3</google-cloud-core.version>
+		<google-cloud-pubsub.version>0.20.1-beta</google-cloud-pubsub.version>
+		<google-cloud-storage.version>1.2.1</google-cloud-storage.version>
 	</properties>
 
 	<dependencyManagement>
@@ -43,15 +45,20 @@
 			</dependency>
 			<dependency>
 				<groupId>com.google.cloud</groupId>
-				<artifactId>google-cloud</artifactId>
-				<version>${google-cloud-java.version}</version>
+				<artifactId>google-cloud-core</artifactId>
+				<version>${google-cloud-core.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.cloud</groupId>
+				<artifactId>google-cloud-pubsub</artifactId>
+				<version>${google-cloud-pubsub.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.cloud</groupId>
+				<artifactId>google-cloud-storage</artifactId>
+				<version>${google-cloud-storage.version}</version>
 			</dependency>
 
-			<dependency>
-				<groupId>io.projectreactor</groupId>
-				<artifactId>reactor-core</artifactId>
-				<version>3.0.7.RELEASE</version>
-			</dependency>
 			<dependency>
 				<groupId>commons-logging</groupId>
 				<artifactId>commons-logging</artifactId>
@@ -62,12 +69,12 @@
 
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
+				<artifactId>spring-cloud-gcp-starter-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-core</artifactId>
+				<artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
