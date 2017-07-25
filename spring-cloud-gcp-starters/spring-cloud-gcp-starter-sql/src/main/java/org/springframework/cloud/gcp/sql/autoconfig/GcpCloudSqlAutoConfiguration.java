@@ -49,7 +49,7 @@ import org.springframework.util.StringUtils;
 /**
  * Google Cloud SQL starter.
  *
- * <p>>It simplifies database configuration in that only an instance and database name are provided,
+ * <p>It simplifies database configuration in that only an instance and database name are provided,
  * instead of a JDBC URL. If the instance region isn't specified, this starter attempts to get it
  * through the Cloud SQL API.
  *
@@ -109,7 +109,7 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	protected SQLAdmin createSqlAdminService(Supplier<GoogleCredential> credentialProvider)
+	protected SQLAdmin sqlAdminService(Supplier<GoogleCredential> credentialProvider)
 			throws GeneralSecurityException, IOException {
 		HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 		JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();

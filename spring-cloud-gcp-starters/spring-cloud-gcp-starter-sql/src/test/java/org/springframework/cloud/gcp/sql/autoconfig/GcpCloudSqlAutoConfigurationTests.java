@@ -30,20 +30,19 @@ import org.mockito.Mock;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
 
 /**
  * @author João André Martins
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(
-		classes = {GcpCloudSqlAutoConfiguration.class, GcpContextAutoConfiguration.class},
+		classes = {GcpCloudSqlAutoConfiguration.class, GcpContextAutoConfiguration.class,
+				GcpCloudSqlTestConfiguration.class
+		},
 		properties = {"spring.cloud.gcp.projectId=proj",
 				"spring.cloud.gcp.sql.instanceName=test-instance",
 				"spring.cloud.gcp.sql.databaseName=test-database",
@@ -55,7 +54,7 @@ public class GcpCloudSqlAutoConfigurationTests {
 	@Autowired
 	private DataSource dataSource;
 
-	@MockBean
+	@Autowired
 	private SQLAdmin mockSqlAdmin;
 
 	@Mock
@@ -68,10 +67,10 @@ public class GcpCloudSqlAutoConfigurationTests {
 
 	@Before
 	public void setUp() throws IOException {
-		when(this.mockSqlAdmin.instances()).thenReturn(this.mockInstances);
-		when(this.mockInstances.get(eq("proj"), eq("test-instance"))).thenReturn(this.mockGet);
-		when(this.mockGet.execute()).thenReturn(this.databaseInstance);
-		this.databaseInstance.setRegion("reg");
+//		when(this.mockSqlAdmin.instances()).thenReturn(this.mockInstances);
+//		when(this.mockInstances.get(eq("proj"), eq("test-instance"))).thenReturn(this.mockGet);
+//		when(this.mockGet.execute()).thenReturn(this.databaseInstance);
+//		this.databaseInstance.setRegion("reg");
 	}
 
 	@Test
@@ -83,6 +82,7 @@ public class GcpCloudSqlAutoConfigurationTests {
 		assertEquals("watchmaker", dataSource.getUsername());
 		assertEquals("pass", dataSource.getPassword());
 	}
+
 
 //	private AnnotationConfigApplicationContext context;
 //
