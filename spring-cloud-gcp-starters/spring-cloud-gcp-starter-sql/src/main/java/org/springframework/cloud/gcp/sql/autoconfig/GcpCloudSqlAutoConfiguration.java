@@ -18,8 +18,6 @@ package org.springframework.cloud.gcp.sql.autoconfig;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.Collections;
-import java.util.function.Supplier;
 
 import javax.sql.DataSource;
 
@@ -28,8 +26,9 @@ import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.services.sqladmin.SQLAdmin;
-import com.google.api.services.sqladmin.model.DatabaseInstance;
+import com.google.auth.http.HttpCredentialsAdapter;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -40,10 +39,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.GcpProperties;
+import org.springframework.cloud.gcp.sql.CloudSqlJdbcUrlProvider;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -68,59 +67,51 @@ public class GcpCloudSqlAutoConfiguration {
 	private GcpProperties gcpProperties;
 
 	@Bean
-	@ConditionalOnMissingBean(DataSource.class)
-	public DataSource cloudSqlDataSource(SQLAdmin sqlAdmin)
-			throws GeneralSecurityException, IOException {
-		Assert.hasText(this.gcpCloudSqlProperties.getDatabaseName(),
-				"spring.cloud.gcp.sql.databaseName name can't be empty.");
-		Assert.hasText(this.gcpCloudSqlProperties.getInstanceName(),
-				"spring.cloud.gcp.sql.instanceName name can't be empty.");
-		Assert.hasText(this.gcpCloudSqlProperties.getUserName(),
-				"spring.cloud.gcp.sql.userName name can't be null.");
-
+	@ConditionalOnMissingBean(CloudSqlJdbcUrlProvider.class)
+	public CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider(SQLAdmin sqlAdmin) throws IOException {
 		// Look for the region if the user didn't specify one.
 		String region = this.gcpCloudSqlProperties.getRegion();
 		if (!StringUtils.hasText(region)) {
-			DatabaseInstance instance =	sqlAdmin.instances().get(
-					this.gcpProperties.getProjectId(),
-					this.gcpCloudSqlProperties.getInstanceName()).execute();
-
-			region = instance.getRegion();
+			region = sqlAdmin.instances().get(this.gcpProperties.getProjectId(),
+					this.gcpCloudSqlProperties.getInstanceName()).execute().getRegion();
 		}
+
 		String instanceConnectionName = this.gcpProperties.getProjectId() + ":"
 				+ region + ":" + this.gcpCloudSqlProperties.getInstanceName();
 
-		String jdbcUrl = String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
+		return () -> String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
 						+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
 				this.gcpCloudSqlProperties.getDatabaseName(),
 				instanceConnectionName);
+	}
 
+	@Bean
+	@ConditionalOnMissingBean(DataSource.class)
+	public DataSource cloudSqlDataSource(CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider)
+			throws GeneralSecurityException, IOException {
 		// TODO(joaomartins): Set the credential factory to be used by SocketFactory when
 		// https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/issues/41 is
 		// resolved. For now, it uses application default creds.
 
 		HikariConfig hikariConfig = new HikariConfig();
-		hikariConfig.setJdbcUrl(jdbcUrl);
+		hikariConfig.setJdbcUrl(cloudSqlJdbcUrlProvider.getJdbcUrl());
 		hikariConfig.setUsername(this.gcpCloudSqlProperties.getUserName());
 		hikariConfig.setPassword(this.gcpCloudSqlProperties.getPassword());
+		// Setting this is useful to disable connection initialization.
+		hikariConfig.setInitializationFailFast(this.gcpCloudSqlProperties.getInitFailFast());
 
 		return new HikariDataSource(hikariConfig);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	protected SQLAdmin sqlAdminService(Supplier<GoogleCredential> credentialProvider)
+	protected SQLAdmin sqlAdminService(CredentialsProvider credentialsProvider)
 			throws GeneralSecurityException, IOException {
 		HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 		JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
 
-		GoogleCredential credential = credentialProvider.get();
-		if (credential.createScopedRequired()) {
-			credential = credential.createScoped(
-					Collections.singleton("https://www.googleapis.com/auth/cloud-platform"));
-		}
-
-		return new SQLAdmin.Builder(httpTransport, jsonFactory, credential)
+		return new SQLAdmin.Builder(httpTransport, jsonFactory,
+				new HttpCredentialsAdapter(credentialsProvider.getCredentials()))
 				.setApplicationName("Google-SQLAdminSample/0.1")
 				.build();
 	}

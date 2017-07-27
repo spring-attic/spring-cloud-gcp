@@ -16,13 +16,14 @@
 
 package org.springframework.cloud.gcp.sql.autoconfig;
 
+import java.io.IOException;
+
 import com.google.api.services.sqladmin.SQLAdmin;
 import com.google.api.services.sqladmin.model.DatabaseInstance;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-
-import java.io.IOException;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;

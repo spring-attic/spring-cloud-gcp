@@ -16,7 +16,10 @@
 
 package org.springframework.cloud.gcp.sql;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * Google Cloud SQL properties.
@@ -24,17 +27,23 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author João André Martins
  */
 @ConfigurationProperties("spring.cloud.gcp.sql")
+@Validated
 public class GcpCloudSqlProperties {
 
+	@NotEmpty
 	private String instanceName;
 
+	@NotEmpty
 	private String databaseName;
 
 	private String region;
 
+	@NotEmpty
 	private String userName;
 
 	private String password;
+
+	private boolean initFailFast;
 
 	public String getInstanceName() {
 		return this.instanceName;
@@ -74,5 +83,13 @@ public class GcpCloudSqlProperties {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public boolean getInitFailFast() {
+		return this.initFailFast;
+	}
+
+	public void setInitFailFast(boolean initFailFast) {
+		this.initFailFast = initFailFast;
 	}
 }
