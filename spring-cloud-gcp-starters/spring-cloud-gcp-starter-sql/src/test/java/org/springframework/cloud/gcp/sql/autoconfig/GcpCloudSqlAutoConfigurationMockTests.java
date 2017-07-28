@@ -44,7 +44,7 @@ import static org.junit.Assert.assertEquals;
 				"spring.cloud.gcp.sql.databaseName=test-database",
 				"spring.cloud.gcp.sql.userName=watchmaker",
 				"spring.cloud.gcp.sql.password=pass",
-				"spring.cloud.gcp.sql.initFailTimeout=false"
+				"spring.cloud.gcp.sql.initFailFast=false"
 		}
 )
 public abstract class GcpCloudSqlAutoConfigurationMockTests {
