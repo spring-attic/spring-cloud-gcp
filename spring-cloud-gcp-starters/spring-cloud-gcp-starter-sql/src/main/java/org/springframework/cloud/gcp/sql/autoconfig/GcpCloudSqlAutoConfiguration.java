@@ -77,13 +77,20 @@ public class GcpCloudSqlAutoConfiguration {
 
 		return new SQLAdmin.Builder(httpTransport, jsonFactory,
 				new HttpCredentialsAdapter(credentialsProvider.getCredentials()))
-				.setApplicationName("Google-SQLAdminSample/0.1")
 				.build();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcUrlProvider.class)
-	public CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider(SQLAdmin sqlAdmin) throws IOException {
+	public CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider(SQLAdmin sqlAdmin)
+			throws IOException, ClassNotFoundException {
+		// TODO(joaomartins): Set the credential factory to be used by SocketFactory when
+		// https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/issues/41 is
+		// resolved. For now, it uses application default creds.
+
+		// Load MySQL driver to register it, so the user doesn't have to.
+		Class.forName("com.mysql.jdbc.Driver");
+
 		// Look for the region if the user didn't specify one.
 		String region = this.gcpCloudSqlProperties.getRegion();
 		if (!StringUtils.hasText(region)) {
@@ -103,14 +110,7 @@ public class GcpCloudSqlAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(DataSource.class)
 	public DataSource cloudSqlDataSource(CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider)
-			throws GeneralSecurityException, IOException, ClassNotFoundException {
-		// TODO(joaomartins): Set the credential factory to be used by SocketFactory when
-		// https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/issues/41 is
-		// resolved. For now, it uses application default creds.
-
-		// Load MySQL driver to register it, so the user doesn't have to.
-		Class.forName("com.mysql.jdbc.Driver");
-
+			throws GeneralSecurityException, IOException {
 		HikariConfig hikariConfig = new HikariConfig();
 		hikariConfig.setJdbcUrl(cloudSqlJdbcUrlProvider.getJdbcUrl());
 		hikariConfig.setUsername(this.gcpCloudSqlProperties.getUserName());
