@@ -42,8 +42,6 @@ import static org.junit.Assert.assertEquals;
 		properties = {"spring.cloud.gcp.projectId=proj",
 				"spring.cloud.gcp.sql.instanceName=test-instance",
 				"spring.cloud.gcp.sql.databaseName=test-database",
-				"spring.cloud.gcp.sql.userName=watchmaker",
-				"spring.cloud.gcp.sql.password=pass",
 				"spring.cloud.gcp.sql.initFailFast=false"
 		}
 )
@@ -75,8 +73,8 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=proj:reg:test-instance"
 							+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
 					this.urlProvider.getJdbcUrl());
-			assertEquals("watchmaker", dataSource.getUsername());
-			assertEquals("pass", dataSource.getPassword());
+			assertEquals("root", dataSource.getUsername());
+			assertEquals("", dataSource.getPassword());
 		}
 	}
 
@@ -90,6 +88,24 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance="
 							+ "proj:siberia:test-instance&"
 							+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
+					this.urlProvider.getJdbcUrl());
+			assertEquals("root", dataSource.getUsername());
+			assertEquals("", dataSource.getPassword());
+		}
+	}
+
+	@TestPropertySource(properties = {
+			"spring.cloud.gcp.sql.userName=watchmaker",
+			"spring.cloud.gcp.sql.password=pass"
+	})
+	public static class GcpCloudSqlAutoConfigurationWithUserAndPassTest
+			extends GcpCloudSqlAutoConfigurationMockTests {
+		@Test
+		@Override
+		public void test() {
+			HikariDataSource dataSource = (HikariDataSource) this.dataSource;
+			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=proj:reg:test-instance"
+							+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("watchmaker", dataSource.getUsername());
 			assertEquals("pass", dataSource.getPassword());

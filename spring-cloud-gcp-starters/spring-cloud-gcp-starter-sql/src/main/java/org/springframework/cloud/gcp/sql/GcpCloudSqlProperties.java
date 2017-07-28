@@ -40,7 +40,7 @@ public class GcpCloudSqlProperties {
 
 	private String userName = "root";
 
-	private String password;
+	private String password = "";
 
 	private boolean initFailFast;
 
