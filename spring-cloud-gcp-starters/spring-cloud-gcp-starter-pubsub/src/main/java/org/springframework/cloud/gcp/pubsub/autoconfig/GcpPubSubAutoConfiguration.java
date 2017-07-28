@@ -94,7 +94,7 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PubSubTemplate pubsubTemplate(PublisherFactory publisherFactory) {
+	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory) {
 		return new PubSubTemplate(publisherFactory);
 	}
 
@@ -120,7 +120,7 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PubSubAdmin pubsubAdmin(GcpProjectIdProvider projectIdProvider,
+	public PubSubAdmin pubSubAdmin(GcpProjectIdProvider projectIdProvider,
 			TopicAdminClient topicAdminClient,
 			SubscriptionAdminClient subscriptionAdminClient) {
 		return new PubSubAdmin(projectIdProvider, topicAdminClient, subscriptionAdminClient);
