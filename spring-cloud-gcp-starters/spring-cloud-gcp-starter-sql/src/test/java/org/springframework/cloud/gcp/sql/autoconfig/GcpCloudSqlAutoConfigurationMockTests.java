@@ -67,7 +67,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 		}
 	}
 
-	public static class CloudSqlDataSource extends GcpCloudSqlAutoConfigurationMockTests {
+	public static class CloudSqlDataSourceTest extends GcpCloudSqlAutoConfigurationMockTests {
 		@Test
 		@Override
 		public void test() {
@@ -81,8 +81,10 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 	}
 
 	@TestPropertySource(properties = {"spring.cloud.gcp.sql.region=siberia"})
-	public static class GcpCloudSqlAutoConfigurationTests_WithRegion
+	public static class GcpCloudSqlAutoConfigurationWithRegionTest
 			extends GcpCloudSqlAutoConfigurationMockTests {
+		@Test
+		@Override
 		public void test() {
 			HikariDataSource dataSource = (HikariDataSource) this.dataSource;
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance="
