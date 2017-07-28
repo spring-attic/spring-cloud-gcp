@@ -38,8 +38,7 @@ public class GcpCloudSqlProperties {
 
 	private String region;
 
-	@NotEmpty
-	private String userName;
+	private String userName = "root";
 
 	private String password;
 

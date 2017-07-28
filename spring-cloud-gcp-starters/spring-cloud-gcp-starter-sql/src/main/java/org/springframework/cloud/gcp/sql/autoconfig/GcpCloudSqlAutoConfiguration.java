@@ -38,12 +38,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.gcp.core.GcpProperties;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcUrlProvider;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -57,16 +58,13 @@ import org.springframework.util.StringUtils;
  */
 @Configuration
 @EnableConfigurationProperties(GcpCloudSqlProperties.class)
-@ConditionalOnClass({GcpProperties.class, SQLAdmin.class})
+@ConditionalOnClass({GcpProjectIdProvider.class, SQLAdmin.class})
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpCloudSqlAutoConfiguration {
 
 	@Autowired
 	private GcpCloudSqlProperties gcpCloudSqlProperties;
-
-	@Autowired
-	private GcpProperties gcpProperties;
 
 	@Bean
 	@ConditionalOnMissingBean
@@ -82,8 +80,12 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcUrlProvider.class)
-	public CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider(SQLAdmin sqlAdmin)
+	public CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider(SQLAdmin sqlAdmin,
+			GcpProjectIdProvider projectIdProvider)
 			throws IOException, ClassNotFoundException {
+		Assert.hasText(projectIdProvider.getProjectId(),
+				"A project ID must be provided.");
+
 		// TODO(joaomartins): Set the credential factory to be used by SocketFactory when
 		// https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/issues/41 is
 		// resolved. For now, it uses application default creds.
@@ -94,12 +96,12 @@ public class GcpCloudSqlAutoConfiguration {
 		// Look for the region if the user didn't specify one.
 		String region = this.gcpCloudSqlProperties.getRegion();
 		if (!StringUtils.hasText(region)) {
-			region = sqlAdmin.instances().get(this.gcpProperties.getProjectId(),
+			region = sqlAdmin.instances().get(projectIdProvider.getProjectId(),
 					this.gcpCloudSqlProperties.getInstanceName()).execute().getRegion();
 		}
 
-		String instanceConnectionName = this.gcpProperties.getProjectId() + ":"
-				+ region + ":" + this.gcpCloudSqlProperties.getInstanceName();
+		String instanceConnectionName = projectIdProvider.getProjectId() + ":" + region + ":"
+				+ this.gcpCloudSqlProperties.getInstanceName();
 
 		return () -> String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
 						+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
