@@ -16,12 +16,13 @@
 
 package org.springframework.cloud.gcp.core.autoconfig;
 
-import java.util.Collections;
+import java.util.List;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.common.collect.ImmutableList;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -47,7 +48,12 @@ import org.springframework.util.StringUtils;
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {
 
-	private static final String GCP_PUBSUB_SCOPE = "https://www.googleapis.com/auth/pubsub";
+	private static final String PUBSUB_SCOPE = "https://www.googleapis.com/auth/pubsub";
+
+	private static final String SQLADMIN_SCOPE =
+			"https://www.googleapis.com/auth/sqlservice.admin";
+
+	private static final List<String> SCOPES_LIST = ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE);
 
 	@Autowired
 	private GcpProperties gcpProperties;
@@ -56,12 +62,14 @@ public class GcpContextAutoConfiguration {
 	@ConditionalOnMissingBean
 	public CredentialsProvider googleCredentials() throws Exception {
 		if (!StringUtils.isEmpty(this.gcpProperties.getCredentialsLocation())) {
-			return FixedCredentialsProvider.create(GoogleCredentials.fromStream(
-					this.gcpProperties.getCredentialsLocation().getInputStream()));
+			return FixedCredentialsProvider
+					.create(GoogleCredentials.fromStream(
+							this.gcpProperties.getCredentialsLocation().getInputStream())
+					.createScoped(SCOPES_LIST));
 		}
 
 		return GoogleCredentialsProvider.newBuilder()
-				.setScopesToApply(Collections.singletonList(GCP_PUBSUB_SCOPE))
+				.setScopesToApply(SCOPES_LIST)
 				.build();
 	}
 
