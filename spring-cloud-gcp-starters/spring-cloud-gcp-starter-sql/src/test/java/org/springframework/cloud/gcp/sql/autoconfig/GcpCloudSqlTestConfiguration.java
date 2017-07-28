@@ -30,7 +30,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Created by joaomartins on 7/25/17.
+ * Provides test mocks.
+ *
+ * @author João André Martins
  */
 @Configuration
 public class GcpCloudSqlTestConfiguration {
