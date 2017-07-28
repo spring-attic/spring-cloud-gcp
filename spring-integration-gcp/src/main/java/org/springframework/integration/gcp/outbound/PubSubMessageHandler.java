@@ -28,17 +28,17 @@ import org.springframework.util.Assert;
  */
 public class PubSubMessageHandler extends AbstractMessageHandler {
 
-	private final PubSubTemplate pubsubTemplate;
+	private final PubSubTemplate pubSubTemplate;
 
 	private String topic;
 
-	public PubSubMessageHandler(PubSubTemplate pubsubTemplate) {
-		this.pubsubTemplate = pubsubTemplate;
+	public PubSubMessageHandler(PubSubTemplate pubSubTemplate) {
+		this.pubSubTemplate = pubSubTemplate;
 	}
 
 	@Override
 	protected void handleMessageInternal(Message<?> message) throws Exception {
-		this.pubsubTemplate.send(this.topic, message);
+		this.pubSubTemplate.send(this.topic, message);
 	}
 
 	public String getTopic() {
