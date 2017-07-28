@@ -27,7 +27,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * @author João André Martins
  */
 @RunWith(MockitoJUnitRunner.class)
-public class PubsubAdminTests {
+public class PubSubAdminTests {
 
 	@Mock
 	private TopicAdminClient mockTopicAdminClient;
@@ -36,17 +36,17 @@ public class PubsubAdminTests {
 	private SubscriptionAdminClient mockSubscriptionAdminClient;
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testNewPubsubAdmin_nullProjectProvider() {
-		new PubsubAdmin(null, this.mockTopicAdminClient, this.mockSubscriptionAdminClient);
+	public void testNewPubSubAdmin_nullProjectProvider() {
+		new PubSubAdmin(null, this.mockTopicAdminClient, this.mockSubscriptionAdminClient);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testNewPubsubAdmin_nullTopicAdminClient() {
-		new PubsubAdmin(() -> "test-project", null, this.mockSubscriptionAdminClient);
+	public void testNewPubSubAdmin_nullTopicAdminClient() {
+		new PubSubAdmin(() -> "test-project", null, this.mockSubscriptionAdminClient);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void testNewPubsubAdmin_nullSubscriptionAdminClient() {
-		new PubsubAdmin(() -> "test-project", this.mockTopicAdminClient, null);
+	public void testNewPubSubAdmin_nullSubscriptionAdminClient() {
+		new PubSubAdmin(() -> "test-project", this.mockTopicAdminClient, null);
 	}
 }

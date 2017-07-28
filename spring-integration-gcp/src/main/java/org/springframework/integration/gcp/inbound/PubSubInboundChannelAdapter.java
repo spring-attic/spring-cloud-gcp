@@ -36,7 +36,7 @@ import org.springframework.util.Assert;
  *
  * @author João André Martins
  */
-public class PubsubInboundChannelAdapter extends MessageProducerSupport {
+public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private final String subscriptionName;
 
@@ -46,7 +46,7 @@ public class PubsubInboundChannelAdapter extends MessageProducerSupport {
 
 	private AckMode ackMode = AckMode.AUTO;
 
-	public PubsubInboundChannelAdapter(SubscriberFactory subscriberFactory,
+	public PubSubInboundChannelAdapter(SubscriberFactory subscriberFactory,
 			String subscriptionName) {
 		this.subscriberFactory = subscriberFactory;
 		this.subscriptionName = subscriptionName;

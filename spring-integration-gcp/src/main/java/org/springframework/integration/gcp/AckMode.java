@@ -25,7 +25,7 @@ public enum AckMode {
 
 	/**
 	 * The framework does not ack/nack and the
-	 * {@link com.google.cloud.pubsub.spi.v1.AckReplyConsumer} is sent back to the user.
+	 * {@link com.google.cloud.pubsub.v1.AckReplyConsumer} is sent back to the user.
 	 */
 	MANUAL,
 

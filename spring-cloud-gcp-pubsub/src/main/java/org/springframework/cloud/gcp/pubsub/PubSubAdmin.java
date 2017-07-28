@@ -41,7 +41,7 @@ import org.springframework.util.Assert;
  *
  * @author João André Martins
  */
-public class PubsubAdmin {
+public class PubSubAdmin {
 
 	private final String projectId;
 
@@ -56,7 +56,7 @@ public class PubsubAdmin {
 	 * This constructor instantiates TopicAdminClient and SubscriptionAdminClient with all their
 	 * defaults and the provided credentials provider.
 	 */
-	public PubsubAdmin(GcpProjectIdProvider projectIdProvider,
+	public PubSubAdmin(GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
 		this(projectIdProvider,
 				TopicAdminClient.create(
@@ -69,7 +69,7 @@ public class PubsubAdmin {
 						.build()));
 	}
 
-	public PubsubAdmin(GcpProjectIdProvider projectIdProvider, TopicAdminClient topicAdminClient,
+	public PubSubAdmin(GcpProjectIdProvider projectIdProvider, TopicAdminClient topicAdminClient,
 			SubscriptionAdminClient subscriptionAdminClient) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
 		Assert.notNull(topicAdminClient, "The topic administration client can't be null");
