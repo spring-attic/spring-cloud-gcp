@@ -69,6 +69,19 @@ public class GcpCloudSqlAutoConfiguration {
 	private GcpProperties gcpProperties;
 
 	@Bean
+	@ConditionalOnMissingBean
+	protected SQLAdmin sqlAdminService(CredentialsProvider credentialsProvider)
+			throws GeneralSecurityException, IOException {
+		HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+		JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+
+		return new SQLAdmin.Builder(httpTransport, jsonFactory,
+				new HttpCredentialsAdapter(credentialsProvider.getCredentials()))
+				.setApplicationName("Google-SQLAdminSample/0.1")
+				.build();
+	}
+
+	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcUrlProvider.class)
 	public CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider(SQLAdmin sqlAdmin) throws IOException {
 		// Look for the region if the user didn't specify one.
@@ -90,31 +103,21 @@ public class GcpCloudSqlAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(DataSource.class)
 	public DataSource cloudSqlDataSource(CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider)
-			throws GeneralSecurityException, IOException {
+			throws GeneralSecurityException, IOException, ClassNotFoundException {
 		// TODO(joaomartins): Set the credential factory to be used by SocketFactory when
 		// https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/issues/41 is
 		// resolved. For now, it uses application default creds.
+
+		// Load MySQL driver to register it, so the user doesn't have to.
+		Class.forName("com.mysql.jdbc.Driver");
 
 		HikariConfig hikariConfig = new HikariConfig();
 		hikariConfig.setJdbcUrl(cloudSqlJdbcUrlProvider.getJdbcUrl());
 		hikariConfig.setUsername(this.gcpCloudSqlProperties.getUserName());
 		hikariConfig.setPassword(this.gcpCloudSqlProperties.getPassword());
-		// Setting this is useful to disable connection initialization.
+		// Setting this is useful to disable connection initialization. Especially in unit tests.
 		hikariConfig.setInitializationFailFast(this.gcpCloudSqlProperties.getInitFailFast());
 
 		return new HikariDataSource(hikariConfig);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	protected SQLAdmin sqlAdminService(CredentialsProvider credentialsProvider)
-			throws GeneralSecurityException, IOException {
-		HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-		JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-
-		return new SQLAdmin.Builder(httpTransport, jsonFactory,
-				new HttpCredentialsAdapter(credentialsProvider.getCredentials()))
-				.setApplicationName("Google-SQLAdminSample/0.1")
-				.build();
 	}
 }
