@@ -10,8 +10,8 @@
 	</parent>
 
 	<artifactId>spring-cloud-gcp-pubsub</artifactId>
-	<name>Spring Cloud GCP Pubsub Module</name>
-	<description>Spring Cloud GCP Pubsub Module</description>
+	<name>Spring Cloud GCP Pub/Sub Module</name>
+	<description>Spring Cloud GCP Pub/Sub Module</description>
 
 	<dependencies>
 		<dependency>

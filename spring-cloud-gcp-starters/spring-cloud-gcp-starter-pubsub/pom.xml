@@ -7,8 +7,8 @@
 		<version>1.0.0.BUILD-SNAPSHOT</version>
 	</parent>
 	<artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
-	<name>Spring Cloud GCP Pubsub Starter</name>
-	<description>Starter for Google Cloud Pubsub messaging</description>
+	<name>Spring Cloud GCP Pub/Sub Starter</name>
+	<description>Starter for Google Cloud Pub/Sub messaging</description>
 	<organization>
 		<name>Pivotal Software, Inc.</name>
 		<url>http://www.spring.io</url>

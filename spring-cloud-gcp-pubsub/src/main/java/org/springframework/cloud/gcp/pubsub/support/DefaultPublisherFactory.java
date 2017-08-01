@@ -28,7 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.pubsub.v1.TopicName;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.pubsub.core.PubsubException;
+import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.util.Assert;
 
 /**
@@ -48,7 +48,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	private final String projectId;
 
 	/**
-	 * {@link Publisher} cache, enforces only one {@link Publisher} per Pubsub topic exists.
+	 * {@link Publisher} cache, enforces only one {@link Publisher} per PubSub topic exists.
 	 */
 	private final ConcurrentHashMap<String, Publisher> publishers = new ConcurrentHashMap<>();
 
@@ -85,7 +85,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 						.build();
 			}
 			catch (IOException ioe) {
-				throw new PubsubException("An error creating the Google Cloud Pub/Sub publisher " +
+				throw new PubSubException("An error creating the Google Cloud Pub/Sub publisher " +
 						"occurred.", ioe);
 			}
 		});

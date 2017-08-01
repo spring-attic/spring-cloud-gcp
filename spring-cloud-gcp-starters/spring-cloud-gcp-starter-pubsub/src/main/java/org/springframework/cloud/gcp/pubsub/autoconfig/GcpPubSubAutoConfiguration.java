@@ -34,9 +34,9 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.pubsub.PubsubAdmin;
-import org.springframework.cloud.gcp.pubsub.core.PubsubException;
-import org.springframework.cloud.gcp.pubsub.core.PubsubTemplate;
+import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
+import org.springframework.cloud.gcp.pubsub.core.PubSubException;
+import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
@@ -49,7 +49,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
-public class GcpPubsubAutoConfiguration {
+public class GcpPubSubAutoConfiguration {
 
 	public static final String DEFAULT_SOURCE_NAME = "spring";
 
@@ -94,8 +94,8 @@ public class GcpPubsubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PubsubTemplate pubsubTemplate(PublisherFactory publisherFactory) {
-		return new PubsubTemplate(publisherFactory);
+	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory) {
+		return new PubSubTemplate(publisherFactory);
 	}
 
 	@Bean
@@ -120,10 +120,10 @@ public class GcpPubsubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PubsubAdmin pubsubAdmin(GcpProjectIdProvider projectIdProvider,
+	public PubSubAdmin pubSubAdmin(GcpProjectIdProvider projectIdProvider,
 			TopicAdminClient topicAdminClient,
 			SubscriptionAdminClient subscriptionAdminClient) {
-		return new PubsubAdmin(projectIdProvider, topicAdminClient, subscriptionAdminClient);
+		return new PubSubAdmin(projectIdProvider, topicAdminClient, subscriptionAdminClient);
 	}
 
 	@Bean
@@ -136,7 +136,7 @@ public class GcpPubsubAutoConfiguration {
 							.build());
 		}
 		catch (IOException ioe) {
-			throw new PubsubException("An error occurred while creating TopicAdminClient.", ioe);
+			throw new PubSubException("An error occurred while creating TopicAdminClient.", ioe);
 		}
 	}
 
@@ -151,7 +151,7 @@ public class GcpPubsubAutoConfiguration {
 							.build());
 		}
 		catch (IOException ioe) {
-			throw new PubsubException("An error occurred while creating SubscriptionAdminClient.",
+			throw new PubSubException("An error occurred while creating SubscriptionAdminClient.",
 					ioe);
 		}
 	}

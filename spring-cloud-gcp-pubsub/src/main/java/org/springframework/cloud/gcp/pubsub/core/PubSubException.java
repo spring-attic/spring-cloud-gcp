@@ -16,14 +16,20 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
-import org.springframework.messaging.Message;
-import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.core.NestedRuntimeException;
 
 /**
- * @author Vinicius Carvalho
+ * The Spring Google Cloud Pub/Sub specific {@link NestedRuntimeException}.
+ *
+ * @author João André Martins
  */
-public interface PubsubOperations {
+public class PubSubException extends NestedRuntimeException {
 
-	ListenableFuture<String> send(String topic, Message message);
+	public PubSubException(String msg) {
+		super(msg);
+	}
 
+	public PubSubException(String msg, Throwable cause) {
+		super(msg, cause);
+	}
 }
