@@ -1,0 +1,8 @@
+= Spring Cloud GCP
+João André Martins
+:toc:
+
+include::overview.adoc[]
+include::spring-integration.adoc[]
+include::spring-cloud-gcp-gcs.adoc[]
+include::spring-cloud-gcp-sql.adoc[]

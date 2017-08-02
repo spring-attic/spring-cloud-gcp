@@ -1,0 +1,8 @@
+= Document overview
+
+The Spring Cloud GCP project aims at making Google Cloud Platform (GCP) the platform of choice to
+run the popular Spring Cloud framework.
+
+We have Spring Integration channel adapters, Google Cloud Storage-based Spring Resource abstraction
+and Spring Boot starters for several products, including Google Cloud SQL.
+
