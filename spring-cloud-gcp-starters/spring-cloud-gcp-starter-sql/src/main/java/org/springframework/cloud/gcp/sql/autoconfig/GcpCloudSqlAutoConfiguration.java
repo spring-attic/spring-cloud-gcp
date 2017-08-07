@@ -50,15 +50,16 @@ import org.springframework.util.StringUtils;
 /**
  * Google Cloud SQL starter.
  *
- * <p>It simplifies database configuration in that only an instance and database name are provided,
- * instead of a JDBC URL. If the instance region isn't specified, this starter attempts to get it
- * through the Cloud SQL API.
+ * <p>
+ * It simplifies database configuration in that only an instance and database name are
+ * provided, instead of a JDBC URL. If the instance region isn't specified, this starter
+ * attempts to get it through the Cloud SQL API.
  *
  * @author João André Martins
  */
 @Configuration
 @EnableConfigurationProperties(GcpCloudSqlProperties.class)
-@ConditionalOnClass({GcpProjectIdProvider.class, SQLAdmin.class})
+@ConditionalOnClass({ GcpProjectIdProvider.class, SQLAdmin.class })
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpCloudSqlAutoConfiguration {
@@ -75,44 +76,36 @@ public class GcpCloudSqlAutoConfiguration {
 
 		return new SQLAdmin.Builder(httpTransport, jsonFactory,
 				new HttpCredentialsAdapter(credentialsProvider.getCredentials()))
-				.build();
+						.build();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcUrlProvider.class)
 	public CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider(SQLAdmin sqlAdmin,
 			GcpProjectIdProvider projectIdProvider)
-			throws IOException, ClassNotFoundException {
+			throws IOException {
 		Assert.hasText(projectIdProvider.getProjectId(),
 				"A project ID must be provided.");
 
-		// TODO(joaomartins): Set the credential factory to be used by SocketFactory when
-		// https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/issues/41 is
-		// resolved. For now, it uses application default creds.
-
-		// Load MySQL driver to register it, so the user doesn't have to.
-		Class.forName("com.mysql.jdbc.Driver");
-
-		// Look for the region if the user didn't specify one.
-		String region = this.gcpCloudSqlProperties.getRegion();
-		if (!StringUtils.hasText(region)) {
-			region = sqlAdmin.instances().get(projectIdProvider.getProjectId(),
-					this.gcpCloudSqlProperties.getInstanceName()).execute().getRegion();
+		String appEngineVersion = System.getProperty("com.google.appengine.runtime.version");
+		if (StringUtils.hasText(appEngineVersion) && appEngineVersion.startsWith("Google App Engine/")) {
+			return new AppEngineCloudSqlJdbcUrlProvider(
+					projectIdProvider.getProjectId(),
+					this.gcpCloudSqlProperties);
 		}
-
-		String instanceConnectionName = projectIdProvider.getProjectId() + ":" + region + ":"
-				+ this.gcpCloudSqlProperties.getInstanceName();
-
-		return () -> String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
-						+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
-				this.gcpCloudSqlProperties.getDatabaseName(),
-				instanceConnectionName);
+		else {
+			return new DefaultCloudSqlJdbcUrlProvider(
+					projectIdProvider.getProjectId(),
+					sqlAdmin,
+					this.gcpCloudSqlProperties);
+		}
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(DataSource.class)
 	public DataSource cloudSqlDataSource(CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider)
-			throws GeneralSecurityException, IOException {
+			throws GeneralSecurityException, IOException, ClassNotFoundException {
+		Class.forName(cloudSqlJdbcUrlProvider.getJdbcDriverClass());
 		HikariConfig hikariConfig = new HikariConfig();
 		hikariConfig.setJdbcUrl(cloudSqlJdbcUrlProvider.getJdbcUrl());
 		hikariConfig.setUsername(this.gcpCloudSqlProperties.getUserName());

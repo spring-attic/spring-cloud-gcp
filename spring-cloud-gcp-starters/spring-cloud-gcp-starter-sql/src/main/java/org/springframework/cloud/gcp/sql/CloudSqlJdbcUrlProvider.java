@@ -22,8 +22,7 @@ package org.springframework.cloud.gcp.sql;
  *
  * @author João André Martins
  */
-@FunctionalInterface
 public interface CloudSqlJdbcUrlProvider {
-
+	String getJdbcDriverClass();
 	String getJdbcUrl();
 }
