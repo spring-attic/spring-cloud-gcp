@@ -1,0 +1,7 @@
+= Spring Integration
+
+== Channel adapters
+
+=== Inbound channel adapter
+
+=== Outbound channel adapter
