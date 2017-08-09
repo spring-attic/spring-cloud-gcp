@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import com.google.api.services.sqladmin.SQLAdmin;
 
-import org.springframework.cloud.gcp.sql.CloudSqlJdbcUrlProvider;
+import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -32,14 +32,14 @@ import org.springframework.util.StringUtils;
  *
  * @author Ray Tsang
  */
-public class DefaultCloudSqlJdbcUrlProvider implements CloudSqlJdbcUrlProvider {
+public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider {
 	private final String projectId;
 
 	private final SQLAdmin sqlAdmin;
 
 	private final GcpCloudSqlProperties properties;
 
-	public DefaultCloudSqlJdbcUrlProvider(String projectId, SQLAdmin sqlAdmin, GcpCloudSqlProperties properties) {
+	public DefaultCloudSqlJdbcInfoProvider(String projectId, SQLAdmin sqlAdmin, GcpCloudSqlProperties properties) {
 		this.projectId = projectId;
 		this.sqlAdmin = sqlAdmin;
 		this.properties = properties;

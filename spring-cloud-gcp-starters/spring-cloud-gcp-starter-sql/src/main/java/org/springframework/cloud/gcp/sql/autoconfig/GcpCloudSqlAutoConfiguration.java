@@ -40,7 +40,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.sql.CloudSqlJdbcUrlProvider;
+import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -80,21 +80,21 @@ public class GcpCloudSqlAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(CloudSqlJdbcUrlProvider.class)
-	public CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider(SQLAdmin sqlAdmin,
-			GcpProjectIdProvider projectIdProvider)
+	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
+	public CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider(SQLAdmin sqlAdmin,
+															GcpProjectIdProvider projectIdProvider)
 			throws IOException {
 		Assert.hasText(projectIdProvider.getProjectId(),
 				"A project ID must be provided.");
 
 		String appEngineVersion = System.getProperty("com.google.appengine.runtime.version");
 		if (StringUtils.hasText(appEngineVersion) && appEngineVersion.startsWith("Google App Engine/")) {
-			return new AppEngineCloudSqlJdbcUrlProvider(
+			return new AppEngineCloudSqlJdbcInfoProvider(
 					projectIdProvider.getProjectId(),
 					this.gcpCloudSqlProperties);
 		}
 		else {
-			return new DefaultCloudSqlJdbcUrlProvider(
+			return new DefaultCloudSqlJdbcInfoProvider(
 					projectIdProvider.getProjectId(),
 					sqlAdmin,
 					this.gcpCloudSqlProperties);
@@ -103,11 +103,11 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(DataSource.class)
-	public DataSource cloudSqlDataSource(CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider)
+	public DataSource cloudSqlDataSource(CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider)
 			throws GeneralSecurityException, IOException, ClassNotFoundException {
-		Class.forName(cloudSqlJdbcUrlProvider.getJdbcDriverClass());
 		HikariConfig hikariConfig = new HikariConfig();
-		hikariConfig.setJdbcUrl(cloudSqlJdbcUrlProvider.getJdbcUrl());
+		hikariConfig.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
+		hikariConfig.setJdbcUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
 		hikariConfig.setUsername(this.gcpCloudSqlProperties.getUserName());
 		hikariConfig.setPassword(this.gcpCloudSqlProperties.getPassword());
 		// Setting this is useful to disable connection initialization. Especially in unit tests.

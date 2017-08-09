@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.sql.autoconfig;
 
-import org.springframework.cloud.gcp.sql.CloudSqlJdbcUrlProvider;
+import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -27,12 +27,12 @@ import org.springframework.util.StringUtils;
  *
  * @author Ray Tsang
  */
-public class AppEngineCloudSqlJdbcUrlProvider implements CloudSqlJdbcUrlProvider {
+public class AppEngineCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider {
 	private final String projectId;
 
 	private final GcpCloudSqlProperties properties;
 
-	public AppEngineCloudSqlJdbcUrlProvider(String projectId, GcpCloudSqlProperties properties) {
+	public AppEngineCloudSqlJdbcInfoProvider(String projectId, GcpCloudSqlProperties properties) {
 		this.projectId = projectId;
 		this.properties = properties;
 		Assert.hasText(projectId,
