@@ -38,14 +38,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.core.AppEngineCondition;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * Google Cloud SQL starter.
@@ -81,24 +81,21 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	public CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider(SQLAdmin sqlAdmin,
-															GcpProjectIdProvider projectIdProvider)
-			throws IOException {
-		Assert.hasText(projectIdProvider.getProjectId(),
-				"A project ID must be provided.");
+	@Conditional(AppEngineCondition.class)
+	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider(GcpProjectIdProvider projectIdProvider) {
+		return new AppEngineCloudSqlJdbcInfoProvider(
+				projectIdProvider.getProjectId(),
+				this.gcpCloudSqlProperties);
+	}
 
-		String appEngineVersion = System.getProperty("com.google.appengine.runtime.version");
-		if (StringUtils.hasText(appEngineVersion) && appEngineVersion.startsWith("Google App Engine/")) {
-			return new AppEngineCloudSqlJdbcInfoProvider(
-					projectIdProvider.getProjectId(),
-					this.gcpCloudSqlProperties);
-		}
-		else {
-			return new DefaultCloudSqlJdbcInfoProvider(
-					projectIdProvider.getProjectId(),
-					sqlAdmin,
-					this.gcpCloudSqlProperties);
-		}
+	@Bean
+	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
+	public CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider(SQLAdmin sqlAdmin,
+			GcpProjectIdProvider projectIdProvider) {
+		return new DefaultCloudSqlJdbcInfoProvider(
+				projectIdProvider.getProjectId(),
+				sqlAdmin,
+				this.gcpCloudSqlProperties);
 	}
 
 	@Bean
