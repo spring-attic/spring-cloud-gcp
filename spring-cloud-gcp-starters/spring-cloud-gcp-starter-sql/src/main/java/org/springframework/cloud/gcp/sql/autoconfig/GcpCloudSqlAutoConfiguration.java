@@ -86,7 +86,8 @@ public class GcpCloudSqlAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
 	@Conditional(AppEngineCondition.class)
-	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider(GcpProjectIdProvider projectIdProvider) {
+	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider(
+			GcpProjectIdProvider projectIdProvider) {
 		CloudSqlJdbcInfoProvider appEngineProvider = new AppEngineCloudSqlJdbcInfoProvider(
 				projectIdProvider.getProjectId(),
 				this.gcpCloudSqlProperties);

@@ -100,7 +100,8 @@ public class GcpContextAutoConfiguration {
 					LOGGER.info("Default credentials provider for Google Compute Engine.");
 				}
 			}
-		} catch (IOException ioe) {
+		}
+		catch (IOException ioe) {
 			LOGGER.error("No credentials were found.", ioe);
 		}
 
