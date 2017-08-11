@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.grpc.ApiException;
 import com.google.cloud.pubsub.v1.PagedResponseWrappers;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
@@ -32,6 +33,7 @@ import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.SubscriptionName;
 import com.google.pubsub.v1.Topic;
 import com.google.pubsub.v1.TopicName;
+import io.grpc.Status;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.Assert;
@@ -92,6 +94,27 @@ public class PubSubAdmin {
 		Assert.hasText(topicName, "No topic name was specified.");
 
 		return this.topicAdminClient.createTopic(TopicName.create(this.projectId, topicName));
+	}
+
+	/**
+	 * Get the configuration of a Google Cloud Pub/Sub topic.
+	 *
+	 * @param topicName canonical topic name, e.g., "topicName"
+	 * @return topic configuration or {@code null} if topic doesn't exist
+	 */
+	public Topic getTopic(String topicName) {
+		Assert.hasText(topicName, "No topic name was specified.");
+
+		try {
+			return this.topicAdminClient.getTopic(TopicName.create(this.projectId, topicName));
+		}
+		catch (ApiException aex) {
+			if (aex.getStatusCode() == Status.Code.NOT_FOUND) {
+				return null;
+			}
+
+			throw aex;
+		}
 	}
 
 	/**
@@ -189,6 +212,28 @@ public class PubSubAdmin {
 				TopicName.create(this.projectId, topicName),
 				pushConfigBuilder.build(),
 				finalAckDeadline);
+	}
+
+	/**
+	 * Get the configuration of a Google Cloud Pub/Sub subscription.
+	 *
+	 * @param subscriptionName canonical subscription name, e.g., "subscriptionName"
+	 * @return subscription configuration or {@code null} if subscription doesn't exist
+	 */
+	public Subscription getSubscription(String subscriptionName) {
+		Assert.hasText(subscriptionName, "No subscription name was specified");
+
+		try {
+			return this.subscriptionAdminClient.getSubscription(
+					SubscriptionName.create(this.projectId, subscriptionName));
+		}
+		catch (ApiException aex) {
+			if (aex.getStatusCode() == Status.Code.NOT_FOUND) {
+				return null;
+			}
+
+			throw aex;
+		}
 	}
 
 	/**

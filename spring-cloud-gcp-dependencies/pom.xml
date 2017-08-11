@@ -53,6 +53,17 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-stream-binder-gcp-pubsub-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-stream-binder-gcp-pubsub</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<dependency>
 				<groupId>com.google.cloud</groupId>
 				<artifactId>google-cloud-core</artifactId>
 				<version>${google-cloud-core.version}</version>
@@ -101,13 +112,19 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-sleuth-core</artifactId>
-				<version>${spring-cloud-sleuth.version}</version>
+				<version>${spring-cloud.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-starter-sleuth</artifactId>
-				<version>${spring-cloud-sleuth.version}</version>
+				<version>${spring-cloud.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-stream</artifactId>
+				<version>${spring-cloud.version}</version>
 			</dependency>
 
 			<!-- spring-cloud-gcp-starter-core -->
@@ -158,7 +175,7 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-context</artifactId>
-				<version>${spring-cloud-context.version}</version>
+				<version>${spring-cloud.version}</version>
 			</dependency>
 
 			<!-- spring-cloud-gcp-pubsub -->
