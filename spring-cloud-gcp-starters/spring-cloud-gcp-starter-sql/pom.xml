@@ -50,5 +50,12 @@
 			<version>1.0.3</version>
 		</dependency>
 
+		<!-- AnnotationConfigApplicationContext requires this in tests -->
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 </project>
