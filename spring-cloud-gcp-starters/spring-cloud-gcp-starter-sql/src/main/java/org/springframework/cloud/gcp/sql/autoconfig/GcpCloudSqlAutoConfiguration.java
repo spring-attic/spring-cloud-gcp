@@ -31,6 +31,8 @@ import com.google.auth.http.HttpCredentialsAdapter;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -62,6 +64,8 @@ import org.springframework.util.StringUtils;
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpCloudSqlAutoConfiguration {
+
+	private static final Log LOGGER = LogFactory.getLog(GcpCloudSqlAutoConfiguration.class);
 
 	@Autowired
 	private GcpCloudSqlProperties gcpCloudSqlProperties;
@@ -103,10 +107,14 @@ public class GcpCloudSqlAutoConfiguration {
 		String instanceConnectionName = projectIdProvider.getProjectId() + ":" + region + ":"
 				+ this.gcpCloudSqlProperties.getInstanceName();
 
-		return () -> String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
+		String jdbcUrl = String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
 						+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
 				this.gcpCloudSqlProperties.getDatabaseName(),
 				instanceConnectionName);
+
+		LOGGER.info("Connecting to Cloud SQL instance " + jdbcUrl);
+
+		return () -> jdbcUrl;
 	}
 
 	@Bean
