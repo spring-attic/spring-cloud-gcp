@@ -24,7 +24,8 @@ import org.springframework.util.StringUtils;
 /**
  * Determine whether this is running inside of an App Engine environment by looking into
  * the System properties `com.google.appengine.runtime.version`.
- * @author
+ *
+ * @author Ray Tsang
  */
 public class AppEngineCondition implements Condition {
 	public static final String APPENGINE_RUNTIME_PROPERTY = "com.google.appengine.runtime.version";

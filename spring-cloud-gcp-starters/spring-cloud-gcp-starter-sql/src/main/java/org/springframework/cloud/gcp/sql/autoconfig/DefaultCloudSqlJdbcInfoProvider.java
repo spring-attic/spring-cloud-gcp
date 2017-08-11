@@ -45,7 +45,8 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 		this.properties = properties;
 		Assert.hasText(projectId,
 				"A project ID must be provided.");
-		if (StringUtils.isEmpty(properties.getInstanceConnectionName())) {
+
+	if (StringUtils.isEmpty(properties.getInstanceConnectionName())) {
 			Assert.hasText(this.properties.getInstanceName(),
 					"Instance Name is required, or specify Instance Connection Name explicitly");
 			if (StringUtils.isEmpty(properties.getRegion())) {
@@ -77,6 +78,9 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 
 	@Override
 	public String getJdbcUrl() {
+		// TODO(joaomartins): Set the credential factory to be used by SocketFactory when
+		// https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/issues/41 is
+		// resolved. For now, it uses application default creds.
 		return String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
 				+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
 				this.properties.getDatabaseName(),
