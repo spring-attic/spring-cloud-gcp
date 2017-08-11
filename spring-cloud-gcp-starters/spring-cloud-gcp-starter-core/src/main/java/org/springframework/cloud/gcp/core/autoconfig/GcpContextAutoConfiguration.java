@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.core.autoconfig;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.google.api.gax.core.CredentialsProvider;
@@ -83,20 +84,24 @@ public class GcpContextAutoConfiguration {
 					.build();
 		}
 
-		Credentials credentials = credentialsProvider.getCredentials();
+		try {
+			Credentials credentials = credentialsProvider.getCredentials();
 
-		if (LOGGER.isInfoEnabled()) {
-			if (credentials instanceof UserCredentials) {
-				LOGGER.info("Default credentials provider for user "
-						+ ((UserCredentials) credentials).getClientId());
+			if (LOGGER.isInfoEnabled()) {
+				if (credentials instanceof UserCredentials) {
+					LOGGER.info("Default credentials provider for user "
+							+ ((UserCredentials) credentials).getClientId());
+				}
+				else if (credentials instanceof ServiceAccountCredentials) {
+					LOGGER.info("Default credentials provider for service account "
+							+ ((ServiceAccountCredentials) credentials).getClientEmail());
+				}
+				else if (credentials instanceof ComputeEngineCredentials) {
+					LOGGER.info("Default credentials provider for Google Compute Engine.");
+				}
 			}
-			else if (credentials instanceof ServiceAccountCredentials) {
-				LOGGER.info("Default credentials provider for service account "
-						+ ((ServiceAccountCredentials) credentials).getClientEmail());
-			}
-			else if (credentials instanceof ComputeEngineCredentials) {
-				LOGGER.info("Default credentials provider for Google Compute Engine.");
-			}
+		} catch (IOException ioe) {
+			LOGGER.error("No credentials were found.", ioe);
 		}
 
 		return credentialsProvider;
