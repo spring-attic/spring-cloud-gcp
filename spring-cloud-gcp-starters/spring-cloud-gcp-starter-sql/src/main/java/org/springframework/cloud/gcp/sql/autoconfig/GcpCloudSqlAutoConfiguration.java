@@ -30,9 +30,9 @@ import com.google.api.services.sqladmin.SQLAdmin;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -112,7 +112,9 @@ public class GcpCloudSqlAutoConfiguration {
 				this.gcpCloudSqlProperties.getDatabaseName(),
 				instanceConnectionName);
 
-		LOGGER.info("Connecting to Cloud SQL instance " + jdbcUrl);
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("Connecting to Cloud SQL instance " + jdbcUrl);
+		}
 
 		return () -> jdbcUrl;
 	}
