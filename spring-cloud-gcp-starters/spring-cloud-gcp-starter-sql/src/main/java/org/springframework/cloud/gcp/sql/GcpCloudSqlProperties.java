@@ -38,6 +38,8 @@ public class GcpCloudSqlProperties {
 
 	private String region;
 
+	private String instanceConnectionName;
+
 	private String userName = "root";
 
 	private String password = "";
@@ -66,6 +68,14 @@ public class GcpCloudSqlProperties {
 
 	public void setRegion(String region) {
 		this.region = region;
+	}
+
+	public String getInstanceConnectionName() {
+		return this.instanceConnectionName;
+	}
+
+	public void setInstanceConnectionName(String instanceConnectionName) {
+		this.instanceConnectionName = instanceConnectionName;
 	}
 
 	public String getUserName() {

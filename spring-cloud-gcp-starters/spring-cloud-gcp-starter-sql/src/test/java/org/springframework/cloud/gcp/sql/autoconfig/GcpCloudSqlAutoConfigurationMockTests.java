@@ -19,13 +19,15 @@ package org.springframework.cloud.gcp.sql.autoconfig;
 import javax.sql.DataSource;
 
 import com.zaxxer.hikari.HikariDataSource;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.sql.CloudSqlJdbcUrlProvider;
+import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -35,32 +37,29 @@ import static org.junit.Assert.assertEquals;
  * @author João André Martins
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(
-		classes = {GcpCloudSqlAutoConfiguration.class, GcpContextAutoConfiguration.class,
-				GcpCloudSqlTestConfiguration.class
-		},
-		properties = {"spring.cloud.gcp.projectId=proj",
-				"spring.cloud.gcp.sql.instanceName=test-instance",
-				"spring.cloud.gcp.sql.databaseName=test-database",
-				"spring.cloud.gcp.sql.initFailFast=false"
-		}
-)
+@SpringBootTest(classes = { GcpCloudSqlAutoConfiguration.class, GcpContextAutoConfiguration.class,
+		GcpCloudSqlTestConfiguration.class
+}, properties = { "spring.cloud.gcp.projectId=proj",
+		"spring.cloud.gcp.sql.instanceName=test-instance",
+		"spring.cloud.gcp.sql.databaseName=test-database",
+		"spring.cloud.gcp.sql.initFailFast=false"
+})
 public abstract class GcpCloudSqlAutoConfigurationMockTests {
 
 	@Autowired
 	protected DataSource dataSource;
 
 	@Autowired
-	protected CloudSqlJdbcUrlProvider urlProvider;
+	protected CloudSqlJdbcInfoProvider urlProvider;
 
 	public abstract void test();
 
-	public static class CloudSqlJdbcUrlProviderTest extends GcpCloudSqlAutoConfigurationMockTests {
+	public static class CloudSqlJdbcInfoProviderTest extends GcpCloudSqlAutoConfigurationMockTests {
 		@Test
 		@Override
 		public void test() {
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=proj:reg:test-instance"
-							+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
+					+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
 					this.urlProvider.getJdbcUrl());
 		}
 	}
@@ -70,15 +69,40 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 		@Override
 		public void test() {
 			HikariDataSource dataSource = (HikariDataSource) this.dataSource;
+			assertEquals("com.mysql.jdbc.Driver", dataSource.getDriverClassName());
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=proj:reg:test-instance"
-							+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
+					+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("root", dataSource.getUsername());
 			assertEquals("", dataSource.getPassword());
 		}
 	}
 
-	@TestPropertySource(properties = {"spring.cloud.gcp.sql.region=siberia"})
+	@TestPropertySource(properties = { "spring.cloud.gcp.sql.region=australia" })
+	public static class CloudSqlAppEngineDataSourceTest extends GcpCloudSqlAutoConfigurationMockTests {
+		@BeforeClass
+		public static void setUp() {
+			System.setProperty("com.google.appengine.runtime.version", "Google App Engine/Some Server");
+		}
+
+		@AfterClass
+		public static void tearDown() {
+			System.getProperties().remove("com.google.appengine.runtime.version");
+		}
+
+		@Test
+		@Override
+		public void test() {
+			HikariDataSource dataSource = (HikariDataSource) this.dataSource;
+			assertEquals("com.mysql.jdbc.GoogleDriver", dataSource.getDriverClassName());
+			assertEquals("jdbc:google:mysql://proj:australia:test-instance/test-database",
+					this.urlProvider.getJdbcUrl());
+			assertEquals("root", dataSource.getUsername());
+			assertEquals("", dataSource.getPassword());
+		}
+	}
+
+	@TestPropertySource(properties = { "spring.cloud.gcp.sql.region=siberia" })
 	public static class GcpCloudSqlAutoConfigurationWithRegionTest
 			extends GcpCloudSqlAutoConfigurationMockTests {
 		@Test
@@ -86,8 +110,8 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 		public void test() {
 			HikariDataSource dataSource = (HikariDataSource) this.dataSource;
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance="
-							+ "proj:siberia:test-instance&"
-							+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
+					+ "proj:siberia:test-instance&"
+					+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("root", dataSource.getUsername());
 			assertEquals("", dataSource.getPassword());
@@ -105,7 +129,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 		public void test() {
 			HikariDataSource dataSource = (HikariDataSource) this.dataSource;
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=proj:reg:test-instance"
-							+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
+					+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("watchmaker", dataSource.getUsername());
 			assertEquals("pass", dataSource.getPassword());
