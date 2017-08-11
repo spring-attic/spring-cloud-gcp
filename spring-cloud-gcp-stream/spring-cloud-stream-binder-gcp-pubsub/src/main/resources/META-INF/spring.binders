@@ -1,0 +1,1 @@
+pubsub: org.springframework.cloud.gcp.stream.binder.pubsub.config.PubSubBinderConfiguration
