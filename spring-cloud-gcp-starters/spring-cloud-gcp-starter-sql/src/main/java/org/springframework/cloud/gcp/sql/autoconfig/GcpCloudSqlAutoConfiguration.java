@@ -38,27 +38,28 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.core.AppEngineCondition;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.sql.CloudSqlJdbcUrlProvider;
+import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * Google Cloud SQL starter.
  *
- * <p>It simplifies database configuration in that only an instance and database name are provided,
- * instead of a JDBC URL. If the instance region isn't specified, this starter attempts to get it
- * through the Cloud SQL API.
+ * <p>
+ * It simplifies database configuration in that only an instance and database name are
+ * provided, instead of a JDBC URL. If the instance region isn't specified, this starter
+ * attempts to get it through the Cloud SQL API.
  *
  * @author João André Martins
  */
 @Configuration
 @EnableConfigurationProperties(GcpCloudSqlProperties.class)
-@ConditionalOnClass({GcpProjectIdProvider.class, SQLAdmin.class})
+@ConditionalOnClass({ GcpProjectIdProvider.class, SQLAdmin.class })
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpCloudSqlAutoConfiguration {
@@ -75,46 +76,35 @@ public class GcpCloudSqlAutoConfiguration {
 
 		return new SQLAdmin.Builder(httpTransport, jsonFactory,
 				new HttpCredentialsAdapter(credentialsProvider.getCredentials()))
-				.build();
+						.build();
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(CloudSqlJdbcUrlProvider.class)
-	public CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider(SQLAdmin sqlAdmin,
-			GcpProjectIdProvider projectIdProvider)
-			throws IOException, ClassNotFoundException {
-		Assert.hasText(projectIdProvider.getProjectId(),
-				"A project ID must be provided.");
+	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
+	@Conditional(AppEngineCondition.class)
+	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider(GcpProjectIdProvider projectIdProvider) {
+		return new AppEngineCloudSqlJdbcInfoProvider(
+				projectIdProvider.getProjectId(),
+				this.gcpCloudSqlProperties);
+	}
 
-		// TODO(joaomartins): Set the credential factory to be used by SocketFactory when
-		// https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/issues/41 is
-		// resolved. For now, it uses application default creds.
-
-		// Load MySQL driver to register it, so the user doesn't have to.
-		Class.forName("com.mysql.jdbc.Driver");
-
-		// Look for the region if the user didn't specify one.
-		String region = this.gcpCloudSqlProperties.getRegion();
-		if (!StringUtils.hasText(region)) {
-			region = sqlAdmin.instances().get(projectIdProvider.getProjectId(),
-					this.gcpCloudSqlProperties.getInstanceName()).execute().getRegion();
-		}
-
-		String instanceConnectionName = projectIdProvider.getProjectId() + ":" + region + ":"
-				+ this.gcpCloudSqlProperties.getInstanceName();
-
-		return () -> String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
-						+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
-				this.gcpCloudSqlProperties.getDatabaseName(),
-				instanceConnectionName);
+	@Bean
+	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
+	public CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider(SQLAdmin sqlAdmin,
+			GcpProjectIdProvider projectIdProvider) {
+		return new DefaultCloudSqlJdbcInfoProvider(
+				projectIdProvider.getProjectId(),
+				sqlAdmin,
+				this.gcpCloudSqlProperties);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(DataSource.class)
-	public DataSource cloudSqlDataSource(CloudSqlJdbcUrlProvider cloudSqlJdbcUrlProvider)
-			throws GeneralSecurityException, IOException {
+	public DataSource cloudSqlDataSource(CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider)
+			throws GeneralSecurityException, IOException, ClassNotFoundException {
 		HikariConfig hikariConfig = new HikariConfig();
-		hikariConfig.setJdbcUrl(cloudSqlJdbcUrlProvider.getJdbcUrl());
+		hikariConfig.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
+		hikariConfig.setJdbcUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
 		hikariConfig.setUsername(this.gcpCloudSqlProperties.getUserName());
 		hikariConfig.setPassword(this.gcpCloudSqlProperties.getPassword());
 		// Setting this is useful to disable connection initialization. Especially in unit tests.
