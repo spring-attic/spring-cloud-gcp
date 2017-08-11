@@ -114,7 +114,9 @@ public class GcpContextAutoConfiguration {
 						? () -> this.gcpProperties.getProjectId()
 						: new DefaultGcpProjectIdProvider();
 
-		LOGGER.info("The default project ID is " + projectIdProvider.getProjectId());
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("The default project ID is " + projectIdProvider.getProjectId());
+		}
 
 		return projectIdProvider;
 	}
