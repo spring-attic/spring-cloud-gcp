@@ -30,6 +30,8 @@ import com.google.api.services.sqladmin.SQLAdmin;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -64,6 +66,8 @@ import org.springframework.context.annotation.Configuration;
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpCloudSqlAutoConfiguration {
 
+	private static final Log LOGGER = LogFactory.getLog(GcpCloudSqlAutoConfiguration.class);
+
 	@Autowired
 	private GcpCloudSqlProperties gcpCloudSqlProperties;
 
@@ -82,20 +86,35 @@ public class GcpCloudSqlAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
 	@Conditional(AppEngineCondition.class)
-	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider(GcpProjectIdProvider projectIdProvider) {
-		return new AppEngineCloudSqlJdbcInfoProvider(
+	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider(
+			GcpProjectIdProvider projectIdProvider) {
+		CloudSqlJdbcInfoProvider appEngineProvider = new AppEngineCloudSqlJdbcInfoProvider(
 				projectIdProvider.getProjectId(),
 				this.gcpCloudSqlProperties);
+
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("App Engine JdbcUrl provider. Connecting to "
+					+ appEngineProvider.getJdbcUrl());
+		}
+
+		return appEngineProvider;
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
 	public CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider(SQLAdmin sqlAdmin,
 			GcpProjectIdProvider projectIdProvider) {
-		return new DefaultCloudSqlJdbcInfoProvider(
+		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(
 				projectIdProvider.getProjectId(),
 				sqlAdmin,
 				this.gcpCloudSqlProperties);
+
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("Default JdbcUrl provider. Connecting to "
+					+ defaultProvider.getJdbcUrl());
+		}
+
+		return defaultProvider;
 	}
 
 	@Bean

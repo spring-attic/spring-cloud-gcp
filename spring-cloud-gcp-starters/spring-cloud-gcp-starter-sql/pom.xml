@@ -29,6 +29,11 @@
 			<artifactId>google-api-services-sqladmin</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+		</dependency>
+
 		<!-- Hibernate Validator -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -46,13 +51,6 @@
 		<dependency>
 			<groupId>com.google.cloud.sql</groupId>
 			<artifactId>mysql-socket-factory</artifactId>
-		</dependency>
-
-		<!-- AnnotationConfigApplicationContext requires this in tests -->
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<scope>test</scope>
 		</dependency>
 
 	</dependencies>

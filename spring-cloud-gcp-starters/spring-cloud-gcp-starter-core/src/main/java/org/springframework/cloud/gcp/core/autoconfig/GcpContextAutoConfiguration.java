@@ -16,13 +16,20 @@
 
 package org.springframework.cloud.gcp.core.autoconfig;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.GoogleCredentialsProvider;
+import com.google.auth.Credentials;
+import com.google.auth.oauth2.ComputeEngineCredentials;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.auth.oauth2.UserCredentials;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -55,22 +62,50 @@ public class GcpContextAutoConfiguration {
 
 	private static final List<String> SCOPES_LIST = ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE);
 
+	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
+
 	@Autowired
 	private GcpProperties gcpProperties;
 
 	@Bean
 	@ConditionalOnMissingBean
 	public CredentialsProvider googleCredentials() throws Exception {
+		CredentialsProvider credentialsProvider;
+
 		if (!StringUtils.isEmpty(this.gcpProperties.getCredentialsLocation())) {
-			return FixedCredentialsProvider
+			credentialsProvider = FixedCredentialsProvider
 					.create(GoogleCredentials.fromStream(
 							this.gcpProperties.getCredentialsLocation().getInputStream())
 					.createScoped(SCOPES_LIST));
 		}
+		else {
+			credentialsProvider = GoogleCredentialsProvider.newBuilder()
+					.setScopesToApply(SCOPES_LIST)
+					.build();
+		}
 
-		return GoogleCredentialsProvider.newBuilder()
-				.setScopesToApply(SCOPES_LIST)
-				.build();
+		try {
+			Credentials credentials = credentialsProvider.getCredentials();
+
+			if (LOGGER.isInfoEnabled()) {
+				if (credentials instanceof UserCredentials) {
+					LOGGER.info("Default credentials provider for user "
+							+ ((UserCredentials) credentials).getClientId());
+				}
+				else if (credentials instanceof ServiceAccountCredentials) {
+					LOGGER.info("Default credentials provider for service account "
+							+ ((ServiceAccountCredentials) credentials).getClientEmail());
+				}
+				else if (credentials instanceof ComputeEngineCredentials) {
+					LOGGER.info("Default credentials provider for Google Compute Engine.");
+				}
+			}
+		}
+		catch (IOException ioe) {
+			LOGGER.error("No credentials were found.", ioe);
+		}
+
+		return credentialsProvider;
 	}
 
 	/**
@@ -80,8 +115,15 @@ public class GcpContextAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public GcpProjectIdProvider gcpProjectIdProvider() {
-		return this.gcpProperties.getProjectId() != null
-				? () -> this.gcpProperties.getProjectId()
-				: new DefaultGcpProjectIdProvider();
+		GcpProjectIdProvider projectIdProvider =
+				this.gcpProperties.getProjectId() != null
+						? () -> this.gcpProperties.getProjectId()
+						: new DefaultGcpProjectIdProvider();
+
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("The default project ID is " + projectIdProvider.getProjectId());
+		}
+
+		return projectIdProvider;
 	}
 }

@@ -22,6 +22,11 @@
 			<artifactId>spring-cloud-gcp-core</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+		</dependency>
+
 		<!-- ServiceAccountSigner, required by users -->
 		<dependency>
 			<groupId>com.google.auth</groupId>
@@ -38,13 +43,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-autoconfigure</artifactId>
-		</dependency>
-
-		<!-- AnnotationConfigApplicationContext requires this in tests -->
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
