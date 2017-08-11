@@ -65,6 +65,32 @@
 				<version>1.2</version>
 			</dependency>
 
+			<!-- spring-cloud-gcp-starter-core -->
+			<dependency>
+				<groupId>com.google.auth</groupId>
+				<artifactId>google-auth-library-oauth2-http</artifactId>
+				<version>0.7.1</version>
+				<exclusions>
+					<exclusion>
+						<groupId>com.google.guava</groupId>
+						<artifactId>guava</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+			<!-- spring-cloud-gcp-starter-sql -->
+			<dependency>
+				<groupId>com.google.apis</groupId>
+				<artifactId>google-api-services-sqladmin</artifactId>
+				<version>v1beta4-rev45-1.22.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.google.cloud.sql</groupId>
+				<artifactId>mysql-socket-factory</artifactId>
+				<version>1.0.3</version>
+			</dependency>
+
 			<!--Starters-->
 
 			<dependency>
