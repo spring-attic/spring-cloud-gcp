@@ -14,3 +14,145 @@ We would love to hear from you.
 
 If you want to collaborate in the project, we would also love to get your Pull Requests. Before you
 start working on one, please take a look at our link:CONTRIBUTING.adoc[collaboration manual].
+
+== Spring Cloud GCP Pub/Sub
+
+Provides a simplified abstraction to interact with Google Cloud Pub/Sub. Using this abstraction
+allows user code to be independent from the underlying Google Cloud Pub/Sub API semantics. It's
+currently possible to publish messages to a Google Cloud Pub/Sub and to create new topics and
+subscriptions.
+
+You can refer to the `PubSubTemplate` and `PubSubAdmin` classes for more details on the
+functionality provided by this module.
+
+== Spring Cloud GCP Storage
+
+Enables the Spring Resource abstraction to run on Google Cloud Storage.
+
+You can use the `@Value` annotation
+
+[source,java]
+----
+@Value("gs://[YOUR_GCS_BUCKET]/[GCS_FILE_NAME]")
+private Resource file;
+----
+
+or the Spring application context
+
+[source,java]
+----
+SpringApplication.run(...).getResource("gs://[YOUR_GCS_BUCKET]/[GCS_FILE_NAME]");
+----
+
+== Spring Integration channel adapters
+
+Provides adapters for Spring Messaging channels to exchange messages via Google Cloud Pub/Sub.
+
+Refer to this https://spring.io/guides/gs/spring-cloud-gcp/[Spring getting started guide] to learn
+how to use the adapters.
+
+== Spring Boot GCP Core
+
+This starter creates and configures two important configuration sources: `CredentialsProvider` and
+`GcpProjectIdProvider`.
+
+It tries to read configuration from the application properties. For example, using a properties
+file:
+
+[source,yaml]
+----
+spring.cloud.gcp.project-id=[YOUR_GCP_PROJECT_ID]
+spring.cloud.gcp.credentials-location=file:[LOCAL_PRIVATE_KEY_FILE]
+----
+
+If `spring.cloud.gcp.project-id` is populated, the provided `GcpProjectIdProvider` returns that
+project ID. Otherwise, it uses google-cloud-java's
+http://googlecloudplatform.github.io/google-cloud-java/0.21.1/apidocs/com/google/cloud/ServiceOptions.html#getDefaultProjectId--[rules to discover the project ID].
+
+Similarly for `spring.cloud.gcp.credentials-location`, if a property is configured, the provided
+`CredentialsProvider` returns credentials for that private key. The value of
+`spring.cloud.gcp.credentials-location` is a Spring Resource, so you can specify
+https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-implementations[file system paths, HTTP URLs, etc.]
+If no property is configured, the provided `CredentialsProvider` returns the
+http://google.github.io/google-auth-library-java/releases/0.7.1/apidocs/com/google/auth/oauth2/GoogleCredentials.html#getApplicationDefault()[application default credentials].
+
+== Spring Boot Cloud SQL
+
+This starter provides a couple of configuration sources: `CloudSqlJdbcInfoProvider` and
+`DataSource`.
+
+`CloudSqlJdbcInfoProvider` returns the JDBC information to be used, such as the JDBC driver name
+and connection string. A special `CloudSqlJdbcInfoProvider` is provided if an app is running on
+Google App Engine.
+
+Besides `spring.cloud.gcp.project-id` and `spring.cloud.gcp.credentials-location`,
+`CloudSqlJdbcInfoProvider` requires the following properties:
+
+[source,yaml]
+----
+spring.cloud.gcp.sql.instance-name=[YOUR_CLOUD_SQL_INSTANCE_NAME]
+spring.cloud.gcp.sql.database-name=[YOUR_CLOUD_SQL_DATABASE_NAME]
+----
+
+The following properties are optional:
+
+[source,yaml]
+----
+spring.cloud.gcp.sql.region=[YOUR_CLOUD_SQL_INSTANCE_REGION]
+spring.cloud.gcp.sql.instance-connection-name=[YOUR_CLOUD_SQL_INSTANCE_CONNECTION_NAME]
+spring.cloud.gcp.sql.user-name=[YOUR_CLOUD_SQL_USERNAME]
+spring.cloud.gcp.sql.password=[YOUR_CLOUD_SQL_PASSWORD]
+----
+
+If `spring.cloud.gcp.sql.region` isn't specified, the starter will use the
+https://cloud.google.com/sql/docs/mysql/admin-api/[Cloud SQL API] to auto-discover the instance
+region.
+
+If `spring.cloud.gcp.sql.instance-connection-name` is specified, it is used as the final instance
+connection name and `spring.cloud.gcp.sql.region` and `spring.cloud.gcp.sql.instance-name` are
+not used.
+
+If `spring.cloud.gcp.sql.user-name` isn't specified, `"root"` is used by default.
+
+If `spring.cloud.gcp.sql.password` isn't specified, an empty string is used by default.
+
+By using this starter in conjunction with
+https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html[Spring JDBC],
+it's possible to inject a fully configured `JdbcTemplate` object only from adding the required
+properties.
+
+Due to https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/issues/41[an issue] in
+the Cloud SQL Socket Factory for JDBC drivers, the credentials used to connect to Cloud SQL are not
+the ones from the provided `CredentialsProvider`, but the
+http://google.github.io/google-auth-library-java/releases/0.7.1/apidocs/com/google/auth/oauth2/GoogleCredentials.html#getApplicationDefault()[application default credentials]
+instead. However, region auto-discovery uses the credentials provided by `CredentialsProvider`.
+
+The returned `DataSource` is an implementation of
+https://brettwooldridge.github.io/HikariCP/[HikariCP]. If you want to use another kind of
+`DataSource`, feel free to use the provided `CloudSqlJdbcInfoProvider` to provide your own
+`DataSource` bean.
+
+== Spring Boot Cloud Pub/Sub
+
+This starter provides Pub/Sub key classes `PubSubTemplate` and `PubSubAdmin`.
+
+It requires the `spring.cloud.gcp.project-id` and `spring.cloud.gcp.credentials-location`
+properties.
+
+The following properties are optional:
+[source,yaml]
+----
+spring.cloud.gcp.pubsub.subscriber.executorThreads=[SUBSCRIBER_EXECUTOR_THREADS]
+spring.cloud.gcp.pubsub.publisher.executorThreads=[PUBLISHER_EXECUTOR_THREADS]
+----
+
+`spring.cloud.gcp.pubsub.subscriber.executorThreads` is the number of threads used by the subscriber
+executor. Likewise, `spring.cloud.gcp.pubsub.publisher.executorThreads` is the number of threads
+used by the publisher executor. The default value for both of these properties is 4.
+
+== Spring Boot Cloud Storage
+
+This starter provides the underpinnings of the Spring Cloud GCP Storage. It doesn't provide any
+bean to be used by an end-user.
+
+It requires the `spring.cloud.gcp.credentials-location` property.
