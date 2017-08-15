@@ -52,7 +52,6 @@ add the following line to [src/main/resources/META-INF/spring.factories](src/mai
 ```
 
 1. Add Spring style configuration variables, see [SampleConfig.java](src/main/java/com/example/SampleConfig.java).
-The class may be annotated with `@PropertySource("spring-cloud-gcp")` if using multiple property sources
 ```
   @Value("${queue_size}")
   private int queueSize;
