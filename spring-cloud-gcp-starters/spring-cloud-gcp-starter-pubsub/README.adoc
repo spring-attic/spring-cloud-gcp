@@ -12,6 +12,10 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
+
+[source]
+----
 dependencies {
     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-pubsub', version: '1.0.0.BUILD-SNAPSHOT'
 }
+----

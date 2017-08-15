@@ -24,8 +24,8 @@ start working on one, please take a look at our link:CONTRIBUTING.adoc[collabora
 == Spring Cloud GCP Bill of Materials (BOM)
 
 If you're a Maven user, it's probably a good idea to add our BOM to your maven.xml
-`<dependencyManagement>` section. This will allow you not to specify versions for any of the Maven
-dependencies and delegate versioning to the BOM.
+`<dependencyManagement>` section. This will allow you to not specify versions for any of the Maven
+dependencies and instead delegate versioning to the BOM.
 
 [source,xml]
 ----
