@@ -60,7 +60,14 @@ public class GcpContextAutoConfiguration {
 	private static final String SQLADMIN_SCOPE =
 			"https://www.googleapis.com/auth/sqlservice.admin";
 
-	private static final List<String> SCOPES_LIST = ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE);
+	private static final String STORAGE_READ_SCOPE =
+			"https://www.googleapis.com/auth/devstorage.read_only";
+
+	private static final String STORAGE_WRITE_SCOPE =
+			"https://www.googleapis.com/auth/devstorage.read_write";
+
+	private static final List<String> SCOPES_LIST = ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE,
+			STORAGE_READ_SCOPE, STORAGE_WRITE_SCOPE);
 
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
 
