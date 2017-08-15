@@ -1,0 +1,17 @@
+= Spring Integration Channel Adapters for Google Cloud Pub/Sub
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-integration-gcp</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-integration-gcp', version: '1.0.0.BUILD-SNAPSHOT'
+}

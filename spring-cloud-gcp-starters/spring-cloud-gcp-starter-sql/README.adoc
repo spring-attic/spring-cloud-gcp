@@ -1,0 +1,17 @@
+= Google Cloud SQL Spring Boot Starter
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-sql</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql', version: '1.0.0.BUILD-SNAPSHOT'
+}

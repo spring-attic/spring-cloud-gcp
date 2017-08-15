@@ -21,7 +21,28 @@ We would love to hear from you.
 If you want to collaborate in the project, we would also love to get your Pull Requests. Before you
 start working on one, please take a look at our link:CONTRIBUTING.adoc[collaboration manual].
 
-== Spring Cloud GCP Pub/Sub
+== Spring Cloud GCP Bill of Materials (BOM)
+
+If you're a Maven user, it's probably a good idea to add our BOM to your maven.xml
+`<dependencyManagement>` section. This will allow you not to specify versions for any of the Maven
+dependencies and delegate versioning to the BOM.
+
+[source,xml]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gcp-dependencies</artifactId>
+            <version>1.0.0.BUILD-SNAPSHOT</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+
+== https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-pubsub[Spring Cloud GCP Pub/Sub]
 
 Provides a simplified abstraction to interact with Google Cloud Pub/Sub. Using this abstraction
 allows user code to be independent from the underlying Google Cloud Pub/Sub API semantics. It's
@@ -31,7 +52,7 @@ subscriptions.
 You can refer to the `PubSubTemplate` and `PubSubAdmin` classes for more details on the
 functionality provided by this module.
 
-== Spring Resource Abstraction for Google Cloud Storage
+== https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-storage[Spring Resource Abstraction for Google Cloud Storage]
 
 Enables the Spring Resource abstraction to run on Google Cloud Storage.
 
@@ -59,7 +80,7 @@ try (OutputStream os = ((WritableResource) gcsResource).getOutputStream()) {
 }
 ----
 
-== Spring Integration Channel Adapters for Google Cloud Pub/Sub
+== https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-integration-gcp[Spring Integration Channel Adapters for Google Cloud Pub/Sub]
 
 Provides adapters for Spring Messaging channels to exchange messages via Google Cloud Pub/Sub. Makes
 extensive usage of the constructs provided by the Spring Cloud GCP Pub/Sub module, like
@@ -68,7 +89,7 @@ extensive usage of the constructs provided by the Spring Cloud GCP Pub/Sub modul
 Refer to this https://spring.io/guides/gs/spring-cloud-gcp/[Spring getting started guide] to learn
 how to use the adapters.
 
-== Google Cloud Core Spring Boot Starter
+== https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-core[Google Cloud Core Spring Boot Starter]
 
 This starter creates and configures two important configuration sources: `CredentialsProvider` and
 `GcpProjectIdProvider`.
@@ -93,7 +114,7 @@ https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resou
 If no property is configured, the provided `CredentialsProvider` returns the
 http://google.github.io/google-auth-library-java/releases/0.7.1/apidocs/com/google/auth/oauth2/GoogleCredentials.html#getApplicationDefault()[application default credentials].
 
-== Google Cloud SQL Spring Boot Starter
+== https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql[Google Cloud SQL Spring Boot Starter]
 
 This starter provides a couple of configuration sources: `CloudSqlJdbcInfoProvider` and
 `DataSource`.
@@ -149,7 +170,7 @@ https://brettwooldridge.github.io/HikariCP/[HikariCP]. If you want to use anothe
 `DataSource`, feel free to use the provided `CloudSqlJdbcInfoProvider` to provide your own
 `DataSource` bean.
 
-== Google Cloud Pub/Sub Spring Boot Starter
+== https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-pubsub[Google Cloud Pub/Sub Spring Boot Starter]
 
 This starter provides Pub/Sub key classes `PubSubTemplate` and `PubSubAdmin`.
 
@@ -167,7 +188,7 @@ spring.cloud.gcp.pubsub.publisher.executorThreads=[PUBLISHER_EXECUTOR_THREADS]
 executor. Likewise, `spring.cloud.gcp.pubsub.publisher.executorThreads` is the number of threads
 used by the publisher executor. The default value for both of these properties is 4.
 
-== Google Cloud Storage Spring Boot Starter
+== https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-storage[Google Cloud Storage Spring Boot Starter]
 
 This starter provides the underpinnings of the Spring Cloud GCP Storage. It doesn't provide any
 bean to be used by an end-user.
