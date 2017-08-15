@@ -5,6 +5,7 @@ Google Cloud Platform. The project website is http://cloud.spring.io/spring-clou
 development).
 
 Currently, this repository provides support for:
+
 * Spring Cloud GCP Pub/Sub
 * Spring Resource Abstraction for Google Cloud Storage
 * Spring Integration Channel Adapters for Google Cloud Pub/Sub
