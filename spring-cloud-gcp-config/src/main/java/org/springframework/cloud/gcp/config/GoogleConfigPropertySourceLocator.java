@@ -58,7 +58,8 @@ public final class GoogleConfigPropertySourceLocator implements PropertySourceLo
 
 	private static final String RUNTIMECONFIG_SCOPE = "https://www.googleapis.com/auth/cloudruntimeconfig";
 
-	private static final String ALL_VARIABLES_PATH = "projects/{project}/configs/{name}_{profile}/variables?returnValues=true";
+	private static final String ALL_VARIABLES_PATH =
+			"projects/{project}/configs/{name}_{profile}/variables?returnValues=true";
 
 	private static final String PROPERTY_SOURCE_NAME = "spring-cloud-gcp";
 
