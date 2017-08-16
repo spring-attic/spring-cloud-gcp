@@ -43,4 +43,3 @@ Similarly for `spring.cloud.gcp.credentials-location`, if a property is configur
 https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-implementations[file system paths, HTTP URLs, etc.]
 If no property is configured, the provided `CredentialsProvider` returns the
 http://google.github.io/google-auth-library-java/releases/0.7.1/apidocs/com/google/auth/oauth2/GoogleCredentials.html#getApplicationDefault()[application default credentials].
-
