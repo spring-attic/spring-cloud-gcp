@@ -78,9 +78,6 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 
 	@Override
 	public String getJdbcUrl() {
-		// TODO(joaomartins): Set the credential factory to be used by SocketFactory when
-		// https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/issues/41 is
-		// resolved. For now, it uses application default creds.
 		return String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
 				+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
 				this.properties.getDatabaseName(),

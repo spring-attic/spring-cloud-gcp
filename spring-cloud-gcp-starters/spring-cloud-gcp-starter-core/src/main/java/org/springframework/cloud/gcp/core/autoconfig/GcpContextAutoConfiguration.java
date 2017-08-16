@@ -66,8 +66,8 @@ public class GcpContextAutoConfiguration {
 	private static final String STORAGE_WRITE_SCOPE =
 			"https://www.googleapis.com/auth/devstorage.read_write";
 
-	private static final List<String> SCOPES_LIST = ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE,
-			STORAGE_READ_SCOPE, STORAGE_WRITE_SCOPE);
+	public static final List<String> CREDENTIALS_SCOPES_LIST =
+			ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE, STORAGE_READ_SCOPE, STORAGE_WRITE_SCOPE);
 
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
 
@@ -83,11 +83,11 @@ public class GcpContextAutoConfiguration {
 			credentialsProvider = FixedCredentialsProvider
 					.create(GoogleCredentials.fromStream(
 							this.gcpProperties.getCredentialsLocation().getInputStream())
-					.createScoped(SCOPES_LIST));
+					.createScoped(CREDENTIALS_SCOPES_LIST));
 		}
 		else {
 			credentialsProvider = GoogleCredentialsProvider.newBuilder()
-					.setScopesToApply(SCOPES_LIST)
+					.setScopesToApply(CREDENTIALS_SCOPES_LIST)
 					.build();
 		}
 
