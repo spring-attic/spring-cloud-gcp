@@ -22,6 +22,8 @@ import java.io.IOException;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.cloud.sql.CredentialFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 
@@ -39,6 +41,8 @@ public class SqlCredentialFactory implements CredentialFactory {
 	public static final String CREDENTIAL_LOCATION_PROPERTY_NAME =
 			"GOOGLE_CLOUD_SQL_CREDS_LOCATION";
 
+	private static final Log LOGGER = LogFactory.getLog(SqlCredentialFactory.class);
+
 	@Override
 	public Credential create() {
 		// TODO(joaomartins): Consider supporting Spring Resources as credential locations. There
@@ -46,6 +50,10 @@ public class SqlCredentialFactory implements CredentialFactory {
 		// the resource from there.
 		String credentialResourceLocation = System.getProperty(CREDENTIAL_LOCATION_PROPERTY_NAME);
 		if (credentialResourceLocation == null) {
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug(CREDENTIAL_LOCATION_PROPERTY_NAME + " property does not exist. "
+						+ "Socket factory will use application default credentials.");
+			}
 			return null;
 		}
 
@@ -53,7 +61,8 @@ public class SqlCredentialFactory implements CredentialFactory {
 			return GoogleCredential.fromStream(new FileInputStream(credentialResourceLocation))
 					.createScoped(GcpContextAutoConfiguration.CREDENTIALS_SCOPES_LIST);
 		}
-		catch (IOException e) {
+		catch (IOException ioe) {
+			LOGGER.warn("There was an error loading Cloud SQL credential.", ioe);
 			return null;
 		}
 	}

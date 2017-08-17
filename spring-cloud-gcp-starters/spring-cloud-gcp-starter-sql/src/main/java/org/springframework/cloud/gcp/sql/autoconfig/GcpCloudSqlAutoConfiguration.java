@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.sql.autoconfig;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.security.GeneralSecurityException;
@@ -151,7 +152,8 @@ public class GcpCloudSqlAutoConfiguration {
 	 * name through a system property. The socket factory creates an instance of
 	 * {@link CredentialFactory} using reflection without any arguments. Because of that, the
 	 * credential location needs to be stored somewhere where the class can read it without any
-	 * context.
+	 * context. It could be possible to pass in a Spring context to {@link SqlCredentialFactory},
+	 * but this is a tricky solution that needs some thinking about.
 	 *
 	 * <p>
 	 * If user didn't specify credentials, the socket factory already does the right thing by using
@@ -171,15 +173,20 @@ public class GcpCloudSqlAutoConfiguration {
 					&& this.gcpProperties.getCredentialsLocation() != null
 					&& this.gcpProperties.getCredentialsLocation().exists()) {
 				// A resource might not be in the filesystem, but the Cloud SQL credential must.
-				if (this.gcpProperties.getCredentialsLocation().getFile() != null) {
-					System.setProperty(SqlCredentialFactory.CREDENTIAL_LOCATION_PROPERTY_NAME,
-							this.gcpProperties.getCredentialsLocation()
-									.getFile().getAbsolutePath());
+				File credentialsLocationFile =
+						this.gcpProperties.getCredentialsLocation().getFile();
+
+				// This should happen if the Spring resource isn't in the filesystem, but a URL,
+				// classpath file, etc.
+				if (credentialsLocationFile == null) {
+					if (LOGGER.isWarnEnabled()) {
+						LOGGER.warn("The private key of the Google Cloud SQL credential must "
+								+ "be in a file on the filesystem.");
+					}
+					return;
 				}
-				else {
-					LOGGER.info("The private key of the Google Cloud SQL credential must "
-							+ "be in a file on the filesystem.");
-				}
+				System.setProperty(SqlCredentialFactory.CREDENTIAL_LOCATION_PROPERTY_NAME,
+						credentialsLocationFile.getAbsolutePath());
 			}
 			else {
 				return;
@@ -191,6 +198,7 @@ public class GcpCloudSqlAutoConfiguration {
 		}
 		catch (IOException ioe) {
 			// Do nothing, let sockets factory use application default credentials.
+			LOGGER.debug(" Error reading Cloud SQL credentials file.", ioe);
 		}
 	}
 }
