@@ -20,8 +20,7 @@ dependencies {
 ----
 
 
-This starter provides a couple of configuration sources: `CloudSqlJdbcInfoProvider` and
-`DataSource`.
+This starter provides the configuration sources: `CloudSqlJdbcInfoProvider` and `DataSource`.
 
 `CloudSqlJdbcInfoProvider` returns the JDBC information to be used, such as the JDBC driver name
 and connection string. A special `CloudSqlJdbcInfoProvider` is provided if an app is running on

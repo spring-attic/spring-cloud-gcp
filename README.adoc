@@ -1,8 +1,7 @@
 = Spring Framework on Google Cloud Platform
 
-This project aims at making it as seamless as possible for Spring users to run their applications on
-Google Cloud Platform. The project website is http://cloud.spring.io/spring-cloud-gcp/ (under
-development).
+This project makes it easy for Spring users to run their applications on Google Cloud Platform. The
+project website is http://cloud.spring.io/spring-cloud-gcp/ (under development).
 
 Currently, this repository provides support for:
 
@@ -49,8 +48,8 @@ Spring Boot greatly simplifies the Spring Cloud GCP experience. Our starters han
 instantiation and configuration logic so you don't have to.
 
 Every starter depends on the core starter to provide critical bits of configuration, like the
-GCP project ID or OAuth2 credentials location. You can configure these as properties in e.g., a
-properties file:
+GCP project ID or OAuth2 credentials location. You can configure these as properties in, for
+example, a properties file:
 
 [source, yaml]
 ----
