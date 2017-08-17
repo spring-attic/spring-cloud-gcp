@@ -1,0 +1,47 @@
+= Spring Resource Abstraction for Google Cloud Storage
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-storage</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-storage', version: '1.0.0.BUILD-SNAPSHOT'
+}
+----
+
+
+Enables the Spring Resource abstraction to run on Google Cloud Storage.
+
+You can use the `@Value` annotation
+
+[source,java]
+----
+@Value("gs://[YOUR_GCS_BUCKET]/[GCS_FILE_NAME]")
+private Resource gcsResource;
+----
+
+or the Spring application context
+
+[source,java]
+----
+SpringApplication.run(...).getResource("gs://[YOUR_GCS_BUCKET]/[GCS_FILE_NAME]");
+----
+
+You can also use this resource to write to a Google Cloud Storage object:
+
+[source,java]
+----
+try (OutputStream os = ((WritableResource) gcsResource).getOutputStream()) {
+  os.write("foo".getBytes());
+}
+----

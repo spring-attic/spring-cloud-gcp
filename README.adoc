@@ -1,12 +1,18 @@
 = Spring Framework on Google Cloud Platform
 
-This project aims at making it as seamless as possible for Spring users to run their applications on
-Google Cloud Platform. The project website is http://cloud.spring.io/spring-cloud-gcp/ (under
-development).
+This project makes it easy for Spring users to run their applications on Google Cloud Platform. The
+project website is http://cloud.spring.io/spring-cloud-gcp/ (under development).
 
-Currently, this repository contains Spring Integration inbound and outbound channel adapters which
-use Google Cloud Pub/Sub, as well as a Google Cloud Pub/Sub Spring abstraction, i.e.,
-`PubSubTemplate`.
+Currently, this repository provides support for:
+
+* https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-pubsub[Spring Cloud GCP Pub/Sub]
+* https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-storage[Spring Resource Abstraction for Google Cloud Storage]
+* https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-integration-gcp[Spring Integration Channel Adapters for Google Cloud Pub/Sub]
+* Spring Boot starters
+** https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-core[Core]
+** https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-pubsub[Google Cloud Pub/Sub]
+** https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql[Google Cloud SQL]
+** https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-storage[Google Cloud Storage]
 
 If you have any other ideas, suggestions or bug reports, please use our
 link:https://github.com/spring-cloud/spring-cloud-gcp/issues[GitHub issue tracker] and let us know!
@@ -14,3 +20,43 @@ We would love to hear from you.
 
 If you want to collaborate in the project, we would also love to get your Pull Requests. Before you
 start working on one, please take a look at our link:CONTRIBUTING.adoc[collaboration manual].
+
+== Spring Cloud GCP Bill of Materials (BOM)
+
+If you're a Maven user, it's probably a good idea to add our BOM to your maven.xml
+`<dependencyManagement>` section. This will allow you to not specify versions for any of the Maven
+dependencies and instead delegate versioning to the BOM.
+
+[source,xml]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gcp-dependencies</artifactId>
+            <version>1.0.0.BUILD-SNAPSHOT</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+
+== Spring Boot Starters
+
+Spring Boot greatly simplifies the Spring Cloud GCP experience. Our starters handle the object
+instantiation and configuration logic so you don't have to.
+
+Every starter depends on the core starter to provide critical bits of configuration, like the
+GCP project ID or OAuth2 credentials location. You can configure these as properties in, for
+example, a properties file:
+
+[source, yaml]
+----
+spring.cloud.gcp.project-id=[YOUR_GCP_PROJECT_ID]
+spring.cloud.gcp.credentials-location=file:[LOCAL_PRIVATE_KEY_FILE]
+----
+
+These properties are optional and, if not specified, Spring Boot will attempt to automatically find
+them for you. For details on how Spring Boot finds these properties, refer to the desired starter
+README.

@@ -1,0 +1,45 @@
+= Google Cloud Core Spring Boot Starter
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-core</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-core', version: '1.0.0.BUILD-SNAPSHOT'
+}
+----
+
+
+This starter creates and configures two important configuration sources: `CredentialsProvider` and
+`GcpProjectIdProvider`.
+
+It tries to read configuration from the application properties. For example, using a properties
+file:
+
+[source,yaml]
+----
+spring.cloud.gcp.project-id=[YOUR_GCP_PROJECT_ID]
+spring.cloud.gcp.credentials-location=file:[LOCAL_PRIVATE_KEY_FILE]
+----
+
+If `spring.cloud.gcp.project-id` is populated, the provided `GcpProjectIdProvider` returns that
+project ID. Otherwise, it uses google-cloud-java's
+http://googlecloudplatform.github.io/google-cloud-java/0.21.1/apidocs/com/google/cloud/ServiceOptions.html#getDefaultProjectId--[rules to discover the project ID].
+
+Similarly for `spring.cloud.gcp.credentials-location`, if a property is configured, the provided
+`CredentialsProvider` returns credentials for that private key. The value of
+`spring.cloud.gcp.credentials-location` is a Spring Resource, so you can specify
+https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-implementations[file system paths, HTTP URLs, etc.]
+If no property is configured, the provided `CredentialsProvider` returns the
+http://google.github.io/google-auth-library-java/releases/0.7.1/apidocs/com/google/auth/oauth2/GoogleCredentials.html#getApplicationDefault()[application default credentials].

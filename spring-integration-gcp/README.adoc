@@ -1,0 +1,28 @@
+= Spring Integration Channel Adapters for Google Cloud Pub/Sub
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-integration-gcp</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-integration-gcp', version: '1.0.0.BUILD-SNAPSHOT'
+}
+----
+
+
+Provides adapters for Spring Messaging channels to exchange messages via Google Cloud Pub/Sub. Makes
+extensive use of the constructs provided by the Spring Cloud GCP Pub/Sub module, like
+`PubSubTemplate`.
+
+Refer to the https://spring.io/guides/gs/spring-cloud-gcp/[Spring getting started guide] to learn
+how to use the adapters.

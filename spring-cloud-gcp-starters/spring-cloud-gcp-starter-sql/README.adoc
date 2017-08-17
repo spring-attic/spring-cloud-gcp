@@ -1,0 +1,74 @@
+= Google Cloud SQL Spring Boot Starter
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-sql</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql', version: '1.0.0.BUILD-SNAPSHOT'
+}
+----
+
+
+This starter provides the configuration sources: `CloudSqlJdbcInfoProvider` and `DataSource`.
+
+`CloudSqlJdbcInfoProvider` returns the JDBC information to be used, such as the JDBC driver name
+and connection string. A special `CloudSqlJdbcInfoProvider` is provided if an app is running on
+Google App Engine.
+
+Besides `spring.cloud.gcp.project-id` and `spring.cloud.gcp.credentials-location`,
+`CloudSqlJdbcInfoProvider` requires the following properties:
+
+[source,yaml]
+----
+spring.cloud.gcp.sql.instance-name=[YOUR_CLOUD_SQL_INSTANCE_NAME]
+spring.cloud.gcp.sql.database-name=[YOUR_CLOUD_SQL_DATABASE_NAME]
+----
+
+The following properties are optional:
+
+[source,yaml]
+----
+spring.cloud.gcp.sql.region=[YOUR_CLOUD_SQL_INSTANCE_REGION]
+spring.cloud.gcp.sql.instance-connection-name=[YOUR_CLOUD_SQL_INSTANCE_CONNECTION_NAME]
+spring.cloud.gcp.sql.user-name=[YOUR_CLOUD_SQL_USERNAME]
+spring.cloud.gcp.sql.password=[YOUR_CLOUD_SQL_PASSWORD]
+----
+
+If `spring.cloud.gcp.sql.region` isn't specified, the starter will use the
+https://cloud.google.com/sql/docs/mysql/admin-api/[Cloud SQL API] to auto-discover the instance
+region.
+
+If `spring.cloud.gcp.sql.instance-connection-name` is specified, it is used as the final instance
+connection name and `spring.cloud.gcp.sql.region` and `spring.cloud.gcp.sql.instance-name` are
+not used.
+
+If `spring.cloud.gcp.sql.user-name` isn't specified, `"root"` is used by default.
+
+If `spring.cloud.gcp.sql.password` isn't specified, an empty string is used by default.
+
+By using this starter in conjunction with
+https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html[Spring JDBC],
+it's possible to inject a fully configured `JdbcTemplate` object only from adding the required
+properties.
+
+Due to https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/issues/41[an issue] in
+the Cloud SQL Socket Factory for JDBC drivers, the credentials used to connect to Cloud SQL are not
+the ones from the provided `CredentialsProvider`, but the
+http://google.github.io/google-auth-library-java/releases/0.7.1/apidocs/com/google/auth/oauth2/GoogleCredentials.html#getApplicationDefault()[application default credentials]
+instead. However, region auto-discovery uses the credentials provided by `CredentialsProvider`.
+
+The returned `DataSource` is an implementation of
+https://brettwooldridge.github.io/HikariCP/[HikariCP]. If you want to use another kind of
+`DataSource`, feel free to use the provided `CloudSqlJdbcInfoProvider` to provide your own
+`DataSource` bean.
