@@ -46,7 +46,7 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 		Assert.hasText(projectId,
 				"A project ID must be provided.");
 
-	if (StringUtils.isEmpty(properties.getInstanceConnectionName())) {
+		if (StringUtils.isEmpty(properties.getInstanceConnectionName())) {
 			Assert.hasText(this.properties.getInstanceName(),
 					"Instance Name is required, or specify Instance Connection Name explicitly");
 			if (StringUtils.isEmpty(properties.getRegion())) {
