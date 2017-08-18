@@ -29,8 +29,8 @@ file:
 
 [source,yaml]
 ----
-spring.cloud.gcp.project-id=[YOUR_GCP_PROJECT_ID]
-spring.cloud.gcp.credentials-location=file:[LOCAL_PRIVATE_KEY_FILE]
+spring.cloud.gcp.project-id=YOUR_GCP_PROJECT_ID
+spring.cloud.gcp.credentials-location=file:LOCAL_PRIVATE_KEY_PATH
 ----
 
 If `spring.cloud.gcp.project-id` is populated, the provided `GcpProjectIdProvider` returns that

@@ -53,8 +53,8 @@ example, a properties file:
 
 [source, yaml]
 ----
-spring.cloud.gcp.project-id=[YOUR_GCP_PROJECT_ID]
-spring.cloud.gcp.credentials-location=file:[LOCAL_PRIVATE_KEY_FILE]
+spring.cloud.gcp.project-id=YOUR_GCP_PROJECT_ID
+spring.cloud.gcp.credentials-location=file:LOCAL_PRIVATE_KEY_FILE
 ----
 
 These properties are optional and, if not specified, Spring Boot will attempt to automatically find

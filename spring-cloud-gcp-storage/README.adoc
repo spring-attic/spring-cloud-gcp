@@ -26,7 +26,7 @@ You can use the `@Value` annotation
 
 [source,java]
 ----
-@Value("gs://[YOUR_GCS_BUCKET]/[GCS_FILE_NAME]")
+@Value("gs://YOUR_GCS_BUCKET/GCS_OBJECT_NAME")
 private Resource gcsResource;
 ----
 
@@ -34,7 +34,7 @@ or the Spring application context
 
 [source,java]
 ----
-SpringApplication.run(...).getResource("gs://[YOUR_GCS_BUCKET]/[GCS_FILE_NAME]");
+SpringApplication.run(...).getResource("gs://YOUR_GCS_BUCKET/GCS_OBJECT_NAME");
 ----
 
 You can also use this resource to write to a Google Cloud Storage object:
