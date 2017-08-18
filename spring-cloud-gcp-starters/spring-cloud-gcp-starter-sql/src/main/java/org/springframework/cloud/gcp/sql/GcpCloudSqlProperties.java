@@ -30,7 +30,6 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class GcpCloudSqlProperties {
 
-	@NotEmpty
 	private String instanceName;
 
 	@NotEmpty
