@@ -28,12 +28,10 @@ import org.springframework.util.StringUtils;
  * @author Ray Tsang
  */
 public class AppEngineCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider {
-	private final String projectId;
 
 	private final GcpCloudSqlProperties properties;
 
 	public AppEngineCloudSqlJdbcInfoProvider(String projectId, GcpCloudSqlProperties properties) {
-		this.projectId = projectId;
 		this.properties = properties;
 		Assert.hasText(projectId,
 				"A project ID must be provided.");

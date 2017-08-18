@@ -39,6 +39,10 @@ public class GcpCloudSqlProperties {
 
 	private String instanceConnectionName;
 
+	private String jdbcUrl;
+
+	private String jdbcDriver = "com.mysql.jdbc.Driver";
+
 	private String userName = "root";
 
 	private String password = "";
@@ -75,6 +79,22 @@ public class GcpCloudSqlProperties {
 
 	public void setInstanceConnectionName(String instanceConnectionName) {
 		this.instanceConnectionName = instanceConnectionName;
+	}
+
+	public String getJdbcUrl() {
+		return this.jdbcUrl;
+	}
+
+	public void setJdbcUrl(String jdbcUrl) {
+		this.jdbcUrl = jdbcUrl;
+	}
+
+	public String getJdbcDriver() {
+		return this.jdbcDriver;
+	}
+
+	public void setJdbcDriver(String jdbcDriver) {
+		this.jdbcDriver = jdbcDriver;
 	}
 
 	public String getUserName() {

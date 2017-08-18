@@ -31,59 +31,61 @@ import org.springframework.util.StringUtils;
  * Engine, Google Container Engine).
  *
  * @author Ray Tsang
+ * @author João André Martins
  */
 public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider {
-	private final String projectId;
 
 	private final SQLAdmin sqlAdmin;
 
 	private final GcpCloudSqlProperties properties;
 
 	public DefaultCloudSqlJdbcInfoProvider(String projectId, SQLAdmin sqlAdmin, GcpCloudSqlProperties properties) {
-		this.projectId = projectId;
 		this.sqlAdmin = sqlAdmin;
 		this.properties = properties;
 		Assert.hasText(projectId,
 				"A project ID must be provided.");
 
-		if (StringUtils.isEmpty(properties.getInstanceConnectionName())) {
-			Assert.hasText(this.properties.getInstanceName(),
-					"Instance Name is required, or specify Instance Connection Name explicitly");
-			if (StringUtils.isEmpty(properties.getRegion())) {
-				try {
-					this.properties.setRegion(determineRegion(this.properties.getInstanceName()));
+		if (StringUtils.isEmpty(properties.getJdbcUrl())) {
+			if (StringUtils.isEmpty(properties.getInstanceConnectionName())) {
+				Assert.hasText(this.properties.getInstanceName(),
+						"Instance Name is required, or specify Instance Connection Name explicitly");
+				if (StringUtils.isEmpty(properties.getRegion())) {
+					try {
+						this.properties.setRegion(
+								determineRegion(projectId, this.properties.getInstanceName()));
+					}
+					catch (IOException ioe) {
+						throw new IllegalArgumentException(
+								"Unable to determine Cloud SQL region. Specify the region explicitly, "
+										+ "or specify Instance Connection Name explicitly ", ioe);
+					}
 				}
-				catch (IOException e) {
-					throw new IllegalArgumentException(
-							"Unable to determine Cloud SQL region. Specify the region explicitly, " +
-									"or specify Instance Connection Name explicitly ",
-							e);
-				}
+
+				this.properties.setInstanceConnectionName(
+						String.format("%s:%s:%s", projectId, this.properties.getRegion(),
+								this.properties.getInstanceName()));
 			}
-			properties.setInstanceConnectionName(
-					String.format("%s:%s:%s", projectId, this.properties.getRegion(),
-							this.properties.getInstanceName()));
+
+			String jdbcUrl = String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
+					+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
+					this.properties.getDatabaseName(),
+					this.properties.getInstanceConnectionName());
+
+			this.properties.setJdbcUrl(jdbcUrl);
 		}
 	}
 
-	protected String determineRegion(String instanceName) throws IOException {
-		return this.sqlAdmin.instances().get(this.projectId,
-				instanceName).execute().getRegion();
+	private String determineRegion(String projectId, String instanceName) throws IOException {
+		return this.sqlAdmin.instances().get(projectId, instanceName).execute().getRegion();
 	}
 
 	@Override
 	public String getJdbcDriverClass() {
-		return "com.mysql.jdbc.Driver";
+		return this.properties.getJdbcDriver();
 	}
 
 	@Override
 	public String getJdbcUrl() {
-		// TODO(joaomartins): Set the credential factory to be used by SocketFactory when
-		// https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/issues/41 is
-		// resolved. For now, it uses application default creds.
-		return String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
-				+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
-				this.properties.getDatabaseName(),
-				this.properties.getInstanceConnectionName());
+		return this.properties.getJdbcUrl();
 	}
 }

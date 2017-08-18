@@ -41,6 +41,8 @@ The following properties are optional:
 ----
 spring.cloud.gcp.sql.region=[YOUR_CLOUD_SQL_INSTANCE_REGION]
 spring.cloud.gcp.sql.instance-connection-name=[YOUR_CLOUD_SQL_INSTANCE_CONNECTION_NAME]
+spring.cloud.gcp.sql.jdbc-url=[YOUR_JDBC_URL]
+spring.cloud.gcp.sql.jdbc-driver=[YOUR_JDBC_DRIVER]
 spring.cloud.gcp.sql.user-name=[YOUR_CLOUD_SQL_USERNAME]
 spring.cloud.gcp.sql.password=[YOUR_CLOUD_SQL_PASSWORD]
 ----
@@ -50,10 +52,17 @@ https://cloud.google.com/sql/docs/mysql/admin-api/[Cloud SQL API] to auto-discov
 region.
 
 If `spring.cloud.gcp.sql.instance-connection-name` is specified, it is used as the final instance
-connection name and `spring.cloud.gcp.sql.region` and `spring.cloud.gcp.sql.instance-name` are
-not used.
+connection name and has precedence over `spring.cloud.gcp.sql.region` and
+`spring.cloud.gcp.sql.instance-name`.
 
-If `spring.cloud.gcp.sql.user-name` isn't specified, `"root"` is used by default.
+If `spring.cloud.gcp.sql.jdbc-url` is specified, it is used as the final JDBC URL and has precedence
+over `spring.cloud.gcp.sql.instance-connection-name`, `spring.cloud.gcp.sql.region` and
+`spring.cloud.gcp.sql.instance-name`.
+
+If `spring.cloud.gcp.sql.jdbc-driver` isn't specified, `com.mysql.jdbc.Driver` is used by default,
+or `com.mysql.jdbc.GoogleDriver` if running on Google App Engine.
+
+If `spring.cloud.gcp.sql.user-name` isn't specified, `root` is used by default.
 
 If `spring.cloud.gcp.sql.password` isn't specified, an empty string is used by default.
 

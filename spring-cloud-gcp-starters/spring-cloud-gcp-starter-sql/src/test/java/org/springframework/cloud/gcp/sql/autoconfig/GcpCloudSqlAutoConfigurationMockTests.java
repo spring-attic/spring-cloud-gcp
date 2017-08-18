@@ -63,6 +63,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=proj:reg:test-instance"
 					+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
 					this.urlProvider.getJdbcUrl());
+			assertEquals("com.mysql.jdbc.Driver", this.urlProvider.getJdbcDriverClass());
 		}
 	}
 
@@ -80,6 +81,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 					this.urlProvider.getJdbcUrl());
 			assertEquals("root", dataSource.getUsername());
 			assertEquals("", dataSource.getPassword());
+			assertEquals("com.mysql.jdbc.Driver", this.urlProvider.getJdbcDriverClass());
 		}
 	}
 
@@ -101,6 +103,8 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 		@Override
 		public void test() {
 			HikariDataSource dataSource = (HikariDataSource) this.dataSource;
+			assertEquals("com.mysql.jdbc.GoogleDriver",
+					this.urlProvider.getJdbcDriverClass());
 			assertEquals("com.mysql.jdbc.GoogleDriver", dataSource.getDriverClassName());
 			assertEquals("jdbc:google:mysql://proj:australia:test-instance/test-database",
 					this.urlProvider.getJdbcUrl());
@@ -124,6 +128,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 					this.urlProvider.getJdbcUrl());
 			assertEquals("root", dataSource.getUsername());
 			assertEquals("", dataSource.getPassword());
+			assertEquals("com.mysql.jdbc.Driver", this.urlProvider.getJdbcDriverClass());
 		}
 	}
 
@@ -143,6 +148,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 					this.urlProvider.getJdbcUrl());
 			assertEquals("watchmaker", dataSource.getUsername());
 			assertEquals("pass", dataSource.getPassword());
+			assertEquals("com.mysql.jdbc.Driver", this.urlProvider.getJdbcDriverClass());
 		}
 	}
 
@@ -157,6 +163,22 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=world:asia:japan"
 							+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
 					this.urlProvider.getJdbcUrl());
+			assertEquals("com.mysql.jdbc.Driver", this.urlProvider.getJdbcDriverClass());
+		}
+	}
+
+	@TestPropertySource(properties = {
+			"spring.cloud.gcp.sql.jdbcUrl=turnItOut",
+			"spring.cloud.gcp.sql.jdbcDriver=romanticRights"
+	})
+	public static class GcpCloudSqlAutoConfigurationWithUrlAndDriver
+			extends GcpCloudSqlAutoConfigurationMockTests {
+
+		@Test
+		@Override
+		public void test() {
+			assertEquals("turnItOut", this.urlProvider.getJdbcUrl());
+			assertEquals("romanticRights", this.urlProvider.getJdbcDriverClass());
 		}
 	}
 }
