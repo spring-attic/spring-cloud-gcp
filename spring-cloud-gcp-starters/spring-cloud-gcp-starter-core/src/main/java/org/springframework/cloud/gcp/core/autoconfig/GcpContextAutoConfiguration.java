@@ -55,15 +55,15 @@ import org.springframework.util.StringUtils;
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {
 
-	private static final String PUBSUB_SCOPE = "https://www.googleapis.com/auth/pubsub";
+	public static final String PUBSUB_SCOPE = "https://www.googleapis.com/auth/pubsub";
 
-	private static final String SQLADMIN_SCOPE =
+	public static final String SQLADMIN_SCOPE =
 			"https://www.googleapis.com/auth/sqlservice.admin";
 
-	private static final String STORAGE_READ_SCOPE =
+	public static final String STORAGE_READ_SCOPE =
 			"https://www.googleapis.com/auth/devstorage.read_only";
 
-	private static final String STORAGE_WRITE_SCOPE =
+	public static final String STORAGE_WRITE_SCOPE =
 			"https://www.googleapis.com/auth/devstorage.read_write";
 
 	public static final List<String> CREDENTIALS_SCOPES_LIST =
