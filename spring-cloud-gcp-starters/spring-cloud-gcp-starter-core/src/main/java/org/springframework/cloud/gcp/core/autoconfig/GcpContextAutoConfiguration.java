@@ -44,7 +44,7 @@ import org.springframework.util.StringUtils;
 
 /**
  *
- * Base starter for Google Cloud Projects. Provide defaults for {@link GoogleCredentials}.
+ * Base starter for Google Cloud Projects. Provides defaults for {@link GoogleCredentials}.
  * Binds properties from {@link GcpProperties}
  *
  * @author Vinicius Carvalho
@@ -66,7 +66,7 @@ public class GcpContextAutoConfiguration {
 	private static final String STORAGE_WRITE_SCOPE =
 			"https://www.googleapis.com/auth/devstorage.read_write";
 
-	public static final List<String> CREDENTIALS_SCOPES_LIST =
+	public static final List<String> DEFAULT_CREDENTIAL_SCOPES =
 			ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE, STORAGE_READ_SCOPE, STORAGE_WRITE_SCOPE);
 
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
@@ -79,15 +79,21 @@ public class GcpContextAutoConfiguration {
 	public CredentialsProvider googleCredentials() throws Exception {
 		CredentialsProvider credentialsProvider;
 
-		if (!StringUtils.isEmpty(this.gcpProperties.getCredentialsLocation())) {
+		GcpProperties.Credentials propertyCredentials = this.gcpProperties.getCredentials();
+		List<String> scopes =
+				propertyCredentials != null && propertyCredentials.getScopes() != null
+						? propertyCredentials.getScopes() : DEFAULT_CREDENTIAL_SCOPES;
+
+		if (propertyCredentials != null
+				&& !StringUtils.isEmpty(propertyCredentials.getLocation())) {
 			credentialsProvider = FixedCredentialsProvider
 					.create(GoogleCredentials.fromStream(
-							this.gcpProperties.getCredentialsLocation().getInputStream())
-					.createScoped(CREDENTIALS_SCOPES_LIST));
+							propertyCredentials.getLocation().getInputStream())
+					.createScoped(scopes));
 		}
 		else {
 			credentialsProvider = GoogleCredentialsProvider.newBuilder()
-					.setScopesToApply(CREDENTIALS_SCOPES_LIST)
+					.setScopesToApply(scopes)
 					.build();
 		}
 
@@ -106,6 +112,7 @@ public class GcpContextAutoConfiguration {
 				else if (credentials instanceof ComputeEngineCredentials) {
 					LOGGER.info("Default credentials provider for Google Compute Engine.");
 				}
+				LOGGER.info("Scopes in use by default credentials: " + scopes.toString());
 			}
 		}
 		catch (IOException ioe) {

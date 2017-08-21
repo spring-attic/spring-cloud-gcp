@@ -26,7 +26,6 @@ This starter provides the configuration sources: `CloudSqlJdbcInfoProvider` and 
 and connection string. A special `CloudSqlJdbcInfoProvider` is provided if an app is running on
 Google App Engine.
 
-Besides `spring.cloud.gcp.project-id` and `spring.cloud.gcp.credentials-location`,
 `CloudSqlJdbcInfoProvider` requires the following properties:
 
 [source,yaml]
