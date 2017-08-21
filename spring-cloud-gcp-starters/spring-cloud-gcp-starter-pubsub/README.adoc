@@ -1,0 +1,38 @@
+= Google Cloud Pub/Sub Spring Boot Starter
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-pubsub', version: '1.0.0.BUILD-SNAPSHOT'
+}
+----
+
+
+This starter provides Pub/Sub key classes `PubSubTemplate` and `PubSubAdmin`.
+
+It requires the `spring.cloud.gcp.project-id` and `spring.cloud.gcp.credentials-location`
+properties.
+
+The following properties are optional:
+[source,yaml]
+----
+spring.cloud.gcp.pubsub.subscriber.executorThreads=[SUBSCRIBER_EXECUTOR_THREADS]
+spring.cloud.gcp.pubsub.publisher.executorThreads=[PUBLISHER_EXECUTOR_THREADS]
+----
+
+`spring.cloud.gcp.pubsub.subscriber.executorThreads` is the number of threads used by the subscriber
+executor. Likewise, `spring.cloud.gcp.pubsub.publisher.executorThreads` is the number of threads
+used by the publisher executor. The default value for both of these properties is 4.
