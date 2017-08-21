@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.sql;
 
+import java.nio.file.Path;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -48,6 +50,8 @@ public class GcpCloudSqlProperties {
 	private String password = "";
 
 	private boolean initFailFast;
+
+	private Path credentialsLocation;
 
 	public String getInstanceName() {
 		return this.instanceName;
@@ -113,11 +117,19 @@ public class GcpCloudSqlProperties {
 		this.password = password;
 	}
 
-	public boolean getInitFailFast() {
+	public boolean isInitFailFast() {
 		return this.initFailFast;
 	}
 
 	public void setInitFailFast(boolean initFailFast) {
 		this.initFailFast = initFailFast;
+	}
+
+	public Path getCredentialsLocation() {
+		return this.credentialsLocation;
+	}
+
+	public void setCredentialsLocation(Path credentialsLocation) {
+		this.credentialsLocation = credentialsLocation;
 	}
 }
