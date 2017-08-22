@@ -1,0 +1,21 @@
+[[spring-cloud-config-client-integration-for-google-cloud-runtime-configurator-api]]
+Spring Cloud Config Client integration for Google Cloud Runtime
+Configurator API
+--------------------------------------------------------------------------------
+
+https://cloud.google.com/deployment-manager/runtime-configurator/[Runtime
+Configuration API] on Google Cloud Platform allows dynamic configuration
+of your services.
+
+https://cloud.spring.io/spring-cloud-config/[Spring Cloud Config Client]
+provides developers the ability to bootstrap their application
+configuration with property sources.
+
+This integration uses the
+https://cloud.google.com/deployment-manager/runtime-configurator/reference/rest/[Runtime
+Configurator REST SDK] to
+[bootstrap](http://projects.spring.io/spring-cloud/spring-cloud.html#customizing-bootstrap-property-sources[integrates]
+as a Spring Cloud Config property source.
+
+link:../../spring-cloud-gcp-examples/spring-cloud-gcp-config-example[Here]
+is a sample application that uses this integration.

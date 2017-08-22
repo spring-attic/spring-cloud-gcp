@@ -8,10 +8,9 @@
     <version>1.0.0.BUILD-SNAPSHOT</version>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.4.RELEASE</version>
-        <relativePath/>
+        <artifactId>spring-cloud-gcp-examples</artifactId>
+        <groupId>org.springframework.cloud</groupId>
+        <version>1.0.0.BUILD-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -20,14 +19,13 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Configuration Client for Google Cloud Runtime Configurator API -->
+        <!-- Configuration Client Starter for Google Cloud Runtime Configurator API -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-gcp-config</artifactId>
-            <version>1.0.0.BUILD-SNAPSHOT</version>
+            <artifactId>spring-cloud-gcp-starter-config</artifactId>
+            <version>${project.version}</version>
         </dependency>
-
-        <!-- Optional dependency to enable runtime property refresh -->
+        <!-- Optional dependency to enable configuration refresh runtime via /refresh endpoint -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>

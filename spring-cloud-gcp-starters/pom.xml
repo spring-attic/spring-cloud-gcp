@@ -21,6 +21,7 @@
 	</properties>
 	<modules>
 		<module>spring-cloud-gcp-starter-pubsub</module>
+		<module>spring-cloud-gcp-starter-config</module>
 		<module>spring-cloud-gcp-starter-core</module>
 		<module>spring-cloud-gcp-starter-storage</module>
 		<module>spring-cloud-gcp-starter-sql</module>

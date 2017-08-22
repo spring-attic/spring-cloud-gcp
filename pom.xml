@@ -26,7 +26,6 @@
 	<modules>
 		<module>spring-cloud-gcp-dependencies</module>
 		<module>spring-cloud-gcp-pubsub</module>
-		<module>spring-cloud-gcp-config</module>
 		<module>spring-cloud-gcp-core</module>
 		<module>spring-cloud-gcp-storage</module>
 		<module>spring-cloud-gcp-starters</module>
@@ -46,6 +45,13 @@
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-dependencies</artifactId>
 				<version>${project.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>Dalston.RELEASE</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
