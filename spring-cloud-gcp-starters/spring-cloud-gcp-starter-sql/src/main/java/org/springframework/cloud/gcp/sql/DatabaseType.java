@@ -41,23 +41,11 @@ public enum DatabaseType {
 		return this.name;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	public String getJdbcDriverName() {
 		return this.jdbcDriverName;
 	}
 
-	public void setJdbcDriverName(String jdbcDriverName) {
-		this.jdbcDriverName = jdbcDriverName;
-	}
-
 	public String getJdbcUrlTemplate() {
 		return this.jdbcUrlTemplate;
-	}
-
-	public void setJdbcUrlTemplate(String jdbcUrlTemplate) {
-		this.jdbcUrlTemplate = jdbcUrlTemplate;
 	}
 }
