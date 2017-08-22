@@ -16,13 +16,11 @@
 
 package org.springframework.cloud.gcp.sql.autoconfig;
 
-import java.io.IOException;
-
 import com.google.api.services.sqladmin.SQLAdmin;
 
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
+import org.springframework.cloud.gcp.sql.DatabaseType;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
-import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -35,57 +33,29 @@ import org.springframework.util.StringUtils;
  */
 public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider {
 
-	private final SQLAdmin sqlAdmin;
+	private final CloudSqlJdbcUrlResolver jdbcUrlResolver;
 
 	private final GcpCloudSqlProperties properties;
 
-	public DefaultCloudSqlJdbcInfoProvider(String projectId, SQLAdmin sqlAdmin, GcpCloudSqlProperties properties) {
-		this.sqlAdmin = sqlAdmin;
+	private final DatabaseType databaseType;
+
+	public DefaultCloudSqlJdbcInfoProvider(String projectId, SQLAdmin sqlAdmin,
+			GcpCloudSqlProperties properties, DatabaseType databaseType) {
+		this.jdbcUrlResolver = new CloudSqlJdbcUrlResolver(databaseType.getJdbcUrlTemplate(),
+				projectId, properties, sqlAdmin);
 		this.properties = properties;
-		Assert.hasText(projectId,
-				"A project ID must be provided.");
-
-		if (StringUtils.isEmpty(properties.getJdbcUrl())) {
-			if (StringUtils.isEmpty(properties.getInstanceConnectionName())) {
-				Assert.hasText(this.properties.getInstanceName(),
-						"Instance Name is required, or specify Instance Connection Name explicitly");
-				if (StringUtils.isEmpty(properties.getRegion())) {
-					try {
-						this.properties.setRegion(
-								determineRegion(projectId, this.properties.getInstanceName()));
-					}
-					catch (IOException ioe) {
-						throw new IllegalArgumentException(
-								"Unable to determine Cloud SQL region. Specify the region explicitly, "
-										+ "or specify Instance Connection Name explicitly ", ioe);
-					}
-				}
-
-				this.properties.setInstanceConnectionName(
-						String.format("%s:%s:%s", projectId, this.properties.getRegion(),
-								this.properties.getInstanceName()));
-			}
-
-			String jdbcUrl = String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
-					+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
-					this.properties.getDatabaseName(),
-					this.properties.getInstanceConnectionName());
-
-			this.properties.setJdbcUrl(jdbcUrl);
-		}
-	}
-
-	private String determineRegion(String projectId, String instanceName) throws IOException {
-		return this.sqlAdmin.instances().get(projectId, instanceName).execute().getRegion();
+		this.databaseType = databaseType;
 	}
 
 	@Override
 	public String getJdbcDriverClass() {
-		return this.properties.getJdbcDriver();
+		return StringUtils.isEmpty(this.properties.getJdbcDriver())
+				? this.databaseType.getJdbcDriverName() : this.properties.getJdbcDriver();
 	}
 
 	@Override
 	public String getJdbcUrl() {
-		return this.properties.getJdbcUrl();
+		return StringUtils.isEmpty(this.properties.getJdbcUrl())
+				? this.jdbcUrlResolver.resolveJdbcUrl() : this.properties.getJdbcUrl();
 	}
 }

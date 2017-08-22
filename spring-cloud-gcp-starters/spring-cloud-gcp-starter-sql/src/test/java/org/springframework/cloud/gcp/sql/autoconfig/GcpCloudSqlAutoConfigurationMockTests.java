@@ -106,7 +106,8 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 			assertEquals("com.mysql.jdbc.GoogleDriver",
 					this.urlProvider.getJdbcDriverClass());
 			assertEquals("com.mysql.jdbc.GoogleDriver", dataSource.getDriverClassName());
-			assertEquals("jdbc:google:mysql://proj:australia:test-instance/test-database",
+			assertEquals("jdbc:google:mysql://proj:australia:test-instance/test-database"
+							+ "?user=root&password=",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("root", dataSource.getUsername());
 			assertEquals("", dataSource.getPassword());
@@ -168,17 +169,35 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 	}
 
 	@TestPropertySource(properties = {
-			"spring.cloud.gcp.sql.jdbcUrl=turnItOut",
-			"spring.cloud.gcp.sql.jdbcDriver=romanticRights"
+			"spring.cloud.gcp.sql.jdbcUrl=jdbc:postgresql://google/turnItOut",
+			"spring.cloud.gcp.sql.jdbcDriver=org.postgresql.Driver"
 	})
-	public static class GcpCloudSqlAutoConfigurationWithUrlAndDriver
+	public static class GcpCloudSqlAutoConfigurationWithUrlAndDriverTest
 			extends GcpCloudSqlAutoConfigurationMockTests {
 
 		@Test
 		@Override
 		public void test() {
-			assertEquals("turnItOut", this.urlProvider.getJdbcUrl());
-			assertEquals("romanticRights", this.urlProvider.getJdbcDriverClass());
+			assertEquals("jdbc:postgresql://google/turnItOut", this.urlProvider.getJdbcUrl());
+			assertEquals("org.postgresql.Driver", this.urlProvider.getJdbcDriverClass());
+		}
+	}
+
+	@TestPropertySource(properties = {
+			"spring.cloud.gcp.sql.database-type=postgresql",
+			"spring.cloud.gcp.sql.instanceName=test-instance"
+	})
+	public static class GcpCloudSqlAutoConfigurationPostgresTest
+			extends GcpCloudSqlAutoConfigurationMockTests {
+
+		@Test
+		@Override
+		public void test() {
+			assertEquals("jdbc:postgresql://google/test-database?socketFactory="
+					+ "com.google.cloud.sql.postgres.SocketFactory&"
+							+ "socketFactoryArg=proj:reg:test-instance",
+					this.urlProvider.getJdbcUrl());
+			assertEquals("org.postgresql.Driver", this.urlProvider.getJdbcDriverClass());
 		}
 	}
 }

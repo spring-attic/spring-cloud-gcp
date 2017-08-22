@@ -41,6 +41,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.AppEngineCondition;
@@ -48,11 +49,14 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
+import org.springframework.cloud.gcp.sql.DatabaseType;
+import org.springframework.cloud.gcp.sql.DatabaseTypeValidator;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.cloud.gcp.sql.SqlCredentialFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.validation.Validator;
 
 /**
  * Google Cloud SQL starter.
@@ -102,7 +106,8 @@ public class GcpCloudSqlAutoConfiguration {
 
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("App Engine JdbcUrl provider. Connecting to "
-					+ appEngineProvider.getJdbcUrl());
+					+ appEngineProvider.getJdbcUrl() + " with driver "
+					+ appEngineProvider.getJdbcDriverClass());
 		}
 
 		setCredentialsProperty();
@@ -112,16 +117,40 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	public CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider(SQLAdmin sqlAdmin,
+	@ConditionalOnProperty(value = "spring.cloud.gcp.sql.database-type", havingValue = "postgresql")
+	public CloudSqlJdbcInfoProvider postgreSqlJdbcInfoProvider(SQLAdmin sqlAdmin,
 			GcpProjectIdProvider projectIdProvider) {
 		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(
 				projectIdProvider.getProjectId(),
 				sqlAdmin,
-				this.gcpCloudSqlProperties);
+				this.gcpCloudSqlProperties,
+				DatabaseType.POSTGRESQL);
 
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("Default JdbcUrl provider. Connecting to "
-					+ defaultProvider.getJdbcUrl());
+			LOGGER.info("Default PostgreSQL JdbcUrl provider. Connecting to "
+					+ defaultProvider.getJdbcUrl() + " with driver "
+					+ defaultProvider.getJdbcDriverClass());
+		}
+
+		setCredentialsProperty();
+
+		return defaultProvider;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
+	public CloudSqlJdbcInfoProvider mySqlJdbcInfoProvider(SQLAdmin sqlAdmin,
+			GcpProjectIdProvider projectIdProvider) {
+		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(
+				projectIdProvider.getProjectId(),
+				sqlAdmin,
+				this.gcpCloudSqlProperties,
+				DatabaseType.MYSQL);
+
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("Default MySQL JdbcUrl provider. Connecting to "
+					+ defaultProvider.getJdbcUrl() + " with driver "
+					+ defaultProvider.getJdbcDriverClass());
 		}
 
 		setCredentialsProperty();
@@ -200,5 +229,13 @@ public class GcpCloudSqlAutoConfiguration {
 			// Do nothing, let sockets factory use application default credentials.
 			LOGGER.debug(" Error reading Cloud SQL credentials file.", ioe);
 		}
+	}
+
+	/**
+	 * Make sure that the database-type property value is either "mysql" or "postgresql".
+	 */
+	@Bean
+	public static Validator configurationPropertiesValidator() {
+		return new DatabaseTypeValidator();
 	}
 }

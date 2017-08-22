@@ -52,7 +52,8 @@ public class AppEngineCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvid
 
 	@Override
 	public String getJdbcUrl() {
-		return String.format("jdbc:google:mysql://%s/%s",
-				this.properties.getInstanceConnectionName(), this.properties.getDatabaseName());
+		return String.format("jdbc:google:mysql://%s/%s?user=%s&password=%s",
+				this.properties.getInstanceConnectionName(), this.properties.getDatabaseName(),
+				this.properties.getUserName(), this.properties.getPassword());
 	}
 }
