@@ -18,10 +18,7 @@ package org.springframework.cloud.gcp.sql;
 
 import java.nio.file.Path;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.validation.annotation.Validated;
 
 /**
  * Google Cloud SQL properties.
@@ -29,12 +26,10 @@ import org.springframework.validation.annotation.Validated;
  * @author João André Martins
  */
 @ConfigurationProperties("spring.cloud.gcp.sql")
-@Validated
 public class GcpCloudSqlProperties {
 
 	private String instanceName;
 
-	@NotEmpty
 	private String databaseName;
 
 	private String region;
