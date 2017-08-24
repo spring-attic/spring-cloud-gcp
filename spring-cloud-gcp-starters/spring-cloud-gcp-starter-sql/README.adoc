@@ -22,6 +22,8 @@ dependencies {
 
 This starter provides the configuration sources: `CloudSqlJdbcInfoProvider` and `DataSource`.
 
+It allows connections to second-generation only Google Cloud SQL instances.
+
 `CloudSqlJdbcInfoProvider` returns the JDBC information to be used, such as the JDBC driver name
 and connection string. A special `CloudSqlJdbcInfoProvider` is provided if an app is running on
 Google App Engine.
@@ -71,12 +73,6 @@ By using this starter in conjunction with
 https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html[Spring JDBC],
 it's possible to inject a fully configured `JdbcTemplate` object only from adding the required
 properties.
-
-Due to https://github.com/GoogleCloudPlatform/cloud-sql-jdbc-socket-factory/issues/41[an issue] in
-the Cloud SQL Socket Factory for JDBC drivers, the credentials used to connect to Cloud SQL are not
-the ones from the provided `CredentialsProvider`, but the
-http://google.github.io/google-auth-library-java/releases/0.7.1/apidocs/com/google/auth/oauth2/GoogleCredentials.html#getApplicationDefault()[application default credentials]
-instead. However, region auto-discovery uses the credentials provided by `CredentialsProvider`.
 
 The returned `DataSource` is an implementation of
 https://brettwooldridge.github.io/HikariCP/[HikariCP]. If you want to use another kind of
