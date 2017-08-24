@@ -1,3 +1,0 @@
-= Spring JDBC
-
-== Spring Boot Cloud SQL starter
