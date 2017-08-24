@@ -82,3 +82,41 @@ The returned `DataSource` is an implementation of
 https://brettwooldridge.github.io/HikariCP/[HikariCP]. If you want to use another kind of
 `DataSource`, feel free to use the provided `CloudSqlJdbcInfoProvider` to provide your own
 `DataSource` bean.
+
+== Troubleshooting tips
+
+If you're not able to connect to a database and see an endless loop of
+`Connecting to Cloud SQL instance [...] on IP [...]`, it's likely that exceptions are being thrown
+and logged at a level lower than your logger's level. This may be the case with HikariCP, the
+default DataSource use by this starter, if your logger is set to INFO or higher level.
+
+To see what's going on in the background, you should add a `logback.xml` file to your application
+resources folder, that looks like this:
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <include resource="org/springframework/boot/logging/logback/base.xml"/>
+  <logger name="com.zaxxer.hikari.pool" level="DEBUG"/>
+</configuration>
+----
+
+== Frequently Asked Questions
+
+=== PostgreSQL: `java.net.SocketException: already connected`
+
+We found this exception to be common if your Maven project's parent is `spring-boot` version
+`1.5.x`, or in any other circumstance that would cause the version of the
+`org.postgresql:postgresql` dependency to be an older one (e.g., `9.4.1212.jre7`).
+
+To fix this, re-declare the dependency in its correct version. For example, in Maven:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.postgresql</groupId>
+  <artifactId>postgresql</artifactId>
+  <version>42.1.1</version>
+</dependency>
+----
