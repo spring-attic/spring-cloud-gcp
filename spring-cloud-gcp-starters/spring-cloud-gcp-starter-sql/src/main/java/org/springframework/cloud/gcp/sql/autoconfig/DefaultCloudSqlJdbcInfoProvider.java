@@ -70,7 +70,7 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 			}
 
 			String jdbcUrl = String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
-					+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
+					+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
 					this.properties.getDatabaseName(),
 					this.properties.getInstanceConnectionName());
 
