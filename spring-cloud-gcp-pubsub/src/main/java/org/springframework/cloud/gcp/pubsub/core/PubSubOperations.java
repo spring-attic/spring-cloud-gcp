@@ -16,7 +16,12 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.util.Optional;
+
+import com.google.cloud.pubsub.v1.Publisher;
+import com.google.cloud.pubsub.v1.Subscriber;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.util.concurrent.ListenableFuture;
 
 /**
@@ -24,6 +29,22 @@ import org.springframework.util.concurrent.ListenableFuture;
  */
 public interface PubSubOperations {
 
-	ListenableFuture<String> send(String topic, Message message);
+	Publisher getPublisher(String topic);
+
+	Subscriber getSubscriber(String subscription);
+
+	String send(String topic, String message);
+
+	String send(String topic, String message, MessageHeaders headers);
+
+	String send(String topic, Message message);
+
+	String send(String topic, Object object, MessageHeaders headers);
+
+	ListenableFuture<String> sendAsync(String topic, String messsage);
+
+	ListenableFuture<String> sendAsync(String topic, Message message);
+
+	ListenableFuture<String> sendAsync(String topic, Object object);
 
 }
