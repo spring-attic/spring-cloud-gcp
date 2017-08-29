@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
@@ -37,7 +38,8 @@ import static org.junit.Assert.assertEquals;
  * @author João André Martins
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { GcpCloudSqlAutoConfiguration.class, GcpContextAutoConfiguration.class,
+@SpringBootTest(classes = { GcpCloudSqlAutoConfiguration.class, DataSourceAutoConfiguration.class,
+		GcpContextAutoConfiguration.class,
 		GcpCloudSqlTestConfiguration.class
 }, properties = { "spring.cloud.gcp.projectId=proj",
 		"spring.cloud.gcp.sql.databaseName=test-database",
@@ -80,14 +82,14 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 					+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("root", dataSource.getUsername());
-			assertEquals("", dataSource.getPassword());
+			assertEquals(null, dataSource.getPassword());
 			assertEquals("com.mysql.jdbc.Driver", this.urlProvider.getJdbcDriverClass());
 		}
 	}
 
 	@TestPropertySource(properties = {
 			"spring.cloud.gcp.sql.region=australia",
-			"spring.cloud.gcp.sql.instanceName=test-instance"})
+			"spring.cloud.gcp.sql.instanceName=test-instance" })
 	public static class CloudSqlAppEngineDataSourceTest extends GcpCloudSqlAutoConfigurationMockTests {
 		@BeforeClass
 		public static void setUp() {
@@ -109,13 +111,13 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 			assertEquals("jdbc:google:mysql://proj:australia:test-instance/test-database",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("root", dataSource.getUsername());
-			assertEquals("", dataSource.getPassword());
+			assertEquals(null, dataSource.getPassword());
 		}
 	}
 
 	@TestPropertySource(properties = {
 			"spring.cloud.gcp.sql.region=siberia",
-			"spring.cloud.gcp.sql.instanceName=test-instance"})
+			"spring.cloud.gcp.sql.instanceName=test-instance" })
 	public static class GcpCloudSqlAutoConfigurationWithRegionTest
 			extends GcpCloudSqlAutoConfigurationMockTests {
 		@Test
@@ -127,7 +129,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 					+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("root", dataSource.getUsername());
-			assertEquals("", dataSource.getPassword());
+			assertEquals(null, dataSource.getPassword());
 			assertEquals("com.mysql.jdbc.Driver", this.urlProvider.getJdbcDriverClass());
 		}
 	}
@@ -155,17 +157,17 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 	@TestPropertySource(properties = {
 			"spring.cloud.gcp.sql.instanceName=test-instance",
 			"spring.datasource.hikari.connectionTestQuery=select 1",
-			"spring.datasource.hikari.maximumPoolSize=19"
+			"spring.datasource.hikari.maximum-pool-size=19"
 
 	})
-	public static class GcpCloudSqlAutoConfigurationWithDatasourceProperties
+	public static class GcpCloudSqlAutoConfigurationWithDatasourcePropertiesTest
 			extends GcpCloudSqlAutoConfigurationMockTests {
 		@Test
 		@Override
 		public void test() {
 			HikariDataSource dataSource = (HikariDataSource) this.dataSource;
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=proj:reg:test-instance"
-							+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
+					+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("com.mysql.jdbc.Driver", this.urlProvider.getJdbcDriverClass());
 			assertEquals(19, dataSource.getMaximumPoolSize());
@@ -182,7 +184,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 		@Override
 		public void test() {
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=world:asia:japan"
-							+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
+					+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("com.mysql.jdbc.Driver", this.urlProvider.getJdbcDriverClass());
 		}

@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 
-import javax.sql.DataSource;
-
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -40,8 +38,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.AppEngineCondition;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -66,7 +63,7 @@ import org.springframework.context.annotation.Primary;
  * @author João André Martins
  */
 @Configuration
-@EnableConfigurationProperties(GcpCloudSqlProperties.class)
+@EnableConfigurationProperties({ GcpCloudSqlProperties.class, DataSourceProperties.class })
 @ConditionalOnClass({ GcpProjectIdProvider.class, SQLAdmin.class })
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
@@ -132,17 +129,14 @@ public class GcpCloudSqlAutoConfiguration {
 	}
 
 	@Bean
-	@ConfigurationProperties(prefix = "spring.datasource")
 	@Primary
-	@ConditionalOnMissingBean(DataSource.class)
-	public DataSource cloudSqlDataSource(CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider)
-			throws GeneralSecurityException, IOException, ClassNotFoundException {
-		return DataSourceBuilder.create()
-				.driverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass())
-				.url(cloudSqlJdbcInfoProvider.getJdbcUrl())
-				.username(this.gcpCloudSqlProperties.getUserName())
-				.password(this.gcpCloudSqlProperties.getPassword())
-				.build();
+	public DataSourceProperties enhancedDatasourceProperties(DataSourceProperties properties,
+			CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider) {
+		properties.setUsername(this.gcpCloudSqlProperties.getUserName());
+		properties.setPassword(this.gcpCloudSqlProperties.getPassword());
+		properties.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
+		properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
+		return properties;
 	}
 
 	/**
