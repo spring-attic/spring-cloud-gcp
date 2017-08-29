@@ -16,10 +16,9 @@
 
 package org.springframework.cloud.gcp.sql;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import java.nio.file.Path;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.validation.annotation.Validated;
 
 /**
  * Google Cloud SQL properties.
@@ -27,22 +26,27 @@ import org.springframework.validation.annotation.Validated;
  * @author João André Martins
  */
 @ConfigurationProperties("spring.cloud.gcp.sql")
-@Validated
 public class GcpCloudSqlProperties {
 
-	@NotEmpty
 	private String instanceName;
 
-	@NotEmpty
 	private String databaseName;
 
 	private String region;
+
+	private String instanceConnectionName;
+
+	private String jdbcUrl;
+
+	private String jdbcDriver = "com.mysql.jdbc.Driver";
 
 	private String userName = "root";
 
 	private String password = "";
 
 	private boolean initFailFast;
+
+	private Path credentialsLocation;
 
 	public String getInstanceName() {
 		return this.instanceName;
@@ -68,6 +72,30 @@ public class GcpCloudSqlProperties {
 		this.region = region;
 	}
 
+	public String getInstanceConnectionName() {
+		return this.instanceConnectionName;
+	}
+
+	public void setInstanceConnectionName(String instanceConnectionName) {
+		this.instanceConnectionName = instanceConnectionName;
+	}
+
+	public String getJdbcUrl() {
+		return this.jdbcUrl;
+	}
+
+	public void setJdbcUrl(String jdbcUrl) {
+		this.jdbcUrl = jdbcUrl;
+	}
+
+	public String getJdbcDriver() {
+		return this.jdbcDriver;
+	}
+
+	public void setJdbcDriver(String jdbcDriver) {
+		this.jdbcDriver = jdbcDriver;
+	}
+
 	public String getUserName() {
 		return this.userName;
 	}
@@ -84,11 +112,19 @@ public class GcpCloudSqlProperties {
 		this.password = password;
 	}
 
-	public boolean getInitFailFast() {
+	public boolean isInitFailFast() {
 		return this.initFailFast;
 	}
 
 	public void setInitFailFast(boolean initFailFast) {
 		this.initFailFast = initFailFast;
+	}
+
+	public Path getCredentialsLocation() {
+		return this.credentialsLocation;
+	}
+
+	public void setCredentialsLocation(Path credentialsLocation) {
+		this.credentialsLocation = credentialsLocation;
 	}
 }

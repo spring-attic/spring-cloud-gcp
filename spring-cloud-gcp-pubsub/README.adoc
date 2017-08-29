@@ -1,0 +1,29 @@
+= Spring Cloud GCP Pub/Sub
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-pubsub</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-pubsub', version: '1.0.0.BUILD-SNAPSHOT'
+}
+----
+
+
+Provides a simplified abstraction to interact with Google Cloud Pub/Sub. Using this abstraction
+allows user code to be independent from the underlying Google Cloud Pub/Sub API semantics. It's
+currently possible to publish messages to a Google Cloud Pub/Sub topic and to create new topics and
+subscriptions.
+
+You can refer to the `PubSubTemplate` and `PubSubAdmin` classes for more details on the
+functionality provided by this module.
