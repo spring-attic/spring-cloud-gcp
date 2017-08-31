@@ -74,7 +74,8 @@ feature_x_enabled true \
 --config-name myapp_prod
 ....
 
-3.  Create / update `src/main/resources/bootstrap.properties` to specify the configuration name, profile a:
+3.  Create / update `src/main/resources/bootstrap.properties` to specify the configuration name, profile and timeout:
+
 Note: If using the
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core/README.adoc[GCP Starter Core properties]
 to configure the GCP project and credentials, they must be included
