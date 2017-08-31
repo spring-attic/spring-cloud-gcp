@@ -49,5 +49,5 @@ private boolean isFeatureXEnabled;
 6.  Send a POST request to the `/refresh` endpoint:
 +
 ....
-  curl -XPOST http://myapp.host.com/refresh`
+  curl -XPOST http://myapp.host.com/refresh
 ....

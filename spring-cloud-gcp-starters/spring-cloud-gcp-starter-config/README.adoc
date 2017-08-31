@@ -129,7 +129,7 @@ be reloadable at runtime.
 4.  Send a POST request to the `/refresh` endpoint:
 +
 ....
-  curl -XPOST http://myapp.host.com/refresh`
+  curl -XPOST http://myapp.host.com/refresh
 ....
 
 
