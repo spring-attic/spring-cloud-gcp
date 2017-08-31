@@ -79,7 +79,7 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		Assert.notNull(this.credentials, "Credentials must not be null");
 		Assert.notNull(this.projectId, "Project ID must not be null");
 
-		this.timeout = 180000; // 3 minutes in milliseconds
+		this.timeout = 60000; // 1 minute in milliseconds
 		if (gcpConfigProperties != null) {
 			this.timeout = gcpConfigProperties.getTimeout();
 		}

@@ -33,9 +33,11 @@ spring.cloud.config.profile=prod
 link:src/main/java/com/example/SampleConfig.java[SampleConfig.java].
 +
 ....
-@Value(${queue_size}) private int queueSize;
+@Value("${queue_size}")
+private int queueSize;
 
-@Value(${feature_x_enabled}) private boolean isFeatureXEnabled;
+@Value("${feature_x_enabled}")
+private boolean isFeatureXEnabled;
 ....
 5.  Update a property with `gcloud`:
 +
