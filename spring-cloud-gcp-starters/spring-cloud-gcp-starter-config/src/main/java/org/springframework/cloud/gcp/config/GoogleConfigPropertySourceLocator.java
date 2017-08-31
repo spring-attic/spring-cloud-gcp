@@ -64,9 +64,7 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 
 	private Credentials credentials;
 
-	private String name;
-
-	private String profile;
+	private ConfigClientProperties configClientProperties;
 
 	private int timeout;
 
@@ -83,24 +81,10 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 
 		this.timeout = 180000; // 3 minutes in milliseconds
 		if (gcpConfigProperties != null) {
-			if (gcpConfigProperties.getProfile() != null) {
-				this.profile = gcpConfigProperties.getProfile();
-			}
-			if (gcpConfigProperties.getName() != null) {
-				this.name = gcpConfigProperties.getName();
-			}
 			this.timeout = gcpConfigProperties.getTimeout();
 		}
-		if (configClientProperties != null) {
-			if (this.profile == null && configClientProperties.getProfile() != null) {
-				this.profile = configClientProperties.getProfile();
-			}
-			if (this.name == null && configClientProperties.getName() != null) {
-				this.name = gcpConfigProperties.getName();
-			}
-		}
-		Assert.notNull(this.name, "Config name must not be null");
-		Assert.notNull(this.profile, "Config profile must not be null");
+		this.configClientProperties = configClientProperties;
+		Assert.notNull(this.configClientProperties, "Client Configuration must not be null");
 		Assert.notNull(this.timeout, "Runtime Configurator API timeout must not be null");
 	}
 
@@ -130,11 +114,11 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		return template;
 	}
 
-	private GoogleConfigEnvironment getRemoteEnvironment(RestTemplate restTemplate)
+	private GoogleConfigEnvironment getRemoteEnvironment(String name, String profile, RestTemplate restTemplate)
 			throws IOException, HttpClientErrorException {
 		ResponseEntity<GoogleConfigEnvironment> response = restTemplate.exchange(
 				RUNTIMECONFIG_API_ROOT + ALL_VARIABLES_PATH, HttpMethod.GET,
-				null, GoogleConfigEnvironment.class, this.projectId, this.name, this.profile);
+				null, GoogleConfigEnvironment.class, this.projectId, name, profile);
 
 		if (response == null || !response.getStatusCode().is2xxSuccessful()) {
 			HttpStatus code = (response == null) ? HttpStatus.BAD_REQUEST : response.getStatusCode();
@@ -146,15 +130,19 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 	@Override
 	public PropertySource<?> locate(Environment environment) {
 		Map<String, Object> config;
+		ConfigClientProperties properties = this.configClientProperties.override(environment);
 		try {
+			Assert.notNull(properties.getName(), "Config name must not be null");
+			Assert.notNull(properties.getProfile(), "Config profile must not be null");
 			RestTemplate restTemplate = getSecureRestTemplate();
-			GoogleConfigEnvironment googleConfigEnvironment = getRemoteEnvironment(restTemplate);
+			GoogleConfigEnvironment googleConfigEnvironment = getRemoteEnvironment(properties.getName(),
+					properties.getProfile(), restTemplate);
 			Assert.notNull(googleConfigEnvironment, "Configuration not in expected format.");
 			config = googleConfigEnvironment.getConfig();
 		}
 		catch (Exception e) {
 			String message = String.format("Error loading configuration for %s/%s_%s", this.projectId,
-					this.name, this.profile);
+					properties.getName(), properties.getProfile());
 			throw new RuntimeException(message, e);
 		}
 		return new MapPropertySource(PROPERTY_SOURCE_NAME, config);

@@ -92,12 +92,12 @@
 				<version>1.0.4</version>
 			</dependency>
 
-      <!-- spring-cloud-gcp-starter-config -->
-      <dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-starter-config</artifactId>
-        <version>${spring-cloud-config.version}</version>
-      </dependency>
+			<!-- spring-cloud-gcp-starter-config -->
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-starter-config</artifactId>
+				<version>${spring-cloud-config.version}</version>
+			</dependency>
 
 			<!--Starters-->
 			<dependency>

@@ -29,31 +29,11 @@ public class GcpConfigProperties {
 	// Config server API time out in milliseconds, default = 3 minutes
 	private int timeout = 180000;
 
-	private String name;
-
-	private String profile;
-
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
 	}
 
 	public int getTimeout() {
 		return this.timeout;
-	}
-
-	public String getProfile()  {
-		return this.profile;
-	}
-
-	public void setProfile(String profile) {
-		this.profile = profile;
-	}
-
-	public String getName() {
-		return this.name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 }
