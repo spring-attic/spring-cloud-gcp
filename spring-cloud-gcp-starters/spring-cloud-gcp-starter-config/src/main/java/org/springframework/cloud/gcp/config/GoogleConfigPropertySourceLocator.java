@@ -29,7 +29,6 @@ import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.config.client.ConfigClientProperties;
 import org.springframework.cloud.config.client.ConfigServicePropertySourceLocator;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
@@ -46,7 +45,6 @@ import org.springframework.web.client.RestTemplate;
  *
  * @author Jisha Abubaker
  */
-@Configuration
 public class GoogleConfigPropertySourceLocator implements PropertySourceLocator {
 
 	private static final String RUNTIMECONFIG_API_ROOT = "https://runtimeconfig.googleapis.com/v1beta1/";

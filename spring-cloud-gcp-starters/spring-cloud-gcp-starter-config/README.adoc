@@ -83,10 +83,15 @@ in the `bootstrap.properties`.
 
 +
 ....
+# disable default Spring config client
+spring.cloud.config.enabled=false
+
 spring.cloud.config.name=myapp
 spring.cloud.config.profile=prod
 spring.cloud.gcp.config.timeout=120000 #optional
 ....
+
+Set `spring.cloud.config.enabled` to `false` to disable the default Spring configuration client.
 
 `spring.application.name` configuration value is used if `spring.cloud.config.name` has not been provided.
 

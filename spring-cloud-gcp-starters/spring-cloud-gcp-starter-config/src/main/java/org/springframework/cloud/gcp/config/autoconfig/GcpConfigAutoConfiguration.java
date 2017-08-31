@@ -35,3 +35,4 @@ public class GcpConfigAutoConfiguration {
 	@Autowired
 	GcpConfigProperties gcpConfigProperties;
 }
+
