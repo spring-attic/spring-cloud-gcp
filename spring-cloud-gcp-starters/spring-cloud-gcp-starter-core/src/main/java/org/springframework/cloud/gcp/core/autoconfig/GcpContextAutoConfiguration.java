@@ -66,8 +66,12 @@ public class GcpContextAutoConfiguration {
 	private static final String STORAGE_WRITE_SCOPE =
 			"https://www.googleapis.com/auth/devstorage.read_write";
 
+	private static final String RUNTIME_CONFIG_SCOPE =
+			"https://www.googleapis.com/auth/cloudruntimeconfig";
+
 	public static final List<String> CREDENTIALS_SCOPES_LIST =
-			ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE, STORAGE_READ_SCOPE, STORAGE_WRITE_SCOPE);
+			ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE, STORAGE_READ_SCOPE,
+					STORAGE_WRITE_SCOPE, RUNTIME_CONFIG_SCOPE);
 
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
 

@@ -1,21 +1,124 @@
-[[spring-cloud-config-client-integration-for-google-cloud-runtime-configurator-api]]
-Spring Cloud Config Client integration for Google Cloud Runtime
-Configurator API
---------------------------------------------------------------------------------
+= Google Cloud Spring Config Client Starter
+
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-config</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-config', version: '1.0.0.BUILD-SNAPSHOT'
+}
+----
 
 https://cloud.google.com/deployment-manager/runtime-configurator/[Runtime
 Configuration API] on Google Cloud Platform allows dynamic configuration
 of your services.
 
-https://cloud.spring.io/spring-cloud-config/[Spring Cloud Config Client]
+https://cloud.spring.io/spring-cloud-config/single/spring-cloud-config.html#_client_side_usage[Spring Cloud Config Client]
 provides developers the ability to bootstrap their application
 configuration with property sources.
 
-This integration uses the
+This starter uses the
 https://cloud.google.com/deployment-manager/runtime-configurator/reference/rest/[Runtime
 Configurator REST SDK] to
-[bootstrap](http://projects.spring.io/spring-cloud/spring-cloud.html#customizing-bootstrap-property-sources[integrates]
-as a Spring Cloud Config property source.
+http://projects.spring.io/spring-cloud/spring-cloud.html#customizing-bootstrap-property-sources[bootstrap]
+ the Runtime Configurator based configuration as a property source.
 
+== Setup
+
+1.  The Runtime Configurator is managed using `gcloud`.
+Install the https://cloud.google.com/sdk/[Google Cloud SDK]. You can
+do so with the following command:
++
+....
+  curl https://sdk.cloud.google.com | bash
+....
+2.  Create, enable billing on a project on the
+https://console.cloud.google.com[Google Cloud Console].
+3.  Enable the
+https://console.cloud.google.com/flows/enableapi?apiid=runtimeconfig.googleapis.com[Runtime
+Config API].
+4.  https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account] and
+set the credentials using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable or
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core/README.adoc[using GCP Starter Core properties].
+
+== Configuration
+
+1.  Create a configuration using the
+https://cloud.google.com/sdk/[Google Cloud SDK]. The configuration name
+should be in the format `config_profile`, for example : `myapp_prod`
++
+....
+gcloud beta runtime-config configs create myapp_prod
+....
++
+2. Then set the variables you wish to load.
++
+....
+  gcloud beta runtime-config configs variables set \
+queue_size 25 \
+--config-name myapp_prod
+  gcloud beta runtime-config configs variables set \
+feature_x_enabled true \
+--config-name myapp_prod
+....
+
+3.  Create / update `src/main/resources/bootstrap.properties` to specify the configuration name, profile:
+Note: If using the GCP Starter Core properties to configure the GCP project and credentials, they must be included
+in the `boostrap.properties`, and not `application.properties`.
++
+....
+spring.cloud.gcp.config.name = "myapp"  (optional, falls back to "spring.cloud.config.name")
+spring.cloud.gcp.config.profile = "prod" (optional, falls back to "spring.cloud.config.profile")
+....
+
+
+4.  Add Spring style configuration variables to your `@Configuration` annotated class.
++
+....
+@Value(${queue_size}) private int queueSize;
+
+@Value(${feature_x_enabled}) private boolean isFeatureXEnabled;
+....
+
+=== Runtime Configuration Refresh
+http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints[Spring
+Boot Actuator] provides support to have configuration parameters be
+reloadable with the POST `/refresh` endpoint.
+1.  Add the following dependency to your `pom.xml`:
+....
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+  </dependency>
+....
+2.  Add `@RefreshScope` to your your `@Configuration` annotated class to have parameters
+be reloadable at runtime.
+3.  Update a property with `gcloud`:
++
+....
+  gcloud beta runtime-config configs variables set \
+     queue_size 200 \
+     --config-name myapp_prod
+....
+4.  Send a POST request to the `/refresh` endpoint:
++
+....
+  curl -XPOST http://myapp.host.com/refresh`
+....
+
+
+== Examples
 link:../../spring-cloud-gcp-examples/spring-cloud-gcp-config-example[Here]
-is a sample application that uses this integration.
+is a sample application that uses this starter.

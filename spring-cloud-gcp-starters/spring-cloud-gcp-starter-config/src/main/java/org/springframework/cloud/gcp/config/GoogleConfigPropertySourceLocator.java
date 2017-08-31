@@ -29,12 +29,12 @@ import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.config.client.ConfigClientProperties;
 import org.springframework.cloud.config.client.ConfigServicePropertySourceLocator;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.util.Assert;
@@ -42,12 +42,11 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Custom property source locator for Google Cloud Runtime Configurator.
+ * Custom {@link PropertySourceLocator} for Google Cloud Runtime Configurator API.
  *
  * @author Jisha Abubaker
  */
 @Configuration
-@ComponentScan("org.springframework.cloud.gcp.core")
 public class GoogleConfigPropertySourceLocator implements PropertySourceLocator {
 
 	private static final String RUNTIMECONFIG_API_ROOT = "https://runtimeconfig.googleapis.com/v1beta1/";
@@ -61,25 +60,53 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 
 	private static final String BEARER_TOKEN_PREFIX = "Bearer ";
 
-	private ConfigClientProperties defaultProperties;
+	private String projectId;
 
 	private Credentials credentials;
 
-	private String projectId;
+	private String name;
 
-	public GoogleConfigPropertySourceLocator(CredentialsProvider credentialsProvider,
-			GcpProjectIdProvider projectIdProvider, ConfigClientProperties defaultProperties) throws Exception {
+	private String profile;
+
+	private int timeout;
+
+	public GoogleConfigPropertySourceLocator(GcpProjectIdProvider projectIdProvider,
+			CredentialsProvider credentialsProvider,
+			ConfigClientProperties configClientProperties,
+			GcpConfigProperties gcpConfigProperties) throws Exception {
 		Assert.notNull(credentialsProvider, "Credentials provider cannot be null");
 		Assert.notNull(projectIdProvider, "Project ID provider cannot be null");
-		Assert.notNull(defaultProperties, "Config client properties cannot be null");
 		this.credentials = credentialsProvider.getCredentials();
 		this.projectId = projectIdProvider.getProjectId();
-		this.defaultProperties = defaultProperties;
+		Assert.notNull(this.credentials, "Credentials must not be null");
+		Assert.notNull(this.projectId, "Project ID must not be null");
+
+		this.timeout = 180000; // 3 minutes in milliseconds
+		if (gcpConfigProperties != null) {
+			if (gcpConfigProperties.getProfile() != null) {
+				this.profile = gcpConfigProperties.getProfile();
+			}
+			if (gcpConfigProperties.getName() != null) {
+				this.name = gcpConfigProperties.getName();
+			}
+			this.timeout = gcpConfigProperties.getTimeout();
+		}
+		if (configClientProperties != null) {
+			if (this.profile == null && configClientProperties.getProfile() != null) {
+				this.profile = configClientProperties.getProfile();
+			}
+			if (this.name == null && configClientProperties.getName() != null) {
+				this.name = gcpConfigProperties.getName();
+			}
+		}
+		Assert.notNull(this.name, "Config name must not be null");
+		Assert.notNull(this.profile, "Config profile must not be null");
+		Assert.notNull(this.timeout, "Runtime Configurator API timeout must not be null");
 	}
 
 	private RestTemplate getSecureRestTemplate() throws Exception {
 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-		requestFactory.setReadTimeout((60 * 1000 * 3) + 5000);
+		requestFactory.setReadTimeout(this.timeout);
 		RestTemplate template = new RestTemplate(requestFactory);
 		Map<String, String> headers = new HashMap<>();
 		Map<String, List<String>> requestMetadata = this.credentials.getRequestMetadata();
@@ -103,34 +130,31 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		return template;
 	}
 
-	private GoogleConfigEnvironment getRemoteEnvironment(RestTemplate restTemplate, ConfigClientProperties properties)
+	private GoogleConfigEnvironment getRemoteEnvironment(RestTemplate restTemplate)
 			throws IOException, HttpClientErrorException {
-		String name = properties.getName();
-		String profile = properties.getProfile();
-
 		ResponseEntity<GoogleConfigEnvironment> response = restTemplate.exchange(
 				RUNTIMECONFIG_API_ROOT + ALL_VARIABLES_PATH, HttpMethod.GET,
-				null, GoogleConfigEnvironment.class, this.projectId, name, profile);
+				null, GoogleConfigEnvironment.class, this.projectId, this.name, this.profile);
 
-		Assert.isTrue(response != null && response.getStatusCode().is2xxSuccessful(),
-				"Invalid response from Runtime Configurator API");
+		if (response == null || !response.getStatusCode().is2xxSuccessful()) {
+			HttpStatus code = (response == null) ? HttpStatus.BAD_REQUEST : response.getStatusCode();
+			throw new HttpClientErrorException(code, "Invalid response from Runtime Configurator API");
+		}
 		return response.getBody();
 	}
 
 	@Override
 	public PropertySource<?> locate(Environment environment) {
-		ConfigClientProperties properties = this.defaultProperties.override(environment);
-		Map<String, Object> config = Collections.emptyMap();
+		Map<String, Object> config;
 		try {
-
 			RestTemplate restTemplate = getSecureRestTemplate();
-			GoogleConfigEnvironment googleConfigEnvironment = getRemoteEnvironment(restTemplate, properties);
+			GoogleConfigEnvironment googleConfigEnvironment = getRemoteEnvironment(restTemplate);
 			Assert.notNull(googleConfigEnvironment, "Configuration not in expected format.");
 			config = googleConfigEnvironment.getConfig();
 		}
 		catch (Exception e) {
 			String message = String.format("Error loading configuration for %s/%s_%s", this.projectId,
-					properties.getName(), properties.getProfile());
+					this.name, this.profile);
 			throw new RuntimeException(message, e);
 		}
 		return new MapPropertySource(PROPERTY_SOURCE_NAME, config);

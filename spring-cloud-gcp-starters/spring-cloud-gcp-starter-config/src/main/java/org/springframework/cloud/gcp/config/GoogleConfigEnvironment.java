@@ -24,7 +24,7 @@ import java.util.Map;
 import javax.xml.bind.DatatypeConverter;
 
 /**
- * Expected  class type for Google Runtime Configurator API response.
+ * Expected response format for Google Runtime Configurator API response.
  *
  * @author Jisha Abubaker
  */
