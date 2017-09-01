@@ -39,43 +39,42 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 
 	private final GcpCloudSqlProperties properties;
 
+	private final String jdbcUrl;
+
 	public DefaultCloudSqlJdbcInfoProvider(String projectId, SQLAdmin sqlAdmin, GcpCloudSqlProperties properties) {
 		this.sqlAdmin = sqlAdmin;
 		this.properties = properties;
 		Assert.hasText(projectId,
 				"A project ID must be provided.");
 
-		if (StringUtils.isEmpty(properties.getJdbcUrl())) {
-			Assert.hasText(properties.getDatabaseName(),
-					"The database name cannot be empty.");
+		Assert.hasText(properties.getDatabaseName(),
+				"The database name cannot be empty.");
 
-			if (StringUtils.isEmpty(properties.getInstanceConnectionName())) {
-				Assert.hasText(this.properties.getInstanceName(),
-						"Instance Name is required, or specify Instance Connection Name explicitly.");
-				if (StringUtils.isEmpty(properties.getRegion())) {
-					try {
-						this.properties.setRegion(
-								determineRegion(projectId, this.properties.getInstanceName()));
-					}
-					catch (IOException ioe) {
-						throw new IllegalArgumentException(
-								"Unable to determine Cloud SQL region. Specify the region explicitly, "
-										+ "or specify Instance Connection Name explicitly.", ioe);
-					}
+		if (StringUtils.isEmpty(properties.getInstanceConnectionName())) {
+			Assert.hasText(this.properties.getInstanceName(),
+					"Instance Name is required, or specify Instance Connection Name explicitly.");
+			if (StringUtils.isEmpty(properties.getRegion())) {
+				try {
+					this.properties.setRegion(
+							determineRegion(projectId, this.properties.getInstanceName()));
 				}
-
-				this.properties.setInstanceConnectionName(
-						String.format("%s:%s:%s", projectId, this.properties.getRegion(),
-								this.properties.getInstanceName()));
+				catch (IOException ioe) {
+					throw new IllegalArgumentException(
+							"Unable to determine Cloud SQL region. Specify the region explicitly, "
+									+ "or specify Instance Connection Name explicitly.",
+							ioe);
+				}
 			}
 
-			String jdbcUrl = String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
-					+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
-					this.properties.getDatabaseName(),
-					this.properties.getInstanceConnectionName());
-
-			this.properties.setJdbcUrl(jdbcUrl);
+			this.properties.setInstanceConnectionName(
+					String.format("%s:%s:%s", projectId, this.properties.getRegion(),
+							this.properties.getInstanceName()));
 		}
+
+		this.jdbcUrl = String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
+				+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
+				this.properties.getDatabaseName(),
+				this.properties.getInstanceConnectionName());
 	}
 
 	private String determineRegion(String projectId, String instanceName) throws IOException {
@@ -84,11 +83,11 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 
 	@Override
 	public String getJdbcDriverClass() {
-		return this.properties.getJdbcDriver();
+		return "com.mysql.jdbc.Driver";
 	}
 
 	@Override
 	public String getJdbcUrl() {
-		return this.properties.getJdbcUrl();
+		return this.jdbcUrl;
 	}
 }

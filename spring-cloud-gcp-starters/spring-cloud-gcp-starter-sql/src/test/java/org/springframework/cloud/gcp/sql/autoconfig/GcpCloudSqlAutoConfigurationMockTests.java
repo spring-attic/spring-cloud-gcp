@@ -135,8 +135,8 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 	}
 
 	@TestPropertySource(properties = {
-			"spring.cloud.gcp.sql.userName=watchmaker",
-			"spring.cloud.gcp.sql.password=pass",
+			"spring.datasource.username=watchmaker",
+			"spring.datasource.password=pass",
 			"spring.cloud.gcp.sql.instanceName=test-instance"
 	})
 	public static class GcpCloudSqlAutoConfigurationWithUserAndPassTest

@@ -31,6 +31,8 @@ public class AppEngineCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvid
 
 	private final GcpCloudSqlProperties properties;
 
+	private final String jdbcUrl;
+
 	public AppEngineCloudSqlJdbcInfoProvider(String projectId, GcpCloudSqlProperties properties) {
 		this.properties = properties;
 		Assert.hasText(projectId,
@@ -43,6 +45,8 @@ public class AppEngineCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvid
 			properties.setInstanceConnectionName(
 					String.format("%s:%s:%s", projectId, properties.getRegion(), properties.getInstanceName()));
 		}
+		this.jdbcUrl = String.format("jdbc:google:mysql://%s/%s",
+				this.properties.getInstanceConnectionName(), this.properties.getDatabaseName());
 	}
 
 	@Override
@@ -52,7 +56,6 @@ public class AppEngineCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvid
 
 	@Override
 	public String getJdbcUrl() {
-		return String.format("jdbc:google:mysql://%s/%s",
-				this.properties.getInstanceConnectionName(), this.properties.getDatabaseName());
+		return this.jdbcUrl;
 	}
 }

@@ -51,6 +51,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.util.StringUtils;
 
 /**
  * Google Cloud SQL starter.
@@ -130,12 +131,17 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@Primary
-	public DataSourceProperties enhancedDatasourceProperties(DataSourceProperties properties,
+	public DataSourceProperties dataSourceProperties(DataSourceProperties properties,
 			CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider) {
-		properties.setUsername(this.gcpCloudSqlProperties.getUserName());
-		properties.setPassword(this.gcpCloudSqlProperties.getPassword());
-		properties.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
-		properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
+		if (StringUtils.isEmpty(properties.getUsername())) {
+			properties.setUsername("root");
+		}
+		if (StringUtils.isEmpty(properties.getDriverClassName())) {
+			properties.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
+		}
+		if (StringUtils.isEmpty(properties.getUrl())) {
+			properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
+		}
 		return properties;
 	}
 
