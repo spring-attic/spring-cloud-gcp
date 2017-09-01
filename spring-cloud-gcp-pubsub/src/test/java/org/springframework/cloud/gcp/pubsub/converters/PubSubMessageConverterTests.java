@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.pubsub.converters;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,11 +34,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
-public class SimpleMessageConverterTests {
+public class PubSubMessageConverterTests {
 
 	@Test
 	public void testFromMessage() {
-		SimpleMessageConverter converter = new SimpleMessageConverter();
+		PubSubMessageConverter converter = new PubSubMessageConverter();
 
 		Map<String, Object> headers = new HashMap<>();
 		headers.put("h1", "value");
@@ -53,35 +54,43 @@ public class SimpleMessageConverterTests {
 
 	@Test(expected = MessageConversionException.class)
 	public void testFromMessage_notPubsubMessage() {
-		new SimpleMessageConverter().fromMessage(new GenericMessage<Object>("payload"),
+		new PubSubMessageConverter().fromMessage(new GenericMessage<Object>("payload"),
 				String.class);
 	}
 
 	@Test
 	public void testToMessage() {
-		SimpleMessageConverter converter = new SimpleMessageConverter();
-		String payload = "test payload";
+		PubSubMessageConverter converter = new PubSubMessageConverter();
+		PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(ByteString.copyFromUtf8("test payload"))
+				.putAttributes("headerKey1", "headerValue1")
+				.putAttributes("headerKey2", "headerValue2")
+				.build();
+
 		Map<String, Object> headers = new HashMap<>();
-		headers.put("headerKey1", "headerValue1");
-		headers.put("headerKey2", "headerValue2");
-		Message<?> message = converter.toMessage(payload, new MessageHeaders(headers));
+		headers.put("headerKey3", "headerValue3");
+		headers.put("headerKey4", "headerValue4");
+		Message<?> message = converter.toMessage(pubsubMessage, new MessageHeaders(headers));
 		assertEquals("test payload", message.getPayload());
 		assertTrue(message.getHeaders().get("headerKey1").equals("headerValue1"));
 		assertTrue(message.getHeaders().get("headerKey2").equals("headerValue2"));
+		assertTrue(message.getHeaders().get("headerKey3").equals("headerValue3"));
+		assertTrue(message.getHeaders().get("headerKey4").equals("headerValue4"));
 	}
 
 	@Test
 	public void testToMessage_noHeaders() {
-		SimpleMessageConverter converter = new SimpleMessageConverter();
-		String payload = "test payload";
-		Message<?> message = converter.toMessage(payload,
+		PubSubMessageConverter converter = new PubSubMessageConverter();
+		PubsubMessage pubsubMessage = PubsubMessage.newBuilder()
+				.setData(ByteString.copyFromUtf8("test payload"))
+				.build();
+		Message<?> message = converter.toMessage(pubsubMessage,
 				new MessageHeaders(new HashMap<>()));
 		assertEquals("test payload", message.getPayload());
 	}
 
 	@Test(expected = MessageConversionException.class)
 	public void testToMessage_notString() {
-		new SimpleMessageConverter().toMessage(new HashMap<>(),
+		new PubSubMessageConverter().toMessage(new HashMap<>(),
 				new MessageHeaders(new HashMap<>()));
 	}
 }

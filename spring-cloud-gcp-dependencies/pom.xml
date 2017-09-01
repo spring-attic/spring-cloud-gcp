@@ -16,9 +16,9 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<google-cloud-core.version>1.2.3</google-cloud-core.version>
-		<google-cloud-pubsub.version>0.20.1-beta</google-cloud-pubsub.version>
-		<google-cloud-storage.version>1.2.1</google-cloud-storage.version>
+		<google-cloud-core.version>1.4.0</google-cloud-core.version>
+		<google-cloud-pubsub.version>0.22.0-beta</google-cloud-pubsub.version>
+		<google-cloud-storage.version>1.4.0</google-cloud-storage.version>
 	</properties>
 
 	<dependencyManagement>

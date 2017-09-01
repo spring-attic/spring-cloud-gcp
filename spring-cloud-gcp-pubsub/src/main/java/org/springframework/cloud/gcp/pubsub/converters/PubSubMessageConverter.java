@@ -16,6 +16,10 @@
 
 package org.springframework.cloud.gcp.pubsub.converters;
 
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
@@ -26,40 +30,58 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.support.GenericMessage;
 
 /**
- * Generates {@link PubsubMessage} from {@link Message} and vice-versa.
+ * Generates {@link PubsubMessage} from {@link Message} with payload type of
+ * {@link String} and vice-versa. When converting to String, it defaults to using UTF-8
+ * @{link Charset}.
  *
- * @author João André Martins
+ * @author Ray Tsang
  */
-public class SimpleMessageConverter implements MessageConverter {
+public class PubSubMessageConverter implements MessageConverter {
+	private final Charset charset;
+
+	public PubSubMessageConverter() {
+		this(Charset.forName("UTF-8"));
+	}
+
+	public PubSubMessageConverter(Charset charset) {
+		this.charset = charset;
+	}
 
 	@Override
 	public Object fromMessage(Message<?> message, Class<?> aClass) {
 		if (!aClass.equals(PubsubMessage.class)) {
 			throw new MessageConversionException(
-					"This converter can only convert to or from " + "PubsubMessages.");
+					"This converter can only convert to PubsubMessage.");
 		}
 
 		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder();
 
+		pubsubMessageBuilder.setData(ByteString.copyFrom(message.getPayload().toString(), this.charset));
 		message.getHeaders().forEach((key, value) -> pubsubMessageBuilder
 				.putAttributes(key, value.toString()));
-
-		pubsubMessageBuilder
-				.setData(ByteString.copyFrom(message.getPayload().toString().getBytes()));
 
 		return pubsubMessageBuilder.build();
 	}
 
 	@Override
 	public Message<?> toMessage(Object o, MessageHeaders messageHeaders) {
-		if (!(o instanceof String)) {
-			throw new MessageConversionException("Only String payloads are supported.");
+		if (!(o instanceof PubsubMessage)) {
+			throw new MessageConversionException("This converter can only convert from PubsubMessage");
 		}
 
-		if (messageHeaders == null) {
-			return new GenericMessage<>((String) o);
+		PubsubMessage pubsubMessage = (PubsubMessage) o;
+
+		Map<String, Object> headers = new HashMap<>();
+		headers.put(MessageHeaders.CONTENT_TYPE, "application/text");
+
+		headers.putAll(pubsubMessage.getAttributesMap());
+		if (messageHeaders != null) {
+			headers.putAll(messageHeaders);
 		}
 
-		return new GenericMessage<>((String) o, messageHeaders);
+		GenericMessage<String> message = new GenericMessage<String>(pubsubMessage.getData().toString(this.charset),
+				new MessageHeaders(headers));
+
+		return message;
 	}
 }

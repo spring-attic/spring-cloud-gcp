@@ -17,8 +17,8 @@
 package org.springframework.cloud.gcp.pubsub.support;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.grpc.ChannelProvider;
-import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,10 +36,13 @@ import static org.junit.Assert.assertTrue;
 public class DefaultPublisherFactoryTests {
 
 	private DefaultPublisherFactory factory;
+
 	@Mock
 	private ExecutorProvider executorProvider;
+
 	@Mock
 	private ChannelProvider channelProvider;
+
 	@Mock
 	private CredentialsProvider credentialsProvider;
 

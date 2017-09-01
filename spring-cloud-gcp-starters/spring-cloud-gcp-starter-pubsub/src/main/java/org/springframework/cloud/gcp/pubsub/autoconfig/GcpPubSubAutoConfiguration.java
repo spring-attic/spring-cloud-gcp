@@ -20,9 +20,9 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.grpc.ChannelProvider;
-import com.google.api.gax.grpc.ExecutorProvider;
-import com.google.api.gax.grpc.FixedExecutorProvider;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
@@ -43,6 +43,8 @@ import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.converter.MessageConverter;
+import org.springframework.messaging.converter.StringMessageConverter;
 
 /**
  * @author João André Martins
@@ -76,7 +78,7 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(name = "subscriberChannelProvider")
 	public ChannelProvider subscriberChannelProvider() {
-		return SubscriptionAdminSettings.defaultChannelProviderBuilder()
+		return SubscriptionAdminSettings.defaultGrpcChannelProviderBuilder()
 				.setClientLibHeader(DEFAULT_SOURCE_NAME,
 						this.getClass().getPackage().getImplementationVersion())
 				.build();
@@ -86,16 +88,25 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean(name = "publisherChannelProvider")
 	public ChannelProvider publisherChannelProvider() {
 		return TopicAdminSettings
-				.defaultChannelProviderBuilder()
+				.defaultGrpcChannelProviderBuilder()
 				.setClientLibHeader(DEFAULT_SOURCE_NAME,
 						this.getClass().getPackage().getImplementationVersion())
 				.build();
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(name = "pubsubMessageConverter")
+	public MessageConverter pubsubMessageConverter() {
+		return new StringMessageConverter();
+	}
+
+	@Bean
 	@ConditionalOnMissingBean
-	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory) {
-		return new PubSubTemplate(publisherFactory);
+	public PubSubTemplate pubSubTemplate(GcpProjectIdProvider projectIdProvider, PublisherFactory publisherFactory,
+			SubscriberFactory subscriberFactory, SubscriptionAdminClient subscriptionAdminClient,
+			@Qualifier("pubsubMessageConverter") MessageConverter pubsubMessageConverter) {
+		return new PubSubTemplate(projectIdProvider, publisherFactory, subscriberFactory,
+				subscriptionAdminClient.getStub(), pubsubMessageConverter);
 	}
 
 	@Bean
