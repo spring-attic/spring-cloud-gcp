@@ -26,9 +26,6 @@ feature_x_enabled true \
 3.  Update link:src/main/resources/bootstrap.properties[]:
 +
 ....
-# disable default Spring config client
-spring.cloud.config.enabled=false
-
 spring.cloud.config.name=myapp
 spring.cloud.config.profile=prod
 ....

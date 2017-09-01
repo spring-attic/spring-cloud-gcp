@@ -95,7 +95,7 @@
 			<!-- spring-cloud-gcp-starter-config -->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-starter-config</artifactId>
+				<artifactId>spring-cloud-config-client</artifactId>
 				<version>${spring-cloud-config.version}</version>
 			</dependency>
 

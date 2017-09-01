@@ -19,12 +19,15 @@ package org.springframework.cloud.gcp.config.autoconfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.config.client.ConfigServicePropertySourceLocator;
 import org.springframework.cloud.gcp.config.GcpConfigProperties;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /**
- * Bootstrap auto configuration for Google Cloud Runtime Configurator Starter
+ * Bootstrap auto configuration for Google Cloud Runtime Configurator Starter.
  * @author Jisha Abubaker
  */
 @Configuration
@@ -34,5 +37,12 @@ public class GcpConfigAutoConfiguration {
 
 	@Autowired
 	GcpConfigProperties gcpConfigProperties;
+
+	// Disabling the default Spring cloud config property source locator
+	@Bean
+	@Primary
+	ConfigServicePropertySourceLocator getConfigServicePropertySourceLocator() {
+		return null;
+	}
 }
 
