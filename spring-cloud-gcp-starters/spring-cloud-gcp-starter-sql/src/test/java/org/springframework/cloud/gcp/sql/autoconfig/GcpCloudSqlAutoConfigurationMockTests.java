@@ -154,11 +154,11 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 
 	@TestPropertySource(properties = {
 			"spring.cloud.gcp.sql.instanceName=test-instance",
-			"spring.datasource.hikari.connectionTestQuery=select 1",
-			"spring.datasource.hikari.maximumPoolSize=19"
+			"spring.cloud.gcp.sql.hikari.connectionTestQuery=select 1",
+			"spring.cloud.gcp.sql.hikari.maximumPoolSize=19"
 
 	})
-	public static class GcpCloudSqlAutoConfigurationWithDatasourceProperties
+	public static class GcpCloudSqlAutoConfigurationWithDatasourcePropertiesTest
 			extends GcpCloudSqlAutoConfigurationMockTests {
 		@Test
 		@Override

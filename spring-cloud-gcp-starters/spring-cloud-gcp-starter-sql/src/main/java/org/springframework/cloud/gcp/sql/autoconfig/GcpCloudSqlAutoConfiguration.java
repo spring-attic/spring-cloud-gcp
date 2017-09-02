@@ -31,6 +31,7 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.services.sqladmin.SQLAdmin;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.cloud.sql.CredentialFactory;
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -132,12 +133,13 @@ public class GcpCloudSqlAutoConfiguration {
 	}
 
 	@Bean
-	@ConfigurationProperties(prefix = "spring.datasource")
+	@ConfigurationProperties(prefix = "spring.cloud.gcp.sql.hikari")
 	@Primary
 	@ConditionalOnMissingBean(DataSource.class)
 	public DataSource cloudSqlDataSource(CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider)
 			throws GeneralSecurityException, IOException, ClassNotFoundException {
 		return DataSourceBuilder.create()
+				.type(HikariDataSource.class)
 				.driverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass())
 				.url(cloudSqlJdbcInfoProvider.getJdbcUrl())
 				.username(this.gcpCloudSqlProperties.getUserName())
