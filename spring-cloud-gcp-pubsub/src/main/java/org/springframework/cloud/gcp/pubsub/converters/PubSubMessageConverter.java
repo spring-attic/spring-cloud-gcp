@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.pubsub.converters;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,22 +29,25 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.support.GenericMessage;
+import org.springframework.util.Assert;
 
 /**
  * Generates {@link PubsubMessage} from {@link Message} with payload type of
  * {@link String} and vice-versa. When converting to String, it defaults to using UTF-8
  * @{link Charset}.
  *
+ * @author João André Martins
  * @author Ray Tsang
  */
 public class PubSubMessageConverter implements MessageConverter {
 	private final Charset charset;
 
 	public PubSubMessageConverter() {
-		this(Charset.forName("UTF-8"));
+		this(StandardCharsets.UTF_8);
 	}
 
 	public PubSubMessageConverter(Charset charset) {
+		Assert.notNull(charset, "charset can't be null");
 		this.charset = charset;
 	}
 
@@ -72,7 +76,7 @@ public class PubSubMessageConverter implements MessageConverter {
 		PubsubMessage pubsubMessage = (PubsubMessage) o;
 
 		Map<String, Object> headers = new HashMap<>();
-		headers.put(MessageHeaders.CONTENT_TYPE, "application/text");
+		headers.put(MessageHeaders.CONTENT_TYPE, "text/plain");
 
 		headers.putAll(pubsubMessage.getAttributesMap());
 		if (messageHeaders != null) {

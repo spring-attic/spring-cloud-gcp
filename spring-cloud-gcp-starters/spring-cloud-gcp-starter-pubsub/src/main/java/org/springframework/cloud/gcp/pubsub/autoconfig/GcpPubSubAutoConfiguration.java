@@ -95,7 +95,7 @@ public class GcpPubSubAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(name = "pubsubMessageConverter")
+	@ConditionalOnMissingBean(name = "pubSubMessageConverter")
 	public MessageConverter pubsubMessageConverter() {
 		return new StringMessageConverter();
 	}
@@ -104,7 +104,7 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public PubSubTemplate pubSubTemplate(GcpProjectIdProvider projectIdProvider, PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory, SubscriptionAdminClient subscriptionAdminClient,
-			@Qualifier("pubsubMessageConverter") MessageConverter pubsubMessageConverter) {
+			@Qualifier("pubSubMessageConverter") MessageConverter pubsubMessageConverter) {
 		return new PubSubTemplate(projectIdProvider, publisherFactory, subscriberFactory,
 				subscriptionAdminClient.getStub(), pubsubMessageConverter);
 	}
