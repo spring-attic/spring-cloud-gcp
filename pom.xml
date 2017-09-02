@@ -28,6 +28,7 @@
 		<module>spring-cloud-gcp-pubsub</module>
 		<module>spring-cloud-gcp-core</module>
 		<module>spring-cloud-gcp-storage</module>
+		<module>spring-cloud-gcp-trace</module>
 		<module>spring-cloud-gcp-starters</module>
 		<module>spring-integration-gcp</module>
 		<module>spring-cloud-gcp-docs</module>
