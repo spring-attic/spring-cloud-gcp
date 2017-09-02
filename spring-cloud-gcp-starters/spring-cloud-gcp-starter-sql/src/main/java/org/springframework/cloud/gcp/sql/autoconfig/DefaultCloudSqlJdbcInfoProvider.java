@@ -53,10 +53,11 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 		if (StringUtils.isEmpty(properties.getInstanceConnectionName())) {
 			Assert.hasText(this.properties.getInstanceName(),
 					"Instance Name is required, or specify Instance Connection Name explicitly.");
-			if (StringUtils.isEmpty(properties.getRegion())) {
+
+			String region = properties.getRegion();
+			if (StringUtils.isEmpty(region)) {
 				try {
-					this.properties.setRegion(
-							determineRegion(projectId, this.properties.getInstanceName()));
+					region = determineRegion(projectId, this.properties.getInstanceName());
 				}
 				catch (IOException ioe) {
 					throw new IllegalArgumentException(
@@ -67,7 +68,7 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 			}
 
 			this.properties.setInstanceConnectionName(
-					String.format("%s:%s:%s", projectId, this.properties.getRegion(),
+					String.format("%s:%s:%s", projectId, region,
 							this.properties.getInstanceName()));
 		}
 
