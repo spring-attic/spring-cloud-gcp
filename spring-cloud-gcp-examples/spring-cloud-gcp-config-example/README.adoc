@@ -1,7 +1,7 @@
-= Google Cloud Spring Config Client Starter Example
+= Spring Cloud GCP Config Client Starter Example
 
 This sample application demonstrates using the
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Spring Cloud Config Client Starter for GCP] in your code.
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Spring Cloud GCP Config Client Starter] in your code.
 
 == Setup & Configuration
 1. Follow link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[these setup instructions].

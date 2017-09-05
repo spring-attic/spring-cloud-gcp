@@ -1,4 +1,4 @@
-= Google Cloud Spring Config Client Starter
+= Spring Cloud GCP Config Client Starter
 
 
 Maven coordinates, using Spring Cloud GCP BOM:
@@ -24,10 +24,6 @@ dependencies {
 https://cloud.google.com/deployment-manager/runtime-configurator/[Runtime
 Configuration API] on Google Cloud Platform allows dynamic configuration
 of your services.
-
-https://cloud.spring.io/spring-cloud-config/single/spring-cloud-config.html#_client_side_usage[Spring Cloud Config Client]
-provides developers the ability to bootstrap their application
-configuration with property sources.
 
 This starter uses the
 https://cloud.google.com/deployment-manager/runtime-configurator/reference/rest/[Runtime
