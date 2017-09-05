@@ -17,8 +17,6 @@
 package org.springframework.cloud.gcp.config;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,12 +24,12 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
-import org.springframework.cloud.config.client.ConfigClientProperties;
-import org.springframework.cloud.config.client.ConfigServicePropertySourceLocator;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,67 +54,58 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 
 	private static final String AUTHORIZATION_HEADER = "Authorization";
 
-	private static final String BEARER_TOKEN_PREFIX = "Bearer ";
-
 	private String projectId;
 
 	private Credentials credentials;
 
-	private ConfigClientProperties configClientProperties;
+	private String name;
+
+	private String profile;
 
 	private int timeout;
 
 	public GoogleConfigPropertySourceLocator(GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider,
-			ConfigClientProperties configClientProperties,
 			GcpConfigProperties gcpConfigProperties) throws Exception {
 		Assert.notNull(credentialsProvider, "Credentials provider cannot be null");
 		Assert.notNull(projectIdProvider, "Project ID provider cannot be null");
 		this.credentials = credentialsProvider.getCredentials();
 		this.projectId = projectIdProvider.getProjectId();
 		Assert.notNull(this.credentials, "Credentials must not be null");
+
 		Assert.notNull(this.projectId, "Project ID must not be null");
 
-		this.timeout = 60000; // 1 minute in milliseconds
-		if (gcpConfigProperties != null) {
-			this.timeout = gcpConfigProperties.getTimeout();
-		}
-		this.configClientProperties = configClientProperties;
-		Assert.notNull(this.configClientProperties, "Client Configuration must not be null");
+		Assert.notNull(gcpConfigProperties, "Google Config properties must not be null");
+		this.timeout = gcpConfigProperties.getTimeout();
+		this.name = gcpConfigProperties.getName();
+		this.profile = gcpConfigProperties.getProfile();
+		Assert.notNull(this.name, "Config name must not be null");
+		Assert.notNull(this.profile, "Config profile must not be null");
 		Assert.notNull(this.timeout, "Runtime Configurator API timeout must not be null");
 	}
 
-	private RestTemplate getSecureRestTemplate() throws Exception {
+	private HttpEntity<Void> getAuthorizedRequest() throws IOException {
+		HttpHeaders headers = new HttpHeaders();
+		Map<String, List<String>> credentialHeaders = this.credentials.getRequestMetadata();
+		Assert.notNull(credentialHeaders, "No valid credential header(s) found");
+
+		for (Map.Entry<String, List<String>> entry : credentialHeaders.entrySet()) {
+			for (String value : entry.getValue()) {
+				headers.add(entry.getKey(), value);
+			}
+		}
+		Assert.isTrue(headers.containsKey(AUTHORIZATION_HEADER), "Authorization header required");
+		return new HttpEntity<>(headers);
+	}
+
+	private GoogleConfigEnvironment getRemoteEnvironment() throws IOException, HttpClientErrorException {
 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 		requestFactory.setReadTimeout(this.timeout);
 		RestTemplate template = new RestTemplate(requestFactory);
-		Map<String, String> headers = new HashMap<>();
-		Map<String, List<String>> requestMetadata = this.credentials.getRequestMetadata();
-		Assert.isTrue(requestMetadata.containsKey(AUTHORIZATION_HEADER), "Authorization header required");
-
-		List<String> authorizationHeaders = requestMetadata.get(AUTHORIZATION_HEADER);
-
-		String bearerToken = null;
-		for (String authorizationHeader : authorizationHeaders) {
-			if (authorizationHeader.startsWith(BEARER_TOKEN_PREFIX)) {
-				bearerToken = authorizationHeader;
-				break;
-			}
-		}
-		Assert.notNull(bearerToken, "Valid Bearer token not found");
-
-		headers.put(AUTHORIZATION_HEADER, bearerToken);
-
-		template.setInterceptors(Collections
-				.singletonList(new ConfigServicePropertySourceLocator.GenericRequestHeaderInterceptor(headers)));
-		return template;
-	}
-
-	private GoogleConfigEnvironment getRemoteEnvironment(String name, String profile, RestTemplate restTemplate)
-			throws IOException, HttpClientErrorException {
-		ResponseEntity<GoogleConfigEnvironment> response = restTemplate.exchange(
-				RUNTIMECONFIG_API_ROOT + ALL_VARIABLES_PATH, HttpMethod.GET,
-				null, GoogleConfigEnvironment.class, this.projectId, name, profile);
+		HttpEntity<Void> requestEntity = getAuthorizedRequest();
+		ResponseEntity<GoogleConfigEnvironment> response = template.exchange(
+				RUNTIMECONFIG_API_ROOT + ALL_VARIABLES_PATH, HttpMethod.GET, requestEntity,
+				GoogleConfigEnvironment.class, this.projectId, this.name, this.profile);
 
 		if (response == null || !response.getStatusCode().is2xxSuccessful()) {
 			HttpStatus code = (response == null) ? HttpStatus.BAD_REQUEST : response.getStatusCode();
@@ -128,19 +117,14 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 	@Override
 	public PropertySource<?> locate(Environment environment) {
 		Map<String, Object> config;
-		ConfigClientProperties properties = this.configClientProperties.override(environment);
 		try {
-			Assert.notNull(properties.getName(), "Config name must not be null");
-			Assert.notNull(properties.getProfile(), "Config profile must not be null");
-			RestTemplate restTemplate = getSecureRestTemplate();
-			GoogleConfigEnvironment googleConfigEnvironment = getRemoteEnvironment(properties.getName(),
-					properties.getProfile(), restTemplate);
+			GoogleConfigEnvironment googleConfigEnvironment = getRemoteEnvironment();
 			Assert.notNull(googleConfigEnvironment, "Configuration not in expected format.");
 			config = googleConfigEnvironment.getConfig();
 		}
 		catch (Exception e) {
 			String message = String.format("Error loading configuration for %s/%s_%s", this.projectId,
-					properties.getName(), properties.getProfile());
+					this.name, this.profile);
 			throw new RuntimeException(message, e);
 		}
 		return new MapPropertySource(PROPERTY_SOURCE_NAME, config);

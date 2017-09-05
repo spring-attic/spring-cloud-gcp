@@ -19,7 +19,7 @@
 		<google-cloud-core.version>1.2.3</google-cloud-core.version>
 		<google-cloud-pubsub.version>0.20.1-beta</google-cloud-pubsub.version>
 		<google-cloud-storage.version>1.2.1</google-cloud-storage.version>
-		<spring-cloud-config.version>1.3.2.RELEASE</spring-cloud-config.version>
+		<spring-cloud-context.version>1.2.3.RELEASE</spring-cloud-context.version>
 	</properties>
 
 	<dependencyManagement>
@@ -95,8 +95,8 @@
 			<!-- spring-cloud-gcp-starter-config -->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-config-client</artifactId>
-				<version>${spring-cloud-config.version}</version>
+				<artifactId>spring-cloud-context</artifactId>
+				<version>${spring-cloud-context.version}</version>
 			</dependency>
 
 			<!--Starters-->

@@ -26,8 +26,28 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("spring.cloud.gcp.config")
 public class GcpConfigProperties {
 
+	private String name;
+
+	private String profile = "default";
+
 	// Config server API time out in milliseconds, default = 1 minute
 	private int timeout = 60000;
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public void setProfile(String profile) {
+		this.profile = profile;
+	}
+
+	public String getProfile() {
+		return this.profile;
+	}
 
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;

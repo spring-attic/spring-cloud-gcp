@@ -26,8 +26,8 @@ feature_x_enabled true \
 3.  Update link:src/main/resources/bootstrap.properties[]:
 +
 ....
-spring.cloud.config.name=myapp
-spring.cloud.config.profile=prod
+spring.cloud.gcp.config.name=myapp
+spring.cloud.gcp.config.profile=prod #default profile = default
 ....
 4.  Add Spring style configuration variables, see
 link:src/main/java/com/example/SampleConfig.java[SampleConfig.java].
