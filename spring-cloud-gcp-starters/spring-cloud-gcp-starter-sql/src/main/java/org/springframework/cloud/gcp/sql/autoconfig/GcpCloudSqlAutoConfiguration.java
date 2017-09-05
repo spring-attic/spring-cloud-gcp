@@ -92,7 +92,8 @@ public class GcpCloudSqlAutoConfiguration {
 
 		return new SQLAdmin.Builder(httpTransport, jsonFactory,
 				new HttpCredentialsAdapter(credentialsProvider.getCredentials()))
-						.build();
+				.setApplicationName("spring")
+				.build();
 	}
 
 	@Bean
