@@ -195,7 +195,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 		public void test() {
 			assertEquals("jdbc:postgresql://google/test-database?socketFactory="
 					+ "com.google.cloud.sql.postgres.SocketFactory&"
-							+ "socketFactoryArg=proj:reg:test-instance",
+							+ "socketFactoryArg=proj:reg:test-instance&useSSL=false",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("org.postgresql.Driver", this.urlProvider.getJdbcDriverClass());
 		}

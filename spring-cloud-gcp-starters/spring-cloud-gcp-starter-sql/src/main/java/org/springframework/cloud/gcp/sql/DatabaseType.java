@@ -21,9 +21,10 @@ package org.springframework.cloud.gcp.sql;
  */
 public enum DatabaseType {
 	MYSQL("mysql", "com.mysql.jdbc.Driver", "jdbc:mysql://google/%s?cloudSqlInstance=%s&"
-			+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory"),
+			+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false"),
 	POSTGRESQL("postgresql", "org.postgresql.Driver", "jdbc:postgresql://google/%s?"
-			+ "socketFactory=com.google.cloud.sql.postgres.SocketFactory&socketFactoryArg=%s");
+			+ "socketFactory=com.google.cloud.sql.postgres.SocketFactory&socketFactoryArg=%s"
+			+ "&useSSL=false");
 
 	private String name;
 
