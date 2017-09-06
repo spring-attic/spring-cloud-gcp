@@ -50,13 +50,11 @@ import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
 import org.springframework.cloud.gcp.sql.DatabaseType;
-import org.springframework.cloud.gcp.sql.DatabaseTypeValidator;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.cloud.gcp.sql.SqlCredentialFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.validation.Validator;
 
 /**
  * Google Cloud SQL starter.
@@ -230,13 +228,5 @@ public class GcpCloudSqlAutoConfiguration {
 			// Do nothing, let sockets factory use application default credentials.
 			LOGGER.debug(" Error reading Cloud SQL credentials file.", ioe);
 		}
-	}
-
-	/**
-	 * Make sure that the database-type property value is either "mysql" or "postgresql".
-	 */
-	@Bean
-	public static Validator configurationPropertiesValidator() {
-		return new DatabaseTypeValidator();
 	}
 }
