@@ -84,7 +84,7 @@ https://brettwooldridge.github.io/HikariCP/[HikariCP]. If you want to use anothe
 If you're not able to connect to a database and see an endless loop of
 `Connecting to Cloud SQL instance [...] on IP [...]`, it's likely that exceptions are being thrown
 and logged at a level lower than your logger's level. This may be the case with HikariCP, the
-default DataSource use by this starter, if your logger is set to INFO or higher level.
+default DataSource used by this starter, if your logger is set to INFO or higher level.
 
 To see what's going on in the background, you should add a `logback.xml` file to your application
 resources folder, that looks like this:

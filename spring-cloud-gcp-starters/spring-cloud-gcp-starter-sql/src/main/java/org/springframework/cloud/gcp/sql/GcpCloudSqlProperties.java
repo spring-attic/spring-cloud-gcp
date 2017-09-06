@@ -48,7 +48,7 @@ public class GcpCloudSqlProperties {
 
 	private Path credentialsLocation;
 
-	private String databaseType = "mysql";
+	private DatabaseType databaseType = DatabaseType.MYSQL;
 
 	public String getInstanceName() {
 		return this.instanceName;
@@ -130,11 +130,11 @@ public class GcpCloudSqlProperties {
 		this.credentialsLocation = credentialsLocation;
 	}
 
-	public String getDatabaseType() {
+	public DatabaseType getDatabaseType() {
 		return this.databaseType;
 	}
 
-	public void setDatabaseType(String databaseType) {
+	public void setDatabaseType(DatabaseType databaseType) {
 		this.databaseType = databaseType;
 	}
 }

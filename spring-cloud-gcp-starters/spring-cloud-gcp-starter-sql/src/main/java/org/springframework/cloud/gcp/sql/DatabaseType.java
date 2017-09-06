@@ -20,26 +20,20 @@ package org.springframework.cloud.gcp.sql;
  * @author João André Martins
  */
 public enum DatabaseType {
-	MYSQL("mysql", "com.mysql.jdbc.Driver", "jdbc:mysql://google/%s?cloudSqlInstance=%s&"
+	MYSQL("com.mysql.jdbc.Driver", "jdbc:mysql://google/%s?cloudSqlInstance=%s&"
 			+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false"),
-	POSTGRESQL("postgresql", "org.postgresql.Driver", "jdbc:postgresql://google/%s?"
+
+	POSTGRESQL("org.postgresql.Driver", "jdbc:postgresql://google/%s?"
 			+ "socketFactory=com.google.cloud.sql.postgres.SocketFactory&socketFactoryArg=%s"
 			+ "&useSSL=false");
 
-	private String name;
+	private final String jdbcDriverName;
 
-	private String jdbcDriverName;
+	private final String jdbcUrlTemplate;
 
-	private String jdbcUrlTemplate;
-
-	DatabaseType(String name, String jdbcDriverName, String jdbcUrlTemplate) {
-		this.name = name;
+	DatabaseType(String jdbcDriverName, String jdbcUrlTemplate) {
 		this.jdbcDriverName = jdbcDriverName;
 		this.jdbcUrlTemplate = jdbcUrlTemplate;
-	}
-
-	public String getName() {
-		return this.name;
 	}
 
 	public String getJdbcDriverName() {
