@@ -31,7 +31,6 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.services.sqladmin.SQLAdmin;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.cloud.sql.CredentialFactory;
-import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,6 +41,8 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.AppEngineCondition;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -53,6 +54,7 @@ import org.springframework.cloud.gcp.sql.SqlCredentialFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 /**
  * Google Cloud SQL starter.
@@ -88,8 +90,8 @@ public class GcpCloudSqlAutoConfiguration {
 
 		return new SQLAdmin.Builder(httpTransport, jsonFactory,
 				new HttpCredentialsAdapter(credentialsProvider.getCredentials()))
-				.setApplicationName("spring")
-				.build();
+						.setApplicationName("spring")
+						.build();
 	}
 
 	@Bean
@@ -131,34 +133,35 @@ public class GcpCloudSqlAutoConfiguration {
 	}
 
 	@Bean
+	@ConfigurationProperties(prefix = "spring.cloud.gcp.sql.hikari")
+	@Primary
 	@ConditionalOnMissingBean(DataSource.class)
 	public DataSource cloudSqlDataSource(CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider)
 			throws GeneralSecurityException, IOException, ClassNotFoundException {
-		HikariConfig hikariConfig = new HikariConfig();
-		hikariConfig.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
-		hikariConfig.setJdbcUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
-		hikariConfig.setUsername(this.gcpCloudSqlProperties.getUserName());
-		hikariConfig.setPassword(this.gcpCloudSqlProperties.getPassword());
-		// Setting this is useful to disable connection initialization. Especially in unit tests.
-		hikariConfig.setInitializationFailFast(this.gcpCloudSqlProperties.isInitFailFast());
-
-		return new HikariDataSource(hikariConfig);
+		return DataSourceBuilder.create()
+				.type(HikariDataSource.class)
+				.driverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass())
+				.url(cloudSqlJdbcInfoProvider.getJdbcUrl())
+				.username(this.gcpCloudSqlProperties.getUserName())
+				.password(this.gcpCloudSqlProperties.getPassword())
+				.build();
 	}
 
 	/**
 	 * Set credentials to be used by the Google Cloud SQL socket factory.
 	 *
 	 * <p>
-	 * The only way to pass a {@link CredentialFactory} to the socket factory is by passing a class
-	 * name through a system property. The socket factory creates an instance of
+	 * The only way to pass a {@link CredentialFactory} to the socket factory is by passing a
+	 * class name through a system property. The socket factory creates an instance of
 	 * {@link CredentialFactory} using reflection without any arguments. Because of that, the
-	 * credential location needs to be stored somewhere where the class can read it without any
-	 * context. It could be possible to pass in a Spring context to {@link SqlCredentialFactory},
-	 * but this is a tricky solution that needs some thinking about.
+	 * credential location needs to be stored somewhere where the class can read it without
+	 * any context. It could be possible to pass in a Spring context to
+	 * {@link SqlCredentialFactory}, but this is a tricky solution that needs some thinking
+	 * about.
 	 *
 	 * <p>
-	 * If user didn't specify credentials, the socket factory already does the right thing by using
-	 * the application default credentials by default. So we don't need to do anything.
+	 * If user didn't specify credentials, the socket factory already does the right thing by
+	 * using the application default credentials by default. So we don't need to do anything.
 	 */
 	private void setCredentialsProperty() {
 		try {
@@ -174,8 +177,7 @@ public class GcpCloudSqlAutoConfiguration {
 					&& this.gcpProperties.getCredentialsLocation() != null
 					&& this.gcpProperties.getCredentialsLocation().exists()) {
 				// A resource might not be in the filesystem, but the Cloud SQL credential must.
-				File credentialsLocationFile =
-						this.gcpProperties.getCredentialsLocation().getFile();
+				File credentialsLocationFile = this.gcpProperties.getCredentialsLocation().getFile();
 
 				// This should happen if the Spring resource isn't in the filesystem, but a URL,
 				// classpath file, etc.

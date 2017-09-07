@@ -153,6 +153,27 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 	}
 
 	@TestPropertySource(properties = {
+			"spring.cloud.gcp.sql.instanceName=test-instance",
+			"spring.cloud.gcp.sql.hikari.connectionTestQuery=select 1",
+			"spring.cloud.gcp.sql.hikari.maximumPoolSize=19"
+
+	})
+	public static class GcpCloudSqlAutoConfigurationWithDatasourcePropertiesTest
+			extends GcpCloudSqlAutoConfigurationMockTests {
+		@Test
+		@Override
+		public void test() {
+			HikariDataSource dataSource = (HikariDataSource) this.dataSource;
+			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=proj:reg:test-instance"
+							+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
+					this.urlProvider.getJdbcUrl());
+			assertEquals("com.mysql.jdbc.Driver", this.urlProvider.getJdbcDriverClass());
+			assertEquals(19, dataSource.getMaximumPoolSize());
+			assertEquals("select 1", dataSource.getConnectionTestQuery());
+		}
+	}
+
+	@TestPropertySource(properties = {
 			"spring.cloud.gcp.sql.instanceConnectionName=world:asia:japan"
 	})
 	public static class GcpCloudSqlAutoConfigurationWithInstanceConnectionNameTest
