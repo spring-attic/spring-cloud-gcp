@@ -17,7 +17,9 @@
 package org.springframework.cloud.gcp.core.autoconfig;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
@@ -27,7 +29,6 @@ import com.google.auth.oauth2.ComputeEngineCredentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.auth.oauth2.UserCredentials;
-import com.google.common.collect.ImmutableList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -38,6 +39,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProperties;
+import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
@@ -55,19 +57,10 @@ import org.springframework.util.StringUtils;
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {
 
-	private static final String PUBSUB_SCOPE = "https://www.googleapis.com/auth/pubsub";
-
-	private static final String SQLADMIN_SCOPE =
-			"https://www.googleapis.com/auth/sqlservice.admin";
-
-	private static final String STORAGE_READ_SCOPE =
-			"https://www.googleapis.com/auth/devstorage.read_only";
-
-	private static final String STORAGE_WRITE_SCOPE =
-			"https://www.googleapis.com/auth/devstorage.read_write";
-
-	public static final List<String> CREDENTIALS_SCOPES_LIST =
-			ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE, STORAGE_READ_SCOPE, STORAGE_WRITE_SCOPE);
+	private static final List<String> CREDENTIALS_SCOPES_LIST =
+			Arrays.asList(GcpScope.values()).stream()
+					.map(scope -> scope.getUrl())
+					.collect(Collectors.toList());
 
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
 

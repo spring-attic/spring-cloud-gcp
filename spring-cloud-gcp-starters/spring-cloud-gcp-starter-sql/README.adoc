@@ -81,3 +81,24 @@ The returned `DataSource` is an implementation of
 https://brettwooldridge.github.io/HikariCP/[HikariCP]. If you want to use another kind of
 `DataSource`, feel free to use the provided `CloudSqlJdbcInfoProvider` to provide your own
 `DataSource` bean.
+
+== Frequently Asked Questions
+
+=== I'm seeing a lot of log lines similar to "c.g.cloud.sql.core.SslSocketFactory : Re-throwing cached exception due to attempt to refresh instance information too soon after error." in a loop and I can't connect to my database
+
+This is usually a symptom that something isn't right with the permissions of your credentials. For
+example, your service account doesn't have the
+https://cloud.google.com/sql/docs/mysql/project-access-control#roles[necessary IAM roles].
+
+To find out what's causing the issue, you can enable DEBUG logging level at HikariCP by adding the
+following logback.xml file to your application's resources, or only add the relevant set log level
+line if you already have one logback.xml file:
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <include resource="org/springframework/boot/logging/logback/base.xml"/>
+  <logger name="com.zaxxer.hikari.pool" level="DEBUG"/>
+</configuration>
+----
