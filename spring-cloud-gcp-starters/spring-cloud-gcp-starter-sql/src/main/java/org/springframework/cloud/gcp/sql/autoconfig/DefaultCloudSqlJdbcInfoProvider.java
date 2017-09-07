@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.sql.autoconfig;
 import com.google.api.services.sqladmin.SQLAdmin;
 
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
-import org.springframework.cloud.gcp.sql.DatabaseType;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.util.StringUtils;
 
@@ -37,20 +36,19 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 
 	private final GcpCloudSqlProperties properties;
 
-	private final DatabaseType databaseType;
-
 	public DefaultCloudSqlJdbcInfoProvider(String projectId, SQLAdmin sqlAdmin,
-			GcpCloudSqlProperties properties, DatabaseType databaseType) {
-		this.jdbcUrlResolver = new CloudSqlJdbcUrlResolver(databaseType.getJdbcUrlTemplate(),
+			GcpCloudSqlProperties properties) {
+		this.jdbcUrlResolver = new CloudSqlJdbcUrlResolver(
+				properties.getDatabaseType().getJdbcUrlTemplate(),
 				projectId, properties, sqlAdmin);
 		this.properties = properties;
-		this.databaseType = databaseType;
 	}
 
 	@Override
 	public String getJdbcDriverClass() {
 		return StringUtils.isEmpty(this.properties.getJdbcDriver())
-				? this.databaseType.getJdbcDriverName() : this.properties.getJdbcDriver();
+				? this.properties.getDatabaseType().getJdbcDriverName()
+				: this.properties.getJdbcDriver();
 	}
 
 	@Override

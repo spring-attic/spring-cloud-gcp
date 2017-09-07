@@ -41,7 +41,6 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.AppEngineCondition;
@@ -49,7 +48,6 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
-import org.springframework.cloud.gcp.sql.DatabaseType;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.cloud.gcp.sql.SqlCredentialFactory;
 import org.springframework.context.annotation.Bean;
@@ -116,38 +114,16 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	@ConditionalOnProperty(value = "spring.cloud.gcp.sql.database-type", havingValue = "postgresql")
-	public CloudSqlJdbcInfoProvider postgreSqlJdbcInfoProvider(SQLAdmin sqlAdmin,
+	public CloudSqlJdbcInfoProvider defaultJdbcInfoProvider(SQLAdmin sqlAdmin,
 			GcpProjectIdProvider projectIdProvider) {
 		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(
 				projectIdProvider.getProjectId(),
 				sqlAdmin,
-				this.gcpCloudSqlProperties,
-				DatabaseType.POSTGRESQL);
+				this.gcpCloudSqlProperties);
 
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("Default PostgreSQL JdbcUrl provider. Connecting to "
-					+ defaultProvider.getJdbcUrl() + " with driver "
-					+ defaultProvider.getJdbcDriverClass());
-		}
-
-		setCredentialsProperty();
-
-		return defaultProvider;
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	public CloudSqlJdbcInfoProvider mySqlJdbcInfoProvider(SQLAdmin sqlAdmin,
-			GcpProjectIdProvider projectIdProvider) {
-		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(
-				projectIdProvider.getProjectId(),
-				sqlAdmin,
-				this.gcpCloudSqlProperties,
-				DatabaseType.MYSQL);
-
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("Default MySQL JdbcUrl provider. Connecting to "
+			LOGGER.info("Default " + this.gcpCloudSqlProperties.getDatabaseType().name()
+					+ " JdbcUrl provider. Connecting to "
 					+ defaultProvider.getJdbcUrl() + " with driver "
 					+ defaultProvider.getJdbcDriverClass());
 		}
