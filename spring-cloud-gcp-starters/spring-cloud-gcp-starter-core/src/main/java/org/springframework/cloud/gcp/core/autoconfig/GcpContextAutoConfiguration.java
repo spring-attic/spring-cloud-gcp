@@ -17,7 +17,9 @@
 package org.springframework.cloud.gcp.core.autoconfig;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
@@ -27,7 +29,6 @@ import com.google.auth.oauth2.ComputeEngineCredentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.auth.oauth2.UserCredentials;
-import com.google.common.collect.ImmutableList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -38,6 +39,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProperties;
+import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
@@ -55,18 +57,10 @@ import org.springframework.util.StringUtils;
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {
 
-	private static final String PUBSUB_SCOPE = "https://www.googleapis.com/auth/pubsub";
-
-	private static final String SQLADMIN_SCOPE = "https://www.googleapis.com/auth/sqlservice.admin";
-
-	private static final String STORAGE_READ_SCOPE = "https://www.googleapis.com/auth/devstorage.read_only";
-
-	private static final String STORAGE_WRITE_SCOPE = "https://www.googleapis.com/auth/devstorage.read_write";
-
-	private static final String TRACE_APPEND_SCOPE = "https://www.googleapis.com/auth/trace.append";
-
-	public static final List<String> CREDENTIALS_SCOPES_LIST = ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE,
-			STORAGE_READ_SCOPE, STORAGE_WRITE_SCOPE, TRACE_APPEND_SCOPE);
+	private static final List<String> CREDENTIALS_SCOPES_LIST =
+			Arrays.asList(GcpScope.values()).stream()
+					.map(scope -> scope.getUrl())
+					.collect(Collectors.toList());
 
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
 
@@ -82,7 +76,7 @@ public class GcpContextAutoConfiguration {
 			credentialsProvider = FixedCredentialsProvider
 					.create(GoogleCredentials.fromStream(
 							this.gcpProperties.getCredentialsLocation().getInputStream())
-							.createScoped(CREDENTIALS_SCOPES_LIST));
+					.createScoped(CREDENTIALS_SCOPES_LIST));
 		}
 		else {
 			credentialsProvider = GoogleCredentialsProvider.newBuilder()
@@ -115,15 +109,16 @@ public class GcpContextAutoConfiguration {
 	}
 
 	/**
-	 * @return a {@link GcpProjectIdProvider} that returns the project ID in the properties
-	 * or, if none, the project ID from the GOOGLE_CLOUD_PROJECT envvar and Metadata Server
+	 * @return a {@link GcpProjectIdProvider} that returns the project ID in the properties or, if
+	 * none, the project ID from the GOOGLE_CLOUD_PROJECT envvar and Metadata Server
 	 */
 	@Bean
 	@ConditionalOnMissingBean
 	public GcpProjectIdProvider gcpProjectIdProvider() {
-		GcpProjectIdProvider projectIdProvider = this.gcpProperties.getProjectId() != null
-				? () -> this.gcpProperties.getProjectId()
-				: new DefaultGcpProjectIdProvider();
+		GcpProjectIdProvider projectIdProvider =
+				this.gcpProperties.getProjectId() != null
+						? () -> this.gcpProperties.getProjectId()
+						: new DefaultGcpProjectIdProvider();
 
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("The default project ID is " + projectIdProvider.getProjectId());
