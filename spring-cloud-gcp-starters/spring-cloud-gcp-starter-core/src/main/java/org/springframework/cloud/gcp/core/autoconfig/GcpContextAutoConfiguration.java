@@ -57,17 +57,16 @@ public class GcpContextAutoConfiguration {
 
 	private static final String PUBSUB_SCOPE = "https://www.googleapis.com/auth/pubsub";
 
-	private static final String SQLADMIN_SCOPE =
-			"https://www.googleapis.com/auth/sqlservice.admin";
+	private static final String SQLADMIN_SCOPE = "https://www.googleapis.com/auth/sqlservice.admin";
 
-	private static final String STORAGE_READ_SCOPE =
-			"https://www.googleapis.com/auth/devstorage.read_only";
+	private static final String STORAGE_READ_SCOPE = "https://www.googleapis.com/auth/devstorage.read_only";
 
-	private static final String STORAGE_WRITE_SCOPE =
-			"https://www.googleapis.com/auth/devstorage.read_write";
+	private static final String STORAGE_WRITE_SCOPE = "https://www.googleapis.com/auth/devstorage.read_write";
 
-	public static final List<String> CREDENTIALS_SCOPES_LIST =
-			ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE, STORAGE_READ_SCOPE, STORAGE_WRITE_SCOPE);
+	private static final String TRACE_APPEND_SCOPE = "https://www.googleapis.com/auth/trace.append";
+
+	public static final List<String> CREDENTIALS_SCOPES_LIST = ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE,
+			STORAGE_READ_SCOPE, STORAGE_WRITE_SCOPE, TRACE_APPEND_SCOPE);
 
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
 
@@ -83,7 +82,7 @@ public class GcpContextAutoConfiguration {
 			credentialsProvider = FixedCredentialsProvider
 					.create(GoogleCredentials.fromStream(
 							this.gcpProperties.getCredentialsLocation().getInputStream())
-					.createScoped(CREDENTIALS_SCOPES_LIST));
+							.createScoped(CREDENTIALS_SCOPES_LIST));
 		}
 		else {
 			credentialsProvider = GoogleCredentialsProvider.newBuilder()
@@ -116,16 +115,15 @@ public class GcpContextAutoConfiguration {
 	}
 
 	/**
-	 * @return a {@link GcpProjectIdProvider} that returns the project ID in the properties or, if
-	 * none, the project ID from the GOOGLE_CLOUD_PROJECT envvar and Metadata Server
+	 * @return a {@link GcpProjectIdProvider} that returns the project ID in the properties
+	 * or, if none, the project ID from the GOOGLE_CLOUD_PROJECT envvar and Metadata Server
 	 */
 	@Bean
 	@ConditionalOnMissingBean
 	public GcpProjectIdProvider gcpProjectIdProvider() {
-		GcpProjectIdProvider projectIdProvider =
-				this.gcpProperties.getProjectId() != null
-						? () -> this.gcpProperties.getProjectId()
-						: new DefaultGcpProjectIdProvider();
+		GcpProjectIdProvider projectIdProvider = this.gcpProperties.getProjectId() != null
+				? () -> this.gcpProperties.getProjectId()
+				: new DefaultGcpProjectIdProvider();
 
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("The default project ID is " + projectIdProvider.getProjectId());
