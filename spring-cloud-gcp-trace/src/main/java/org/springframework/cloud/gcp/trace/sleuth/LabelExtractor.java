@@ -46,7 +46,7 @@ import org.springframework.util.StringUtils;
 public class LabelExtractor {
 	public static final String DEFAULT_AGENT_NAME = "spring-cloud-gcp-trace";
 
-	public static final String DEFAULT_PREFIX = "spring.sleuth/";
+	public static final String DEFAULT_PREFIX = "cloud.spring.io/";
 
 	public static final String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd (HH:mm:ss.SSS)";
 

@@ -100,16 +100,20 @@ public class StackdriverTraceSpanListener implements SpanReporter {
 				.setEndTime(createTimestamp(span.getEnd()));
 
 		// Set Kind
-		builder.setKind(getKind(span));
+		TraceSpan.SpanKind kind = getKind(span);
+		builder.setKind(kind);
+
+		// Set the parent IDs
+		rewriteIds(adjustedSpan, kind, builder);
 
 		builder.putAllLabels(this.labelExtractor.extract(span, builder.getKind(), this.instanceId));
 
 		return builder.build();
 	}
 
-	private void rewriteIds(Span span, TraceSpan.Builder builder, TraceSpan.SpanKind kind) {
+	private void rewriteIds(Span span, TraceSpan.SpanKind kind, TraceSpan.Builder builder) {
+		// Find the parent ID. Use 0 if no parent found.
 		long parentId = 0;
-		// Set Parent ID
 		if (span.getParents().size() > 0) {
 			if (span.getParents().size() > 1) {
 				LOGGER.error("Stackdriver Trace doesn't support spans with multiple parents. Omitting "
@@ -118,7 +122,11 @@ public class StackdriverTraceSpanListener implements SpanReporter {
 			parentId = span.getParents().get(0);
 		}
 
-		// Change the spanId of RPC_CLIENT spans.
+		// Every span will need a different Span ID.
+		// If it's a RPC_CLIENT span, there is likely to be a RPC_SERVER span. Both spans would've
+		// had the same Span ID and that won't work. Thus, we need to change one of the Span IDs.
+		// If it's a RPC_CLIENT, we'll rewrite the Span ID. Later, we'll need to rewrite the
+		// corresponding RPC_SERVER span's parent ID to match this one.
 		if (kind == TraceSpan.SpanKind.RPC_CLIENT) {
 			builder.setSpanId(rewriteId(span.getSpanId()));
 		}
@@ -129,18 +137,16 @@ public class StackdriverTraceSpanListener implements SpanReporter {
 		// Change the parentSpanId of RPC_SERVER spans to use the rewritten spanId of the
 		// RPC_CLIENT spans.
 		if (kind == TraceSpan.SpanKind.RPC_SERVER) {
-			if (!span.isRemote() && parentId != 0) {
+			if (!span.isRemote()) {
 				// Owns the Span.
 				// This means the parent RPC_CLIENT span was a separate span with id=span.parentId.
-				// When
-				// that span fragment was converted, it would have had id=rewriteId(zipkinSpan.parentId)
+				// When that span was converted, it would have had id=rewriteId(span.parentId)
 				builder.setParentSpanId(rewriteId(parentId));
 			}
 			else {
 				// This is a multi-host span.
 				// This means the parent client-side span has the same id as this span. When that fragment
-				// of
-				// the span was converted, it would have had id rewriteId(zipkinSpan.id)
+				// of the span was converted, it would have had id rewriteId(span.spanId)
 				builder.setParentSpanId(rewriteId(span.getSpanId()));
 			}
 		}
