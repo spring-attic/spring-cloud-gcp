@@ -22,12 +22,13 @@ import com.google.devtools.cloudtrace.v1.Trace;
 import com.google.devtools.cloudtrace.v1.TraceSpan;
 import com.google.devtools.cloudtrace.v1.Traces;
 import com.google.protobuf.Timestamp;
-import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.cloud.sleuth.Log;
 import org.springframework.cloud.sleuth.Span;
 import org.springframework.cloud.sleuth.SpanAdjuster;
 import org.springframework.cloud.sleuth.SpanReporter;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -40,7 +41,7 @@ import org.springframework.util.StringUtils;
  * @author Ray Tsang
  */
 public class StackdriverTraceSpanListener implements SpanReporter {
-	private static final Log LOGGER = LogFactory.getLog(StackdriverTraceSpanListener.class);
+	private static final org.apache.commons.logging.Log LOGGER = LogFactory.getLog(StackdriverTraceSpanListener.class);
 
 	private final String instanceId;
 
@@ -61,7 +62,7 @@ public class StackdriverTraceSpanListener implements SpanReporter {
 		this.traceConsumer = traceConsumer;
 	}
 
-	private Timestamp createTimestamp(long milliseconds) {
+	protected Timestamp createTimestamp(long milliseconds) {
 		long seconds = (milliseconds / 1000);
 		int remainderMicros = (int) (milliseconds % 1000);
 		int remainderNanos = remainderMicros * 1000000;
@@ -70,7 +71,7 @@ public class StackdriverTraceSpanListener implements SpanReporter {
 	}
 
 	private TraceSpan.SpanKind getKind(Span span) {
-		for (org.springframework.cloud.sleuth.Log log : span.logs()) {
+		for (Log log : span.logs()) {
 			if (Span.CLIENT_SEND.equals(log.getEvent()) || Span.CLIENT_RECV.equals(log.getEvent())) {
 				return TraceSpan.SpanKind.RPC_CLIENT;
 			}
@@ -79,6 +80,15 @@ public class StackdriverTraceSpanListener implements SpanReporter {
 			}
 		}
 		return TraceSpan.SpanKind.SPAN_KIND_UNSPECIFIED;
+	}
+
+	private Log findLog(Span span, String event) {
+		for (Log log : span.logs()) {
+			if (event.equals(log.getEvent())) {
+				return log;
+			}
+		}
+		return null;
 	}
 
 	protected TraceSpan convert(Span span) {
@@ -90,25 +100,40 @@ public class StackdriverTraceSpanListener implements SpanReporter {
 		TraceSpan.Builder builder = TraceSpan.newBuilder();
 
 		// Set name
-		if (StringUtils.hasText(span.getName())) {
-			builder.setName(span.getName());
+		if (StringUtils.hasText(adjustedSpan.getName())) {
+			builder.setName(adjustedSpan.getName());
 		}
 
-		// Set Span ID, Start Time, and End Time
-		builder.setSpanId(span.getSpanId())
-				.setStartTime(createTimestamp(span.getBegin()))
-				.setEndTime(createTimestamp(span.getEnd()));
-
-		// Set Kind
-		TraceSpan.SpanKind kind = getKind(span);
+		TraceSpan.SpanKind kind = getKind(adjustedSpan);
 		builder.setKind(kind);
-
-		// Set the parent IDs
+		builder.setSpanId(adjustedSpan.getSpanId());
 		rewriteIds(adjustedSpan, kind, builder);
+		writeStartEndTime(adjustedSpan, builder);
 
-		builder.putAllLabels(this.labelExtractor.extract(span, builder.getKind(), this.instanceId));
+		builder.putAllLabels(this.labelExtractor.extract(adjustedSpan, builder.getKind(), this.instanceId));
 
 		return builder.build();
+	}
+
+	private void writeStartEndTime(Span span, TraceSpan.Builder builder) {
+		if (!span.isRemote()) {
+			Log clientSend = findLog(span, Span.CLIENT_SEND);
+			Log clientReceive = findLog(span, Span.CLIENT_RECV);
+			if (clientSend != null) {
+				builder.setStartTime(createTimestamp(clientSend.getTimestamp()));
+			}
+			else {
+				builder.setStartTime(createTimestamp(span.getBegin()));
+			}
+			if (!span.isRunning()) {
+				if (clientReceive != null) {
+					builder.setEndTime(createTimestamp(clientReceive.getTimestamp()));
+				}
+				else {
+					builder.setEndTime(createTimestamp(span.getEnd()));
+				}
+			}
+		}
 	}
 
 	private void rewriteIds(Span span, TraceSpan.SpanKind kind, TraceSpan.Builder builder) {
@@ -170,6 +195,7 @@ public class StackdriverTraceSpanListener implements SpanReporter {
 
 	@Override
 	public void report(Span span) {
+		Assert.notNull(span, "span cannot be null");
 		if (span.isExportable()) {
 			TraceSpan traceSpan = convert(span);
 			Traces traces = Traces.newBuilder()
