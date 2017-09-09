@@ -20,6 +20,7 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
@@ -27,6 +28,7 @@ import com.google.api.gax.grpc.FixedExecutorProvider;
 import com.google.cloud.trace.Tracer;
 import com.google.cloud.trace.v1.TraceServiceClient;
 import com.google.cloud.trace.v1.TraceServiceSettings;
+import com.google.cloud.trace.v1.consumer.FlushableTraceConsumer;
 import com.google.cloud.trace.v1.consumer.ScheduledBufferingTraceConsumer;
 import com.google.cloud.trace.v1.consumer.TraceConsumer;
 import com.google.cloud.trace.v1.util.RoughTraceSizer;
@@ -41,9 +43,9 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.commons.util.IdUtils;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.trace.GcpTraceProperties;
+import org.springframework.cloud.gcp.trace.TraceServiceClientTraceConsumer;
 import org.springframework.cloud.gcp.trace.sleuth.LabelExtractor;
 import org.springframework.cloud.gcp.trace.sleuth.StackdriverTraceSpanListener;
-import org.springframework.cloud.gcp.trace.sleuth.TraceServiceClientTraceConsumer;
 import org.springframework.cloud.sleuth.Sampler;
 import org.springframework.cloud.sleuth.SpanAdjuster;
 import org.springframework.cloud.sleuth.SpanNamer;
@@ -107,13 +109,21 @@ public class StackdriverTraceAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(name = "asyncTraceConsumerExecutorService")
+	public ScheduledExecutorService asyncTraceConsumerExecutorService(GcpTraceProperties gcpTraceProperties) {
+		return Executors.newScheduledThreadPool(gcpTraceProperties.getExecutorThreads());
+	}
+
+	@Bean
 	@ConditionalOnMissingBean(name = "asyncTraceConsumer")
-	public TraceConsumer asyncTraceConsumer(@Qualifier("syncTraceConsumer") TraceConsumer syncTraceConsumer,
-			Sizer<Trace> traceSizer, GcpTraceProperties gcpTraceProperties) {
+	public FlushableTraceConsumer asyncTraceConsumer(
+			@Qualifier("syncTraceConsumer") TraceConsumer syncTraceConsumer,
+			Sizer<Trace> traceSizer,
+			@Qualifier("asyncTraceConsumerExecutorService") ScheduledExecutorService executorService,
+			GcpTraceProperties gcpTraceProperties) {
 		ScheduledBufferingTraceConsumer scheduledBufferingTraceConsumer = new ScheduledBufferingTraceConsumer(
 				syncTraceConsumer, traceSizer, gcpTraceProperties.getBufferSizeBytes(),
-				gcpTraceProperties.getScheduledDelaySeconds(),
-				Executors.newScheduledThreadPool(1));
+				gcpTraceProperties.getScheduledDelaySeconds(), executorService);
 
 		return scheduledBufferingTraceConsumer;
 	}
@@ -125,6 +135,16 @@ public class StackdriverTraceAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean
+	public SpanReporter traceSpanReporter(Environment environment, GcpProjectIdProvider gcpProjectIdProvider,
+			LabelExtractor labelExtractor,
+			List<SpanAdjuster> spanAdjusters, @Qualifier("asyncTraceConsumer") TraceConsumer traceConsumer) {
+		String instanceId = IdUtils.getDefaultInstanceId(environment);
+		return new StackdriverTraceSpanListener(instanceId, gcpProjectIdProvider.getProjectId(), labelExtractor,
+				spanAdjusters, traceConsumer);
+	}
+
+	@Bean
 	@ConditionalOnMissingBean(Tracer.class)
 	public DefaultTracer stackdriverTracer(Sampler sampler, Random random,
 			SpanNamer spanNamer, SpanLogger spanLogger,
@@ -133,14 +153,4 @@ public class StackdriverTraceAutoConfiguration {
 				spanReporter, true, traceKeys);
 	}
 
-	@Bean
-	@ConditionalOnMissingBean
-	public SpanReporter traceSpanReporter(Environment environment, GcpProjectIdProvider gcpProjectIdProvider,
-			LabelExtractor labelExtractor,
-			List<SpanAdjuster> spanAdjusters, @Qualifier("asyncTraceConsumer") TraceConsumer traceConsumer) {
-		String instanceId = IdUtils.getDefaultInstanceId(environment);
-		return new StackdriverTraceSpanListener(instanceId, gcpProjectIdProvider.getProjectId(), labelExtractor,
-				spanAdjusters,
-				traceConsumer);
-	}
 }
