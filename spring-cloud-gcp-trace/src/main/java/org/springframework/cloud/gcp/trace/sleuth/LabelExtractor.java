@@ -48,7 +48,7 @@ public class LabelExtractor {
 
 	public static final String DEFAULT_PREFIX = "cloud.spring.io/";
 
-	public static final String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd (HH:mm:ss.SSS)";
+	public static final String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd (HH:mm:ss.SSS z)";
 
 	private static final Map<String, String> DEFAULT_RENAME_MAP;
 	static {

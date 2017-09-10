@@ -15,8 +15,10 @@
  */
 package org.springframework.cloud.gcp.trace.sleuth;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -64,6 +66,8 @@ public class StackdriverTraceSpanListenerTests {
 	@Autowired
 	MockEnvironment mockEnvironment;
 
+	SimpleDateFormat dateFormatter = new SimpleDateFormat(LabelExtractor.DEFAULT_TIMESTAMP_FORMAT);
+
 	@PostConstruct
 	public void init() {
 		this.test.traceSpans.clear();
@@ -88,8 +92,10 @@ public class StackdriverTraceSpanListenerTests {
 		// Server Spans should use Span begin and end time, not SR or SS
 		Assert.assertEquals(this.spanListener.createTimestamp(beginTime - 1), traceSpan.getStartTime());
 		Assert.assertEquals(this.spanListener.createTimestamp(endTime + 1), traceSpan.getEndTime());
-		Assert.assertEquals("2009-04-05 (02:19:38.081)", traceSpan.getLabelsOrThrow("cloud.spring.io/sr"));
-		Assert.assertEquals("2009-04-05 (02:19:38.123)", traceSpan.getLabelsOrThrow("cloud.spring.io/ss"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(beginTime)),
+				traceSpan.getLabelsOrThrow("cloud.spring.io/sr"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(endTime)),
+				traceSpan.getLabelsOrThrow("cloud.spring.io/ss"));
 		Assert.assertEquals(TraceSpan.SpanKind.RPC_SERVER, traceSpan.getKind());
 	}
 
@@ -112,8 +118,10 @@ public class StackdriverTraceSpanListenerTests {
 		// Client span chould use CS and CR time, not Span begin or end time.
 		Assert.assertEquals(this.spanListener.createTimestamp(beginTime), traceSpan.getStartTime());
 		Assert.assertEquals(this.spanListener.createTimestamp(endTime), traceSpan.getEndTime());
-		Assert.assertEquals("2009-04-05 (02:19:38.081)", traceSpan.getLabelsOrThrow("cloud.spring.io/cs"));
-		Assert.assertEquals("2009-04-05 (02:19:38.123)", traceSpan.getLabelsOrThrow("cloud.spring.io/cr"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(beginTime)),
+				traceSpan.getLabelsOrThrow("cloud.spring.io/cs"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(endTime)),
+				traceSpan.getLabelsOrThrow("cloud.spring.io/cr"));
 		Assert.assertEquals(TraceSpan.SpanKind.RPC_CLIENT, traceSpan.getKind());
 	}
 
@@ -137,8 +145,10 @@ public class StackdriverTraceSpanListenerTests {
 		// Server side remote span should not report start/end time
 		Assert.assertEquals(Timestamp.getDefaultInstance(), traceSpan.getStartTime());
 		Assert.assertEquals(Timestamp.getDefaultInstance(), traceSpan.getEndTime());
-		Assert.assertEquals("2009-04-05 (02:19:38.081)", traceSpan.getLabelsOrThrow("cloud.spring.io/sr"));
-		Assert.assertEquals("2009-04-05 (02:19:38.123)", traceSpan.getLabelsOrThrow("cloud.spring.io/ss"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(beginTime)),
+				traceSpan.getLabelsOrThrow("cloud.spring.io/sr"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(endTime)),
+				traceSpan.getLabelsOrThrow("cloud.spring.io/ss"));
 		Assert.assertEquals(TraceSpan.SpanKind.RPC_SERVER, traceSpan.getKind());
 	}
 
@@ -162,8 +172,10 @@ public class StackdriverTraceSpanListenerTests {
 		// Client span chould use CS and CR time, not Span begin or end time.
 		Assert.assertEquals(Timestamp.getDefaultInstance(), traceSpan.getStartTime());
 		Assert.assertEquals(Timestamp.getDefaultInstance(), traceSpan.getEndTime());
-		Assert.assertEquals("2009-04-05 (02:19:38.081)", traceSpan.getLabelsOrThrow("cloud.spring.io/cs"));
-		Assert.assertEquals("2009-04-05 (02:19:38.123)", traceSpan.getLabelsOrThrow("cloud.spring.io/cr"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(beginTime)),
+				traceSpan.getLabelsOrThrow("cloud.spring.io/cs"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(endTime)),
+				traceSpan.getLabelsOrThrow("cloud.spring.io/cr"));
 		Assert.assertEquals(TraceSpan.SpanKind.RPC_CLIENT, traceSpan.getKind());
 	}
 
@@ -201,8 +213,10 @@ public class StackdriverTraceSpanListenerTests {
 		// Server side remote span should not report start/end time
 		Assert.assertEquals(Timestamp.getDefaultInstance(), serverTraceSpan.getStartTime());
 		Assert.assertEquals(Timestamp.getDefaultInstance(), serverTraceSpan.getEndTime());
-		Assert.assertEquals("2009-04-05 (02:19:38.081)", serverTraceSpan.getLabelsOrThrow("cloud.spring.io/sr"));
-		Assert.assertEquals("2009-04-05 (02:19:38.123)", serverTraceSpan.getLabelsOrThrow("cloud.spring.io/ss"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(beginTime)),
+				serverTraceSpan.getLabelsOrThrow("cloud.spring.io/sr"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(endTime)),
+				serverTraceSpan.getLabelsOrThrow("cloud.spring.io/ss"));
 		Assert.assertEquals(TraceSpan.SpanKind.RPC_SERVER, serverTraceSpan.getKind());
 
 		TraceSpan clientTraceSpan = this.test.traceSpans.get(1);
@@ -210,8 +224,10 @@ public class StackdriverTraceSpanListenerTests {
 		// Client span chould use CS and CR time, not Span begin or end time.
 		Assert.assertEquals(this.spanListener.createTimestamp(beginTime), clientTraceSpan.getStartTime());
 		Assert.assertEquals(this.spanListener.createTimestamp(endTime), clientTraceSpan.getEndTime());
-		Assert.assertEquals("2009-04-05 (02:19:38.081)", clientTraceSpan.getLabelsOrThrow("cloud.spring.io/cs"));
-		Assert.assertEquals("2009-04-05 (02:19:38.123)", clientTraceSpan.getLabelsOrThrow("cloud.spring.io/cr"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(beginTime)),
+				clientTraceSpan.getLabelsOrThrow("cloud.spring.io/cs"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(endTime)),
+				clientTraceSpan.getLabelsOrThrow("cloud.spring.io/cr"));
 		Assert.assertEquals(TraceSpan.SpanKind.RPC_CLIENT, clientTraceSpan.getKind());
 
 		Assert.assertEquals(0, clientTraceSpan.getParentSpanId());

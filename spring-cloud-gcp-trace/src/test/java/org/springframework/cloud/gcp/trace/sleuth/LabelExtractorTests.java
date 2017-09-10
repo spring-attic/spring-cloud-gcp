@@ -15,6 +15,8 @@
  */
 package org.springframework.cloud.gcp.trace.sleuth;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 
 import com.google.devtools.cloudtrace.v1.TraceSpan;
@@ -28,6 +30,8 @@ import org.springframework.cloud.sleuth.Span;
  * @author Ray Tsang
  */
 public class LabelExtractorTests {
+	SimpleDateFormat dateFormatter = new SimpleDateFormat(LabelExtractor.DEFAULT_TIMESTAMP_FORMAT);
+
 	@Test
 	public void testLabelReplacement() {
 		LabelExtractor extractor = new LabelExtractor();
@@ -60,8 +64,8 @@ public class LabelExtractorTests {
 		Map<String, String> labels = extractor.extract(span, TraceSpan.SpanKind.RPC_CLIENT, "hostname");
 
 		Assert.assertNotNull("span shouldn't be null", span);
-		Assert.assertEquals("2009-04-05 (02:19:38.081)", labels.get("cloud.spring.io/cs"));
-		Assert.assertEquals("2009-04-05 (02:19:38.123)", labels.get("cloud.spring.io/cr"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(begin)), labels.get("cloud.spring.io/cs"));
+		Assert.assertEquals(this.dateFormatter.format(new Date(end)), labels.get("cloud.spring.io/cr"));
 		Assert.assertEquals("localhost", labels.get("/http/host"));
 		Assert.assertEquals("spring-cloud-gcp-trace", labels.get("/agent"));
 		Assert.assertEquals("hello-service", labels.get("/component"));
