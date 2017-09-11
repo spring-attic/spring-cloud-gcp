@@ -1,7 +1,47 @@
 == Spring Cloud GCP for Pub/Sub
 
-Spring Cloud GCP provides a Spring abstraction layer to publish and subscribe messages from Google
-Cloud Pub/Sub topics and to create or delete Google Cloud Pub/Sub topics and subscriptions.
+Spring Cloud GCP provides a Spring abstraction layer to publish to and subscribe from Google Cloud
+Pub/Sub topics and to create, list or delete Google Cloud Pub/Sub topics and subscriptions.
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-pubsub</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub', version: '1.0.0.BUILD-SNAPSHOT'
+}
+----
+
+A Spring Boot starter is provided to auto-configure the various Pub/Sub components.
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-pubsub', version: '1.0.0.BUILD-SNAPSHOT'
+}
+----
 
 === Pub/Sub operations abstraction
 
@@ -13,7 +53,7 @@ comprehends all the possible operations to be carried by a Google Cloud Pub/Sub 
 
 `PubSubTemplate` depends on a `PublisherFactory`, which is a functional interface to provide a
 Google Cloud Java Client for Pub/Sub `Publisher`. The Spring Boot starter for GCP Pub/Sub
-auto-configures a `PublisherFactory` with sensible defaults and uses the `GcpProjectIdProvider` and
+auto-configures a `PublisherFactory` with default settings and uses the `GcpProjectIdProvider` and
 `CredentialsProvider` auto-configured by the Spring Boot GCP Core starter.
 
 The `PublisherFactory` implementation provided by Spring Cloud GCP Pub/Sub,
@@ -32,7 +72,7 @@ spring.cloud.gcp.pubsub.publisher.executorThreads=2
 
 The default value for both these properties is 4 threads.
 
-==== Publishing to a Google Cloud Pub/Sub topic
+==== Publishing to a topic
 
 `PubSubTemplate` provides an asynchronous method to publish messages to a Google Cloud Pub/Sub
 topic.
@@ -74,7 +114,7 @@ defaults. The Spring Boot starter for GCP Pub/Sub auto-configures a `PubSubAdmin
 `GcpProjectIdProvider` and the `CredentialsProvider` auto-configured by the Spring Boot GCP Core
 starter.
 
-==== Creating a Google Cloud Pub/Sub topic
+==== Creating a topic
 
 `PubSubAdmin` implements a method to create topics:
 
@@ -95,7 +135,7 @@ public void newTopic() {
 }
 ----
 
-==== Deleting a Google Cloud Pub/Sub topic
+==== Deleting a topic
 
 `PubSubAdmin` implements a method to delete topics:
 
@@ -116,7 +156,7 @@ public void deleteTopic() {
 }
 ----
 
-==== Listing Google Cloud Pub/Sub topics
+==== Listing topics
 
 `PubSubAdmin` implements a method to list topics:
 
@@ -144,13 +184,11 @@ public List<String> listTopics() {
 
 ==== Creating a Google Cloud Pub/Sub subscription
 
-// TODO(joaomartins): Mention the other alternative createSubscription methods.
-
 `PubSubAdmin` implements a method to create subscriptions to existing topics:
 
 [source,java]
 ----
-public Subscription createSubscription(String subscriptionName, String topicName)
+public Subscription createSubscription(String subscriptionName, String topicName, Integer ackDeadline, String pushEndpoint)
 ----
 
 Here is an example of how to create a Google Cloud Pub/Sub subscription:
@@ -161,11 +199,30 @@ Here is an example of how to create a Google Cloud Pub/Sub subscription:
 private PubSubAdmin admin;
 
 public void newSubscription() {
-    admin.createSubscription("subscriptionName", "topicName");
+    admin.createSubscription("subscriptionName", "topicName", 10, “http://my.endpoint/push”);
 }
 ----
 
-==== Deleting a Google Cloud Pub/Sub subscription
+Alternative methods with default settings are provided for ease of use. The default value for
+`ackDeadline` is 10 seconds. If `pushEndpoint` isn’t specified, the subscription uses message
+pulling, instead.
+
+[source,java]
+----
+public Subscription createSubscription(String subscriptionName, String topicName)
+----
+
+[source,java]
+----
+public Subscription createSubscription(String subscriptionName, String topicName, Integer ackDeadline)
+----
+
+[source,java]
+----
+public Subscription createSubscription(String subscriptionName, String topicName, String pushEndpoint)
+----
+
+==== Deleting a subscription
 
 `PubSubAdmin` implements a method to delete subscriptions:
 
@@ -186,7 +243,7 @@ public void deleteSubscription() {
 }
 ----
 
-==== Listing Google Cloud Pub/Sub subscriptions
+==== Listing subscriptions
 
 `PubSubAdmin` implements a method to list subscriptions:
 

@@ -6,8 +6,28 @@ so you can run your MySQL or PostgreSQL databases in Google Cloud SQL using Spri
 libraries that depend on it like Spring Data JPA.
 
 The Cloud SQL support provided by Spring Cloud GCP is in the form of a Spring Boot starter. The role
-of the starter is to read configuration from properties and assume sensible defaults so that user
-experience connecting to MySQL is as easy as can be.
+of the starter is to read configuration from properties and assume default settings so that user
+experience connecting to MySQL is as easy as possible.
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-sql</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql', version: '1.0.0.BUILD-SNAPSHOT'
+}
+----
+
 
 === Spring Boot Starter for Google Cloud SQL
 
@@ -29,7 +49,7 @@ public List<Map<String, Object>> listUsers() {
 
 |===
 | Property name | Description | Default value | Unused if specified property(ies)
-| `spring.cloud.gcp.sql.database-type` | The type of used database. Can either be `mysql` or
+| `spring.cloud.gcp.sql.database-type` | The type of database used. Can either be `mysql` or
 `postgresql`. | `mysql` |
 | `spring.cloud.gcp.sql.credentials-location` | File system path to the Google OAuth2 credentials
 private key file. Used to authenticate and authorize calls to the Google Cloud SQL Admin API to
@@ -58,15 +78,15 @@ number of connections could not be created. | `false` |
 
 ==== `JdbcTemplate` creation flow
 
-According to previous properties, the Spring Boot starter for Google Cloud SQL creates a
-`CloudSqlJdbcInfoProvider` object, which is used to obtain an instance's JDBC URL and driver class
-name. If you provide your own `CloudSqlJdbcInfoProvider` bean, yours is used and the related
-properties to build the JDBC URL or driver class are ignored.
+Based on the previous properties, the Spring Boot starter for Google Cloud SQL creates a
+`CloudSqlJdbcInfoProvider` object which is used to obtain an instance's JDBC URL and driver class
+name. If you provide your own `CloudSqlJdbcInfoProvider` bean, it is used instead and the properties
+related to building the JDBC URL or driver class are ignored.
 
 It is in the `CloudSqlJdbcInfoProvider` creation step that the credentials factory is registered
 in a system property to be `SqlCredentialFactory`. This isn't relevant unless you want to provide
-your own `CloudSqlJdbcInfoProvider` bean, in which case you should also be registering the
-credentials factory class name under the `"cloudSql.socketFactory.credentialFactory"` system
+your own `CloudSqlJdbcInfoProvider` bean, in which case you should also register the
+credentials factory class name under the `cloudSql.socketFactory.credentialFactory` system
 property.
 
 The `CloudSqlJdbcInfoProvider` bean is used by the starter to create a `DataSource` object. This

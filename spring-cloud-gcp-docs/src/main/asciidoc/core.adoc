@@ -3,6 +3,27 @@
 At the center of every Spring Cloud GCP module are the concepts of `GcpProjectIdProvider` and
 `CredentialsProvider`.
 
+Spring Cloud GCP provides a Spring Boot starter to auto-configure the core components.
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-core</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-core', version: '1.0.0.BUILD-SNAPSHOT'
+}
+----
+
 === Project ID
 
 `GcpProjectIdProvider` is a functional interface that returns a GCP project ID string.
@@ -27,11 +48,11 @@ Otherwise, the project ID is discovered based on a
 https://googlecloudplatform.github.io/google-cloud-java/0.20.1/apidocs/com/google/cloud/ServiceOptions.html#getDefaultProjectId--[set of rules]:
 
 1. The project ID specified by the `GOOGLE_CLOUD_PROJECT` environment variable
-1. The Google App Engine project ID
-1. The project ID specified in the JSON credentials file pointed by the
+2. The Google App Engine project ID
+3. The project ID specified in the JSON credentials file pointed by the
 `GOOGLE_APPLICATION_CREDENTIALS` environment variable
-1. The Google Cloud SDK project ID
-1. The Google Compute Engine project ID, from the Google Compute Engine Metadata Server
+4. The Google Cloud SDK project ID
+5. The Google Compute Engine project ID, from the Google Compute Engine Metadata Server
 
 === Credentials
 
@@ -61,14 +82,15 @@ If that property isn't specified, the starter tries to discover credentials from
 https://github.com/google/google-auth-library-java/blob/master/oauth2_http/java/com/google/auth/oauth2/GoogleCredentials.java#L57[number of places]:
 
 1. Credentials file pointed to by the `GOOGLE_APPLICATION_CREDENTIALS` environment variable
-1. Credentials provided by the Google Cloud SDK `gcloud auth application-default login` command
-1. Google App Engine built-in credentials
-1. Google Cloud Shell built-in credentials
-1. Google Compute Engine built-in credentials
+2. Credentials provided by the Google Cloud SDK `gcloud auth application-default login` command
+3. Google App Engine built-in credentials
+4. Google Cloud Shell built-in credentials
+5. Google Compute Engine built-in credentials
 
 === Scopes
 
-The credentials provided by default contain scopes for every service supported by Spring Cloud GCP.
+By default, the credentials provided by the Spring Cloud GCP Core Starter contain scopes for every
+service supported by Spring Cloud GCP.
 
 |===
 | Service | Scope
