@@ -28,7 +28,6 @@ import com.google.api.gax.grpc.FixedExecutorProvider;
 import com.google.cloud.trace.Tracer;
 import com.google.cloud.trace.v1.TraceServiceClient;
 import com.google.cloud.trace.v1.TraceServiceSettings;
-import com.google.cloud.trace.v1.consumer.FlushableTraceConsumer;
 import com.google.cloud.trace.v1.consumer.ScheduledBufferingTraceConsumer;
 import com.google.cloud.trace.v1.consumer.TraceConsumer;
 import com.google.cloud.trace.v1.util.RoughTraceSizer;
@@ -58,74 +57,20 @@ import org.springframework.cloud.sleuth.sampler.SamplerProperties;
 import org.springframework.cloud.sleuth.trace.DefaultTracer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 
 @Configuration
 @EnableConfigurationProperties({ SamplerProperties.class, GcpTraceProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.trace.enabled", matchIfMissing = true)
+@Import({ StackdriverTraceAutoConfiguration.TraceConsumerConfiguration.class })
 @AutoConfigureBefore(TraceAutoConfiguration.class)
 public class StackdriverTraceAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public Sampler defaultTraceSampler(SamplerProperties config) {
 		return new PercentageBasedSampler(config);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public LabelExtractor traceLabelExtractor() {
-		return new LabelExtractor();
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(name = "traceExecutorProvider")
-	public ExecutorProvider traceExecutorProvider(GcpTraceProperties gcpTraceProperties) {
-		return FixedExecutorProvider.create(
-				Executors.newScheduledThreadPool(gcpTraceProperties.getExecutorThreads()));
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public TraceServiceClient traceServiceClient(CredentialsProvider credentialsProvider,
-			@Qualifier("traceExecutorProvider") ExecutorProvider executorProvider) throws IOException {
-		return TraceServiceClient.create(TraceServiceSettings.defaultBuilder()
-				.setCredentialsProvider(credentialsProvider)
-				.setExecutorProvider(executorProvider)
-				.build());
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public Sizer<Trace> traceSizer() {
-		return new RoughTraceSizer();
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(name = "syncTraceConsumer")
-	public TraceConsumer syncTraceConsumer(GcpProjectIdProvider gcpProjectIdProvider,
-			TraceServiceClient traceServiceClient) {
-		return new TraceServiceClientTraceConsumer(
-				gcpProjectIdProvider.getProjectId(), traceServiceClient);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(name = "asyncTraceConsumerExecutorService")
-	public ScheduledExecutorService asyncTraceConsumerExecutorService(GcpTraceProperties gcpTraceProperties) {
-		return Executors.newScheduledThreadPool(gcpTraceProperties.getExecutorThreads());
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(name = "asyncTraceConsumer")
-	public FlushableTraceConsumer asyncTraceConsumer(
-			@Qualifier("syncTraceConsumer") TraceConsumer syncTraceConsumer,
-			Sizer<Trace> traceSizer,
-			@Qualifier("asyncTraceConsumerExecutorService") ScheduledExecutorService executorService,
-			GcpTraceProperties gcpTraceProperties) {
-		ScheduledBufferingTraceConsumer scheduledBufferingTraceConsumer = new ScheduledBufferingTraceConsumer(
-				syncTraceConsumer, traceSizer, gcpTraceProperties.getBufferSizeBytes(),
-				gcpTraceProperties.getScheduledDelaySeconds(), executorService);
-
-		return scheduledBufferingTraceConsumer;
 	}
 
 	@Bean
@@ -138,7 +83,7 @@ public class StackdriverTraceAutoConfiguration {
 	@ConditionalOnMissingBean
 	public SpanReporter traceSpanReporter(Environment environment, GcpProjectIdProvider gcpProjectIdProvider,
 			LabelExtractor labelExtractor,
-			List<SpanAdjuster> spanAdjusters, @Qualifier("asyncTraceConsumer") TraceConsumer traceConsumer) {
+			List<SpanAdjuster> spanAdjusters, TraceConsumer traceConsumer) {
 		String instanceId = IdUtils.getDefaultInstanceId(environment);
 		return new StackdriverTraceSpanListener(instanceId, gcpProjectIdProvider.getProjectId(), labelExtractor,
 				spanAdjusters, traceConsumer);
@@ -146,11 +91,75 @@ public class StackdriverTraceAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(Tracer.class)
-	public DefaultTracer stackdriverTracer(Sampler sampler, Random random,
+	public DefaultTracer sleuthTracer(Sampler sampler, Random random,
 			SpanNamer spanNamer, SpanLogger spanLogger,
 			SpanReporter spanReporter, TraceKeys traceKeys) {
 		return new DefaultTracer(sampler, random, spanNamer, spanLogger,
 				spanReporter, true, traceKeys);
 	}
 
+	@Bean
+	@ConditionalOnMissingBean
+	public LabelExtractor traceLabelExtractor() {
+		return new LabelExtractor();
+	}
+
+	@Configuration
+	@ConditionalOnMissingBean(TraceConsumer.class)
+	public class TraceConsumerConfiguration {
+		@Bean
+		@ConditionalOnMissingBean(name = "traceExecutorProvider")
+		public ExecutorProvider traceExecutorProvider(GcpTraceProperties gcpTraceProperties) {
+			return FixedExecutorProvider.create(
+					Executors.newScheduledThreadPool(gcpTraceProperties.getExecutorThreads()));
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public TraceServiceClient traceServiceClient(CredentialsProvider credentialsProvider,
+				@Qualifier("traceExecutorProvider") ExecutorProvider executorProvider) throws IOException {
+			return TraceServiceClient.create(TraceServiceSettings.defaultBuilder()
+					.setCredentialsProvider(credentialsProvider)
+					.setExecutorProvider(executorProvider)
+					.build());
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(name = "traceServiceClientTraceConsumer")
+		public TraceServiceClientTraceConsumer traceServiceClientTraceConsumer(
+				GcpProjectIdProvider gcpProjectIdProvider, TraceServiceClient traceServiceClient) {
+			return new TraceServiceClientTraceConsumer(
+					gcpProjectIdProvider.getProjectId(), traceServiceClient);
+
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public Sizer<Trace> traceSizer() {
+			return new RoughTraceSizer();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean(name = "traceConsumerExecutorService")
+		public ScheduledExecutorService traceConsumerExecutorService(GcpTraceProperties gcpTraceProperties) {
+			return Executors.newScheduledThreadPool(gcpTraceProperties.getExecutorThreads());
+		}
+
+		@Primary
+		@Bean
+		@ConditionalOnMissingBean(name = "traceConsumer")
+		public TraceConsumer traceConsumer(
+				GcpProjectIdProvider gcpProjectIdProvider,
+				TraceServiceClientTraceConsumer traceServiceClientTraceConsumer,
+				Sizer<Trace> traceSizer,
+				@Qualifier("traceConsumerExecutorService") ScheduledExecutorService executorService,
+				GcpTraceProperties gcpTraceProperties) {
+			ScheduledBufferingTraceConsumer scheduledBufferingTraceConsumer = new ScheduledBufferingTraceConsumer(
+					traceServiceClientTraceConsumer,
+					traceSizer, gcpTraceProperties.getBufferSizeBytes(),
+					gcpTraceProperties.getScheduledDelaySeconds(), executorService);
+
+			return scheduledBufferingTraceConsumer;
+		}
+	}
 }

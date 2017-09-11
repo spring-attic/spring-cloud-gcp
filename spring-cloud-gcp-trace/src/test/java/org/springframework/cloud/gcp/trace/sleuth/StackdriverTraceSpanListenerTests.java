@@ -38,7 +38,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.sleuth.Log;
 import org.springframework.cloud.sleuth.Sampler;
 import org.springframework.cloud.sleuth.Span;
-import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.cloud.sleuth.sampler.AlwaysSampler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,9 +52,6 @@ public class StackdriverTraceSpanListenerTests {
 	private static final long beginTime = 1238912378081L;
 
 	private static final long endTime = 1238912378123L;
-
-	@Autowired
-	Tracer tracer;
 
 	@Autowired
 	TestConfiguration test;

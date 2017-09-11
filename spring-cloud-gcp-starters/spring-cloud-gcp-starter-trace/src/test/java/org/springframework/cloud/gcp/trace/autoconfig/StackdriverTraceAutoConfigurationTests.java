@@ -21,7 +21,6 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import com.google.cloud.trace.v1.consumer.FlushableTraceConsumer;
 import com.google.cloud.trace.v1.consumer.TraceConsumer;
 import com.google.devtools.cloudtrace.v1.Traces;
 import org.junit.Assert;
@@ -29,10 +28,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.trace.GcpTraceProperties;
 import org.springframework.cloud.sleuth.Span;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
@@ -45,35 +42,21 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author Ray Tsang
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StackdriverTraceAutoConfigurationTests.MockConfiguration.class,
-		StackdriverTraceAutoConfiguration.class, GcpContextAutoConfiguration.class,
+@SpringBootTest(classes = {
+		StackdriverTraceAutoConfigurationTests.MockConfiguration.class,
+		StackdriverTraceAutoConfiguration.class,
+		GcpContextAutoConfiguration.class,
 		TraceAutoConfiguration.class, SleuthLogAutoConfiguration.class }, properties = {
 				"spring.cloud.gcp.project-id=proj", "spring.sleuth.sampler.percentage=1.0" })
+
 public abstract class StackdriverTraceAutoConfigurationTests {
-	@Autowired
-	GcpTraceProperties traceProperties;
-
-	@Autowired
-	DefaultTracer tracer;
-
-	@Autowired
-	@Qualifier("asyncTraceConsumer")
-	FlushableTraceConsumer asyncTraceConsumer;
-
-	@Autowired
-	MockConfiguration configuration;
-
-	@PostConstruct
-	public void init() {
-		this.configuration.tracesList.clear();
-	}
 
 	@Configuration
 	public static class MockConfiguration {
 		private List<Traces> tracesList = new ArrayList<>();
 
 		@Bean
-		public TraceConsumer syncTraceConsumer() {
+		public TraceConsumer traceConsumer() {
 			return new TraceConsumer() {
 				@Override
 				public void receive(Traces traces) {
@@ -83,14 +66,22 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 		}
 	}
 
-	public static class SpanTest extends StackdriverTraceAutoConfigurationTests {
+	public static class TraceConsumerSpanTests extends StackdriverTraceAutoConfigurationTests {
+		@Autowired
+		MockConfiguration configuration;
+
+		@Autowired
+		DefaultTracer tracer;
+
+		@PostConstruct
+		public void init() {
+			this.configuration.tracesList.clear();
+		}
+
 		@Test
 		public void test() {
 			Span span = this.tracer.createSpan("Test Span");
 			this.tracer.close(span);
-
-			// Flush traces in buffer
-			this.asyncTraceConsumer.flush();
 
 			// Test that we are using 128bit Trace ID
 			Assert.assertNotEquals(0, span.getTraceIdHigh());
@@ -98,5 +89,6 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 			// There should be one trace received
 			Assert.assertEquals(1, this.configuration.tracesList.size());
 		}
+
 	}
 }
