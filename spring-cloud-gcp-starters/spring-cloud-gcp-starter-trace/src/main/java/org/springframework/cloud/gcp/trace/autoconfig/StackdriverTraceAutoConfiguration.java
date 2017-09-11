@@ -62,7 +62,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 
 @Configuration
-@EnableConfigurationProperties({ SamplerProperties.class, GcpTraceProperties.class })
+@EnableConfigurationProperties({ SamplerProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.trace.enabled", matchIfMissing = true)
 @Import({ StackdriverTraceAutoConfiguration.TraceConsumerConfiguration.class })
 @AutoConfigureBefore(TraceAutoConfiguration.class)
@@ -106,6 +106,7 @@ public class StackdriverTraceAutoConfiguration {
 
 	@Configuration
 	@ConditionalOnMissingBean(TraceConsumer.class)
+	@EnableConfigurationProperties(GcpTraceProperties.class)
 	public class TraceConsumerConfiguration {
 		@Bean
 		@ConditionalOnMissingBean(name = "traceExecutorProvider")
