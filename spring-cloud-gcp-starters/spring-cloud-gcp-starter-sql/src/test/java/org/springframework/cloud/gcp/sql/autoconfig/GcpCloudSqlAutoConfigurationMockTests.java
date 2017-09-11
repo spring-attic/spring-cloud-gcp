@@ -61,7 +61,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 		@Override
 		public void test() {
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=proj:reg:test-instance"
-					+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
+					+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("com.mysql.jdbc.Driver", this.urlProvider.getJdbcDriverClass());
 		}
@@ -77,7 +77,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 			HikariDataSource dataSource = (HikariDataSource) this.dataSource;
 			assertEquals("com.mysql.jdbc.Driver", dataSource.getDriverClassName());
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=proj:reg:test-instance"
-					+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
+					+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("root", dataSource.getUsername());
 			assertEquals("", dataSource.getPassword());
@@ -124,7 +124,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 			HikariDataSource dataSource = (HikariDataSource) this.dataSource;
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance="
 					+ "proj:siberia:test-instance&"
-					+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory",
+					+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("root", dataSource.getUsername());
 			assertEquals("", dataSource.getPassword());
@@ -144,7 +144,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 		public void test() {
 			HikariDataSource dataSource = (HikariDataSource) this.dataSource;
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=proj:reg:test-instance"
-					+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
+					+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("watchmaker", dataSource.getUsername());
 			assertEquals("pass", dataSource.getPassword());
@@ -161,7 +161,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 		@Override
 		public void test() {
 			assertEquals("jdbc:mysql://google/test-database?cloudSqlInstance=world:asia:japan"
-							+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory",
+							+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("com.mysql.jdbc.Driver", this.urlProvider.getJdbcDriverClass());
 		}

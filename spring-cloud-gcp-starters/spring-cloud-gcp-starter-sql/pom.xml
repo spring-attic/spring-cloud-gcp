@@ -34,12 +34,6 @@
 			<artifactId>commons-logging</artifactId>
 		</dependency>
 
-		<!-- Hibernate Validator -->
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-validator</artifactId>
-		</dependency>
-
 		<!-- @ConfigurationProperties metadata -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
