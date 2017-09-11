@@ -46,7 +46,7 @@ If no property is configured, the provided `CredentialsProvider` returns the
 http://google.github.io/google-auth-library-java/releases/0.7.1/apidocs/com/google/auth/oauth2/GoogleCredentials.html#getApplicationDefault()[application default credentials].
 
 If your app is running on Google App Engine or Google Compute Engine, in most cases, you should omit
-the `spring.cloud.gcp.credentials-location` property and, instead, let the Spring Cloud GCP Core
+the `spring.cloud.gcp.credentials.location` property and, instead, let the Spring Cloud GCP Core
 Starter get the correct credentials for those environments. On App Engine Standard, the
 https://cloud.google.com/appengine/docs/standard/java/appidentity/[App Identity service account credentials]
 are used, on App Engine Flexible, the
