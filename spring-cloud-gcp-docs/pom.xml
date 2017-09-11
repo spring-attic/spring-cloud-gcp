@@ -76,6 +76,22 @@
 					<plugin>
 						<groupId>org.asciidoctor</groupId>
 						<artifactId>asciidoctor-maven-plugin</artifactId>
+						<version>1.5.3</version>
+						<configuration>
+							<sourceDocumentName>index.adoc</sourceDocumentName>
+							<backend>docbook5</backend>
+							<doctype>book</doctype>
+							<attributes>
+								<allow-uri-read>true</allow-uri-read>
+								<attribute-missing>warn</attribute-missing>
+								<project-version>${project.version}</project-version>
+								<project-artifactId>${project.artifactId}</project-artifactId>
+								<version-type-lowercase>${version-type-lowercase}</version-type-lowercase>
+								<snippets>${basedir}/target/generated-snippets</snippets>
+								<github-tag>${github-tag}</github-tag>
+								<docinfo>true</docinfo>
+							</attributes>
+						</configuration>
 						<executions>
 							<execution>
 								<id>generate-docbook</id>
@@ -83,15 +99,17 @@
 								<goals>
 									<goal>process-asciidoc</goal>
 								</goals>
+							</execution>
+							<execution>
+								<id>generate-html5</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>process-asciidoc</goal>
+								</goals>
 								<configuration>
-									<sourceDocumentName>index.adoc</sourceDocumentName>
-									<backend>docbook5</backend>
-									<doctype>book</doctype>
+									<backend>html5</backend>
 									<attributes>
-										<docinfo>true</docinfo>
-										<spring-cloud-stream-binder-kinesis-version>${project.version}</spring-cloud-stream-binder-kinesis-version>
-										<spring-cloud-stream-binder-kinesis-docs-version>${project.version}</spring-cloud-stream-binder-kinesis-docs-version>
-										<github-tag>${github-tag}</github-tag>
+										<toc2 />
 									</attributes>
 								</configuration>
 							</execution>
