@@ -47,11 +47,5 @@
 			<artifactId>mysql-socket-factory</artifactId>
 		</dependency>
 
-		<!-- JdbcTemplate -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jdbc</artifactId>
-		</dependency>
-
 	</dependencies>
 </project>
