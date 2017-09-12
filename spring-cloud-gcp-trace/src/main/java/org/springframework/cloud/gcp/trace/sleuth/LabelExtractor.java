@@ -56,8 +56,8 @@ public class LabelExtractor {
 		DEFAULT_RENAME_MAP.put("http.host", "/http/host");
 		DEFAULT_RENAME_MAP.put("http.method", "/http/method");
 		DEFAULT_RENAME_MAP.put("http.status_code", "/http/status_code");
-		DEFAULT_RENAME_MAP.put("http.request.size", "/request/size");
-		DEFAULT_RENAME_MAP.put("http.response.size", "/response/size");
+		DEFAULT_RENAME_MAP.put("http.request.size", "/http/request/size");
+		DEFAULT_RENAME_MAP.put("http.response.size", "/http/response/size");
 		DEFAULT_RENAME_MAP.put("http.url", "/http/url");
 	}
 
