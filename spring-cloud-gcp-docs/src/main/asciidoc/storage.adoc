@@ -2,8 +2,8 @@
 
 https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html[Spring Resources]
 are an abstraction for a number of low-level resources, such as file system files, classpath files,
-servlet context-relative files, etc. Spring Cloud GCP adds a new resource type: a Google Cloud
-Storage (GCS) object.
+servlet context-relative files, etc.
+Spring Cloud GCP adds a new resource type: a Google Cloud Storage (GCS) object.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -17,10 +17,10 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source]
+[source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-storage', version: '1.0.0.BUILD-SNAPSHOT'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-storage', version: '{project-version}'
 }
 ----
 
@@ -38,10 +38,10 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source]
+[source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-storage', version: '1.0.0.BUILD-SNAPSHOT'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-storage', version: '{project-version}'
 }
 ----
 

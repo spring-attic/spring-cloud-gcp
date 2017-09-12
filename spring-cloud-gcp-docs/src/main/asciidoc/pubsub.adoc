@@ -15,10 +15,10 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source]
+[source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub', version: '1.0.0.BUILD-SNAPSHOT'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub', version: '{project-version}'
 }
 ----
 
@@ -36,33 +36,37 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source]
+[source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-pubsub', version: '1.0.0.BUILD-SNAPSHOT'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-pubsub', version: '{project-version}'
 }
 ----
 
 === Pub/Sub operations abstraction
 
 `PubSubTemplate` is an abstraction that allows Spring users to use Google Cloud Pub/Sub without
-depending on any Google Cloud Pub/Sub API semantics. `PubSubTemplate` uses the
+depending on any Google Cloud Pub/Sub API semantics.
+`PubSubTemplate` uses the
 https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub[Google Cloud Java Client for Pub/Sub]
-to interact with Google Cloud Pub/Sub. It implements the `PubSubOperations` interface, which
-comprehends all the possible operations to be carried by a Google Cloud Pub/Sub client.
+to interact with Google Cloud Pub/Sub.
+It implements the `PubSubOperations` interface, which comprehends all the possible operations to be
+carried by a Google Cloud Pub/Sub client.
 
 `PubSubTemplate` depends on a `PublisherFactory`, which is a functional interface to provide a
-Google Cloud Java Client for Pub/Sub `Publisher`. The Spring Boot starter for GCP Pub/Sub
-auto-configures a `PublisherFactory` with default settings and uses the `GcpProjectIdProvider` and
-`CredentialsProvider` auto-configured by the Spring Boot GCP Core starter.
+Google Cloud Java Client for Pub/Sub `Publisher`.
+The Spring Boot starter for GCP Pub/Sub auto-configures a `PublisherFactory` with default settings
+and uses the `GcpProjectIdProvider` and `CredentialsProvider` auto-configured by the Spring Boot GCP
+Core starter.
 
 The `PublisherFactory` implementation provided by Spring Cloud GCP Pub/Sub,
 `DefaultPublisherFactory`, caches `Publisher` instances by topic name, in order to optimize resource
 utilization.
 
 The Spring Boot starter for GCP Pub/Sub allows for the customization of the number of threads used
-by both the `Publisher` and `Subscriber` executors. In the example, we're setting the number of
-threads used by both the `Publisher` and `Subscriber` to 2.
+by both the `Publisher` and `Subscriber` executors.
+In the example, we're setting the number of threads used by both the `Publisher` and `Subscriber` to
+2.
 
 [source,yaml]
 ----
@@ -85,10 +89,10 @@ public ListenableFuture<String> send(final String topic, Message message)
 The `send()` method takes a Spring Message and it uses the built-in `SimpleMessageConverter` to
 convert from `Message` to the `PubsubMessage` accepted by the Google Cloud Java Library for Pub/Sub.
 `SimpleMessageConverter` copies the `Message` headers into `PubsubMessage` attributes and the
-`Message` payload into the `PubsubMessage` data. `SimpleMessageConverter` calls `toString()` in both
-the `Message` headers and payload, since `PubsubMessage` only supports `String` attributes and data
-at the transmission level. We're considering JSON object encoding/decoding in the future to support
-more object types.
+`Message` payload into the `PubsubMessage` data.
+`SimpleMessageConverter` calls `toString()` in both the `Message` headers and payload, since
+`PubsubMessage` only supports `String` attributes and data at the transmission level.
+We're considering JSON object encoding/decoding in the future to support more object types.
 
 Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 
@@ -105,12 +109,14 @@ public void publishMessage() {
 === Pub/Sub management
 
 `PubSubAdmin` is the abstraction provided by Spring Cloud GCP to manage Google Cloud Pub/Sub
-resources. It allows for the creation, deletion and listing of topics and subscriptions.
+resources.
+It allows for the creation, deletion and listing of topics and subscriptions.
 
 `PubSubAdmin` depends on `GcpProjectIdProvider` and either a `CredentialsProvider` or a
-`TopicAdminClient` and a `SubscriptionAdminClient`. If given a `CredentialsProvider`, it creates
-a `TopicAdminClient` and a `SubscriptionAdminClient` with the Google Cloud Java Library for Pub/Sub
-defaults. The Spring Boot starter for GCP Pub/Sub auto-configures a `PubSubAdmin` object using the
+`TopicAdminClient` and a `SubscriptionAdminClient`.
+If given a `CredentialsProvider`, it creates a `TopicAdminClient` and a `SubscriptionAdminClient`
+with the Google Cloud Java Library for Pub/Sub defaults.
+The Spring Boot starter for GCP Pub/Sub auto-configures a `PubSubAdmin` object using the
 `GcpProjectIdProvider` and the `CredentialsProvider` auto-configured by the Spring Boot GCP Core
 starter.
 
@@ -203,9 +209,9 @@ public void newSubscription() {
 }
 ----
 
-Alternative methods with default settings are provided for ease of use. The default value for
-`ackDeadline` is 10 seconds. If `pushEndpoint` isn’t specified, the subscription uses message
-pulling, instead.
+Alternative methods with default settings are provided for ease of use.
+The default value for `ackDeadline` is 10 seconds.
+If `pushEndpoint` isn’t specified, the subscription uses message pulling, instead.
 
 [source,java]
 ----

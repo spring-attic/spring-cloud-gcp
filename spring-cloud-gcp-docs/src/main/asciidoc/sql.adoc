@@ -5,9 +5,9 @@ https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.
 so you can run your MySQL or PostgreSQL databases in Google Cloud SQL using Spring JDBC, or other
 libraries that depend on it like Spring Data JPA.
 
-The Cloud SQL support provided by Spring Cloud GCP is in the form of a Spring Boot starter. The role
-of the starter is to read configuration from properties and assume default settings so that user
-experience connecting to MySQL is as easy as possible.
+The Cloud SQL support provided by Spring Cloud GCP is in the form of a Spring Boot starter.
+The role of the starter is to read configuration from properties and assume default settings so that
+user experience connecting to MySQL is as easy as possible.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -21,10 +21,10 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source]
+[source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql', version: '1.0.0.BUILD-SNAPSHOT'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql', version: '{project-version}'
 }
 ----
 
@@ -80,26 +80,28 @@ number of connections could not be created. | `false` |
 
 Based on the previous properties, the Spring Boot starter for Google Cloud SQL creates a
 `CloudSqlJdbcInfoProvider` object which is used to obtain an instance's JDBC URL and driver class
-name. If you provide your own `CloudSqlJdbcInfoProvider` bean, it is used instead and the properties
+name.
+If you provide your own `CloudSqlJdbcInfoProvider` bean, it is used instead and the properties
 related to building the JDBC URL or driver class are ignored.
 
 It is in the `CloudSqlJdbcInfoProvider` creation step that the credentials factory is registered
-in a system property to be `SqlCredentialFactory`. This isn't relevant unless you want to provide
-your own `CloudSqlJdbcInfoProvider` bean, in which case you should also register the
-credentials factory class name under the `cloudSql.socketFactory.credentialFactory` system
-property.
+in a system property to be `SqlCredentialFactory`.
+This isn't relevant unless you want to provide your own `CloudSqlJdbcInfoProvider` bean, in which
+case you should also register the credentials factory class name under the
+`cloudSql.socketFactory.credentialFactory` system property.
 
-The `CloudSqlJdbcInfoProvider` bean is used by the starter to create a `DataSource` object. This
-`DataSource` object is picked up by the Spring JDBC module to automatically configure a
-`JdbcTemplate` object. We chose HikariCP as the default connection pool implementation, but you're
-free to provide your own `DataSource` implementation using the provided `CloudSqlJdbcInfoProvider`
-bean to resolve an instance's JDBC URL and driver class name.
+The `CloudSqlJdbcInfoProvider` bean is used by the starter to create a `DataSource` object.
+This `DataSource` object is picked up by the Spring JDBC module to automatically configure a
+`JdbcTemplate` object.
+We chose HikariCP as the default connection pool implementation, but you're free to provide your own
+`DataSource` implementation using the provided `CloudSqlJdbcInfoProvider` bean to resolve an
+instance's JDBC URL and driver class name.
 
-It is in the `DataSource` creation step that the JDBC driver class is registered. This isn't
-relevant unless you want to provide your own `DataSource` bean, in which case, you should load the
-driver class so that the user doesn't have to.
+It is in the `DataSource` creation step that the JDBC driver class is registered.
+This isn't relevant unless you want to provide your own `DataSource` bean, in which case, you should
+load the driver class so that the user doesn't have to.
 
 The result of this flow is a fully configured and operational `JdbcTemplate` object that you can
-use to interact with your SQL database. You can connect to your database with as little as a
-database and instance names!
+use to interact with your SQL database.
+You can connect to your database with as little as a database and instance names!
 

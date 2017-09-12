@@ -17,10 +17,10 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source]
+[source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-core', version: '1.0.0.BUILD-SNAPSHOT'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-core', version: '{project-version}'
 }
 ----
 
@@ -35,9 +35,9 @@ public interface GcpProjectIdProvider {
 }
 ----
 
-The Spring Boot GCP Core starter auto-configures a `GcpProjectIdProvider`. If a
-`spring.cloud.gcp.project-id` property is specified, the provided `GcpProjectIdProvider` returns
-that property value.
+The Spring Boot GCP Core starter auto-configures a `GcpProjectIdProvider`.
+If a `spring.cloud.gcp.project-id` property is specified, the provided `GcpProjectIdProvider`
+returns that property value.
 
 [source,java]
 ----
@@ -45,7 +45,7 @@ spring.cloud.gcp.project-id=my-gcp-project-id
 ----
 
 Otherwise, the project ID is discovered based on a
-https://googlecloudplatform.github.io/google-cloud-java/0.20.1/apidocs/com/google/cloud/ServiceOptions.html#getDefaultProjectId--[set of rules]:
+https://googlecloudplatform.github.io/google-cloud-java/latest/apidocs/com/google/cloud/ServiceOptions.html#getDefaultProjectId-[set of rules]:
 
 1. The project ID specified by the `GOOGLE_CLOUD_PROJECT` environment variable
 2. The Google App Engine project ID
@@ -66,12 +66,14 @@ public interface CredentialsProvider {
 }
 ----
 
-The Spring Boot GCP Core starter auto-configures a `CredentialsProvider`. It uses the
-`spring.cloud.gcp.credentials.location` property to locate the OAuth2 private key of a Google
-service account. Keep in mind this property is a Spring Resource, so the credentials file can be obtained from a number of
+The Spring Boot GCP Core starter auto-configures a `CredentialsProvider`.
+It uses the `spring.cloud.gcp.credentials.location` property to locate the OAuth2 private key of a
+Google service account.
+Keep in mind this property is a Spring Resource, so the credentials file can be obtained from a
+number of
 https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-implementations[different locations]
-such as the file system, classpath, URL, etc. The next example specifies the credentials location
-property in the file system.
+such as the file system, classpath, URL, etc.
+The next example specifies the credentials location property in the file system.
 
 [source,yaml]
 ----
@@ -101,8 +103,9 @@ service supported by Spring Cloud GCP.
 |===
 
 The Spring Boot GCP Core starter allows you to configure a custom scope list for the provided
-credentials. To do that, specify a comma-delimited list of scopes in the
-`spring.cloud.gcp.credentials.scopes` property.
+credentials.
+To do that, specify a comma-delimited list of scopes in the `spring.cloud.gcp.credentials.scopes`
+property.
 
 [source,yaml]
 ----

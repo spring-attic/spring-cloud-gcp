@@ -9,7 +9,7 @@ João André Martins
 == Introduction
 
 The Spring Cloud GCP project aims at making Google Cloud Platform (GCP) the platform of choice to
-run the popular Spring framework.
+run the popular Spring Framework.
 
 Currently, Spring Cloud GCP lets you leverage the power and simplicity of the Spring framework to:
 
