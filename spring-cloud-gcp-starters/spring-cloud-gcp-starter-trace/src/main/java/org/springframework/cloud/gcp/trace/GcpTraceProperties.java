@@ -38,23 +38,24 @@ public class GcpTraceProperties {
 	 * However, be careful when running inside of a containerized environment. You should either set JVM's max heap
 	 * or set this value explicitly.
 	 */
-	private int bufferSizeBytes = onePercentOfRuntimeTotalMemory();
+	private int bufferSizeBytes = percentOfRuntimeTotalMemory(0.01f);
 
 	/**
 	 * Scheduled delay in seconds. Buffered trace messages will be flushed to Stackdriver when
 	 * buffered longer than scheduled delays.
 	 */
-	private int scheduledDelaySeconds = 5;
+	private int scheduledDelaySeconds = 10;
 
 	/**
 	 * A utility method to determine 1% of total memory based on Zipkin's AsyncReporter.
 	 * However, need to be careful about running this inside of a container environment since only certain versions
 	 * of the JDK with additional flags can accurately detect container memory limit.
 	 *
-	 * @return 1% of the @{link Runtime{@link Runtime#totalMemory()}}
+	 * @param percentage 1.0 means 100%, 0.01 means 1%
+	 * @return Percentage of @{link Runtime{@link Runtime#totalMemory()}}
 	 */
-	static int onePercentOfRuntimeTotalMemory() {
-		long result = (long) (Runtime.getRuntime().totalMemory() * 0.01);
+	static int percentOfRuntimeTotalMemory(float percentage) {
+		long result = (long) (Runtime.getRuntime().totalMemory() * percentage);
 		// don't overflow in the rare case 1% of memory is larger than 2 GiB!
 		return (int) Math.max(Math.min(Integer.MAX_VALUE, result), Integer.MIN_VALUE);
 	}

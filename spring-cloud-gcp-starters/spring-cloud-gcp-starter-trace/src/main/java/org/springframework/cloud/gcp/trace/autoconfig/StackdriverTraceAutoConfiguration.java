@@ -126,6 +126,12 @@ public class StackdriverTraceAutoConfiguration {
 		}
 
 		@Bean
+		@ConditionalOnMissingBean(name = "scheduledBufferingExecutorService")
+		public ScheduledExecutorService scheduledBufferingExecutorService() {
+			return Executors.newSingleThreadScheduledExecutor();
+		}
+
+		@Bean
 		@ConditionalOnMissingBean(name = "traceServiceClientTraceConsumer")
 		public TraceServiceClientTraceConsumer traceServiceClientTraceConsumer(
 				GcpProjectIdProvider gcpProjectIdProvider, TraceServiceClient traceServiceClient) {
@@ -153,7 +159,7 @@ public class StackdriverTraceAutoConfiguration {
 				GcpProjectIdProvider gcpProjectIdProvider,
 				TraceServiceClientTraceConsumer traceServiceClientTraceConsumer,
 				Sizer<Trace> traceSizer,
-				@Qualifier("traceConsumerExecutorService") ScheduledExecutorService executorService,
+				@Qualifier("scheduledBufferingExecutorService") ScheduledExecutorService executorService,
 				GcpTraceProperties gcpTraceProperties) {
 			ScheduledBufferingTraceConsumer scheduledBufferingTraceConsumer = new ScheduledBufferingTraceConsumer(
 					traceServiceClientTraceConsumer,
