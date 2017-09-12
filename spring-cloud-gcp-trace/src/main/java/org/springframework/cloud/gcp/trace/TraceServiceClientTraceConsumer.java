@@ -21,8 +21,6 @@ import java.io.IOException;
 import com.google.cloud.trace.v1.TraceServiceClient;
 import com.google.cloud.trace.v1.consumer.TraceConsumer;
 import com.google.devtools.cloudtrace.v1.Traces;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * This {@link TraceConsumer} immediately sends trace data to Stackdriver Trace.
@@ -30,8 +28,6 @@ import org.apache.commons.logging.LogFactory;
  * @author Ray Tsang
  */
 public class TraceServiceClientTraceConsumer implements TraceConsumer, Closeable {
-	private static final Log LOGGER = LogFactory.getLog(TraceServiceClientTraceConsumer.class);
-
 	private final String projectId;
 
 	private final TraceServiceClient client;
