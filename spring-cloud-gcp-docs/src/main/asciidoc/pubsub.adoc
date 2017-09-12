@@ -3,25 +3,6 @@
 Spring Cloud GCP provides a Spring abstraction layer to publish to and subscribe from Google Cloud
 Pub/Sub topics and to create, list or delete Google Cloud Pub/Sub topics and subscriptions.
 
-Maven coordinates, using Spring Cloud GCP BOM:
-
-[source,xml]
-----
-<dependency>
-    <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-pubsub</artifactId>
-</dependency>
-----
-
-Gradle coordinates:
-
-[source,subs="normal"]
-----
-dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub', version: '{project-version}'
-}
-----
-
 A Spring Boot starter is provided to auto-configure the various Pub/Sub components.
 
 Maven coordinates, using Spring Cloud GCP BOM:

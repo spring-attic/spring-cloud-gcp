@@ -5,25 +5,6 @@ are an abstraction for a number of low-level resources, such as file system file
 servlet context-relative files, etc.
 Spring Cloud GCP adds a new resource type: a Google Cloud Storage (GCS) object.
 
-Maven coordinates, using Spring Cloud GCP BOM:
-
-[source,xml]
-----
-<dependency>
-    <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-storage</artifactId>
-</dependency>
-----
-
-Gradle coordinates:
-
-[source,subs="normal"]
-----
-dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-storage', version: '{project-version}'
-}
-----
-
 A Spring Boot starter is provided to auto-configure the various Storage components.
 
 Maven coordinates, using Spring Cloud GCP BOM:
