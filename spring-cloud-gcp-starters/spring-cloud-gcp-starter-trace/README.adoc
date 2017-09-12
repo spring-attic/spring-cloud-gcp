@@ -34,7 +34,8 @@ The following properties are optional:
 # Number of threads to use by the underlying gRPC channel to send the trace request to Stackdriver
 spring.cloud.gcp.trace.executor-threads=[NUMBER_OF_SENDER_THREADS]
 
-# Buffer size, defaults to 4096, traces will be flushed to Stackdriver when buffered trace messages exceed this size.
+# Buffer size, defaults to 1% of Runtime.totalMemory(), traces will be flushed to Stackdriver when buffered trace
+# messages exceed this size.
 spring.cloud.gcp.trace.buffer-size-bytes=[BUFFER_SIZE_BYTES]
 
 # Buffered trace messages will be flushed to Stackdriver when buffered longer than scheduled delays.
@@ -51,3 +52,9 @@ spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)          # Ignore some UR
 
 Stackdriver Trace requires the use of 128-bit Trace ID. This starter ignores `spring.sleuth.traceId128` property
 and it'll always uses 128-bit Trace ID.
+
+== Enable APIs
+You must enable Stackdriver Trace API from the Google Cloud Console in order to capture traces.
+Navigate to the link:https://console.cloud.google.com/apis/api/cloudtrace.googleapis.com/overview[Stackdriver Trace API]
+for your project and make sure it's enabled.
+

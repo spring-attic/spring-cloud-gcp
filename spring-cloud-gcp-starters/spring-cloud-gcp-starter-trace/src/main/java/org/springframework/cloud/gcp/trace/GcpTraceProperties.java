@@ -33,14 +33,31 @@ public class GcpTraceProperties {
 	/**
 	 * Buffer size in bytes. Traces will be flushed to Stackdriver when buffered trace
 	 * messages exceed this size.
+	 *
+	 * This value is defaulted to 1% of the {@link Runtime#totalMemory()} in bytes.
+	 * However, be careful when running inside of a containerized environment. You should either set JVM's max heap
+	 * or set this value explicitly.
 	 */
-	private int bufferSizeBytes = 4096;
+	private int bufferSizeBytes = onePercentOfRuntimeTotalMemory();
 
 	/**
 	 * Scheduled delay in seconds. Buffered trace messages will be flushed to Stackdriver when
 	 * buffered longer than scheduled delays.
 	 */
 	private int scheduledDelaySeconds = 5;
+
+	/**
+	 * A utility method to determine 1% of total memory based on Zipkin's AsyncReporter.
+	 * However, need to be careful about running this inside of a container environment since only certain versions
+	 * of the JDK with additional flags can accurately detect container memory limit.
+	 *
+	 * @return 1% of the @{link Runtime{@link Runtime#totalMemory()}}
+	 */
+	static int onePercentOfRuntimeTotalMemory() {
+		long result = (long) (Runtime.getRuntime().totalMemory() * 0.01);
+		// don't overflow in the rare case 1% of memory is larger than 2 GiB!
+		return (int) Math.max(Math.min(Integer.MAX_VALUE, result), Integer.MIN_VALUE);
+	}
 
 	public int getExecutorThreads() {
 		return this.executorThreads;
