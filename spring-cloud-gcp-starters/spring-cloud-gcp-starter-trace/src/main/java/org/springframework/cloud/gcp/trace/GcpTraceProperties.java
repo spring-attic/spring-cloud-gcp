@@ -47,7 +47,7 @@ public class GcpTraceProperties {
 	private int scheduledDelaySeconds = 10;
 
 	/**
-	 * A utility method to determine 1% of total memory based on Zipkin's AsyncReporter.
+	 * A utility method to determine x% of total memory based on Zipkin's AsyncReporter.
 	 * However, need to be careful about running this inside of a container environment since only certain versions
 	 * of the JDK with additional flags can accurately detect container memory limit.
 	 *
