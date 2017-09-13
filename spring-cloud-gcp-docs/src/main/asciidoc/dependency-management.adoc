@@ -24,3 +24,6 @@ Instead, the version of the BOM you’re using determines the versions of the us
 In the following sections, the Maven dependency snippets will assume you are using the Spring Cloud
 GCP BOM and the dependency versions are omitted.
 
+Gradle users can achieve the same kind of BOM experience using Spring's
+https://github.com/spring-gradle-plugins/dependency-management-plugin[dependency-management-plugin]
+Gradle plugin.
