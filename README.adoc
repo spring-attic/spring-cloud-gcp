@@ -10,6 +10,7 @@ Currently, this repository provides support for:
 * https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-integration-gcp[Spring Integration Channel Adapters for Google Cloud Pub/Sub]
 * Spring Boot starters
 ** https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-core[Core]
+** https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Google Cloud Config]
 ** https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-pubsub[Google Cloud Pub/Sub]
 ** https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql[Google Cloud SQL]
 ** https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-storage[Google Cloud Storage]
