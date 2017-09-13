@@ -18,8 +18,10 @@ package org.springframework.cloud.gcp.sql.autoconfig;
 
 import java.io.IOException;
 
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.services.sqladmin.SQLAdmin;
 import com.google.api.services.sqladmin.model.DatabaseInstance;
+import com.google.auth.Credentials;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -51,5 +53,10 @@ public class GcpCloudSqlTestConfiguration {
 		databaseInstance.setRegion("reg");
 
 		return mockSqlAdmin;
+	}
+
+	@Bean
+	public CredentialsProvider googleCredentials() {
+		return () -> mock(Credentials.class);
 	}
 }
