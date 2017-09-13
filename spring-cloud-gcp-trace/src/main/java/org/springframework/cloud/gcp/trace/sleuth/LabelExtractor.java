@@ -28,7 +28,7 @@ import org.springframework.cloud.sleuth.Span;
 import org.springframework.util.StringUtils;
 
 /**
- * Translated from Andrian Cole's
+ * Translated from Adrian Cole's
  * <a href= "https://github.com/GoogleCloudPlatform/stackdriver-zipkin/">Stackdriver
  * Zipkin Proxy</a>.
  *

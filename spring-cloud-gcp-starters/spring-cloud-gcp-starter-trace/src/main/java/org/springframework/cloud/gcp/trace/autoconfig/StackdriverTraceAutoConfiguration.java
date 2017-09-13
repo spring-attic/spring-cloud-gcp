@@ -25,7 +25,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.api.gax.grpc.FixedExecutorProvider;
-import com.google.cloud.trace.Tracer;
 import com.google.cloud.trace.v1.TraceServiceClient;
 import com.google.cloud.trace.v1.TraceServiceSettings;
 import com.google.cloud.trace.v1.consumer.ScheduledBufferingTraceConsumer;
@@ -50,6 +49,7 @@ import org.springframework.cloud.sleuth.SpanAdjuster;
 import org.springframework.cloud.sleuth.SpanNamer;
 import org.springframework.cloud.sleuth.SpanReporter;
 import org.springframework.cloud.sleuth.TraceKeys;
+import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SpanLogger;
 import org.springframework.cloud.sleuth.sampler.PercentageBasedSampler;
@@ -91,7 +91,7 @@ public class StackdriverTraceAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(Tracer.class)
-	public DefaultTracer sleuthTracer(Sampler sampler, Random random,
+	public Tracer sleuthTracer(Sampler sampler, Random random,
 			SpanNamer spanNamer, SpanLogger spanLogger,
 			SpanReporter spanReporter, TraceKeys traceKeys) {
 		return new DefaultTracer(sampler, random, spanNamer, spanLogger,
