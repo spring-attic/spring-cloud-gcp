@@ -28,7 +28,6 @@ It allows connections to second-generation only Google Cloud SQL instances.
 and connection string. A special `CloudSqlJdbcInfoProvider` is provided if an app is running on
 Google App Engine.
 
-Besides `spring.cloud.gcp.project-id` and `spring.cloud.gcp.credentials-location`,
 `CloudSqlJdbcInfoProvider` uses the following properties:
 
 [source,yaml]
