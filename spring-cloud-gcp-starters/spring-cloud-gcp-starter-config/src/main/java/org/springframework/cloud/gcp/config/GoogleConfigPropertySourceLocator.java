@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.config;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -64,6 +65,8 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 
 	private int timeout;
 
+	private boolean enabled;
+
 	public GoogleConfigPropertySourceLocator(GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider,
 			GcpConfigProperties gcpConfigProperties) throws Exception {
@@ -79,6 +82,7 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		this.timeout = gcpConfigProperties.getTimeout();
 		this.name = gcpConfigProperties.getName();
 		this.profile = gcpConfigProperties.getProfile();
+		this.enabled = gcpConfigProperties.isEnabled();
 		Assert.notNull(this.name, "Config name must not be null");
 		Assert.notNull(this.profile, "Config profile must not be null");
 		Assert.notNull(this.timeout, "Runtime Configurator API timeout must not be null");
@@ -98,7 +102,7 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		return new HttpEntity<>(headers);
 	}
 
-	private GoogleConfigEnvironment getRemoteEnvironment() throws IOException, HttpClientErrorException {
+	GoogleConfigEnvironment getRemoteEnvironment() throws IOException, HttpClientErrorException {
 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 		requestFactory.setReadTimeout(this.timeout);
 		RestTemplate template = new RestTemplate(requestFactory);
@@ -116,6 +120,9 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 
 	@Override
 	public PropertySource<?> locate(Environment environment) {
+		if (!this.enabled) {
+			return new MapPropertySource(PROPERTY_SOURCE_NAME, Collections.emptyMap());
+		}
 		Map<String, Object> config;
 		try {
 			GoogleConfigEnvironment googleConfigEnvironment = getRemoteEnvironment();

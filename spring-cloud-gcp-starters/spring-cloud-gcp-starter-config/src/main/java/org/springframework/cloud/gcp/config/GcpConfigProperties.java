@@ -26,12 +26,22 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("spring.cloud.gcp.config")
 public class GcpConfigProperties {
 
+	private boolean enabled = true;
+
 	private String name;
 
 	private String profile = "default";
 
 	// Config server API time out in milliseconds, default = 1 minute
 	private int timeout = 60000;
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public boolean isEnabled() {
+		return this.enabled;
+	}
 
 	public void setName(String name) {
 		this.name = name;

@@ -26,6 +26,7 @@ feature_x_enabled true \
 3.  Update link:src/main/resources/bootstrap.properties[]:
 +
 ....
+spring.cloud.gcp.config.enabled=true #optional, default = true
 spring.cloud.gcp.config.name=myapp
 spring.cloud.gcp.config.profile=prod #default profile = default
 ....

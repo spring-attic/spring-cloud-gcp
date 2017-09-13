@@ -28,7 +28,7 @@ import javax.xml.bind.DatatypeConverter;
  *
  * @author Jisha Abubaker
  */
-final class GoogleConfigEnvironment {
+class GoogleConfigEnvironment {
 
 	private List<Variable> variables;
 
