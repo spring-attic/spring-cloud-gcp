@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.sql;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collections;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -25,7 +26,7 @@ import com.google.cloud.sql.CredentialFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
  * Returns the credentials that are written to a system property by the Cloud SQL starter.
@@ -59,7 +60,7 @@ public class SqlCredentialFactory implements CredentialFactory {
 
 		try {
 			return GoogleCredential.fromStream(new FileInputStream(credentialResourceLocation))
-					.createScoped(GcpContextAutoConfiguration.CREDENTIALS_SCOPES_LIST);
+					.createScoped(Collections.singleton(GcpScope.SQLADMIN.getUrl()));
 		}
 		catch (IOException ioe) {
 			LOGGER.warn("There was an error loading Cloud SQL credential.", ioe);

@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.core.autoconfig;
 
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.auth.Credentials;
 import org.junit.After;
 import org.junit.Test;
 
@@ -23,13 +25,17 @@ import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author João André Martins
  */
+@Configuration
 public class GcpContextAutoConfigurationTests {
 
 	private AnnotationConfigApplicationContext context;
@@ -59,8 +65,14 @@ public class GcpContextAutoConfigurationTests {
 	private void loadEnvironment(String... environment) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		context.register(GcpContextAutoConfiguration.class);
+		context.register(this.getClass());
 		EnvironmentTestUtils.addEnvironment(context, environment);
 		context.refresh();
 		this.context = context;
+	}
+
+	@Bean
+	public CredentialsProvider googleCredentials() {
+		return () -> mock(Credentials.class);
 	}
 }

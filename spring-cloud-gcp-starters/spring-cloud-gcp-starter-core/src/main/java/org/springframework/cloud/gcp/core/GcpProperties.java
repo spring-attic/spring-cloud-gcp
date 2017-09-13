@@ -16,18 +16,21 @@
 
 package org.springframework.cloud.gcp.core;
 
+import java.util.List;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.io.Resource;
 
 /**
  * @author Vinicius Carvalho
+ * @author João André Martins
  */
 @ConfigurationProperties("spring.cloud.gcp")
 public class GcpProperties {
 
 	private String projectId;
 
-	private Resource credentialsLocation;
+	private Credentials credentials = new Credentials();
 
 	public String getProjectId() {
 		return this.projectId;
@@ -37,12 +40,32 @@ public class GcpProperties {
 		this.projectId = projectId;
 	}
 
-	public Resource getCredentialsLocation() {
-		return this.credentialsLocation;
+	public Credentials getCredentials() {
+		return this.credentials;
 	}
 
-	public void setCredentialsLocation(Resource credentialsLocation) {
-		this.credentialsLocation = credentialsLocation;
+	public void setCredentials(Credentials credentials) {
+		this.credentials = credentials;
 	}
 
+	public class Credentials {
+		private Resource location;
+		private List<String> scopes;
+
+		public Resource getLocation() {
+			return this.location;
+		}
+
+		public void setLocation(Resource location) {
+			this.location = location;
+		}
+
+		public List<String> getScopes() {
+			return this.scopes;
+		}
+
+		public void setScopes(List<String> scopes) {
+			this.scopes = scopes;
+		}
+	}
 }

@@ -17,7 +17,9 @@
 package org.springframework.cloud.gcp.core.autoconfig;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
@@ -27,7 +29,6 @@ import com.google.auth.oauth2.ComputeEngineCredentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.auth.oauth2.UserCredentials;
-import com.google.common.collect.ImmutableList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -38,13 +39,14 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProperties;
+import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
 /**
  *
- * Base starter for Google Cloud Projects. Provide defaults for {@link GoogleCredentials}.
+ * Base starter for Google Cloud Projects. Provides defaults for {@link GoogleCredentials}.
  * Binds properties from {@link GcpProperties}
  *
  * @author Vinicius Carvalho
@@ -55,23 +57,10 @@ import org.springframework.util.StringUtils;
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {
 
-	private static final String PUBSUB_SCOPE = "https://www.googleapis.com/auth/pubsub";
-
-	private static final String SQLADMIN_SCOPE =
-			"https://www.googleapis.com/auth/sqlservice.admin";
-
-	private static final String STORAGE_READ_SCOPE =
-			"https://www.googleapis.com/auth/devstorage.read_only";
-
-	private static final String STORAGE_WRITE_SCOPE =
-			"https://www.googleapis.com/auth/devstorage.read_write";
-
-	private static final String RUNTIME_CONFIG_SCOPE =
-			"https://www.googleapis.com/auth/cloudruntimeconfig";
-
-	public static final List<String> CREDENTIALS_SCOPES_LIST =
-			ImmutableList.of(PUBSUB_SCOPE, SQLADMIN_SCOPE, STORAGE_READ_SCOPE,
-					STORAGE_WRITE_SCOPE, RUNTIME_CONFIG_SCOPE);
+	private static final List<String> CREDENTIALS_SCOPES_LIST =
+			Arrays.asList(GcpScope.values()).stream()
+					.map(scope -> scope.getUrl())
+					.collect(Collectors.toList());
 
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
 
@@ -83,15 +72,21 @@ public class GcpContextAutoConfiguration {
 	public CredentialsProvider googleCredentials() throws Exception {
 		CredentialsProvider credentialsProvider;
 
-		if (!StringUtils.isEmpty(this.gcpProperties.getCredentialsLocation())) {
+		GcpProperties.Credentials propertyCredentials = this.gcpProperties.getCredentials();
+		List<String> scopes =
+				propertyCredentials != null && propertyCredentials.getScopes() != null
+						? propertyCredentials.getScopes() : CREDENTIALS_SCOPES_LIST;
+
+		if (propertyCredentials != null
+				&& !StringUtils.isEmpty(propertyCredentials.getLocation())) {
 			credentialsProvider = FixedCredentialsProvider
 					.create(GoogleCredentials.fromStream(
-							this.gcpProperties.getCredentialsLocation().getInputStream())
-					.createScoped(CREDENTIALS_SCOPES_LIST));
+							propertyCredentials.getLocation().getInputStream())
+					.createScoped(scopes));
 		}
 		else {
 			credentialsProvider = GoogleCredentialsProvider.newBuilder()
-					.setScopesToApply(CREDENTIALS_SCOPES_LIST)
+					.setScopesToApply(scopes)
 					.build();
 		}
 
@@ -110,6 +105,7 @@ public class GcpContextAutoConfiguration {
 				else if (credentials instanceof ComputeEngineCredentials) {
 					LOGGER.info("Default credentials provider for Google Compute Engine.");
 				}
+				LOGGER.info("Scopes in use by default credentials: " + scopes.toString());
 			}
 		}
 		catch (IOException ioe) {
