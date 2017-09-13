@@ -22,5 +22,3 @@ dependencies {
 
 This starter provides the underpinnings of the Spring Cloud GCP Storage. It doesn't provide any
 bean to be used by an end-user.
-
-It requires the `spring.cloud.gcp.credentials-location` property.

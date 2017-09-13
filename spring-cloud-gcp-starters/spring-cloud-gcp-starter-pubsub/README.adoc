@@ -23,9 +23,6 @@ dependencies {
 
 This starter provides Pub/Sub key classes `PubSubTemplate` and `PubSubAdmin`.
 
-It requires the `spring.cloud.gcp.project-id` and `spring.cloud.gcp.credentials-location`
-properties.
-
 The following properties are optional:
 [source,yaml]
 ----

@@ -171,11 +171,12 @@ public class GcpCloudSqlAutoConfiguration {
 			}
 			// Then, the global credential.
 			else if (this.gcpProperties != null
-					&& this.gcpProperties.getCredentialsLocation() != null
-					&& this.gcpProperties.getCredentialsLocation().exists()) {
+					&& this.gcpProperties.getCredentials() != null
+					&& this.gcpProperties.getCredentials().getLocation() != null
+					&& this.gcpProperties.getCredentials().getLocation().exists()) {
 				// A resource might not be in the filesystem, but the Cloud SQL credential must.
 				File credentialsLocationFile =
-						this.gcpProperties.getCredentialsLocation().getFile();
+						this.gcpProperties.getCredentials().getLocation().getFile();
 
 				// This should happen if the Spring resource isn't in the filesystem, but a URL,
 				// classpath file, etc.

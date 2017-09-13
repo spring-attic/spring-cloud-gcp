@@ -54,7 +54,8 @@ example, a properties file:
 [source, yaml]
 ----
 spring.cloud.gcp.project-id=[YOUR_GCP_PROJECT_ID]
-spring.cloud.gcp.credentials-location=file:[LOCAL_PRIVATE_KEY_FILE]
+spring.cloud.gcp.credentials.location=file:[LOCAL_PRIVATE_KEY_FILE]
+spring.cloud.gcp.credentials.scopes=[SCOPE_1],[SCOPE_2],[SCOPE_3]
 ----
 
 These properties are optional and, if not specified, Spring Boot will attempt to automatically find
@@ -62,5 +63,5 @@ them for you. For details on how Spring Boot finds these properties, refer to th
 README.
 
 If your app is running on Google App Engine or Google Compute Engine, in most cases, you should omit
-the `spring.cloud.gcp.credentials-location` property and, instead, let the Spring Cloud GCP Core
+the `spring.cloud.gcp.credentials.location` property and, instead, let the Spring Cloud GCP Core
 Starter get the correct credentials for those environments.
