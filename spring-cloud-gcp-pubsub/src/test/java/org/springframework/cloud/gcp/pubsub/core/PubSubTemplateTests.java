@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.pubsub.v1.Publisher;
+import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,11 +30,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
+import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.messaging.converter.MessageConverter;
+import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -50,16 +52,31 @@ public class PubSubTemplateTests {
 
 	@Mock
 	private PublisherFactory mockPublisherFactory;
+
 	@Mock
 	private Publisher mockPublisher;
 
+	@Mock
+	private SubscriberFactory subscriberFactory;
+
+	@Mock
+	private GcpProjectIdProvider projectIdProvider;
+
+	@Mock
+	private SubscriberStub subscriberStub;
+
+	private MessageConverter messageConverter = new StringMessageConverter();
+
 	private PubSubTemplate pubSubTemplate;
+
 	private Message<String> siMessage;
+
 	private SettableApiFuture<String> settableApiFuture;
 
 	@Before
 	public void setUp() throws ExecutionException, InterruptedException {
-		this.pubSubTemplate = new PubSubTemplate(this.mockPublisherFactory);
+		this.pubSubTemplate = new PubSubTemplate(this.projectIdProvider, this.mockPublisherFactory,
+				this.subscriberFactory, this.subscriberStub, this.messageConverter);
 		when(this.mockPublisherFactory.getPublisher("testTopic")).thenReturn(this.mockPublisher);
 		this.settableApiFuture = SettableApiFuture.create();
 		when(this.mockPublisher.publish(isA(PubsubMessage.class)))
@@ -75,26 +92,9 @@ public class PubSubTemplateTests {
 	@Test
 	public void testSend() throws ExecutionException, InterruptedException {
 		this.settableApiFuture.set("result");
-		ListenableFuture<String> future = this.pubSubTemplate.send("testTopic", this.siMessage);
+		ListenableFuture<String> future = this.pubSubTemplate.sendAsync("testTopic", this.siMessage);
 
 		assertEquals("result", future.get());
-	}
-
-	@Test(expected = MessageConversionException.class)
-	public void testSend_notPubsubMessage() {
-		this.pubSubTemplate.setMessageConverter(new MessageConverter() {
-			@Override
-			public Object fromMessage(Message<?> message, Class<?> targetClass) {
-				return "not PubsubMessage.class";
-			}
-
-			@Override
-			public Message<?> toMessage(Object payload, MessageHeaders headers) {
-				return null;
-			}
-		});
-
-		this.pubSubTemplate.send("testTopic", this.siMessage);
 	}
 
 	@Test(expected = PubSubException.class)
@@ -107,7 +107,7 @@ public class PubSubTemplateTests {
 
 	@Test
 	public void testSend_onFailure() {
-		ListenableFuture<String> future = this.pubSubTemplate.send("testTopic", this.siMessage);
+		ListenableFuture<String> future = this.pubSubTemplate.sendAsync("testTopic", this.siMessage);
 		this.settableApiFuture.setException(new Exception("future failed."));
 
 		try {
@@ -120,10 +120,5 @@ public class PubSubTemplateTests {
 		catch (ExecutionException ee) {
 			assertEquals("future failed.", ee.getCause().getMessage());
 		}
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testSetNullMessageConverter() {
-		this.pubSubTemplate.setMessageConverter(null);
 	}
 }

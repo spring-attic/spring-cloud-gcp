@@ -16,18 +16,32 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
+
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
+import com.google.cloud.pubsub.v1.MessageReceiver;
+import com.google.cloud.pubsub.v1.Publisher;
+import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.PubsubMessage;
+import com.google.pubsub.v1.PullRequest;
+import com.google.pubsub.v1.PullResponse;
+import com.google.pubsub.v1.ReceivedMessage;
+import com.google.pubsub.v1.SubscriptionName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cloud.gcp.pubsub.converters.SimpleMessageConverter;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.pubsub.converters.PubSubMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
+import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.converter.MessageConversionException;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.MessageConverter;
-import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
@@ -36,25 +50,69 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @author João André Martins
  */
 public class PubSubTemplate implements PubSubOperations, InitializingBean {
+	private static final Log LOGGER = LogFactory.getLog(PubSubTemplate.class);
 
-	private MessageConverter messageConverter = new SimpleMessageConverter();
+	private final GcpProjectIdProvider projectIdProvider;
 
 	private final PublisherFactory publisherFactory;
 
-	public PubSubTemplate(PublisherFactory publisherFactory) {
+	private final SubscriberFactory subscriberFactory;
+
+	private final SubscriberStub subscriberStub;
+
+	private final PubSubMessageConverter pubSubMessageConverter = new PubSubMessageConverter();
+
+	private final MessageConverter messageConverter;
+
+	public PubSubTemplate(GcpProjectIdProvider projectIdProvider, PublisherFactory publisherFactory,
+			SubscriberFactory subscriberFactory, SubscriberStub subscriberStub, MessageConverter messageConverter) {
+		this.projectIdProvider = projectIdProvider;
 		this.publisherFactory = publisherFactory;
+		this.subscriberFactory = subscriberFactory;
+		this.subscriberStub = subscriberStub;
+		this.messageConverter = messageConverter;
 	}
 
 	@Override
-	public ListenableFuture<String> send(final String topic, Message message) {
-		// Convert from payload into PubsubMessage.
-		Object pubsubMessageObject =
-				this.messageConverter.fromMessage(message, PubsubMessage.class);
+	public Publisher getPublisher(String topic) {
+		return this.publisherFactory.getPublisher(topic);
+	}
 
-		if (!(pubsubMessageObject instanceof PubsubMessage)) {
-			throw new MessageConversionException("The specified converter must produce "
-					+ "PubsubMessages to send to Google Cloud Pub/Sub.");
+	public String send(String topic, String message) {
+		return send(topic, message, null);
+	}
+
+	@Override
+	public String send(String topic, Message message) {
+		ListenableFuture<String> id = sendAsync(topic, message);
+		try {
+			return id.get();
 		}
+		catch (InterruptedException e) {
+			LOGGER.debug("Caught interrupted exception when waiting for message ID. Topic: "
+					+ topic + ". Returning null.");
+			return null;
+		}
+		catch (ExecutionException e) {
+			throw new PubSubException("Caught execution exception when waiting for message ID. Topic: " + topic, e);
+		}
+	}
+
+	@Override
+	public String send(String topic, Object message) {
+		return send(topic, message, new MessageHeaders(new HashMap<>()));
+	}
+
+	@Override
+	public String send(String topic, Object message, MessageHeaders headers) {
+		return send(topic, this.messageConverter.toMessage(message, headers));
+	}
+
+	@Override
+	public ListenableFuture<String> sendAsync(final String topic, Message message) {
+		// Convert from payload into PubsubMessage.
+		PubsubMessage pubsubMessageObject = (PubsubMessage) this.pubSubMessageConverter.fromMessage(message,
+				PubsubMessage.class);
 
 		// Send message to Google Cloud Pub/Sub.
 		ApiFuture<String> publishFuture = this.publisherFactory.getPublisher(topic)
@@ -79,15 +137,47 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
+	public ListenableFuture<String> sendAsync(String topic, Object object) {
+		return sendAsync(topic, object, new MessageHeaders(new HashMap<>()));
+	}
+
+	@Override
+	public ListenableFuture<String> sendAsync(String topic, Object payload, MessageHeaders headers) {
+		return sendAsync(topic, this.messageConverter.toMessage(payload, headers));
+	}
+
+	@Override
+	public Message<String> pull(String subscription, boolean returnImmediately) {
+		PullRequest request = PullRequest.newBuilder()
+				.setSubscriptionWithSubscriptionName(
+						SubscriptionName.create(this.projectIdProvider.getProjectId(), subscription))
+				.setMaxMessages(1)
+				.setReturnImmediately(returnImmediately)
+				.build();
+		PullResponse response = this.subscriberStub.pullCallable().call(request);
+		if (response.getReceivedMessagesCount() == 0) {
+			return null;
+		}
+
+		ReceivedMessage message = response.getReceivedMessages(0);
+		return (Message<String>) this.pubSubMessageConverter.toMessage(message.getMessage(), null);
+	}
+
+	@Override
+	public <T> Message<T> pull(String subscrption, Class<T> clazz, boolean returnImmediately) {
+		return null;
+	}
+
+	@Override
+	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
+		return this.subscriberFactory.getSubscriber(subscription, messageReceiver);
+	}
+
+	@Override
 	public void afterPropertiesSet() throws Exception {
 	}
 
 	public MessageConverter getMessageConverter() {
 		return this.messageConverter;
-	}
-
-	public void setMessageConverter(MessageConverter messageConverter) {
-		Assert.notNull(messageConverter, "Message converter can't be null.");
-		this.messageConverter = messageConverter;
 	}
 }

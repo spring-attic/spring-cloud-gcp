@@ -47,7 +47,7 @@ public class PubSubMessageHandlerTests {
 	@Before
 	public void setUp() {
 		this.message = new GenericMessage<>("testPayload");
-		when(this.pubSubTemplate.send(eq("testTopic"), eq(this.message)))
+		when(this.pubSubTemplate.sendAsync(eq("testTopic"), eq(this.message)))
 				.thenReturn(new SettableListenableFuture<>());
 		this.adapter = new PubSubMessageHandler(this.pubSubTemplate);
 		this.adapter.setTopic("testTopic");

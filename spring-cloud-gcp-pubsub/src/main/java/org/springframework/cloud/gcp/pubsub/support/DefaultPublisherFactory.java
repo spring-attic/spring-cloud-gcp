@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.grpc.ChannelProvider;
-import com.google.api.gax.grpc.ExecutorProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.pubsub.v1.TopicName;
@@ -38,8 +38,8 @@ import org.springframework.util.Assert;
  * Creates {@link Publisher}s for topics once and reuses them.
  *
  * <p>
- * Every {@link Publisher} produced by this factory reuses the same {@link ExecutorProvider},
- * so the number of created threads doesn't spin out of control.
+ * Every {@link Publisher} produced by this factory reuses the same
+ * {@link ExecutorProvider}, so the number of created threads doesn't spin out of control.
  *
  * @author João André Martins
  */
