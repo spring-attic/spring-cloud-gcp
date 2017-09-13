@@ -28,11 +28,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("spring.cloud.gcp.sql")
 public class GcpCloudSqlProperties {
 
-	private String instanceName;
-
 	private String databaseName;
-
-	private String region;
 
 	private String instanceConnectionName;
 
@@ -48,28 +44,12 @@ public class GcpCloudSqlProperties {
 
 	private Path credentialsLocation;
 
-	public String getInstanceName() {
-		return this.instanceName;
-	}
-
-	public void setInstanceName(String instanceName) {
-		this.instanceName = instanceName;
-	}
-
 	public String getDatabaseName() {
 		return this.databaseName;
 	}
 
 	public void setDatabaseName(String databaseName) {
 		this.databaseName = databaseName;
-	}
-
-	public String getRegion() {
-		return this.region;
-	}
-
-	public void setRegion(String region) {
-		this.region = region;
 	}
 
 	public String getInstanceConnectionName() {

@@ -23,13 +23,6 @@ import java.security.GeneralSecurityException;
 
 import javax.sql.DataSource;
 
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.services.sqladmin.SQLAdmin;
-import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.cloud.sql.CredentialFactory;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -58,39 +51,30 @@ import org.springframework.context.annotation.Configuration;
  * Google Cloud SQL starter.
  *
  * <p>
- * Simplifies database configuration in that only an instance and database name are
- * provided, instead of a JDBC URL. If the instance region isn't specified, this starter
- * attempts to get it through the Cloud SQL API.
+ * Provides Google Cloud SQL instance connectivity through Spring JDBC by providing only a database
+ * and instance connection name.
  *
  * @author João André Martins
  */
 @Configuration
 @EnableConfigurationProperties(GcpCloudSqlProperties.class)
-@ConditionalOnClass({ GcpProjectIdProvider.class, SQLAdmin.class })
+@ConditionalOnClass(GcpProjectIdProvider.class)
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpCloudSqlAutoConfiguration {
 
 	private static final Log LOGGER = LogFactory.getLog(GcpCloudSqlAutoConfiguration.class);
 
+	public final static String INSTANCE_CONNECTION_NAME_HELP_URL =
+			"https://github.com/spring-cloud/spring-cloud-gcp/tree/master/"
+					+ "spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql"
+					+ "#google-cloud-sql-instance-connection-name";
+
 	@Autowired
 	private GcpCloudSqlProperties gcpCloudSqlProperties;
 
 	@Autowired
 	private GcpProperties gcpProperties;
-
-	@Bean
-	@ConditionalOnMissingBean
-	protected SQLAdmin sqlAdminService(CredentialsProvider credentialsProvider)
-			throws GeneralSecurityException, IOException {
-		HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-		JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-
-		return new SQLAdmin.Builder(httpTransport, jsonFactory,
-				new HttpCredentialsAdapter(credentialsProvider.getCredentials()))
-				.setApplicationName("spring")
-				.build();
-	}
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
@@ -113,11 +97,10 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	public CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider(SQLAdmin sqlAdmin,
+	public CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider(
 			GcpProjectIdProvider projectIdProvider) {
 		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(
 				projectIdProvider.getProjectId(),
-				sqlAdmin,
 				this.gcpCloudSqlProperties);
 
 		if (LOGGER.isInfoEnabled()) {
