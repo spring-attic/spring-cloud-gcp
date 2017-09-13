@@ -36,6 +36,7 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
+import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
@@ -94,8 +95,9 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory) {
-		return new PubSubTemplate(publisherFactory);
+	public PubSubOperations pubSubTemplate(PublisherFactory publisherFactory,
+			SubscriberFactory subscriberFactory) {
+		return new PubSubTemplate(publisherFactory, subscriberFactory);
 	}
 
 	@Bean

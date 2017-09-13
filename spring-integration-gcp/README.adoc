@@ -20,9 +20,9 @@ dependencies {
 ----
 
 
-Provides adapters for Spring Messaging channels to exchange messages via Google Cloud Pub/Sub. Makes
-extensive use of the constructs provided by the Spring Cloud GCP Pub/Sub module, like
-`PubSubTemplate`.
+Provides adapters for Spring Messaging channels to exchange messages via Google Cloud Pub/Sub.
+Makes extensive use of the constructs provided by the Spring Cloud GCP Pub/Sub module, like
+`PubSubOperations`.
 
 Refer to the https://spring.io/guides/gs/spring-cloud-gcp/[Spring getting started guide] to learn
 how to use the adapters.

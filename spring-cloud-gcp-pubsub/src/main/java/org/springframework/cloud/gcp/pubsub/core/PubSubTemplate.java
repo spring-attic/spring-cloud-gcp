@@ -19,11 +19,14 @@ package org.springframework.cloud.gcp.pubsub.core;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
+import com.google.cloud.pubsub.v1.MessageReceiver;
+import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.converters.SimpleMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
+import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.messaging.converter.MessageConverter;
@@ -41,12 +44,15 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private final PublisherFactory publisherFactory;
 
-	public PubSubTemplate(PublisherFactory publisherFactory) {
+	private final SubscriberFactory subscriberFactory;
+
+	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory) {
 		this.publisherFactory = publisherFactory;
+		this.subscriberFactory = subscriberFactory;
 	}
 
 	@Override
-	public ListenableFuture<String> send(final String topic, Message message) {
+	public ListenableFuture<String> publish(final String topic, Message message) {
 		// Convert from payload into PubsubMessage.
 		Object pubsubMessageObject =
 				this.messageConverter.fromMessage(message, PubsubMessage.class);
@@ -76,6 +82,13 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		});
 
 		return settableFuture;
+	}
+
+	@Override
+	public Subscriber subscribe(String subscription, MessageReceiver messageHandler) {
+		Subscriber subscriber = this.subscriberFactory.getSubscriber(subscription, messageHandler);
+		subscriber.startAsync();
+		return subscriber;
 	}
 
 	@Override
