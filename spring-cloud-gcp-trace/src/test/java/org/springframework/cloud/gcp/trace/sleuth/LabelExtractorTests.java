@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import org.springframework.cloud.sleuth.Log;
 import org.springframework.cloud.sleuth.Span;
+import org.springframework.cloud.sleuth.TraceKeys;
 
 /**
  * @author Ray Tsang
@@ -34,7 +35,7 @@ public class LabelExtractorTests {
 
 	@Test
 	public void testLabelReplacement() {
-		LabelExtractor extractor = new LabelExtractor();
+		LabelExtractor extractor = new LabelExtractor(new TraceKeys());
 		Span span = Span.builder()
 				.tag("http.host", "localhost")
 				.build();
@@ -47,7 +48,7 @@ public class LabelExtractorTests {
 
 	@Test
 	public void testRpcClientBasics() {
-		LabelExtractor extractor = new LabelExtractor();
+		LabelExtractor extractor = new LabelExtractor(new TraceKeys());
 		String instanceId = "localhost";
 		long begin = 1238912378081L;
 		long end = 1238912378123L;

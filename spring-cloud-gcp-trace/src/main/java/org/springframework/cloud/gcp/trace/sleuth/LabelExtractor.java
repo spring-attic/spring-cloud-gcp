@@ -25,6 +25,7 @@ import com.google.devtools.cloudtrace.v1.TraceSpan;
 
 import org.springframework.cloud.sleuth.Log;
 import org.springframework.cloud.sleuth.Span;
+import org.springframework.cloud.sleuth.TraceKeys;
 import org.springframework.util.StringUtils;
 
 /**
@@ -50,17 +51,6 @@ public class LabelExtractor {
 
 	public static final String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd (HH:mm:ss.SSS z)";
 
-	private static final Map<String, String> DEFAULT_RENAME_MAP;
-	static {
-		DEFAULT_RENAME_MAP = new HashMap<>();
-		DEFAULT_RENAME_MAP.put("http.host", "/http/host");
-		DEFAULT_RENAME_MAP.put("http.method", "/http/method");
-		DEFAULT_RENAME_MAP.put("http.status_code", "/http/status_code");
-		DEFAULT_RENAME_MAP.put("http.request.size", "/http/request/size");
-		DEFAULT_RENAME_MAP.put("http.response.size", "/http/response/size");
-		DEFAULT_RENAME_MAP.put("http.url", "/http/url");
-	}
-
 	private final String agentName;
 
 	private final String prefix;
@@ -69,8 +59,12 @@ public class LabelExtractor {
 
 	private final DateFormat timestampFormat;
 
-	public LabelExtractor() {
-		this(DEFAULT_AGENT_NAME, DEFAULT_PREFIX, DEFAULT_RENAME_MAP, new SimpleDateFormat(DEFAULT_TIMESTAMP_FORMAT));
+	public LabelExtractor(TraceKeys traceKeys) {
+		this(buildLabelRenameMapFromTraceKeys(traceKeys));
+	}
+
+	public LabelExtractor(Map<String, String> labelRenameMap) {
+		this(DEFAULT_AGENT_NAME, DEFAULT_PREFIX, labelRenameMap, new SimpleDateFormat(DEFAULT_TIMESTAMP_FORMAT));
 	}
 
 	public LabelExtractor(String agentName, String prefix, Map<String, String> labelRenameMap,
@@ -79,6 +73,24 @@ public class LabelExtractor {
 		this.prefix = prefix;
 		this.labelRenameMap = labelRenameMap;
 		this.timestampFormat = timestampFormat;
+	}
+
+	/**
+	 * Builds a
+	 * @param traceKeys Sleuth's {@link TraceKeys}
+	 * @return A mapping of Sleuth's HTTP trace keys to Stackdriver label keys
+	 */
+	public static Map<String, String> buildLabelRenameMapFromTraceKeys(TraceKeys traceKeys) {
+		Map<String, String> labelRenameMap = new HashMap<>();
+		TraceKeys.Http httpKeys = traceKeys.getHttp();
+		labelRenameMap = new HashMap<>();
+		labelRenameMap.put(httpKeys.getHost(), "/http/host");
+		labelRenameMap.put(httpKeys.getMethod(), "/http/method");
+		labelRenameMap.put(httpKeys.getStatusCode(), "/http/status_code");
+		labelRenameMap.put(httpKeys.getRequestSize(), "/http/request/size");
+		labelRenameMap.put(httpKeys.getResponseSize(), "/http/response/size");
+		labelRenameMap.put(httpKeys.getUrl(), "/http/url");
+		return labelRenameMap;
 	}
 
 	public Map<String, String> extract(Span span, TraceSpan.SpanKind kind, String instanceId) {

@@ -38,6 +38,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.sleuth.Log;
 import org.springframework.cloud.sleuth.Sampler;
 import org.springframework.cloud.sleuth.Span;
+import org.springframework.cloud.sleuth.TraceKeys;
 import org.springframework.cloud.sleuth.sampler.AlwaysSampler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -269,7 +270,7 @@ public class StackdriverTraceSpanListenerTests {
 
 		@Bean
 		StackdriverTraceSpanListener spanListener(TraceConsumer traceConsumer) {
-			return new StackdriverTraceSpanListener("instance-id", "project-id", new LabelExtractor(),
+			return new StackdriverTraceSpanListener("instance-id", "project-id", new LabelExtractor(new TraceKeys()),
 					Collections.emptyList(), traceConsumer);
 		}
 	}

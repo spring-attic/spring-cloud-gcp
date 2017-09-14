@@ -100,8 +100,8 @@ public class StackdriverTraceAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public LabelExtractor traceLabelExtractor() {
-		return new LabelExtractor();
+	public LabelExtractor traceLabelExtractor(TraceKeys traceKeys) {
+		return new LabelExtractor(traceKeys);
 	}
 
 	@Configuration
