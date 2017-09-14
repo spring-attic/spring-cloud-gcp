@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.sql.autoconfig;
 
-import com.google.api.services.sqladmin.SQLAdmin;
-
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.util.StringUtils;
@@ -36,11 +34,11 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 
 	private final GcpCloudSqlProperties properties;
 
-	public DefaultCloudSqlJdbcInfoProvider(String projectId, SQLAdmin sqlAdmin,
+	public DefaultCloudSqlJdbcInfoProvider(String projectId,
 			GcpCloudSqlProperties properties) {
 		this.jdbcUrlResolver = new CloudSqlJdbcUrlResolver(
 				properties.getDatabaseType().getJdbcUrlTemplate(),
-				projectId, properties, sqlAdmin);
+				projectId, properties);
 		this.properties = properties;
 	}
 

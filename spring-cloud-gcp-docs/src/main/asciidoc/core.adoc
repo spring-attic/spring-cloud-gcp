@@ -1,0 +1,113 @@
+== Spring Cloud GCP Core
+
+At the center of every Spring Cloud GCP module are the concepts of `GcpProjectIdProvider` and
+`CredentialsProvider`.
+
+Spring Cloud GCP provides a Spring Boot starter to auto-configure the core components.
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-core</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-core', version: '{project-version}'
+}
+----
+
+=== Project ID
+
+`GcpProjectIdProvider` is a functional interface that returns a GCP project ID string.
+
+[source,java]
+----
+public interface GcpProjectIdProvider {
+	String getProjectId();
+}
+----
+
+The Spring Boot GCP Core starter auto-configures a `GcpProjectIdProvider`.
+If a `spring.cloud.gcp.project-id` property is specified, the provided `GcpProjectIdProvider`
+returns that property value.
+
+[source,java]
+----
+spring.cloud.gcp.project-id=my-gcp-project-id
+----
+
+Otherwise, the project ID is discovered based on a
+https://googlecloudplatform.github.io/google-cloud-java/latest/apidocs/com/google/cloud/ServiceOptions.html#getDefaultProjectId-[set of rules]:
+
+1. The project ID specified by the `GOOGLE_CLOUD_PROJECT` environment variable
+2. The Google App Engine project ID
+3. The project ID specified in the JSON credentials file pointed by the
+`GOOGLE_APPLICATION_CREDENTIALS` environment variable
+4. The Google Cloud SDK project ID
+5. The Google Compute Engine project ID, from the Google Compute Engine Metadata Server
+
+=== Credentials
+
+`CredentialsProvider` is a functional interface that returns the credentials to authenticate and
+authorize calls to Google Cloud Client Libraries.
+
+[source,java]
+----
+public interface CredentialsProvider {
+  Credentials getCredentials() throws IOException;
+}
+----
+
+The Spring Boot GCP Core starter auto-configures a `CredentialsProvider`.
+It uses the `spring.cloud.gcp.credentials.location` property to locate the OAuth2 private key of a
+Google service account.
+Keep in mind this property is a Spring Resource, so the credentials file can be obtained from a
+number of
+https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-implementations[different locations]
+such as the file system, classpath, URL, etc.
+The next example specifies the credentials location property in the file system.
+
+[source,yaml]
+----
+spring.cloud.gcp.credentials.location=file:/usr/local/key.json
+----
+
+If that property isn't specified, the starter tries to discover credentials from a
+https://github.com/google/google-auth-library-java/blob/master/oauth2_http/java/com/google/auth/oauth2/GoogleCredentials.java#L57[number of places]:
+
+1. Credentials file pointed to by the `GOOGLE_APPLICATION_CREDENTIALS` environment variable
+2. Credentials provided by the Google Cloud SDK `gcloud auth application-default login` command
+3. Google App Engine built-in credentials
+4. Google Cloud Shell built-in credentials
+5. Google Compute Engine built-in credentials
+
+=== Scopes
+
+By default, the credentials provided by the Spring Cloud GCP Core Starter contain scopes for every
+service supported by Spring Cloud GCP.
+
+|===
+| Service | Scope
+| Pub/Sub | https://www.googleapis.com/auth/pubsub
+| SQL Admin | https://www.googleapis.com/auth/sqlservice.admin
+| Storage (Read Only) | https://www.googleapis.com/auth/devstorage.read_only
+| Storage (Write/Write) | https://www.googleapis.com/auth/devstorage.read_write
+|===
+
+The Spring Boot GCP Core starter allows you to configure a custom scope list for the provided
+credentials.
+To do that, specify a comma-delimited list of scopes in the `spring.cloud.gcp.credentials.scopes`
+property.
+
+[source,yaml]
+----
+spring.cloud.gcp.credentials.scopes=https://www.googleapis.com/auth/pubsub,https://www.googleapis.com/auth/sqlservice.admin
+----

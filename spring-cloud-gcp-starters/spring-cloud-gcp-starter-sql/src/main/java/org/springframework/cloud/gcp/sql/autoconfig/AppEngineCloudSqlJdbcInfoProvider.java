@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.sql.autoconfig;
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * Provides default JDBC driver class name and constructs the JDBC URL for Cloud SQL v2
@@ -33,16 +32,12 @@ public class AppEngineCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvid
 
 	public AppEngineCloudSqlJdbcInfoProvider(String projectId, GcpCloudSqlProperties properties) {
 		this.properties = properties;
-		Assert.hasText(projectId,
-				"A project ID must be provided.");
-		Assert.hasText(properties.getDatabaseName(), "Database Name is required");
-		if (StringUtils.isEmpty(properties.getInstanceConnectionName())) {
-			Assert.hasText(properties.getInstanceName(),
-					"Instance Name is required, or specify Instance Connection Name directly");
-			Assert.hasText(properties.getRegion(), "Region is required, or specify Instance Connection Name directly");
-			properties.setInstanceConnectionName(
-					String.format("%s:%s:%s", projectId, properties.getRegion(), properties.getInstanceName()));
-		}
+		Assert.hasText(projectId, "A project ID must be provided.");
+		Assert.hasText(properties.getDatabaseName(), "A database name is required.");
+		Assert.hasText(properties.getInstanceConnectionName(),
+				"An instance connection name must be provided. Refer to "
+						+ GcpCloudSqlAutoConfiguration.INSTANCE_CONNECTION_NAME_HELP_URL
+						+ " for more information.");
 	}
 
 	@Override
