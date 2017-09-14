@@ -30,9 +30,8 @@ public class AppEngineCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvid
 
 	private final GcpCloudSqlProperties properties;
 
-	public AppEngineCloudSqlJdbcInfoProvider(String projectId, GcpCloudSqlProperties properties) {
+	public AppEngineCloudSqlJdbcInfoProvider(GcpCloudSqlProperties properties) {
 		this.properties = properties;
-		Assert.hasText(projectId, "A project ID must be provided.");
 		Assert.hasText(properties.getDatabaseName(), "A database name is required.");
 		Assert.hasText(properties.getInstanceConnectionName(),
 				"An instance connection name must be provided. Refer to "

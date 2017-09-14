@@ -71,7 +71,10 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 		}
 	}
 
+	// Project ID passed in so ServiceOptions doesn't try to get it from AppIdentity API, which
+	// isn't easily mockable.
 	@TestPropertySource(properties = {
+			"spring.cloud.gcp.project-id=im-not-used-for-anything",
 			"spring.cloud.gcp.sql.instanceConnectionName=tubular-bells:australia:test-instance"})
 	public static class CloudSqlAppEngineDataSourceTest extends GcpCloudSqlAutoConfigurationMockTests {
 		@BeforeClass
@@ -91,7 +94,7 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 			assertEquals("com.mysql.jdbc.GoogleDriver",
 					this.urlProvider.getJdbcDriverClass());
 			assertEquals("com.mysql.jdbc.GoogleDriver", dataSource.getDriverClassName());
-			assertEquals("jdbc:google:mysql://tubular-bells:australia:test-instance/test-database",
+			assertEquals("jdbc:google:mysql://tubular-bells:australia:test-instance/test-database"
 					+ "?user=root&password=",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("root", dataSource.getUsername());

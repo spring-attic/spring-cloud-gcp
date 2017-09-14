@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.sql.autoconfig;
 
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -30,16 +31,17 @@ import org.springframework.util.StringUtils;
  */
 public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider {
 
-	private final CloudSqlJdbcUrlResolver jdbcUrlResolver;
-
 	private final GcpCloudSqlProperties properties;
 
-	public DefaultCloudSqlJdbcInfoProvider(String projectId,
-			GcpCloudSqlProperties properties) {
-		this.jdbcUrlResolver = new CloudSqlJdbcUrlResolver(
-				properties.getDatabaseType().getJdbcUrlTemplate(),
-				projectId, properties);
+	public DefaultCloudSqlJdbcInfoProvider(GcpCloudSqlProperties properties) {
 		this.properties = properties;
+		Assert.hasText(this.properties.getDatabaseName(), "A database name must be provided.");
+		if (StringUtils.isEmpty(this.properties.getJdbcUrl())) {
+			Assert.hasText(this.properties.getInstanceConnectionName(),
+					"An instance connection name must be provided. Refer to "
+							+ GcpCloudSqlAutoConfiguration.INSTANCE_CONNECTION_NAME_HELP_URL
+							+ " for more information.");
+		}
 	}
 
 	@Override
@@ -52,6 +54,9 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 	@Override
 	public String getJdbcUrl() {
 		return StringUtils.isEmpty(this.properties.getJdbcUrl())
-				? this.jdbcUrlResolver.resolveJdbcUrl() : this.properties.getJdbcUrl();
+				? String.format(this.properties.getDatabaseType().getJdbcUrlTemplate(),
+				this.properties.getDatabaseName(),
+				this.properties.getInstanceConnectionName())
+				: this.properties.getJdbcUrl();
 	}
 }

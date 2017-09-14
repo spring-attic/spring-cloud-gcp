@@ -46,14 +46,6 @@ public class GcpCloudSqlProperties {
 
 	private DatabaseType databaseType = DatabaseType.MYSQL;
 
-	public String getInstanceName() {
-		return this.instanceName;
-	}
-
-	public void setInstanceName(String instanceName) {
-		this.instanceName = instanceName;
-	}
-
 	public String getDatabaseName() {
 		return this.databaseName;
 	}
