@@ -16,6 +16,7 @@
 
 package org.springframework.integration.gcp.outbound;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,18 +47,22 @@ public class PubSubMessageHandlerTests {
 
 	@Before
 	public void setUp() {
-		this.message = new GenericMessage<>("testPayload");
-		when(this.pubSubTemplate.send(eq("testTopic"), eq(this.message)))
+		this.message = new GenericMessage<>("testPayload",
+				ImmutableMap.of("key1", "value1", "key2", "value2"));
+		when(this.pubSubTemplate.publish(eq("testTopic"), eq("testPayload"),
+				eq(ImmutableMap.of("key1", "value1", "key2", "value2"))))
 				.thenReturn(new SettableListenableFuture<>());
 		this.adapter = new PubSubMessageHandler(this.pubSubTemplate);
 		this.adapter.setTopic("testTopic");
+
 	}
 
 	@Test
-	public void testSend() {
+	public void testPublish() {
 		this.adapter.handleMessage(this.message);
 		verify(this.pubSubTemplate, times(1))
-				.send(eq("testTopic"), eq(this.message));
+				.publish(eq("testTopic"), eq("testPayload"),
+						eq(ImmutableMap.of("key1", "value1", "key2", "value2")));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
