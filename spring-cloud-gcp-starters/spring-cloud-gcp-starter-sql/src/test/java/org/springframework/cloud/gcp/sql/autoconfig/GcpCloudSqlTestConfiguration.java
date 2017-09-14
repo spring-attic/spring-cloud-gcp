@@ -16,20 +16,13 @@
 
 package org.springframework.cloud.gcp.sql.autoconfig;
 
-import java.io.IOException;
-
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.services.sqladmin.SQLAdmin;
-import com.google.api.services.sqladmin.model.DatabaseInstance;
 import com.google.auth.Credentials;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Provides test mocks.
@@ -38,22 +31,6 @@ import static org.mockito.Mockito.when;
  */
 @Configuration
 public class GcpCloudSqlTestConfiguration {
-
-	@Bean
-	@Primary
-	public SQLAdmin sqlAdminService() throws IOException {
-		SQLAdmin mockSqlAdmin = mock(SQLAdmin.class);
-		SQLAdmin.Instances mockInstances = mock(SQLAdmin.Instances.class);
-		SQLAdmin.Instances.Get mockGet = mock(SQLAdmin.Instances.Get.class);
-		DatabaseInstance databaseInstance = new DatabaseInstance();
-
-		when(mockSqlAdmin.instances()).thenReturn(mockInstances);
-		when(mockInstances.get(eq("proj"), eq("test-instance"))).thenReturn(mockGet);
-		when(mockGet.execute()).thenReturn(databaseInstance);
-		databaseInstance.setRegion("reg");
-
-		return mockSqlAdmin;
-	}
 
 	@Bean
 	public CredentialsProvider googleCredentials() {
