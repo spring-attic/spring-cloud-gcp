@@ -150,7 +150,7 @@ public class PubSubTemplateTests {
 	}
 
 	@Test
-	public void testPoll() {
+	public void testSubscribe() {
 		Subscriber subscriber = this.pubSubTemplate.subscribe("testSubscription",
 				(message, consumer) -> { });
 		assertEquals(this.mockSubscriber, subscriber);
