@@ -19,6 +19,7 @@
 		<google-cloud-core.version>1.2.3</google-cloud-core.version>
 		<google-cloud-pubsub.version>0.20.1-beta</google-cloud-pubsub.version>
 		<google-cloud-storage.version>1.2.1</google-cloud-storage.version>
+		<spring-cloud-context.version>1.2.3.RELEASE</spring-cloud-context.version>
 	</properties>
 
 	<dependencyManagement>
@@ -85,8 +86,14 @@
 				<version>1.0.4</version>
 			</dependency>
 
-			<!--Starters-->
+			<!-- spring-cloud-gcp-starter-config -->
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-context</artifactId>
+				<version>${spring-cloud-context.version}</version>
+			</dependency>
 
+			<!--Starters-->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-core</artifactId>
@@ -105,6 +112,11 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-sql</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-starter-config</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>

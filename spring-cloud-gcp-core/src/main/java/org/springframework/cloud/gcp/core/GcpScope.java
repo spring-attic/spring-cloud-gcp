@@ -25,7 +25,8 @@ public enum GcpScope {
 	PUBSUB("https://www.googleapis.com/auth/pubsub"),
 	SQLADMIN("https://www.googleapis.com/auth/sqlservice.admin"),
 	STORAGE_READ("https://www.googleapis.com/auth/devstorage.read_only"),
-	STORAGE_WRITE("https://www.googleapis.com/auth/devstorage.read_write");
+	STORAGE_WRITE("https://www.googleapis.com/auth/devstorage.read_write"),
+	RUNTIME_CONFIG_SCOPE("https://www.googleapis.com/auth/cloudruntimeconfig");
 
 	private String url;
 
