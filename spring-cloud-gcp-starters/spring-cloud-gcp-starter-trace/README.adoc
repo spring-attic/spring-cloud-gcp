@@ -29,7 +29,6 @@ its buffered trace messages exceed its buffer size or have been buffered for lon
 
 The following properties are optional:
 
-[source,yaml]
 ----
 # Number of threads to use by the underlying gRPC channel to send the trace request to Stackdriver
 spring.cloud.gcp.trace.executor-threads=[NUMBER_OF_SENDER_THREADS]
@@ -38,17 +37,21 @@ spring.cloud.gcp.trace.executor-threads=[NUMBER_OF_SENDER_THREADS]
 # messages exceed this size.
 spring.cloud.gcp.trace.buffer-size-bytes=[BUFFER_SIZE_BYTES]
 
-# Buffered trace messages will be flushed to Stackdriver when buffered longer than scheduled delays.
+# Buffered trace messages will be flushed to Stackdriver when buffered longer than scheduled delays (in seconds).
+# Default is 10 seconds
 spring.cloud.gcp.trace.scheduled-delay-seconds=[SCHEDULED_DELAY_SECONDS]
 ----
 
-You can use core Spring Cloud Sleuth properties to control Sleuth's sampling rate, etc. For example:
+You can use core Spring Cloud Sleuth properties to control Sleuth's sampling rate, etc.
+Read https://cloud.spring.io/spring-cloud-sleuth/[Sleuth documentation] for more information
+on Sleuth configurations.
 
-[source,yaml]
----
-spring.sleuth.sampler.percentage=.1                             # Send 10% of the request traces to Stackdriver
+For example, when you are testing to see the traces are going through, you can set the sampling rate to 100%.
+
+----
+spring.sleuth.sampler.percentage=1                              # Send 100% of the request traces to Stackdriver.
 spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)          # Ignore some URL paths
----
+----
 
 Stackdriver Trace requires the use of 128-bit Trace ID. This starter ignores `spring.sleuth.traceId128` property
 and it'll always uses 128-bit Trace ID.
