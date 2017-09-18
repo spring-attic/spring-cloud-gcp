@@ -46,7 +46,7 @@ import org.springframework.util.StringUtils;
 
 /**
  *
- * Base starter for Google Cloud Projects. Provide defaults for {@link GoogleCredentials}.
+ * Base starter for Google Cloud Projects. Provides defaults for {@link GoogleCredentials}.
  * Binds properties from {@link GcpProperties}
  *
  * @author Vinicius Carvalho
@@ -72,15 +72,21 @@ public class GcpContextAutoConfiguration {
 	public CredentialsProvider googleCredentials() throws Exception {
 		CredentialsProvider credentialsProvider;
 
-		if (!StringUtils.isEmpty(this.gcpProperties.getCredentialsLocation())) {
+		GcpProperties.Credentials propertyCredentials = this.gcpProperties.getCredentials();
+		List<String> scopes =
+				propertyCredentials != null && propertyCredentials.getScopes() != null
+						? propertyCredentials.getScopes() : CREDENTIALS_SCOPES_LIST;
+
+		if (propertyCredentials != null
+				&& !StringUtils.isEmpty(propertyCredentials.getLocation())) {
 			credentialsProvider = FixedCredentialsProvider
 					.create(GoogleCredentials.fromStream(
-							this.gcpProperties.getCredentialsLocation().getInputStream())
-					.createScoped(CREDENTIALS_SCOPES_LIST));
+							propertyCredentials.getLocation().getInputStream())
+					.createScoped(scopes));
 		}
 		else {
 			credentialsProvider = GoogleCredentialsProvider.newBuilder()
-					.setScopesToApply(CREDENTIALS_SCOPES_LIST)
+					.setScopesToApply(scopes)
 					.build();
 		}
 
@@ -99,6 +105,7 @@ public class GcpContextAutoConfiguration {
 				else if (credentials instanceof ComputeEngineCredentials) {
 					LOGGER.info("Default credentials provider for Google Compute Engine.");
 				}
+				LOGGER.info("Scopes in use by default credentials: " + scopes.toString());
 			}
 		}
 		catch (IOException ioe) {

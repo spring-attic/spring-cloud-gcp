@@ -36,7 +36,7 @@ public class SimpleMessageConverter implements MessageConverter {
 	public Object fromMessage(Message<?> message, Class<?> aClass) {
 		if (!aClass.equals(PubsubMessage.class)) {
 			throw new MessageConversionException(
-					"This converter can only convert to or from " + "PubsubMessages.");
+					"This converter can only convert to or from PubsubMessages.");
 		}
 
 		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder();

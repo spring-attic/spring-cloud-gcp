@@ -1,4 +1,0 @@
-= Spring Resources
-
-== Google Cloud Storage
-

@@ -1,0 +1,107 @@
+== Spring JDBC
+
+Spring Cloud GCP adds integrations with
+https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html[Spring JDBC]
+so you can run your MySQL or PostgreSQL databases in Google Cloud SQL using Spring JDBC, or other
+libraries that depend on it like Spring Data JPA.
+
+The Cloud SQL support provided by Spring Cloud GCP is in the form of a Spring Boot starter.
+The role of the starter is to read configuration from properties and assume default settings so that
+user experience connecting to MySQL is as easy as possible.
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-sql</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql', version: '{project-version}'
+}
+----
+
+
+=== Spring Boot Starter for Google Cloud SQL
+
+The Spring Boot Starter for Google Cloud SQL provides an auto-configured
+https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html#jdbc-JdbcTemplate[`JdbcTemplate`]
+object bean that allows for operations such as querying and modifying a database.
+
+[source,java]
+----
+@Autowired
+private JdbcTemplate jdbcTemplate;
+
+public List<Map<String, Object>> listUsers() {
+    return jdbcTemplate.queryForList("SELECT * FROM user;");
+}
+----
+
+`JdbcTemplate` is configured based on the following properties:
+
+|===
+| Property name | Description | Default value | Unused if specified property(ies)
+| `spring.cloud.gcp.sql.database-type` | The type of database used. Can either be `mysql` or
+`postgresql`. | `mysql` |
+| `spring.cloud.gcp.sql.credentials-location` | File system path to the Google OAuth2 credentials
+private key file. Used to authenticate and authorize calls to the Google Cloud SQL Admin API to
+discovery an instance's region, if none is specified, and new connections to a Google Cloud SQL
+instance. | default credentials provided by the Spring GCP Core Boot starter |
+| `spring.cloud.gcp.sql.jdbc-url` | The full JDBC URL connection string. | |
+| `spring.cloud.gcp.sql.jdbc-driver` | The JDBC driver class name. |  `com.mysql.jdbc.Driver` for
+MySQL, `org.postgresql.Driver` for PostgreSQL or `com.mysql.jdbc.GoogleDriver` if MySQL is used
+within Google App Engine. |
+| `spring.cloud.gcp.sql.database-name` | Name of the database to connect to. | |
+`spring.cloud.gcp.sql.jdbc-url`
+| `spring.cloud.gcp.sql.instance-connection-name` | A string containing a Google Cloud SQL
+instance's project ID, region and name, each separated by a colon. For example,
+`my-project-id:my-region:my-instance-name`. | | `spring.cloud.gcp.sql.jdbc-url`
+| `spring.cloud.gcp.sql.instance-name` | A Google Cloud SQL instance name, used to construct an
+instance connection name. | |`spring.cloud.gcp.sql.jdbc-url` or
+`spring.cloud.gcp.sql.instance-connection-name`
+| `spring.cloud.gcp.sql.region` | The region where a Google Cloud SQL instance is located. | The
+starter tries to infer an instance's region by making a call to the Google Cloud SQL Admin API. |
+`spring.cloud.gcp.sql.jdbc-url` or `spring.cloud.gcp.sql.instance-connection-name`
+| `spring.cloud.gcp.sql.user-name` | MySQL or PostgreSQL user name. | `root` |
+| `spring.cloud.gcp.sql.password` | MySQL or PostgreSQL password. | empty string |
+| `spring.cloud.gcp.sql.init-fail-fast` | If set to `true`, returns an exception if the minimum
+number of connections could not be created. | `false` |
+|===
+
+==== `JdbcTemplate` creation flow
+
+Based on the previous properties, the Spring Boot starter for Google Cloud SQL creates a
+`CloudSqlJdbcInfoProvider` object which is used to obtain an instance's JDBC URL and driver class
+name.
+If you provide your own `CloudSqlJdbcInfoProvider` bean, it is used instead and the properties
+related to building the JDBC URL or driver class are ignored.
+
+It is in the `CloudSqlJdbcInfoProvider` creation step that the credentials factory is registered
+in a system property to be `SqlCredentialFactory`.
+This isn't relevant unless you want to provide your own `CloudSqlJdbcInfoProvider` bean, in which
+case you should also register the credentials factory class name under the
+`cloudSql.socketFactory.credentialFactory` system property.
+
+The `CloudSqlJdbcInfoProvider` bean is used by the starter to create a `DataSource` object.
+This `DataSource` object is picked up by the Spring JDBC module to automatically configure a
+`JdbcTemplate` object.
+We chose HikariCP as the default connection pool implementation, but you're free to provide your own
+`DataSource` implementation using the provided `CloudSqlJdbcInfoProvider` bean to resolve an
+instance's JDBC URL and driver class name.
+
+It is in the `DataSource` creation step that the JDBC driver class is registered.
+This isn't relevant unless you want to provide your own `DataSource` bean, in which case, you should
+load the driver class so that the user doesn't have to.
+
+The result of this flow is a fully configured and operational `JdbcTemplate` object that you can
+use to interact with your SQL database.
+You can connect to your database with as little as a database and instance names!
+

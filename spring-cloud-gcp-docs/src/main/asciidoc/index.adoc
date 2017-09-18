@@ -1,8 +1,26 @@
-= Spring Cloud GCP
+= Spring Cloud GCP Reference Documentation
 João André Martins
+:doctype: book
 :toc:
+:toclevels: 4
+:source-highlighter: prettify
+:numbered:
 
-include::overview.adoc[]
+== Introduction
+
+The Spring Cloud GCP project aims at making the Spring Framework a first-class citizen of Google
+Cloud Platform (GCP).
+
+Currently, Spring Cloud GCP lets you leverage the power and simplicity of the Spring framework to:
+
+1. Publish and subscribe from Google Cloud Pub/Sub topics
+2. Exchange messages with Spring Integration using Google Cloud Pub/Sub on the background
+3. Write and read from Spring Resources backed up by Google Cloud Storage
+4. Configure Spring JDBC with a few properties to use Google Cloud SQL on the background
+
+include::dependency-management.adoc[]
+include::core.adoc[]
+include::pubsub.adoc[]
+include::storage.adoc[]
+include::sql.adoc[]
 include::spring-integration.adoc[]
-include::spring-cloud-gcp-gcs.adoc[]
-include::spring-cloud-gcp-sql.adoc[]

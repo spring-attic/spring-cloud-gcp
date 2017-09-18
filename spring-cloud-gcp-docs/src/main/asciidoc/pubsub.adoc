@@ -1,0 +1,258 @@
+== Spring Cloud GCP for Pub/Sub
+
+Spring Cloud GCP provides a Spring abstraction layer to publish to and subscribe from Google Cloud
+Pub/Sub topics and to create, list or delete Google Cloud Pub/Sub topics and subscriptions.
+
+A Spring Boot starter is provided to auto-configure the various Pub/Sub components.
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-pubsub', version: '{project-version}'
+}
+----
+
+=== Pub/Sub operations abstraction
+
+`PubSubTemplate` is an abstraction that allows Spring users to use Google Cloud Pub/Sub without
+depending on any Google Cloud Pub/Sub API semantics.
+`PubSubTemplate` uses the
+https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub[Google Cloud Java Client for Pub/Sub]
+to interact with Google Cloud Pub/Sub.
+It implements the `PubSubOperations` interface, which comprehends all the possible operations to be
+carried by a Google Cloud Pub/Sub client.
+
+`PubSubTemplate` depends on a `PublisherFactory`, which is a functional interface to provide a
+Google Cloud Java Client for Pub/Sub `Publisher`.
+The Spring Boot starter for GCP Pub/Sub auto-configures a `PublisherFactory` with default settings
+and uses the `GcpProjectIdProvider` and `CredentialsProvider` auto-configured by the Spring Boot GCP
+Core starter.
+
+The `PublisherFactory` implementation provided by Spring Cloud GCP Pub/Sub,
+`DefaultPublisherFactory`, caches `Publisher` instances by topic name, in order to optimize resource
+utilization.
+
+The Spring Boot starter for GCP Pub/Sub allows for the customization of the number of threads used
+by both the `Publisher` and `Subscriber` executors.
+In the example, we're setting the number of threads used by both the `Publisher` and `Subscriber` to
+2.
+
+[source,yaml]
+----
+spring.cloud.gcp.pubsub.subscriber.executorThreads=2
+spring.cloud.gcp.pubsub.publisher.executorThreads=2
+----
+
+The default value for both these properties is 4 threads.
+
+==== Publishing to a topic
+
+`PubSubTemplate` provides an asynchronous method to publish messages to a Google Cloud Pub/Sub
+topic.
+
+[source,java]
+----
+public ListenableFuture<String> send(final String topic, Message message)
+----
+
+The `send()` method takes a Spring Message and it uses the built-in `SimpleMessageConverter` to
+convert from `Message` to the `PubsubMessage` accepted by the Google Cloud Java Library for Pub/Sub.
+`SimpleMessageConverter` copies the `Message` headers into `PubsubMessage` attributes and the
+`Message` payload into the `PubsubMessage` data.
+`SimpleMessageConverter` calls `toString()` in both the `Message` headers and payload, since
+`PubsubMessage` only supports `String` attributes and data at the transmission level.
+We're considering JSON object encoding/decoding in the future to support more object types.
+
+Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
+
+[source,java]
+----
+@Autowired
+private PubSubTemplate pubSubTemplate;
+
+public void publishMessage() {
+    this.pubSubTemplate.send("topic", new GenericMessage<>("your message payload"));
+}
+----
+
+=== Pub/Sub management
+
+`PubSubAdmin` is the abstraction provided by Spring Cloud GCP to manage Google Cloud Pub/Sub
+resources.
+It allows for the creation, deletion and listing of topics and subscriptions.
+
+`PubSubAdmin` depends on `GcpProjectIdProvider` and either a `CredentialsProvider` or a
+`TopicAdminClient` and a `SubscriptionAdminClient`.
+If given a `CredentialsProvider`, it creates a `TopicAdminClient` and a `SubscriptionAdminClient`
+with the Google Cloud Java Library for Pub/Sub defaults.
+The Spring Boot starter for GCP Pub/Sub auto-configures a `PubSubAdmin` object using the
+`GcpProjectIdProvider` and the `CredentialsProvider` auto-configured by the Spring Boot GCP Core
+starter.
+
+==== Creating a topic
+
+`PubSubAdmin` implements a method to create topics:
+
+[source,java]
+----
+public Topic createTopic(String topicName)
+----
+
+Here is an example of how to create a Google Cloud Pub/Sub topic:
+
+[source,java]
+----
+@Autowired
+private PubSubAdmin admin;
+
+public void newTopic() {
+    admin.createTopic("topicName");
+}
+----
+
+==== Deleting a topic
+
+`PubSubAdmin` implements a method to delete topics:
+
+[source,java]
+----
+public void deleteTopic(String topicName)
+----
+
+Here is an example of how to delete a Google Cloud Pub/Sub topic:
+
+[source,java]
+----
+@Autowired
+private PubSubAdmin admin;
+
+public void deleteTopic() {
+    admin.deleteTopic("topicName");
+}
+----
+
+==== Listing topics
+
+`PubSubAdmin` implements a method to list topics:
+
+[source,java]
+----
+public List<Topic> listTopics
+----
+
+Here is an example of how to list every Google Cloud Pub/Sub topic name in a project:
+
+[source,java]
+----
+@Autowired
+private PubSubAdmin admin;
+
+public List<String> listTopics() {
+    return admin
+        .listTopics()
+        .stream()
+        .map(Topic::getNameAsTopicName)
+        .map(TopicName::getTopic)
+        .collect(Collectors.toList());
+}
+----
+
+==== Creating a subscription
+
+`PubSubAdmin` implements a method to create subscriptions to existing topics:
+
+[source,java]
+----
+public Subscription createSubscription(String subscriptionName, String topicName, Integer ackDeadline, String pushEndpoint)
+----
+
+Here is an example of how to create a Google Cloud Pub/Sub subscription:
+
+[source,java]
+----
+@Autowired
+private PubSubAdmin admin;
+
+public void newSubscription() {
+    admin.createSubscription("subscriptionName", "topicName", 10, “http://my.endpoint/push”);
+}
+----
+
+Alternative methods with default settings are provided for ease of use.
+The default value for `ackDeadline` is 10 seconds.
+If `pushEndpoint` isn’t specified, the subscription uses message pulling, instead.
+
+[source,java]
+----
+public Subscription createSubscription(String subscriptionName, String topicName)
+----
+
+[source,java]
+----
+public Subscription createSubscription(String subscriptionName, String topicName, Integer ackDeadline)
+----
+
+[source,java]
+----
+public Subscription createSubscription(String subscriptionName, String topicName, String pushEndpoint)
+----
+
+==== Deleting a subscription
+
+`PubSubAdmin` implements a method to delete subscriptions:
+
+[source,java]
+----
+public void deleteSubscription(String subscriptionName)
+----
+
+Here is an example of how to delete a Google Cloud Pub/Sub subscription:
+
+[source,java]
+----
+@Autowired
+private PubSubAdmin admin;
+
+public void deleteSubscription() {
+    admin.deleteSubscription("subscriptionName");
+}
+----
+
+==== Listing subscriptions
+
+`PubSubAdmin` implements a method to list subscriptions:
+
+[source,java]
+----
+public List<Subscription> listSubscriptions()
+----
+
+Here is an example of how to list every subscription name in a project:
+
+[source,java]
+----
+@Autowired
+private PubSubAdmin admin;
+
+public List<String> listSubscriptions() {
+return admin
+    .listSubscriptions()
+    .stream()
+    .map(Subscription::getNameAsSubscriptionName)
+    .map(SubscriptionName::getSubscription)
+    .collect(Collectors.toList());
+}
+----
+

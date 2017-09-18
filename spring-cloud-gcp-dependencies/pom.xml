@@ -20,6 +20,7 @@
 		<google-cloud-pubsub.version>0.20.1-beta</google-cloud-pubsub.version>
 		<google-cloud-trace.version>0.20.1-alpha</google-cloud-trace.version>
 		<google-cloud-storage.version>1.2.1</google-cloud-storage.version>
+		<spring-cloud-context.version>1.2.3.RELEASE</spring-cloud-context.version>
 		<cloud-trace-java.version>0.4.0</cloud-trace-java.version>
 		<spring-cloud-sleuth.version>1.3.0.M1</spring-cloud-sleuth.version>
 	</properties>
@@ -141,8 +142,14 @@
 				<version>1.0.4</version>
 			</dependency>
 
-			<!--Starters-->
+			<!-- spring-cloud-gcp-starter-config -->
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-context</artifactId>
+				<version>${spring-cloud-context.version}</version>
+			</dependency>
 
+			<!--Starters-->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-core</artifactId>
@@ -161,6 +168,11 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-sql</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-starter-config</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
