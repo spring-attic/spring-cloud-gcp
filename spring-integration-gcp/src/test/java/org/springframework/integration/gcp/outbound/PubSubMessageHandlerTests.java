@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -40,7 +40,7 @@ import static org.mockito.Mockito.when;
 public class PubSubMessageHandlerTests {
 
 	@Mock
-	private PubSubTemplate pubSubTemplate;
+	private PubSubOperations pubSubTemplate;
 
 	private PubSubMessageHandler adapter;
 	private Message<?> message;
@@ -52,8 +52,7 @@ public class PubSubMessageHandlerTests {
 		when(this.pubSubTemplate.publish(eq("testTopic"), eq("testPayload"),
 				eq(ImmutableMap.of("key1", "value1", "key2", "value2"))))
 				.thenReturn(new SettableListenableFuture<>());
-		this.adapter = new PubSubMessageHandler(this.pubSubTemplate);
-		this.adapter.setTopic("testTopic");
+		this.adapter = new PubSubMessageHandler(this.pubSubTemplate, "testTopic");
 
 	}
 
@@ -63,10 +62,5 @@ public class PubSubMessageHandlerTests {
 		verify(this.pubSubTemplate, times(1))
 				.publish(eq("testTopic"), eq("testPayload"),
 						eq(ImmutableMap.of("key1", "value1", "key2", "value2")));
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testSetNullTopic() {
-		this.adapter.setTopic(null);
 	}
 }

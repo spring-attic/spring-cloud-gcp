@@ -21,7 +21,7 @@ dependencies {
 ----
 
 
-This starter provides Pub/Sub key classes `PubSubTemplate` and `PubSubAdmin`.
+This starter provides auto-configured instances of `PubSubTemplate` and `PubSubAdmin`.
 
 The following properties are optional:
 [source,yaml]

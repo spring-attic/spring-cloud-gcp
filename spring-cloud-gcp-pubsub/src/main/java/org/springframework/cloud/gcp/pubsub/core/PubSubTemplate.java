@@ -21,11 +21,14 @@ import java.util.Map;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
+import com.google.cloud.pubsub.v1.MessageReceiver;
+import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
+import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
@@ -39,8 +42,11 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private final PublisherFactory publisherFactory;
 
-	public PubSubTemplate(PublisherFactory publisherFactory) {
+	private final SubscriberFactory subscriberFactory;
+
+	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory) {
 		this.publisherFactory = publisherFactory;
+		this.subscriberFactory = subscriberFactory;
 	}
 
 	@Override
@@ -80,6 +86,13 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		}
 
 		return pubsubMessageBuilder.build();
+	}
+
+	@Override
+	public Subscriber subscribe(String subscription, MessageReceiver messageHandler) {
+		Subscriber subscriber = this.subscriberFactory.getSubscriber(subscription, messageHandler);
+		subscriber.startAsync();
+		return subscriber;
 	}
 
 	@Override

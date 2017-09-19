@@ -14,6 +14,7 @@ Currently, this repository provides support for:
 ** https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-pubsub[Google Cloud Pub/Sub]
 ** https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql[Google Cloud SQL]
 ** https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-storage[Google Cloud Storage]
+** https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-trace[Stackdriver Trace with Spring Cloud Sleuth]
 
 If you have any other ideas, suggestions or bug reports, please use our
 link:https://github.com/spring-cloud/spring-cloud-gcp/issues[GitHub issue tracker] and let us know!

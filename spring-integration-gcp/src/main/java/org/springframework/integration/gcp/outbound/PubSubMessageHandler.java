@@ -22,16 +22,14 @@ import java.util.Map;
 import com.google.common.collect.ImmutableList;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.converter.CompositeMessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
-import org.springframework.util.Assert;
 
 /**
- * Sends messages to Google Cloud Pub/Sub by delegating to {@link PubSubTemplate}.
+ * Sends messages to Google Cloud Pub/Sub by delegating to {@link PubSubOperations}.
  *
  * @author João André Martins
  */
@@ -43,8 +41,9 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private String topic;
 
-	public PubSubMessageHandler(PubSubTemplate pubSubTemplate) {
+	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
+		this.topic = topic;
 
 		StringMessageConverter stringMessageConverter = new StringMessageConverter();
 		stringMessageConverter.setSerializedPayloadClass(String.class);
@@ -61,14 +60,5 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 				(key, value) -> headers.put(key, value.toString()));
 
 		this.pubSubTemplate.publish(this.topic, payload, headers);
-	}
-
-	public String getTopic() {
-		return this.topic;
-	}
-
-	public void setTopic(String topic) {
-		Assert.notNull(topic, "The topic can't be null.");
-		this.topic = topic;
 	}
 }
