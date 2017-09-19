@@ -35,6 +35,8 @@ The Spring Boot Starter for Google Cloud SQL provides an auto-configured
 https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html#jdbc-JdbcTemplate[`JdbcTemplate`]
 object bean that allows for operations such as querying and modifying a database.
 
+Note that this starter requires the Google Cloud SQL API to be enabled in in your GCP project.
+
 [source,java]
 ----
 @Autowired
