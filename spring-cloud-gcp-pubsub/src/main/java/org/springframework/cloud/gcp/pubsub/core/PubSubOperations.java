@@ -16,14 +16,39 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import com.google.cloud.pubsub.v1.MessageReceiver;
+import com.google.cloud.pubsub.v1.Subscriber;
+
 import org.springframework.messaging.Message;
 import org.springframework.util.concurrent.ListenableFuture;
 
 /**
+ * An abstraction for Google Cloud Pub/Sub.
+ *
  * @author Vinicius Carvalho
+ * @author João André Martins
  */
 public interface PubSubOperations {
 
-	ListenableFuture<String> send(String topic, Message message);
+	/**
+	 * Sends a Spring {@link Message} to Pub/Sub.
+	 *
+	 * @param topic the name of an existing topic
+	 * @param message the Spring message
+	 * @return the listenable future of the call
+	 */
+	ListenableFuture<String> publish(String topic, Message message);
+
+	/**
+	 * Adds a callback method to an existing subscription.
+	 *
+	 * <p>
+	 * The created {@link Subscriber} is returned so it can be stopped.
+	 *
+	 * @param subscription the name of an existing subscription
+	 * @param messageHandler the callback method triggered when new messages arrive
+	 * @return subscriber listening to new messages
+	 */
+	Subscriber subscribe(String subscription, MessageReceiver messageHandler);
 
 }

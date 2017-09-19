@@ -20,8 +20,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import com.google.api.core.ApiService;
 import com.google.api.core.SettableApiFuture;
+import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Publisher;
+import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +33,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
+import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.MessageConversionException;
@@ -39,7 +43,11 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -50,8 +58,15 @@ public class PubSubTemplateTests {
 
 	@Mock
 	private PublisherFactory mockPublisherFactory;
+
+	@Mock
+	private SubscriberFactory mockSubscriberFactory;
+
 	@Mock
 	private Publisher mockPublisher;
+
+	@Mock
+	private Subscriber mockSubscriber;
 
 	private PubSubTemplate pubSubTemplate;
 	private Message<String> siMessage;
@@ -59,11 +74,18 @@ public class PubSubTemplateTests {
 
 	@Before
 	public void setUp() throws ExecutionException, InterruptedException {
-		this.pubSubTemplate = new PubSubTemplate(this.mockPublisherFactory);
-		when(this.mockPublisherFactory.getPublisher("testTopic")).thenReturn(this.mockPublisher);
+		this.pubSubTemplate =
+				new PubSubTemplate(this.mockPublisherFactory, this.mockSubscriberFactory);
+		when(this.mockPublisherFactory.getPublisher("testTopic"))
+				.thenReturn(this.mockPublisher);
 		this.settableApiFuture = SettableApiFuture.create();
 		when(this.mockPublisher.publish(isA(PubsubMessage.class)))
 				.thenReturn(this.settableApiFuture);
+
+		when(this.mockSubscriberFactory.getSubscriber(
+				eq("testSubscription"), isA(MessageReceiver.class)))
+				.thenReturn(this.mockSubscriber);
+		when(this.mockSubscriber.startAsync()).thenReturn(mock(ApiService.class));
 
 		Map<String, Object> headers = new HashMap<>();
 		headers.put("header1", "value1");
@@ -75,7 +97,7 @@ public class PubSubTemplateTests {
 	@Test
 	public void testSend() throws ExecutionException, InterruptedException {
 		this.settableApiFuture.set("result");
-		ListenableFuture<String> future = this.pubSubTemplate.send("testTopic", this.siMessage);
+		ListenableFuture<String> future = this.pubSubTemplate.publish("testTopic", this.siMessage);
 
 		assertEquals("result", future.get());
 	}
@@ -94,7 +116,7 @@ public class PubSubTemplateTests {
 			}
 		});
 
-		this.pubSubTemplate.send("testTopic", this.siMessage);
+		this.pubSubTemplate.publish("testTopic", this.siMessage);
 	}
 
 	@Test(expected = PubSubException.class)
@@ -102,12 +124,12 @@ public class PubSubTemplateTests {
 		when(this.mockPublisherFactory.getPublisher("testTopic"))
 				.thenThrow(new PubSubException("couldn't create the publisher."));
 
-		this.pubSubTemplate.send("testTopic", this.siMessage);
+		this.pubSubTemplate.publish("testTopic", this.siMessage);
 	}
 
 	@Test
 	public void testSend_onFailure() {
-		ListenableFuture<String> future = this.pubSubTemplate.send("testTopic", this.siMessage);
+		ListenableFuture<String> future = this.pubSubTemplate.publish("testTopic", this.siMessage);
 		this.settableApiFuture.setException(new Exception("future failed."));
 
 		try {
@@ -125,5 +147,13 @@ public class PubSubTemplateTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void testSetNullMessageConverter() {
 		this.pubSubTemplate.setMessageConverter(null);
+	}
+
+	@Test
+	public void testSubscribe() {
+		Subscriber subscriber = this.pubSubTemplate.subscribe("testSubscription",
+				(message, consumer) -> { });
+		assertEquals(this.mockSubscriber, subscriber);
+		verify(this.mockSubscriber, times(1)).startAsync();
 	}
 }

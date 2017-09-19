@@ -23,8 +23,8 @@ import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
 
+import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
-import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.gcp.AckMode;
 import org.springframework.messaging.MessageHeaders;
@@ -40,15 +40,15 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private final String subscriptionName;
 
-	private final SubscriberFactory subscriberFactory;
+	private final PubSubOperations pubSubTemplate;
 
 	private Subscriber subscriber;
 
 	private AckMode ackMode = AckMode.AUTO;
 
-	public PubSubInboundChannelAdapter(SubscriberFactory subscriberFactory,
+	public PubSubInboundChannelAdapter(PubSubOperations pubSubTemplate,
 			String subscriptionName) {
-		this.subscriberFactory = subscriberFactory;
+		this.pubSubTemplate = pubSubTemplate;
 		this.subscriptionName = subscriptionName;
 	}
 
@@ -56,9 +56,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	protected void doStart() {
 		super.doStart();
 
-		this.subscriber =
-				this.subscriberFactory.getSubscriber(this.subscriptionName, this::receiveMessage);
-		this.subscriber.startAsync();
+		this.subscriber = this.pubSubTemplate.subscribe(this.subscriptionName, this::receiveMessage);
 	}
 
 	private void receiveMessage(PubsubMessage message, AckReplyConsumer consumer) {

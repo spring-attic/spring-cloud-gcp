@@ -16,37 +16,28 @@
 
 package org.springframework.integration.gcp.outbound;
 
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.messaging.Message;
-import org.springframework.util.Assert;
 
 /**
- * Sends messages to Google Cloud Pub/Sub by delegating to {@link PubSubTemplate}.
+ * Sends messages to Google Cloud Pub/Sub by delegating to {@link PubSubOperations}.
  *
  * @author João André Martins
  */
 public class PubSubMessageHandler extends AbstractMessageHandler {
 
-	private final PubSubTemplate pubSubTemplate;
+	private final PubSubOperations pubSubTemplate;
 
 	private String topic;
 
-	public PubSubMessageHandler(PubSubTemplate pubSubTemplate) {
+	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
+		this.topic = topic;
 	}
 
 	@Override
 	protected void handleMessageInternal(Message<?> message) throws Exception {
-		this.pubSubTemplate.send(this.topic, message);
-	}
-
-	public String getTopic() {
-		return this.topic;
-	}
-
-	public void setTopic(String topic) {
-		Assert.notNull(topic, "The topic can't be null.");
-		this.topic = topic;
+		this.pubSubTemplate.publish(this.topic, message);
 	}
 }
