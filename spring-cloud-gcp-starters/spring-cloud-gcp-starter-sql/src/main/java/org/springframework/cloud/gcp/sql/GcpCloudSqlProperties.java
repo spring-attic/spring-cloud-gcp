@@ -34,7 +34,7 @@ public class GcpCloudSqlProperties {
 
 	private String jdbcUrl;
 
-	private String jdbcDriver = "com.mysql.jdbc.Driver";
+	private String jdbcDriver;
 
 	private String userName = "root";
 
@@ -43,6 +43,8 @@ public class GcpCloudSqlProperties {
 	private boolean initFailFast;
 
 	private Path credentialsLocation;
+
+	private DatabaseType databaseType = DatabaseType.MYSQL;
 
 	public String getDatabaseName() {
 		return this.databaseName;
@@ -106,5 +108,13 @@ public class GcpCloudSqlProperties {
 
 	public void setCredentialsLocation(Path credentialsLocation) {
 		this.credentialsLocation = credentialsLocation;
+	}
+
+	public DatabaseType getDatabaseType() {
+		return this.databaseType;
+	}
+
+	public void setDatabaseType(DatabaseType databaseType) {
+		this.databaseType = databaseType;
 	}
 }

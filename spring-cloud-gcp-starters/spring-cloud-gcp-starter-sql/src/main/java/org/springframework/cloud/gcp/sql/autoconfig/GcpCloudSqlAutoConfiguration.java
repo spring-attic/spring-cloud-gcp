@@ -79,15 +79,14 @@ public class GcpCloudSqlAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
 	@Conditional(AppEngineCondition.class)
-	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider(
-			GcpProjectIdProvider projectIdProvider) {
-		CloudSqlJdbcInfoProvider appEngineProvider = new AppEngineCloudSqlJdbcInfoProvider(
-				projectIdProvider.getProjectId(),
-				this.gcpCloudSqlProperties);
+	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider() {
+		CloudSqlJdbcInfoProvider appEngineProvider =
+				new AppEngineCloudSqlJdbcInfoProvider(this.gcpCloudSqlProperties);
 
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("App Engine JdbcUrl provider. Connecting to "
-					+ appEngineProvider.getJdbcUrl());
+					+ appEngineProvider.getJdbcUrl() + " with driver "
+					+ appEngineProvider.getJdbcDriverClass());
 		}
 
 		setCredentialsProperty();
@@ -97,15 +96,15 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	public CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider(
-			GcpProjectIdProvider projectIdProvider) {
-		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(
-				projectIdProvider.getProjectId(),
-				this.gcpCloudSqlProperties);
+	public CloudSqlJdbcInfoProvider defaultJdbcInfoProvider() {
+		CloudSqlJdbcInfoProvider defaultProvider =
+				new DefaultCloudSqlJdbcInfoProvider(this.gcpCloudSqlProperties);
 
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("Default JdbcUrl provider. Connecting to "
-					+ defaultProvider.getJdbcUrl());
+			LOGGER.info("Default " + this.gcpCloudSqlProperties.getDatabaseType().name()
+					+ " JdbcUrl provider. Connecting to "
+					+ defaultProvider.getJdbcUrl() + " with driver "
+					+ defaultProvider.getJdbcDriverClass());
 		}
 
 		setCredentialsProperty();

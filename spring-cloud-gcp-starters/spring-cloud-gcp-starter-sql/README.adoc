@@ -22,26 +22,23 @@ dependencies {
 
 This starter provides the configuration sources: `CloudSqlJdbcInfoProvider` and `DataSource`.
 
+It allows connections to second-generation only Google Cloud SQL instances.
+
 `CloudSqlJdbcInfoProvider` returns the JDBC information to be used, such as the JDBC driver name
 and connection string. A special `CloudSqlJdbcInfoProvider` is provided if an app is running on
 Google App Engine.
 
-`CloudSqlJdbcInfoProvider` requires the following properties:
+`CloudSqlJdbcInfoProvider` uses the following properties:
 
 [source,yaml]
 ----
 spring.cloud.gcp.sql.database-name=[YOUR_CLOUD_SQL_DATABASE_NAME]
-----
-
-The following properties are optional:
-
-[source,yaml]
-----
 spring.cloud.gcp.sql.instance-connection-name=[YOUR_CLOUD_SQL_INSTANCE_CONNECTION_NAME]
 spring.cloud.gcp.sql.jdbc-url=[YOUR_JDBC_URL]
 spring.cloud.gcp.sql.jdbc-driver=[YOUR_JDBC_DRIVER]
 spring.cloud.gcp.sql.user-name=[YOUR_CLOUD_SQL_USERNAME]
 spring.cloud.gcp.sql.password=[YOUR_CLOUD_SQL_PASSWORD]
+spring.cloud.gcp.sql.database-type=[mysql or postgresql]
 ----
 
 `spring.cloud.gcp.sql.instance-connection-name` is your instance's
@@ -51,12 +48,18 @@ Required if `spring.cloud.gcp.sql.jdbc-url` isn't specified.
 If `spring.cloud.gcp.sql.jdbc-url` is specified, it is used as the final JDBC URL and has precedence
 over `spring.cloud.gcp.sql.instance-connection-name`.
 
-If `spring.cloud.gcp.sql.jdbc-driver` isn't specified, `com.mysql.jdbc.Driver` is used by default,
-or `com.mysql.jdbc.GoogleDriver` if running on Google App Engine.
+If `spring.cloud.gcp.sql.jdbc-driver` isn't specified, `com.mysql.jdbc.Driver` is used if
+`spring.cloud.gcp.sql.database-type` is `mysql`, `org.postgresql.Driver` if
+`spring.cloud.gcp.sql.database-type` is `postgresql` or `com.mysql.jdbc.GoogleDriver` if running on
+Google App Engine.
 
 If `spring.cloud.gcp.sql.user-name` isn't specified, `root` is used by default.
 
 If `spring.cloud.gcp.sql.password` isn't specified, an empty string is used by default.
+
+`spring.cloud.gcp.sql.database-type` can either be `mysql` or `postgresql`. Any value that isn't
+those two will cause the configuration to error. `spring.cloud.gcp.sql.database-type` determines if
+the resolved JDBC URL and driver class are for MySQL or PostgreSQL.
 
 By using this starter in conjunction with
 https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html[Spring JDBC],
@@ -76,7 +79,43 @@ A Google Cloud SQL instance connection name is a string comprised of three eleme
 
 You can find your instance's connection name in its Google Cloud Console page.
 
+== Troubleshooting tips
+
+If you're not able to connect to a database and see an endless loop of
+`Connecting to Cloud SQL instance [...] on IP [...]`, it's likely that exceptions are being thrown
+and logged at a level lower than your logger's level. This may be the case with HikariCP, the
+default DataSource used by this starter, if your logger is set to INFO or higher level.
+
+To see what's going on in the background, you should add a `logback.xml` file to your application
+resources folder, that looks like this:
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <include resource="org/springframework/boot/logging/logback/base.xml"/>
+  <logger name="com.zaxxer.hikari.pool" level="DEBUG"/>
+</configuration>
+----
+
 == Frequently Asked Questions
+
+=== PostgreSQL: `java.net.SocketException: already connected`
+
+We found this exception to be common if your Maven project's parent is `spring-boot` version
+`1.5.x`, or in any other circumstance that would cause the version of the
+`org.postgresql:postgresql` dependency to be an older one (e.g., `9.4.1212.jre7`).
+
+To fix this, re-declare the dependency in its correct version. For example, in Maven:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.postgresql</groupId>
+  <artifactId>postgresql</artifactId>
+  <version>42.1.1</version>
+</dependency>
+----
 
 === I'm seeing a lot of log lines similar to "c.g.cloud.sql.core.SslSocketFactory : Re-throwing cached exception due to attempt to refresh instance information too soon after error." in a loop and I can't connect to my database
 

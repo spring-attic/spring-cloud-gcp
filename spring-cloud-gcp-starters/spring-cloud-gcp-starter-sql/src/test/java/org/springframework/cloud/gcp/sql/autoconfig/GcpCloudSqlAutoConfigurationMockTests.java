@@ -39,8 +39,7 @@ import static org.junit.Assert.assertEquals;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { GcpCloudSqlAutoConfiguration.class, GcpContextAutoConfiguration.class,
 		GcpCloudSqlTestConfiguration.class
-}, properties = { "spring.cloud.gcp.projectId=proj",
-		"spring.cloud.gcp.sql.databaseName=test-database",
+}, properties = { "spring.cloud.gcp.sql.databaseName=test-database",
 		"spring.cloud.gcp.sql.initFailFast=false"
 })
 public abstract class GcpCloudSqlAutoConfigurationMockTests {
@@ -72,7 +71,10 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 		}
 	}
 
+	// Project ID passed in so ServiceOptions doesn't try to get it from AppIdentity API, which
+	// isn't easily mockable.
 	@TestPropertySource(properties = {
+			"spring.cloud.gcp.project-id=im-not-used-for-anything",
 			"spring.cloud.gcp.sql.instanceConnectionName=tubular-bells:australia:test-instance"})
 	public static class CloudSqlAppEngineDataSourceTest extends GcpCloudSqlAutoConfigurationMockTests {
 		@BeforeClass
@@ -92,7 +94,8 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 			assertEquals("com.mysql.jdbc.GoogleDriver",
 					this.urlProvider.getJdbcDriverClass());
 			assertEquals("com.mysql.jdbc.GoogleDriver", dataSource.getDriverClassName());
-			assertEquals("jdbc:google:mysql://tubular-bells:australia:test-instance/test-database",
+			assertEquals("jdbc:google:mysql://tubular-bells:australia:test-instance/test-database"
+					+ "?user=root&password=",
 					this.urlProvider.getJdbcUrl());
 			assertEquals("root", dataSource.getUsername());
 			assertEquals("", dataSource.getPassword());
@@ -135,17 +138,35 @@ public abstract class GcpCloudSqlAutoConfigurationMockTests {
 	}
 
 	@TestPropertySource(properties = {
-			"spring.cloud.gcp.sql.jdbcUrl=turnItOut",
-			"spring.cloud.gcp.sql.jdbcDriver=romanticRights"
+			"spring.cloud.gcp.sql.jdbcUrl=jdbc:postgresql://google/turnItOut",
+			"spring.cloud.gcp.sql.jdbcDriver=org.postgresql.Driver"
 	})
-	public static class GcpCloudSqlAutoConfigurationWithUrlAndDriver
+	public static class GcpCloudSqlAutoConfigurationWithUrlAndDriverTest
 			extends GcpCloudSqlAutoConfigurationMockTests {
 
 		@Test
 		@Override
 		public void test() {
-			assertEquals("turnItOut", this.urlProvider.getJdbcUrl());
-			assertEquals("romanticRights", this.urlProvider.getJdbcDriverClass());
+			assertEquals("jdbc:postgresql://google/turnItOut", this.urlProvider.getJdbcUrl());
+			assertEquals("org.postgresql.Driver", this.urlProvider.getJdbcDriverClass());
+		}
+	}
+
+	@TestPropertySource(properties = {
+			"spring.cloud.gcp.sql.database-type=postgresql",
+			"spring.cloud.gcp.sql.instanceConnectionName=tubular-bells:singapore:test-instance"
+	})
+	public static class GcpCloudSqlAutoConfigurationPostgresTest
+			extends GcpCloudSqlAutoConfigurationMockTests {
+
+		@Test
+		@Override
+		public void test() {
+			assertEquals("jdbc:postgresql://google/test-database?socketFactory="
+					+ "com.google.cloud.sql.postgres.SocketFactory&"
+							+ "socketFactoryArg=tubular-bells:singapore:test-instance&useSSL=false",
+					this.urlProvider.getJdbcUrl());
+			assertEquals("org.postgresql.Driver", this.urlProvider.getJdbcDriverClass());
 		}
 	}
 }

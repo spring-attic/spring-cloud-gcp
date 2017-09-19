@@ -33,35 +33,30 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 
 	private final GcpCloudSqlProperties properties;
 
-	public DefaultCloudSqlJdbcInfoProvider(String projectId, GcpCloudSqlProperties properties) {
+	public DefaultCloudSqlJdbcInfoProvider(GcpCloudSqlProperties properties) {
 		this.properties = properties;
-		Assert.hasText(projectId,
-				"A project ID must be provided.");
-
-		if (StringUtils.isEmpty(properties.getJdbcUrl())) {
-			Assert.hasText(properties.getDatabaseName(),
-					"A database name must be provided.");
-			Assert.hasText(properties.getInstanceConnectionName(),
+		Assert.hasText(this.properties.getDatabaseName(), "A database name must be provided.");
+		if (StringUtils.isEmpty(this.properties.getJdbcUrl())) {
+			Assert.hasText(this.properties.getInstanceConnectionName(),
 					"An instance connection name must be provided. Refer to "
 							+ GcpCloudSqlAutoConfiguration.INSTANCE_CONNECTION_NAME_HELP_URL
 							+ " for more information.");
-
-			String jdbcUrl = String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
-					+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
-					this.properties.getDatabaseName(),
-					this.properties.getInstanceConnectionName());
-
-			this.properties.setJdbcUrl(jdbcUrl);
 		}
 	}
 
 	@Override
 	public String getJdbcDriverClass() {
-		return this.properties.getJdbcDriver();
+		return StringUtils.isEmpty(this.properties.getJdbcDriver())
+				? this.properties.getDatabaseType().getJdbcDriverName()
+				: this.properties.getJdbcDriver();
 	}
 
 	@Override
 	public String getJdbcUrl() {
-		return this.properties.getJdbcUrl();
+		return StringUtils.isEmpty(this.properties.getJdbcUrl())
+				? String.format(this.properties.getDatabaseType().getJdbcUrlTemplate(),
+				this.properties.getDatabaseName(),
+				this.properties.getInstanceConnectionName())
+				: this.properties.getJdbcUrl();
 	}
 }
