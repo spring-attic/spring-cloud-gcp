@@ -16,13 +16,12 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.util.Map;
+
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 
-import org.springframework.messaging.Message;
 import org.springframework.util.concurrent.ListenableFuture;
-
-import java.util.Map;
 
 /**
  * An abstraction for Google Cloud Pub/Sub.
@@ -33,13 +32,24 @@ import java.util.Map;
 public interface PubSubOperations {
 
 	/**
-	 * Sends a Spring {@link Message} to Pub/Sub.
+	 * Sends a message to Pub/Sub.
 	 *
 	 * @param topic the name of an existing topic
-	 * @param message the Spring message
+	 * @param payload the message String payload
+	 * @param headers map of String to String headers
 	 * @return the listenable future of the call
 	 */
 	ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers);
+
+	/**
+	 * Sends a message to Pub/Sub.
+	 *
+	 * @param topic the name of an existing topic
+	 * @param payload the message payload in bytes
+	 * @param headers map of String to String headers
+	 * @return the listenable future of the call
+	 */
+	ListenableFuture<String> publish(String topic, byte[] payload, Map<String, String> headers);
 
 	/**
 	 * Adds a callback method to an existing subscription.

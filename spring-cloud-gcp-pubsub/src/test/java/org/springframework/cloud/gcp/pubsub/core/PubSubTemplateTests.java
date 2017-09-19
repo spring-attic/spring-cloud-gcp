@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import com.google.api.core.ApiService;
@@ -25,6 +23,7 @@ import com.google.api.core.SettableApiFuture;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,11 +33,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.converter.MessageConversionException;
-import org.springframework.messaging.converter.MessageConverter;
-import org.springframework.messaging.support.GenericMessage;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import static org.junit.Assert.assertEquals;
@@ -69,7 +63,7 @@ public class PubSubTemplateTests {
 	private Subscriber mockSubscriber;
 
 	private PubSubTemplate pubSubTemplate;
-	private Message<String> siMessage;
+	private PubsubMessage pubsubMessage;
 	private SettableApiFuture<String> settableApiFuture;
 
 	@Before
@@ -87,36 +81,33 @@ public class PubSubTemplateTests {
 				.thenReturn(this.mockSubscriber);
 		when(this.mockSubscriber.startAsync()).thenReturn(mock(ApiService.class));
 
-		Map<String, Object> headers = new HashMap<>();
-		headers.put("header1", "value1");
-		headers.put("header2", 12345);
-
-		this.siMessage = new GenericMessage<>("testBody", headers);
+		this.pubsubMessage = PubsubMessage.newBuilder().setData(
+				ByteString.copyFrom("permanating".getBytes())).build();
 	}
 
 	@Test
-	public void testSend() throws ExecutionException, InterruptedException {
+	public void testPublish() throws ExecutionException, InterruptedException {
 		this.settableApiFuture.set("result");
-		ListenableFuture<String> future = this.pubSubTemplate.publish("testTopic", this.siMessage);
+		ListenableFuture<String> future = this.pubSubTemplate.publish("testTopic",
+				this.pubsubMessage);
 
 		assertEquals("result", future.get());
 	}
 
-	@Test(expected = MessageConversionException.class)
-	public void testSend_notPubsubMessage() {
-		this.pubSubTemplate.setMessageConverter(new MessageConverter() {
-			@Override
-			public Object fromMessage(Message<?> message, Class<?> targetClass) {
-				return "not PubsubMessage.class";
-			}
+	@Test
+	public void testPublish_String() {
+		this.pubSubTemplate.publish("testTopic", "testPayload", null);
 
-			@Override
-			public Message<?> toMessage(Object payload, MessageHeaders headers) {
-				return null;
-			}
-		});
+		verify(this.mockPublisher, times(1))
+				.publish(isA(PubsubMessage.class));
+	}
 
-		this.pubSubTemplate.publish("testTopic", this.siMessage);
+	@Test
+	public void testPublish_Bytes() {
+		this.pubSubTemplate.publish("testTopic", "testPayload".getBytes(), null);
+
+		verify(this.mockPublisher, times(1))
+				.publish(isA(PubsubMessage.class));
 	}
 
 	@Test(expected = PubSubException.class)
@@ -124,12 +115,13 @@ public class PubSubTemplateTests {
 		when(this.mockPublisherFactory.getPublisher("testTopic"))
 				.thenThrow(new PubSubException("couldn't create the publisher."));
 
-		this.pubSubTemplate.publish("testTopic", this.siMessage);
+		this.pubSubTemplate.publish("testTopic", this.pubsubMessage);
 	}
 
 	@Test
 	public void testSend_onFailure() {
-		ListenableFuture<String> future = this.pubSubTemplate.publish("testTopic", this.siMessage);
+		ListenableFuture<String> future =
+				this.pubSubTemplate.publish("testTopic", this.pubsubMessage);
 		this.settableApiFuture.setException(new Exception("future failed."));
 
 		try {
@@ -142,11 +134,6 @@ public class PubSubTemplateTests {
 		catch (ExecutionException ee) {
 			assertEquals("future failed.", ee.getCause().getMessage());
 		}
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testSetNullMessageConverter() {
-		this.pubSubTemplate.setMessageConverter(null);
 	}
 
 	@Test

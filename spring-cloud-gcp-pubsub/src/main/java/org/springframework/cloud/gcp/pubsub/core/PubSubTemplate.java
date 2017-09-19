@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import com.google.api.core.ApiFuture;
@@ -44,18 +45,32 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private final SubscriberFactory subscriberFactory;
 
+	private final Charset charset;
+
 	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory) {
+		this(publisherFactory, subscriberFactory, Charset.defaultCharset());
+	}
+
+	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory,
+			Charset charset) {
 		this.publisherFactory = publisherFactory;
 		this.subscriberFactory = subscriberFactory;
+		this.charset = charset;
 	}
 
 	@Override
 	public ListenableFuture<String> publish(final String topic, String payload,
 			Map<String, String> headers) {
-		return publish(topic, buildPubsubMessage(payload, null));
+		return publish(topic, buildPubsubMessage(payload.getBytes(this.charset), headers));
 	}
 
-	private ListenableFuture<String> publish(final String topic, PubsubMessage pubsubMessage) {
+	@Override
+	public ListenableFuture<String> publish(final String topic, byte[] payload,
+			Map<String, String> headers) {
+		return publish(topic, buildPubsubMessage(payload, headers));
+	}
+
+	public ListenableFuture<String> publish(final String topic, PubsubMessage pubsubMessage) {
 		ApiFuture<String> publishFuture =
 				this.publisherFactory.getPublisher(topic).publish(pubsubMessage);
 
@@ -77,9 +92,9 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		return settableFuture;
 	}
 
-	private PubsubMessage buildPubsubMessage(String payload, Map<String, String> headers) {
+	private PubsubMessage buildPubsubMessage(byte[] payload, Map<String, String> headers) {
 		PubsubMessage.Builder pubsubMessageBuilder =
-				PubsubMessage.newBuilder().setData(ByteString.copyFrom(payload.getBytes()));
+				PubsubMessage.newBuilder().setData(ByteString.copyFrom(payload));
 
 		if (headers != null) {
 			pubsubMessageBuilder.putAllAttributes(headers);

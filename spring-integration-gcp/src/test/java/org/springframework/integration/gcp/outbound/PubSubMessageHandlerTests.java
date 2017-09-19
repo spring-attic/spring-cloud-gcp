@@ -16,6 +16,8 @@
 
 package org.springframework.integration.gcp.outbound;
 
+import java.util.Map;
+
 import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +31,7 @@ import org.springframework.messaging.support.GenericMessage;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,7 +53,7 @@ public class PubSubMessageHandlerTests {
 		this.message = new GenericMessage<>("testPayload",
 				ImmutableMap.of("key1", "value1", "key2", "value2"));
 		when(this.pubSubTemplate.publish(eq("testTopic"), eq("testPayload"),
-				eq(ImmutableMap.of("key1", "value1", "key2", "value2"))))
+				isA(Map.class)))
 				.thenReturn(new SettableListenableFuture<>());
 		this.adapter = new PubSubMessageHandler(this.pubSubTemplate, "testTopic");
 
@@ -60,7 +63,6 @@ public class PubSubMessageHandlerTests {
 	public void testPublish() {
 		this.adapter.handleMessage(this.message);
 		verify(this.pubSubTemplate, times(1))
-				.publish(eq("testTopic"), eq("testPayload"),
-						eq(ImmutableMap.of("key1", "value1", "key2", "value2")));
+				.publish(eq("testTopic"), eq("testPayload"), isA(Map.class));
 	}
 }
