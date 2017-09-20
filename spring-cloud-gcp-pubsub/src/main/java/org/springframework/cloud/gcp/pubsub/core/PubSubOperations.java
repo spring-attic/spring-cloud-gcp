@@ -22,6 +22,8 @@ import java.util.Map;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 
+import com.google.protobuf.ByteString;
+import com.google.pubsub.v1.PubsubMessage;
 import org.springframework.util.concurrent.ListenableFuture;
 
 /**
@@ -63,6 +65,25 @@ public interface PubSubOperations {
 	 * @return the listenable future of the call
 	 */
 	ListenableFuture<String> publish(String topic, byte[] payload, Map<String, String> headers);
+
+	/**
+	 * Sends a message to Pub/Sub.
+	 *
+	 * @param topic the name of an existing topic
+	 * @param payload the message payload on the {@link PubsubMessage} payload format
+	 * @param headers map of String to String headers
+	 * @return the listenable future of the call
+	 */
+	ListenableFuture<String> publish(String topic, ByteString payload, Map<String, String> headers);
+
+	/**
+	 * Sends a message to Pub/Sub.
+	 *
+	 * @param topic the name of an existing topic
+	 * @param pubsubMessage a Google Cloud Pub/Sub API message
+	 * @return
+	 */
+	ListenableFuture<String> publish(String topic, PubsubMessage pubsubMessage);
 
 	/**
 	 * Adds a callback method to an existing subscription.

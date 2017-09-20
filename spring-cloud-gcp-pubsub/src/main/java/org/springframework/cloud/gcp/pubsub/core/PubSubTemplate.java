@@ -59,15 +59,28 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	@Override
 	public ListenableFuture<String> publish(final String topic, String payload,
 			Map<String, String> headers, Charset charset) {
-		return publish(topic, buildPubsubMessage(payload.getBytes(charset), headers));
+		return publish(topic, payload.getBytes(charset), headers);
 	}
 
 	@Override
 	public ListenableFuture<String> publish(final String topic, byte[] payload,
 			Map<String, String> headers) {
-		return publish(topic, buildPubsubMessage(payload, headers));
+		return publish(topic, ByteString.copyFrom(payload), headers);
 	}
 
+	@Override
+	public ListenableFuture<String> publish(final String topic, ByteString payload,
+			Map<String, String> headers) {
+		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder().setData(payload);
+
+		if (headers != null) {
+			pubsubMessageBuilder.putAllAttributes(headers);
+		}
+
+		return publish(topic, pubsubMessageBuilder.build());
+	}
+
+	@Override
 	public ListenableFuture<String> publish(final String topic, PubsubMessage pubsubMessage) {
 		ApiFuture<String> publishFuture =
 				this.publisherFactory.getPublisher(topic).publish(pubsubMessage);
@@ -88,17 +101,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		});
 
 		return settableFuture;
-	}
-
-	private PubsubMessage buildPubsubMessage(byte[] payload, Map<String, String> headers) {
-		PubsubMessage.Builder pubsubMessageBuilder =
-				PubsubMessage.newBuilder().setData(ByteString.copyFrom(payload));
-
-		if (headers != null) {
-			pubsubMessageBuilder.putAllAttributes(headers);
-		}
-
-		return pubsubMessageBuilder.build();
 	}
 
 	@Override

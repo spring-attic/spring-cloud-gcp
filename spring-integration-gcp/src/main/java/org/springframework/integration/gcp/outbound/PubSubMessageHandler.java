@@ -16,11 +16,15 @@
 
 package org.springframework.integration.gcp.outbound;
 
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableList;
+import com.google.protobuf.ByteString;
+import com.google.pubsub.v1.PubsubMessage;
 
+import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.messaging.Message;
@@ -53,12 +57,44 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	@Override
 	protected void handleMessageInternal(Message<?> message) {
-		String payload = (String) this.messageConverter.fromMessage(message, String.class);
+		Object payload = message.getPayload();
+
+		if (payload instanceof PubsubMessage) {
+			this.pubSubTemplate.publish(this.topic, (PubsubMessage) payload);
+			return;
+		}
+
+		ByteString pubsubPayload;
+
+		if (payload instanceof String) {
+			pubsubPayload =
+					ByteString.copyFrom(
+							(String) this.messageConverter.fromMessage(message, String.class),
+							Charset.defaultCharset());
+		}
+		else if (payload instanceof byte[]) {
+			pubsubPayload = ByteString.copyFrom((byte[]) payload);
+		}
+		else if (payload instanceof ByteString) {
+			pubsubPayload = (ByteString) payload;
+		}
+		else {
+			throw new PubSubException("Payload type "
+					+ payload.getClass().getName() + " is unsupported.");
+		}
 
 		Map<String, String> headers = new HashMap<>();
 		message.getHeaders().forEach(
 				(key, value) -> headers.put(key, value.toString()));
 
-		this.pubSubTemplate.publish(this.topic, payload, headers);
+		this.pubSubTemplate.publish(this.topic, pubsubPayload, headers);
+	}
+
+	public MessageConverter getMessageConverter() {
+		return messageConverter;
+	}
+
+	public void setMessageConverter(MessageConverter messageConverter) {
+		this.messageConverter = messageConverter;
 	}
 }

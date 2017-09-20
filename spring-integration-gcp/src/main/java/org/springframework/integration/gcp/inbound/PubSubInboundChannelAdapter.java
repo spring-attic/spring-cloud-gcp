@@ -64,7 +64,8 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	protected void doStart() {
 		super.doStart();
 
-		this.subscriber = this.pubSubTemplate.subscribe(this.subscriptionName, this::receiveMessage);
+		this.subscriber =
+				this.pubSubTemplate.subscribe(this.subscriptionName, this::receiveMessage);
 	}
 
 	private void receiveMessage(PubsubMessage message, AckReplyConsumer consumer) {
