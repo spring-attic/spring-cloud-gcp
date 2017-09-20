@@ -16,12 +16,13 @@
 
 package org.springframework.integration.gcp.inbound;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.Subscriber;
-import com.google.common.collect.ImmutableList;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
@@ -30,6 +31,7 @@ import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.gcp.AckMode;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.CompositeMessageConverter;
+import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.util.Assert;
 
@@ -56,8 +58,10 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 		StringMessageConverter stringMessageConverter = new StringMessageConverter();
 		stringMessageConverter.setSerializedPayloadClass(String.class);
+		List<MessageConverter> messageConverters = new ArrayList<>();
+		messageConverters.add(stringMessageConverter);
 		getMessagingTemplate().setMessageConverter(
-				new CompositeMessageConverter(ImmutableList.of(stringMessageConverter)));
+				new CompositeMessageConverter(messageConverters));
 	}
 
 	@Override
@@ -111,5 +115,13 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	public void setAckMode(AckMode ackMode) {
 		Assert.notNull(ackMode, "The acknowledgement mode can't be null.");
 		this.ackMode = ackMode;
+	}
+
+	public void setMessageConverter(MessageConverter messageConverter) {
+		getMessagingTemplate().setMessageConverter(messageConverter);
+	}
+
+	public MessageConverter getMessageConverter() {
+		return getMessagingTemplate().getMessageConverter();
 	}
 }

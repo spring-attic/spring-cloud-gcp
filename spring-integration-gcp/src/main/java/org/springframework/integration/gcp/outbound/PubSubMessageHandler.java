@@ -17,14 +17,13 @@
 package org.springframework.integration.gcp.outbound;
 
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
-import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.messaging.Message;
@@ -48,11 +47,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
 		this.topic = topic;
-
-		StringMessageConverter stringMessageConverter = new StringMessageConverter();
-		stringMessageConverter.setSerializedPayloadClass(String.class);
-		this.messageConverter =
-				new CompositeMessageConverter(ImmutableList.of(stringMessageConverter));
+		this.messageConverter = new CompositeMessageConverter(
+				Collections.singletonList(new StringMessageConverter()));
 	}
 
 	@Override
@@ -66,21 +62,16 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 		ByteString pubsubPayload;
 
-		if (payload instanceof String) {
-			pubsubPayload =
-					ByteString.copyFrom(
-							(String) this.messageConverter.fromMessage(message, String.class),
-							Charset.defaultCharset());
-		}
-		else if (payload instanceof byte[]) {
+		if (payload instanceof byte[]) {
 			pubsubPayload = ByteString.copyFrom((byte[]) payload);
 		}
 		else if (payload instanceof ByteString) {
 			pubsubPayload = (ByteString) payload;
 		}
 		else {
-			throw new PubSubException("Payload type "
-					+ payload.getClass().getName() + " is unsupported.");
+			pubsubPayload =	ByteString.copyFrom(
+					(String) this.messageConverter.fromMessage(message, String.class),
+					Charset.defaultCharset());
 		}
 
 		Map<String, String> headers = new HashMap<>();
@@ -91,7 +82,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	}
 
 	public MessageConverter getMessageConverter() {
-		return messageConverter;
+		return this.messageConverter;
 	}
 
 	public void setMessageConverter(MessageConverter messageConverter) {

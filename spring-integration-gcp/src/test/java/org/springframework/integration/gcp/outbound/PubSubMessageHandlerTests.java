@@ -16,9 +16,11 @@
 
 package org.springframework.integration.gcp.outbound;
 
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.protobuf.ByteString;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,6 +65,8 @@ public class PubSubMessageHandlerTests {
 	public void testPublish() {
 		this.adapter.handleMessage(this.message);
 		verify(this.pubSubTemplate, times(1))
-				.publish(eq("testTopic"), eq("testPayload"), isA(Map.class));
+				.publish(eq("testTopic"),
+						eq(ByteString.copyFrom("testPayload", Charset.defaultCharset())),
+						isA(Map.class));
 	}
 }
