@@ -1,0 +1,25 @@
+= Spring Cloud GCP Trace Starter Example
+
+This sample application demonstrates using the
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-trace[Spring Cloud GCP Trace Starter] in your code.
+
+== Setup & Configuration
+1. Create a Google Cloud Platform Project
+1. https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account]
+   with Trace Append permission. Furnish a new JSON key and then set the credentials using the
+   `GOOGLE_APPLICATION_CREDENTIALS` environment variable or
+   link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core/README.adoc[using GCP Starter Core properties].
+1. Enable the https://console.cloud.google.com/apis/api/cloudtrace.googleapis.com/overview[Stackdriver Trace API]
+
+== Run the Example
+Run the example from Maven:
+----
+mvn spring-boot:run
+----
+
+Browse to `http://localhost:8080`. This will trigger the `ExampleController.work()` method,
+which in turn will call other services, and also a remote RESTful call to `ExampleController.meet()` method.
+
+To see the traces, navigate to Stackdriver Trace console's https://console.cloud.google.com/traces/traces[Trace List]
+view. You should see the trace information in detail.
+
