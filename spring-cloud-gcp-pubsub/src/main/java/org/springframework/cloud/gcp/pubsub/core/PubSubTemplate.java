@@ -45,23 +45,21 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private final SubscriberFactory subscriberFactory;
 
-	private final Charset charset;
-
 	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory) {
-		this(publisherFactory, subscriberFactory, Charset.defaultCharset());
-	}
-
-	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory,
-			Charset charset) {
 		this.publisherFactory = publisherFactory;
 		this.subscriberFactory = subscriberFactory;
-		this.charset = charset;
 	}
 
 	@Override
 	public ListenableFuture<String> publish(final String topic, String payload,
 			Map<String, String> headers) {
-		return publish(topic, buildPubsubMessage(payload.getBytes(this.charset), headers));
+		return publish(topic, payload, headers, Charset.defaultCharset());
+	}
+
+	@Override
+	public ListenableFuture<String> publish(final String topic, String payload,
+			Map<String, String> headers, Charset charset) {
+		return publish(topic, buildPubsubMessage(payload.getBytes(charset), headers));
 	}
 
 	@Override

@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
@@ -40,6 +41,18 @@ public interface PubSubOperations {
 	 * @return the listenable future of the call
 	 */
 	ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers);
+
+	/**
+	 * Sends a message to Pub/Sub.
+	 *
+	 * @param topic the name of an existing topic
+	 * @param payload the message String payload
+	 * @param headers map of String to String headers
+	 * @param charset charset to decode the {@param payload}
+	 * @return the listenable future of the call
+	 */
+	ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers,
+			Charset charset);
 
 	/**
 	 * Sends a message to Pub/Sub.
