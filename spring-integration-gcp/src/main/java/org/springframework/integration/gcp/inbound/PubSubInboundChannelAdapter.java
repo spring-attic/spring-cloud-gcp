@@ -16,9 +16,7 @@
 
 package org.springframework.integration.gcp.inbound;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
@@ -30,7 +28,6 @@ import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.gcp.AckMode;
 import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.converter.CompositeMessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.util.Assert;
@@ -51,17 +48,15 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private AckMode ackMode = AckMode.AUTO;
 
-	public PubSubInboundChannelAdapter(PubSubOperations pubSubTemplate,
-			String subscriptionName) {
+	private MessageConverter messageConverter;
+
+	public PubSubInboundChannelAdapter(PubSubOperations pubSubTemplate, String subscriptionName) {
 		this.pubSubTemplate = pubSubTemplate;
 		this.subscriptionName = subscriptionName;
 
 		StringMessageConverter stringMessageConverter = new StringMessageConverter();
 		stringMessageConverter.setSerializedPayloadClass(String.class);
-		List<MessageConverter> messageConverters = new ArrayList<>();
-		messageConverters.add(stringMessageConverter);
-		getMessagingTemplate().setMessageConverter(
-				new CompositeMessageConverter(messageConverters));
+		this.messageConverter = stringMessageConverter;
 	}
 
 	@Override
@@ -83,9 +78,9 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 
 		try {
-			String payload = message.getData().toStringUtf8();
-			sendMessage(getMessagingTemplate().getMessageConverter().toMessage(
-					payload, new MessageHeaders(messageHeaders)));
+			sendMessage(this.messageConverter.toMessage(
+					message.getData().toStringUtf8(),
+					new MessageHeaders(messageHeaders)));
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
@@ -118,10 +113,10 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	}
 
 	public void setMessageConverter(MessageConverter messageConverter) {
-		getMessagingTemplate().setMessageConverter(messageConverter);
+		this.messageConverter = messageConverter;
 	}
 
 	public MessageConverter getMessageConverter() {
-		return getMessagingTemplate().getMessageConverter();
+		return this.messageConverter;
 	}
 }
