@@ -51,27 +51,39 @@ The Spring Cloud GCP project brings the familiar Spring programming model to Goo
 
 {% capture main_content %}
 
-## Components
+The Spring Cloud GCP project is currently in Alpha stage and improvements are being added to the
+published artifact on a daily basis.
 
-* spring-cloud-gcp-core - Common utilities
-
-* spring-cloud-gcp-pubsub - Core Pub/Sub functionality
-
-* spring-cloud-gcp-starters - Spring Boot starters
-
-* spring-cloud-gcp-storage - Core storage functionality
-
-* spring-integration-gcp - Spring Integration Extensions for GCP
+We plan on creating a Milestone release soon.
+Until then, the Spring Cloud GCP project is available through Pivotal's Maven snapshot repository.
 
 ## Features
 
-* Spring Integration Pub/Sub channel adapters;
+The Spring Cloud GCP project offers the following features:
 
-* `PubsubTemplate`, Spring's message sending abstraction for Google Cloud Pub/Sub;
+* Bill of Materials (BOM) for dependency version management
 
-* Spring Resources on Google Cloud Storage;
+* Spring message sending abstraction for Google Cloud Pub/Sub, `PubSubTemplate`
 
-* Spring Boot starters for Google Cloud Pub/Sub and Google Cloud Storage.
+* Spring Resource abstraction for Google Cloud Storage objects
+
+* Spring Integration channel adapters for Google Cloud Pub/Sub
+
+* Spring Boot Starters
+
+  * Core GCP functionality like GCP project ID and credentials
+
+  * Spring Cloud Config through Google Runtime Config API
+
+  * Google Cloud Pub/Sub
+
+  * Google Cloud SQL
+
+  * Google Cloud Storage
+
+  * Spring Cloud Sleuth integration with Google Stackdriver Trace
+
+* Code samples
 
 <span id="quick-start"></span>
 
@@ -85,15 +97,15 @@ The Spring Cloud GCP project brings the familiar Spring programming model to Goo
 
 ### Sample Projects
 
-* TBD
+* [spring-cloud-gcp-examples](https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-examples)
 
 ### Getting Started Guides
 
-* TBD
+* [Messaging with Google Cloud Pub/Sub](https://spring.io/guides/gs/spring-cloud-gcp/)
 
-### Tutorials
+<!--### Tutorials
 
-* TBD
+* TBD-->
 
 {% endcapture %}
 
