@@ -16,9 +16,19 @@
 
 package org.springframework.integration.gcp.outbound;
 
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.google.protobuf.ByteString;
+import com.google.pubsub.v1.PubsubMessage;
+
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.converter.MessageConverter;
+import org.springframework.messaging.converter.StringMessageConverter;
+import org.springframework.util.Assert;
 
 /**
  * Sends messages to Google Cloud Pub/Sub by delegating to {@link PubSubOperations}.
@@ -29,6 +39,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private final PubSubOperations pubSubTemplate;
 
+	private MessageConverter messageConverter = new StringMessageConverter();
+
 	private String topic;
 
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
@@ -37,7 +49,42 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	}
 
 	@Override
-	protected void handleMessageInternal(Message<?> message) throws Exception {
-		this.pubSubTemplate.publish(this.topic, message);
+	protected void handleMessageInternal(Message<?> message) {
+		Object payload = message.getPayload();
+
+		if (payload instanceof PubsubMessage) {
+			this.pubSubTemplate.publish(this.topic, (PubsubMessage) payload);
+			return;
+		}
+
+		ByteString pubsubPayload;
+
+		if (payload instanceof byte[]) {
+			pubsubPayload = ByteString.copyFrom((byte[]) payload);
+		}
+		else if (payload instanceof ByteString) {
+			pubsubPayload = (ByteString) payload;
+		}
+		else {
+			pubsubPayload =	ByteString.copyFrom(
+					(String) this.messageConverter.fromMessage(message, String.class),
+					Charset.defaultCharset());
+		}
+
+		Map<String, String> headers = new HashMap<>();
+		message.getHeaders().forEach(
+				(key, value) -> headers.put(key, value.toString()));
+
+		this.pubSubTemplate.publish(this.topic, pubsubPayload, headers);
+	}
+
+	public MessageConverter getMessageConverter() {
+		return this.messageConverter;
+	}
+
+	public void setMessageConverter(MessageConverter messageConverter) {
+		Assert.notNull(messageConverter,
+				"The specified message converter can't be null.");
+		this.messageConverter = messageConverter;
 	}
 }

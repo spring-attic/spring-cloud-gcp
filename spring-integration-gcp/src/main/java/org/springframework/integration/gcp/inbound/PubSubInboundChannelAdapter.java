@@ -28,6 +28,8 @@ import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.gcp.AckMode;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.converter.MessageConverter;
+import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.util.Assert;
 
 /**
@@ -46,17 +48,23 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private AckMode ackMode = AckMode.AUTO;
 
-	public PubSubInboundChannelAdapter(PubSubOperations pubSubTemplate,
-			String subscriptionName) {
+	private MessageConverter messageConverter;
+
+	public PubSubInboundChannelAdapter(PubSubOperations pubSubTemplate, String subscriptionName) {
 		this.pubSubTemplate = pubSubTemplate;
 		this.subscriptionName = subscriptionName;
+
+		StringMessageConverter stringMessageConverter = new StringMessageConverter();
+		stringMessageConverter.setSerializedPayloadClass(String.class);
+		this.messageConverter = stringMessageConverter;
 	}
 
 	@Override
 	protected void doStart() {
 		super.doStart();
 
-		this.subscriber = this.pubSubTemplate.subscribe(this.subscriptionName, this::receiveMessage);
+		this.subscriber =
+				this.pubSubTemplate.subscribe(this.subscriptionName, this::receiveMessage);
 	}
 
 	private void receiveMessage(PubsubMessage message, AckReplyConsumer consumer) {
@@ -70,8 +78,9 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 
 		try {
-			sendMessage(getMessagingTemplate().getMessageConverter().toMessage(
-					message.getData(), new MessageHeaders(messageHeaders)));
+			sendMessage(this.messageConverter.toMessage(
+					message.getData().toStringUtf8(),
+					new MessageHeaders(messageHeaders)));
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
@@ -101,5 +110,15 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	public void setAckMode(AckMode ackMode) {
 		Assert.notNull(ackMode, "The acknowledgement mode can't be null.");
 		this.ackMode = ackMode;
+	}
+
+	public void setMessageConverter(MessageConverter messageConverter) {
+		Assert.notNull(messageConverter,
+				"The specified message converter can't be null.");
+		this.messageConverter = messageConverter;
+	}
+
+	public MessageConverter getMessageConverter() {
+		return this.messageConverter;
 	}
 }

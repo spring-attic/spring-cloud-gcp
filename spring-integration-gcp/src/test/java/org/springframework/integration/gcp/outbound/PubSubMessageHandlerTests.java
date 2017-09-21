@@ -16,6 +16,11 @@
 
 package org.springframework.integration.gcp.outbound;
 
+import java.nio.charset.Charset;
+import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.protobuf.ByteString;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +33,7 @@ import org.springframework.messaging.support.GenericMessage;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,16 +52,21 @@ public class PubSubMessageHandlerTests {
 
 	@Before
 	public void setUp() {
-		this.message = new GenericMessage<>("testPayload");
-		when(this.pubSubTemplate.publish(eq("testTopic"), eq(this.message)))
+		this.message = new GenericMessage<>("testPayload",
+				ImmutableMap.of("key1", "value1", "key2", "value2"));
+		when(this.pubSubTemplate.publish(eq("testTopic"), eq("testPayload"),
+				isA(Map.class)))
 				.thenReturn(new SettableListenableFuture<>());
 		this.adapter = new PubSubMessageHandler(this.pubSubTemplate, "testTopic");
+
 	}
 
 	@Test
-	public void testSend() {
+	public void testPublish() {
 		this.adapter.handleMessage(this.message);
 		verify(this.pubSubTemplate, times(1))
-				.publish(eq("testTopic"), eq(this.message));
+				.publish(eq("testTopic"),
+						eq(ByteString.copyFrom("testPayload", Charset.defaultCharset())),
+						isA(Map.class));
 	}
 }

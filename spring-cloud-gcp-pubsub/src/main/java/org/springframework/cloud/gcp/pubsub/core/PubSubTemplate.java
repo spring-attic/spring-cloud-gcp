@@ -16,31 +16,30 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.nio.charset.Charset;
+import java.util.Map;
+
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cloud.gcp.pubsub.converters.SimpleMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.converter.MessageConversionException;
-import org.springframework.messaging.converter.MessageConverter;
-import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
 /**
+ * Default implementation of {@link PubSubOperations}.
+ *
  * @author Vinicius Carvalho
  * @author João André Martins
  */
 public class PubSubTemplate implements PubSubOperations, InitializingBean {
-
-	private MessageConverter messageConverter = new SimpleMessageConverter();
 
 	private final PublisherFactory publisherFactory;
 
@@ -52,19 +51,39 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public ListenableFuture<String> publish(final String topic, Message message) {
-		// Convert from payload into PubsubMessage.
-		Object pubsubMessageObject =
-				this.messageConverter.fromMessage(message, PubsubMessage.class);
+	public ListenableFuture<String> publish(final String topic, String payload,
+			Map<String, String> headers) {
+		return publish(topic, payload, headers, Charset.defaultCharset());
+	}
 
-		if (!(pubsubMessageObject instanceof PubsubMessage)) {
-			throw new MessageConversionException("The specified converter must produce "
-					+ "PubsubMessages to send to Google Cloud Pub/Sub.");
+	@Override
+	public ListenableFuture<String> publish(final String topic, String payload,
+			Map<String, String> headers, Charset charset) {
+		return publish(topic, payload.getBytes(charset), headers);
+	}
+
+	@Override
+	public ListenableFuture<String> publish(final String topic, byte[] payload,
+			Map<String, String> headers) {
+		return publish(topic, ByteString.copyFrom(payload), headers);
+	}
+
+	@Override
+	public ListenableFuture<String> publish(final String topic, ByteString payload,
+			Map<String, String> headers) {
+		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder().setData(payload);
+
+		if (headers != null) {
+			pubsubMessageBuilder.putAllAttributes(headers);
 		}
 
-		// Send message to Google Cloud Pub/Sub.
-		ApiFuture<String> publishFuture = this.publisherFactory.getPublisher(topic)
-				.publish((PubsubMessage) pubsubMessageObject);
+		return publish(topic, pubsubMessageBuilder.build());
+	}
+
+	@Override
+	public ListenableFuture<String> publish(final String topic, PubsubMessage pubsubMessage) {
+		ApiFuture<String> publishFuture =
+				this.publisherFactory.getPublisher(topic).publish(pubsubMessage);
 
 		final SettableListenableFuture<String> settableFuture = new SettableListenableFuture<>();
 		ApiFutures.addCallback(publishFuture, new ApiFutureCallback<String>() {
@@ -93,14 +112,5 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-	}
-
-	public MessageConverter getMessageConverter() {
-		return this.messageConverter;
-	}
-
-	public void setMessageConverter(MessageConverter messageConverter) {
-		Assert.notNull(messageConverter, "Message converter can't be null.");
-		this.messageConverter = messageConverter;
 	}
 }
