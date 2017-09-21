@@ -17,7 +17,6 @@
 package org.springframework.integration.gcp.outbound;
 
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,9 +26,9 @@ import com.google.pubsub.v1.PubsubMessage;
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.converter.CompositeMessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
+import org.springframework.util.Assert;
 
 /**
  * Sends messages to Google Cloud Pub/Sub by delegating to {@link PubSubOperations}.
@@ -47,8 +46,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
 		this.topic = topic;
-		this.messageConverter = new CompositeMessageConverter(
-				Collections.singletonList(new StringMessageConverter()));
+		this.messageConverter = new StringMessageConverter();
 	}
 
 	@Override
@@ -86,6 +84,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	}
 
 	public void setMessageConverter(MessageConverter messageConverter) {
+		Assert.notNull(messageConverter,
+				"The specified message converter can't be null.");
 		this.messageConverter = messageConverter;
 	}
 }

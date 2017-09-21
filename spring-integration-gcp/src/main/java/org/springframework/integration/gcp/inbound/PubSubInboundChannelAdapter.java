@@ -113,6 +113,8 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	}
 
 	public void setMessageConverter(MessageConverter messageConverter) {
+		Assert.notNull(messageConverter,
+				"The specified message converter can't be null.");
 		this.messageConverter = messageConverter;
 	}
 
