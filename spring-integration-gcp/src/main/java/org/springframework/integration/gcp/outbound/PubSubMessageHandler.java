@@ -39,14 +39,13 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private final PubSubOperations pubSubTemplate;
 
-	private MessageConverter messageConverter;
+	private MessageConverter messageConverter = new StringMessageConverter();
 
 	private String topic;
 
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
 		this.topic = topic;
-		this.messageConverter = new StringMessageConverter();
 	}
 
 	@Override
