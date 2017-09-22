@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.integration.gcp.inbound;
+package org.springframework.integration.gcp.pubsub.inbound;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
