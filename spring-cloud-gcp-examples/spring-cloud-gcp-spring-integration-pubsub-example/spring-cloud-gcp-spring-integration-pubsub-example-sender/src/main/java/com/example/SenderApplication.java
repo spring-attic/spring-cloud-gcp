@@ -16,10 +16,10 @@
 
 package com.example;
 
+import java.io.IOException;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.io.IOException;
 
 /**
  * Spring Integration Channel Adapters for Google Cloud Pub/Sub code sample.

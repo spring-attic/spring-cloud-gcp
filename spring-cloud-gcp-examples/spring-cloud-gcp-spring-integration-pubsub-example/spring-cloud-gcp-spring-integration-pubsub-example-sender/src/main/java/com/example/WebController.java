@@ -21,7 +21,7 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.MessagingGateway;
 import org.springframework.integration.annotation.ServiceActivator;
-import org.springframework.integration.gcp.outbound.PubSubMessageHandler;
+import org.springframework.integration.gcp.pubsub.outbound.PubSubMessageHandler;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,12 +45,6 @@ public class WebController {
 		return outboundAdapter;
 	}
 
-	@MessagingGateway(defaultRequestChannel = "pubsubOutputChannel")
-	public interface PubsubOutboundGateway {
-
-		void sendToPubsub(String text);
-	}
-
 	/**
 	 * Posts a message to a Google Cloud Pub/Sub topic, through Spring's messaging gateway, and
 	 * redirects the user to the home page.
@@ -59,7 +53,13 @@ public class WebController {
 	 */
 	@PostMapping("/postMessage")
 	public RedirectView postMessage(@RequestParam("message") String message) {
-		messagingGateway.sendToPubsub(message);
+		this.messagingGateway.sendToPubsub(message);
 		return new RedirectView("/");
+	}
+
+	@MessagingGateway(defaultRequestChannel = "pubsubOutputChannel")
+	public interface PubsubOutboundGateway {
+
+		void sendToPubsub(String text);
 	}
 }
