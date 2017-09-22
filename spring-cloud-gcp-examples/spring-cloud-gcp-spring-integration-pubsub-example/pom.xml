@@ -3,24 +3,18 @@
 		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
-		<artifactId>spring-cloud-gcp</artifactId>
+		<artifactId>spring-cloud-gcp-examples</artifactId>
 		<groupId>org.springframework.cloud</groupId>
 		<version>1.0.0.BUILD-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-cloud-gcp-examples</artifactId>
-	<name>Spring Cloud GCP Examples</name>
-	<version>1.0.0.BUILD-SNAPSHOT</version>
+	<groupId>com.example</groupId>
+	<artifactId>spring-cloud-gcp-spring-integration-pubsub-example</artifactId>
 	<packaging>pom</packaging>
-
-	<properties>
-		<main.basedir>${basedir}/..</main.basedir>
-	</properties>
-
-    <modules>
-		<module>spring-cloud-gcp-config-example</module>
-		<module>spring-cloud-gcp-trace-example</module>
-		<module>spring-cloud-gcp-spring-integration-pubsub-example</module>
+	<name>Spring Cloud GCP Integration Pub/Sub Channel Adapters Code Sample</name>
+	<modules>
+		<module>spring-cloud-gcp-spring-integration-pubsub-example-sender</module>
+		<module>spring-cloud-gcp-spring-integration-pubsub-example-receiver</module>
 	</modules>
 </project>
