@@ -20,5 +20,6 @@
 
     <modules>
 		<module>spring-cloud-gcp-config-example</module>
+		<module>spring-cloud-gcp-trace-example</module>
 	</modules>
 </project>
