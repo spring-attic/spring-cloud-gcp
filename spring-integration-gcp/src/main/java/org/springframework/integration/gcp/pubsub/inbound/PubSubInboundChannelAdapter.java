@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.integration.gcp.inbound;
+package org.springframework.integration.gcp.pubsub.inbound;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +26,7 @@ import com.google.pubsub.v1.PubsubMessage;
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
-import org.springframework.integration.gcp.AckMode;
+import org.springframework.integration.gcp.pubsub.AckMode;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;

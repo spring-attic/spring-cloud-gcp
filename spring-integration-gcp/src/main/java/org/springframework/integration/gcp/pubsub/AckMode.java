@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.integration.gcp;
+package org.springframework.integration.gcp.pubsub;
 
 /**
  * Determines acknowledgement policy for incoming messages from Google Cloud Pub/Sub.
