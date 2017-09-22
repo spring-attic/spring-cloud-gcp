@@ -53,7 +53,7 @@ link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core/README.adoc[u
 
 1.  Create a configuration using the
 https://cloud.google.com/sdk/[Google Cloud SDK]. The configuration name
-should be in the format `config_profile`, for example : `myapp_prod`
+should be in the format `config_profile`, for example: `myapp_prod`
 +
 ....
 gcloud beta runtime-config configs create myapp_prod
