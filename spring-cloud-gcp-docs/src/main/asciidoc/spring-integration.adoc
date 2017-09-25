@@ -26,7 +26,7 @@ dependencies {
 }
 ----
 
-=== Channel Adapters for Google cloud Pub/Sub
+=== Channel Adapters for Google Cloud Pub/Sub
 
 ==== Inbound channel adapter
 
@@ -84,8 +84,7 @@ users can extract using the `GcpHeaders.ACKNOWLEDGEMENT` key and use to (n)ack a
 @ServiceActivator(inputChannel = "pubsubInputChannel")
 public MessageHandler messageReceiver() {
     return message -> {
-        LOGGER.info("Message arrived! Payload: "
-              + ((ByteString) message.getPayload()).toStringUtf8());
+        LOGGER.info("Message arrived! Payload: " + message.getPayload());
         AckReplyConsumer consumer =
               message.getHeaders().get(GcpHeaders.ACKNOWLEDGEMENT, AckReplyConsumer.class);
         consumer.ack();
@@ -108,9 +107,7 @@ on the user application side.
 @Bean
 @ServiceActivator(inputChannel = "pubsubOutputChannel")
 public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
-    PubSubMessageHandler outboundAdapter = new PubSubMessageHandler(pubsubTemplate);
-    outboundAdapter.setTopic("topicName");
-    return outboundAdapter;
+    return new PubSubMessageHandler(pubsubTemplate, "topicName");
 }
 ----
 
