@@ -28,7 +28,7 @@ dependencies {
 
 `PubSubOperations` is an abstraction that allows Spring users to use Google Cloud Pub/Sub without
 depending on any Google Cloud Pub/Sub API semantics.
-It comprehends all the possible operations to be carried by a Google Cloud Pub/Sub client.
+It provides the common set of operations needed to interact with Google Cloud Pub/Sub.
 `PubSubTemplate` is the default implementation of `PubSubOperations` and it uses the
 https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub[Google Cloud Java Client for Pub/Sub]
 to interact with Google Cloud Pub/Sub.
@@ -59,45 +59,22 @@ The default value for both these properties is 4 threads.
 ==== Publishing to a topic
 
 `PubSubTemplate` provides asynchronous methods to publish messages to a Google Cloud Pub/Sub topic.
+It supports different types of payloads, including `Strings` with different encodings, `byte[]`,
+`ByteString` and `PubsubMessage`.
 
 [source,java]
 ----
 public ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers)
-----
 
-Publishes a message containing the `payload` and `headers` to the target `topic`.
-The `payload` is converted into a `byte[]` using `Charset.defaultCharset()`.
-
-[source,java]
-----
 public ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers,
 Charset charset)
-----
 
-Publishes a message containing the `payload` and `headers` to the target `topic`.
-The `payload` is converted into a `byte[]` using the specified `charset`.
-
-[source,java]
-----
 public ListenableFuture<String> publish(String topic, byte[] payload, Map<String, String> headers)
-----
 
-Publishes a message containing the `payload` and `headers` to the target `topic`.
-
-[source,java]
-----
 public ListenableFuture<String> publish(String topic, ByteString payload, Map<String, String> headers)
-----
 
-Publishes a message containing the `payload` and `headers` to the target `topic`.
-The `payload` is in Google Cloud Pub/Sub Client Library's native payload format, `ByteString`.
-
-[source,java]
-----
 public ListenableFuture<String> publish(String topic, PubsubMessage pubsubMessage)
 ----
-
-Low level method to publish a Google Cloud Pub/Sub `PubSubMessage` to the target `topic`.
 
 Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 
