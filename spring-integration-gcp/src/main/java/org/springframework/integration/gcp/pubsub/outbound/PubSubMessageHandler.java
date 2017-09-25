@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.integration.gcp.outbound;
+package org.springframework.integration.gcp.pubsub.outbound;
 
 import java.nio.charset.Charset;
 import java.util.HashMap;
