@@ -26,13 +26,12 @@ dependencies {
 
 === Pub/Sub operations abstraction
 
-`PubSubTemplate` is an abstraction that allows Spring users to use Google Cloud Pub/Sub without
+`PubSubOperations` is an abstraction that allows Spring users to use Google Cloud Pub/Sub without
 depending on any Google Cloud Pub/Sub API semantics.
-`PubSubTemplate` uses the
+It provides the common set of operations needed to interact with Google Cloud Pub/Sub.
+`PubSubTemplate` is the default implementation of `PubSubOperations` and it uses the
 https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub[Google Cloud Java Client for Pub/Sub]
 to interact with Google Cloud Pub/Sub.
-It implements the `PubSubOperations` interface, which comprehends all the possible operations to be
-carried by a Google Cloud Pub/Sub client.
 
 `PubSubTemplate` depends on a `PublisherFactory`, which is a functional interface to provide a
 Google Cloud Java Client for Pub/Sub `Publisher`.
@@ -51,39 +50,41 @@ In the example, we're setting the number of threads used by both the `Publisher`
 
 [source,yaml]
 ----
-spring.cloud.gcp.pubsub.subscriber.executorThreads=2
-spring.cloud.gcp.pubsub.publisher.executorThreads=2
+spring.cloud.gcp.pubsub.subscriber-executor-threads=2
+spring.cloud.gcp.pubsub.publisher-executor-threads=2
 ----
 
 The default value for both these properties is 4 threads.
 
 ==== Publishing to a topic
 
-`PubSubTemplate` provides an asynchronous method to publish messages to a Google Cloud Pub/Sub
-topic.
+`PubSubTemplate` provides asynchronous methods to publish messages to a Google Cloud Pub/Sub topic.
+It supports different types of payloads, including `Strings` with different encodings, `byte[]`,
+`ByteString` and `PubsubMessage`.
 
 [source,java]
 ----
-public ListenableFuture<String> send(final String topic, Message message)
-----
+public ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers)
 
-The `send()` method takes a Spring Message and it uses the built-in `SimpleMessageConverter` to
-convert from `Message` to the `PubsubMessage` accepted by the Google Cloud Java Library for Pub/Sub.
-`SimpleMessageConverter` copies the `Message` headers into `PubsubMessage` attributes and the
-`Message` payload into the `PubsubMessage` data.
-`SimpleMessageConverter` calls `toString()` in both the `Message` headers and payload, since
-`PubsubMessage` only supports `String` attributes and data at the transmission level.
-We're considering JSON object encoding/decoding in the future to support more object types.
+public ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers,
+Charset charset)
+
+public ListenableFuture<String> publish(String topic, byte[] payload, Map<String, String> headers)
+
+public ListenableFuture<String> publish(String topic, ByteString payload, Map<String, String> headers)
+
+public ListenableFuture<String> publish(String topic, PubsubMessage pubsubMessage)
+----
 
 Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 
 [source,java]
 ----
 @Autowired
-private PubSubTemplate pubSubTemplate;
+private PubSubOperations pubSubTemplate;
 
 public void publishMessage() {
-    this.pubSubTemplate.send("topic", new GenericMessage<>("your message payload"));
+    this.pubSubTemplate.publish("topic", "your message payload", ImmutableMap.of("key1", "val1"));
 }
 ----
 

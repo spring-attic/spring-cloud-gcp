@@ -43,22 +43,21 @@ do so with the following command:
 2.  Create, enable billing on a project on the
 https://console.cloud.google.com[Google Cloud Console].
 3.  Enable the
-https://console.cloud.google.com/flows/enableapi?apiid=runtimeconfig.googleapis.com[Runtime
+https://console.cloud.google.com/apis/api/runtimeconfig.googleapis.com/overview[Runtime
 Config API].
 4.  https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account] and
 set the credentials using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable or
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core/README.adoc[using GCP Starter Core properties].
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core/README.adoc[using GCP Starter Core properties]. (Note that when testing locally, the https://cloud.google.com/sdk/gcloud/reference/beta/auth/application-default/login[Cloud SDK application default credentials] are not supported by the Runtime Configuration API.)
 
 == Configuration
 
 1.  Create a configuration using the
 https://cloud.google.com/sdk/[Google Cloud SDK]. The configuration name
-should be in the format `config_profile`, for example : `myapp_prod`
+should be in the format `config_profile`, for example: `myapp_prod`
 +
 ....
 gcloud beta runtime-config configs create myapp_prod
 ....
-+
 2. Then set the variables you wish to load.
 +
 ....
@@ -69,14 +68,12 @@ queue_size 25 \
 feature_x_enabled true \
 --config-name myapp_prod
 ....
-
 3.  Update `src/main/resources/bootstrap.properties` to specify the configuration name, profile and timeout:
-
++
 Note: If using the
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core/README.adoc[GCP Starter Core properties]
 to configure the GCP project and credentials for this starter, they must be included
 in the `bootstrap.properties`.
-
 +
 ....
 spring.cloud.gcp.config.enabled=true #optional, default = true
@@ -84,14 +81,12 @@ spring.cloud.gcp.config.name=myapp
 spring.cloud.gcp.config.profile=prod
 spring.cloud.gcp.config.timeout=120000 #optional
 ....
-
++
 The  default value of `spring.cloud.config.profile` is `default`.
-
++
 `spring.cloud.gcp.config.timeout` configures the timeout in milliseconds for requests sent to the
 Google Cloud Runtime Configurator API. This field is optional, and uses a default of 1 minute.
-
-
-4.  Add Spring style configuration variables to your `@Configuration` annotated class.
+4.  Add Spring style configuration variables to your Spring components.
 +
 ....
 @Value("${queue_size}")
@@ -105,23 +100,27 @@ private boolean isFeatureXEnabled;
 http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints[Spring
 Boot Actuator] provides support to have configuration parameters be
 reloadable with the POST `/refresh` endpoint.
+
 1.  Add the following dependency to your `pom.xml`:
++
 ....
   <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-actuator</artifactId>
   </dependency>
 ....
-2.  Add `@RefreshScope` to your your `@Configuration` annotated class to have parameters
+2.  Add `@RefreshScope` to your Spring component to have parameters
 be reloadable at runtime.
-3.  Update a property with `gcloud`:
+3. If your application doesn't require authentication, add `management.security.enabled=false`
+to your `application.properties` at allow unrestricted access to `/refresh`.
+4.  Update a property with `gcloud`:
 +
 ....
   gcloud beta runtime-config configs variables set \
      queue_size 200 \
      --config-name myapp_prod
 ....
-4.  Send a POST request to the `/refresh` endpoint:
+5.  Send a POST request to the `/refresh` endpoint:
 +
 ....
   curl -XPOST http://myapp.host.com/refresh
