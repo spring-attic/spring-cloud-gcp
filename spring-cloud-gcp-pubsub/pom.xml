@@ -30,6 +30,10 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-gcp-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.google.api</groupId>
+			<artifactId>gax</artifactId>
+		</dependency>
 
 		<!-- Tests -->
 		<dependency>

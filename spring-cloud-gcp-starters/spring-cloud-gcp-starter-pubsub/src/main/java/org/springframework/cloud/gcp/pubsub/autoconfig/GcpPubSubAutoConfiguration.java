@@ -20,9 +20,9 @@ import java.io.IOException;
 import java.util.concurrent.Executors;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.grpc.ChannelProvider;
-import com.google.api.gax.grpc.ExecutorProvider;
-import com.google.api.gax.grpc.FixedExecutorProvider;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
@@ -77,7 +77,7 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(name = "subscriberChannelProvider")
 	public ChannelProvider subscriberChannelProvider() {
-		return SubscriptionAdminSettings.defaultChannelProviderBuilder()
+		return SubscriptionAdminSettings.defaultGrpcChannelProviderBuilder()
 				.setClientLibHeader(DEFAULT_SOURCE_NAME,
 						this.getClass().getPackage().getImplementationVersion())
 				.build();
@@ -87,7 +87,7 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean(name = "publisherChannelProvider")
 	public ChannelProvider publisherChannelProvider() {
 		return TopicAdminSettings
-				.defaultChannelProviderBuilder()
+				.defaultGrpcChannelProviderBuilder()
 				.setClientLibHeader(DEFAULT_SOURCE_NAME,
 						this.getClass().getPackage().getImplementationVersion())
 				.build();
@@ -133,7 +133,7 @@ public class GcpPubSubAutoConfiguration {
 	public TopicAdminClient topicAdminClient(CredentialsProvider credentialsProvider) {
 		try {
 			return TopicAdminClient.create(
-					TopicAdminSettings.defaultBuilder()
+					TopicAdminSettings.newBuilder()
 							.setCredentialsProvider(credentialsProvider)
 							.build());
 		}
@@ -148,7 +148,7 @@ public class GcpPubSubAutoConfiguration {
 			CredentialsProvider credentialsProvider) {
 		try {
 			return SubscriptionAdminClient.create(
-					SubscriptionAdminSettings.defaultBuilder()
+					SubscriptionAdminSettings.newBuilder()
 							.setCredentialsProvider(credentialsProvider)
 							.build());
 		}
