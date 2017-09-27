@@ -25,5 +25,10 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-gcp-trace</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.google.api</groupId>
+			<artifactId>gax</artifactId>
+			<version>1.8.1</version>
+		</dependency>
 	</dependencies>
 </project>

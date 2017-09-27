@@ -17,8 +17,8 @@
 
 	<properties>
 		<google-cloud-core.version>1.2.3</google-cloud-core.version>
-		<google-cloud-pubsub.version>0.20.1-beta</google-cloud-pubsub.version>
-		<google-cloud-trace.version>0.20.1-alpha</google-cloud-trace.version>
+		<google-cloud-pubsub.version>0.24.0-beta</google-cloud-pubsub.version>
+		<google-cloud-trace.version>0.24.0-alpha</google-cloud-trace.version>
 		<google-cloud-storage.version>1.2.1</google-cloud-storage.version>
 		<cloud-trace-java.version>0.4.0</cloud-trace-java.version>
 		<spring-cloud-context.version>1.2.3.RELEASE</spring-cloud-context.version>
@@ -154,6 +154,13 @@
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-context</artifactId>
 				<version>${spring-cloud-context.version}</version>
+			</dependency>
+
+			<!-- spring-cloud-gcp-pubsub -->
+			<dependency>
+				<groupId>com.google.api</groupId>
+				<artifactId>gax</artifactId>
+				<version>1.8.1</version>
 			</dependency>
 
 			<!--Starters-->
