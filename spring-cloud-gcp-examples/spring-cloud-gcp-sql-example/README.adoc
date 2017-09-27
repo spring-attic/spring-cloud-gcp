@@ -25,10 +25,8 @@ password as the value.
 a `spring.cloud.gcp.sql.credentials-location` property with the path on your local file system to
 a credentials file, prepended with `file:`.
 
-5. Run the `SqlApplication` Spring Boot app.
+5. Run the `SqlApplication` Spring Boot app. The database will be populated based on the
+link:src/main/resources/schema.sql[schema.sql] and link:src/main/resources/data.sql[data.sql] files.
 
-6. Navigate to http://localhost:8080/populateDatabase on your browser to create a table and add
-content to it.
-
-7. Navigate to http://localhost:8080/getTuples on your browser to print the contents of the table
+6. Navigate to http://localhost:8080/getTuples on your browser to print the contents of the table
 created in 5.
