@@ -15,8 +15,8 @@ Cloud Project with billing enabled and a Google Cloud SQL instance.
 "Databases" section.
 
 3. Open the link:src/main/resources/application.properties[application.properties] file and replace
-*[database-name]* by the name of the database you created on 2 and *[instance-connection-name]* by
-the instance connection name of the instance you created on 1.
+*[database-name]* with the name of the database you created in step 2 and *[instance-connection-name]*
+with the instance connection name of the instance you created in step 1.
 +
 If you set a root password, you should also add a `spring.cloud.gcp.sql.password` property with the
 password as the value.
@@ -28,5 +28,5 @@ a credentials file, prepended with `file:`.
 5. Run the `SqlApplication` Spring Boot app. The database will be populated based on the
 link:src/main/resources/schema.sql[schema.sql] and link:src/main/resources/data.sql[data.sql] files.
 
-6. Navigate to http://localhost:8080/getTuples on your browser to print the contents of the table
+6. Navigate to http://localhost:8080/getTuples in your browser to print the contents of the table
 created in 5.
