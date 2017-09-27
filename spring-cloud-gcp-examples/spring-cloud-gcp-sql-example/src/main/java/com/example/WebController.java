@@ -16,14 +16,14 @@
 
 package com.example;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * @author João André Martins
@@ -39,22 +39,5 @@ public class WebController {
 		return this.jdbcTemplate.queryForList("SELECT * FROM users").stream()
 				.map(Map::values)
 				.collect(Collectors.toList());
-	}
-
-	@GetMapping("/populateDatabase")
-	public String populateDatabase() {
-		this.jdbcTemplate.execute("DROP TABLE users;");
-		this.jdbcTemplate.execute("CREATE TABLE users ("
-				+ "id int NOT NULL AUTO_INCREMENT,"
-				+ "email VARCHAR(255),"
-				+ "first_name VARCHAR(255),"
-				+ "last_name VARCHAR(255),"
-				+ "PRIMARY KEY (id));");
-		this.jdbcTemplate.execute("INSERT INTO users (email, first_name, last_name) VALUES "
-				+ "(\"luisao@gmail.com\", \"Anderson\", \"Silva\"),"
-				+ "(\"jonas@gmail.com\", \"Jonas\", \"Gonçalves\"),"
-				+ "(\"fejsa@gmail.com\", \"Ljubomir\", \"Fejsa\")");
-
-		return "Database populated!";
 	}
 }
