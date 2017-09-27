@@ -44,6 +44,8 @@ public class SenderApplication {
 	public MessageHandler messageSender(PubSubOperations pubsubTemplate) {
 		PubSubMessageHandler outboundAdapter =
 				new PubSubMessageHandler(pubsubTemplate, "exampleTopic");
+		// Lets us see errors if there are any.
+		outboundAdapter.setSync(true);
 		return outboundAdapter;
 	}
 
