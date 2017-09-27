@@ -58,8 +58,8 @@ import org.springframework.util.StringUtils;
 public class GcpContextAutoConfiguration {
 
 	private static final List<String> CREDENTIALS_SCOPES_LIST =
-			Arrays.asList(GcpScope.values()).stream()
-					.map(scope -> scope.getUrl())
+			Arrays.stream(GcpScope.values())
+					.map(GcpScope::getUrl)
 					.collect(Collectors.toList());
 
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);

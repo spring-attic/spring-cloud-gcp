@@ -26,10 +26,12 @@ This starter provides auto-configured instances of `PubSubTemplate` and `PubSubA
 The following properties are optional:
 [source,yaml]
 ----
-spring.cloud.gcp.pubsub.subscriber.executorThreads=[SUBSCRIBER_EXECUTOR_THREADS]
-spring.cloud.gcp.pubsub.publisher.executorThreads=[PUBLISHER_EXECUTOR_THREADS]
+spring.cloud.gcp.pubsub.subscriber-executor-threads=[SUBSCRIBER_EXECUTOR_THREADS]
+spring.cloud.gcp.pubsub.publisher-executor-threads=[PUBLISHER_EXECUTOR_THREADS]
 ----
 
-`spring.cloud.gcp.pubsub.subscriber.executorThreads` is the number of threads used by the subscriber
-executor. Likewise, `spring.cloud.gcp.pubsub.publisher.executorThreads` is the number of threads
-used by the publisher executor. The default value for both of these properties is 4.
+`spring.cloud.gcp.pubsub.subscriber-executor-threads` is the number of threads used by the
+subscriber executor.
+Likewise, `spring.cloud.gcp.pubsub.publisher-executor-threads` is the number of threads used by the
+publisher executor.
+The default value for both of these properties is 4.

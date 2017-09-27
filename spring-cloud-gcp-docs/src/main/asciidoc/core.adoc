@@ -100,6 +100,8 @@ service supported by Spring Cloud GCP.
 | SQL Admin | https://www.googleapis.com/auth/sqlservice.admin
 | Storage (Read Only) | https://www.googleapis.com/auth/devstorage.read_only
 | Storage (Write/Write) | https://www.googleapis.com/auth/devstorage.read_write
+| Runtime Config | https://www.googleapis.com/auth/cloudruntimeconfig
+| Trace (Append) | https://www.googleapis.com/auth/trace.append
 |===
 
 The Spring Boot GCP Core starter allows you to configure a custom scope list for the provided

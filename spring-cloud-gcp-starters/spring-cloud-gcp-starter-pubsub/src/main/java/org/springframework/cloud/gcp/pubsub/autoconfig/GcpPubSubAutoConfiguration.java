@@ -28,12 +28,14 @@ import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.pubsub.GcpPubSubProperties;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
@@ -50,28 +52,26 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
+@EnableConfigurationProperties(GcpPubSubProperties.class)
 public class GcpPubSubAutoConfiguration {
 
 	public static final String DEFAULT_SOURCE_NAME = "spring";
 
-	@Value("${spring.cloud.gcp.pubsub.subscriber.executorThreads:4}")
-	private int subscriberExecutorThreads;
-
-	@Value("${spring.cloud.gcp.pubsub.publisher.executorThreads:4}")
-	private int publisherExecutorThreads;
+	@Autowired
+	private GcpPubSubProperties gcpPubSubProperties;
 
 	@Bean
 	@ConditionalOnMissingBean(name = "publisherExecutorProvider")
 	public ExecutorProvider publisherExecutorProvider() {
-		return FixedExecutorProvider.create(
-				Executors.newScheduledThreadPool(this.publisherExecutorThreads));
+		return FixedExecutorProvider.create(Executors.newScheduledThreadPool(
+				this.gcpPubSubProperties.getPublisherExecutorThreads()));
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(name = "subscriberExecutorProvider")
 	public ExecutorProvider subscriberExecutorProvider() {
-		return FixedExecutorProvider.create(
-				Executors.newScheduledThreadPool(this.subscriberExecutorThreads));
+		return FixedExecutorProvider.create(Executors.newScheduledThreadPool(
+				this.gcpPubSubProperties.getSubscriberExecutorThreads()));
 	}
 
 	@Bean
