@@ -40,6 +40,12 @@ spring.cloud.gcp.trace.buffer-size-bytes=[BUFFER_SIZE_BYTES]
 # Buffered trace messages will be flushed to Stackdriver when buffered longer than scheduled delays (in seconds).
 # Default is 10 seconds
 spring.cloud.gcp.trace.scheduled-delay-seconds=[SCHEDULED_DELAY_SECONDS]
+
+# GCP project ID Trace is served from
+spring.cloud.gcp.trace.project-id=[TRACE_GCP_PROJECT_ID]
+
+# Credentials for the trace service
+spring.cloud.gcp.trace.credentials-location=[CREDENTIALS_FILESYSTEM_LOCATION]
 ----
 
 You can use core Spring Cloud Sleuth properties to control Sleuth's sampling rate, etc.

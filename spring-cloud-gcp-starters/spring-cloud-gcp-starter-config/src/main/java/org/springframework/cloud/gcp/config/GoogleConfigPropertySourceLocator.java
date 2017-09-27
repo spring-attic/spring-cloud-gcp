@@ -24,7 +24,6 @@ import java.util.Map;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -145,7 +144,6 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		return new MapPropertySource(PROPERTY_SOURCE_NAME, config);
 	}
 
-	@VisibleForTesting
 	String getProjectId() {
 		return this.projectId;
 	}

@@ -29,6 +29,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.cloud.gcp.core.GcpScope;
+import org.springframework.cloud.gcp.storage.GcpStorageProperties;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
