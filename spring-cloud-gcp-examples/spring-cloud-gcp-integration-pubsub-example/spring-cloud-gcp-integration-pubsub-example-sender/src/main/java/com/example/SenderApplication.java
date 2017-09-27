@@ -20,6 +20,12 @@ import java.io.IOException;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.context.annotation.Bean;
+import org.springframework.integration.annotation.MessagingGateway;
+import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.integration.gcp.pubsub.outbound.PubSubMessageHandler;
+import org.springframework.messaging.MessageHandler;
 
 /**
  * Spring Integration Channel Adapters for Google Cloud Pub/Sub code sample.
@@ -31,5 +37,19 @@ public class SenderApplication {
 
 	public static void main(String[] args) throws IOException {
 		SpringApplication.run(SenderApplication.class, args);
+	}
+
+	@Bean
+	@ServiceActivator(inputChannel = "pubsubOutputChannel")
+	public MessageHandler messageSender(PubSubOperations pubsubTemplate) {
+		PubSubMessageHandler outboundAdapter =
+				new PubSubMessageHandler(pubsubTemplate, "exampleTopic");
+		return outboundAdapter;
+	}
+
+	@MessagingGateway(defaultRequestChannel = "pubsubOutputChannel")
+	public interface PubsubOutboundGateway {
+
+		void sendToPubsub(String text);
 	}
 }

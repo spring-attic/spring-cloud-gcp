@@ -16,11 +16,15 @@
 
 package com.example;
 
+import java.io.IOException;
+
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
 import org.springframework.context.annotation.Bean;
@@ -29,13 +33,16 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.gcp.pubsub.AckMode;
 import org.springframework.integration.gcp.pubsub.inbound.PubSubInboundChannelAdapter;
 import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.MessageHandler;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.messaging.handler.annotation.Header;
 
-@RestController
-public class WebController {
+@SpringBootApplication
+public class ReceiverApplication {
 
-	private static final Log LOGGER = LogFactory.getLog(WebController.class);
+	public static void main(String[] args) throws IOException {
+		SpringApplication.run(ReceiverApplication.class, args);
+	}
+
+	private static final Log LOGGER = LogFactory.getLog(ReceiverApplication.class);
 
 	@Bean
 	public MessageChannel pubsubInputChannel() {
@@ -54,14 +61,10 @@ public class WebController {
 		return adapter;
 	}
 
-	@Bean
 	@ServiceActivator(inputChannel = "pubsubInputChannel")
-	public MessageHandler messageReceiver() {
-		return message -> {
-			LOGGER.info("Message arrived! Payload: " + message.getPayload());
-			AckReplyConsumer consumer =
-					(AckReplyConsumer) message.getHeaders().get(GcpHeaders.ACKNOWLEDGEMENT);
-			consumer.ack();
-		};
+	public void messageReceiver(String payload,
+			@Header(GcpHeaders.ACKNOWLEDGEMENT) AckReplyConsumer ackReplyConsumer) {
+		LOGGER.info("Message arrived! Payload: " + payload);
+		ackReplyConsumer.ack();
 	}
 }

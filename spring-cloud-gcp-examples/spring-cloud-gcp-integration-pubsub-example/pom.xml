@@ -10,11 +10,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.example</groupId>
-	<artifactId>spring-cloud-gcp-spring-integration-pubsub-example</artifactId>
+	<artifactId>spring-cloud-gcp-integration-pubsub-example</artifactId>
 	<packaging>pom</packaging>
 	<name>Spring Cloud GCP Integration Pub/Sub Channel Adapters Code Sample</name>
 	<modules>
-		<module>spring-cloud-gcp-spring-integration-pubsub-example-sender</module>
-		<module>spring-cloud-gcp-spring-integration-pubsub-example-receiver</module>
+		<module>spring-cloud-gcp-integration-pubsub-example-sender</module>
+		<module>spring-cloud-gcp-integration-pubsub-example-receiver</module>
 	</modules>
 </project>
