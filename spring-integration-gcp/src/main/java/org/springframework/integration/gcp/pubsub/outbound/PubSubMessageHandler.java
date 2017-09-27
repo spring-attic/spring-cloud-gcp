@@ -122,6 +122,13 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		return this.sync;
 	}
 
+	/**
+	 * Set publish method to be synchronous or asynchronous.
+	 *
+	 * <p>Publish is asynchronous be default.
+	 *
+	 * @param sync true for synchronous, false for asynchronous
+	 */
 	public void setSync(boolean sync) {
 		this.sync = sync;
 	}
@@ -131,7 +138,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	}
 
 	/**
-	 * Sets the SpEL expression to evaluate a timeout in milliseconds for a synchronous publish call
+	 * Set the SpEL expression to evaluate a timeout in milliseconds for a synchronous publish call
 	 * to Google Cloud Pub/Sub.
 	 *
 	 * @param publishTimeoutExpression the {@link Expression} for the publish timeout in
@@ -143,7 +150,19 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	}
 
 	/**
-	 * Sets the timeout in milliseconds for a synchronous publish call to Google Cloud Pub/Sub.
+	 * Set the SpEL expression to evaluate a timeout in milliseconds for a synchronous publish call
+	 * to Google Cloud Pub/Sub from a string.
+	 *
+	 * @param publishTimeoutExpression a string with an expression for the publish timeout in
+	 *                                milliseconds
+	 */
+	public void setPublishTimeoutExpressionString(String publishTimeoutExpression) {
+		Assert.notNull(publishTimeoutExpression, "Publish timeout expression can't be null.");
+		setPublishTimeoutExpression(EXPRESSION_PARSER.parseExpression(publishTimeoutExpression));
+	}
+
+	/**
+	 * Set the timeout in milliseconds for a synchronous publish call to Google Cloud Pub/Sub.
 	 *
 	 * @param timeoutMillis timeout in milliseconds
 	 */
