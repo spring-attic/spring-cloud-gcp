@@ -3,32 +3,27 @@
 		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
-		<artifactId>spring-cloud-gcp-starters</artifactId>
+		<artifactId>spring-cloud-gcp-examples</artifactId>
 		<groupId>org.springframework.cloud</groupId>
 		<version>1.0.0.BUILD-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-cloud-gcp-starter-trace</artifactId>
-	<name>Spring Cloud GCP Cloud Trace Starter</name>
+	<artifactId>spring-cloud-gcp-sql-example</artifactId>
+	<name>Spring Cloud GCP SQL Starter Code Sample</name>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-gcp-starter-core</artifactId>
+			<artifactId>spring-cloud-gcp-starter-sql</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-sleuth</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-gcp-trace</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.api</groupId>
-			<artifactId>gax</artifactId>
-			<version>1.8.1</version>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
 		</dependency>
 	</dependencies>
 </project>

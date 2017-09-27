@@ -23,8 +23,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.grpc.ExecutorProvider;
-import com.google.api.gax.grpc.FixedExecutorProvider;
+import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.cloud.trace.v1.TraceServiceClient;
 import com.google.cloud.trace.v1.TraceServiceSettings;
 import com.google.cloud.trace.v1.consumer.ScheduledBufferingTraceConsumer;
@@ -156,17 +156,14 @@ public class StackdriverTraceAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean(name = "traceConsumer")
 		public TraceConsumer traceConsumer(
-				GcpProjectIdProvider gcpProjectIdProvider,
 				TraceServiceClientTraceConsumer traceServiceClientTraceConsumer,
 				Sizer<Trace> traceSizer,
 				@Qualifier("scheduledBufferingExecutorService") ScheduledExecutorService executorService,
 				GcpTraceProperties gcpTraceProperties) {
-			ScheduledBufferingTraceConsumer scheduledBufferingTraceConsumer = new ScheduledBufferingTraceConsumer(
+			return new ScheduledBufferingTraceConsumer(
 					traceServiceClientTraceConsumer,
 					traceSizer, gcpTraceProperties.getBufferSizeBytes(),
 					gcpTraceProperties.getScheduledDelaySeconds(), executorService);
-
-			return scheduledBufferingTraceConsumer;
 		}
 	}
 }
