@@ -24,5 +24,10 @@ Provides adapters for Spring Messaging channels to exchange messages via Google 
 Makes extensive use of the constructs provided by the Spring Cloud GCP Pub/Sub module, like
 `PubSubOperations`.
 
+The outbound channel adapter, `PubSubMessageHandler`, publishes messages asynchronously by default.
+On asynchronous mode, publish errors are not displayed.
+A publish timeout can be configured for synchronous publishing. If none is provided, the adapter
+waits indefinitely for a response.
+
 Refer to the https://spring.io/guides/gs/spring-cloud-gcp/[Spring getting started guide] to learn
 how to use the adapters.
