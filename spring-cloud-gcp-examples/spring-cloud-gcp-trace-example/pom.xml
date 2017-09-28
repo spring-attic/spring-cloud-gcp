@@ -4,7 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.example</groupId>
-    <artifactId>spring-gcp-trace-example</artifactId>
+    <artifactId>spring-cloud-gcp-trace-example</artifactId>
+    <name>Spring Cloud GCP Trace Code Sample</name>
     <version>1.0.0.BUILD-SNAPSHOT</version>
 
     <parent>
