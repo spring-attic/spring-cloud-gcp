@@ -144,7 +144,7 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		return new MapPropertySource(PROPERTY_SOURCE_NAME, config);
 	}
 
-	String getProjectId() {
+	public String getProjectId() {
 		return this.projectId;
 	}
 }
