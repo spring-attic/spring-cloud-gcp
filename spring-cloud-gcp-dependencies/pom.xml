@@ -22,7 +22,7 @@
 		<google-cloud-storage.version>1.2.1</google-cloud-storage.version>
 		<cloud-trace-java.version>0.4.0</cloud-trace-java.version>
 		<spring-cloud-context.version>1.2.3.RELEASE</spring-cloud-context.version>
-		<spring-cloud-sleuth.version>1.2.4.RELEASE</spring-cloud-sleuth.version>
+		<spring-cloud-sleuth.version>1.3.0.M1</spring-cloud-sleuth.version>
 	</properties>
 
 	<dependencyManagement>
@@ -196,6 +196,18 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<!-- Remove this when spring-cloud-sleuth 1.3.0 moves to GA -->
+	<repositories>
+		<repository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/libs-milestone-local</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
 
 	<profiles>
 		<profile>
