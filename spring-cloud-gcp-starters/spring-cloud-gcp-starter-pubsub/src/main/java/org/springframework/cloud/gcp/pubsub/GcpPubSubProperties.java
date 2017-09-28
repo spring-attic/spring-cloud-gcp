@@ -17,12 +17,17 @@
 package org.springframework.cloud.gcp.pubsub;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.core.io.Resource;
 
 @ConfigurationProperties("spring.cloud.gcp.pubsub")
 public class GcpPubSubProperties {
 	private int subscriberExecutorThreads = 4;
 
 	private int publisherExecutorThreads = 4;
+
+	private String projectId;
+
+	private Resource credentialsLocation;
 
 	public int getSubscriberExecutorThreads() {
 		return this.subscriberExecutorThreads;
@@ -38,5 +43,21 @@ public class GcpPubSubProperties {
 
 	public void setPublisherExecutorThreads(int publisherExecutorThreads) {
 		this.publisherExecutorThreads = publisherExecutorThreads;
+	}
+
+	public String getProjectId() {
+		return this.projectId;
+	}
+
+	public void setProjectId(String projectId) {
+		this.projectId = projectId;
+	}
+
+	public Resource getCredentialsLocation() {
+		return this.credentialsLocation;
+	}
+
+	public void setCredentialsLocation(Resource credentialsLocation) {
+		this.credentialsLocation = credentialsLocation;
 	}
 }
