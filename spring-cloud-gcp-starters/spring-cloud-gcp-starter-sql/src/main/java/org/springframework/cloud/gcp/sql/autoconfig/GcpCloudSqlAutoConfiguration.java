@@ -127,6 +127,7 @@ public class GcpCloudSqlAutoConfiguration {
 		}
 		if (StringUtils.isEmpty(properties.getUrl())) {
 			properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
+		} else {
 			LOGGER.warn("spring.datasource.jdbc-url is specified. Not using generated Cloud SQL configuration");
 		}
 		return properties;
