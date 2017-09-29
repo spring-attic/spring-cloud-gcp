@@ -35,6 +35,7 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 /**
  * Outbound channel adapter to publish messages to Google Cloud Pub/Sub.
@@ -60,6 +61,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	private EvaluationContext evaluationContext;
 
 	private Expression publishTimeoutExpression = new ValueExpression<>(DEFAULT_PUBLISH_TIMEOUT);
+
+	private ListenableFutureCallback<String> publishFutureCallback;
 
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
@@ -95,6 +98,10 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 		ListenableFuture<String> pubsubFuture =
 				this.pubSubTemplate.publish(this.topic, pubsubPayload, headers);
+
+		if (this.publishFutureCallback != null) {
+			pubsubFuture.addCallback(this.publishFutureCallback);
+		}
 
 		if (this.sync) {
 			Long timeout = this.publishTimeoutExpression.getValue(
@@ -168,6 +175,19 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	 */
 	public void setPublishTimeout(long timeoutMillis) {
 		setPublishTimeoutExpression(new ValueExpression<>(timeoutMillis));
+	}
+
+	public ListenableFutureCallback<String> getPublishFutureCallback() {
+		return publishFutureCallback;
+	}
+
+	/**
+	 * Set the callback to be activated when the publish call resolves.
+	 *
+	 * @param publishFutureCallback callback for the publish future
+	 */
+	public void setPublishFutureCallback(ListenableFutureCallback<String> publishFutureCallback) {
+		this.publishFutureCallback = publishFutureCallback;
 	}
 
 	@Override
