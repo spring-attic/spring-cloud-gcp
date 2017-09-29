@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.config;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ import org.springframework.core.env.StandardEnvironment;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -54,10 +56,8 @@ public class GoogleConfigPropertySourceLocatorTest {
 		this.expectedProperties = new HashMap<>();
 		this.expectedProperties.put("property-int", 10);
 		this.expectedProperties.put("property-bool", true);
-		this.projectIdProvider = Mockito.mock(GcpProjectIdProvider.class);
-		when(this.projectIdProvider.getProjectId()).thenReturn("projectid");
-		this.credentialsProvider = Mockito.mock(CredentialsProvider.class);
-		when(this.credentialsProvider.getCredentials()).thenReturn(Mockito.mock(Credentials.class));
+		this.projectIdProvider = () -> "projectid";
+		this.credentialsProvider = () -> mock(Credentials.class);
 
 	}
 
@@ -72,6 +72,7 @@ public class GoogleConfigPropertySourceLocatorTest {
 		assertEquals(propertySource.getName(), "spring-cloud-gcp");
 		assertEquals(propertySource.getProperty("property-int"), 10);
 		assertEquals(propertySource.getProperty("property-bool"), true);
+		assertEquals("projectid", this.googleConfigPropertySourceLocator.getProjectId());
 	}
 
 	@Test
@@ -81,5 +82,15 @@ public class GoogleConfigPropertySourceLocatorTest {
 				this.projectIdProvider, this.credentialsProvider, this.gcpConfigProperties));
 		this.googleConfigPropertySourceLocator.locate(new StandardEnvironment());
 		verify(this.googleConfigPropertySourceLocator, never()).getRemoteEnvironment();
+	}
+
+	@Test
+	public void testProjectIdInConfigProperties() throws IOException {
+		this.gcpConfigProperties.setProjectId("pariah");
+		this.googleConfigPropertySourceLocator = new GoogleConfigPropertySourceLocator(
+				this.projectIdProvider, this.credentialsProvider, this.gcpConfigProperties
+		);
+
+		assertEquals("pariah", this.googleConfigPropertySourceLocator.getProjectId());
 	}
 }

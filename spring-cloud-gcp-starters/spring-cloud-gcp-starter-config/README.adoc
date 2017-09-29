@@ -80,6 +80,8 @@ spring.cloud.gcp.config.enabled=true #optional, default = true
 spring.cloud.gcp.config.name=myapp
 spring.cloud.gcp.config.profile=prod
 spring.cloud.gcp.config.timeout=120000 #optional
+spring.cloud.gcp.config.project-id=my-gcp-project-id
+spring.cloud.gcp.config.credentials-location=file:/path/to/my/local/creds.json
 ....
 +
 The  default value of `spring.cloud.config.profile` is `default`.
