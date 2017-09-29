@@ -14,28 +14,24 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.core;
+package org.springframework.cloud.gcp.storage;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.core.io.Resource;
 
 /**
- * OAuth2 scopes for Google Cloud Platform services integrated by Spring Cloud GCP.
- *
  * @author João André Martins
  */
-public enum GcpScope {
-	PUBSUB("https://www.googleapis.com/auth/pubsub"),
-	SQLADMIN("https://www.googleapis.com/auth/sqlservice.admin"),
-	STORAGE_READ_ONLY("https://www.googleapis.com/auth/devstorage.read_only"),
-	STORAGE_READ_WRITE("https://www.googleapis.com/auth/devstorage.read_write"),
-	RUNTIME_CONFIG_SCOPE("https://www.googleapis.com/auth/cloudruntimeconfig"),
-	TRACE_APPEND("https://www.googleapis.com/auth/trace.append");
+@ConfigurationProperties("spring.cloud.gcp.storage")
+public class GcpStorageProperties {
 
-	private String url;
+	private Resource credentialsLocation;
 
-	GcpScope(String url) {
-		this.url = url;
+	public Resource getCredentialsLocation() {
+		return this.credentialsLocation;
 	}
 
-	public String getUrl() {
-		return this.url;
+	public void setCredentialsLocation(Resource credentialsLocation) {
+		this.credentialsLocation = credentialsLocation;
 	}
 }

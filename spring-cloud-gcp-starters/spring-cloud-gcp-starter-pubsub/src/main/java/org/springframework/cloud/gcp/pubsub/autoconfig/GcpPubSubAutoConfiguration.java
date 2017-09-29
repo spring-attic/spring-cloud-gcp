@@ -17,12 +17,15 @@
 package org.springframework.cloud.gcp.pubsub.autoconfig;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.concurrent.Executors;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.grpc.ChannelProvider;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
@@ -34,6 +37,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.pubsub.GcpPubSubProperties;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
@@ -59,6 +63,24 @@ public class GcpPubSubAutoConfiguration {
 
 	@Autowired
 	private GcpPubSubProperties gcpPubSubProperties;
+
+	private GcpProjectIdProvider finalProjectIdProvider;
+
+	private CredentialsProvider finalCredentialsProvider;
+
+	public GcpPubSubAutoConfiguration(GcpPubSubProperties gcpPubSubProperties,
+			GcpProjectIdProvider gcpProjectIdProvider,
+			CredentialsProvider credentialsProvider) throws IOException {
+		this.finalProjectIdProvider = gcpPubSubProperties.getProjectId() != null
+				? gcpPubSubProperties::getProjectId
+				: gcpProjectIdProvider;
+		this.finalCredentialsProvider = gcpPubSubProperties.getCredentialsLocation() != null
+				? FixedCredentialsProvider.create(
+						GoogleCredentials.fromStream(
+								gcpPubSubProperties.getCredentialsLocation().getInputStream())
+								.createScoped(Collections.singletonList(GcpScope.PUBSUB.getUrl())))
+				: credentialsProvider;
+	}
 
 	@Bean
 	@ConditionalOnMissingBean(name = "publisherExecutorProvider")
@@ -102,39 +124,43 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SubscriberFactory defaultSubscriberFactory(GcpProjectIdProvider projectIdProvider,
-			CredentialsProvider credentialsProvider,
+	public SubscriberFactory defaultSubscriberFactory(
 			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
 			@Qualifier("publisherChannelProvider") ChannelProvider channelProvider) {
-		return new DefaultSubscriberFactory(projectIdProvider, executorProvider, channelProvider,
-				credentialsProvider);
+		return new DefaultSubscriberFactory(
+				this.finalProjectIdProvider,
+				executorProvider,
+				channelProvider,
+				this.finalCredentialsProvider);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PublisherFactory defaultPublisherFactory(GcpProjectIdProvider projectIdProvider,
-			CredentialsProvider credentialsProvider,
+	public PublisherFactory defaultPublisherFactory(
 			@Qualifier("subscriberExecutorProvider") ExecutorProvider subscriberProvider,
 			@Qualifier("subscriberChannelProvider") ChannelProvider channelProvider) {
-		return new DefaultPublisherFactory(projectIdProvider, subscriberProvider, channelProvider,
-				credentialsProvider);
+		return new DefaultPublisherFactory(
+				this.finalProjectIdProvider,
+				subscriberProvider,
+				channelProvider,
+				this.finalCredentialsProvider);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PubSubAdmin pubSubAdmin(GcpProjectIdProvider projectIdProvider,
-			TopicAdminClient topicAdminClient,
+	public PubSubAdmin pubSubAdmin(TopicAdminClient topicAdminClient,
 			SubscriptionAdminClient subscriptionAdminClient) {
-		return new PubSubAdmin(projectIdProvider, topicAdminClient, subscriptionAdminClient);
+		return new PubSubAdmin(this.finalProjectIdProvider, topicAdminClient,
+				subscriptionAdminClient);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public TopicAdminClient topicAdminClient(CredentialsProvider credentialsProvider) {
+	public TopicAdminClient topicAdminClient() {
 		try {
 			return TopicAdminClient.create(
 					TopicAdminSettings.newBuilder()
-							.setCredentialsProvider(credentialsProvider)
+							.setCredentialsProvider(this.finalCredentialsProvider)
 							.build());
 		}
 		catch (IOException ioe) {
@@ -144,12 +170,11 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SubscriptionAdminClient subscriptionAdminClient(
-			CredentialsProvider credentialsProvider) {
+	public SubscriptionAdminClient subscriptionAdminClient() {
 		try {
 			return SubscriptionAdminClient.create(
 					SubscriptionAdminSettings.newBuilder()
-							.setCredentialsProvider(credentialsProvider)
+							.setCredentialsProvider(this.finalCredentialsProvider)
 							.build());
 		}
 		catch (IOException ioe) {

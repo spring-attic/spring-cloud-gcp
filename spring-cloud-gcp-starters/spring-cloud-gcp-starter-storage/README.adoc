@@ -22,3 +22,7 @@ dependencies {
 
 This starter provides the underpinnings of the Spring Cloud GCP Storage. It doesn't provide any
 bean to be used by an end-user.
+
+There is an optional property, `spring.cloud.gcp.storage.credentials-location`. Its value is the
+filesystem path for a credentials file, in case Storage is served from a different GCP project ID
+than the one configured in the link:../spring-cloud-gcp-starter-core/README.adoc[Core Starter].

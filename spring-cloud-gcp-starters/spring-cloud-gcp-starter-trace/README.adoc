@@ -19,6 +19,33 @@ dependencies {
 }
 ----
 
+Since a Milestone version of a Spring Cloud dependency is used, you will also need to add the Spring
+Milestones repository to your build file.
+
+`pom.xml`
+[source]
+----
+<repositories>
+    <repository>
+        <id>spring-milestones</id>
+        <name>Spring Milestones</name>
+        <url>https://repo.spring.io/libs-milestone-local</url>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
+</repositories>
+----
+
+`build.gradle`
+[source]
+----
+repositories {
+    mavenCentral()
+    maven { url "http://repo.spring.io/libs-milestone" }
+}
+----
+
 This starter uses Spring Cloud Sleuth and provides a `SpanReporter` that sends the Sleuth's trace information to Stackdriver Trace.
 
 All configurations are optional. You can override a number of default configuration values in addition to the core
@@ -40,6 +67,12 @@ spring.cloud.gcp.trace.buffer-size-bytes=[BUFFER_SIZE_BYTES]
 # Buffered trace messages will be flushed to Stackdriver when buffered longer than scheduled delays (in seconds).
 # Default is 10 seconds
 spring.cloud.gcp.trace.scheduled-delay-seconds=[SCHEDULED_DELAY_SECONDS]
+
+# GCP project ID Trace is served from
+spring.cloud.gcp.trace.project-id=[TRACE_GCP_PROJECT_ID]
+
+# Credentials for the trace service
+spring.cloud.gcp.trace.credentials-location=[CREDENTIALS_FILESYSTEM_LOCATION]
 ----
 
 You can use core Spring Cloud Sleuth properties to control Sleuth's sampling rate, etc.

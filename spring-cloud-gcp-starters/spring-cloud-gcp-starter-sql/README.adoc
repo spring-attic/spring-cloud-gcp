@@ -51,6 +51,7 @@ spring.cloud.gcp.sql.jdbc-driver=[YOUR_JDBC_DRIVER]
 spring.cloud.gcp.sql.user-name=[YOUR_CLOUD_SQL_USERNAME]
 spring.cloud.gcp.sql.password=[YOUR_CLOUD_SQL_PASSWORD]
 spring.cloud.gcp.sql.database-type=[mysql or postgresql]
+spring.cloud.gcp.sql.credentials-location=[CREDENTIALS_FILESYSTEM_PATH]
 ----
 
 If `spring.cloud.gcp.sql.jdbc-url` is specified, it is used as the final JDBC URL and has precedence
@@ -68,6 +69,10 @@ If `spring.cloud.gcp.sql.password` isn't specified, an empty string is used by d
 `spring.cloud.gcp.sql.database-type` can either be `mysql` or `postgresql`. Any value that isn't
 those two will cause the configuration to error. `spring.cloud.gcp.sql.database-type` determines if
 the resolved JDBC URL and driver class are for MySQL or PostgreSQL.
+
+`spring.cloud.gcp.sql.credentials-location` can be used to specify credentials for a GCP project ID
+different than the one configured in the link:../spring-cloud-gcp-starter-core/README.adoc[Core
+Starter].
 
 By using this starter in conjunction with
 https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html[Spring JDBC],
