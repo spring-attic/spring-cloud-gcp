@@ -28,35 +28,22 @@ Settings`, it will set this policy across all of your IDEA projects.
 import optimization. Consider disabling the option if optimization does not yield the expected
 results.
 
-= Contribution workflow
+= Contributing a patch
 
-When contributing to this repository, please observe the following guidelines.
+1. Submit an issue describing your proposed change
 
-1. Follow https://github.com/spring-projects/spring-framework/wiki/Spring-Framework-Code-Style[Spring
-Framework codestyle] and enforce it through checkstyle and IDE
+2. A repository owner will respond to your issue as soon as possible
 
-2. Create/assign a Github issue to yourself before starting work on a PR (whenever significant enough)
+3. If your proposed change is accepted, and you haven't already done so, sign a
+https://cla.pivotal.io/[Contributor License Agreement]
 
-3. Reference issue(s) in the commit message / PR description to
-https://help.github.com/articles/closing-issues-using-keywords/[automatically close] the issue when
-PR is merged
+4. Fork the repository, develop and test your code changes
 
-4. Follow
-https://github.com/spring-projects/spring-framework/blob/master/CONTRIBUTING.md#format-commit-messages[Spring
-Commit Guidelines] for documenting commits, which will automatically pre-populate Github's PR title
-and description
+5. Ensure that your code adheres to the
+https://github.com/spring-projects/spring-framework/wiki/Spring-Framework-Code-Style[Spring Style
+Guide]
 
-5. Use branches within spring-cloud-gcp to work on issues and allow multiple collaborators to add commits to a PR. (Using forks is also allowed, and necessary for external contributors)
+6. Ensure your code has an appropriate set of unit tests which all pass
 
-6. For first-party contributors, the original PR author is responsible for merging the PR into master after getting approval from reviewer(s). (However, reviewer can merge, if the author is delaying.)
-
-7. Always delete PR branch after close or merge. Github allows the branch to be restored if needed.
-
-8. Protect master branch from direct commits.
-
-9. Use Github's
-https://help.github.com/articles/configuring-commit-squashing-for-pull-requests/[squash & merge
-feature] when submitting PRs and enforce it through Github
-
-10. When merging the PR, use the PR Title + Description as the commit message. See sample in the Appendix below.
-
+7. Submit a pull request. After it is approved by a project committer, you can Squash & Merge the
+pull request from GitHub
