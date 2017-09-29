@@ -1,0 +1,77 @@
+== Spring Cloud Sleuth
+
+https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] is an instrumentation framework for Spring Boot
+applications. It captures trace informations and can forward trace traces to services like Zipkin for storage and
+analysis.
+
+Google Cloud Platform provides its own managed distributed tracing service called
+https://cloud.google.com/trace/[Stackdriver Trace]. Instead of running and maintaining your own Zipkin instance and
+storage, you can use Stackdriver Trace to store traces, view trace details, generate latency distributions graphs,
+and generate performance regression reports.
+
+This Spring Cloud GCP starter can forward Spring Cloud Sleuth traces to Stackdriver Trace without an intermediary
+Zipkin server.
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-trace</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-trace', version: '{project-version}'
+}
+----
+
+You must enable Stackdriver Trace API from the Google Cloud Console in order to capture traces. Navigate to the
+https://console.cloud.google.com/apis/api/cloudtrace.googleapis.com/overview[Stackdriver Trace API] for your project
+and make sure it’s enabled.
+
+[NOTE]
+====
+If you are already using a Zipkin server capturing trace information from multiple platform/frameworks, you also use a
+https://cloud.google.com/trace/docs/zipkin[Stackdriver Zipkin proxy] to forward those traces to Stackdriver Trace
+without modifying existing applications.
+====
+
+=== Spring Boot Starter for Stackdriver Trace
+Spring Boot Starter for Stackdriver Trace uses Spring Cloud Sleuth and auto-configures a
+https://github.com/spring-cloud/spring-cloud-sleuth/blob/master/spring-cloud-sleuth-core/src/main/java/org/springframework/cloud/sleuth/SpanReporter.java[SpanReporter]
+that sends the Sleuth’s trace information to Stackdriver Trace.
+
+This starter will send traces asynchronously using a buffered trace consumer that auto-flushes when its buffered trace
+messages exceed its buffer size or have been buffered for longer than its scheduled delay.
+
+There are several parameters you can use to tune the Stackdriver Trace adapter. All configurations are optional:
+
+
+|===
+| Property name | Description | Default value
+| `spring.cloud.gcp.trace.enabled` | Auto-configure Spring Cloud Sleuth to send traces to Stackdriver Trace. | `true`
+| `spring.cloud.gcp.trace.executor-threads` | Number of threads to use by the underlying gRPC channel to send the trace request to Stackdriver. | `4`
+| `spring.cloud.gcp.trace.buffer-size-bytes` | Buffer size in bytes. Traces will be flushed to Stackdriver when buffered trace messages exceed this size. | 1% of Runtime.totalMemory()
+| `spring.cloud.gcp.trace.scheduled-delay-seconds` | Buffered trace messages will be flushed to Stackdriver when buffered longer than scheduled delays (in seconds) even if the buffered message size didn't exceed the buffer size. | `10`
+|===
+
+You can use core Spring Cloud Sleuth properties to control Sleuth’s sampling rate, etc.
+Read https://cloud.spring.io/spring-cloud-sleuth/[Sleuth documentation] for more information on Sleuth configurations.
+
+For example, when you are testing to see the traces are going through, you can set the sampling rate to 100%.
+
+[source]
+----
+spring.sleuth.sampler.percentage=1                              # Send 100% of the request traces to Stackdriver.
+spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)          # Ignore some URL paths.
+----
+
+Stackdriver Trace requires the use of 128-bit Trace ID. This starter ignores `spring.sleuth.traceId128` property and
+always uses 128-bit Trace ID.

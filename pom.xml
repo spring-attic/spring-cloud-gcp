@@ -28,9 +28,11 @@
 		<module>spring-cloud-gcp-pubsub</module>
 		<module>spring-cloud-gcp-core</module>
 		<module>spring-cloud-gcp-storage</module>
+		<module>spring-cloud-gcp-trace</module>
 		<module>spring-cloud-gcp-starters</module>
 		<module>spring-integration-gcp</module>
 		<module>spring-cloud-gcp-docs</module>
+		<module>spring-cloud-gcp-examples</module>
 	</modules>
 
 	<properties>
@@ -103,24 +105,26 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<version>2.17</version>
+				<configuration>
+					<configLocation>src/checkstyle/checkstyle.xml</configLocation>
+					<headerLocation>src/checkstyle/checkstyle-header.txt</headerLocation>
+					<encoding>UTF-8</encoding>
+					<consoleOutput>true</consoleOutput>
+					<failsOnError>true</failsOnError>
+					<includeTestSourceDirectory>true</includeTestSourceDirectory>
+					<failOnViolation>true</failOnViolation>
+					<violationSeverity>warning</violationSeverity>
+				</configuration>
 				<executions>
 					<execution>
 						<id>checkstyle-validation</id>
 						<phase>validate</phase>
-						<configuration>
-							<encoding>UTF-8</encoding>
-							<failOnViolation>true</failOnViolation>
-							<violationSeverity>warning</violationSeverity>
-							<includeTestSourceDirectory>true</includeTestSourceDirectory>
-							<configLocation>src/checkstyle/checkstyle.xml</configLocation>
-						</configuration>
 						<goals>
 							<goal>check</goal>
 						</goals>
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
 	</build>
 

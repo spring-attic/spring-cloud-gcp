@@ -28,25 +28,23 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("spring.cloud.gcp.sql")
 public class GcpCloudSqlProperties {
 
-	private String instanceName;
-
 	private String databaseName;
 
-	private String region;
-
 	private String instanceConnectionName;
+
+	private String jdbcUrl;
+
+	private String jdbcDriver;
+
+	private String userName = "root";
+
+	private String password = "";
 
 	private boolean initFailFast;
 
 	private Path credentialsLocation;
 
-	public String getInstanceName() {
-		return this.instanceName;
-	}
-
-	public void setInstanceName(String instanceName) {
-		this.instanceName = instanceName;
-	}
+	private DatabaseType databaseType = DatabaseType.MYSQL;
 
 	public String getDatabaseName() {
 		return this.databaseName;
@@ -56,20 +54,44 @@ public class GcpCloudSqlProperties {
 		this.databaseName = databaseName;
 	}
 
-	public String getRegion() {
-		return this.region;
-	}
-
-	public void setRegion(String region) {
-		this.region = region;
-	}
-
 	public String getInstanceConnectionName() {
 		return this.instanceConnectionName;
 	}
 
 	public void setInstanceConnectionName(String instanceConnectionName) {
 		this.instanceConnectionName = instanceConnectionName;
+	}
+
+	public String getJdbcUrl() {
+		return this.jdbcUrl;
+	}
+
+	public void setJdbcUrl(String jdbcUrl) {
+		this.jdbcUrl = jdbcUrl;
+	}
+
+	public String getJdbcDriver() {
+		return this.jdbcDriver;
+	}
+
+	public void setJdbcDriver(String jdbcDriver) {
+		this.jdbcDriver = jdbcDriver;
+	}
+
+	public String getUserName() {
+		return this.userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public String getPassword() {
+		return this.password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
 	public boolean isInitFailFast() {
@@ -86,5 +108,13 @@ public class GcpCloudSqlProperties {
 
 	public void setCredentialsLocation(Path credentialsLocation) {
 		this.credentialsLocation = credentialsLocation;
+	}
+
+	public DatabaseType getDatabaseType() {
+		return this.databaseType;
+	}
+
+	public void setDatabaseType(DatabaseType databaseType) {
+		this.databaseType = databaseType;
 	}
 }

@@ -17,8 +17,10 @@
 package org.springframework.cloud.gcp.storage.autoconfig;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
@@ -26,6 +28,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.GcpProperties;
+import org.springframework.cloud.gcp.core.GcpScope;
+import org.springframework.cloud.gcp.storage.GcpStorageProperties;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolver;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,15 +47,22 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @ConditionalOnClass(Storage.class)
-@EnableConfigurationProperties(GcpProperties.class)
+@EnableConfigurationProperties({GcpProperties.class, GcpStorageProperties.class})
 @Import(GoogleStorageProtocolResolver.class)
 public class StorageAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public static Storage storage(CredentialsProvider credentialsProvider) throws IOException {
+	public static Storage storage(
+			CredentialsProvider credentialsProvider,
+			GcpStorageProperties gcpStorageProperties) throws IOException {
 		return StorageOptions.newBuilder()
-				.setCredentials(credentialsProvider.getCredentials())
+				.setCredentials(gcpStorageProperties.getCredentialsLocation() != null
+						? GoogleCredentials.fromStream(
+								gcpStorageProperties.getCredentialsLocation().getInputStream())
+						.createScoped(Collections.singletonList(
+								GcpScope.STORAGE_READ_WRITE.getUrl()))
+						: credentialsProvider.getCredentials())
 				.build()
 				.getService();
 	}

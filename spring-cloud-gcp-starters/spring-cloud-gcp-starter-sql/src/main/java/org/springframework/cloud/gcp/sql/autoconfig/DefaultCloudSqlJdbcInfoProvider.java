@@ -16,10 +16,6 @@
 
 package org.springframework.cloud.gcp.sql.autoconfig;
 
-import java.io.IOException;
-
-import com.google.api.services.sqladmin.SQLAdmin;
-
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.util.Assert;
@@ -35,60 +31,32 @@ import org.springframework.util.StringUtils;
  */
 public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider {
 
-	private final SQLAdmin sqlAdmin;
-
 	private final GcpCloudSqlProperties properties;
 
-	private final String jdbcUrl;
-
-	public DefaultCloudSqlJdbcInfoProvider(String projectId, SQLAdmin sqlAdmin, GcpCloudSqlProperties properties) {
-		this.sqlAdmin = sqlAdmin;
+	public DefaultCloudSqlJdbcInfoProvider(GcpCloudSqlProperties properties) {
 		this.properties = properties;
-		Assert.hasText(projectId,
-				"A project ID must be provided.");
-
-		Assert.hasText(properties.getDatabaseName(),
-				"The database name cannot be empty.");
-
-		if (StringUtils.isEmpty(properties.getInstanceConnectionName())) {
-			Assert.hasText(this.properties.getInstanceName(),
-					"Instance Name is required, or specify Instance Connection Name explicitly.");
-
-			String region = properties.getRegion();
-			if (StringUtils.isEmpty(region)) {
-				try {
-					region = determineRegion(projectId, this.properties.getInstanceName());
-				}
-				catch (IOException ioe) {
-					throw new IllegalArgumentException(
-							"Unable to determine Cloud SQL region. Specify the region explicitly, "
-									+ "or specify Instance Connection Name explicitly.",
-							ioe);
-				}
-			}
-
-			this.properties.setInstanceConnectionName(
-					String.format("%s:%s:%s", projectId, region,
-							this.properties.getInstanceName()));
+		Assert.hasText(this.properties.getDatabaseName(), "A database name must be provided.");
+		if (StringUtils.isEmpty(this.properties.getJdbcUrl())) {
+			Assert.hasText(this.properties.getInstanceConnectionName(),
+					"An instance connection name must be provided. Refer to "
+							+ GcpCloudSqlAutoConfiguration.INSTANCE_CONNECTION_NAME_HELP_URL
+							+ " for more information.");
 		}
-
-		this.jdbcUrl = String.format("jdbc:mysql://google/%s?cloudSqlInstance=%s&"
-				+ "socketFactory=com.google.cloud.sql.mysql.SocketFactory&useSSL=false",
-				this.properties.getDatabaseName(),
-				this.properties.getInstanceConnectionName());
-	}
-
-	private String determineRegion(String projectId, String instanceName) throws IOException {
-		return this.sqlAdmin.instances().get(projectId, instanceName).execute().getRegion();
 	}
 
 	@Override
 	public String getJdbcDriverClass() {
-		return "com.mysql.jdbc.Driver";
+		return StringUtils.isEmpty(this.properties.getJdbcDriver())
+				? this.properties.getDatabaseType().getJdbcDriverName()
+				: this.properties.getJdbcDriver();
 	}
 
 	@Override
 	public String getJdbcUrl() {
-		return this.jdbcUrl;
+		return StringUtils.isEmpty(this.properties.getJdbcUrl())
+				? String.format(this.properties.getDatabaseType().getJdbcUrlTemplate(),
+				this.properties.getDatabaseName(),
+				this.properties.getInstanceConnectionName())
+				: this.properties.getJdbcUrl();
 	}
 }

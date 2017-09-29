@@ -19,15 +19,7 @@ package org.springframework.cloud.gcp.sql.autoconfig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.security.GeneralSecurityException;
 
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.services.sqladmin.SQLAdmin;
-import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.cloud.sql.CredentialFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,21 +49,23 @@ import org.springframework.util.StringUtils;
  * Google Cloud SQL starter.
  *
  * <p>
- * Simplifies database configuration in that only an instance and database name are
- * provided, instead of a JDBC URL. If the instance region isn't specified, this starter
- * attempts to get it through the Cloud SQL API.
+ * Provides Google Cloud SQL instance connectivity through Spring JDBC by providing only a
+ * database and instance connection name.
  *
  * @author João André Martins
  */
 @Configuration
-@EnableConfigurationProperties({ GcpCloudSqlProperties.class, DataSourceProperties.class })
-@ConditionalOnClass({ GcpProjectIdProvider.class, SQLAdmin.class })
+@EnableConfigurationProperties(GcpCloudSqlProperties.class)
+@ConditionalOnClass(GcpProjectIdProvider.class)
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpCloudSqlAutoConfiguration {
 
+	public final static String INSTANCE_CONNECTION_NAME_HELP_URL =
+			"https://github.com/spring-cloud/spring-cloud-gcp/tree/master/"
+			+ "spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql"
+			+ "#google-cloud-sql-instance-connection-name";
 	private static final Log LOGGER = LogFactory.getLog(GcpCloudSqlAutoConfiguration.class);
-
 	@Autowired
 	private GcpCloudSqlProperties gcpCloudSqlProperties;
 
@@ -79,30 +73,15 @@ public class GcpCloudSqlAutoConfiguration {
 	private GcpProperties gcpProperties;
 
 	@Bean
-	@ConditionalOnMissingBean
-	protected SQLAdmin sqlAdminService(CredentialsProvider credentialsProvider)
-			throws GeneralSecurityException, IOException {
-		HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-		JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-
-		return new SQLAdmin.Builder(httpTransport, jsonFactory,
-				new HttpCredentialsAdapter(credentialsProvider.getCredentials()))
-						.setApplicationName("spring")
-						.build();
-	}
-
-	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
 	@Conditional(AppEngineCondition.class)
-	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider(
-			GcpProjectIdProvider projectIdProvider) {
-		CloudSqlJdbcInfoProvider appEngineProvider = new AppEngineCloudSqlJdbcInfoProvider(
-				projectIdProvider.getProjectId(),
-				this.gcpCloudSqlProperties);
+	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider() {
+		CloudSqlJdbcInfoProvider appEngineProvider = new AppEngineCloudSqlJdbcInfoProvider(this.gcpCloudSqlProperties);
 
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("App Engine JdbcUrl provider. Connecting to "
-					+ appEngineProvider.getJdbcUrl());
+					+ appEngineProvider.getJdbcUrl() + " with driver "
+					+ appEngineProvider.getJdbcDriverClass());
 		}
 
 		setCredentialsProperty();
@@ -112,16 +91,14 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	public CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider(SQLAdmin sqlAdmin,
-			GcpProjectIdProvider projectIdProvider) {
-		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(
-				projectIdProvider.getProjectId(),
-				sqlAdmin,
-				this.gcpCloudSqlProperties);
+	public CloudSqlJdbcInfoProvider defaultJdbcInfoProvider() {
+		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(this.gcpCloudSqlProperties);
 
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("Default JdbcUrl provider. Connecting to "
-					+ defaultProvider.getJdbcUrl());
+			LOGGER.info("Default " + this.gcpCloudSqlProperties.getDatabaseType().name()
+					+ " JdbcUrl provider. Connecting to "
+					+ defaultProvider.getJdbcUrl() + " with driver "
+					+ defaultProvider.getJdbcDriverClass());
 		}
 
 		setCredentialsProperty();
@@ -172,10 +149,10 @@ public class GcpCloudSqlAutoConfiguration {
 			}
 			// Then, the global credential.
 			else if (this.gcpProperties != null
-					&& this.gcpProperties.getCredentialsLocation() != null
-					&& this.gcpProperties.getCredentialsLocation().exists()) {
+					&& this.gcpProperties.getCredentials().getLocation() != null
+					&& this.gcpProperties.getCredentials().getLocation().exists()) {
 				// A resource might not be in the filesystem, but the Cloud SQL credential must.
-				File credentialsLocationFile = this.gcpProperties.getCredentialsLocation().getFile();
+				File credentialsLocationFile = this.gcpProperties.getCredentials().getLocation().getFile();
 
 				// This should happen if the Spring resource isn't in the filesystem, but a URL,
 				// classpath file, etc.
