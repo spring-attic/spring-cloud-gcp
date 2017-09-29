@@ -29,6 +29,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -55,8 +56,9 @@ import org.springframework.util.StringUtils;
  * @author João André Martins
  */
 @Configuration
-@EnableConfigurationProperties(GcpCloudSqlProperties.class)
+@EnableConfigurationProperties({ GcpCloudSqlProperties.class, DataSourceProperties.class })
 @ConditionalOnClass(GcpProjectIdProvider.class)
+@ConditionalOnProperty(name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpCloudSqlAutoConfiguration {
@@ -65,7 +67,9 @@ public class GcpCloudSqlAutoConfiguration {
 			"https://github.com/spring-cloud/spring-cloud-gcp/tree/master/"
 			+ "spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql"
 			+ "#google-cloud-sql-instance-connection-name";
+
 	private static final Log LOGGER = LogFactory.getLog(GcpCloudSqlAutoConfiguration.class);
+
 	@Autowired
 	private GcpCloudSqlProperties gcpCloudSqlProperties;
 
@@ -108,16 +112,22 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@Primary
-	public DataSourceProperties dataSourceProperties(DataSourceProperties properties,
+	public DataSourceProperties cloudSqlDataSourceProperties(DataSourceProperties properties,
 			CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider) {
 		if (StringUtils.isEmpty(properties.getUsername())) {
 			properties.setUsername("root");
+			LOGGER.warn("spring.datasource.username is not specified. Setting default username.");
 		}
 		if (StringUtils.isEmpty(properties.getDriverClassName())) {
 			properties.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
 		}
+		else {
+			LOGGER.warn(
+					"spring.datasource.driver-class-name is specified. Not using generated Cloud SQL configuration");
+		}
 		if (StringUtils.isEmpty(properties.getUrl())) {
 			properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
+			LOGGER.warn("spring.datasource.jdbc-url is specified. Not using generated Cloud SQL configuration");
 		}
 		return properties;
 	}
