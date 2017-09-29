@@ -45,5 +45,4 @@ Guide]
 
 6. Ensure your code has an appropriate set of unit tests which all pass
 
-7. Submit a pull request. After it is approved by a project committer, you can Squash & Merge the
-pull request from GitHub
+7. Submit a pull request. It will be approved and merged by a committer
