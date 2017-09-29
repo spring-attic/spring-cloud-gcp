@@ -178,7 +178,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	}
 
 	public ListenableFutureCallback<String> getPublishFutureCallback() {
-		return publishFutureCallback;
+		return this.publishFutureCallback;
 	}
 
 	/**
