@@ -100,7 +100,10 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 			@Override
 			public void onSuccess(String result) {
-				LOGGER.debug("Publishing to " + topic + " was successful. Message ID: " + result);
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug(
+							"Publishing to " + topic + " was successful. Message ID: " + result);
+				}
 				settableFuture.set(result);
 			}
 
