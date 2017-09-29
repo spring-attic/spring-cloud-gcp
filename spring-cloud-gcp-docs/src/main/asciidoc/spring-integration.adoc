@@ -118,3 +118,4 @@ GCP Pub/Sub topic.
 On asynchronous mode, publish errors are not displayed.
 A publish timeout can be configured for synchronous publishing. If none is provided, the adapter
 waits indefinitely for a response.
+
