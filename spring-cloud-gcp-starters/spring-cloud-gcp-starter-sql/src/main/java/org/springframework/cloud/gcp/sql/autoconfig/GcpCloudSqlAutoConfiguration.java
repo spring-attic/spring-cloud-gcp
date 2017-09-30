@@ -63,7 +63,8 @@ import org.springframework.util.StringUtils;
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpCloudSqlAutoConfiguration {
 
-	public final static String INSTANCE_CONNECTION_NAME_HELP_URL = "https://github.com/spring-cloud/spring-cloud-gcp/tree/master/"
+	public final static String INSTANCE_CONNECTION_NAME_HELP_URL =
+			"https://github.com/spring-cloud/spring-cloud-gcp/tree/master/"
 			+ "spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql"
 			+ "#google-cloud-sql-instance-connection-name";
 
