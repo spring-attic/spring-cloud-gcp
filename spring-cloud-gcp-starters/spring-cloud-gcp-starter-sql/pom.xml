@@ -63,13 +63,13 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-tx</artifactId>
-            <scope>test</scope>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-jdbc</artifactId>
-            <scope>test</scope>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
