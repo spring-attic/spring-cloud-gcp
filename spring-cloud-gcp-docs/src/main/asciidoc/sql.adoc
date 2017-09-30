@@ -99,4 +99,3 @@ load the driver class so that the user doesn't have to.
 The result of this flow is a fully configured and operational `JdbcTemplate` object that you can
 use to interact with your SQL database.
 You can connect to your database with as little as a database and instance names!
-

@@ -75,4 +75,3 @@ spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)          # Ignore some UR
 
 Stackdriver Trace requires the use of 128-bit Trace ID. This starter ignores `spring.sleuth.traceId128` property and
 always uses 128-bit Trace ID.
-

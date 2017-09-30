@@ -27,4 +27,3 @@ GCP BOM and the dependency versions are omitted.
 Gradle users can achieve the same kind of BOM experience using Spring's
 https://github.com/spring-gradle-plugins/dependency-management-plugin[dependency-management-plugin]
 Gradle plugin.
-
