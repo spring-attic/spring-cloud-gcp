@@ -63,8 +63,7 @@ import org.springframework.util.StringUtils;
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpCloudSqlAutoConfiguration {
 
-	public final static String INSTANCE_CONNECTION_NAME_HELP_URL =
-			"https://github.com/spring-cloud/spring-cloud-gcp/tree/master/"
+	public final static String INSTANCE_CONNECTION_NAME_HELP_URL = "https://github.com/spring-cloud/spring-cloud-gcp/tree/master/"
 			+ "spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql"
 			+ "#google-cloud-sql-instance-connection-name";
 
@@ -127,7 +126,8 @@ public class GcpCloudSqlAutoConfiguration {
 		}
 		if (StringUtils.isEmpty(properties.getUrl())) {
 			properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
-		} else {
+		}
+		else {
 			LOGGER.warn("spring.datasource.jdbc-url is specified. Not using generated Cloud SQL configuration");
 		}
 		return properties;
