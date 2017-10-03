@@ -177,7 +177,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		setPublishTimeoutExpression(new ValueExpression<>(timeoutMillis));
 	}
 
-	public ListenableFutureCallback<String> getPublishFutureCallback() {
+	protected ListenableFutureCallback<String> getPublishFutureCallback() {
 		return this.publishFutureCallback;
 	}
 
