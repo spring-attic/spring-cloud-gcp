@@ -23,6 +23,25 @@ We would love to hear from you.
 If you want to collaborate in the project, we would also love to get your Pull Requests. Before you
 start working on one, please take a look at our link:CONTRIBUTING.adoc[collaboration manual].
 
+== Spring Snapshots Maven Repository
+
+Currently, the Maven artifacts for the project are only available in the Spring Snapshots repository.
+You will want to make sure that the repository is added to your `pom.xml` or globally in your https://maven.apache.org/settings.html[`settings.xml`].
+
+[source,xml]
+----
+<repositories>
+    <repository>
+        <id>spring-snapshots</id>
+        <name>Spring Snapshots</name>
+        <url>https://repo.spring.io/libs-snapshot</url>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+</repositories>
+----
+
 == Spring Cloud GCP Bill of Materials (BOM)
 
 If you're a Maven user, it's probably a good idea to add our BOM to your maven.xml
