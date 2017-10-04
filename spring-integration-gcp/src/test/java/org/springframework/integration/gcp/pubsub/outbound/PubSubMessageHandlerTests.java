@@ -31,6 +31,7 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.expression.Expression;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
 import static org.mockito.Matchers.eq;
@@ -84,5 +85,26 @@ public class PubSubMessageHandlerTests {
 		this.adapter.handleMessage(this.message);
 		verify(timeout, times(1)).getValue(
 				eq(null), eq(this.message), eq(Long.class));
+	}
+
+	@Test
+	public void testPublishCallback() {
+		ListenableFutureCallback<String> callbackSpy = spy(new ListenableFutureCallback<String>() {
+			@Override
+			public void onFailure(Throwable ex) {
+
+			}
+
+			@Override
+			public void onSuccess(String result) {
+
+			}
+		});
+
+		this.adapter.setPublishCallback(callbackSpy);
+
+		this.adapter.handleMessage(this.message);
+
+		verify(callbackSpy, times(1)).onSuccess(eq("benfica"));
 	}
 }

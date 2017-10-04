@@ -35,6 +35,7 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 /**
  * Outbound channel adapter to publish messages to Google Cloud Pub/Sub.
@@ -60,6 +61,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	private EvaluationContext evaluationContext;
 
 	private Expression publishTimeoutExpression = new ValueExpression<>(DEFAULT_PUBLISH_TIMEOUT);
+
+	private ListenableFutureCallback<String> publishCallback;
 
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
@@ -96,6 +99,10 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		ListenableFuture<String> pubsubFuture =
 				this.pubSubTemplate.publish(this.topic, pubsubPayload, headers);
 
+		if (this.publishCallback != null) {
+			pubsubFuture.addCallback(this.publishCallback);
+		}
+
 		if (this.sync) {
 			Long timeout = this.publishTimeoutExpression.getValue(
 					this.evaluationContext, message, Long.class);
@@ -126,7 +133,6 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	 * Set publish method to be synchronous or asynchronous.
 	 *
 	 * <p>Publish is asynchronous be default.
-	 *
 	 * @param sync true for synchronous, false for asynchronous
 	 */
 	public void setSync(boolean sync) {
@@ -140,7 +146,6 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	/**
 	 * Set the SpEL expression to evaluate a timeout in milliseconds for a synchronous publish call
 	 * to Google Cloud Pub/Sub.
-	 *
 	 * @param publishTimeoutExpression the {@link Expression} for the publish timeout in
 	 *                                 milliseconds
 	 */
@@ -152,7 +157,6 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	/**
 	 * Set the SpEL expression to evaluate a timeout in milliseconds for a synchronous publish call
 	 * to Google Cloud Pub/Sub from a string.
-	 *
 	 * @param publishTimeoutExpression a string with an expression for the publish timeout in
 	 *                                milliseconds
 	 */
@@ -163,11 +167,22 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	/**
 	 * Set the timeout in milliseconds for a synchronous publish call to Google Cloud Pub/Sub.
-	 *
 	 * @param timeoutMillis timeout in milliseconds
 	 */
 	public void setPublishTimeout(long timeoutMillis) {
 		setPublishTimeoutExpression(new ValueExpression<>(timeoutMillis));
+	}
+
+	protected ListenableFutureCallback<String> getPublishCallback() {
+		return this.publishCallback;
+	}
+
+	/**
+	 * Set the callback to be activated when the publish call resolves.
+	 * @param publishCallback callback for the publish future
+	 */
+	public void setPublishCallback(ListenableFutureCallback<String> publishCallback) {
+		this.publishCallback = publishCallback;
 	}
 
 	@Override
