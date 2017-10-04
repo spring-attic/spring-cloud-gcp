@@ -101,7 +101,7 @@ public class PubSubMessageHandlerTests {
 			}
 		});
 
-		this.adapter.setPublishFutureCallback(callbackSpy);
+		this.adapter.setPublishCallback(callbackSpy);
 
 		this.adapter.handleMessage(this.message);
 

@@ -62,7 +62,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private Expression publishTimeoutExpression = new ValueExpression<>(DEFAULT_PUBLISH_TIMEOUT);
 
-	private ListenableFutureCallback<String> publishFutureCallback;
+	private ListenableFutureCallback<String> publishCallback;
 
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
@@ -99,8 +99,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		ListenableFuture<String> pubsubFuture =
 				this.pubSubTemplate.publish(this.topic, pubsubPayload, headers);
 
-		if (this.publishFutureCallback != null) {
-			pubsubFuture.addCallback(this.publishFutureCallback);
+		if (this.publishCallback != null) {
+			pubsubFuture.addCallback(this.publishCallback);
 		}
 
 		if (this.sync) {
@@ -173,16 +173,16 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		setPublishTimeoutExpression(new ValueExpression<>(timeoutMillis));
 	}
 
-	protected ListenableFutureCallback<String> getPublishFutureCallback() {
-		return this.publishFutureCallback;
+	protected ListenableFutureCallback<String> getPublishCallback() {
+		return this.publishCallback;
 	}
 
 	/**
 	 * Set the callback to be activated when the publish call resolves.
-	 * @param publishFutureCallback callback for the publish future
+	 * @param publishCallback callback for the publish future
 	 */
-	public void setPublishFutureCallback(ListenableFutureCallback<String> publishFutureCallback) {
-		this.publishFutureCallback = publishFutureCallback;
+	public void setPublishCallback(ListenableFutureCallback<String> publishCallback) {
+		this.publishCallback = publishCallback;
 	}
 
 	@Override
