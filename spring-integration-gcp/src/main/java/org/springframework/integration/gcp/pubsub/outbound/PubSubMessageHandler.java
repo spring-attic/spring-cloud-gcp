@@ -133,7 +133,6 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	 * Set publish method to be synchronous or asynchronous.
 	 *
 	 * <p>Publish is asynchronous be default.
-	 *
 	 * @param sync true for synchronous, false for asynchronous
 	 */
 	public void setSync(boolean sync) {
@@ -147,7 +146,6 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	/**
 	 * Set the SpEL expression to evaluate a timeout in milliseconds for a synchronous publish call
 	 * to Google Cloud Pub/Sub.
-	 *
 	 * @param publishTimeoutExpression the {@link Expression} for the publish timeout in
 	 *                                 milliseconds
 	 */
@@ -159,7 +157,6 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	/**
 	 * Set the SpEL expression to evaluate a timeout in milliseconds for a synchronous publish call
 	 * to Google Cloud Pub/Sub from a string.
-	 *
 	 * @param publishTimeoutExpression a string with an expression for the publish timeout in
 	 *                                milliseconds
 	 */
@@ -170,7 +167,6 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	/**
 	 * Set the timeout in milliseconds for a synchronous publish call to Google Cloud Pub/Sub.
-	 *
 	 * @param timeoutMillis timeout in milliseconds
 	 */
 	public void setPublishTimeout(long timeoutMillis) {
@@ -183,7 +179,6 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	/**
 	 * Set the callback to be activated when the publish call resolves.
-	 *
 	 * @param publishFutureCallback callback for the publish future
 	 */
 	public void setPublishFutureCallback(ListenableFutureCallback<String> publishFutureCallback) {
