@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.storage;
 
+import com.google.cloud.storage.BlobInfo;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.google.cloud.WriteChannel;
@@ -59,7 +62,7 @@ public class GoogleStorageTests {
 		Assert.assertTrue(this.remoteResource instanceof WritableResource);
 		WritableResource writableResource = (WritableResource) this.remoteResource;
 		Assert.assertTrue(writableResource.isWritable());
-		OutputStream os = writableResource.getOutputStream();
+		writableResource.getOutputStream();
 	}
 
 	@Test
@@ -69,11 +72,92 @@ public class GoogleStorageTests {
 		Blob blob = Mockito.mock(Blob.class);
 		WriteChannel writeChannel = Mockito.mock(WriteChannel.class);
 		Mockito.when(blob.writer()).thenReturn(writeChannel);
+		Mockito.when(blob.exists()).thenReturn(true);
 		Mockito.when(storage.get(BlobId.of("test-spring", "test"))).thenReturn(blob);
 
 		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
 		OutputStream os = resource.getOutputStream();
 		Assert.assertNotNull(os);
+	}
+
+	@Test(expected = IOException.class)
+	public void testWritableOutputStreamNoAutoCreateOnNullBlob() throws Exception {
+		String location = "gs://test-spring/test";
+		Storage storage = Mockito.mock(Storage.class);
+		Mockito.when(storage.get(BlobId.of("test-spring", "test"))).thenReturn(null);
+
+		GoogleStorageResource resource = new GoogleStorageResource(storage, location,
+				false);
+		resource.getOutputStream();
+	}
+
+	@Test
+	public void testWritableOutputStreamWithAutoCreateOnNullBlob() throws Exception {
+		String location = "gs://test-spring/test";
+		Storage storage = Mockito.mock(Storage.class);
+		BlobId blobId = BlobId.of("test-spring", "test");
+		Mockito.when(storage.get(blobId)).thenReturn(null);
+		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+		WriteChannel writeChannel = Mockito.mock(WriteChannel.class);
+		Blob blob = Mockito.mock(Blob.class);
+		Mockito.when(blob.writer()).thenReturn(writeChannel);
+		Mockito.when(storage.create(blobInfo)).thenReturn(blob);
+
+		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
+		OutputStream os = resource.getOutputStream();
+		Assert.assertNotNull(os);
+	}
+
+	@Test
+	public void testWritableOutputStreamWithAutoCreateOnNonExistantBlob() throws Exception {
+		String location = "gs://test-spring/test";
+		Storage storage = Mockito.mock(Storage.class);
+		BlobId blobId = BlobId.of("test-spring", "test");
+		Blob nonExistantBlob = Mockito.mock(Blob.class);
+		Mockito.when(nonExistantBlob.exists()).thenReturn(false);
+		Mockito.when(storage.get(blobId)).thenReturn(nonExistantBlob);
+		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+		WriteChannel writeChannel = Mockito.mock(WriteChannel.class);
+		Blob blob = Mockito.mock(Blob.class);
+		Mockito.when(blob.writer()).thenReturn(writeChannel);
+		Mockito.when(storage.create(blobInfo)).thenReturn(blob);
+
+		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
+		OutputStream os = resource.getOutputStream();
+		Assert.assertNotNull(os);
+	}
+
+	@Test(expected = IOException.class)
+	public void testGetInputStreamOnNullBlob() throws Exception {
+		String location = "gs://test-spring/test";
+		Storage storage = Mockito.mock(Storage.class);
+		Mockito.when(storage.get(BlobId.of("test-spring", "test"))).thenReturn(null);
+
+		GoogleStorageResource resource = new GoogleStorageResource(storage, location,
+				false);
+		resource.getInputStream();
+	}
+
+	@Test
+	public void testGetFilenameOnNullBlob() throws Exception {
+		String location = "gs://test-spring/test";
+		Storage storage = Mockito.mock(Storage.class);
+		Mockito.when(storage.get(BlobId.of("test-spring", "test"))).thenReturn(null);
+
+		GoogleStorageResource resource = new GoogleStorageResource(storage, location,
+				false);
+		Assert.assertNull(resource.getFilename());
+	}
+
+	@Test
+	public void testCreateBlobIfNotExistingGetterSetter() {
+		String location = "gs://test-spring/test";
+		Storage storage = Mockito.mock(Storage.class);
+		GoogleStorageResource resource = new GoogleStorageResource(storage, location,
+				false);
+
+		resource.setCreateBlobIfNotExists(true);
+		Assert.assertTrue(resource.isCreateBlobIfNotExists());
 	}
 
 	@Configuration
