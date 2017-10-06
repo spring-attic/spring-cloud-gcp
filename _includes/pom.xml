@@ -1,7 +1,7 @@
 <dependencies>
     <dependency>
         <groupId>{@= groupId @}</groupId>
-        <artifactId>spring-integration-gcp</artifactId>
+        <artifactId>spring-cloud-gcp</artifactId>
         <version>{@= version @}</version>
     </dependency>
 </dependencies>
