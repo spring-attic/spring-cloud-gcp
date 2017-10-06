@@ -3,6 +3,10 @@
 This project makes it easy for Spring users to run their applications on Google Cloud Platform. The
 project website is http://cloud.spring.io/spring-cloud-gcp/ (under development).
 
+For a deep dive into the project, refer to the
+https://docs.spring.io/spring-cloud-gcp/docs/1.0.0.BUILD-SNAPSHOT/reference/htmlsingle/[Spring
+Cloud GCP Reference Document].
+
 Currently, this repository provides support for:
 
 * https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-pubsub[Spring Cloud GCP Pub/Sub]
