@@ -153,10 +153,7 @@ public class GoogleStorageTests {
 	public void testCreateBlobIfNotExistingGetterSetter() {
 		String location = "gs://test-spring/test";
 		Storage storage = Mockito.mock(Storage.class);
-		GoogleStorageResource resource = new GoogleStorageResource(storage, location,
-				false);
-
-		resource.setCreateBlobIfNotExists(true);
+		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
 		Assert.assertTrue(resource.isCreateBlobIfNotExists());
 	}
 

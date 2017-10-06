@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.storage;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -47,7 +48,7 @@ public class GoogleStorageResource implements WritableResource {
 
 	private final String location;
 
-	private boolean createBlobIfNotExists = true;
+	private final boolean createBlobIfNotExists;
 
 	public GoogleStorageResource(Storage storage, String location,
 			boolean createBlobIfNotExists) {
@@ -63,10 +64,6 @@ public class GoogleStorageResource implements WritableResource {
 
 	public boolean isCreateBlobIfNotExists() {
 		return this.createBlobIfNotExists;
-	}
-
-	public void setCreateBlobIfNotExists(boolean createBlobIfNotExists) {
-		this.createBlobIfNotExists = createBlobIfNotExists;
 	}
 
 	@Override
@@ -122,7 +119,7 @@ public class GoogleStorageResource implements WritableResource {
 
 	private Blob throwExceptionForNullBlob(Blob blob) throws IOException {
 		if (blob == null) {
-			throw new IOException("The blob was not found and is null.");
+			throw new FileNotFoundException("The blob was not found and is null.");
 		}
 		return blob;
 	}
