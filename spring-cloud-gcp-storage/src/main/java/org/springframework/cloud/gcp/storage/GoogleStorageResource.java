@@ -106,15 +106,18 @@ public class GoogleStorageResource implements WritableResource {
 		return uri;
 	}
 
-	private Blob resolve() throws IOException {
+	private BlobId getBlobId() throws IOException {
 		URI uri = getURI();
-		BlobId blobId = BlobId.of(uri.getHost(),
+		return BlobId.of(uri.getHost(),
 				uri.getPath().substring(1, uri.getPath().length()));
-		Blob blob = this.storage.get(blobId);
-		if ((blob == null || !blob.exists()) && this.createBlobIfNotExists) {
-			return this.storage.create(BlobInfo.newBuilder(blobId).build());
-		}
-		return blob;
+	}
+
+	private Blob resolve() throws IOException {
+		return this.storage.get(getBlobId());
+	}
+
+	private Blob createBlob() throws IOException {
+		return this.storage.create(BlobInfo.newBuilder(getBlobId()).build());
 	}
 
 	private Blob throwExceptionForNullBlob(Blob blob) throws IOException {
@@ -172,6 +175,10 @@ public class GoogleStorageResource implements WritableResource {
 
 	@Override
 	public OutputStream getOutputStream() throws IOException {
-		return Channels.newOutputStream(throwExceptionForNullBlob(resolve()).writer());
+		Blob blob = resolve();
+		if ((blob == null || !blob.exists()) && this.createBlobIfNotExists) {
+			blob = createBlob();
+		}
+		return Channels.newOutputStream(throwExceptionForNullBlob(blob).writer());
 	}
 }
