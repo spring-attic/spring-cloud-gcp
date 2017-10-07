@@ -34,10 +34,10 @@ public class GoogleStorageProtocolResolverContext {
 	}
 
 	public Storage getStorage() {
-		return storage;
+		return this.storage;
 	}
 
 	public boolean isAutoCreateFiles() {
-		return autoCreateFiles;
+		return this.autoCreateFiles;
 	}
 }
