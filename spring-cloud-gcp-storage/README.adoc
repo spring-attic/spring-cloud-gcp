@@ -45,3 +45,7 @@ try (OutputStream os = ((WritableResource) gcsResource).getOutputStream()) {
   os.write("foo".getBytes());
 }
 ----
+
+By default a new file is created if the resource refers to a file that does not exist when getting
+the output stream. This can be overriden by setting `spring.cloud.gcp.storage.auto-create-files`
+to `false`.

@@ -162,7 +162,8 @@ public class GoogleStorageTests {
 	static class StorageApplication {
 
 		@Bean
-		public static Storage mockStorage() throws Exception {
+		public static GoogleStorageProtocolResolverContext mockGoogleStorageProtocolResolverContext()
+				throws Exception {
 			Storage storage = Mockito.mock(Storage.class);
 			BlobId validBlob = BlobId.of("test-spring", "images/spring.png");
 			Blob mockedBlob = Mockito.mock(Blob.class);
@@ -171,7 +172,7 @@ public class GoogleStorageTests {
 			Mockito.when(mockedBlob.getSize()).thenReturn(4096L);
 			Mockito.when(storage.get(Mockito.eq(validBlob))).thenReturn(mockedBlob);
 			Mockito.when(mockedBlob.writer()).thenReturn(writeChannel);
-			return storage;
+			return new GoogleStorageProtocolResolverContext(storage, true);
 		}
 
 	}

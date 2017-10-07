@@ -16,32 +16,28 @@
 
 package org.springframework.cloud.gcp.storage;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.core.io.Resource;
+import com.google.cloud.storage.Storage;
 
 /**
- * @author João André Martins
+ * Holds {@link Storage} and associated settings for use with the
+ * {@link GoogleStorageResource}.
  */
-@ConfigurationProperties("spring.cloud.gcp.storage")
-public class GcpStorageProperties {
+public class GoogleStorageProtocolResolverContext {
 
-	private Resource credentialsLocation;
+	private final Storage storage;
+	private final boolean autoCreateFiles;
 
-	private boolean autoCreateFiles = true;
-
-	public boolean isAutoCreateFiles() {
-		return autoCreateFiles;
-	}
-
-	public void setAutoCreateFiles(boolean autoCreateFiles) {
+	public GoogleStorageProtocolResolverContext(Storage storage,
+			boolean autoCreateFiles) {
+		this.storage = storage;
 		this.autoCreateFiles = autoCreateFiles;
 	}
 
-	public Resource getCredentialsLocation() {
-		return this.credentialsLocation;
+	public Storage getStorage() {
+		return storage;
 	}
 
-	public void setCredentialsLocation(Resource credentialsLocation) {
-		this.credentialsLocation = credentialsLocation;
+	public boolean isAutoCreateFiles() {
+		return autoCreateFiles;
 	}
 }

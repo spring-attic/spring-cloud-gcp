@@ -26,3 +26,7 @@ bean to be used by an end-user.
 There is an optional property, `spring.cloud.gcp.storage.credentials-location`. Its value is the
 filesystem path for a credentials file, in case Storage is served from a different GCP project ID
 than the one configured in the link:../spring-cloud-gcp-starter-core/README.adoc[Core Starter].
+
+The optional property `spring.cloud.gcp.storage.auto-create-files` causes a new file to be created
+with a given URI if an output stream was requested from that URI but there was no file at that URI.
+If `true`, the default setting, then new files are automatically created.

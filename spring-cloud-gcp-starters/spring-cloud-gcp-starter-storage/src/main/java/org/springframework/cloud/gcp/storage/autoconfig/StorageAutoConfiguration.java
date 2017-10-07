@@ -21,7 +21,6 @@ import java.util.Collections;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -31,14 +30,15 @@ import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.cloud.gcp.storage.GcpStorageProperties;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolver;
+import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolverContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
- * An auto-configuration for Google {@link Storage} bean definition. Also it
- * {@link Import} a {@link GoogleStorageProtocolResolver} to register it
- * with the {@code DefaultResourceLoader}.
+ * An auto-configuration for Google {@link GoogleStorageProtocolResolverContext} bean
+ * definition. Also it {@link Import} a {@link GoogleStorageProtocolResolver} to register
+ * it with the {@code DefaultResourceLoader}.
  *
  * @author Vinicius Carvalho
  * @author Artem Bilan
@@ -46,17 +46,18 @@ import org.springframework.context.annotation.Import;
  * @see GoogleStorageProtocolResolver
  */
 @Configuration
-@ConditionalOnClass(Storage.class)
+@ConditionalOnClass(GoogleStorageProtocolResolverContext.class)
 @EnableConfigurationProperties({GcpProperties.class, GcpStorageProperties.class})
 @Import(GoogleStorageProtocolResolver.class)
 public class StorageAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public static Storage storage(
+	public static GoogleStorageProtocolResolverContext googleStorageProtocolResolverContext(
 			CredentialsProvider credentialsProvider,
 			GcpStorageProperties gcpStorageProperties) throws IOException {
-		return StorageOptions.newBuilder()
+		return new GoogleStorageProtocolResolverContext(
+				StorageOptions.newBuilder()
 				.setCredentials(gcpStorageProperties.getCredentialsLocation() != null
 						? GoogleCredentials.fromStream(
 								gcpStorageProperties.getCredentialsLocation().getInputStream())
@@ -64,7 +65,7 @@ public class StorageAutoConfiguration {
 								GcpScope.STORAGE_READ_WRITE.getUrl()))
 						: credentialsProvider.getCredentials())
 				.build()
-				.getService();
+						.getService(),
+				gcpStorageProperties.isAutoCreateFiles());
 	}
-
 }

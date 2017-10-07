@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.storage;
 
-import com.google.cloud.storage.Storage;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -36,7 +34,8 @@ import org.springframework.core.io.ResourceLoader;
  * @author Vinicius Carvalho
  * @author Artem Bilan
  */
-public class GoogleStorageProtocolResolver implements ProtocolResolver, BeanFactoryPostProcessor, ResourceLoaderAware {
+public class GoogleStorageProtocolResolver
+		implements ProtocolResolver, BeanFactoryPostProcessor, ResourceLoaderAware {
 
 	private static final Log logger = LogFactory.getLog(GoogleStorageProtocolResolver.class);
 
@@ -44,13 +43,14 @@ public class GoogleStorageProtocolResolver implements ProtocolResolver, BeanFact
 
 	private ConfigurableListableBeanFactory beanFactory;
 
-	private volatile Storage storage;
+	private volatile GoogleStorageProtocolResolverContext context;
 
 	GoogleStorageProtocolResolver() {
 	}
 
 	@Override
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
+			throws BeansException {
 		this.beanFactory = beanFactory;
 	}
 
@@ -68,10 +68,12 @@ public class GoogleStorageProtocolResolver implements ProtocolResolver, BeanFact
 	@Override
 	public Resource resolve(String location, ResourceLoader resourceLoader) {
 		if (location.startsWith(PROTOCOL)) {
-			if (this.storage == null) {
-				this.storage = this.beanFactory.getBean(Storage.class);
+			if (this.context == null) {
+				this.context = this.beanFactory
+						.getBean(GoogleStorageProtocolResolverContext.class);
 			}
-			return new GoogleStorageResource(this.storage, location);
+			return new GoogleStorageResource(this.context.getStorage(), location,
+					this.context.isAutoCreateFiles());
 		}
 		return null;
 	}
