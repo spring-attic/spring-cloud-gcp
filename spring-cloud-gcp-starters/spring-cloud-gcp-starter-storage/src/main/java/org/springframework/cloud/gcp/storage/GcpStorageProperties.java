@@ -30,7 +30,7 @@ public class GcpStorageProperties {
 	private boolean autoCreateFiles = true;
 
 	public boolean isAutoCreateFiles() {
-		return autoCreateFiles;
+		return this.autoCreateFiles;
 	}
 
 	public void setAutoCreateFiles(boolean autoCreateFiles) {
