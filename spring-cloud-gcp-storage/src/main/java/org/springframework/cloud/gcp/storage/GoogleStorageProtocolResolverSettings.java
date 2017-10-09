@@ -16,25 +16,15 @@
 
 package org.springframework.cloud.gcp.storage;
 
-import com.google.cloud.storage.Storage;
-
 /**
- * Holds {@link Storage} and associated settings for use with the
- * {@link GoogleStorageResource}.
+ * Holds settings for use with the {@link GoogleStorageResource}. These settings are
+ * optional.
  */
-public class GoogleStorageProtocolResolverContext {
-
-	private final Storage storage;
+public class GoogleStorageProtocolResolverSettings {
 	private final boolean autoCreateFiles;
 
-	public GoogleStorageProtocolResolverContext(Storage storage,
-			boolean autoCreateFiles) {
-		this.storage = storage;
+	public GoogleStorageProtocolResolverSettings(boolean autoCreateFiles) {
 		this.autoCreateFiles = autoCreateFiles;
-	}
-
-	public Storage getStorage() {
-		return this.storage;
 	}
 
 	public boolean isAutoCreateFiles() {

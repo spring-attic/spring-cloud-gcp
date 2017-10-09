@@ -16,10 +16,12 @@
 
 package org.springframework.cloud.gcp.storage;
 
+import com.google.cloud.storage.Storage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ResourceLoaderAware;
@@ -43,7 +45,10 @@ public class GoogleStorageProtocolResolver
 
 	private ConfigurableListableBeanFactory beanFactory;
 
-	private volatile GoogleStorageProtocolResolverContext context;
+	private GoogleStorageProtocolResolverSettings settings;
+	private boolean settingsAvailable = true;
+
+	private volatile Storage storage;
 
 	GoogleStorageProtocolResolver() {
 	}
@@ -68,12 +73,22 @@ public class GoogleStorageProtocolResolver
 	@Override
 	public Resource resolve(String location, ResourceLoader resourceLoader) {
 		if (location.startsWith(PROTOCOL)) {
-			if (this.context == null) {
-				this.context = this.beanFactory
-						.getBean(GoogleStorageProtocolResolverContext.class);
+			if (this.settingsAvailable && this.settings == null) {
+				try {
+					this.settings = this.beanFactory
+							.getBean(GoogleStorageProtocolResolverSettings.class);
+				}
+				catch (NoSuchBeanDefinitionException e) {
+					logger.warn("There is no bean definition for the resolver settings.",
+							e);
+					this.settingsAvailable = false;
+				}
 			}
-			return new GoogleStorageResource(this.context.getStorage(), location,
-					this.context.isAutoCreateFiles());
+			if (this.storage == null) {
+				this.storage = this.beanFactory.getBean(Storage.class);
+			}
+			return new GoogleStorageResource(this.storage, location,
+					this.settingsAvailable ? this.settings.isAutoCreateFiles() : true);
 		}
 		return null;
 	}

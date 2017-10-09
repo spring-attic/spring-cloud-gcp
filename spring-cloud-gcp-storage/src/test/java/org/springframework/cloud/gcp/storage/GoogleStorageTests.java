@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.storage;
 
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.OutputStream;
 
 import com.google.cloud.WriteChannel;
@@ -79,7 +79,7 @@ public class GoogleStorageTests {
 		Assert.assertNotNull(os);
 	}
 
-	@Test(expected = IOException.class)
+	@Test(expected = FileNotFoundException.class)
 	public void testWritableOutputStreamNoAutoCreateOnNullBlob() throws Exception {
 		String location = "gs://test-spring/test";
 		Storage storage = Mockito.mock(Storage.class);
@@ -127,7 +127,7 @@ public class GoogleStorageTests {
 		Assert.assertNotNull(os);
 	}
 
-	@Test(expected = IOException.class)
+	@Test(expected = FileNotFoundException.class)
 	public void testGetInputStreamOnNullBlob() throws Exception {
 		String location = "gs://test-spring/test";
 		Storage storage = Mockito.mock(Storage.class);
@@ -162,8 +162,7 @@ public class GoogleStorageTests {
 	static class StorageApplication {
 
 		@Bean
-		public static GoogleStorageProtocolResolverContext mockGoogleStorageProtocolResolverContext()
-				throws Exception {
+		public static Storage mockStorage() throws Exception {
 			Storage storage = Mockito.mock(Storage.class);
 			BlobId validBlob = BlobId.of("test-spring", "images/spring.png");
 			Blob mockedBlob = Mockito.mock(Blob.class);
@@ -172,9 +171,8 @@ public class GoogleStorageTests {
 			Mockito.when(mockedBlob.getSize()).thenReturn(4096L);
 			Mockito.when(storage.get(Mockito.eq(validBlob))).thenReturn(mockedBlob);
 			Mockito.when(mockedBlob.writer()).thenReturn(writeChannel);
-			return new GoogleStorageProtocolResolverContext(storage, true);
+			return storage;
 		}
-
 	}
 
 }

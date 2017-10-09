@@ -119,7 +119,7 @@ public class GoogleStorageResource implements WritableResource {
 
 	private Blob throwExceptionForNullBlob(Blob blob) throws IOException {
 		if (blob == null) {
-			throw new FileNotFoundException("The blob was not found and is null.");
+			throw new FileNotFoundException("The blob was not found: " + this.location);
 		}
 		return blob;
 	}

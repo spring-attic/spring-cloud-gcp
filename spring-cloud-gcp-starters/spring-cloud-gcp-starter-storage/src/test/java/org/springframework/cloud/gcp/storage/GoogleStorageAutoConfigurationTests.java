@@ -69,17 +69,15 @@ public class GoogleStorageAutoConfigurationTests {
 		}
 
 		@Bean
-		public static GoogleStorageProtocolResolverContext mockGoogleStorageProtocolResolverContext()
-				throws Exception {
+		public static Storage mockStorage() throws Exception {
 			Storage storage = Mockito.mock(Storage.class);
 			BlobId validBlob = BlobId.of("test-spring", "images/spring.png");
 			Blob mockedBlob = Mockito.mock(Blob.class);
 			Mockito.when(mockedBlob.exists()).thenReturn(true);
 			Mockito.when(mockedBlob.getSize()).thenReturn(4096L);
 			Mockito.when(storage.get(Mockito.eq(validBlob))).thenReturn(mockedBlob);
-			return new GoogleStorageProtocolResolverContext(storage, true);
+			return storage;
 		}
-
 	}
 
 }
