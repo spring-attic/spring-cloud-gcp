@@ -43,7 +43,8 @@ import static org.junit.Assert.assertFalse;
 /**
  * @author Artem Bilan
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = "spring.cloud.gcp.storage.auto-create-files=false")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+		properties = "spring.cloud.gcp.storage.auto-create-files=false")
 @RunWith(SpringRunner.class)
 public class GoogleStorageAutoConfigurationTests {
 
