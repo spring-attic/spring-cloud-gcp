@@ -138,6 +138,7 @@ public class StackdriverTraceSpanListenerTests {
 
 		Assert.assertEquals(1, this.test.traceSpans.size());
 		TraceSpan traceSpan = this.test.traceSpans.get(0);
+		Assert.assertEquals(0, traceSpan.getParentSpanId());
 		Assert.assertEquals("http:parent", traceSpan.getName());
 		// Server side remote span should not report start/end time
 		Assert.assertEquals(Timestamp.getDefaultInstance(), traceSpan.getStartTime());
@@ -180,6 +181,7 @@ public class StackdriverTraceSpanListenerTests {
 	public void testClientServerSpans() {
 		Span clientSpan = Span.builder()
 				.traceId(123L)
+				.spanId(9999L)
 				.name("http:call")
 				.begin(beginTime - 1)
 				.end(endTime + 1)
