@@ -68,8 +68,7 @@ public class StorageAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
-	public static GoogleStorageProtocolResolverSettings googleStorageProtocolResolverContext(
+	public static GoogleStorageProtocolResolverSettings googleStorageProtocolResolverSettings(
 			GcpStorageProperties gcpStorageProperties) throws IOException {
 		return new GoogleStorageProtocolResolverSettings(
 				gcpStorageProperties.isAutoCreateFiles());
