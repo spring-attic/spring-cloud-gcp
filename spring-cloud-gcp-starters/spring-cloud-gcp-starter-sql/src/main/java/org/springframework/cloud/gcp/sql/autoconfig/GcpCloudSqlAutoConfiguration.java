@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import com.google.cloud.sql.CredentialFactory;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,7 +44,6 @@ import org.springframework.cloud.gcp.sql.SqlCredentialFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.util.StringUtils;
 
 /**
@@ -110,30 +110,6 @@ public class GcpCloudSqlAutoConfiguration {
 		return defaultProvider;
 	}
 
-	@Bean
-	@Primary
-	public DataSourceProperties cloudSqlDataSourceProperties(DataSourceProperties properties,
-			CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider) {
-		if (StringUtils.isEmpty(properties.getUsername())) {
-			properties.setUsername("root");
-			LOGGER.warn("spring.datasource.username is not specified. Setting default username.");
-		}
-		if (StringUtils.isEmpty(properties.getDriverClassName())) {
-			properties.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
-		}
-		else {
-			LOGGER.warn(
-					"spring.datasource.driver-class-name is specified. Not using generated Cloud SQL configuration");
-		}
-		if (StringUtils.isEmpty(properties.getUrl())) {
-			properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
-		}
-		else {
-			LOGGER.warn("spring.datasource.jdbc-url is specified. Not using generated Cloud SQL configuration");
-		}
-		return properties;
-	}
-
 	/**
 	 * Set credentials to be used by the Google Cloud SQL socket factory.
 	 *
@@ -191,4 +167,31 @@ public class GcpCloudSqlAutoConfiguration {
 			LOGGER.debug(" Error reading Cloud SQL credentials file.", ioe);
 		}
 	}
+
+	@Configuration
+	protected static class DataSourcePropertiesMutatorConfiguration {
+
+		public DataSourcePropertiesMutatorConfiguration(DataSourceProperties properties,
+				CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider) {
+			if (StringUtils.isEmpty(properties.getUsername())) {
+				properties.setUsername("root");
+				LOGGER.warn("spring.datasource.username is not specified. Setting default username.");
+			}
+			if (StringUtils.isEmpty(properties.getDriverClassName())) {
+				properties.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
+			}
+			else {
+				LOGGER.warn("spring.datasource.driver-class-name is specified. " +
+						"Not using generated Cloud SQL configuration");
+			}
+			if (StringUtils.isEmpty(properties.getUrl())) {
+				properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
+			}
+			else {
+				LOGGER.warn("spring.datasource.jdbc-url is specified. Not using generated Cloud SQL configuration");
+			}
+		}
+
+	}
+
 }
