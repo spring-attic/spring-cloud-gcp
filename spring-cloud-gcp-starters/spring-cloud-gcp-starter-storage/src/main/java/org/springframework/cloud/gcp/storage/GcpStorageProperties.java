@@ -23,19 +23,9 @@ import org.springframework.core.io.Resource;
  * @author João André Martins
  */
 @ConfigurationProperties("spring.cloud.gcp.storage")
-public class GcpStorageProperties {
+public class GcpStorageProperties extends GoogleStorageProtocolResolverSettings {
 
 	private Resource credentialsLocation;
-
-	private boolean autoCreateFiles = true;
-
-	public boolean isAutoCreateFiles() {
-		return this.autoCreateFiles;
-	}
-
-	public void setAutoCreateFiles(boolean autoCreateFiles) {
-		this.autoCreateFiles = autoCreateFiles;
-	}
 
 	public Resource getCredentialsLocation() {
 		return this.credentialsLocation;

@@ -66,11 +66,4 @@ public class StorageAutoConfiguration {
 						: credentialsProvider.getCredentials())
 				.build().getService();
 	}
-
-	@Bean
-	public static GoogleStorageProtocolResolverSettings googleStorageProtocolResolverSettings(
-			GcpStorageProperties gcpStorageProperties) throws IOException {
-		return new GoogleStorageProtocolResolverSettings(
-				gcpStorageProperties.isAutoCreateFiles());
-	}
 }

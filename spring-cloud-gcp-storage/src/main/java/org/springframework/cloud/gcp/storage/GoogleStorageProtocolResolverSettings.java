@@ -21,13 +21,13 @@ package org.springframework.cloud.gcp.storage;
  * optional.
  */
 public class GoogleStorageProtocolResolverSettings {
-	private final boolean autoCreateFiles;
-
-	public GoogleStorageProtocolResolverSettings(boolean autoCreateFiles) {
-		this.autoCreateFiles = autoCreateFiles;
-	}
+	private boolean autoCreateFiles = true;
 
 	public boolean isAutoCreateFiles() {
 		return this.autoCreateFiles;
+	}
+
+	public void setAutoCreateFiles(boolean autoCreateFiles) {
+		this.autoCreateFiles = autoCreateFiles;
 	}
 }
