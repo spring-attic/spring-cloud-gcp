@@ -47,7 +47,6 @@ public class GoogleStorageProtocolResolver
 
 	private GoogleStorageProtocolResolverSettings settings
 			= new GoogleStorageProtocolResolverSettings();
-	private boolean checkedIfSettingsBeanAvailable;
 
 	private volatile Storage storage;
 
@@ -74,7 +73,8 @@ public class GoogleStorageProtocolResolver
 	@Override
 	public Resource resolve(String location, ResourceLoader resourceLoader) {
 		if (location.startsWith(PROTOCOL)) {
-			if (!this.checkedIfSettingsBeanAvailable) {
+			if (this.storage == null) {
+				this.storage = this.beanFactory.getBean(Storage.class);
 				try {
 					this.settings = this.beanFactory
 							.getBean(GoogleStorageProtocolResolverSettings.class);
@@ -83,12 +83,6 @@ public class GoogleStorageProtocolResolver
 					logger.info("There is no bean definition for the resolver settings, "
 							+ "so defaults are used.");
 				}
-				finally {
-					this.checkedIfSettingsBeanAvailable = true;
-				}
-			}
-			if (this.storage == null) {
-				this.storage = this.beanFactory.getBean(Storage.class);
 			}
 			return new GoogleStorageResource(this.storage, location, this.settings.isAutoCreateFiles());
 		}
