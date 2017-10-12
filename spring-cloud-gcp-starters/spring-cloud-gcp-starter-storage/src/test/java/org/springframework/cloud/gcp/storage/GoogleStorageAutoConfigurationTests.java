@@ -21,7 +21,6 @@ import java.io.IOException;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -39,22 +38,33 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Artem Bilan
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+		properties = "spring.cloud.gcp.storage.auto-create-files=false")
 @RunWith(SpringRunner.class)
 public class GoogleStorageAutoConfigurationTests {
 
 	@LocalServerPort
 	private int port;
 
+	@Value("gs://test-spring/images/spring.png")
+	private Resource googleStorageResource;
+
 	@Test
 	public void testValidObject() throws Exception {
 		TestRestTemplate testRestTemplate = new TestRestTemplate();
 		Long actual = testRestTemplate.getForObject("http://localhost:" + this.port + "/resource", Long.class);
 		assertEquals(new Long(4096L), actual);
+	}
+
+	@Test
+	public void testAutoCreateFilesFalse() throws IOException {
+		assertFalse(((GoogleStorageResource) this.googleStorageResource)
+				.isCreateBlobIfNotExists());
 	}
 
 	@SpringBootApplication(exclude = GcpContextAutoConfiguration.class)
@@ -79,7 +89,6 @@ public class GoogleStorageAutoConfigurationTests {
 			Mockito.when(storage.get(Mockito.eq(validBlob))).thenReturn(mockedBlob);
 			return storage;
 		}
-
 	}
 
 }

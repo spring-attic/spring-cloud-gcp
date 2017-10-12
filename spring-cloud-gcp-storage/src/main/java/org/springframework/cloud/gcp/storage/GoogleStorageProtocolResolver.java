@@ -17,11 +17,11 @@
 package org.springframework.cloud.gcp.storage;
 
 import com.google.cloud.storage.Storage;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ResourceLoaderAware;
@@ -36,7 +36,8 @@ import org.springframework.core.io.ResourceLoader;
  * @author Vinicius Carvalho
  * @author Artem Bilan
  */
-public class GoogleStorageProtocolResolver implements ProtocolResolver, BeanFactoryPostProcessor, ResourceLoaderAware {
+public class GoogleStorageProtocolResolver
+		implements ProtocolResolver, BeanFactoryPostProcessor, ResourceLoaderAware {
 
 	private static final Log logger = LogFactory.getLog(GoogleStorageProtocolResolver.class);
 
@@ -44,13 +45,17 @@ public class GoogleStorageProtocolResolver implements ProtocolResolver, BeanFact
 
 	private ConfigurableListableBeanFactory beanFactory;
 
+	private GoogleStorageProtocolResolverSettings settings
+			= new GoogleStorageProtocolResolverSettings();
+
 	private volatile Storage storage;
 
 	GoogleStorageProtocolResolver() {
 	}
 
 	@Override
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
+			throws BeansException {
 		this.beanFactory = beanFactory;
 	}
 
@@ -70,8 +75,16 @@ public class GoogleStorageProtocolResolver implements ProtocolResolver, BeanFact
 		if (location.startsWith(PROTOCOL)) {
 			if (this.storage == null) {
 				this.storage = this.beanFactory.getBean(Storage.class);
+				try {
+					this.settings = this.beanFactory
+							.getBean(GoogleStorageProtocolResolverSettings.class);
+				}
+				catch (NoSuchBeanDefinitionException e) {
+					logger.info("There is no bean definition for the resolver settings, "
+							+ "so defaults are used.");
+				}
 			}
-			return new GoogleStorageResource(this.storage, location);
+			return new GoogleStorageResource(this.storage, location, this.settings.isAutoCreateFiles());
 		}
 		return null;
 	}
