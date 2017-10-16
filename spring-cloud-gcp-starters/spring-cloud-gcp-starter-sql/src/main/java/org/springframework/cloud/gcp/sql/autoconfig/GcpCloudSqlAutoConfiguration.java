@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.sql.autoconfig;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.security.GeneralSecurityException;
 
 import javax.sql.DataSource;
@@ -146,10 +145,10 @@ public class GcpCloudSqlAutoConfiguration {
 		try {
 			// First tries the SQL configuration credential.
 			if (this.gcpCloudSqlProperties != null
-					&& this.gcpCloudSqlProperties.getCredentialsLocation() != null
-					&& Files.exists(this.gcpCloudSqlProperties.getCredentialsLocation())) {
+					&& this.gcpCloudSqlProperties.getCredentials() != null) {
 				System.setProperty(SqlCredentialFactory.CREDENTIAL_LOCATION_PROPERTY_NAME,
-						this.gcpCloudSqlProperties.getCredentialsLocation().toString());
+						this.gcpCloudSqlProperties.getCredentials().getLocation().getFile()
+								.getAbsolutePath());
 			}
 			// Then, the global credential.
 			else if (this.gcpProperties != null

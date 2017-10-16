@@ -16,9 +16,8 @@
 
 package org.springframework.cloud.gcp.sql;
 
-import java.nio.file.Path;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.gcp.core.CredentialsProperty;
 
 /**
  * Google Cloud SQL properties.
@@ -42,7 +41,7 @@ public class GcpCloudSqlProperties {
 
 	private boolean initFailFast;
 
-	private Path credentialsLocation;
+	private Credentials credentials;
 
 	private DatabaseType databaseType = DatabaseType.MYSQL;
 
@@ -102,12 +101,12 @@ public class GcpCloudSqlProperties {
 		this.initFailFast = initFailFast;
 	}
 
-	public Path getCredentialsLocation() {
-		return this.credentialsLocation;
+	public Credentials getCredentials() {
+		return this.credentials;
 	}
 
-	public void setCredentialsLocation(Path credentialsLocation) {
-		this.credentialsLocation = credentialsLocation;
+	public void setCredentials(Credentials credentials) {
+		this.credentials = credentials;
 	}
 
 	public DatabaseType getDatabaseType() {
@@ -116,5 +115,8 @@ public class GcpCloudSqlProperties {
 
 	public void setDatabaseType(DatabaseType databaseType) {
 		this.databaseType = databaseType;
+	}
+
+	public class Credentials extends CredentialsProperty {
 	}
 }
