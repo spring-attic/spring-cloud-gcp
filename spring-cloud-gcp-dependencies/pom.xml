@@ -124,11 +124,16 @@
 			</dependency>
 
 			<!-- spring-cloud-gcp-starter-sql -->
-
 			<dependency>
 				<groupId>com.google.cloud.sql</groupId>
 				<artifactId>mysql-socket-factory</artifactId>
 				<version>1.0.4</version>
+				<exclusions>
+					<exclusion>
+						<groupId>com.google.guava</groupId>
+						<artifactId>guava-jdk5</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 
 			<dependency>

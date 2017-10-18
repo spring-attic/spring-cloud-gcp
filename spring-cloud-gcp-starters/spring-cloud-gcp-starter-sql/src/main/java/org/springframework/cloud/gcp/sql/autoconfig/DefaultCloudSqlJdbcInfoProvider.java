@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.sql.autoconfig;
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
 import org.springframework.cloud.gcp.sql.GcpCloudSqlProperties;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * Provides default JDBC driver class name and constructs the JDBC URL for Cloud SQL v2
@@ -36,27 +35,21 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 	public DefaultCloudSqlJdbcInfoProvider(GcpCloudSqlProperties properties) {
 		this.properties = properties;
 		Assert.hasText(this.properties.getDatabaseName(), "A database name must be provided.");
-		if (StringUtils.isEmpty(this.properties.getJdbcUrl())) {
-			Assert.hasText(this.properties.getInstanceConnectionName(),
-					"An instance connection name must be provided. Refer to "
-							+ GcpCloudSqlAutoConfiguration.INSTANCE_CONNECTION_NAME_HELP_URL
-							+ " for more information.");
-		}
+		Assert.hasText(this.properties.getInstanceConnectionName(),
+				"An instance connection name must be provided. Refer to "
+						+ GcpCloudSqlAutoConfiguration.INSTANCE_CONNECTION_NAME_HELP_URL
+						+ " for more information.");
 	}
 
 	@Override
 	public String getJdbcDriverClass() {
-		return StringUtils.isEmpty(this.properties.getJdbcDriver())
-				? this.properties.getDatabaseType().getJdbcDriverName()
-				: this.properties.getJdbcDriver();
+		return this.properties.getDatabaseType().getJdbcDriverName();
 	}
 
 	@Override
 	public String getJdbcUrl() {
-		return StringUtils.isEmpty(this.properties.getJdbcUrl())
-				? String.format(this.properties.getDatabaseType().getJdbcUrlTemplate(),
+		return String.format(this.properties.getDatabaseType().getJdbcUrlTemplate(),
 				this.properties.getDatabaseName(),
-				this.properties.getInstanceConnectionName())
-				: this.properties.getJdbcUrl();
+				this.properties.getInstanceConnectionName());
 	}
 }

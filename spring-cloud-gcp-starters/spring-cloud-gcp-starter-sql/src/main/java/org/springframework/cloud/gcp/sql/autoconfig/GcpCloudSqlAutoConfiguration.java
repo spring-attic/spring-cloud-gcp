@@ -19,13 +19,8 @@ package org.springframework.cloud.gcp.sql.autoconfig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.security.GeneralSecurityException;
-
-import javax.sql.DataSource;
 
 import com.google.cloud.sql.CredentialFactory;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -34,7 +29,9 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.AppEngineCondition;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -46,29 +43,32 @@ import org.springframework.cloud.gcp.sql.SqlCredentialFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.util.StringUtils;
 
 /**
  * Google Cloud SQL starter.
  *
  * <p>
- * Provides Google Cloud SQL instance connectivity through Spring JDBC by providing only a database
- * and instance connection name.
+ * Provides Google Cloud SQL instance connectivity through Spring JDBC by providing only a
+ * database and instance connection name.
  *
  * @author João André Martins
  */
 @Configuration
-@EnableConfigurationProperties(GcpCloudSqlProperties.class)
+@EnableConfigurationProperties({ GcpCloudSqlProperties.class, DataSourceProperties.class })
 @ConditionalOnClass(GcpProjectIdProvider.class)
+@ConditionalOnProperty(name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpCloudSqlAutoConfiguration {
 
-	private static final Log LOGGER = LogFactory.getLog(GcpCloudSqlAutoConfiguration.class);
-
 	public final static String INSTANCE_CONNECTION_NAME_HELP_URL =
 			"https://github.com/spring-cloud/spring-cloud-gcp/tree/master/"
-					+ "spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql"
-					+ "#google-cloud-sql-instance-connection-name";
+			+ "spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql"
+			+ "#google-cloud-sql-instance-connection-name";
+
+	private static final Log LOGGER = LogFactory.getLog(GcpCloudSqlAutoConfiguration.class);
 
 	@Autowired
 	private GcpCloudSqlProperties gcpCloudSqlProperties;
@@ -80,8 +80,7 @@ public class GcpCloudSqlAutoConfiguration {
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
 	@Conditional(AppEngineCondition.class)
 	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider() {
-		CloudSqlJdbcInfoProvider appEngineProvider =
-				new AppEngineCloudSqlJdbcInfoProvider(this.gcpCloudSqlProperties);
+		CloudSqlJdbcInfoProvider appEngineProvider = new AppEngineCloudSqlJdbcInfoProvider(this.gcpCloudSqlProperties);
 
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("App Engine JdbcUrl provider. Connecting to "
@@ -97,8 +96,7 @@ public class GcpCloudSqlAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
 	public CloudSqlJdbcInfoProvider defaultJdbcInfoProvider() {
-		CloudSqlJdbcInfoProvider defaultProvider =
-				new DefaultCloudSqlJdbcInfoProvider(this.gcpCloudSqlProperties);
+		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(this.gcpCloudSqlProperties);
 
 		if (LOGGER.isInfoEnabled()) {
 			LOGGER.info("Default " + this.gcpCloudSqlProperties.getDatabaseType().name()
@@ -113,34 +111,44 @@ public class GcpCloudSqlAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(DataSource.class)
-	public DataSource cloudSqlDataSource(CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider)
-			throws GeneralSecurityException, IOException, ClassNotFoundException {
-		HikariConfig hikariConfig = new HikariConfig();
-		hikariConfig.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
-		hikariConfig.setJdbcUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
-		hikariConfig.setUsername(this.gcpCloudSqlProperties.getUserName());
-		hikariConfig.setPassword(this.gcpCloudSqlProperties.getPassword());
-		// Setting this is useful to disable connection initialization. Especially in unit tests.
-		hikariConfig.setInitializationFailFast(this.gcpCloudSqlProperties.isInitFailFast());
-
-		return new HikariDataSource(hikariConfig);
+	@Primary
+	public DataSourceProperties cloudSqlDataSourceProperties(DataSourceProperties properties,
+			CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider) {
+		if (StringUtils.isEmpty(properties.getUsername())) {
+			properties.setUsername("root");
+			LOGGER.warn("spring.datasource.username is not specified. Setting default username.");
+		}
+		if (StringUtils.isEmpty(properties.getDriverClassName())) {
+			properties.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
+		}
+		else {
+			LOGGER.warn(
+					"spring.datasource.driver-class-name is specified. Not using generated Cloud SQL configuration");
+		}
+		if (StringUtils.isEmpty(properties.getUrl())) {
+			properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
+		}
+		else {
+			LOGGER.warn("spring.datasource.jdbc-url is specified. Not using generated Cloud SQL configuration");
+		}
+		return properties;
 	}
 
 	/**
 	 * Set credentials to be used by the Google Cloud SQL socket factory.
 	 *
 	 * <p>
-	 * The only way to pass a {@link CredentialFactory} to the socket factory is by passing a class
-	 * name through a system property. The socket factory creates an instance of
+	 * The only way to pass a {@link CredentialFactory} to the socket factory is by passing a
+	 * class name through a system property. The socket factory creates an instance of
 	 * {@link CredentialFactory} using reflection without any arguments. Because of that, the
-	 * credential location needs to be stored somewhere where the class can read it without any
-	 * context. It could be possible to pass in a Spring context to {@link SqlCredentialFactory},
-	 * but this is a tricky solution that needs some thinking about.
+	 * credential location needs to be stored somewhere where the class can read it without
+	 * any context. It could be possible to pass in a Spring context to
+	 * {@link SqlCredentialFactory}, but this is a tricky solution that needs some thinking
+	 * about.
 	 *
 	 * <p>
-	 * If user didn't specify credentials, the socket factory already does the right thing by using
-	 * the application default credentials by default. So we don't need to do anything.
+	 * If user didn't specify credentials, the socket factory already does the right thing by
+	 * using the application default credentials by default. So we don't need to do anything.
 	 */
 	private void setCredentialsProperty() {
 		try {
@@ -153,12 +161,10 @@ public class GcpCloudSqlAutoConfiguration {
 			}
 			// Then, the global credential.
 			else if (this.gcpProperties != null
-					&& this.gcpProperties.getCredentials() != null
 					&& this.gcpProperties.getCredentials().getLocation() != null
 					&& this.gcpProperties.getCredentials().getLocation().exists()) {
 				// A resource might not be in the filesystem, but the Cloud SQL credential must.
-				File credentialsLocationFile =
-						this.gcpProperties.getCredentials().getLocation().getFile();
+				File credentialsLocationFile = this.gcpProperties.getCredentials().getLocation().getFile();
 
 				// This should happen if the Spring resource isn't in the filesystem, but a URL,
 				// classpath file, etc.
