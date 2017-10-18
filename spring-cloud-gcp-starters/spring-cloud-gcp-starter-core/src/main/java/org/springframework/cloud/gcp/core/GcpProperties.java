@@ -45,6 +45,6 @@ public class GcpProperties {
 		this.credentials = credentials;
 	}
 
-	public class Credentials extends CredentialsProperty {
+	public class Credentials extends AbstractCredentialsProperty {
 	}
 }

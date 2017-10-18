@@ -17,7 +17,7 @@
 package org.springframework.cloud.gcp.sql;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.gcp.core.CredentialsProperty;
+import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
 
 /**
  * Google Cloud SQL properties.
@@ -117,6 +117,6 @@ public class GcpCloudSqlProperties {
 		this.databaseType = databaseType;
 	}
 
-	public class Credentials extends CredentialsProperty {
+	public class Credentials extends AbstractCredentialsProperty {
 	}
 }

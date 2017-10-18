@@ -25,7 +25,7 @@ import org.springframework.core.io.Resource;
  *
  * @author João Andre Martins
  */
-public abstract class CredentialsProperty {
+public abstract class AbstractCredentialsProperty {
 
 	private Resource location;
 	private List<String> scopes;

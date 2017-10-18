@@ -17,7 +17,7 @@
 package org.springframework.cloud.gcp.pubsub;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.gcp.core.CredentialsProperty;
+import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
 
 @ConfigurationProperties("spring.cloud.gcp.pubsub")
 public class GcpPubSubProperties {
@@ -61,6 +61,6 @@ public class GcpPubSubProperties {
 		this.credentials = credentials;
 	}
 
-	public class Credentials extends CredentialsProperty {
+	public class Credentials extends AbstractCredentialsProperty {
 	}
 }

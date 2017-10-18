@@ -17,7 +17,7 @@
 package org.springframework.cloud.gcp.storage;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.gcp.core.CredentialsProperty;
+import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
 
 /**
  * @author João André Martins
@@ -35,6 +35,6 @@ public class GcpStorageProperties extends GoogleStorageProtocolResolverSettings 
 		this.credentials = credentials;
 	}
 
-	public class Credentials extends CredentialsProperty {
+	public class Credentials extends AbstractCredentialsProperty {
 	}
 }

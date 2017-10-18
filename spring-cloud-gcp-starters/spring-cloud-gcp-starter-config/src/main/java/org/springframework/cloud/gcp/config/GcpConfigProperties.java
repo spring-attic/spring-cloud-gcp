@@ -17,7 +17,7 @@
 package org.springframework.cloud.gcp.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.gcp.core.CredentialsProperty;
+import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
 
 /**
  * Configuration for {@link GoogleConfigPropertySourceLocator}.
@@ -88,6 +88,6 @@ public class GcpConfigProperties {
 		this.credentials = credentials;
 	}
 
-	public class Credentials extends CredentialsProperty {
+	public class Credentials extends AbstractCredentialsProperty {
 	}
 }
