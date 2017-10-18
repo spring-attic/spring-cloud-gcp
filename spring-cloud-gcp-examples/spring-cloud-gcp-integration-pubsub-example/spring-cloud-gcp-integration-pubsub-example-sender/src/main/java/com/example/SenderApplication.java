@@ -42,11 +42,7 @@ public class SenderApplication {
 	@Bean
 	@ServiceActivator(inputChannel = "pubsubOutputChannel")
 	public MessageHandler messageSender(PubSubOperations pubsubTemplate) {
-		PubSubMessageHandler outboundAdapter =
-				new PubSubMessageHandler(pubsubTemplate, "exampleTopic");
-		// Lets us see errors if there are any.
-		outboundAdapter.setSync(true);
-		return outboundAdapter;
+		return new PubSubMessageHandler(pubsubTemplate, "exampleTopic");
 	}
 
 	@MessagingGateway(defaultRequestChannel = "pubsubOutputChannel")
