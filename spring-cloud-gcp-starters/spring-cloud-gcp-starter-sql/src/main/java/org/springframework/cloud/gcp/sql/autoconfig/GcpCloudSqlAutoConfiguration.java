@@ -76,9 +76,6 @@ public class GcpCloudSqlAutoConfiguration {
 	@Autowired
 	private GcpProperties gcpProperties;
 
-	@Autowired
-	private DataSourceProperties dataSourceProperties;
-
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
 	@Conditional(AppEngineCondition.class)
@@ -92,7 +89,6 @@ public class GcpCloudSqlAutoConfiguration {
 		}
 
 		setCredentialsProperty();
-		mutateDatasourceProperties(appEngineProvider);
 
 		return appEngineProvider;
 	}
@@ -110,7 +106,6 @@ public class GcpCloudSqlAutoConfiguration {
 		}
 
 		setCredentialsProperty();
-		mutateDatasourceProperties(defaultProvider);
 
 		return defaultProvider;
 	}
@@ -173,24 +168,30 @@ public class GcpCloudSqlAutoConfiguration {
 		}
 	}
 
-	private void mutateDatasourceProperties(CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider) {
-		if (StringUtils.isEmpty(this.dataSourceProperties.getUsername())) {
-			this.dataSourceProperties.setUsername("root");
-			LOGGER.warn("spring.datasource.username is not specified. Setting default username.");
+	@Configuration
+	protected static class DataSourcePropertiesMutatorConfiguration {
+
+		public DataSourcePropertiesMutatorConfiguration(DataSourceProperties properties,
+				CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider) {
+			if (StringUtils.isEmpty(properties.getUsername())) {
+				properties.setUsername("root");
+				LOGGER.warn("spring.datasource.username is not specified. Setting default username.");
+			}
+			if (StringUtils.isEmpty(properties.getDriverClassName())) {
+				properties.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
+			}
+			else {
+				LOGGER.warn("spring.datasource.driver-class-name is specified. " +
+						"Not using generated Cloud SQL configuration");
+			}
+			if (StringUtils.isEmpty(properties.getUrl())) {
+				properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
+			}
+			else {
+				LOGGER.warn("spring.datasource.jdbc-url is specified. Not using generated Cloud SQL configuration");
+			}
 		}
-		if (StringUtils.isEmpty(this.dataSourceProperties.getDriverClassName())) {
-			this.dataSourceProperties.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
-		}
-		else {
-			LOGGER.warn("spring.datasource.driver-class-name is specified. " +
-					"Not using generated Cloud SQL configuration");
-		}
-		if (StringUtils.isEmpty(this.dataSourceProperties.getUrl())) {
-			this.dataSourceProperties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
-		}
-		else {
-			LOGGER.warn("spring.datasource.jdbc-url is specified. Not using generated Cloud SQL configuration");
-		}
+
 	}
 
 }
