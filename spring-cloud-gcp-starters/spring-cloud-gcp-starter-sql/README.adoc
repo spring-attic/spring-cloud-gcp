@@ -36,7 +36,7 @@ a DataSource].
 `spring.datasource.url` and `spring.datasource.driver-class-name` are automatically configured by
 the provided `CloudSqlJdbcInfoProvider`, unless they are explicitly configured.
 
-The starter requires the following properties:
+The following properties are required:
 
 [source,yaml]
 ----
