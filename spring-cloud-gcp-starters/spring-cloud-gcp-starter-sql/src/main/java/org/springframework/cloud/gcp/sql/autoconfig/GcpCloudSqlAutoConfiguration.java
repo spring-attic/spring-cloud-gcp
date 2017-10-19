@@ -172,7 +172,7 @@ public class GcpCloudSqlAutoConfiguration {
 			}
 		}
 		catch (IOException ioe) {
-			LOGGER.info(" Error reading Cloud SQL credentials file.", ioe);
+			LOGGER.info("Error reading Cloud SQL credentials file.", ioe);
 			return;
 		}
 
