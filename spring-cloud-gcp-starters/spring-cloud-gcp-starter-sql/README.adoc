@@ -31,7 +31,7 @@ the starter provides a `CloudSqlJdbcInfoProvider` object that returns the correc
 JDBC URL and driver class name to be used.
 
 The starter uses Spring Boot to
-https://github.com/spring-projects/spring-boot/blob/v1.5.8.RELEASE/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/jdbc/DataSourceProperties.java[configure
+https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/autoconfigure/jdbc/DataSourceProperties.html[configure
 a DataSource].
 `spring.datasource.url` and `spring.datasource.driver-class-name` are automatically configured by
 the provided `CloudSqlJdbcInfoProvider`, unless they are explicitly configured.

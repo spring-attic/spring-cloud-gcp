@@ -50,7 +50,7 @@ public List<Map<String, Object>> listUsers() {
 ----
 
 This starter is configured through
-https://github.com/spring-projects/spring-boot/blob/v1.5.8.RELEASE/spring-boot-autoconfigure/src/main/java/org/springframework/boot/autoconfigure/jdbc/DataSourceProperties.java[`DataSourceProperties`].
+https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/autoconfigure/jdbc/DataSourceProperties.html[`DataSourceProperties`].
 There is also some configuration specific to Google Cloud SQL:
 
 |===
