@@ -57,10 +57,10 @@ public class StorageAutoConfiguration {
 	public static Storage storage(CredentialsProvider credentialsProvider,
 			GcpStorageProperties gcpStorageProperties) throws IOException {
 		return StorageOptions.newBuilder()
-				.setCredentials(gcpStorageProperties.getCredentialsLocation() != null
+				.setCredentials(gcpStorageProperties.getCredentials() != null
 						? GoogleCredentials
-								.fromStream(gcpStorageProperties.getCredentialsLocation()
-										.getInputStream())
+								.fromStream(gcpStorageProperties.getCredentials()
+										.getLocation().getInputStream())
 								.createScoped(Collections.singletonList(
 										GcpScope.STORAGE_READ_WRITE.getUrl()))
 						: credentialsProvider.getCredentials())
