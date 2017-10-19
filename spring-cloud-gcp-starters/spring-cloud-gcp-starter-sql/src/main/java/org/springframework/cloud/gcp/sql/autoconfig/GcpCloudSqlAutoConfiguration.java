@@ -150,44 +150,45 @@ public class GcpCloudSqlAutoConfiguration {
 	 * using the application default credentials by default. So we don't need to do anything.
 	 */
 	private void setCredentialsProperty() {
+		File credentialsLocationFile;
+
 		try {
 			// First tries the SQL configuration credential.
 			if (this.gcpCloudSqlProperties != null
 					&& this.gcpCloudSqlProperties.getCredentials() != null) {
-				System.setProperty(SqlCredentialFactory.CREDENTIAL_LOCATION_PROPERTY_NAME,
-						this.gcpCloudSqlProperties.getCredentials().getLocation().getFile()
-								.getAbsolutePath());
+				credentialsLocationFile =
+						this.gcpCloudSqlProperties.getCredentials().getLocation().getFile();
 			}
 			// Then, the global credential.
 			else if (this.gcpProperties != null
-					&& this.gcpProperties.getCredentials().getLocation() != null
-					&& this.gcpProperties.getCredentials().getLocation().exists()) {
+					&& this.gcpProperties.getCredentials().getLocation() != null) {
 				// A resource might not be in the filesystem, but the Cloud SQL credential must.
-				File credentialsLocationFile = this.gcpProperties.getCredentials().getLocation().getFile();
-
-				// This should happen if the Spring resource isn't in the filesystem, but a URL,
-				// classpath file, etc.
-				if (credentialsLocationFile == null) {
-					if (LOGGER.isWarnEnabled()) {
-						LOGGER.warn("The private key of the Google Cloud SQL credential must "
-								+ "be in a file on the filesystem.");
-					}
-					return;
-				}
-				System.setProperty(SqlCredentialFactory.CREDENTIAL_LOCATION_PROPERTY_NAME,
-						credentialsLocationFile.getAbsolutePath());
+				credentialsLocationFile =
+						this.gcpProperties.getCredentials().getLocation().getFile();
 			}
 			else {
+				// Do nothing, let sockets factory use application default credentials.
 				return;
 			}
-
-			// If there are specified credentials, tell sockets factory to use them.
-			System.setProperty(CredentialFactory.CREDENTIAL_FACTORY_PROPERTY,
-					SqlCredentialFactory.class.getName());
 		}
 		catch (IOException ioe) {
-			// Do nothing, let sockets factory use application default credentials.
-			LOGGER.debug(" Error reading Cloud SQL credentials file.", ioe);
+			LOGGER.info(" Error reading Cloud SQL credentials file.", ioe);
+			return;
 		}
+
+		// This should happen if the Spring resource isn't in the filesystem, but a URL,
+		// classpath file, etc.
+		if (credentialsLocationFile == null) {
+			LOGGER.info("The private key of the Google Cloud SQL credential must "
+					+ "be in a file on the filesystem.");
+			return;
+		}
+
+		System.setProperty(SqlCredentialFactory.CREDENTIAL_LOCATION_PROPERTY_NAME,
+				credentialsLocationFile.getAbsolutePath());
+
+		// If there are specified credentials, tell sockets factory to use them.
+		System.setProperty(CredentialFactory.CREDENTIAL_FACTORY_PROPERTY,
+				SqlCredentialFactory.class.getName());
 	}
 }

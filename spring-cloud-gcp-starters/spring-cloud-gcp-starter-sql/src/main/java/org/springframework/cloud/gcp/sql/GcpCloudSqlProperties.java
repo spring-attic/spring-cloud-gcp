@@ -66,6 +66,6 @@ public class GcpCloudSqlProperties {
 		this.databaseType = databaseType;
 	}
 
-	public class Credentials extends AbstractCredentialsProperty {
+	public static class Credentials extends AbstractCredentialsProperty {
 	}
 }

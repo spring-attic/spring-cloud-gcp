@@ -21,7 +21,8 @@ import java.util.List;
 import org.springframework.core.io.Resource;
 
 /**
- * To be extended by property class subclasses and allow e.g., a "credentials.location" notation.
+ * To be extended by property class subclasses and allow e.g., a "credentials.location" property
+ * notation.
  *
  * @author João Andre Martins
  */

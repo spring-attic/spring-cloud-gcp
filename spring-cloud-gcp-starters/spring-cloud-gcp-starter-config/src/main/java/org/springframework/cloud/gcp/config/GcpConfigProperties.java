@@ -88,6 +88,6 @@ public class GcpConfigProperties {
 		this.credentials = credentials;
 	}
 
-	public class Credentials extends AbstractCredentialsProperty {
+	public static class Credentials extends AbstractCredentialsProperty {
 	}
 }
