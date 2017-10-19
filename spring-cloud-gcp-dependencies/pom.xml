@@ -17,8 +17,8 @@
 
 	<properties>
 		<google-cloud-core.version>1.2.3</google-cloud-core.version>
-		<google-cloud-pubsub.version>0.24.0-beta</google-cloud-pubsub.version>
-		<google-cloud-trace.version>0.24.0-alpha</google-cloud-trace.version>
+		<google-cloud-pubsub.version>0.26.0-beta</google-cloud-pubsub.version>
+		<google-cloud-trace.version>0.26.0-alpha</google-cloud-trace.version>
 		<google-cloud-storage.version>1.2.1</google-cloud-storage.version>
 		<cloud-trace-java.version>0.4.0</cloud-trace-java.version>
 		<spring-cloud-context.version>1.2.3.RELEASE</spring-cloud-context.version>
@@ -124,11 +124,16 @@
 			</dependency>
 
 			<!-- spring-cloud-gcp-starter-sql -->
-
 			<dependency>
 				<groupId>com.google.cloud.sql</groupId>
 				<artifactId>mysql-socket-factory</artifactId>
 				<version>1.0.4</version>
+				<exclusions>
+					<exclusion>
+						<groupId>com.google.guava</groupId>
+						<artifactId>guava-jdk5</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 
 			<dependency>

@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.MessagingGateway;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -41,12 +41,8 @@ public class SenderApplication {
 
 	@Bean
 	@ServiceActivator(inputChannel = "pubsubOutputChannel")
-	public MessageHandler messageSender(PubSubOperations pubsubTemplate) {
-		PubSubMessageHandler outboundAdapter =
-				new PubSubMessageHandler(pubsubTemplate, "exampleTopic");
-		// Lets us see errors if there are any.
-		outboundAdapter.setSync(true);
-		return outboundAdapter;
+	public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
+		return new PubSubMessageHandler(pubsubTemplate, "exampleTopic");
 	}
 
 	@MessagingGateway(defaultRequestChannel = "pubsubOutputChannel")
