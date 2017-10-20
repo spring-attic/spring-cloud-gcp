@@ -70,7 +70,7 @@ public class GcpCloudSqlProperties {
 		private Resource location;
 
 		public Resource getLocation() {
-			return location;
+			return this.location;
 		}
 
 		public void setLocation(Resource location) {

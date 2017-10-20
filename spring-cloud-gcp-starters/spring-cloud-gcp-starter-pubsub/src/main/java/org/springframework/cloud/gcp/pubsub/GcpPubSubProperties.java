@@ -16,11 +16,11 @@
 
 package org.springframework.cloud.gcp.pubsub;
 
+import java.util.Collections;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
 import org.springframework.cloud.gcp.core.GcpScope;
-
-import java.util.Collections;
 
 @ConfigurationProperties("spring.cloud.gcp.pubsub")
 public class GcpPubSubProperties {

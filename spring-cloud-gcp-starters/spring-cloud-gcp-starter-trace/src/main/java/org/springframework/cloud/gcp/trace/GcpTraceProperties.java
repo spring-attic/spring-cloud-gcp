@@ -15,11 +15,11 @@
  */
 package org.springframework.cloud.gcp.trace;
 
+import java.util.Collections;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
 import org.springframework.cloud.gcp.core.GcpScope;
-
-import java.util.Collections;
 
 /**
  * Stackdriver Trace Properties.
