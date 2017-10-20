@@ -27,7 +27,6 @@ import com.google.auth.oauth2.GoogleCredentials;
 
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
@@ -75,10 +74,11 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		Assert.notNull(credentialsProvider, "Credentials provider cannot be null");
 		Assert.notNull(projectIdProvider, "Project ID provider cannot be null");
 		Assert.notNull(gcpConfigProperties, "Google Config properties must not be null");
+
 		this.credentials = gcpConfigProperties.getCredentials() != null
 				? GoogleCredentials.fromStream(
 						gcpConfigProperties.getCredentials().getLocation().getInputStream())
-				.createScoped(Collections.singletonList(GcpScope.RUNTIME_CONFIG_SCOPE.getUrl()))
+				.createScoped(gcpConfigProperties.getCredentials().getScopes())
 				: credentialsProvider.getCredentials();
 		this.projectId = gcpConfigProperties.getProjectId() != null
 				? gcpConfigProperties.getProjectId()

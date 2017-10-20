@@ -17,6 +17,8 @@ Currently, Spring Cloud GCP lets you leverage the power and simplicity of the Sp
 2. Exchange messages with Spring Integration using Google Cloud Pub/Sub on the background
 3. Write and read from Spring Resources backed up by Google Cloud Storage
 4. Configure Spring JDBC with a few properties to use Google Cloud SQL on the background
+5. Trace the execution of your app with Spring Cloud Sleuth and Google Stackdriver Trace
+6. Configure your app with Spring Cloud Config, backed up by the Google Runtime Configuration API
 
 include::dependency-management.adoc[]
 

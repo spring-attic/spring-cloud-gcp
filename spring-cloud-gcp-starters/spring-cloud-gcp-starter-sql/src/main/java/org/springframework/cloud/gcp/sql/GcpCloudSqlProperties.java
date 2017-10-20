@@ -17,7 +17,7 @@
 package org.springframework.cloud.gcp.sql;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
+import org.springframework.core.io.Resource;
 
 /**
  * Google Cloud SQL properties.
@@ -66,6 +66,15 @@ public class GcpCloudSqlProperties {
 		this.databaseType = databaseType;
 	}
 
-	public static class Credentials extends AbstractCredentialsProperty {
+	public static class Credentials {
+		private Resource location;
+
+		public Resource getLocation() {
+			return this.location;
+		}
+
+		public void setLocation(Resource location) {
+			this.location = location;
+		}
 	}
 }

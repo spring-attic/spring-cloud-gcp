@@ -36,7 +36,7 @@ spring.cloud.gcp.credentials.scopes=[SCOPE_1],[SCOPE_2],[SCOPE_3]
 
 If `spring.cloud.gcp.project-id` is populated, the provided `GcpProjectIdProvider` returns that
 project ID. Otherwise, it uses google-cloud-java's
-http://googlecloudplatform.github.io/google-cloud-java/0.21.1/apidocs/com/google/cloud/ServiceOptions.html#getDefaultProjectId--[rules to discover the project ID].
+http://googlecloudplatform.github.io/google-cloud-java/latest/apidocs/com/google/cloud/ServiceOptions.html#getDefaultProjectId--[rules to discover the project ID].
 
 Similarly for `spring.cloud.gcp.credentials.location`, if a property is configured, the provided
 `CredentialsProvider` returns credentials for that private key. The value of

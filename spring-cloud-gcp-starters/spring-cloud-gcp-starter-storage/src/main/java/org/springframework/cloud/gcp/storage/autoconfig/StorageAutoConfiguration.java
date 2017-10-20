@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.storage.autoconfig;
 
 import java.io.IOException;
-import java.util.Collections;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -28,7 +27,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.GcpProperties;
-import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.cloud.gcp.storage.GcpStorageProperties;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolver;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolverSettings;
@@ -61,8 +59,7 @@ public class StorageAutoConfiguration {
 						? GoogleCredentials
 								.fromStream(gcpStorageProperties.getCredentials()
 										.getLocation().getInputStream())
-								.createScoped(Collections.singletonList(
-										GcpScope.STORAGE_READ_WRITE.getUrl()))
+								.createScoped(gcpStorageProperties.getCredentials().getScopes())
 						: credentialsProvider.getCredentials())
 				.build().getService();
 	}

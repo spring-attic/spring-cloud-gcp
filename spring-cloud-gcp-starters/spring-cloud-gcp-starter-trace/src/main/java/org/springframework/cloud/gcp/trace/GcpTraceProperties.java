@@ -15,8 +15,11 @@
  */
 package org.springframework.cloud.gcp.trace;
 
+import java.util.Collections;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
+import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
  * Stackdriver Trace Properties.
@@ -106,5 +109,8 @@ public class GcpTraceProperties {
 	}
 
 	public static class Credentials extends AbstractCredentialsProperty {
+		public Credentials() {
+			setScopes(Collections.singletonList(GcpScope.TRACE_APPEND.getUrl()));
+		}
 	}
 }

@@ -20,17 +20,23 @@ dependencies {
 ----
 
 
-This starter provides the configuration sources: `CloudSqlJdbcInfoProvider` and `DataSource`.
+This starter provides the configuration sources `CloudSqlJdbcInfoProvider` and `DataSource`.
 
-It allows connections to second-generation only Google Cloud SQL instances.
+It only allows connections to second-generation Google Cloud SQL instances.
 
 Before using the starter, ensure that the Google Cloud SQL API is enabled in your GCP project.
 
-`CloudSqlJdbcInfoProvider` returns the JDBC information to be used, such as the JDBC driver name
-and connection string. A special `CloudSqlJdbcInfoProvider` is provided if an app is running on
-Google App Engine.
+Based on your environment (e.g., Google App Engine) or database type (e.g., MySQL, PostgreSQL),
+the starter provides a `CloudSqlJdbcInfoProvider` object that returns the correct values for the
+JDBC URL and driver class name to be used.
 
-`CloudSqlJdbcInfoProvider` requires the following properties:
+The starter uses Spring Boot to
+https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/autoconfigure/jdbc/DataSourceProperties.html[configure
+a DataSource].
+`spring.datasource.url` and `spring.datasource.driver-class-name` are automatically configured by
+the provided `CloudSqlJdbcInfoProvider`, unless they are explicitly configured.
+
+The following properties are required:
 
 [source,yaml]
 ----
@@ -40,37 +46,20 @@ spring.cloud.gcp.sql.instance-connection-name=[YOUR_CLOUD_SQL_INSTANCE_CONNECTIO
 
 `spring.cloud.gcp.sql.instance-connection-name` is your instance's
 https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql#google-cloud-sql-instance-connection-name[connection name].
-You can alternatively specify the full `spring.cloud.gcp.sql.jdbc-url`.
 
 The following properties are optional:
 
 [source,yaml]
 ----
-spring.cloud.gcp.sql.jdbc-url=[YOUR_JDBC_URL]
-spring.cloud.gcp.sql.jdbc-driver=[YOUR_JDBC_DRIVER]
-spring.cloud.gcp.sql.user-name=[YOUR_CLOUD_SQL_USERNAME]
-spring.cloud.gcp.sql.password=[YOUR_CLOUD_SQL_PASSWORD]
 spring.cloud.gcp.sql.database-type=[mysql or postgresql]
-spring.cloud.gcp.sql.credentials-location=[CREDENTIALS_FILESYSTEM_PATH]
+spring.cloud.gcp.sql.credentials.location=[CREDENTIALS_FILESYSTEM_PATH]
 ----
-
-If `spring.cloud.gcp.sql.jdbc-url` is specified, it is used as the final JDBC URL and has precedence
-over `spring.cloud.gcp.sql.instance-connection-name`.
-
-If `spring.cloud.gcp.sql.jdbc-driver` isn't specified, `com.mysql.jdbc.Driver` is used if
-`spring.cloud.gcp.sql.database-type` is `mysql`, `org.postgresql.Driver` if
-`spring.cloud.gcp.sql.database-type` is `postgresql` or `com.mysql.jdbc.GoogleDriver` if running on
-Google App Engine.
-
-If `spring.cloud.gcp.sql.user-name` isn't specified, `root` is used by default.
-
-If `spring.cloud.gcp.sql.password` isn't specified, an empty string is used by default.
 
 `spring.cloud.gcp.sql.database-type` can either be `mysql` or `postgresql`. Any value that isn't
 those two will cause the configuration to error. `spring.cloud.gcp.sql.database-type` determines if
 the resolved JDBC URL and driver class are for MySQL or PostgreSQL.
 
-`spring.cloud.gcp.sql.credentials-location` can be used to specify credentials for a GCP project ID
+`spring.cloud.gcp.sql.credentials.location` can be used to specify credentials for a GCP project ID
 different than the one configured in the link:../spring-cloud-gcp-starter-core/README.adoc[Core
 Starter].
 
@@ -78,11 +67,6 @@ By using this starter in conjunction with
 https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html[Spring JDBC],
 it's possible to inject a fully configured `JdbcTemplate` object only from adding the required
 properties.
-
-The returned `DataSource` is an implementation of
-https://brettwooldridge.github.io/HikariCP/[HikariCP]. If you want to use another kind of
-`DataSource`, feel free to use the provided `CloudSqlJdbcInfoProvider` to provide your own
-`DataSource` bean.
 
 === Google Cloud SQL Instance Connection Name
 
@@ -96,8 +80,8 @@ You can find your instance's connection name in its Google Cloud Console page.
 
 If you're not able to connect to a database and see an endless loop of
 `Connecting to Cloud SQL instance [...] on IP [...]`, it's likely that exceptions are being thrown
-and logged at a level lower than your logger's level. This may be the case with HikariCP, the
-default DataSource used by this starter, if your logger is set to INFO or higher level.
+and logged at a level lower than your logger's level. This may be the case with HikariCP, if your
+logger is set to INFO or higher level.
 
 To see what's going on in the background, you should add a `logback.xml` file to your application
 resources folder, that looks like this:
@@ -135,8 +119,8 @@ To fix this, re-declare the dependency in its correct version. For example, in M
 This is usually a symptom that something isn't right with the permissions of your credentials or the Google Cloud SQL API is not enabled. Verify that the Google Cloud SQL API is enabled in the Cloud Console and that your service account has the
 https://cloud.google.com/sql/docs/mysql/project-access-control#roles[necessary IAM roles].
 
-To find out what's causing the issue, you can enable DEBUG logging level at HikariCP by adding the
-following logback.xml file to your application's resources, or only add the relevant set log level
+To find out what's causing the issue, you can enable DEBUG logging level by adding the following
+logback.xml file to your application's resources, or only add the relevant set log level
 line if you already have one logback.xml file:
 
 [source, xml]

@@ -27,7 +27,8 @@ public enum GcpScope {
 	STORAGE_READ_ONLY("https://www.googleapis.com/auth/devstorage.read_only"),
 	STORAGE_READ_WRITE("https://www.googleapis.com/auth/devstorage.read_write"),
 	RUNTIME_CONFIG_SCOPE("https://www.googleapis.com/auth/cloudruntimeconfig"),
-	TRACE_APPEND("https://www.googleapis.com/auth/trace.append");
+	TRACE_APPEND("https://www.googleapis.com/auth/trace.append"),
+	CLOUD_PLATFORM("https://www.googleapis.com/auth/cloud-platform");
 
 	private String url;
 

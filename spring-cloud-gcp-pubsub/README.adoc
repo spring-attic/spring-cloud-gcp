@@ -25,5 +25,5 @@ allows user code to be independent from the underlying Google Cloud Pub/Sub API 
 currently possible to publish messages to a Google Cloud Pub/Sub topic and to create new topics and
 subscriptions.
 
-You can refer to the `PubSubOperations` and `PubSubAdmin` classes for more details on the
+You can refer to the `PubSubTemplate` and `PubSubAdmin` classes for more details on the
 functionality provided by this module.

@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.pubsub.autoconfig;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.concurrent.Executors;
 
 import com.google.api.gax.core.CredentialsProvider;
@@ -37,7 +36,6 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.pubsub.GcpPubSubProperties;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
@@ -77,7 +75,7 @@ public class GcpPubSubAutoConfiguration {
 				? FixedCredentialsProvider.create(
 						GoogleCredentials.fromStream(
 								gcpPubSubProperties.getCredentials().getLocation().getInputStream())
-								.createScoped(Collections.singletonList(GcpScope.PUBSUB.getUrl())))
+								.createScoped(gcpPubSubProperties.getCredentials().getScopes()))
 				: credentialsProvider;
 	}
 
