@@ -22,7 +22,7 @@ If you set a root password, you should also add a `spring.cloud.gcp.sql.password
 password as the value.
 
 4. https://cloud.google.com/sdk/gcloud/reference/auth/login[Authenticate in the Cloud SDK] or add
-a `spring.cloud.gcp.sql.credentials-location` property with the path on your local file system to
+a `spring.cloud.gcp.sql.credentials.location` property with the path on your local file system to
 a credentials file, prepended with `file:`.
 
 5. Run the `SqlApplication` Spring Boot app. The database will be populated based on the

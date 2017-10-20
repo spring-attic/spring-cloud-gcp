@@ -52,14 +52,14 @@ The following properties are optional:
 [source,yaml]
 ----
 spring.cloud.gcp.sql.database-type=[mysql or postgresql]
-spring.cloud.gcp.sql.credentials-location=[CREDENTIALS_FILESYSTEM_PATH]
+spring.cloud.gcp.sql.credentials.location=[CREDENTIALS_FILESYSTEM_PATH]
 ----
 
 `spring.cloud.gcp.sql.database-type` can either be `mysql` or `postgresql`. Any value that isn't
 those two will cause the configuration to error. `spring.cloud.gcp.sql.database-type` determines if
 the resolved JDBC URL and driver class are for MySQL or PostgreSQL.
 
-`spring.cloud.gcp.sql.credentials-location` can be used to specify credentials for a GCP project ID
+`spring.cloud.gcp.sql.credentials.location` can be used to specify credentials for a GCP project ID
 different than the one configured in the link:../spring-cloud-gcp-starter-core/README.adoc[Core
 Starter].
 

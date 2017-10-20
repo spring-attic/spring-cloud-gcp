@@ -60,7 +60,7 @@ public class SqlCredentialFactory implements CredentialFactory {
 
 		try {
 			return GoogleCredential.fromStream(new FileInputStream(credentialResourceLocation))
-					.createScoped(Collections.singleton(GcpScope.CLOUD_PLATFORM.getUrl()));
+					.createScoped(Collections.singleton(GcpScope.SQLADMIN.getUrl()));
 		}
 		catch (IOException ioe) {
 			LOGGER.warn("There was an error loading Cloud SQL credential.", ioe);

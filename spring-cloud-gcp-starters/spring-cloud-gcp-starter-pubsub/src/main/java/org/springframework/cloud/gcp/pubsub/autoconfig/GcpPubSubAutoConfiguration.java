@@ -77,7 +77,7 @@ public class GcpPubSubAutoConfiguration {
 				? FixedCredentialsProvider.create(
 						GoogleCredentials.fromStream(
 								gcpPubSubProperties.getCredentials().getLocation().getInputStream())
-								.createScoped(Collections.singletonList(GcpScope.PUBSUB.getUrl())))
+								.createScoped(gcpPubSubProperties.getCredentials().getScopes()))
 				: credentialsProvider;
 	}
 

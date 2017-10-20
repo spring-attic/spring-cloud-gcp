@@ -22,7 +22,7 @@ dependencies {
 This starter uses Spring Cloud Sleuth and provides a `SpanReporter` that sends the Sleuth's trace information to Stackdriver Trace.
 
 All configurations are optional. You can override a number of default configuration values in addition to the core
-`spring.cloud.gcp.project-id` and `spring.cloud.gcp.credentials-location`.
+`spring.cloud.gcp.project-id` and `spring.cloud.gcp.credentials.location`.
 
 By default, this starter will send trace asynchronously using a flushable trace consumer that auto-flushes when
 its buffered trace messages exceed its buffer size or have been buffered for longer than its scheduled delay.
@@ -45,7 +45,8 @@ spring.cloud.gcp.trace.scheduled-delay-seconds=[SCHEDULED_DELAY_SECONDS]
 spring.cloud.gcp.trace.project-id=[TRACE_GCP_PROJECT_ID]
 
 # Credentials for the trace service
-spring.cloud.gcp.trace.credentials-location=[CREDENTIALS_FILESYSTEM_LOCATION]
+spring.cloud.gcp.trace.credentials.location=[CREDENTIALS_FILESYSTEM_LOCATION]
+spring.cloud.gcp.trace.credentials.scope=[COMMA_DELIMITED_SCOPE_LIST]
 ----
 
 You can use core Spring Cloud Sleuth properties to control Sleuth's sampling rate, etc.

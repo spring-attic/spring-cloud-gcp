@@ -61,8 +61,7 @@ public class StorageAutoConfiguration {
 						? GoogleCredentials
 								.fromStream(gcpStorageProperties.getCredentials()
 										.getLocation().getInputStream())
-								.createScoped(Collections.singletonList(
-										GcpScope.STORAGE_READ_WRITE.getUrl()))
+								.createScoped(gcpStorageProperties.getCredentials().getScopes())
 						: credentialsProvider.getCredentials())
 				.build().getService();
 	}

@@ -18,6 +18,9 @@ package org.springframework.cloud.gcp.pubsub;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
+import org.springframework.cloud.gcp.core.GcpScope;
+
+import java.util.Collections;
 
 @ConfigurationProperties("spring.cloud.gcp.pubsub")
 public class GcpPubSubProperties {
@@ -62,5 +65,8 @@ public class GcpPubSubProperties {
 	}
 
 	public static class Credentials extends AbstractCredentialsProperty {
+		public Credentials() {
+			setScopes(Collections.singletonList(GcpScope.PUBSUB.getUrl()));
+		}
 	}
 }
