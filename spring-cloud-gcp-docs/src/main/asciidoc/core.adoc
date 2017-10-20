@@ -1,3 +1,4 @@
+[#spring-cloud-gcp-core]
 == Spring Cloud GCP Core
 
 At the center of every Spring Cloud GCP module are the concepts of `GcpProjectIdProvider` and
@@ -89,7 +90,7 @@ https://github.com/google/google-auth-library-java/blob/master/oauth2_http/java/
 4. Google Cloud Shell built-in credentials
 5. Google Compute Engine built-in credentials
 
-=== Scopes
+==== Scopes
 
 By default, the credentials provided by the Spring Cloud GCP Core Starter contain scopes for every
 service supported by Spring Cloud GCP.

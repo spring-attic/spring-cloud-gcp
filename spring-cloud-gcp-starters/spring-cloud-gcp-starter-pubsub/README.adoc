@@ -25,18 +25,17 @@ This starter provides auto-configured instances of `PubSubTemplate` and `PubSubA
 The following properties are optional:
 [source,yaml]
 ----
-spring.cloud.gcp.pubsub.subscriber-executor-threads=[SUBSCRIBER_EXECUTOR_THREADS]
-spring.cloud.gcp.pubsub.publisher-executor-threads=[PUBLISHER_EXECUTOR_THREADS]
-spring.cloud.gcp.pubsub.project-id=[PUBSUB_GCP_PROJECT_ID]
-spring.cloud.gcp.pubsub.credentials.location=[CREDENTIALS_FILESYSTEM_PATH]
-spring.cloud.gcp.pubsub.credentials.scopes=[COMMA_DELIMITED_SCOPE_LIST]
+spring.cloud.gcp.pubsub.subscriber-executor-threads=[SUBSCRIBER_EXECUTOR_THREADS] #optional, default 4
+spring.cloud.gcp.pubsub.publisher-executor-threads=[PUBLISHER_EXECUTOR_THREADS] #optional, default 4
+spring.cloud.gcp.pubsub.project-id=[PUBSUB_GCP_PROJECT_ID] #optional
+spring.cloud.gcp.pubsub.credentials.location=[CREDENTIALS_RESOURCE_PATH] #optional
+spring.cloud.gcp.pubsub.credentials.scopes=[COMMA_DELIMITED_SCOPE_LIST] #optional
 ----
 
 `spring.cloud.gcp.pubsub.subscriber-executor-threads` is the number of threads used by the
 subscriber executor.
 Likewise, `spring.cloud.gcp.pubsub.publisher-executor-threads` is the number of threads used by the
 publisher executor.
-The default value for both of these properties is 4.
 
 `spring.cloud.gcp.pubsub.project-id` and `spring.cloud.gcp.pubsub.credentials.location` and
 `spring.cloud.gcp.pubsub.credentials.scopes` are overrides to the GCP project ID and credentials in
