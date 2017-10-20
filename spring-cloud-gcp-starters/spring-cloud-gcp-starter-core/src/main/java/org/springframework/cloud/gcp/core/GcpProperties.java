@@ -16,10 +16,7 @@
 
 package org.springframework.cloud.gcp.core;
 
-import java.util.List;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.core.io.Resource;
 
 /**
  * @author Vinicius Carvalho
@@ -48,24 +45,6 @@ public class GcpProperties {
 		this.credentials = credentials;
 	}
 
-	public class Credentials {
-		private Resource location;
-		private List<String> scopes;
-
-		public Resource getLocation() {
-			return this.location;
-		}
-
-		public void setLocation(Resource location) {
-			this.location = location;
-		}
-
-		public List<String> getScopes() {
-			return this.scopes;
-		}
-
-		public void setScopes(List<String> scopes) {
-			this.scopes = scopes;
-		}
+	public static class Credentials extends AbstractCredentialsProperty {
 	}
 }

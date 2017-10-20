@@ -17,7 +17,7 @@
 package org.springframework.cloud.gcp.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.core.io.Resource;
+import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
 
 /**
  * Configuration for {@link GoogleConfigPropertySourceLocator}.
@@ -38,7 +38,7 @@ public class GcpConfigProperties {
 
 	private String projectId;
 
-	private Resource credentialsLocation;
+	private Credentials credentials;
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
@@ -80,11 +80,14 @@ public class GcpConfigProperties {
 		this.projectId = projectId;
 	}
 
-	public Resource getCredentialsLocation() {
-		return this.credentialsLocation;
+	public Credentials getCredentials() {
+		return this.credentials;
 	}
 
-	public void setCredentialsLocation(Resource credentialsLocation) {
-		this.credentialsLocation = credentialsLocation;
+	public void setCredentials(Credentials credentials) {
+		this.credentials = credentials;
+	}
+
+	public static class Credentials extends AbstractCredentialsProperty {
 	}
 }

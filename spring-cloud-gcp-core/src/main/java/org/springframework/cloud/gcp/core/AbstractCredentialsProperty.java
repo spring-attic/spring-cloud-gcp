@@ -14,27 +14,36 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.storage;
+package org.springframework.cloud.gcp.core;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
+import java.util.List;
+
+import org.springframework.core.io.Resource;
 
 /**
- * @author João André Martins
+ * To be extended by property class subclasses and allow e.g., a "credentials.location" property
+ * notation.
+ *
+ * @author João Andre Martins
  */
-@ConfigurationProperties("spring.cloud.gcp.storage")
-public class GcpStorageProperties extends GoogleStorageProtocolResolverSettings {
+public abstract class AbstractCredentialsProperty {
 
-	private Credentials credentials;
+	private Resource location;
+	private List<String> scopes;
 
-	public Credentials getCredentials() {
-		return this.credentials;
+	public Resource getLocation() {
+		return this.location;
 	}
 
-	public void setCredentials(Credentials credentials) {
-		this.credentials = credentials;
+	public void setLocation(Resource location) {
+		this.location = location;
 	}
 
-	public static class Credentials extends AbstractCredentialsProperty {
+	public List<String> getScopes() {
+		return this.scopes;
+	}
+
+	public void setScopes(List<String> scopes) {
+		this.scopes = scopes;
 	}
 }
