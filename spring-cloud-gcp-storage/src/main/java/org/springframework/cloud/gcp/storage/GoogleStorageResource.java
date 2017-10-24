@@ -142,7 +142,9 @@ public class GoogleStorageResource implements WritableResource {
 
 	@Override
 	public Resource createRelative(String relativePath) throws IOException {
-		throw new UnsupportedOperationException("Directory creation not supported");
+		int lastSlashIndex = this.location.lastIndexOf("/");
+		String absolutePath = this.location.substring(0, lastSlashIndex + 1) + relativePath;
+		return new GoogleStorageResource(this.storage, absolutePath);
 	}
 
 	@Override
