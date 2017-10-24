@@ -33,3 +33,5 @@ include::sql.adoc[]
 include::spring-integration.adoc[]
 
 include::trace.adoc[]
+
+include::config.adoc[]

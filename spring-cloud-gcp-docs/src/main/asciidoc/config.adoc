@@ -1,0 +1,101 @@
+== Spring Cloud Config
+
+Spring Cloud GCP makes it possible to use the
+https://cloud.google.com/deployment-manager/runtime-configurator/reference/rest/[Google
+Runtime Configuration API] as a
+https://cloud.spring.io/spring-cloud-config/[Spring Cloud Config] server to remotely store your
+application configuration data.
+
+The Spring Cloud GCP Config support is provided via a Spring Boot starter that makes notation like
+`@Value{"${gcp_runtime_config_api_var_name}"}` populate variables with values stored in the
+Google Runtime Configuration API.
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-config</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-config', version: '{project-version}'
+}
+----
+
+=== Configuration
+
+The following parameters are configurable in Spring Cloud GCP Config:
+
+|===
+| Name | Description | Default value
+| `spring.cloud.gcp.config.enabled` | Enables the Config client | `true`
+| `spring.cloud.gcp.config.name` |
+http://cloud.spring.io/spring-cloud-static/spring-cloud-config/1.3.3.RELEASE/single/spring-cloud-config.html#_locating_remote_configuration_resources[Name
+of your application] |
+| `spring.cloud.gcp.config.profile` |
+http://cloud.spring.io/spring-cloud-static/spring-cloud-config/1.3.3.RELEASE/single/spring-cloud-config.html#_locating_remote_configuration_resources[Configuration's
+Spring profile] (e.g., prod) | default
+| `spring.cloud.gcp.config.timeout` | Timeout in milliseconds for connecting to the Google Runtime
+Configuration API | 60000
+| `spring.cloud.gcp.config.project-id` | GCP project ID where the Google Runtime Configuration API
+is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> |
+| `spring.cloud.gcp.config.credentials.location` | OAuth2 credentials for authenticating with the
+Google Runtime Configuration API, if different from the ones in the
+<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> |
+| `spring.cloud.gcp.config.credentials.scopes` |
+https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
+Config credentials | https://www.googleapis.com/auth/cloudruntimeconfig
+|===
+
+NOTE: These properties should be specified in a `bootstrap.yml` file, rather than the usual
+`applications.yml`
+
+=== Quick start
+
+1. Create a configuration in the Google Runtime Configuration API that is called
+`spring.cloud.gcp.config.name`_`spring.cloud.gcp.config.profile`. In other words, if
+`spring.cloud.gcp.config.name` is `myapp` and `spring.cloud.gcp.config.profile` is prod, the
+configuration should be called `myapp_prod`.
++
+In order to do that, you should have the
+https://cloud.google.com/sdk/[Google Cloud SDK] installed, own a Google Cloud Project and run the
+following command:
++
+----
+gcloud beta runtime-config configs create myapp_prod
+gcloud beta runtime-config configs variables set queue_size 25 --config-name myapp_prod
+----
+
+2. Configure your bootstrap.yml file with your application's configuration data:
++
+----
+spring.cloud.gcp.config.name=myapp
+spring.cloud.gcp.config.profile=prod
+----
+3. Add a `@Configuration` class that contains a field annotated with `@Value` in the following way:
++
+----
+@Value("${queue_size}")
+private int queueSize;
+----
+
+When your Spring application starts, if an instance of the class that contains the `queueSize`
+field is auto-wired, the `queueSize` field value will be set to 25.
+
+=== Refreshing the configuration at runtime
+
+Using http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints[Spring
+Boot Actuator] enables a `/refresh` endpoint in your application that can be used to refresh the
+values of all the Spring Config-managed variables.
+
+To achieve that, add a `@RefreshScope` annotation to your `@Configuration` class(es).
+Then, if you change the value of `myapp_prod`'s `queue_size` variable in the Google Runtime
+Configuration API and then hit the `/refresh` endpoint of your application, you can verify that the
+value of the `queueSize` field is now the changed value.

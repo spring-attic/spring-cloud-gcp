@@ -1,3 +1,4 @@
+[#spring-cloud-gcp-core]
 == Spring Cloud GCP Core
 
 At the center of every Spring Cloud GCP module are the concepts of `GcpProjectIdProvider` and
