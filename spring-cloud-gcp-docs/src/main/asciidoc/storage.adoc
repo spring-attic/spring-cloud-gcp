@@ -53,3 +53,20 @@ try (OutputStream os = ((WritableResource) gcsResource).getOutputStream()) {
 The Spring Boot Starter for Google Cloud Storage auto-configures the `Storage` bean required by the
 `spring-cloud-gcp-storage` module, based on the `CredentialsProvider` provided by the Spring Boot
 GCP Core starter.
+
+=== Configuration
+
+The Spring Boot Starter for Google Cloud Storage provides the following configuration options:
+
+[source,yaml]
+----
+spring.cloud.gcp.storage.auto-create-files=false #optional, default true
+spring.cloud.gcp.storage.credentials.location=[CREDENTIALS_RESOURCE_PATH] #optional
+spring.cloud.gcp.storage.credentials.scopes=[COMMA_DELIMITED_SCOPE_LIST] #optional
+----
+
+`spring.cloud.gcp.storage.auto-create-files` creates files on Google Cloud Storage when writes are
+made to non-existent files.
+
+`spring.cloud.gcp.storage.credentials.location` and `spring.cloud.gcp.storage.credentials.scopes`
+are overrides to the same options in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>.
