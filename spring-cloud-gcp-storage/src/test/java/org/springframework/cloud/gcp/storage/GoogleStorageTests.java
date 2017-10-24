@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.storage;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.OutputStream;
 
 import com.google.cloud.WriteChannel;
@@ -155,6 +156,24 @@ public class GoogleStorageTests {
 		Storage storage = Mockito.mock(Storage.class);
 		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
 		Assert.assertTrue(resource.isCreateBlobIfNotExists());
+	}
+
+	@Test
+	public void testCreateRelative() throws IOException {
+		String location = "gs://test-spring/test.png";
+		Storage storage = Mockito.mock(Storage.class);
+		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
+		GoogleStorageResource relative = (GoogleStorageResource) resource.createRelative("relative.png");
+		Assert.assertEquals("gs://test-spring/relative.png", relative.getURI().toString());
+	}
+
+	@Test
+	public void testCreateRelativeSubdirs() throws IOException {
+		String location = "gs://test-spring/t1/test.png";
+		Storage storage = Mockito.mock(Storage.class);
+		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
+		GoogleStorageResource relative = (GoogleStorageResource) resource.createRelative("r1/relative.png");
+		Assert.assertEquals("gs://test-spring/t1/r1/relative.png", relative.getURI().toString());
 	}
 
 	@Configuration
