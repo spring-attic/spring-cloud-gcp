@@ -54,8 +54,8 @@ https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for 
 Config credentials | https://www.googleapis.com/auth/cloudruntimeconfig
 |===
 
-NOTE: These properties should be specified in a `bootstrap.yml` file, rather than the usual
-`applications.yml`
+NOTE: These properties should be specified in a `bootstrap.yml`/`bootstrap.properties` file, rather
+than the usual `applications.yml`/`application.properties`.
 
 === Quick start
 
@@ -69,6 +69,7 @@ https://cloud.google.com/sdk/[Google Cloud SDK] installed, own a Google Cloud Pr
 following command:
 +
 ----
+gcloud init # if this is your first Google Cloud SDK run.
 gcloud beta runtime-config configs create myapp_prod
 gcloud beta runtime-config configs variables set queue_size 25 --config-name myapp_prod
 ----
@@ -95,7 +96,8 @@ Using http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_e
 Boot Actuator] enables a `/refresh` endpoint in your application that can be used to refresh the
 values of all the Spring Config-managed variables.
 
-To achieve that, add a `@RefreshScope` annotation to your `@Configuration` class(es).
+To achieve that, add a `@RefreshScope` annotation to your class(es) containing remote configuration
+properties.
 Then, if you change the value of `myapp_prod`'s `queue_size` variable in the Google Runtime
 Configuration API and then hit the `/refresh` endpoint of your application, you can verify that the
-value of the `queueSize` field is now the changed value.
+value of the `queueSize` field has been updated.
