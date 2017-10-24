@@ -26,12 +26,12 @@ bean to be used by an end-user.
 [options="header",]
 |=======================================================================
 | Setting | Optional | Default Value | Meaning
+| `spring.cloud.gcp.storage.auto-create-files` | Yes | `true` | If `true`, new file will be created
+at given URL if none exists when getting output stream
 | `spring.cloud.gcp.storage.credentials.location` | Yes | Location of the credentials for the
 Storage service, if different from those in the
 link:../spring-cloud-gcp-starter-core/README.adoc[Core Starter] | the filesystem path for a
 credentials private key file
 | `spring.cloud.gcp.storage.credentials.scopes` | Yes | List of scopes for this service-specific
 credentials |
-| `spring.cloud.gcp.storage.auto-create-files` | Yes | `true` | If `true`, new file will be created
-at given URL if none exists when getting output stream
 |=======================================================================

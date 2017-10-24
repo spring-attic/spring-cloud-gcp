@@ -43,19 +43,6 @@ The `PublisherFactory` implementation provided by Spring Cloud GCP Pub/Sub,
 `DefaultPublisherFactory`, caches `Publisher` instances by topic name, in order to optimize resource
 utilization.
 
-The Spring Boot starter for GCP Pub/Sub allows for the customization of the number of threads used
-by both the `Publisher` and `Subscriber` executors.
-In the example, we're setting the number of threads used by both the `Publisher` and `Subscriber` to
-2.
-
-[source,yaml]
-----
-spring.cloud.gcp.pubsub.subscriber-executor-threads=2
-spring.cloud.gcp.pubsub.publisher-executor-threads=2
-----
-
-The default value for both these properties is 4 threads.
-
 ==== Publishing to a topic
 
 `PubSubTemplate` provides asynchronous methods to publish messages to a Google Cloud Pub/Sub topic.
@@ -256,3 +243,24 @@ return admin
     .collect(Collectors.toList());
 }
 ----
+
+=== Configuration
+
+The Spring Boot starter for Google Cloud Pub/Sub provides the following configuration options:
+
+[source,yaml]
+----
+spring.cloud.gcp.pubsub.subscriber-executor-threads=2 #optional, default 4
+spring.cloud.gcp.pubsub.publisher-executor-threads=2 #optional, default 4
+spring.cloud.gcp.pubsub.project-id=[PUBSUB_GCP_PROJECT_ID] #optional
+spring.cloud.gcp.pubsub.credentials.location=[CREDENTIALS_RESOURCE_PATH] #optional
+spring.cloud.gcp.pubsub.credentials.scopes=[COMMA_DELIMITED_SCOPE_LIST] #optional
+----
+
+`spring.cloud.gcp.pubsub.subscriber-executor-threads` and
+`spring.cloud.gcp.pubsub.publisher-executor-threads` are the number of threads used by the
+`Subscriber` and `Publisher`, respectively.
+
+`spring.cloud.gcp.pubsub.project-id`, `spring.cloud.gcp.pubsub.credentials.location` and
+`spring.cloud.gcp.pubsub.credentials.scopes` are overrides to the same properties in the
+<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>.
