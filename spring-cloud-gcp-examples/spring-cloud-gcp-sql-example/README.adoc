@@ -18,7 +18,7 @@ Cloud Project with billing enabled and a Google Cloud SQL instance.
 *[database-name]* with the name of the database you created in step 2 and *[instance-connection-name]*
 with the instance connection name of the instance you created in step 1.
 +
-If you set a root password, you should also add a `spring.cloud.gcp.sql.password` property with the
+If you set a root password, you should also add a `spring.datasource.password` property with the
 password as the value.
 
 4. https://cloud.google.com/sdk/gcloud/reference/auth/login[Authenticate in the Cloud SDK] or add
