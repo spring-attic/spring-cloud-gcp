@@ -7,7 +7,7 @@ https://cloud.spring.io/spring-cloud-config/[Spring Cloud Config] server to remo
 application configuration data.
 
 The Spring Cloud GCP Config support is provided via a Spring Boot starter that makes notation like
-`@Value{"${gcp_runtime_config_api_var_name}"}` populate variables with values stored in the
+`@Value("${gcp_runtime_config_api_var_name}")` populate variables with values stored in the
 Google Runtime Configuration API.
 
 Maven coordinates, using Spring Cloud GCP BOM:
@@ -108,7 +108,7 @@ auto-wired instances of the above POJO.
 
 Using http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints[Spring
 Boot Actuator] enables a `/refresh` endpoint in your application that can be used to refresh the
-values of all the Spring Config-managed variables.
+values of all the Spring Cloud Config-managed variables.
 
 To achieve that, add a `@RefreshScope` annotation to your class(es) containing remote configuration
 properties.
