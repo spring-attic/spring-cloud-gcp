@@ -80,15 +80,27 @@ gcloud beta runtime-config configs variables set queue_size 25 --config-name mya
 spring.cloud.gcp.config.name=myapp
 spring.cloud.gcp.config.profile=prod
 ----
-3. Add a `@Configuration` class that contains a field annotated with `@Value` in the following way:
+3. Add a field annotated with `@Value` to a POJO:
 +
 ----
-@Value("${queue_size}")
-private int queueSize;
+@Component
+public class SampleConfig {
+
+  @Value("${queue_size}")
+  private String queueSize;
+
+  public String getQueueSize() {
+    return this.queueSize;
+  }
+
+  public void setQueueSize(String queueSize) {
+    this.queueSize = queueSize;
+  }
+}
 ----
 
-When your Spring application starts, if an instance of the class that contains the `queueSize`
-field is auto-wired, the `queueSize` field value will be set to 25.
+When your Spring application starts, the `queueSize` field value will be set to 25 for any
+auto-wired instances of the above POJO.
 
 === Refreshing the configuration at runtime
 
