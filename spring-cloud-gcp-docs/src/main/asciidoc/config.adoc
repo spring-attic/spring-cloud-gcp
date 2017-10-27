@@ -37,11 +37,9 @@ The following parameters are configurable in Spring Cloud GCP Config:
 | Name | Description | Optional | Default value
 | `spring.cloud.gcp.config.enabled` | Enables the Config client | Yes | `true`
 | `spring.cloud.gcp.config.name` |
-http://cloud.spring.io/spring-cloud-static/spring-cloud-config/1.3.3.RELEASE/single/spring-cloud-config.html#_locating_remote_configuration_resources[Name
-of your application] | No |
+Name of your application | No |
 | `spring.cloud.gcp.config.profile` |
-http://cloud.spring.io/spring-cloud-static/spring-cloud-config/1.3.3.RELEASE/single/spring-cloud-config.html#_locating_remote_configuration_resources[Configuration's
-Spring profile] (e.g., prod) | Yes | default
+Configuration's Spring profile (e.g., prod) | Yes | default
 | `spring.cloud.gcp.config.timeout` | Timeout in milliseconds for connecting to the Google Runtime
 Configuration API | Yes | 60000
 | `spring.cloud.gcp.config.project-id` | GCP project ID where the Google Runtime Configuration API
