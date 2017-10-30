@@ -36,10 +36,10 @@ must be enabled in your GCP project.
 
 To do that, go to the
 https://console.cloud.google.com/apis/library[API library page] of the Google Cloud Console, search
-for "Cloud SQL API", click the first result and enabled the API.
+for "Cloud SQL API", click the first result and enable the API.
 
 NOTE: There are several similar "Cloud SQL" results. You must access the "Google Cloud SQL API" one
-and enable the API from there
+and enable the API from there.
 
 === Spring Boot Starter for Google Cloud SQL
 

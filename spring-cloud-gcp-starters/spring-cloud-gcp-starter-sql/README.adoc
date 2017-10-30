@@ -27,10 +27,10 @@ It only allows connections to second-generation Google Cloud SQL instances.
 Before using the starter, ensure that the Google Cloud SQL API is enabled in your GCP project.
 To do that, go to the
 https://console.cloud.google.com/apis/library[API library page] of the Google Cloud Console, search
-for "Cloud SQL API", click the first result and enabled the API.
+for "Cloud SQL API", click the first result and enable the API.
 
 NOTE: There are several similar "Cloud SQL" results. You must access the "Google Cloud SQL API" one
-and enable the API from there
+and enable the API from there.
 
 Based on your environment (e.g., Google App Engine) or database type (e.g., MySQL, PostgreSQL),
 the starter provides a `CloudSqlJdbcInfoProvider` object that returns the correct values for the
