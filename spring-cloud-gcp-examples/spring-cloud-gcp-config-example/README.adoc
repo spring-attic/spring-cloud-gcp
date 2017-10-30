@@ -4,7 +4,7 @@ This sample application demonstrates using the
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Spring Cloud GCP Config Client Starter] in your code.
 
 == Setup & Configuration
-1. Checkout out the code of this sample.
+1. Checkout the code of this sample.
 2. Setup the Google Runtime Configuration API with
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config#setup[these instructions].
 3. Create a configuration using the
