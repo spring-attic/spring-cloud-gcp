@@ -11,7 +11,6 @@
 
 	<artifactId>spring-cloud-gcp-examples</artifactId>
 	<name>Spring Cloud GCP Examples</name>
-	<version>1.0.0.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
