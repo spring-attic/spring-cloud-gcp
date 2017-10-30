@@ -25,6 +25,9 @@ dependencies {
 }
 ----
 
+You also need to add Pivotal's Snapshot repository per
+<<pivotal-snapshot-repository, these instructions>>.
+
 === Project ID
 
 `GcpProjectIdProvider` is a functional interface that returns a GCP project ID string.

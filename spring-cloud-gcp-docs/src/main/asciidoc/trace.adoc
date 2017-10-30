@@ -14,7 +14,6 @@ Zipkin server.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
-
 [source,xml]
 ----
 <dependency>
@@ -31,6 +30,9 @@ dependencies {
     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-trace', version: '{project-version}'
 }
 ----
+
+You also need to add Pivotal's Snapshot repository per
+<<pivotal-snapshot-repository, these instructions>>.
 
 You must enable Stackdriver Trace API from the Google Cloud Console in order to capture traces. Navigate to the
 https://console.cloud.google.com/apis/api/cloudtrace.googleapis.com/overview[Stackdriver Trace API] for your project

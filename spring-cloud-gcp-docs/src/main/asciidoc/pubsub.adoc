@@ -24,6 +24,9 @@ dependencies {
 }
 ----
 
+You also need to add Pivotal's Snapshot repository per
+<<pivotal-snapshot-repository, these instructions>>.
+
 === Pub/Sub operations abstraction
 
 `PubSubOperations` is an abstraction that allows Spring users to use Google Cloud Pub/Sub without

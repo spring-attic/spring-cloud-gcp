@@ -26,6 +26,9 @@ dependencies {
 }
 ----
 
+You also need to add Pivotal's Snapshot repository per
+<<pivotal-snapshot-repository, these instructions>>.
+
 === Channel Adapters for Google Cloud Pub/Sub
 
 ==== Inbound channel adapter

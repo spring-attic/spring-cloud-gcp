@@ -29,6 +29,9 @@ dependencies {
 }
 ----
 
+You also need to add Pivotal's Snapshot repository per
+<<pivotal-snapshot-repository, these instructions>>.
+
 === Configuration
 
 The following parameters are configurable in Spring Cloud GCP Config:
