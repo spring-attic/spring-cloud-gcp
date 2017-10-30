@@ -68,7 +68,7 @@ Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 [source,java]
 ----
 @Autowired
-private PubSubOperations pubSubTemplate;
+private PubSubTemplate pubSubTemplate;
 
 public void publishMessage() {
     this.pubSubTemplate.publish("topic", "your message payload", ImmutableMap.of("key1", "val1"));
@@ -84,7 +84,7 @@ It allows for the creation, deletion and listing of topics and subscriptions.
 `PubSubAdmin` depends on `GcpProjectIdProvider` and either a `CredentialsProvider` or a
 `TopicAdminClient` and a `SubscriptionAdminClient`.
 If given a `CredentialsProvider`, it creates a `TopicAdminClient` and a `SubscriptionAdminClient`
-with the Google Cloud Java Library for Pub/Sub defaults.
+with the Google Cloud Java Library for Pub/Sub default settings.
 The Spring Boot starter for GCP Pub/Sub auto-configures a `PubSubAdmin` object using the
 `GcpProjectIdProvider` and the `CredentialsProvider` auto-configured by the Spring Boot GCP Core
 starter.
@@ -248,19 +248,19 @@ return admin
 
 The Spring Boot starter for Google Cloud Pub/Sub provides the following configuration options:
 
-[source,yaml]
-----
-spring.cloud.gcp.pubsub.subscriber-executor-threads=2 #optional, default 4
-spring.cloud.gcp.pubsub.publisher-executor-threads=2 #optional, default 4
-spring.cloud.gcp.pubsub.project-id=[PUBSUB_GCP_PROJECT_ID] #optional
-spring.cloud.gcp.pubsub.credentials.location=[CREDENTIALS_RESOURCE_PATH] #optional
-spring.cloud.gcp.pubsub.credentials.scopes=[COMMA_DELIMITED_SCOPE_LIST] #optional
-----
-
-`spring.cloud.gcp.pubsub.subscriber-executor-threads` and
-`spring.cloud.gcp.pubsub.publisher-executor-threads` are the number of threads used by the
-`Subscriber` and `Publisher`, respectively.
-
-`spring.cloud.gcp.pubsub.project-id`, `spring.cloud.gcp.pubsub.credentials.location` and
-`spring.cloud.gcp.pubsub.credentials.scopes` are overrides to the same properties in the
-<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>.
+|===
+| Name | Description | Optional | Default value
+| `spring.cloud.gcp.pubsub.subscriber-executor-threads` | Number of threads used by `Subscriber`
+instances created by `SubscriberFactory` | Yes | 4
+| `spring.cloud.gcp.pubsub.publisher-executor-threads` | Number of threads used by `Publisher`
+instances created by `PublisherFactory` | Yes | 4
+| `spring.cloud.gcp.pubsub.project-id` | GCP project ID where the Google Cloud Pub/Sub API
+is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
+| Yes |
+| `spring.cloud.gcp.pubsub.credentials.location` | OAuth2 credentials for authenticating with the
+Google Cloud Pub/Sub API, if different from the ones in the
+<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | Yes |
+| `spring.cloud.gcp.pubsub.credentials.scopes` |
+https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
+Config credentials | Yes | https://www.googleapis.com/auth/pubsub
+|===
