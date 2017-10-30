@@ -26,6 +26,8 @@ dependencies {
 }
 ----
 
+You also need to add Pivotal's Snapshot repository per
+<<pivotal-snapshot-repository, these instructions>>.
 
 === Google Cloud Storage
 
