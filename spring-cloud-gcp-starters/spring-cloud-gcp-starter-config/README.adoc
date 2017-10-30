@@ -13,7 +13,6 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-
 [source]
 ----
 dependencies {
@@ -45,7 +44,8 @@ https://console.cloud.google.com[Google Cloud Console].
 3.  Enable the
 https://console.cloud.google.com/apis/api/runtimeconfig.googleapis.com/overview[Runtime
 Config API].
-4.  https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account] and
+4.  https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create
+a service account] with the `Project > Viewer` IAM role and
 set the credentials using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable or
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core/README.adoc[using GCP Starter Core properties]. (Note that when testing locally, the https://cloud.google.com/sdk/gcloud/reference/beta/auth/application-default/login[Cloud SDK application default credentials] are not supported by the Runtime Configuration API.)
 
@@ -58,6 +58,7 @@ should be in the format `config_profile`, for example: `myapp_prod`
 ....
 gcloud beta runtime-config configs create myapp_prod
 ....
+
 2. Then set the variables you wish to load.
 +
 ....
@@ -68,6 +69,7 @@ queue_size 25 \
 feature_x_enabled true \
 --config-name myapp_prod
 ....
+
 3.  Update `src/main/resources/bootstrap.properties` to specify the configuration name, profile and timeout:
 +
 Note: If using the
@@ -85,10 +87,14 @@ spring.cloud.gcp.config.credentials.location=file:/path/to/my/local/creds.json #
 spring.cloud.gcp.config.credentials.scopes=https://www.googleapis.com/auth/sqlservice.admin #optional
 ....
 +
-The  default value of `spring.cloud.config.profile` is `default`.
+The default value of `spring.cloud.config.profile` is `default`.
 +
 `spring.cloud.gcp.config.timeout` configures the timeout in milliseconds for requests sent to the
 Google Cloud Runtime Configurator API. This field is optional, and uses a default of 1 minute.
++
+If `spring.cloud.gcp.config.credentials.location` points to a file in your file system, don't
+forget the `file:` prefix.
+
 4.  Add Spring style configuration variables to your Spring components.
 +
 ....
