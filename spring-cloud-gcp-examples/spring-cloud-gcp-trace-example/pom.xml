@@ -6,7 +6,6 @@
     <groupId>com.example</groupId>
     <artifactId>spring-cloud-gcp-trace-example</artifactId>
     <name>Spring Cloud GCP Trace Code Sample</name>
-    <version>1.0.0.BUILD-SNAPSHOT</version>
 
     <parent>
         <artifactId>spring-cloud-gcp-examples</artifactId>
