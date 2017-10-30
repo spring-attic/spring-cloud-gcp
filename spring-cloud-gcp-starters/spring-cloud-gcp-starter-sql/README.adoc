@@ -25,6 +25,12 @@ This starter provides the configuration sources `CloudSqlJdbcInfoProvider` and `
 It only allows connections to second-generation Google Cloud SQL instances.
 
 Before using the starter, ensure that the Google Cloud SQL API is enabled in your GCP project.
+To do that, go to the
+https://console.cloud.google.com/apis/library[API library page] of the Google Cloud Console, search
+for "Cloud SQL API", click the first result and enable the API.
+
+NOTE: There are several similar "Cloud SQL" results. You must access the "Google Cloud SQL API" one
+and enable the API from there.
 
 Based on your environment (e.g., Google App Engine) or database type (e.g., MySQL, PostgreSQL),
 the starter provides a `CloudSqlJdbcInfoProvider` object that returns the correct values for the
@@ -33,6 +39,8 @@ JDBC URL and driver class name to be used.
 The starter uses Spring Boot to
 https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/autoconfigure/jdbc/DataSourceProperties.html[configure
 a DataSource].
+The SQL username and password are configured through `spring.datasource.username` and
+`spring.datasource.password`.
 `spring.datasource.url` and `spring.datasource.driver-class-name` are automatically configured by
 the provided `CloudSqlJdbcInfoProvider`, unless they are explicitly configured.
 

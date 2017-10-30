@@ -29,6 +29,18 @@ dependencies {
 ----
 
 
+=== Prerequisites
+
+In order to use the Spring Boot Starter for Google Cloud SQL features, the Google Cloud SQL API
+must be enabled in your GCP project.
+
+To do that, go to the
+https://console.cloud.google.com/apis/library[API library page] of the Google Cloud Console, search
+for "Cloud SQL API", click the first result and enable the API.
+
+NOTE: There are several similar "Cloud SQL" results. You must access the "Google Cloud SQL API" one
+and enable the API from there.
+
 === Spring Boot Starter for Google Cloud SQL
 
 The Spring Boot Starter for Google Cloud SQL provides an auto-configured
@@ -51,6 +63,10 @@ public List<Map<String, Object>> listUsers() {
 
 This starter is configured through
 https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/autoconfigure/jdbc/DataSourceProperties.html[`DataSourceProperties`].
+Properties like the SQL username, `spring.datasource.username`, and password,
+`spring.datasource.password`, should be configured via the
+https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html#boot-features-connect-to-production-database[Spring
+Boot Datasource configuration].
 There is also some configuration specific to Google Cloud SQL:
 
 |===
