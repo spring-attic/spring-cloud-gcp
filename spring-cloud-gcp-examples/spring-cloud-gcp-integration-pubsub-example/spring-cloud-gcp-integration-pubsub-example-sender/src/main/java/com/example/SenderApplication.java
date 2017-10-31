@@ -18,6 +18,9 @@ package com.example;
 
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
@@ -26,6 +29,7 @@ import org.springframework.integration.annotation.MessagingGateway;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.gcp.pubsub.outbound.PubSubMessageHandler;
 import org.springframework.messaging.MessageHandler;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 /**
  * Spring Integration Channel Adapters for Google Cloud Pub/Sub code sample.
@@ -35,6 +39,8 @@ import org.springframework.messaging.MessageHandler;
 @SpringBootApplication
 public class SenderApplication {
 
+	private static final Log LOGGER = LogFactory.getLog(SenderApplication.class);
+
 	public static void main(String[] args) throws IOException {
 		SpringApplication.run(SenderApplication.class, args);
 	}
@@ -42,7 +48,21 @@ public class SenderApplication {
 	@Bean
 	@ServiceActivator(inputChannel = "pubsubOutputChannel")
 	public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
-		return new PubSubMessageHandler(pubsubTemplate, "exampleTopic");
+		PubSubMessageHandler adapter =
+				new PubSubMessageHandler(pubsubTemplate, "exampleTopic");
+		adapter.setPublishCallback(new ListenableFutureCallback<String>() {
+			@Override
+			public void onFailure(Throwable ex) {
+				LOGGER.info("There was an error sending the message.");
+			}
+
+			@Override
+			public void onSuccess(String result) {
+				LOGGER.info("Message was sent successfully.");
+			}
+		});
+
+		return adapter;
 	}
 
 	@MessagingGateway(defaultRequestChannel = "pubsubOutputChannel")
