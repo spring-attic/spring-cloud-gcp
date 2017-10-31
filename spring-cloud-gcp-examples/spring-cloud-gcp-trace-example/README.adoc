@@ -4,8 +4,8 @@ This sample application demonstrates using the
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-trace[Spring Cloud GCP Trace Starter] in your code.
 
 You can read about the Spring Boot Starter for Stackdriver Trace in more detail at the
-https://docs.spring.io/spring-cloud-gcp/docs/1.0.0.BUILD-SNAPSHOT/reference/htmlsingle/#_spring_cloud_sleuth[Spring
-Cloud GCP Reference Document Stackdriver Trace section].
+link:../../spring-cloud-gcp-docs/src/main/asciidoc/trace[Spring Cloud GCP Reference Document
+Stackdriver Trace section].
 
 == Setup & Configuration
 1. Create a Google Cloud Platform Project
