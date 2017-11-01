@@ -1,0 +1,45 @@
+= Spring Cloud GCP Storage Starter Example
+
+This code sample demonstrates how to read and write files with the Spring Resource abstraction for
+Google Cloud Storage using the
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-storage[Spring Cloud GCP Storage Starter].
+
+= Running the example
+
+1. Make sure that you have the Cloud SDK configured by following https://cloud.google.com/sdk/docs/[these instructions].
+
+2. Create a new bucket in Google Cloud Storage. You can use the `gsutil` command that comes with the
+Cloud SDK.
++
+```
+$ BUCKET=spring-bucket-$USER
+$ gsutil makebucket gs://$BUCKET
+$ gsutil copy my-file.txt gs://$BUCKET
+```
+
+3. Transfer the local `my-file.txt` file to the bucket.
++
+```
+$ gsutil copy my-file.txt gs://$BUCKET
+```
+
+4. Edit the `src/main/java/com/example/WebController.java` file so that `REPLACE_WITH_YOUR_BUCKET` is replaced
+with the name of the bucket you created in Step 2.
+
+6. Start the `GcsApplication` Spring Boot app.
++
+```
+mvn spring-boot:run
+```
+
+7. Navigate to http://localhost:8080/ in your browser to print the contents of the file you uploaded in 3.
+
+8. To update the file contents, send a POST request to the same endpoint using `curl`:
++
+```
+curl -d 'new message' -H 'Content-Type: text/plain' localhost:8080
+```
++
+You should see a confirmation that the contents of the file were updated.
++
+However, let's verify by going to http://localhost:8080/.
