@@ -22,6 +22,7 @@
 		<module>spring-cloud-gcp-trace-example</module>
 		<module>spring-cloud-gcp-sql-example</module>
 		<module>spring-cloud-gcp-integration-pubsub-example</module>
+		<module>spring-cloud-gcp-storage-resource-example</module>
 	</modules>
 
 	<build>
