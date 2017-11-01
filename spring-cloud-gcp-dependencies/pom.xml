@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-dependencies-parent</artifactId>
-		<version>1.3.3.BUILD-SNAPSHOT</version>
+		<version>1.3.5.RELEASE</version>
 		<relativePath/>
 	</parent>
 
@@ -17,12 +17,13 @@
 
 	<properties>
 		<google-cloud-core.version>1.2.3</google-cloud-core.version>
-		<google-cloud-pubsub.version>0.20.1-beta</google-cloud-pubsub.version>
-		<google-cloud-trace.version>0.20.1-alpha</google-cloud-trace.version>
+		<google-cloud-pubsub.version>0.26.0-beta</google-cloud-pubsub.version>
+		<google-cloud-trace.version>0.26.0-alpha</google-cloud-trace.version>
 		<google-cloud-storage.version>1.2.1</google-cloud-storage.version>
 		<cloud-trace-java.version>0.4.0</cloud-trace-java.version>
-		<spring-cloud.version>1.2.1.RELEASE</spring-cloud.version>
-		<spring-boot.version>1.5.4.RELEASE</spring-boot.version>
+		<spring-cloud-context.version>1.2.3.RELEASE</spring-cloud-context.version>
+		<spring-cloud-sleuth.version>1.2.5.RELEASE</spring-cloud-sleuth.version>
+		<spring-cloud-stream.version>1.2.1.RELEASE</spring-cloud-stream.version>
 	</properties>
 
 	<dependencyManagement>
@@ -112,19 +113,19 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-sleuth-core</artifactId>
-				<version>${spring-cloud.version}</version>
+				<version>${spring-cloud-sleuth.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-starter-sleuth</artifactId>
-				<version>${spring-cloud.version}</version>
+				<version>${spring-cloud-sleuth.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-stream</artifactId>
-				<version>${spring-cloud.version}</version>
+				<version>${spring-cloud-stream.version}</version>
 			</dependency>
 
 			<!-- spring-cloud-gcp-starter-core -->
@@ -142,28 +143,15 @@
 
 			<!-- spring-cloud-gcp-starter-sql -->
 			<dependency>
-				<groupId>com.google.apis</groupId>
-				<artifactId>google-api-services-sqladmin</artifactId>
-				<version>v1beta4-rev45-1.22.0</version>
+				<groupId>com.google.cloud.sql</groupId>
+				<artifactId>mysql-socket-factory</artifactId>
+				<version>1.0.4</version>
 				<exclusions>
 					<exclusion>
 						<groupId>com.google.guava</groupId>
 						<artifactId>guava-jdk5</artifactId>
 					</exclusion>
 				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>com.google.cloud.sql</groupId>
-				<artifactId>mysql-socket-factory</artifactId>
-				<version>1.0.4</version>
-			</dependency>
-
-			<!-- Configuration properties metadata -->
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-configuration-processor</artifactId>
-				<version>${spring-boot.version}</version>
 			</dependency>
 
 			<dependency>
@@ -188,7 +176,14 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-context</artifactId>
-				<version>${spring-cloud.version}</version>
+				<version>${spring-cloud-context.version}</version>
+			</dependency>
+
+			<!-- spring-cloud-gcp-pubsub -->
+			<dependency>
+				<groupId>com.google.api</groupId>
+				<artifactId>gax</artifactId>
+				<version>1.9.0</version>
 			</dependency>
 
 			<!--Starters-->

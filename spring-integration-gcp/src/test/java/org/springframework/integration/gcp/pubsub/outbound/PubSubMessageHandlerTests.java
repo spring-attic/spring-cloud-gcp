@@ -28,12 +28,15 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.expression.Expression;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -54,9 +57,12 @@ public class PubSubMessageHandlerTests {
 	public void setUp() {
 		this.message = new GenericMessage<>("testPayload",
 				ImmutableMap.of("key1", "value1", "key2", "value2"));
-		when(this.pubSubTemplate.publish(eq("testTopic"), eq("testPayload"),
+		SettableListenableFuture<String> future = new SettableListenableFuture<>();
+		future.set("benfica");
+		when(this.pubSubTemplate.publish(eq("testTopic"),
+				eq(ByteString.copyFrom("testPayload", Charset.defaultCharset())),
 				isA(Map.class)))
-				.thenReturn(new SettableListenableFuture<>());
+				.thenReturn(future);
 		this.adapter = new PubSubMessageHandler(this.pubSubTemplate, "testTopic");
 
 	}
@@ -68,5 +74,37 @@ public class PubSubMessageHandlerTests {
 				.publish(eq("testTopic"),
 						eq(ByteString.copyFrom("testPayload", Charset.defaultCharset())),
 						isA(Map.class));
+	}
+
+	@Test
+	public void testPublishSync() {
+		this.adapter.setSync(true);
+		Expression timeout = spy(this.adapter.getPublishTimeoutExpression());
+		this.adapter.setPublishTimeoutExpression(timeout);
+
+		this.adapter.handleMessage(this.message);
+		verify(timeout, times(1)).getValue(
+				eq(null), eq(this.message), eq(Long.class));
+	}
+
+	@Test
+	public void testPublishCallback() {
+		ListenableFutureCallback<String> callbackSpy = spy(new ListenableFutureCallback<String>() {
+			@Override
+			public void onFailure(Throwable ex) {
+
+			}
+
+			@Override
+			public void onSuccess(String result) {
+
+			}
+		});
+
+		this.adapter.setPublishCallback(callbackSpy);
+
+		this.adapter.handleMessage(this.message);
+
+		verify(callbackSpy, times(1)).onSuccess(eq("benfica"));
 	}
 }

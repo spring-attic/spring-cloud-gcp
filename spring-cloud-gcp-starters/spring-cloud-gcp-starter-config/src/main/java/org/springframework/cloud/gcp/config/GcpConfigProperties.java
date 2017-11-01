@@ -16,7 +16,11 @@
 
 package org.springframework.cloud.gcp.config;
 
+import java.util.Collections;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
+import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
  * Configuration for {@link GoogleConfigPropertySourceLocator}.
@@ -34,6 +38,10 @@ public class GcpConfigProperties {
 
 	// Config server API time out in milliseconds, default = 1 minute
 	private int timeout = 60000;
+
+	private String projectId;
+
+	private Credentials credentials;
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
@@ -65,5 +73,27 @@ public class GcpConfigProperties {
 
 	public int getTimeout() {
 		return this.timeout;
+	}
+
+	public String getProjectId() {
+		return this.projectId;
+	}
+
+	public void setProjectId(String projectId) {
+		this.projectId = projectId;
+	}
+
+	public Credentials getCredentials() {
+		return this.credentials;
+	}
+
+	public void setCredentials(Credentials credentials) {
+		this.credentials = credentials;
+	}
+
+	public static class Credentials extends AbstractCredentialsProperty {
+		public Credentials() {
+			setScopes(Collections.singletonList(GcpScope.RUNTIME_CONFIG_SCOPE.getUrl()));
+		}
 	}
 }

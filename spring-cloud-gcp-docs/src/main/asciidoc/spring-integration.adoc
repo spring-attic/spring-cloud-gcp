@@ -26,7 +26,7 @@ dependencies {
 }
 ----
 
-=== Channel Adapters for Google cloud Pub/Sub
+=== Channel Adapters for Google Cloud Pub/Sub
 
 ==== Inbound channel adapter
 
@@ -84,8 +84,7 @@ users can extract using the `GcpHeaders.ACKNOWLEDGEMENT` key and use to (n)ack a
 @ServiceActivator(inputChannel = "pubsubInputChannel")
 public MessageHandler messageReceiver() {
     return message -> {
-        LOGGER.info("Message arrived! Payload: "
-              + ((ByteString) message.getPayload()).toStringUtf8());
+        LOGGER.info("Message arrived! Payload: " + message.getPayload());
         AckReplyConsumer consumer =
               message.getHeaders().get(GcpHeaders.ACKNOWLEDGEMENT, AckReplyConsumer.class);
         consumer.ack();
@@ -108,11 +107,17 @@ on the user application side.
 @Bean
 @ServiceActivator(inputChannel = "pubsubOutputChannel")
 public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
-    PubSubMessageHandler outboundAdapter = new PubSubMessageHandler(pubsubTemplate);
-    outboundAdapter.setTopic("topicName");
-    return outboundAdapter;
+    return new PubSubMessageHandler(pubsubTemplate, "topicName");
 }
 ----
 
 The provided `PubSubTemplate` contains all the necessary configuration to publish messages to a
 GCP Pub/Sub topic.
+
+`PubSubMessageHandler` publishes messages asynchronously by default.
+A publish timeout can be configured for synchronous publishing. If none is provided, the adapter
+waits indefinitely for a response.
+
+It is possible to set user-defined callbacks for the `publish()` call in `PubSubMessageHandler`
+through the `setPublishFutureCallback()` method.
+These are useful to process the message ID, in case of success, or the error if any was thrown.

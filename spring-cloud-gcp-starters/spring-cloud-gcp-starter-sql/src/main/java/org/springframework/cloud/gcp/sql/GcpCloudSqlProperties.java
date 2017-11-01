@@ -16,9 +16,8 @@
 
 package org.springframework.cloud.gcp.sql;
 
-import java.nio.file.Path;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.core.io.Resource;
 
 /**
  * Google Cloud SQL properties.
@@ -27,22 +26,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties("spring.cloud.gcp.sql")
 public class GcpCloudSqlProperties {
-
 	private String databaseName;
 
 	private String instanceConnectionName;
 
-	private String jdbcUrl;
-
-	private String jdbcDriver;
-
-	private String userName = "root";
-
-	private String password = "";
-
-	private boolean initFailFast;
-
-	private Path credentialsLocation;
+	private Credentials credentials;
 
 	private DatabaseType databaseType = DatabaseType.MYSQL;
 
@@ -62,52 +50,12 @@ public class GcpCloudSqlProperties {
 		this.instanceConnectionName = instanceConnectionName;
 	}
 
-	public String getJdbcUrl() {
-		return this.jdbcUrl;
+	public Credentials getCredentials() {
+		return this.credentials;
 	}
 
-	public void setJdbcUrl(String jdbcUrl) {
-		this.jdbcUrl = jdbcUrl;
-	}
-
-	public String getJdbcDriver() {
-		return this.jdbcDriver;
-	}
-
-	public void setJdbcDriver(String jdbcDriver) {
-		this.jdbcDriver = jdbcDriver;
-	}
-
-	public String getUserName() {
-		return this.userName;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-
-	public String getPassword() {
-		return this.password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public boolean isInitFailFast() {
-		return this.initFailFast;
-	}
-
-	public void setInitFailFast(boolean initFailFast) {
-		this.initFailFast = initFailFast;
-	}
-
-	public Path getCredentialsLocation() {
-		return this.credentialsLocation;
-	}
-
-	public void setCredentialsLocation(Path credentialsLocation) {
-		this.credentialsLocation = credentialsLocation;
+	public void setCredentials(Credentials credentials) {
+		this.credentials = credentials;
 	}
 
 	public DatabaseType getDatabaseType() {
@@ -116,5 +64,17 @@ public class GcpCloudSqlProperties {
 
 	public void setDatabaseType(DatabaseType databaseType) {
 		this.databaseType = databaseType;
+	}
+
+	public static class Credentials {
+		private Resource location;
+
+		public Resource getLocation() {
+			return this.location;
+		}
+
+		public void setLocation(Resource location) {
+			this.location = location;
+		}
 	}
 }

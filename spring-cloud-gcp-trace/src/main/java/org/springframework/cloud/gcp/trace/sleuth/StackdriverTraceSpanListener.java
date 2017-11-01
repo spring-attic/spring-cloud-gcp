@@ -180,8 +180,8 @@ public class StackdriverTraceSpanListener implements SpanReporter {
 		}
 	}
 
-	private long rewriteId(Long id) {
-		if (id == null) {
+	private long rewriteId(long id) {
+		if (id == 0) {
 			return 0;
 		}
 		// To deterministically rewrite the ID, xor it with a random 64-bit constant.

@@ -15,7 +15,11 @@
  */
 package org.springframework.cloud.gcp.trace;
 
+import java.util.Collections;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
+import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
  * Stackdriver Trace Properties.
@@ -45,6 +49,10 @@ public class GcpTraceProperties {
 	 * buffered longer than scheduled delays.
 	 */
 	private int scheduledDelaySeconds = 10;
+
+	private String projectId;
+
+	private Credentials credentials;
 
 	/**
 	 * A utility method to determine x% of total memory based on Zipkin's AsyncReporter.
@@ -82,5 +90,27 @@ public class GcpTraceProperties {
 
 	public void setScheduledDelaySeconds(int scheduledDelaySeconds) {
 		this.scheduledDelaySeconds = scheduledDelaySeconds;
+	}
+
+	public String getProjectId() {
+		return this.projectId;
+	}
+
+	public void setProjectId(String projectId) {
+		this.projectId = projectId;
+	}
+
+	public Credentials getCredentials() {
+		return this.credentials;
+	}
+
+	public void setCredentials(Credentials credentials) {
+		this.credentials = credentials;
+	}
+
+	public static class Credentials extends AbstractCredentialsProperty {
+		public Credentials() {
+			setScopes(Collections.singletonList(GcpScope.TRACE_APPEND.getUrl()));
+		}
 	}
 }

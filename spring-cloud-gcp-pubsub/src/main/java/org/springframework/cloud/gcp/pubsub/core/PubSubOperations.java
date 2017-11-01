@@ -50,7 +50,7 @@ public interface PubSubOperations {
 	 * @param topic the name of an existing topic
 	 * @param payload the message String payload
 	 * @param headers map of String to String headers
-	 * @param charset charset to decode the {@param payload}
+	 * @param charset charset to decode the payload
 	 * @return the listenable future of the call
 	 */
 	ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers,
@@ -81,7 +81,7 @@ public interface PubSubOperations {
 	 *
 	 * @param topic the name of an existing topic
 	 * @param pubsubMessage a Google Cloud Pub/Sub API message
-	 * @return
+	 * @return the listenable future of the call
 	 */
 	ListenableFuture<String> publish(String topic, PubsubMessage pubsubMessage);
 
