@@ -19,7 +19,7 @@ package org.springframework.cloud.gcp.stream.binder.pubsub.config;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
-import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.stream.binder.pubsub.PubSubMessageChannelBinder;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.provisioning.PubSubChannelProvisioner;
@@ -43,7 +43,7 @@ public class PubSubBinderConfiguration {
 	@Bean
 	public PubSubMessageChannelBinder pubSubBinder(
 			PubSubChannelProvisioner pubSubChannelProvisioner,
-			PubSubOperations pubSubTemplate) {
+			PubSubTemplate pubSubTemplate) {
 		return new PubSubMessageChannelBinder(false, null, pubSubChannelProvisioner, pubSubTemplate);
 	}
 }

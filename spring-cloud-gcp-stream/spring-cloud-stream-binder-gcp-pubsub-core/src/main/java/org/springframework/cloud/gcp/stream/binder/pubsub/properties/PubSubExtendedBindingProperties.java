@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.stream.binder.ExtendedBindingProperties;
 
@@ -26,13 +29,29 @@ import org.springframework.cloud.stream.binder.ExtendedBindingProperties;
 public class PubSubExtendedBindingProperties
 		implements ExtendedBindingProperties<PubSubConsumerProperties, PubSubProducerProperties> {
 
+	private Map<String, PubSubBindingProperties> bindings = new HashMap<>();
+
+	public Map<String, PubSubBindingProperties> getBindings() {
+		return this.bindings;
+	}
+
 	@Override
 	public PubSubConsumerProperties getExtendedConsumerProperties(String channelName) {
-		return null;
+		if (this.bindings.containsKey(channelName)
+				&& this.bindings.get(channelName).getConsumer() != null) {
+			return this.bindings.get(channelName).getConsumer();
+		}
+
+		return new PubSubConsumerProperties();
 	}
 
 	@Override
 	public PubSubProducerProperties getExtendedProducerProperties(String channelName) {
-		return null;
+		if (this.bindings.containsKey(channelName)
+				&& this.bindings.get(channelName).getProducer() != null) {
+			return this.bindings.get(channelName).getProducer();
+		}
+
+		return new PubSubProducerProperties();
 	}
 }

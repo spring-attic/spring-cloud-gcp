@@ -20,7 +20,8 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.grpc.ApiException;
+import com.google.api.gax.grpc.GrpcStatusCode;
+import com.google.api.gax.rpc.ApiException;
 import com.google.cloud.pubsub.v1.PagedResponseWrappers;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
@@ -109,7 +110,8 @@ public class PubSubAdmin {
 			return this.topicAdminClient.getTopic(TopicName.create(this.projectId, topicName));
 		}
 		catch (ApiException aex) {
-			if (aex.getStatusCode() == Status.Code.NOT_FOUND) {
+			if (aex.getStatusCode() instanceof GrpcStatusCode
+					&& ((GrpcStatusCode) aex.getStatusCode()).getCode() == Status.Code.NOT_FOUND) {
 				return null;
 			}
 
@@ -228,7 +230,8 @@ public class PubSubAdmin {
 					SubscriptionName.create(this.projectId, subscriptionName));
 		}
 		catch (ApiException aex) {
-			if (aex.getStatusCode() == Status.Code.NOT_FOUND) {
+			if (aex.getStatusCode() instanceof GrpcStatusCode
+					&& ((GrpcStatusCode) aex.getStatusCode()).getCode() == Status.Code.NOT_FOUND) {
 				return null;
 			}
 
