@@ -7,7 +7,7 @@
 	<parent>
 		<artifactId>spring-cloud-gcp</artifactId>
 		<groupId>org.springframework.cloud</groupId>
-		<version>1.0.0.BUILD-SNAPSHOT</version>
+		<version>1.0.0.M1</version>
 	</parent>
 	<name>Spring Integration GCP</name>
 	<description>Integration modules for Google Cloud Platform</description>

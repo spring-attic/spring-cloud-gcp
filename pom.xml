@@ -11,7 +11,7 @@
 	</parent>
 
 	<artifactId>spring-cloud-gcp</artifactId>
-	<version>1.0.0.BUILD-SNAPSHOT</version>
+	<version>1.0.0.M1</version>
 	<packaging>pom</packaging>
 	<name>Spring Cloud GCP</name>
 	<description>Spring Cloud GCP</description>
@@ -32,7 +32,6 @@
 		<module>spring-cloud-gcp-starters</module>
 		<module>spring-integration-gcp</module>
 		<module>spring-cloud-gcp-docs</module>
-		<module>spring-cloud-gcp-examples</module>
 	</modules>
 
 	<properties>
