@@ -50,12 +50,6 @@ public class WebController {
 	public RedirectView createSubscription(@RequestParam("topicName") String topicName,
 			@RequestParam("subscriptionName") String subscriptionName) {
 		this.pubSubAdmin.createSubscription(subscriptionName, topicName);
-		this.pubSubTemplate.subscribe(subscriptionName,
-				(pubsubMessage, ackReplyConsumer) -> {
-					LOGGER.info("Message received from " + subscriptionName + " subscription. "
-							+ pubsubMessage.getData().toStringUtf8());
-					ackReplyConsumer.ack();
-				});
 
 		return new RedirectView("/");
 	}

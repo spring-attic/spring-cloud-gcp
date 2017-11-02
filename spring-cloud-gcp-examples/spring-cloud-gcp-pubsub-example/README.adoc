@@ -55,7 +55,9 @@ One flow you can follow is to:
 This creates a subscription and automatically starts listening to it.
 Any new messages in the subscription are logged.
 
-3. Send message `Hello world!` to topic `exampleTopic`.
+3. Subscribe to the `exampleSubscription` subscription.
+
+4. Send message `Hello world!` to topic `exampleTopic`.
 +
 You should see the following message logged:
 +
@@ -63,13 +65,6 @@ You should see the following message logged:
 Message received from exampleSubscription subscription. Hello world!
 ----
 
-4. Delete topic `exampleTopic`.
+5. Delete topic `exampleTopic`.
 
-5. Delete topic `exampleSubscription`.
-
-Another suggested flow is to restart the local application after step 3.
-This causes the application to stop listening to the existing subscription.
-You can make it listen to the same subscription again by subscribing to the `exampleSubscription`
-subscription.
-
-Check that your app is listening by repeating step 3. and verifying that the message is logged.
+6. Delete topic `exampleSubscription`.
