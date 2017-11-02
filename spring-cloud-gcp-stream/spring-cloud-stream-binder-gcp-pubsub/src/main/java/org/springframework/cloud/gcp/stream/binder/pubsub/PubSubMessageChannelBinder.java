@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub;
 
-import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
@@ -43,21 +43,22 @@ public class PubSubMessageChannelBinder
 	implements ExtendedPropertiesBinder<MessageChannel, PubSubConsumerProperties,
 		PubSubProducerProperties> {
 
-	private PubSubOperations pubSubTemplate;
+	private PubSubTemplate pubSubTemplate;
 
 	private PubSubExtendedBindingProperties pubSubExtendedBindingProperties =
 			new PubSubExtendedBindingProperties();
 
 	public PubSubMessageChannelBinder(boolean supportsHeadersNatively, String[] headersToEmbed,
-			PubSubChannelProvisioner provisioningProvider, PubSubOperations pubSubTemplate) {
+			PubSubChannelProvisioner provisioningProvider, PubSubTemplate pubSubTemplate) {
 		super(supportsHeadersNatively, headersToEmbed, provisioningProvider);
 		this.pubSubTemplate = pubSubTemplate;
 	}
 
 	@Override
 	protected MessageHandler createProducerMessageHandler(ProducerDestination destination,
-			ExtendedProducerProperties<PubSubProducerProperties> producerProperties)
-			throws Exception {
+			ExtendedProducerProperties<PubSubProducerProperties> producerProperties,
+			MessageChannel errorChannel) throws Exception {
+
 		this.provisioningProvider.provisionProducerDestination(
 				destination.getName(), producerProperties);
 
@@ -68,8 +69,11 @@ public class PubSubMessageChannelBinder
 	protected MessageProducer createConsumerEndpoint(ConsumerDestination destination, String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties) throws Exception {
 
+		String consumerName = group == null
+				? destination.getName() : destination.getName() + "-" + group;
+
 		this.provisioningProvider.provisionConsumerDestination(
-				destination.getName(), group, properties);
+				consumerName, group, properties);
 
 		return new PubSubInboundChannelAdapter(this.pubSubTemplate, destination.getName());
 	}
@@ -83,4 +87,6 @@ public class PubSubMessageChannelBinder
 	public PubSubProducerProperties getExtendedProducerProperties(String channelName) {
 		return this.pubSubExtendedBindingProperties.getExtendedProducerProperties(channelName);
 	}
+
+
 }
