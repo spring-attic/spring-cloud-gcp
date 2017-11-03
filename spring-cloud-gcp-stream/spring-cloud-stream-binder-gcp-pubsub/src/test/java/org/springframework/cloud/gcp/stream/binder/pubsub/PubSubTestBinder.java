@@ -1,3 +1,19 @@
+/*
+ *  Copyright 2017 original author or authors.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package org.springframework.cloud.gcp.stream.binder.pubsub;
 
 import java.util.concurrent.Executors;
@@ -26,19 +42,22 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 /**
  * @author Andreas Berger
  */
-public class PubSubTestBinder extends
-		AbstractTestBinder<PubSubMessageChannelBinder, ExtendedConsumerProperties<PubSubConsumerProperties>, ExtendedProducerProperties<PubSubProducerProperties>> {
+public class PubSubTestBinder extends AbstractTestBinder<PubSubMessageChannelBinder,
+		ExtendedConsumerProperties<PubSubConsumerProperties>,
+		ExtendedProducerProperties<PubSubProducerProperties>> {
 
 	private final PubSubAdmin pubSubAdmin;
 
-	public PubSubTestBinder(String project, boolean supportsHeadersNatively, PubSubSupport pubSubSupport) {
+	public PubSubTestBinder(String project, boolean supportsHeadersNatively,
+			PubSubSupport pubSubSupport) {
 		GcpProjectIdProvider projectIdProvider = () -> project;
 
-		pubSubAdmin = new PubSubAdmin(projectIdProvider,
+		this.pubSubAdmin = new PubSubAdmin(projectIdProvider,
 				pubSubSupport.getTopicAdminClient(),
 				pubSubSupport.getSubscriptionAdminClient());
 
-		ExecutorProvider executor = FixedExecutorProvider.create(Executors.newScheduledThreadPool(5));
+		ExecutorProvider executor =
+				FixedExecutorProvider.create(Executors.newScheduledThreadPool(5));
 
 		PublisherFactory publisherFactory = new DefaultPublisherFactory(
 				projectIdProvider,
@@ -55,14 +74,15 @@ public class PubSubTestBinder extends
 		PubSubMessageChannelBinder binder = new PubSubMessageChannelBinder(
 				supportsHeadersNatively,
 				new String[0],
-				new PubSubChannelProvisioner(pubSubAdmin),
+				new PubSubChannelProvisioner(this.pubSubAdmin),
 				new PubSubTemplate(publisherFactory, subscriberFactory));
 
 		GenericApplicationContext context = new GenericApplicationContext();
 		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
 		scheduler.setPoolSize(1);
 		scheduler.afterPropertiesSet();
-		context.getBeanFactory().registerSingleton(IntegrationContextUtils.TASK_SCHEDULER_BEAN_NAME, scheduler);
+		context.getBeanFactory().registerSingleton(
+				IntegrationContextUtils.TASK_SCHEDULER_BEAN_NAME, scheduler);
 		context.refresh();
 		binder.setApplicationContext(context);
 		binder.setCodec(new PojoCodec());
@@ -72,13 +92,14 @@ public class PubSubTestBinder extends
 
 	@Override
 	public void cleanup() {
-		pubSubAdmin.listSubscriptions().forEach(subscription -> {
+		this.pubSubAdmin.listSubscriptions().forEach(subscription -> {
 			System.out.println("Deleting subscription: " + subscription.getName());
-			pubSubAdmin.deleteSubscription(subscription.getNameAsSubscriptionName().getSubscription());
+			this.pubSubAdmin.deleteSubscription(
+					subscription.getNameAsSubscriptionName().getSubscription());
 		});
-		pubSubAdmin.listTopics().forEach(topic -> {
+		this.pubSubAdmin.listTopics().forEach(topic -> {
 			System.out.println("Deleting topic: " + topic.getName());
-			pubSubAdmin.deleteTopic(topic.getNameAsTopicName().getTopic());
+			this.pubSubAdmin.deleteTopic(topic.getNameAsTopicName().getTopic());
 		});
 	}
 }

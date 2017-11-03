@@ -195,16 +195,16 @@ public class PubSubMessageHandler extends AbstractMessageHandler implements Life
 
 	@Override
 	public void start() {
-		running = true;
+		this.running = true;
 	}
 
 	@Override
 	public void stop() {
-		running = false;
+		this.running = false;
 	}
 
 	@Override
 	public boolean isRunning() {
-		return running;
+		return this.running;
 	}
 }
