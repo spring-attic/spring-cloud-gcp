@@ -25,7 +25,6 @@ import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
-import org.springframework.context.Lifecycle;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.integration.expression.ExpressionUtils;
@@ -47,7 +46,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
  *
  * @author João André Martins
  */
-public class PubSubMessageHandler extends AbstractMessageHandler implements Lifecycle {
+public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private static final long DEFAULT_PUBLISH_TIMEOUT = 10000;
 
@@ -64,7 +63,6 @@ public class PubSubMessageHandler extends AbstractMessageHandler implements Life
 	private Expression publishTimeoutExpression = new ValueExpression<>(DEFAULT_PUBLISH_TIMEOUT);
 
 	private ListenableFutureCallback<String> publishCallback;
-	private boolean running;
 
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
@@ -191,20 +189,5 @@ public class PubSubMessageHandler extends AbstractMessageHandler implements Life
 	protected void onInit() throws Exception {
 		super.onInit();
 		this.evaluationContext = ExpressionUtils.createStandardEvaluationContext(getBeanFactory());
-	}
-
-	@Override
-	public void start() {
-		this.running = true;
-	}
-
-	@Override
-	public void stop() {
-		this.running = false;
-	}
-
-	@Override
-	public boolean isRunning() {
-		return this.running;
 	}
 }
