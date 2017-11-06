@@ -21,13 +21,13 @@ package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
  */
 public class PubSubConsumerProperties {
 
-	private boolean autoCreateTopic = true;
+	private boolean autoCreateResources = true;
 
-	public boolean isAutoCreateTopic() {
-		return this.autoCreateTopic;
+	public boolean isAutoCreateResources() {
+		return this.autoCreateResources;
 	}
 
-	public void setAutoCreateTopic(boolean autoCreateTopic) {
-		this.autoCreateTopic = autoCreateTopic;
+	public void setAutoCreateResources(boolean autoCreateResources) {
+		this.autoCreateResources = autoCreateResources;
 	}
 }

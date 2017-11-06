@@ -55,15 +55,16 @@ public class PubSubChannelProvisioner
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties)
 			throws ProvisioningException {
 		if (this.pubSubAdmin.getSubscription(name) == null
-				&& properties.getExtension().isAutoCreateTopic()) {
-			if (this.pubSubAdmin.getTopic(name) == null) {
+				&& properties.getExtension().isAutoCreateResources()) {
+			if (this.pubSubAdmin.getTopic(name) == null
+					&& properties.getExtension().isAutoCreateResources()) {
 				this.pubSubAdmin.createTopic(name);
 			}
 
 			this.pubSubAdmin.createSubscription(name, name);
 		}
 		else {
-			throw new ProvisioningException("Unexisting '" + name); // this is where I was
+			throw new ProvisioningException("Unexisting '" + name);
 		}
 
 		return new PubSubConsumerDestination(name);
