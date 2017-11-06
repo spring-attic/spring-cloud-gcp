@@ -23,6 +23,7 @@
 		<module>spring-cloud-gcp-sql-example</module>
 		<module>spring-cloud-gcp-integration-pubsub-example</module>
 		<module>spring-cloud-gcp-storage-resource-example</module>
+		<module>spring-cloud-gcp-pubsub-example</module>
 	</modules>
 
 	<build>

@@ -1,0 +1,70 @@
+= Spring Cloud GCP Pub/Sub Code Sample
+
+This is an example application that demonstrates how to use the Spring Cloud GCP Pub/Sub abstraction
+to do things like:
+
+* Create a topic
+* Create a subscription for a topic
+* Publish a message to a topic and process it
+* Listen to an active subscription
+* Delete a topic
+* Delete a subscription
+
+The sample uses the `PubSubAdmin` class to perform administrative tasks like creating resources and
+`PubSubTemplate` to perform operations like publishing messages and listening to subscriptions.
+
+== Setup
+
+To run this code sample, you must have a Google Cloud Platform project with billing and the Google
+Cloud Pub/Sub API enabled.
+
+Install and initialize the https://cloud.google.com/sdk/[Google Cloud SDK]. Log in with
+application default credentials using the following command:
+
+----
+gcloud auth application-default login
+----
+
+Alternatively, create a new service account from the
+https://console.cloud.google.com/iam-admin/serviceaccounts/project[Google Cloud Console IAM Service
+Accounts] page, with the `Pub/Sub Editor` role.
+Download the service account private key.
+In the `src/main/resources/application.properties` file, set the `spring.cloud.gcp.project-id` value
+to your project ID and `spring.cloud.gcp.credentials.location` to the local file system path of
+the private key you downloaded.
+
+== Running the code
+
+Open a terminal window and change directories to the root of the app, where the `pom.xml` file is
+located.
+
+Run the following command from that directory:
+
+----
+./mvnw spring-boot:run
+----
+
+This will launch a local web server listening on port 8080.
+
+One flow you can follow is to:
+
+1. Create topic `exampleTopic`.
+
+2. Create subscription `exampleSubscription` for topic `exampleTopic`.
++
+This creates a subscription and automatically starts listening to it.
+Any new messages in the subscription are logged.
+
+3. Subscribe to the `exampleSubscription` subscription.
+
+4. Send message `Hello world!` to topic `exampleTopic`.
++
+You should see the following message logged:
++
+----
+Message received from exampleSubscription subscription. Hello world!
+----
+
+5. Delete topic `exampleTopic`.
+
+6. Delete topic `exampleSubscription`.

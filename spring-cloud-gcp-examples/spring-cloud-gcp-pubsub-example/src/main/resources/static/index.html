@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div>
+    <form action="/createTopic" method="post">
+        Create topic <input name="topicName" type="text"> <input type="submit">
+    </form>
+</div>
+<div>
+    <form action="/createSubscription" method="post">
+        Create subscription <input name="subscriptionName" type="text"> for topic
+        <input name="topicName"> <input type="submit">
+    </form>
+</div>
+<div>
+    <form action="/subscribe">
+        Subscribe to <input name="subscription" type="text"> subscription <input type="submit">
+    </form>
+</div>
+<div>
+    <form action="/postMessage">
+        Send message <input name="message" type="text"> to topic
+        <input name="topicName" type="text"> <input type="submit">
+    </form>
+</div>
+<div>
+    <form action="/deleteTopic" method="post">
+        Delete topic <input name="topic" type="text"> <input type="submit">
+    </form>
+</div>
+<div>
+    <form action="/deleteSubscription" method="post">
+        Delete subscription <input name="subscription" type="text"> <input type="submit">
+    </form>
+</div>
+</body>
+</html>
