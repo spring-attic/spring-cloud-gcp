@@ -86,4 +86,4 @@ README.
 
 NOTE: If your app is running on Google App Engine or Google Compute Engine, in most cases, you should omit
 the `spring.cloud.gcp.credentials.location` property and, instead, let the Spring Cloud GCP Core
-Starter get the correct credentials for those environments.
+Starter find the correct credentials for those environments.
