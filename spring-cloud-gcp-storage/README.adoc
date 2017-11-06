@@ -15,7 +15,7 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-storage', version: '1.0.0.BUILD-SNAPSHOT'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-storage', version: '1.0.0.M1'
 }
 ----
 
