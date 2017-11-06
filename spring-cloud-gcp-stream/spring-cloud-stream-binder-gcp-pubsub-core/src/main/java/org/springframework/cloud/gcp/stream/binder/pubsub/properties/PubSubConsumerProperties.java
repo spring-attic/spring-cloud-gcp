@@ -21,7 +21,7 @@ package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
  */
 public class PubSubConsumerProperties {
 
-	private boolean autoCreateTopic;
+	private boolean autoCreateTopic = true;
 
 	public boolean isAutoCreateTopic() {
 		return this.autoCreateTopic;

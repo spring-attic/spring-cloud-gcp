@@ -54,12 +54,16 @@ public class PubSubChannelProvisioner
 	public ConsumerDestination provisionConsumerDestination(String name, String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties)
 			throws ProvisioningException {
-		if (this.pubSubAdmin.getSubscription(name) == null) {
+		if (this.pubSubAdmin.getSubscription(name) == null
+				&& properties.getExtension().isAutoCreateTopic()) {
 			if (this.pubSubAdmin.getTopic(name) == null) {
 				this.pubSubAdmin.createTopic(name);
 			}
 
 			this.pubSubAdmin.createSubscription(name, name);
+		}
+		else {
+			throw new ProvisioningException("Unexisting '" + name); // this is where I was
 		}
 
 		return new PubSubConsumerDestination(name);
