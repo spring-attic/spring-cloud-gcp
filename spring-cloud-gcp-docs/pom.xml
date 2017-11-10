@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>spring-cloud-gcp</artifactId>
 		<groupId>org.springframework.cloud</groupId>
-		<version>1.0.0.BUILD-SNAPSHOT</version>
+		<version>1.0.0.RELEASE</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -90,6 +90,7 @@
 								<snippets>${basedir}/target/generated-snippets</snippets>
 								<github-tag>${github-tag}</github-tag>
 								<docinfo>true</docinfo>
+								<release-train-version>Astoria.RC1</release-train-version>
 							</attributes>
 						</configuration>
 						<executions>
