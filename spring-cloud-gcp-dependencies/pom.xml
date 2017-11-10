@@ -16,6 +16,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
+		<spring-cloud-gcp.version>1.0.0.RELEASE</spring-cloud-gcp.version>
 		<google-cloud-core.version>1.2.3</google-cloud-core.version>
 		<google-cloud-storage.version>1.2.1</google-cloud-storage.version>
 		<spring-cloud-context.version>1.2.3.RELEASE</spring-cloud-context.version>
@@ -26,12 +27,12 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-core</artifactId>
-				<version>${project.version}</version>
+				<version>${spring-cloud-gcp.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-storage</artifactId>
-				<version>${project.version}</version>
+				<version>${spring-cloud-gcp.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.cloud</groupId>
@@ -98,17 +99,17 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-core</artifactId>
-				<version>${project.version}</version>
+				<version>${spring-cloud-gcp.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-storage</artifactId>
-				<version>${project.version}</version>
+				<version>${spring-cloud-gcp.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-sql</artifactId>
-				<version>${project.version}</version>
+				<version>${spring-cloud-gcp.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
