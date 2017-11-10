@@ -12,7 +12,7 @@
 	<artifactId>spring-cloud-gcp-dependencies</artifactId>
 	<name>Spring Cloud GCP Dependencies</name>
 	<description>Spring Cloud GCP Dependencies</description>
-	<version>Astoria.RC1</version>
+	<version>Astoria.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>

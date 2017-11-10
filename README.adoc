@@ -40,7 +40,7 @@ dependencies and instead delegate versioning to the BOM.
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-gcp-dependencies</artifactId>
-            <version>Astoria.RC1</version>
+            <version>Astoria.BUILD-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

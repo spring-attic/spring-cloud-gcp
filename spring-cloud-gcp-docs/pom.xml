@@ -90,7 +90,7 @@
 								<snippets>${basedir}/target/generated-snippets</snippets>
 								<github-tag>${github-tag}</github-tag>
 								<docinfo>true</docinfo>
-								<release-train-version>Astoria.RC1</release-train-version>
+								<release-train-version>Astoria.BUILD-SNAPSHOT</release-train-version>
 							</attributes>
 						</configuration>
 						<executions>
