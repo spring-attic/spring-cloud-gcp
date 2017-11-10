@@ -27,22 +27,6 @@ We would love to hear from you.
 If you want to collaborate in the project, we would also love to get your Pull Requests. Before you
 start working on one, please take a look at our link:CONTRIBUTING.adoc[collaboration manual].
 
-== Spring Milestones Maven Repository
-
-Currently, the Maven artifacts for the project are only available in the Spring Milestones repository.
-You will want to make sure that the repository is added to your `pom.xml` file or globally in your https://maven.apache.org/settings.html[`settings.xml`] file.
-
-[source,xml]
-----
-<repositories>
-    <repository>
-        <id>spring-milestones</id>
-        <name>Spring Milestones</name>
-        <url>https://repo.spring.io/milestone</url>
-    </repository>
-</repositories>
-----
-
 == Spring Cloud GCP Bill of Materials (BOM)
 
 If you're a Maven user, it's probably a good idea to add our BOM to your maven.xml
@@ -56,7 +40,7 @@ dependencies and instead delegate versioning to the BOM.
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-gcp-dependencies</artifactId>
-            <version>1.0.0.M1</version>
+            <version>Astoria.BUILD-SNAPSHOT</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>

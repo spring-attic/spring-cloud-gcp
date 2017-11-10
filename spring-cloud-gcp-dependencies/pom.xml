@@ -12,17 +12,14 @@
 	<artifactId>spring-cloud-gcp-dependencies</artifactId>
 	<name>Spring Cloud GCP Dependencies</name>
 	<description>Spring Cloud GCP Dependencies</description>
-	<version>1.0.0.BUILD-SNAPSHOT</version>
+	<version>Astoria.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
+		<spring-cloud-gcp.version>1.0.0.RELEASE</spring-cloud-gcp.version>
 		<google-cloud-core.version>1.2.3</google-cloud-core.version>
-		<google-cloud-pubsub.version>0.26.0-beta</google-cloud-pubsub.version>
-		<google-cloud-trace.version>0.26.0-alpha</google-cloud-trace.version>
 		<google-cloud-storage.version>1.2.1</google-cloud-storage.version>
-		<cloud-trace-java.version>0.4.0</cloud-trace-java.version>
 		<spring-cloud-context.version>1.2.3.RELEASE</spring-cloud-context.version>
-		<spring-cloud-sleuth.version>1.2.5.RELEASE</spring-cloud-sleuth.version>
 	</properties>
 
 	<dependencyManagement>
@@ -30,27 +27,12 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-pubsub</artifactId>
-				<version>${project.version}</version>
+				<version>${spring-cloud-gcp.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-storage</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-trace</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-integration-gcp</artifactId>
-				<version>${project.version}</version>
+				<version>${spring-cloud-gcp.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.cloud</groupId>
@@ -59,55 +41,14 @@
 			</dependency>
 			<dependency>
 				<groupId>com.google.cloud</groupId>
-				<artifactId>google-cloud-pubsub</artifactId>
-				<version>${google-cloud-pubsub.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.cloud</groupId>
 				<artifactId>google-cloud-storage</artifactId>
 				<version>${google-cloud-storage.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.cloud</groupId>
-				<artifactId>google-cloud-trace</artifactId>
-				<version>${google-cloud-trace.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.google.cloud.trace.v1</groupId>
-				<artifactId>sink</artifactId>
-				<version>${cloud-trace-java.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>io.grpc</groupId>
-						<artifactId>grpc-all</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>com.google.protobuf</groupId>
-						<artifactId>protobuf-java</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>com.google.guava</groupId>
-						<artifactId>guava</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 
 			<dependency>
 				<groupId>commons-logging</groupId>
 				<artifactId>commons-logging</artifactId>
 				<version>1.2</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-sleuth-core</artifactId>
-				<version>${spring-cloud-sleuth.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-starter-sleuth</artifactId>
-				<version>${spring-cloud-sleuth.version}</version>
 			</dependency>
 
 			<!-- spring-cloud-gcp-starter-core -->
@@ -154,50 +95,21 @@
 				<version>42.1.1</version>
 			</dependency>
 
-			<!-- spring-cloud-gcp-starter-config -->
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-context</artifactId>
-				<version>${spring-cloud-context.version}</version>
-			</dependency>
-
-			<!-- spring-cloud-gcp-pubsub -->
-			<dependency>
-				<groupId>com.google.api</groupId>
-				<artifactId>gax</artifactId>
-				<version>1.9.0</version>
-			</dependency>
-
 			<!--Starters-->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
-				<version>${project.version}</version>
+				<version>${spring-cloud-gcp.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-storage</artifactId>
-				<version>${project.version}</version>
+				<version>${spring-cloud-gcp.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-sql</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-config</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-trace</artifactId>
-				<version>${project.version}</version>
+				<version>${spring-cloud-gcp.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

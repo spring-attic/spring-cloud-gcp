@@ -11,7 +11,7 @@
 	</parent>
 
 	<artifactId>spring-cloud-gcp</artifactId>
-	<version>1.0.0.BUILD-SNAPSHOT</version>
+	<version>1.0.0.RELEASE</version>
 	<packaging>pom</packaging>
 	<name>Spring Cloud GCP</name>
 	<description>Spring Cloud GCP</description>
@@ -25,14 +25,9 @@
 
 	<modules>
 		<module>spring-cloud-gcp-dependencies</module>
-		<module>spring-cloud-gcp-pubsub</module>
 		<module>spring-cloud-gcp-core</module>
 		<module>spring-cloud-gcp-storage</module>
-		<module>spring-cloud-gcp-trace</module>
 		<module>spring-cloud-gcp-starters</module>
-		<module>spring-integration-gcp</module>
-		<module>spring-cloud-gcp-docs</module>
-		<module>spring-cloud-gcp-examples</module>
 	</modules>
 
 	<properties>
@@ -45,7 +40,7 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-dependencies</artifactId>
-				<version>${project.version}</version>
+				<version>Astoria.BUILD-SNAPSHOT</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

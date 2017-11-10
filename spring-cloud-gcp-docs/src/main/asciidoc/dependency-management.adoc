@@ -13,7 +13,7 @@ Instead, the version of the BOM you’re using determines the versions of the us
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-gcp-dependencies</artifactId>
-            <version>{project-version}</version>
+            <version>{release-train-version}</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
