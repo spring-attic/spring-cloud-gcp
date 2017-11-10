@@ -17,10 +17,10 @@
 
 	<properties>
 		<google-cloud-core.version>1.2.3</google-cloud-core.version>
-		<google-cloud-pubsub.version>0.26.0-beta</google-cloud-pubsub.version>
-		<google-cloud-trace.version>0.26.0-alpha</google-cloud-trace.version>
+		<google-cloud-pubsub.version>0.28.0-beta</google-cloud-pubsub.version>
+		<google-cloud-trace.version>0.28.0-beta</google-cloud-trace.version>
 		<google-cloud-storage.version>1.2.1</google-cloud-storage.version>
-		<cloud-trace-java.version>0.4.0</cloud-trace-java.version>
+		<cloud-trace-java.version>0.5.0</cloud-trace-java.version>
 		<spring-cloud-context.version>1.2.3.RELEASE</spring-cloud-context.version>
 		<spring-cloud-sleuth.version>1.2.5.RELEASE</spring-cloud-sleuth.version>
 	</properties>
@@ -165,7 +165,7 @@
 			<dependency>
 				<groupId>com.google.api</groupId>
 				<artifactId>gax</artifactId>
-				<version>1.9.0</version>
+				<version>1.14.0</version>
 			</dependency>
 
 			<!--Starters-->

@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.grpc.ChannelProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.pubsub.v1.TopicName;
@@ -54,13 +54,13 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 	private final ExecutorProvider executorProvider;
 
-	private final ChannelProvider channelProvider;
+	private final TransportChannelProvider channelProvider;
 
 	private final CredentialsProvider credentialsProvider;
 
 	public DefaultPublisherFactory(GcpProjectIdProvider projectIdProvider,
 			ExecutorProvider executorProvider,
-			ChannelProvider channelProvider,
+			TransportChannelProvider channelProvider,
 			CredentialsProvider credentialsProvider) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
 		Assert.notNull(executorProvider, "The executor provider can't be null.");
@@ -78,7 +78,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	public Publisher getPublisher(String topic) {
 		return this.publishers.computeIfAbsent(topic, key -> {
 			try {
-				return Publisher.defaultBuilder(TopicName.create(this.projectId, key))
+				return Publisher.newBuilder(TopicName.of(this.projectId, key))
 						.setExecutorProvider(this.executorProvider)
 						.setChannelProvider(this.channelProvider)
 						.setCredentialsProvider(this.credentialsProvider)

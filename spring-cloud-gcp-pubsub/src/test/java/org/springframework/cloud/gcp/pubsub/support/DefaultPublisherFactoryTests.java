@@ -16,9 +16,12 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import java.io.IOException;
+
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.grpc.ChannelProvider;
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +31,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 /**
  * @author João André Martins
@@ -39,12 +43,17 @@ public class DefaultPublisherFactoryTests {
 	@Mock
 	private ExecutorProvider executorProvider;
 	@Mock
-	private ChannelProvider channelProvider;
+	private TransportChannelProvider channelProvider;
 	@Mock
 	private CredentialsProvider credentialsProvider;
+	@Mock
+	private GrpcTransportChannel transportChannel;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws IOException {
+		when(this.channelProvider.getTransportChannel()).thenReturn(this.transportChannel);
+		when(this.channelProvider.shouldAutoClose()).thenReturn(false);
+
 		this.factory = new DefaultPublisherFactory(
 				() -> "projectId", this.executorProvider, this.channelProvider,
 				this.credentialsProvider);
