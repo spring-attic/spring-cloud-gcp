@@ -17,13 +17,14 @@
 package org.springframework.cloud.gcp.pubsub.autoconfig;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.concurrent.Executors;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
-import com.google.api.gax.grpc.ChannelProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
@@ -95,20 +96,19 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(name = "subscriberChannelProvider")
-	public ChannelProvider subscriberChannelProvider() {
-		return SubscriptionAdminSettings.defaultGrpcChannelProviderBuilder()
-				.setClientLibHeader(DEFAULT_SOURCE_NAME,
-						this.getClass().getPackage().getImplementationVersion())
+	public TransportChannelProvider subscriberChannelProvider() {
+		return SubscriptionAdminSettings.defaultGrpcTransportProviderBuilder()
+				.setHeaderProvider(() -> Collections.singletonMap(DEFAULT_SOURCE_NAME,
+						this.getClass().getPackage().getImplementationVersion()))
 				.build();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(name = "publisherChannelProvider")
-	public ChannelProvider publisherChannelProvider() {
-		return TopicAdminSettings
-				.defaultGrpcChannelProviderBuilder()
-				.setClientLibHeader(DEFAULT_SOURCE_NAME,
-						this.getClass().getPackage().getImplementationVersion())
+	public TransportChannelProvider publisherChannelProvider() {
+		return TopicAdminSettings.defaultGrpcTransportProviderBuilder()
+				.setHeaderProvider(() -> Collections.singletonMap(DEFAULT_SOURCE_NAME,
+						this.getClass().getPackage().getImplementationVersion()))
 				.build();
 	}
 
@@ -123,7 +123,7 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(
 			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
-			@Qualifier("publisherChannelProvider") ChannelProvider channelProvider) {
+			@Qualifier("publisherChannelProvider") TransportChannelProvider channelProvider) {
 		return new DefaultSubscriberFactory(
 				this.finalProjectIdProvider,
 				executorProvider,
@@ -135,7 +135,7 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(
 			@Qualifier("subscriberExecutorProvider") ExecutorProvider subscriberProvider,
-			@Qualifier("subscriberChannelProvider") ChannelProvider channelProvider) {
+			@Qualifier("subscriberChannelProvider") TransportChannelProvider channelProvider) {
 		return new DefaultPublisherFactory(
 				this.finalProjectIdProvider,
 				subscriberProvider,

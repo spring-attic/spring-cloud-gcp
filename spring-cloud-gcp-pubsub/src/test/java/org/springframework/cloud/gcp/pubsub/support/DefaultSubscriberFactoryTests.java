@@ -18,7 +18,7 @@ package org.springframework.cloud.gcp.pubsub.support;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.grpc.ChannelProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -34,7 +34,7 @@ public class DefaultSubscriberFactoryTests {
 	private ExecutorProvider executorProvider;
 
 	@Mock
-	private ChannelProvider channelProvider;
+	private TransportChannelProvider channelProvider;
 
 	@Mock
 	private CredentialsProvider credentialsProvider;
