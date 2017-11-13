@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.storage;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -92,19 +91,19 @@ public class GoogleStorageResourceBucket implements WritableResource {
 	}
 
 	@Override
-	public File getFile() throws IOException {
+	public File getFile() {
 		throw new UnsupportedOperationException(
 				"GCS bucket is not in the local filesystem.");
 	}
 
 	@Override
-	public long contentLength() throws IOException {
+	public long contentLength() {
 		throw new UnsupportedOperationException(
 				"Cannot get content length for a storage bucket.");
 	}
 
 	@Override
-	public long lastModified() throws IOException {
+	public long lastModified() {
 		throw new UnsupportedOperationException(
 				"Cannot get last-modified for a storage bucket.");
 	}
@@ -128,7 +127,7 @@ public class GoogleStorageResourceBucket implements WritableResource {
 	}
 
 	@Override
-	public InputStream getInputStream() throws IOException {
+	public InputStream getInputStream() {
 		throw new UnsupportedOperationException(
 				"Cannot get input stream for a storage bucket.");
 	}
@@ -139,20 +138,12 @@ public class GoogleStorageResourceBucket implements WritableResource {
 	}
 
 	@Override
-	public OutputStream getOutputStream() throws IOException {
+	public OutputStream getOutputStream() {
 		throw new UnsupportedOperationException(
 				"Cannot get output stream for a storage bucket.");
 	}
 
 	private Bucket resolve() {
 		return this.storage.get(this.bucketName);
-	}
-
-	private Bucket throwExceptionForNullBucket(Bucket bucket) throws IOException {
-		if (bucket == null) {
-			throw new FileNotFoundException(
-					"The bucket was not found: " + this.bucketName);
-		}
-		return bucket;
 	}
 }
