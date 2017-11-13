@@ -145,10 +145,10 @@ public class StackdriverTraceAutoConfiguration {
 				@Qualifier("traceExecutorProvider") ExecutorProvider executorProvider)
 				throws IOException {
 			return TraceServiceClient.create(
-					((TraceServiceSettings.Builder) TraceServiceSettings.newBuilder()
+					TraceServiceSettings.newBuilder()
 					.setCredentialsProvider(
 							StackdriverTraceAutoConfiguration.this.finalCredentialsProvider)
-					.setExecutorProvider(executorProvider))
+					.setExecutorProvider(executorProvider)
 					.build());
 		}
 
