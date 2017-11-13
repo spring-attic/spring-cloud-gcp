@@ -70,7 +70,7 @@ public class GoogleStorageResourceObject implements WritableResource {
 	@Override
 	public boolean exists() {
 		try {
-			return throwExceptionForNullBlob(resolve()).exists();
+			return resolve() != null;
 		}
 		catch (IOException e) {
 			return false;
@@ -115,7 +115,6 @@ public class GoogleStorageResourceObject implements WritableResource {
 	}
 
 	private Blob createBlob() throws IOException {
-		// Creating the bucket resource will create the bucket if necessary.
 		Resource bucket = getBucket();
 		if (!bucket.exists()) {
 			throw new IOException("Unable to create blob: " + getBlobId().toString()

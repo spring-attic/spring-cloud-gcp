@@ -61,12 +61,7 @@ public class GoogleStorageResourceBucket implements WritableResource {
 
 	@Override
 	public boolean exists() {
-		try {
-			return throwExceptionForNullBucket(resolve()).exists();
-		}
-		catch (IOException e) {
-			return false;
-		}
+		return resolve() != null;
 	}
 
 	@Override
@@ -123,12 +118,8 @@ public class GoogleStorageResourceBucket implements WritableResource {
 
 	@Override
 	public String getFilename() {
-		try {
-			return throwExceptionForNullBucket(resolve()).getName();
-		}
-		catch (IOException e) {
-			return null;
-		}
+		Bucket bucket = resolve();
+		return bucket == null ? null : bucket.getName();
 	}
 
 	@Override
