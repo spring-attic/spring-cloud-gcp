@@ -50,6 +50,10 @@ public class GoogleStorageResourceBucket implements WritableResource {
 		this.storage = storage;
 		this.bucketName = bucketName;
 
+		createBucketIfRequired(createBucketIfNotExists);
+	}
+
+	private void createBucketIfRequired(boolean createBucketIfNotExists) {
 		if (!exists() && createBucketIfNotExists) {
 			this.storage.create(BucketInfo.newBuilder(this.bucketName).build());
 		}
@@ -95,7 +99,7 @@ public class GoogleStorageResourceBucket implements WritableResource {
 	@Override
 	public File getFile() throws IOException {
 		throw new UnsupportedOperationException(
-				"Cannot get a file from a storage bucket.");
+				"GCS bucket is not in the local filesystem.");
 	}
 
 	@Override
