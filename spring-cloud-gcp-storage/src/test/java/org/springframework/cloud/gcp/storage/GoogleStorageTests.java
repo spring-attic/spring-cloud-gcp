@@ -24,7 +24,9 @@ import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,10 +53,70 @@ public class GoogleStorageTests {
 	@Value("gs://test-spring/images/spring.png")
 	private Resource remoteResource;
 
+	@Value("gs://test-spring")
+	private Resource bucketResource;
+
+	@Value("gs://test-spring/")
+	private Resource bucketResourceTrailingSlash;
+
 	@Test
 	public void testValidObject() throws Exception {
 		Assert.assertTrue(this.remoteResource.exists());
 		Assert.assertEquals(4096L, this.remoteResource.contentLength());
+	}
+
+	@Test
+	public void testValidBucket() throws IOException {
+		Assert.assertEquals("test-spring", this.bucketResource.getDescription());
+		Assert.assertEquals(this.bucketResource.getDescription(),
+				this.bucketResourceTrailingSlash.getDescription());
+
+		Assert.assertEquals("test-spring", this.bucketResource.getFilename());
+		Assert.assertEquals(this.bucketResource.getFilename(),
+				this.bucketResourceTrailingSlash.getFilename());
+
+		Assert.assertEquals("gs://test-spring", this.bucketResource.getURI().toString());
+		Assert.assertEquals(this.bucketResource.getURI().toString(),
+				this.bucketResourceTrailingSlash.getURI().toString());
+
+		String relative = this.bucketResource.createRelative("aaa/bbb").getURI()
+				.toString();
+		Assert.assertEquals("gs://test-spring/aaa/bbb", relative);
+		Assert.assertEquals(relative,
+				this.bucketResource.createRelative("/aaa/bbb").getURI().toString());
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void testBucketOutputStream() throws IOException {
+		((WritableResource) this.bucketResource).getOutputStream();
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void testBucketInputStream() throws IOException {
+		this.bucketResource.getInputStream();
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void testBucketContentLength() throws IOException {
+		this.bucketResource.contentLength();
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void testBucketFile() throws IOException {
+		this.bucketResource.getFile();
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void testBucketLastModified() throws IOException {
+		this.bucketResource.lastModified();
+	}
+
+	@Test
+	public void testBucketResourceStatuses() throws IOException {
+		Assert.assertFalse(this.bucketResource.isOpen());
+		Assert.assertFalse(this.bucketResource.isReadable());
+		Assert.assertFalse(((WritableResource) this.bucketResource).isWritable());
+		Assert.assertTrue(this.bucketResource.exists());
 	}
 
 	@Test
@@ -104,7 +166,9 @@ public class GoogleStorageTests {
 		Mockito.when(storage.create(blobInfo)).thenReturn(blob);
 
 		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
-		OutputStream os = resource.getOutputStream();
+		GoogleStorageResourceObject spyResource = Mockito.spy(resource);
+		Mockito.doReturn(this.bucketResource).when(spyResource).getBucket();
+		OutputStream os = spyResource.getOutputStream();
 		Assert.assertNotNull(os);
 	}
 
@@ -123,8 +187,11 @@ public class GoogleStorageTests {
 		Mockito.when(blob.writer()).thenReturn(writeChannel);
 		Mockito.when(storage.create(blobInfo)).thenReturn(blob);
 
+
 		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
-		OutputStream os = resource.getOutputStream();
+		GoogleStorageResourceObject spyResource = Mockito.spy(resource);
+		Mockito.doReturn(this.bucketResource).when(spyResource).getBucket();
+		OutputStream os = spyResource.getOutputStream();
 		Assert.assertNotNull(os);
 	}
 
@@ -184,11 +251,15 @@ public class GoogleStorageTests {
 		public static Storage mockStorage() throws Exception {
 			Storage storage = Mockito.mock(Storage.class);
 			BlobId validBlob = BlobId.of("test-spring", "images/spring.png");
+			Bucket mockedBucket = Mockito.mock(Bucket.class);
 			Blob mockedBlob = Mockito.mock(Blob.class);
 			WriteChannel writeChannel = Mockito.mock(WriteChannel.class);
 			Mockito.when(mockedBlob.exists()).thenReturn(true);
+			Mockito.when(mockedBucket.exists()).thenReturn(true);
 			Mockito.when(mockedBlob.getSize()).thenReturn(4096L);
 			Mockito.when(storage.get(Mockito.eq(validBlob))).thenReturn(mockedBlob);
+			Mockito.when(storage.get("test-spring")).thenReturn(mockedBucket);
+			Mockito.when(mockedBucket.getName()).thenReturn("test-spring");
 			Mockito.when(mockedBlob.writer()).thenReturn(writeChannel);
 			return storage;
 		}

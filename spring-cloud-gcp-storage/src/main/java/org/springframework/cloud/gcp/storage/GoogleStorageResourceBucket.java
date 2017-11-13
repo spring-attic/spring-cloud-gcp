@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.storage;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -24,6 +25,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 
@@ -38,29 +40,29 @@ public class GoogleStorageResourceBucket implements WritableResource {
 
 	private final Storage storage;
 
-	private final String location;
+	private final String bucketName;
 
-	public GoogleStorageResourceBucket(Storage storage, String location,
+	public GoogleStorageResourceBucket(Storage storage, String bucketName,
 			boolean createBucketIfNotExists) {
 		Assert.notNull(storage, "Storage object can not be null");
-		Assert.notNull(storage, "Path to bucket can not be null");
+		Assert.notNull(bucketName, "Bucket name can not be null");
 
 		this.storage = storage;
-
-		// Ignore trailing slash
-		int trailingSlashIndex = location.indexOf('/',
-				GoogleStorageProtocolResolver.PROTOCOL.length());
-		this.location = location.substring(0,
-				trailingSlashIndex < 0 ? location.length() : trailingSlashIndex);
+		this.bucketName = bucketName;
 
 		if (!exists() && createBucketIfNotExists) {
-			this.storage.create(BucketInfo.newBuilder(this.location).build());
+			this.storage.create(BucketInfo.newBuilder(this.bucketName).build());
 		}
 	}
 
 	@Override
 	public boolean exists() {
-		return this.storage.get(this.location) != null;
+		try {
+			return throwExceptionForNullBucket(resolve()).exists();
+		}
+		catch (IOException e) {
+			return false;
+		}
 	}
 
 	@Override
@@ -82,7 +84,7 @@ public class GoogleStorageResourceBucket implements WritableResource {
 	public URI getURI() throws IOException {
 		URI uri = null;
 		try {
-			uri = new URI(this.location);
+			uri = new URI(GoogleStorageProtocolResolver.PROTOCOL + getFilename());
 		}
 		catch (URISyntaxException e) {
 			throw new IOException("Invalid URI syntax", e);
@@ -111,17 +113,23 @@ public class GoogleStorageResourceBucket implements WritableResource {
 	@Override
 	public Resource createRelative(String relativePath) throws IOException {
 		return new GoogleStorageResourceObject(this.storage,
-				this.location + (relativePath.startsWith("/") ? "" : "/") + relativePath);
+				getURI().toString() + (relativePath.startsWith("/") ? "" : "/")
+						+ relativePath);
 	}
 
 	@Override
 	public String getFilename() {
-		return this.location;
+		try {
+			return throwExceptionForNullBucket(resolve()).getName();
+		}
+		catch (IOException e) {
+			return null;
+		}
 	}
 
 	@Override
 	public String getDescription() {
-		return this.location;
+		return this.bucketName;
 	}
 
 	@Override
@@ -139,5 +147,17 @@ public class GoogleStorageResourceBucket implements WritableResource {
 	public OutputStream getOutputStream() throws IOException {
 		throw new UnsupportedOperationException(
 				"Cannot get output stream for a storage bucket.");
+	}
+
+	private Bucket resolve() {
+		return this.storage.get(this.bucketName);
+	}
+
+	private Bucket throwExceptionForNullBucket(Bucket bucket) throws IOException {
+		if (bucket == null) {
+			throw new FileNotFoundException(
+					"The bucket was not found: " + this.bucketName);
+		}
+		return bucket;
 	}
 }

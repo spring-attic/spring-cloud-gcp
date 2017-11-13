@@ -74,10 +74,9 @@ public class GoogleStorageProtocolResolver
 	public Resource resolve(String location, ResourceLoader resourceLoader) {
 		if (location.startsWith(PROTOCOL)) {
 
-			int bucketSeparatorIndex = location.indexOf('/', PROTOCOL.length());
+			String[] pathParts = location.substring(PROTOCOL.length()).split("/");
 
-			String bucketPath = location.substring(0,
-					bucketSeparatorIndex < 0 ? location.length() : bucketSeparatorIndex);
+			String bucketName = pathParts[0];
 
 			if (this.storage == null) {
 				this.storage = this.beanFactory.getBean(Storage.class);
@@ -91,12 +90,9 @@ public class GoogleStorageProtocolResolver
 				}
 			}
 
-			GoogleStorageResourceBucket bucketResource = new GoogleStorageResourceBucket(
-					this.storage, bucketPath, this.settings.isAutoCreateFiles());
-
-			if (bucketSeparatorIndex < 0
-					|| bucketSeparatorIndex + 1 == location.length()) {
-				return bucketResource;
+			if (pathParts.length < 2) {
+				return new GoogleStorageResourceBucket(this.storage, bucketName,
+						this.settings.isAutoCreateFiles());
 			}
 
 			return new GoogleStorageResourceObject(this.storage, location,

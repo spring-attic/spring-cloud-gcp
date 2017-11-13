@@ -30,6 +30,7 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
+import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
@@ -114,6 +115,12 @@ public class GoogleStorageResourceObject implements WritableResource {
 	}
 
 	private Blob createBlob() throws IOException {
+		// Creating the bucket resource will create the bucket if necessary.
+		Resource bucket = getBucket();
+		if (!bucket.exists()) {
+			throw new IOException("Unable to create blob: " + getBlobId().toString()
+					+ ", because the bucket does not exist: " + getBlobId().getBucket());
+		}
 		return this.storage.create(BlobInfo.newBuilder(getBlobId()).build());
 	}
 
@@ -179,5 +186,11 @@ public class GoogleStorageResourceObject implements WritableResource {
 			blob = createBlob();
 		}
 		return Channels.newOutputStream(throwExceptionForNullBlob(blob).writer());
+	}
+
+	@VisibleForTesting
+	Resource getBucket() throws IOException {
+		return new GoogleStorageResourceBucket(this.storage, getBlobId().getBucket(),
+				this.createBlobIfNotExists);
 	}
 }
