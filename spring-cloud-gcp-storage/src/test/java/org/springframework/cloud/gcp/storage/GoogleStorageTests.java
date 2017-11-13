@@ -75,7 +75,7 @@ public class GoogleStorageTests {
 		Mockito.when(blob.exists()).thenReturn(true);
 		Mockito.when(storage.get(BlobId.of("test-spring", "test"))).thenReturn(blob);
 
-		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
+		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
 		OutputStream os = resource.getOutputStream();
 		Assert.assertNotNull(os);
 	}
@@ -86,7 +86,7 @@ public class GoogleStorageTests {
 		Storage storage = Mockito.mock(Storage.class);
 		Mockito.when(storage.get(BlobId.of("test-spring", "test"))).thenReturn(null);
 
-		GoogleStorageResource resource = new GoogleStorageResource(storage, location,
+		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location,
 				false);
 		resource.getOutputStream();
 	}
@@ -103,7 +103,7 @@ public class GoogleStorageTests {
 		Mockito.when(blob.writer()).thenReturn(writeChannel);
 		Mockito.when(storage.create(blobInfo)).thenReturn(blob);
 
-		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
+		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
 		OutputStream os = resource.getOutputStream();
 		Assert.assertNotNull(os);
 	}
@@ -123,7 +123,7 @@ public class GoogleStorageTests {
 		Mockito.when(blob.writer()).thenReturn(writeChannel);
 		Mockito.when(storage.create(blobInfo)).thenReturn(blob);
 
-		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
+		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
 		OutputStream os = resource.getOutputStream();
 		Assert.assertNotNull(os);
 	}
@@ -134,7 +134,7 @@ public class GoogleStorageTests {
 		Storage storage = Mockito.mock(Storage.class);
 		Mockito.when(storage.get(BlobId.of("test-spring", "test"))).thenReturn(null);
 
-		GoogleStorageResource resource = new GoogleStorageResource(storage, location,
+		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location,
 				false);
 		resource.getInputStream();
 	}
@@ -145,7 +145,7 @@ public class GoogleStorageTests {
 		Storage storage = Mockito.mock(Storage.class);
 		Mockito.when(storage.get(BlobId.of("test-spring", "test"))).thenReturn(null);
 
-		GoogleStorageResource resource = new GoogleStorageResource(storage, location,
+		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location,
 				false);
 		Assert.assertNull(resource.getFilename());
 	}
@@ -154,7 +154,7 @@ public class GoogleStorageTests {
 	public void testCreateBlobIfNotExistingGetterSetter() {
 		String location = "gs://test-spring/test";
 		Storage storage = Mockito.mock(Storage.class);
-		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
+		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
 		Assert.assertTrue(resource.isCreateBlobIfNotExists());
 	}
 
@@ -162,8 +162,8 @@ public class GoogleStorageTests {
 	public void testCreateRelative() throws IOException {
 		String location = "gs://test-spring/test.png";
 		Storage storage = Mockito.mock(Storage.class);
-		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
-		GoogleStorageResource relative = (GoogleStorageResource) resource.createRelative("relative.png");
+		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
+		GoogleStorageResourceObject relative = (GoogleStorageResourceObject) resource.createRelative("relative.png");
 		Assert.assertEquals("gs://test-spring/relative.png", relative.getURI().toString());
 	}
 
@@ -171,8 +171,8 @@ public class GoogleStorageTests {
 	public void testCreateRelativeSubdirs() throws IOException {
 		String location = "gs://test-spring/t1/test.png";
 		Storage storage = Mockito.mock(Storage.class);
-		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
-		GoogleStorageResource relative = (GoogleStorageResource) resource.createRelative("r1/relative.png");
+		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
+		GoogleStorageResourceObject relative = (GoogleStorageResourceObject) resource.createRelative("r1/relative.png");
 		Assert.assertEquals("gs://test-spring/t1/r1/relative.png", relative.getURI().toString());
 	}
 

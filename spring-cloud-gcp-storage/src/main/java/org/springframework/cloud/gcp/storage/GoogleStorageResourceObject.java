@@ -42,7 +42,7 @@ import org.springframework.util.Assert;
  * @author Vinicius Carvalho
  * @author Mike Eltsufin
  */
-public class GoogleStorageResource implements WritableResource {
+public class GoogleStorageResourceObject implements WritableResource {
 
 	private final Storage storage;
 
@@ -50,7 +50,7 @@ public class GoogleStorageResource implements WritableResource {
 
 	private final boolean createBlobIfNotExists;
 
-	public GoogleStorageResource(Storage storage, String location,
+	public GoogleStorageResourceObject(Storage storage, String location,
 			boolean createBlobIfNotExists) {
 		Assert.notNull(storage, "Storage object can not be null");
 		this.storage = storage;
@@ -58,7 +58,7 @@ public class GoogleStorageResource implements WritableResource {
 		this.createBlobIfNotExists = createBlobIfNotExists;
 	}
 
-	public GoogleStorageResource(Storage storage, String location) {
+	public GoogleStorageResourceObject(Storage storage, String location) {
 		this(storage, location, true);
 	}
 
@@ -144,7 +144,7 @@ public class GoogleStorageResource implements WritableResource {
 	public Resource createRelative(String relativePath) throws IOException {
 		int lastSlashIndex = this.location.lastIndexOf("/");
 		String absolutePath = this.location.substring(0, lastSlashIndex + 1) + relativePath;
-		return new GoogleStorageResource(this.storage, absolutePath);
+		return new GoogleStorageResourceObject(this.storage, absolutePath);
 	}
 
 	@Override

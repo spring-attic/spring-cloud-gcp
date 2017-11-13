@@ -41,7 +41,7 @@ public class GoogleStorageProtocolResolver
 
 	private static final Log logger = LogFactory.getLog(GoogleStorageProtocolResolver.class);
 
-	private static final String PROTOCOL = "gs://";
+	public static final String PROTOCOL = "gs://";
 
 	private ConfigurableListableBeanFactory beanFactory;
 
@@ -73,6 +73,12 @@ public class GoogleStorageProtocolResolver
 	@Override
 	public Resource resolve(String location, ResourceLoader resourceLoader) {
 		if (location.startsWith(PROTOCOL)) {
+
+			int bucketSeparatorIndex = location.indexOf('/', PROTOCOL.length());
+
+			String bucketPath = location.substring(0,
+					bucketSeparatorIndex < 0 ? location.length() : bucketSeparatorIndex);
+
 			if (this.storage == null) {
 				this.storage = this.beanFactory.getBean(Storage.class);
 				try {
@@ -84,7 +90,17 @@ public class GoogleStorageProtocolResolver
 							+ "so defaults are used.");
 				}
 			}
-			return new GoogleStorageResource(this.storage, location, this.settings.isAutoCreateFiles());
+
+			GoogleStorageResourceBucket bucketResource = new GoogleStorageResourceBucket(
+					this.storage, bucketPath, this.settings.isAutoCreateFiles());
+
+			if (bucketSeparatorIndex < 0
+					|| bucketSeparatorIndex + 1 == location.length()) {
+				return bucketResource;
+			}
+
+			return new GoogleStorageResourceObject(this.storage, location,
+					this.settings.isAutoCreateFiles());
 		}
 		return null;
 	}
