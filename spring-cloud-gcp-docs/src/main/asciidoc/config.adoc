@@ -104,12 +104,35 @@ auto-wired instances of the above `SampleConfig` bean.
 
 === Refreshing the configuration at runtime
 
-Using http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints[Spring
+http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints[Spring
 Boot Actuator] enables a `/refresh` endpoint in your application that can be used to refresh the
 values of all the Spring Cloud Config-managed variables.
 
-To achieve that, add a `@RefreshScope` annotation to your class(es) containing remote configuration
-properties.
-Then, if you change the value of `myapp_prod`'s `queue_size` variable in the Google Runtime
-Configuration API and then hit the `/refresh` endpoint of your application, you can verify that the
-value of the `queueSize` field has been updated.
+To achieve that, add the Spring Boot Actuator dependency.
+
+Maven coordinates:
+
+----
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '1.5.3.RELEASE'
+}
+----
+
+Add a `@RefreshScope` annotation to your class(es) containing remote configuration properties.
+Then, if you change the value of the `queue_size` variable in the `myapp_prod` configuration and
+hit the `/refresh` endpoint of your application, you can verify that the value of the `queueSize`
+field has been updated.
+
+NOTE: If you're developing locally or just not using authentication in your application, you should
+add `management.security.enabled=false` to your `application.properties` file to allow unrestricted
+access to the `/refresh` endpoint.
