@@ -24,6 +24,7 @@
 		<module>spring-cloud-gcp-integration-pubsub-example</module>
 		<module>spring-cloud-gcp-storage-resource-example</module>
 		<module>spring-cloud-gcp-pubsub-example</module>
+		<module>spring-cloud-gcp-data-jpa-example</module>
 	</modules>
 
 	<build>
