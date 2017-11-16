@@ -115,10 +115,9 @@ public class GoogleStorageResourceObject implements WritableResource {
 	}
 
 	private Blob createBlob() throws IOException {
-		Resource bucket = getBucket();
+		GoogleStorageResourceBucket bucket = getBucket();
 		if (!bucket.exists()) {
-			throw new IOException("Unable to create blob: " + getBlobId().toString()
-					+ ", because the bucket does not exist: " + getBlobId().getBucket());
+			bucket.createBucket();
 		}
 		return this.storage.create(BlobInfo.newBuilder(getBlobId()).build());
 	}
@@ -150,7 +149,7 @@ public class GoogleStorageResourceObject implements WritableResource {
 	public Resource createRelative(String relativePath) throws IOException {
 		int lastSlashIndex = this.location.lastIndexOf("/");
 		String absolutePath = this.location.substring(0, lastSlashIndex + 1) + relativePath;
-		return new GoogleStorageResourceObject(this.storage, absolutePath);
+		return new GoogleStorageResourceObject(this.storage, absolutePath, this.createBlobIfNotExists);
 	}
 
 	@Override
@@ -188,7 +187,7 @@ public class GoogleStorageResourceObject implements WritableResource {
 	}
 
 	@VisibleForTesting
-	Resource getBucket() throws IOException {
+	GoogleStorageResourceBucket getBucket() throws IOException {
 		return new GoogleStorageResourceBucket(this.storage, getBlobId().getBucket(),
 				this.createBlobIfNotExists);
 	}

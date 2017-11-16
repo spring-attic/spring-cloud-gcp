@@ -34,12 +34,16 @@ import org.springframework.util.Assert;
 
 /**
  * Implements {@link WritableResource} for buckets in Google Cloud Storage.
+ *
+ * @author Chengyuan Zhao
  */
 public class GoogleStorageResourceBucket implements WritableResource {
 
 	private final Storage storage;
 
 	private final String bucketName;
+
+	private final boolean createBucketIfRequired;
 
 	public GoogleStorageResourceBucket(Storage storage, String bucketName,
 			boolean createBucketIfNotExists) {
@@ -48,14 +52,11 @@ public class GoogleStorageResourceBucket implements WritableResource {
 
 		this.storage = storage;
 		this.bucketName = bucketName;
-
-		createBucketIfRequired(createBucketIfNotExists);
+		this.createBucketIfRequired = createBucketIfNotExists;
 	}
 
-	private void createBucketIfRequired(boolean createBucketIfNotExists) {
-		if (!exists() && createBucketIfNotExists) {
-			this.storage.create(BucketInfo.newBuilder(this.bucketName).build());
-		}
+	public void createBucket() {
+		this.storage.create(BucketInfo.newBuilder(this.bucketName).build());
 	}
 
 	@Override
@@ -112,13 +113,13 @@ public class GoogleStorageResourceBucket implements WritableResource {
 	public Resource createRelative(String relativePath) throws IOException {
 		return new GoogleStorageResourceObject(this.storage,
 				getURI().toString() + (relativePath.startsWith("/") ? "" : "/")
-						+ relativePath);
+						+ relativePath,
+				this.createBucketIfRequired);
 	}
 
 	@Override
 	public String getFilename() {
-		Bucket bucket = resolve();
-		return bucket == null ? null : bucket.getName();
+		return this.bucketName;
 	}
 
 	@Override

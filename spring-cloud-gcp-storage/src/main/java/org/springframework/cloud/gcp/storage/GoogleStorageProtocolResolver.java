@@ -74,7 +74,13 @@ public class GoogleStorageProtocolResolver
 	public Resource resolve(String location, ResourceLoader resourceLoader) {
 		if (location.startsWith(PROTOCOL)) {
 
-			String[] pathParts = location.substring(PROTOCOL.length()).split("/");
+			String pathWithoutProtocol = location.substring(PROTOCOL.length());
+
+			String[] pathParts = pathWithoutProtocol.split("/");
+
+			if (pathParts.length == 0 || pathWithoutProtocol.isEmpty()) {
+				return null;
+			}
 
 			String bucketName = pathParts[0];
 
@@ -90,13 +96,17 @@ public class GoogleStorageProtocolResolver
 				}
 			}
 
+			Resource resource;
+
 			if (pathParts.length < 2) {
-				return new GoogleStorageResourceBucket(this.storage, bucketName,
+				resource = new GoogleStorageResourceBucket(this.storage, bucketName,
 						this.settings.isAutoCreateFiles());
 			}
-
-			return new GoogleStorageResourceObject(this.storage, location,
-					this.settings.isAutoCreateFiles());
+			else {
+				resource = new GoogleStorageResourceObject(this.storage, location,
+						this.settings.isAutoCreateFiles());
+			}
+			return resource;
 		}
 		return null;
 	}

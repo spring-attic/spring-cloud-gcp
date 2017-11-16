@@ -59,6 +59,23 @@ public class GoogleStorageTests {
 	@Value("gs://test-spring/")
 	private Resource bucketResourceTrailingSlash;
 
+	@Value("gs://")
+	private Resource emptyPathResource;
+
+	@Value("gs:///")
+	private Resource slashPathResource;
+
+	@Test
+	public void testNullPaths() {
+		Assert.assertFalse(this.emptyPathResource instanceof GoogleStorageResourceObject);
+		Assert.assertFalse(this.emptyPathResource instanceof GoogleStorageResourceBucket);
+		Assert.assertFalse(this.slashPathResource instanceof GoogleStorageResourceObject);
+		Assert.assertFalse(this.slashPathResource instanceof GoogleStorageResourceBucket);
+		Assert.assertTrue(this.remoteResource instanceof GoogleStorageResourceObject);
+		Assert.assertTrue(this.bucketResource instanceof GoogleStorageResourceBucket);
+		Assert.assertTrue(this.bucketResourceTrailingSlash instanceof GoogleStorageResourceBucket);
+	}
+
 	@Test
 	public void testValidObject() throws Exception {
 		Assert.assertTrue(this.remoteResource.exists());
