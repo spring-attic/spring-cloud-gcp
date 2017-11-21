@@ -30,7 +30,6 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
@@ -186,7 +185,6 @@ public class GoogleStorageResourceObject implements WritableResource {
 		return Channels.newOutputStream(throwExceptionForNullBlob(blob).writer());
 	}
 
-	@VisibleForTesting
 	GoogleStorageResourceBucket getBucket() throws IOException {
 		return new GoogleStorageResourceBucket(this.storage, getBlobId().getBucket(),
 				this.createBlobIfNotExists);
