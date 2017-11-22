@@ -72,7 +72,9 @@ public class GoogleStorageProtocolResolver
 
 	@Override
 	public Resource resolve(String location, ResourceLoader resourceLoader) {
-		if (location.startsWith(PROTOCOL)) {
+			if (!location.startsWith(PROTOCOL)) {
+					return null;
+			}
 
 			String pathWithoutProtocol = location.substring(PROTOCOL.length());
 
@@ -107,8 +109,6 @@ public class GoogleStorageProtocolResolver
 						this.settings.isAutoCreateFiles());
 			}
 			return resource;
-		}
-		return null;
 	}
 
 }
