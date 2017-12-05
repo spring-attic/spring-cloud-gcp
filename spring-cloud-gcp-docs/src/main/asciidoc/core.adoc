@@ -114,3 +114,12 @@ property.
 ----
 spring.cloud.gcp.credentials.scopes=https://www.googleapis.com/auth/pubsub,https://www.googleapis.com/auth/sqlservice.admin
 ----
+
+You can also use `STARTER_SCOPES` placeholder as a scope to represent the starters default scopes,
+and append the additional scopes you need to add.
+
+[source,yaml]
+----
+spring.cloud.gcp.credentials.scopes=STARTER_SCOPES,https://www.googleapis.com/auth/cloud-vision
+----
+

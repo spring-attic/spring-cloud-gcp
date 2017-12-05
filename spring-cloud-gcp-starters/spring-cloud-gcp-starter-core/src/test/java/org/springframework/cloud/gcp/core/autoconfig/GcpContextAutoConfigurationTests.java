@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.core.autoconfig;
 
+import java.util.List;
+
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import org.junit.After;
@@ -24,9 +26,11 @@ import org.junit.Test;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -56,11 +60,44 @@ public class GcpContextAutoConfigurationTests {
 	}
 
 	@Test
+	public void testStarterScopes() {
+	}
+
+	@Test
 	public void testGetProjectIdProvider_withoutGcpProperties() {
 		loadEnvironment();
 		assertTrue(this.context.getBean(GcpProjectIdProvider.class)
 				instanceof DefaultGcpProjectIdProvider);
 	}
+
+	@Test
+	public void testResolveScopesDefaultScopes() {
+		loadEnvironment();
+		GcpContextAutoConfiguration configuration = this.context.getBean(GcpContextAutoConfiguration.class);
+		List<String> scopes = configuration.resolveScopes();
+		assertTrue(scopes.size() > 1);
+		assertTrue(scopes.contains(GcpScope.PUBSUB.getUrl()));
+	}
+
+	@Test
+	public void testResolveScopesOverrideScopes() {
+		loadEnvironment("spring.cloud.gcp.credentials.scopes=myscope");
+		GcpContextAutoConfiguration configuration = this.context.getBean(GcpContextAutoConfiguration.class);
+		List<String> scopes = configuration.resolveScopes();
+		assertEquals(scopes.size(), 1);
+		assertTrue(scopes.contains("myscope"));
+	}
+
+	@Test
+	public void testResolveScopesStarterScopesPlaceholder() {
+		loadEnvironment("spring.cloud.gcp.credentials.scopes=STARTER_SCOPES,myscope");
+		GcpContextAutoConfiguration configuration = this.context.getBean(GcpContextAutoConfiguration.class);
+		List<String> scopes = configuration.resolveScopes();
+		assertTrue(scopes.size() > 1);
+		assertTrue(scopes.contains(GcpScope.PUBSUB.getUrl()));
+		assertTrue(scopes.contains("myscope"));
+	}
+
 
 	private void loadEnvironment(String... environment) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
