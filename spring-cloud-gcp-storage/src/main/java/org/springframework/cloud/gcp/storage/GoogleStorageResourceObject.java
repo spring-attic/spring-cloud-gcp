@@ -42,7 +42,7 @@ import org.springframework.util.Assert;
  * @author Vinicius Carvalho
  * @author Mike Eltsufin
  */
-public class GoogleStorageResource implements WritableResource {
+public class GoogleStorageResourceObject implements WritableResource {
 
 	private final Storage storage;
 
@@ -50,7 +50,7 @@ public class GoogleStorageResource implements WritableResource {
 
 	private final boolean createBlobIfNotExists;
 
-	public GoogleStorageResource(Storage storage, String location,
+	public GoogleStorageResourceObject(Storage storage, String location,
 			boolean createBlobIfNotExists) {
 		Assert.notNull(storage, "Storage object can not be null");
 		this.storage = storage;
@@ -58,7 +58,7 @@ public class GoogleStorageResource implements WritableResource {
 		this.createBlobIfNotExists = createBlobIfNotExists;
 	}
 
-	public GoogleStorageResource(Storage storage, String location) {
+	public GoogleStorageResourceObject(Storage storage, String location) {
 		this(storage, location, true);
 	}
 
@@ -69,7 +69,7 @@ public class GoogleStorageResource implements WritableResource {
 	@Override
 	public boolean exists() {
 		try {
-			return throwExceptionForNullBlob(resolve()).exists();
+			return resolve() != null;
 		}
 		catch (IOException e) {
 			return false;
@@ -114,6 +114,10 @@ public class GoogleStorageResource implements WritableResource {
 	}
 
 	private Blob createBlob() throws IOException {
+		GoogleStorageResourceBucket bucket = getBucket();
+		if (!bucket.exists()) {
+			bucket.createBucket();
+		}
 		return this.storage.create(BlobInfo.newBuilder(getBlobId()).build());
 	}
 
@@ -144,7 +148,7 @@ public class GoogleStorageResource implements WritableResource {
 	public Resource createRelative(String relativePath) throws IOException {
 		int lastSlashIndex = this.location.lastIndexOf("/");
 		String absolutePath = this.location.substring(0, lastSlashIndex + 1) + relativePath;
-		return new GoogleStorageResource(this.storage, absolutePath);
+		return new GoogleStorageResourceObject(this.storage, absolutePath, this.createBlobIfNotExists);
 	}
 
 	@Override
@@ -179,5 +183,10 @@ public class GoogleStorageResource implements WritableResource {
 			blob = createBlob();
 		}
 		return Channels.newOutputStream(throwExceptionForNullBlob(blob).writer());
+	}
+
+	GoogleStorageResourceBucket getBucket() throws IOException {
+		return new GoogleStorageResourceBucket(this.storage, getBlobId().getBucket(),
+				this.createBlobIfNotExists);
 	}
 }

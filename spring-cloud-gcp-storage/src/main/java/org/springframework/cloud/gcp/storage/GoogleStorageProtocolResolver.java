@@ -39,14 +39,14 @@ import org.springframework.core.io.ResourceLoader;
 public class GoogleStorageProtocolResolver
 		implements ProtocolResolver, BeanFactoryPostProcessor, ResourceLoaderAware {
 
-	private static final Log logger = LogFactory.getLog(GoogleStorageProtocolResolver.class);
+	public static final String PROTOCOL = "gs://";
 
-	private static final String PROTOCOL = "gs://";
+	private static final Log logger = LogFactory
+			.getLog(GoogleStorageProtocolResolver.class);
 
 	private ConfigurableListableBeanFactory beanFactory;
 
-	private GoogleStorageProtocolResolverSettings settings
-			= new GoogleStorageProtocolResolverSettings();
+	private GoogleStorageProtocolResolverSettings settings = new GoogleStorageProtocolResolverSettings();
 
 	private volatile Storage storage;
 
@@ -54,8 +54,8 @@ public class GoogleStorageProtocolResolver
 	}
 
 	@Override
-	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
-			throws BeansException {
+	public void postProcessBeanFactory(
+			ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
 	}
 
@@ -65,28 +65,50 @@ public class GoogleStorageProtocolResolver
 			((DefaultResourceLoader) resourceLoader).addProtocolResolver(this);
 		}
 		else {
-			logger.warn("The provided delegate resource loader is not an implementation " +
-					"of DefaultResourceLoader. Custom Protocol using gs:// prefix will not be enabled.");
+			logger.warn("The provided delegate resource loader is not an implementation "
+					+ "of DefaultResourceLoader. Custom Protocol using gs:// prefix will not be enabled.");
 		}
 	}
 
 	@Override
 	public Resource resolve(String location, ResourceLoader resourceLoader) {
-		if (location.startsWith(PROTOCOL)) {
-			if (this.storage == null) {
-				this.storage = this.beanFactory.getBean(Storage.class);
-				try {
-					this.settings = this.beanFactory
-							.getBean(GoogleStorageProtocolResolverSettings.class);
-				}
-				catch (NoSuchBeanDefinitionException e) {
-					logger.info("There is no bean definition for the resolver settings, "
-							+ "so defaults are used.");
-				}
-			}
-			return new GoogleStorageResource(this.storage, location, this.settings.isAutoCreateFiles());
+		if (!location.startsWith(PROTOCOL)) {
+			return null;
 		}
-		return null;
+
+		String pathWithoutProtocol = location.substring(PROTOCOL.length());
+
+		String[] pathParts = pathWithoutProtocol.split("/");
+
+		if (pathParts.length == 0 || pathWithoutProtocol.isEmpty()) {
+			return null;
+		}
+
+		String bucketName = pathParts[0];
+
+		if (this.storage == null) {
+			this.storage = this.beanFactory.getBean(Storage.class);
+			try {
+				this.settings = this.beanFactory
+						.getBean(GoogleStorageProtocolResolverSettings.class);
+			}
+			catch (NoSuchBeanDefinitionException e) {
+				logger.info("There is no bean definition for the resolver settings, "
+						+ "so defaults are used.");
+			}
+		}
+
+		Resource resource;
+
+		if (pathParts.length < 2) {
+			resource = new GoogleStorageResourceBucket(this.storage, bucketName,
+					this.settings.isAutoCreateFiles());
+		}
+		else {
+			resource = new GoogleStorageResourceObject(this.storage, location,
+					this.settings.isAutoCreateFiles());
+		}
+		return resource;
 	}
 
 }
