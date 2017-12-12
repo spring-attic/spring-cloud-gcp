@@ -26,9 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-import com.google.api.gax.paging.Page;
 import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
@@ -70,15 +68,10 @@ public class GCSSession implements Session<BlobInfo> {
 		// TODO(joaomartins): Only supports listing buckets, not folders.
 
 		Collection<BlobInfo> blobs = new ArrayList<>();
-		Page<Blob> page;
-		Storage.BlobListOption blobListOption = Storage.BlobListOption.pageSize(20);
 
-		do {
-			page = this.gcs.list(path, blobListOption);
-			StreamSupport.stream(page.getValues().spliterator(), false)
-					.forEach(blobs::add);
-			blobListOption = Storage.BlobListOption.pageToken(page.getNextPageToken());
-		} while (page.hasNextPage());
+		for (Blob blob : this.gcs.list(path).iterateAll()) {
+			blobs.add(blob);
+		}
 
 		return blobs.toArray(new BlobInfo[blobs.size()]);
 	}
