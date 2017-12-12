@@ -111,8 +111,8 @@ public class GoogleStorageResourceObject implements WritableResource {
 	}
 
 	/**
-	 * Gets the underlying storage object in Cloud Storage.
-	 * @return The storage object, will be null if it does not exist in Cloud Storage.
+	 * Gets the underlying storage object in Google Cloud Storage.
+	 * @return The storage object, will be null if it does not exist in Google Cloud Storage.
 	 * @throws IOException
 	 */
 	public Blob getGoogleStorageObject() throws IOException {
