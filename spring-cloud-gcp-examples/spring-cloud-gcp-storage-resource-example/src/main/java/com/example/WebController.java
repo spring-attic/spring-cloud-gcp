@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class WebController {
 
-	@Value("gs://REPLACE_WITH_YOUR_BUCKET/my-file.txt")
+	@Value("gs://cccz-test-7/")
 	private Resource gcsFile;
 
 	@RequestMapping(value = "/", method = RequestMethod.GET)
@@ -48,10 +48,15 @@ public class WebController {
 				Charset.defaultCharset()) + "\n";
 	}
 
-	@RequestMapping(value = "/", method = RequestMethod.POST)
-	String writeGcs(@RequestBody String data) throws IOException {
+	@RequestMapping(value = "/write", method = RequestMethod.GET)
+	String writeGcs() throws IOException {
+		/*
 		try (OutputStream os = ((WritableResource) this.gcsFile).getOutputStream()) {
-			os.write(data.getBytes());
+			os.write("AHAHAHA".getBytes());
+		}
+		*/
+		try (OutputStream os = ((WritableResource) this.gcsFile.createRelative("/test2.txt")).getOutputStream()) {
+			os.write("AHAHAHA".getBytes());
 		}
 		return "file was updated\n";
 	}
