@@ -47,7 +47,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 
@@ -97,8 +96,7 @@ public class GCSStreamingMessageSourceTest {
 				new PageImpl<>(null, null,
 						Stream.of(blob1, blob2)
 								.collect(Collectors.toList())))
-					.given(gcs)
-					.list(eq("gcsbucket"), any(Storage.BlobListOption.class));
+					.given(gcs).list(eq("gcsbucket"));
 
 			ReadChannel channel1 = mock(ReadChannel.class);
 			ReadChannel channel2 = mock(ReadChannel.class);
