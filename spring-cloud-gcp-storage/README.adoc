@@ -49,3 +49,8 @@ try (OutputStream os = ((WritableResource) gcsResource).getOutputStream()) {
 By default a new file is created if the resource refers to a file that does not exist when getting
 the output stream. This can be overriden by setting `spring.cloud.gcp.storage.auto-create-files`
 to `false`.
+
+If the path refers to an object on Google Cloud Storage (as opposed to a bucket), then the resource
+can be cast as a `GoogleStorageResourceObject` and the `getGoogleStorageObject` method can be called
+to obtain a https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-storage/src/main/java/com/google/cloud/storage/Blob.java[`Blob`].
+This type represents a GCS file, which has associated https://cloud.google.com/storage/docs/gsutil/addlhelp/WorkingWithObjectMetadata[metadata], such as content-type, that can be set.
