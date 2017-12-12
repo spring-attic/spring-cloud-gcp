@@ -60,7 +60,7 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class StorageOutboundChannelAdapterTest {
+public class GCSMessageHandlerTest {
 
 	private static Storage GCS;
 
@@ -114,7 +114,7 @@ public class StorageOutboundChannelAdapterTest {
 		@Bean
 		@ServiceActivator(inputChannel = "siGcsTestChannel")
 		public MessageHandler outboundAdapter(Storage gcs) {
-			StorageOutboundChannelAdapter adapter = new StorageOutboundChannelAdapter(new GCSSessionFactory(gcs));
+			GCSMessageHandler adapter = new GCSMessageHandler(new GCSSessionFactory(gcs));
 			adapter.setRemoteDirectoryExpression(new ValueExpression<>("testGcsBucket"));
 
 			return adapter;

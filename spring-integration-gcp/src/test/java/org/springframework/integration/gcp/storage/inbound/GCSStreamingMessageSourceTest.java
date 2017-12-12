@@ -56,7 +56,7 @@ import static org.mockito.Mockito.mock;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class StorageInboundChannelAdapterTest {
+public class GCSStreamingMessageSourceTest {
 
 	@Autowired
 	private PollableChannel gcsChannel;
@@ -113,8 +113,8 @@ public class StorageInboundChannelAdapterTest {
 		@Bean
 		@InboundChannelAdapter(value = "gcsChannel", poller = @Poller(fixedDelay = "100"))
 		public MessageSource<InputStream> adapter(Storage gcs) {
-			StorageInboundChannelAdapter adapter =
-					new StorageInboundChannelAdapter(new RemoteFileTemplate<>(new GCSSessionFactory(gcs)));
+			GCSStreamingMessageSource adapter =
+					new GCSStreamingMessageSource(new RemoteFileTemplate<>(new GCSSessionFactory(gcs)));
 			adapter.setRemoteDirectory("gcsbucket");
 			adapter.setFilter(new AcceptOnceFileListFilter<>());
 

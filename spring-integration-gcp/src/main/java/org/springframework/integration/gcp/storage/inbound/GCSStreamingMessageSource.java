@@ -30,9 +30,9 @@ import org.springframework.integration.gcp.storage.GCSFileInfo;
 /**
  * @author João André Martins
  */
-public class StorageInboundChannelAdapter extends AbstractRemoteFileStreamingMessageSource<BlobInfo> {
+public class GCSStreamingMessageSource extends AbstractRemoteFileStreamingMessageSource<BlobInfo> {
 
-	public StorageInboundChannelAdapter(RemoteFileTemplate<BlobInfo> template) {
+	public GCSStreamingMessageSource(RemoteFileTemplate<BlobInfo> template) {
 		super(template, null);
 	}
 
