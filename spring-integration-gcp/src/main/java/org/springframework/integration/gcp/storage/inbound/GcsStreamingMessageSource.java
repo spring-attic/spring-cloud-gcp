@@ -45,6 +45,6 @@ public class GcsStreamingMessageSource extends AbstractRemoteFileStreamingMessag
 
 	@Override
 	public String getComponentType() {
-		return "gcp:gcs-inbound-channel-adapter";
+		return "gcp:gcs-inbound-streaming-channel-adapter";
 	}
 }

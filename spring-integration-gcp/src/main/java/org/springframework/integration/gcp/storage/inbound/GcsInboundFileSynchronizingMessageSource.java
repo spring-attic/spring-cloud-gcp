@@ -39,6 +39,6 @@ public class GcsInboundFileSynchronizingMessageSource extends AbstractInboundFil
 
 	@Override
 	public String getComponentType() {
-		return "gcp:gcs-inbound-streaming-channel-adapter";
+		return "gcp:gcs-inbound-channel-adapter";
 	}
 }
