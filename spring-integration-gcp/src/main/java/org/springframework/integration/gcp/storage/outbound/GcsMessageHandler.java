@@ -26,17 +26,17 @@ import org.springframework.integration.file.support.FileExistsMode;
 /**
  * @author João André Martins
  */
-public class GCSMessageHandler extends FileTransferringMessageHandler<BlobInfo> {
+public class GcsMessageHandler extends FileTransferringMessageHandler<BlobInfo> {
 
-	public GCSMessageHandler(SessionFactory<BlobInfo> sessionFactory) {
+	public GcsMessageHandler(SessionFactory<BlobInfo> sessionFactory) {
 		super(sessionFactory);
 	}
 
-	public GCSMessageHandler(RemoteFileTemplate<BlobInfo> remoteFileTemplate) {
+	public GcsMessageHandler(RemoteFileTemplate<BlobInfo> remoteFileTemplate) {
 		super(remoteFileTemplate);
 	}
 
-	public GCSMessageHandler(RemoteFileTemplate<BlobInfo> remoteFileTemplate, FileExistsMode mode) {
+	public GcsMessageHandler(RemoteFileTemplate<BlobInfo> remoteFileTemplate, FileExistsMode mode) {
 		super(remoteFileTemplate, mode);
 	}
 }

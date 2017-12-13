@@ -20,15 +20,15 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 
 import org.springframework.integration.file.remote.synchronizer.AbstractInboundFileSynchronizer;
-import org.springframework.integration.gcp.storage.GCSSessionFactory;
+import org.springframework.integration.gcp.storage.GcsSessionFactory;
 
 /**
  * @author João André Martins
  */
-public class GCSInboundFileSynchronizer extends AbstractInboundFileSynchronizer<BlobInfo> {
+public class GcsInboundFileSynchronizer extends AbstractInboundFileSynchronizer<BlobInfo> {
 
-	public GCSInboundFileSynchronizer(Storage gcs) {
-		super(new GCSSessionFactory(gcs));
+	public GcsInboundFileSynchronizer(Storage gcs) {
+		super(new GcsSessionFactory(gcs));
 	}
 
 	@Override

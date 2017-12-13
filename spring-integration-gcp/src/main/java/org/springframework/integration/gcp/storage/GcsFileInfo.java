@@ -19,15 +19,17 @@ package org.springframework.integration.gcp.storage;
 import com.google.cloud.storage.BlobInfo;
 
 import org.springframework.integration.file.remote.AbstractFileInfo;
+import org.springframework.util.Assert;
 
 /**
  * @author João André Martins
  */
-public class GCSFileInfo extends AbstractFileInfo<BlobInfo> {
+public class GcsFileInfo extends AbstractFileInfo<BlobInfo> {
 
 	private BlobInfo gcsFile;
 
-	public GCSFileInfo(BlobInfo gcsFile) {
+	public GcsFileInfo(BlobInfo gcsFile) {
+		Assert.notNull(gcsFile, "The GCS blob can't be null.");
 		this.gcsFile = gcsFile;
 	}
 

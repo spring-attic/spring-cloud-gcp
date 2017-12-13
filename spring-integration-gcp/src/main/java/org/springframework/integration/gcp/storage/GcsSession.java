@@ -44,23 +44,26 @@ import org.springframework.util.StreamUtils;
 /**
  * @author João André Martins
  */
-public class GCSSession implements Session<BlobInfo> {
+public class GcsSession implements Session<BlobInfo> {
 
 	private Storage gcs;
 
-	private static final Log LOGGER = LogFactory.getLog(GCSSession.class);
+	private static final Log LOGGER = LogFactory.getLog(GcsSession.class);
 
-	public GCSSession(Storage gcs) {
+	public GcsSession(Storage gcs) {
+		Assert.notNull(gcs, "The GCS client can't be null.");
 		this.gcs = gcs;
 	}
 
 	@Override
 	public boolean remove(String path) throws IOException {
 		String[] tokens = getBucketAndObjectFromPath(path);
+		Assert.state(tokens.length == 1 || tokens.length == 2,
+				"Path must be in the form of [bucket] or [bucket]/[blob name]");
 
-		return tokens.length < 3
-				? this.gcs.delete(tokens[1])
-				: this.gcs.delete(tokens[1], tokens[2]);
+		return tokens.length == 1
+				? this.gcs.delete(tokens[0])
+				: this.gcs.delete(tokens[0], tokens[1]);
 	}
 
 	@Override
@@ -183,10 +186,9 @@ public class GCSSession implements Session<BlobInfo> {
 	}
 
 	private String[] getBucketAndObjectFromPath(String path) throws IOException {
-		// Assumes paths of the form /bucket/folder/blob
-		String[] tokens = path.split("/", 2);
-		Assert.state(tokens.length > 1, "Path must be in the form of [bucket]/[blob name]");
+		// Assumes paths of the form bucket/folder/blob
+		Assert.hasText(path, "Path can't be empty.");
 
-		return tokens;
+		return path.split("/", 2);
 	}
 }

@@ -16,25 +16,31 @@
 
 package org.springframework.integration.gcp.storage.inbound;
 
-import java.io.File;
-import java.util.Comparator;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.cloud.storage.BlobInfo;
 
-import org.springframework.integration.file.remote.synchronizer.AbstractInboundFileSynchronizingMessageSource;
+import org.springframework.integration.file.remote.AbstractFileInfo;
+import org.springframework.integration.file.remote.AbstractRemoteFileStreamingMessageSource;
+import org.springframework.integration.file.remote.RemoteFileTemplate;
+import org.springframework.integration.gcp.storage.GcsFileInfo;
 
 /**
  * @author João André Martins
  */
-public class GCSInboundFileSynchronizingMessageSource extends AbstractInboundFileSynchronizingMessageSource<BlobInfo> {
+public class GcsStreamingMessageSource extends AbstractRemoteFileStreamingMessageSource<BlobInfo> {
 
-	public GCSInboundFileSynchronizingMessageSource(GCSInboundFileSynchronizer synchronizer) {
-		super(synchronizer);
+	public GcsStreamingMessageSource(RemoteFileTemplate<BlobInfo> template) {
+		super(template, null);
 	}
 
-	public GCSInboundFileSynchronizingMessageSource(GCSInboundFileSynchronizer synchronizer,
-			Comparator<File> comparator) {
-		super(synchronizer, comparator);
+	@Override
+	protected List<AbstractFileInfo<BlobInfo>> asFileInfoList(Collection<BlobInfo> collection) {
+		return collection.stream()
+				.map(GcsFileInfo::new)
+				.collect(Collectors.toList());
 	}
 
 	@Override

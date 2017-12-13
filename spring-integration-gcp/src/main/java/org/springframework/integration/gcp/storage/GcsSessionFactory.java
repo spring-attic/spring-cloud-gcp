@@ -17,27 +17,37 @@
 package org.springframework.integration.gcp.storage;
 
 import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.Storage;
 
-import org.springframework.integration.file.remote.ClientCallback;
-import org.springframework.integration.file.remote.RemoteFileTemplate;
+import org.springframework.integration.file.remote.session.Session;
 import org.springframework.integration.file.remote.session.SessionFactory;
+import org.springframework.integration.file.remote.session.SharedSessionCapable;
+import org.springframework.util.Assert;
 
 /**
  * @author João André Martins
  */
-public class GCSRemoteFileTemplate extends RemoteFileTemplate<BlobInfo> {
+public class GcsSessionFactory implements SessionFactory<BlobInfo>, SharedSessionCapable {
 
-	/**
-	 * Construct a {@link RemoteFileTemplate} with the supplied session factory.
-	 *
-	 * @param sessionFactory the session factory.
-	 */
-	public GCSRemoteFileTemplate(SessionFactory<BlobInfo> sessionFactory) {
-		super(sessionFactory);
+	private Storage gcs;
+
+	public GcsSessionFactory(Storage gcs) {
+		Assert.notNull(gcs, "The GCS client can't be null.");
+		this.gcs = gcs;
 	}
 
 	@Override
-	public <T, C> T executeWithClient(ClientCallback<C, T> callback) {
-		return callback.doWithClient((C) this.sessionFactory.getSession().getClientInstance());
+	public Session<BlobInfo> getSession() {
+		return new GcsSession(this.gcs);
+	}
+
+	@Override
+	public boolean isSharedSession() {
+		return true;
+	}
+
+	@Override
+	public void resetSharedSession() {
+
 	}
 }

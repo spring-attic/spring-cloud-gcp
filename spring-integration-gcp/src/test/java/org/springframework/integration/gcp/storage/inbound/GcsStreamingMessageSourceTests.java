@@ -27,7 +27,6 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Storage;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.BDDMockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -40,13 +39,14 @@ import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.file.filters.AcceptOnceFileListFilter;
 import org.springframework.integration.file.remote.RemoteFileTemplate;
-import org.springframework.integration.gcp.storage.GCSSessionFactory;
+import org.springframework.integration.gcp.storage.GcsSessionFactory;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.willAnswer;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 
@@ -55,7 +55,7 @@ import static org.mockito.Mockito.mock;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class GCSStreamingMessageSourceTest {
+public class GcsStreamingMessageSourceTests {
 
 	@Autowired
 	private PollableChannel gcsChannel;
@@ -85,14 +85,14 @@ public class GCSStreamingMessageSourceTest {
 			Blob blob1 = mock(Blob.class);
 			Blob blob2 = mock(Blob.class);
 
-			BDDMockito.willAnswer(invocationOnMock -> "gcsbucket").given(blob1).getBucket();
-			BDDMockito.willAnswer(invocationOnMock -> "folder1/gcsfilename").given(blob1).getName();
-			BDDMockito.willAnswer(invocationOnMock -> "gcsbucket").given(blob2).getBucket();
-			BDDMockito.willAnswer(invocationOnMock -> "secondfilename").given(blob2).getName();
+			willAnswer(invocationOnMock -> "gcsbucket").given(blob1).getBucket();
+			willAnswer(invocationOnMock -> "folder1/gcsfilename").given(blob1).getName();
+			willAnswer(invocationOnMock -> "gcsbucket").given(blob2).getBucket();
+			willAnswer(invocationOnMock -> "secondfilename").given(blob2).getName();
 
 			Storage gcs = mock(Storage.class);
 
-			BDDMockito.willAnswer(invocationOnMock ->
+			willAnswer(invocationOnMock ->
 				new PageImpl<>(null, null,
 						Stream.of(blob1, blob2)
 								.collect(Collectors.toList())))
@@ -100,9 +100,9 @@ public class GCSStreamingMessageSourceTest {
 
 			ReadChannel channel1 = mock(ReadChannel.class);
 			ReadChannel channel2 = mock(ReadChannel.class);
-			BDDMockito.willAnswer(invocationOnMock -> channel1)
+			willAnswer(invocationOnMock -> channel1)
 					.given(gcs).reader(eq("gcsbucket"), eq("folder1/gcsfilename"));
-			BDDMockito.willAnswer(invocationOnMock -> channel2)
+			willAnswer(invocationOnMock -> channel2)
 					.given(gcs).reader(eq("gcsbucket"), eq("secondfilename"));
 
 			return gcs;
@@ -111,8 +111,8 @@ public class GCSStreamingMessageSourceTest {
 		@Bean
 		@InboundChannelAdapter(value = "gcsChannel", poller = @Poller(fixedDelay = "100"))
 		public MessageSource<InputStream> adapter(Storage gcs) {
-			GCSStreamingMessageSource adapter =
-					new GCSStreamingMessageSource(new RemoteFileTemplate<>(new GCSSessionFactory(gcs)));
+			GcsStreamingMessageSource adapter =
+					new GcsStreamingMessageSource(new RemoteFileTemplate<>(new GcsSessionFactory(gcs)));
 			adapter.setRemoteDirectory("gcsbucket");
 			adapter.setFilter(new AcceptOnceFileListFilter<>());
 

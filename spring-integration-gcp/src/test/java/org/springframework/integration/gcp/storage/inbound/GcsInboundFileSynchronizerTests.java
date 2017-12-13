@@ -33,7 +33,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.BDDMockito;
 
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +45,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.willAnswer;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 
@@ -54,12 +54,12 @@ import static org.mockito.Mockito.mock;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class GCSInboundFileSynchronizerTest {
+public class GcsInboundFileSynchronizerTests {
 
 	@Autowired
 	private Storage gcs;
 
-	private static final Log LOGGER = LogFactory.getLog(GCSInboundFileSynchronizerTest.class);
+	private static final Log LOGGER = LogFactory.getLog(GcsInboundFileSynchronizerTests.class);
 
 	@After
 	@Before
@@ -85,11 +85,11 @@ public class GCSInboundFileSynchronizerTest {
 	@Test
 	public void testCopyFiles() throws Exception {
 		File localDirectory = new File("test");
-		GCSInboundFileSynchronizer synchronizer = new GCSInboundFileSynchronizer(this.gcs);
+		GcsInboundFileSynchronizer synchronizer = new GcsInboundFileSynchronizer(this.gcs);
 		synchronizer.setRemoteDirectory("test-bucket");
 		synchronizer.setBeanFactory(mock(BeanFactory.class));
 
-		GCSInboundFileSynchronizingMessageSource adapter = new GCSInboundFileSynchronizingMessageSource(synchronizer);
+		GcsInboundFileSynchronizingMessageSource adapter = new GcsInboundFileSynchronizingMessageSource(synchronizer);
 		adapter.setAutoCreateLocalDirectory(true);
 		adapter.setLocalDirectory(localDirectory);
 		adapter.setBeanFactory(mock(BeanFactory.class));
@@ -121,15 +121,15 @@ public class GCSInboundFileSynchronizerTest {
 			Blob blob1 = mock(Blob.class);
 			Blob blob2 = mock(Blob.class);
 
-			BDDMockito.willAnswer(invocation -> "legend of heroes").given(blob1).getName();
-			BDDMockito.willAnswer(invocation -> "trails in the sky").given(blob2).getName();
+			willAnswer(invocation -> "legend of heroes").given(blob1).getName();
+			willAnswer(invocation -> "trails in the sky").given(blob2).getName();
 
-			BDDMockito.willAnswer(invocation -> "estelle".getBytes()).given(gcsMock)
+			willAnswer(invocation -> "estelle".getBytes()).given(gcsMock)
 					.readAllBytes(eq("test-bucket"), eq("legend of heroes"));
-			BDDMockito.willAnswer(invocation -> "joshua".getBytes()).given(gcsMock)
+			willAnswer(invocation -> "joshua".getBytes()).given(gcsMock)
 					.readAllBytes(eq("test-bucket"), eq("trails in the sky"));
 
-			BDDMockito.willAnswer(invocation -> new PageImpl<>(null, null,
+			willAnswer(invocation -> new PageImpl<>(null, null,
 					Stream.of(blob1, blob2)
 							.collect(Collectors.toList())))
 					.given(gcsMock).list("test-bucket");
