@@ -39,4 +39,9 @@ public class GcsMessageHandler extends FileTransferringMessageHandler<BlobInfo> 
 	public GcsMessageHandler(RemoteFileTemplate<BlobInfo> remoteFileTemplate, FileExistsMode mode) {
 		super(remoteFileTemplate, mode);
 	}
+
+	@Override
+	public void setRemoteFileSeparator(String remoteFileSeparator) {
+		throw new UnsupportedOperationException("Google Cloud Storage doesn't support separators other than '/'.");
+	}
 }

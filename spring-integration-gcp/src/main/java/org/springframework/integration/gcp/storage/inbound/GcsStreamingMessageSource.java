@@ -47,4 +47,9 @@ public class GcsStreamingMessageSource extends AbstractRemoteFileStreamingMessag
 	public String getComponentType() {
 		return "gcp:gcs-inbound-streaming-channel-adapter";
 	}
+
+	@Override
+	public void setRemoteFileSeparator(String remoteFileSeparator) {
+		throw new UnsupportedOperationException("Google Cloud Storage doesn't support separators other than '/'.");
+	}
 }
