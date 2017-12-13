@@ -50,7 +50,7 @@ public class GcsSession implements Session<BlobInfo> {
 
 	private static final Log LOGGER = LogFactory.getLog(GcsSession.class);
 
-	private String remoteFileSeparator = "/";
+	private static final String SEPARATOR = "/";
 
 	public GcsSession(Storage gcs) {
 		Assert.notNull(gcs, "The GCS client can't be null.");
@@ -191,10 +191,6 @@ public class GcsSession implements Session<BlobInfo> {
 		// Assumes paths of the form bucket/folder/blob
 		Assert.hasText(path, "Path can't be empty.");
 
-		return path.split(this.remoteFileSeparator, 2);
-	}
-
-	public void setRemoteFileSeparator(String remoteFileSeparator) {
-		this.remoteFileSeparator = remoteFileSeparator;
+		return path.split(SEPARATOR, 2);
 	}
 }

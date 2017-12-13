@@ -3,8 +3,8 @@
 The channel adapters for Google Cloud Storage allow you to read and write files to Google Cloud
 Storage through `MessageChannels`.
 
-Spring Cloud GCP provides two inbound adapters, `GCSInboundFileSynchronizingMessageSource` and
-`GCSStreamingMessageSource`, and one outbound adapter, `GCSMessageHandler`.
+Spring Cloud GCP provides two inbound adapters, `GcsInboundFileSynchronizingMessageSource` and
+`GcsStreamingMessageSource`, and one outbound adapter, `GcsMessageHandler`.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -38,11 +38,11 @@ Here is an example of how to configure a Google Cloud Storage inbound channel ad
 @Bean
 @InboundChannelAdapter(channel = "new-file-channel", poller = @Poller(fixedDelay = "5000"))
 public MessageSource<File> synchronizerAdapter(Storage gcs) {
-  GCSInboundFileSynchronizer synchronizer = new GCSInboundFileSynchronizer(gcs);
+  GcsInboundFileSynchronizer synchronizer = new GcsInboundFileSynchronizer(gcs);
   synchronizer.setRemoteDirectory("your-gcs-bucket");
 
-  GCSInboundFileSynchronizingMessageSource synchAdapter =
-          new GCSInboundFileSynchronizingMessageSource(synchronizer);
+  GcsInboundFileSynchronizingMessageSource synchAdapter =
+          new GcsInboundFileSynchronizingMessageSource(synchronizer);
   synchAdapter.setLocalDirectory(new File("local-directory"));
 
   return synchAdapter;
@@ -61,8 +61,8 @@ Here is an example of how to configure a Google Cloud Storage inbound streaming 
 @Bean
 @InboundChannelAdapter(channel = "streaming-channel", poller = @Poller(fixedDelay = "5000"))
 public MessageSource<InputStream> streamingAdapter(Storage gcs) {
-  GCSStreamingMessageSource adapter =
-          new GCSStreamingMessageSource(new GCSRemoteFileTemplate(new GCSSessionFactory(gcs)));
+  GcsStreamingMessageSource adapter =
+          new GcsStreamingMessageSource(new GcsRemoteFileTemplate(new GcsSessionFactory(gcs)));
   adapter.setRemoteDirectory("your-gcs-bucket");
   return adapter;
 }
@@ -81,7 +81,7 @@ Here is an example of how to configure a Google Cloud Storage outbound channel a
 @Bean
 @ServiceActivator(inputChannel = "writeFiles")
 public MessageHandler outboundChannelAdapter(Storage gcs) {
-  GCSMessageHandler outboundChannelAdapter = new GCSMessageHandler(new GCSSessionFactory(gcs));
+  GcsMessageHandler outboundChannelAdapter = new GcsMessageHandler(new GcsSessionFactory(gcs));
   outboundChannelAdapter.setRemoteDirectoryExpression(new ValueExpression<>("your-gcs-bucket"));
 
   return outboundChannelAdapter;
