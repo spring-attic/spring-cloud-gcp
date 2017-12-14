@@ -17,8 +17,12 @@
 package org.springframework.cloud.gcp.core.autoconfig;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.api.gax.core.CredentialsProvider;
@@ -56,16 +60,39 @@ import org.springframework.util.StringUtils;
 @ConditionalOnClass(GoogleCredentials.class)
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {
+	private static final String DEFAULT_STARTER_SCOPES_PLACEHOLDER = "STARTER_SCOPES";
 
 	private static final List<String> CREDENTIALS_SCOPES_LIST =
-			Arrays.stream(GcpScope.values())
-					.map(GcpScope::getUrl)
-					.collect(Collectors.toList());
+			Collections.unmodifiableList(
+					Arrays.stream(GcpScope.values())
+						.map(GcpScope::getUrl)
+						.collect(Collectors.toList()));
 
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
 
 	@Autowired
 	private GcpProperties gcpProperties;
+
+	protected List<String> resolveScopes() {
+		GcpProperties.Credentials propertyCredentials = this.gcpProperties.getCredentials();
+		if (propertyCredentials != null && propertyCredentials.getScopes() != null) {
+			Set<String> resolvedScopes = new HashSet<>();
+			propertyCredentials.getScopes().forEach(scope -> {
+				if (DEFAULT_STARTER_SCOPES_PLACEHOLDER.equals(scope)) {
+					resolvedScopes.addAll(CREDENTIALS_SCOPES_LIST);
+				}
+				else {
+					resolvedScopes.add(scope);
+				}
+			});
+
+			return Collections.unmodifiableList(new ArrayList<>(resolvedScopes));
+		}
+		else {
+			return CREDENTIALS_SCOPES_LIST;
+		}
+
+	}
 
 	@Bean
 	@ConditionalOnMissingBean
@@ -73,9 +100,8 @@ public class GcpContextAutoConfiguration {
 		CredentialsProvider credentialsProvider;
 
 		GcpProperties.Credentials propertyCredentials = this.gcpProperties.getCredentials();
-		List<String> scopes =
-				propertyCredentials != null && propertyCredentials.getScopes() != null
-						? propertyCredentials.getScopes() : CREDENTIALS_SCOPES_LIST;
+
+		List<String> scopes = resolveScopes();
 
 		if (propertyCredentials != null
 				&& !StringUtils.isEmpty(propertyCredentials.getLocation())) {
