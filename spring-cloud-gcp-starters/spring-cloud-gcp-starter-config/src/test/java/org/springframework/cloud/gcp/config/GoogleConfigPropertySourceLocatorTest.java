@@ -88,7 +88,8 @@ public class GoogleConfigPropertySourceLocatorTest {
 	@Test
 	public void disabledPropertySourceAvoidChecks() throws IOException {
 		this.gcpConfigProperties.setEnabled(false);
-		this.googleConfigPropertySourceLocator = spy(new GoogleConfigPropertySourceLocator(null, null, null));
+		this.googleConfigPropertySourceLocator =
+				spy(new GoogleConfigPropertySourceLocator(null, null, this.gcpConfigProperties));
 		this.googleConfigPropertySourceLocator.locate(new StandardEnvironment());
 		verify(this.googleConfigPropertySourceLocator, never()).getRemoteEnvironment();
 	}
