@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.storage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
 import com.google.cloud.WriteChannel;
 import com.google.cloud.storage.Blob;
@@ -258,6 +259,16 @@ public class GoogleStorageTests {
 		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
 		GoogleStorageResourceObject relative = (GoogleStorageResourceObject) resource.createRelative("r1/relative.png");
 		Assert.assertEquals("gs://test-spring/t1/r1/relative.png", relative.getURI().toString());
+	}
+
+	@Test
+	public void nullSignedUrlForNullBlob() throws IOException {
+		String location = "gs://test-spring/t1/test.png";
+		Storage storage = Mockito.mock(Storage.class);
+		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage,
+				location);
+		Mockito.when(storage.get(Mockito.any(BlobId.class))).thenReturn(null);
+		Assert.assertNull(resource.getSignedUrl(TimeUnit.DAYS, 1));
 	}
 
 	@Configuration

@@ -25,6 +25,8 @@ package org.springframework.cloud.gcp.storage;
 public class GoogleStorageProtocolResolverSettings {
 	private boolean autoCreateFiles = true;
 
+	public static final String GOOGLE_CREDENTIALS_PATH_ENV_VAR = "GOOGLE_APPLICATION_CREDENTIALS";
+
 	public boolean isAutoCreateFiles() {
 		return this.autoCreateFiles;
 	}

@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.storage;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,15 +26,19 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
+import java.util.concurrent.TimeUnit;
 
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.Storage.SignUrlOption;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Implements {@link WritableResource} for reading and writing objects in Google Cloud
@@ -117,6 +122,31 @@ public class GoogleStorageResourceObject implements WritableResource {
 	 */
 	public Blob getGoogleStorageObject() throws IOException {
 		return this.storage.get(getBlobId());
+	}
+
+	/**
+	 * Gets a signed URL to an object if it exists.
+	 * @param timeUnit the time unit used to determine how long the URL is valid.
+	 * @param timePeriods the number of periods to determine how long the URL is valid.
+	 * @return the URL if the object exists, and null if it does not.
+	 * @throws IOException
+	 */
+	public URL getSignedUrl(TimeUnit timeUnit, int timePeriods) throws IOException {
+		Blob blob = this.getGoogleStorageObject();
+		if (blob == null) {
+			return null;
+		}
+		String privateKeyPath = System.getenv(
+				GoogleStorageProtocolResolverSettings.GOOGLE_CREDENTIALS_PATH_ENV_VAR);
+		if (StringUtils.isEmpty(privateKeyPath)) {
+			throw new IOException("A private key file path is required at the "
+					+ GoogleStorageProtocolResolverSettings.GOOGLE_CREDENTIALS_PATH_ENV_VAR
+					+ " environment variable to sign URLs.");
+		}
+		return this.storage.signUrl(
+				BlobInfo.newBuilder(blob.getBucket(), blob.getName()).build(),
+				timePeriods, timeUnit, SignUrlOption.signWith(ServiceAccountCredentials
+						.fromStream(new FileInputStream(privateKeyPath))));
 	}
 
 	private Blob createBlob() throws IOException {
