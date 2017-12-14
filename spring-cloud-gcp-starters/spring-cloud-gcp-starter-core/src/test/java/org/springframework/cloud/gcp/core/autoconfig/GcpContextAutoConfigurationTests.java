@@ -60,10 +60,6 @@ public class GcpContextAutoConfigurationTests {
 	}
 
 	@Test
-	public void testStarterScopes() {
-	}
-
-	@Test
 	public void testGetProjectIdProvider_withoutGcpProperties() {
 		loadEnvironment();
 		assertTrue(this.context.getBean(GcpProjectIdProvider.class)
@@ -90,10 +86,10 @@ public class GcpContextAutoConfigurationTests {
 
 	@Test
 	public void testResolveScopesStarterScopesPlaceholder() {
-		loadEnvironment("spring.cloud.gcp.credentials.scopes=STARTER_SCOPES,myscope");
+		loadEnvironment("spring.cloud.gcp.credentials.scopes=DEFAULT_SCOPES,myscope");
 		GcpContextAutoConfiguration configuration = this.context.getBean(GcpContextAutoConfiguration.class);
 		List<String> scopes = configuration.resolveScopes();
-		assertTrue(scopes.size() > 1);
+		assertTrue(scopes.size() == GcpScope.values().length + 1);
 		assertTrue(scopes.contains(GcpScope.PUBSUB.getUrl()));
 		assertTrue(scopes.contains("myscope"));
 	}

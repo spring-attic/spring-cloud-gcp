@@ -60,7 +60,7 @@ import org.springframework.util.StringUtils;
 @ConditionalOnClass(GoogleCredentials.class)
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {
-	private static final String DEFAULT_STARTER_SCOPES_PLACEHOLDER = "STARTER_SCOPES";
+	private static final String DEFAULT_SCOPES_PLACEHOLDER = "DEFAULT_SCOPES";
 
 	private static final List<String> CREDENTIALS_SCOPES_LIST =
 			Collections.unmodifiableList(
@@ -78,7 +78,7 @@ public class GcpContextAutoConfiguration {
 		if (propertyCredentials != null && propertyCredentials.getScopes() != null) {
 			Set<String> resolvedScopes = new HashSet<>();
 			propertyCredentials.getScopes().forEach(scope -> {
-				if (DEFAULT_STARTER_SCOPES_PLACEHOLDER.equals(scope)) {
+				if (DEFAULT_SCOPES_PLACEHOLDER.equals(scope)) {
 					resolvedScopes.addAll(CREDENTIALS_SCOPES_LIST);
 				}
 				else {
@@ -88,10 +88,8 @@ public class GcpContextAutoConfiguration {
 
 			return Collections.unmodifiableList(new ArrayList<>(resolvedScopes));
 		}
-		else {
-			return CREDENTIALS_SCOPES_LIST;
-		}
 
+		return CREDENTIALS_SCOPES_LIST;
 	}
 
 	@Bean
