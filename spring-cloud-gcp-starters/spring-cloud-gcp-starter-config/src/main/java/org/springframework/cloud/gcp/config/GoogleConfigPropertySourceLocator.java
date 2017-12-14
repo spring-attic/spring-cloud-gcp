@@ -71,28 +71,30 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 	public GoogleConfigPropertySourceLocator(GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider,
 			GcpConfigProperties gcpConfigProperties) throws IOException {
-		Assert.notNull(credentialsProvider, "Credentials provider cannot be null");
-		Assert.notNull(projectIdProvider, "Project ID provider cannot be null");
 		Assert.notNull(gcpConfigProperties, "Google Config properties must not be null");
 
-		this.credentials = gcpConfigProperties.getCredentials() != null
-				? GoogleCredentials.fromStream(
-						gcpConfigProperties.getCredentials().getLocation().getInputStream())
-				.createScoped(gcpConfigProperties.getCredentials().getScopes())
-				: credentialsProvider.getCredentials();
-		this.projectId = gcpConfigProperties.getProjectId() != null
-				? gcpConfigProperties.getProjectId()
-				: projectIdProvider.getProjectId();
-		Assert.notNull(this.credentials, "Credentials must not be null");
+		if (gcpConfigProperties.isEnabled()) {
+			Assert.notNull(credentialsProvider, "Credentials provider cannot be null");
+			Assert.notNull(projectIdProvider, "Project ID provider cannot be null");
+			this.credentials = gcpConfigProperties.getCredentials() != null
+					? GoogleCredentials.fromStream(
+					gcpConfigProperties.getCredentials().getLocation().getInputStream())
+					.createScoped(gcpConfigProperties.getCredentials().getScopes())
+					: credentialsProvider.getCredentials();
+			this.projectId = gcpConfigProperties.getProjectId() != null
+					? gcpConfigProperties.getProjectId()
+					: projectIdProvider.getProjectId();
+			Assert.notNull(this.credentials, "Credentials must not be null");
 
-		Assert.notNull(this.projectId, "Project ID must not be null");
+			Assert.notNull(this.projectId, "Project ID must not be null");
 
-		this.timeout = gcpConfigProperties.getTimeout();
-		this.name = gcpConfigProperties.getName();
-		this.profile = gcpConfigProperties.getProfile();
-		this.enabled = gcpConfigProperties.isEnabled();
-		Assert.notNull(this.name, "Config name must not be null");
-		Assert.notNull(this.profile, "Config profile must not be null");
+			this.timeout = gcpConfigProperties.getTimeout();
+			this.name = gcpConfigProperties.getName();
+			this.profile = gcpConfigProperties.getProfile();
+			this.enabled = gcpConfigProperties.isEnabled();
+			Assert.notNull(this.name, "Config name must not be null");
+			Assert.notNull(this.profile, "Config profile must not be null");
+		}
 	}
 
 	private HttpEntity<Void> getAuthorizedRequest() throws IOException {
