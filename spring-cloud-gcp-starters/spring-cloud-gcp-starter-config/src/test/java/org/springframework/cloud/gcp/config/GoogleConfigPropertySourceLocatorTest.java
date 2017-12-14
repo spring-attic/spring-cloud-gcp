@@ -35,6 +35,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -80,6 +81,14 @@ public class GoogleConfigPropertySourceLocatorTest {
 		this.gcpConfigProperties.setEnabled(false);
 		this.googleConfigPropertySourceLocator = Mockito.spy(new GoogleConfigPropertySourceLocator(
 				this.projectIdProvider, this.credentialsProvider, this.gcpConfigProperties));
+		this.googleConfigPropertySourceLocator.locate(new StandardEnvironment());
+		verify(this.googleConfigPropertySourceLocator, never()).getRemoteEnvironment();
+	}
+
+	@Test
+	public void disabledPropertySourceAvoidChecks() throws IOException {
+		this.gcpConfigProperties.setEnabled(false);
+		this.googleConfigPropertySourceLocator = spy(new GoogleConfigPropertySourceLocator(null, null, null));
 		this.googleConfigPropertySourceLocator.locate(new StandardEnvironment());
 		verify(this.googleConfigPropertySourceLocator, never()).getRemoteEnvironment();
 	}
