@@ -85,6 +85,15 @@ public class GoogleConfigPropertySourceLocatorTest {
 	}
 
 	@Test
+	public void disabledPropertySourceAvoidChecks() throws Exception {
+		this.gcpConfigProperties.setEnabled(false);
+		this.googleConfigPropertySourceLocator = Mockito.spy(new GoogleConfigPropertySourceLocator(
+				null, null, null));
+		this.googleConfigPropertySourceLocator.locate(new StandardEnvironment());
+		verify(this.googleConfigPropertySourceLocator, never()).getRemoteEnvironment();
+	}
+
+	@Test
 	public void testProjectIdInConfigProperties() throws IOException {
 		this.gcpConfigProperties.setProjectId("pariah");
 		this.googleConfigPropertySourceLocator = new GoogleConfigPropertySourceLocator(

@@ -24,7 +24,7 @@ import org.springframework.cloud.gcp.config.autoconfig.GcpConfigAutoConfiguratio
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Jisha Abubaker
@@ -54,13 +54,13 @@ public class GcpConfigAutoConfigurationTest {
 		loadEnvironment("spring.cloud.gcp.config.name=myapp",
 				"spring.cloud.gcp.config.profile=prod",
 				"spring.cloud.gcp.config.timeout=120000",
-				"spring.cloud.gcp.config.enabled=false",
+				"spring.cloud.gcp.config.enabled=true",
 				"spring.cloud.gcp.config.project-id=pariah");
 		GcpConfigProperties config = this.context.getBean(GcpConfigProperties.class);
 		assertEquals(config.getName(), "myapp");
 		assertEquals(config.getProfile(), "prod");
 		assertEquals(config.getTimeout(), 120000);
-		assertFalse(config.isEnabled());
+		assertTrue(config.isEnabled());
 		assertEquals(config.getProjectId(), "pariah");
 	}
 
