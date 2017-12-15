@@ -36,7 +36,6 @@ import com.google.auth.oauth2.UserCredentials;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -70,8 +69,11 @@ public class GcpContextAutoConfiguration {
 
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
 
-	@Autowired
-	private GcpProperties gcpProperties;
+	private final GcpProperties gcpProperties;
+
+	public GcpContextAutoConfiguration(GcpProperties gcpProperties) {
+		this.gcpProperties = gcpProperties;
+	}
 
 	protected List<String> resolveScopes() {
 		GcpProperties.Credentials propertyCredentials = this.gcpProperties.getCredentials();
