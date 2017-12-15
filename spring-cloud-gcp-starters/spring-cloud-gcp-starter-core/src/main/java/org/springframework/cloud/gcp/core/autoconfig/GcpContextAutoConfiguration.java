@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.GoogleCredentialsProvider;
-import com.google.auth.Credentials;
 import com.google.auth.oauth2.ComputeEngineCredentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -39,12 +38,14 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -76,8 +77,8 @@ public class GcpContextAutoConfiguration {
 	}
 
 	protected List<String> resolveScopes() {
-		GcpProperties.Credentials propertyCredentials = this.gcpProperties.getCredentials();
-		if (propertyCredentials != null && propertyCredentials.getScopes() != null) {
+		Credentials propertyCredentials = this.gcpProperties.getCredentials();
+		if (!ObjectUtils.isEmpty(propertyCredentials.getScopes())) {
 			Set<String> resolvedScopes = new HashSet<>();
 			propertyCredentials.getScopes().forEach(scope -> {
 				if (DEFAULT_SCOPES_PLACEHOLDER.equals(scope)) {
@@ -99,12 +100,11 @@ public class GcpContextAutoConfiguration {
 	public CredentialsProvider googleCredentials() throws Exception {
 		CredentialsProvider credentialsProvider;
 
-		GcpProperties.Credentials propertyCredentials = this.gcpProperties.getCredentials();
+		Credentials propertyCredentials = this.gcpProperties.getCredentials();
 
 		List<String> scopes = resolveScopes();
 
-		if (propertyCredentials != null
-				&& !StringUtils.isEmpty(propertyCredentials.getLocation())) {
+		if (!StringUtils.isEmpty(propertyCredentials.getLocation())) {
 			credentialsProvider = FixedCredentialsProvider
 					.create(GoogleCredentials.fromStream(
 							propertyCredentials.getLocation().getInputStream())
@@ -117,7 +117,7 @@ public class GcpContextAutoConfiguration {
 		}
 
 		try {
-			Credentials credentials = credentialsProvider.getCredentials();
+			com.google.auth.Credentials credentials = credentialsProvider.getCredentials();
 
 			if (LOGGER.isInfoEnabled()) {
 				if (credentials instanceof UserCredentials) {

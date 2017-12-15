@@ -71,7 +71,7 @@ public class GcpPubSubAutoConfiguration {
 		this.finalProjectIdProvider = gcpPubSubProperties.getProjectId() != null
 				? gcpPubSubProperties::getProjectId
 				: gcpProjectIdProvider;
-		this.finalCredentialsProvider = gcpPubSubProperties.getCredentials() != null
+		this.finalCredentialsProvider = gcpPubSubProperties.getCredentials().getLocation() != null
 				? FixedCredentialsProvider.create(
 						GoogleCredentials.fromStream(
 								gcpPubSubProperties.getCredentials().getLocation().getInputStream())

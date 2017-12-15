@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.core;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 /**
  * @author Vinicius Carvalho
@@ -27,7 +28,8 @@ public class GcpProperties {
 
 	private String projectId;
 
-	private Credentials credentials = new Credentials();
+	@NestedConfigurationProperty
+	private final Credentials credentials = new Credentials();
 
 	public String getProjectId() {
 		return this.projectId;
@@ -41,10 +43,4 @@ public class GcpProperties {
 		return this.credentials;
 	}
 
-	public void setCredentials(Credentials credentials) {
-		this.credentials = credentials;
-	}
-
-	public static class Credentials extends AbstractCredentialsProperty {
-	}
 }
