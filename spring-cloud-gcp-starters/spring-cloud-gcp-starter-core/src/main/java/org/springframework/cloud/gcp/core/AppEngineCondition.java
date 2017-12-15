@@ -23,7 +23,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Determine whether this is running inside of an App Engine environment by looking into
- * the System properties `com.google.appengine.runtime.version`.
+ * the System properties {@value APPENGINE_RUNTIME_PROPERTY}.
  *
  * @author Ray Tsang
  */
@@ -35,10 +35,8 @@ public class AppEngineCondition implements Condition {
 	@Override
 	public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
 		String appEngineVersion = System.getProperty(APPENGINE_RUNTIME_PROPERTY);
-		if (StringUtils.isEmpty(appEngineVersion)) {
-			return false;
-		}
+		return !StringUtils.isEmpty(appEngineVersion)
+				&& appEngineVersion.startsWith(APPENGINE_RUNTIME_PREFIX);
 
-		return appEngineVersion.startsWith(APPENGINE_RUNTIME_PREFIX);
 	}
 }
