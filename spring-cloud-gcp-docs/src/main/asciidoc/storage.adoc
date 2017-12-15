@@ -41,11 +41,17 @@ private Resource gcsResource;
 This creates a `Resource` object that can be used to read the object, among
 https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-resource[other possible operations].
 
-It is also possible to write to a `Resource`, although a cast to `WriteableResource` is required.
+It is also possible to write to a `Resource`, although a `WriteableResource` is required.
 
 [source,java]
 ----
-try (OutputStream os = ((WritableResource) gcsResource).getOutputStream()) {
+@Value("gs://[YOUR_GCS_BUCKET]/[GCS_FILE_NAME]")
+private WritableResource gcsResource;
+----
+
+[source,java]
+----
+try (OutputStream os = gcsResource.getOutputStream()) {
   os.write("foo".getBytes());
 }
 ----

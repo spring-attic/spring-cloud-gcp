@@ -71,10 +71,10 @@ following command:
 ----
 gcloud init # if this is your first Google Cloud SDK run.
 gcloud beta runtime-config configs create myapp_prod
-gcloud beta runtime-config configs variables set queue_size 25 --config-name myapp_prod
+gcloud beta runtime-config configs variables set myapp.queue-size 25 --config-name myapp_prod
 ----
 
-2. Configure your bootstrap.yml file with your application's configuration data:
+2. Configure your `bootstrap.properties` file with your application's configuration data:
 +
 ----
 spring.cloud.gcp.config.name=myapp
@@ -84,23 +84,23 @@ spring.cloud.gcp.config.profile=prod
 +
 ----
 @Component
+@ConfigurationProperties("myapp")
 public class SampleConfig {
 
-  @Value("${queue_size}")
-  private String queueSize;
+  private int queueSize;
 
-  public String getQueueSize() {
+  public int getQueueSize() {
     return this.queueSize;
   }
 
-  public void setQueueSize(String queueSize) {
+  public void setQueueSize(int queueSize) {
     this.queueSize = queueSize;
   }
 }
 ----
 
-When your Spring application starts, the `queueSize` field value will be set to 25 for any
-auto-wired instances of the above `SampleConfig` bean.
+When your Spring application starts, the `queueSize` field value will be set to 25 for the
+above `SampleConfig` bean.
 
 === Refreshing the configuration at runtime
 
@@ -129,9 +129,9 @@ dependencies {
 ----
 
 Add a `@RefreshScope` annotation to your class(es) containing remote configuration properties.
-Then, if you change the value of the `queue_size` variable in the `myapp_prod` configuration and
-hit the `/refresh` endpoint of your application, you can verify that the value of the `queueSize`
-field has been updated.
+Then, if you change the value of the `myapp.queue-size` variable in the `myapp_prod`
+configuration and hit the `/refresh` endpoint of your application, you can verify that the
+value of the `queueSize` field has been updated.
 
 NOTE: If you're developing locally or just not using authentication in your application, you should
 add `management.security.enabled=false` to your `application.properties` file to allow unrestricted

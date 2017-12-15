@@ -82,7 +82,7 @@ spring.cloud.gcp.credentials.location=file:/usr/local/key.json
 ----
 
 If that property isn't specified, the starter tries to discover credentials from a
-https://github.com/google/google-auth-library-java/blob/master/oauth2_http/java/com/google/auth/oauth2/GoogleCredentials.java#L57[number of places]:
+https://github.com/google/google-auth-library-java/blob/a8929df490d3751f2349986264290a074dee35e1/oauth2_http/java/com/google/auth/oauth2/GoogleCredentials.java#L57[number of places]:
 
 1. Credentials file pointed to by the `GOOGLE_APPLICATION_CREDENTIALS` environment variable
 2. Credentials provided by the Google Cloud SDK `gcloud auth application-default login` command
