@@ -278,14 +278,11 @@ public class GoogleStorageTests {
 		Blob blob = Mockito.mock(Blob.class);
 		Mockito.when(blob.getBucket()).thenReturn("fakeBucket");
 		Mockito.when(blob.getName()).thenReturn("fakeObject");
-		GoogleStorageResourceObject resource = Mockito.spy(new GoogleStorageResourceObject(storage,
-				location));
-		Mockito.doReturn("/fake/path/file.json").when(resource).getGcpPrivateKeyPath();
-		Mockito.doReturn(null).when(resource).getSignUrlOptionForPrivateKey(Mockito.anyString());
+		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
 		Mockito.when(storage.get(Mockito.any(BlobId.class))).thenReturn(blob);
 		resource.createSignedUrl(TimeUnit.DAYS, 1L);
 		Mockito.verify(storage, Mockito.times(1))
-				.signUrl(Mockito.any(), Mockito.eq(1L), Mockito.eq(TimeUnit.DAYS), Mockito.any());
+				.signUrl(Mockito.any(), Mockito.eq(1L), Mockito.eq(TimeUnit.DAYS));
 	}
 
 	@Configuration
