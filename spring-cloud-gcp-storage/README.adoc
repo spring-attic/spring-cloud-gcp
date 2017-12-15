@@ -54,3 +54,5 @@ If the path refers to an object on Google Cloud Storage (as opposed to a bucket)
 can be cast as a `GoogleStorageResourceObject` and the `getGoogleStorageObject` method can be called
 to obtain a https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-storage/src/main/java/com/google/cloud/storage/Blob.java[`Blob`].
 This type represents a GCS file, which has associated https://cloud.google.com/storage/docs/gsutil/addlhelp/WorkingWithObjectMetadata[metadata], such as content-type, that can be set.
+The `createSignedUrl` method can also be used to obtain https://cloud.google.com/storage/docs/access-control/signed-urls[signed URLs] for GCS objects.
+However, creating signed URLs requires that the resource was created using service account credentials.
