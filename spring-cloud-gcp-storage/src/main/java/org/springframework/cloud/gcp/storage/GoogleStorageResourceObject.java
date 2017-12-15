@@ -34,6 +34,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.Storage.SignUrlOption;
+import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
@@ -125,28 +126,39 @@ public class GoogleStorageResourceObject implements WritableResource {
 	}
 
 	/**
-	 * Gets a signed URL to an object if it exists.
+	 * Creates a signed URL to an object if it exists.
 	 * @param timeUnit the time unit used to determine how long the URL is valid.
 	 * @param timePeriods the number of periods to determine how long the URL is valid.
 	 * @return the URL if the object exists, and null if it does not.
 	 * @throws IOException
 	 */
-	public URL getSignedUrl(TimeUnit timeUnit, int timePeriods) throws IOException {
+	public URL createSignedUrl(TimeUnit timeUnit, long timePeriods) throws IOException {
 		Blob blob = this.getGoogleStorageObject();
 		if (blob == null) {
 			return null;
 		}
+		String privateKeyPath = getGcpPrivateKeyPath();
+		return this.storage.signUrl(
+				BlobInfo.newBuilder(blob.getBucket(), blob.getName()).build(),
+				timePeriods, timeUnit, getSignUrlOptionForPrivateKey(privateKeyPath));
+	}
+
+	@VisibleForTesting
+	SignUrlOption getSignUrlOptionForPrivateKey(String privateKeyPath) throws IOException {
+		return SignUrlOption.signWith(ServiceAccountCredentials
+				.fromStream(new FileInputStream(privateKeyPath)));
+	}
+
+	@VisibleForTesting
+	String getGcpPrivateKeyPath() throws IOException {
 		String privateKeyPath = System.getenv(
 				GoogleStorageProtocolResolverSettings.GOOGLE_CREDENTIALS_PATH_ENV_VAR);
 		if (StringUtils.isEmpty(privateKeyPath)) {
-			throw new IOException("A private key file path is required at the "
+			throw new IOException("There is no private key file path at the "
 					+ GoogleStorageProtocolResolverSettings.GOOGLE_CREDENTIALS_PATH_ENV_VAR
-					+ " environment variable to sign URLs.");
+					+ " environment variable.");
 		}
-		return this.storage.signUrl(
-				BlobInfo.newBuilder(blob.getBucket(), blob.getName()).build(),
-				timePeriods, timeUnit, SignUrlOption.signWith(ServiceAccountCredentials
-						.fromStream(new FileInputStream(privateKeyPath))));
+		return privateKeyPath;
 	}
 
 	private Blob createBlob() throws IOException {
