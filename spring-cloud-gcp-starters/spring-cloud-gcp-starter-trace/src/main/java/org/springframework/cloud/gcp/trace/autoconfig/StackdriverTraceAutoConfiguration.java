@@ -84,7 +84,7 @@ public class StackdriverTraceAutoConfiguration {
 		this.finalProjectIdProvider = gcpTraceProperties.getProjectId() != null
 				? gcpTraceProperties::getProjectId
 				: gcpProjectIdProvider;
-		this.finalCredentialsProvider = gcpTraceProperties.getCredentials() != null
+		this.finalCredentialsProvider = gcpTraceProperties.getCredentials().getLocation() != null
 				? FixedCredentialsProvider.create(GoogleCredentials.fromStream(
 						gcpTraceProperties.getCredentials().getLocation().getInputStream())
 				.createScoped(gcpTraceProperties.getCredentials().getScopes()))

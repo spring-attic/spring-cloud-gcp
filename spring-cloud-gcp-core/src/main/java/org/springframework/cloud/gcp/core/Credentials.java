@@ -16,27 +16,26 @@
 
 package org.springframework.cloud.gcp.core;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.core.io.Resource;
 
 /**
- * To be extended by property class subclasses and allow e.g., a "credentials.location" property
- * notation.
+ * Credentials configuration
  *
  * @author João Andre Martins
+ * @author Stephane Nicoll
  */
-public abstract class AbstractCredentialsProperty {
+public class Credentials {
+
+	private List<String> scopes = new ArrayList<>();
 
 	private Resource location;
-	private List<String> scopes;
 
-	public Resource getLocation() {
-		return this.location;
-	}
-
-	public void setLocation(Resource location) {
-		this.location = location;
+	public Credentials(String... defaultScopes) {
+		this.scopes.addAll(Arrays.asList(defaultScopes));
 	}
 
 	public List<String> getScopes() {
@@ -46,4 +45,13 @@ public abstract class AbstractCredentialsProperty {
 	public void setScopes(List<String> scopes) {
 		this.scopes = scopes;
 	}
+
+	public Resource getLocation() {
+		return this.location;
+	}
+
+	public void setLocation(Resource location) {
+		this.location = location;
+	}
+
 }
