@@ -1,8 +1,7 @@
 [#spring-cloud-gcp-core]
 == Spring Cloud GCP Core
 
-At the center of every Spring Cloud GCP module are the concepts of `GcpProjectIdProvider` and
-`CredentialsProvider`.
+At the center of every Spring Cloud GCP module are the concepts of `GcpProjectIdProvider` and `CredentialsProvider`.
 
 Spring Cloud GCP provides a Spring Boot starter to auto-configure the core components.
 
@@ -37,8 +36,7 @@ public interface GcpProjectIdProvider {
 ----
 
 The Spring Boot GCP Core starter auto-configures a `GcpProjectIdProvider`.
-If a `spring.cloud.gcp.project-id` property is specified, the provided `GcpProjectIdProvider`
-returns that property value.
+If a `spring.cloud.gcp.project-id` property is specified, the provided `GcpProjectIdProvider` returns that property value.
 
 [source,java]
 ----
@@ -68,12 +66,8 @@ public interface CredentialsProvider {
 ----
 
 The Spring Boot GCP Core starter auto-configures a `CredentialsProvider`.
-It uses the `spring.cloud.gcp.credentials.location` property to locate the OAuth2 private key of a
-Google service account.
-Keep in mind this property is a Spring Resource, so the credentials file can be obtained from a
-number of
-https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-implementations[different locations]
-such as the file system, classpath, URL, etc.
+It uses the `spring.cloud.gcp.credentials.location` property to locate the OAuth2 private key of a Google service account.
+Keep in mind this property is a Spring Resource, so the credentials file can be obtained from a number of https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-implementations[different locations] such as the file system, classpath, URL, etc.
 The next example specifies the credentials location property in the file system.
 
 [source,yaml]
@@ -81,8 +75,7 @@ The next example specifies the credentials location property in the file system.
 spring.cloud.gcp.credentials.location=file:/usr/local/key.json
 ----
 
-If that property isn't specified, the starter tries to discover credentials from a
-https://github.com/google/google-auth-library-java/blob/master/oauth2_http/java/com/google/auth/oauth2/GoogleCredentials.java#L57[number of places]:
+If that property isn't specified, the starter tries to discover credentials from a https://github.com/GoogleCloudPlatform/google-cloud-java#authentication[number of places]:
 
 1. Credentials file pointed to by the `GOOGLE_APPLICATION_CREDENTIALS` environment variable
 2. Credentials provided by the Google Cloud SDK `gcloud auth application-default login` command
