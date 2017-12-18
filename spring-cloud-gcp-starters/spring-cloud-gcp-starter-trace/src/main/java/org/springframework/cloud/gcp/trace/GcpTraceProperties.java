@@ -15,10 +15,9 @@
  */
 package org.springframework.cloud.gcp.trace;
 
-import java.util.Collections;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
@@ -52,7 +51,8 @@ public class GcpTraceProperties {
 
 	private String projectId;
 
-	private Credentials credentials;
+	@NestedConfigurationProperty
+	private final Credentials credentials = new Credentials(GcpScope.TRACE_APPEND.getUrl());
 
 	/**
 	 * A utility method to determine x% of total memory based on Zipkin's AsyncReporter.
@@ -104,13 +104,4 @@ public class GcpTraceProperties {
 		return this.credentials;
 	}
 
-	public void setCredentials(Credentials credentials) {
-		this.credentials = credentials;
-	}
-
-	public static class Credentials extends AbstractCredentialsProperty {
-		public Credentials() {
-			setScopes(Collections.singletonList(GcpScope.TRACE_APPEND.getUrl()));
-		}
-	}
 }

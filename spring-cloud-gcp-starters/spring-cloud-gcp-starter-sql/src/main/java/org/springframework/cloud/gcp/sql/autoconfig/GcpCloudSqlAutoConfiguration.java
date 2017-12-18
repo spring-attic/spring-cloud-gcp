@@ -23,7 +23,6 @@ import com.google.cloud.sql.CredentialFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -69,11 +68,15 @@ public class GcpCloudSqlAutoConfiguration {
 
 	private static final Log LOGGER = LogFactory.getLog(GcpCloudSqlAutoConfiguration.class);
 
-	@Autowired
-	private GcpCloudSqlProperties gcpCloudSqlProperties;
+	private final GcpCloudSqlProperties gcpCloudSqlProperties;
 
-	@Autowired
-	private GcpProperties gcpProperties;
+	private final GcpProperties gcpProperties;
+
+	public GcpCloudSqlAutoConfiguration(GcpCloudSqlProperties gcpCloudSqlProperties,
+			GcpProperties gcpProperties) {
+		this.gcpCloudSqlProperties = gcpCloudSqlProperties;
+		this.gcpProperties = gcpProperties;
+	}
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)

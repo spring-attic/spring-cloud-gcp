@@ -16,8 +16,6 @@
 
 package com.example;
 
-import java.io.IOException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -41,12 +39,12 @@ public class SenderApplication {
 
 	private static final Log LOGGER = LogFactory.getLog(SenderApplication.class);
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		SpringApplication.run(SenderApplication.class, args);
 	}
 
 	@Bean
-	@ServiceActivator(inputChannel = "pubsubOutputChannel")
+	@ServiceActivator(inputChannel = "pubSubOutputChannel")
 	public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
 		PubSubMessageHandler adapter =
 				new PubSubMessageHandler(pubsubTemplate, "exampleTopic");
@@ -65,9 +63,9 @@ public class SenderApplication {
 		return adapter;
 	}
 
-	@MessagingGateway(defaultRequestChannel = "pubsubOutputChannel")
-	public interface PubsubOutboundGateway {
+	@MessagingGateway(defaultRequestChannel = "pubSubOutputChannel")
+	public interface PubSubOutboundGateway {
 
-		void sendToPubsub(String text);
+		void sendToPubSub(String text);
 	}
 }

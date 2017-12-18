@@ -31,7 +31,6 @@ import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -59,20 +58,20 @@ public class GcpPubSubAutoConfiguration {
 
 	public static final String DEFAULT_SOURCE_NAME = "spring";
 
-	@Autowired
-	private GcpPubSubProperties gcpPubSubProperties;
+	private final GcpPubSubProperties gcpPubSubProperties;
 
-	private GcpProjectIdProvider finalProjectIdProvider;
+	private final GcpProjectIdProvider finalProjectIdProvider;
 
-	private CredentialsProvider finalCredentialsProvider;
+	private final CredentialsProvider finalCredentialsProvider;
 
 	public GcpPubSubAutoConfiguration(GcpPubSubProperties gcpPubSubProperties,
 			GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
+		this.gcpPubSubProperties = gcpPubSubProperties;
 		this.finalProjectIdProvider = gcpPubSubProperties.getProjectId() != null
 				? gcpPubSubProperties::getProjectId
 				: gcpProjectIdProvider;
-		this.finalCredentialsProvider = gcpPubSubProperties.getCredentials() != null
+		this.finalCredentialsProvider = gcpPubSubProperties.getCredentials().getLocation() != null
 				? FixedCredentialsProvider.create(
 						GoogleCredentials.fromStream(
 								gcpPubSubProperties.getCredentials().getLocation().getInputStream())
