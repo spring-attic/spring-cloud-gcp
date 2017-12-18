@@ -119,13 +119,6 @@
 				<version>1.0.4</version>
 			</dependency>
 
-			<!-- spring-cloud-gcp-starter-config -->
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-context</artifactId>
-				<version>${spring-cloud-context.version}</version>
-			</dependency>
-
 			<!--google-cloud-java BOM-->
 			<dependency>
 				<groupId>com.google.cloud</groupId>
