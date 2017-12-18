@@ -74,6 +74,61 @@
 				<artifactId>spring-cloud-gcp-starter-trace</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>com.google.cloud.trace.v1</groupId>
+				<artifactId>sink</artifactId>
+				<version>${cloud-trace-java.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>io.grpc</groupId>
+						<artifactId>grpc-all</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.google.protobuf</groupId>
+						<artifactId>protobuf-java</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.google.guava</groupId>
+						<artifactId>guava</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+			<!-- spring-cloud-gcp-starter-sql -->
+			<dependency>
+				<groupId>com.google.cloud.sql</groupId>
+				<artifactId>mysql-socket-factory</artifactId>
+				<version>1.0.4</version>
+				<exclusions>
+					<exclusion>
+						<groupId>com.google.guava</groupId>
+						<artifactId>guava-jdk5</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+			<dependency>
+				<groupId>com.google.cloud.sql</groupId>
+				<artifactId>postgres-socket-factory</artifactId>
+				<version>1.0.4</version>
+			</dependency>
+
+			<!-- spring-cloud-gcp-starter-config -->
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-context</artifactId>
+				<version>${spring-cloud-context.version}</version>
+			</dependency>
+
+			<!--google-cloud-java BOM-->
+			<dependency>
+				<groupId>com.google.cloud</groupId>
+				<artifactId>google-cloud-bom</artifactId>
+				<version>${google-cloud-bom.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
