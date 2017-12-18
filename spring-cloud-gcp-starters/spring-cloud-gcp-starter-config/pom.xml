@@ -21,5 +21,9 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-gcp-autoconfigure</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-gcp-config</artifactId>
+		</dependency>
 	</dependencies>
 </project>
