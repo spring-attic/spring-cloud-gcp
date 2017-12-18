@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.core.autoconfig;
+package org.springframework.cloud.gcp.autoconfigure.core;
 
 import java.io.IOException;
 import java.util.ArrayList;
