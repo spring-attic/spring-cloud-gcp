@@ -1,4 +1,4 @@
-= Spring Cloud GCP Config Client Starter Example
+= Spring Cloud GCP Config Client Starter Code Sample
 
 This sample application demonstrates using the
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Spring Cloud GCP Config Client Starter] in your code.
