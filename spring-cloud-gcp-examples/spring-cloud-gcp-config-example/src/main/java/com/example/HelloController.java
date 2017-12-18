@@ -16,7 +16,6 @@
 
 package com.example;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,8 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HelloController {
 
-	@Autowired
-	SampleConfig sampleConfig;
+	private final MyAppProperties sampleConfig;
+
+	public HelloController(MyAppProperties sampleConfig) {
+		this.sampleConfig = sampleConfig;
+	}
 
 	@RequestMapping("/")
 	public String index() {
