@@ -14,13 +14,13 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.config;
+package org.springframework.cloud.gcp.autoconfigure.config;
 
 import org.junit.After;
 import org.junit.Test;
 
 import org.springframework.boot.test.util.EnvironmentTestUtils;
-import org.springframework.cloud.gcp.config.autoconfig.GcpConfigAutoConfiguration;
+import org.springframework.cloud.gcp.config.GcpConfigProperties;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import static org.junit.Assert.assertEquals;

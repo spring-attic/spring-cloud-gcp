@@ -33,6 +33,8 @@
 		<module>spring-integration-gcp</module>
 		<module>spring-cloud-gcp-docs</module>
 		<module>spring-cloud-gcp-examples</module>
+		<module>spring-cloud-gcp-autoconfigure</module>
+		<module>spring-cloud-gcp-config</module>
 	</modules>
 
 	<properties>

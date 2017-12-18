@@ -1,4 +1,5 @@
+
 org.springframework.cloud.bootstrap.BootstrapConfiguration=\
-org.springframework.cloud.gcp.config.autoconfig.GcpConfigAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.config.GcpConfigAutoConfiguration,\
 org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration,\
 org.springframework.cloud.gcp.config.GoogleConfigPropertySourceLocator

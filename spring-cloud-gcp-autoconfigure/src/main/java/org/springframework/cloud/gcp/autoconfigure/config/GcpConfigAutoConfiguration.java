@@ -14,22 +14,29 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.config.autoconfig;
+package org.springframework.cloud.gcp.autoconfigure.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.config.GcpConfigProperties;
+import org.springframework.cloud.gcp.config.GoogleConfigPropertySourceLocator;
 import org.springframework.cloud.gcp.core.autoconfig.GcpContextAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * Bootstrap auto configuration for Google Cloud Runtime Configurator Starter.
+ *
  * @author Jisha Abubaker
+ * @author João André Martins
  */
 @Configuration
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @EnableConfigurationProperties(GcpConfigProperties.class)
+@ConditionalOnClass(GoogleConfigPropertySourceLocator.class)
+@ConditionalOnMissingBean(GcpConfigProperties.class)
 public class GcpConfigAutoConfiguration {
 
 	@Autowired

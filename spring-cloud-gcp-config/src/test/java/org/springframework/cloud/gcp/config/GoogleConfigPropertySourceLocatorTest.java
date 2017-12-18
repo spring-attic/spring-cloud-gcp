@@ -24,6 +24,7 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.core.env.MapPropertySource;
@@ -34,7 +35,6 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -50,7 +50,7 @@ public class GoogleConfigPropertySourceLocatorTest {
 	private CredentialsProvider credentialsProvider;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		this.gcpConfigProperties = new GcpConfigProperties();
 		this.gcpConfigProperties.setName("test");
 		this.expectedProperties = new HashMap<>();
@@ -65,7 +65,7 @@ public class GoogleConfigPropertySourceLocatorTest {
 	public void locateReturnsMapPropertySource() throws Exception {
 		GoogleConfigEnvironment googleConfigEnvironment = mock(GoogleConfigEnvironment.class);
 		when(googleConfigEnvironment.getConfig()).thenReturn(this.expectedProperties);
-		this.googleConfigPropertySourceLocator = spy(new GoogleConfigPropertySourceLocator(
+		this.googleConfigPropertySourceLocator = Mockito.spy(new GoogleConfigPropertySourceLocator(
 				this.projectIdProvider, this.credentialsProvider, this.gcpConfigProperties));
 		doReturn(googleConfigEnvironment).when(this.googleConfigPropertySourceLocator).getRemoteEnvironment();
 		PropertySource<?> propertySource = this.googleConfigPropertySourceLocator.locate(new StandardEnvironment());
@@ -80,7 +80,7 @@ public class GoogleConfigPropertySourceLocatorTest {
 		this.gcpConfigProperties.setEnabled(false);
 		GoogleConfigEnvironment googleConfigEnvironment = mock(GoogleConfigEnvironment.class);
 		when(googleConfigEnvironment.getConfig()).thenReturn(this.expectedProperties);
-		this.googleConfigPropertySourceLocator = spy(new GoogleConfigPropertySourceLocator(
+		this.googleConfigPropertySourceLocator = Mockito.spy(new GoogleConfigPropertySourceLocator(
 				this.projectIdProvider, this.credentialsProvider, this.gcpConfigProperties));
 		doReturn(googleConfigEnvironment).when(this.googleConfigPropertySourceLocator).getRemoteEnvironment();
 		PropertySource<?> propertySource = this.googleConfigPropertySourceLocator.locate(new StandardEnvironment());
@@ -91,7 +91,7 @@ public class GoogleConfigPropertySourceLocatorTest {
 	@Test
 	public void disabledPropertySourceReturnsNull() throws Exception {
 		this.gcpConfigProperties.setEnabled(false);
-		this.googleConfigPropertySourceLocator = spy(new GoogleConfigPropertySourceLocator(
+		this.googleConfigPropertySourceLocator = Mockito.spy(new GoogleConfigPropertySourceLocator(
 				this.projectIdProvider, this.credentialsProvider, this.gcpConfigProperties));
 		this.googleConfigPropertySourceLocator.locate(new StandardEnvironment());
 		verify(this.googleConfigPropertySourceLocator, never()).getRemoteEnvironment();
@@ -101,7 +101,7 @@ public class GoogleConfigPropertySourceLocatorTest {
 	public void disabledPropertySourceAvoidChecks() throws IOException {
 		this.gcpConfigProperties.setEnabled(false);
 		this.googleConfigPropertySourceLocator =
-				spy(new GoogleConfigPropertySourceLocator(null, null, this.gcpConfigProperties));
+				Mockito.spy(new GoogleConfigPropertySourceLocator(null, null, this.gcpConfigProperties));
 		this.googleConfigPropertySourceLocator.locate(new StandardEnvironment());
 		verify(this.googleConfigPropertySourceLocator, never()).getRemoteEnvironment();
 	}
