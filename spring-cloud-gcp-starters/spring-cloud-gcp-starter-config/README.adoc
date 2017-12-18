@@ -137,5 +137,5 @@ to your `application.properties` at allow unrestricted access to `/refresh`.
 
 
 == Examples
-link:../../spring-cloud-gcp-examples/spring-cloud-gcp-config-example[Here]
+link:../../spring-cloud-gcp-samples/spring-cloud-gcp-config-sample[Here]
 is a sample application that uses this starter.
