@@ -18,10 +18,10 @@ Then set the variables that your application will load:
 +
 ....
   gcloud beta runtime-config configs variables set \
-queue_size 25 \
+myapp.queue-size 25 \
 --config-name myapp_prod
   gcloud beta runtime-config configs variables set \
-feature_x_enabled true \
+myapp.feature-x-enabled true \
 --config-name myapp_prod
 ....
 
@@ -32,21 +32,13 @@ spring.cloud.gcp.config.enabled=true #optional, default = true
 spring.cloud.gcp.config.name=myapp
 spring.cloud.gcp.config.profile=prod #default profile = default
 ....
-5.  Notice the Spring-managed configuration variables in
-link:src/main/java/com/example/SampleConfig.java[SampleConfig.java].
-+
-....
-@Value("${queue_size}")
-private int queueSize;
-
-@Value("${feature_x_enabled}")
-private boolean isFeatureXEnabled;
-....
+5.  Notice that link:src/main/java/com/example/MyAppProperties.java[MyAppProperties.java]
+uses `@ConfigurationProperties` to bind the `myapp` namespace from the environment.
 6.  Update a property with `gcloud`:
 +
 ....
   gcloud beta runtime-config configs variables set \
-     queue_size 200 \
+     myapp.queue-size 200 \
      --config-name myapp_prod
 ....
 7.  Send a POST request to the `/refresh` endpoint:

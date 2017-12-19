@@ -18,7 +18,7 @@ package org.springframework.cloud.gcp.pubsub.support;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.grpc.ChannelProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.SubscriptionName;
@@ -38,13 +38,13 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	private final ExecutorProvider executorProvider;
 
-	private final ChannelProvider channelProvider;
+	private final TransportChannelProvider channelProvider;
 
 	private final CredentialsProvider credentialsProvider;
 
 	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider,
 			ExecutorProvider executorProvider,
-			ChannelProvider channelProvider,
+			TransportChannelProvider channelProvider,
 			CredentialsProvider credentialsProvider) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
 		Assert.notNull(executorProvider, "The executor provider can't be null.");
@@ -60,8 +60,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	@Override
 	public Subscriber getSubscriber(String subscriptionName, MessageReceiver receiver) {
-		return Subscriber.defaultBuilder(
-				SubscriptionName.create(this.projectId, subscriptionName), receiver)
+		return Subscriber.newBuilder(
+				SubscriptionName.of(this.projectId, subscriptionName), receiver)
 				.setChannelProvider(this.channelProvider)
 				.setExecutorProvider(this.executorProvider)
 				.setCredentialsProvider(this.credentialsProvider)

@@ -17,20 +17,20 @@
 package org.springframework.cloud.gcp.pubsub.autoconfig;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.concurrent.Executors;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
-import com.google.api.gax.grpc.ChannelProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -58,20 +58,20 @@ public class GcpPubSubAutoConfiguration {
 
 	public static final String DEFAULT_SOURCE_NAME = "spring";
 
-	@Autowired
-	private GcpPubSubProperties gcpPubSubProperties;
+	private final GcpPubSubProperties gcpPubSubProperties;
 
-	private GcpProjectIdProvider finalProjectIdProvider;
+	private final GcpProjectIdProvider finalProjectIdProvider;
 
-	private CredentialsProvider finalCredentialsProvider;
+	private final CredentialsProvider finalCredentialsProvider;
 
 	public GcpPubSubAutoConfiguration(GcpPubSubProperties gcpPubSubProperties,
 			GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
+		this.gcpPubSubProperties = gcpPubSubProperties;
 		this.finalProjectIdProvider = gcpPubSubProperties.getProjectId() != null
 				? gcpPubSubProperties::getProjectId
 				: gcpProjectIdProvider;
-		this.finalCredentialsProvider = gcpPubSubProperties.getCredentials() != null
+		this.finalCredentialsProvider = gcpPubSubProperties.getCredentials().getLocation() != null
 				? FixedCredentialsProvider.create(
 						GoogleCredentials.fromStream(
 								gcpPubSubProperties.getCredentials().getLocation().getInputStream())
@@ -95,20 +95,19 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(name = "subscriberChannelProvider")
-	public ChannelProvider subscriberChannelProvider() {
-		return SubscriptionAdminSettings.defaultGrpcChannelProviderBuilder()
-				.setClientLibHeader(DEFAULT_SOURCE_NAME,
-						this.getClass().getPackage().getImplementationVersion())
+	public TransportChannelProvider subscriberChannelProvider() {
+		return SubscriptionAdminSettings.defaultGrpcTransportProviderBuilder()
+				.setHeaderProvider(() -> Collections.singletonMap(DEFAULT_SOURCE_NAME,
+						this.getClass().getPackage().getImplementationVersion()))
 				.build();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(name = "publisherChannelProvider")
-	public ChannelProvider publisherChannelProvider() {
-		return TopicAdminSettings
-				.defaultGrpcChannelProviderBuilder()
-				.setClientLibHeader(DEFAULT_SOURCE_NAME,
-						this.getClass().getPackage().getImplementationVersion())
+	public TransportChannelProvider publisherChannelProvider() {
+		return TopicAdminSettings.defaultGrpcTransportProviderBuilder()
+				.setHeaderProvider(() -> Collections.singletonMap(DEFAULT_SOURCE_NAME,
+						this.getClass().getPackage().getImplementationVersion()))
 				.build();
 	}
 
@@ -123,7 +122,7 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(
 			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
-			@Qualifier("publisherChannelProvider") ChannelProvider channelProvider) {
+			@Qualifier("publisherChannelProvider") TransportChannelProvider channelProvider) {
 		return new DefaultSubscriberFactory(
 				this.finalProjectIdProvider,
 				executorProvider,
@@ -135,7 +134,7 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(
 			@Qualifier("subscriberExecutorProvider") ExecutorProvider subscriberProvider,
-			@Qualifier("subscriberChannelProvider") ChannelProvider channelProvider) {
+			@Qualifier("subscriberChannelProvider") TransportChannelProvider channelProvider) {
 		return new DefaultPublisherFactory(
 				this.finalProjectIdProvider,
 				subscriberProvider,

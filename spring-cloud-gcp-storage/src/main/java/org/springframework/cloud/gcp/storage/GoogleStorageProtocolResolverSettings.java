@@ -17,8 +17,10 @@
 package org.springframework.cloud.gcp.storage;
 
 /**
- * Holds settings for use with the {@link GoogleStorageResource}. These settings are
- * optional.
+ * Holds settings for use with the {@link GoogleStorageResourceObject} and
+ * {@link GoogleStorageResourceBucket}. These settings are optional.
+ *
+ * @author Chengyuan Zhao
  */
 public class GoogleStorageProtocolResolverSettings {
 	private boolean autoCreateFiles = true;

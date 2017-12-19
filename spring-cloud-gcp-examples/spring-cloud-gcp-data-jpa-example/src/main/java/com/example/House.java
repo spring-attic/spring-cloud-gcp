@@ -16,19 +16,30 @@
 
 package com.example;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
-/**
-* Sample spring boot application.
-*
-* @author Jisha Abubaker
-*/
-@SpringBootApplication
-@EnableConfigurationProperties(MyAppProperties.class)
-public class Application {
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+@Entity
+public class House {
+
+	@Id
+	@GeneratedValue
+	private long id;
+	private String address;
+
+	public House() {
+	}
+
+	public House(String address) {
+		this.address = address;
+	}
+
+	public String getAddress() {
+		return this.address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
 	}
 }

@@ -16,19 +16,35 @@
 
 package com.example;
 
+import java.util.stream.Stream;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 
-/**
-* Sample spring boot application.
-*
-* @author Jisha Abubaker
-*/
 @SpringBootApplication
-@EnableConfigurationProperties(MyAppProperties.class)
-public class Application {
+public class DemoApplication {
+
+	private static final Log LOGGER = LogFactory.getLog(DemoApplication.class);
+
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+		SpringApplication.run(DemoApplication.class, args);
+	}
+
+	@Bean
+	public CommandLineRunner houses(HouseRepository houseRepository) {
+		return args -> {
+			Stream.of(new House("111 8th Av., NYC"),
+					new House("636 Avenue of the Americas, NYC"),
+					new House("White House"),
+					new House("Pentagon"))
+					.forEach(houseRepository::save);
+
+			houseRepository.findAll().forEach(house -> LOGGER.info(house.getAddress()));
+		};
 	}
 }

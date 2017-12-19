@@ -1,0 +1,43 @@
+= Spring Data JPA with Spring Cloud GCP SQL Code Sample
+
+This sample application demonstrates how to use
+https://projects.spring.io/spring-data-jpa/[Spring Data JPA] with the
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql[Spring Cloud GCP SQL Starter].
+
+== Setup
+
+* If you don't have a Google Cloud Platform project with billing enabled, create one from the
+https://console.cloud.google.com/[Google Cloud Console].
+
+* To authenticate, you have two options:
+
+1. Download the https://cloud.google.com/sdk/[Google Cloud SDK] and run the following command:
++
+`gcloud auth application-default login`
+
+2. Create a service account from the
+https://console.cloud.google.com/iam-admin/serviceaccounts[Google Cloud Console], download its
+private key and point the `spring.cloud.gcp.credentials.location` property in the
+`application.properties` file to it.
+
+* Create a Google Cloud SQL instance in your project from the
+https://console.cloud.google.com/sql[Google Cloud Console].
+Copy the `instance connection name` from the console to the
+`spring.cloud.gcp.sql.instance-connection-name` property value in the `application.properties` file.
++
+Use the `Databases` section to create a database in your instance, e.g., `houses`.
+Copy the database name to the `spring.cloud.gcp.sql.database-name` property value in the
+`application.properties` file.
+
+== Running the application
+
+This application uses the Spring Cloud GCP SQL starter to configure a `JdbcTemplate` object, which
+the Spring Data JPA starter uses as an input.
+
+This application is runnable by executing the following command from the same directory where the
+`pom.xml` file is located:
+
+`./mvnw spring-boot:run`
+
+It writes a few house tuples to the database and then reads and prints each house address from the
+database.

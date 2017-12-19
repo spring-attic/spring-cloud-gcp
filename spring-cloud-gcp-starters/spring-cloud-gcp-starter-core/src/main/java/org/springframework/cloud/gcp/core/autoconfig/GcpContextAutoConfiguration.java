@@ -17,14 +17,17 @@
 package org.springframework.cloud.gcp.core.autoconfig;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.GoogleCredentialsProvider;
-import com.google.auth.Credentials;
 import com.google.auth.oauth2.ComputeEngineCredentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
@@ -32,16 +35,17 @@ import com.google.auth.oauth2.UserCredentials;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
@@ -56,29 +60,51 @@ import org.springframework.util.StringUtils;
 @ConditionalOnClass(GoogleCredentials.class)
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {
+	private static final String DEFAULT_SCOPES_PLACEHOLDER = "DEFAULT_SCOPES";
 
 	private static final List<String> CREDENTIALS_SCOPES_LIST =
-			Arrays.stream(GcpScope.values())
-					.map(GcpScope::getUrl)
-					.collect(Collectors.toList());
+			Collections.unmodifiableList(
+					Arrays.stream(GcpScope.values())
+						.map(GcpScope::getUrl)
+						.collect(Collectors.toList()));
 
 	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
 
-	@Autowired
-	private GcpProperties gcpProperties;
+	private final GcpProperties gcpProperties;
+
+	public GcpContextAutoConfiguration(GcpProperties gcpProperties) {
+		this.gcpProperties = gcpProperties;
+	}
+
+	protected List<String> resolveScopes() {
+		Credentials propertyCredentials = this.gcpProperties.getCredentials();
+		if (!ObjectUtils.isEmpty(propertyCredentials.getScopes())) {
+			Set<String> resolvedScopes = new HashSet<>();
+			propertyCredentials.getScopes().forEach(scope -> {
+				if (DEFAULT_SCOPES_PLACEHOLDER.equals(scope)) {
+					resolvedScopes.addAll(CREDENTIALS_SCOPES_LIST);
+				}
+				else {
+					resolvedScopes.add(scope);
+				}
+			});
+
+			return Collections.unmodifiableList(new ArrayList<>(resolvedScopes));
+		}
+
+		return CREDENTIALS_SCOPES_LIST;
+	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	public CredentialsProvider googleCredentials() throws Exception {
 		CredentialsProvider credentialsProvider;
 
-		GcpProperties.Credentials propertyCredentials = this.gcpProperties.getCredentials();
-		List<String> scopes =
-				propertyCredentials != null && propertyCredentials.getScopes() != null
-						? propertyCredentials.getScopes() : CREDENTIALS_SCOPES_LIST;
+		Credentials propertyCredentials = this.gcpProperties.getCredentials();
 
-		if (propertyCredentials != null
-				&& !StringUtils.isEmpty(propertyCredentials.getLocation())) {
+		List<String> scopes = resolveScopes();
+
+		if (!StringUtils.isEmpty(propertyCredentials.getLocation())) {
 			credentialsProvider = FixedCredentialsProvider
 					.create(GoogleCredentials.fromStream(
 							propertyCredentials.getLocation().getInputStream())
@@ -91,7 +117,7 @@ public class GcpContextAutoConfiguration {
 		}
 
 		try {
-			Credentials credentials = credentialsProvider.getCredentials();
+			com.google.auth.Credentials credentials = credentialsProvider.getCredentials();
 
 			if (LOGGER.isInfoEnabled()) {
 				if (credentials instanceof UserCredentials) {

@@ -19,7 +19,6 @@ package com.example;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,8 +31,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ExampleController {
 	private static final Log LOGGER = LogFactory.getLog(ExampleController.class);
 
-	@Autowired
-	private WorkService workService;
+	private final WorkService workService;
+
+	public ExampleController(WorkService workService) {
+		this.workService = workService;
+	}
 
 	@RequestMapping("/")
 	public String work() {

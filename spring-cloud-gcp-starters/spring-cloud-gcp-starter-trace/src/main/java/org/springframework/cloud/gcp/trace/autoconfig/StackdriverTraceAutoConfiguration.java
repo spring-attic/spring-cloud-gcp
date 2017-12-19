@@ -84,7 +84,7 @@ public class StackdriverTraceAutoConfiguration {
 		this.finalProjectIdProvider = gcpTraceProperties.getProjectId() != null
 				? gcpTraceProperties::getProjectId
 				: gcpProjectIdProvider;
-		this.finalCredentialsProvider = gcpTraceProperties.getCredentials() != null
+		this.finalCredentialsProvider = gcpTraceProperties.getCredentials().getLocation() != null
 				? FixedCredentialsProvider.create(GoogleCredentials.fromStream(
 						gcpTraceProperties.getCredentials().getLocation().getInputStream())
 				.createScoped(gcpTraceProperties.getCredentials().getScopes()))
@@ -144,7 +144,8 @@ public class StackdriverTraceAutoConfiguration {
 		public TraceServiceClient traceServiceClient(
 				@Qualifier("traceExecutorProvider") ExecutorProvider executorProvider)
 				throws IOException {
-			return TraceServiceClient.create(TraceServiceSettings.defaultBuilder()
+			return TraceServiceClient.create(
+					TraceServiceSettings.newBuilder()
 					.setCredentialsProvider(
 							StackdriverTraceAutoConfiguration.this.finalCredentialsProvider)
 					.setExecutorProvider(executorProvider)

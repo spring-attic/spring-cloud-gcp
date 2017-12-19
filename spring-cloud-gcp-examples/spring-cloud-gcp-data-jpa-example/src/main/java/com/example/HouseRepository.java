@@ -16,19 +16,8 @@
 
 package com.example;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.data.repository.CrudRepository;
 
-/**
-* Sample spring boot application.
-*
-* @author Jisha Abubaker
-*/
-@SpringBootApplication
-@EnableConfigurationProperties(MyAppProperties.class)
-public class Application {
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
-	}
+public interface HouseRepository extends CrudRepository<House, Long> {
+
 }

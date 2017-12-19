@@ -63,11 +63,11 @@ public class PubSubAdmin {
 			CredentialsProvider credentialsProvider) throws IOException {
 		this(projectIdProvider,
 				TopicAdminClient.create(
-						TopicAdminSettings.defaultBuilder()
+						TopicAdminSettings.newBuilder()
 								.setCredentialsProvider(credentialsProvider)
 								.build()),
 				SubscriptionAdminClient.create(
-						SubscriptionAdminSettings.defaultBuilder()
+						SubscriptionAdminSettings.newBuilder()
 						.setCredentialsProvider(credentialsProvider)
 						.build()));
 	}
@@ -210,8 +210,8 @@ public class PubSubAdmin {
 		}
 
 		return this.subscriptionAdminClient.createSubscription(
-				SubscriptionName.create(this.projectId, subscriptionName),
-				TopicName.create(this.projectId, topicName),
+				SubscriptionName.of(this.projectId, subscriptionName),
+				TopicName.of(this.projectId, topicName),
 				pushConfigBuilder.build(),
 				finalAckDeadline);
 	}
@@ -248,7 +248,7 @@ public class PubSubAdmin {
 		Assert.hasText(subscriptionName, "No subscription name was specified");
 
 		this.subscriptionAdminClient.deleteSubscription(
-				SubscriptionName.create(this.projectId, subscriptionName));
+				SubscriptionName.of(this.projectId, subscriptionName));
 	}
 
 	/**
@@ -258,7 +258,7 @@ public class PubSubAdmin {
 	 */
 	public List<Subscription> listSubscriptions() {
 		PagedResponseWrappers.ListSubscriptionsPagedResponse subscriptionsPage =
-				this.subscriptionAdminClient.listSubscriptions(ProjectName.create(this.projectId));
+				this.subscriptionAdminClient.listSubscriptions(ProjectName.of(this.projectId));
 
 		return Lists.newArrayList(subscriptionsPage.iterateAll());
 	}

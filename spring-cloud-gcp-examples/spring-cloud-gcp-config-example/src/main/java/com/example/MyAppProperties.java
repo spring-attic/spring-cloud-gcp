@@ -16,22 +16,21 @@
 
 package com.example;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * Sample Configuration class with property values loaded using the Runtime Configurator API.
+ *
  * @author Jisha Abubaker
+ * @author Stephane Nicoll
  */
 @RefreshScope
-@Configuration
-public class SampleConfig {
+@ConfigurationProperties("myapp")
+public class MyAppProperties {
 
-	@Value("${queue_size}")
 	private int queueSize;
 
-	@Value("${feature_x_enabled}")
 	private boolean isFeatureXEnabled;
 
 	public int getQueueSize() {
