@@ -6,6 +6,9 @@ Storage through `MessageChannels`.
 Spring Cloud GCP provides two inbound adapters, `GcsInboundFileSynchronizingMessageSource` and
 `GcsStreamingMessageSource`, and one outbound adapter, `GcsMessageHandler`.
 
+To use the Storage portion of Spring Integration for Spring Cloud GCP, you must also provide the
+`spring-integration-file` dependency, since it isn't going to be pulled transitively.
+
 Maven coordinates, using Spring Cloud GCP BOM:
 
 [source,xml]
