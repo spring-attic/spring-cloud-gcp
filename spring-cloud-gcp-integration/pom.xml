@@ -11,7 +11,7 @@
 	</parent>
 	<name>Spring Integration GCP</name>
 	<description>Integration modules for Google Cloud Platform</description>
-	<artifactId>spring-integration-gcp</artifactId>
+	<artifactId>spring-cloud-gcp-integration</artifactId>
 	<organization>
 		<name>Pivotal Software, Inc.</name>
 		<url>http://www.spring.io</url>
