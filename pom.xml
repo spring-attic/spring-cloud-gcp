@@ -32,7 +32,7 @@
 		<module>spring-cloud-gcp-starters</module>
 		<module>spring-integration-gcp</module>
 		<module>spring-cloud-gcp-docs</module>
-		<module>spring-cloud-gcp-examples</module>
+		<module>spring-cloud-gcp-samples</module>
 	</modules>
 
 	<properties>
