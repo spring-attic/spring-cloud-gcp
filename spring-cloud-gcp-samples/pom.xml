@@ -25,7 +25,8 @@
 		<module>spring-cloud-gcp-storage-resource-sample</module>
 		<module>spring-cloud-gcp-pubsub-sample</module>
 		<module>spring-cloud-gcp-data-jpa-sample</module>
-	</modules>
+		<module>spring-cloud-gcp-vision-api-sample</module>
+    </modules>
 
 	<build>
 		<plugins>
