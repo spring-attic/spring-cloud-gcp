@@ -16,10 +16,9 @@
 
 package org.springframework.cloud.gcp.config;
 
-import java.util.Collections;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.gcp.core.AbstractCredentialsProperty;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
@@ -41,7 +40,8 @@ public class GcpConfigProperties {
 
 	private String projectId;
 
-	private Credentials credentials;
+	@NestedConfigurationProperty
+	private final Credentials credentials = new Credentials(GcpScope.RUNTIME_CONFIG_SCOPE.getUrl());
 
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
@@ -87,13 +87,4 @@ public class GcpConfigProperties {
 		return this.credentials;
 	}
 
-	public void setCredentials(Credentials credentials) {
-		this.credentials = credentials;
-	}
-
-	public static class Credentials extends AbstractCredentialsProperty {
-		public Credentials() {
-			setScopes(Collections.singletonList(GcpScope.RUNTIME_CONFIG_SCOPE.getUrl()));
-		}
-	}
 }

@@ -16,7 +16,6 @@
 
 package com.example;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,8 +27,11 @@ import org.springframework.web.servlet.view.RedirectView;
 @RestController
 public class WebController {
 
-	@Autowired
-	private SenderApplication.PubsubOutboundGateway messagingGateway;
+	private final SenderApplication.PubSubOutboundGateway messagingGateway;
+
+	public WebController(SenderApplication.PubSubOutboundGateway messagingGateway) {
+		this.messagingGateway = messagingGateway;
+	}
 
 	/**
 	 * Posts a message to a Google Cloud Pub/Sub topic, through Spring's messaging gateway, and
@@ -39,7 +41,7 @@ public class WebController {
 	 */
 	@PostMapping("/postMessage")
 	public RedirectView postMessage(@RequestParam("message") String message) {
-		this.messagingGateway.sendToPubsub(message);
+		this.messagingGateway.sendToPubSub(message);
 		return new RedirectView("/");
 	}
 }
