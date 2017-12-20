@@ -7,7 +7,7 @@ This enables messaging between different processes, applications or micro-servic
 Google Cloud Pub/Sub.
 
 To use the Pub/Sub portion of Spring Integration for Spring Cloud GCP, you must also provide the
-`spring-integration-file` dependency, since it isn't going to be pulled transitively.
+`spring-cloud-gcp-pubsub` dependency, since it isn't pulled transitively.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -17,6 +17,10 @@ Maven coordinates, using Spring Cloud GCP BOM:
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-gcp-integration</artifactId>
 </dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-pubsub</artifactId>
+</dependency>
 ----
 
 Gradle coordinates:
@@ -25,6 +29,7 @@ Gradle coordinates:
 ----
 dependencies {
     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-integration', version: '{project-version}'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub', version: '{project-version}'
 }
 ----
 

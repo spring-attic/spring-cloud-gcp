@@ -7,7 +7,7 @@ Spring Cloud GCP provides two inbound adapters, `GcsInboundFileSynchronizingMess
 `GcsStreamingMessageSource`, and one outbound adapter, `GcsMessageHandler`.
 
 To use the Storage portion of Spring Integration for Spring Cloud GCP, you must also provide the
-`spring-integration-file` dependency, since it isn't going to be pulled transitively.
+`spring-integration-file` and `google-cloud-storage` dependencies, since they aren't pulled transitively.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -21,6 +21,10 @@ Maven coordinates, using Spring Cloud GCP BOM:
     <groupId>org.springframework.integration</groupId>
     <artifactId>spring-integration-file</artifactId>
 </dependency>
+<dependency>
+    <groupId>com.google.cloud</groupId>
+    <artifactId>google-cloud-storage</artifactId>
+</dependency>
 ----
 
 Gradle coordinates:
@@ -30,6 +34,7 @@ Gradle coordinates:
 dependencies {
     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-integration', version: '{project-version}'
     compile group: 'org.springframework.integration', name: 'spring-integration-file', version: '{spring-integration-version}'
+    compile group: 'com.google.cloud', name: 'google-cloud-storage', version: '{google-cloud-storage-version}'
 }
 ----
 
