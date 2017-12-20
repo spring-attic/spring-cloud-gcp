@@ -6,6 +6,9 @@ to Google Cloud Pub/Sub topics and subscriptions.
 This enables messaging between different processes, applications or micro-services backed up by
 Google Cloud Pub/Sub.
 
+To use the Pub/Sub portion of Spring Integration for Spring Cloud GCP, you must also provide the
+`spring-integration-file` dependency, since it isn't going to be pulled transitively.
+
 Maven coordinates, using Spring Cloud GCP BOM:
 
 [source,xml]

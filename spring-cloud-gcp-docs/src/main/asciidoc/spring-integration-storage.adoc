@@ -33,8 +33,6 @@ dependencies {
 }
 ----
 
-=== Channel Adapters for Google Cloud Pub/Sub
-
 ==== Inbound channel adapter
 
 The Google Cloud Storage inbound channel adapter polls a Google Cloud Storage bucket for new files and sends each of

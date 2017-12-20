@@ -90,7 +90,7 @@
 								<snippets>${basedir}/target/generated-snippets</snippets>
 								<github-tag>${github-tag}</github-tag>
 								<docinfo>true</docinfo>
-								<spring-integration-version>4.3.12.RELEASE</spring-integration-version>
+								<spring-integration-version>5.0.0.RELEASE</spring-integration-version>
 							</attributes>
 						</configuration>
 						<executions>
