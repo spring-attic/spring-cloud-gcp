@@ -1,6 +1,6 @@
 == Spring Cloud GCP for Pub/Sub
 
-Spring Cloud GCP provides a Spring abstraction layer to publish to and subscribe from Google Cloud
+Spring Cloud GCP provides an abstraction layer to publish to and subscribe from Google Cloud
 Pub/Sub topics and to create, list or delete Google Cloud Pub/Sub topics and subscriptions.
 
 A Spring Boot starter is provided to auto-configure the various required Pub/Sub components.
@@ -67,9 +67,6 @@ Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 
 [source,java]
 ----
-@Autowired
-private PubSubTemplate pubSubTemplate;
-
 public void publishMessage() {
     this.pubSubTemplate.publish("topic", "your message payload", ImmutableMap.of("key1", "val1"));
 }
@@ -102,11 +99,8 @@ Here is an example of how to create a Google Cloud Pub/Sub topic:
 
 [source,java]
 ----
-@Autowired
-private PubSubAdmin admin;
-
 public void newTopic() {
-    admin.createTopic("topicName");
+    pubSubAdmin.createTopic("topicName");
 }
 ----
 
@@ -123,11 +117,8 @@ Here is an example of how to delete a Google Cloud Pub/Sub topic:
 
 [source,java]
 ----
-@Autowired
-private PubSubAdmin admin;
-
 public void deleteTopic() {
-    admin.deleteTopic("topicName");
+    pubSubAdmin.deleteTopic("topicName");
 }
 ----
 
@@ -144,11 +135,8 @@ Here is an example of how to list every Google Cloud Pub/Sub topic name in a pro
 
 [source,java]
 ----
-@Autowired
-private PubSubAdmin admin;
-
 public List<String> listTopics() {
-    return admin
+    return pubSubAdmin
         .listTopics()
         .stream()
         .map(Topic::getNameAsTopicName)
@@ -170,11 +158,8 @@ Here is an example of how to create a Google Cloud Pub/Sub subscription:
 
 [source,java]
 ----
-@Autowired
-private PubSubAdmin admin;
-
 public void newSubscription() {
-    admin.createSubscription("subscriptionName", "topicName", 10, “http://my.endpoint/push”);
+    pubSubAdmin.createSubscription("subscriptionName", "topicName", 10, “http://my.endpoint/push”);
 }
 ----
 
@@ -210,11 +195,8 @@ Here is an example of how to delete a Google Cloud Pub/Sub subscription:
 
 [source,java]
 ----
-@Autowired
-private PubSubAdmin admin;
-
 public void deleteSubscription() {
-    admin.deleteSubscription("subscriptionName");
+    pubSubAdmin.deleteSubscription("subscriptionName");
 }
 ----
 
@@ -231,16 +213,13 @@ Here is an example of how to list every subscription name in a project:
 
 [source,java]
 ----
-@Autowired
-private PubSubAdmin admin;
-
 public List<String> listSubscriptions() {
-return admin
-    .listSubscriptions()
-    .stream()
-    .map(Subscription::getNameAsSubscriptionName)
-    .map(SubscriptionName::getSubscription)
-    .collect(Collectors.toList());
+    return pubSubAdmin
+        .listSubscriptions()
+        .stream()
+        .map(Subscription::getNameAsSubscriptionName)
+        .map(SubscriptionName::getSubscription)
+        .collect(Collectors.toList());
 }
 ----
 

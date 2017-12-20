@@ -42,17 +42,16 @@ on the user application side.
 [source,java]
 ----
 @Bean
-public MessageChannel pubsubInputChannel() {
+public MessageChannel pubSubInputChannel() {
     return new PublishSubscribeChannel();
 }
 
 @Bean
 public PubSubInboundChannelAdapter messageChannelAdapter(
-    @Qualifier("pubsubInputChannel") MessageChannel inputChannel,
     SubscriberFactory subscriberFactory) {
     PubSubInboundChannelAdapter adapter =
         new PubSubInboundChannelAdapter(subscriberFactory, "subscriptionName");
-    adapter.setOutputChannel(inputChannel);
+    adapter.setOutputChannel(pubSubInputChannel());
     adapter.setAckMode(AckMode.MANUAL);
 
     return adapter;
