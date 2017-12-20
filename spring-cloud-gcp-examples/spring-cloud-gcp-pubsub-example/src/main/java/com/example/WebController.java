@@ -19,7 +19,6 @@ package com.example;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,13 +30,16 @@ import org.springframework.web.servlet.view.RedirectView;
 @RestController
 public class WebController {
 
-	@Autowired
-	private PubSubTemplate pubSubTemplate;
+	private static final Log LOGGER = LogFactory.getLog(PubSubApplication.class);
 
-	@Autowired
-	private PubSubAdmin pubSubAdmin;
+	private final PubSubTemplate pubSubTemplate;
 
-	private static Log LOGGER = LogFactory.getLog(PubSubApplication.class);
+	private final PubSubAdmin pubSubAdmin;
+
+	public WebController(PubSubTemplate pubSubTemplate, PubSubAdmin pubSubAdmin) {
+		this.pubSubTemplate = pubSubTemplate;
+		this.pubSubAdmin = pubSubAdmin;
+	}
 
 	@PostMapping("/createTopic")
 	public RedirectView createTopic(@RequestParam("topicName") String topicName) {

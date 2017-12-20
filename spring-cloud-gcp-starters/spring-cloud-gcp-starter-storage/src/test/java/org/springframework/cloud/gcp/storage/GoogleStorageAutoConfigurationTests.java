@@ -63,7 +63,7 @@ public class GoogleStorageAutoConfigurationTests {
 
 	@Test
 	public void testAutoCreateFilesFalse() throws IOException {
-		assertFalse(((GoogleStorageResource) this.googleStorageResource)
+		assertFalse(((GoogleStorageResourceObject) this.googleStorageResource)
 				.isCreateBlobIfNotExists());
 	}
 
