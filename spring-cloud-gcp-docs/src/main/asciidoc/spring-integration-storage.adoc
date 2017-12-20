@@ -14,6 +14,10 @@ Maven coordinates, using Spring Cloud GCP BOM:
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-integration-gcp</artifactId>
 </dependency>
+<dependency>
+    <groupId>org.springframework.integration</groupId>
+    <artifactId>spring-integration-file</artifactId>
+</dependency>
 ----
 
 Gradle coordinates:
@@ -22,6 +26,7 @@ Gradle coordinates:
 ----
 dependencies {
     compile group: 'org.springframework.cloud', name: 'spring-integration-gcp', version: '{project-version}'
+    compile group: 'org.springframework.integration', name: 'spring-integration-file', version: '{spring-integration-version}'
 }
 ----
 
