@@ -9,8 +9,8 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-cloud-gcp-examples</artifactId>
-	<name>Spring Cloud GCP Examples</name>
+	<artifactId>spring-cloud-gcp-samples</artifactId>
+	<name>Spring Cloud GCP Code Samples</name>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -18,13 +18,13 @@
 	</properties>
 
     <modules>
-		<module>spring-cloud-gcp-config-example</module>
-		<module>spring-cloud-gcp-trace-example</module>
-		<module>spring-cloud-gcp-sql-example</module>
-		<module>spring-cloud-gcp-integration-pubsub-example</module>
-		<module>spring-cloud-gcp-storage-resource-example</module>
-		<module>spring-cloud-gcp-pubsub-example</module>
-		<module>spring-cloud-gcp-data-jpa-example</module>
+		<module>spring-cloud-gcp-config-sample</module>
+		<module>spring-cloud-gcp-trace-sample</module>
+		<module>spring-cloud-gcp-sql-sample</module>
+		<module>spring-cloud-gcp-integration-pubsub-sample</module>
+		<module>spring-cloud-gcp-storage-resource-sample</module>
+		<module>spring-cloud-gcp-pubsub-sample</module>
+		<module>spring-cloud-gcp-data-jpa-sample</module>
 	</modules>
 
 	<build>
