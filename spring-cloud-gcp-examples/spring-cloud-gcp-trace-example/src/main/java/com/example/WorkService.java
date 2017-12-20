@@ -18,7 +18,6 @@ package com.example;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.sleuth.annotation.NewSpan;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -27,14 +26,17 @@ import org.springframework.web.client.RestTemplate;
 public class WorkService {
 	private static final Log LOGGER = LogFactory.getLog(WorkService.class);
 
-	@Autowired
-	private RestTemplate restTemplate;
+	private final RestTemplate restTemplate;
+
+	public WorkService(RestTemplate restTemplate) {
+		this.restTemplate = restTemplate;
+	}
 
 	@NewSpan("busyWork")
 	public void busyWork() {
 		LOGGER.info("starting busy work");
 		for (int i = 0; i < 3; i++) {
-			String response = this.restTemplate.getForObject("http://localhost:8080/meet", String.class);
+			this.restTemplate.getForObject("http://localhost:8080/meet", String.class);
 		}
 		LOGGER.info("finished busy work");
 	}
