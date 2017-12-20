@@ -84,6 +84,7 @@ public class GcsSession implements Session<BlobInfo> {
 	@Override
 	public void read(String source, OutputStream outputStream) throws IOException {
 		String[] tokens = getBucketAndObjectFromPath(source);
+		Assert.state(tokens.length == 2, "Can only read files. not buckets.");
 
 		try (OutputStream os = outputStream) {
 			os.write(this.gcs.readAllBytes(tokens[0], tokens[1]));
@@ -93,6 +94,8 @@ public class GcsSession implements Session<BlobInfo> {
 	@Override
 	public void write(InputStream inputStream, String destination) throws IOException {
 		String[] tokens = getBucketAndObjectFromPath(destination);
+		Assert.state(tokens.length == 2, "Can only write to files, not buckets.");
+
 		BlobInfo gcsBlobInfo = BlobInfo.newBuilder(BlobId.of(tokens[0], tokens[1])).build();
 
 		try (InputStream is = inputStream) {
@@ -155,11 +158,9 @@ public class GcsSession implements Session<BlobInfo> {
 	public boolean exists(String path) throws IOException {
 		String[] tokens = getBucketAndObjectFromPath(path);
 
-		if (tokens.length == 1) {
-			return this.gcs.get(path) != null;
-		}
-
-		return this.gcs.get(tokens[0], tokens[1]) != null;
+		return tokens.length == 1
+				? this.gcs.get(path) != null
+				: this.gcs.get(tokens[0], tokens[1]) != null;
 	}
 
 	@Override
@@ -174,6 +175,7 @@ public class GcsSession implements Session<BlobInfo> {
 	@Override
 	public InputStream readRaw(String source) throws IOException {
 		String[] tokens = getBucketAndObjectFromPath(source);
+		Assert.state(tokens.length == 2, "Can only write to files, not buckets.");
 		return Channels.newInputStream(this.gcs.reader(tokens[0], tokens[1]));
 	}
 
