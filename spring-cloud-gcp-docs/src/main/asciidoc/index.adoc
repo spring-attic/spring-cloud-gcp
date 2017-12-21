@@ -1,15 +1,6 @@
+[[spring-cloud-gcp-reference]]
 = Spring Cloud GCP Reference Documentation
-
-=== Authors
-
-João André Martins,
-Jisha Abubaker,
-Ray Tsang,
-Mike Eltsufin,
-Artem Bilan
-
-=== {project-version}
-
+João André Martins; Jisha Abubaker; Ray Tsang; Mike Eltsufin; Artem Bilan
 :doctype: book
 :toc:
 :toclevels: 4
