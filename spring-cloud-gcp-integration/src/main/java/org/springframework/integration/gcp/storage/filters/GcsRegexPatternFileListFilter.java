@@ -16,10 +16,11 @@
 
 package org.springframework.integration.gcp.storage.filters;
 
-import com.google.cloud.storage.BlobInfo;
-import org.springframework.integration.file.filters.AbstractRegexPatternFileListFilter;
-
 import java.util.regex.Pattern;
+
+import com.google.cloud.storage.BlobInfo;
+
+import org.springframework.integration.file.filters.AbstractRegexPatternFileListFilter;
 
 /**
  * @author João André Martins
