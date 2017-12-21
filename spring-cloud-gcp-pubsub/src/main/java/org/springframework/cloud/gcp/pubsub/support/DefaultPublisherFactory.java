@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.api.gax.batching.BatchingSettings;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.annotations.VisibleForTesting;
@@ -58,10 +60,29 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 	private final CredentialsProvider credentialsProvider;
 
+	private final RetrySettings retrySettings;
+
+	private final BatchingSettings batchingSettings;
+
+	/**
+	 * The base {@link DefaultPublisherFactory} constructor.
+	 *
+	 * @param projectIdProvider provides the GCP project ID
+	 * @param executorProvider provides the executor to be used by the publisher, useful to specify
+	 *                         the number of threads to be used by each executor
+	 * @param channelProvider provides the channel to be used by the publisher, useful to specify
+	 *                        HTTP headers for the REST API calls
+	 * @param credentialsProvider provides the GCP credentials to be used by the publisher on the
+	 *                            API calls it makes
+	 * @param retrySettings sets the retry configuration
+	 * @param batchingSettings sets the batching configuration
+	 */
 	public DefaultPublisherFactory(GcpProjectIdProvider projectIdProvider,
 			ExecutorProvider executorProvider,
 			TransportChannelProvider channelProvider,
-			CredentialsProvider credentialsProvider) {
+			CredentialsProvider credentialsProvider,
+			RetrySettings retrySettings,
+			BatchingSettings batchingSettings) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
 		Assert.notNull(executorProvider, "The executor provider can't be null.");
 		Assert.notNull(channelProvider, "The channel provider can't be null.");
@@ -72,17 +93,36 @@ public class DefaultPublisherFactory implements PublisherFactory {
 		this.executorProvider = executorProvider;
 		this.channelProvider = channelProvider;
 		this.credentialsProvider = credentialsProvider;
+		this.retrySettings = retrySettings;
+		this.batchingSettings = batchingSettings;
+	}
+
+	public DefaultPublisherFactory(GcpProjectIdProvider projectIdProvider,
+			ExecutorProvider executorProvider,
+			TransportChannelProvider channelProvider,
+			CredentialsProvider credentialsProvider) {
+		this(projectIdProvider, executorProvider, channelProvider, credentialsProvider, null, null);
 	}
 
 	@Override
 	public Publisher getPublisher(String topic) {
 		return this.publishers.computeIfAbsent(topic, key -> {
 			try {
-				return Publisher.newBuilder(TopicName.of(this.projectId, key))
-						.setExecutorProvider(this.executorProvider)
-						.setChannelProvider(this.channelProvider)
-						.setCredentialsProvider(this.credentialsProvider)
-						.build();
+				Publisher.Builder publisherBuilder =
+						Publisher.newBuilder(TopicName.of(this.projectId, key))
+								.setExecutorProvider(this.executorProvider)
+								.setChannelProvider(this.channelProvider)
+								.setCredentialsProvider(this.credentialsProvider);
+
+				if (this.retrySettings != null) {
+					publisherBuilder.setRetrySettings(this.retrySettings);
+				}
+
+				if (this.batchingSettings != null) {
+					publisherBuilder.setBatchingSettings(this.batchingSettings);
+				}
+
+				return publisherBuilder.build();
 			}
 			catch (IOException ioe) {
 				throw new PubSubException("An error creating the Google Cloud Pub/Sub publisher " +
