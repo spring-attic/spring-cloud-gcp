@@ -90,6 +90,8 @@
 								<snippets>${basedir}/target/generated-snippets</snippets>
 								<github-tag>${github-tag}</github-tag>
 								<docinfo>true</docinfo>
+								<spring-integration-version>4.3.13.RELEASE</spring-integration-version>
+								<google-cloud-storage-version>1.14.0</google-cloud-storage-version>
 							</attributes>
 						</configuration>
 						<executions>
