@@ -122,4 +122,12 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 	}
+
+	public PublisherFactory getPublisherFactory() {
+		return this.publisherFactory;
+	}
+
+	public SubscriberFactory getSubscriberFactory() {
+		return this.subscriberFactory;
+	}
 }
