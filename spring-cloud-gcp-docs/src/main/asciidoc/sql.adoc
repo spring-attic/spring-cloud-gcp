@@ -24,7 +24,7 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql', version: '{project-version}'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql'
 }
 ----
 
