@@ -16,9 +16,11 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
@@ -29,9 +31,13 @@ import static org.junit.Assert.assertEquals;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultPublisherFactoryTests {
 
+	@Mock
+	private CredentialsProvider credentialsProvider;
+
 	@Test
 	public void testGetPublisher() {
 		DefaultPublisherFactory factory = new DefaultPublisherFactory(() -> "projectId");
+		factory.setCredentialsProvider(this.credentialsProvider);
 		Publisher publisher = factory.getPublisher("testTopic");
 
 		assertEquals(factory.getCache().size(), 1);

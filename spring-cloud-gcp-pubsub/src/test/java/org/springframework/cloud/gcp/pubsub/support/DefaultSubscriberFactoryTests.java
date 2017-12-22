@@ -16,9 +16,11 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.pubsub.v1.Subscriber;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
@@ -29,6 +31,20 @@ import static org.junit.Assert.assertEquals;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultSubscriberFactoryTests {
 
+	@Mock
+	private CredentialsProvider credentialsProvider;
+
+	@Test
+	public void testNewSubscriber() {
+		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> "angeldust");
+		factory.setCredentialsProvider(this.credentialsProvider);
+
+		Subscriber subscriber = factory.getSubscriber("midnight cowboy", (message, consumer) -> { });
+
+		assertEquals("midnight cowboy", subscriber.getSubscriptionName().getSubscription());
+		assertEquals("angeldust", subscriber.getSubscriptionName().getProject());
+	}
+
 	@Test(expected = IllegalArgumentException.class)
 	public void testNewDefaultSubscriberFactory_nullProjectProvider() {
 		new DefaultSubscriberFactory(null);
@@ -37,15 +53,5 @@ public class DefaultSubscriberFactoryTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void testNewDefaultSubscriberFactory_nullProject() {
 		new DefaultSubscriberFactory(() -> null);
-	}
-
-	@Test
-	public void testNewSubscriber() {
-		SubscriberFactory factory = new DefaultSubscriberFactory(() -> "angeldust");
-
-		Subscriber subscriber = factory.getSubscriber("midnight cowboy", (message, consumer) -> { });
-
-		assertEquals("midnight cowboy", subscriber.getSubscriptionName().getSubscription());
-		assertEquals("angeldust", subscriber.getSubscriptionName().getProject());
 	}
 }
