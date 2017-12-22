@@ -53,21 +53,15 @@ Note that this starter requires the Google Cloud SQL API to be enabled in in you
 
 [source,java]
 ----
-@Autowired
-private JdbcTemplate jdbcTemplate;
-
 public List<Map<String, Object>> listUsers() {
     return jdbcTemplate.queryForList("SELECT * FROM user;");
 }
 ----
 
-This starter is configured through
-https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/autoconfigure/jdbc/DataSourceProperties.html[`DataSourceProperties`].
-Properties like the SQL username, `spring.datasource.username`, and password,
-`spring.datasource.password`, should be configured via the
-https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html#boot-features-connect-to-production-database[Spring
-Boot Datasource configuration].
-There is also some configuration specific to Google Cloud SQL:
+You can rely on https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html#boot-features-connect-to-production-database[Spring
+Boot data source auto-configuration to configure a `DataSource` bean. Properties like the
+SQL username, `spring.datasource.username`, and password,  `spring.datasource.password`
+can be used. There is also some configuration specific to Google Cloud SQL:
 
 |===
 | Property name | Description | Default value | Unused if specified property(ies)
@@ -110,4 +104,4 @@ they are resolved by a `CloudSqlJdbcInfoProvider` and applied to the `DataSource
 
 Using the created `DataSource` in conjunction with Spring JDBC provides you with a fully configured
 and operational `JdbcTemplate` object that you can use to interact with your SQL database.
-You can connect to your database with as little as a database and instance names!
+You can connect to your database with as little as a database and instance names.
