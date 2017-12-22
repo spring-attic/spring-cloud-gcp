@@ -37,11 +37,7 @@ import org.springframework.util.Assert;
  * The default {@link PublisherFactory} implementation.
  *
  * <p>
- * Creates {@link Publisher}s for topics once and reuses them.
- *
- * <p>
- * Every {@link Publisher} produced by this factory reuses the same {@link ExecutorProvider},
- * so the number of created threads doesn't spin out of control.
+ * Creates {@link Publisher}s for topics once, caches and reuses them.
  *
  * @author João André Martins
  */
@@ -54,54 +50,62 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	 */
 	private final ConcurrentHashMap<String, Publisher> publishers = new ConcurrentHashMap<>();
 
-	private final ExecutorProvider executorProvider;
+	private ExecutorProvider executorProvider;
 
-	private final TransportChannelProvider channelProvider;
+	private TransportChannelProvider channelProvider;
 
-	private final CredentialsProvider credentialsProvider;
+	private CredentialsProvider credentialsProvider;
 
-	private final RetrySettings retrySettings;
+	private RetrySettings retrySettings;
 
-	private final BatchingSettings batchingSettings;
+	private BatchingSettings batchingSettings;
 
 	/**
-	 * The base {@link DefaultPublisherFactory} constructor.
-	 *
 	 * @param projectIdProvider provides the GCP project ID
-	 * @param executorProvider provides the executor to be used by the publisher, useful to specify
-	 *                         the number of threads to be used by each executor
-	 * @param channelProvider provides the channel to be used by the publisher, useful to specify
-	 *                        HTTP headers for the REST API calls
-	 * @param credentialsProvider provides the GCP credentials to be used by the publisher on the
-	 *                            API calls it makes
-	 * @param retrySettings sets the retry configuration
-	 * @param batchingSettings sets the batching configuration
 	 */
-	public DefaultPublisherFactory(GcpProjectIdProvider projectIdProvider,
-			ExecutorProvider executorProvider,
-			TransportChannelProvider channelProvider,
-			CredentialsProvider credentialsProvider,
-			RetrySettings retrySettings,
-			BatchingSettings batchingSettings) {
+	public DefaultPublisherFactory(GcpProjectIdProvider projectIdProvider) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
-		Assert.notNull(executorProvider, "The executor provider can't be null.");
-		Assert.notNull(channelProvider, "The channel provider can't be null.");
-		Assert.notNull(credentialsProvider, "The credentials provider can't be null.");
 
 		this.projectId = projectIdProvider.getProjectId();
 		Assert.hasText(this.projectId, "The project ID can't be null or empty.");
-		this.executorProvider = executorProvider;
-		this.channelProvider = channelProvider;
-		this.credentialsProvider = credentialsProvider;
-		this.retrySettings = retrySettings;
-		this.batchingSettings = batchingSettings;
 	}
 
-	public DefaultPublisherFactory(GcpProjectIdProvider projectIdProvider,
-			ExecutorProvider executorProvider,
-			TransportChannelProvider channelProvider,
-			CredentialsProvider credentialsProvider) {
-		this(projectIdProvider, executorProvider, channelProvider, credentialsProvider, null, null);
+	/**
+	 * @param executorProvider provides the executor to be used by the publisher, useful to specify
+	 *                         the number of threads to be used by each executor
+	 */
+	public void setExecutorProvider(ExecutorProvider executorProvider) {
+		this.executorProvider = executorProvider;
+	}
+
+	/**
+	 * @param channelProvider provides the channel to be used by the publisher, useful to specify
+	 *                        HTTP headers for the REST API calls
+	 */
+	public void setChannelProvider(TransportChannelProvider channelProvider) {
+		this.channelProvider = channelProvider;
+	}
+
+	/**
+	 * @param credentialsProvider provides the GCP credentials to be used by the publisher on the
+	 *                            API calls it makes
+	 */
+	public void setCredentialsProvider(CredentialsProvider credentialsProvider) {
+		this.credentialsProvider = credentialsProvider;
+	}
+
+	/**
+	 * @param retrySettings sets the retry configuration
+	 */
+	public void setRetrySettings(RetrySettings retrySettings) {
+		this.retrySettings = retrySettings;
+	}
+
+	/**
+	 * @param batchingSettings sets the batching configuration
+	 */
+	public void setBatchingSettings(BatchingSettings batchingSettings) {
+		this.batchingSettings = batchingSettings;
 	}
 
 	@Override
@@ -109,10 +113,19 @@ public class DefaultPublisherFactory implements PublisherFactory {
 		return this.publishers.computeIfAbsent(topic, key -> {
 			try {
 				Publisher.Builder publisherBuilder =
-						Publisher.newBuilder(TopicName.of(this.projectId, key))
-								.setExecutorProvider(this.executorProvider)
-								.setChannelProvider(this.channelProvider)
-								.setCredentialsProvider(this.credentialsProvider);
+						Publisher.newBuilder(TopicName.of(this.projectId, key));
+
+				if (this.executorProvider != null) {
+					publisherBuilder.setExecutorProvider(this.executorProvider);
+				}
+
+				if (this.channelProvider != null) {
+					publisherBuilder.setChannelProvider(this.channelProvider);
+				}
+
+				if (this.credentialsProvider != null) {
+					publisherBuilder.setCredentialsProvider(this.credentialsProvider);
+				}
 
 				if (this.retrySettings != null) {
 					publisherBuilder.setRetrySettings(this.retrySettings);

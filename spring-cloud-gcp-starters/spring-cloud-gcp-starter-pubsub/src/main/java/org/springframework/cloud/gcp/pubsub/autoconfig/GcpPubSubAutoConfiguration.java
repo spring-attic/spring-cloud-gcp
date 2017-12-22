@@ -123,23 +123,25 @@ public class GcpPubSubAutoConfiguration {
 	public SubscriberFactory defaultSubscriberFactory(
 			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
 			@Qualifier("publisherChannelProvider") TransportChannelProvider channelProvider) {
-		return new DefaultSubscriberFactory(
-				this.finalProjectIdProvider,
-				executorProvider,
-				channelProvider,
-				this.finalCredentialsProvider);
+		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(this.finalProjectIdProvider);
+		factory.setExecutorProvider(executorProvider);
+		factory.setChannelProvider(channelProvider);
+		factory.setCredentialsProvider(this.finalCredentialsProvider);
+
+		return factory;
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(
-			@Qualifier("subscriberExecutorProvider") ExecutorProvider subscriberProvider,
+			@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
 			@Qualifier("subscriberChannelProvider") TransportChannelProvider channelProvider) {
-		return new DefaultPublisherFactory(
-				this.finalProjectIdProvider,
-				subscriberProvider,
-				channelProvider,
-				this.finalCredentialsProvider);
+		DefaultPublisherFactory factory = new DefaultPublisherFactory(this.finalProjectIdProvider);
+		factory.setExecutorProvider(executorProvider);
+		factory.setChannelProvider(channelProvider);
+		factory.setCredentialsProvider(this.finalCredentialsProvider);
+
+		return factory;
 	}
 
 	@Bean

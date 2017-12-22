@@ -37,81 +37,109 @@ import org.springframework.util.Assert;
  */
 public class DefaultSubscriberFactory implements SubscriberFactory {
 
-	private String projectId;
+	private final String projectId;
 
-	private final ExecutorProvider executorProvider;
+	private ExecutorProvider executorProvider;
 
-	private final TransportChannelProvider channelProvider;
+	private TransportChannelProvider channelProvider;
 
-	private final CredentialsProvider credentialsProvider;
+	private CredentialsProvider credentialsProvider;
 
-	private final HeaderProvider headerProvider;
+	private HeaderProvider headerProvider;
 
-	private final ExecutorProvider systemExecutorProvider;
+	private ExecutorProvider systemExecutorProvider;
 
-	private final FlowControlSettings flowControlSettings;
+	private FlowControlSettings flowControlSettings;
 
-	private final Duration maxAckDurationPeriod;
+	private Duration maxAckDurationPeriod;
 
-	private final Integer parallelPullCount;
+	private Integer parallelPullCount;
 
 	/**
-	 * Base {@link DefaultSubscriberFactory} constructor.
-	 *
 	 * @param projectIdProvider provides the GCP project ID
-	 * @param executorProvider provides the executor to be used by the subscriber, useful to specify
-	 *                         the number of threads to be used by each executor
-	 * @param channelProvider provides the channel to be used by the subscriber
-	 * @param credentialsProvider provides the GCP credentials to be used by the subscriber on the
-	 *                            API calls it makes
-	 * @param headerProvider provides headers for the API's HTTP calls
-	 * @param systemExecutorProvider provides an executor for polling and managing lease extensions
-	 * @param flowControlSettings configures the flow control of the subscriber, including the
-	 *                            behaviour for when flow limits are hit
-	 * @param maxAckDurationPeriod sets the maximum period the ack period is extended by
-	 * @param parallelPullCount sets the number of pull workers
 	 */
-	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider,
-			ExecutorProvider executorProvider,
-			TransportChannelProvider channelProvider,
-			CredentialsProvider credentialsProvider,
-			HeaderProvider headerProvider,
-			ExecutorProvider systemExecutorProvider,
-			FlowControlSettings flowControlSettings,
-			Duration maxAckDurationPeriod,
-			Integer parallelPullCount) {
+	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
-		Assert.notNull(executorProvider, "The executor provider can't be null.");
-		Assert.notNull(channelProvider, "The channel provider can't be null.");
-		Assert.notNull(credentialsProvider, "The credentials provider can't be null.");
 
 		this.projectId = projectIdProvider.getProjectId();
 		Assert.hasText(this.projectId, "The project ID can't be null or empty.");
-		this.executorProvider = executorProvider;
-		this.channelProvider = channelProvider;
-		this.credentialsProvider = credentialsProvider;
-		this.headerProvider = headerProvider;
-		this.systemExecutorProvider = systemExecutorProvider;
-		this.flowControlSettings = flowControlSettings;
-		this.maxAckDurationPeriod = maxAckDurationPeriod;
-		this.parallelPullCount = parallelPullCount;
 	}
 
-	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider,
-			ExecutorProvider executorProvider,
-			TransportChannelProvider channelProvider,
-			CredentialsProvider credentialsProvider) {
-		this(projectIdProvider, executorProvider, channelProvider, credentialsProvider,
-				null, null, null, null, null);
+	/**
+	 * @param executorProvider provides the executor to be used by the subscriber, useful to specify
+	 *                         the number of threads to be used by each executor
+	 */
+	public void setExecutorProvider(ExecutorProvider executorProvider) {
+		this.executorProvider = executorProvider;
+	}
+
+	/**
+	 * @param channelProvider provides the channel to be used by the subscriber
+	 */
+	public void setChannelProvider(TransportChannelProvider channelProvider) {
+		this.channelProvider = channelProvider;
+	}
+
+	/**
+	 * @param credentialsProvider provides the GCP credentials to be used by the subscriber on the
+	 *                            API calls it makes
+	 */
+	public void setCredentialsProvider(CredentialsProvider credentialsProvider) {
+		this.credentialsProvider = credentialsProvider;
+	}
+
+	/**
+	 * @param headerProvider provides headers for the API's HTTP calls
+	 */
+	public void setHeaderProvider(HeaderProvider headerProvider) {
+		this.headerProvider = headerProvider;
+	}
+
+	/**
+	 * @param systemExecutorProvider provides an executor for polling and managing lease extensions
+	 */
+	public void setSystemExecutorProvider(ExecutorProvider systemExecutorProvider) {
+		this.systemExecutorProvider = systemExecutorProvider;
+	}
+
+	/**
+	 * @param flowControlSettings configures the flow control of the subscriber, including the
+	 *                            behaviour for when flow limits are hit
+	 */
+	public void setFlowControlSettings(FlowControlSettings flowControlSettings) {
+		this.flowControlSettings = flowControlSettings;
+	}
+
+	/**
+	 * @param maxAckDurationPeriod sets the maximum period the ack period is extended by
+	 */
+	public void setMaxAckDurationPeriod(Duration maxAckDurationPeriod) {
+		this.maxAckDurationPeriod = maxAckDurationPeriod;
+	}
+
+	/**
+	 * @param parallelPullCount sets the number of pull workers
+	 */
+	public void setParallelPullCount(Integer parallelPullCount) {
+		this.parallelPullCount = parallelPullCount;
 	}
 
 	@Override
 	public Subscriber getSubscriber(String subscriptionName, MessageReceiver receiver) {
 		Subscriber.Builder subscriberBuilder = Subscriber.newBuilder(
-				SubscriptionName.of(this.projectId, subscriptionName), receiver)
-				.setChannelProvider(this.channelProvider)
-				.setExecutorProvider(this.executorProvider)
-				.setCredentialsProvider(this.credentialsProvider);
+				SubscriptionName.of(this.projectId, subscriptionName), receiver);
+
+		if (this.channelProvider != null) {
+			subscriberBuilder.setChannelProvider(this.channelProvider);
+		}
+
+		if (this.executorProvider != null) {
+			subscriberBuilder.setExecutorProvider(this.executorProvider);
+		}
+
+		if (this.credentialsProvider != null) {
+			subscriberBuilder.setCredentialsProvider(this.credentialsProvider);
+		}
 
 		if (this.headerProvider != null) {
 			subscriberBuilder.setHeaderProvider(this.headerProvider);
