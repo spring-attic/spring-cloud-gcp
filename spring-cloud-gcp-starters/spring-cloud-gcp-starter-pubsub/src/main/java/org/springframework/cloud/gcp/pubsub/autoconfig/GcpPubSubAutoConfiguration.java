@@ -114,8 +114,11 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory,
-			SubscriberFactory subscriberFactory) {
-		return new PubSubTemplate(publisherFactory, subscriberFactory);
+			SubscriberFactory subscriberFactory,
+			SubscriptionAdminSettings subscriptionAdminSettings,
+			GcpProjectIdProvider projectIdProvider) {
+		return new PubSubTemplate(publisherFactory, subscriberFactory, subscriptionAdminSettings,
+				projectIdProvider);
 	}
 
 	@Bean
@@ -175,6 +178,18 @@ public class GcpPubSubAutoConfiguration {
 		}
 		catch (IOException ioe) {
 			throw new PubSubException("An error occurred while creating SubscriptionAdminClient.",
+					ioe);
+		}
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public SubscriptionAdminSettings subscriptionAdminSettings() {
+		try {
+			return SubscriptionAdminSettings.newBuilder().build();
+		}
+		catch (IOException ioe) {
+			throw new PubSubException("An error occurred while creating SubscriptionAdminSettings.",
 					ioe);
 		}
 	}

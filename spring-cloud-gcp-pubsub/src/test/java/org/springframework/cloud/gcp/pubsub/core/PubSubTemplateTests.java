@@ -23,6 +23,7 @@ import com.google.api.core.SettableApiFuture;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Before;
@@ -62,14 +63,17 @@ public class PubSubTemplateTests {
 	@Mock
 	private Subscriber mockSubscriber;
 
+	@Mock
+	private SubscriptionAdminSettings subscriptionAdminSettings;
+
 	private PubSubTemplate pubSubTemplate;
 	private PubsubMessage pubsubMessage;
 	private SettableApiFuture<String> settableApiFuture;
 
 	@Before
-	public void setUp() throws ExecutionException, InterruptedException {
-		this.pubSubTemplate =
-				new PubSubTemplate(this.mockPublisherFactory, this.mockSubscriberFactory);
+	public void setUp() {
+		this.pubSubTemplate = new PubSubTemplate(this.mockPublisherFactory,
+				this.mockSubscriberFactory, this.subscriptionAdminSettings, () -> "tomahawk");
 		when(this.mockPublisherFactory.getPublisher("testTopic"))
 				.thenReturn(this.mockPublisher);
 		this.settableApiFuture = SettableApiFuture.create();

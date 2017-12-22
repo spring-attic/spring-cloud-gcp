@@ -17,19 +17,30 @@
 package org.springframework.cloud.gcp.pubsub.core;
 
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
+import com.google.cloud.pubsub.v1.stub.GrpcSubscriberStub;
+import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.protobuf.ByteString;
+import com.google.pubsub.v1.AcknowledgeRequest;
 import com.google.pubsub.v1.PubsubMessage;
+import com.google.pubsub.v1.PullRequest;
+import com.google.pubsub.v1.PullResponse;
+import com.google.pubsub.v1.ReceivedMessage;
+import com.google.pubsub.v1.SubscriptionName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -49,9 +60,29 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private final SubscriberFactory subscriberFactory;
 
-	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory) {
+	private final SubscriptionAdminSettings pullSettings;
+
+	private final GcpProjectIdProvider projectIdProvider;
+
+	/**
+	 * Default {@link PubSubTemplate} constructor.
+	 *
+	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
+	 *                         publish to topics
+	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory to
+	 *                          subscribe to subscriptions
+	 * @param pullSettings a {@link com.google.cloud.pubsub.v1.SubscriptionAdminSettings} object to
+	 *                     create a {@link com.google.cloud.pubsub.v1.stub.SubscriberStub} to pull
+	 *                     messages on demand
+	 * @param projectIdProvider provides the project ID for the on demand pull requests. Only used
+	 *                          in the pull methods
+	 */
+	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory,
+			SubscriptionAdminSettings pullSettings, GcpProjectIdProvider projectIdProvider) {
 		this.publisherFactory = publisherFactory;
 		this.subscriberFactory = subscriberFactory;
+		this.pullSettings = pullSettings;
+		this.projectIdProvider = projectIdProvider;
 	}
 
 	@Override
@@ -117,6 +148,70 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		Subscriber subscriber = this.subscriberFactory.getSubscriber(subscription, messageHandler);
 		subscriber.startAsync();
 		return subscriber;
+	}
+
+	/**
+	 * Pulls messages on demand using the pull request in argument.
+	 *
+	 * <p>
+	 * After messages are received, this method sends acknowledgements for the received messages if
+	 * any was received.
+	 */
+	@Override
+	public List<PubsubMessage> pull(PullRequest pullRequest) {
+		try {
+			try (SubscriberStub subscriber = GrpcSubscriberStub.create(this.pullSettings)) {
+				PullResponse pullResponse =	subscriber.pullCallable().call(pullRequest);
+
+				// Ack received messages.
+				if (pullResponse.getReceivedMessagesCount() > 0) {
+					List<String> ackIds = pullResponse.getReceivedMessagesList().stream()
+							.map(ReceivedMessage::getAckId)
+							.collect(Collectors.toList());
+
+					AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
+							.setSubscriptionWithSubscriptionName(
+									pullRequest.getSubscriptionAsSubscriptionName())
+							.addAllAckIds(ackIds)
+							.build();
+
+					subscriber.acknowledgeCallable().call(acknowledgeRequest);
+				}
+
+				return pullResponse.getReceivedMessagesList().stream()
+						.map(ReceivedMessage::getMessage)
+						.collect(Collectors.toList());
+			}
+		}
+		catch (Exception ioe) {
+			throw new PubSubException("Error pulling messages from subscription "
+					+ pullRequest.getSubscription() + ".", ioe);
+		}
+	}
+
+	@Override
+	public List<PubsubMessage> pull(String subscription, Integer maxMessages,
+			Boolean returnImmediately) {
+		PullRequest.Builder pullRequestBuilder =
+				PullRequest.newBuilder().setSubscriptionWithSubscriptionName(
+						SubscriptionName.of(this.projectIdProvider.getProjectId(), subscription));
+
+		if (maxMessages != null) {
+			pullRequestBuilder.setMaxMessages(maxMessages);
+		}
+
+		if (returnImmediately != null) {
+			pullRequestBuilder.setReturnImmediately(returnImmediately);
+		}
+
+		return pull(pullRequestBuilder.build());
+	}
+
+	@Override
+	public PubsubMessage pullNext(String subscription) {
+		List<PubsubMessage> receivedMessageList = pull(subscription, 1, true);
+
+		return receivedMessageList.size() > 0 ?	receivedMessageList.get(0) : null;
 	}
 
 	@Override

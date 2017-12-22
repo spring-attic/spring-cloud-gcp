@@ -17,12 +17,14 @@
 package org.springframework.cloud.gcp.pubsub.core;
 
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Map;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
+import com.google.pubsub.v1.PullRequest;
 
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -97,4 +99,34 @@ public interface PubSubOperations {
 	 */
 	Subscriber subscribe(String subscription, MessageReceiver messageHandler);
 
+	/**
+	 * Pulls a number of messages from a Google Cloud Pub/Sub subscription.
+	 *
+	 * <p>
+	 * Automatically acknowledges received messages.
+	 *
+	 * @param pullRequest request object containing request settings
+	 * @return the list of received messages
+	 */
+	List<PubsubMessage> pull(PullRequest pullRequest);
+
+	/**
+	 * Pulls a number of messages from a Google Cloud Pub/Sub subscription.
+	 *
+	 * @param subscription the subscription name
+	 * @param maxMessages the maximum number of pulled messages
+	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
+	 *                         messages to satisfy {@code maxMessages}
+	 * @return the list of received messages
+	 */
+	List<PubsubMessage> pull(String subscription, Integer maxMessages,
+			Boolean returnImmediately);
+
+	/**
+	 * Pulls a message from a Google Cloud Pub/Sub subscription.
+	 *
+	 * @param subscription the subscription name
+	 * @return a received message, or {@code null} if none exists in the subscription
+	 */
+	PubsubMessage pullNext(String subscription);
 }
