@@ -32,9 +32,9 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-integration', version: '{project-version}'
-    compile group: 'org.springframework.integration', name: 'spring-integration-file', version: '{spring-integration-version}'
-    compile group: 'com.google.cloud', name: 'google-cloud-storage', version: '{google-cloud-storage-version}'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-integration'
+    compile group: 'org.springframework.integration', name: 'spring-integration-file'
+    compile group: 'com.google.cloud', name: 'google-cloud-storage'
 }
 ----
 
