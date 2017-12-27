@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+Stackdriver appender logback configuration provided for import.
+-->
+
+<included>
+  <property name="STACKDRIVER_LOG_NAME" value="${STACKDRIVER_LOG_NAME:-spring.log}"/>
+  <property name="STACKDRIVER_LOG_FLUSH_LEVEL" value="${STACKDRIVER_LOG_FLUSH_LEVEL:-WARN}"/>
+
+  <appender name="STACKDRIVER" class="com.google.cloud.logging.logback.LoggingAppender">
+    <log>${STACKDRIVER_LOG_NAME}</log> <!-- Optional : default java.log -->
+    <enhancer>com.google.cloud.logging.TraceLoggingEnhancer</enhancer> <!-- Optional -->
+    <flushLevel>${STACKDRIVER_LOG_FLUSH_LEVEL}</flushLevel> <!-- Optional : default ERROR -->
+  </appender>
+</included>
