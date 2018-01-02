@@ -14,10 +14,11 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.core;
+package org.springframework.cloud.gcp.autoconfigure.core;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.cloud.gcp.core.Credentials;
 
 /**
  * @author Vinicius Carvalho

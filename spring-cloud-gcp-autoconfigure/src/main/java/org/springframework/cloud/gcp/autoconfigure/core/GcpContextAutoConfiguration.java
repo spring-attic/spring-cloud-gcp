@@ -41,7 +41,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
