@@ -28,7 +28,7 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-trace', version: '{project-version}'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-trace'
 }
 ----
 

@@ -1,0 +1,34 @@
+= Spring Integration Channel Adapters for Google Cloud Pub/Sub Code Sample
+
+This code sample contains a couple of apps.
+One app gets a message provided by the user through a webpage and publishes it to a Google Cloud
+Pub/Sub topic.
+The other app subscribes to that topic and logs received messages.
+
+== Setup & Configuration
+
+1. Configure your GCP project ID and credentials by following
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core[these instructions].
++
+Alternatively, if you have the
+https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with
+https://developers.google.com/identity/protocols/application-default-credentials[application
+default credentials], Spring will auto-discover those parameters for you.
+
+2. Go to the https://console.cloud.google.com/cloudpubsub/topicList[Google Cloud Console Pub/Sub
+topics page] and create a topic called `exampleTopic`.
+
+3. Still in the same page, locate the newly created topic, click the button with the three vertical
+dots at the end of the topic's line and click "New subscription".
+Create a new subscription called `exampleSubscription` with all default parameters.
+
+3. In separate terminal windows, start the
+`spring-cloud-gcp-spring-integration-pubsub-sample-sender` and
+`spring-cloud-gcp-spring-integration-pubsub-sample-receiver` applications with the
+`mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
+
+4. Go to http://localhost:8080, write a message in the text box and hit the `Submit` button.
+
+5. Verify that the receiver logged the message you wrote.
++
+`Message arrived! Payload: [message-entered]`
