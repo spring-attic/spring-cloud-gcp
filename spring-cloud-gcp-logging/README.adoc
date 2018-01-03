@@ -20,7 +20,7 @@ dependencies {
 }
 ----
 
-https://cloud.google.com/logging/[Stackdriver Logging] is the managed logging services provided by Google Cloud
+https://cloud.google.com/logging/[Stackdriver Logging] is the managed logging service provided by Google Cloud
 Platform.
 
 This module provides support for associating a web request trace ID with the corresponding log entries. This allows
@@ -42,7 +42,7 @@ and https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-
 
 == Logback Support
 
-For Logback, a `org/springframework/cloud/gcp/logging/logback-appender.xml` is made available for import to make it
+For Logback, a `org/springframework/cloud/gcp/logging/logback-appender.xml` file is made available for import to make it
 easier to configure the Logback appender.
 
 Your configuration may then look something like this:

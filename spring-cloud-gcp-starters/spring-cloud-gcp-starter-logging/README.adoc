@@ -45,7 +45,7 @@ Your Logback configuration may look something like this:
 
 Note that, when the application is run locally, the logs will go into the "spring.log"
 channel of the "Global" resource. However, when running on GCP on App Engine or GKE, the log channel
-will under the appropriate monitored resource.
+will run under the appropriate monitored resource.
 
 `STACKDRIVER_LOG_NAME` and `STACKDRIVER_LOG_FLUSH_LEVEL` environment variables can be used to customize
 the `STACKDIRVER` appender.

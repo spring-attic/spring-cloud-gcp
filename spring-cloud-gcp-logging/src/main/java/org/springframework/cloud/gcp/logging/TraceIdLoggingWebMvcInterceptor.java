@@ -40,13 +40,18 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 	@Override
 	public boolean preHandle(HttpServletRequest req,
 			HttpServletResponse resp, Object handler) throws Exception {
-		TraceLoggingEnhancer.setCurrentTraceId(extractTraceIdFromRequest(req));
+		String traceId = extractTraceIdFromRequest(req);
+		if (traceId != null) {
+			TraceLoggingEnhancer.setCurrentTraceId(extractTraceIdFromRequest(req));
+		}
 		return true;
 	}
 
 	@Override
 	public void afterCompletion(HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse, Object handler, Exception e) throws Exception {
+		// Note: the thread-local is currently not fully cleared, but just set to null
+		// See: https://github.com/GoogleCloudPlatform/google-cloud-java/issues/2746
 		TraceLoggingEnhancer.setCurrentTraceId(null);
 	}
 

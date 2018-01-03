@@ -16,8 +16,8 @@
 
 package org.springframework.cloud.gcp.logging;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.Assert;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -31,13 +31,17 @@ public class LoggingWebMvcConfigurer extends WebMvcConfigurerAdapter {
 
 	private TraceIdLoggingWebMvcInterceptor interceptor;
 
-	public LoggingWebMvcConfigurer(TraceIdLoggingWebMvcInterceptor interceptor) {
-		this.interceptor = interceptor;
+	public LoggingWebMvcConfigurer(@Autowired(required = false) TraceIdLoggingWebMvcInterceptor interceptor) {
+		if (interceptor != null) {
+			this.interceptor = interceptor;
+		}
+		else {
+			this.interceptor = new TraceIdLoggingWebMvcInterceptor();
+		}
 	}
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
-		Assert.notNull(this.interceptor, "Interceptor must be provided");
 		registry.addInterceptor(this.interceptor);
 	}
 }

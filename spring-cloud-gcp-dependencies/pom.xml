@@ -188,6 +188,13 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<!-- google-cloud-logging-logback is not in the google-cloud-java BOM yet -->
+			<!-- See: https://github.com/GoogleCloudPlatform/google-cloud-java/issues/2745 -->
+			<dependency>
+				<groupId>com.google.cloud</groupId>
+				<artifactId>google-cloud-logging-logback</artifactId>
+				<version>0.32.0-alpha</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

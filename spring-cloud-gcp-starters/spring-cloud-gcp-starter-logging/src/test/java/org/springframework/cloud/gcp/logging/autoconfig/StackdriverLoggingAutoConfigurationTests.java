@@ -51,7 +51,7 @@ public abstract class StackdriverLoggingAutoConfigurationTests {
 		return count;
 	}
 
-	public static class StackdriverLoggingAutoConfigurationTest_default
+	public static class StackdriverLoggingAutoConfigurationDefaultTests
 			extends StackdriverLoggingAutoConfigurationTests {
 
 		@Test
@@ -62,7 +62,7 @@ public abstract class StackdriverLoggingAutoConfigurationTests {
 
 	@TestPropertySource(properties = {
 			"spring.cloud.gcp.logging.enabled=false" })
-	public static class StackdriverLoggingAutoConfigurationTest_disabled
+	public static class StackdriverLoggingAutoConfigurationDisabledTests
 			extends StackdriverLoggingAutoConfigurationTests {
 
 		@Test
