@@ -1,0 +1,109 @@
+= Spring Integration Channel Adapters
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-integration</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-integration'
+}
+----
+
+
+== Google Cloud Pub/Sub
+
+Provides adapters for Spring Messaging channels to exchange messages via Google Cloud Pub/Sub.
+Makes extensive use of the constructs provided by the Spring Cloud GCP Pub/Sub module, like
+`PubSubOperations`.
+
+The outbound channel adapter, `PubSubMessageHandler`, publishes messages asynchronously by default.
+A publish timeout can be configured for synchronous publishing. If none is provided, the adapter
+waits indefinitely for a response.
+
+It is possible to set user-defined callbacks for the `publish()` call in `PubSubMessageHandler`
+through the `setPublishFutureCallback()` method.
+These are useful to process the message ID, in case of success, or the error if any was thrown.
+
+Refer to the https://spring.io/guides/gs/spring-cloud-gcp/[Spring getting started guide] to learn
+how to use the adapters.
+
+== Google Cloud Storage
+
+The channel adapters for Google Cloud Storage allow you to read and write files to Google Cloud
+Storage through `MessageChannels`.
+
+Spring Cloud GCP provides two inbound adapters, `GcsInboundFileSynchronizingMessageSource` and
+`GcsStreamingMessageSource`, and one outbound adapter, `GcsMessageHandler`.
+
+=== Inbound channel adapter
+
+The Google Cloud Storage inbound channel adapter polls a Google Cloud Storage bucket for new files and sends each of
+them in a `Message` payload to the `MessageChannel` specified in the `@InboundChannelAdapter` annotation.
+The files are temporarily stored in a folder in the local file system.
+
+Here is an example of how to configure a Google Cloud Storage inbound channel adapter.
+
+[source,java]
+----
+@Bean
+@InboundChannelAdapter(channel = "new-file-channel", poller = @Poller(fixedDelay = "5000"))
+public MessageSource<File> synchronizerAdapter(Storage gcs) {
+  GcsInboundFileSynchronizer synchronizer = new GcsInboundFileSynchronizer(gcs);
+  synchronizer.setRemoteDirectory("your-gcs-bucket");
+
+  GcsInboundFileSynchronizingMessageSource synchAdapter =
+          new GcsInboundFileSynchronizingMessageSource(synchronizer);
+  synchAdapter.setLocalDirectory(new File("local-directory"));
+
+  return synchAdapter;
+}
+----
+
+=== Inbound streaming channel adapter
+
+The inbound streaming channel adapter is similar to the normal inbound channel adapter, except it does not require files
+to be stored in the file system.
+
+Here is an example of how to configure a Google Cloud Storage inbound streaming channel adapter.
+
+[source,java]
+----
+@Bean
+@InboundChannelAdapter(channel = "streaming-channel", poller = @Poller(fixedDelay = "5000"))
+public MessageSource<InputStream> streamingAdapter(Storage gcs) {
+  GcsStreamingMessageSource adapter =
+          new GcsStreamingMessageSource(new GcsRemoteFileTemplate(new GcsSessionFactory(gcs)));
+  adapter.setRemoteDirectory("your-gcs-bucket");
+  return adapter;
+}
+----
+
+=== Outbound channel adapter
+
+The outbound channel adapter allows files to be written to Google Cloud Storage.
+When it receives a `Message` containing a payload of type `File`, it writes that file to the Google Cloud Storage
+bucket specified in the adapter.
+
+Here is an example of how to configure a Google Cloud Storage outbound channel adapter.
+
+[source,java]
+----
+@Bean
+@ServiceActivator(inputChannel = "writeFiles")
+public MessageHandler outboundChannelAdapter(Storage gcs) {
+  GcsMessageHandler outboundChannelAdapter = new GcsMessageHandler(new GcsSessionFactory(gcs));
+  outboundChannelAdapter.setRemoteDirectoryExpression(new ValueExpression<>("your-gcs-bucket"));
+
+  return outboundChannelAdapter;
+}
+----

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>spring-cloud-gcp-samples</artifactId>
+		<groupId>org.springframework.cloud</groupId>
+		<version>1.0.0.BUILD-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.example</groupId>
+	<artifactId>spring-cloud-gcp-integration-pubsub-sample</artifactId>
+	<packaging>pom</packaging>
+	<name>Spring Cloud GCP Integration Pub/Sub Channel Adapters Code Sample</name>
+	<modules>
+		<module>spring-cloud-gcp-integration-pubsub-sample-sender</module>
+		<module>spring-cloud-gcp-integration-pubsub-sample-receiver</module>
+	</modules>
+</project>

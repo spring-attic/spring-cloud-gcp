@@ -16,7 +16,7 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-config', version: '1.0.0.M1'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-config'
 }
 ----
 
@@ -137,5 +137,5 @@ to your `application.properties` at allow unrestricted access to `/refresh`.
 
 
 == Examples
-link:../../spring-cloud-gcp-examples/spring-cloud-gcp-config-example[Here]
+link:../../spring-cloud-gcp-samples/spring-cloud-gcp-config-sample[Here]
 is a sample application that uses this starter.

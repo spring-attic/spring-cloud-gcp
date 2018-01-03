@@ -1,0 +1,48 @@
+= Spring Cloud GCP Config Client Starter Code Sample
+
+This sample application demonstrates using the
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Spring Cloud GCP Config Client Starter] in your code.
+
+== Setup & Configuration
+1. Checkout the code of this sample.
+2. Setup the Google Runtime Configuration API with
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config#setup[these instructions].
+3. Create a configuration using the
+https://cloud.google.com/sdk/[Google Cloud SDK].
++
+....
+gcloud beta runtime-config configs create myapp_prod
+....
++
+Then set the variables that your application will load:
++
+....
+  gcloud beta runtime-config configs variables set \
+myapp.queue-size 25 \
+--config-name myapp_prod
+  gcloud beta runtime-config configs variables set \
+myapp.feature-x-enabled true \
+--config-name myapp_prod
+....
+
+4.  Update link:src/main/resources/bootstrap.properties[]:
++
+....
+spring.cloud.gcp.config.enabled=true #optional, default = true
+spring.cloud.gcp.config.name=myapp
+spring.cloud.gcp.config.profile=prod #default profile = default
+....
+5.  Notice that link:src/main/java/com/example/MyAppProperties.java[MyAppProperties.java]
+uses `@ConfigurationProperties` to bind the `myapp` namespace from the environment.
+6.  Update a property with `gcloud`:
++
+....
+  gcloud beta runtime-config configs variables set \
+     myapp.queue-size 200 \
+     --config-name myapp_prod
+....
+7.  Send a POST request to the `/refresh` endpoint:
++
+....
+  curl -XPOST http://myapp.host.com/refresh
+....

@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.config.autoconfig;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.config.GcpConfigProperties;
@@ -32,7 +31,5 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(GcpConfigProperties.class)
 public class GcpConfigAutoConfiguration {
 
-	@Autowired
-	GcpConfigProperties gcpConfigProperties;
 }
 
