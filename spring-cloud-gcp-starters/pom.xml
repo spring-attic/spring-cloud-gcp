@@ -27,11 +27,4 @@
 		<module>spring-cloud-gcp-starter-sql</module>
 		<module>spring-cloud-gcp-starter-trace</module>
 	</modules>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-	</dependencies>
 </project>
