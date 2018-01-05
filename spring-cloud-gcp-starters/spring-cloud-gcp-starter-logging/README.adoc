@@ -48,6 +48,6 @@ channel of the "Global" resource. However, when running on GCP on App Engine or 
 will run under the appropriate monitored resource.
 
 `STACKDRIVER_LOG_NAME` and `STACKDRIVER_LOG_FLUSH_LEVEL` environment variables can be used to customize
-the `STACKDIRVER` appender.
+the `STACKDRIVER` appender.
 
 Also see the link:../../spring-cloud-gcp-logging[spring-cloud-gcp-logging] module.
