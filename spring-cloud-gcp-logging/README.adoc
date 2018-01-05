@@ -58,6 +58,6 @@ Your configuration may then look something like this:
 ----
 
 `STACKDRIVER_LOG_NAME` and `STACKDRIVER_LOG_FLUSH_LEVEL` environment variables can be used to customize the
-`STACKDIRVER` appender.
+`STACKDRIVER` appender.
 
 Also see the link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[spring-cloud-gcp-starter-logging] module.
