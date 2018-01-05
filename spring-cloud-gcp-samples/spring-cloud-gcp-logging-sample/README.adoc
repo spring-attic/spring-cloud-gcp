@@ -1,0 +1,37 @@
+= Spring Cloud GCP Logging Starter Example
+
+This sample application demonstrates using the
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[Spring Cloud GCP Logging Starter] in your code.
+
+You can read about the Spring Boot Starter for Stackdriver Logging in more detail at the
+link:../../spring-cloud-gcp-docs/src/main/asciidoc/trace.adoc[Spring Cloud GCP Reference Document
+Stackdriver Logging section].
+
+== Setup & Configuration
+1. Create a Google Cloud Platform Project
+1. https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account]
+with Trace Append permission. Furnish a new JSON key and then set the credentials using the
+`GOOGLE_APPLICATION_CREDENTIALS` environment variable or
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core/README.adoc[using GCP Starter Core properties].
++
+Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and
+initialized and are logged in with
+https://developers.google.com/identity/protocols/application-default-credentials[application
+default credentials], you can skip this step since Spring Cloud GCP will auto-discover those
+settings for you.
+
+1. Enable the Stackdriver Logging API.
+
+== Run the Example
+Deploy the sample application from Maven:
+
+----
+mvn appengine:deploy
+----
+
+Browse to `http://[Your-Project-ID].appspot.com/log`. This will trigger the `ExampleController.log()` method,
+which uses a typical logger supporting Logback to write a line of text to the Stackdriver log.
+
+To see the logged line, navigate to the Logging section of the Cloud Console.
+Select your App Engine deployment as the resource and look under the `spring.log` channel to see the
+logged text.
