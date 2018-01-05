@@ -26,5 +26,6 @@
 		<module>spring-cloud-gcp-starter-storage</module>
 		<module>spring-cloud-gcp-starter-sql</module>
 		<module>spring-cloud-gcp-starter-trace</module>
+		<module>spring-cloud-gcp-starter-logging</module>
 	</modules>
 </project>

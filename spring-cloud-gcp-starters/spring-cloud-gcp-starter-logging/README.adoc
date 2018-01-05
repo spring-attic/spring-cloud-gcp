@@ -1,0 +1,53 @@
+= Spring Boot Starter for Google Stackdriver Logging
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-logging</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-logging'
+}
+----
+
+This starter registers a Web MVC interceptor that extracts the request trace ID from the `X-Cloud-Trace-Context`
+HTTP header and makes it available to logging appenders to add to log entries as metadata.
+
+Currently, https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-logging#add-a-stackdriver-logging-handler-to-a-logger[Java Util Logging (JUL)]
+and https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-contrib/google-cloud-logging-logback[Logback] are supported.
+
+== Getting Started
+
+For Logback, a `org/springframework/cloud/gcp/logging/logback-appender.xml` is made available for import to make it
+easier to configure the Logback appender. It defines the `STACKDRIVER` appender that will
+send logs to Stackdriver Logging.
+
+Your Logback configuration may look something like this:
+[source, xml]
+----
+<configuration>
+  <include resource="org/springframework/cloud/gcp/logging/logback-appender.xml" />
+
+  <root level="INFO">
+    <appender-ref ref="STACKDRIVER" />
+  </root>
+</configuration>
+----
+
+Note that, when the application is run locally, the logs will go into the "spring.log"
+channel of the "Global" resource. However, when running on GCP on App Engine or GKE, the log channel
+will run under the appropriate monitored resource.
+
+`STACKDRIVER_LOG_NAME` and `STACKDRIVER_LOG_FLUSH_LEVEL` environment variables can be used to customize
+the `STACKDRIVER` appender.
+
+Also see the link:../../spring-cloud-gcp-logging[spring-cloud-gcp-logging] module.
