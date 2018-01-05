@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 public class LoggingWebMvcConfigurer extends WebMvcConfigurerAdapter {
 
-	private TraceIdLoggingWebMvcInterceptor interceptor;
+	private final TraceIdLoggingWebMvcInterceptor interceptor;
 
 	public LoggingWebMvcConfigurer(@Autowired(required = false) TraceIdLoggingWebMvcInterceptor interceptor) {
 		if (interceptor != null) {
