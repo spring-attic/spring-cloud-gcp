@@ -10,10 +10,10 @@ initialized and logged in with
 https://developers.google.com/identity/protocols/application-default-credentials[application
 default credentials].
 
-1. Check that the Stackdriver Logging API is enabled.
+1. Check that the https://cloud.google.com/logging/docs/access-control[Stackdriver Logging API is enabled].
 
 == Run the Example
-Deploy the sample application from Maven:
+Deploy the sample application from Maven to App Engine Flexible Environment:
 
 ----
 mvn appengine:deploy
@@ -22,7 +22,7 @@ mvn appengine:deploy
 Browse to `http://[Your-Project-ID].appspot.com/log`. This will trigger the `ExampleController.log()` method,
 which uses a typical logger supporting Logback to write a line of text to the Stackdriver log.
 
-To see the logged lines, navigate to the Logging section of the Cloud Console.
+To see the logged lines, navigate to the https://pantheon.corp.google.com/logs/viewer[Logging section of the Cloud Console].
 Select your App Engine deployment as the resource and look under the `spring.log` channel to see the
 logged text. You can further narrow down the log by request by using the following filtering text
 that takes advantage of the trace ID label in each logged line:
@@ -33,5 +33,8 @@ logName="projects/[Your-Project-ID]/logs/spring.log"
 labels."appengine.googleapis.com/trace_id"="[Trace-ID-Of-Request]"
 ----
 
-If you run this application locally, then these logs will appear in Stackdriver under the `Global`
+Expand the log entry labels and note that `appengine.googleapis.com/trace_id` label is set to the
+same value for both log messages.
+
+If you run this application locally by using `mvn spring-boot:run`, then these logs will appear in Stackdriver under the `Global`
 resource instead of the App Engine deployment's resource.
