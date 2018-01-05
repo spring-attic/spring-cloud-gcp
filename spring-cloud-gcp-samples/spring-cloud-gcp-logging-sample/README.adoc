@@ -3,10 +3,6 @@
 This sample application demonstrates using the
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[Spring Cloud GCP Logging Starter] in your code.
 
-You can read about the Spring Boot Starter for Stackdriver Logging in more detail at the
-link:../../spring-cloud-gcp-docs/src/main/asciidoc/trace.adoc[Spring Cloud GCP Reference Document
-Stackdriver Logging section].
-
 == Setup & Configuration
 1. Create a Google Cloud Platform Project
 1. https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account]
