@@ -29,7 +29,7 @@
 
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-integration-gcp</artifactId>
+			<artifactId>spring-cloud-gcp-integration</artifactId>
 		</dependency>
 	</dependencies>
 </project>
