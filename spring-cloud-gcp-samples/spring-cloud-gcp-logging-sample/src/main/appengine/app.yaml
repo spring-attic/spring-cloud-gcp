@@ -7,3 +7,4 @@ handlers:
 
 manual_scaling:
   instances: 1
+  
