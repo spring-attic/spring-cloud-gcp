@@ -20,7 +20,12 @@ mvn spring-boot:run
 ----
 
 Browse to `localhost:8080/log`. This will trigger the `ExampleController.log()` method,
-which uses a typical logger supporting Logback to write a line of text to the Stackdriver log.
+which uses a typical logger supporting Logback to write a line of text to the Stackdriver log. However,
+you will need to specify the trace ID in the `x-cloud-trace-context` header manually to see a trace ID
+label appear in Stackdriver:
+----
+curl --header "x-cloud-trace-context: [Some-Trace-ID]" localhost:8080/log
+----
 
 To see the logged lines, navigate to the https://pantheon.corp.google.com/logs/viewer[Logging section of the Cloud Console].
 Select the `Global` resource and look under the `spring.log` channel to see the
@@ -39,4 +44,4 @@ labels."appengine.googleapis.com/trace_id"="[Trace-ID-Of-Request]"
 ----
 
 Expand the log entry labels and note that `appengine.googleapis.com/trace_id` label is set to the
-same value for both log messages.
+same value for both log messages. The trace ID header when deployed to App Engine is set automatically.
