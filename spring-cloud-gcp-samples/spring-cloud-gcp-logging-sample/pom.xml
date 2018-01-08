@@ -33,11 +33,6 @@
                 <artifactId>appengine-maven-plugin</artifactId>
                 <version>1.3.2</version>
             </plugin>
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <version>9.4.8.v20171121</version>
-            </plugin>
         </plugins>
     </build>
 </project>

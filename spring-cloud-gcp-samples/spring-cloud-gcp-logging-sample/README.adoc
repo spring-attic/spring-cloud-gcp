@@ -12,7 +12,7 @@ default credentials].
 
 1. Check that the https://cloud.google.com/logging/docs/access-control[Stackdriver Logging API is enabled].
 
-== Run the Example
+== Running the Example
 Run the sample application from Maven:
 
 ----
@@ -31,8 +31,8 @@ To see the logged lines, navigate to the https://pantheon.corp.google.com/logs/v
 Select the `Global` resource and look under the `spring.log` channel to see the
 logged text.
 
-If your application is deployed to Google App Engine or Google Container Engine,
-you will instead find the logs under the deployments resource in the Stackdriver UI under the `spring.log` channel.
+If your application is deployed to Google App Engine or Google Kubernetes Engine,
+you will instead find the logs under the deployment's resource in the Stackdriver UI under the `spring.log` channel.
 You can further narrow down the log by request by using the following filtering text
 that takes advantage of the trace ID label in each logged line. For example, if deployed to App Engine
 (by using `mvn appengine:deploy` in this sample) you can use the following to filter by the trace ID:
@@ -44,4 +44,4 @@ labels."appengine.googleapis.com/trace_id"="[Trace-ID-Of-Request]"
 ----
 
 Expand the log entry labels and note that `appengine.googleapis.com/trace_id` label is set to the
-same value for both log messages. The trace ID header when deployed to App Engine is set automatically.
+same value for both log messages. The trace ID header `x-cloud-trace-context` is set automatically when deployed to App Engine.
