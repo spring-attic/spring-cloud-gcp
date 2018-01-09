@@ -38,12 +38,41 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  */
 public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 
-	private static final String X_CLOUD_TRACE = "x-cloud-trace-context";
+	public static final String X_CLOUD_TRACE = "x-cloud-trace-context";
 
-	private static final String X_B3_TRACE = "X-B3-TraceId";
+	public static final String X_B3_TRACE = "X-B3-TraceId";
 
-	private static final List<String> TRACE_HEADERS = ImmutableList.of(X_CLOUD_TRACE,
+	private static final List<String> DEFAULT_HEADERS = ImmutableList.of(X_CLOUD_TRACE,
 			X_B3_TRACE);
+
+	private final List<String> traceHeaders;
+
+	private final boolean allowOnlyOneHeader;
+
+	/**
+	 * Constructor that specifies the headers to check in what order, and if to only
+	 * expect a single header to be in the request.
+	 * @param headers the headers to check in order.
+	 * @param allowOnlyOneHeader true to allow multiple headers with trace IDs, false to
+	 * throw an exception if more than one header is found to have trace ID.
+	 */
+	public TraceIdLoggingWebMvcInterceptor(List<String> headers,
+			boolean allowOnlyOneHeader) {
+		if (headers == null) {
+			throw new IllegalArgumentException(
+					"A valid list of headers for trace IDs is required.");
+		}
+		this.traceHeaders = headers;
+		this.allowOnlyOneHeader = allowOnlyOneHeader;
+	}
+
+	/**
+	 * Default constructor allows multiple headers to have trace IDs, but prioritizes the
+	 * x-cloud-trace-context header.
+	 */
+	public TraceIdLoggingWebMvcInterceptor() {
+		this(DEFAULT_HEADERS, false);
+	}
 
 	@Override
 	public boolean preHandle(HttpServletRequest req,
@@ -70,14 +99,21 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 	 * @return The trace ID or null, if none found.
 	 */
 	public String extractTraceIdFromRequest(HttpServletRequest req) {
-		String traceId;
-		for (String header : TRACE_HEADERS) {
-			traceId = extractTraceIdFromRequestWithHeader(req, header);
-			if (traceId != null) {
-				return traceId;
+		String traceId = null;
+		for (String header : traceHeaders) {
+			String nextTraceId = extractTraceIdFromRequestWithHeader(req, header);
+			if (nextTraceId != null) {
+				if (traceId == null) {
+					traceId = nextTraceId;
+				}
+				else if (allowOnlyOneHeader) {
+					throw new IllegalStateException(
+							"The request has trace IDs under more than one header,"
+									+ " while config only expects one.");
+				}
 			}
 		}
-		return null;
+		return traceId;
 	}
 
 	private String extractTraceIdFromRequestWithHeader(HttpServletRequest req,
@@ -90,7 +126,6 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 				traceId = traceId.substring(0, slash);
 			}
 		}
-
 		return traceId;
 	}
 }

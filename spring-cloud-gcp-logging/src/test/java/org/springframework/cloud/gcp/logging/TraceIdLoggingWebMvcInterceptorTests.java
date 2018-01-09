@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.logging;
 
 import com.google.cloud.logging.TraceLoggingEnhancer;
+import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -93,6 +94,34 @@ public class TraceIdLoggingWebMvcInterceptorTests {
 		String traceId = this.interceptor.extractTraceIdFromRequest(request);
 
 		assertThat(traceId, is(TEST_TRACE_ID));
+	}
+
+	@Test
+	public void testExtractTraceIdFromRequestCustomPriority() {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader(TRACE_ID_HEADER, TEST_TRACE_ID_WITH_SPAN);
+		request.addHeader(B3_TRACE_ID_HEADER, TEST_TRACE_ID_2);
+
+		TraceIdLoggingWebMvcInterceptor customInterceptor = new TraceIdLoggingWebMvcInterceptor(
+				ImmutableList.of(B3_TRACE_ID_HEADER, TRACE_ID_HEADER), false);
+
+		String traceId = customInterceptor.extractTraceIdFromRequest(request);
+
+		assertThat(traceId, is(TEST_TRACE_ID_2));
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void testExtractTraceIdFromRequestCustomPriorityAllowOnlyOneHeader() {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader(TRACE_ID_HEADER, TEST_TRACE_ID_WITH_SPAN);
+		request.addHeader(B3_TRACE_ID_HEADER, TEST_TRACE_ID_2);
+
+		TraceIdLoggingWebMvcInterceptor customInterceptor = new TraceIdLoggingWebMvcInterceptor(
+				ImmutableList.of(B3_TRACE_ID_HEADER, TRACE_ID_HEADER), true);
+
+		String traceId = customInterceptor.extractTraceIdFromRequest(request);
+
+		assertThat(traceId, is(TEST_TRACE_ID_2));
 	}
 
 	@Test
