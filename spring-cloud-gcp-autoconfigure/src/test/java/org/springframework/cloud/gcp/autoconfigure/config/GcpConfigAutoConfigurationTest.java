@@ -44,7 +44,7 @@ public class GcpConfigAutoConfigurationTest {
 		GcpConfigProperties config = this.context.getBean(GcpConfigProperties.class);
 		assertEquals(config.getName(), null);
 		assertEquals(config.getProfile(), "default");
-		assertEquals(config.getTimeout(), 60000);
+		assertEquals(config.getTimeoutMillis(), 60000);
 		assertEquals(config.isEnabled(), true);
 	}
 
@@ -58,7 +58,7 @@ public class GcpConfigAutoConfigurationTest {
 		GcpConfigProperties config = this.context.getBean(GcpConfigProperties.class);
 		assertEquals(config.getName(), "myapp");
 		assertEquals(config.getProfile(), "prod");
-		assertEquals(config.getTimeout(), 120000);
+		assertEquals(config.getTimeoutMillis(), 120000);
 		assertFalse(config.isEnabled());
 		assertEquals(config.getProjectId(), "pariah");
 	}

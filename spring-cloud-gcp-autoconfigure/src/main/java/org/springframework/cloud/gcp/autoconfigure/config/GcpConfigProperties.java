@@ -73,7 +73,7 @@ public class GcpConfigProperties implements GcpConfigPropertiesProvider {
 		this.timeout = timeout;
 	}
 
-	public int getTimeout() {
+	public int getTimeoutMillis() {
 		return this.timeout;
 	}
 

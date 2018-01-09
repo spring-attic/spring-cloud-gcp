@@ -19,25 +19,39 @@ package org.springframework.cloud.gcp.config;
 import org.springframework.cloud.gcp.core.Credentials;
 
 /**
- * Provides the required properties for Spring Cloud GCP Cloud Config.
+ * Provides the required properties for Spring Cloud GCP Runtime Configuration.
  *
  * @author João André Martins
  */
 public interface GcpConfigPropertiesProvider {
 
 	/**
-	 *
-	 * @return
+	 * Determines if Spring Cloud GCP Runtime Configuration is enabled.
 	 */
 	boolean isEnabled();
 
+	/**
+	 * The name of the Spring Application being run.
+	 */
 	String getName();
 
+	/**
+	 * The profile running the app. For example, "prod", "dev", etc.
+	 */
 	String getProfile();
 
-	int getTimeout();
+	/**
+	 * The timeout for reaching Google Runtime Configuration API.
+	 */
+	int getTimeoutMillis();
 
+	/**
+	 * An override to the GCP project ID in the core module.
+	 */
 	String getProjectId();
 
+	/**
+	 * An override to the GCP credentials in the core module.
+	 */
 	Credentials getCredentials();
 }
