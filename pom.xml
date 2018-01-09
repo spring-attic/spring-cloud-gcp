@@ -37,10 +37,8 @@
 	</modules>
 
 	<properties>
-		<cloud-trace-java.version>0.5.0</cloud-trace-java.version>
 		<spring-cloud-context.version>1.2.3.RELEASE</spring-cloud-context.version>
 		<spring-cloud-sleuth.version>1.2.5.RELEASE</spring-cloud-sleuth.version>
-		<google-cloud-bom.version>0.32.0-alpha</google-cloud-bom.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
@@ -53,25 +51,6 @@
 				<version>${project.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.google.cloud.trace.v1</groupId>
-				<artifactId>sink</artifactId>
-				<version>${cloud-trace-java.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>io.grpc</groupId>
-						<artifactId>grpc-all</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>com.google.protobuf</groupId>
-						<artifactId>protobuf-java</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>com.google.guava</groupId>
-						<artifactId>guava</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 
 			<dependency>
@@ -92,64 +71,11 @@
 				<version>${spring-cloud-sleuth.version}</version>
 			</dependency>
 
-			<!-- spring-cloud-gcp-starter-core -->
-			<dependency>
-				<groupId>com.google.auth</groupId>
-				<artifactId>google-auth-library-oauth2-http</artifactId>
-				<version>0.7.1</version>
-				<exclusions>
-					<exclusion>
-						<groupId>com.google.guava</groupId>
-						<artifactId>guava</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<!-- spring-cloud-gcp-starter-sql -->
-			<dependency>
-				<groupId>com.google.cloud.sql</groupId>
-				<artifactId>mysql-socket-factory</artifactId>
-				<version>1.0.4</version>
-				<exclusions>
-					<exclusion>
-						<groupId>com.google.guava</groupId>
-						<artifactId>guava-jdk5</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-			<dependency>
-				<groupId>mysql</groupId>
-				<artifactId>mysql-connector-java</artifactId>
-				<version>5.1.42</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.google.cloud.sql</groupId>
-				<artifactId>postgres-socket-factory</artifactId>
-				<version>1.0.4</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.postgresql</groupId>
-				<artifactId>postgresql</artifactId>
-				<version>42.1.1</version>
-			</dependency>
-
 			<!-- spring-cloud-gcp-starter-config -->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-context</artifactId>
 				<version>${spring-cloud-context.version}</version>
-			</dependency>
-
-			<!--google-cloud-java BOM-->
-			<dependency>
-				<groupId>com.google.cloud</groupId>
-				<artifactId>google-cloud-bom</artifactId>
-				<version>${google-cloud-bom.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
