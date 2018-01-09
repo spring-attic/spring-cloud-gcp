@@ -38,12 +38,12 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  */
 public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 
-	public static final String X_CLOUD_TRACE = "x-cloud-trace-context";
+	public static final String X_CLOUD_TRACE_HEADER = "x-cloud-trace-context";
 
-	public static final String X_B3_TRACE = "X-B3-TraceId";
+	public static final String X_B3_TRACE_HEADER = "X-B3-TraceId";
 
-	private static final List<String> DEFAULT_HEADERS = ImmutableList.of(X_CLOUD_TRACE,
-			X_B3_TRACE);
+	private static final List<String> DEFAULT_HEADERS = ImmutableList.of(X_CLOUD_TRACE_HEADER,
+			X_B3_TRACE_HEADER);
 
 	private final List<String> traceHeaders;
 
