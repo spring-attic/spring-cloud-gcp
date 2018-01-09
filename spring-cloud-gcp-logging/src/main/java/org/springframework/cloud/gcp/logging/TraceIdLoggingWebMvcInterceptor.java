@@ -74,11 +74,6 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 		this(DEFAULT_HEADERS, false);
 	}
 
-	private static final String X_B3_TRACE = "X-B3-TraceId";
-
-	private static final List<String> TRACE_HEADERS = ImmutableList.of(X_CLOUD_TRACE,
-			X_B3_TRACE);
-
 	@Override
 	public boolean preHandle(HttpServletRequest req,
 			HttpServletResponse resp, Object handler) throws Exception {
@@ -105,13 +100,13 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 	 */
 	public String extractTraceIdFromRequest(HttpServletRequest req) {
 		String traceId = null;
-		for (String header : traceHeaders) {
+		for (String header : this.traceHeaders) {
 			String nextTraceId = extractTraceIdFromRequestWithHeader(req, header);
 			if (nextTraceId != null) {
 				if (traceId == null) {
 					traceId = nextTraceId;
 				}
-				else if (allowOnlyOneHeader) {
+				else if (this.allowOnlyOneHeader) {
 					throw new IllegalStateException(
 							"The request has trace IDs under more than one header,"
 									+ " while config only expects one.");
