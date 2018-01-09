@@ -125,6 +125,7 @@ public class TraceIdLoggingWebMvcInterceptorTests {
 	}
 
 	@Test
+
 	public void testExtractTraceIdFromRequest_missing() {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 

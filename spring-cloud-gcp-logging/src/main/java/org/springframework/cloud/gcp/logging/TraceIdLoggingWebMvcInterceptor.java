@@ -74,6 +74,11 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 		this(DEFAULT_HEADERS, false);
 	}
 
+	private static final String X_B3_TRACE = "X-B3-TraceId";
+
+	private static final List<String> TRACE_HEADERS = ImmutableList.of(X_CLOUD_TRACE,
+			X_B3_TRACE);
+
 	@Override
 	public boolean preHandle(HttpServletRequest req,
 			HttpServletResponse resp, Object handler) throws Exception {
