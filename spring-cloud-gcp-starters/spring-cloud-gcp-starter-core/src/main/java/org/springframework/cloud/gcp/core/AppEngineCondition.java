@@ -40,9 +40,9 @@ public class AppEngineCondition extends SpringBootCondition {
 		boolean match = !StringUtils.isEmpty(appEngineVersion) && appEngineVersion.startsWith(APPENGINE_RUNTIME_PREFIX);
 		String message = match
 				? "Your app is running on Google App Engine. " + APPENGINE_RUNTIME_PROPERTY + " property is set to "
-				+ appEngineVersion
+				+ appEngineVersion + "."
 				: "App not running on Google App Engine. Property " + APPENGINE_RUNTIME_PROPERTY + " isn't present, or"
-				+ "it doesn't start with the " + APPENGINE_RUNTIME_PREFIX + " prefix.";
+				+ " it doesn't start with the " + APPENGINE_RUNTIME_PREFIX + " prefix.";
 
 		return new ConditionOutcome(match, message);
 	}
