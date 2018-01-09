@@ -61,6 +61,8 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	private BatchingSettings batchingSettings;
 
 	/**
+	 * Default {@link DefaultPublisherFactory} constructor.
+	 *
 	 * @param projectIdProvider provides the GCP project ID
 	 */
 	public DefaultPublisherFactory(GcpProjectIdProvider projectIdProvider) {
@@ -71,38 +73,41 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	}
 
 	/**
-	 * @param executorProvider provides the executor to be used by the publisher, useful to specify
-	 *                         the number of threads to be used by each executor
+	 * Sets the provider for the executor that will be used by the publisher.
+	 *
+	 * <p>
+	 * Useful to specify the number of threads to be used by each executor.
 	 */
 	public void setExecutorProvider(ExecutorProvider executorProvider) {
 		this.executorProvider = executorProvider;
 	}
 
 	/**
-	 * @param channelProvider provides the channel to be used by the publisher, useful to specify
-	 *                        HTTP headers for the REST API calls
+	 * Sets the provider for the channel to be used by the publisher.
+	 *
+	 * <p>
+	 * Useful to specify HTTP headers for the REST API calls.
 	 */
 	public void setChannelProvider(TransportChannelProvider channelProvider) {
 		this.channelProvider = channelProvider;
 	}
 
 	/**
-	 * @param credentialsProvider provides the GCP credentials to be used by the publisher on the
-	 *                            API calls it makes
+	 * Sets the provider for the GCP credentials to be used by the publisher on every API calls it makes.
 	 */
 	public void setCredentialsProvider(CredentialsProvider credentialsProvider) {
 		this.credentialsProvider = credentialsProvider;
 	}
 
 	/**
-	 * @param retrySettings sets the retry configuration
+	 * Sets the API call retry configuration.
 	 */
 	public void setRetrySettings(RetrySettings retrySettings) {
 		this.retrySettings = retrySettings;
 	}
 
 	/**
-	 * @param batchingSettings sets the batching configuration
+	 * Sets the API call batching configuration.
 	 */
 	public void setBatchingSettings(BatchingSettings batchingSettings) {
 		this.batchingSettings = batchingSettings;
