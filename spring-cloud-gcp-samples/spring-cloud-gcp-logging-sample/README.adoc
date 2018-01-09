@@ -1,0 +1,47 @@
+= Spring Cloud GCP Logging Starter Example
+
+This sample application demonstrates using the
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[Spring Cloud GCP Logging Starter] in your code.
+
+== Setup & Configuration
+1. Create a Google Cloud Platform Project
+1. Have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and
+initialized and logged in with
+https://developers.google.com/identity/protocols/application-default-credentials[application
+default credentials].
+
+1. Check that the https://cloud.google.com/logging/docs/access-control[Stackdriver Logging API is enabled].
+
+== Running the Example
+Run the sample application from Maven:
+
+----
+mvn spring-boot:run
+----
+
+Browse to `localhost:8080/log`. This will trigger the `ExampleController.log()` method,
+which uses a typical logger supporting Logback to write a line of text to the Stackdriver log. However,
+you will need to specify the trace ID in the `x-cloud-trace-context` header manually to see a trace ID
+label appear in Stackdriver:
+----
+curl --header "x-cloud-trace-context: [Some-Trace-ID]" localhost:8080/log
+----
+
+To see the logged lines, navigate to the https://pantheon.corp.google.com/logs/viewer[Logging section of the Cloud Console].
+Select the `Global` resource and look under the `spring.log` channel to see the
+logged text.
+
+If your application is deployed to Google App Engine or Google Kubernetes Engine,
+you will instead find the logs under the deployment's resource in the Stackdriver UI under the `spring.log` channel.
+You can further narrow down the log by request by using the following filtering text
+that takes advantage of the trace ID label in each logged line. For example, if deployed to App Engine
+(by using `mvn appengine:deploy` in this sample) you can use the following to filter by the trace ID:
+
+----
+resource.type="gae_app"
+logName="projects/[Your-Project-ID]/logs/spring.log"
+labels."appengine.googleapis.com/trace_id"="[Trace-ID-Of-Request]"
+----
+
+Expand the log entry labels and note that `appengine.googleapis.com/trace_id` label is set to the
+same value for both log messages. The trace ID header `x-cloud-trace-context` is set automatically when deployed to App Engine.

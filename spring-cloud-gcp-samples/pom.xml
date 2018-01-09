@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>spring-cloud-gcp</artifactId>
+		<groupId>org.springframework.cloud</groupId>
+		<version>1.0.0.BUILD-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>spring-cloud-gcp-samples</artifactId>
+	<name>Spring Cloud GCP Code Samples</name>
+	<packaging>pom</packaging>
+
+	<properties>
+		<main.basedir>${basedir}/..</main.basedir>
+	</properties>
+
+    <modules>
+		<module>spring-cloud-gcp-config-sample</module>
+		<module>spring-cloud-gcp-trace-sample</module>
+		<module>spring-cloud-gcp-logging-sample</module>
+		<module>spring-cloud-gcp-sql-sample</module>
+		<module>spring-cloud-gcp-integration-pubsub-sample</module>
+		<module>spring-cloud-gcp-storage-resource-sample</module>
+		<module>spring-cloud-gcp-pubsub-sample</module>
+		<module>spring-cloud-gcp-data-jpa-sample</module>
+	</modules>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+</project>

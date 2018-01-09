@@ -25,6 +25,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
+import java.util.concurrent.TimeUnit;
 
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
@@ -117,6 +118,24 @@ public class GoogleStorageResourceObject implements WritableResource {
 	 */
 	public Blob getGoogleStorageObject() throws IOException {
 		return this.storage.get(getBlobId());
+	}
+
+	/**
+	 * Creates a signed URL to an object if it exists. This method will fail if this storage resource
+	 * was not created using service account credentials.
+	 * @param timeUnit the time unit used to determine how long the URL is valid.
+	 * @param timePeriods the number of periods to determine how long the URL is valid.
+	 * @return the URL if the object exists, and null if it does not.
+	 * @throws IOException
+	 */
+	public URL createSignedUrl(TimeUnit timeUnit, long timePeriods) throws IOException {
+		Blob blob = this.getGoogleStorageObject();
+		if (blob == null) {
+			return null;
+		}
+		return this.storage.signUrl(
+				BlobInfo.newBuilder(blob.getBucket(), blob.getName()).build(),
+				timePeriods, timeUnit);
 	}
 
 	private Blob createBlob() throws IOException {
