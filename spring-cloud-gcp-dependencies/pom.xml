@@ -44,6 +44,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-logging</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-integration</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -77,6 +82,11 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-trace</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-starter-logging</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
@@ -139,6 +149,14 @@
 						<artifactId>guava</artifactId>
 					</exclusion>
 				</exclusions>
+			</dependency>
+    
+			<!-- google-cloud-logging-logback is not in the google-cloud-java BOM yet -->
+			<!-- See: https://github.com/GoogleCloudPlatform/google-cloud-java/issues/2745 -->
+			<dependency>
+				<groupId>com.google.cloud</groupId>
+				<artifactId>google-cloud-logging-logback</artifactId>
+				<version>0.32.0-alpha</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
