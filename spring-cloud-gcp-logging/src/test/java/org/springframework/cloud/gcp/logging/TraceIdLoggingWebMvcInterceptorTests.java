@@ -33,9 +33,13 @@ public class TraceIdLoggingWebMvcInterceptorTests {
 
 	public static final String TEST_TRACE_ID = "105445aa7843bc8bf206b120001000";
 
+	public static final String TEST_TRACE_ID_2 = "205445aa7843bc8bf206b120001000";
+
 	public static final String TEST_TRACE_ID_WITH_SPAN = "105445aa7843bc8bf206b120001000/0;o=1";
 
 	public static final String TRACE_ID_HEADER = "X-CLOUD-TRACE-CONTEXT";
+
+	public static final String B3_TRACE_ID_HEADER = "X-B3-TraceId";
 
 	private TraceIdLoggingWebMvcInterceptor interceptor = new TraceIdLoggingWebMvcInterceptor();
 
@@ -64,6 +68,27 @@ public class TraceIdLoggingWebMvcInterceptorTests {
 	public void testExtractTraceIdFromRequest_valid() {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addHeader(TRACE_ID_HEADER, TEST_TRACE_ID_WITH_SPAN);
+
+		String traceId = this.interceptor.extractTraceIdFromRequest(request);
+
+		assertThat(traceId, is(TEST_TRACE_ID));
+	}
+
+	@Test
+	public void testExtractSecondaryTraceIdFromRequest_valid() {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader(B3_TRACE_ID_HEADER, TEST_TRACE_ID_WITH_SPAN);
+
+		String traceId = this.interceptor.extractTraceIdFromRequest(request);
+
+		assertThat(traceId, is(TEST_TRACE_ID));
+	}
+
+	@Test
+	public void testExtractTraceIdFromRequestPriority() {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader(TRACE_ID_HEADER, TEST_TRACE_ID_WITH_SPAN);
+		request.addHeader(B3_TRACE_ID_HEADER, TEST_TRACE_ID_2);
 
 		String traceId = this.interceptor.extractTraceIdFromRequest(request);
 

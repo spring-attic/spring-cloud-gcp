@@ -16,10 +16,13 @@
 
 package org.springframework.cloud.gcp.logging;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.cloud.logging.TraceLoggingEnhancer;
+import com.google.common.collect.ImmutableList;
 
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -36,6 +39,11 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 
 	private static final String X_CLOUD_TRACE = "x-cloud-trace-context";
+
+	private static final String X_B3_TRACE = "X-B3-TraceId";
+
+	private static final List<String> TRACE_HEADERS = ImmutableList.of(X_CLOUD_TRACE,
+			X_B3_TRACE);
 
 	@Override
 	public boolean preHandle(HttpServletRequest req,
@@ -62,7 +70,19 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 	 * @return The trace ID or null, if none found.
 	 */
 	public String extractTraceIdFromRequest(HttpServletRequest req) {
-		String traceId = (String) req.getHeader(X_CLOUD_TRACE);
+		String traceId;
+		for (String header : TRACE_HEADERS) {
+			traceId = extractTraceIdFromRequestWithHeader(req, header);
+			if (traceId != null) {
+				return traceId;
+			}
+		}
+		return null;
+	}
+
+	private String extractTraceIdFromRequestWithHeader(HttpServletRequest req,
+			String header) {
+		String traceId = req.getHeader(header);
 
 		if (traceId != null) {
 			int slash = traceId.indexOf('/');
