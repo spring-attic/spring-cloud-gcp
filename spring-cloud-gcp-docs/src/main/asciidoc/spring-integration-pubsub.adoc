@@ -1,0 +1,128 @@
+=== Channel Adapters for Google Cloud Pub/Sub
+
+The channel adapters for Google Cloud Pub/Sub connect your Spring
+https://docs.spring.io/spring-integration/reference/html/messaging-channels-section.html#channel[`MessageChannels`]
+to Google Cloud Pub/Sub topics and subscriptions.
+This enables messaging between different processes, applications or micro-services backed up by
+Google Cloud Pub/Sub.
+
+To use the Pub/Sub portion of Spring Integration for Spring Cloud GCP, you must also provide the
+`spring-cloud-gcp-pubsub` dependency, since it isn't pulled transitively.
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-integration</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-pubsub</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-integration'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub'
+}
+----
+
+==== Inbound channel adapter
+
+`PubSubInboundChannelAdapter` is the inbound channel adapter for GCP Pub/Sub that listens to a GCP
+Pub/Sub subscription for new messages.
+It converts new messages to an internal Spring
+https://docs.spring.io/spring-integration/reference/html/messaging-construction-chapter.html#message[`Message`]
+and then sends it to the bound output channel.
+
+To use the inbound channel adapter, a `PubSubInboundChannelAdapter` must be provided and configured
+on the user application side.
+
+[source,java]
+----
+@Bean
+public MessageChannel pubsubInputChannel() {
+    return new PublishSubscribeChannel();
+}
+
+@Bean
+public PubSubInboundChannelAdapter messageChannelAdapter(
+    @Qualifier("pubsubInputChannel") MessageChannel inputChannel,
+    SubscriberFactory subscriberFactory) {
+    PubSubInboundChannelAdapter adapter =
+        new PubSubInboundChannelAdapter(subscriberFactory, "subscriptionName");
+    adapter.setOutputChannel(inputChannel);
+    adapter.setAckMode(AckMode.MANUAL);
+
+    return adapter;
+}
+----
+
+In the example, we first specify the `MessageChannel` where the adapter is going to write incoming
+messages to.
+The `MessageChannel` implementation isn't important here.
+Depending on your use case, you might want to use a `MessageChannel` other than
+`PublishSubscribeChannel`.
+
+Then, we declare a `PubSubInboundChannelAdapter` bean.
+It requires the channel we just created and a `SubscriberFactory`, which creates `Subscriber`
+objects from the Google Cloud Java Client for Pub/Sub.
+The Spring Boot starter for GCP Pub/Sub provides a configured `SubscriberFactory`.
+
+It is also possible to set the message acknowledgement mode on the adapter, which is automatic by
+default.
+On automatic acking, a message is acked with GCP Pub/Sub if the adapter sent it to the channel and
+no exceptions were thrown.
+If a `RuntimeException` is thrown while the message is processed, then the message is nacked.
+On manual acking, the adapter attaches an `AckReplyConsumer` object to the `Message` headers, which
+users can extract using the `GcpHeaders.ACKNOWLEDGEMENT` key and use to (n)ack a message.
+
+[source,java]
+----
+@Bean
+@ServiceActivator(inputChannel = "pubsubInputChannel")
+public MessageHandler messageReceiver() {
+    return message -> {
+        LOGGER.info("Message arrived! Payload: " + message.getPayload());
+        AckReplyConsumer consumer =
+              message.getHeaders().get(GcpHeaders.ACKNOWLEDGEMENT, AckReplyConsumer.class);
+        consumer.ack();
+    };
+}
+----
+
+==== Outbound channel adapter
+
+`PubSubMessageHandler` is the outbound channel adapter for GCP Pub/Sub that listens for new messages
+on a Spring `MessageChannel`.
+It uses `PubSubTemplate` to convert new `Message` instances to the GCP Pub/Sub format and post them
+to a GCP Pub/Sub topic.
+
+To use the outbound channel adapter, a `PubSubMessageHandler` bean must be provided and configured
+on the user application side.
+
+[source,java]
+----
+@Bean
+@ServiceActivator(inputChannel = "pubsubOutputChannel")
+public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
+    return new PubSubMessageHandler(pubsubTemplate, "topicName");
+}
+----
+
+The provided `PubSubTemplate` contains all the necessary configuration to publish messages to a
+GCP Pub/Sub topic.
+
+`PubSubMessageHandler` publishes messages asynchronously by default.
+A publish timeout can be configured for synchronous publishing. If none is provided, the adapter
+waits indefinitely for a response.
+
+It is possible to set user-defined callbacks for the `publish()` call in `PubSubMessageHandler`
+through the `setPublishFutureCallback()` method.
+These are useful to process the message ID, in case of success, or the error if any was thrown.

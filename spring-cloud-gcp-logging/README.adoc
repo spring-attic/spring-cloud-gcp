@@ -1,0 +1,63 @@
+= Spring Cloud GCP Stackdriver Logging Support
+
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-logging</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-logging'
+}
+----
+
+https://cloud.google.com/logging/[Stackdriver Logging] is the managed logging service provided by Google Cloud
+Platform.
+
+This module provides support for associating a web request trace ID with the corresponding log entries. This allows
+grouping of log messages by request.
+
+It works by using the `X-Cloud-Trace-Context` HTTP header which is automatically added to HTTP requests sent to
+applications hosted on GCP services such as App Engine and GKE.
+
+`TraceIdLoggingWebMvcInterceptor` extracts the request trace ID from the `X-Cloud-Trace-Context` HTTP header and stores
+it in a thread-local of the https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-logging/src/main/java/com/google/cloud/logging/TraceLoggingEnhancer.java[`TraceLoggingEnhancer`]
+which can then be used in a logging appender to add the trace ID metadata to log messages.
+
+
+`LoggingWebMvcConfigurer` configuration class is also provided to help register the `TraceIdLoggingWebMvcInterceptor`
+in Spring MVC applications.
+
+Currently, https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-logging#add-a-stackdriver-logging-handler-to-a-logger[Java Util Logging (JUL)]
+and https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-contrib/google-cloud-logging-logback[Logback] are supported.
+
+== Logback Support
+
+For Logback, a `org/springframework/cloud/gcp/logging/logback-appender.xml` file is made available for import to make it
+easier to configure the Logback appender.
+
+Your configuration may then look something like this:
+[source, xml]
+----
+<configuration>
+  <include resource="org/springframework/cloud/gcp/logging/logback-appender.xml" />
+
+  <root level="INFO">
+    <appender-ref ref="STACKDRIVER" />
+  </root>
+</configuration>
+----
+
+`STACKDRIVER_LOG_NAME` and `STACKDRIVER_LOG_FLUSH_LEVEL` environment variables can be used to customize the
+`STACKDRIVER` appender.
+
+Also see the link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[spring-cloud-gcp-starter-logging] module.
