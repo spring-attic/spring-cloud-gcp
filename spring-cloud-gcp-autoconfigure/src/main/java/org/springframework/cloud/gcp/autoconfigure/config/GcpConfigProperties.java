@@ -18,16 +18,18 @@ package org.springframework.cloud.gcp.autoconfigure.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.cloud.gcp.config.GcpConfigPropertiesProvider;
 import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
- * Configuration for {@link GoogleConfigPropertySourceLocator}.
+ * Configuration for {@link org.springframework.cloud.gcp.config.GoogleConfigPropertySourceLocator}.
  *
  * @author Jisha Abubaker
+ * @author João André Martins
  */
 @ConfigurationProperties("spring.cloud.gcp.config")
-public class GcpConfigProperties {
+public class GcpConfigProperties implements GcpConfigPropertiesProvider {
 
 	private boolean enabled = true;
 

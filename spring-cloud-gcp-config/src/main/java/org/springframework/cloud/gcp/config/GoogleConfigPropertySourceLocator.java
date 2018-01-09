@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.config;
+package org.springframework.cloud.gcp.config;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -70,28 +70,30 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 
 	public GoogleConfigPropertySourceLocator(GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider,
-			GcpConfigProperties gcpConfigProperties) throws IOException {
-		Assert.notNull(gcpConfigProperties, "Google Config properties must not be null");
+			GcpConfigPropertiesProvider gcpConfigPropertiesProvider) throws IOException {
+		Assert.notNull(gcpConfigPropertiesProvider, "Google Config properties must not be null");
 
-		if (gcpConfigProperties.isEnabled()) {
+		if (gcpConfigPropertiesProvider.isEnabled()) {
 			Assert.notNull(credentialsProvider, "Credentials provider cannot be null");
 			Assert.notNull(projectIdProvider, "Project ID provider cannot be null");
-			this.credentials = gcpConfigProperties.getCredentials().getLocation() != null
+			org.springframework.cloud.gcp.core.Credentials configCredentials =
+					gcpConfigPropertiesProvider.getCredentials();
+			this.credentials = configCredentials != null && configCredentials.getLocation() != null
 					? GoogleCredentials.fromStream(
-					gcpConfigProperties.getCredentials().getLocation().getInputStream())
-					.createScoped(gcpConfigProperties.getCredentials().getScopes())
+							gcpConfigPropertiesProvider.getCredentials().getLocation().getInputStream())
+					.createScoped(gcpConfigPropertiesProvider.getCredentials().getScopes())
 					: credentialsProvider.getCredentials();
-			this.projectId = gcpConfigProperties.getProjectId() != null
-					? gcpConfigProperties.getProjectId()
+			this.projectId = gcpConfigPropertiesProvider.getProjectId() != null
+					? gcpConfigPropertiesProvider.getProjectId()
 					: projectIdProvider.getProjectId();
 			Assert.notNull(this.credentials, "Credentials must not be null");
 
 			Assert.notNull(this.projectId, "Project ID must not be null");
 
-			this.timeout = gcpConfigProperties.getTimeout();
-			this.name = gcpConfigProperties.getName();
-			this.profile = gcpConfigProperties.getProfile();
-			this.enabled = gcpConfigProperties.isEnabled();
+			this.timeout = gcpConfigPropertiesProvider.getTimeout();
+			this.name = gcpConfigPropertiesProvider.getName();
+			this.profile = gcpConfigPropertiesProvider.getProfile();
+			this.enabled = gcpConfigPropertiesProvider.isEnabled();
 			Assert.notNull(this.name, "Config name must not be null");
 			Assert.notNull(this.profile, "Config profile must not be null");
 		}

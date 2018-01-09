@@ -1,1 +1,1 @@
-provides: spring-cloud-gcp-autoconfigure
+provides: spring-cloud-gcp-autoconfigure, spring-cloud-gcp-config

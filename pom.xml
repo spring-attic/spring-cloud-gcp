@@ -35,7 +35,8 @@
 		<module>spring-cloud-gcp-docs</module>
 		<module>spring-cloud-gcp-samples</module>
 		<module>spring-cloud-gcp-autoconfigure</module>
-	</modules>
+        <module>spring-cloud-gcp-config</module>
+    </modules>
 
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
