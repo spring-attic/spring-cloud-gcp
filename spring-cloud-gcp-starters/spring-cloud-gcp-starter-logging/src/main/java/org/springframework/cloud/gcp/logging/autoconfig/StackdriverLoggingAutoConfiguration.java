@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gcp.logging.LoggingWebMvcConfigurer;
 import org.springframework.cloud.gcp.logging.TraceIdLoggingWebMvcInterceptor;
+import org.springframework.cloud.gcp.logging.XCloudTraceIdFromRequestExtractor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -38,6 +39,6 @@ public class StackdriverLoggingAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public TraceIdLoggingWebMvcInterceptor getLoggingWebMvcInterceptor() {
-		return new TraceIdLoggingWebMvcInterceptor();
+		return new TraceIdLoggingWebMvcInterceptor(new XCloudTraceIdFromRequestExtractor());
 	}
 }

@@ -16,14 +16,13 @@
 
 package org.springframework.cloud.gcp.logging;
 
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.cloud.logging.TraceLoggingEnhancer;
-import com.google.common.collect.ImmutableList;
 
+import org.springframework.util.Assert;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 /**
@@ -35,51 +34,33 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * trace ID metadata to log messages.
  *
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 
-	public static final String X_CLOUD_TRACE_HEADER = "x-cloud-trace-context";
+	private TraceIdFromRequestExtractor traceIdFromRequestExtractor;
 
-	public static final String X_B3_TRACE_HEADER = "X-B3-TraceId";
-
-	private static final List<String> DEFAULT_HEADERS = ImmutableList.of(X_CLOUD_TRACE_HEADER,
-			X_B3_TRACE_HEADER);
-
-	private final List<String> traceHeaders;
-
-	private final boolean allowOnlyOneHeader;
-
-	/**
-	 * Constructor that specifies the headers to check in what order, and if to only
-	 * expect a single header to be in the request.
-	 * @param headers the headers to check in order.
-	 * @param allowOnlyOneHeader true to allow multiple headers with trace IDs, false to
-	 * throw an exception if more than one header is found to have trace ID.
-	 */
-	public TraceIdLoggingWebMvcInterceptor(List<String> headers,
-			boolean allowOnlyOneHeader) {
-		if (headers == null) {
-			throw new IllegalArgumentException(
-					"A valid list of headers for trace IDs is required.");
-		}
-		this.traceHeaders = headers;
-		this.allowOnlyOneHeader = allowOnlyOneHeader;
+	public TraceIdLoggingWebMvcInterceptor(TraceIdFromRequestExtractor extractor) {
+		Assert.notNull(extractor, "A valid trace id extractor is required.");
+		this.traceIdFromRequestExtractor = extractor;
 	}
 
-	/**
-	 * Default constructor allows multiple headers to have trace IDs, but prioritizes the
-	 * x-cloud-trace-context header.
-	 */
-	public TraceIdLoggingWebMvcInterceptor() {
-		this(DEFAULT_HEADERS, false);
+	public TraceIdFromRequestExtractor getTraceIdFromRequestExtractor() {
+		return this.traceIdFromRequestExtractor;
+	}
+
+	public void setTraceIdFromRequestExtractor(
+			TraceIdFromRequestExtractor traceIdFromRequestExtractor) {
+		this.traceIdFromRequestExtractor = traceIdFromRequestExtractor;
 	}
 
 	@Override
 	public boolean preHandle(HttpServletRequest req,
 			HttpServletResponse resp, Object handler) throws Exception {
-		String traceId = extractTraceIdFromRequest(req);
+		String traceId = this.traceIdFromRequestExtractor.extractTraceIdFromRequest(req);
 		if (traceId != null) {
-			TraceLoggingEnhancer.setCurrentTraceId(extractTraceIdFromRequest(req));
+			TraceLoggingEnhancer.setCurrentTraceId(
+					this.traceIdFromRequestExtractor.extractTraceIdFromRequest(req));
 		}
 		return true;
 	}
@@ -90,42 +71,5 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 		// Note: the thread-local is currently not fully cleared, but just set to null
 		// See: https://github.com/GoogleCloudPlatform/google-cloud-java/issues/2746
 		TraceLoggingEnhancer.setCurrentTraceId(null);
-	}
-
-	/**
-	 * Extracts trace ID from the HTTP request by checking request headers.
-	 *
-	 * @param req The HTTP servlet request.
-	 * @return The trace ID or null, if none found.
-	 */
-	public String extractTraceIdFromRequest(HttpServletRequest req) {
-		String traceId = null;
-		for (String header : this.traceHeaders) {
-			String nextTraceId = extractTraceIdFromRequestWithHeader(req, header);
-			if (nextTraceId != null) {
-				if (traceId == null) {
-					traceId = nextTraceId;
-				}
-				else if (this.allowOnlyOneHeader) {
-					throw new IllegalStateException(
-							"The request has trace IDs under more than one header,"
-									+ " while config only expects one.");
-				}
-			}
-		}
-		return traceId;
-	}
-
-	private String extractTraceIdFromRequestWithHeader(HttpServletRequest req,
-			String header) {
-		String traceId = req.getHeader(header);
-
-		if (traceId != null) {
-			int slash = traceId.indexOf('/');
-			if (slash >= 0) {
-				traceId = traceId.substring(0, slash);
-			}
-		}
-		return traceId;
 	}
 }

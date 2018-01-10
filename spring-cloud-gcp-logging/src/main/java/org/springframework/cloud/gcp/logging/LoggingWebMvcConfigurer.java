@@ -36,7 +36,8 @@ public class LoggingWebMvcConfigurer extends WebMvcConfigurerAdapter {
 			this.interceptor = interceptor;
 		}
 		else {
-			this.interceptor = new TraceIdLoggingWebMvcInterceptor();
+			this.interceptor = new TraceIdLoggingWebMvcInterceptor(
+					new XCloudTraceIdFromRequestExtractor());
 		}
 	}
 
