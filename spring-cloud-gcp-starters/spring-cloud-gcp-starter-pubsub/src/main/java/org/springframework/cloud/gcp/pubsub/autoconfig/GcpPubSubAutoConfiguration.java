@@ -117,8 +117,10 @@ public class GcpPubSubAutoConfiguration {
 			SubscriberFactory subscriberFactory,
 			SubscriptionAdminSettings subscriptionAdminSettings,
 			GcpProjectIdProvider projectIdProvider) {
-		return new PubSubTemplate(publisherFactory, subscriberFactory, subscriptionAdminSettings,
-				projectIdProvider);
+		PubSubTemplate pubSubTemplate = new PubSubTemplate(publisherFactory, subscriberFactory);
+		pubSubTemplate.setProjectIdProvider(projectIdProvider);
+		pubSubTemplate.setPullSettings(subscriptionAdminSettings);
+		return pubSubTemplate;
 	}
 
 	@Bean
