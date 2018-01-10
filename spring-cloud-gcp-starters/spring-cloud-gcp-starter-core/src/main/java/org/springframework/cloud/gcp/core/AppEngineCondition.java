@@ -16,7 +16,8 @@
 
 package org.springframework.cloud.gcp.core;
 
-import org.springframework.context.annotation.Condition;
+import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
+import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.StringUtils;
@@ -26,17 +27,23 @@ import org.springframework.util.StringUtils;
  * the System properties {@value APPENGINE_RUNTIME_PROPERTY}.
  *
  * @author Ray Tsang
+ * @author João André Martins
  */
-public class AppEngineCondition implements Condition {
+public class AppEngineCondition extends SpringBootCondition {
 	public static final String APPENGINE_RUNTIME_PROPERTY = "com.google.appengine.runtime.version";
 
 	public static final String APPENGINE_RUNTIME_PREFIX = "Google App Engine/";
 
 	@Override
-	public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
+	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
 		String appEngineVersion = System.getProperty(APPENGINE_RUNTIME_PROPERTY);
-		return !StringUtils.isEmpty(appEngineVersion)
-				&& appEngineVersion.startsWith(APPENGINE_RUNTIME_PREFIX);
+		boolean match = !StringUtils.isEmpty(appEngineVersion) && appEngineVersion.startsWith(APPENGINE_RUNTIME_PREFIX);
+		String message = match
+				? "Your app is running on Google App Engine. " + APPENGINE_RUNTIME_PROPERTY + " property is set to "
+				+ appEngineVersion + "."
+				: "App not running on Google App Engine. Property " + APPENGINE_RUNTIME_PROPERTY + " isn't present, or"
+				+ " it doesn't start with the " + APPENGINE_RUNTIME_PREFIX + " prefix.";
 
+		return new ConditionOutcome(match, message);
 	}
 }
