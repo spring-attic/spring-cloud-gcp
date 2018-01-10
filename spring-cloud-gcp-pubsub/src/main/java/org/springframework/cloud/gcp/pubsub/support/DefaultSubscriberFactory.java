@@ -56,6 +56,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	private Integer parallelPullCount;
 
 	/**
+	 * Default {@link DefaultSubscriberFactory} constructor.
+	 *
 	 * @param projectIdProvider provides the GCP project ID
 	 */
 	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider) {
@@ -66,59 +68,59 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	/**
-	 * @param executorProvider provides the executor to be used by the subscriber, useful to specify
-	 *                         the number of threads to be used by each executor
+	 * Sets the provider for the subscribers' executor.
+	 *
+	 * <p>
+	 * Useful to specify the number of threads to be used by each executor.
 	 */
 	public void setExecutorProvider(ExecutorProvider executorProvider) {
 		this.executorProvider = executorProvider;
 	}
 
 	/**
-	 * @param channelProvider provides the channel to be used by the subscriber
+	 * Sets the provider for the subscribers' transport channel.
 	 */
 	public void setChannelProvider(TransportChannelProvider channelProvider) {
 		this.channelProvider = channelProvider;
 	}
 
 	/**
-	 * @param credentialsProvider provides the GCP credentials to be used by the subscriber on the
-	 *                            API calls it makes
+	 * Sets the provider for the GCP credentials to be used by the subscribers' API calls.
 	 */
 	public void setCredentialsProvider(CredentialsProvider credentialsProvider) {
 		this.credentialsProvider = credentialsProvider;
 	}
 
 	/**
-	 * @param headerProvider provides headers for the API's HTTP calls
+	 * Sets the provider for the HTTP headers to be added to the subscribers' REST API calls.
 	 */
 	public void setHeaderProvider(HeaderProvider headerProvider) {
 		this.headerProvider = headerProvider;
 	}
 
 	/**
-	 * @param systemExecutorProvider provides an executor for polling and managing lease extensions
+	 * Sets the provider for the system executor, to poll and manage lease extensions.
 	 */
 	public void setSystemExecutorProvider(ExecutorProvider systemExecutorProvider) {
 		this.systemExecutorProvider = systemExecutorProvider;
 	}
 
 	/**
-	 * @param flowControlSettings configures the flow control of the subscriber, including the
-	 *                            behaviour for when flow limits are hit
+	 * Sets the flow control for the subscribers, including the behaviour for when the flow limits are hit.
 	 */
 	public void setFlowControlSettings(FlowControlSettings flowControlSettings) {
 		this.flowControlSettings = flowControlSettings;
 	}
 
 	/**
-	 * @param maxAckDurationPeriod sets the maximum period the ack period is extended by
+	 * Sets the maximum period the ack timeout is extended by.
 	 */
 	public void setMaxAckDurationPeriod(Duration maxAckDurationPeriod) {
 		this.maxAckDurationPeriod = maxAckDurationPeriod;
 	}
 
 	/**
-	 * @param parallelPullCount sets the number of pull workers
+	 * Sets the number of pull workers.
 	 */
 	public void setParallelPullCount(Integer parallelPullCount) {
 		this.parallelPullCount = parallelPullCount;
