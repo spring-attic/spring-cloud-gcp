@@ -20,6 +20,7 @@
     <modules>
 		<module>spring-cloud-gcp-config-sample</module>
 		<module>spring-cloud-gcp-trace-sample</module>
+		<module>spring-cloud-gcp-logging-sample</module>
 		<module>spring-cloud-gcp-sql-sample</module>
 		<module>spring-cloud-gcp-integration-pubsub-sample</module>
 		<module>spring-cloud-gcp-storage-resource-sample</module>
