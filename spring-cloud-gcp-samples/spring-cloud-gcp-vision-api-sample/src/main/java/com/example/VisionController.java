@@ -16,9 +16,6 @@
 
 package com.example;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Map;
 
@@ -35,10 +32,17 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * Code sample that shows how Spring Cloud GCP can be leveraged to use Google Cloud Client Libraries.
+ *
+ * In this case, spring-cloud-gcp-starter-core autowires a {@link CredentialsProvider} object that provides the GCP
+ * credentials, required to authenticate and authorize Vision API calls.
+ *
  * @author João André Martins
  */
 @RestController
@@ -47,40 +51,59 @@ public class VisionController {
 	@Autowired
 	private CredentialsProvider credentialsProvider;
 
+	@Autowired
+	private ResourceLoader resourceLoader;
+
+	/**
+	 * This method downloads an image from a URL and sends its contents to the Vision API for label detection.
+	 *
+	 * @param imageUrl the URL of the image
+	 * @return a string with the list of labels and percentage of certainty
+	 * @throws Exception if the Vision API call produces an error
+	 */
 	@GetMapping("/vision")
-	public String uploadImage(String path) throws Exception {
-		String result = "";
+	public String uploadImage(String imageUrl) throws Exception {
+		// Copies the content of the image to memory.
+		byte[] imageBytes = StreamUtils.copyToByteArray(this.resourceLoader.getResource(imageUrl).getInputStream());
 
 		ImageAnnotatorSettings clientSettings = ImageAnnotatorSettings.newBuilder()
 				.setCredentialsProvider(this.credentialsProvider)
 				.build();
 
-		Path imagePath = Paths.get(path);
 		BatchAnnotateImagesResponse responses;
 
+		// Initializes the API client and sends the request.
 		try (ImageAnnotatorClient client = ImageAnnotatorClient.create(clientSettings)) {
-			Image image = Image.newBuilder().setContent(
-					ByteString.copyFrom(Files.readAllBytes(imagePath))).build();
+			Image image = Image.newBuilder().setContent(ByteString.copyFrom(imageBytes)).build();
+			// Sets the type of request to label detection, to detect broad sets of categories in an image.
 			Feature feature = Feature.newBuilder().setType(Feature.Type.LABEL_DETECTION).build();
 			AnnotateImageRequest request =
 					AnnotateImageRequest.newBuilder().setImage(image).addFeatures(feature).build();
 			responses = client.batchAnnotateImages(Collections.singletonList(request));
 		}
 
-		for (AnnotateImageResponse response : responses.getResponsesList()) {
+		StringBuilder responseBuilder = new StringBuilder("<table border=\"1\">");
+
+		// We're only expecting one response.
+		if (responses.getResponsesCount() > 0) {
+			AnnotateImageResponse response = responses.getResponses(0);
+
 			if (response.hasError()) {
-				result += response.getError().getMessage();
+				throw new Exception(response.getError().getMessage());
 			}
-			else {
-				for (EntityAnnotation annotation : response.getLabelAnnotationsList()) {
-					for (Map.Entry<Descriptors.FieldDescriptor, Object> entry :
-							annotation.getAllFields().entrySet()) {
-						result += entry.getKey().getName() + " " + entry.getValue().toString() + "<br/>";
-					}
+
+			for (EntityAnnotation annotation : response.getLabelAnnotationsList()) {
+				for (Map.Entry<Descriptors.FieldDescriptor, Object> entry : annotation.getAllFields().entrySet()) {
+					responseBuilder.append("<tr><td>")
+							.append(entry.getKey().getName())
+							.append("</td><td>")
+							.append(entry.getValue().toString())
+							.append("</td></tr>");
 				}
 			}
 		}
 
-		return result;
+		responseBuilder.append("</table>");
+		return responseBuilder.toString();
 	}
 }

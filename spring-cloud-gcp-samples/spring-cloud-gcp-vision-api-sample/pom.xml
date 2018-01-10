@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>spring-cloud-gcp-vision-api-sample</artifactId>
+    <name>Spring Cloud GCP Vision API Sample</name>
 
     <dependencies>
         <dependency>
