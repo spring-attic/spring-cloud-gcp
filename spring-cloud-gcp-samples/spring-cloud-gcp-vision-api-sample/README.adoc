@@ -26,10 +26,9 @@ don't have one already.
   +
   e.g., `spring.cloud.gcp.credentials.location=file:/path/to/creds.json`
 
-4. Run the `./mvn spring-boot:run` command from the same directory as this sample's `pom.xml` file.
+4. Run the `mvn spring-boot:run` command from the same directory as this sample's `pom.xml` file.
 
-5. Go to http://localhost:8080 in your browser, paste the local file system path of an image file and
-press the `Submit` button.
+5. Go to http://localhost:8080 in your browser, paste a URL to an image and press the `Submit` button.
 
 6. You will see a readable version of the Google Cloud Vision API response, which contains the words
 that Google Cloud Vision attributed to your image, as well as a percentage of certainty.

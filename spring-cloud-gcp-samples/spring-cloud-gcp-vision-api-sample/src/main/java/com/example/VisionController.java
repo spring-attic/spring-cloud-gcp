@@ -17,7 +17,6 @@
 package com.example;
 
 import java.util.Collections;
-import java.util.Map;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.vision.v1.AnnotateImageRequest;
@@ -29,7 +28,6 @@ import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.cloud.vision.v1.ImageAnnotatorSettings;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Descriptors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
@@ -84,8 +82,10 @@ public class VisionController {
 
 		StringBuilder responseBuilder = new StringBuilder("<table border=\"1\">");
 
+		responseBuilder.append("<tr><th>description</th><th>score</th></tr>");
+
 		// We're only expecting one response.
-		if (responses.getResponsesCount() > 0) {
+		if (responses.getResponsesCount() == 1) {
 			AnnotateImageResponse response = responses.getResponses(0);
 
 			if (response.hasError()) {
@@ -93,17 +93,18 @@ public class VisionController {
 			}
 
 			for (EntityAnnotation annotation : response.getLabelAnnotationsList()) {
-				for (Map.Entry<Descriptors.FieldDescriptor, Object> entry : annotation.getAllFields().entrySet()) {
-					responseBuilder.append("<tr><td>")
-							.append(entry.getKey().getName())
-							.append("</td><td>")
-							.append(entry.getValue().toString())
-							.append("</td></tr>");
-				}
+				responseBuilder.append("<tr><td>")
+						.append(annotation.getDescription())
+						.append("</td><td>")
+						.append(annotation.getScore())
+						.append("</td></tr>");
 			}
 		}
 
 		responseBuilder.append("</table>");
+
+		responseBuilder.append("<p><img src='" + imageUrl + "'/></p>");
+
 		return responseBuilder.toString();
 	}
 }
