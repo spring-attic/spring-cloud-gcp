@@ -25,10 +25,13 @@ import com.google.pubsub.v1.PullRequest;
  * Generates {@link Subscriber} objects.
  *
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public interface SubscriberFactory {
 
 	Subscriber getSubscriber(String subscriptionName, MessageReceiver receiver);
 
 	PullRequest getPullRequest(String subscriptionName, Integer maxMessages, Boolean returnImmediately);
+
+	SubscriptionAdminSettings getSubscriptionAdminSettings();
 }

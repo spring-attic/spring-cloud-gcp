@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -36,10 +35,8 @@ import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
 import com.google.pubsub.v1.ReceivedMessage;
-import com.google.pubsub.v1.SubscriptionName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.threeten.bp.Duration;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -72,6 +69,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  *
  * @author Vinicius Carvalho
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
@@ -80,11 +78,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	private final PublisherFactory publisherFactory;
 
 	private final SubscriberFactory subscriberFactory;
-
-	/**
-	 * Contains the retry settings of the synchronous pull client.
-	 */
-	private SubscriptionAdminSettings subscriptionAdminSettings;
 
 	/**
 	 * Default {@link PubSubTemplate} constructor.
@@ -174,9 +167,12 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 */
 	private List<PubsubMessage> pull(PullRequest pullRequest) {
 		Assert.notNull(pullRequest, "The pull request cannot be null.");
+		Assert.notNull(subscriberFactory.getSubscriptionAdminSettings(),
+				"The SubscriptionAdminSettings cannot be null.");
 
 		try {
-			try (SubscriberStub subscriber = GrpcSubscriberStub.create(this.subscriptionAdminSettings)) {
+			try (SubscriberStub subscriber = GrpcSubscriberStub.create(
+					subscriberFactory.getSubscriptionAdminSettings())) {
 				PullResponse pullResponse =	subscriber.pullCallable().call(pullRequest);
 
 				// Ack received messages.
@@ -219,13 +215,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-	}
-
-	public void setPullTimeoutMillis(long pullTimeoutMillis) throws IOException {
-		SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder = SubscriptionAdminSettings.newBuilder();
-		SubscriptionAdminSettings.newBuilder().pullSettings()
-				.setSimpleTimeoutNoRetries(Duration.ofSeconds(pullTimeoutMillis));
-		this.subscriptionAdminSettings = subscriptionAdminSettingsBuilder.build();
 	}
 
 	public PublisherFactory getPublisherFactory() {

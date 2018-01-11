@@ -27,12 +27,16 @@ import com.google.pubsub.v1.SubscriptionName;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.Assert;
+import org.threeten.bp.Duration;
+
+import java.io.IOException;
 
 /**
  *
  * The default {@link SubscriberFactory} implementation.
  *
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public class DefaultSubscriberFactory implements SubscriberFactory {
 
@@ -70,7 +74,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 				.build();
 	}
 
-	@Override public PullRequest getPullRequest(String subscriptionName, Integer maxMessages,
+	@Override
+	public PullRequest getPullRequest(String subscriptionName, Integer maxMessages,
 			Boolean returnImmediately) {
 		PullRequest.Builder pullRequestBuilder =
 				PullRequest.newBuilder().setSubscriptionWithSubscriptionName(
@@ -85,5 +90,15 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 		}
 
 		return pullRequestBuilder.build();
+	}
+
+	@Override
+	public SubscriptionAdminSettings getSubscriptionAdminSettings() {
+		try {
+			return SubscriptionAdminSettings.newBuilder().build();
+		}
+		catch (IOException e) {
+			throw new RuntimeException("Error creating default SubscriptionAdminSettings", e);
+		}
 	}
 }
