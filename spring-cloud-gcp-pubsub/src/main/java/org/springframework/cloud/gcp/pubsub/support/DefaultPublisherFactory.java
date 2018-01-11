@@ -73,41 +73,37 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	}
 
 	/**
-	 * Sets the provider for the executor that will be used by the publisher.
-	 *
-	 * <p>
-	 * Useful to specify the number of threads to be used by each executor.
+	 * Set the provider for the executor that will be used by the publisher. Useful to specify the number of threads to
+	 * be used by each executor.
 	 */
 	public void setExecutorProvider(ExecutorProvider executorProvider) {
 		this.executorProvider = executorProvider;
 	}
 
 	/**
-	 * Sets the provider for the channel to be used by the publisher.
-	 *
-	 * <p>
-	 * Useful to specify HTTP headers for the REST API calls.
+	 * Set the provider for the channel to be used by the publisher. Useful to specify HTTP headers for the REST API
+	 * calls.
 	 */
 	public void setChannelProvider(TransportChannelProvider channelProvider) {
 		this.channelProvider = channelProvider;
 	}
 
 	/**
-	 * Sets the provider for the GCP credentials to be used by the publisher on every API calls it makes.
+	 * Set the provider for the GCP credentials to be used by the publisher on every API calls it makes.
 	 */
 	public void setCredentialsProvider(CredentialsProvider credentialsProvider) {
 		this.credentialsProvider = credentialsProvider;
 	}
 
 	/**
-	 * Sets the API call retry configuration.
+	 * Set the API call retry configuration.
 	 */
 	public void setRetrySettings(RetrySettings retrySettings) {
 		this.retrySettings = retrySettings;
 	}
 
 	/**
-	 * Sets the API call batching configuration.
+	 * Set the API call batching configuration.
 	 */
 	public void setBatchingSettings(BatchingSettings batchingSettings) {
 		this.batchingSettings = batchingSettings;

@@ -68,59 +68,57 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	/**
-	 * Sets the provider for the subscribers' executor.
-	 *
-	 * <p>
-	 * Useful to specify the number of threads to be used by each executor.
+	 * Set the provider for the subscribers' executor. Useful to specify the number of threads to be used by each
+	 * executor.
 	 */
 	public void setExecutorProvider(ExecutorProvider executorProvider) {
 		this.executorProvider = executorProvider;
 	}
 
 	/**
-	 * Sets the provider for the subscribers' transport channel.
+	 * Set the provider for the subscribers' transport channel.
 	 */
 	public void setChannelProvider(TransportChannelProvider channelProvider) {
 		this.channelProvider = channelProvider;
 	}
 
 	/**
-	 * Sets the provider for the GCP credentials to be used by the subscribers' API calls.
+	 * Set the provider for the GCP credentials to be used by the subscribers' API calls.
 	 */
 	public void setCredentialsProvider(CredentialsProvider credentialsProvider) {
 		this.credentialsProvider = credentialsProvider;
 	}
 
 	/**
-	 * Sets the provider for the HTTP headers to be added to the subscribers' REST API calls.
+	 * Set the provider for the HTTP headers to be added to the subscribers' REST API calls.
 	 */
 	public void setHeaderProvider(HeaderProvider headerProvider) {
 		this.headerProvider = headerProvider;
 	}
 
 	/**
-	 * Sets the provider for the system executor, to poll and manage lease extensions.
+	 * Set the provider for the system executor, to poll and manage lease extensions.
 	 */
 	public void setSystemExecutorProvider(ExecutorProvider systemExecutorProvider) {
 		this.systemExecutorProvider = systemExecutorProvider;
 	}
 
 	/**
-	 * Sets the flow control for the subscribers, including the behaviour for when the flow limits are hit.
+	 * Set the flow control for the subscribers, including the behaviour for when the flow limits are hit.
 	 */
 	public void setFlowControlSettings(FlowControlSettings flowControlSettings) {
 		this.flowControlSettings = flowControlSettings;
 	}
 
 	/**
-	 * Sets the maximum period the ack timeout is extended by.
+	 * Set the maximum period the ack timeout is extended by.
 	 */
 	public void setMaxAckDurationPeriod(Duration maxAckDurationPeriod) {
 		this.maxAckDurationPeriod = maxAckDurationPeriod;
 	}
 
 	/**
-	 * Sets the number of pull workers.
+	 * Set the number of pull workers.
 	 */
 	public void setParallelPullCount(Integer parallelPullCount) {
 		this.parallelPullCount = parallelPullCount;
