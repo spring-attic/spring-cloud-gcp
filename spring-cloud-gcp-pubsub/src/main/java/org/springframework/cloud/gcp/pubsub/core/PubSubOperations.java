@@ -24,7 +24,6 @@ import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
-import com.google.pubsub.v1.PullRequest;
 
 import org.springframework.util.concurrent.ListenableFuture;
 

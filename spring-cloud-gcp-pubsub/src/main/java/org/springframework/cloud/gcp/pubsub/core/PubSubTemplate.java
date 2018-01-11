@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,6 @@ import java.util.stream.Collectors;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
-import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
@@ -245,12 +245,11 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		this.projectIdProvider = projectIdProvider;
 	}
 
-	public void setPullTimeoutMillis(Integer pullTimeoutMillis) {
-		this.subscriptionAdminSettings = SubscriptionAdminSettings.newBuilder()
-				.pullSettings()
-				.setRetrySettings(RetrySettings.newBuilder().setTotalTimeout(
-						Duration.ofMillis(pullTimeoutMillis.longValue())).build())
-				.build();
+	public void setPullTimeoutMillis(long pullTimeoutMillis) throws IOException {
+		SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder = SubscriptionAdminSettings.newBuilder();
+		SubscriptionAdminSettings.newBuilder().pullSettings()
+				.setSimpleTimeoutNoRetries(Duration.ofSeconds(pullTimeoutMillis));
+		this.subscriptionAdminSettings = subscriptionAdminSettingsBuilder.build();
 	}
 
 	public PublisherFactory getPublisherFactory() {
