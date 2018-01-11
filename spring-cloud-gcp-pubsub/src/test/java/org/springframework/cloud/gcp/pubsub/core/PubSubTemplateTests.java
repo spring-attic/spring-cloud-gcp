@@ -73,14 +73,14 @@ public class PubSubTemplateTests {
 	@Before
 	public void setUp() {
 		this.pubSubTemplate = new PubSubTemplate(this.mockPublisherFactory,
-				this.mockSubscriberFactory, this.subscriptionAdminSettings, () -> "tomahawk");
+				this.mockSubscriberFactory);
 		when(this.mockPublisherFactory.getPublisher("testTopic"))
 				.thenReturn(this.mockPublisher);
 		this.settableApiFuture = SettableApiFuture.create();
 		when(this.mockPublisher.publish(isA(PubsubMessage.class)))
 				.thenReturn(this.settableApiFuture);
 
-		when(this.mockSubscriberFactory.getSubscriber(
+		when(this.mockSubscriberFactory.createSubscriber(
 				eq("testSubscription"), isA(MessageReceiver.class)))
 				.thenReturn(this.mockSubscriber);
 		when(this.mockSubscriber.startAsync()).thenReturn(mock(ApiService.class));

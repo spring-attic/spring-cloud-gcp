@@ -116,10 +116,7 @@ public class GcpPubSubAutoConfiguration {
 	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory,
 			GcpProjectIdProvider projectIdProvider) {
-		PubSubTemplate pubSubTemplate = new PubSubTemplate(publisherFactory, subscriberFactory);
-		pubSubTemplate.setProjectIdProvider(projectIdProvider);
-		pubSubTemplate.setPullTimeoutMillis(gcpPubSubProperties.getPullTimeoutMillis());
-		return pubSubTemplate;
+		return new PubSubTemplate(publisherFactory, subscriberFactory);
 	}
 
 	@Bean
@@ -131,7 +128,8 @@ public class GcpPubSubAutoConfiguration {
 				this.finalProjectIdProvider,
 				executorProvider,
 				channelProvider,
-				this.finalCredentialsProvider);
+				this.finalCredentialsProvider,
+				this.gcpPubSubProperties.getPullSimpleTimeoutNoRetriesMillis());
 	}
 
 	@Bean

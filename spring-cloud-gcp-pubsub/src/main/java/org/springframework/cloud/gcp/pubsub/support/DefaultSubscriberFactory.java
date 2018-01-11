@@ -16,20 +16,23 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import java.io.IOException;
+
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
+import com.google.cloud.pubsub.v1.stub.GrpcSubscriberStub;
+import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.SubscriptionName;
 
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.util.Assert;
 import org.threeten.bp.Duration;
 
-import java.io.IOException;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.util.Assert;
 
 /**
  *
@@ -48,10 +51,13 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	private final CredentialsProvider credentialsProvider;
 
+	private final Long pullSimpleTimeoutNoRetriesMillis;
+
 	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider,
 			ExecutorProvider executorProvider,
 			TransportChannelProvider channelProvider,
-			CredentialsProvider credentialsProvider) {
+			CredentialsProvider credentialsProvider,
+			Long pullSimpleTimeoutNoRetriesMillis) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
 		Assert.notNull(executorProvider, "The executor provider can't be null.");
 		Assert.notNull(channelProvider, "The channel provider can't be null.");
@@ -62,10 +68,11 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 		this.executorProvider = executorProvider;
 		this.channelProvider = channelProvider;
 		this.credentialsProvider = credentialsProvider;
+		this.pullSimpleTimeoutNoRetriesMillis = pullSimpleTimeoutNoRetriesMillis;
 	}
 
 	@Override
-	public Subscriber getSubscriber(String subscriptionName, MessageReceiver receiver) {
+	public Subscriber createSubscriber(String subscriptionName, MessageReceiver receiver) {
 		return Subscriber.newBuilder(
 				SubscriptionName.of(this.projectId, subscriptionName), receiver)
 				.setChannelProvider(this.channelProvider)
@@ -75,7 +82,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	@Override
-	public PullRequest getPullRequest(String subscriptionName, Integer maxMessages,
+	public PullRequest createPullRequest(String subscriptionName, Integer maxMessages,
 			Boolean returnImmediately) {
 		PullRequest.Builder pullRequestBuilder =
 				PullRequest.newBuilder().setSubscriptionWithSubscriptionName(
@@ -93,9 +100,15 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	@Override
-	public SubscriptionAdminSettings getSubscriptionAdminSettings() {
+	public SubscriberStub getSubscriberStub() {
 		try {
-			return SubscriptionAdminSettings.newBuilder().build();
+			SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder = SubscriptionAdminSettings.newBuilder();
+			if (this.pullSimpleTimeoutNoRetriesMillis != null) {
+				subscriptionAdminSettingsBuilder.pullSettings()
+						.setSimpleTimeoutNoRetries(Duration.ofSeconds(this.pullSimpleTimeoutNoRetriesMillis));
+			}
+
+			return GrpcSubscriberStub.create(subscriptionAdminSettingsBuilder.build());
 		}
 		catch (IOException e) {
 			throw new RuntimeException("Error creating default SubscriptionAdminSettings", e);

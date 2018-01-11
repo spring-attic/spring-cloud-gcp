@@ -26,8 +26,6 @@ import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
-import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
-import com.google.cloud.pubsub.v1.stub.GrpcSubscriberStub;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.AcknowledgeRequest;
@@ -39,7 +37,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.util.Assert;
@@ -55,17 +52,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  *
  * <p>
  * This class also allows for synchronous message pulling from a subscription through the {@code pull()} and
- * {@code pullNext()} methods. In order for synchronous pulling to work, a {@link GcpProjectIdProvider} object must be
- * provided through the available setter method. For example:
- *
- * <pre>
- * <code>
- *     @Autowired PubSubTemplate pubSubTemplate;
- *
- *     pubSubTemplate.setProjectIdProvider(() -> "myGcpProjectId");
- *     pubSubTemplate.pull(PullRequest.newBuilder().setSubscription("my subscription").build());
- * </code>
- * </pre>
+ * {@code pullNext()} methods.
  *
  * @author Vinicius Carvalho
  * @author João André Martins
@@ -152,7 +139,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	@Override
 	public Subscriber subscribe(String subscription, MessageReceiver messageHandler) {
-		Subscriber subscriber = this.subscriberFactory.getSubscriber(subscription, messageHandler);
+		Subscriber subscriber = this.subscriberFactory.createSubscriber(subscription, messageHandler);
 		subscriber.startAsync();
 		return subscriber;
 	}
@@ -167,33 +154,31 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 */
 	private List<PubsubMessage> pull(PullRequest pullRequest) {
 		Assert.notNull(pullRequest, "The pull request cannot be null.");
-		Assert.notNull(subscriberFactory.getSubscriptionAdminSettings(),
-				"The SubscriptionAdminSettings cannot be null.");
+		Assert.notNull(this.subscriberFactory.getSubscriberStub(),
+				"The SubscriberStub cannot be null.");
 
 		try {
-			try (SubscriberStub subscriber = GrpcSubscriberStub.create(
-					subscriberFactory.getSubscriptionAdminSettings())) {
-				PullResponse pullResponse =	subscriber.pullCallable().call(pullRequest);
+			SubscriberStub subscriber = this.subscriberFactory.getSubscriberStub();
+			PullResponse pullResponse =	subscriber.pullCallable().call(pullRequest);
 
-				// Ack received messages.
-				if (pullResponse.getReceivedMessagesCount() > 0) {
-					List<String> ackIds = pullResponse.getReceivedMessagesList().stream()
-							.map(ReceivedMessage::getAckId)
-							.collect(Collectors.toList());
-
-					AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
-							.setSubscriptionWithSubscriptionName(
-									pullRequest.getSubscriptionAsSubscriptionName())
-							.addAllAckIds(ackIds)
-							.build();
-
-					subscriber.acknowledgeCallable().call(acknowledgeRequest);
-				}
-
-				return pullResponse.getReceivedMessagesList().stream()
-						.map(ReceivedMessage::getMessage)
+			// Ack received messages.
+			if (pullResponse.getReceivedMessagesCount() > 0) {
+				List<String> ackIds = pullResponse.getReceivedMessagesList().stream()
+						.map(ReceivedMessage::getAckId)
 						.collect(Collectors.toList());
+
+				AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
+						.setSubscriptionWithSubscriptionName(
+								pullRequest.getSubscriptionAsSubscriptionName())
+						.addAllAckIds(ackIds)
+						.build();
+
+				subscriber.acknowledgeCallable().call(acknowledgeRequest);
 			}
+
+			return pullResponse.getReceivedMessagesList().stream()
+					.map(ReceivedMessage::getMessage)
+					.collect(Collectors.toList());
 		}
 		catch (Exception ioe) {
 			throw new PubSubException("Error pulling messages from subscription "
@@ -203,7 +188,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	@Override
 	public List<PubsubMessage> pull(String subscription, Integer maxMessages, Boolean returnImmediately) {
-		return pull(subscriberFactory.getPullRequest(subscription, maxMessages, returnImmediately));
+		return pull(this.subscriberFactory.createPullRequest(subscription, maxMessages, returnImmediately));
 	}
 
 	@Override
