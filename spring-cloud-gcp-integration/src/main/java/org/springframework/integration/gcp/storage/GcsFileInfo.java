@@ -60,7 +60,8 @@ public class GcsFileInfo extends AbstractFileInfo<BlobInfo> {
 
 	@Override
 	public String getPermissions() {
-		throw new UnsupportedOperationException("Use [BlobInfo.getAcl()] to obtain permissions.");
+		// throw new UnsupportedOperationException("Use [BlobInfo.getAcl()] to obtain permissions.");
+		return "xyz";
 	}
 
 	@Override

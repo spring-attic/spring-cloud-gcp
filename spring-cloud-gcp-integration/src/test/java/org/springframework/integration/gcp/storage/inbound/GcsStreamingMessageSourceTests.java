@@ -16,7 +16,6 @@
 
 package org.springframework.integration.gcp.storage.inbound;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -61,7 +60,7 @@ public class GcsStreamingMessageSourceTests {
 	private PollableChannel gcsChannel;
 
 	@Test
-	public void testInboundStreamingChannelAdater() throws IOException {
+	public void testInboundStreamingChannelAdapter() {
 		Message<?> message = this.gcsChannel.receive(5000);
 
 		assertThat(message).isNotNull();
