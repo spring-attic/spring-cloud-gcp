@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.pubsub.support;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
+import com.google.pubsub.v1.PullRequest;
 
 /**
  * Generates {@link Subscriber} objects.
@@ -27,4 +29,6 @@ import com.google.cloud.pubsub.v1.Subscriber;
 public interface SubscriberFactory {
 
 	Subscriber getSubscriber(String subscriptionName, MessageReceiver receiver);
+
+	PullRequest getPullRequest(String subscriptionName, Integer maxMessages, Boolean returnImmediately);
 }

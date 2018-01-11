@@ -81,8 +81,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private final SubscriberFactory subscriberFactory;
 
-	private GcpProjectIdProvider projectIdProvider;
-
 	/**
 	 * Contains the retry settings of the synchronous pull client.
 	 */
@@ -209,22 +207,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	@Override
 	public List<PubsubMessage> pull(String subscription, Integer maxMessages, Boolean returnImmediately) {
-		Assert.notNull(this.projectIdProvider, "The project ID provider can't be null. Specify a project ID"
-				+ " first with the PubSubTemplate.setProjectIdProvider() method.");
-
-		PullRequest.Builder pullRequestBuilder =
-				PullRequest.newBuilder().setSubscriptionWithSubscriptionName(
-						SubscriptionName.of(this.projectIdProvider.getProjectId(), subscription));
-
-		if (maxMessages != null) {
-			pullRequestBuilder.setMaxMessages(maxMessages);
-		}
-
-		if (returnImmediately != null) {
-			pullRequestBuilder.setReturnImmediately(returnImmediately);
-		}
-
-		return pull(pullRequestBuilder.build());
+		return pull(subscriberFactory.getPullRequest(subscription, maxMessages, returnImmediately));
 	}
 
 	@Override
@@ -236,13 +219,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-	}
-
-	/**
-	 * Sets the GCP project ID provider for synchronous pulls only.
-	 */
-	public void setProjectIdProvider(GcpProjectIdProvider projectIdProvider) {
-		this.projectIdProvider = projectIdProvider;
 	}
 
 	public void setPullTimeoutMillis(long pullTimeoutMillis) throws IOException {

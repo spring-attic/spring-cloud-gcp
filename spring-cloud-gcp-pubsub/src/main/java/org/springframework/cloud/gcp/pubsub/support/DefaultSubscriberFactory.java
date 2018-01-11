@@ -21,6 +21,8 @@ import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
+import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.SubscriptionName;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -66,5 +68,22 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 				.setExecutorProvider(this.executorProvider)
 				.setCredentialsProvider(this.credentialsProvider)
 				.build();
+	}
+
+	@Override public PullRequest getPullRequest(String subscriptionName, Integer maxMessages,
+			Boolean returnImmediately) {
+		PullRequest.Builder pullRequestBuilder =
+				PullRequest.newBuilder().setSubscriptionWithSubscriptionName(
+						SubscriptionName.of(this.projectId, subscriptionName));
+
+		if (maxMessages != null) {
+			pullRequestBuilder.setMaxMessages(maxMessages);
+		}
+
+		if (returnImmediately != null) {
+			pullRequestBuilder.setReturnImmediately(returnImmediately);
+		}
+
+		return pullRequestBuilder.build();
 	}
 }
