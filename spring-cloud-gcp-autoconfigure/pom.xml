@@ -33,5 +33,9 @@
             <artifactId>spring-cloud-gcp-config</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+        </dependency>
     </dependencies>
 </project>
