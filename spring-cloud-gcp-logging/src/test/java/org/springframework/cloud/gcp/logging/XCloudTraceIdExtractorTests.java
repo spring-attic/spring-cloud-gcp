@@ -29,7 +29,7 @@ import static org.junit.Assert.assertThat;
  * @author Chengyuan Zhao
  */
 
-public class XCloudTraceIdFromRequestExtractorTest {
+public class XCloudTraceIdExtractorTests {
 
 	private static final String TEST_TRACE_ID = "105445aa7843bc8bf206b120001000";
 
@@ -37,7 +37,7 @@ public class XCloudTraceIdFromRequestExtractorTest {
 
 	private static final String TRACE_ID_HEADER = "X-CLOUD-TRACE-CONTEXT";
 
-	private XCloudTraceIdFromRequestExtractor extractor = new XCloudTraceIdFromRequestExtractor();
+	private XCloudTraceIdExtractor extractor = new XCloudTraceIdExtractor();
 
 	@Test
 	public void testExtractTraceIdFromRequest_valid() {

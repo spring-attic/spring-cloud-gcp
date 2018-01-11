@@ -20,6 +20,8 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.common.collect.ImmutableList;
+
 import org.springframework.util.Assert;
 
 /**
@@ -28,30 +30,24 @@ import org.springframework.util.Assert;
  *
  * @author Chengyuan Zhao
  */
-public class PrioritizedMultipleHeaderTraceIdFromRequestExtractor
-		implements TraceIdFromRequestExtractor {
+public class CompositeHeaderTraceIdExtractor implements TraceIdExtractor {
 
-	private List<TraceIdFromRequestExtractor> subExtractors;
+	private final List<TraceIdExtractor> extractors;
 
-	public PrioritizedMultipleHeaderTraceIdFromRequestExtractor(
-			List<TraceIdFromRequestExtractor> subExtractors) {
-		Assert.notNull(subExtractors, "A valid list of extractors is required.");
+	public CompositeHeaderTraceIdExtractor(List<TraceIdExtractor> extractors) {
+		Assert.notNull(extractors, "A valid list of extractors is required.");
 
-		this.subExtractors = subExtractors;
+		this.extractors = ImmutableList.copyOf(extractors);
 	}
 
-	public List<TraceIdFromRequestExtractor> getSubExtractors() {
-		return this.subExtractors;
-	}
-
-	public void setSubExtractors(List<TraceIdFromRequestExtractor> subExtractors) {
-		this.subExtractors = subExtractors;
+	public List<TraceIdExtractor> getExtractors() {
+		return this.extractors;
 	}
 
 	@Override
 	public String extractTraceIdFromRequest(HttpServletRequest req) {
 		String traceId;
-		for (TraceIdFromRequestExtractor extractor : getSubExtractors()) {
+		for (TraceIdExtractor extractor : getExtractors()) {
 			traceId = extractor.extractTraceIdFromRequest(req);
 			if (traceId != null) {
 				return traceId;

@@ -29,7 +29,7 @@ import static org.junit.Assert.assertThat;
  * @author Chengyuan Zhao
  */
 
-public class PriorityMultipleHeaderTraceIdFromRequestExtractorTest {
+public class CompositeHeaderTraceIdExtractorTest {
 
 	private static final String TEST_TRACE_ID = "105445aa7843bc8bf206b120001000";
 
@@ -41,10 +41,10 @@ public class PriorityMultipleHeaderTraceIdFromRequestExtractorTest {
 
 	private static final String B3_TRACE_ID_HEADER = "X-B3-TraceId";
 
-	private PrioritizedMultipleHeaderTraceIdFromRequestExtractor extractor =
-			new PrioritizedMultipleHeaderTraceIdFromRequestExtractor(
-			ImmutableList.of(new XCloudTraceIdFromRequestExtractor(),
-					new ZipkinTraceIdFromRequestExtractor()));
+	private CompositeHeaderTraceIdExtractor extractor =
+			new CompositeHeaderTraceIdExtractor(
+			ImmutableList.of(new XCloudTraceIdExtractor(),
+					new ZipkinTraceIdExtractor()));
 
 	@Test
 	public void testExtractTraceIdFromRequestPriority() {

@@ -38,29 +38,29 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  */
 public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 
-	private TraceIdFromRequestExtractor traceIdFromRequestExtractor;
+	private TraceIdExtractor traceIdExtractor;
 
-	public TraceIdLoggingWebMvcInterceptor(TraceIdFromRequestExtractor extractor) {
+	public TraceIdLoggingWebMvcInterceptor(TraceIdExtractor extractor) {
 		Assert.notNull(extractor, "A valid trace id extractor is required.");
-		this.traceIdFromRequestExtractor = extractor;
+		this.traceIdExtractor = extractor;
 	}
 
-	public TraceIdFromRequestExtractor getTraceIdFromRequestExtractor() {
-		return this.traceIdFromRequestExtractor;
+	public TraceIdExtractor getTraceIdExtractor() {
+		return this.traceIdExtractor;
 	}
 
-	public void setTraceIdFromRequestExtractor(
-			TraceIdFromRequestExtractor traceIdFromRequestExtractor) {
-		this.traceIdFromRequestExtractor = traceIdFromRequestExtractor;
+	public void setTraceIdExtractor(
+			TraceIdExtractor traceIdExtractor) {
+		this.traceIdExtractor = traceIdExtractor;
 	}
 
 	@Override
 	public boolean preHandle(HttpServletRequest req,
 			HttpServletResponse resp, Object handler) throws Exception {
-		String traceId = this.traceIdFromRequestExtractor.extractTraceIdFromRequest(req);
+		String traceId = this.traceIdExtractor.extractTraceIdFromRequest(req);
 		if (traceId != null) {
 			TraceLoggingEnhancer.setCurrentTraceId(
-					this.traceIdFromRequestExtractor.extractTraceIdFromRequest(req));
+					this.traceIdExtractor.extractTraceIdFromRequest(req));
 		}
 		return true;
 	}

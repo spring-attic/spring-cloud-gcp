@@ -38,7 +38,7 @@ public class TraceIdLoggingWebMvcInterceptorTests {
 	private static final String TRACE_ID_HEADER = "X-CLOUD-TRACE-CONTEXT";
 
 	private TraceIdLoggingWebMvcInterceptor interceptor =
-			new TraceIdLoggingWebMvcInterceptor(new XCloudTraceIdFromRequestExtractor());
+			new TraceIdLoggingWebMvcInterceptor(new XCloudTraceIdExtractor());
 
 	@Test
 	public void testPreHandle() throws Exception {

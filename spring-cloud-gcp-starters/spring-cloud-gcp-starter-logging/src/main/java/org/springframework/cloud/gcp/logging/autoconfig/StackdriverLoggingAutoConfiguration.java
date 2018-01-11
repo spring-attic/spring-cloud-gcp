@@ -20,9 +20,10 @@ import com.google.cloud.logging.TraceLoggingEnhancer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.logging.CompositeHeaderTraceIdExtractor;
 import org.springframework.cloud.gcp.logging.LoggingWebMvcConfigurer;
 import org.springframework.cloud.gcp.logging.TraceIdLoggingWebMvcInterceptor;
-import org.springframework.cloud.gcp.logging.XCloudTraceIdFromRequestExtractor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -32,13 +33,16 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @ConditionalOnClass({ TraceIdLoggingWebMvcInterceptor.class, TraceLoggingEnhancer.class })
+@EnableConfigurationProperties({ StackdriverLoggingProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.logging.enabled", matchIfMissing = true)
 @Import(LoggingWebMvcConfigurer.class)
 public class StackdriverLoggingAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public TraceIdLoggingWebMvcInterceptor getLoggingWebMvcInterceptor() {
-		return new TraceIdLoggingWebMvcInterceptor(new XCloudTraceIdFromRequestExtractor());
+	public TraceIdLoggingWebMvcInterceptor getLoggingWebMvcInterceptor(
+			StackdriverLoggingProperties loggingProperties) {
+		return new TraceIdLoggingWebMvcInterceptor(new CompositeHeaderTraceIdExtractor(
+				LoggingWebMvcConfigurer.getTraceIdExtractors(loggingProperties)));
 	}
 }

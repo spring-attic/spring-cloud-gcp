@@ -28,13 +28,13 @@ import static org.junit.Assert.assertThat;
  * @author Chengyuan Zhao
  */
 
-public class ZipkinTraceIdFromRequestExtractorTest {
+public class ZipkinTraceIdExtractorTests {
 
 	private static final String TEST_TRACE_ID = "105445aa7843bc8bf206b120001000";
 
 	private static final String B3_TRACE_ID_HEADER = "X-B3-TraceId";
 
-	private ZipkinTraceIdFromRequestExtractor extractor = new ZipkinTraceIdFromRequestExtractor();
+	private ZipkinTraceIdExtractor extractor = new ZipkinTraceIdExtractor();
 
 	@Test
 	public void testExtractTraceIdFromRequest_missing() {

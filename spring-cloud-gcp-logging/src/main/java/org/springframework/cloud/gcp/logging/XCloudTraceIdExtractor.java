@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @author Chengyuan Zhao
  */
-public class XCloudTraceIdFromRequestExtractor implements TraceIdFromRequestExtractor {
+public class XCloudTraceIdExtractor implements TraceIdExtractor {
 
 	public static final String X_CLOUD_TRACE_HEADER = "x-cloud-trace-context";
 

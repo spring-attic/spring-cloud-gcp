@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.logging;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -25,20 +28,43 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  * MVC Adapter that adds the {@link TraceIdLoggingWebMvcInterceptor}
  *
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 @Configuration
 public class LoggingWebMvcConfigurer extends WebMvcConfigurerAdapter {
 
 	private final TraceIdLoggingWebMvcInterceptor interceptor;
 
-	public LoggingWebMvcConfigurer(@Autowired(required = false) TraceIdLoggingWebMvcInterceptor interceptor) {
+	public LoggingWebMvcConfigurer(
+			@Autowired(required = false) TraceIdLoggingWebMvcInterceptor interceptor,
+			LoggingWebMvcConfigurerSettings settings) {
 		if (interceptor != null) {
 			this.interceptor = interceptor;
 		}
 		else {
+
 			this.interceptor = new TraceIdLoggingWebMvcInterceptor(
-					new XCloudTraceIdFromRequestExtractor());
+					new CompositeHeaderTraceIdExtractor(
+							getTraceIdExtractors(settings)));
 		}
+	}
+
+	public static List<TraceIdExtractor> getTraceIdExtractors(
+			LoggingWebMvcConfigurerSettings settings) {
+		List<TraceIdExtractor> subExtractors = new ArrayList<>();
+		if (settings.isxCloudTrace()) {
+			subExtractors.add(new XCloudTraceIdExtractor());
+		}
+
+		if (settings.isZipkinTrace()) {
+			if (settings.isPrioritizeXCloudTrace()) {
+				subExtractors.add(new ZipkinTraceIdExtractor());
+			}
+			else {
+				subExtractors.add(0, new ZipkinTraceIdExtractor());
+			}
+		}
+		return subExtractors;
 	}
 
 	@Override

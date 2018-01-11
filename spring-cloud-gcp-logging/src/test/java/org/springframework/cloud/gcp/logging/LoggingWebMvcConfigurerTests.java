@@ -26,7 +26,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Mike Eltsufin
@@ -39,13 +41,72 @@ public class LoggingWebMvcConfigurerTests {
 
 	@Test
 	public void testAddInterceptors() {
-		LoggingWebMvcConfigurer adapter = new LoggingWebMvcConfigurer(this.interceptor);
+		LoggingWebMvcConfigurer adapter = new LoggingWebMvcConfigurer(this.interceptor,
+				new LoggingWebMvcConfigurerSettings());
 		TestInterceptorRegistry registry = new TestInterceptorRegistry();
 
 		adapter.addInterceptors(registry);
 
 		assertThat(registry.doGetInterceptors().size(), is(1));
 		assertThat(registry.doGetInterceptors().get(0), is(this.interceptor));
+	}
+
+	@Test
+	public void testGetTraceIdExtractorsPrioritizeXCloudTrace() {
+		LoggingWebMvcConfigurerSettings settings = new LoggingWebMvcConfigurerSettings();
+		settings.setPrioritizeXCloudTrace(true);
+		settings.setxCloudTrace(true);
+		settings.setZipkinTrace(true);
+
+		List<TraceIdExtractor> extractors =
+				LoggingWebMvcConfigurer.getTraceIdExtractors(settings);
+
+		assertEquals(2, extractors.size());
+		assertTrue(extractors.get(0) instanceof XCloudTraceIdExtractor);
+		assertTrue(extractors.get(1) instanceof ZipkinTraceIdExtractor);
+	}
+
+	@Test
+	public void testGetTraceIdExtractorsPrioritizeZipkinTrace() {
+		LoggingWebMvcConfigurerSettings settings = new LoggingWebMvcConfigurerSettings();
+		settings.setPrioritizeXCloudTrace(false);
+		settings.setxCloudTrace(true);
+		settings.setZipkinTrace(true);
+
+		List<TraceIdExtractor> extractors =
+				LoggingWebMvcConfigurer.getTraceIdExtractors(settings);
+
+		assertEquals(2, extractors.size());
+		assertTrue(extractors.get(0) instanceof ZipkinTraceIdExtractor);
+		assertTrue(extractors.get(1) instanceof XCloudTraceIdExtractor);
+	}
+
+	@Test
+	public void testGetTraceIdExtractorsOnlyXCloud() {
+		LoggingWebMvcConfigurerSettings settings = new LoggingWebMvcConfigurerSettings();
+		settings.setPrioritizeXCloudTrace(false);
+		settings.setxCloudTrace(true);
+		settings.setZipkinTrace(false);
+
+		List<TraceIdExtractor> extractors =
+				LoggingWebMvcConfigurer.getTraceIdExtractors(settings);
+
+		assertEquals(1, extractors.size());
+		assertTrue(extractors.get(0) instanceof XCloudTraceIdExtractor);
+	}
+
+	@Test
+	public void testGetTraceIdExtractorsOnlyZipkin() {
+		LoggingWebMvcConfigurerSettings settings = new LoggingWebMvcConfigurerSettings();
+		settings.setPrioritizeXCloudTrace(true);
+		settings.setxCloudTrace(false);
+		settings.setZipkinTrace(true);
+
+		List<TraceIdExtractor> extractors =
+				LoggingWebMvcConfigurer.getTraceIdExtractors(settings);
+
+		assertEquals(1, extractors.size());
+		assertTrue(extractors.get(0) instanceof ZipkinTraceIdExtractor);
 	}
 
 	/**
