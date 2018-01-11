@@ -32,6 +32,8 @@ public class GcpPubSubProperties {
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.PUBSUB.getUrl());
 
+	private int pullTimeoutMillis = 10000;
+
 	public int getSubscriberExecutorThreads() {
 		return this.subscriberExecutorThreads;
 	}
@@ -60,4 +62,11 @@ public class GcpPubSubProperties {
 		return this.credentials;
 	}
 
+	public int getPullTimeoutMillis() {
+		return pullTimeoutMillis;
+	}
+
+	public void setPullTimeoutMillis(int pullTimeoutMillis) {
+		this.pullTimeoutMillis = pullTimeoutMillis;
+	}
 }

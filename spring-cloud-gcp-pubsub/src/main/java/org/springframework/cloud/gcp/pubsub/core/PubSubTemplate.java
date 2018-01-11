@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
@@ -38,6 +39,7 @@ import com.google.pubsub.v1.ReceivedMessage;
 import com.google.pubsub.v1.SubscriptionName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.threeten.bp.Duration;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -56,17 +58,17 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  *
  * <p>
  * This class also allows for synchronous message pulling from a subscription through the {@code pull()} and
- * {@code pullNext()} methods. In order for synchronous pulling to work, a {@link SubscriptionAdminSettings} and a
- * {@link GcpProjectIdProvider} objects must be provided through the available setter methods. For example:
+ * {@code pullNext()} methods. In order for synchronous pulling to work, a {@link GcpProjectIdProvider} object must be
+ * provided through the available setter method. For example:
  *
  * <pre>
+ * <code>
  *     @Autowired PubSubTemplate pubSubTemplate;
  *
- *     pubSubTemplate.setPullSettings(SubscriptionAdminSettings.newBuilder().build());
  *     pubSubTemplate.setProjectIdProvider(() -> "myGcpProjectId");
  *     pubSubTemplate.pull(PullRequest.newBuilder().setSubscription("my subscription").build());
+ * </code>
  * </pre>
- * @Autowired
  *
  * @author Vinicius Carvalho
  * @author João André Martins
@@ -79,9 +81,12 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private final SubscriberFactory subscriberFactory;
 
-	private SubscriptionAdminSettings pullSettings;
-
 	private GcpProjectIdProvider projectIdProvider;
+
+	/**
+	 * Contains the retry settings of the synchronous pull client.
+	 */
+	private SubscriptionAdminSettings subscriptionAdminSettings;
 
 	/**
 	 * Default {@link PubSubTemplate} constructor.
@@ -169,14 +174,11 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 * @param pullRequest pull request containing the subscription name
 	 * @return the list of {@link PubsubMessage} containing the headers and payload
 	 */
-	@Override
-	public List<PubsubMessage> pull(PullRequest pullRequest) {
+	private List<PubsubMessage> pull(PullRequest pullRequest) {
 		Assert.notNull(pullRequest, "The pull request cannot be null.");
-		Assert.notNull(this.pullSettings, "The pull settings can't be null. Specify pull settings first"
-				+ " using the PubSubTemplate.setPullSettings() method.");
 
 		try {
-			try (SubscriberStub subscriber = GrpcSubscriberStub.create(this.pullSettings)) {
+			try (SubscriberStub subscriber = GrpcSubscriberStub.create(this.subscriptionAdminSettings)) {
 				PullResponse pullResponse =	subscriber.pullCallable().call(pullRequest);
 
 				// Ack received messages.
@@ -205,14 +207,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		}
 	}
 
-	/**
-	 * Pulls a number of messages synchronously using the specified timeout to communicate with Google Cloud Pub/Sub.
-	 * @param subscription the subscription name
-	 * @param maxMessages the maximum number of pulled messages
-	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 *                         messages to satisfy {@code maxMessages}
-	 * @return the list of {@link PubsubMessage} containing the headers and payload
-	 */
 	@Override
 	public List<PubsubMessage> pull(String subscription, Integer maxMessages, Boolean returnImmediately) {
 		Assert.notNull(this.projectIdProvider, "The project ID provider can't be null. Specify a project ID"
@@ -233,11 +227,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		return pull(pullRequestBuilder.build());
 	}
 
-	/**
-	 * Pulls one message synchronously, on demand, from a subscription.
-	 * @param subscription the subscription name
-	 * @return a single {@link PubsubMessage} containing headers and payload
-	 */
 	@Override
 	public PubsubMessage pullNext(String subscription) {
 		List<PubsubMessage> receivedMessageList = pull(subscription, 1, true);
@@ -250,17 +239,18 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	/**
-	 * Sets the synchronous pull settings.
-	 */
-	public void setPullSettings(SubscriptionAdminSettings pullSettings) {
-		this.pullSettings = pullSettings;
-	}
-
-	/**
 	 * Sets the GCP project ID provider for synchronous pulls only.
 	 */
 	public void setProjectIdProvider(GcpProjectIdProvider projectIdProvider) {
 		this.projectIdProvider = projectIdProvider;
+	}
+
+	public void setPullTimeoutMillis(Integer pullTimeoutMillis) {
+		this.subscriptionAdminSettings = SubscriptionAdminSettings.newBuilder()
+				.pullSettings()
+				.setRetrySettings(RetrySettings.newBuilder().setTotalTimeout(
+						Duration.ofMillis(pullTimeoutMillis.longValue())).build())
+				.build();
 	}
 
 	public PublisherFactory getPublisherFactory() {

@@ -102,17 +102,6 @@ public interface PubSubOperations {
 	/**
 	 * Pulls a number of messages from a Google Cloud Pub/Sub subscription.
 	 *
-	 * <p>
-	 * Automatically acknowledges received messages.
-	 *
-	 * @param pullRequest request object containing request settings
-	 * @return the list of received messages
-	 */
-	List<PubsubMessage> pull(PullRequest pullRequest);
-
-	/**
-	 * Pulls a number of messages from a Google Cloud Pub/Sub subscription.
-	 *
 	 * @param subscription the subscription name
 	 * @param maxMessages the maximum number of pulled messages
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
