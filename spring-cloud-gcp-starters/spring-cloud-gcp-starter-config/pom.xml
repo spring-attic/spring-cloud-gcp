@@ -8,7 +8,7 @@
 	</parent>
 	<artifactId>spring-cloud-gcp-starter-config</artifactId>
 	<name>Spring Cloud GCP Config Starter</name>
-	<description>Starter for Spring Cloud Config Client using Google Runtime Configurator</description>
+	<description>Starter for Spring Cloud Config Client using Google Runtime Configuration API</description>
 	<organization>
 		<name>Pivotal Software, Inc.</name>
 		<url>http://www.spring.io</url>
@@ -19,21 +19,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-context</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
+			<artifactId>spring-cloud-gcp-starter-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-gcp-starter-core</artifactId>
-		</dependency>
-		<!-- Configuration processor -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-processor</artifactId>
-			<optional>true</optional>
+			<artifactId>spring-cloud-gcp-config</artifactId>
 		</dependency>
 	</dependencies>
 </project>

@@ -1,0 +1,38 @@
+= Google Cloud Platform Client Libraries with Spring Cloud GCP
+
+This code sample shows how the Spring Cloud GCP integrations can simplify the use of Google
+Cloud Platform Java Client Libraries.
+
+It uses the https://cloud.google.com/vision/[Google Cloud Vision API] to extract information about a picture.
+We take advantage of the link:/spring-cloud-gcp-starters/spring-cloud-gcp-starter-core[Core starter] to retrieve
+the GCP credentials that we will use to authenticate with the API.
+
+== Running the sample
+
+1. Create a Google Cloud Platform project with
+https://cloud.google.com/billing/docs/how-to/modify-project#enable-billing[billing enabled], if you
+don't have one already.
+
+2. Enable the Google Cloud Vision API from the "APIs & Services" menu of the Google Cloud Console.
+
+3. Authenticate in one of two ways:
+
+  a. Use the Google Cloud SDK to
+  https://developers.google.com/identity/protocols/application-default-credentials#toolcloudsdk[authenticate with
+  application default credentials].
+  b. https://cloud.google.com/iam/docs/creating-managing-service-accounts[Create a new service
+  account], download its private key and point the `spring.cloud.gcp.credentials.location` property
+  to it.
+  +
+  e.g., `spring.cloud.gcp.credentials.location=file:/path/to/creds.json`
+
+4. Run the `mvn spring-boot:run` command from the same directory as this sample's `pom.xml` file.
+
+5. Go to http://localhost:8080 in your browser, paste a URL to an image and press the `Submit` button.
+
+6. You will see a readable version of the Google Cloud Vision API response, which contains the words
+that Google Cloud Vision attributed to your image, as well as a percentage of certainty.
+
+In this case, by using the Spring Cloud GCP Core Boot starter, you can inject a `CredentialsProvider` object which you
+can pass to our API to provide the correct Google credentials.
+You don't need to set any environment variables for authentication to work.
