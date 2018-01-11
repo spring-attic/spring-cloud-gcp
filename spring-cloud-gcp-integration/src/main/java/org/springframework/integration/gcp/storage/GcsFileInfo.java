@@ -70,11 +70,4 @@ public class GcsFileInfo extends AbstractFileInfo<BlobInfo> {
 	public BlobInfo getFileInfo() {
 		return this.gcsFile;
 	}
-
-	@Override
-	public String toString() {
-		return "FileInfo [isDirectory=" + isDirectory() + ", Size=" + getSize() + ", ModifiedTime="
-				+ new Date(getModified()) + ", Filename=" + getFilename()
-				+ ", RemoteDirectory=" + getRemoteDirectory() + "]";
-	}
 }
