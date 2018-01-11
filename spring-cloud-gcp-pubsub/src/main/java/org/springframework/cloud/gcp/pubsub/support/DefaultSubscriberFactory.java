@@ -51,13 +51,13 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	private final CredentialsProvider credentialsProvider;
 
-	private final Long pullSimpleTimeoutNoRetriesMillis;
+	private Long pullTimeoutMillis;
 
 	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider,
 			ExecutorProvider executorProvider,
 			TransportChannelProvider channelProvider,
 			CredentialsProvider credentialsProvider,
-			Long pullSimpleTimeoutNoRetriesMillis) {
+			Long pullTimeoutMillis) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
 		Assert.notNull(executorProvider, "The executor provider can't be null.");
 		Assert.notNull(channelProvider, "The channel provider can't be null.");
@@ -68,7 +68,18 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 		this.executorProvider = executorProvider;
 		this.channelProvider = channelProvider;
 		this.credentialsProvider = credentialsProvider;
-		this.pullSimpleTimeoutNoRetriesMillis = pullSimpleTimeoutNoRetriesMillis;
+		this.pullTimeoutMillis = pullTimeoutMillis;
+	}
+
+	/**
+	 * Enables simple a timeout for subscription pull requests.
+	 *
+	 * @param pullTimeoutMillis Timeout in milliseconds for subscription pull requests. If
+	 * set, disables pull retry logic and uses the simple timeout. If set to null, default
+	 * pull behavior with retries will be used.
+	 */
+	public void setPullTimeoutMillis(Long pullTimeoutMillis) {
+		this.pullTimeoutMillis = pullTimeoutMillis;
 	}
 
 	@Override
@@ -100,12 +111,12 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	@Override
-	public SubscriberStub getSubscriberStub() {
+	public SubscriberStub createSubscriberStub() {
 		try {
 			SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder = SubscriptionAdminSettings.newBuilder();
-			if (this.pullSimpleTimeoutNoRetriesMillis != null) {
+			if (this.pullTimeoutMillis != null) {
 				subscriptionAdminSettingsBuilder.pullSettings()
-						.setSimpleTimeoutNoRetries(Duration.ofSeconds(this.pullSimpleTimeoutNoRetriesMillis));
+						.setSimpleTimeoutNoRetries(Duration.ofSeconds(this.pullTimeoutMillis));
 			}
 
 			return GrpcSubscriberStub.create(subscriptionAdminSettingsBuilder.build());

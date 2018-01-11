@@ -154,11 +154,11 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 */
 	private List<PubsubMessage> pull(PullRequest pullRequest) {
 		Assert.notNull(pullRequest, "The pull request cannot be null.");
-		Assert.notNull(this.subscriberFactory.getSubscriberStub(),
+		Assert.notNull(this.subscriberFactory.createSubscriberStub(),
 				"The SubscriberStub cannot be null.");
 
 		try {
-			SubscriberStub subscriber = this.subscriberFactory.getSubscriberStub();
+			SubscriberStub subscriber = this.subscriberFactory.createSubscriberStub();
 			PullResponse pullResponse =	subscriber.pullCallable().call(pullRequest);
 
 			// Ack received messages.

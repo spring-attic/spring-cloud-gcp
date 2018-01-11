@@ -33,5 +33,5 @@ public interface SubscriberFactory {
 
 	PullRequest createPullRequest(String subscriptionName, Integer maxMessages, Boolean returnImmediately);
 
-	SubscriberStub getSubscriberStub();
+	SubscriberStub createSubscriberStub();
 }
