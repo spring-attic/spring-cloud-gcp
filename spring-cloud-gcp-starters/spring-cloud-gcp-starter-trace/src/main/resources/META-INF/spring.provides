@@ -1,0 +1,1 @@
+provides: spring-cloud-gcp-starter-core, spring-cloud-starter-sleuth, spring-cloud-gcp-trace, gax
