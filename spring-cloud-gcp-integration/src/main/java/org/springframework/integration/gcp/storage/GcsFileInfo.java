@@ -16,8 +16,6 @@
 
 package org.springframework.integration.gcp.storage;
 
-import java.util.Date;
-
 import com.google.cloud.storage.BlobInfo;
 
 import org.springframework.integration.file.remote.AbstractFileInfo;
