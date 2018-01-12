@@ -52,61 +52,51 @@ public class LoggingWebMvcConfigurerTests {
 	}
 
 	@Test
+	public void testGetTraceIdExtractorsDefault() {
+		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
+				.getCompositeExtractor(null).getExtractors();
+
+		assertEquals(2, extractors.length);
+		assertTrue(extractors[0] instanceof XCloudTraceIdExtractor);
+		assertTrue(extractors[1] instanceof ZipkinTraceIdExtractor);
+	}
+
+	@Test
 	public void testGetTraceIdExtractorsPrioritizeXCloudTrace() {
-		LoggingWebMvcConfigurerSettings settings = new LoggingWebMvcConfigurerSettings();
-		settings.setPrioritizeXCloudTrace(true);
-		settings.setxCloudTrace(true);
-		settings.setZipkinTrace(true);
+		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
+				.getCompositeExtractor(TraceIdExtractorCombination.XCLOUD_ZIPKIN).getExtractors();
 
-		List<TraceIdExtractor> extractors =
-				LoggingWebMvcConfigurer.getTraceIdExtractors(settings);
-
-		assertEquals(2, extractors.size());
-		assertTrue(extractors.get(0) instanceof XCloudTraceIdExtractor);
-		assertTrue(extractors.get(1) instanceof ZipkinTraceIdExtractor);
+		assertEquals(2, extractors.length);
+		assertTrue(extractors[0] instanceof XCloudTraceIdExtractor);
+		assertTrue(extractors[1] instanceof ZipkinTraceIdExtractor);
 	}
 
 	@Test
 	public void testGetTraceIdExtractorsPrioritizeZipkinTrace() {
-		LoggingWebMvcConfigurerSettings settings = new LoggingWebMvcConfigurerSettings();
-		settings.setPrioritizeXCloudTrace(false);
-		settings.setxCloudTrace(true);
-		settings.setZipkinTrace(true);
+		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
+				.getCompositeExtractor(TraceIdExtractorCombination.ZIPKIN_XCLOUD).getExtractors();
 
-		List<TraceIdExtractor> extractors =
-				LoggingWebMvcConfigurer.getTraceIdExtractors(settings);
-
-		assertEquals(2, extractors.size());
-		assertTrue(extractors.get(0) instanceof ZipkinTraceIdExtractor);
-		assertTrue(extractors.get(1) instanceof XCloudTraceIdExtractor);
+		assertEquals(2, extractors.length);
+		assertTrue(extractors[0] instanceof ZipkinTraceIdExtractor);
+		assertTrue(extractors[1] instanceof XCloudTraceIdExtractor);
 	}
 
 	@Test
 	public void testGetTraceIdExtractorsOnlyXCloud() {
-		LoggingWebMvcConfigurerSettings settings = new LoggingWebMvcConfigurerSettings();
-		settings.setPrioritizeXCloudTrace(false);
-		settings.setxCloudTrace(true);
-		settings.setZipkinTrace(false);
+		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
+				.getCompositeExtractor(TraceIdExtractorCombination.XCLOUD).getExtractors();
 
-		List<TraceIdExtractor> extractors =
-				LoggingWebMvcConfigurer.getTraceIdExtractors(settings);
-
-		assertEquals(1, extractors.size());
-		assertTrue(extractors.get(0) instanceof XCloudTraceIdExtractor);
+		assertEquals(1, extractors.length);
+		assertTrue(extractors[0] instanceof XCloudTraceIdExtractor);
 	}
 
 	@Test
 	public void testGetTraceIdExtractorsOnlyZipkin() {
-		LoggingWebMvcConfigurerSettings settings = new LoggingWebMvcConfigurerSettings();
-		settings.setPrioritizeXCloudTrace(true);
-		settings.setxCloudTrace(false);
-		settings.setZipkinTrace(true);
+		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
+				.getCompositeExtractor(TraceIdExtractorCombination.ZIPKIN).getExtractors();
 
-		List<TraceIdExtractor> extractors =
-				LoggingWebMvcConfigurer.getTraceIdExtractors(settings);
-
-		assertEquals(1, extractors.size());
-		assertTrue(extractors.get(0) instanceof ZipkinTraceIdExtractor);
+		assertEquals(1, extractors.length);
+		assertTrue(extractors[0] instanceof ZipkinTraceIdExtractor);
 	}
 
 	/**

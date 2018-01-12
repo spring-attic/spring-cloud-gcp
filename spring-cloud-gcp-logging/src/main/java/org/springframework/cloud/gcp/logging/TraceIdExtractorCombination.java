@@ -17,19 +17,11 @@
 package org.springframework.cloud.gcp.logging;
 
 /**
- * Holds settings for @{@link LoggingWebMvcConfigurer}
+ * Enum values represent the order and combination of trace ID extractors that can be
+ * used.
+ *
  * @author Chengyuan Zhao
  */
-public class LoggingWebMvcConfigurerSettings {
-
-	public TraceIdExtractorCombination getExtractorCombination() {
-		return this.extractorCombination;
-	}
-
-	public void setExtractorCombination(
-			TraceIdExtractorCombination extractorCombination) {
-		this.extractorCombination = extractorCombination;
-	}
-
-	private TraceIdExtractorCombination extractorCombination;
+public enum TraceIdExtractorCombination {
+	XCLOUD, ZIPKIN, XCLOUD_ZIPKIN, ZIPKIN_XCLOUD
 }

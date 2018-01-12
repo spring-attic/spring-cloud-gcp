@@ -16,9 +16,6 @@
 
 package org.springframework.cloud.gcp.logging;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -42,29 +39,37 @@ public class LoggingWebMvcConfigurer extends WebMvcConfigurerAdapter {
 			this.interceptor = interceptor;
 		}
 		else {
-
 			this.interceptor = new TraceIdLoggingWebMvcInterceptor(
-					new CompositeHeaderTraceIdExtractor(
-							getTraceIdExtractors(settings)));
+					getCompositeExtractor(settings.getExtractorCombination()));
 		}
 	}
 
-	public static List<TraceIdExtractor> getTraceIdExtractors(
-			LoggingWebMvcConfigurerSettings settings) {
-		List<TraceIdExtractor> subExtractors = new ArrayList<>();
-		if (settings.isxCloudTrace()) {
-			subExtractors.add(new XCloudTraceIdExtractor());
+	/**
+	 * Gets a {@link CompositeHeaderTraceIdExtractor} based on
+	 * {@link TraceIdExtractorCombination}. Defaults to XCLOUD_ZIPKIN.
+	 * @param combination the enum indication the combination.
+	 * @return the composite trace ID extractor.
+	 */
+	public static CompositeHeaderTraceIdExtractor getCompositeExtractor(
+			TraceIdExtractorCombination combination) {
+		CompositeHeaderTraceIdExtractor extractor = new CompositeHeaderTraceIdExtractor(
+				new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor());
+		if (combination == null) {
+			return extractor;
 		}
-
-		if (settings.isZipkinTrace()) {
-			if (settings.isPrioritizeXCloudTrace()) {
-				subExtractors.add(new ZipkinTraceIdExtractor());
-			}
-			else {
-				subExtractors.add(0, new ZipkinTraceIdExtractor());
-			}
+		switch (combination) {
+		case XCLOUD:
+			extractor = new CompositeHeaderTraceIdExtractor(new XCloudTraceIdExtractor());
+			break;
+		case ZIPKIN:
+			extractor = new CompositeHeaderTraceIdExtractor(new ZipkinTraceIdExtractor());
+			break;
+		case ZIPKIN_XCLOUD:
+			extractor = new CompositeHeaderTraceIdExtractor(new ZipkinTraceIdExtractor(),
+					new XCloudTraceIdExtractor());
+			break;
 		}
-		return subExtractors;
+		return extractor;
 	}
 
 	@Override

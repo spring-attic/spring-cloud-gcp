@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.logging;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -29,7 +28,7 @@ import static org.junit.Assert.assertThat;
  * @author Chengyuan Zhao
  */
 
-public class CompositeHeaderTraceIdExtractorTest {
+public class CompositeHeaderTraceIdExtractorTests {
 
 	private static final String TEST_TRACE_ID = "105445aa7843bc8bf206b120001000";
 
@@ -41,10 +40,8 @@ public class CompositeHeaderTraceIdExtractorTest {
 
 	private static final String B3_TRACE_ID_HEADER = "X-B3-TraceId";
 
-	private CompositeHeaderTraceIdExtractor extractor =
-			new CompositeHeaderTraceIdExtractor(
-			ImmutableList.of(new XCloudTraceIdExtractor(),
-					new ZipkinTraceIdExtractor()));
+	private CompositeHeaderTraceIdExtractor extractor = new CompositeHeaderTraceIdExtractor(
+			new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor());
 
 	@Test
 	public void testExtractTraceIdFromRequestPriority() {

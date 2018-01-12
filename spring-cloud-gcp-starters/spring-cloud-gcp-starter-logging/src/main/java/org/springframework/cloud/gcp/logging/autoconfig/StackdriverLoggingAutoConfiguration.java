@@ -43,6 +43,7 @@ public class StackdriverLoggingAutoConfiguration {
 	public TraceIdLoggingWebMvcInterceptor getLoggingWebMvcInterceptor(
 			StackdriverLoggingProperties loggingProperties) {
 		return new TraceIdLoggingWebMvcInterceptor(new CompositeHeaderTraceIdExtractor(
-				LoggingWebMvcConfigurer.getTraceIdExtractors(loggingProperties)));
+				LoggingWebMvcConfigurer.getCompositeExtractor(
+						loggingProperties.getExtractorCombination())));
 	}
 }
