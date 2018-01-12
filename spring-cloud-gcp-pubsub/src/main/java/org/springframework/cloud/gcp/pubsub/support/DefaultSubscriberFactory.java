@@ -56,8 +56,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider,
 			ExecutorProvider executorProvider,
 			TransportChannelProvider channelProvider,
-			CredentialsProvider credentialsProvider,
-			Long pullTimeoutMillis) {
+			CredentialsProvider credentialsProvider) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
 		Assert.notNull(executorProvider, "The executor provider can't be null.");
 		Assert.notNull(channelProvider, "The channel provider can't be null.");
