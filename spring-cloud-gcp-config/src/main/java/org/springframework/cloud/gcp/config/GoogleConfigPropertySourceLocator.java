@@ -25,8 +25,13 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
+import org.springframework.cloud.gcp.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
@@ -45,6 +50,11 @@ import org.springframework.web.client.RestTemplate;
  *
  * @author Jisha Abubaker
  */
+@Configuration
+@ConditionalOnProperty(prefix = "spring.cloud.gcp.config", name = "enabled", havingValue = "true",
+	matchIfMissing = true)
+@AutoConfigureAfter(GcpContextAutoConfiguration.class)
+@EnableConfigurationProperties(GcpConfigProperties.class)
 public class GoogleConfigPropertySourceLocator implements PropertySourceLocator {
 
 	private static final String RUNTIMECONFIG_API_ROOT = "https://runtimeconfig.googleapis.com/v1beta1/";
@@ -70,19 +80,24 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 
 	public GoogleConfigPropertySourceLocator(GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider,
-			GcpConfigPropertiesProvider gcpConfigPropertiesProvider) throws IOException {
-		Assert.notNull(gcpConfigPropertiesProvider, "Google Config properties must not be null");
+			GcpConfigProperties gcpConfigPropertiesProvider) throws IOException {
+		Assert.notNull(gcpConfigPropertiesProvider,
+				"Google Config properties must not be null");
 
 		if (gcpConfigPropertiesProvider.isEnabled()) {
 			Assert.notNull(credentialsProvider, "Credentials provider cannot be null");
 			Assert.notNull(projectIdProvider, "Project ID provider cannot be null");
-			org.springframework.cloud.gcp.core.Credentials configCredentials =
-					gcpConfigPropertiesProvider.getCredentials();
-			this.credentials = configCredentials != null && configCredentials.getLocation() != null
-					? GoogleCredentials.fromStream(
-							gcpConfigPropertiesProvider.getCredentials().getLocation().getInputStream())
-					.createScoped(gcpConfigPropertiesProvider.getCredentials().getScopes())
-					: credentialsProvider.getCredentials();
+			org.springframework.cloud.gcp.core.Credentials configCredentials = gcpConfigPropertiesProvider
+					.getCredentials();
+			this.credentials = configCredentials != null
+					&& configCredentials.getLocation() != null
+							? GoogleCredentials
+									.fromStream(
+											gcpConfigPropertiesProvider.getCredentials()
+													.getLocation().getInputStream())
+									.createScoped(gcpConfigPropertiesProvider
+											.getCredentials().getScopes())
+							: credentialsProvider.getCredentials();
 			this.projectId = gcpConfigPropertiesProvider.getProjectId() != null
 					? gcpConfigPropertiesProvider.getProjectId()
 					: projectIdProvider.getProjectId();
@@ -101,7 +116,8 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 
 	private HttpEntity<Void> getAuthorizedRequest() throws IOException {
 		HttpHeaders headers = new HttpHeaders();
-		Map<String, List<String>> credentialHeaders = this.credentials.getRequestMetadata();
+		Map<String, List<String>> credentialHeaders = this.credentials
+				.getRequestMetadata();
 		Assert.notNull(credentialHeaders, "No valid credential header(s) found");
 
 		for (Map.Entry<String, List<String>> entry : credentialHeaders.entrySet()) {
@@ -109,22 +125,27 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 				headers.add(entry.getKey(), value);
 			}
 		}
-		Assert.isTrue(headers.containsKey(AUTHORIZATION_HEADER), "Authorization header required");
+		Assert.isTrue(headers.containsKey(AUTHORIZATION_HEADER),
+				"Authorization header required");
 		return new HttpEntity<>(headers);
 	}
 
-	GoogleConfigEnvironment getRemoteEnvironment() throws IOException, HttpClientErrorException {
+	GoogleConfigEnvironment getRemoteEnvironment()
+			throws IOException, HttpClientErrorException {
 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 		requestFactory.setReadTimeout(this.timeout);
 		RestTemplate template = new RestTemplate(requestFactory);
 		HttpEntity<Void> requestEntity = getAuthorizedRequest();
 		ResponseEntity<GoogleConfigEnvironment> response = template.exchange(
-				RUNTIMECONFIG_API_ROOT + ALL_VARIABLES_PATH, HttpMethod.GET, requestEntity,
-				GoogleConfigEnvironment.class, this.projectId, this.name, this.profile);
+				RUNTIMECONFIG_API_ROOT + ALL_VARIABLES_PATH, HttpMethod.GET,
+				requestEntity, GoogleConfigEnvironment.class, this.projectId, this.name,
+				this.profile);
 
 		if (response == null || !response.getStatusCode().is2xxSuccessful()) {
-			HttpStatus code = (response == null) ? HttpStatus.BAD_REQUEST : response.getStatusCode();
-			throw new HttpClientErrorException(code, "Invalid response from Runtime Configurator API");
+			HttpStatus code = (response == null) ? HttpStatus.BAD_REQUEST
+					: response.getStatusCode();
+			throw new HttpClientErrorException(code,
+					"Invalid response from Runtime Configurator API");
 		}
 		return response.getBody();
 	}
@@ -137,12 +158,13 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		Map<String, Object> config;
 		try {
 			GoogleConfigEnvironment googleConfigEnvironment = getRemoteEnvironment();
-			Assert.notNull(googleConfigEnvironment, "Configuration not in expected format.");
+			Assert.notNull(googleConfigEnvironment,
+					"Configuration not in expected format.");
 			config = googleConfigEnvironment.getConfig();
 		}
 		catch (Exception e) {
-			String message = String.format("Error loading configuration for %s/%s_%s", this.projectId,
-					this.name, this.profile);
+			String message = String.format("Error loading configuration for %s/%s_%s",
+					this.projectId, this.name, this.profile);
 			throw new RuntimeException(message, e);
 		}
 		return new MapPropertySource(PROPERTY_SOURCE_NAME, config);

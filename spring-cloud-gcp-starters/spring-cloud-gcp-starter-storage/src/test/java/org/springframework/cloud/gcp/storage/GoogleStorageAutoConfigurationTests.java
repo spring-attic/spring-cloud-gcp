@@ -21,6 +21,7 @@ import java.io.IOException;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Storage;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -30,7 +31,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -67,7 +67,7 @@ public class GoogleStorageAutoConfigurationTests {
 				.isCreateBlobIfNotExists());
 	}
 
-	@SpringBootApplication(exclude = GcpContextAutoConfiguration.class)
+	@SpringBootApplication
 	@RestController
 	static class StorageApplication {
 

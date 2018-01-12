@@ -14,13 +14,15 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.config;
+package org.springframework.cloud.gcp.config;
 
 import org.junit.After;
 import org.junit.Test;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.test.util.EnvironmentTestUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Configuration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -66,8 +68,13 @@ public class GcpConfigAutoConfigurationTest {
 	private void loadEnvironment(String... environment) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		EnvironmentTestUtils.addEnvironment(context, environment);
-		context.register(GcpConfigAutoConfiguration.class);
+		context.register(TestConfiguration.class);
 		context.refresh();
 		this.context = context;
+	}
+
+	@Configuration
+	@EnableConfigurationProperties(GcpConfigProperties.class)
+	protected static class TestConfiguration {
 	}
 }
