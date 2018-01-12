@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
@@ -33,5 +34,5 @@ public interface SubscriberFactory {
 
 	PullRequest createPullRequest(String subscriptionName, Integer maxMessages, Boolean returnImmediately);
 
-	SubscriberStub createSubscriberStub();
+	SubscriberStub createSubscriberStub(RetrySettings retrySettings);
 }

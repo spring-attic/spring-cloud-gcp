@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
@@ -28,8 +29,6 @@ import com.google.cloud.pubsub.v1.stub.GrpcSubscriberStub;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.SubscriptionName;
-
-import org.threeten.bp.Duration;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.Assert;
@@ -51,8 +50,6 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	private final CredentialsProvider credentialsProvider;
 
-	private Long pullTimeoutMillis;
-
 	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider,
 			ExecutorProvider executorProvider,
 			TransportChannelProvider channelProvider,
@@ -67,18 +64,6 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 		this.executorProvider = executorProvider;
 		this.channelProvider = channelProvider;
 		this.credentialsProvider = credentialsProvider;
-		this.pullTimeoutMillis = pullTimeoutMillis;
-	}
-
-	/**
-	 * Enables simple a timeout for subscription pull requests.
-	 *
-	 * @param pullTimeoutMillis Timeout in milliseconds for subscription pull requests. If
-	 * set, disables pull retry logic and uses the simple timeout. If set to null, default
-	 * pull behavior with retries will be used.
-	 */
-	public void setPullTimeoutMillis(Long pullTimeoutMillis) {
-		this.pullTimeoutMillis = pullTimeoutMillis;
 	}
 
 	@Override
@@ -110,12 +95,11 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	@Override
-	public SubscriberStub createSubscriberStub() {
+	public SubscriberStub createSubscriberStub(RetrySettings retrySettings) {
 		try {
 			SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder = SubscriptionAdminSettings.newBuilder();
-			if (this.pullTimeoutMillis != null) {
-				subscriptionAdminSettingsBuilder.pullSettings()
-						.setSimpleTimeoutNoRetries(Duration.ofSeconds(this.pullTimeoutMillis));
+			if (retrySettings != null) {
+				subscriptionAdminSettingsBuilder.pullSettings().setRetrySettings(retrySettings);
 			}
 
 			return GrpcSubscriberStub.create(subscriptionAdminSettingsBuilder.build());

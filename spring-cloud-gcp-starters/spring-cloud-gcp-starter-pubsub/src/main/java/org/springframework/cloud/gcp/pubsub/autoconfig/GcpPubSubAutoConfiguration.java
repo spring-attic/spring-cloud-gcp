@@ -128,8 +128,7 @@ public class GcpPubSubAutoConfiguration {
 				this.finalProjectIdProvider,
 				executorProvider,
 				channelProvider,
-				this.finalCredentialsProvider,
-				this.gcpPubSubProperties.getPullSimpleTimeoutNoRetriesMillis());
+				this.finalCredentialsProvider);
 	}
 
 	@Bean

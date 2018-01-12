@@ -20,6 +20,7 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.protobuf.ByteString;
@@ -99,19 +100,20 @@ public interface PubSubOperations {
 	Subscriber subscribe(String subscription, MessageReceiver messageHandler);
 
 	/**
-	 * Pulls a number of messages from a Google Cloud Pub/Sub subscription.
+	 * Pulls and auto-acknowledges a number of messages from a Google Cloud Pub/Sub subscription.
 	 *
 	 * @param subscription the subscription name
 	 * @param maxMessages the maximum number of pulled messages
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 *                         messages to satisfy {@code maxMessages}
+	 * @param retrySettings the timeout and retry setting for the pull request
 	 * @return the list of received messages
 	 */
 	List<PubsubMessage> pull(String subscription, Integer maxMessages,
-			Boolean returnImmediately);
+			Boolean returnImmediately, RetrySettings retrySettings);
 
 	/**
-	 * Pulls a message from a Google Cloud Pub/Sub subscription.
+	 * Pulls and auto-acknowledges a message from a Google Cloud Pub/Sub subscription.
 	 *
 	 * @param subscription the subscription name
 	 * @return a received message, or {@code null} if none exists in the subscription

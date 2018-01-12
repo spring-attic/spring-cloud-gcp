@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
@@ -152,13 +153,11 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 * @param pullRequest pull request containing the subscription name
 	 * @return the list of {@link PubsubMessage} containing the headers and payload
 	 */
-	private List<PubsubMessage> pull(PullRequest pullRequest) {
+	private List<PubsubMessage> pull(PullRequest pullRequest, RetrySettings retrySettings) {
 		Assert.notNull(pullRequest, "The pull request cannot be null.");
-		Assert.notNull(this.subscriberFactory.createSubscriberStub(),
-				"The SubscriberStub cannot be null.");
 
 		try {
-			SubscriberStub subscriber = this.subscriberFactory.createSubscriberStub();
+			SubscriberStub subscriber = this.subscriberFactory.createSubscriberStub(retrySettings);
 			PullResponse pullResponse =	subscriber.pullCallable().call(pullRequest);
 
 			// Ack received messages.
@@ -187,13 +186,14 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public List<PubsubMessage> pull(String subscription, Integer maxMessages, Boolean returnImmediately) {
-		return pull(this.subscriberFactory.createPullRequest(subscription, maxMessages, returnImmediately));
+	public List<PubsubMessage> pull(String subscription, Integer maxMessages, Boolean returnImmediately,
+			RetrySettings retrySettings) {
+		return pull(this.subscriberFactory.createPullRequest(subscription, maxMessages, returnImmediately), null);
 	}
 
 	@Override
 	public PubsubMessage pullNext(String subscription) {
-		List<PubsubMessage> receivedMessageList = pull(subscription, 1, true);
+		List<PubsubMessage> receivedMessageList = pull(subscription, 1, true, null);
 
 		return receivedMessageList.size() > 0 ?	receivedMessageList.get(0) : null;
 	}
