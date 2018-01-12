@@ -114,8 +114,7 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory,
-			SubscriberFactory subscriberFactory,
-			GcpProjectIdProvider projectIdProvider) {
+			SubscriberFactory subscriberFactory) {
 		return new PubSubTemplate(publisherFactory, subscriberFactory);
 	}
 
