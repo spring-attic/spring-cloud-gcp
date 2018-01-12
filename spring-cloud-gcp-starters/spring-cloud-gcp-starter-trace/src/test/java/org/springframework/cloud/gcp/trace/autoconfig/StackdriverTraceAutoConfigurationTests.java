@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.gcp.core.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.core.GcpContextConfiguration;
 import org.springframework.cloud.sleuth.Span;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
@@ -45,7 +45,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(classes = {
 		StackdriverTraceAutoConfigurationTests.MockConfiguration.class,
 		StackdriverTraceAutoConfiguration.class,
-		GcpContextAutoConfiguration.class,
+		GcpContextConfiguration.class,
 		TraceAutoConfiguration.class, SleuthLogAutoConfiguration.class }, properties = {
 				"spring.cloud.gcp.project-id=proj", "spring.sleuth.sampler.percentage=1.0" })
 public abstract class StackdriverTraceAutoConfigurationTests {

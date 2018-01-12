@@ -37,7 +37,7 @@ import static org.mockito.Mockito.mock;
  * @author João André Martins
  */
 @Configuration
-public class GcpContextAutoConfigurationTests {
+public class GcpContextConfigurationTests {
 
 	private AnnotationConfigApplicationContext context;
 
@@ -66,7 +66,7 @@ public class GcpContextAutoConfigurationTests {
 	@Test
 	public void testResolveScopesDefaultScopes() {
 		loadEnvironment();
-		GcpContextAutoConfiguration configuration = this.context.getBean(GcpContextAutoConfiguration.class);
+		GcpContextConfiguration configuration = this.context.getBean(GcpContextConfiguration.class);
 		List<String> scopes = configuration.resolveScopes();
 		assertTrue(scopes.size() > 1);
 		assertTrue(scopes.contains(GcpScope.PUBSUB.getUrl()));
@@ -75,7 +75,7 @@ public class GcpContextAutoConfigurationTests {
 	@Test
 	public void testResolveScopesOverrideScopes() {
 		loadEnvironment("spring.cloud.gcp.credentials.scopes=myscope");
-		GcpContextAutoConfiguration configuration = this.context.getBean(GcpContextAutoConfiguration.class);
+		GcpContextConfiguration configuration = this.context.getBean(GcpContextConfiguration.class);
 		List<String> scopes = configuration.resolveScopes();
 		assertEquals(scopes.size(), 1);
 		assertTrue(scopes.contains("myscope"));
@@ -84,7 +84,7 @@ public class GcpContextAutoConfigurationTests {
 	@Test
 	public void testResolveScopesStarterScopesPlaceholder() {
 		loadEnvironment("spring.cloud.gcp.credentials.scopes=DEFAULT_SCOPES,myscope");
-		GcpContextAutoConfiguration configuration = this.context.getBean(GcpContextAutoConfiguration.class);
+		GcpContextConfiguration configuration = this.context.getBean(GcpContextConfiguration.class);
 		List<String> scopes = configuration.resolveScopes();
 		assertTrue(scopes.size() == GcpScope.values().length + 1);
 		assertTrue(scopes.contains(GcpScope.PUBSUB.getUrl()));
@@ -94,7 +94,7 @@ public class GcpContextAutoConfigurationTests {
 
 	private void loadEnvironment(String... environment) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		context.register(GcpContextAutoConfiguration.class);
+		context.register(GcpContextConfiguration.class);
 		context.register(this.getClass());
 		EnvironmentTestUtils.addEnvironment(context, environment);
 		context.refresh();

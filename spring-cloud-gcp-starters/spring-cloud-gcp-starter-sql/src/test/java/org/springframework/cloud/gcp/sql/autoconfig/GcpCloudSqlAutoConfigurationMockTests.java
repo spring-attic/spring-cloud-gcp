@@ -27,7 +27,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.gcp.core.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.core.GcpContextConfiguration;
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -38,7 +38,7 @@ import static org.junit.Assert.assertEquals;
  * @author João André Martins
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { GcpCloudSqlAutoConfiguration.class, GcpContextAutoConfiguration.class,
+@SpringBootTest(classes = { GcpCloudSqlAutoConfiguration.class, GcpContextConfiguration.class,
 		GcpCloudSqlTestConfiguration.class, DataSourceAutoConfiguration.class
 }, properties = { "spring.cloud.gcp.sql.databaseName=test-database" })
 public abstract class GcpCloudSqlAutoConfigurationMockTests {

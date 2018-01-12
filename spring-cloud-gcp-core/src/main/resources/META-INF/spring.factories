@@ -1,2 +1,2 @@
 org.springframework.cloud.bootstrap.BootstrapConfiguration=\
-org.springframework.cloud.gcp.core.GcpContextAutoConfiguration
+org.springframework.cloud.gcp.core.GcpContextConfiguration

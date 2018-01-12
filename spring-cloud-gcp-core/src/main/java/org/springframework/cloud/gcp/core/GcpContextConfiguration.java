@@ -36,8 +36,6 @@ import com.google.auth.oauth2.UserCredentials;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,9 +51,8 @@ import org.springframework.util.StringUtils;
  * @author João André Martins
  */
 @Configuration
-@ConditionalOnClass(GoogleCredentials.class)
 @EnableConfigurationProperties(GcpProperties.class)
-public class GcpContextAutoConfiguration {
+public class GcpContextConfiguration {
 	private static final String DEFAULT_SCOPES_PLACEHOLDER = "DEFAULT_SCOPES";
 
 	private static final List<String> CREDENTIALS_SCOPES_LIST =
@@ -64,11 +61,11 @@ public class GcpContextAutoConfiguration {
 						.map(GcpScope::getUrl)
 						.collect(Collectors.toList()));
 
-	private static final Log LOGGER = LogFactory.getLog(GcpContextAutoConfiguration.class);
+	private static final Log LOGGER = LogFactory.getLog(GcpContextConfiguration.class);
 
 	private final GcpProperties gcpProperties;
 
-	public GcpContextAutoConfiguration(GcpProperties gcpProperties) {
+	public GcpContextConfiguration(GcpProperties gcpProperties) {
 		this.gcpProperties = gcpProperties;
 	}
 
@@ -92,7 +89,6 @@ public class GcpContextAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public CredentialsProvider googleCredentials() throws Exception {
 		CredentialsProvider credentialsProvider;
 
@@ -142,7 +138,6 @@ public class GcpContextAutoConfiguration {
 	 * none, the project ID from the GOOGLE_CLOUD_PROJECT envvar and Metadata Server
 	 */
 	@Bean
-	@ConditionalOnMissingBean
 	public GcpProjectIdProvider gcpProjectIdProvider() {
 		GcpProjectIdProvider projectIdProvider =
 				this.gcpProperties.getProjectId() != null

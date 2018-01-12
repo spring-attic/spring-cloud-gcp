@@ -32,10 +32,8 @@ import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.gcp.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.pubsub.GcpPubSubProperties;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
@@ -52,7 +50,6 @@ import org.springframework.context.annotation.Configuration;
  * @author João André Martins
  */
 @Configuration
-@AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @EnableConfigurationProperties(GcpPubSubProperties.class)
 public class GcpPubSubAutoConfiguration {
 

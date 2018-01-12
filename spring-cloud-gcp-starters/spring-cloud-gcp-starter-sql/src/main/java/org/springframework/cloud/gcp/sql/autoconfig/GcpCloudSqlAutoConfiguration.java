@@ -23,7 +23,6 @@ import com.google.cloud.sql.CredentialFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -32,7 +31,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.AppEngineCondition;
-import org.springframework.cloud.gcp.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProperties;
 import org.springframework.cloud.gcp.sql.CloudSqlJdbcInfoProvider;
@@ -58,7 +56,6 @@ import org.springframework.util.StringUtils;
 @ConditionalOnClass(GcpProjectIdProvider.class)
 @ConditionalOnProperty(name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
-@AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public class GcpCloudSqlAutoConfiguration {
 
 	public final static String INSTANCE_CONNECTION_NAME_HELP_URL =
