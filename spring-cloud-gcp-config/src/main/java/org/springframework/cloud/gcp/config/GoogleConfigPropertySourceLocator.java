@@ -25,11 +25,9 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
-import org.springframework.cloud.gcp.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -51,15 +49,14 @@ import org.springframework.web.client.RestTemplate;
  * @author Jisha Abubaker
  */
 @Configuration
-@ConditionalOnProperty(prefix = "spring.cloud.gcp.config", name = "enabled", havingValue = "true",
+@ConditionalOnProperty(prefix = "spring.cloud.gcp.config", name = "enabled", havingValue = "true", //
 	matchIfMissing = true)
-@AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @EnableConfigurationProperties(GcpConfigProperties.class)
 public class GoogleConfigPropertySourceLocator implements PropertySourceLocator {
 
 	private static final String RUNTIMECONFIG_API_ROOT = "https://runtimeconfig.googleapis.com/v1beta1/";
 
-	private static final String ALL_VARIABLES_PATH =
+	private static final String ALL_VARIABLES_PATH = //
 			"projects/{project}/configs/{name}_{profile}/variables?returnValues=true";
 
 	private static final String PROPERTY_SOURCE_NAME = "spring-cloud-gcp";
