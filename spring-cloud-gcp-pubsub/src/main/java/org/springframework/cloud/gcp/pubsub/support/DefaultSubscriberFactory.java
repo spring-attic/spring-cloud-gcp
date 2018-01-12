@@ -97,7 +97,11 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	@Override
 	public SubscriberStub createSubscriberStub(RetrySettings retrySettings) {
 		try {
-			SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder = SubscriptionAdminSettings.newBuilder();
+			SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder = SubscriptionAdminSettings.newBuilder()
+					.setExecutorProvider(this.executorProvider)
+					.setCredentialsProvider(this.credentialsProvider)
+					.setTransportChannelProvider(this.channelProvider);
+
 			if (retrySettings != null) {
 				subscriptionAdminSettingsBuilder.pullSettings().setRetrySettings(retrySettings);
 			}

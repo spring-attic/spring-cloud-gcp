@@ -23,7 +23,6 @@ import com.google.api.core.SettableApiFuture;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.cloud.pubsub.v1.Subscriber;
-import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Before;
@@ -62,9 +61,6 @@ public class PubSubTemplateTests {
 
 	@Mock
 	private Subscriber mockSubscriber;
-
-	@Mock
-	private SubscriptionAdminSettings subscriptionAdminSettings;
 
 	private PubSubTemplate pubSubTemplate;
 	private PubsubMessage pubsubMessage;

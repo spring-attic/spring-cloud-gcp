@@ -18,20 +18,14 @@ package org.springframework.cloud.gcp.pubsub.support;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
-import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.threeten.bp.Duration;
-
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author João André Martins
- * @author Mike Eltsufin
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultSubscriberFactoryTests {
@@ -57,22 +51,4 @@ public class DefaultSubscriberFactoryTests {
 				this.credentialsProvider);
 	}
 
-	@Test
-	public void testCreateSubscriberStub_nullRetrySettings() {
-		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> "test_project_id",
-				this.executorProvider, this.channelProvider, this.credentialsProvider);
-
-		SubscriberStub subscriberStub = factory.createSubscriberStub(null);
-		assertNotNull(subscriberStub);
-	}
-
-	@Test
-	public void testCreateSubscriberStub_notNullRetrySettings() {
-		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> "test_project_id",
-				this.executorProvider, this.channelProvider, this.credentialsProvider);
-
-		SubscriberStub subscriberStub = factory.createSubscriberStub(RetrySettings.newBuilder().setTotalTimeout(
-				Duration.ofMillis(1000)).build());
-		assertNotNull(subscriberStub);
-	}
 }
