@@ -22,14 +22,14 @@ package org.springframework.cloud.gcp.logging;
  */
 public class LoggingWebMvcConfigurerSettings {
 
-	private TraceIdExtractorCombination extractorCombination;
+	private TraceIdExtractorType extractorCombination;
 
-	public TraceIdExtractorCombination getExtractorCombination() {
+	public TraceIdExtractorType getExtractorCombination() {
 		return this.extractorCombination;
 	}
 
 	public void setExtractorCombination(
-			TraceIdExtractorCombination extractorCombination) {
+			TraceIdExtractorType extractorCombination) {
 		this.extractorCombination = extractorCombination;
 	}
 }

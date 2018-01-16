@@ -46,14 +46,14 @@ public class LoggingWebMvcConfigurer extends WebMvcConfigurerAdapter {
 
 	/**
 	 * Gets a {@link CompositeTraceIdExtractor} based on
-	 * {@link TraceIdExtractorCombination}. Defaults to XCLOUD_ZIPKIN.
+	 * {@link TraceIdExtractorType}. Defaults to XCLOUD_ZIPKIN.
 	 * @param combination the enum indication the combination.
 	 * @return the composite trace ID extractor.
 	 */
 	public static CompositeTraceIdExtractor getCompositeExtractor(
-			TraceIdExtractorCombination combination) {
-		TraceIdExtractorCombination checkedCombination =
-				combination == null ? TraceIdExtractorCombination.XCLOUD_ZIPKIN : combination;
+			TraceIdExtractorType combination) {
+		TraceIdExtractorType checkedCombination =
+				combination == null ? TraceIdExtractorType.XCLOUD_ZIPKIN : combination;
 		CompositeTraceIdExtractor extractor;
 		switch (checkedCombination) {
 		case XCLOUD:

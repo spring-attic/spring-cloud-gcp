@@ -17,11 +17,16 @@
 package org.springframework.cloud.gcp.logging;
 
 /**
- * Enum values represent the order and combination of trace ID extractors that can be
+ * Enum values represent the order and combination of predefined trace ID extractors that can be
  * used.
+ *
+ * @see XCloudTraceIdExtractor
+ * @see ZipkinTraceIdExtractor
+ * @see CompositeTraceIdExtractor
+ * @see TraceIdExtractor
  *
  * @author Chengyuan Zhao
  */
-public enum TraceIdExtractorCombination {
+public enum TraceIdExtractorType {
 	XCLOUD, ZIPKIN, XCLOUD_ZIPKIN, ZIPKIN_XCLOUD
 }

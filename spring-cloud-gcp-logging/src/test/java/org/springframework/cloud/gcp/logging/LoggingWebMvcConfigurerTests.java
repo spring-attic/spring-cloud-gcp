@@ -64,7 +64,7 @@ public class LoggingWebMvcConfigurerTests {
 	@Test
 	public void testGetTraceIdExtractorsPrioritizeXCloudTrace() {
 		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
-				.getCompositeExtractor(TraceIdExtractorCombination.XCLOUD_ZIPKIN).getExtractors();
+				.getCompositeExtractor(TraceIdExtractorType.XCLOUD_ZIPKIN).getExtractors();
 
 		assertEquals(2, extractors.length);
 		assertTrue(extractors[0] instanceof XCloudTraceIdExtractor);
@@ -74,7 +74,7 @@ public class LoggingWebMvcConfigurerTests {
 	@Test
 	public void testGetTraceIdExtractorsPrioritizeZipkinTrace() {
 		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
-				.getCompositeExtractor(TraceIdExtractorCombination.ZIPKIN_XCLOUD).getExtractors();
+				.getCompositeExtractor(TraceIdExtractorType.ZIPKIN_XCLOUD).getExtractors();
 
 		assertEquals(2, extractors.length);
 		assertTrue(extractors[0] instanceof ZipkinTraceIdExtractor);
@@ -84,7 +84,7 @@ public class LoggingWebMvcConfigurerTests {
 	@Test
 	public void testGetTraceIdExtractorsOnlyXCloud() {
 		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
-				.getCompositeExtractor(TraceIdExtractorCombination.XCLOUD).getExtractors();
+				.getCompositeExtractor(TraceIdExtractorType.XCLOUD).getExtractors();
 
 		assertEquals(1, extractors.length);
 		assertTrue(extractors[0] instanceof XCloudTraceIdExtractor);
@@ -93,7 +93,7 @@ public class LoggingWebMvcConfigurerTests {
 	@Test
 	public void testGetTraceIdExtractorsOnlyZipkin() {
 		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
-				.getCompositeExtractor(TraceIdExtractorCombination.ZIPKIN).getExtractors();
+				.getCompositeExtractor(TraceIdExtractorType.ZIPKIN).getExtractors();
 
 		assertEquals(1, extractors.length);
 		assertTrue(extractors[0] instanceof ZipkinTraceIdExtractor);
