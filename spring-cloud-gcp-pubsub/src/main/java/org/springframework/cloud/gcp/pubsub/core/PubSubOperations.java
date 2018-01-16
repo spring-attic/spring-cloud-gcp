@@ -33,12 +33,12 @@ import org.springframework.util.concurrent.ListenableFuture;
  *
  * @author Vinicius Carvalho
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public interface PubSubOperations {
 
 	/**
-	 * Sends a message to Pub/Sub.
-	 *
+	 * Send a message to Pub/Sub.
 	 * @param topic the name of an existing topic
 	 * @param payload the message String payload
 	 * @param headers map of String to String headers
@@ -47,8 +47,7 @@ public interface PubSubOperations {
 	ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers);
 
 	/**
-	 * Sends a message to Pub/Sub.
-	 *
+	 * Send a message to Pub/Sub.
 	 * @param topic the name of an existing topic
 	 * @param payload the message String payload
 	 * @param headers map of String to String headers
@@ -59,8 +58,7 @@ public interface PubSubOperations {
 			Charset charset);
 
 	/**
-	 * Sends a message to Pub/Sub.
-	 *
+	 * Send a message to Pub/Sub.
 	 * @param topic the name of an existing topic
 	 * @param payload the message payload in bytes
 	 * @param headers map of String to String headers
@@ -69,8 +67,7 @@ public interface PubSubOperations {
 	ListenableFuture<String> publish(String topic, byte[] payload, Map<String, String> headers);
 
 	/**
-	 * Sends a message to Pub/Sub.
-	 *
+	 * Send a message to Pub/Sub.
 	 * @param topic the name of an existing topic
 	 * @param payload the message payload on the {@link PubsubMessage} payload format
 	 * @param headers map of String to String headers
@@ -79,8 +76,7 @@ public interface PubSubOperations {
 	ListenableFuture<String> publish(String topic, ByteString payload, Map<String, String> headers);
 
 	/**
-	 * Sends a message to Pub/Sub.
-	 *
+	 * Send a message to Pub/Sub.
 	 * @param topic the name of an existing topic
 	 * @param pubsubMessage a Google Cloud Pub/Sub API message
 	 * @return the listenable future of the call
@@ -88,11 +84,8 @@ public interface PubSubOperations {
 	ListenableFuture<String> publish(String topic, PubsubMessage pubsubMessage);
 
 	/**
-	 * Adds a callback method to an existing subscription.
-	 *
-	 * <p>
-	 * The created {@link Subscriber} is returned so it can be stopped.
-	 *
+	 * Add a callback method to an existing subscription.
+	 * <p>The created {@link Subscriber} is returned so it can be stopped.
 	 * @param subscription the name of an existing subscription
 	 * @param messageHandler the callback method triggered when new messages arrive
 	 * @return subscriber listening to new messages
@@ -100,12 +93,11 @@ public interface PubSubOperations {
 	Subscriber subscribe(String subscription, MessageReceiver messageHandler);
 
 	/**
-	 * Pulls and auto-acknowledges a number of messages from a Google Cloud Pub/Sub subscription.
-	 *
+	 * Pull and auto-acknowledge a number of messages from a Google Cloud Pub/Sub subscription.
 	 * @param subscription the subscription name
 	 * @param maxMessages the maximum number of pulled messages
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 *                         messages to satisfy {@code maxMessages}
+	 * messages to satisfy {@code maxMessages}
 	 * @param retrySettings the timeout and retry setting for the pull request
 	 * @return the list of received messages
 	 */
@@ -113,8 +105,7 @@ public interface PubSubOperations {
 			Boolean returnImmediately, RetrySettings retrySettings);
 
 	/**
-	 * Pulls and auto-acknowledges a message from a Google Cloud Pub/Sub subscription.
-	 *
+	 * Pull and auto-acknowledge a message from a Google Cloud Pub/Sub subscription.
 	 * @param subscription the subscription name
 	 * @return a received message, or {@code null} if none exists in the subscription
 	 */
