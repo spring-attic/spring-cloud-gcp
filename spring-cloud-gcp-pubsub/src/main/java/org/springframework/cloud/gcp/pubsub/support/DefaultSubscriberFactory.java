@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -79,6 +79,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	@Override
 	public PullRequest createPullRequest(String subscriptionName, Integer maxMessages,
 			Boolean returnImmediately) {
+		Assert.hasLength(subscriptionName, "The subscription name must be provided.");
+
 		PullRequest.Builder pullRequestBuilder =
 				PullRequest.newBuilder().setSubscriptionWithSubscriptionName(
 						SubscriptionName.of(this.projectId, subscriptionName));
@@ -109,7 +111,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 			return GrpcSubscriberStub.create(subscriptionAdminSettingsBuilder.build());
 		}
 		catch (IOException e) {
-			throw new RuntimeException("Error creating default SubscriptionAdminSettings", e);
+			throw new RuntimeException("Error creating the SubscriberStub", e);
 		}
 	}
 }

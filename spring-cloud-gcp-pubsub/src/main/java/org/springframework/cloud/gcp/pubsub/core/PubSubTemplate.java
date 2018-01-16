@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -154,6 +154,8 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 		try {
 			SubscriberStub subscriber = this.subscriberFactory.createSubscriberStub(retrySettings);
+			Assert.notNull(subscriber, "A SubscriberStub is needed to execute the pull request.");
+
 			PullResponse pullResponse =	subscriber.pullCallable().call(pullRequest);
 
 			// Ack received messages.
