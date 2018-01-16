@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.logging;
 
-import com.google.common.collect.ImmutableList;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -34,6 +32,13 @@ public class LoggingWebMvcConfigurer extends WebMvcConfigurerAdapter {
 
 	private final TraceIdLoggingWebMvcInterceptor interceptor;
 
+	/**
+	 * Constructor that accepts an {@link TraceIdLoggingWebMvcInterceptor}. If the given
+	 * interceptor is null, then a default {@link CompositeTraceIdExtractor} is used that
+	 * checks using {@link XCloudTraceIdExtractor} followed by the {@link ZipkinTraceIdExtractor}.
+	 *
+	 * @param interceptor
+	 */
 	public LoggingWebMvcConfigurer(
 			@Autowired(required = false) TraceIdLoggingWebMvcInterceptor interceptor) {
 		if (interceptor != null) {
@@ -41,8 +46,8 @@ public class LoggingWebMvcConfigurer extends WebMvcConfigurerAdapter {
 		}
 		else {
 			this.interceptor = new TraceIdLoggingWebMvcInterceptor(
-					new CompositeTraceIdExtractor(ImmutableList.of(
-							new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor())));
+					new CompositeTraceIdExtractor(
+							new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor()));
 		}
 	}
 

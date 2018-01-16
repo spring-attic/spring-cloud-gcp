@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 public interface TraceIdExtractor {
 
 	/**
-	 * Extracts trace ID from the HTTP request by checking request headers.
+	 * Extract trace ID from the HTTP request by checking request headers.
 	 *
 	 * @param req The HTTP servlet request.
 	 * @return The trace ID or null, if none found.

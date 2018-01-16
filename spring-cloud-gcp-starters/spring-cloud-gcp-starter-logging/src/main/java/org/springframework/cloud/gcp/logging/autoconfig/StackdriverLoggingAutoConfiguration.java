@@ -16,7 +16,6 @@
 package org.springframework.cloud.gcp.logging.autoconfig;
 
 import com.google.cloud.logging.TraceLoggingEnhancer;
-import com.google.common.collect.ImmutableList;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -45,40 +44,38 @@ public class StackdriverLoggingAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public TraceIdLoggingWebMvcInterceptor getLoggingWebMvcInterceptor(
+	public TraceIdLoggingWebMvcInterceptor loggingWebMvcInterceptor(
 			TraceIdExtractor extractor) {
 		return new TraceIdLoggingWebMvcInterceptor(extractor);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public TraceIdExtractor getTraceIdExtractor(
+	public TraceIdExtractor traceIdExtractor(
 			StackdriverLoggingProperties loggingProperties) {
 		TraceIdExtractorType type = loggingProperties.getExtractorType();
 		TraceIdExtractorType checkedCombination = type == null
 				? TraceIdExtractorType.XCLOUD_ZIPKIN
 				: type;
-		CompositeTraceIdExtractor extractor;
+		TraceIdExtractor extractor;
 		switch (checkedCombination) {
 		case XCLOUD:
-			extractor = new CompositeTraceIdExtractor(
-					ImmutableList.of(new XCloudTraceIdExtractor()));
+			extractor = new XCloudTraceIdExtractor();
 			break;
 		case ZIPKIN:
-			extractor = new CompositeTraceIdExtractor(
-					ImmutableList.of(new ZipkinTraceIdExtractor()));
+			extractor = new ZipkinTraceIdExtractor();
 			break;
 		case ZIPKIN_XCLOUD:
-			extractor = new CompositeTraceIdExtractor(ImmutableList
-					.of(new ZipkinTraceIdExtractor(), new XCloudTraceIdExtractor()));
+			extractor = new CompositeTraceIdExtractor(
+					new ZipkinTraceIdExtractor(), new XCloudTraceIdExtractor());
 			break;
 		case XCLOUD_ZIPKIN:
-			extractor = new CompositeTraceIdExtractor(ImmutableList
-					.of(new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor()));
+			extractor = new CompositeTraceIdExtractor(
+					new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor());
 			break;
 		default:
-			extractor = new CompositeTraceIdExtractor(ImmutableList
-					.of(new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor()));
+			extractor = new CompositeTraceIdExtractor(
+					new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor());
 			break;
 		}
 		return extractor;

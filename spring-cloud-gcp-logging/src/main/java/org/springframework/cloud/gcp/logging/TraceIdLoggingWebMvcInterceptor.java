@@ -38,7 +38,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  */
 public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 
-	private TraceIdExtractor traceIdExtractor;
+	private final TraceIdExtractor traceIdExtractor;
 
 	public TraceIdLoggingWebMvcInterceptor(TraceIdExtractor extractor) {
 		Assert.notNull(extractor, "A valid trace id extractor is required.");
@@ -47,11 +47,6 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 
 	public TraceIdExtractor getTraceIdExtractor() {
 		return this.traceIdExtractor;
-	}
-
-	public void setTraceIdExtractor(
-			TraceIdExtractor traceIdExtractor) {
-		this.traceIdExtractor = traceIdExtractor;
 	}
 
 	@Override

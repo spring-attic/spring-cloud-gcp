@@ -25,8 +25,8 @@ import com.google.common.collect.ImmutableList;
 import org.springframework.util.Assert;
 
 /**
- * Checks HTTP request for multiple headers that might contain a trace ID, and provides
- * the first one.
+ * Delegates checking HTTP request to a list of provided {@link TraceIdExtractor}
+ * for headers that might contain a trace ID, and provides the first one that is found.
  *
  * @author Chengyuan Zhao
  */
@@ -34,7 +34,7 @@ public class CompositeTraceIdExtractor implements TraceIdExtractor {
 
 	private final List<TraceIdExtractor> extractors;
 
-	public CompositeTraceIdExtractor(List<TraceIdExtractor> extractors) {
+	public CompositeTraceIdExtractor(TraceIdExtractor... extractors) {
 		Assert.notEmpty(extractors, "A list of valid trace ID extractors is required.");
 		this.extractors = ImmutableList.copyOf(extractors);
 	}

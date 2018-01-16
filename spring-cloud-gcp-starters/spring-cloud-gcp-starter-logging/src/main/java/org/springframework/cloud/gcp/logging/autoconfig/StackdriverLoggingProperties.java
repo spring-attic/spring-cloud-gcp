@@ -21,7 +21,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * @author Chengyuan Zhao
  */
-@ConfigurationProperties("spring.cloud.gcp.logging.headers")
+@ConfigurationProperties("spring.cloud.gcp.logging.traceId")
 public class StackdriverLoggingProperties {
 	private TraceIdExtractorType extractorType;
 
