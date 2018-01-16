@@ -26,11 +26,11 @@ import com.google.common.annotations.VisibleForTesting;
  *
  * @author Chengyuan Zhao
  */
-public class CompositeHeaderTraceIdExtractor implements TraceIdExtractor {
+public class CompositeTraceIdExtractor implements TraceIdExtractor {
 
 	private final TraceIdExtractor[] extractors;
 
-	public CompositeHeaderTraceIdExtractor(TraceIdExtractor... extractors) {
+	public CompositeTraceIdExtractor(TraceIdExtractor... extractors) {
 		this.extractors = extractors;
 	}
 

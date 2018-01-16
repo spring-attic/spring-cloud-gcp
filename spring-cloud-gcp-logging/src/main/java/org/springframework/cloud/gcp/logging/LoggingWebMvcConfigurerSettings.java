@@ -17,10 +17,12 @@
 package org.springframework.cloud.gcp.logging;
 
 /**
- * Holds settings for @{@link LoggingWebMvcConfigurer}
+ * Holds settings for {@link LoggingWebMvcConfigurer}
  * @author Chengyuan Zhao
  */
 public class LoggingWebMvcConfigurerSettings {
+
+	private TraceIdExtractorCombination extractorCombination;
 
 	public TraceIdExtractorCombination getExtractorCombination() {
 		return this.extractorCombination;
@@ -30,6 +32,4 @@ public class LoggingWebMvcConfigurerSettings {
 			TraceIdExtractorCombination extractorCombination) {
 		this.extractorCombination = extractorCombination;
 	}
-
-	private TraceIdExtractorCombination extractorCombination;
 }

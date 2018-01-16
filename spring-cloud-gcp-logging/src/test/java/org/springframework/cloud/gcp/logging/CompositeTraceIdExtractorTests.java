@@ -28,7 +28,7 @@ import static org.junit.Assert.assertThat;
  * @author Chengyuan Zhao
  */
 
-public class CompositeHeaderTraceIdExtractorTests {
+public class CompositeTraceIdExtractorTests {
 
 	private static final String TEST_TRACE_ID = "105445aa7843bc8bf206b120001000";
 
@@ -40,7 +40,7 @@ public class CompositeHeaderTraceIdExtractorTests {
 
 	private static final String B3_TRACE_ID_HEADER = "X-B3-TraceId";
 
-	private CompositeHeaderTraceIdExtractor extractor = new CompositeHeaderTraceIdExtractor(
+	private CompositeTraceIdExtractor extractor = new CompositeTraceIdExtractor(
 			new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor());
 
 	@Test

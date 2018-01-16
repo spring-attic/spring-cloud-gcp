@@ -45,28 +45,34 @@ public class LoggingWebMvcConfigurer extends WebMvcConfigurerAdapter {
 	}
 
 	/**
-	 * Gets a {@link CompositeHeaderTraceIdExtractor} based on
+	 * Gets a {@link CompositeTraceIdExtractor} based on
 	 * {@link TraceIdExtractorCombination}. Defaults to XCLOUD_ZIPKIN.
 	 * @param combination the enum indication the combination.
 	 * @return the composite trace ID extractor.
 	 */
-	public static CompositeHeaderTraceIdExtractor getCompositeExtractor(
+	public static CompositeTraceIdExtractor getCompositeExtractor(
 			TraceIdExtractorCombination combination) {
-		CompositeHeaderTraceIdExtractor extractor = new CompositeHeaderTraceIdExtractor(
-				new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor());
-		if (combination == null) {
-			return extractor;
-		}
-		switch (combination) {
+		TraceIdExtractorCombination checkedCombination =
+				combination == null ? TraceIdExtractorCombination.XCLOUD_ZIPKIN : combination;
+		CompositeTraceIdExtractor extractor;
+		switch (checkedCombination) {
 		case XCLOUD:
-			extractor = new CompositeHeaderTraceIdExtractor(new XCloudTraceIdExtractor());
+			extractor = new CompositeTraceIdExtractor(new XCloudTraceIdExtractor());
 			break;
 		case ZIPKIN:
-			extractor = new CompositeHeaderTraceIdExtractor(new ZipkinTraceIdExtractor());
+			extractor = new CompositeTraceIdExtractor(new ZipkinTraceIdExtractor());
 			break;
 		case ZIPKIN_XCLOUD:
-			extractor = new CompositeHeaderTraceIdExtractor(new ZipkinTraceIdExtractor(),
+			extractor = new CompositeTraceIdExtractor(new ZipkinTraceIdExtractor(),
 					new XCloudTraceIdExtractor());
+			break;
+		case XCLOUD_ZIPKIN:
+			extractor = new CompositeTraceIdExtractor(new XCloudTraceIdExtractor(),
+					new ZipkinTraceIdExtractor());
+			break;
+		default:
+			extractor = new CompositeTraceIdExtractor(new XCloudTraceIdExtractor(),
+					new ZipkinTraceIdExtractor());
 			break;
 		}
 		return extractor;
