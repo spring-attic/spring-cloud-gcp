@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.logging;
 
+import com.google.common.collect.ImmutableList;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -33,49 +35,15 @@ public class LoggingWebMvcConfigurer extends WebMvcConfigurerAdapter {
 	private final TraceIdLoggingWebMvcInterceptor interceptor;
 
 	public LoggingWebMvcConfigurer(
-			@Autowired(required = false) TraceIdLoggingWebMvcInterceptor interceptor,
-			LoggingWebMvcConfigurerSettings settings) {
+			@Autowired(required = false) TraceIdLoggingWebMvcInterceptor interceptor) {
 		if (interceptor != null) {
 			this.interceptor = interceptor;
 		}
 		else {
 			this.interceptor = new TraceIdLoggingWebMvcInterceptor(
-					getCompositeExtractor(settings.getExtractorCombination()));
+					new CompositeTraceIdExtractor(ImmutableList.of(
+							new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor())));
 		}
-	}
-
-	/**
-	 * Gets a {@link CompositeTraceIdExtractor} based on
-	 * {@link TraceIdExtractorType}. Defaults to XCLOUD_ZIPKIN.
-	 * @param combination the enum indication the combination.
-	 * @return the composite trace ID extractor.
-	 */
-	public static CompositeTraceIdExtractor getCompositeExtractor(
-			TraceIdExtractorType combination) {
-		TraceIdExtractorType checkedCombination =
-				combination == null ? TraceIdExtractorType.XCLOUD_ZIPKIN : combination;
-		CompositeTraceIdExtractor extractor;
-		switch (checkedCombination) {
-		case XCLOUD:
-			extractor = new CompositeTraceIdExtractor(new XCloudTraceIdExtractor());
-			break;
-		case ZIPKIN:
-			extractor = new CompositeTraceIdExtractor(new ZipkinTraceIdExtractor());
-			break;
-		case ZIPKIN_XCLOUD:
-			extractor = new CompositeTraceIdExtractor(new ZipkinTraceIdExtractor(),
-					new XCloudTraceIdExtractor());
-			break;
-		case XCLOUD_ZIPKIN:
-			extractor = new CompositeTraceIdExtractor(new XCloudTraceIdExtractor(),
-					new ZipkinTraceIdExtractor());
-			break;
-		default:
-			extractor = new CompositeTraceIdExtractor(new XCloudTraceIdExtractor(),
-					new ZipkinTraceIdExtractor());
-			break;
-		}
-		return extractor;
 	}
 
 	@Override

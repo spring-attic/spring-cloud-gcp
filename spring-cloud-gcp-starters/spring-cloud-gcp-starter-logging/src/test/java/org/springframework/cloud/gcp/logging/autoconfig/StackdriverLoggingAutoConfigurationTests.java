@@ -16,17 +16,25 @@
 
 package org.springframework.cloud.gcp.logging.autoconfig;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.gcp.logging.CompositeTraceIdExtractor;
+import org.springframework.cloud.gcp.logging.TraceIdExtractor;
 import org.springframework.cloud.gcp.logging.TraceIdLoggingWebMvcInterceptor;
+import org.springframework.cloud.gcp.logging.XCloudTraceIdExtractor;
+import org.springframework.cloud.gcp.logging.ZipkinTraceIdExtractor;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Mike Eltsufin
@@ -51,23 +59,80 @@ public abstract class StackdriverLoggingAutoConfigurationTests {
 		return count;
 	}
 
-	public static class StackdriverLoggingAutoConfigurationDefaultTests
-			extends StackdriverLoggingAutoConfigurationTests {
+	@Test
+	public void testGetTraceIdExtractorsDefault() {
+		StackdriverLoggingProperties propertires = new StackdriverLoggingProperties();
+		propertires.setExtractorType(null);
+		List<TraceIdExtractor> extractors = ((CompositeTraceIdExtractor) new StackdriverLoggingAutoConfiguration()
+				.getTraceIdExtractor(propertires)).getExtractors();
 
-		@Test
-		public void test() {
-			assertThat(countTraceIdInterceptors(), is(1));
-		}
+		assertEquals(2, extractors.size());
+		assertTrue(extractors.get(0) instanceof XCloudTraceIdExtractor);
+		assertTrue(extractors.get(1) instanceof ZipkinTraceIdExtractor);
 	}
 
-	@TestPropertySource(properties = {
-			"spring.cloud.gcp.logging.enabled=false" })
+	@Test
+	public void testGetTraceIdExtractorsPrioritizeXCloudTrace() {
+		StackdriverLoggingProperties propertires = new StackdriverLoggingProperties();
+		propertires.setExtractorType(TraceIdExtractorType.XCLOUD_ZIPKIN);
+		List<TraceIdExtractor> extractors = ((CompositeTraceIdExtractor) new StackdriverLoggingAutoConfiguration()
+				.getTraceIdExtractor(propertires)).getExtractors();
+
+		assertEquals(2, extractors.size());
+		assertTrue(extractors.get(0) instanceof XCloudTraceIdExtractor);
+		assertTrue(extractors.get(1) instanceof ZipkinTraceIdExtractor);
+	}
+
+	@Test
+	public void testGetTraceIdExtractorsPrioritizeZipkinTrace() {
+		StackdriverLoggingProperties propertires = new StackdriverLoggingProperties();
+		propertires.setExtractorType(TraceIdExtractorType.ZIPKIN_XCLOUD);
+		List<TraceIdExtractor> extractors = ((CompositeTraceIdExtractor) new StackdriverLoggingAutoConfiguration()
+				.getTraceIdExtractor(propertires)).getExtractors();
+
+		assertEquals(2, extractors.size());
+		assertTrue(extractors.get(0) instanceof ZipkinTraceIdExtractor);
+		assertTrue(extractors.get(1) instanceof XCloudTraceIdExtractor);
+	}
+
+	@Test
+	public void testGetTraceIdExtractorsOnlyXCloud() {
+		StackdriverLoggingProperties propertires = new StackdriverLoggingProperties();
+		propertires.setExtractorType(TraceIdExtractorType.XCLOUD);
+		List<TraceIdExtractor> extractors = ((CompositeTraceIdExtractor) new StackdriverLoggingAutoConfiguration()
+				.getTraceIdExtractor(propertires)).getExtractors();
+
+		assertEquals(1, extractors.size());
+		assertTrue(extractors.get(0) instanceof XCloudTraceIdExtractor);
+	}
+
+	@Test
+	public void testGetTraceIdExtractorsOnlyZipkin() {
+		StackdriverLoggingProperties propertires = new StackdriverLoggingProperties();
+		propertires.setExtractorType(TraceIdExtractorType.ZIPKIN);
+		List<TraceIdExtractor> extractors = ((CompositeTraceIdExtractor) new StackdriverLoggingAutoConfiguration()
+				.getTraceIdExtractor(propertires)).getExtractors();
+
+		assertEquals(1, extractors.size());
+		assertTrue(extractors.get(0) instanceof ZipkinTraceIdExtractor);
+	}
+
+	@TestPropertySource(properties = { "spring.cloud.gcp.logging.enabled=false" })
 	public static class StackdriverLoggingAutoConfigurationDisabledTests
 			extends StackdriverLoggingAutoConfigurationTests {
 
 		@Test
 		public void test() {
 			assertThat(countTraceIdInterceptors(), is(0));
+		}
+	}
+
+	public static class StackdriverLoggingAutoConfigurationDefaultTests
+			extends StackdriverLoggingAutoConfigurationTests {
+
+		@Test
+		public void test() {
+			assertThat(countTraceIdInterceptors(), is(1));
 		}
 	}
 }

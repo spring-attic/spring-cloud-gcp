@@ -17,12 +17,19 @@
 package org.springframework.cloud.gcp.logging.autoconfig;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.gcp.logging.LoggingWebMvcConfigurerSettings;
 
 /**
  * @author Chengyuan Zhao
  */
 @ConfigurationProperties("spring.cloud.gcp.logging.headers")
-public class StackdriverLoggingProperties extends LoggingWebMvcConfigurerSettings {
+public class StackdriverLoggingProperties {
+	private TraceIdExtractorType extractorType;
 
+	public TraceIdExtractorType getExtractorType() {
+		return this.extractorType;
+	}
+
+	public void setExtractorType(TraceIdExtractorType extractorType) {
+		this.extractorType = extractorType;
+	}
 }

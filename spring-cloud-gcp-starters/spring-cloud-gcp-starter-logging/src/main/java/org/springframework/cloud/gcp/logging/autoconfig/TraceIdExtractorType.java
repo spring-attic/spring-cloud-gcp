@@ -14,11 +14,11 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.logging;
+package org.springframework.cloud.gcp.logging.autoconfig;
 
 /**
- * Enum values represent the order and combination of predefined trace ID extractors that can be
- * used.
+ * Enum values represent the order and combination of predefined trace ID extractors that
+ * can be used.
  *
  * @see XCloudTraceIdExtractor
  * @see ZipkinTraceIdExtractor

@@ -16,6 +16,7 @@
 package org.springframework.cloud.gcp.logging.autoconfig;
 
 import com.google.cloud.logging.TraceLoggingEnhancer;
+import com.google.common.collect.ImmutableList;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -23,13 +24,17 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.logging.CompositeTraceIdExtractor;
 import org.springframework.cloud.gcp.logging.LoggingWebMvcConfigurer;
+import org.springframework.cloud.gcp.logging.TraceIdExtractor;
 import org.springframework.cloud.gcp.logging.TraceIdLoggingWebMvcInterceptor;
+import org.springframework.cloud.gcp.logging.XCloudTraceIdExtractor;
+import org.springframework.cloud.gcp.logging.ZipkinTraceIdExtractor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 @Configuration
 @ConditionalOnClass({ TraceIdLoggingWebMvcInterceptor.class, TraceLoggingEnhancer.class })
@@ -41,9 +46,41 @@ public class StackdriverLoggingAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public TraceIdLoggingWebMvcInterceptor getLoggingWebMvcInterceptor(
+			TraceIdExtractor extractor) {
+		return new TraceIdLoggingWebMvcInterceptor(extractor);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public TraceIdExtractor getTraceIdExtractor(
 			StackdriverLoggingProperties loggingProperties) {
-		return new TraceIdLoggingWebMvcInterceptor(new CompositeTraceIdExtractor(
-				LoggingWebMvcConfigurer.getCompositeExtractor(
-						loggingProperties.getExtractorCombination())));
+		TraceIdExtractorType type = loggingProperties.getExtractorType();
+		TraceIdExtractorType checkedCombination = type == null
+				? TraceIdExtractorType.XCLOUD_ZIPKIN
+				: type;
+		CompositeTraceIdExtractor extractor;
+		switch (checkedCombination) {
+		case XCLOUD:
+			extractor = new CompositeTraceIdExtractor(
+					ImmutableList.of(new XCloudTraceIdExtractor()));
+			break;
+		case ZIPKIN:
+			extractor = new CompositeTraceIdExtractor(
+					ImmutableList.of(new ZipkinTraceIdExtractor()));
+			break;
+		case ZIPKIN_XCLOUD:
+			extractor = new CompositeTraceIdExtractor(ImmutableList
+					.of(new ZipkinTraceIdExtractor(), new XCloudTraceIdExtractor()));
+			break;
+		case XCLOUD_ZIPKIN:
+			extractor = new CompositeTraceIdExtractor(ImmutableList
+					.of(new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor()));
+			break;
+		default:
+			extractor = new CompositeTraceIdExtractor(ImmutableList
+					.of(new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor()));
+			break;
+		}
+		return extractor;
 	}
 }

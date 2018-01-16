@@ -16,9 +16,13 @@
 
 package org.springframework.cloud.gcp.logging;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+
+import org.springframework.util.Assert;
 
 /**
  * Checks HTTP request for multiple headers that might contain a trace ID, and provides
@@ -28,21 +32,21 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class CompositeTraceIdExtractor implements TraceIdExtractor {
 
-	private final TraceIdExtractor[] extractors;
+	private final List<TraceIdExtractor> extractors;
 
-	public CompositeTraceIdExtractor(TraceIdExtractor... extractors) {
-		this.extractors = extractors;
+	public CompositeTraceIdExtractor(List<TraceIdExtractor> extractors) {
+		Assert.notEmpty(extractors, "A list of valid trace ID extractors is required.");
+		this.extractors = ImmutableList.copyOf(extractors);
 	}
 
-	@VisibleForTesting
-	TraceIdExtractor[] getExtractors() {
+	public List<TraceIdExtractor> getExtractors() {
 		return this.extractors;
 	}
 
 	@Override
 	public String extractTraceIdFromRequest(HttpServletRequest req) {
 		String traceId;
-		for (TraceIdExtractor extractor : this.extractors) {
+		for (TraceIdExtractor extractor : getExtractors()) {
 			traceId = extractor.extractTraceIdFromRequest(req);
 			if (traceId != null) {
 				return traceId;

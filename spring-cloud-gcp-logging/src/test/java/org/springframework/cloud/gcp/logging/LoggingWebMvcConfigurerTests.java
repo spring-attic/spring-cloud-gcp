@@ -26,9 +26,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @author Mike Eltsufin
@@ -41,62 +39,13 @@ public class LoggingWebMvcConfigurerTests {
 
 	@Test
 	public void testAddInterceptors() {
-		LoggingWebMvcConfigurer adapter = new LoggingWebMvcConfigurer(this.interceptor,
-				new LoggingWebMvcConfigurerSettings());
+		LoggingWebMvcConfigurer adapter = new LoggingWebMvcConfigurer(this.interceptor);
 		TestInterceptorRegistry registry = new TestInterceptorRegistry();
 
 		adapter.addInterceptors(registry);
 
 		assertThat(registry.doGetInterceptors().size(), is(1));
 		assertThat(registry.doGetInterceptors().get(0), is(this.interceptor));
-	}
-
-	@Test
-	public void testGetTraceIdExtractorsDefault() {
-		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
-				.getCompositeExtractor(null).getExtractors();
-
-		assertEquals(2, extractors.length);
-		assertTrue(extractors[0] instanceof XCloudTraceIdExtractor);
-		assertTrue(extractors[1] instanceof ZipkinTraceIdExtractor);
-	}
-
-	@Test
-	public void testGetTraceIdExtractorsPrioritizeXCloudTrace() {
-		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
-				.getCompositeExtractor(TraceIdExtractorType.XCLOUD_ZIPKIN).getExtractors();
-
-		assertEquals(2, extractors.length);
-		assertTrue(extractors[0] instanceof XCloudTraceIdExtractor);
-		assertTrue(extractors[1] instanceof ZipkinTraceIdExtractor);
-	}
-
-	@Test
-	public void testGetTraceIdExtractorsPrioritizeZipkinTrace() {
-		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
-				.getCompositeExtractor(TraceIdExtractorType.ZIPKIN_XCLOUD).getExtractors();
-
-		assertEquals(2, extractors.length);
-		assertTrue(extractors[0] instanceof ZipkinTraceIdExtractor);
-		assertTrue(extractors[1] instanceof XCloudTraceIdExtractor);
-	}
-
-	@Test
-	public void testGetTraceIdExtractorsOnlyXCloud() {
-		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
-				.getCompositeExtractor(TraceIdExtractorType.XCLOUD).getExtractors();
-
-		assertEquals(1, extractors.length);
-		assertTrue(extractors[0] instanceof XCloudTraceIdExtractor);
-	}
-
-	@Test
-	public void testGetTraceIdExtractorsOnlyZipkin() {
-		TraceIdExtractor[] extractors = LoggingWebMvcConfigurer
-				.getCompositeExtractor(TraceIdExtractorType.ZIPKIN).getExtractors();
-
-		assertEquals(1, extractors.length);
-		assertTrue(extractors[0] instanceof ZipkinTraceIdExtractor);
 	}
 
 	/**
