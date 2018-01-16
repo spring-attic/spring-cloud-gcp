@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,11 +16,18 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import java.io.IOException;
+
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
+import com.google.cloud.pubsub.v1.stub.GrpcSubscriberStub;
+import com.google.cloud.pubsub.v1.stub.SubscriberStub;
+import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.SubscriptionName;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -31,6 +38,7 @@ import org.springframework.util.Assert;
  * The default {@link SubscriberFactory} implementation.
  *
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public class DefaultSubscriberFactory implements SubscriberFactory {
 
@@ -59,12 +67,51 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	@Override
-	public Subscriber getSubscriber(String subscriptionName, MessageReceiver receiver) {
+	public Subscriber createSubscriber(String subscriptionName, MessageReceiver receiver) {
 		return Subscriber.newBuilder(
 				SubscriptionName.of(this.projectId, subscriptionName), receiver)
 				.setChannelProvider(this.channelProvider)
 				.setExecutorProvider(this.executorProvider)
 				.setCredentialsProvider(this.credentialsProvider)
 				.build();
+	}
+
+	@Override
+	public PullRequest createPullRequest(String subscriptionName, Integer maxMessages,
+			Boolean returnImmediately) {
+		Assert.hasLength(subscriptionName, "The subscription name must be provided.");
+
+		PullRequest.Builder pullRequestBuilder =
+				PullRequest.newBuilder().setSubscriptionWithSubscriptionName(
+						SubscriptionName.of(this.projectId, subscriptionName));
+
+		if (maxMessages != null) {
+			pullRequestBuilder.setMaxMessages(maxMessages);
+		}
+
+		if (returnImmediately != null) {
+			pullRequestBuilder.setReturnImmediately(returnImmediately);
+		}
+
+		return pullRequestBuilder.build();
+	}
+
+	@Override
+	public SubscriberStub createSubscriberStub(RetrySettings retrySettings) {
+		try {
+			SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder = SubscriptionAdminSettings.newBuilder()
+					.setExecutorProvider(this.executorProvider)
+					.setCredentialsProvider(this.credentialsProvider)
+					.setTransportChannelProvider(this.channelProvider);
+
+			if (retrySettings != null) {
+				subscriptionAdminSettingsBuilder.pullSettings().setRetrySettings(retrySettings);
+			}
+
+			return GrpcSubscriberStub.create(subscriptionAdminSettingsBuilder.build());
+		}
+		catch (IOException e) {
+			throw new RuntimeException("Error creating the SubscriberStub", e);
+		}
 	}
 }
