@@ -28,5 +28,22 @@ package org.springframework.cloud.gcp.logging.autoconfig;
  * @author Chengyuan Zhao
  */
 public enum TraceIdExtractorType {
-	XCLOUD, ZIPKIN, XCLOUD_ZIPKIN, ZIPKIN_XCLOUD
+	/**
+	 * Uses only {@link org.springframework.cloud.gcp.logging.XCloudTraceIdExtractor}
+	 */
+	XCLOUD,
+	/**
+	 * Uses only {@link org.springframework.cloud.gcp.logging.ZipkinTraceIdExtractor}
+	 */
+	ZIPKIN,
+	/**
+	 * Uses the XCloud extractor followed by the Zipkiung extractor if no trace ID was found
+	 * by the former.
+	 */
+	XCLOUD_ZIPKIN,
+	/**
+	 * Uses the Zipkin extractor followed by the XCloud extractor if no trace ID was found
+	 * by the former.
+	 */
+	ZIPKIN_XCLOUD
 }
