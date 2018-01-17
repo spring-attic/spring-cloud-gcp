@@ -74,9 +74,7 @@ public class StackdriverLoggingAutoConfiguration {
 					new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor());
 			break;
 		default:
-			extractor = new CompositeTraceIdExtractor(
-					new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor());
-			break;
+			throw new IllegalArgumentException(checkedType + " is not a valid trace ID extractor type.");
 		}
 		return extractor;
 	}
