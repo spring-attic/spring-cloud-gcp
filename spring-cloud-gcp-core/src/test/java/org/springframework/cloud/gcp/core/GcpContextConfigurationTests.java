@@ -14,23 +14,20 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.core;
+package org.springframework.cloud.gcp.core;
 
 import java.util.List;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
+
 import org.junit.After;
 import org.junit.Test;
 
 import org.springframework.boot.test.util.EnvironmentTestUtils;
-import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -40,7 +37,7 @@ import static org.mockito.Mockito.mock;
  * @author João André Martins
  */
 @Configuration
-public class GcpContextAutoConfigurationTests {
+public class GcpContextConfigurationTests {
 
 	private AnnotationConfigApplicationContext context;
 
@@ -69,7 +66,7 @@ public class GcpContextAutoConfigurationTests {
 	@Test
 	public void testResolveScopesDefaultScopes() {
 		loadEnvironment();
-		GcpContextAutoConfiguration configuration = this.context.getBean(GcpContextAutoConfiguration.class);
+		GcpContextConfiguration configuration = this.context.getBean(GcpContextConfiguration.class);
 		List<String> scopes = configuration.resolveScopes();
 		assertTrue(scopes.size() > 1);
 		assertTrue(scopes.contains(GcpScope.PUBSUB.getUrl()));
@@ -78,7 +75,7 @@ public class GcpContextAutoConfigurationTests {
 	@Test
 	public void testResolveScopesOverrideScopes() {
 		loadEnvironment("spring.cloud.gcp.credentials.scopes=myscope");
-		GcpContextAutoConfiguration configuration = this.context.getBean(GcpContextAutoConfiguration.class);
+		GcpContextConfiguration configuration = this.context.getBean(GcpContextConfiguration.class);
 		List<String> scopes = configuration.resolveScopes();
 		assertEquals(scopes.size(), 1);
 		assertTrue(scopes.contains("myscope"));
@@ -87,7 +84,7 @@ public class GcpContextAutoConfigurationTests {
 	@Test
 	public void testResolveScopesStarterScopesPlaceholder() {
 		loadEnvironment("spring.cloud.gcp.credentials.scopes=DEFAULT_SCOPES,myscope");
-		GcpContextAutoConfiguration configuration = this.context.getBean(GcpContextAutoConfiguration.class);
+		GcpContextConfiguration configuration = this.context.getBean(GcpContextConfiguration.class);
 		List<String> scopes = configuration.resolveScopes();
 		assertTrue(scopes.size() == GcpScope.values().length + 1);
 		assertTrue(scopes.contains(GcpScope.PUBSUB.getUrl()));
@@ -97,7 +94,7 @@ public class GcpContextAutoConfigurationTests {
 
 	private void loadEnvironment(String... environment) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		context.register(GcpContextAutoConfiguration.class);
+		context.register(GcpContextConfiguration.class);
 		context.register(this.getClass());
 		EnvironmentTestUtils.addEnvironment(context, environment);
 		context.refresh();

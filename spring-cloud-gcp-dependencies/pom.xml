@@ -29,11 +29,6 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-autoconfigure</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-pubsub</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -81,11 +76,6 @@
 			<!--Starters-->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -97,11 +87,6 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-sql</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-config</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -163,7 +148,7 @@
 				<scope>import</scope>
 			</dependency>
 
-			<!-- spring-cloud-gcp-starter-core -->
+			<!-- spring-cloud-gcp-core -->
 			<dependency>
 				<groupId>com.google.auth</groupId>
 				<artifactId>google-auth-library-oauth2-http</artifactId>

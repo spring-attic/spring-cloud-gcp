@@ -23,7 +23,7 @@
 
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-gcp-starter-core</artifactId>
+			<artifactId>spring-cloud-gcp-core</artifactId>
 		</dependency>
 
 		<dependency>

@@ -14,11 +14,10 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.config;
+package org.springframework.cloud.gcp.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import org.springframework.cloud.gcp.config.GcpConfigPropertiesProvider;
 import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.GcpScope;
 
@@ -29,7 +28,7 @@ import org.springframework.cloud.gcp.core.GcpScope;
  * @author João André Martins
  */
 @ConfigurationProperties("spring.cloud.gcp.config")
-public class GcpConfigProperties implements GcpConfigPropertiesProvider {
+public class GcpConfigProperties {
 
 	private boolean enabled = true;
 

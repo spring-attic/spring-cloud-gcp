@@ -44,7 +44,7 @@ import static org.mockito.Mockito.when;
  */
 public class GoogleConfigPropertySourceLocatorTest {
 
-	private GcpConfigPropertiesProvider gcpConfigProperties;
+	private GcpConfigProperties gcpConfigProperties;
 	private Map<String, Object> expectedProperties;
 	private GoogleConfigPropertySourceLocator googleConfigPropertySourceLocator;
 	private GcpProjectIdProvider projectIdProvider;
@@ -52,7 +52,7 @@ public class GoogleConfigPropertySourceLocatorTest {
 
 	@Before
 	public void setUp() {
-		this.gcpConfigProperties = mock(GcpConfigPropertiesProvider.class);
+		this.gcpConfigProperties = mock(GcpConfigProperties.class);
 		when(this.gcpConfigProperties.getName()).thenReturn("test");
 		when(this.gcpConfigProperties.isEnabled()).thenReturn(true);
 		org.springframework.cloud.gcp.core.Credentials configCredentials =
