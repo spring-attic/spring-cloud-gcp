@@ -109,7 +109,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	@Override
 	public ListenableFuture<String> publish(final String topic, PubsubMessage pubsubMessage) {
 		ApiFuture<String> publishFuture =
-				this.publisherFactory.getPublisher(topic).publish(pubsubMessage);
+				this.publisherFactory.createPublisher(topic).publish(pubsubMessage);
 
 		final SettableListenableFuture<String> settableFuture = new SettableListenableFuture<>();
 		ApiFutures.addCallback(publishFuture, new ApiFutureCallback<String>() {

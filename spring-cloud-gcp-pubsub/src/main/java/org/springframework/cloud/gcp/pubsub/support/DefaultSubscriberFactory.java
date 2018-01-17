@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.pubsub.support;
 
 import java.io.IOException;
 
+import com.google.api.core.ApiClock;
 import com.google.api.gax.batching.FlowControlSettings;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
@@ -62,6 +63,10 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	private Duration maxAckDurationPeriod;
 
 	private Integer parallelPullCount;
+
+	private String pullEndpoint;
+
+	private ApiClock apiClock;
 
 	/**
 	 * Default {@link DefaultSubscriberFactory} constructor.
@@ -132,6 +137,20 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 		this.parallelPullCount = parallelPullCount;
 	}
 
+	/**
+	 * Sets the endpoint for synchronous pulling messages.
+	 */
+	public void setPullEndpoint(String pullEndpoint) {
+		this.pullEndpoint = pullEndpoint;
+	}
+
+	/**
+	 * Sets the clock to use for the retry logic in synchronous pulling.
+	 */
+	public void setApiClock(ApiClock apiClock) {
+		this.apiClock = apiClock;
+	}
+
 	@Override
 	public Subscriber createSubscriber(String subscriptionName, MessageReceiver receiver) {
 		Subscriber.Builder subscriberBuilder = Subscriber.newBuilder(
@@ -194,16 +213,38 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	@Override
 	public SubscriberStub createSubscriberStub(RetrySettings retrySettings) {
+		SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder =
+				SubscriptionAdminSettings.newBuilder();
+
+		if (this.credentialsProvider != null) {
+			subscriptionAdminSettingsBuilder.setCredentialsProvider(this.credentialsProvider);
+		}
+
+		if (this.pullEndpoint != null) {
+			subscriptionAdminSettingsBuilder.setEndpoint(this.pullEndpoint);
+		}
+
+		if (this.executorProvider != null) {
+			subscriptionAdminSettingsBuilder.setExecutorProvider(this.executorProvider);
+		}
+
+		if (this.headerProvider != null) {
+			subscriptionAdminSettingsBuilder.setHeaderProvider(this.headerProvider);
+		}
+
+		if (this.channelProvider != null) {
+			subscriptionAdminSettingsBuilder.setTransportChannelProvider(this.channelProvider);
+		}
+
+		if (this.apiClock != null) {
+			subscriptionAdminSettingsBuilder.setClock(this.apiClock);
+		}
+
+		if (retrySettings != null) {
+			subscriptionAdminSettingsBuilder.pullSettings().setRetrySettings(retrySettings);
+		}
+
 		try {
-			SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder = SubscriptionAdminSettings.newBuilder()
-					.setExecutorProvider(this.executorProvider)
-					.setCredentialsProvider(this.credentialsProvider)
-					.setTransportChannelProvider(this.channelProvider);
-
-			if (retrySettings != null) {
-				subscriptionAdminSettingsBuilder.pullSettings().setRetrySettings(retrySettings);
-			}
-
 			return GrpcSubscriberStub.create(subscriptionAdminSettingsBuilder.build());
 		}
 		catch (IOException e) {

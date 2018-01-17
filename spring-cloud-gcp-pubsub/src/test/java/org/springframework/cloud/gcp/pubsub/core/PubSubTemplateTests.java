@@ -70,7 +70,7 @@ public class PubSubTemplateTests {
 	public void setUp() {
 		this.pubSubTemplate = new PubSubTemplate(this.mockPublisherFactory,
 				this.mockSubscriberFactory);
-		when(this.mockPublisherFactory.getPublisher("testTopic"))
+		when(this.mockPublisherFactory.createPublisher("testTopic"))
 				.thenReturn(this.mockPublisher);
 		this.settableApiFuture = SettableApiFuture.create();
 		when(this.mockPublisher.publish(isA(PubsubMessage.class)))
@@ -112,7 +112,7 @@ public class PubSubTemplateTests {
 
 	@Test(expected = PubSubException.class)
 	public void testSend_noPublisher() {
-		when(this.mockPublisherFactory.getPublisher("testTopic"))
+		when(this.mockPublisherFactory.createPublisher("testTopic"))
 				.thenThrow(new PubSubException("couldn't create the publisher."));
 
 		this.pubSubTemplate.publish("testTopic", this.pubsubMessage);

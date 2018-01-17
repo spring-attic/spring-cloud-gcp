@@ -61,8 +61,8 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	private BatchingSettings batchingSettings;
 
 	/**
-	 * Default {@link DefaultPublisherFactory} constructor.
-	 *
+	 * Create {@link DefaultPublisherFactory} instance based on the provided {@link GcpProjectIdProvider}.
+	 * <p>The {@link GcpProjectIdProvider} must not be null, neither provide an empty {@code projectId}.
 	 * @param projectIdProvider provides the GCP project ID
 	 */
 	public DefaultPublisherFactory(GcpProjectIdProvider projectIdProvider) {
@@ -110,7 +110,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	}
 
 	@Override
-	public Publisher getPublisher(String topic) {
+	public Publisher createPublisher(String topic) {
 		return this.publishers.computeIfAbsent(topic, key -> {
 			try {
 				Publisher.Builder publisherBuilder =

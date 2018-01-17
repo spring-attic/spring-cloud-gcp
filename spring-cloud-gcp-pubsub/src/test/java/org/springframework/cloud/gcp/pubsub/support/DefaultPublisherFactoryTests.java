@@ -38,7 +38,7 @@ public class DefaultPublisherFactoryTests {
 	public void testGetPublisher() {
 		DefaultPublisherFactory factory = new DefaultPublisherFactory(() -> "projectId");
 		factory.setCredentialsProvider(this.credentialsProvider);
-		Publisher publisher = factory.getPublisher("testTopic");
+		Publisher publisher = factory.createPublisher("testTopic");
 
 		assertEquals(factory.getCache().size(), 1);
 		assertEquals(publisher, factory.getCache().get("testTopic"));
