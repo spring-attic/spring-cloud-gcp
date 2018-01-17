@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.logging;
 
-import com.google.cloud.logging.TraceLoggingEnhancer;
 import org.junit.Test;
 
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -27,9 +26,10 @@ import static org.junit.Assert.assertThat;
 
 /**
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 
-public class TraceIdLoggingWebMvcInterceptorTests {
+public class XCloudTraceIdExtractorTests {
 
 	private static final String TEST_TRACE_ID = "105445aa7843bc8bf206b120001000";
 
@@ -37,27 +37,35 @@ public class TraceIdLoggingWebMvcInterceptorTests {
 
 	private static final String TRACE_ID_HEADER = "X-CLOUD-TRACE-CONTEXT";
 
-	private TraceIdLoggingWebMvcInterceptor interceptor =
-			new TraceIdLoggingWebMvcInterceptor(new XCloudTraceIdExtractor());
+	private XCloudTraceIdExtractor extractor = new XCloudTraceIdExtractor();
 
 	@Test
-	public void testPreHandle() throws Exception {
+	public void testExtractTraceIdFromRequest_valid() {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addHeader(TRACE_ID_HEADER, TEST_TRACE_ID_WITH_SPAN);
 
-		TraceLoggingEnhancer.setCurrentTraceId(null);
+		String traceId = this.extractor.extractTraceIdFromRequest(request);
 
-		this.interceptor.preHandle(request, null, null);
-
-		assertThat(TraceLoggingEnhancer.getCurrentTraceId(), is(TEST_TRACE_ID));
+		assertThat(traceId, is(TEST_TRACE_ID));
 	}
 
 	@Test
-	public void testAfterCompletion() throws Exception {
-		TraceLoggingEnhancer.setCurrentTraceId(TEST_TRACE_ID);
+	public void testExtractTraceIdFromRequest_missing() {
+		MockHttpServletRequest request = new MockHttpServletRequest();
 
-		this.interceptor.afterCompletion(null, null, null, null);
+		String traceId = this.extractor.extractTraceIdFromRequest(request);
 
-		assertThat(TraceLoggingEnhancer.getCurrentTraceId(), nullValue());
+		assertThat(traceId, nullValue());
 	}
+
+	@Test
+	public void testExtractTraceIdFromRequest_missingSpan() {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader(TRACE_ID_HEADER, TEST_TRACE_ID);
+
+		String traceId = this.extractor.extractTraceIdFromRequest(request);
+
+		assertThat(traceId, is(TEST_TRACE_ID));
+	}
+
 }

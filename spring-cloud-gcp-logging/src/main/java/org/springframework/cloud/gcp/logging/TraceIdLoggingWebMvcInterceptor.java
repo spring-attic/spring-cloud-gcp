@@ -16,14 +16,13 @@
 
 package org.springframework.cloud.gcp.logging;
 
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.cloud.logging.TraceLoggingEnhancer;
-import com.google.common.collect.ImmutableList;
 
+import org.springframework.util.Assert;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 /**
@@ -35,22 +34,27 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * trace ID metadata to log messages.
  *
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 
-	private static final String X_CLOUD_TRACE = "x-cloud-trace-context";
+	private final TraceIdExtractor traceIdExtractor;
 
-	private static final String X_B3_TRACE = "X-B3-TraceId";
+	public TraceIdLoggingWebMvcInterceptor(TraceIdExtractor extractor) {
+		Assert.notNull(extractor, "A valid trace id extractor is required.");
+		this.traceIdExtractor = extractor;
+	}
 
-	private static final List<String> TRACE_HEADERS = ImmutableList.of(X_CLOUD_TRACE,
-			X_B3_TRACE);
+	public TraceIdExtractor getTraceIdExtractor() {
+		return this.traceIdExtractor;
+	}
 
 	@Override
 	public boolean preHandle(HttpServletRequest req,
 			HttpServletResponse resp, Object handler) throws Exception {
-		String traceId = extractTraceIdFromRequest(req);
+		String traceId = this.traceIdExtractor.extractTraceIdFromRequest(req);
 		if (traceId != null) {
-			TraceLoggingEnhancer.setCurrentTraceId(extractTraceIdFromRequest(req));
+			TraceLoggingEnhancer.setCurrentTraceId(traceId);
 		}
 		return true;
 	}
@@ -61,36 +65,5 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 		// Note: the thread-local is currently not fully cleared, but just set to null
 		// See: https://github.com/GoogleCloudPlatform/google-cloud-java/issues/2746
 		TraceLoggingEnhancer.setCurrentTraceId(null);
-	}
-
-	/**
-	 * Extracts trace ID from the HTTP request by checking request headers.
-	 *
-	 * @param req The HTTP servlet request.
-	 * @return The trace ID or null, if none found.
-	 */
-	public String extractTraceIdFromRequest(HttpServletRequest req) {
-		String traceId;
-		for (String header : TRACE_HEADERS) {
-			traceId = extractTraceIdFromRequestWithHeader(req, header);
-			if (traceId != null) {
-				return traceId;
-			}
-		}
-		return null;
-	}
-
-	private String extractTraceIdFromRequestWithHeader(HttpServletRequest req,
-			String header) {
-		String traceId = req.getHeader(header);
-
-		if (traceId != null) {
-			int slash = traceId.indexOf('/');
-			if (slash >= 0) {
-				traceId = traceId.substring(0, slash);
-			}
-		}
-
-		return traceId;
 	}
 }

@@ -20,24 +20,62 @@ import com.google.cloud.logging.TraceLoggingEnhancer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.logging.CompositeTraceIdExtractor;
 import org.springframework.cloud.gcp.logging.LoggingWebMvcConfigurer;
+import org.springframework.cloud.gcp.logging.TraceIdExtractor;
 import org.springframework.cloud.gcp.logging.TraceIdLoggingWebMvcInterceptor;
+import org.springframework.cloud.gcp.logging.XCloudTraceIdExtractor;
+import org.springframework.cloud.gcp.logging.ZipkinTraceIdExtractor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 /**
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 @Configuration
 @ConditionalOnClass({ TraceIdLoggingWebMvcInterceptor.class, TraceLoggingEnhancer.class })
+@EnableConfigurationProperties({ StackdriverLoggingProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.logging.enabled", matchIfMissing = true)
 @Import(LoggingWebMvcConfigurer.class)
 public class StackdriverLoggingAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public TraceIdLoggingWebMvcInterceptor getLoggingWebMvcInterceptor() {
-		return new TraceIdLoggingWebMvcInterceptor();
+	public TraceIdLoggingWebMvcInterceptor loggingWebMvcInterceptor(
+			TraceIdExtractor extractor) {
+		return new TraceIdLoggingWebMvcInterceptor(extractor);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public TraceIdExtractor traceIdExtractor(
+			StackdriverLoggingProperties loggingProperties) {
+		TraceIdExtractorType checkedType = loggingProperties.getTraceIdExtractor();
+		if (checkedType == null) {
+			checkedType = TraceIdExtractorType.XCLOUD_ZIPKIN;
+		}
+		TraceIdExtractor extractor;
+		switch (checkedType) {
+		case XCLOUD:
+			extractor = new XCloudTraceIdExtractor();
+			break;
+		case ZIPKIN:
+			extractor = new ZipkinTraceIdExtractor();
+			break;
+		case ZIPKIN_XCLOUD:
+			extractor = new CompositeTraceIdExtractor(
+					new ZipkinTraceIdExtractor(), new XCloudTraceIdExtractor());
+			break;
+		case XCLOUD_ZIPKIN:
+			extractor = new CompositeTraceIdExtractor(
+					new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor());
+			break;
+		default:
+			throw new IllegalArgumentException(checkedType + " is not a valid trace ID extractor type.");
+		}
+		return extractor;
 	}
 }

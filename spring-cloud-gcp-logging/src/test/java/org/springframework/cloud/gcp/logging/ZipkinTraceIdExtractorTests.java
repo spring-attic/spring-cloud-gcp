@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.logging;
 
-import com.google.cloud.logging.TraceLoggingEnhancer;
 import org.junit.Test;
 
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -26,38 +25,33 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 
-public class TraceIdLoggingWebMvcInterceptorTests {
+public class ZipkinTraceIdExtractorTests {
 
 	private static final String TEST_TRACE_ID = "105445aa7843bc8bf206b120001000";
 
-	private static final String TEST_TRACE_ID_WITH_SPAN = "105445aa7843bc8bf206b120001000/0;o=1";
+	private static final String B3_TRACE_ID_HEADER = "X-B3-TraceId";
 
-	private static final String TRACE_ID_HEADER = "X-CLOUD-TRACE-CONTEXT";
-
-	private TraceIdLoggingWebMvcInterceptor interceptor =
-			new TraceIdLoggingWebMvcInterceptor(new XCloudTraceIdExtractor());
+	private ZipkinTraceIdExtractor extractor = new ZipkinTraceIdExtractor();
 
 	@Test
-	public void testPreHandle() throws Exception {
+	public void testExtractTraceIdFromRequest_missing() {
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.addHeader(TRACE_ID_HEADER, TEST_TRACE_ID_WITH_SPAN);
 
-		TraceLoggingEnhancer.setCurrentTraceId(null);
+		String traceId = this.extractor.extractTraceIdFromRequest(request);
 
-		this.interceptor.preHandle(request, null, null);
-
-		assertThat(TraceLoggingEnhancer.getCurrentTraceId(), is(TEST_TRACE_ID));
+		assertThat(traceId, nullValue());
 	}
 
 	@Test
-	public void testAfterCompletion() throws Exception {
-		TraceLoggingEnhancer.setCurrentTraceId(TEST_TRACE_ID);
+	public void testExtractTraceIdFromRequest() {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader(B3_TRACE_ID_HEADER, TEST_TRACE_ID);
 
-		this.interceptor.afterCompletion(null, null, null, null);
+		String traceId = this.extractor.extractTraceIdFromRequest(request);
 
-		assertThat(TraceLoggingEnhancer.getCurrentTraceId(), nullValue());
+		assertThat(traceId, is(TEST_TRACE_ID));
 	}
 }
