@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.List;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.rpc.ApiException;
+import com.google.api.gax.rpc.StatusCode;
 import com.google.cloud.pubsub.v1.PagedResponseWrappers;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
@@ -92,6 +94,27 @@ public class PubSubAdmin {
 		Assert.hasText(topicName, "No topic name was specified.");
 
 		return this.topicAdminClient.createTopic(TopicName.create(this.projectId, topicName));
+	}
+
+	/**
+	 * Get the configuration of a Google Cloud Pub/Sub topic.
+	 *
+	 * @param topicName canonical topic name, e.g., "topicName"
+	 * @return topic configuration or {@code null} if topic doesn't exist
+	 */
+	public Topic getTopic(String topicName) {
+		Assert.hasText(topicName, "No topic name was specified.");
+
+		try {
+			return this.topicAdminClient.getTopic(TopicName.create(this.projectId, topicName));
+		}
+		catch (ApiException aex) {
+			if (aex.getStatusCode().getCode() == StatusCode.Code.NOT_FOUND) {
+				return null;
+			}
+
+			throw aex;
+		}
 	}
 
 	/**
@@ -189,6 +212,28 @@ public class PubSubAdmin {
 				TopicName.of(this.projectId, topicName),
 				pushConfigBuilder.build(),
 				finalAckDeadline);
+	}
+
+	/**
+	 * Get the configuration of a Google Cloud Pub/Sub subscription.
+	 *
+	 * @param subscriptionName canonical subscription name, e.g., "subscriptionName"
+	 * @return subscription configuration or {@code null} if subscription doesn't exist
+	 */
+	public Subscription getSubscription(String subscriptionName) {
+		Assert.hasText(subscriptionName, "No subscription name was specified");
+
+		try {
+			return this.subscriptionAdminClient.getSubscription(
+					SubscriptionName.create(this.projectId, subscriptionName));
+		}
+		catch (ApiException aex) {
+			if (aex.getStatusCode().getCode() == StatusCode.Code.NOT_FOUND) {
+				return null;
+			}
+
+			throw aex;
+		}
 	}
 
 	/**

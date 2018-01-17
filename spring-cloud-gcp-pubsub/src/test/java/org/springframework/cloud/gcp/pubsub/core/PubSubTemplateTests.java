@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -67,16 +67,16 @@ public class PubSubTemplateTests {
 	private SettableApiFuture<String> settableApiFuture;
 
 	@Before
-	public void setUp() throws ExecutionException, InterruptedException {
-		this.pubSubTemplate =
-				new PubSubTemplate(this.mockPublisherFactory, this.mockSubscriberFactory);
+	public void setUp() {
+		this.pubSubTemplate = new PubSubTemplate(this.mockPublisherFactory,
+				this.mockSubscriberFactory);
 		when(this.mockPublisherFactory.getPublisher("testTopic"))
 				.thenReturn(this.mockPublisher);
 		this.settableApiFuture = SettableApiFuture.create();
 		when(this.mockPublisher.publish(isA(PubsubMessage.class)))
 				.thenReturn(this.settableApiFuture);
 
-		when(this.mockSubscriberFactory.getSubscriber(
+		when(this.mockSubscriberFactory.createSubscriber(
 				eq("testSubscription"), isA(MessageReceiver.class)))
 				.thenReturn(this.mockSubscriber);
 		when(this.mockSubscriber.startAsync()).thenReturn(mock(ApiService.class));
