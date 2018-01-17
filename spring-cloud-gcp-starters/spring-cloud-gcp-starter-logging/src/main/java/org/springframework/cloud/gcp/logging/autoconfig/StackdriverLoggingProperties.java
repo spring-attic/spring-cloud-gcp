@@ -23,13 +23,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties("spring.cloud.gcp.logging.traceId")
 public class StackdriverLoggingProperties {
-	private TraceIdExtractorType extractorType;
+	private TraceIdExtractorType extractor;
 
-	public TraceIdExtractorType getExtractorType() {
-		return this.extractorType;
+	public TraceIdExtractorType getExtractor() {
+		return this.extractor;
 	}
 
-	public void setExtractorType(TraceIdExtractorType extractorType) {
-		this.extractorType = extractorType;
+	public void setExtractor(TraceIdExtractorType extractor) {
+		this.extractor = extractor;
 	}
 }

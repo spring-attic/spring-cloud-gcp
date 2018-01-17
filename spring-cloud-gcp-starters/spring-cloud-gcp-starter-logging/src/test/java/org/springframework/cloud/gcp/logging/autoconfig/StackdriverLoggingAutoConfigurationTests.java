@@ -62,7 +62,7 @@ public abstract class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testGetTraceIdExtractorsDefault() {
 		StackdriverLoggingProperties propertires = new StackdriverLoggingProperties();
-		propertires.setExtractorType(null);
+		propertires.setExtractor(null);
 		List<TraceIdExtractor> extractors = ((CompositeTraceIdExtractor) new StackdriverLoggingAutoConfiguration()
 				.traceIdExtractor(propertires)).getExtractors();
 
@@ -74,7 +74,7 @@ public abstract class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testGetTraceIdExtractorsPrioritizeXCloudTrace() {
 		StackdriverLoggingProperties propertires = new StackdriverLoggingProperties();
-		propertires.setExtractorType(TraceIdExtractorType.XCLOUD_ZIPKIN);
+		propertires.setExtractor(TraceIdExtractorType.XCLOUD_ZIPKIN);
 		List<TraceIdExtractor> extractors = ((CompositeTraceIdExtractor) new StackdriverLoggingAutoConfiguration()
 				.traceIdExtractor(propertires)).getExtractors();
 
@@ -86,7 +86,7 @@ public abstract class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testGetTraceIdExtractorsPrioritizeZipkinTrace() {
 		StackdriverLoggingProperties propertires = new StackdriverLoggingProperties();
-		propertires.setExtractorType(TraceIdExtractorType.ZIPKIN_XCLOUD);
+		propertires.setExtractor(TraceIdExtractorType.ZIPKIN_XCLOUD);
 		List<TraceIdExtractor> extractors = ((CompositeTraceIdExtractor) new StackdriverLoggingAutoConfiguration()
 				.traceIdExtractor(propertires)).getExtractors();
 
@@ -98,7 +98,7 @@ public abstract class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testGetTraceIdExtractorsOnlyXCloud() {
 		StackdriverLoggingProperties propertires = new StackdriverLoggingProperties();
-		propertires.setExtractorType(TraceIdExtractorType.XCLOUD);
+		propertires.setExtractor(TraceIdExtractorType.XCLOUD);
 
 		assertTrue(new StackdriverLoggingAutoConfiguration()
 				.traceIdExtractor(propertires) instanceof XCloudTraceIdExtractor);
@@ -107,7 +107,7 @@ public abstract class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testGetTraceIdExtractorsOnlyZipkin() {
 		StackdriverLoggingProperties propertires = new StackdriverLoggingProperties();
-		propertires.setExtractorType(TraceIdExtractorType.ZIPKIN);
+		propertires.setExtractor(TraceIdExtractorType.ZIPKIN);
 
 		assertTrue(new StackdriverLoggingAutoConfiguration()
 				.traceIdExtractor(propertires) instanceof ZipkinTraceIdExtractor);
