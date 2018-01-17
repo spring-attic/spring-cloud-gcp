@@ -54,8 +54,7 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 			HttpServletResponse resp, Object handler) throws Exception {
 		String traceId = this.traceIdExtractor.extractTraceIdFromRequest(req);
 		if (traceId != null) {
-			TraceLoggingEnhancer.setCurrentTraceId(
-					this.traceIdExtractor.extractTraceIdFromRequest(req));
+			TraceLoggingEnhancer.setCurrentTraceId(traceId);
 		}
 		return true;
 	}

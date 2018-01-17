@@ -53,9 +53,10 @@ public class StackdriverLoggingAutoConfiguration {
 	@ConditionalOnMissingBean
 	public TraceIdExtractor traceIdExtractor(
 			StackdriverLoggingProperties loggingProperties) {
-		TraceIdExtractorType checkedType = loggingProperties.getExtractorType() == null
-				? TraceIdExtractorType.XCLOUD_ZIPKIN
-				: loggingProperties.getExtractorType();
+		TraceIdExtractorType checkedType = loggingProperties.getExtractorType();
+		if (checkedType == null) {
+			checkedType = TraceIdExtractorType.XCLOUD_ZIPKIN;
+		}
 		TraceIdExtractor extractor;
 		switch (checkedType) {
 		case XCLOUD:
