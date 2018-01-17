@@ -37,7 +37,7 @@ public enum TraceIdExtractorType {
 	 */
 	ZIPKIN,
 	/**
-	 * Uses the XCloud extractor followed by the Zipkiung extractor if no trace ID was found
+	 * Uses the XCloud extractor followed by the Zipkin extractor if no trace ID was found
 	 * by the former.
 	 */
 	XCLOUD_ZIPKIN,

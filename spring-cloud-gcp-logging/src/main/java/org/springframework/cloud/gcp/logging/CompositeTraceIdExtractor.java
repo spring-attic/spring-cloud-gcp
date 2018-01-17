@@ -25,8 +25,8 @@ import com.google.common.collect.ImmutableList;
 import org.springframework.util.Assert;
 
 /**
- * Delegates checking HTTP request to a list of provided {@link TraceIdExtractor}
- * for headers that might contain a trace ID, and provides the first one that is found.
+ * Delegates checking HTTP request to a list of provided {@link TraceIdExtractor}, and provides
+ * the first one that is found.
  *
  * @author Chengyuan Zhao
  */

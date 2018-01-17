@@ -37,7 +37,8 @@ public class LoggingWebMvcConfigurer extends WebMvcConfigurerAdapter {
 	 * interceptor is null, then a default {@link CompositeTraceIdExtractor} is used that
 	 * checks using {@link XCloudTraceIdExtractor} followed by the {@link ZipkinTraceIdExtractor}.
 	 *
-	 * @param interceptor
+	 * @param interceptor The interceptor to use with this configurer. If not provided
+	 * a {@link TraceIdLoggingWebMvcInterceptor} is used with the trace ID extractor described above.
 	 */
 	public LoggingWebMvcConfigurer(
 			@Autowired(required = false) TraceIdLoggingWebMvcInterceptor interceptor) {
