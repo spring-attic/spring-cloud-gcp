@@ -41,8 +41,8 @@ and https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-
 == Getting Started
 
 For Logback, a `org/springframework/cloud/gcp/logging/logback-appender.xml` is made available for import to make it
-easier to configure the Logback appender. It defines the `STACKDRIVER` appender that will
-send logs to Stackdriver Logging.
+easier to configure the Logback appender.
+It defines the `STACKDRIVER` appender that will send logs to Stackdriver Logging.
 
 Your Logback configuration may look something like this:
 [source, xml]
@@ -57,7 +57,8 @@ Your Logback configuration may look something like this:
 ----
 
 Note that, when the application is run locally, the logs will go into the "spring.log"
-channel of the "Global" resource. However, when running on GCP on App Engine or GKE, the log channel
+channel of the "Global" resource.
+However, when running on GCP on App Engine or GKE, the log channel
 will run under the appropriate monitored resource.
 
 `STACKDRIVER_LOG_NAME` and `STACKDRIVER_LOG_FLUSH_LEVEL` environment variables can be used to customize
