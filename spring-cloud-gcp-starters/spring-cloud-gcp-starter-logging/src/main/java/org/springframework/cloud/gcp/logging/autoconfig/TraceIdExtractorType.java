@@ -20,10 +20,10 @@ package org.springframework.cloud.gcp.logging.autoconfig;
  * Enum values represent the order and combination of predefined trace ID extractors that
  * can be used.
  *
- * @see XCloudTraceIdExtractor
- * @see ZipkinTraceIdExtractor
- * @see CompositeTraceIdExtractor
- * @see TraceIdExtractor
+ * @see org.springframework.cloud.gcp.logging.XCloudTraceIdExtractor
+ * @see org.springframework.cloud.gcp.logging.ZipkinTraceIdExtractor
+ * @see org.springframework.cloud.gcp.logging.CompositeTraceIdExtractor
+ * @see org.springframework.cloud.gcp.logging.TraceIdExtractor
  *
  * @author Chengyuan Zhao
  */
