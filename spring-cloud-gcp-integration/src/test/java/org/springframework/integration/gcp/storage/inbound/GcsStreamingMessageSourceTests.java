@@ -16,7 +16,6 @@
 
 package org.springframework.integration.gcp.storage.inbound;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,8 +45,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willAnswer;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -61,7 +60,7 @@ public class GcsStreamingMessageSourceTests {
 	private PollableChannel gcsChannel;
 
 	@Test
-	public void testInboundStreamingChannelAdater() throws IOException {
+	public void testInboundStreamingChannelAdapter() {
 		Message<?> message = this.gcsChannel.receive(5000);
 
 		assertThat(message).isNotNull();

@@ -16,6 +16,8 @@
 
 package org.springframework.integration.gcp.storage;
 
+import java.util.Date;
+
 import com.google.cloud.storage.BlobInfo;
 
 import org.springframework.integration.file.remote.AbstractFileInfo;
@@ -66,5 +68,13 @@ public class GcsFileInfo extends AbstractFileInfo<BlobInfo> {
 	@Override
 	public BlobInfo getFileInfo() {
 		return this.gcsFile;
+	}
+
+	@Override
+	public String toString() {
+		return "FileInfo [isDirectory=" + isDirectory() + ", isLink=" + isLink()
+				+ ", Size=" + getSize() + ", ModifiedTime="
+				+ new Date(getModified()) + ", Filename=" + getFilename()
+				+ ", RemoteDirectory=" + getRemoteDirectory() + "]";
 	}
 }
