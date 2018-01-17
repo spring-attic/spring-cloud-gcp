@@ -23,5 +23,5 @@ import com.google.cloud.pubsub.v1.Publisher;
  */
 public interface PublisherFactory {
 
-	Publisher getPublisher(String topic);
+	Publisher createPublisher(String topic);
 }

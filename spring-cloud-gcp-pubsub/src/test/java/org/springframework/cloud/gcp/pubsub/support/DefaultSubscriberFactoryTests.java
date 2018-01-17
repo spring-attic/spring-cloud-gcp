@@ -17,12 +17,13 @@
 package org.springframework.cloud.gcp.pubsub.support;
 
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.cloud.pubsub.v1.Subscriber;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author João André Martins
@@ -31,24 +32,27 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class DefaultSubscriberFactoryTests {
 
 	@Mock
-	private ExecutorProvider executorProvider;
-
-	@Mock
-	private TransportChannelProvider channelProvider;
-
-	@Mock
 	private CredentialsProvider credentialsProvider;
+
+	@Test
+	public void testNewSubscriber() {
+		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> "angeldust");
+		factory.setCredentialsProvider(this.credentialsProvider);
+
+		Subscriber subscriber = factory.createSubscriber("midnight cowboy", (message, consumer) -> { });
+
+		assertEquals("midnight cowboy", subscriber.getSubscriptionName().getSubscription());
+		assertEquals("angeldust", subscriber.getSubscriptionName().getProject());
+	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testNewDefaultSubscriberFactory_nullProjectProvider() {
-		new DefaultSubscriberFactory(null, this.executorProvider, this.channelProvider,
-				this.credentialsProvider);
+		new DefaultSubscriberFactory(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testNewDefaultSubscriberFactory_nullProject() {
-		new DefaultSubscriberFactory(() -> null, this.executorProvider, this.channelProvider,
-				this.credentialsProvider);
+		new DefaultSubscriberFactory(() -> null);
 	}
 
 }

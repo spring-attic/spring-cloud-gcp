@@ -18,9 +18,12 @@ package org.springframework.cloud.gcp.pubsub.support;
 
 import java.io.IOException;
 
+import com.google.api.core.ApiClock;
+import com.google.api.gax.batching.FlowControlSettings;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
@@ -29,6 +32,7 @@ import com.google.cloud.pubsub.v1.stub.GrpcSubscriberStub;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.SubscriptionName;
+import org.threeten.bp.Duration;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.Assert;
@@ -42,38 +46,149 @@ import org.springframework.util.Assert;
  */
 public class DefaultSubscriberFactory implements SubscriberFactory {
 
-	private String projectId;
+	private final String projectId;
 
-	private final ExecutorProvider executorProvider;
+	private ExecutorProvider executorProvider;
 
-	private final TransportChannelProvider channelProvider;
+	private TransportChannelProvider channelProvider;
 
-	private final CredentialsProvider credentialsProvider;
+	private CredentialsProvider credentialsProvider;
 
-	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider,
-			ExecutorProvider executorProvider,
-			TransportChannelProvider channelProvider,
-			CredentialsProvider credentialsProvider) {
+	private HeaderProvider headerProvider;
+
+	private ExecutorProvider systemExecutorProvider;
+
+	private FlowControlSettings flowControlSettings;
+
+	private Duration maxAckDurationPeriod;
+
+	private Integer parallelPullCount;
+
+	private String pullEndpoint;
+
+	private ApiClock apiClock;
+
+	/**
+	 * Default {@link DefaultSubscriberFactory} constructor.
+	 *
+	 * @param projectIdProvider provides the GCP project ID
+	 */
+	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
-		Assert.notNull(executorProvider, "The executor provider can't be null.");
-		Assert.notNull(channelProvider, "The channel provider can't be null.");
-		Assert.notNull(credentialsProvider, "The credentials provider can't be null.");
 
 		this.projectId = projectIdProvider.getProjectId();
 		Assert.hasText(this.projectId, "The project ID can't be null or empty.");
+	}
+
+	/**
+	 * Set the provider for the subscribers' executor. Useful to specify the number of threads to be used by each
+	 * executor.
+	 */
+	public void setExecutorProvider(ExecutorProvider executorProvider) {
 		this.executorProvider = executorProvider;
+	}
+
+	/**
+	 * Set the provider for the subscribers' transport channel.
+	 */
+	public void setChannelProvider(TransportChannelProvider channelProvider) {
 		this.channelProvider = channelProvider;
+	}
+
+	/**
+	 * Set the provider for the GCP credentials to be used by the subscribers' API calls.
+	 */
+	public void setCredentialsProvider(CredentialsProvider credentialsProvider) {
 		this.credentialsProvider = credentialsProvider;
+	}
+
+	/**
+	 * Set the provider for the HTTP headers to be added to the subscribers' REST API calls.
+	 */
+	public void setHeaderProvider(HeaderProvider headerProvider) {
+		this.headerProvider = headerProvider;
+	}
+
+	/**
+	 * Set the provider for the system executor, to poll and manage lease extensions.
+	 */
+	public void setSystemExecutorProvider(ExecutorProvider systemExecutorProvider) {
+		this.systemExecutorProvider = systemExecutorProvider;
+	}
+
+	/**
+	 * Set the flow control for the subscribers, including the behaviour for when the flow limits are hit.
+	 */
+	public void setFlowControlSettings(FlowControlSettings flowControlSettings) {
+		this.flowControlSettings = flowControlSettings;
+	}
+
+	/**
+	 * Set the maximum period the ack timeout is extended by.
+	 */
+	public void setMaxAckDurationPeriod(Duration maxAckDurationPeriod) {
+		this.maxAckDurationPeriod = maxAckDurationPeriod;
+	}
+
+	/**
+	 * Set the number of pull workers.
+	 */
+	public void setParallelPullCount(Integer parallelPullCount) {
+		this.parallelPullCount = parallelPullCount;
+	}
+
+	/**
+	 * Sets the endpoint for synchronous pulling messages.
+	 */
+	public void setPullEndpoint(String pullEndpoint) {
+		this.pullEndpoint = pullEndpoint;
+	}
+
+	/**
+	 * Sets the clock to use for the retry logic in synchronous pulling.
+	 */
+	public void setApiClock(ApiClock apiClock) {
+		this.apiClock = apiClock;
 	}
 
 	@Override
 	public Subscriber createSubscriber(String subscriptionName, MessageReceiver receiver) {
-		return Subscriber.newBuilder(
-				SubscriptionName.of(this.projectId, subscriptionName), receiver)
-				.setChannelProvider(this.channelProvider)
-				.setExecutorProvider(this.executorProvider)
-				.setCredentialsProvider(this.credentialsProvider)
-				.build();
+		Subscriber.Builder subscriberBuilder = Subscriber.newBuilder(
+				SubscriptionName.of(this.projectId, subscriptionName), receiver);
+
+		if (this.channelProvider != null) {
+			subscriberBuilder.setChannelProvider(this.channelProvider);
+		}
+
+		if (this.executorProvider != null) {
+			subscriberBuilder.setExecutorProvider(this.executorProvider);
+		}
+
+		if (this.credentialsProvider != null) {
+			subscriberBuilder.setCredentialsProvider(this.credentialsProvider);
+		}
+
+		if (this.headerProvider != null) {
+			subscriberBuilder.setHeaderProvider(this.headerProvider);
+		}
+
+		if (this.systemExecutorProvider != null) {
+			subscriberBuilder.setSystemExecutorProvider(this.systemExecutorProvider);
+		}
+
+		if (this.flowControlSettings != null) {
+			subscriberBuilder.setFlowControlSettings(this.flowControlSettings);
+		}
+
+		if (this.maxAckDurationPeriod != null) {
+			subscriberBuilder.setMaxAckExtensionPeriod(this.maxAckDurationPeriod);
+		}
+
+		if (this.parallelPullCount != null) {
+			subscriberBuilder.setParallelPullCount(this.parallelPullCount);
+		}
+
+		return subscriberBuilder.build();
 	}
 
 	@Override
@@ -98,16 +213,38 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	@Override
 	public SubscriberStub createSubscriberStub(RetrySettings retrySettings) {
+		SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder =
+				SubscriptionAdminSettings.newBuilder();
+
+		if (this.credentialsProvider != null) {
+			subscriptionAdminSettingsBuilder.setCredentialsProvider(this.credentialsProvider);
+		}
+
+		if (this.pullEndpoint != null) {
+			subscriptionAdminSettingsBuilder.setEndpoint(this.pullEndpoint);
+		}
+
+		if (this.executorProvider != null) {
+			subscriptionAdminSettingsBuilder.setExecutorProvider(this.executorProvider);
+		}
+
+		if (this.headerProvider != null) {
+			subscriptionAdminSettingsBuilder.setHeaderProvider(this.headerProvider);
+		}
+
+		if (this.channelProvider != null) {
+			subscriptionAdminSettingsBuilder.setTransportChannelProvider(this.channelProvider);
+		}
+
+		if (this.apiClock != null) {
+			subscriptionAdminSettingsBuilder.setClock(this.apiClock);
+		}
+
+		if (retrySettings != null) {
+			subscriptionAdminSettingsBuilder.pullSettings().setRetrySettings(retrySettings);
+		}
+
 		try {
-			SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder = SubscriptionAdminSettings.newBuilder()
-					.setExecutorProvider(this.executorProvider)
-					.setCredentialsProvider(this.credentialsProvider)
-					.setTransportChannelProvider(this.channelProvider);
-
-			if (retrySettings != null) {
-				subscriptionAdminSettingsBuilder.pullSettings().setRetrySettings(retrySettings);
-			}
-
 			return GrpcSubscriberStub.create(subscriptionAdminSettingsBuilder.build());
 		}
 		catch (IOException e) {

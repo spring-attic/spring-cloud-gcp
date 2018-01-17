@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.api.gax.batching.BatchingSettings;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.annotations.VisibleForTesting;
@@ -35,11 +37,7 @@ import org.springframework.util.Assert;
  * The default {@link PublisherFactory} implementation.
  *
  * <p>
- * Creates {@link Publisher}s for topics once and reuses them.
- *
- * <p>
- * Every {@link Publisher} produced by this factory reuses the same {@link ExecutorProvider},
- * so the number of created threads doesn't spin out of control.
+ * Creates {@link Publisher}s for topics once, caches and reuses them.
  *
  * @author João André Martins
  */
@@ -52,37 +50,93 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	 */
 	private final ConcurrentHashMap<String, Publisher> publishers = new ConcurrentHashMap<>();
 
-	private final ExecutorProvider executorProvider;
+	private ExecutorProvider executorProvider;
 
-	private final TransportChannelProvider channelProvider;
+	private TransportChannelProvider channelProvider;
 
-	private final CredentialsProvider credentialsProvider;
+	private CredentialsProvider credentialsProvider;
 
-	public DefaultPublisherFactory(GcpProjectIdProvider projectIdProvider,
-			ExecutorProvider executorProvider,
-			TransportChannelProvider channelProvider,
-			CredentialsProvider credentialsProvider) {
+	private RetrySettings retrySettings;
+
+	private BatchingSettings batchingSettings;
+
+	/**
+	 * Create {@link DefaultPublisherFactory} instance based on the provided {@link GcpProjectIdProvider}.
+	 * <p>The {@link GcpProjectIdProvider} must not be null, neither provide an empty {@code projectId}.
+	 * @param projectIdProvider provides the GCP project ID
+	 */
+	public DefaultPublisherFactory(GcpProjectIdProvider projectIdProvider) {
 		Assert.notNull(projectIdProvider, "The project ID provider can't be null.");
-		Assert.notNull(executorProvider, "The executor provider can't be null.");
-		Assert.notNull(channelProvider, "The channel provider can't be null.");
-		Assert.notNull(credentialsProvider, "The credentials provider can't be null.");
 
 		this.projectId = projectIdProvider.getProjectId();
 		Assert.hasText(this.projectId, "The project ID can't be null or empty.");
+	}
+
+	/**
+	 * Set the provider for the executor that will be used by the publisher. Useful to specify the number of threads to
+	 * be used by each executor.
+	 */
+	public void setExecutorProvider(ExecutorProvider executorProvider) {
 		this.executorProvider = executorProvider;
+	}
+
+	/**
+	 * Set the provider for the channel to be used by the publisher. Useful to specify HTTP headers for the REST API
+	 * calls.
+	 */
+	public void setChannelProvider(TransportChannelProvider channelProvider) {
 		this.channelProvider = channelProvider;
+	}
+
+	/**
+	 * Set the provider for the GCP credentials to be used by the publisher on every API calls it makes.
+	 */
+	public void setCredentialsProvider(CredentialsProvider credentialsProvider) {
 		this.credentialsProvider = credentialsProvider;
 	}
 
+	/**
+	 * Set the API call retry configuration.
+	 */
+	public void setRetrySettings(RetrySettings retrySettings) {
+		this.retrySettings = retrySettings;
+	}
+
+	/**
+	 * Set the API call batching configuration.
+	 */
+	public void setBatchingSettings(BatchingSettings batchingSettings) {
+		this.batchingSettings = batchingSettings;
+	}
+
 	@Override
-	public Publisher getPublisher(String topic) {
+	public Publisher createPublisher(String topic) {
 		return this.publishers.computeIfAbsent(topic, key -> {
 			try {
-				return Publisher.newBuilder(TopicName.of(this.projectId, key))
-						.setExecutorProvider(this.executorProvider)
-						.setChannelProvider(this.channelProvider)
-						.setCredentialsProvider(this.credentialsProvider)
-						.build();
+				Publisher.Builder publisherBuilder =
+						Publisher.newBuilder(TopicName.of(this.projectId, key));
+
+				if (this.executorProvider != null) {
+					publisherBuilder.setExecutorProvider(this.executorProvider);
+				}
+
+				if (this.channelProvider != null) {
+					publisherBuilder.setChannelProvider(this.channelProvider);
+				}
+
+				if (this.credentialsProvider != null) {
+					publisherBuilder.setCredentialsProvider(this.credentialsProvider);
+				}
+
+				if (this.retrySettings != null) {
+					publisherBuilder.setRetrySettings(this.retrySettings);
+				}
+
+				if (this.batchingSettings != null) {
+					publisherBuilder.setBatchingSettings(this.batchingSettings);
+				}
+
+				return publisherBuilder.build();
 			}
 			catch (IOException ioe) {
 				throw new PubSubException("An error creating the Google Cloud Pub/Sub publisher " +

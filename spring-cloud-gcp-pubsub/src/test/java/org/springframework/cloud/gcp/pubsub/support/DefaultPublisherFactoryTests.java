@@ -16,22 +16,14 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
-import java.io.IOException;
-
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.grpc.GrpcTransportChannel;
-import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 /**
  * @author João André Martins
@@ -39,43 +31,28 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultPublisherFactoryTests {
 
-	private DefaultPublisherFactory factory;
-	@Mock
-	private ExecutorProvider executorProvider;
-	@Mock
-	private TransportChannelProvider channelProvider;
 	@Mock
 	private CredentialsProvider credentialsProvider;
-	@Mock
-	private GrpcTransportChannel transportChannel;
-
-	@Before
-	public void setUp() throws IOException {
-		when(this.channelProvider.getTransportChannel()).thenReturn(this.transportChannel);
-		when(this.channelProvider.shouldAutoClose()).thenReturn(false);
-
-		this.factory = new DefaultPublisherFactory(
-				() -> "projectId", this.executorProvider, this.channelProvider,
-				this.credentialsProvider);
-	}
 
 	@Test
 	public void testGetPublisher() {
-		Publisher publisher = this.factory.getPublisher("testTopic");
+		DefaultPublisherFactory factory = new DefaultPublisherFactory(() -> "projectId");
+		factory.setCredentialsProvider(this.credentialsProvider);
+		Publisher publisher = factory.createPublisher("testTopic");
 
-		assertEquals(this.factory.getCache().size(), 1);
-		assertTrue(this.factory.getCache().get("testTopic") == publisher);
+		assertEquals(factory.getCache().size(), 1);
+		assertEquals(publisher, factory.getCache().get("testTopic"));
+		assertEquals("testTopic", publisher.getTopicName().getTopic());
+		assertEquals("projectId", publisher.getTopicName().getProject());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testNewDefaultPublisherFactory_nullProjectIdProvider() {
-		new DefaultPublisherFactory(null, this.executorProvider, this.channelProvider,
-				this.credentialsProvider);
+		new DefaultPublisherFactory(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testNewDefaultPublisherFactory_nullProjectId() {
-		new DefaultPublisherFactory(() -> null, this.executorProvider, this.channelProvider,
-				this.credentialsProvider);
+		new DefaultPublisherFactory(() -> null);
 	}
 }
