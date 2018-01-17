@@ -39,7 +39,7 @@ public class DefaultSubscriberFactoryTests {
 		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> "angeldust");
 		factory.setCredentialsProvider(this.credentialsProvider);
 
-		Subscriber subscriber = factory.getSubscriber("midnight cowboy", (message, consumer) -> { });
+		Subscriber subscriber = factory.createSubscriber("midnight cowboy", (message, consumer) -> { });
 
 		assertEquals("midnight cowboy", subscriber.getSubscriptionName().getSubscription());
 		assertEquals("angeldust", subscriber.getSubscriptionName().getProject());
