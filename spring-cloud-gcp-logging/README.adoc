@@ -23,16 +23,22 @@ dependencies {
 https://cloud.google.com/logging/[Stackdriver Logging] is the managed logging service provided by Google Cloud
 Platform.
 
-This module provides support for associating a web request trace ID with the corresponding log entries. This allows
-grouping of log messages by request.
+This module provides support for associating a web request trace ID with the corresponding log entries.
+This allows grouping of log messages by request.
 
-It works by using the `X-Cloud-Trace-Context` HTTP header which is automatically added to HTTP requests sent to
-applications hosted on GCP services such as App Engine and GKE.
-
-`TraceIdLoggingWebMvcInterceptor` extracts the request trace ID from the `X-Cloud-Trace-Context` HTTP header and stores
-it in a thread-local of the https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-logging/src/main/java/com/google/cloud/logging/TraceLoggingEnhancer.java[`TraceLoggingEnhancer`]
+`TraceIdLoggingWebMvcInterceptor` extracts the request trace ID from an HTTP request using a
+`TraceIdExtractor` and stores it in a thread-local of the https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-logging/src/main/java/com/google/cloud/logging/TraceLoggingEnhancer.java[`TraceLoggingEnhancer`]
 which can then be used in a logging appender to add the trace ID metadata to log messages.
 
+There are implementations provided for `TraceIdExtractor`:
+
+[options="header",]
+|=======================================================================
+| Extractor | Description
+| `XCloudTraceIdExtractor` | Checks the `X-Cloud-Trace-Context` HTTP header that is automatically added to HTTP requests sent to applications hosted on GCP services such as App Engine and GKE
+| `ZipkinTraceIdExtractor` | Checks the `X-B3-TraceId` header
+| `CompositeTraceIdExtractor` | Instantiated with a list of other `TraceIdExtractor`, and provides the first trace ID found using these extractors in the given order
+|=======================================================================
 
 `LoggingWebMvcConfigurer` configuration class is also provided to help register the `TraceIdLoggingWebMvcInterceptor`
 in Spring MVC applications.
