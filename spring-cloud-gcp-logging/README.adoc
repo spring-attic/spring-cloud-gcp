@@ -30,13 +30,15 @@ This allows grouping of log messages by request.
 `TraceIdExtractor` and stores it in a thread-local of the https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-logging/src/main/java/com/google/cloud/logging/TraceLoggingEnhancer.java[`TraceLoggingEnhancer`]
 which can then be used in a logging appender to add the trace ID metadata to log messages.
 
-There are implementations provided for `TraceIdExtractor`: `XCloudTraceIdExtractor`,
-which checks the `X-Cloud-Trace-Context` HTTP header that is automatically added to HTTP requests sent to
-applications hosted on GCP services such as App Engine and GKE, and `ZipkinTraceIdExtractor`, which checks
-the `X-B3-TraceId` header.
-A third implementation, `CompositeTraceIdExtractor`, is instantiated with a
-a list of other `TraceIdExtractor`, and provides the first trace ID found using these extractors in
-the given order.
+There are implementations provided for `TraceIdExtractor`:
+
+[options="header",]
+|=======================================================================
+| Extractor | Description
+| `XCloudTraceIdExtractor` | Checks the `X-Cloud-Trace-Context` HTTP header that is automatically added to HTTP requests sent to applications hosted on GCP services such as App Engine and GKE
+| `ZipkinTraceIdExtractor` | Checks the `X-B3-TraceId` header
+| `CompositeTraceIdExtractor` | Instantiated with a list of other `TraceIdExtractor`, and provides the first trace ID found using these extractors in the given order
+|=======================================================================
 
 `LoggingWebMvcConfigurer` configuration class is also provided to help register the `TraceIdLoggingWebMvcInterceptor`
 in Spring MVC applications.
