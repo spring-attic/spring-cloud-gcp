@@ -49,7 +49,7 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnClass({ GoogleStorageProtocolResolverSettings.class, Storage.class })
 @EnableConfigurationProperties({GcpProperties.class, GcpStorageProperties.class})
 @Import(GoogleStorageProtocolResolver.class)
-public class StorageAutoConfiguration {
+public class GcpStorageAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
@@ -62,8 +62,7 @@ public class StorageAutoConfiguration {
 										.getLocation().getInputStream())
 								.createScoped(gcpStorageProperties.getCredentials().getScopes())
 						: credentialsProvider.getCredentials())
-				.setHeaderProvider(new UsageTrackingHeaderProvider("spring-cloud-gcp-storage",
-						StorageAutoConfiguration.class.getPackage().getImplementationVersion()))
+				.setHeaderProvider(new UsageTrackingHeaderProvider(GcpStorageAutoConfiguration.class))
 				.build().getService();
 	}
 }

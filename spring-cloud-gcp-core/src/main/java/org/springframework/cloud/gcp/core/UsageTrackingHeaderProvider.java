@@ -29,22 +29,27 @@ import com.google.api.gax.rpc.HeaderProvider;
  */
 public class UsageTrackingHeaderProvider implements HeaderProvider {
 
-	private final String springLibrary;
+	/** Class whose project name and version will be used in the header */
+	private Class clazz;
 
-	private final String springLibraryVersion;
-
-	public UsageTrackingHeaderProvider(String springLibrary, String springLibraryVersion) {
-		this.springLibrary = springLibrary;
-		this.springLibraryVersion = springLibraryVersion;
+	public UsageTrackingHeaderProvider(Class clazz) {
+		this.clazz = clazz;
 	}
 
+	/**
+	 * Returns the "User-Agent" header whose value should be added to the google-cloud-java REST API calls.
+	 * e.g., {@code User-Agent: Spring/1.0.0.RELEASE spring-cloud-gcp-pubsub/1.0.0.RELEASE}.
+	 */
 	@Override
 	public Map<String, String> getHeaders() {
 		Map<String, String> headers = new HashMap<>();
 
+		String[] packageTokens = this.clazz.getPackage().getName().split("\\.");
+		String springLibrary = "spring-cloud-gcp-" + packageTokens[packageTokens.length - 1];
+
 		headers.put("User-Agent",
 				"Spring/" + this.getClass().getPackage().getImplementationVersion()
-				+ " " + this.springLibrary + "/" + this.springLibraryVersion);
+				+ " " + springLibrary + "/" + this.clazz.getPackage().getImplementationVersion());
 
 		return headers;
 	}

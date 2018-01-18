@@ -62,9 +62,7 @@ public class GcpPubSubAutoConfiguration {
 
 	private final CredentialsProvider finalCredentialsProvider;
 
-	private final HeaderProvider headerProvider =
-			new UsageTrackingHeaderProvider("spring-cloud-gcp-pubsub",
-					this.getClass().getPackage().getImplementationVersion());
+	private final HeaderProvider headerProvider = new UsageTrackingHeaderProvider(this.getClass());
 
 	public GcpPubSubAutoConfiguration(GcpPubSubProperties gcpPubSubProperties,
 			GcpProjectIdProvider gcpProjectIdProvider,

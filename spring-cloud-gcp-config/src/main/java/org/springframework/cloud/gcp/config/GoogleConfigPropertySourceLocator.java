@@ -110,9 +110,7 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		Assert.isTrue(headers.containsKey(AUTHORIZATION_HEADER), "Authorization header required");
 
 		// Adds usage tracking header.
-		new UsageTrackingHeaderProvider("spring-cloud-gcp-config",
-				this.getClass().getPackage().getImplementationVersion())
-				.getHeaders().forEach(headers::add);
+		new UsageTrackingHeaderProvider(this.getClass()).getHeaders().forEach(headers::add);
 
 		return new HttpEntity<>(headers);
 	}

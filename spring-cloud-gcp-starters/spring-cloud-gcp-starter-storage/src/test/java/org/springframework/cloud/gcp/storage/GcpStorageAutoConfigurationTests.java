@@ -46,7 +46,7 @@ import static org.junit.Assert.assertFalse;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = "spring.cloud.gcp.storage.auto-create-files=false")
 @RunWith(SpringRunner.class)
-public class GoogleStorageAutoConfigurationTests {
+public class GcpStorageAutoConfigurationTests {
 
 	@LocalServerPort
 	private int port;

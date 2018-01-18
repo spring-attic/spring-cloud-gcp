@@ -80,9 +80,7 @@ public class StackdriverTraceAutoConfiguration {
 
 	private CredentialsProvider finalCredentialsProvider;
 
-	private HeaderProvider headerProvider =
-			new UsageTrackingHeaderProvider("spring-cloud-gcp-trace",
-					this.getClass().getPackage().getImplementationVersion());
+	private HeaderProvider headerProvider =	new UsageTrackingHeaderProvider(this.getClass());
 
 	public StackdriverTraceAutoConfiguration(GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider,
