@@ -62,6 +62,9 @@ public class GoogleStorageTests {
 	@Value("gs://test-spring/images/spring.png")
 	private Resource remoteResource;
 
+	@Value("gs://test_spring/images/spring.png")
+	private Resource remoteResourceWithUnderscore;
+
 	@Value("gs://test-spring")
 	private Resource bucketResource;
 
@@ -92,6 +95,11 @@ public class GoogleStorageTests {
 	}
 
 	@Test
+	public void testValidObjectWithUnderscore() throws Exception {
+		Assert.assertTrue(this.remoteResourceWithUnderscore.exists());
+	}
+
+	@Test
 	public void testValidBucket() throws IOException {
 		Assert.assertEquals("test-spring", this.bucketResource.getDescription());
 		Assert.assertEquals(this.bucketResource.getDescription(),
@@ -104,6 +112,7 @@ public class GoogleStorageTests {
 		Assert.assertEquals("gs://test-spring", this.bucketResource.getURI().toString());
 		Assert.assertEquals(this.bucketResource.getURI().toString(),
 				this.bucketResourceTrailingSlash.getURI().toString());
+
 
 		String relative = this.bucketResource.createRelative("aaa/bbb").getURI()
 				.toString();
@@ -300,6 +309,7 @@ public class GoogleStorageTests {
 		public static Storage mockStorage() throws Exception {
 			Storage storage = mock(Storage.class);
 			BlobId validBlob = BlobId.of("test-spring", "images/spring.png");
+			BlobId validBlobWithUnderscore = BlobId.of("test_spring", "images/spring.png");
 			Bucket mockedBucket = mock(Bucket.class);
 			Blob mockedBlob = mock(Blob.class);
 			WriteChannel writeChannel = mock(WriteChannel.class);
@@ -307,6 +317,7 @@ public class GoogleStorageTests {
 			when(mockedBucket.exists()).thenReturn(true);
 			when(mockedBlob.getSize()).thenReturn(4096L);
 			when(storage.get(eq(validBlob))).thenReturn(mockedBlob);
+			when(storage.get(eq(validBlobWithUnderscore))).thenReturn(mockedBlob);
 			when(storage.get("test-spring")).thenReturn(mockedBucket);
 			when(mockedBucket.getName()).thenReturn("test-spring");
 			when(mockedBlob.writer()).thenReturn(writeChannel);
