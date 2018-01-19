@@ -151,11 +151,10 @@ public class StackdriverTraceAutoConfiguration {
 				throws IOException {
 			return TraceServiceClient.create(
 					TraceServiceSettings.newBuilder()
-					.setCredentialsProvider(
-							StackdriverTraceAutoConfiguration.this.finalCredentialsProvider)
-					.setExecutorProvider(executorProvider)
+							.setCredentialsProvider(StackdriverTraceAutoConfiguration.this.finalCredentialsProvider)
+							.setExecutorProvider(executorProvider)
 							.setHeaderProvider(StackdriverTraceAutoConfiguration.this.headerProvider)
-					.build());
+							.build());
 		}
 
 		@Bean
