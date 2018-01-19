@@ -1,0 +1,1 @@
+provides: spring-cloud-gcp-starter-core, HikariCP, mysql-socket-factory, mysql-connector-java, postgres-socket-factory, postgresql
