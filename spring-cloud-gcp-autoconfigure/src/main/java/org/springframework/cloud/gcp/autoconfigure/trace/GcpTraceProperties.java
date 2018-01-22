@@ -37,7 +37,7 @@ public class GcpTraceProperties {
 	 * Buffer size in bytes. Traces will be flushed to Stackdriver when buffered trace
 	 * messages exceed this size.
 	 *
-	 * This value is defaulted to 1% of the {@link Runtime#totalMemory()} in bytes.
+	 * <p>This value is defaulted to 1% of the {@link Runtime#totalMemory()} in bytes.
 	 * However, be careful when running inside of a containerized environment. You should either set JVM's max heap
 	 * or set this value explicitly.
 	 */

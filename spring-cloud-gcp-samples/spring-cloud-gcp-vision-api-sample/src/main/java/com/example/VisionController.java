@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Code sample that shows how Spring Cloud GCP can be leveraged to use Google Cloud Client Libraries.
  *
- * In this case, spring-cloud-gcp-starter-core autowires a {@link CredentialsProvider} object that provides the GCP
+ * <p>In this case, spring-cloud-gcp-starter-core autowires a {@link CredentialsProvider} object that provides the GCP
  * credentials, required to authenticate and authorize Vision API calls.
  *
  * @author João André Martins

@@ -48,9 +48,8 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 /**
- *
  * Base starter for Google Cloud Projects. Provides defaults for {@link GoogleCredentials}.
- * Binds properties from {@link GcpProperties}
+ * Binds properties from {@link GcpProperties}.
  *
  * @author Vinicius Carvalho
  * @author João André Martins
