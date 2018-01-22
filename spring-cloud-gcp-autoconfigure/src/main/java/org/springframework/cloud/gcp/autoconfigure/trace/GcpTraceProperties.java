@@ -49,8 +49,10 @@ public class GcpTraceProperties {
 	 */
 	private int scheduledDelaySeconds = 10;
 
+	/** Overrides the GCP project ID specified in the Core module. */
 	private String projectId;
 
+	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.TRACE_APPEND.getUrl());
 

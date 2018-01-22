@@ -26,12 +26,16 @@ import org.springframework.core.io.Resource;
  */
 @ConfigurationProperties("spring.cloud.gcp.sql")
 public class GcpCloudSqlProperties {
+	/** Name of the database in the Cloud SQL instance. */
 	private String databaseName;
 
+	/** Cloud SQL instance connection name. [GCP_PROJECT_ID]:[INSTANCE_REGION]:[INSTANCE_NAME]. */
 	private String instanceConnectionName;
 
+	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	private Credentials credentials;
 
+	/** SQL database vendor. */
 	private DatabaseType databaseType = DatabaseType.MYSQL;
 
 	public String getDatabaseName() {

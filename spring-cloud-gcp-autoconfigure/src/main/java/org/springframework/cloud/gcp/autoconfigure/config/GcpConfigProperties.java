@@ -31,17 +31,23 @@ import org.springframework.cloud.gcp.core.GcpScope;
 @ConfigurationProperties("spring.cloud.gcp.config")
 public class GcpConfigProperties implements GcpConfigPropertiesProvider {
 
+	/** Enables Spring Cloud GCP Config. */
 	private boolean enabled = true;
 
+	/** Name of the application. */
 	private String name;
 
+	/** Profile under which app is running (e.g., "prod", "dev", "test", etc.). */
 	private String profile = "default";
 
 	// Config server API time out in milliseconds, default = 1 minute
+	/** Timeout for Google Runtime Configuration API calls. */
 	private int timeout = 60000;
 
+	/** Overrides the GCP project ID specified in the Core module. */
 	private String projectId;
 
+	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.RUNTIME_CONFIG_SCOPE.getUrl());
 
