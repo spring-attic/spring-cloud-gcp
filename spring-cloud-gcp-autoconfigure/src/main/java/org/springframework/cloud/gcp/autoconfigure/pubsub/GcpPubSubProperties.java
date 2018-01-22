@@ -26,16 +26,16 @@ import org.springframework.cloud.gcp.core.GcpScope;
  */
 @ConfigurationProperties("spring.cloud.gcp.pubsub")
 public class GcpPubSubProperties {
-	/** Number of threads used by every {@link com.google.cloud.pubsub.v1.Subscriber}. Default is 4 */
+	/** Number of threads used by every {@link com.google.cloud.pubsub.v1.Subscriber}. */
 	private int subscriberExecutorThreads = 4;
 
-	/** Number of threads used by every {@link com.google.cloud.pubsub.v1.Publisher}. Default is 4 */
+	/** Number of threads used by every {@link com.google.cloud.pubsub.v1.Publisher}. */
 	private int publisherExecutorThreads = 4;
 
-	/** Overrides the GCP project ID specified in the Core module */
+	/** Overrides the GCP project ID specified in the Core module. */
 	private String projectId;
 
-	/** Overrides the GCP OAuth2 credentials specified in the Core module */
+	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.PUBSUB.getUrl());
 

@@ -24,7 +24,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("spring.cloud.gcp.logging")
 public class StackdriverLoggingProperties {
 
-	/** Determines which header to extract from HTTP request as the trace ID*/
+	/** Determines which header to extract from HTTP request as the trace ID. */
 	private TraceIdExtractorType traceIdExtractor;
 
 	public TraceIdExtractorType getTraceIdExtractor() {
