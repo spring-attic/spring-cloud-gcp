@@ -35,7 +35,7 @@ public class GcpCloudSqlProperties {
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	private Credentials credentials;
 
-	/** Database type. */
+	/** SQL database vendor. */
 	private DatabaseType databaseType = DatabaseType.MYSQL;
 
 	public String getDatabaseName() {
