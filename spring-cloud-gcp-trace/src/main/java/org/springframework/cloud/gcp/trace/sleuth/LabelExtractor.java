@@ -13,6 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package org.springframework.cloud.gcp.trace.sleuth;
 
 import java.text.DateFormat;
@@ -45,6 +46,7 @@ import org.springframework.util.StringUtils;
  * @author Ray Tsang
  */
 public class LabelExtractor {
+
 	public static final String DEFAULT_AGENT_NAME = "spring-cloud-gcp-trace";
 
 	public static final String DEFAULT_PREFIX = "cloud.spring.io/";

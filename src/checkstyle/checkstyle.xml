@@ -146,5 +146,6 @@
         <module name="WhitespaceAfter"/>
         <module name="WhitespaceAround"/>
         <module name="JavadocParagraph"/>
+        <module name="EmptyLineSeparator"/>
     </module>
 </module>

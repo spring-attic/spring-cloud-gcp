@@ -51,6 +51,7 @@ public class PubSubMessageHandlerTests {
 	private PubSubOperations pubSubTemplate;
 
 	private PubSubMessageHandler adapter;
+
 	private Message<?> message;
 
 	@Before

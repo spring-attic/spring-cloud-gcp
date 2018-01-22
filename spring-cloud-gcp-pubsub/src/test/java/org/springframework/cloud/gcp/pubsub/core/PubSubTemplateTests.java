@@ -63,7 +63,9 @@ public class PubSubTemplateTests {
 	private Subscriber mockSubscriber;
 
 	private PubSubTemplate pubSubTemplate;
+
 	private PubsubMessage pubsubMessage;
+
 	private SettableApiFuture<String> settableApiFuture;
 
 	@Before

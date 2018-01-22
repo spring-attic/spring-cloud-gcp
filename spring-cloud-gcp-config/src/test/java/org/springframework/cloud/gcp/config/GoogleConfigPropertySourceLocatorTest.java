@@ -45,9 +45,13 @@ import static org.mockito.Mockito.when;
 public class GoogleConfigPropertySourceLocatorTest {
 
 	private GcpConfigPropertiesProvider gcpConfigProperties;
+
 	private Map<String, Object> expectedProperties;
+
 	private GoogleConfigPropertySourceLocator googleConfigPropertySourceLocator;
+
 	private GcpProjectIdProvider projectIdProvider;
+
 	private CredentialsProvider credentialsProvider;
 
 	@Before
