@@ -47,9 +47,8 @@ import org.springframework.util.concurrent.SettableListenableFuture;
 /**
  * Default implementation of {@link PubSubOperations}.
  *
- * <p>
- * The main Google Cloud Pub/Sub integration component for publishing to topics and
- * consuming messages from subscriptions asynchronously or by pulling.
+ * <p>The main Google Cloud Pub/Sub integration component for publishing to topics and consuming messages from
+ * subscriptions asynchronously or by pulling.
  *
  * @author Vinicius Carvalho
  * @author João André Martins
@@ -144,8 +143,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	/**
 	 * Pulls messages synchronously, on demand, using the pull request in argument.
 	 *
-	 * <p>
-	 * This method acknowledges all received messages.
+	 * <p>This method acknowledges all received messages.
 	 * @param pullRequest pull request containing the subscription name
 	 * @return the list of {@link PubsubMessage} containing the headers and payload
 	 */

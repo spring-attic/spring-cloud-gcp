@@ -13,6 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package org.springframework.cloud.gcp.trace.sleuth;
 
 import java.util.List;
@@ -36,7 +37,7 @@ import org.springframework.util.StringUtils;
  * "https://github.com/spring-cloud/spring-cloud-sleuth/tree/master/spring-cloud-sleuth-zipkin">Spring
  * Cloud Sleuth Zipkin's Span Listener</a>
  *
- * Listener of Sleuth events. Reports to Stackdriver Trace via {@link TraceConsumer}
+ * <p>Listener of Sleuth events. Reports to Stackdriver Trace via {@link TraceConsumer}
  *
  * @author Ray Tsang
  */

@@ -23,6 +23,8 @@ package org.springframework.cloud.gcp.autoconfigure.sql;
  * @author João André Martins
  */
 public interface CloudSqlJdbcInfoProvider {
+
 	String getJdbcDriverClass();
+
 	String getJdbcUrl();
 }

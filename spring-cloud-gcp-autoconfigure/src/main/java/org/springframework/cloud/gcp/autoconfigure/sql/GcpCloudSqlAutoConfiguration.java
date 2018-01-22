@@ -43,9 +43,8 @@ import org.springframework.util.StringUtils;
 /**
  * Google Cloud SQL starter.
  *
- * <p>
- * Provides Google Cloud SQL instance connectivity through Spring JDBC by providing only a
- * database and instance connection name.
+ * <p>Provides Google Cloud SQL instance connectivity through Spring JDBC by providing only a database and instance
+ * connection name.
  *
  * @author João André Martins
  */
@@ -135,8 +134,7 @@ public class GcpCloudSqlAutoConfiguration {
 	/**
 	 * Set credentials to be used by the Google Cloud SQL socket factory.
 	 *
-	 * <p>
-	 * The only way to pass a {@link CredentialFactory} to the socket factory is by passing a
+	 * <p>The only way to pass a {@link CredentialFactory} to the socket factory is by passing a
 	 * class name through a system property. The socket factory creates an instance of
 	 * {@link CredentialFactory} using reflection without any arguments. Because of that, the
 	 * credential location needs to be stored somewhere where the class can read it without
@@ -144,8 +142,7 @@ public class GcpCloudSqlAutoConfiguration {
 	 * {@link SqlCredentialFactory}, but this is a tricky solution that needs some thinking
 	 * about.
 	 *
-	 * <p>
-	 * If user didn't specify credentials, the socket factory already does the right thing by
+	 * <p>If user didn't specify credentials, the socket factory already does the right thing by
 	 * using the application default credentials by default. So we don't need to do anything.
 	 */
 	private void setCredentialsProperty() {

@@ -26,6 +26,7 @@ public class House {
 	@Id
 	@GeneratedValue
 	private long id;
+
 	private String address;
 
 	public House() {

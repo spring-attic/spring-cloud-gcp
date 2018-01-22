@@ -85,6 +85,7 @@ public interface PubSubOperations {
 
 	/**
 	 * Add a callback method to an existing subscription.
+	 *
 	 * <p>The created {@link Subscriber} is returned so it can be stopped.
 	 * @param subscription the name of an existing subscription
 	 * @param messageHandler the callback method triggered when new messages arrive

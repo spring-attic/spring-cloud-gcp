@@ -36,8 +36,7 @@ import org.springframework.util.Assert;
 /**
  * The default {@link PublisherFactory} implementation.
  *
- * <p>
- * Creates {@link Publisher}s for topics once, caches and reuses them.
+ * <p>Creates {@link Publisher}s for topics once, caches and reuses them.
  *
  * @author João André Martins
  */
@@ -62,6 +61,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 	/**
 	 * Create {@link DefaultPublisherFactory} instance based on the provided {@link GcpProjectIdProvider}.
+	 *
 	 * <p>The {@link GcpProjectIdProvider} must not be null, neither provide an empty {@code projectId}.
 	 * @param projectIdProvider provides the GCP project ID
 	 */

@@ -30,7 +30,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * trace ID from the "x-cloud-trace-context" HTTP header and stores it in a thread-local
  * using {@link TraceLoggingEnhancer#setCurrentTraceId}.
  *
- * The {@link TraceLoggingEnhancer} can then be used in a logging appender to add the
+ * <p>The {@link TraceLoggingEnhancer} can then be used in a logging appender to add the
  * trace ID metadata to log messages.
  *
  * @author Mike Eltsufin

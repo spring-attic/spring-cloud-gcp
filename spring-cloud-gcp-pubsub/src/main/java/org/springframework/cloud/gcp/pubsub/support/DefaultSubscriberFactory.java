@@ -38,7 +38,6 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.Assert;
 
 /**
- *
  * The default {@link SubscriberFactory} implementation.
  *
  * @author João André Martins

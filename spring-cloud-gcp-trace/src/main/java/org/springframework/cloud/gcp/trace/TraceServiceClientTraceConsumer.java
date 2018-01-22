@@ -13,6 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package org.springframework.cloud.gcp.trace;
 
 import java.io.Closeable;
@@ -28,6 +29,7 @@ import com.google.devtools.cloudtrace.v1.Traces;
  * @author Ray Tsang
  */
 public class TraceServiceClientTraceConsumer implements TraceConsumer, Closeable {
+
 	private final String projectId;
 
 	private final TraceServiceClient client;

@@ -31,8 +31,7 @@ import org.springframework.cloud.gcp.core.GcpScope;
 /**
  * Returns the credentials that are written to a system property by the Cloud SQL starter.
  *
- * <p>
- * Since the sockets factory creates an instance of this class by reflection and without any
+ * <p>Since the sockets factory creates an instance of this class by reflection and without any
  * arguments, the credential location must be in a place that this class knows without any context.
  *
  * @author João André Martins

@@ -13,6 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package org.springframework.cloud.gcp.trace.sleuth;
 
 import java.text.DateFormat;
@@ -33,18 +34,19 @@ import org.springframework.util.StringUtils;
  * <a href= "https://github.com/GoogleCloudPlatform/stackdriver-zipkin/">Stackdriver
  * Zipkin Proxy</a>.
  *
- * This extracts Stackdriver Span labels equivalent from Sleuth Span.
+ * <p>This extracts Stackdriver Span labels equivalent from Sleuth Span.
  *
- * Sleuth Span Logs are converted to Stackdriver Span labels by using
+ * <p>Sleuth Span Logs are converted to Stackdriver Span labels by using
  * {@link Log#getEvent()} as the key and {@link Log#getTimestamp()} as the value.
  *
- * Sleuth Span tags with equivalent Stackdriver labels will be renamed to the Stackdriver
+ * <p>Sleuth Span tags with equivalent Stackdriver labels will be renamed to the Stackdriver
  * name. Any Sleuth Span without a Stackdriver label equivalent are renamed to
  * spring.sleuth/[key_name]
  *
  * @author Ray Tsang
  */
 public class LabelExtractor {
+
 	public static final String DEFAULT_AGENT_NAME = "spring-cloud-gcp-trace";
 
 	public static final String DEFAULT_PREFIX = "cloud.spring.io/";

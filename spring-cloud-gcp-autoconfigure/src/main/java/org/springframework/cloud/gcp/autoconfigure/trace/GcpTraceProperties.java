@@ -13,6 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package org.springframework.cloud.gcp.autoconfigure.trace;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -37,7 +38,7 @@ public class GcpTraceProperties {
 	 * Buffer size in bytes. Traces will be flushed to Stackdriver when buffered trace
 	 * messages exceed this size.
 	 *
-	 * This value is defaulted to 1% of the {@link Runtime#totalMemory()} in bytes.
+	 * <p>This value is defaulted to 1% of the {@link Runtime#totalMemory()} in bytes.
 	 * However, be careful when running inside of a containerized environment. You should either set JVM's max heap
 	 * or set this value explicitly.
 	 */
