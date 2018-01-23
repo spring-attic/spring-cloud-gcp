@@ -229,7 +229,7 @@
 												<include name="**/*.pdf" />
 											</fileset>
 										</copy>
-										<move file="${basedir}/target/contents/reference/pdf/index.pdf" tofile="${basedir}/target/contents/reference/pdf/spring-cloud-stream-reference.pdf" />
+										<move file="${basedir}/target/contents/reference/pdf/index.pdf" tofile="${basedir}/target/contents/reference/pdf/spring-cloud-gcp-reference.pdf" />
 									</postProcess>
 								</configuration>
 							</execution>
@@ -248,7 +248,7 @@
 												<include name="**/*.epub" />
 											</fileset>
 										</copy>
-										<move file="${basedir}/target/contents/reference/epub/index.epub" tofile="${basedir}/target/contents/reference/epub/spring-cloud-stream-reference.epub" />
+										<move file="${basedir}/target/contents/reference/epub/index.epub" tofile="${basedir}/target/contents/reference/epub/spring-cloud-gcp-reference.epub" />
 									</postProcess>
 								</configuration>
 							</execution>
