@@ -33,14 +33,14 @@ public class Credentials {
 	/**
 	 * Overrides OAuth2 scopes list used by the credentials.
 	 *
-	 * A list of scopes can be found at https://developers.google.com/identity/protocols/googlescopes.
+	 * <p>A list of scopes can be found at https://developers.google.com/identity/protocols/googlescopes.
 	 */
 	private List<String> scopes = new ArrayList<>();
 
 	/**
 	 * Location of the OAuth2 credentials private key.
 	 *
-	 * Since this is a {@link Resource}, the private key can be in a multitude of locations, such as a local file
+	 * <p>Since this is a {@link Resource}, the private key can be in a multitude of locations, such as a local file
 	 * system, classpath, URL, etc.
 	 * @see <a href="URL#https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io
 	 * /Resource.html">the Spring Resource Javadoc</a>
