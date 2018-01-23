@@ -24,6 +24,7 @@ import com.google.api.gax.batching.BatchingSettings;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.annotations.VisibleForTesting;
@@ -54,6 +55,8 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	private TransportChannelProvider channelProvider;
 
 	private CredentialsProvider credentialsProvider;
+
+	private HeaderProvider headerProvider;
 
 	private RetrySettings retrySettings;
 
@@ -96,6 +99,13 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	}
 
 	/**
+	 * Set the provider for the HTTP headers to be used in the Pub/Sub REST API requests.
+	 */
+	public void setHeaderProvider(HeaderProvider headerProvider) {
+		this.headerProvider = headerProvider;
+	}
+
+	/**
 	 * Set the API call retry configuration.
 	 */
 	public void setRetrySettings(RetrySettings retrySettings) {
@@ -126,6 +136,10 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 				if (this.credentialsProvider != null) {
 					publisherBuilder.setCredentialsProvider(this.credentialsProvider);
+				}
+
+				if (this.headerProvider != null) {
+					publisherBuilder.setHeaderProvider(this.headerProvider);
 				}
 
 				if (this.retrySettings != null) {

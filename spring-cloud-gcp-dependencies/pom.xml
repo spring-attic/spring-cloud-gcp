@@ -16,7 +16,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<google-cloud-bom.version>0.32.0-alpha</google-cloud-bom.version>
+		<google-cloud-bom.version>0.33.0-alpha</google-cloud-bom.version>
 		<cloud-trace-java.version>0.5.0</cloud-trace-java.version>
 		<!-- Setting SI version until
 		 https://github.com/spring-cloud/spring-cloud-gcp/pull/302#discussion_r161083818

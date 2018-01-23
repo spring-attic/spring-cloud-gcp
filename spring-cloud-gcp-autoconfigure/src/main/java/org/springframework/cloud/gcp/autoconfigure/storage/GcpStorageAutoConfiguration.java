@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
+import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolver;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolverSettings;
 import org.springframework.context.annotation.Bean;
@@ -60,6 +61,7 @@ public class GcpStorageAutoConfiguration {
 										.getLocation().getInputStream())
 								.createScoped(gcpStorageProperties.getCredentials().getScopes())
 						: credentialsProvider.getCredentials())
+				.setHeaderProvider(new UsageTrackingHeaderProvider(GcpStorageAutoConfiguration.class))
 				.build().getService();
 	}
 }

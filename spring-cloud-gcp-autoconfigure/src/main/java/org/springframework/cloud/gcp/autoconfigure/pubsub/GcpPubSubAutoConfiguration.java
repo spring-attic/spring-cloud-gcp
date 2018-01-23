@@ -17,14 +17,13 @@
 package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.concurrent.Executors;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
-import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
@@ -39,6 +38,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
@@ -59,13 +59,13 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(GcpPubSubProperties.class)
 public class GcpPubSubAutoConfiguration {
 
-	public static final String DEFAULT_SOURCE_NAME = "spring";
-
 	private final GcpPubSubProperties gcpPubSubProperties;
 
 	private final GcpProjectIdProvider finalProjectIdProvider;
 
 	private final CredentialsProvider finalCredentialsProvider;
+
+	private final HeaderProvider headerProvider = new UsageTrackingHeaderProvider(this.getClass());
 
 	public GcpPubSubAutoConfiguration(GcpPubSubProperties gcpPubSubProperties,
 			GcpProjectIdProvider gcpProjectIdProvider,
@@ -97,24 +97,6 @@ public class GcpPubSubAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(name = "subscriberChannelProvider")
-	public TransportChannelProvider subscriberChannelProvider() {
-		return SubscriptionAdminSettings.defaultGrpcTransportProviderBuilder()
-				.setHeaderProvider(() -> Collections.singletonMap(DEFAULT_SOURCE_NAME,
-						this.getClass().getPackage().getImplementationVersion()))
-				.build();
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(name = "publisherChannelProvider")
-	public TransportChannelProvider publisherChannelProvider() {
-		return TopicAdminSettings.defaultGrpcTransportProviderBuilder()
-				.setHeaderProvider(() -> Collections.singletonMap(DEFAULT_SOURCE_NAME,
-						this.getClass().getPackage().getImplementationVersion()))
-				.build();
-	}
-
-	@Bean
 	@ConditionalOnMissingBean
 	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory) {
@@ -124,12 +106,11 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(
-			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
-			@Qualifier("publisherChannelProvider") TransportChannelProvider channelProvider) {
+			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider) {
 		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
-		factory.setChannelProvider(channelProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
+		factory.setHeaderProvider(this.headerProvider);
 
 		return factory;
 	}
@@ -137,12 +118,11 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(
-			@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
-			@Qualifier("subscriberChannelProvider") TransportChannelProvider channelProvider) {
+			@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider) {
 		DefaultPublisherFactory factory = new DefaultPublisherFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
-		factory.setChannelProvider(channelProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
+		factory.setHeaderProvider(this.headerProvider);
 
 		return factory;
 	}
@@ -162,6 +142,7 @@ public class GcpPubSubAutoConfiguration {
 			return TopicAdminClient.create(
 					TopicAdminSettings.newBuilder()
 							.setCredentialsProvider(this.finalCredentialsProvider)
+							.setHeaderProvider(this.headerProvider)
 							.build());
 		}
 		catch (IOException ioe) {
@@ -176,6 +157,7 @@ public class GcpPubSubAutoConfiguration {
 			return SubscriptionAdminClient.create(
 					SubscriptionAdminSettings.newBuilder()
 							.setCredentialsProvider(this.finalCredentialsProvider)
+							.setHeaderProvider(this.headerProvider)
 							.build());
 		}
 		catch (IOException ioe) {

@@ -27,6 +27,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
@@ -104,12 +105,13 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		Map<String, List<String>> credentialHeaders = this.credentials.getRequestMetadata();
 		Assert.notNull(credentialHeaders, "No valid credential header(s) found");
 
-		for (Map.Entry<String, List<String>> entry : credentialHeaders.entrySet()) {
-			for (String value : entry.getValue()) {
-				headers.add(entry.getKey(), value);
-			}
-		}
+		credentialHeaders.forEach((key, values) -> values.forEach(value -> headers.add(key, value)));
+
 		Assert.isTrue(headers.containsKey(AUTHORIZATION_HEADER), "Authorization header required");
+
+		// Adds usage tracking header.
+		new UsageTrackingHeaderProvider(this.getClass()).getHeaders().forEach(headers::add);
+
 		return new HttpEntity<>(headers);
 	}
 

@@ -27,6 +27,7 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
+import com.google.api.gax.rpc.HeaderProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.trace.v1.TraceServiceClient;
 import com.google.cloud.trace.v1.TraceServiceSettings;
@@ -44,6 +45,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.commons.util.IdUtils;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.trace.TraceServiceClientTraceConsumer;
 import org.springframework.cloud.gcp.trace.sleuth.LabelExtractor;
 import org.springframework.cloud.gcp.trace.sleuth.StackdriverTraceSpanListener;
@@ -79,6 +81,8 @@ public class StackdriverTraceAutoConfiguration {
 	private GcpProjectIdProvider finalProjectIdProvider;
 
 	private CredentialsProvider finalCredentialsProvider;
+
+	private HeaderProvider headerProvider =	new UsageTrackingHeaderProvider(this.getClass());
 
 	public StackdriverTraceAutoConfiguration(GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider,
@@ -148,10 +152,10 @@ public class StackdriverTraceAutoConfiguration {
 				throws IOException {
 			return TraceServiceClient.create(
 					TraceServiceSettings.newBuilder()
-					.setCredentialsProvider(
-							StackdriverTraceAutoConfiguration.this.finalCredentialsProvider)
-					.setExecutorProvider(executorProvider)
-					.build());
+							.setCredentialsProvider(StackdriverTraceAutoConfiguration.this.finalCredentialsProvider)
+							.setExecutorProvider(executorProvider)
+							.setHeaderProvider(StackdriverTraceAutoConfiguration.this.headerProvider)
+							.build());
 		}
 
 		@Bean
