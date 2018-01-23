@@ -9,7 +9,7 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-cloud-gcp-docs</artifactId>
+	<artifactId>docs</artifactId>
 	<name>Spring Cloud GCP Documentation</name>
 
 	<properties>
