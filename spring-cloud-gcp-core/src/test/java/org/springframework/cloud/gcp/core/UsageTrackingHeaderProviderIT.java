@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -23,9 +23,13 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * This needs to be an integration test because the JAR MANIFEST has to be available for
+ * this.getClass().getPackage().getImplementationVersion() to work properly.
+ *
  * @author João André Martins
+ * @author Mike Eltsufin
  */
-public class UsageTrackingHeaderProviderTest {
+public class UsageTrackingHeaderProviderIT {
 
 	@Test
 	public void testGetHeaders() {
