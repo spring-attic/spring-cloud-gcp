@@ -34,7 +34,8 @@ public class BasicSpannerPersistentPropertyTests {
 
 	@Test
 	public void testGetColumn() {
-		BasicSpannerPersistentEntity<TestEntity> entity = (BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
+		BasicSpannerPersistentEntity<TestEntity> entity =
+				(BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
 		Set<String> cols = new HashSet<>();
@@ -51,16 +52,17 @@ public class BasicSpannerPersistentPropertyTests {
 
 	@Test
 	public void testAssociations() {
-    BasicSpannerPersistentEntity<TestEntity> entity = (BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
-        .getPersistentEntity(TestEntity.class));
+		BasicSpannerPersistentEntity<TestEntity> entity =
+				(BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
+				.getPersistentEntity(TestEntity.class));
 
-    entity.columns().forEach(col -> {
-      BasicSpannerPersistentProperty prop = (BasicSpannerPersistentProperty) entity
-          .getPersistentPropertyByColumnName(col);
-      Assert.assertSame(prop, prop.createAssociation().getInverse());
-      Assert.assertNull(prop.createAssociation().getObverse());
-    });
-  }
+		entity.columns().forEach(col -> {
+			BasicSpannerPersistentProperty prop = (BasicSpannerPersistentProperty) entity
+					.getPersistentPropertyByColumnName(col);
+			Assert.assertSame(prop, prop.createAssociation().getInverse());
+			Assert.assertNull(prop.createAssociation().getObverse());
+		});
+	}
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {

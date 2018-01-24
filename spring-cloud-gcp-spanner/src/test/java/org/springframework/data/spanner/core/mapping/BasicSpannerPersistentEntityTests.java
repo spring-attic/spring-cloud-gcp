@@ -44,7 +44,8 @@ public class BasicSpannerPersistentEntityTests {
 
 	@Test
 	public void testColumns() {
-		BasicSpannerPersistentEntity<TestEntity> entity = (BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
+		BasicSpannerPersistentEntity<TestEntity> entity =
+				(BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
 		Iterator<String> colIter = entity.columns().iterator();
