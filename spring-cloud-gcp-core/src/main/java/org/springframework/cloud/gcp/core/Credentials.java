@@ -32,8 +32,6 @@ public class Credentials {
 
 	/**
 	 * Overrides OAuth2 scopes list used by the credentials.
-	 *
-	 * <p>A list of scopes can be found at https://developers.google.com/identity/protocols/googlescopes.
 	 */
 	private List<String> scopes = new ArrayList<>();
 
