@@ -44,7 +44,7 @@ public class BasicSpannerPersistentEntity<T>
 
 	/**
 	 * Constructor
-	 * @param information
+	 * @param information type information about the underlying entity type.
 	 */
 	public BasicSpannerPersistentEntity(TypeInformation<T> information) {
 		super(information);
@@ -63,9 +63,13 @@ public class BasicSpannerPersistentEntity<T>
 
 	@Override
 	public void addPersistentProperty(SpannerPersistentProperty property) {
-		super.addPersistentProperty(property);
+		addPersistentPropertyToPersistentEntity(property);
 		this.columnNames.add(property.getColumnName());
 		this.columnNameToPropertyName.put(property.getColumnName(), property.getName());
+	}
+
+	protected void addPersistentPropertyToPersistentEntity(SpannerPersistentProperty property) {
+		super.addPersistentProperty(property);
 	}
 
 	@Override

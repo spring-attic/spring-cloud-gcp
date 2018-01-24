@@ -17,7 +17,6 @@
 package org.springframework.data.spanner.core.mapping;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -25,44 +24,43 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Chengyuan Zhao
  */
 @RunWith(SpringRunner.class)
-public class BasicSpannerPersistentEntityTests {
+public class BasicSpannerPersistentPropertyTests {
 
 	@Test
-	public void testTableName() {
-		BasicSpannerPersistentEntity<TestEntity> entity = new BasicSpannerPersistentEntity<>(
-				ClassTypeInformation.from(TestEntity.class));
-
-		Assert.assertEquals("custom_test_table", entity.tableName());
-	}
-
-	@Test
-	public void testColumns() {
+	public void testGetColumn() {
 		BasicSpannerPersistentEntity<TestEntity> entity = (BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
-		Iterator<String> colIter = entity.columns().iterator();
 		Set<String> cols = new HashSet<>();
-		cols.add("custom_col");
 		cols.add("id");
+		cols.add("custom_col");
+		cols.add("other");
 
-		int colCount = 0;
-		String col;
-
-		while (colIter.hasNext()) {
-			colCount++;
-			col = colIter.next();
-			Assert.assertTrue(cols.contains(col));
-		}
-
-		Assert.assertEquals(2, colCount);
+		entity.columns().forEach(col -> {
+			BasicSpannerPersistentProperty prop = (BasicSpannerPersistentProperty) entity
+					.getPersistentPropertyByColumnName(col);
+			Assert.assertTrue(cols.contains(prop.getColumnName()));
+		});
 	}
+
+	@Test
+	public void testAssociations() {
+    BasicSpannerPersistentEntity<TestEntity> entity = (BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
+        .getPersistentEntity(TestEntity.class));
+
+    entity.columns().forEach(col -> {
+      BasicSpannerPersistentProperty prop = (BasicSpannerPersistentProperty) entity
+          .getPersistentPropertyByColumnName(col);
+      Assert.assertSame(prop, prop.createAssociation().getInverse());
+      Assert.assertNull(prop.createAssociation().getObverse());
+    });
+  }
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
@@ -71,5 +69,8 @@ public class BasicSpannerPersistentEntityTests {
 
 		@Column(name = "custom_col")
 		String something;
+
+		@Column(name = "")
+		String other;
 	}
 }
