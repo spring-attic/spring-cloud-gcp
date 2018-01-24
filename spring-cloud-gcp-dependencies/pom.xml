@@ -63,31 +63,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-integration</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-stream</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-stream-binder-gcp-pubsub-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-stream-binder-gcp-pubsub</artifactId>
+				<artifactId>spring-cloud-gcp-pubsub-stream-binder</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<!--Starters-->
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-pubsub</artifactId>
@@ -96,16 +76,6 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-storage</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-sql</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-config</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -167,7 +137,7 @@
 				<scope>import</scope>
 			</dependency>
 
-			<!-- spring-cloud-gcp-starter-core -->
+			<!-- spring-cloud-gcp-core -->
 			<dependency>
 				<groupId>com.google.auth</groupId>
 				<artifactId>google-auth-library-oauth2-http</artifactId>
