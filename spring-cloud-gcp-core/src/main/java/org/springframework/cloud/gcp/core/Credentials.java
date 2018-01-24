@@ -42,8 +42,6 @@ public class Credentials {
 	 *
 	 * <p>Since this is a {@link Resource}, the private key can be in a multitude of locations, such as a local file
 	 * system, classpath, URL, etc.
-	 * @see <a href="URL#https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io
-	 * /Resource.html">the Spring Resource Javadoc</a>
 	 */
 	private Resource location;
 
