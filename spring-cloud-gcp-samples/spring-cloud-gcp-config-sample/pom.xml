@@ -22,17 +22,12 @@
         <!-- Configuration Client Starter for Google Cloud Runtime Configurator API -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-gcp-starter-config</artifactId>
+            <artifactId>spring-cloud-gcp-autoconfigure</artifactId>
         </dependency>
         <!-- Optional dependency to enable configuration refresh runtime via /refresh endpoint -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <!-- @RefreshScope -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-context</artifactId>
         </dependency>
     </dependencies>
 </project>
