@@ -40,7 +40,7 @@ public class Credentials {
 	/**
 	 * Location of the OAuth2 credentials private key.
 	 *
-	 * <p>Since this is a {@link Resource}, the private key can be in a multitude of locations, such as a local file
+	 * <p>Since this is a Resource, the private key can be in a multitude of locations, such as a local file
 	 * system, classpath, URL, etc.
 	 */
 	private Resource location;
