@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -42,20 +42,26 @@ public class SpannerMappingContext extends
 
 	/**
 	 * Set the field naming strategy used when creating persistent properties.
-	 * @param fieldNamingStrategy
+	 * @param fieldNamingStrategy the field naming strategy passed used by created persistent
+	 * properties get column names.
 	 */
 	public void setFieldNamingStrategy(FieldNamingStrategy fieldNamingStrategy) {
 		this.fieldNamingStrategy = fieldNamingStrategy == null ? DEFAULT_NAMING_STRATEGY
 				: fieldNamingStrategy;
 	}
 
+	/**
+	 * Gets the field naming strategy used by this mapping context.
+	 * @return
+	 */
+	public FieldNamingStrategy getFieldNamingStrategy() {
+		return this.fieldNamingStrategy;
+	}
+
 	@Override
 	protected <T> SpannerPersistentEntity<T> createPersistentEntity(
 			TypeInformation<T> typeInformation) {
-		BasicSpannerPersistentEntity<T> entity = new BasicSpannerPersistentEntity<T>(
-				typeInformation);
-
-		return entity;
+		return new BasicSpannerPersistentEntity<>(typeInformation);
 	}
 
 	@Override

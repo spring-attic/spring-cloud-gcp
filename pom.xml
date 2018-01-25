@@ -37,7 +37,7 @@
 		<module>spring-cloud-gcp-autoconfigure</module>
 		<module>spring-cloud-gcp-config</module>
 		<module>spring-cloud-gcp-stream</module>
-		<module>spring-cloud-gcp-spanner</module>
+		<module>spring-cloud-gcp-data-spanner</module>
 	</modules>
 
 	<properties>

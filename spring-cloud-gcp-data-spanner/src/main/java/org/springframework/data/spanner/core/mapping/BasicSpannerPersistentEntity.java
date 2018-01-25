@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -53,12 +53,7 @@ public class BasicSpannerPersistentEntity<T>
 		String fallback = StringUtils.uncapitalize(rawType.getSimpleName());
 
 		Table table = this.findAnnotation(Table.class);
-		if (table != null) {
-			this.tableName = StringUtils.hasText(table.name()) ? table.name() : fallback;
-		}
-		else {
-			this.tableName = fallback;
-		}
+		this.tableName = table != null && StringUtils.hasText(table.name()) ? table.name() : fallback;
 	}
 
 	@Override

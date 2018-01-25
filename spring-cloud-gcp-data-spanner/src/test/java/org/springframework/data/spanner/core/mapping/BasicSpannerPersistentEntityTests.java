@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,22 +16,16 @@
 
 package org.springframework.data.spanner.core.mapping;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-
-import org.junit.Assert;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Chengyuan Zhao
  */
-@RunWith(SpringRunner.class)
 public class BasicSpannerPersistentEntityTests {
 
 	@Test
@@ -39,7 +33,24 @@ public class BasicSpannerPersistentEntityTests {
 		BasicSpannerPersistentEntity<TestEntity> entity = new BasicSpannerPersistentEntity<>(
 				ClassTypeInformation.from(TestEntity.class));
 
-		Assert.assertEquals("custom_test_table", entity.tableName());
+		MatcherAssert.assertThat(entity.tableName(), Matchers.is("custom_test_table"));
+	}
+
+	@Test
+	public void testRawTableName() {
+		BasicSpannerPersistentEntity<EntityNoCustomName> entity = new BasicSpannerPersistentEntity<>(
+				ClassTypeInformation.from(EntityNoCustomName.class));
+
+		MatcherAssert.assertThat(entity.tableName(), Matchers.is("entityNoCustomName"));
+	}
+
+	@Test
+	public void testEmptyCustomTableName() {
+		BasicSpannerPersistentEntity<EntityEmptyCustomName> entity = new BasicSpannerPersistentEntity<>(
+				ClassTypeInformation.from(EntityEmptyCustomName.class));
+
+		MatcherAssert.assertThat(entity.tableName(),
+				Matchers.is("entityEmptyCustomName"));
 	}
 
 	@Test
@@ -48,21 +59,8 @@ public class BasicSpannerPersistentEntityTests {
 				(BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
-		Iterator<String> colIter = entity.columns().iterator();
-		Set<String> cols = new HashSet<>();
-		cols.add("custom_col");
-		cols.add("id");
-
-		int colCount = 0;
-		String col;
-
-		while (colIter.hasNext()) {
-			colCount++;
-			col = colIter.next();
-			Assert.assertTrue(cols.contains(col));
-		}
-
-		Assert.assertEquals(2, colCount);
+		MatcherAssert.assertThat(entity.columns(),
+				Matchers.containsInAnyOrder("custom_col", "id"));
 	}
 
 	@Table(name = "custom_test_table")
@@ -71,6 +69,21 @@ public class BasicSpannerPersistentEntityTests {
 		String id;
 
 		@Column(name = "custom_col")
+		String something;
+	}
+
+	private static class EntityNoCustomName {
+		@Id
+		String id;
+
+		String something;
+	}
+
+	@Table(name = "")
+	private static class EntityEmptyCustomName {
+		@Id
+		String id;
+
 		String something;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,14 +16,17 @@
 
 package org.springframework.data.spanner.core.mapping;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
@@ -38,15 +41,24 @@ public class BasicSpannerPersistentPropertyTests {
 				(BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
-		Set<String> cols = new HashSet<>();
-		cols.add("id");
-		cols.add("custom_col");
-		cols.add("other");
+		MatcherAssert.assertThat(entity.columns(),
+				Matchers.containsInAnyOrder("id", "custom_col", "other"));
+	}
+
+	@Test(expected = MappingException.class)
+	public void testNullColumnName() {
+		SpannerMappingContext context = new SpannerMappingContext();
+		FieldNamingStrategy namingStrat = Mockito.mock(FieldNamingStrategy.class);
+		Mockito.when(namingStrat.getFieldName(ArgumentMatchers.any())).thenReturn(null);
+		context.setFieldNamingStrategy(namingStrat);
+		BasicSpannerPersistentEntity<TestEntity> entity =
+				(BasicSpannerPersistentEntity<TestEntity>) (context
+				.getPersistentEntity(TestEntity.class));
 
 		entity.columns().forEach(col -> {
 			BasicSpannerPersistentProperty prop = (BasicSpannerPersistentProperty) entity
 					.getPersistentPropertyByColumnName(col);
-			Assert.assertTrue(cols.contains(prop.getColumnName()));
+			prop.getColumnName();
 		});
 	}
 
