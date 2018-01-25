@@ -38,6 +38,13 @@ public class BasicSpannerPersistentProperty
 
 	private FieldNamingStrategy fieldNamingStrategy;
 
+	/**
+	 * Constructor
+	 * @param property the property to store
+	 * @param owner the entity to which this property belongs
+	 * @param simpleTypeHolder
+	 * @param fieldNamingStrategy the naming strategy used to get the column name of this property
+	 */
 	public BasicSpannerPersistentProperty(Property property,
 			PersistentEntity<?, SpannerPersistentProperty> owner,
 			SimpleTypeHolder simpleTypeHolder, FieldNamingStrategy fieldNamingStrategy) {

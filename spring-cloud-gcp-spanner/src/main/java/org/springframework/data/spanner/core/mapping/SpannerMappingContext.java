@@ -24,7 +24,7 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
 /**
- * A mapping context that provides ways to create persie
+ * A mapping context that provides ways to create persistent entities and properties.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
@@ -40,6 +40,10 @@ public class SpannerMappingContext extends
 
 	}
 
+	/**
+	 * Set the field naming strategy used when creating persistent properties.
+	 * @param fieldNamingStrategy
+	 */
 	public void setFieldNamingStrategy(FieldNamingStrategy fieldNamingStrategy) {
 		this.fieldNamingStrategy = fieldNamingStrategy == null ? DEFAULT_NAMING_STRATEGY
 				: fieldNamingStrategy;
