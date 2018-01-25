@@ -22,7 +22,7 @@
         <!-- Configuration Client Starter for Google Cloud Runtime Configurator API -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-gcp-starter-config</artifactId>
+            <artifactId>spring-cloud-gcp-config</artifactId>
         </dependency>
         <!-- Optional dependency to enable configuration refresh runtime via /refresh endpoint -->
         <dependency>
