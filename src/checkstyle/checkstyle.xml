@@ -83,7 +83,18 @@
         <module name="AvoidStarImport"/>
         <module name="AvoidStaticImport">
             <property name="excludes"
-                      value="org.junit.Assert.*,org.mockito.Mockito.*,org.mockito.ArgumentMatchers.*,org.hamcrest.Matchers.*,org.assertj.core.api.Assertions.*,org.mockito.BDDMockito.*"/>
+                      value="org.junit.Assert.*,
+                             org.junit.Assume.*,
+                             org.mockito.Mockito.*,
+                             org.mockito.ArgumentMatchers.*,
+                             org.mockito.AdditionalAnswers.*,
+                             org.hamcrest.CoreMatchers.*,
+                             org.hamcrest.Matchers.*,
+                             org.mockito.hamcrest.MockitoHamcrest.*,
+                             org.hamcrest.collection.IsCollectionWithSize.*,
+                             org.assertj.core.api.Assertions.*,
+                             org.mockito.BDDMockito.*"
+                      />
         </module>
         <module name="FallThrough"/>
         <module name="ImportOrder">
