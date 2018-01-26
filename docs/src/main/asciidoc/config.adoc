@@ -7,8 +7,8 @@ https://cloud.spring.io/spring-cloud-config/[Spring Cloud Config] server to remo
 application configuration data.
 
 The Spring Cloud GCP Config support is provided via the Spring Cloud GCP Autoconfigure module.
-It enables the use of the `@ConfigurationProperties` annotation to map a class's fields to settings
-stored by the Google Runtime Configuration API.
+It enables the use of the Google Runtime Configuration API as a source for Spring Boot configuration
+properties.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
