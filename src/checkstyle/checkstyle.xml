@@ -90,7 +90,7 @@
                              org.mockito.AdditionalAnswers.*,
                              org.hamcrest.CoreMatchers.*,
                              org.hamcrest.Matchers.*,
-                             org.mockito.hamcrest.MockitoHamcrest.*
+                             org.mockito.hamcrest.MockitoHamcrest.*,
                              org.hamcrest.collection.IsCollectionWithSize.*,
                              org.assertj.core.api.Assertions.*,
                              org.mockito.BDDMockito.*"
