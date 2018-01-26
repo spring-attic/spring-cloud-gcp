@@ -19,10 +19,9 @@ Run the sample application from Maven:
 mvn spring-boot:run
 ----
 
-Browse to `localhost:8080/log`. This will trigger the `ExampleController.log()` method,
-which uses a typical logger supporting Logback to write a line of text to the Stackdriver log.
-However, you will need to specify the trace ID in the `x-cloud-trace-context` or `X-B3-TraceId` headers manually to see a trace ID
-label appear in Stackdriver:
+Then, issue a request containing either of the `x-cloud-trace-context` or `X-B3-TraceId` headers to
+the `localhost:8080/log` endpoint and verify that a label appears in Stackdriver:
+
 ----
 curl --header "x-cloud-trace-context: [Some-Trace-ID]" localhost:8080/log
 ----
@@ -34,8 +33,7 @@ See the link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[Sp
 for other options for this setting.
 
 To see the logged lines, navigate to the https://pantheon.corp.google.com/logs/viewer[Logging section of the Cloud Console].
-Select the `Global` resource and look under the `spring.log` channel to see the
-logged text.
+Select the `Global` resource and look under the `spring.log` channel to see the logged text.
 
 If your application is deployed to Google App Engine or Google Kubernetes Engine,
 you will instead find the logs under the deployment's resource in the Stackdriver UI under the `spring.log` channel.

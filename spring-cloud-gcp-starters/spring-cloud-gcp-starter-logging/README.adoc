@@ -22,6 +22,11 @@ dependencies {
 This starter registers a Web MVC interceptor that extracts the request trace ID from the HTTP
 request and makes it available to logging appenders to add to log entries as metadata.
 
+NOTE: Due to the way logging is set up, the GCP project ID and credentials defined in
+`application.properties` are ignored.
+Instead, you should set the `GOOGLE_CLOUD_PROJECT` and `GOOGLE_APPLICATION_CREDENTIALS` environment
+variables to the project ID and credentials private key location, respectively.
+
 The behavior of the trace ID extraction can be configured with the `spring.cloud.gcp.logging.traceIdExtractor`
 setting:
 
