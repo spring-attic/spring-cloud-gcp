@@ -18,10 +18,6 @@
 	<properties>
 		<google-cloud-bom.version>0.33.0-alpha</google-cloud-bom.version>
 		<cloud-trace-java.version>0.5.0</cloud-trace-java.version>
-		<!-- Setting SI version until
-		 https://github.com/spring-cloud/spring-cloud-gcp/pull/302#discussion_r161083818
-		 is resolved. -->
-		<spring-integration.version>5.0.1.BUILD-SNAPSHOT</spring-integration.version>
 	</properties>
 
 	<dependencyManagement>
@@ -186,12 +182,6 @@
 				<groupId>com.google.cloud</groupId>
 				<artifactId>google-cloud-logging-logback</artifactId>
 				<version>0.32.0-alpha</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.springframework.integration</groupId>
-				<artifactId>spring-integration-core</artifactId>
-				<version>${spring-integration.version}</version>
 			</dependency>
 
 			<!-- google-cloud-bom is setting the version of netty-tcnative-boringssl-static which is incompatible
