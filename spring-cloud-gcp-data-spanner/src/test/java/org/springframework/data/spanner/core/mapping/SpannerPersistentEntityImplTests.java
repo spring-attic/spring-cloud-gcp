@@ -28,11 +28,11 @@ import static org.hamcrest.Matchers.is;
 /**
  * @author Chengyuan Zhao
  */
-public class BasicSpannerPersistentEntityTests {
+public class SpannerPersistentEntityImplTests {
 
 	@Test
 	public void testTableName() {
-		BasicSpannerPersistentEntity<TestEntity> entity = new BasicSpannerPersistentEntity<>(
+		SpannerPersistentEntityImpl<TestEntity> entity = new SpannerPersistentEntityImpl<>(
 				ClassTypeInformation.from(TestEntity.class));
 
 		assertThat(entity.tableName(), is("custom_test_table"));
@@ -40,7 +40,7 @@ public class BasicSpannerPersistentEntityTests {
 
 	@Test
 	public void testRawTableName() {
-		BasicSpannerPersistentEntity<EntityNoCustomName> entity = new BasicSpannerPersistentEntity<>(
+		SpannerPersistentEntityImpl<EntityNoCustomName> entity = new SpannerPersistentEntityImpl<>(
 				ClassTypeInformation.from(EntityNoCustomName.class));
 
 		assertThat(entity.tableName(), is("entityNoCustomName"));
@@ -48,7 +48,7 @@ public class BasicSpannerPersistentEntityTests {
 
 	@Test
 	public void testEmptyCustomTableName() {
-		BasicSpannerPersistentEntity<EntityEmptyCustomName> entity = new BasicSpannerPersistentEntity<>(
+		SpannerPersistentEntityImpl<EntityEmptyCustomName> entity = new SpannerPersistentEntityImpl<>(
 				ClassTypeInformation.from(EntityEmptyCustomName.class));
 
 		assertThat(entity.tableName(), is("entityEmptyCustomName"));
@@ -56,8 +56,8 @@ public class BasicSpannerPersistentEntityTests {
 
 	@Test
 	public void testColumns() {
-		BasicSpannerPersistentEntity<TestEntity> entity =
-				(BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
+		SpannerPersistentEntityImpl<TestEntity> entity =
+				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
 		assertThat(entity.columns(), containsInAnyOrder("custom_col", "id"));

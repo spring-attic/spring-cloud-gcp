@@ -23,7 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation that allows specifying column name different from the field's name.
+ * Annotation for a {@link SpannerPersistentProperty} that allows specifying the column name
+ * instead of deriving it from the field's name.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao

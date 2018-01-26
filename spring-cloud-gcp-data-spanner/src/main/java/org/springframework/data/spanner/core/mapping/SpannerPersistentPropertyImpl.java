@@ -27,25 +27,27 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.util.StringUtils;
 
 /**
- * Represents a property of an entity stored in Spanner.
+ * Represents an implementation for {@link SpannerPersistentProperty}, which is a property of a
+ * {@link SpannerPersistentEntity} stored in a Google Spanner table.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public class BasicSpannerPersistentProperty
+public class SpannerPersistentPropertyImpl
 		extends AnnotationBasedPersistentProperty<SpannerPersistentProperty>
 		implements SpannerPersistentProperty {
 
 	private FieldNamingStrategy fieldNamingStrategy;
 
 	/**
-	 * Constructor
+	 * Creates a new {@link SpannerPersistentPropertyImpl}
+	 *
 	 * @param property the property to store
 	 * @param owner the entity to which this property belongs
 	 * @param simpleTypeHolder
 	 * @param fieldNamingStrategy the naming strategy used to get the column name of this property
 	 */
-	public BasicSpannerPersistentProperty(Property property,
+	public SpannerPersistentPropertyImpl(Property property,
 			PersistentEntity<?, SpannerPersistentProperty> owner,
 			SimpleTypeHolder simpleTypeHolder, FieldNamingStrategy fieldNamingStrategy) {
 		super(property, owner, simpleTypeHolder);
@@ -59,6 +61,16 @@ public class BasicSpannerPersistentProperty
 		return new Association<>(this, null);
 	}
 
+	/**
+	 * Gets the name of the column in the Google Spanner table mapped to this property.
+	 * The column name is resolved using the {@link FieldNamingStrategy} passed in to the
+	 * {@link SpannerPersistentPropertyImpl#SpannerPersistentPropertyImpl(Property, PersistentEntity,
+	 * SimpleTypeHolder, FieldNamingStrategy)} constructor.
+	 * This is by default the by default
+	 *
+	 * @return the name of the column.
+	 * @throws {@link MappingException} if the resolution fails
+	 */
 	@Override
 	public String getColumnName() {
 		if (StringUtils.hasText(getAnnotatedColumnName())) {

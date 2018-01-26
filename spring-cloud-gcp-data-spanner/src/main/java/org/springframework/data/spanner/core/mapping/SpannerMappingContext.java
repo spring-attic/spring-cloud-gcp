@@ -24,7 +24,7 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
 /**
- * A mapping context that provides ways to create persistent entities and properties.
+ * A mapping context for Google Spanner that provides ways to create persistent entities and properties.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
@@ -61,13 +61,13 @@ public class SpannerMappingContext extends
 	@Override
 	protected <T> SpannerPersistentEntity<T> createPersistentEntity(
 			TypeInformation<T> typeInformation) {
-		return new BasicSpannerPersistentEntity<>(typeInformation);
+		return new SpannerPersistentEntityImpl<>(typeInformation);
 	}
 
 	@Override
 	protected SpannerPersistentProperty createPersistentProperty(Property property,
 			SpannerPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
-		return new BasicSpannerPersistentProperty(property, owner, simpleTypeHolder,
+		return new SpannerPersistentPropertyImpl(property, owner, simpleTypeHolder,
 				this.fieldNamingStrategy);
 	}
 }

@@ -19,7 +19,8 @@ package org.springframework.data.spanner.core.mapping;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
 /**
- * Represents an entity stored by Spanner.
+ * Spanner specific interface for a {@link MutablePersistentEntity} stored
+ * in a Google Spanner table.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao

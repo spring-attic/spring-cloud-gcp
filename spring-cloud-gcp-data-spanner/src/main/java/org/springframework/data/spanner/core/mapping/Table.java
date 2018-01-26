@@ -23,7 +23,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotates classes with a custom name.
+ * Annotation for a {@link SpannerPersistentEntity} that allows specifying a custom table name,
+ * instead of deriving it from the entity's class name.
+ *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */

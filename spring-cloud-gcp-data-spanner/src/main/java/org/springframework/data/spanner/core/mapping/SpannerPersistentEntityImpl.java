@@ -27,12 +27,12 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
 
 /**
- * Represents a Spanner table and its columns' mapping to fields within an entity type.
+ * Represents a Google Spanner table and its columns' mapping to fields within an entity type.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public class BasicSpannerPersistentEntity<T>
+public class SpannerPersistentEntityImpl<T>
 		extends BasicPersistentEntity<T, SpannerPersistentProperty>
 		implements SpannerPersistentEntity<T> {
 
@@ -43,10 +43,10 @@ public class BasicSpannerPersistentEntity<T>
 	private final Map<String, String> columnNameToPropertyName = new HashMap<>();
 
 	/**
-	 * Constructor
+	 * Creates a {@link SpannerPersistentEntityImpl}
 	 * @param information type information about the underlying entity type.
 	 */
-	public BasicSpannerPersistentEntity(TypeInformation<T> information) {
+	public SpannerPersistentEntityImpl(TypeInformation<T> information) {
 		super(information);
 
 		Class<?> rawType = information.getType();
@@ -63,7 +63,7 @@ public class BasicSpannerPersistentEntity<T>
 		this.columnNameToPropertyName.put(property.getColumnName(), property.getName());
 	}
 
-	protected void addPersistentPropertyToPersistentEntity(SpannerPersistentProperty property) {
+	private void addPersistentPropertyToPersistentEntity(SpannerPersistentProperty property) {
 		super.addPersistentProperty(property);
 	}
 

@@ -36,12 +36,12 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  */
 @RunWith(SpringRunner.class)
-public class BasicSpannerPersistentPropertyTests {
+public class SpannerPersistentPropertyImplTests {
 
 	@Test
 	public void testGetColumn() {
-		BasicSpannerPersistentEntity<TestEntity> entity =
-				(BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
+		SpannerPersistentEntityImpl<TestEntity> entity =
+				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
 		assertThat(entity.columns(), containsInAnyOrder("id", "custom_col", "other"));
@@ -53,12 +53,12 @@ public class BasicSpannerPersistentPropertyTests {
 		FieldNamingStrategy namingStrat = mock(FieldNamingStrategy.class);
 		when(namingStrat.getFieldName(any())).thenReturn(null);
 		context.setFieldNamingStrategy(namingStrat);
-		BasicSpannerPersistentEntity<TestEntity> entity =
-				(BasicSpannerPersistentEntity<TestEntity>) (context
+		SpannerPersistentEntityImpl<TestEntity> entity =
+				(SpannerPersistentEntityImpl<TestEntity>) (context
 				.getPersistentEntity(TestEntity.class));
 
 		entity.columns().forEach(col -> {
-			BasicSpannerPersistentProperty prop = (BasicSpannerPersistentProperty) entity
+			SpannerPersistentPropertyImpl prop = (SpannerPersistentPropertyImpl) entity
 					.getPersistentPropertyByColumnName(col);
 
 			// Getting the column name will throw an exception because of the mock naming
@@ -69,12 +69,12 @@ public class BasicSpannerPersistentPropertyTests {
 
 	@Test
 	public void testAssociations() {
-		BasicSpannerPersistentEntity<TestEntity> entity =
-				(BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
+		SpannerPersistentEntityImpl<TestEntity> entity =
+				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
 		entity.columns().forEach(col -> {
-			BasicSpannerPersistentProperty prop = (BasicSpannerPersistentProperty) entity
+			SpannerPersistentPropertyImpl prop = (SpannerPersistentPropertyImpl) entity
 					.getPersistentPropertyByColumnName(col);
 			assertSame(prop, prop.createAssociation().getInverse());
 			assertNull(prop.createAssociation().getObverse());
