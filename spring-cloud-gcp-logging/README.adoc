@@ -26,6 +26,11 @@ Platform.
 This module provides support for associating a web request trace ID with the corresponding log entries.
 This allows grouping of log messages by request.
 
+NOTE: Due to the way logging is set up, the GCP project ID and credentials defined in
+`application.properties` are ignored.
+Instead, you should set the `GOOGLE_CLOUD_PROJECT` and `GOOGLE_APPLICATION_CREDENTIALS` environment
+variables to the project ID and credentials private key location, respectively.
+
 `TraceIdLoggingWebMvcInterceptor` extracts the request trace ID from an HTTP request using a
 `TraceIdExtractor` and stores it in a thread-local of the https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-logging/src/main/java/com/google/cloud/logging/TraceLoggingEnhancer.java[`TraceLoggingEnhancer`]
 which can then be used in a logging appender to add the trace ID metadata to log messages.
