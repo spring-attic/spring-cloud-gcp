@@ -6,7 +6,7 @@ Runtime Configuration API] as a
 https://cloud.spring.io/spring-cloud-config/[Spring Cloud Config] server to remotely store your
 application configuration data.
 
-The Spring Cloud GCP Config support is provided via the Spring Cloud GCP Autoconfigure module.
+The Spring Cloud GCP Config support is provided via its own Spring Boot starter.
 It enables the use of the Google Runtime Configuration API as a source for Spring Boot configuration
 properties.
 
@@ -16,7 +16,7 @@ Maven coordinates, using Spring Cloud GCP BOM:
 ----
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-autoconfigure</artifactId>
+    <artifactId>spring-cloud-gcp-starter-config</artifactId>
 </dependency>
 ----
 
@@ -25,7 +25,7 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-autoconfigure'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-config'
 }
 ----
 
