@@ -16,18 +16,21 @@
 
 package org.springframework.data.spanner.core.mapping;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Chengyuan Zhao
@@ -41,15 +44,14 @@ public class BasicSpannerPersistentPropertyTests {
 				(BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
-		MatcherAssert.assertThat(entity.columns(),
-				Matchers.containsInAnyOrder("id", "custom_col", "other"));
+		assertThat(entity.columns(), containsInAnyOrder("id", "custom_col", "other"));
 	}
 
 	@Test(expected = MappingException.class)
 	public void testNullColumnName() {
 		SpannerMappingContext context = new SpannerMappingContext();
-		FieldNamingStrategy namingStrat = Mockito.mock(FieldNamingStrategy.class);
-		Mockito.when(namingStrat.getFieldName(ArgumentMatchers.any())).thenReturn(null);
+		FieldNamingStrategy namingStrat = mock(FieldNamingStrategy.class);
+		when(namingStrat.getFieldName(any())).thenReturn(null);
 		context.setFieldNamingStrategy(namingStrat);
 		BasicSpannerPersistentEntity<TestEntity> entity =
 				(BasicSpannerPersistentEntity<TestEntity>) (context
@@ -58,6 +60,9 @@ public class BasicSpannerPersistentPropertyTests {
 		entity.columns().forEach(col -> {
 			BasicSpannerPersistentProperty prop = (BasicSpannerPersistentProperty) entity
 					.getPersistentPropertyByColumnName(col);
+
+			// Getting the column name will throw an exception because of the mock naming
+			// strategy.
 			prop.getColumnName();
 		});
 	}
@@ -71,8 +76,8 @@ public class BasicSpannerPersistentPropertyTests {
 		entity.columns().forEach(col -> {
 			BasicSpannerPersistentProperty prop = (BasicSpannerPersistentProperty) entity
 					.getPersistentPropertyByColumnName(col);
-			Assert.assertSame(prop, prop.createAssociation().getInverse());
-			Assert.assertNull(prop.createAssociation().getObverse());
+			assertSame(prop, prop.createAssociation().getInverse());
+			assertNull(prop.createAssociation().getObverse());
 		});
 	}
 

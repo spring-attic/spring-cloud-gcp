@@ -16,12 +16,14 @@
 
 package org.springframework.data.spanner.core.mapping;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.util.ClassTypeInformation;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.is;
 
 /**
  * @author Chengyuan Zhao
@@ -33,7 +35,7 @@ public class BasicSpannerPersistentEntityTests {
 		BasicSpannerPersistentEntity<TestEntity> entity = new BasicSpannerPersistentEntity<>(
 				ClassTypeInformation.from(TestEntity.class));
 
-		MatcherAssert.assertThat(entity.tableName(), Matchers.is("custom_test_table"));
+		assertThat(entity.tableName(), is("custom_test_table"));
 	}
 
 	@Test
@@ -41,7 +43,7 @@ public class BasicSpannerPersistentEntityTests {
 		BasicSpannerPersistentEntity<EntityNoCustomName> entity = new BasicSpannerPersistentEntity<>(
 				ClassTypeInformation.from(EntityNoCustomName.class));
 
-		MatcherAssert.assertThat(entity.tableName(), Matchers.is("entityNoCustomName"));
+		assertThat(entity.tableName(), is("entityNoCustomName"));
 	}
 
 	@Test
@@ -49,8 +51,7 @@ public class BasicSpannerPersistentEntityTests {
 		BasicSpannerPersistentEntity<EntityEmptyCustomName> entity = new BasicSpannerPersistentEntity<>(
 				ClassTypeInformation.from(EntityEmptyCustomName.class));
 
-		MatcherAssert.assertThat(entity.tableName(),
-				Matchers.is("entityEmptyCustomName"));
+		assertThat(entity.tableName(), is("entityEmptyCustomName"));
 	}
 
 	@Test
@@ -59,8 +60,7 @@ public class BasicSpannerPersistentEntityTests {
 				(BasicSpannerPersistentEntity<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
-		MatcherAssert.assertThat(entity.columns(),
-				Matchers.containsInAnyOrder("custom_col", "id"));
+		assertThat(entity.columns(), containsInAnyOrder("custom_col", "id"));
 	}
 
 	@Table(name = "custom_test_table")

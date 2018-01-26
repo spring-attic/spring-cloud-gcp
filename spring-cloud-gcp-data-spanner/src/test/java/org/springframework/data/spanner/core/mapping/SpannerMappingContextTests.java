@@ -16,14 +16,16 @@
 
 package org.springframework.data.spanner.core.mapping;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 
 import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Chengyuan Zhao
@@ -36,15 +38,15 @@ public class SpannerMappingContextTests {
 		SpannerMappingContext context = new SpannerMappingContext();
 
 		context.setFieldNamingStrategy(null);
-		Assert.assertEquals(PropertyNameFieldNamingStrategy.INSTANCE,
+		assertEquals(PropertyNameFieldNamingStrategy.INSTANCE,
 				context.getFieldNamingStrategy());
 	}
 
 	@Test
 	public void testSetFieldNamingStrategy() {
 		SpannerMappingContext context = new SpannerMappingContext();
-		FieldNamingStrategy strat = Mockito.mock(FieldNamingStrategy.class);
+		FieldNamingStrategy strat = mock(FieldNamingStrategy.class);
 		context.setFieldNamingStrategy(strat);
-		Assert.assertSame(strat, context.getFieldNamingStrategy());
+		assertSame(strat, context.getFieldNamingStrategy());
 	}
 }
