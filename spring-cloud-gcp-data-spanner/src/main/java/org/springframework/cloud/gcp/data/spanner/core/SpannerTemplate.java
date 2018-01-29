@@ -33,6 +33,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerObjectMapper;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.util.Assert;
 
 /**
  * @author Ray Tsang
@@ -51,6 +52,14 @@ public class SpannerTemplate implements SpannerOperations {
 	public SpannerTemplate(DatabaseClient databaseClient,
 			SpannerMappingContext mappingContext, SpannerObjectMapper spannerObjectMapper,
 			SpannerMutationFactory spannerMutationFactory) {
+		Assert.notNull(databaseClient,
+				"A valid database client for Spanner is required.");
+		Assert.notNull(mappingContext,
+				"A valid mapping context for Spanner is required.");
+		Assert.notNull(spannerObjectMapper,
+				"A valid results mapper for Spanner is required.");
+		Assert.notNull(spannerMutationFactory,
+				"A valid Spanner mutation factory is required.");
 		this.databaseClient = databaseClient;
 		this.mappingContext = mappingContext;
 		this.objectMapper = spannerObjectMapper;
