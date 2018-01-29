@@ -6,7 +6,7 @@ Maven coordinates, using Spring Cloud GCP BOM:
 ----
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-starter-core</artifactId>
+    <artifactId>spring-cloud-gcp-starter</artifactId>
 </dependency>
 ----
 
@@ -16,7 +16,7 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-core'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter'
 }
 ----
 

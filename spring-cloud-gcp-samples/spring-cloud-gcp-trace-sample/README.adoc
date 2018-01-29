@@ -12,7 +12,7 @@ Stackdriver Trace section].
 1. https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account]
 with Trace Append permission. Furnish a new JSON key and then set the credentials using the
 `GOOGLE_APPLICATION_CREDENTIALS` environment variable or
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core/README.adoc[using GCP Starter Core properties].
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter/README.adoc[using GCP Starter Core properties].
 +
 Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and
 initialized and are logged in with

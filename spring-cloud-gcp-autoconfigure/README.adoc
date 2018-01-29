@@ -53,7 +53,7 @@ Config API].
 4.  https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create
 a service account] with the `Project > Viewer` IAM role and
 set the credentials using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable or
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core/README.adoc[using GCP Starter Core properties]. (Note that when testing locally, the https://cloud.google.com/sdk/gcloud/reference/beta/auth/application-default/login[Cloud SDK application default credentials] are not supported by the Runtime Configuration API.)
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter/README.adoc[using GCP Starter Core properties]. (Note that when testing locally, the https://cloud.google.com/sdk/gcloud/reference/beta/auth/application-default/login[Cloud SDK application default credentials] are not supported by the Runtime Configuration API.)
 
 === Configuration
 
@@ -79,7 +79,7 @@ feature_x_enabled true \
 3.  Update `src/main/resources/bootstrap.properties` to specify the configuration name, profile and timeout:
 +
 Note: If using the
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core/README.adoc[GCP Starter Core properties]
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter/README.adoc[GCP Starter Core properties]
 to configure the GCP project and credentials for this starter, they must be included
 in the `bootstrap.properties`.
 +
