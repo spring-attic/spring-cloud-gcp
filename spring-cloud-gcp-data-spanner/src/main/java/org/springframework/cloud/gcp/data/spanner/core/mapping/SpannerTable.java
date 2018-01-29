@@ -33,5 +33,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SpannerTable {
+
+	/**
+	 * The name of the table in Spanner, which can differ from the name of the class which it
+	 * annotates
+	 * @return The name of the table
+	 */
 	String name();
 }

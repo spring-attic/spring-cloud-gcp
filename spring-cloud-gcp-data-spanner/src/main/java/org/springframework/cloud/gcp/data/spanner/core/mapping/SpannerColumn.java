@@ -33,5 +33,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface SpannerColumn {
+
+	/**
+	 * The custom name of the column in the Spanner table, which can differ from the name of the
+	 * field which it annotates.
+	 * @return the name of the column in the Spanner table
+	 */
 	String name();
 }
