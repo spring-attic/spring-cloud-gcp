@@ -6,17 +6,13 @@ to Google Cloud Pub/Sub topics and subscriptions.
 This enables messaging between different processes, applications or micro-services backed up by
 Google Cloud Pub/Sub.
 
-To use the Pub/Sub portion of Spring Integration for Spring Cloud GCP, you must also provide the
-`spring-cloud-gcp-pubsub` dependency, since it isn't pulled transitively.
+The Spring Integration Channel Adapters for Google Cloud Pub/Sub are included in the
+`spring-cloud-gcp-pubsub` module.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
 [source,xml]
 ----
-<dependency>
-    <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-integration</artifactId>
-</dependency>
 <dependency>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-gcp-pubsub</artifactId>
@@ -28,7 +24,6 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-integration'
     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub'
 }
 ----
