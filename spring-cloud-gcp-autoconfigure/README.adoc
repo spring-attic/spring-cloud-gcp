@@ -1,3 +1,9 @@
+= Spring Cloud GCP Autoconfigure
+
+This module contains the Spring Boot auto-configuration logic for all the services supported by Spring Cloud GCP.
+Features are usable by importing the `autoconfigure` dependency to your project plus other dependencies that enable
+specific features.
+
 == Spring Cloud GCP Config Client Starter
 
 
@@ -7,7 +13,7 @@ Maven coordinates, using Spring Cloud GCP BOM:
 ----
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-starter-config</artifactId>
+    <artifactId>spring-cloud-gcp-autoconfigure</artifactId>
 </dependency>
 ----
 
@@ -16,7 +22,7 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-config'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-autoconfigure'
 }
 ----
 
