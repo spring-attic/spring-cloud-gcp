@@ -78,8 +78,8 @@ public class SpannerTemplateTests {
 		this.mutationFactory = mock(SpannerMutationFactory.class);
 		this.readContext = mock(ReadContext.class);
 		when(this.databaseClient.singleUse()).thenReturn(this.readContext);
-		spannerTemplate = new SpannerTemplate(databaseClient, mappingContext,
-				objectMapper, mutationFactory);
+		this.spannerTemplate = new SpannerTemplate(this.databaseClient, this.mappingContext,
+				this.objectMapper, this.mutationFactory);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
