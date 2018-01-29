@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.data.spanner.core.mapping;
+package org.springframework.cloud.spanner.core.mapping;
 
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
@@ -90,7 +90,7 @@ public class SpannerPersistentPropertyImpl
 
 	private String getAnnotatedColumnName() {
 
-		Column annotation = findAnnotation(Column.class);
+		SpannerColumn annotation = findAnnotation(SpannerColumn.class);
 
 		if (annotation != null && StringUtils.hasText(annotation.name())) {
 			return annotation.name();

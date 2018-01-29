@@ -14,24 +14,24 @@
  *  limitations under the License.
  */
 
-package org.springframework.data.spanner.core.mapping;
+package org.springframework.cloud.spanner.core.mapping;
 
-import org.springframework.data.mapping.PersistentProperty;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Interface for a {@link PersistentProperty} of a {@link SpannerPersistentEntity}
- * to be stored in a Google Spanner table.
+ * Annotation for a {@link SpannerPersistentEntity} that allows specifying a custom table name,
+ * instead of deriving it from the entity's class name.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public interface SpannerPersistentProperty
-		extends PersistentProperty<SpannerPersistentProperty> {
-
-	/**
-	 * Gets the name of the column in the Google Spanner table mapped to this property.
-	 *
-	 * @return the name of the column.
-	 */
-	String getColumnName();
+@Documented
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SpannerTable {
+	String name();
 }

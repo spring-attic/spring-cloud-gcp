@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.data.spanner.core.mapping;
+package org.springframework.cloud.spanner.core.mapping;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,7 +52,7 @@ public class SpannerPersistentEntityImpl<T>
 		Class<?> rawType = information.getType();
 		String fallback = StringUtils.uncapitalize(rawType.getSimpleName());
 
-		Table table = this.findAnnotation(Table.class);
+		SpannerTable table = this.findAnnotation(SpannerTable.class);
 		this.tableName = table != null && StringUtils.hasText(table.name()) ? table.name() : fallback;
 	}
 

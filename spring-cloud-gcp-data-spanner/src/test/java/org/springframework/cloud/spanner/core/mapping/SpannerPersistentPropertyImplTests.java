@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.data.spanner.core.mapping;
+package org.springframework.cloud.spanner.core.mapping;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,15 +81,15 @@ public class SpannerPersistentPropertyImplTests {
 		});
 	}
 
-	@Table(name = "custom_test_table")
+	@SpannerTable(name = "custom_test_table")
 	private static class TestEntity {
 		@Id
 		String id;
 
-		@Column(name = "custom_col")
+		@SpannerColumn(name = "custom_col")
 		String something;
 
-		@Column(name = "")
+		@SpannerColumn(name = "")
 		String other;
 	}
 }

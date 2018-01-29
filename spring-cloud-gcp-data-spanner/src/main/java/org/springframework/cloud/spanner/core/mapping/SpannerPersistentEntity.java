@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.data.spanner.core.mapping;
+package org.springframework.cloud.spanner.core.mapping;
 
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
