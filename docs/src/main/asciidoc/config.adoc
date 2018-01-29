@@ -6,9 +6,9 @@ Runtime Configuration API] as a
 https://cloud.spring.io/spring-cloud-config/[Spring Cloud Config] server to remotely store your
 application configuration data.
 
-The Spring Cloud GCP Config support is provided via a Spring Boot starter that enables the use of
-the `@Value` annotation for injecting values stored in the Google Runtime Configuration API into
-fields of Spring-managed beans.
+The Spring Cloud GCP Config support is provided via its own Spring Boot starter.
+It enables the use of the Google Runtime Configuration API as a source for Spring Boot configuration
+properties.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -35,13 +35,13 @@ The following parameters are configurable in Spring Cloud GCP Config:
 
 |===
 | Name | Description | Optional | Default value
-| `spring.cloud.gcp.config.enabled` | Enables the Config client | Yes | `true`
+| `spring.cloud.gcp.config.enabled` | Enables the Config client | Yes | `false`
 | `spring.cloud.gcp.config.name` |
 Name of your application | No |
 | `spring.cloud.gcp.config.profile` |
 Configuration's Spring profile (e.g., prod) | Yes | `default`
-| `spring.cloud.gcp.config.timeout` | Timeout in milliseconds for connecting to the Google Runtime
-Configuration API | Yes | `60000`
+| `spring.cloud.gcp.config.timeout-millis` | Timeout in milliseconds for connecting to the Google
+Runtime Configuration API | Yes | `60000`
 | `spring.cloud.gcp.config.project-id` | GCP project ID where the Google Runtime Configuration API
 is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
 | Yes |
@@ -80,7 +80,7 @@ gcloud beta runtime-config configs variables set myapp.queue-size 25 --config-na
 spring.cloud.gcp.config.name=myapp
 spring.cloud.gcp.config.profile=prod
 ----
-3. Add a field annotated with `@Value` to a Spring-managed bean:
+3. Add the `@ConfigurationProperties` annotation to a Spring-managed bean:
 +
 ----
 @Component
@@ -124,7 +124,7 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '1.5.3.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
 }
 ----
 

@@ -19,7 +19,7 @@ package org.springframework.cloud.gcp.autoconfigure.config;
 import org.junit.After;
 import org.junit.Test;
 
-import org.springframework.boot.test.util.EnvironmentTestUtils;
+import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import static org.junit.Assert.assertEquals;
@@ -45,14 +45,14 @@ public class GcpConfigAutoConfigurationTest {
 		assertEquals(config.getName(), null);
 		assertEquals(config.getProfile(), "default");
 		assertEquals(config.getTimeoutMillis(), 60000);
-		assertEquals(config.isEnabled(), true);
+		assertEquals(config.isEnabled(), false);
 	}
 
 	@Test
 	public void testConfigurationValuesAreCorrectlyLoaded() {
 		loadEnvironment("spring.cloud.gcp.config.name=myapp",
 				"spring.cloud.gcp.config.profile=prod",
-				"spring.cloud.gcp.config.timeout=120000",
+				"spring.cloud.gcp.config.timeoutMillis=120000",
 				"spring.cloud.gcp.config.enabled=false",
 				"spring.cloud.gcp.config.project-id=pariah");
 		GcpConfigProperties config = this.context.getBean(GcpConfigProperties.class);
@@ -65,7 +65,7 @@ public class GcpConfigAutoConfigurationTest {
 
 	private void loadEnvironment(String... environment) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		EnvironmentTestUtils.addEnvironment(context, environment);
+		TestPropertyValues.of(environment).applyTo(context);
 		context.register(GcpConfigAutoConfiguration.class);
 		context.refresh();
 		this.context = context;
