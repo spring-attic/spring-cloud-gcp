@@ -37,7 +37,7 @@ to interact with Google Cloud Pub/Sub.
 Google Cloud Java Client for Pub/Sub `Publisher`.
 The Spring Boot starter for GCP Pub/Sub auto-configures a `PublisherFactory` with default settings
 and uses the `GcpProjectIdProvider` and `CredentialsProvider` auto-configured by the Spring Boot GCP
-Core starter.
+starter.
 
 The `PublisherFactory` implementation provided by Spring Cloud GCP Pub/Sub,
 `DefaultPublisherFactory`, caches `Publisher` instances by topic name, in order to optimize resource

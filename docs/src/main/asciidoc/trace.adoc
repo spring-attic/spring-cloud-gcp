@@ -67,12 +67,12 @@ size. | Yes | 1% of Runtime.totalMemory()
 Buffered trace messages will be flushed to Stackdriver when buffered longer than scheduled delays
 (in seconds) even if the buffered message size didn't exceed the buffer size. | Yes | `10`
 | `spring.cloud.gcp.trace.project-id` |
-Overrides the project ID from the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | Yes |
+Overrides the project ID from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | Yes |
 | `spring.cloud.gcp.trace.credentials.location` |
-Overrides the credentials location from the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> |
+Overrides the credentials location from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> |
 Yes |
 | `spring.cloud.gcp.trace.credentials.scopes` |
-Overrides the credentials scopes from the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> |
+Overrides the credentials scopes from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> |
 Yes |
 |===
 

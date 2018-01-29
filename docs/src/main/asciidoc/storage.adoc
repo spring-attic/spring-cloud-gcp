@@ -62,7 +62,7 @@ However, creating signed URLs requires that the resource was created using servi
 
 The Spring Boot Starter for Google Cloud Storage auto-configures the `Storage` bean required by the
 `spring-cloud-gcp-storage` module, based on the `CredentialsProvider` provided by the Spring Boot
-GCP Core starter.
+GCP starter.
 
 === Configuration
 
