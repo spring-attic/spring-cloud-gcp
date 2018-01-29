@@ -28,7 +28,7 @@ myapp.feature-x-enabled true \
 4.  Update link:src/main/resources/bootstrap.properties[]:
 +
 ....
-spring.cloud.gcp.config.enabled=true #optional, default = true
+spring.cloud.gcp.config.enabled=true
 spring.cloud.gcp.config.name=myapp
 spring.cloud.gcp.config.profile=prod #default profile = default
 ....
@@ -41,8 +41,8 @@ uses `@ConfigurationProperties` to bind the `myapp` namespace from the environme
      myapp.queue-size 200 \
      --config-name myapp_prod
 ....
-7.  Send a POST request to the `/refresh` endpoint:
+7.  Send a POST request to the refresh endpoint:
 +
 ....
-  curl -XPOST http://myapp.host.com/refresh
+  curl -XPOST http://myapp.host.com/actuator/refresh
 ....

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.config;
+package org.springframework.cloud.gcp.autoconfigure.config;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -34,7 +34,6 @@ import org.springframework.core.env.PropertySource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.util.Assert;
@@ -71,30 +70,30 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 
 	public GoogleConfigPropertySourceLocator(GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider,
-			GcpConfigPropertiesProvider gcpConfigPropertiesProvider) throws IOException {
-		Assert.notNull(gcpConfigPropertiesProvider, "Google Config properties must not be null");
+			GcpConfigProperties gcpConfigProperties) throws IOException {
+		Assert.notNull(gcpConfigProperties, "Google Config properties must not be null");
 
-		if (gcpConfigPropertiesProvider.isEnabled()) {
+		if (gcpConfigProperties.isEnabled()) {
 			Assert.notNull(credentialsProvider, "Credentials provider cannot be null");
 			Assert.notNull(projectIdProvider, "Project ID provider cannot be null");
 			org.springframework.cloud.gcp.core.Credentials configCredentials =
-					gcpConfigPropertiesProvider.getCredentials();
+					gcpConfigProperties.getCredentials();
 			this.credentials = configCredentials != null && configCredentials.getLocation() != null
 					? GoogleCredentials.fromStream(
-							gcpConfigPropertiesProvider.getCredentials().getLocation().getInputStream())
-					.createScoped(gcpConfigPropertiesProvider.getCredentials().getScopes())
+							gcpConfigProperties.getCredentials().getLocation().getInputStream())
+					.createScoped(gcpConfigProperties.getCredentials().getScopes())
 					: credentialsProvider.getCredentials();
-			this.projectId = gcpConfigPropertiesProvider.getProjectId() != null
-					? gcpConfigPropertiesProvider.getProjectId()
+			this.projectId = gcpConfigProperties.getProjectId() != null
+					? gcpConfigProperties.getProjectId()
 					: projectIdProvider.getProjectId();
 			Assert.notNull(this.credentials, "Credentials must not be null");
 
 			Assert.notNull(this.projectId, "Project ID must not be null");
 
-			this.timeout = gcpConfigPropertiesProvider.getTimeoutMillis();
-			this.name = gcpConfigPropertiesProvider.getName();
-			this.profile = gcpConfigPropertiesProvider.getProfile();
-			this.enabled = gcpConfigPropertiesProvider.isEnabled();
+			this.timeout = gcpConfigProperties.getTimeoutMillis();
+			this.name = gcpConfigProperties.getName();
+			this.profile = gcpConfigProperties.getProfile();
+			this.enabled = gcpConfigProperties.isEnabled();
 			Assert.notNull(this.name, "Config name must not be null");
 			Assert.notNull(this.profile, "Config profile must not be null");
 		}
@@ -124,9 +123,9 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 				RUNTIMECONFIG_API_ROOT + ALL_VARIABLES_PATH, HttpMethod.GET, requestEntity,
 				GoogleConfigEnvironment.class, this.projectId, this.name, this.profile);
 
-		if (response == null || !response.getStatusCode().is2xxSuccessful()) {
-			HttpStatus code = (response == null) ? HttpStatus.BAD_REQUEST : response.getStatusCode();
-			throw new HttpClientErrorException(code, "Invalid response from Runtime Configurator API");
+		if (!response.getStatusCode().is2xxSuccessful()) {
+			throw new HttpClientErrorException(response.getStatusCode(),
+					"Invalid response from Runtime Configurator API");
 		}
 		return response.getBody();
 	}

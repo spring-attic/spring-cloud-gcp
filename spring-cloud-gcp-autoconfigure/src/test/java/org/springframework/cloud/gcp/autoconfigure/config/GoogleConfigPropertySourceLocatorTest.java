@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.config;
+package org.springframework.cloud.gcp.autoconfigure.config;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -44,7 +44,7 @@ import static org.mockito.Mockito.when;
  */
 public class GoogleConfigPropertySourceLocatorTest {
 
-	private GcpConfigPropertiesProvider gcpConfigProperties;
+	private GcpConfigProperties gcpConfigProperties;
 
 	private Map<String, Object> expectedProperties;
 
@@ -56,7 +56,7 @@ public class GoogleConfigPropertySourceLocatorTest {
 
 	@Before
 	public void setUp() {
-		this.gcpConfigProperties = mock(GcpConfigPropertiesProvider.class);
+		this.gcpConfigProperties = mock(GcpConfigProperties.class);
 		when(this.gcpConfigProperties.getName()).thenReturn("test");
 		when(this.gcpConfigProperties.isEnabled()).thenReturn(true);
 		org.springframework.cloud.gcp.core.Credentials configCredentials =
