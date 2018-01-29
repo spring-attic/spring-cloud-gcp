@@ -6,8 +6,8 @@
 		<artifactId>spring-cloud-gcp-starters</artifactId>
 		<version>1.0.0.BUILD-SNAPSHOT</version>
 	</parent>
-	<artifactId>spring-cloud-gcp-starter-core</artifactId>
-	<name>Spring Cloud GCP Core Starter</name>
+	<artifactId>spring-cloud-gcp-starter</artifactId>
+	<name>Spring Cloud GCP Support Starter</name>
 	<description>Starter for Google Cloud</description>
 	<organization>
 		<name>Pivotal Software, Inc.</name>

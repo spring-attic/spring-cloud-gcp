@@ -66,7 +66,7 @@
 			<!--Starters-->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-core</artifactId>
+				<artifactId>spring-cloud-gcp-starter</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -148,7 +148,7 @@
 				<scope>import</scope>
 			</dependency>
 
-			<!-- spring-cloud-gcp-starter-core -->
+			<!-- spring-cloud-gcp-starter -->
 			<dependency>
 				<groupId>com.google.auth</groupId>
 				<artifactId>google-auth-library-oauth2-http</artifactId>

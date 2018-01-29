@@ -39,5 +39,5 @@ publisher executor.
 
 `spring.cloud.gcp.pubsub.project-id` and `spring.cloud.gcp.pubsub.credentials.location` and
 `spring.cloud.gcp.pubsub.credentials.scopes` are overrides to the GCP project ID and credentials in
-the link:../spring-cloud-gcp-starter-core/README.adoc[Core Starter], in case the Google Cloud
+the link:../spring-cloud-gcp-starter/README.adoc[GCP Support Starter], in case the Google Cloud
 Pub/Sub service is hosted from a different GCP project ID.

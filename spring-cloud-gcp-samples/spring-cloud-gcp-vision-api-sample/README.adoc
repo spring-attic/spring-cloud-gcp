@@ -4,7 +4,7 @@ This code sample shows how the Spring Cloud GCP integrations can simplify the us
 Cloud Platform Java Client Libraries.
 
 It uses the https://cloud.google.com/vision/[Google Cloud Vision API] to extract information about a picture.
-We take advantage of the link:/spring-cloud-gcp-starters/spring-cloud-gcp-starter-core[Core starter] to retrieve
+We take advantage of the link:/spring-cloud-gcp-starters/spring-cloud-gcp-starter[GCP Support starter] to retrieve
 the GCP credentials that we will use to authenticate with the API.
 
 == Running the sample
