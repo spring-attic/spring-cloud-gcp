@@ -64,17 +64,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-stream</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-stream-binder-gcp-pubsub-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-stream-binder-gcp-pubsub</artifactId>
+				<artifactId>spring-cloud-gcp-pubsub-stream-binder</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
