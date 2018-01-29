@@ -18,21 +18,20 @@ package org.springframework.cloud.gcp.autoconfigure.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
-import org.springframework.cloud.gcp.config.GcpConfigPropertiesProvider;
 import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
- * Configuration for {@link org.springframework.cloud.gcp.config.GoogleConfigPropertySourceLocator}.
+ * Configuration for {@link GoogleConfigPropertySourceLocator}.
  *
  * @author Jisha Abubaker
  * @author João André Martins
  */
 @ConfigurationProperties("spring.cloud.gcp.config")
-public class GcpConfigProperties implements GcpConfigPropertiesProvider {
+public class GcpConfigProperties {
 
 	/** Enables Spring Cloud GCP Config. */
-	private boolean enabled = true;
+	private boolean enabled;
 
 	/** Name of the application. */
 	private String name;
@@ -40,9 +39,8 @@ public class GcpConfigProperties implements GcpConfigPropertiesProvider {
 	/** Profile under which app is running (e.g., "prod", "dev", "test", etc.). */
 	private String profile = "default";
 
-	// Config server API time out in milliseconds, default = 1 minute
 	/** Timeout for Google Runtime Configuration API calls. */
-	private int timeout = 60000;
+	private int timeoutMillis = 60000;
 
 	/** Overrides the GCP project ID specified in the Core module. */
 	private String projectId;
@@ -75,12 +73,12 @@ public class GcpConfigProperties implements GcpConfigPropertiesProvider {
 		return this.profile;
 	}
 
-	public void setTimeout(int timeout) {
-		this.timeout = timeout;
+	public void setTimeoutMillis(int timeoutMillis) {
+		this.timeoutMillis = timeoutMillis;
 	}
 
 	public int getTimeoutMillis() {
-		return this.timeout;
+		return this.timeoutMillis;
 	}
 
 	public String getProjectId() {
