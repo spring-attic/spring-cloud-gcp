@@ -28,6 +28,7 @@
 		<dependency>
 			<groupId>org.springframework.integration</groupId>
 			<artifactId>spring-integration-core</artifactId>
+			<optional>true</optional>
 		</dependency>
 
 		<!-- Tests -->
