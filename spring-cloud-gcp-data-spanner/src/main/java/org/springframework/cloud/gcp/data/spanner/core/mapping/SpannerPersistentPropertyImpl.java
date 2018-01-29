@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.spanner.core.mapping;
+package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.spanner.core.mapping;
+package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -23,15 +23,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for a {@link SpannerPersistentEntity} that allows specifying a custom table name,
- * instead of deriving it from the entity's class name.
+ * Annotation for a {@link SpannerPersistentProperty} that allows specifying the column name
+ * instead of deriving it from the field's name.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
 @Documented
-@Target(ElementType.TYPE)
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SpannerTable {
+public @interface SpannerColumn {
 	String name();
 }
