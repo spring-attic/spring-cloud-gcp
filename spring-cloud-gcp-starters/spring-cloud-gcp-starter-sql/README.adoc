@@ -68,8 +68,7 @@ those two will cause the configuration to error. `spring.cloud.gcp.sql.database-
 the resolved JDBC URL and driver class are for MySQL or PostgreSQL.
 
 `spring.cloud.gcp.sql.credentials.location` can be used to specify credentials for a GCP project ID
-different than the one configured in the link:../spring-cloud-gcp-starter-core/README.adoc[Core
-Starter].
+different than the one configured in the link:../spring-cloud-gcp-starter/README.adoc[GCP Starter].
 
 By using this starter in conjunction with
 https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html[Spring JDBC],

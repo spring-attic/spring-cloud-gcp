@@ -13,7 +13,7 @@ Currently, this repository provides support for:
 * link:spring-cloud-gcp-storage[Spring Resource Abstraction for Google Cloud Storage]
 * link:spring-cloud-gcp-integration[Spring Integration Channel Adapters for Google Cloud Pub/Sub]
 * Spring Boot starters
-** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-core[Core]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter[GCP Support]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Google Cloud Config]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-pubsub[Google Cloud Pub/Sub]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql[Google Cloud SQL]
@@ -69,7 +69,7 @@ dependencies and instead delegate versioning to the BOM.
 Spring Boot greatly simplifies the Spring Cloud GCP experience. Our starters handle the object
 instantiation and configuration logic so you don't have to.
 
-Every starter depends on the core starter to provide critical bits of configuration, like the
+Every starter depends on the GCP starter to provide critical bits of configuration, like the
 GCP project ID or OAuth2 credentials location. You can configure these as properties in, for
 example, a properties file:
 

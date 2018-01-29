@@ -1,4 +1,4 @@
-= Google Cloud Core Spring Boot Starter
+= Google Cloud Spring Boot Starter
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -6,7 +6,7 @@ Maven coordinates, using Spring Cloud GCP BOM:
 ----
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-starter-core</artifactId>
+    <artifactId>spring-cloud-gcp-starter</artifactId>
 </dependency>
 ----
 
@@ -16,7 +16,7 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-core'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter'
 }
 ----
 
@@ -46,7 +46,7 @@ If no property is configured, the provided `CredentialsProvider` returns the
 http://google.github.io/google-auth-library-java/releases/0.7.1/apidocs/com/google/auth/oauth2/GoogleCredentials.html#getApplicationDefault()[application default credentials].
 
 If your app is running on Google App Engine or Google Compute Engine, in most cases, you should omit
-the `spring.cloud.gcp.credentials.location` property and, instead, let the Spring Cloud GCP Core
+the `spring.cloud.gcp.credentials.location` property and, instead, let the Spring Cloud GCP
 Starter get the correct credentials for those environments.
 On App Engine Standard, the
 https://cloud.google.com/appengine/docs/standard/java/appidentity/[App Identity service account credentials]
