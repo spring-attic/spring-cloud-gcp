@@ -50,7 +50,6 @@ import org.springframework.util.StringUtils;
  */
 @Configuration
 @EnableConfigurationProperties({ GcpCloudSqlProperties.class, DataSourceProperties.class })
-@ConditionalOnClass(com.google.cloud.sql.mysql.SocketFactory.class)
 @ConditionalOnProperty(name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
@@ -92,11 +91,32 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	public CloudSqlJdbcInfoProvider defaultJdbcInfoProvider() {
-		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(this.gcpCloudSqlProperties);
+	@ConditionalOnClass(com.google.cloud.sql.mysql.SocketFactory.class)
+	public CloudSqlJdbcInfoProvider defaultMySqlJdbcInfoProvider() {
+		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(
+				this.gcpCloudSqlProperties, DatabaseType.MYSQL);
 
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("Default " + this.gcpCloudSqlProperties.getDatabaseType().name()
+			LOGGER.info("Default " + DatabaseType.MYSQL.name()
+					+ " JdbcUrl provider. Connecting to "
+					+ defaultProvider.getJdbcUrl() + " with driver "
+					+ defaultProvider.getJdbcDriverClass());
+		}
+
+		setCredentialsProperty();
+
+		return defaultProvider;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
+	@ConditionalOnClass(com.google.cloud.sql.mysql.SocketFactory.class)
+	public CloudSqlJdbcInfoProvider defaultPostgreSqlJdbcInfoProvider() {
+		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(
+				this.gcpCloudSqlProperties, DatabaseType.POSTGRESQL);
+
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("Default " + DatabaseType.POSTGRESQL.name()
 					+ " JdbcUrl provider. Connecting to "
 					+ defaultProvider.getJdbcUrl() + " with driver "
 					+ defaultProvider.getJdbcDriverClass());
