@@ -19,43 +19,42 @@ package org.springframework.cloud.gcp.autoconfigure.sql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cloud.gcp.autoconfigure.core.AppEngineCondition;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Provides the {@link CloudSqlJdbcInfoProvider} for MySQL.
+ * Provides the {@link CloudSqlJdbcInfoProvider} for apps running on Google App Engine.
  *
  * @author João André Martins
  */
 @Configuration
-@ConditionalOnClass({com.google.cloud.sql.mysql.SocketFactory.class, GcpCloudSqlProperties.class,
-		com.mysql.jdbc.Driver.class})
+@ConditionalOnClass({com.google.cloud.sql.mysql.SocketFactory.class, GcpCloudSqlProperties.class})
 @ConditionalOnProperty(
 		name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
-@AutoConfigureAfter(AppEngineJdbcInfoProviderAutoConfiguration.class)
-public class MySqlJdbcInfoProviderAutoConfiguration {
+public class AppEngineJdbcInfoProviderAutoConfiguration {
 
 	private static final Log LOGGER =
-			LogFactory.getLog(MySqlJdbcInfoProviderAutoConfiguration.class);
+			LogFactory.getLog(AppEngineJdbcInfoProviderAutoConfiguration.class);
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	public CloudSqlJdbcInfoProvider defaultMySqlJdbcInfoProvider(
+	@Conditional(AppEngineCondition.class)
+	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider(
 			GcpCloudSqlProperties gcpCloudSqlProperties) {
-		CloudSqlJdbcInfoProvider defaultProvider =
-				new DefaultCloudSqlJdbcInfoProvider(gcpCloudSqlProperties, DatabaseType.MYSQL);
+		CloudSqlJdbcInfoProvider appEngineProvider =
+				new AppEngineCloudSqlJdbcInfoProvider(gcpCloudSqlProperties);
 
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("Default " + DatabaseType.MYSQL.name()
-					+ " JdbcUrl provider. Connecting to "
-					+ defaultProvider.getJdbcUrl() + " with driver "
-					+ defaultProvider.getJdbcDriverClass());
+			LOGGER.info("App Engine JdbcUrl provider. Connecting to "
+					+ appEngineProvider.getJdbcUrl() + " with driver "
+					+ appEngineProvider.getJdbcDriverClass());
 		}
 
-		return defaultProvider;
+		return appEngineProvider;
 	}
 }

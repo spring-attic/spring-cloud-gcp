@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.autoconfigure.sql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -35,6 +36,7 @@ import org.springframework.context.annotation.Configuration;
 		org.postgresql.Driver.class})
 @ConditionalOnProperty(
 		name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
+@AutoConfigureAfter(AppEngineJdbcInfoProviderAutoConfiguration.class)
 public class PostgreSqlJdbcInfoProviderAutoConfiguration {
 
 	private static final Log LOGGER =

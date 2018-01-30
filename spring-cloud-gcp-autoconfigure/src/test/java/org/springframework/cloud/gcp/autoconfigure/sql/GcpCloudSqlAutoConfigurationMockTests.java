@@ -39,7 +39,8 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 			.withConfiguration(AutoConfigurations.of(GcpCloudSqlAutoConfiguration.class,
 					GcpContextAutoConfiguration.class, GcpCloudSqlTestConfiguration.class,
 					DataSourceAutoConfiguration.class, MySqlJdbcInfoProviderAutoConfiguration.class,
-					PostgreSqlJdbcInfoProviderAutoConfiguration.class));
+					PostgreSqlJdbcInfoProviderAutoConfiguration.class,
+					AppEngineJdbcInfoProviderAutoConfiguration.class));
 
 	@Test
 	public void testCloudSqlDataSourceTest() {

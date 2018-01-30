@@ -25,24 +25,19 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.gcp.autoconfigure.core.AppEngineCondition;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.util.StringUtils;
 
 /**
- * Google Cloud SQL starter.
- *
- * <p>Provides Google Cloud SQL instance connectivity through Spring JDBC by providing only a
+ * Provides Google Cloud SQL instance connectivity through Spring JDBC by providing only a
  * database and instance connection name.
  *
  * @author João André Martins
@@ -70,25 +65,6 @@ public class GcpCloudSqlAutoConfiguration {
 			GcpProperties gcpProperties) {
 		this.gcpCloudSqlProperties = gcpCloudSqlProperties;
 		this.gcpProperties = gcpProperties;
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	@Conditional(AppEngineCondition.class)
-	@Primary
-	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider() {
-		CloudSqlJdbcInfoProvider appEngineProvider =
-				new AppEngineCloudSqlJdbcInfoProvider(this.gcpCloudSqlProperties);
-
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("App Engine JdbcUrl provider. Connecting to "
-					+ appEngineProvider.getJdbcUrl() + " with driver "
-					+ appEngineProvider.getJdbcDriverClass());
-		}
-
-		setCredentialsProperty();
-
-		return appEngineProvider;
 	}
 
 	@Bean

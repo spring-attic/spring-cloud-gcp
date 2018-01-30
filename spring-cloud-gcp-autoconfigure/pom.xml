@@ -74,7 +74,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -92,7 +92,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
 
         <!-- Storage -->
