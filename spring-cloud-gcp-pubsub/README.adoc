@@ -27,3 +27,20 @@ subscriptions.
 
 You can refer to the `PubSubTemplate` and `PubSubAdmin` classes for more details on the
 functionality provided by this module.
+
+== Spring Integration Pub/Sub Channel Adapters
+
+Provides adapters for Spring Messaging channels to exchange messages via Google Cloud Pub/Sub.
+Makes extensive use of the constructs provided by the Spring Cloud GCP Pub/Sub module, like
+`PubSubOperations`.
+
+The outbound channel adapter, `PubSubMessageHandler`, publishes messages asynchronously by default.
+A publish timeout can be configured for synchronous publishing. If none is provided, the adapter
+waits indefinitely for a response.
+
+It is possible to set user-defined callbacks for the `publish()` call in `PubSubMessageHandler`
+through the `setPublishFutureCallback()` method.
+These are useful to process the message ID, in case of success, or the error if any was thrown.
+
+Refer to the https://spring.io/guides/gs/spring-cloud-gcp/[Spring getting started guide] to learn
+how to use the adapters.

@@ -32,7 +32,6 @@
 		<module>spring-cloud-gcp-trace</module>
 		<module>spring-cloud-gcp-logging</module>
 		<module>spring-cloud-gcp-starters</module>
-		<module>spring-cloud-gcp-integration</module>
 		<module>spring-cloud-gcp-samples</module>
 		<module>spring-cloud-gcp-autoconfigure</module>
 		<module>spring-cloud-gcp-pubsub-stream-binder</module>
