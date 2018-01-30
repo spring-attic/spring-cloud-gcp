@@ -45,7 +45,6 @@ import static org.junit.Assert.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -125,10 +124,11 @@ public class SpannerTemplateTests {
 	@Test
 	public void findSingleKeyTest() {
 		Struct struct = mock(Struct.class);
+		TestEntity result = new TestEntity();
 		when(this.readContext.readRow(any(), any(), any())).thenReturn(struct);
-		doNothing().when(this.objectMapper).map(any(), any());
+		when(this.objectMapper.read(eq(TestEntity.class), same(struct))).thenReturn(result);
 		TestEntity entity = this.spannerTemplate.find(TestEntity.class, Key.of("key"));
-		verify(this.objectMapper, times(1)).map(struct, entity);
+		assertSame(result, entity);
 	}
 
 	@Test

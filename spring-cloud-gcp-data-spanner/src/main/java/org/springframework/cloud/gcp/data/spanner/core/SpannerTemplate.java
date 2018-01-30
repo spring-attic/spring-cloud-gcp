@@ -29,7 +29,6 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerObjectMapper;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
@@ -89,9 +88,7 @@ public class SpannerTemplate implements SpannerOperations {
 		if (row == null) {
 			return null;
 		}
-		T object = BeanUtils.instantiateClass(entityClass);
-		this.objectMapper.map(row, object);
-		return object;
+		return this.objectMapper.read(entityClass, row);
 	}
 
 	@Override

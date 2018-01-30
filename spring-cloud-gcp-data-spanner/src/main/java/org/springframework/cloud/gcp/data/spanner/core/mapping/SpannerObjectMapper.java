@@ -18,8 +18,12 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.util.List;
 
+import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
+
+import org.springframework.data.convert.EntityReader;
+import org.springframework.data.convert.EntityWriter;
 
 /**
  * Interface for mappers that can populate fields from Spanner results.
@@ -27,14 +31,8 @@ import com.google.cloud.spanner.Struct;
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public interface SpannerObjectMapper {
-
-	/**
-	 * Populates an object with data from a Spanner row
-	 * @param s The struct holding the Spanner row's data
-	 * @param target The object whose fields will be populated
-	 */
-	void map(Struct s, Object target);
+public interface SpannerObjectMapper
+		extends EntityReader<Object, Struct>, EntityWriter<Object, Mutation> {
 
 	/**
 	 * Converts a set of Spanner results into a list of objects.
