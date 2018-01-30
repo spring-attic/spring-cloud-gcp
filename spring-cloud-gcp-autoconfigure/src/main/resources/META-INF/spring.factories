@@ -4,7 +4,9 @@ org.springframework.cloud.gcp.autoconfigure.logging.StackdriverLoggingAutoConfig
 org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageAutoConfiguration,\
-org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration
+org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.sql.MySqlJdbcInfoProviderAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.sql.PostgreSqlJdbcInfoProviderAutoConfiguration
 
 org.springframework.cloud.bootstrap.BootstrapConfiguration=\
 org.springframework.cloud.gcp.autoconfigure.config.GcpConfigAutoConfiguration,\

@@ -38,7 +38,8 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 			.withPropertyValues("spring.cloud.gcp.sql.databaseName=test-database")
 			.withConfiguration(AutoConfigurations.of(GcpCloudSqlAutoConfiguration.class,
 					GcpContextAutoConfiguration.class, GcpCloudSqlTestConfiguration.class,
-					DataSourceAutoConfiguration.class));
+					DataSourceAutoConfiguration.class, MySqlJdbcInfoProviderAutoConfiguration.class,
+					PostgreSqlJdbcInfoProviderAutoConfiguration.class));
 
 	@Test
 	public void testCloudSqlDataSourceTest() {
