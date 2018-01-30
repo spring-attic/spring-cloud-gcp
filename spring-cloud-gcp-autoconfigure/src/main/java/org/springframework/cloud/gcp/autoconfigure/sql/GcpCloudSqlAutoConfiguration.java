@@ -110,7 +110,7 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	@ConditionalOnClass(com.google.cloud.sql.mysql.SocketFactory.class)
+	@ConditionalOnClass(com.google.cloud.sql.postgres.SocketFactory.class)
 	public CloudSqlJdbcInfoProvider defaultPostgreSqlJdbcInfoProvider() {
 		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(
 				this.gcpCloudSqlProperties, DatabaseType.POSTGRESQL);

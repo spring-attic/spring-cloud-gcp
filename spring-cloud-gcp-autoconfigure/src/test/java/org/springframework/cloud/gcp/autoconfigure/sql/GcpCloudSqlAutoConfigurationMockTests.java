@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 
@@ -128,8 +129,6 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 		this.contextRunner.withPropertyValues(
 				"spring.cloud.gcp.sql.instanceConnectionName=world:asia:japan")
 				.run(context -> {
-					HikariDataSource dataSource =
-							(HikariDataSource) context.getBean(DataSource.class);
 					CloudSqlJdbcInfoProvider urlProvider =
 							context.getBean(CloudSqlJdbcInfoProvider.class);
 					assertThat(urlProvider.getJdbcUrl()).isEqualTo(
@@ -140,20 +139,20 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 				});
 	}
 
-//	@TestPropertySource(properties = {
-//			"spring.cloud.gcp.sql.instanceConnectionName=tubular-bells:singapore:test-instance"
-//	})
-//	public static class GcpCloudSqlAutoConfigurationPostgresTest
-//			extends GcpCloudSqlAutoConfigurationMockTests {
-//
-//		@Test
-//		@Override
-//		public void test() {
-//			assertEquals("jdbc:postgresql://google/test-database?socketFactory="
-//					+ "com.google.cloud.sql.postgres.SocketFactory&"
-//					+ "socketFactoryArg=tubular-bells:singapore:test-instance&useSSL=false",
-//					this.urlProvider.getJdbcUrl());
-//			assertEquals("org.postgresql.Driver", this.urlProvider.getJdbcDriverClass());
-//		}
-//	}
+	@Test
+	public void testPostgre() {
+		this.contextRunner.withPropertyValues(
+				"spring.cloud.gcp.sql.instanceConnectionName=tubular-bells:singapore:test-instance")
+				.withClassLoader(
+						new FilteredClassLoader("com.google.cloud.sql.mysql"))
+				.run(context -> {
+					CloudSqlJdbcInfoProvider urlProvider =
+							context.getBean(CloudSqlJdbcInfoProvider.class);
+					assertThat(urlProvider.getJdbcUrl()).isEqualTo(
+							"jdbc:postgresql://google/test-database?socketFactory=com.google.cloud"
+									+ ".sql.postgres.SocketFactory&socketFactoryArg="
+									+ "tubular-bells:singapore:test-instance&useSSL=false");
+					assertThat(urlProvider.getJdbcDriverClass()).matches("org.postgresql.Driver");
+				});
+	}
 }

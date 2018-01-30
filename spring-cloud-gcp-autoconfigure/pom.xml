@@ -77,6 +77,11 @@
             <artifactId>postgres-socket-factory</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- Storage -->
         <dependency>
