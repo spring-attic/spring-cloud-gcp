@@ -28,8 +28,8 @@ import org.springframework.cloud.stream.binder.ExtendedPropertiesBinder;
 import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.integration.core.MessageProducer;
-import org.springframework.integration.gcp.pubsub.inbound.PubSubInboundChannelAdapter;
-import org.springframework.integration.gcp.pubsub.outbound.PubSubMessageHandler;
+import org.springframework.cloud.gcp.integration.pubsub.inbound.PubSubInboundChannelAdapter;
+import org.springframework.cloud.gcp.integration.pubsub.outbound.PubSubMessageHandler;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
