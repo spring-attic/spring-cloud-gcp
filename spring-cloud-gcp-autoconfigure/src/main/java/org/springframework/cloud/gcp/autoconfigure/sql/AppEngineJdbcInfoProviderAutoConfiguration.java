@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Configuration;
  * @author João André Martins
  */
 @Configuration
-@ConditionalOnClass({com.google.cloud.sql.mysql.SocketFactory.class, GcpCloudSqlProperties.class})
+@ConditionalOnClass({com.google.cloud.sql.mysql.SocketFactory.class})
 @ConditionalOnProperty(
 		name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
 public class AppEngineJdbcInfoProviderAutoConfiguration {

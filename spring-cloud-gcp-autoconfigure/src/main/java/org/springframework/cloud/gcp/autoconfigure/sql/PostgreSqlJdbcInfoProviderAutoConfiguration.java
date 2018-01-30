@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Configuration;
  * @author João André Martins
  */
 @Configuration
-@ConditionalOnClass({com.google.cloud.sql.postgres.SocketFactory.class, GcpCloudSqlProperties.class,
+@ConditionalOnClass({com.google.cloud.sql.postgres.SocketFactory.class,
 		org.postgresql.Driver.class})
 @ConditionalOnProperty(
 		name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
