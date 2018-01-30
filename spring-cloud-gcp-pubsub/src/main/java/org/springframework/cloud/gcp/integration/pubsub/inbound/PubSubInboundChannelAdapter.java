@@ -23,10 +23,10 @@ import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
 
+import org.springframework.cloud.gcp.integration.pubsub.AckMode;
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
-import org.springframework.cloud.gcp.integration.pubsub.AckMode;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;

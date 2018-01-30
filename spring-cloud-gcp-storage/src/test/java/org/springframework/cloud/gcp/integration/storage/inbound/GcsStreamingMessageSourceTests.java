@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.integration.storage.GcsSessionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.InboundChannelAdapter;
@@ -38,7 +39,6 @@ import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.file.FileHeaders;
 import org.springframework.integration.file.filters.AcceptOnceFileListFilter;
 import org.springframework.integration.file.remote.RemoteFileTemplate;
-import org.springframework.cloud.gcp.integration.storage.GcsSessionFactory;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.PollableChannel;
 import org.springframework.test.context.ContextConfiguration;
