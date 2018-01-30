@@ -33,6 +33,7 @@ import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfigurat
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.util.StringUtils;
 
@@ -48,6 +49,9 @@ import org.springframework.util.StringUtils;
 		name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
+@Import({AppEngineJdbcInfoProviderAutoConfiguration.class,
+		MySqlJdbcInfoProviderAutoConfiguration.class,
+		PostgreSqlJdbcInfoProviderAutoConfiguration.class})
 public class GcpCloudSqlAutoConfiguration {
 
 	public final static String INSTANCE_CONNECTION_NAME_HELP_URL =

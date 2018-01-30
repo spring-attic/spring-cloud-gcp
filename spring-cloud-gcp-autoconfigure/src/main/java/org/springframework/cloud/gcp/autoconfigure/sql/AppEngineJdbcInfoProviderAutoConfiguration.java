@@ -22,7 +22,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gcp.autoconfigure.core.AppEngineCondition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
@@ -35,17 +34,15 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConditionalOnClass({com.google.cloud.sql.mysql.SocketFactory.class})
-@ConditionalOnProperty(
-		name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
+@Conditional(AppEngineCondition.class)
 @AutoConfigureBefore(GcpCloudSqlAutoConfiguration.class)
-public class AppEngineJdbcInfoProviderAutoConfiguration {
+class AppEngineJdbcInfoProviderAutoConfiguration {
 
 	private static final Log LOGGER =
 			LogFactory.getLog(AppEngineJdbcInfoProviderAutoConfiguration.class);
 
 	@Bean
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	@Conditional(AppEngineCondition.class)
 	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider(
 			GcpCloudSqlProperties gcpCloudSqlProperties) {
 		CloudSqlJdbcInfoProvider appEngineProvider =

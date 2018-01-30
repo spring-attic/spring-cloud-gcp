@@ -22,7 +22,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -34,10 +33,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConditionalOnClass({com.google.cloud.sql.postgres.SocketFactory.class,
 		org.postgresql.Driver.class})
-@ConditionalOnProperty(
-		name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
 @AutoConfigureAfter(AppEngineJdbcInfoProviderAutoConfiguration.class)
-public class PostgreSqlJdbcInfoProviderAutoConfiguration {
+class PostgreSqlJdbcInfoProviderAutoConfiguration {
 
 	private static final Log LOGGER =
 			LogFactory.getLog(PostgreSqlJdbcInfoProviderAutoConfiguration.class);

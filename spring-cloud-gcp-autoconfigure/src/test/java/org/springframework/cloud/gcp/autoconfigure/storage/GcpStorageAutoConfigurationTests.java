@@ -33,10 +33,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.sql.AppEngineJdbcInfoProviderAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.sql.MySqlJdbcInfoProviderAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.sql.PostgreSqlJdbcInfoProviderAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.storage.GoogleStorageResourceObject;
 import org.springframework.context.annotation.Bean;
@@ -84,10 +81,7 @@ public class GcpStorageAutoConfigurationTests {
 	@SpringBootApplication(exclude = {
 			GcpContextAutoConfiguration.class,
 			GcpCloudSqlAutoConfiguration.class,
-			DataSourceAutoConfiguration.class,
-			MySqlJdbcInfoProviderAutoConfiguration.class,
-			PostgreSqlJdbcInfoProviderAutoConfiguration.class,
-			AppEngineJdbcInfoProviderAutoConfiguration.class
+			DataSourceAutoConfiguration.class
 	})
 	@RestController
 	static class StorageApplication {
