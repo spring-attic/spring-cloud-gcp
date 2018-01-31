@@ -40,13 +40,8 @@
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<spring-cloud-context.version>2.0.0.M5</spring-cloud-context.version>
-		<spring-cloud-sleuth.version>2.0.0.M5</spring-cloud-sleuth.version>
-		<spring-cloud-stream.version>2.0.0.M3</spring-cloud-stream.version>
-		<!-- Setting SI version until
-		 https://github.com/spring-cloud/spring-cloud-gcp/pull/302#discussion_r161083818
-		 is resolved. -->
-		<spring-integration.version>5.0.1.BUILD-SNAPSHOT</spring-integration.version>
+		<spring-cloud-release.version>Finchley.M5</spring-cloud-release.version>
+		<spring-boot-release.version>2.0.0.RC1</spring-boot-release.version>
 	</properties>
 
 	<dependencyManagement>
@@ -61,33 +56,18 @@
 
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-sleuth-core</artifactId>
-				<version>${spring-cloud-sleuth.version}</version>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud-release.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-starter-sleuth</artifactId>
-				<version>${spring-cloud-sleuth.version}</version>
-			</dependency>
-
-			<!-- spring-cloud-gcp-starter-config -->
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-context</artifactId>
-				<version>${spring-cloud-context.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-stream</artifactId>
-				<version>${spring-cloud-stream.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.springframework.integration</groupId>
-				<artifactId>spring-integration-core</artifactId>
-				<version>${spring-integration.version}</version>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot-release.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
