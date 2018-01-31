@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -76,6 +77,7 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@Primary
+	@ConditionalOnBean(CloudSqlJdbcInfoProvider.class)
 	public DataSourceProperties cloudSqlDataSourceProperties(DataSourceProperties properties,
 			CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider) {
 		if (StringUtils.isEmpty(properties.getUsername())) {
