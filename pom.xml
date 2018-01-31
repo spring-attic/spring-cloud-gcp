@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-build</artifactId>
-		<version>2.0.0.M6</version>
+		<version>2.0.0.RC1</version>
 		<relativePath/><!-- lookup parent from repository -->
 	</parent>
 
@@ -43,10 +43,6 @@
 		<spring-cloud-context.version>2.0.0.M5</spring-cloud-context.version>
 		<spring-cloud-sleuth.version>2.0.0.M5</spring-cloud-sleuth.version>
 		<spring-cloud-stream.version>2.0.0.M3</spring-cloud-stream.version>
-		<!-- Setting SI version until
-		 https://github.com/spring-cloud/spring-cloud-gcp/pull/302#discussion_r161083818
-		 is resolved. -->
-		<spring-integration.version>5.0.1.BUILD-SNAPSHOT</spring-integration.version>
 	</properties>
 
 	<dependencyManagement>
