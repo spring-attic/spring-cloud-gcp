@@ -9,7 +9,7 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-cloud-gcp-starter-sql</artifactId>
+	<artifactId>spring-cloud-gcp-starter-sql-mysql</artifactId>
 	<name>Spring Cloud GCP Cloud SQL Starter</name>
 
 	<dependencies>
@@ -17,27 +17,18 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-gcp-starter</artifactId>
 		</dependency>
-
-		<!-- Adds SocketFactory and MySQL driver to classpath -->
+		<dependency>
+			<groupId>com.zaxxer</groupId>
+			<artifactId>HikariCP</artifactId>
+			<scope>compile</scope>
+		</dependency>
 		<dependency>
 			<groupId>com.google.cloud.sql</groupId>
 			<artifactId>mysql-socket-factory</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-		</dependency>
-
-		<!-- PostgreSQL -->
-		<dependency>
-			<groupId>com.google.cloud.sql</groupId>
-			<artifactId>postgres-socket-factory</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
 		</dependency>
 
 	</dependencies>
