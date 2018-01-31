@@ -63,6 +63,12 @@
             <groupId>com.google.cloud.sql</groupId>
             <artifactId>mysql-socket-factory</artifactId>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>mysql</groupId>
+                    <artifactId>mysql-connector-java</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -83,7 +89,6 @@
             <artifactId>postgres-socket-factory</artifactId>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>

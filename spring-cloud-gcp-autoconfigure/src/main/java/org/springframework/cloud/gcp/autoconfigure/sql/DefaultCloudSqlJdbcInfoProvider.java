@@ -30,8 +30,12 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 
 	private final GcpCloudSqlProperties properties;
 
-	public DefaultCloudSqlJdbcInfoProvider(GcpCloudSqlProperties properties) {
+	private final DatabaseType databaseType;
+
+	public DefaultCloudSqlJdbcInfoProvider(GcpCloudSqlProperties properties,
+			DatabaseType databaseType) {
 		this.properties = properties;
+		this.databaseType = databaseType;
 		Assert.hasText(this.properties.getDatabaseName(), "A database name must be provided.");
 		Assert.hasText(this.properties.getInstanceConnectionName(),
 				"An instance connection name must be provided. Refer to "
@@ -41,12 +45,12 @@ public class DefaultCloudSqlJdbcInfoProvider implements CloudSqlJdbcInfoProvider
 
 	@Override
 	public String getJdbcDriverClass() {
-		return this.properties.getDatabaseType().getJdbcDriverName();
+		return this.databaseType.getJdbcDriverName();
 	}
 
 	@Override
 	public String getJdbcUrl() {
-		return String.format(this.properties.getDatabaseType().getJdbcUrlTemplate(),
+		return String.format(this.databaseType.getJdbcUrlTemplate(),
 				this.properties.getDatabaseName(),
 				this.properties.getInstanceConnectionName());
 	}

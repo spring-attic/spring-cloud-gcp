@@ -25,35 +25,38 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.gcp.autoconfigure.core.AppEngineCondition;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.util.StringUtils;
 
 /**
- * Google Cloud SQL starter.
- *
- * <p>Provides Google Cloud SQL instance connectivity through Spring JDBC by providing only a database and instance
- * connection name.
+ * Provides Google Cloud SQL instance connectivity through Spring JDBC by providing only a
+ * database and instance connection name.
  *
  * @author João André Martins
  */
 @Configuration
 @EnableConfigurationProperties({ GcpCloudSqlProperties.class, DataSourceProperties.class })
-@ConditionalOnClass(com.google.cloud.sql.mysql.SocketFactory.class)
-@ConditionalOnProperty(name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+		name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
 @AutoConfigureBefore(DataSourceAutoConfiguration.class)
-@AutoConfigureAfter(GcpContextAutoConfiguration.class)
+@AutoConfigureAfter({GcpContextAutoConfiguration.class,
+		AppEngineJdbcInfoProviderAutoConfiguration.class,
+		MySqlJdbcInfoProviderAutoConfiguration.class,
+		PostgreSqlJdbcInfoProviderAutoConfiguration.class})
+@Import({AppEngineJdbcInfoProviderAutoConfiguration.class,
+		MySqlJdbcInfoProviderAutoConfiguration.class,
+		PostgreSqlJdbcInfoProviderAutoConfiguration.class})
+@ConditionalOnBean(CloudSqlJdbcInfoProvider.class)
 public class GcpCloudSqlAutoConfiguration {
 
 	public final static String INSTANCE_CONNECTION_NAME_HELP_URL =
@@ -71,40 +74,6 @@ public class GcpCloudSqlAutoConfiguration {
 			GcpProperties gcpProperties) {
 		this.gcpCloudSqlProperties = gcpCloudSqlProperties;
 		this.gcpProperties = gcpProperties;
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	@Conditional(AppEngineCondition.class)
-	public CloudSqlJdbcInfoProvider appengineCloudSqlJdbcInfoProvider() {
-		CloudSqlJdbcInfoProvider appEngineProvider = new AppEngineCloudSqlJdbcInfoProvider(this.gcpCloudSqlProperties);
-
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("App Engine JdbcUrl provider. Connecting to "
-					+ appEngineProvider.getJdbcUrl() + " with driver "
-					+ appEngineProvider.getJdbcDriverClass());
-		}
-
-		setCredentialsProperty();
-
-		return appEngineProvider;
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
-	public CloudSqlJdbcInfoProvider defaultJdbcInfoProvider() {
-		CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(this.gcpCloudSqlProperties);
-
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("Default " + this.gcpCloudSqlProperties.getDatabaseType().name()
-					+ " JdbcUrl provider. Connecting to "
-					+ defaultProvider.getJdbcUrl() + " with driver "
-					+ defaultProvider.getJdbcDriverClass());
-		}
-
-		setCredentialsProperty();
-
-		return defaultProvider;
 	}
 
 	@Bean
@@ -128,6 +97,9 @@ public class GcpCloudSqlAutoConfiguration {
 		else {
 			LOGGER.warn("spring.datasource.url is specified. Not using generated Cloud SQL configuration");
 		}
+
+		setCredentialsProperty();
+
 		return properties;
 	}
 
