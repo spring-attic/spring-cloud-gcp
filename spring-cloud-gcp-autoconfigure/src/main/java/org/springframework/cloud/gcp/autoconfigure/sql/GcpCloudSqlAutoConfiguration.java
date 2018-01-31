@@ -56,7 +56,6 @@ import org.springframework.util.StringUtils;
 @Import({AppEngineJdbcInfoProviderAutoConfiguration.class,
 		MySqlJdbcInfoProviderAutoConfiguration.class,
 		PostgreSqlJdbcInfoProviderAutoConfiguration.class})
-@ConditionalOnBean(CloudSqlJdbcInfoProvider.class)
 public class GcpCloudSqlAutoConfiguration {
 
 	public final static String INSTANCE_CONNECTION_NAME_HELP_URL =
@@ -78,6 +77,7 @@ public class GcpCloudSqlAutoConfiguration {
 
 	@Bean
 	@Primary
+	@ConditionalOnBean(CloudSqlJdbcInfoProvider.class)
 	public DataSourceProperties cloudSqlDataSourceProperties(DataSourceProperties properties,
 			CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider) {
 		if (StringUtils.isEmpty(properties.getUsername())) {
