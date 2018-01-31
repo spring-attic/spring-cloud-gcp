@@ -40,9 +40,7 @@
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<spring-cloud-context.version>2.0.0.M5</spring-cloud-context.version>
-		<spring-cloud-sleuth.version>2.0.0.M5</spring-cloud-sleuth.version>
-		<spring-cloud-stream.version>2.0.0.M3</spring-cloud-stream.version>
+		<spring-cloud-release.version>Finchley.M5</spring-cloud-release.version>
 	</properties>
 
 	<dependencyManagement>
@@ -57,27 +55,10 @@
 
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-sleuth-core</artifactId>
-				<version>${spring-cloud-sleuth.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-starter-sleuth</artifactId>
-				<version>${spring-cloud-sleuth.version}</version>
-			</dependency>
-
-			<!-- spring-cloud-gcp-starter-config -->
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-context</artifactId>
-				<version>${spring-cloud-context.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-stream</artifactId>
-				<version>${spring-cloud-stream.version}</version>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud-release.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
