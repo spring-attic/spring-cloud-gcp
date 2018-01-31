@@ -25,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
@@ -56,7 +55,6 @@ import org.springframework.util.StringUtils;
 @Import({AppEngineJdbcInfoProviderAutoConfiguration.class,
 		MySqlJdbcInfoProviderAutoConfiguration.class,
 		PostgreSqlJdbcInfoProviderAutoConfiguration.class})
-@ConditionalOnBean(CloudSqlJdbcInfoProvider.class)
 public class GcpCloudSqlAutoConfiguration {
 
 	public final static String INSTANCE_CONNECTION_NAME_HELP_URL =
