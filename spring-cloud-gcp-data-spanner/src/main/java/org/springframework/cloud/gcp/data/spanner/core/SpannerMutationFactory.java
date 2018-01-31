@@ -50,7 +50,7 @@ public interface SpannerMutationFactory {
 	 * @param <T> The object's type.
 	 * @return The mutation operation to perform the action.
 	 */
-	<T> Mutation update(T object, String... properties);
+	<T> Mutation update(T object);
 
 	/**
 	 * Deletes several objects from Spanner.
