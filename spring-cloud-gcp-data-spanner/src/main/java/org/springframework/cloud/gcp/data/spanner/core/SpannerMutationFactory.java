@@ -44,15 +44,6 @@ public interface SpannerMutationFactory {
 	<T> Mutation upsert(T object);
 
 	/**
-	 * Replaces a single object in Spanner. The columns' values corresponding to the
-	 * object's fields are treated according to Mutation.Op.REPLACE.
-	 * @param object The object to store.
-	 * @param <T> The object's type.
-	 * @return The mutation operation to perform this action.
-	 */
-	<T> Mutation replace(T object);
-
-	/**
 	 * Updates a single object in Spanner. The columns' values corresponding to the
 	 * object's fields are treated according to Mutation.Op.UPDATE.
 	 * @param object The object to update.

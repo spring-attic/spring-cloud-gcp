@@ -158,6 +158,15 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
+	public void findBySqlString() {
+		QueryOption queryOption = mock(QueryOption.class);
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		spyTemplate.find(TestEntity.class, "test", queryOption);
+		verify(spyTemplate).find(eq(TestEntity.class), eq(Statement.of("test")),
+				same(queryOption));
+	}
+
+	@Test
 	public void findAllTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
 		ReadOption readOption = mock(ReadOption.class);

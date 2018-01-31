@@ -80,6 +80,18 @@ public interface SpannerOperations {
 			Options.QueryOption... options);
 
 	/**
+	 * Finds objects by using an SQL string.
+	 * @param entityClass the type of object to retrieve.
+	 * @param statement the SQL statement used to select the objects.
+	 * @param options Spanner read options with which to conduct the read operation.
+	 * @param <T> the type of object to retrieve.
+	 * @return a list of the objects found. If no keys could be found the list will be
+	 * empty.
+	 */
+	<T> List<T> find(Class<T> entityClass, String statement,
+			Options.QueryOption... options);
+
+	/**
 	 * Finds all objects of the given type.
 	 * @param entityClass the type of the object to retrieve.
 	 * @param options Spanner read options with which to conduct the read operation.

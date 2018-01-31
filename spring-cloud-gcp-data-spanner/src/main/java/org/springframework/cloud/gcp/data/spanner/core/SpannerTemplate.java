@@ -24,6 +24,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
@@ -106,6 +107,12 @@ public class SpannerTemplate implements SpannerOperations {
 			Options.QueryOption... options) {
 		ResultSet resultSet = getReadContext().executeQuery(statement, options);
 		return this.objectMapper.mapToUnmodifiableList(resultSet, entityClass);
+	}
+
+	@Override
+	public <T> List<T> find(Class<T> entityClass, String statement,
+			QueryOption... options) {
+		return find(entityClass, Statement.of(statement), options);
 	}
 
 	@Override
