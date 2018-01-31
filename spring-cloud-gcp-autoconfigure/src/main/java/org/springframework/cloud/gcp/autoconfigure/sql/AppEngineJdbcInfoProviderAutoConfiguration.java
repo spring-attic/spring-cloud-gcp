@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.autoconfigure.sql;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.gcp.autoconfigure.core.AppEngineCondition;
@@ -35,7 +34,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConditionalOnClass({com.google.cloud.sql.mysql.SocketFactory.class})
 @Conditional(AppEngineCondition.class)
-@AutoConfigureBefore(GcpCloudSqlAutoConfiguration.class)
 class AppEngineJdbcInfoProviderAutoConfiguration {
 
 	private static final Log LOGGER =
