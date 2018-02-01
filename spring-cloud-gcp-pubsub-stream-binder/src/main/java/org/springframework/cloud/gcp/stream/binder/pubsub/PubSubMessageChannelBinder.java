@@ -16,9 +16,9 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub;
 
-import org.springframework.cloud.gcp.integration.pubsub.inbound.PubSubInboundChannelAdapter;
-import org.springframework.cloud.gcp.integration.pubsub.outbound.PubSubMessageHandler;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundChannelAdapter;
+import org.springframework.cloud.gcp.pubsub.integration.outbound.PubSubMessageHandler;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
