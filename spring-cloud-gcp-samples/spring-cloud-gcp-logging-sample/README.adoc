@@ -35,7 +35,7 @@ for other options for this setting.
 To see the logged lines, navigate to the https://pantheon.corp.google.com/logs/viewer[Logging section of the Cloud Console].
 Select the `Global` resource and look under the `spring.log` channel to see the logged text.
 
-If your application is deployed to Google App Engine or Google Kubernetes Engine,
+If your application is deployed to Google App Engine (GAE) or Google Kubernetes Engine (GKE),
 you will instead find the logs under the deployment's resource in the Stackdriver UI under the `spring.log` channel.
 You can further narrow down the log by request by using the following filtering text
 that takes advantage of the trace ID label in each logged line. For example, if deployed to App Engine
@@ -49,3 +49,7 @@ labels."appengine.googleapis.com/trace_id"="[Trace-ID-Of-Request]"
 
 Expand the log entry labels and note that `appengine.googleapis.com/trace_id` label is set to the
 same value for both log messages. The trace ID header `x-cloud-trace-context` is set automatically when deployed to App Engine.
+
+NOTE: When running on GAE or GKE, also remember to remove the `CONSOLE` appender, otherwise logs
+will appear on Cloud Logging in duplicate: once in the `spring.log` stream and once in the `stdout`
+stream.

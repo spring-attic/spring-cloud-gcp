@@ -1,1 +1,1 @@
-provides: spring-cloud-gcp-starter-core, spring-cloud-gcp-logging
+provides: spring-cloud-gcp-starter, spring-cloud-gcp-logging

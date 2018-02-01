@@ -1,0 +1,62 @@
+= Google Cloud Spring Boot Starter
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter'
+}
+----
+
+
+This starter creates and configures two important configuration sources: `CredentialsProvider` and
+`GcpProjectIdProvider`.
+
+It tries to read configuration from the application properties. For example, using a properties
+file:
+
+[source,yaml]
+----
+spring.cloud.gcp.project-id=[YOUR_GCP_PROJECT_ID]
+spring.cloud.gcp.credentials.location=file:[LOCAL_PRIVATE_KEY_FILE]
+spring.cloud.gcp.credentials.scopes=[SCOPE_1],[SCOPE_2],[SCOPE_3]
+----
+
+If `spring.cloud.gcp.project-id` is populated, the provided `GcpProjectIdProvider` returns that
+project ID. Otherwise, it uses google-cloud-java's
+http://googlecloudplatform.github.io/google-cloud-java/latest/apidocs/com/google/cloud/ServiceOptions.html#getDefaultProjectId--[rules to discover the project ID].
+
+Similarly for `spring.cloud.gcp.credentials.location`, if a property is configured, the provided
+`CredentialsProvider` returns credentials for that private key.
+The value of `spring.cloud.gcp.credentials.location` is a Spring Resource, so you can specify
+https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-implementations[file system paths, HTTP URLs, etc.]
+If no property is configured, the provided `CredentialsProvider` returns the
+http://google.github.io/google-auth-library-java/releases/0.7.1/apidocs/com/google/auth/oauth2/GoogleCredentials.html#getApplicationDefault()[application default credentials].
+
+If your app is running on Google App Engine or Google Compute Engine, in most cases, you should omit
+the `spring.cloud.gcp.credentials.location` property and, instead, let the Spring Cloud GCP
+Starter get the correct credentials for those environments.
+On App Engine Standard, the
+https://cloud.google.com/appengine/docs/standard/java/appidentity/[App Identity service account credentials]
+are used, on App Engine Flexible, the
+https://cloud.google.com/appengine/docs/flexible/java/service-account[Flexible service account credential]
+are used and on Google Compute Engine, the
+https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#using_the_compute_engine_default_service_account[Compute Engine Default Service Account]
+is used.
+
+`spring.cloud.gcp.credentials.scopes` is a comma-delimited list of
+https://developers.google.com/identity/protocols/googlescopes[Google OAuth2 scopes] for Google
+Cloud Platform services that the credentials returned by the provided `CredentialsProvider` support.
+If unspecified, list of default scopes for every service supported by this project is used.

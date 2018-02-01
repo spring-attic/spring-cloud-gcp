@@ -196,8 +196,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 		Assert.hasLength(subscriptionName, "The subscription name must be provided.");
 
 		PullRequest.Builder pullRequestBuilder =
-				PullRequest.newBuilder().setSubscriptionWithSubscriptionName(
-						SubscriptionName.of(this.projectId, subscriptionName));
+				PullRequest.newBuilder().setSubscription(
+						SubscriptionName.of(this.projectId, subscriptionName).toString());
 
 		if (maxMessages != null) {
 			pullRequestBuilder.setMaxMessages(maxMessages);

@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-gcp-starter-core</artifactId>
+            <artifactId>spring-cloud-gcp-starter</artifactId>
         </dependency>
 
         <dependency>
@@ -26,7 +26,6 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-vision</artifactId>
-            <version>1.14.0</version>
         </dependency>
     </dependencies>
 </project>

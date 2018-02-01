@@ -8,7 +8,7 @@ The other app subscribes to that topic and logs received messages.
 == Setup & Configuration
 
 1. Configure your GCP project ID and credentials by following
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-core[these instructions].
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter[these instructions].
 +
 Alternatively, if you have the
 https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with

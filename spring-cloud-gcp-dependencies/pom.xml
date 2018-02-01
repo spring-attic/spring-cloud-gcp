@@ -59,29 +59,14 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-integration</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-stream</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-stream-binder-gcp-pubsub-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-stream-binder-gcp-pubsub</artifactId>
+				<artifactId>spring-cloud-gcp-pubsub-stream-binder</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
 			<!--Starters-->
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-core</artifactId>
+				<artifactId>spring-cloud-gcp-starter</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -96,7 +81,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-sql</artifactId>
+				<artifactId>spring-cloud-gcp-starter-sql-mysql</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-starter-sql-postgresql</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -163,7 +153,7 @@
 				<scope>import</scope>
 			</dependency>
 
-			<!-- spring-cloud-gcp-starter-core -->
+			<!-- spring-cloud-gcp-starter -->
 			<dependency>
 				<groupId>com.google.auth</groupId>
 				<artifactId>google-auth-library-oauth2-http</artifactId>

@@ -11,7 +11,7 @@ Maven coordinates, using Spring Cloud GCP BOM:
 ----
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-starter-core</artifactId>
+    <artifactId>spring-cloud-gcp-starter</artifactId>
 </dependency>
 ----
 
@@ -20,7 +20,7 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-core'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter'
 }
 ----
 
@@ -35,7 +35,7 @@ public interface GcpProjectIdProvider {
 }
 ----
 
-The Spring Boot GCP Core starter auto-configures a `GcpProjectIdProvider`.
+The Spring Boot GCP starter auto-configures a `GcpProjectIdProvider`.
 If a `spring.cloud.gcp.project-id` property is specified, the provided `GcpProjectIdProvider` returns that property value.
 
 [source,java]
@@ -65,7 +65,7 @@ public interface CredentialsProvider {
 }
 ----
 
-The Spring Boot GCP Core starter auto-configures a `CredentialsProvider`.
+The Spring Boot GCP starter auto-configures a `CredentialsProvider`.
 It uses the `spring.cloud.gcp.credentials.location` property to locate the OAuth2 private key of a Google service account.
 Keep in mind this property is a Spring Resource, so the credentials file can be obtained from a number of https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-implementations[different locations] such as the file system, classpath, URL, etc.
 The next example specifies the credentials location property in the file system.
@@ -85,7 +85,7 @@ If that property isn't specified, the starter tries to discover credentials from
 
 ==== Scopes
 
-By default, the credentials provided by the Spring Cloud GCP Core Starter contain scopes for every
+By default, the credentials provided by the Spring Cloud GCP Starter contain scopes for every
 service supported by Spring Cloud GCP.
 
 |===
@@ -98,7 +98,7 @@ service supported by Spring Cloud GCP.
 | Cloud Platform | https://www.googleapis.com/auth/cloud-platform
 |===
 
-The Spring Boot GCP Core starter allows you to configure a custom scope list for the provided
+The Spring Boot GCP starter allows you to configure a custom scope list for the provided
 credentials.
 To do that, specify a comma-delimited list of scopes in the `spring.cloud.gcp.credentials.scopes`
 property.

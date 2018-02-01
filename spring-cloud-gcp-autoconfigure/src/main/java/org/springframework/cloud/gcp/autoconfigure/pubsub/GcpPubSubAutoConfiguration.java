@@ -54,7 +54,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
-@ConditionalOnProperty(value = "spring.cloud.gcp.trace.enabled", matchIfMissing = true)
+@ConditionalOnProperty(value = "spring.cloud.gcp.pubsub.enabled", matchIfMissing = true)
 @ConditionalOnClass(PubSubTemplate.class)
 @EnableConfigurationProperties(GcpPubSubProperties.class)
 public class GcpPubSubAutoConfiguration {
