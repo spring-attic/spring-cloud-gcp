@@ -50,5 +50,6 @@ labels."appengine.googleapis.com/trace_id"="[Trace-ID-Of-Request]"
 Expand the log entry labels and note that `appengine.googleapis.com/trace_id` label is set to the
 same value for both log messages. The trace ID header `x-cloud-trace-context` is set automatically when deployed to App Engine.
 
-When running on GAE or GKE, also remember to remove the `CONSOLE` appender, otherwise logs will
-appear on Cloud Logging in duplicate.
+NOTE: When running on GAE or GKE, also remember to remove the `CONSOLE` appender, otherwise logs
+will appear on Cloud Logging in duplicate: once in the `spring.log` stream and once in the `stdout`
+stream.
