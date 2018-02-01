@@ -5,6 +5,7 @@
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
     <root level="INFO">
+        <!-- If running in GCP, remove the CONSOLE appender otherwise logs will be duplicated. -->
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="STACKDRIVER" />
     </root>
