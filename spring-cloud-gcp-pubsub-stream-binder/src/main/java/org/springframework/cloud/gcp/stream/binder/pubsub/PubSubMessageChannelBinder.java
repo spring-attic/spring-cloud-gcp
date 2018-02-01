@@ -48,9 +48,9 @@ public class PubSubMessageChannelBinder
 	private PubSubExtendedBindingProperties pubSubExtendedBindingProperties =
 			new PubSubExtendedBindingProperties();
 
-	public PubSubMessageChannelBinder(boolean supportsHeadersNatively, String[] headersToEmbed,
+	public PubSubMessageChannelBinder(String[] headersToEmbed,
 			PubSubChannelProvisioner provisioningProvider, PubSubTemplate pubSubTemplate) {
-		super(supportsHeadersNatively, headersToEmbed, provisioningProvider);
+		super(headersToEmbed, provisioningProvider);
 		this.pubSubTemplate = pubSubTemplate;
 	}
 

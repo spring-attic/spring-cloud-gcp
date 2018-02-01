@@ -93,7 +93,7 @@ public class PubSubAdmin {
 	public Topic createTopic(String topicName) {
 		Assert.hasText(topicName, "No topic name was specified.");
 
-		return this.topicAdminClient.createTopic(TopicName.create(this.projectId, topicName));
+		return this.topicAdminClient.createTopic(TopicName.of(this.projectId, topicName));
 	}
 
 	/**
@@ -106,7 +106,7 @@ public class PubSubAdmin {
 		Assert.hasText(topicName, "No topic name was specified.");
 
 		try {
-			return this.topicAdminClient.getTopic(TopicName.create(this.projectId, topicName));
+			return this.topicAdminClient.getTopic(TopicName.of(this.projectId, topicName));
 		}
 		catch (ApiException aex) {
 			if (aex.getStatusCode().getCode() == StatusCode.Code.NOT_FOUND) {
@@ -125,7 +125,7 @@ public class PubSubAdmin {
 	public void deleteTopic(String topicName) {
 		Assert.hasText(topicName, "No topic name was specified.");
 
-		this.topicAdminClient.deleteTopic(TopicName.create(this.projectId, topicName));
+		this.topicAdminClient.deleteTopic(TopicName.of(this.projectId, topicName));
 	}
 
 	/**
@@ -135,7 +135,7 @@ public class PubSubAdmin {
 	 */
 	public List<Topic> listTopics() {
 		PagedResponseWrappers.ListTopicsPagedResponse topicListPage =
-				this.topicAdminClient.listTopics(ProjectName.create(this.projectId));
+				this.topicAdminClient.listTopics(ProjectName.of(this.projectId));
 
 		return Lists.newArrayList(topicListPage.iterateAll());
 	}
@@ -225,7 +225,7 @@ public class PubSubAdmin {
 
 		try {
 			return this.subscriptionAdminClient.getSubscription(
-					SubscriptionName.create(this.projectId, subscriptionName));
+					SubscriptionName.of(this.projectId, subscriptionName));
 		}
 		catch (ApiException aex) {
 			if (aex.getStatusCode().getCode() == StatusCode.Code.NOT_FOUND) {
