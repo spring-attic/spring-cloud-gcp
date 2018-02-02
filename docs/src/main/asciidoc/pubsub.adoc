@@ -77,7 +77,7 @@ public void publishMessage() {
 Google Cloud Pub/Sub allows many subscriptions to be associated to the same topic.
 `PubSubTemplate` allows you to subscribe to subscriptions via the `subscribe()` method.
 It relies on a `SubscriberFactory` object, whose only task is to generate Google Cloud Pub/Sub
-`Subscriber`s.
+`Subscriber` objects.
 
 The Spring Boot starter for Google Cloud Pub/Sub auto-configures a `SubscriberFactory`.
 

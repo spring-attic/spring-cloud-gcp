@@ -64,7 +64,7 @@ public List<Map<String, Object>> listUsers() {
 
 You can rely on
 https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html#boot-features-connect-to-production-database[Spring
-Boot data source auto-configuration to configure a `DataSource` bean.
+Boot data source auto-configuration] to configure a `DataSource` bean.
 In other words, properties like the SQL username, `spring.datasource.username`, and password,
 `spring.datasource.password` can be used.
 There is also some configuration specific to Google Cloud SQL:
