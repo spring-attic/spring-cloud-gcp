@@ -78,6 +78,8 @@ Google Cloud Pub/Sub allows many subscriptions to be associated to the same topi
 `PubSubTemplate` allows you to subscribe to subscriptions via the `subscribe()` method.
 It relies on a `SubscriberFactory` object, whose only task is to generate Google Cloud Pub/Sub
 `Subscriber` objects.
+When subscribing to a subscription, messages will be pulled from Google Cloud Pub/Sub
+asynchronously, on a certain interval.
 
 The Spring Boot starter for Google Cloud Pub/Sub auto-configures a `SubscriberFactory`.
 
@@ -250,7 +252,7 @@ The Spring Boot starter for Google Cloud Pub/Sub provides the following configur
 
 |===
 | Name | Description | Optional | Default value
-| `spring.cloud.gcp.pubsub.enabled` | Enables or disables Pub/Sub auto configuration | Yes | `true`
+| `spring.cloud.gcp.pubsub.enabled` | Enables or disables Pub/Sub auto-configuration | Yes | `true`
 | `spring.cloud.gcp.pubsub.subscriber-executor-threads` | Number of threads used by `Subscriber`
 instances created by `SubscriberFactory` | Yes | 4
 | `spring.cloud.gcp.pubsub.publisher-executor-threads` | Number of threads used by `Publisher`
