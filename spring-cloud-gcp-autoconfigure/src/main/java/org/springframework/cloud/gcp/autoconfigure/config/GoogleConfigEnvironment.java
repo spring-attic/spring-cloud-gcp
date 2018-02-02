@@ -52,7 +52,7 @@ class GoogleConfigEnvironment {
 		return config;
 	}
 
-	private static class Variable {
+	static class Variable {
 
 		private String name;
 

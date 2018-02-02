@@ -7,6 +7,4 @@ org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageAutoConfiguration,
 org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration
 
 org.springframework.cloud.bootstrap.BootstrapConfiguration=\
-org.springframework.cloud.gcp.autoconfigure.config.GcpConfigAutoConfiguration,\
-org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration,\
-org.springframework.cloud.gcp.autoconfigure.config.GoogleConfigPropertySourceLocator
+org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration

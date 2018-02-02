@@ -28,7 +28,7 @@ import static org.junit.Assert.assertFalse;
 /**
  * @author Jisha Abubaker
  */
-public class GcpConfigAutoConfigurationTest {
+public class GcpConfigBootstrapConfigurationTest {
 	private AnnotationConfigApplicationContext context;
 
 	@After
@@ -66,7 +66,7 @@ public class GcpConfigAutoConfigurationTest {
 	private void loadEnvironment(String... environment) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		TestPropertyValues.of(environment).applyTo(context);
-		context.register(GcpConfigAutoConfiguration.class);
+		context.register(GcpConfigBootstrapConfiguration.class);
 		context.refresh();
 		this.context = context;
 	}

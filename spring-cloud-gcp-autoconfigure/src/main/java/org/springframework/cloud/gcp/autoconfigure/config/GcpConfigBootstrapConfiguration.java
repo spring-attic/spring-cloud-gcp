@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,11 +20,9 @@ import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
 
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,18 +31,18 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author Jisha Abubaker
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 @Configuration
-@AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @EnableConfigurationProperties(GcpConfigProperties.class)
-public class GcpConfigAutoConfiguration {
+public class GcpConfigBootstrapConfiguration {
 
 	@Bean
 	@ConditionalOnProperty(prefix = "spring.cloud.gcp.config", name = "enabled", havingValue = "true")
-	public GoogleConfigPropertySourceLocator googleConfigPropertySourceLocator(GcpProjectIdProvider projectIdProvider,
-			CredentialsProvider credentialsProvider,
+	public GoogleConfigPropertySourceLocator googleConfigPropertySourceLocator(CredentialsProvider credentialsProvider,
 			GcpConfigProperties configProperties) throws IOException {
-		return new GoogleConfigPropertySourceLocator(projectIdProvider, credentialsProvider, configProperties);
+		return new GoogleConfigPropertySourceLocator(new DefaultGcpProjectIdProvider(), credentialsProvider,
+				configProperties);
 	}
 }
 

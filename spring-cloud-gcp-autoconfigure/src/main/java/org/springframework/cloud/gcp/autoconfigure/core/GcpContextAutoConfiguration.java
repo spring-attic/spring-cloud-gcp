@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import com.google.auth.oauth2.UserCredentials;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.Credentials;
@@ -55,7 +54,6 @@ import org.springframework.util.StringUtils;
  * @author João André Martins
  */
 @Configuration
-@ConditionalOnClass(GoogleCredentials.class)
 @EnableConfigurationProperties(GcpProperties.class)
 public class GcpContextAutoConfiguration {
 	private static final String DEFAULT_SCOPES_PLACEHOLDER = "DEFAULT_SCOPES";
