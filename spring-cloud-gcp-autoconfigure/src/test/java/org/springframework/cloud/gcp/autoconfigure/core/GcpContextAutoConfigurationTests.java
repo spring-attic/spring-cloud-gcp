@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.autoconfigure.core;
 
-import java.util.List;
-
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import org.junit.After;
@@ -26,7 +24,6 @@ import org.junit.Test;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,35 +61,6 @@ public class GcpContextAutoConfigurationTests {
 		assertTrue(this.context.getBean(GcpProjectIdProvider.class)
 				instanceof DefaultGcpProjectIdProvider);
 	}
-
-	@Test
-	public void testResolveScopesDefaultScopes() {
-		loadEnvironment();
-		GcpContextAutoConfiguration configuration = this.context.getBean(GcpContextAutoConfiguration.class);
-		List<String> scopes = configuration.resolveScopes();
-		assertTrue(scopes.size() > 1);
-		assertTrue(scopes.contains(GcpScope.PUBSUB.getUrl()));
-	}
-
-	@Test
-	public void testResolveScopesOverrideScopes() {
-		loadEnvironment("spring.cloud.gcp.credentials.scopes=myscope");
-		GcpContextAutoConfiguration configuration = this.context.getBean(GcpContextAutoConfiguration.class);
-		List<String> scopes = configuration.resolveScopes();
-		assertEquals(scopes.size(), 1);
-		assertTrue(scopes.contains("myscope"));
-	}
-
-	@Test
-	public void testResolveScopesStarterScopesPlaceholder() {
-		loadEnvironment("spring.cloud.gcp.credentials.scopes=DEFAULT_SCOPES,myscope");
-		GcpContextAutoConfiguration configuration = this.context.getBean(GcpContextAutoConfiguration.class);
-		List<String> scopes = configuration.resolveScopes();
-		assertTrue(scopes.size() == GcpScope.values().length + 1);
-		assertTrue(scopes.contains(GcpScope.PUBSUB.getUrl()));
-		assertTrue(scopes.contains("myscope"));
-	}
-
 
 	private void loadEnvironment(String... environment) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
