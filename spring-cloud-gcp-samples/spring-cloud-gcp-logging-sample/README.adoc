@@ -16,14 +16,14 @@ default credentials].
 Run the sample application from Maven:
 
 ----
-mvn spring-boot:run
+$ mvn spring-boot:run
 ----
 
 Then, issue a request containing either of the `x-cloud-trace-context` or `X-B3-TraceId` headers to
 the `localhost:8080/log` endpoint and verify that a label appears in Stackdriver:
 
 ----
-curl --header "x-cloud-trace-context: [Some-Trace-ID]" localhost:8080/log
+$ curl --header "x-cloud-trace-context: [Some-Trace-ID]" localhost:8080/log
 ----
 
 The `spring.cloud.gcp.logging.traceIdExtractor=xcloud_zipkin` setting in `application.properties`
