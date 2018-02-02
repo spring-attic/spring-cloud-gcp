@@ -163,8 +163,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 						.collect(Collectors.toList());
 
 				AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
-						.setSubscriptionWithSubscriptionName(
-								pullRequest.getSubscriptionAsSubscriptionName())
+						.setSubscription(pullRequest.getSubscription())
 						.addAllAckIds(ackIds)
 						.build();
 

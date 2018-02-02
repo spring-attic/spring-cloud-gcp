@@ -18,7 +18,6 @@ package com.example;
 
 import java.util.Collections;
 
-import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.vision.v1.AnnotateImageRequest;
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
@@ -26,7 +25,6 @@ import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
-import com.google.cloud.vision.v1.ImageAnnotatorSettings;
 import com.google.protobuf.ByteString;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,19 +36,19 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Code sample that shows how Spring Cloud GCP can be leveraged to use Google Cloud Client Libraries.
  *
- * <p>In this case, spring-cloud-gcp-starter autowires a {@link CredentialsProvider} object that provides the GCP
- * credentials, required to authenticate and authorize Vision API calls.
+ * <p></p>This uses the Cloud Vision API with the {@link ImageAnnotatorClient}, which is configured and produced
+ * in {@link Application}. See {@link Application#imageAnnotatorClient(com.google.api.gax.core.CredentialsProvider)}
+ * to understand how the client is produced with the help of spring-cloud-gcp-starter.
  *
  * @author João André Martins
  */
 @RestController
 public class VisionController {
-
-	@Autowired
-	private CredentialsProvider credentialsProvider;
-
 	@Autowired
 	private ResourceLoader resourceLoader;
+
+	@Autowired
+	private ImageAnnotatorClient imageAnnotatorClient;
 
 	/**
 	 * This method downloads an image from a URL and sends its contents to the Vision API for label detection.
@@ -64,21 +62,15 @@ public class VisionController {
 		// Copies the content of the image to memory.
 		byte[] imageBytes = StreamUtils.copyToByteArray(this.resourceLoader.getResource(imageUrl).getInputStream());
 
-		ImageAnnotatorSettings clientSettings = ImageAnnotatorSettings.newBuilder()
-				.setCredentialsProvider(this.credentialsProvider)
-				.build();
-
 		BatchAnnotateImagesResponse responses;
 
-		// Initializes the API client and sends the request.
-		try (ImageAnnotatorClient client = ImageAnnotatorClient.create(clientSettings)) {
-			Image image = Image.newBuilder().setContent(ByteString.copyFrom(imageBytes)).build();
-			// Sets the type of request to label detection, to detect broad sets of categories in an image.
-			Feature feature = Feature.newBuilder().setType(Feature.Type.LABEL_DETECTION).build();
-			AnnotateImageRequest request =
-					AnnotateImageRequest.newBuilder().setImage(image).addFeatures(feature).build();
-			responses = client.batchAnnotateImages(Collections.singletonList(request));
-		}
+		Image image = Image.newBuilder().setContent(ByteString.copyFrom(imageBytes)).build();
+
+		// Sets the type of request to label detection, to detect broad sets of categories in an image.
+		Feature feature = Feature.newBuilder().setType(Feature.Type.LABEL_DETECTION).build();
+		AnnotateImageRequest request =
+				AnnotateImageRequest.newBuilder().setImage(image).addFeatures(feature).build();
+		responses = this.imageAnnotatorClient.batchAnnotateImages(Collections.singletonList(request));
 
 		StringBuilder responseBuilder = new StringBuilder("<table border=\"1\">");
 
