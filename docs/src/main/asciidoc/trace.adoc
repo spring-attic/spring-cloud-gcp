@@ -1,7 +1,7 @@
 == Spring Cloud Sleuth
 
 https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] is an instrumentation framework for Spring Boot
-applications. It captures trace informations and can forward trace traces to services like Zipkin for storage and
+applications. It captures trace informations and can forward traces to services like Zipkin for storage and
 analysis.
 
 Google Cloud Platform provides its own managed distributed tracing service called
