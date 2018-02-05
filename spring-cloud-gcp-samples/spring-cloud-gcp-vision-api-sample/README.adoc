@@ -26,7 +26,7 @@ don't have one already.
   +
   e.g., `spring.cloud.gcp.credentials.location=file:/path/to/creds.json`
 
-4. Run the `mvn spring-boot:run` command from the same directory as this sample's `pom.xml` file.
+4. Run the `$ mvn spring-boot:run` command from the same directory as this sample's `pom.xml` file.
 
 5. Go to http://localhost:8080 in your browser, paste a URL to an image and press the `Submit` button.
 
