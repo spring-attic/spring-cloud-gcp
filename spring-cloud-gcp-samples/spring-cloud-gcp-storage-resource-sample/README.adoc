@@ -29,7 +29,7 @@ with the name of the bucket you created in Step 2.
 6. Start the `GcsApplication` Spring Boot app.
 +
 ```
-mvn spring-boot:run
+$ mvn spring-boot:run
 ```
 
 7. Navigate to http://localhost:8080/ in your browser to print the contents of the file you uploaded in 3.
@@ -37,7 +37,7 @@ mvn spring-boot:run
 8. To update the file contents, send a POST request to the same endpoint using `curl`:
 +
 ```
-curl -d 'new message' -H 'Content-Type: text/plain' localhost:8080
+$ curl -d 'new message' -H 'Content-Type: text/plain' localhost:8080
 ```
 +
 You should see a confirmation that the contents of the file were updated.

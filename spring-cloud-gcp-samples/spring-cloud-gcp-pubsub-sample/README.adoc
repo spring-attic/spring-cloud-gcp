@@ -41,7 +41,7 @@ located.
 Run the following command from that directory:
 
 ----
-./mvnw spring-boot:run
+$ ./mvnw spring-boot:run
 ----
 
 This will launch a local web server listening on port 8080.

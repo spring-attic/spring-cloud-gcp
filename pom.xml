@@ -35,6 +35,7 @@
 		<module>spring-cloud-gcp-samples</module>
 		<module>spring-cloud-gcp-autoconfigure</module>
 		<module>spring-cloud-gcp-pubsub-stream-binder</module>
+		<module>spring-cloud-gcp-data-spanner</module>
 	</modules>
 
 	<properties>
