@@ -70,7 +70,6 @@ public class SpannerTemplate implements SpannerOperations {
 		return this.databaseClient.singleUse();
 	}
 
-	@Override
 	public SpannerMappingContext getMappingContext() {
 		return this.mappingContext;
 	}

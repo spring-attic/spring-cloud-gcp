@@ -24,8 +24,6 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Statement;
 
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-
 /**
  * Defines operations available to use with Spanner.
  *
@@ -33,12 +31,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
  * @author Chengyuan Zhao
  */
 public interface SpannerOperations {
-
-	/**
-	 * Gets the mapping context used to facilitate the available options.
-	 * @return the mapping context.
-	 */
-	SpannerMappingContext getMappingContext();
 
 	/**
 	 * Gets the Spanner database client used to execute the operations.
