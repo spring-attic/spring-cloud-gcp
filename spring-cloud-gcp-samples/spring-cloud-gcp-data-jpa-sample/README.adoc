@@ -37,7 +37,7 @@ the Spring Data JPA starter uses as an input.
 This application is runnable by executing the following command from the same directory where the
 `pom.xml` file is located:
 
-`$ ./mvnw spring-boot:run`
+`$ mvn spring-boot:run`
 
 It writes a few house tuples to the database and then reads and prints each house address from the
 database.

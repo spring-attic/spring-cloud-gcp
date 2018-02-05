@@ -34,8 +34,9 @@ Alternatively, uncomment the `spring.cloud.gcp.sql.project-id` and
 link:src/main/resources/application.properties file and fill the values with your project ID and
 the path to your service account credentials on your local file system, prepended with `file:`.
 
-6. Run the `SqlApplication` Spring Boot app. The database will be populated based on the
-link:src/main/resources/schema.sql[schema.sql] and link:src/main/resources/data.sql[data.sql] files.
+6. Run the `SqlApplication` Spring Boot app using the `$ mvn spring-boot:run` command.
+The database will be populated based on the link:src/main/resources/schema.sql[schema.sql] and
+link:src/main/resources/data.sql[data.sql] files.
 
 7. Navigate to http://localhost:8080/getTuples in your browser to print the contents of the table
 created in 5.

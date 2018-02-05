@@ -35,14 +35,15 @@ spring.cloud.gcp.config.profile=prod #default profile = default
 ....
 5.  Notice that link:src/main/java/com/example/MyAppProperties.java[MyAppProperties.java]
 uses `@ConfigurationProperties` to bind the `myapp` namespace from the environment.
-6.  Update a property with `gcloud`:
+6.  Run the application using the `$ mvn spring-boot:run` command.
+7.  Update a property with `gcloud`:
 +
 ....
 $ gcloud beta runtime-config configs variables set \
   myapp.queue-size 200 \
   --config-name myapp_prod
 ....
-7.  Send a POST request to the refresh endpoint:
+8.  Send a POST request to the refresh endpoint:
 +
 ....
 $ curl -XPOST http://myapp.host.com/actuator/refresh
