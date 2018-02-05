@@ -282,8 +282,8 @@ public class GoogleStorageTests {
 	public void nullSignedUrlForNullBlob() throws IOException {
 		String location = "gs://test-spring/t1/test.png";
 		Storage storage = mock(Storage.class);
-		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage,
-				location);
+		GoogleStorageResourceObject resource =
+				new GoogleStorageResourceObject(storage, location, false);
 		when(storage.get(any(BlobId.class))).thenReturn(null);
 		Assert.assertNull(resource.createSignedUrl(TimeUnit.DAYS, 1));
 	}

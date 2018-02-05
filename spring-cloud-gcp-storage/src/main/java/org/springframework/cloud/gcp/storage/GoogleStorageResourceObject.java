@@ -130,11 +130,18 @@ public class GoogleStorageResourceObject implements WritableResource {
 	 */
 	public URL createSignedUrl(TimeUnit timeUnit, long timePeriods) throws IOException {
 		Blob blob = this.getGoogleStorageObject();
+
 		if (blob == null) {
-			return null;
+			if (!this.createBlobIfNotExists) {
+				return null;
+			}
+
+			createBlob();
 		}
+
+		BlobId blobId = getBlobId();
 		return this.storage.signUrl(
-				BlobInfo.newBuilder(blob.getBucket(), blob.getName()).build(),
+				BlobInfo.newBuilder(blobId.getBucket(), blobId.getName()).build(),
 				timePeriods, timeUnit);
 	}
 
