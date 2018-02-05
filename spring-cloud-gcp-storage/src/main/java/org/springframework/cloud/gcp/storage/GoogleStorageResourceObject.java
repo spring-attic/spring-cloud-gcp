@@ -121,8 +121,11 @@ public class GoogleStorageResourceObject implements WritableResource {
 	}
 
 	/**
-	 * Creates a signed URL to an object if it exists. This method will fail if this storage resource
-	 * was not created using service account credentials.
+	 * Creates a signed URL to an object.
+	 * <p>If an object doesn't exist and {@code createBlobIfNotExists} is {@code true}, then the
+	 * object is created in GCS.
+	 * <p>This method will fail if this storage resource was not created using service account
+	 * credentials.
 	 * @param timeUnit the time unit used to determine how long the URL is valid.
 	 * @param timePeriods the number of periods to determine how long the URL is valid.
 	 * @return the URL if the object exists, and null if it does not.
