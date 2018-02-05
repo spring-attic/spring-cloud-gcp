@@ -25,7 +25,7 @@ Create a new subscription called `exampleSubscription` with all default paramete
 3. In separate terminal windows, start the
 `spring-cloud-gcp-spring-integration-pubsub-sample-sender` and
 `spring-cloud-gcp-spring-integration-pubsub-sample-receiver` applications with the
-`mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
+`$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
 
 4. Go to http://localhost:8080, write a message in the text box and hit the `Submit` button.
 
