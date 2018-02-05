@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>spring-cloud-gcp</artifactId>
+		<groupId>org.springframework.cloud</groupId>
+		<version>1.0.0.BUILD-SNAPSHOT</version>
+	</parent>
+	<groupId>org.springframework.data</groupId>
+	<artifactId>spring-cloud-gcp-data-spanner</artifactId>
+	<name>Spring Cloud GCP Spanner Module</name>
+	<description>Spring Cloud GCP Spanner Module</description>
+	<properties>
+		<main.basedir>${basedir}/../..</main.basedir>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-spanner</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+		</dependency>
+	</dependencies>
+</project>
