@@ -13,7 +13,7 @@ https://console.cloud.google.com/[Google Cloud Console].
 
 1. Download the https://cloud.google.com/sdk/[Google Cloud SDK] and run the following command:
 +
-`gcloud auth application-default login`
+`$ gcloud auth application-default login`
 
 2. Create a service account from the
 https://console.cloud.google.com/iam-admin/serviceaccounts[Google Cloud Console], download its
@@ -37,7 +37,7 @@ the Spring Data JPA starter uses as an input.
 This application is runnable by executing the following command from the same directory where the
 `pom.xml` file is located:
 
-`./mvnw spring-boot:run`
+`$ ./mvnw spring-boot:run`
 
 It writes a few house tuples to the database and then reads and prints each house address from the
 database.

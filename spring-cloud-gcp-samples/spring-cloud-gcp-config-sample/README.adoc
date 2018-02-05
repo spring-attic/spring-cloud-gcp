@@ -11,18 +11,19 @@ link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config#setup[these
 https://cloud.google.com/sdk/[Google Cloud SDK].
 +
 ....
-gcloud beta runtime-config configs create myapp_prod
+$ gcloud beta runtime-config configs create myapp_prod
 ....
 +
 Then set the variables that your application will load:
 +
 ....
-  gcloud beta runtime-config configs variables set \
-myapp.queue-size 25 \
---config-name myapp_prod
-  gcloud beta runtime-config configs variables set \
-myapp.feature-x-enabled true \
---config-name myapp_prod
+$ gcloud beta runtime-config configs variables set \
+  myapp.queue-size 25 \
+  --config-name myapp_prod
+
+$ gcloud beta runtime-config configs variables set \
+  myapp.feature-x-enabled true \
+  --config-name myapp_prod
 ....
 
 4.  Update link:src/main/resources/bootstrap.properties[]:
@@ -37,12 +38,12 @@ uses `@ConfigurationProperties` to bind the `myapp` namespace from the environme
 6.  Update a property with `gcloud`:
 +
 ....
-  gcloud beta runtime-config configs variables set \
-     myapp.queue-size 200 \
-     --config-name myapp_prod
+$ gcloud beta runtime-config configs variables set \
+  myapp.queue-size 200 \
+  --config-name myapp_prod
 ....
 7.  Send a POST request to the refresh endpoint:
 +
 ....
-  curl -XPOST http://myapp.host.com/actuator/refresh
+$ curl -XPOST http://myapp.host.com/actuator/refresh
 ....
