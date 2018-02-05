@@ -21,6 +21,7 @@ mail.properties
 .project
 .classpath
 .settings/
+.sts4-cache/
 
 # Because re-configuring the directory in the share plugin leads to side effect we ignore the file
 dependency-reduced-pom.xml
