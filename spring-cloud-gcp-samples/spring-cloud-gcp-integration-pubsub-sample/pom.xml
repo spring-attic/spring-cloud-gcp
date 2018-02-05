@@ -17,4 +17,18 @@
 		<module>spring-cloud-gcp-integration-pubsub-sample-sender</module>
 		<module>spring-cloud-gcp-integration-pubsub-sample-receiver</module>
 	</modules>
+
+	<repositories>
+		<repository>
+			<id>spring-snapshots</id>
+			<name>Spring Snapshots</name>
+			<url>https://repo.spring.io/libs-snapshot-local</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
+	</repositories>
 </project>
