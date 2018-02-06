@@ -34,7 +34,6 @@ import com.google.cloud.storage.Storage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
 import org.springframework.util.Assert;
 
@@ -152,20 +151,18 @@ public class GoogleStorageResourceObject implements WritableResource {
 	 * @throws IOException
 	 */
 	public Blob create() throws IOException {
-		BlobInfo objectInfo = BlobInfo.newBuilder(getBlobId()).build();
-		if (!exists() && !this.createBlobIfNotExists) {
-			return null;
+		GoogleStorageResourceBucket bucket = getResourceBucket();
+
+		if (!bucket.exists()) {
+			if (!bucket.isCreateBucketIfNotExists()) {
+				throw new IllegalStateException("The bucket " + bucket.getFilename()
+						+ " doesn't exist and couldn't be created");
+			}
+
+			bucket.create();
 		}
 
-		GoogleStorageResourceBucket bucket = getBucket();
-
-		if (!bucket.exists() && !bucket.isCreateBucketIfNotExists()) {
-			return null;
-		}
-
-		bucket.create();
-
-		return this.storage.create(objectInfo);
+		return this.storage.create(BlobInfo.newBuilder(getBlobId()).build());
 	}
 
 	private Blob throwExceptionForNullBlob(Blob blob) throws IOException {
@@ -252,8 +249,8 @@ public class GoogleStorageResourceObject implements WritableResource {
 		return Channels.newOutputStream(blob.writer());
 	}
 
-	GoogleStorageResourceBucket getBucket() throws IOException {
-		return new GoogleStorageResourceBucket(this.storage, getBlobId().getBucket(),
-				this.createBlobIfNotExists);
+	GoogleStorageResourceBucket getResourceBucket() throws IOException {
+		return new GoogleStorageResourceBucket(
+				this.storage, getBlobId().getBucket(), this.createBlobIfNotExists);
 	}
 }

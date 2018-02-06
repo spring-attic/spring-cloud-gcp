@@ -28,7 +28,6 @@ import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
 import org.springframework.util.Assert;
 
@@ -59,18 +58,14 @@ public class GoogleStorageResourceBucket implements WritableResource {
 	/**
 	 * Creates the bucket that this {@link GoogleStorageResourceBucket} represents in Google Cloud
 	 * Storage.
+	 *
 	 * <p>If the bucket already exists in Google Cloud Storage, the
 	 * {@link com.google.cloud.storage.Bucket} object for that bucket is returned.
-	 * @return the {@link com.google.cloud.storage.Bucket} object for the bucket or {@code null} if
-	 * the bucket doesn't exist and cannot be created
+	 * @return the {@link com.google.cloud.storage.Bucket} object for the bucket
 	 */
 	public Bucket create() {
 		if (exists()) {
-			return getGcsBucket();
-		}
-
-		if (!this.createBucketIfNotExists) {
-			return null;
+			throw new IllegalStateException("The bucket " + this.bucketName + " already exists.");
 		}
 
 		return this.storage.create(BucketInfo.newBuilder(this.bucketName).build());

@@ -41,7 +41,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -178,7 +177,7 @@ public class GoogleStorageTests {
 		Assert.assertNotNull(os);
 	}
 
-	@Test
+	@Test(expected = FileNotFoundException.class)
 	public void testWritableOutputStreamNoAutoCreateOnNullBlob() throws Exception {
 		String location = "gs://test-spring/test";
 		Storage storage = mock(Storage.class);
@@ -186,7 +185,7 @@ public class GoogleStorageTests {
 
 		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location,
 				false);
-		assertThat(resource.getOutputStream()).isNull();
+		resource.getOutputStream();
 	}
 
 	@Test
@@ -203,7 +202,7 @@ public class GoogleStorageTests {
 
 		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
 		GoogleStorageResourceObject spyResource = spy(resource);
-		doReturn(this.bucketResource).when(spyResource).getBucket();
+		doReturn(this.bucketResource).when(spyResource).getResourceBucket();
 		OutputStream os = spyResource.getOutputStream();
 		Assert.assertNotNull(os);
 	}
@@ -226,7 +225,7 @@ public class GoogleStorageTests {
 
 		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
 		GoogleStorageResourceObject spyResource = spy(resource);
-		doReturn(this.bucketResource).when(spyResource).getBucket();
+		doReturn(this.bucketResource).when(spyResource).getResourceBucket();
 		OutputStream os = spyResource.getOutputStream();
 		Assert.assertNotNull(os);
 	}
