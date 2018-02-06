@@ -36,6 +36,7 @@ import org.springframework.util.Assert;
  * Implements {@link WritableResource} for buckets in Google Cloud Storage.
  *
  * @author Chengyuan Zhao
+ * @author João André Martins
  */
 public class GoogleStorageResourceBucket implements WritableResource {
 
@@ -43,7 +44,7 @@ public class GoogleStorageResourceBucket implements WritableResource {
 
 	private final String bucketName;
 
-	private final boolean createBucketIfRequired;
+	private final boolean createBucketIfNotExists;
 
 	public GoogleStorageResourceBucket(Storage storage, String bucketName,
 			boolean createBucketIfNotExists) {
@@ -52,16 +53,26 @@ public class GoogleStorageResourceBucket implements WritableResource {
 
 		this.storage = storage;
 		this.bucketName = bucketName;
-		this.createBucketIfRequired = createBucketIfNotExists;
+		this.createBucketIfNotExists = createBucketIfNotExists;
 	}
 
-	public void createBucket() {
-		this.storage.create(BucketInfo.newBuilder(this.bucketName).build());
+	/**
+	 * Creates the bucket that this {@link GoogleStorageResourceBucket} represents in Google Cloud
+	 * Storage.
+	 * @return the {@link com.google.cloud.storage.Blob} of the created object or {@code null} if
+	 * the bucket already exists or cannot be created
+	 */
+	public Bucket create() {
+		if (exists() || !this.createBucketIfNotExists) {
+			return null;
+		}
+
+		return this.storage.create(BucketInfo.newBuilder(this.bucketName).build());
 	}
 
 	@Override
 	public boolean exists() {
-		return resolve() != null;
+		return getGcsBucket() != null;
 	}
 
 	@Override
@@ -111,10 +122,15 @@ public class GoogleStorageResourceBucket implements WritableResource {
 
 	@Override
 	public Resource createRelative(String relativePath) throws IOException {
-		return new GoogleStorageResourceObject(this.storage,
+		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(this.storage,
 				getURI().toString() + (relativePath.startsWith("/") ? "" : "/")
 						+ relativePath,
-				this.createBucketIfRequired);
+				this.createBucketIfNotExists);
+		if (!resource.exists()) {
+			resource.create();
+		}
+
+		return resource;
 	}
 
 	@Override
@@ -144,7 +160,11 @@ public class GoogleStorageResourceBucket implements WritableResource {
 				"Cannot get output stream for a storage bucket.");
 	}
 
-	private Bucket resolve() {
+	private Bucket getGcsBucket() {
 		return this.storage.get(this.bucketName);
+	}
+
+	public boolean isCreateBucketIfNotExists() {
+		return this.createBucketIfNotExists;
 	}
 }

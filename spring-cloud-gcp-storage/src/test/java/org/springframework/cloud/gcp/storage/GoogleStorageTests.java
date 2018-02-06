@@ -41,6 +41,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -177,7 +178,7 @@ public class GoogleStorageTests {
 		Assert.assertNotNull(os);
 	}
 
-	@Test(expected = FileNotFoundException.class)
+	@Test
 	public void testWritableOutputStreamNoAutoCreateOnNullBlob() throws Exception {
 		String location = "gs://test-spring/test";
 		Storage storage = mock(Storage.class);
@@ -185,7 +186,7 @@ public class GoogleStorageTests {
 
 		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location,
 				false);
-		resource.getOutputStream();
+		assertThat(resource.getOutputStream()).isNull();
 	}
 
 	@Test
