@@ -17,12 +17,12 @@ Maven coordinates, using Spring Cloud GCP BOM:
 [source,xml]
 ----
 <dependency>
-    <groupId>org.springframework.integration</groupId>
-    <artifactId>spring-integration-file</artifactId>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-pubsub</artifactId>
 </dependency>
 <dependency>
-    <groupId>com.google.cloud</groupId>
-    <artifactId>google-cloud-storage</artifactId>
+    <groupId>org.springframework.integration</groupId>
+    <artifactId>spring-integration-file</artifactId>
 </dependency>
 ----
 
@@ -31,8 +31,8 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub'
     compile group: 'org.springframework.integration', name: 'spring-integration-file'
-    compile group: 'com.google.cloud', name: 'google-cloud-storage'
 }
 ----
 
