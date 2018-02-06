@@ -243,13 +243,13 @@ public class GoogleStorageResourceObject implements WritableResource {
 
 		if (blob == null || !blob.exists()) {
 			if (!this.createBlobIfNotExists) {
-				return null;
+				throw new FileNotFoundException("The blob was not found: " + this.location);
 			}
 
 			blob = create();
 		}
 
-		return Channels.newOutputStream(throwExceptionForNullBlob(blob).writer());
+		return Channels.newOutputStream(blob.writer());
 	}
 
 	GoogleStorageResourceBucket getBucket() throws IOException {
