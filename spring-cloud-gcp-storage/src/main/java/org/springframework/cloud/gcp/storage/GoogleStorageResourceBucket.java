@@ -69,7 +69,7 @@ public class GoogleStorageResourceBucket implements WritableResource {
 			return getGcsBucket();
 		}
 
-		if (!exists() && !this.createBucketIfNotExists) {
+		if (!this.createBucketIfNotExists) {
 			return null;
 		}
 
