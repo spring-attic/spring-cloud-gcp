@@ -59,11 +59,17 @@ public class GoogleStorageResourceBucket implements WritableResource {
 	/**
 	 * Creates the bucket that this {@link GoogleStorageResourceBucket} represents in Google Cloud
 	 * Storage.
-	 * @return the {@link com.google.cloud.storage.Blob} of the created object or {@code null} if
-	 * the bucket already exists or cannot be created
+	 * <p>If the bucket already exists in Google Cloud Storage, the
+	 * {@link com.google.cloud.storage.Bucket} object for that bucket is returned.
+	 * @return the {@link com.google.cloud.storage.Bucket} object for the bucket or {@code null} if
+	 * the bucket doesn't exist and cannot be created
 	 */
 	public Bucket create() {
-		if (exists() || !this.createBucketIfNotExists) {
+		if (exists()) {
+			return getGcsBucket();
+		}
+
+		if (!exists() && !this.createBucketIfNotExists) {
 			return null;
 		}
 
@@ -121,7 +127,7 @@ public class GoogleStorageResourceBucket implements WritableResource {
 	}
 
 	@Override
-	public Resource createRelative(String relativePath) throws IOException {
+	public GoogleStorageResourceObject createRelative(String relativePath) throws IOException {
 		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(this.storage,
 				getURI().toString() + (relativePath.startsWith("/") ? "" : "/")
 						+ relativePath,

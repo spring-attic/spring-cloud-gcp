@@ -136,8 +136,8 @@ public class GoogleStorageResourceObject implements WritableResource {
 	public URL createSignedUrl(TimeUnit timeUnit, long timePeriods) throws IOException {
 		Blob blob = this.getGcsBlob();
 
-		if (blob == null && LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Creating signed URL for non-existing GCS object " + this.location);
+		if (blob == null && LOGGER.isWarnEnabled()) {
+			LOGGER.warn("Creating signed URL for non-existing GCS object " + this.location);
 		}
 
 		return this.storage.signUrl(
@@ -192,7 +192,7 @@ public class GoogleStorageResourceObject implements WritableResource {
 	}
 
 	@Override
-	public Resource createRelative(String relativePath) throws IOException {
+	public GoogleStorageResourceObject createRelative(String relativePath) throws IOException {
 		int lastSlashIndex = this.location.lastIndexOf("/");
 		String absolutePath = this.location.substring(0, lastSlashIndex + 1) + relativePath;
 
