@@ -56,6 +56,14 @@ public class GoogleStorageResourceObject implements WritableResource {
 
 	private final boolean createBlobIfNotExists;
 
+	/**
+	 * Constructs the resource representation of a file in Google Cloud Storage.
+	 * @param storage the Google Cloud Storage client
+	 * @param location the URL of the file, e.g., gs://your-bucket/your-file-name
+	 * @param createBlobIfNotExists determines the auto-creation of the file in Google Cloud Storage
+	 *                              if an operation that depends on its existence is triggered
+	 *                              (e.g., getting the output stream of a file)
+	 */
 	public GoogleStorageResourceObject(Storage storage, String location,
 			boolean createBlobIfNotExists) {
 		Assert.notNull(storage, "Storage object can not be null");

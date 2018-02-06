@@ -45,6 +45,14 @@ public class GoogleStorageResourceBucket implements WritableResource {
 
 	private final boolean createBucketIfNotExists;
 
+	/**
+	 * Constructs the resource representation of a GCS bucket.
+	 * @param storage the Google Cloud Storage client
+	 * @param bucketName the name of the bucket
+	 * @param createBucketIfNotExists determines bucket auto-creation when another operation that
+	 *                                depends on the existence of this bucket is executed (e.g.,
+	 *                                creating a file in the bucket)
+	 */
 	public GoogleStorageResourceBucket(Storage storage, String bucketName,
 			boolean createBucketIfNotExists) {
 		Assert.notNull(storage, "Storage object can not be null");
