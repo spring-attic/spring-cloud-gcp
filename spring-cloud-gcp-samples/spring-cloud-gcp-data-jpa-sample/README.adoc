@@ -4,30 +4,35 @@ This sample application demonstrates how to use
 https://projects.spring.io/spring-data-jpa/[Spring Data JPA] with the
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql[Spring Cloud GCP SQL Starter].
 
+We will create an instance, a database within the instance, populate the database and then query it.
+
 == Setup
 
-* If you don't have a Google Cloud Platform project with billing enabled, create one from the
-https://console.cloud.google.com/[Google Cloud Console].
+1. Follow https://cloud.google.com/sql/docs/mysql/quickstart[these instructions] to set up a Google
+Cloud Project with billing enabled.
 
-* To authenticate, you have two options:
+2. Create a Google Cloud SQL instance from the
+https://console.cloud.google.com/sql/instances[Google Cloud Console Cloud SQL page].
 
-1. Download the https://cloud.google.com/sdk/[Google Cloud SDK] and run the following command:
+3. Still within the Google Cloud Console SQL page, create a new database in the instance from the
+"Databases" section. **We recommend you to setup a root password** for your instance (in PostgreSQL you have to).
+**Take note of your root password**, as you will need it in the next step.
+
+4. Open the link:src/main/resources/application.properties[application.properties] file and replace
+*[database-name]* with the name of the database you created in step 3 and
+*[instance-connection-name]* with the instance connection name of the instance you created in
+step 1.
 +
-`$ gcloud auth application-default login`
+Add the `spring.datasource.password` property with the password as the value.
 
-2. Create a service account from the
-https://console.cloud.google.com/iam-admin/serviceaccounts[Google Cloud Console], download its
-private key and point the `spring.cloud.gcp.credentials.location` property in the
-`application.properties` file to it.
-
-* Create a Google Cloud SQL instance in your project from the
-https://console.cloud.google.com/sql[Google Cloud Console].
-Copy the `instance connection name` from the console to the
-`spring.cloud.gcp.sql.instance-connection-name` property value in the `application.properties` file.
+5. https://cloud.google.com/sdk/gcloud/reference/auth/login[If
+you are authenticated in the Cloud SDK], your project ID and credentials will be automatically found
+by the Spring Boot Starter for Google Cloud SQL.
 +
-Use the `Databases` section to create a database in your instance, e.g., `houses`.
-Copy the database name to the `spring.cloud.gcp.sql.database-name` property value in the
-`application.properties` file.
+Alternatively, uncomment the `spring.cloud.gcp.sql.project-id` and
+`spring.cloud.gcp.sql.credentials.location` properties in the
+link:src/main/resources/application.properties file and fill the values with your project ID and
+the path to your service account credentials on your local file system, prepended with `file:`.
 
 == Running the application
 

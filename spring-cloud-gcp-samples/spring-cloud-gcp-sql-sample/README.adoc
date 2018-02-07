@@ -1,4 +1,4 @@
-= Spring Cloud GCP SQL Starter Example
+= Spring Cloud GCP SQL Code Sample
 
 This code sample demonstrates how to connect to a Google Cloud SQL instance using the
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql/README.adoc[Spring Cloud GCP SQL
@@ -6,7 +6,7 @@ Starter].
 
 We will create an instance, a database within the instance, populate the database and then query it.
 
-= Setup & Configuration
+== Setup
 
 1. Follow https://cloud.google.com/sql/docs/mysql/quickstart[these instructions] to set up a Google
 Cloud Project with billing enabled.
@@ -15,15 +15,15 @@ Cloud Project with billing enabled.
 https://console.cloud.google.com/sql/instances[Google Cloud Console Cloud SQL page].
 
 3. Still within the Google Cloud Console SQL page, create a new database in the instance from the
-"Databases" section.
+"Databases" section. **We recommend you to setup a root password** for your instance (in PostgreSQL you have to).
+**Take note of your root password**, as you will need it in the next step.
 
 4. Open the link:src/main/resources/application.properties[application.properties] file and replace
 *[database-name]* with the name of the database you created in step 3 and
 *[instance-connection-name]* with the instance connection name of the instance you created in
 step 1.
 +
-If you set a root password, you should also add a `spring.datasource.password` property with the
-password as the value.
+Add the `spring.datasource.password` property with the password as the value.
 
 5. https://cloud.google.com/sdk/gcloud/reference/auth/login[If
 you are authenticated in the Cloud SDK], your project ID and credentials will be automatically found
@@ -34,9 +34,14 @@ Alternatively, uncomment the `spring.cloud.gcp.sql.project-id` and
 link:src/main/resources/application.properties file and fill the values with your project ID and
 the path to your service account credentials on your local file system, prepended with `file:`.
 
-6. Run the `SqlApplication` Spring Boot app using the `$ mvn spring-boot:run` command.
+== Running the application
+
+You can run the `SqlApplication` Spring Boot app using the following command:
+
+`$ mvn spring-boot:run`
+
 The database will be populated based on the link:src/main/resources/schema.sql[schema.sql] and
 link:src/main/resources/data.sql[data.sql] files.
 
-7. Navigate to http://localhost:8080/getTuples in your browser to print the contents of the table
-created in 5.
+When the application is up, navigate to http://localhost:8080/getTuples in your browser to print the contents of the `users` table.
+
