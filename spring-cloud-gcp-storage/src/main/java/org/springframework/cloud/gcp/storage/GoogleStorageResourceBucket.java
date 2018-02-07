@@ -66,16 +66,11 @@ public class GoogleStorageResourceBucket implements WritableResource {
 	/**
 	 * Creates the bucket that this {@link GoogleStorageResourceBucket} represents in Google Cloud
 	 * Storage.
-	 *
-	 * <p>If the bucket already exists in Google Cloud Storage, the
-	 * {@link com.google.cloud.storage.Bucket} object for that bucket is returned.
 	 * @return the {@link com.google.cloud.storage.Bucket} object for the bucket
+	 * @throws com.google.cloud.storage.StorageException if any errors during bucket creation arise,
+	 * such as if the bucket already exists
 	 */
 	public Bucket create() {
-		if (exists()) {
-			throw new IllegalStateException("The bucket " + this.bucketName + " already exists.");
-		}
-
 		return this.storage.create(BucketInfo.newBuilder(this.bucketName).build());
 	}
 

@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolver;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolverSettings;
@@ -53,7 +54,8 @@ public class GcpStorageAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public static Storage storage(CredentialsProvider credentialsProvider,
-			GcpStorageProperties gcpStorageProperties) throws IOException {
+			GcpStorageProperties gcpStorageProperties,
+			GcpProjectIdProvider projectIdProvider) throws IOException {
 		return StorageOptions.newBuilder()
 				.setCredentials(gcpStorageProperties.getCredentials().getLocation() != null
 						? GoogleCredentials
@@ -62,6 +64,7 @@ public class GcpStorageAutoConfiguration {
 								.createScoped(gcpStorageProperties.getCredentials().getScopes())
 						: credentialsProvider.getCredentials())
 				.setHeaderProvider(new UsageTrackingHeaderProvider(GcpStorageAutoConfiguration.class))
+				.setProjectId(projectIdProvider.getProjectId())
 				.build().getService();
 	}
 }
