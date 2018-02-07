@@ -67,10 +67,7 @@ public class PubSubMessageChannelBinder
 	@Override
 	protected MessageProducer createConsumerEndpoint(ConsumerDestination destination, String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties) {
-
-		String subscription = this.provisioningProvider.createSubscription(destination.getName(), group, properties);
-
-		return new PubSubInboundChannelAdapter(this.pubSubTemplate, subscription);
+		return new PubSubInboundChannelAdapter(this.pubSubTemplate, destination.getName());
 	}
 
 	@Override

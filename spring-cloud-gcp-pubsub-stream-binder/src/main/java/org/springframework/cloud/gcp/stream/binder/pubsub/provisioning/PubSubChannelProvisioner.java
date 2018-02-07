@@ -54,11 +54,6 @@ public class PubSubChannelProvisioner
 	public ConsumerDestination provisionConsumerDestination(String name, String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties)
 			throws ProvisioningException {
-		return new PubSubConsumerDestination(name);
-	}
-
-	public String createSubscription(String name, String group,
-			ExtendedConsumerProperties<PubSubConsumerProperties> properties) {
 
 		String subscription = group == null ? name : (name + '.' + group);
 		if (this.pubSubAdmin.getSubscription(subscription) == null) {
@@ -73,6 +68,6 @@ public class PubSubChannelProvisioner
 				throw new ProvisioningException("Unexisting '" + subscription + "' subscription.");
 			}
 		}
-		return subscription;
+		return  new PubSubConsumerDestination(subscription);
 	}
 }
