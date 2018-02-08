@@ -46,7 +46,7 @@ public class SqlCredentialFactory implements CredentialFactory {
 	@Override
 	public Credential create() {
 		// TODO(joaomartins): Consider supporting Spring Resources as credential locations. There
-		// would need to be a way to create or inject a Spring context here statically, to load
+		// would need to be a way to createBlob or inject a Spring context here statically, to load
 		// the resource from there.
 		String credentialResourceLocation = System.getProperty(CREDENTIAL_LOCATION_PROPERTY_NAME);
 		if (credentialResourceLocation == null) {

@@ -17,7 +17,7 @@
 package org.springframework.cloud.gcp.storage;
 
 /**
- * Holds settings for use with the {@link GoogleStorageResourceObject} and
+ * Holds settings for use with the {@link GoogleStorageResource} and
  * {@link GoogleStorageResourceBucket}. These settings are optional.
  *
  * @author Chengyuan Zhao
