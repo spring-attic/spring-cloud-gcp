@@ -124,6 +124,15 @@ public class GoogleStorageResourceBucket implements WritableResource {
 				"Cannot get last-modified for a storage bucket.");
 	}
 
+	/**
+	 * Creates a file within a given bucket. The file resource inherits
+	 * {@code createBlobIfNotExists} from this bucket's {@code createBucketIfNotExists}.
+	 *
+	 * <p>If the file did not exist in Google Cloud Storage, it is created by this method.
+	 * @param relativePath the URL for a Google Cloud Storage bucket
+	 * @return the {@link GoogleStorageResourceObject} object for the created file
+	 * @throws IOException
+	 */
 	@Override
 	public GoogleStorageResourceObject createRelative(String relativePath) throws IOException {
 		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(this.storage,

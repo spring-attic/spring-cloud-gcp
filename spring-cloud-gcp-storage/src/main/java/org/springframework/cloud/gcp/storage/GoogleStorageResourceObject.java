@@ -196,6 +196,15 @@ public class GoogleStorageResourceObject implements WritableResource {
 		return throwExceptionForNullBlob(getGcsBlob()).getUpdateTime();
 	}
 
+	/**
+	 * Creates a file in the same bucket as this one. It inherits {@code createBlobIfNotExists}
+	 * from this object.
+	 *
+	 * <p>The file is created if it didn't exist in Google Cloud Storage.
+	 * @param relativePath the URL to a Google Cloud Storage file
+	 * @return the {@link GoogleStorageResourceObject} object for the created file
+	 * @throws IOException
+	 */
 	@Override
 	public GoogleStorageResourceObject createRelative(String relativePath) throws IOException {
 		int lastSlashIndex = this.location.lastIndexOf("/");
