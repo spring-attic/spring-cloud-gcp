@@ -27,9 +27,7 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.converter.MessageConverter;
-import org.springframework.messaging.converter.StringMessageConverter;
+import org.springframework.integration.support.MessageBuilder;
 import org.springframework.util.Assert;
 
 /**
@@ -48,15 +46,9 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private AckMode ackMode = AckMode.AUTO;
 
-	private MessageConverter messageConverter;
-
 	public PubSubInboundChannelAdapter(PubSubOperations pubSubTemplate, String subscriptionName) {
 		this.pubSubTemplate = pubSubTemplate;
 		this.subscriptionName = subscriptionName;
-
-		StringMessageConverter stringMessageConverter = new StringMessageConverter();
-		stringMessageConverter.setSerializedPayloadClass(String.class);
-		this.messageConverter = stringMessageConverter;
 	}
 
 	@Override
@@ -78,9 +70,10 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 
 		try {
-			sendMessage(this.messageConverter.toMessage(
-					message.getData().toStringUtf8(),
-					new MessageHeaders(messageHeaders)));
+			sendMessage(
+					MessageBuilder.withPayload(message.getData().toByteArray())
+							.copyHeaders(messageHeaders)
+							.build());
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
@@ -110,15 +103,5 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	public void setAckMode(AckMode ackMode) {
 		Assert.notNull(ackMode, "The acknowledgement mode can't be null.");
 		this.ackMode = ackMode;
-	}
-
-	public void setMessageConverter(MessageConverter messageConverter) {
-		Assert.notNull(messageConverter,
-				"The specified message converter can't be null.");
-		this.messageConverter = messageConverter;
-	}
-
-	public MessageConverter getMessageConverter() {
-		return this.messageConverter;
 	}
 }
