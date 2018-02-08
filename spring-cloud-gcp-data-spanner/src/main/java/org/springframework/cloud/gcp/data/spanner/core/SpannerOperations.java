@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.List;
 
-import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Options;
@@ -31,12 +30,6 @@ import com.google.cloud.spanner.Statement;
  * @author Chengyuan Zhao
  */
 public interface SpannerOperations {
-
-	/**
-	 * Gets the Spanner database client used to execute the operations.
-	 * @return the Spanner database client.
-	 */
-	DatabaseClient getDatabaseClient();
 
 	/**
 	 * Finds a single stored object using a key.

@@ -106,11 +106,6 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
-	public void getDatabaseClientTest() {
-		assertSame(this.databaseClient, this.spannerTemplate.getDatabaseClient());
-	}
-
-	@Test
 	public void getMappingContextTest() {
 		assertSame(this.mappingContext, this.spannerTemplate.getMappingContext());
 	}

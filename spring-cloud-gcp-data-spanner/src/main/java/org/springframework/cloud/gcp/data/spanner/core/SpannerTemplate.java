@@ -75,11 +75,6 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public DatabaseClient getDatabaseClient() {
-		return this.databaseClient;
-	}
-
-	@Override
 	public <T> T find(Class<T> entityClass, Key key) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
