@@ -1,0 +1,30 @@
+= Spring Cloud GCP Stream for Pub/Sub
+
+This module contains the Spring Cloud GCP Stream for Pub/Sub logic.
+
+== Spring Cloud GCP Stream Config
+
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-pubsub-stream-binder</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub-stream-binder'
+}
+----
+
+=== Setup for Pub/Sub Emulator
+
+To use this binder with a https://cloud.google.com/pubsub/docs/emulator[running emulator], configure its host and port via
+`spring.cloud.gcp.pubsub.emulatorHost`.
