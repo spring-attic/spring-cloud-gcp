@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
-import java.util.function.BiFunction;
+import java.util.Arrays;
 import java.util.function.Function;
 
 import com.google.cloud.spanner.Key;
@@ -59,17 +59,17 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	}
 
 	@Override
-	public <T> Mutation insert(T object) {
+	public Mutation insert(Object object) {
 		return saveObject(Op.INSERT, object);
 	}
 
 	@Override
-	public <T> Mutation upsert(T object) {
+	public Mutation upsert(Object object) {
 		return saveObject(Op.INSERT_OR_UPDATE, object);
 	}
 
 	@Override
-	public <T> Mutation update(T object) {
+	public Mutation update(Object object) {
 		return saveObject(Op.UPDATE, object);
 	}
 
@@ -78,7 +78,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 		return deleteKeySetFromTable(entityClass, (persistentEntity) -> {
 			KeySet.Builder builder = KeySet.newBuilder();
 			for (T entity : entities) {
-				final PersistentPropertyAccessor accessor = persistentEntity
+				PersistentPropertyAccessor accessor = persistentEntity
 						.getPropertyAccessor(entity);
 				PersistentProperty idProperty = persistentEntity.getIdProperty();
 				Object value = accessor.getProperty(idProperty);
@@ -90,15 +90,8 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	}
 
 	@Override
-	public <T> Mutation delete(T object) {
-		return deleteKeyFromTable(object.getClass(), (persistentEntity) -> {
-			PersistentPropertyAccessor accessor = persistentEntity
-					.getPropertyAccessor(object);
-
-			PersistentProperty idProperty = persistentEntity.getIdProperty();
-			Object value = accessor.getProperty(idProperty);
-			return Key.of(value);
-		});
+	public Mutation delete(Object object) {
+		return delete((Class<Object>) object.getClass(), Arrays.asList(object));
 	}
 
 	@Override
@@ -108,29 +101,18 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
 	@Override
 	public Mutation delete(Class entityClass, Key key) {
-		return deleteKeyFromTable(entityClass, (unused) -> key);
-	}
-
-	private <T> Mutation createMutationWithClass(Class entityClass,
-			Function<SpannerPersistentEntity, T> function,
-			BiFunction<String, T, Mutation> tableNameMutationFunction) {
-		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
-				.getPersistentEntity(entityClass);
-		return tableNameMutationFunction.apply(persistentEntity.tableName(),
-				function.apply(persistentEntity));
-	}
-
-	private Mutation deleteKeyFromTable(Class entityClass,
-			Function<SpannerPersistentEntity, Key> keyFunction) {
-		return createMutationWithClass(entityClass, keyFunction, Mutation::delete);
+		return delete(entityClass, KeySet.singleKey(key));
 	}
 
 	private Mutation deleteKeySetFromTable(Class entityClass,
 			Function<SpannerPersistentEntity, KeySet> keyFunction) {
-		return createMutationWithClass(entityClass, keyFunction, Mutation::delete);
+		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
+				.getPersistentEntity(entityClass);
+		return Mutation.delete(persistentEntity.tableName(),
+				keyFunction.apply(persistentEntity));
 	}
 
-	private <T> Mutation saveObject(Op op, T object) {
+	private Mutation saveObject(Op op, Object object) {
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
 				.getPersistentEntity(object.getClass());
 		Mutation.WriteBuilder writeBuilder = writeBuilder(op,

@@ -31,28 +31,25 @@ public interface SpannerMutationFactory {
 	/**
 	 * Stores a single object in Spanner.
 	 * @param object The object to store.
-	 * @param <T> The object's type.
 	 * @return The mutation operation which will store the object.
 	 */
-	<T> Mutation insert(T object);
+	Mutation insert(Object object);
 
 	/**
 	 * Updates or inserts a single object in Spanner. The columns' values corresponding to
 	 * the object's fields are treated according to Mutation.Op.INSERT_OR_UPDATE.
 	 * @param object The object to update or newly insert.
-	 * @param <T> The object's type.
 	 * @return The mutation operation to perform the action.
 	 */
-	<T> Mutation upsert(T object);
+	Mutation upsert(Object object);
 
 	/**
 	 * Updates a single object in Spanner. The columns' values corresponding to the
 	 * object's fields are treated according to Mutation.Op.UPDATE.
 	 * @param object The object to update.
-	 * @param <T> The object's type.
 	 * @return The mutation operation to perform the action.
 	 */
-	<T> Mutation update(T object);
+	Mutation update(Object object);
 
 	/**
 	 * Deletes several objects from Spanner.
@@ -67,10 +64,9 @@ public interface SpannerMutationFactory {
 	/**
 	 * Deletes a single object from Spanner.
 	 * @param object The object to delete.
-	 * @param <T> The type of the object to delete.
 	 * @return The delete mutation.
 	 */
-	<T> Mutation delete(T object);
+	Mutation delete(Object object);
 
 	/**
 	 * Deletes a set of keys from Spanner.

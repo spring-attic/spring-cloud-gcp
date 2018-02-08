@@ -16,11 +16,13 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
@@ -48,7 +50,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 
 	@Override
 	public <T> List<T> mapToUnmodifiableList(ResultSet resultSet, Class<T> entityClass) {
-		ArrayList<T> result = new ArrayList<T>();
+		ArrayList<T> result = new ArrayList<>();
 		while (resultSet.next()) {
 			result.add(read(entityClass, resultSet.getCurrentRowAsStruct()));
 		}
@@ -76,6 +78,11 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 			for (Method method : source.getClass().getMethods()) {
 				// the retrieval methods are named like getDate or getTimestamp
 				if (!method.getName().startsWith("get")) {
+					continue;
+				}
+
+				Class[] params = method.getParameterTypes();
+				if (params.length != 1 || !name.getClass().isAssignableFrom(params[0])) {
 					continue;
 				}
 
@@ -118,34 +125,18 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 					ValueBinder<WriteBuilder> set = sink
 							.set(spannerPersistentProperty.getColumnName());
 
-					boolean valueSet = false;
+					Class testPropertyType = propertyType.isPrimitive()
+							? getBoxedFromPrimitive(propertyType)
+							: propertyType;
 
-					for (Method method : sink.getClass().getMethods()) {
-						// the binding methods are named like to() or toInt64Array()
-						if (!method.getName().startsWith("to")) {
-							continue;
-						}
+					// Attempt an exact match first
+					boolean valueSet = attemptSetValue(value, propertyType, set,
+							(paramType) -> paramType.equals(testPropertyType));
 
-						Class[] params = method.getParameterTypes();
-						if (params.length != 1) {
-							continue;
-						}
-
-						if (params[0].isAssignableFrom(propertyType)) {
-							try {
-								method.invoke(set, value);
-								valueSet = true;
-								break;
-							}
-							catch (IllegalAccessException e) {
-								throw new UnsupportedOperationException(
-										"Could not set value for write mutation.", e);
-							}
-							catch (InvocationTargetException e) {
-								throw new UnsupportedOperationException(
-										"Could not set value for write mutation.", e);
-							}
-						}
+					if (!valueSet) {
+						valueSet = attemptSetValue(value, propertyType, set,
+								(paramType) -> paramType
+										.isAssignableFrom(testPropertyType));
 					}
 
 					if (!valueSet) {
@@ -153,5 +144,40 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 								"Unsupported mapping for type: %s", value.getClass()));
 					}
 				});
+	}
+
+	private boolean attemptSetValue(Object value, Class<?> propertyType,
+			ValueBinder<WriteBuilder> set, Predicate<Class> matchFunction) {
+		for (Method method : ValueBinder.class.getMethods()) {
+			// the binding methods are named like to() or toInt64Array()
+			if (!method.getName().startsWith("to")) {
+				continue;
+			}
+
+			Class[] params = method.getParameterTypes();
+			if (params.length != 1) {
+				continue;
+			}
+
+			if (matchFunction.test(params[0])) {
+				try {
+					method.invoke(set, value);
+					return true;
+				}
+				catch (IllegalAccessException e) {
+					throw new UnsupportedOperationException(
+							"Could not set value for write mutation.", e);
+				}
+				catch (InvocationTargetException e) {
+					throw new UnsupportedOperationException(
+							"Could not set value for write mutation.", e);
+				}
+			}
+		}
+		return false;
+	}
+
+	private Class getBoxedFromPrimitive(Class primitive) {
+		return Array.get(Array.newInstance(primitive, 1), 0).getClass();
 	}
 }
