@@ -18,7 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.util.List;
 
-import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
 
@@ -32,7 +32,7 @@ import org.springframework.data.convert.EntityWriter;
  * @author Chengyuan Zhao
  */
 public interface SpannerObjectMapper
-		extends EntityReader<Object, Struct>, EntityWriter<Object, Mutation> {
+		extends EntityReader<Object, Struct>, EntityWriter<Object, WriteBuilder> {
 
 	/**
 	 * Converts a set of Spanner results into a list of objects.
@@ -42,5 +42,4 @@ public interface SpannerObjectMapper
 	 * @return A list of objects.
 	 */
 	<T> List<T> mapToUnmodifiableList(ResultSet resultSet, Class<T> entityClass);
-
 }

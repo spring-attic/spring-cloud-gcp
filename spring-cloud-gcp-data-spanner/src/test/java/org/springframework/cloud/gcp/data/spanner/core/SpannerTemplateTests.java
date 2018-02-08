@@ -202,6 +202,8 @@ public class SpannerTemplateTests {
 	public void deleteByKeyTest() {
 		Key key = Key.of("key");
 		Mutation mutation = Mutation.delete("custom_test_table", key);
+		when(this.mutationFactory.delete(eq(TestEntity.class), same(key)))
+				.thenReturn(mutation);
 		this.spannerTemplate.delete(TestEntity.class, key);
 		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
 	}
@@ -230,6 +232,8 @@ public class SpannerTemplateTests {
 		KeySet keys = KeySet.newBuilder().addKey(Key.of("key1")).addKey(Key.of("key2"))
 				.build();
 		Mutation mutation = Mutation.delete("custom_test_table", keys);
+		when(this.mutationFactory.delete(eq(TestEntity.class), same(keys)))
+				.thenReturn(mutation);
 		this.spannerTemplate.delete(TestEntity.class, keys);
 		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
 	}

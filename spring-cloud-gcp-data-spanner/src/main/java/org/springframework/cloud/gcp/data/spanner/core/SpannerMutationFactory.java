@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 
 /**
@@ -69,4 +71,20 @@ public interface SpannerMutationFactory {
 	 * @return The delete mutation.
 	 */
 	<T> Mutation delete(T object);
+
+	/**
+	 * Deletes a set of keys from Spanner.
+	 * @param entityClass The type of the entity to delete.
+	 * @param keys The keys of the objects to delete.
+	 * @return The delete mutation.
+	 */
+	Mutation delete(Class entityClass, KeySet keys);
+
+	/**
+	 * Deletes a key from Spanner.
+	 * @param entityClass The type of the entity to delete.
+	 * @param key The key of the object to delete.
+	 * @return The delete mutation.
+	 */
+	Mutation delete(Class entityClass, Key key);
 }
