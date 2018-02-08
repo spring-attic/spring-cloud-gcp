@@ -58,9 +58,6 @@ public class PubSubMessageChannelBinder
 	protected MessageHandler createProducerMessageHandler(ProducerDestination destination,
 			ExtendedProducerProperties<PubSubProducerProperties> producerProperties,
 			MessageChannel errorChannel) {
-
-		this.provisioningProvider.provisionProducerDestination(destination.getName(), producerProperties);
-
 		return new PubSubMessageHandler(this.pubSubTemplate, destination.getName());
 	}
 

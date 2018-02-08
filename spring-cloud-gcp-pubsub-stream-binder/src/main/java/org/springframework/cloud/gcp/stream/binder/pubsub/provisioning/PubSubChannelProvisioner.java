@@ -68,6 +68,6 @@ public class PubSubChannelProvisioner
 				throw new ProvisioningException("Unexisting '" + subscription + "' subscription.");
 			}
 		}
-		return  new PubSubConsumerDestination(subscription);
+		return new PubSubConsumerDestination(subscription);
 	}
 }
