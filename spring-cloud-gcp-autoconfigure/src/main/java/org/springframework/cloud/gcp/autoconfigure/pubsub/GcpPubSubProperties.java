@@ -35,6 +35,12 @@ public class GcpPubSubProperties {
 	/** Overrides the GCP project ID specified in the Core module. */
 	private String projectId;
 
+	/**
+	 * The host and port of the local running emulator. If provided, this will setup the
+	 * client to connect against a running pub/sub emulator
+	 */
+	private String emulatorHost;
+
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.PUBSUB.getUrl());
@@ -67,4 +73,11 @@ public class GcpPubSubProperties {
 		return this.credentials;
 	}
 
+	public String getEmulatorHost() {
+		return this.emulatorHost;
+	}
+
+	public void setEmulatorHost(String emulatorHost) {
+		this.emulatorHost = emulatorHost;
+	}
 }
