@@ -67,13 +67,13 @@ public class SpannerObjectMapperImplTests {
 	public void writeTest() throws ClassNotFoundException {
 		TestEntity t = new TestEntity();
 		t.id = "key1";
-		t.stringThing = "string";
-		t.booleanThing = true;
-		t.longThing = 3L;
-		t.doubleThing = 3.33;
+		t.stringField = "string";
+		t.booleanField = true;
+		t.longField = 3L;
+		t.doubleField = 3.33;
 		t.doubleArray = new double[] { 3.33, 3.33, 3.33 };
-		t.dateThing = Date.fromYearMonthDay(2018, 11, 22);
-		t.timestampThing = Timestamp.ofTimeMicroseconds(333);
+		t.dateField = Date.fromYearMonthDay(2018, 11, 22);
+		t.timestampField = Timestamp.ofTimeMicroseconds(333);
 		t.bytes = ByteArray.copyFrom("333");
 
 		WriteBuilder writeBuilder = mock(WriteBuilder.class);
@@ -82,49 +82,49 @@ public class SpannerObjectMapperImplTests {
 		when(idBinder.to(anyString())).thenReturn(null);
 		when(writeBuilder.set(eq("id"))).thenReturn(idBinder);
 
-		ValueBinder<WriteBuilder> stringThingBinder = mock(ValueBinder.class);
-		when(stringThingBinder.to(anyString())).thenReturn(null);
-		when(writeBuilder.set(eq("custom_col"))).thenReturn(stringThingBinder);
+		ValueBinder<WriteBuilder> stringFieldBinder = mock(ValueBinder.class);
+		when(stringFieldBinder.to(anyString())).thenReturn(null);
+		when(writeBuilder.set(eq("custom_col"))).thenReturn(stringFieldBinder);
 
-		ValueBinder<WriteBuilder> booleanThingBinder = mock(ValueBinder.class);
-		when(booleanThingBinder.to((Boolean) any())).thenReturn(null);
-		when(writeBuilder.set(eq("booleanThing"))).thenReturn(booleanThingBinder);
+		ValueBinder<WriteBuilder> booleanFieldBinder = mock(ValueBinder.class);
+		when(booleanFieldBinder.to((Boolean) any())).thenReturn(null);
+		when(writeBuilder.set(eq("booleanField"))).thenReturn(booleanFieldBinder);
 
-		ValueBinder<WriteBuilder> longThingBinder = mock(ValueBinder.class);
-		when(longThingBinder.to(anyLong())).thenReturn(null);
-		when(writeBuilder.set(eq("longThing"))).thenReturn(longThingBinder);
+		ValueBinder<WriteBuilder> longFieldBinder = mock(ValueBinder.class);
+		when(longFieldBinder.to(anyLong())).thenReturn(null);
+		when(writeBuilder.set(eq("longField"))).thenReturn(longFieldBinder);
 
-		ValueBinder<WriteBuilder> doubleThingBinder = mock(ValueBinder.class);
-		when(doubleThingBinder.to(anyDouble())).thenReturn(null);
-		when(writeBuilder.set(eq("doubleThing"))).thenReturn(doubleThingBinder);
+		ValueBinder<WriteBuilder> doubleFieldBinder = mock(ValueBinder.class);
+		when(doubleFieldBinder.to(anyDouble())).thenReturn(null);
+		when(writeBuilder.set(eq("doubleField"))).thenReturn(doubleFieldBinder);
 
-		ValueBinder<WriteBuilder> doubleArrayThingBinder = mock(ValueBinder.class);
-		when(doubleArrayThingBinder.toFloat64Array((double[]) any())).thenReturn(null);
-		when(writeBuilder.set(eq("doubleArray"))).thenReturn(doubleArrayThingBinder);
+		ValueBinder<WriteBuilder> doubleArrayFieldBinder = mock(ValueBinder.class);
+		when(doubleArrayFieldBinder.toFloat64Array((double[]) any())).thenReturn(null);
+		when(writeBuilder.set(eq("doubleArray"))).thenReturn(doubleArrayFieldBinder);
 
-		ValueBinder<WriteBuilder> dateThingBinder = mock(ValueBinder.class);
-		when(dateThingBinder.to((Date) any())).thenReturn(null);
-		when(writeBuilder.set(eq("dateThing"))).thenReturn(dateThingBinder);
+		ValueBinder<WriteBuilder> dateFieldBinder = mock(ValueBinder.class);
+		when(dateFieldBinder.to((Date) any())).thenReturn(null);
+		when(writeBuilder.set(eq("dateField"))).thenReturn(dateFieldBinder);
 
-		ValueBinder<WriteBuilder> timestampThingBinder = mock(ValueBinder.class);
-		when(timestampThingBinder.to((Timestamp) any())).thenReturn(null);
-		when(writeBuilder.set(eq("timestampThing"))).thenReturn(timestampThingBinder);
+		ValueBinder<WriteBuilder> timestampFieldBinder = mock(ValueBinder.class);
+		when(timestampFieldBinder.to((Timestamp) any())).thenReturn(null);
+		when(writeBuilder.set(eq("timestampField"))).thenReturn(timestampFieldBinder);
 
-		ValueBinder<WriteBuilder> bytesThingBinder = mock(ValueBinder.class);
-		when(bytesThingBinder.to((ByteArray) any())).thenReturn(null);
-		when(writeBuilder.set(eq("bytes"))).thenReturn(bytesThingBinder);
+		ValueBinder<WriteBuilder> bytesFieldBinder = mock(ValueBinder.class);
+		when(bytesFieldBinder.to((ByteArray) any())).thenReturn(null);
+		when(writeBuilder.set(eq("bytes"))).thenReturn(bytesFieldBinder);
 
 		this.objectMapper.write(t, writeBuilder);
 
 		verify(idBinder, times(1)).to(eq(t.id));
-		verify(stringThingBinder, times(1)).to(eq(t.stringThing));
-		verify(booleanThingBinder, times(1)).to(eq(Boolean.valueOf(t.booleanThing)));
-		verify(longThingBinder, times(1)).to(eq(Long.valueOf(t.longThing)));
-		verify(doubleThingBinder, times(1)).to(eq(Double.valueOf(t.doubleThing)));
-		verify(doubleArrayThingBinder, times(1)).toFloat64Array(eq(t.doubleArray));
-		verify(dateThingBinder, times(1)).to(eq(t.dateThing));
-		verify(timestampThingBinder, times(1)).to(eq(t.timestampThing));
-		verify(bytesThingBinder, times(1)).to(eq(t.bytes));
+		verify(stringFieldBinder, times(1)).to(eq(t.stringField));
+		verify(booleanFieldBinder, times(1)).to(eq(Boolean.valueOf(t.booleanField)));
+		verify(longFieldBinder, times(1)).to(eq(Long.valueOf(t.longField)));
+		verify(doubleFieldBinder, times(1)).to(eq(Double.valueOf(t.doubleField)));
+		verify(doubleArrayFieldBinder, times(1)).toFloat64Array(eq(t.doubleArray));
+		verify(dateFieldBinder, times(1)).to(eq(t.dateField));
+		verify(timestampFieldBinder, times(1)).to(eq(t.timestampField));
+		verify(bytesFieldBinder, times(1)).to(eq(t.bytes));
 	}
 
 	@Test
@@ -132,20 +132,20 @@ public class SpannerObjectMapperImplTests {
 
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
-				.add("booleanThing", Value.bool(true)).add("longThing", Value.int64(3L))
-				.add("doubleThing", Value.float64(3.33))
+				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
+				.add("doubleField", Value.float64(3.33))
 				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
-				.add("dateThing", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
-				.add("timestampThing", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
+				.add("dateField", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
+				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
 
 		Struct struct2 = Struct.newBuilder().add("id", Value.string("key2"))
 				.add("custom_col", Value.string("string2"))
-				.add("booleanThing", Value.bool(true)).add("longThing", Value.int64(5L))
-				.add("doubleThing", Value.float64(5.55))
+				.add("booleanField", Value.bool(true)).add("longField", Value.int64(5L))
+				.add("doubleField", Value.float64(5.55))
 				.add("doubleArray", Value.float64Array(new double[] { 5.55, 5.55 }))
-				.add("dateThing", Value.date(Date.fromYearMonthDay(2019, 11, 22)))
-				.add("timestampThing", Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
+				.add("dateField", Value.date(Date.fromYearMonthDay(2019, 11, 22)))
+				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string2"))).build();
 
 		MockResults mockResults = new MockResults();
@@ -164,21 +164,21 @@ public class SpannerObjectMapperImplTests {
 		TestEntity t2 = entities.get(1);
 
 		assertEquals("key1", t1.id);
-		assertEquals("string1", t1.stringThing);
-		assertEquals(true, t1.booleanThing);
-		assertEquals(3L, t1.longThing);
-		assertEquals(3.33, t1.doubleThing, 0.00001);
+		assertEquals("string1", t1.stringField);
+		assertEquals(true, t1.booleanField);
+		assertEquals(3L, t1.longField);
+		assertEquals(3.33, t1.doubleField, 0.00001);
 		assertEquals(3, t1.doubleArray.length);
-		assertEquals(2018, t1.dateThing.getYear());
+		assertEquals(2018, t1.dateField.getYear());
 		assertEquals(ByteArray.copyFrom("string1"), t1.bytes);
 
 		assertEquals("key2", t2.id);
-		assertEquals("string2", t2.stringThing);
-		assertEquals(true, t2.booleanThing);
-		assertEquals(5L, t2.longThing);
-		assertEquals(5.55, t2.doubleThing, 0.00001);
+		assertEquals("string2", t2.stringField);
+		assertEquals(true, t2.booleanField);
+		assertEquals(5L, t2.longField);
+		assertEquals(5.55, t2.doubleField, 0.00001);
 		assertEquals(2, t2.doubleArray.length);
-		assertEquals(2019, t2.dateThing.getYear());
+		assertEquals(2019, t2.dateField.getYear());
 		assertEquals(ByteArray.copyFrom("string2"), t2.bytes);
 	}
 
@@ -188,20 +188,20 @@ public class SpannerObjectMapperImplTests {
 		String id;
 
 		@SpannerColumn(name = "custom_col")
-		String stringThing;
+		String stringField;
 
 		@SpannerColumn(name = "")
-		boolean booleanThing;
+		boolean booleanField;
 
-		long longThing;
+		long longField;
 
-		double doubleThing;
+		double doubleField;
 
 		double[] doubleArray;
 
-		Date dateThing;
+		Date dateField;
 
-		Timestamp timestampThing;
+		Timestamp timestampField;
 
 		ByteArray bytes;
 	}

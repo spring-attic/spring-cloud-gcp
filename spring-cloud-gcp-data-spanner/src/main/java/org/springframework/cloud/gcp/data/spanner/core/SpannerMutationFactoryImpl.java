@@ -133,9 +133,6 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 		case UPDATE:
 			builder = Mutation.newUpdateBuilder(tableName);
 			break;
-		case REPLACE:
-			builder = Mutation.newReplaceBuilder(tableName);
-			break;
 		}
 		if (builder == null) {
 			throw new IllegalArgumentException(
