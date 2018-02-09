@@ -122,7 +122,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
 					Object value = accessor.getProperty(spannerPersistentProperty);
 					Class<?> propertyType = spannerPersistentProperty.getType();
-					ValueBinder<WriteBuilder> set = sink
+					ValueBinder<WriteBuilder> valueBinder = sink
 							.set(spannerPersistentProperty.getColumnName());
 
 					Class testPropertyType = propertyType.isPrimitive()
@@ -130,11 +130,11 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 							: propertyType;
 
 					// Attempt an exact match first
-					boolean valueSet = attemptSetValue(value, propertyType, set,
+					boolean valueSet = attemptSetValue(value, valueBinder,
 							(paramType) -> paramType.equals(testPropertyType));
 
 					if (!valueSet) {
-						valueSet = attemptSetValue(value, propertyType, set,
+						valueSet = attemptSetValue(value, valueBinder,
 								(paramType) -> paramType
 										.isAssignableFrom(testPropertyType));
 					}
@@ -146,8 +146,8 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 				});
 	}
 
-	private boolean attemptSetValue(Object value, Class<?> propertyType,
-			ValueBinder<WriteBuilder> set, Predicate<Class> matchFunction) {
+	private boolean attemptSetValue(Object value, ValueBinder<WriteBuilder> valueBinder,
+			Predicate<Class> matchFunction) {
 		for (Method method : ValueBinder.class.getMethods()) {
 			// the binding methods are named like to() or toInt64Array()
 			if (!method.getName().startsWith("to")) {
@@ -161,7 +161,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 
 			if (matchFunction.test(params[0])) {
 				try {
-					method.invoke(set, value);
+					method.invoke(valueBinder, value);
 					return true;
 				}
 				catch (IllegalAccessException e) {
