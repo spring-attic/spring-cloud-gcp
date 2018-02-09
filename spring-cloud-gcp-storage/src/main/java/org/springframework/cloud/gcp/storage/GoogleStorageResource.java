@@ -82,6 +82,9 @@ public class GoogleStorageResource implements WritableResource {
 		try {
 			this.location = new URI(location);
 			this.bucketName = this.location.getAuthority();
+			if (this.getBucketName() == null) {
+				throw new IllegalArgumentException("No bucket specified in the location: " + location);
+			}
 			if (this.location.getPath() != null && this.location.getPath().length() > 1) {
 				this.blobName = this.location.getPath().substring(1);
 			}
@@ -105,7 +108,8 @@ public class GoogleStorageResource implements WritableResource {
 	@Override
 	public boolean exists() {
 		try {
-			return getBlob() != null;
+			return !isBucket() && getBlob() != null ||
+					getBucket() != null;
 		}
 		catch (IOException e) {
 			return false;
@@ -114,7 +118,7 @@ public class GoogleStorageResource implements WritableResource {
 
 	@Override
 	public boolean isReadable() {
-		return true;
+		return !isBucket();
 	}
 
 	@Override
@@ -136,6 +140,7 @@ public class GoogleStorageResource implements WritableResource {
 	 * Gets the underlying storage object in Google Cloud Storage.
 	 * @return The storage object, will be null if it does not exist in Google Cloud Storage.
 	 * @throws IOException
+	 * @throws IllegalStateException if the resource reference is to a bucket, and not a blob.
 	 */
 	public Blob getBlob() throws IOException {
 		return this.storage.get(getBlobId());
@@ -148,6 +153,7 @@ public class GoogleStorageResource implements WritableResource {
 	 * @param timePeriods the number of periods to determine how long the URL is valid.
 	 * @param options specifies additional options for signing URLs
 	 * @return the URL if the object exists, and null if it does not.
+	 * @throws IllegalStateException if the resource reference is to a bucket, and not a blob.
 	 */
 	public URL createSignedUrl(TimeUnit timeUnit, long timePeriods,
 			Storage.SignUrlOption... options) throws IOException {
@@ -167,6 +173,7 @@ public class GoogleStorageResource implements WritableResource {
 	 * @return the created blob object
 	 * @throws StorageException if any errors during blob creation arise,
 	 * such as if the blob already exists
+	 * @throws IllegalStateException if the resource reference is to a bucket, and not a blob.
 	 */
 	public Blob createBlob() throws StorageException {
 		return this.storage.create(BlobInfo.newBuilder(getBlobId()).build());
@@ -232,7 +239,10 @@ public class GoogleStorageResource implements WritableResource {
 	 */
 	@Override
 	public GoogleStorageResource createRelative(String relativePath) throws IOException {
-		String absolutePath = GoogleStorageProtocolResolver.PROTOCOL + this.bucketName + "/" + relativePath;
+		String absolutePath = null;
+
+		this.location.resolve(relativePath).toString();
+
 
 		GoogleStorageResource blobResource = new GoogleStorageResource(
 				this.storage, absolutePath, this.createBlobIfNotExists);
@@ -246,12 +256,7 @@ public class GoogleStorageResource implements WritableResource {
 
 	@Override
 	public String getFilename() {
-		try {
-			return throwExceptionForNullBlob(getBlob()).getName();
-		}
-		catch (IOException e) {
-			return null;
-		}
+		return !isBucket() ? blobName : bucketName;
 	}
 
 	@Override
@@ -266,7 +271,7 @@ public class GoogleStorageResource implements WritableResource {
 
 	@Override
 	public boolean isWritable() {
-		return this.createBlobIfNotExists || exists();
+		return !isBucket() && (this.createBlobIfNotExists || exists());
 	}
 
 	/**
@@ -290,7 +295,27 @@ public class GoogleStorageResource implements WritableResource {
 		return Channels.newOutputStream(blob.writer());
 	}
 
+	public String getBlobName() {
+		return blobName;
+	}
+
+	public String getBucketName() {
+		return bucketName;
+	}
+
+	/**
+	 * Check if this resource references a bucket and not a blob.
+	 * @return if the resource is bucket
+	 */
+	public boolean isBucket() {
+		return blobName == null;
+	}
+
 	private BlobId getBlobId() {
+		if (isBucket()) {
+			throw new IllegalStateException("No blob id specified in the location: '" + this.location +
+					"', and the operation is not allowed on buckets.");
+		}
 		return BlobId.of(this.bucketName, this.blobName);
 	}
 }

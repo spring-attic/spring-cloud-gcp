@@ -48,8 +48,6 @@ public class GoogleStorageProtocolResolver
 
 	private GoogleStorageProtocolResolverSettings settings = new GoogleStorageProtocolResolverSettings();
 
-	private volatile Storage storage;
-
 	GoogleStorageProtocolResolver() {
 	}
 
@@ -76,7 +74,8 @@ public class GoogleStorageProtocolResolver
 			return null;
 		}
 		else {
-			return new GoogleStorageResource(this.storage, location, this.settings.isAutoCreateFiles());
+			return new GoogleStorageResource(this.beanFactory.getBean(Storage.class), location,
+					this.settings.isAutoCreateFiles());
 		}
 	}
 

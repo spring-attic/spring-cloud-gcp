@@ -33,6 +33,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
@@ -71,22 +72,19 @@ public class GoogleStorageTests {
 	@Value("gs://test-spring/")
 	private Resource bucketResourceTrailingSlash;
 
-	@Value("gs://")
-	private Resource emptyPathResource;
+	@Autowired
+	private Storage storage;
 
-	@Value("gs:///")
-	private Resource slashPathResource;
-
-	@Test
-	public void testNullPaths() {
-		Assert.assertFalse(this.emptyPathResource instanceof GoogleStorageResource);
-		Assert.assertFalse(this.emptyPathResource instanceof GoogleStorageResource);
-		Assert.assertFalse(this.slashPathResource instanceof GoogleStorageResource);
-		Assert.assertFalse(this.slashPathResource instanceof GoogleStorageResource);
-		Assert.assertTrue(this.remoteResource instanceof GoogleStorageResource);
-		Assert.assertTrue(this.bucketResource instanceof GoogleStorageResource);
-		Assert.assertTrue(this.bucketResourceTrailingSlash instanceof GoogleStorageResource);
+	@Test(expected = IllegalArgumentException.class)
+	public void testEmptyPath() {
+		new GoogleStorageResource(storage, "gs://", false);
 	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testSlashPath() {
+		new GoogleStorageResource(storage, "gs:///", false);
+	}
+
 
 	@Test
 	public void testValidObject() throws Exception {
@@ -101,8 +99,8 @@ public class GoogleStorageTests {
 
 	@Test
 	public void testValidBucket() throws IOException {
-		Assert.assertEquals("test-spring", this.bucketResource.getDescription());
-		Assert.assertEquals(this.bucketResource.getDescription(),
+		Assert.assertEquals("gs://test-spring", this.bucketResource.getDescription());
+		Assert.assertNotEquals(this.bucketResource.getDescription(),
 				this.bucketResourceTrailingSlash.getDescription());
 
 		Assert.assertEquals("test-spring", this.bucketResource.getFilename());
@@ -110,7 +108,7 @@ public class GoogleStorageTests {
 				this.bucketResourceTrailingSlash.getFilename());
 
 		Assert.assertEquals("gs://test-spring", this.bucketResource.getURI().toString());
-		Assert.assertEquals(this.bucketResource.getURI().toString(),
+		Assert.assertNotEquals(this.bucketResource.getURI().toString(),
 				this.bucketResourceTrailingSlash.getURI().toString());
 
 
@@ -119,35 +117,38 @@ public class GoogleStorageTests {
 		Assert.assertEquals("gs://test-spring/aaa/bbb", relative);
 		Assert.assertEquals(relative,
 				this.bucketResource.createRelative("/aaa/bbb").getURI().toString());
+
+		Assert.assertNull(((GoogleStorageResource)this.bucketResourceTrailingSlash).getBlobName());
+		Assert.assertTrue(((GoogleStorageResource)this.bucketResourceTrailingSlash).isBucket());
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = IllegalStateException.class)
 	public void testBucketOutputStream() throws IOException {
 		((WritableResource) this.bucketResource).getOutputStream();
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void testBucketInputStream() throws IOException {
+	@Test(expected = IllegalStateException.class)
+	public void testBucketNoBlobInputStream() throws IOException {
 		this.bucketResource.getInputStream();
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void testBucketContentLength() throws IOException {
+	@Test(expected = IllegalStateException.class)
+	public void testBucketNoBlobContentLength() throws IOException {
 		this.bucketResource.contentLength();
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
-	public void testBucketFile() throws IOException {
+	public void testBucketNoBlobFile() throws IOException {
 		this.bucketResource.getFile();
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void testBucketLastModified() throws IOException {
+	@Test(expected = IllegalStateException.class)
+	public void testBucketNoBlobLastModified() throws IOException {
 		this.bucketResource.lastModified();
 	}
 
 	@Test
-	public void testBucketResourceStatuses() throws IOException {
+	public void testBucketNoBlobResourceStatuses() throws IOException {
 		Assert.assertFalse(this.bucketResource.isOpen());
 		Assert.assertFalse(this.bucketResource.isReadable());
 		Assert.assertFalse(((WritableResource) this.bucketResource).isWritable());
@@ -240,14 +241,14 @@ public class GoogleStorageTests {
 	}
 
 	@Test
-	public void testGetFilenameOnNullBlob() throws Exception {
+	public void testGetFilenameOnNonExistingBlob() throws Exception {
 		String location = "gs://test-spring/test";
 		Storage storage = mock(Storage.class);
 		when(storage.get(BlobId.of("test-spring", "test"))).thenReturn(null);
 
 		GoogleStorageResource resource = new GoogleStorageResource(storage, location,
 				false);
-		Assert.assertNull(resource.getFilename());
+		Assert.assertEquals("test", resource.getFilename());
 	}
 
 	@Test
