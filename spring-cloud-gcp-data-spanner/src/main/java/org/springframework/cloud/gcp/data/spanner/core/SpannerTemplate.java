@@ -95,14 +95,14 @@ public class SpannerTemplate implements SpannerOperations {
 				.getPersistentEntity(entityClass);
 		ResultSet resultSet = getReadContext().read(persistentEntity.tableName(), keys,
 				persistentEntity.columns(), options);
-		return this.objectMapper.mapToUnmodifiableList(resultSet, entityClass);
+		return this.objectMapper.mapToList(resultSet, entityClass);
 	}
 
 	@Override
 	public <T> List<T> find(Class<T> entityClass, Statement statement,
 			Options.QueryOption... options) {
 		ResultSet resultSet = getReadContext().executeQuery(statement, options);
-		return this.objectMapper.mapToUnmodifiableList(resultSet, entityClass);
+		return this.objectMapper.mapToList(resultSet, entityClass);
 	}
 
 	@Override

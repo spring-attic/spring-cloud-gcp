@@ -22,6 +22,7 @@ import java.util.List;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
@@ -40,6 +41,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -128,7 +130,7 @@ public class SpannerObjectMapperImplTests {
 	}
 
 	@Test
-	public void mapToUnmodifiableListTest() {
+	public void mapToListTest() {
 
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
@@ -146,7 +148,7 @@ public class SpannerObjectMapperImplTests {
 				.add("doubleArray", Value.float64Array(new double[] { 5.55, 5.55 }))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2019, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
-				.add("bytes", Value.bytes(ByteArray.copyFrom("string2"))).build();
+				.build();
 
 		MockResults mockResults = new MockResults();
 		mockResults.structs = Arrays.asList(struct1, struct2);
@@ -156,7 +158,7 @@ public class SpannerObjectMapperImplTests {
 		when(results.getCurrentRowAsStruct())
 				.thenAnswer(invocation -> mockResults.getCurrent());
 
-		List<TestEntity> entities = this.objectMapper.mapToUnmodifiableList(results,
+		List<TestEntity> entities = this.objectMapper.mapToList(results,
 				TestEntity.class);
 		assertEquals(2, entities.size());
 
@@ -179,7 +181,51 @@ public class SpannerObjectMapperImplTests {
 		assertEquals(5.55, t2.doubleField, 0.00001);
 		assertEquals(2, t2.doubleArray.length);
 		assertEquals(2019, t2.dateField.getYear());
-		assertEquals(ByteArray.copyFrom("string2"), t2.bytes);
+		assertNull(t2.bytes);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void readUnexpectedColumnTest() {
+		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
+				.add("custom_col", Value.string("string1"))
+				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
+				.add("UNEXPECTED_COLUMN", Value.float64(3.33))
+				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
+				.add("dateField", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
+				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
+				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
+
+		this.objectMapper.read(TestEntity.class, struct1);
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void readUnconvertableValueTest() {
+		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
+				.add("custom_col", Value.string("string1"))
+				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
+				.add("doubleField", Value.string("UNCONVERTABLE VALUE"))
+				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
+				.add("dateField", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
+				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
+				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
+
+		this.objectMapper.read(TestEntity.class, struct1);
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void readUnmatachableTypesTest() {
+		Struct struct1 = Struct.newBuilder().add("unuseableField", Value.string("key1"))
+				.build();
+		this.objectMapper.read(FaultyTestEntity.class, struct1);
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void writeIncompatibleTypeTest() {
+		FaultyTestEntity ft = new FaultyTestEntity();
+		ft.unuseableField = new TestEntity();
+
+		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
+		this.objectMapper.write(ft, writeBuilder);
 	}
 
 	@SpannerTable(name = "custom_test_table")
@@ -204,6 +250,11 @@ public class SpannerObjectMapperImplTests {
 		Timestamp timestampField;
 
 		ByteArray bytes;
+	}
+
+	@SpannerTable(name = "faulty_test_table")
+	private static class FaultyTestEntity {
+		TestEntity unuseableField;
 	}
 
 	private static class MockResults {

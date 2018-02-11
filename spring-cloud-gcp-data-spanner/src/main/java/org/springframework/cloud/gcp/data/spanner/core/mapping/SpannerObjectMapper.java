@@ -41,5 +41,5 @@ public interface SpannerObjectMapper
 	 * @param <T> The type of the objects the Spanner results represent.
 	 * @return A list of objects.
 	 */
-	<T> List<T> mapToUnmodifiableList(ResultSet resultSet, Class<T> entityClass);
+	<T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass);
 }

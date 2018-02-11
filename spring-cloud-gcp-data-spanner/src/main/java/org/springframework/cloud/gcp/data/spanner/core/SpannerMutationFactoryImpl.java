@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.Arrays;
-import java.util.function.Function;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
@@ -75,18 +74,18 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
 	@Override
 	public <T> Mutation delete(Class<T> entityClass, Iterable<? extends T> entities) {
-		return deleteKeySetFromTable(entityClass, (persistentEntity) -> {
-			KeySet.Builder builder = KeySet.newBuilder();
-			for (T entity : entities) {
-				PersistentPropertyAccessor accessor = persistentEntity
-						.getPropertyAccessor(entity);
-				PersistentProperty idProperty = persistentEntity.getIdProperty();
-				Object value = accessor.getProperty(idProperty);
+		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
+				.getPersistentEntity(entityClass);
+		KeySet.Builder builder = KeySet.newBuilder();
+		for (T entity : entities) {
+			PersistentPropertyAccessor accessor = persistentEntity
+					.getPropertyAccessor(entity);
+			PersistentProperty idProperty = persistentEntity.getIdProperty();
+			Object value = accessor.getProperty(idProperty);
 
-				builder.addKey(Key.of(value));
-			}
-			return builder.build();
-		});
+			builder.addKey(Key.of(value));
+		}
+		return delete(entityClass, builder.build());
 	}
 
 	@Override
@@ -96,20 +95,14 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
 	@Override
 	public Mutation delete(Class entityClass, KeySet keys) {
-		return deleteKeySetFromTable(entityClass, (unused) -> keys);
+		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
+				.getPersistentEntity(entityClass);
+		return Mutation.delete(persistentEntity.tableName(), keys);
 	}
 
 	@Override
 	public Mutation delete(Class entityClass, Key key) {
 		return delete(entityClass, KeySet.singleKey(key));
-	}
-
-	private Mutation deleteKeySetFromTable(Class entityClass,
-			Function<SpannerPersistentEntity, KeySet> keyFunction) {
-		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
-				.getPersistentEntity(entityClass);
-		return Mutation.delete(persistentEntity.tableName(),
-				keyFunction.apply(persistentEntity));
 	}
 
 	private Mutation saveObject(Op op, Object object) {

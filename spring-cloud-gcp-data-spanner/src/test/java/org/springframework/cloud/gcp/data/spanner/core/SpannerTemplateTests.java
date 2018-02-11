@@ -133,7 +133,7 @@ public class SpannerTemplateTests {
 		KeySet keySet = KeySet.singleKey(Key.of("key"));
 		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
 		this.spannerTemplate.find(TestEntity.class, keySet, readOption);
-		verify(this.objectMapper, times(1)).mapToUnmodifiableList(same(results),
+		verify(this.objectMapper, times(1)).mapToList(same(results),
 				eq(TestEntity.class));
 		verify(this.readContext, times(1)).read(eq("custom_test_table"), same(keySet),
 				any(), same(readOption));
@@ -146,7 +146,7 @@ public class SpannerTemplateTests {
 		Statement statement = Statement.of("test");
 		when(this.readContext.executeQuery(any(), any())).thenReturn(results);
 		this.spannerTemplate.find(TestEntity.class, statement, queryOption);
-		verify(this.objectMapper, times(1)).mapToUnmodifiableList(same(results),
+		verify(this.objectMapper, times(1)).mapToList(same(results),
 				eq(TestEntity.class));
 		verify(this.readContext, times(1)).executeQuery(same(statement),
 				same(queryOption));

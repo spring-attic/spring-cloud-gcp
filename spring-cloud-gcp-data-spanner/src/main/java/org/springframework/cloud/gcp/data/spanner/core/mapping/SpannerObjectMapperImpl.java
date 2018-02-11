@@ -17,10 +17,9 @@
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -30,7 +29,6 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.ValueBinder;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.Assert;
@@ -49,17 +47,27 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 	}
 
 	@Override
-	public <T> List<T> mapToUnmodifiableList(ResultSet resultSet, Class<T> entityClass) {
+	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass) {
 		ArrayList<T> result = new ArrayList<>();
 		while (resultSet.next()) {
 			result.add(read(entityClass, resultSet.getCurrentRowAsStruct()));
 		}
-		return Collections.unmodifiableList(result);
+		return result;
 	}
 
 	@Override
 	public <R> R read(Class<R> type, Struct source) {
-		R object = BeanUtils.instantiateClass(type);
+		R object;
+		try {
+			Constructor<R> constructor = type.getDeclaredConstructor();
+			constructor.setAccessible(true);
+			object = constructor.newInstance();
+		}
+		catch (ReflectiveOperationException e) {
+			throw new UnsupportedOperationException(
+					"Unable to create a new instance of entity using default constructor.",
+					e);
+		}
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
 				.getPersistentEntity(type);
 		PersistentPropertyAccessor accessor = persistentEntity
@@ -69,6 +77,13 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 			String name = field.getName();
 			SpannerPersistentProperty property = persistentEntity
 					.getPersistentPropertyByColumnName(name);
+			if (property == null) {
+				throw new IllegalStateException("Spanner struct contains a column named "
+						+ name
+						+ " that does not correspond to any property in the entity type "
+						+ type);
+			}
+			Class propType = property.getType();
 			if (source.isNull(name)) {
 				continue;
 			}
@@ -87,26 +102,27 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 				}
 
 				Class retType = method.getReturnType();
-				if (retType.isAssignableFrom(property.getType())) {
+				if (propType.isAssignableFrom(retType)) {
 					try {
 						accessor.setProperty(property, method.invoke(source, name));
 						valueSet = true;
 						break;
 					}
-					catch (IllegalAccessException e) {
+					catch (ReflectiveOperationException e) {
 						throw new UnsupportedOperationException(
-								"Could not set value for read.", e);
-					}
-					catch (InvocationTargetException e) {
-						throw new UnsupportedOperationException(
-								"Could not set value for read.", e);
+								"Could not set value for property in entity. Value type is "
+										+ retType + " , entity's property type is "
+										+ propType,
+								e);
 					}
 				}
 			}
 
 			if (!valueSet) {
 				throw new UnsupportedOperationException(
-						"No compatible types in object for reading column: " + name);
+						"The value in column with name " + name
+								+ " could not be converted to the corresponding property in the entity."
+								+ " The property's type is " + propType);
 			}
 		}
 		return object;
@@ -164,11 +180,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 					method.invoke(valueBinder, value);
 					return true;
 				}
-				catch (IllegalAccessException e) {
-					throw new UnsupportedOperationException(
-							"Could not set value for write mutation.", e);
-				}
-				catch (InvocationTargetException e) {
+				catch (ReflectiveOperationException e) {
 					throw new UnsupportedOperationException(
 							"Could not set value for write mutation.", e);
 				}
