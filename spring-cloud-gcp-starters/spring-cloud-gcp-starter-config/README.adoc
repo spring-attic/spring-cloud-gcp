@@ -1,0 +1,126 @@
+= Google Cloud Runtime Config Spring Boot Starter
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-config</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-config'
+}
+----
+
+https://cloud.google.com/deployment-manager/runtime-configurator/[Runtime
+Configuration API] on Google Cloud Platform allows dynamic configuration
+of your services.
+
+This starter uses the
+https://cloud.google.com/deployment-manager/runtime-configurator/reference/rest/[Runtime
+Configurator REST SDK] to
+http://projects.spring.io/spring-cloud/spring-cloud.html#customizing-bootstrap-property-sources[bootstrap]
+ the Runtime Configurator based configuration as a property source.
+
+=== Setup
+
+1.  The Runtime Configurator is managed using `gcloud`.
+Install the https://cloud.google.com/sdk/[Google Cloud SDK]. You can
+do so with the following command:
++
+....
+$  curl https://sdk.cloud.google.com | bash
+....
+2.  Create, enable billing on a project on the
+https://console.cloud.google.com[Google Cloud Console].
+3.  Enable the
+https://console.cloud.google.com/apis/api/runtimeconfig.googleapis.com/overview[Runtime
+Config API].
+4.  https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create
+a service account] with the `Project > Viewer` IAM role and
+set the credentials using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable or
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter/README.adoc[using GCP Starter Core properties]. (Note that when testing locally, the https://cloud.google.com/sdk/gcloud/reference/beta/auth/application-default/login[Cloud SDK application default credentials] are not supported by the Runtime Configuration API.)
+
+=== Configuration
+
+1.  Create a configuration using the
+https://cloud.google.com/sdk/[Google Cloud SDK]. The configuration name
+should be in the format `config_profile`, for example: `myapp_prod`
++
+....
+gcloud beta runtime-config configs create myapp_prod
+....
+
+2. Then set the variables you wish to load.
++
+....
+$ gcloud beta runtime-config configs variables set \
+  queue_size 25 \
+  --config-name myapp_prod
+
+$ gcloud beta runtime-config configs variables set \
+  feature_x_enabled true \
+  --config-name myapp_prod
+....
+
+3.  Update `src/main/resources/bootstrap.properties` to specify the configuration name, profile and timeout:
++
+Note: If using the
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter/README.adoc[GCP Starter Core properties]
+to configure the GCP project and credentials for this starter, they must be included
+in the `bootstrap.properties`.
++
+....
+spring.cloud.gcp.config.enabled=true
+spring.cloud.gcp.config.name=myapp
+spring.cloud.gcp.config.profile=prod #optional, default = "default"
+spring.cloud.gcp.config.timeout=120000 #optional, default = 60000
+spring.cloud.gcp.config.project-id=my-gcp-project-id #optional
+spring.cloud.gcp.config.credentials.location=file:/path/to/my/local/creds.json #optional
+spring.cloud.gcp.config.credentials.scopes=https://www.googleapis.com/auth/sqlservice.admin #optional
+....
++
+If `spring.cloud.gcp.config.credentials.location` points to a file in your file system, don't
+forget the `file:` prefix.
+
+4.  Add a configuration class annotated with `@ConfigurationProperties("myapp")`.
+
+==== Runtime Configuration Refresh
+http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints[Spring
+Cloud] provides support to have configuration parameters be
+reloadable with the POST `/actuator/refresh` endpoint.
+
+1.  Add the following dependency to your `pom.xml`:
++
+....
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+  </dependency>
+....
+2.  Add `@RefreshScope` to your Spring configuration class to have parameters be reloadable at runtime.
+3.  If your application doesn't require authentication, add `management.endpoints.web.expose=*`
+to your `application.properties` at allow unrestricted access to `/actuator/refresh`.
+4.  Update a property with `gcloud`:
++
+....
+$ gcloud beta runtime-config configs variables set \
+  myapp.queue_size 200 \
+  --config-name myapp_prod
+....
+5.  Send a POST request to the refresh endpoint:
++
+....
+$ curl -XPOST http://myapp.host.com/actuator/refresh
+....
+
+=== Examples
+link:../../spring-cloud-gcp-samples/spring-cloud-gcp-config-sample[Here]
+is a sample application that uses this starter.
