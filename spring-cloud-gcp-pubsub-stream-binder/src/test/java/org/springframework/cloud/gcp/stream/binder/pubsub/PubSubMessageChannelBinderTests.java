@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.stream.binder.pubsub;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 
+import org.junit.Test;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
 import org.springframework.cloud.stream.binder.AbstractBinderTests;
@@ -31,7 +32,7 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 /**
  * @author João André Martins
  */
-public class PubSubMessageChannelBinderTest extends AbstractBinderTests<PubSubTestBinder,
+public class PubSubMessageChannelBinderTests extends AbstractBinderTests<PubSubTestBinder,
 		ExtendedConsumerProperties<PubSubConsumerProperties>,
 		ExtendedProducerProperties<PubSubProducerProperties>> {
 
@@ -40,7 +41,7 @@ public class PubSubMessageChannelBinderTest extends AbstractBinderTests<PubSubTe
 
 	private PubSubTestBinder binder;
 
-	public PubSubMessageChannelBinderTest() {
+	public PubSubMessageChannelBinderTests() {
 		this.binder = new PubSubTestBinder();
 	}
 
@@ -67,5 +68,11 @@ public class PubSubMessageChannelBinderTest extends AbstractBinderTests<PubSubTe
 	@Override
 	public Spy spyOn(String name) {
 		return null;
+	}
+
+	@Override
+	public void testClean() throws Exception {
+		// Do nothing. Just wait a little bit for the emulator to come up.
+		Thread.sleep(1000);
 	}
 }
