@@ -137,10 +137,14 @@ public class GoogleStorageResourceObject implements WritableResource {
 	 * resource was not created using service account credentials.
 	 * @param timeUnit the time unit used to determine how long the URL is valid.
 	 * @param timePeriods the number of periods to determine how long the URL is valid.
+	 * @param options specifies additional options for signing URLs
 	 * @return the URL if the object exists, and null if it does not.
 	 * @throws IOException
 	 */
-	public URL createSignedUrl(TimeUnit timeUnit, long timePeriods) throws IOException {
+	public URL createSignedUrl(TimeUnit timeUnit, long timePeriods,
+			Storage.SignUrlOption... options) throws IOException {
+		Assert.notNull(options, "options can't be null.");
+
 		Blob blob = this.getGcsBlob();
 
 		if (blob == null && LOGGER.isWarnEnabled()) {
@@ -148,7 +152,7 @@ public class GoogleStorageResourceObject implements WritableResource {
 		}
 
 		return this.storage.signUrl(
-				BlobInfo.newBuilder(getBlobId()).build(), timePeriods, timeUnit);
+				BlobInfo.newBuilder(getBlobId()).build(), timePeriods, timeUnit, options);
 	}
 
 	/**
