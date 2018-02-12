@@ -1,4 +1,5 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubEmulatorConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.logging.StackdriverLoggingAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfiguration,\

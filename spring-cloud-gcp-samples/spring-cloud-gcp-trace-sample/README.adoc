@@ -26,7 +26,7 @@ settings for you.
 Run the example from Maven:
 
 ----
-mvn spring-boot:run
+$ mvn spring-boot:run
 ----
 
 Browse to `http://localhost:8080`. This will trigger the `ExampleController.work()` method,
