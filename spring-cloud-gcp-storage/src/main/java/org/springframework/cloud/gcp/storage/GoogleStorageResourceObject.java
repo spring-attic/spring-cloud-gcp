@@ -143,6 +143,8 @@ public class GoogleStorageResourceObject implements WritableResource {
 	 */
 	public URL createSignedUrl(TimeUnit timeUnit, long timePeriods,
 			Storage.SignUrlOption... options) throws IOException {
+		Assert.notNull(options, "options can't be null.");
+
 		Blob blob = this.getGcsBlob();
 
 		if (blob == null && LOGGER.isWarnEnabled()) {
