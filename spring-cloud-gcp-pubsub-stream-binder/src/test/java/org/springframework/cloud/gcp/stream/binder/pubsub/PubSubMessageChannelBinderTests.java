@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.stream.binder.pubsub;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 
-import org.junit.Test;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
 import org.springframework.cloud.stream.binder.AbstractBinderTests;
