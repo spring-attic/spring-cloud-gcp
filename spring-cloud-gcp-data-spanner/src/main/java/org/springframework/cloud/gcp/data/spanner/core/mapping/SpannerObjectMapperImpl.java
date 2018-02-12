@@ -20,6 +20,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -47,6 +48,8 @@ import org.springframework.util.Assert;
 public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 
 	private final SpannerMappingContext spannerMappingContext;
+
+	private final Map<Class, Map<String, Method>> propertyMethodMapping = new HashMap<>();
 
 	private static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>>
 			writeBuilderIterableMapping =
@@ -91,6 +94,23 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
 		this.spannerMappingContext = spannerMappingContext;
+	}
+
+	private Map<String, Method> getPropertyMethodMappingForType(Class type) {
+		Map<String, Method> mapping = this.propertyMethodMapping.get(type);
+		if (mapping == null) {
+			mapping = new HashMap<>();
+			this.propertyMethodMapping.put(type, mapping);
+		}
+		return mapping;
+	}
+
+	private void cachePropertyMethod(Class type, String colName, Method method) {
+		getPropertyMethodMappingForType(type).put(colName, method);
+	}
+
+	private Method getPropertyMethod(Class type, String colName) {
+		return getPropertyMethodMappingForType(type).get(colName);
 	}
 
 	@Override
@@ -147,32 +167,39 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 				valueSet = attemptReadIterableValue(property, source, name, accessor);
 			}
 			else {
-				for (Method method : source.getClass().getMethods()) {
-					// the retrieval methods are named like getDate or getTimestamp
-					if (!method.getName().startsWith("get")) {
-						continue;
-					}
+				Method getMethod = getPropertyMethod(type, name);
+				if (getMethod == null) {
+					for (Method method : source.getClass().getMethods()) {
+						// the retrieval methods are named like getDate or getTimestamp
+						if (!method.getName().startsWith("get")) {
+							continue;
+						}
 
-					Class[] params = method.getParameterTypes();
-					if (params.length != 1
-							|| !name.getClass().isAssignableFrom(params[0])) {
-						continue;
-					}
+						Class[] params = method.getParameterTypes();
+						if (params.length != 1
+								|| !name.getClass().isAssignableFrom(params[0])) {
+							continue;
+						}
 
-					Class retType = method.getReturnType();
-					if (propType.isAssignableFrom(retType)) {
-						try {
-							accessor.setProperty(property, method.invoke(source, name));
-							valueSet = true;
+						Class retType = method.getReturnType();
+						if (propType.isAssignableFrom(retType)) {
+							getMethod = method;
+							cachePropertyMethod(type, name, method);
 							break;
 						}
-						catch (ReflectiveOperationException e) {
-							throw new SpannerDataException(
-									"Could not set value for property in entity. Value type is "
-											+ retType + " , entity's property type is "
-											+ propType,
-									e);
-						}
+					}
+				}
+				if (getMethod != null) {
+					try {
+						accessor.setProperty(property, getMethod.invoke(source, name));
+						valueSet = true;
+					}
+					catch (ReflectiveOperationException e) {
+						throw new SpannerDataException(
+								"Could not set value for property in entity. Value type is "
+										+ getMethod.getReturnType()
+										+ " , entity's property type is " + propType,
+								e);
 					}
 				}
 			}
