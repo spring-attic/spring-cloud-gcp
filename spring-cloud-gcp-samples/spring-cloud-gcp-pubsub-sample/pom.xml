@@ -11,6 +11,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>spring-cloud-gcp-pubsub-sample</artifactId>
+	<name>Spring Cloud GCP Pub/Sub Code Sample</name>
 
 	<dependencyManagement>
 		<dependencies>

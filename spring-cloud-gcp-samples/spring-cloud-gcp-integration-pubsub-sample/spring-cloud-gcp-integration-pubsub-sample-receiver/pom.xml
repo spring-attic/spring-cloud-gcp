@@ -10,6 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>spring-cloud-gcp-integration-pubsub-sample-receiver</artifactId>
+	<name>Spring Cloud GCP Integration Pub/Sub Receiver Code Sample</name>
 
 	<dependencies>
 		<dependency>
