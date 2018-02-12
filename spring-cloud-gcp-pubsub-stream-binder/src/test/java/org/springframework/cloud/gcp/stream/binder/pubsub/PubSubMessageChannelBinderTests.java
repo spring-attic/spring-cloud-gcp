@@ -41,7 +41,7 @@ public class PubSubMessageChannelBinderTests extends AbstractBinderTests<PubSubT
 	private PubSubTestBinder binder;
 
 	public PubSubMessageChannelBinderTests() {
-		this.binder = new PubSubTestBinder();
+		this.binder = new PubSubTestBinder(this.emulator.getPort());
 	}
 
 	@BeforeClass

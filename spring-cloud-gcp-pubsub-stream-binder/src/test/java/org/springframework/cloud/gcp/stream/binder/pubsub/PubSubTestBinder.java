@@ -49,12 +49,12 @@ public class PubSubTestBinder extends AbstractTestBinder<PubSubMessageChannelBin
 		ExtendedConsumerProperties<PubSubConsumerProperties>,
 		ExtendedProducerProperties<PubSubProducerProperties>> {
 
-	public PubSubTestBinder() {
+	public PubSubTestBinder(int port) {
 		GcpProjectIdProvider projectIdProvider = () -> "sodium-gateway-790";
 
 		// Transport channel provider so that test binder talks to emulator.
 		ManagedChannel channel = ManagedChannelBuilder
-				.forTarget("localhost:8085")
+				.forTarget("localhost:" + port)
 				.usePlaintext(true)
 				.build();
 		TransportChannelProvider transportChannelProvider =

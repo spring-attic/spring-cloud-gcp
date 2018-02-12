@@ -37,11 +37,15 @@ public class PubSubEmulator extends ExternalResource {
 
 	private Process emulator;
 
+	private int port;
+
 	public PubSubEmulator() {
 		this.cloudSdkPath = Paths.get(System.getProperty("user.home"))
 				.resolve("google-cloud-sdk")
 				.resolve("bin")
 				.resolve("gcloud");
+		// A port number between 10000 and 20000.
+		this.port = new Double((Math.random() + 1) * 10000).intValue();
 	}
 
 	@Override
@@ -51,9 +55,11 @@ public class PubSubEmulator extends ExternalResource {
 				"beta",
 				"emulators",
 				"pubsub",
-				"start");
+				"start",
+				"--host-port=localhost:" + this.port);
 		new Thread(() -> {
 			try {
+				LOGGER.info("Starting the emulator with command: " + processBuilder.command());
 				this.emulator = processBuilder.start();
 			}
 			catch (IOException ioe) {
@@ -65,5 +71,9 @@ public class PubSubEmulator extends ExternalResource {
 	@Override
 	protected void after() {
 		this.emulator.destroy();
+	}
+
+	public int getPort() {
+		return this.port;
 	}
 }
