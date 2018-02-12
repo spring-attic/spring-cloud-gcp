@@ -43,7 +43,9 @@ public class PubSubEmulator extends ExternalResource {
 		this.cloudSdkPath = Paths.get(System.getProperty("user.home"))
 				.resolve("google-cloud-sdk")
 				.resolve("bin")
-				.resolve("gcloud");
+				.resolve(System.getProperty("os.name").toLowerCase().contains("windows")
+						? "gcloud.cmd"
+						: "gcloud");
 		// A port number between 10000 and 20000.
 		this.port = new Double((Math.random() + 1) * 10000).intValue();
 	}
