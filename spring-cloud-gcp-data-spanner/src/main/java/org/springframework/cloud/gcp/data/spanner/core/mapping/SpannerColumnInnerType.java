@@ -16,29 +16,28 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
-import org.springframework.data.mapping.PersistentProperty;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Interface for a {@link PersistentProperty} of a {@link SpannerPersistentEntity}
- * to be stored in a Google Spanner table.
+ * Annotation for a {@link SpannerPersistentProperty} that includes an inner-type, such as
+ * an Iterable<>. Type erasure means the inner type of the
+ * property is lost, but the inner type is needed when storing the entity.
  *
- * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public interface SpannerPersistentProperty
-		extends PersistentProperty<SpannerPersistentProperty> {
+@Documented
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SpannerColumnInnerType {
 
 	/**
-	 * Gets the name of the column in the Google Spanner table mapped to this property.
-	 *
-	 * @return the name of the column.
+	 * The inner type of the property, which has meaning for properties of types such as
+	 * Iterable<>.
+	 * @return the inner type of the property.
 	 */
-	String getColumnName();
-
-	/**
-	 * Gets the inner type of the column, which is meaningful for columns of type ARRAY in Google
-	 * Spanner.
-	 * @return the inner type of the column. Returns null if no inner type is specified by annotation.
-	 */
-	Class getColumnInnerType();
+	Class innerType();
 }

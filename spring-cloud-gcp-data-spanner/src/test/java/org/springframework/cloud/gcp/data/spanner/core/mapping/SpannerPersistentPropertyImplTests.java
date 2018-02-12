@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -26,6 +28,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,7 +47,7 @@ public class SpannerPersistentPropertyImplTests {
 				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
-		assertThat(entity.columns(), containsInAnyOrder("id", "custom_col", "other"));
+		assertThat(entity.columns(), containsInAnyOrder("id", "custom_col", "other", "doubleList"));
 	}
 
 	@Test(expected = MappingException.class)
@@ -81,6 +84,26 @@ public class SpannerPersistentPropertyImplTests {
 		});
 	}
 
+	@Test
+	public void testColumnInnerTypeNull() {
+		SpannerPersistentEntityImpl<TestEntity> entity =
+				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
+				.getPersistentEntity(TestEntity.class));
+
+		assertNull(entity.getPersistentPropertyByColumnName("custom_col")
+				.getColumnInnerType());
+	}
+
+	@Test
+	public void testColumnInnerType() {
+		SpannerPersistentEntityImpl<TestEntity> entity =
+				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
+				.getPersistentEntity(TestEntity.class));
+
+		assertEquals(Double.class, entity.getPersistentPropertyByColumnName("doubleList")
+				.getColumnInnerType());
+	}
+
 	@SpannerTable(name = "custom_test_table")
 	private static class TestEntity {
 		@Id
@@ -91,5 +114,8 @@ public class SpannerPersistentPropertyImplTests {
 
 		@SpannerColumn(name = "")
 		String other;
+
+		@SpannerColumnInnerType(innerType = Double.class)
+		List<Double> doubleList;
 	}
 }

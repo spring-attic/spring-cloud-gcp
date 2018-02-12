@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,6 +34,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumnInnerType;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerObjectMapper;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerObjectMapperImpl;
@@ -40,8 +43,10 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
 import org.springframework.data.annotation.Id;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -74,9 +79,23 @@ public class SpannerObjectMapperImplTests {
 		t.longField = 3L;
 		t.doubleField = 3.33;
 		t.doubleArray = new double[] { 3.33, 3.33, 3.33 };
+		t.doubleList = new ArrayList<>();
+		t.doubleList.add(3.33);
+		t.stringList = new ArrayList<>();
+		t.stringList.add("stringstringstring");
 		t.dateField = Date.fromYearMonthDay(2018, 11, 22);
 		t.timestampField = Timestamp.ofTimeMicroseconds(333);
 		t.bytes = ByteArray.copyFrom("333");
+		t.booleanList = new ArrayList<>();
+		t.booleanList.add(t.booleanField);
+		t.longList = new ArrayList<>();
+		t.longList.add(t.longField);
+		t.dateList = new ArrayList<>();
+		t.dateList.add(t.dateField);
+		t.timestampList = new ArrayList<>();
+		t.timestampList.add(t.timestampField);
+		t.bytesList = new ArrayList<>();
+		t.bytesList.add(t.bytes);
 
 		WriteBuilder writeBuilder = mock(WriteBuilder.class);
 
@@ -104,6 +123,36 @@ public class SpannerObjectMapperImplTests {
 		when(doubleArrayFieldBinder.toFloat64Array((double[]) any())).thenReturn(null);
 		when(writeBuilder.set(eq("doubleArray"))).thenReturn(doubleArrayFieldBinder);
 
+		ValueBinder<WriteBuilder> doubleListFieldBinder = mock(ValueBinder.class);
+		when(doubleListFieldBinder.toFloat64Array((Iterable<Double>) any()))
+				.thenReturn(null);
+		when(writeBuilder.set(eq("doubleList"))).thenReturn(doubleListFieldBinder);
+
+		ValueBinder<WriteBuilder> stringListFieldBinder = mock(ValueBinder.class);
+		when(stringListFieldBinder.toStringArray(any())).thenReturn(null);
+		when(writeBuilder.set(eq("stringList"))).thenReturn(stringListFieldBinder);
+
+		ValueBinder<WriteBuilder> booleanListFieldBinder = mock(ValueBinder.class);
+		when(booleanListFieldBinder.toBoolArray((Iterable<Boolean>) any()))
+				.thenReturn(null);
+		when(writeBuilder.set(eq("booleanList"))).thenReturn(booleanListFieldBinder);
+
+		ValueBinder<WriteBuilder> longListFieldBinder = mock(ValueBinder.class);
+		when(longListFieldBinder.toInt64Array((Iterable<Long>) any())).thenReturn(null);
+		when(writeBuilder.set(eq("longList"))).thenReturn(longListFieldBinder);
+
+		ValueBinder<WriteBuilder> timestampListFieldBinder = mock(ValueBinder.class);
+		when(timestampListFieldBinder.toTimestampArray(any())).thenReturn(null);
+		when(writeBuilder.set(eq("timestampList"))).thenReturn(timestampListFieldBinder);
+
+		ValueBinder<WriteBuilder> dateListFieldBinder = mock(ValueBinder.class);
+		when(dateListFieldBinder.toDateArray(any())).thenReturn(null);
+		when(writeBuilder.set(eq("dateList"))).thenReturn(dateListFieldBinder);
+
+		ValueBinder<WriteBuilder> bytesListFieldBinder = mock(ValueBinder.class);
+		when(bytesListFieldBinder.toDateArray(any())).thenReturn(null);
+		when(writeBuilder.set(eq("bytesList"))).thenReturn(bytesListFieldBinder);
+
 		ValueBinder<WriteBuilder> dateFieldBinder = mock(ValueBinder.class);
 		when(dateFieldBinder.to((Date) any())).thenReturn(null);
 		when(writeBuilder.set(eq("dateField"))).thenReturn(dateFieldBinder);
@@ -124,6 +173,13 @@ public class SpannerObjectMapperImplTests {
 		verify(longFieldBinder, times(1)).to(eq(Long.valueOf(t.longField)));
 		verify(doubleFieldBinder, times(1)).to(eq(Double.valueOf(t.doubleField)));
 		verify(doubleArrayFieldBinder, times(1)).toFloat64Array(eq(t.doubleArray));
+		verify(doubleListFieldBinder, times(1)).toFloat64Array(eq(t.doubleList));
+		verify(stringListFieldBinder, times(1)).toStringArray(eq(t.stringList));
+		verify(booleanListFieldBinder, times(1)).toBoolArray(eq(t.booleanList));
+		verify(longListFieldBinder, times(1)).toInt64Array(eq(t.longList));
+		verify(timestampListFieldBinder, times(1)).toTimestampArray(eq(t.timestampList));
+		verify(dateListFieldBinder, times(1)).toDateArray(eq(t.dateList));
+		verify(bytesListFieldBinder, times(1)).toBytesArray(eq(t.bytesList));
 		verify(dateFieldBinder, times(1)).to(eq(t.dateField));
 		verify(timestampFieldBinder, times(1)).to(eq(t.timestampField));
 		verify(bytesFieldBinder, times(1)).to(eq(t.bytes));
@@ -141,11 +197,18 @@ public class SpannerObjectMapperImplTests {
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
 
+		List<Double> doubleList = new ArrayList<>();
+		doubleList.add(3.33);
+		List<String> stringList = new ArrayList<>();
+		stringList.add("string");
+
 		Struct struct2 = Struct.newBuilder().add("id", Value.string("key2"))
 				.add("custom_col", Value.string("string2"))
 				.add("booleanField", Value.bool(true)).add("longField", Value.int64(5L))
 				.add("doubleField", Value.float64(5.55))
 				.add("doubleArray", Value.float64Array(new double[] { 5.55, 5.55 }))
+				.add("doubleList", Value.float64Array(doubleList))
+				.add("stringList", Value.stringArray(stringList))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2019, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
 				.build();
@@ -181,6 +244,9 @@ public class SpannerObjectMapperImplTests {
 		assertEquals(5.55, t2.doubleField, 0.00001);
 		assertEquals(2, t2.doubleArray.length);
 		assertEquals(2019, t2.dateField.getYear());
+		assertEquals(1, t2.doubleList.size());
+		assertEquals(3.33, t2.doubleList.get(0), 0.000001);
+		assertThat(t2.stringList, containsInAnyOrder("string"));
 		assertNull(t2.bytes);
 	}
 
@@ -198,7 +264,7 @@ public class SpannerObjectMapperImplTests {
 		this.objectMapper.read(TestEntity.class, struct1);
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = SpannerDataException.class)
 	public void readUnconvertableValueTest() {
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
@@ -212,18 +278,33 @@ public class SpannerObjectMapperImplTests {
 		this.objectMapper.read(TestEntity.class, struct1);
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = SpannerDataException.class)
+	public void writeUnannotatedIterableTest() {
+		FaultyTestEntity ft = new FaultyTestEntity();
+		ft.doubleList = new ArrayList<>();
+		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
+		this.objectMapper.write(ft, writeBuilder);
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void writeUnsupportedTypeIterableTest() {
+		FaultyTestEntity2 ft = new FaultyTestEntity2();
+		ft.unuseableList = new ArrayList<>();
+		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table_2");
+		this.objectMapper.write(ft, writeBuilder);
+	}
+
+	@Test(expected = SpannerDataException.class)
 	public void readUnmatachableTypesTest() {
 		Struct struct1 = Struct.newBuilder().add("unuseableField", Value.string("key1"))
 				.build();
 		this.objectMapper.read(FaultyTestEntity.class, struct1);
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = SpannerDataException.class)
 	public void writeIncompatibleTypeTest() {
 		FaultyTestEntity ft = new FaultyTestEntity();
 		ft.unuseableField = new TestEntity();
-
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
 		this.objectMapper.write(ft, writeBuilder);
 	}
@@ -245,6 +326,27 @@ public class SpannerObjectMapperImplTests {
 
 		double[] doubleArray;
 
+		@SpannerColumnInnerType(innerType = Double.class)
+		List<Double> doubleList;
+
+		@SpannerColumnInnerType(innerType = String.class)
+		List<String> stringList;
+
+		@SpannerColumnInnerType(innerType = Boolean.class)
+		List<Boolean> booleanList;
+
+		@SpannerColumnInnerType(innerType = Long.class)
+		List<Long> longList;
+
+		@SpannerColumnInnerType(innerType = Timestamp.class)
+		List<Timestamp> timestampList;
+
+		@SpannerColumnInnerType(innerType = Date.class)
+		List<Date> dateList;
+
+		@SpannerColumnInnerType(innerType = ByteArray.class)
+		List<ByteArray> bytesList;
+
 		Date dateField;
 
 		Timestamp timestampField;
@@ -255,6 +357,15 @@ public class SpannerObjectMapperImplTests {
 	@SpannerTable(name = "faulty_test_table")
 	private static class FaultyTestEntity {
 		TestEntity unuseableField;
+
+		List<Double> doubleList;
+	}
+
+	@SpannerTable(name = "faulty_test_table_2")
+	private static class FaultyTestEntity2 {
+
+		@SpannerColumnInnerType(innerType = TestEntity.class)
+		List<TestEntity> unuseableList;
 	}
 
 	private static class MockResults {
