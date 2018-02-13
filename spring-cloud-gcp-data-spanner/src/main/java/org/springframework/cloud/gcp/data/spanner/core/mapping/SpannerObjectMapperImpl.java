@@ -153,36 +153,18 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 			 * manually specified. ByteArray must be excluded since it implements
 			 * Iterable, but is also explicitly supported by spanner.
 			 */
-			if (Iterable.class.isAssignableFrom(propType)
-					&& !ByteArray.class.equals(propType)) {
+			if (isIterableNonByteArrayType(propType)) {
 				valueSet = attemptReadIterableValue(property, source, name, accessor);
 			}
 			else {
 				Method getMethod = this.propertyReadMethodMapping.get(propType);
 				if (getMethod == null) {
-					for (Method method : source.getClass().getMethods()) {
-						// the retrieval methods are named like getDate or getTimestamp
-						if (!method.getName().startsWith("get")) {
-							continue;
-						}
-
-						Class[] params = method.getParameterTypes();
-						if (params.length != 1
-								|| !name.getClass().isAssignableFrom(params[0])) {
-							continue;
-						}
-
-						Class retType = method.getReturnType();
-						if (propType.isAssignableFrom(retType)) {
-							getMethod = method;
-							this.propertyReadMethodMapping.put(propType, method);
-							break;
-						}
-					}
+					getMethod = findReadMethod(source, propType);
 				}
 				if (getMethod != null) {
 					try {
 						accessor.setProperty(property, getMethod.invoke(source, name));
+						this.propertyReadMethodMapping.put(propType, getMethod);
 						valueSet = true;
 					}
 					catch (ReflectiveOperationException e) {
@@ -203,6 +185,31 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 			}
 		}
 		return object;
+	}
+
+	private Method findReadMethod(Struct source, Class propType) {
+		for (Method method : source.getClass().getMethods()) {
+			// the retrieval methods are named like getDate or getTimestamp
+			if (!method.getName().startsWith("get")) {
+				continue;
+			}
+
+			Class[] params = method.getParameterTypes();
+			if (params.length != 1 || !String.class.isAssignableFrom(params[0])) {
+				continue;
+			}
+
+			Class retType = method.getReturnType();
+			if (propType.isAssignableFrom(retType)) {
+				return method;
+			}
+		}
+		return null;
+	}
+
+	private boolean isIterableNonByteArrayType(Class propType) {
+		return Iterable.class.isAssignableFrom(propType)
+				&& !ByteArray.class.equals(propType);
 	}
 
 	@Override
@@ -230,8 +237,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 					 * manually specified. ByteArray must be excluded since it implements
 					 * Iterable, but is also explicitly supported by spanner.
 					 */
-					if (Iterable.class.isAssignableFrom(propertyType)
-							&& !ByteArray.class.equals(propertyType)) {
+					if (isIterableNonByteArrayType(propertyType)) {
 						valueSet = attemptSetIterableValue((Iterable) value, valueBinder,
 								spannerPersistentProperty);
 					}
