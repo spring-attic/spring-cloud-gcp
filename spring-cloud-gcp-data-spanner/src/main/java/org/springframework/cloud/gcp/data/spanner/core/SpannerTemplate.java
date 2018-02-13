@@ -118,37 +118,37 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public void insert(Object object) {
-		applyMutationOfOneArg(this.mutationFactory::insert, object);
+		applyMutationUsingEntity(this.mutationFactory::insert, object);
 	}
 
 	@Override
 	public void update(Object object) {
-		applyMutationOfOneArg(this.mutationFactory::update, object);
+		applyMutationUsingEntity(this.mutationFactory::update, object);
 	}
 
 	@Override
 	public void upsert(Object object) {
-		applyMutationOfOneArg(this.mutationFactory::upsert, object);
+		applyMutationUsingEntity(this.mutationFactory::upsert, object);
 	}
 
 	@Override
 	public void delete(Class entityClass, Key key) {
-		applyMutationOfTwoArg(this.mutationFactory::delete, entityClass, key);
+		applyMutationWithClass(this.mutationFactory::delete, entityClass, key);
 	}
 
 	@Override
 	public void delete(Object entity) {
-		applyMutationOfOneArg(this.mutationFactory::delete, entity);
+		applyMutationUsingEntity(this.mutationFactory::delete, entity);
 	}
 
 	@Override
 	public <T> void delete(Class<T> entityClass, Iterable<? extends T> entities) {
-		applyMutationOfTwoArg(this.mutationFactory::delete, entityClass, entities);
+		applyMutationWithClass(this.mutationFactory::delete, entityClass, entities);
 	}
 
 	@Override
 	public void delete(Class entityClass, KeySet keys) {
-		applyMutationOfTwoArg(this.mutationFactory::delete, entityClass, keys);
+		applyMutationWithClass(this.mutationFactory::delete, entityClass, keys);
 	}
 
 	@Override
@@ -161,12 +161,13 @@ public class SpannerTemplate implements SpannerOperations {
 		return resultSet.getLong(0);
 	}
 
-	private <T, U> void applyMutationOfTwoArg(BiFunction<T, U, Mutation> function, T arg1,
+	private <T, U> void applyMutationWithClass(BiFunction<T, U, Mutation> function,
+			T arg1,
 			U arg2) {
 		this.databaseClient.write(Arrays.asList(function.apply(arg1, arg2)));
 	}
 
-	private <T> void applyMutationOfOneArg(Function<T, Mutation> function, T arg) {
-		applyMutationOfTwoArg((T t, Object unused) -> function.apply(t), arg, null);
+	private <T> void applyMutationUsingEntity(Function<T, Mutation> function, T arg) {
+		applyMutationWithClass((T t, Object unused) -> function.apply(t), arg, null);
 	}
 }
