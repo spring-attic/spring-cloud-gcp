@@ -31,6 +31,7 @@ import java.util.function.Predicate;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.AbstractStructReader;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
@@ -60,43 +61,35 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 	private final Map<Class, Method> propertyWriteMethodMapping = new HashMap<>();
 
 	private static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>>
-			writeBuilderIterableMapping =
-			// The casting of each biconsumer below is needed for Java 8 compilation, but not Java 9.
-			new ImmutableMap.Builder<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>>()
-			.put(Boolean.class,
-					(BiConsumer<ValueBinder<WriteBuilder>, Iterable>) (binder,
-							value) -> binder.toBoolArray(value))
-			.put(Long.class,
-					(BiConsumer<ValueBinder<WriteBuilder>, Iterable>) (binder,
-							value) -> binder.toInt64Array(value))
-			.put(String.class,
-					(BiConsumer<ValueBinder<WriteBuilder>, Iterable>) (binder,
-							value) -> binder.toStringArray(value))
-			.put(Double.class,
-					(BiConsumer<ValueBinder<WriteBuilder>, Iterable>) (binder,
-							value) -> binder.toFloat64Array(value))
-			.put(Timestamp.class,
-					(BiConsumer<ValueBinder<WriteBuilder>, Iterable>) (binder,
-							value) -> binder.toTimestampArray(value))
-			.put(Date.class,
-					(BiConsumer<ValueBinder<WriteBuilder>, Iterable>) (binder,
-							value) -> binder.toDateArray(value))
-			.put(ByteArray.class,
-					(BiConsumer<ValueBinder<WriteBuilder>, Iterable>) (binder,
-							value) -> binder.toBytesArray(value))
-			.build();
+			writeBuilderIterableMapping;
+
+	static {
+		// Java 8 has compile errors when using the builder extension methods
+		ImmutableMap.Builder<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>> builder =
+				new ImmutableMap.Builder<>();
+
+		builder.put(Date.class, ValueBinder::toDateArray);
+		builder.put(Boolean.class, ValueBinder::toBoolArray);
+		builder.put(Long.class, ValueBinder::toInt64Array);
+		builder.put(String.class, ValueBinder::toStringArray);
+		builder.put(Double.class, ValueBinder::toFloat64Array);
+		builder.put(Timestamp.class, ValueBinder::toTimestampArray);
+		builder.put(ByteArray.class, ValueBinder::toBytesArray);
+
+		writeBuilderIterableMapping = builder.build();
+	}
 
 	private static final Map<Class, BiFunction<Struct, String, List>>
 			readIterableMapping =
 			new ImmutableMap.Builder<Class, BiFunction<Struct, String, List>>()
-			.put(Boolean.class, (struct, colName) -> struct.getBooleanList(colName))
-			.put(Long.class, (struct, colName) -> struct.getLongList(colName))
-			.put(String.class, (struct, colName) -> struct.getStringList(colName))
-			.put(Double.class, (struct, colName) -> struct.getDoubleList(colName))
-			.put(Timestamp.class, (struct, colName) -> struct.getTimestampList(colName))
-			.put(Date.class, (struct, colName) -> struct.getDateList(colName))
-			.put(ByteArray.class, (struct, colName) -> struct.getBytesList(colName))
-			.build();
+					.put(Boolean.class, AbstractStructReader::getBooleanList)
+					.put(Long.class, AbstractStructReader::getLongList)
+					.put(String.class, AbstractStructReader::getStringList)
+					.put(Double.class, AbstractStructReader::getDoubleList)
+					.put(Timestamp.class, AbstractStructReader::getTimestampList)
+					.put(Date.class, AbstractStructReader::getDateList)
+					.put(ByteArray.class, AbstractStructReader::getBytesList)
+					.build();
 
 	public SpannerObjectMapperImpl(SpannerMappingContext spannerMappingContext) {
 		Assert.notNull(spannerMappingContext,
