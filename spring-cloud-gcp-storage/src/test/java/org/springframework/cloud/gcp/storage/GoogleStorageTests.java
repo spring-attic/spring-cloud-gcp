@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.storage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.util.concurrent.TimeUnit;
 
 import com.google.cloud.WriteChannel;
@@ -26,6 +27,7 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.HttpMethod;
 import com.google.cloud.storage.Storage;
 
@@ -66,23 +68,20 @@ public class GoogleStorageTests {
 	@Value("gs://test_spring/images/spring.png")
 	private Resource remoteResourceWithUnderscore;
 
-	@Value("gs://test-spring")
-	private Resource bucketResource;
-
 	@Value("gs://test-spring/")
-	private Resource bucketResourceTrailingSlash;
+	private Resource bucketResource;
 
 	@Autowired
 	private Storage storage;
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testEmptyPath() {
-		new GoogleStorageResource(storage, "gs://", false);
+		new GoogleStorageResource(this.storage, "gs://", false);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testSlashPath() {
-		new GoogleStorageResource(storage, "gs:///", false);
+		new GoogleStorageResource(this.storage, "gs:///", false);
 	}
 
 
@@ -99,27 +98,24 @@ public class GoogleStorageTests {
 
 	@Test
 	public void testValidBucket() throws IOException {
-		Assert.assertEquals("gs://test-spring", this.bucketResource.getDescription());
-		Assert.assertNotEquals(this.bucketResource.getDescription(),
-				this.bucketResourceTrailingSlash.getDescription());
-
+		Assert.assertEquals("gs://test-spring/", this.bucketResource.getDescription());
 		Assert.assertEquals("test-spring", this.bucketResource.getFilename());
-		Assert.assertEquals(this.bucketResource.getFilename(),
-				this.bucketResourceTrailingSlash.getFilename());
+		Assert.assertEquals("gs://test-spring/", this.bucketResource.getURI().toString());
 
-		Assert.assertEquals("gs://test-spring", this.bucketResource.getURI().toString());
-		Assert.assertNotEquals(this.bucketResource.getURI().toString(),
-				this.bucketResourceTrailingSlash.getURI().toString());
-
-
-		String relative = this.bucketResource.createRelative("aaa/bbb").getURI()
-				.toString();
+		String relative = this.bucketResource.createRelative("aaa/bbb").getURI().toString();
 		Assert.assertEquals("gs://test-spring/aaa/bbb", relative);
-		Assert.assertEquals(relative,
-				this.bucketResource.createRelative("/aaa/bbb").getURI().toString());
+		Assert.assertEquals(relative, this.bucketResource.createRelative("/aaa/bbb").getURI().toString());
 
-		Assert.assertNull(((GoogleStorageResource)this.bucketResourceTrailingSlash).getBlobName());
-		Assert.assertTrue(((GoogleStorageResource)this.bucketResourceTrailingSlash).isBucket());
+		Assert.assertNull(((GoogleStorageResource) this.bucketResource).getBlobName());
+		Assert.assertTrue(((GoogleStorageResource) this.bucketResource).isBucket());
+
+		Assert.assertTrue(this.bucketResource.exists());
+		Assert.assertTrue(((GoogleStorageResource) this.bucketResource).bucketExists());
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testBucketNotEndingInSlash() {
+		new GoogleStorageResource(this.storage, "gs://test-spring");
 	}
 
 	@Test(expected = IllegalStateException.class)
@@ -252,11 +248,11 @@ public class GoogleStorageTests {
 	}
 
 	@Test
-	public void testCreateBlobIfNotExistingGetterSetter() {
+	public void testisAutoCreateFilesGetterSetter() {
 		String location = "gs://test-spring/test";
 		Storage storage = mock(Storage.class);
 		GoogleStorageResource resource = new GoogleStorageResource(storage, location);
-		Assert.assertTrue(resource.isCreateBlobIfNotExists());
+		Assert.assertTrue(resource.isAutoCreateFiles());
 	}
 
 	@Test
@@ -301,6 +297,27 @@ public class GoogleStorageTests {
 		verify(storage, times(1)).signUrl(any(), eq(1L), eq(TimeUnit.DAYS), eq(option));
 	}
 
+	@Test(expected = MalformedURLException.class)
+	public void getUrlFails() throws IOException {
+		this.remoteResource.getURL();
+	}
+
+	@Test
+	public void testBucketDoesNotExist() {
+		GoogleStorageResource bucket = new GoogleStorageResource(this.storage, "gs://non-existing/");
+		Assert.assertFalse(bucket.bucketExists());
+		Assert.assertFalse(bucket.exists());
+
+		Assert.assertNotNull(bucket.createBucket());
+	}
+
+	@Test
+	public void testBucketExistsButResourceDoesNot() {
+		GoogleStorageResource resource = new GoogleStorageResource(this.storage, "gs://test-spring/file1");
+		Assert.assertTrue(resource.bucketExists());
+		Assert.assertFalse(resource.exists());
+	}
+
 	@Configuration
 	@Import(GoogleStorageProtocolResolver.class)
 	static class StorageApplication {
@@ -319,6 +336,7 @@ public class GoogleStorageTests {
 			when(storage.get(eq(validBlob))).thenReturn(mockedBlob);
 			when(storage.get(eq(validBlobWithUnderscore))).thenReturn(mockedBlob);
 			when(storage.get("test-spring")).thenReturn(mockedBucket);
+			when(storage.create(BucketInfo.newBuilder("non-existing").build())).thenReturn(mockedBucket);
 			when(mockedBucket.getName()).thenReturn("test-spring");
 			when(mockedBlob.writer()).thenReturn(writeChannel);
 			return storage;

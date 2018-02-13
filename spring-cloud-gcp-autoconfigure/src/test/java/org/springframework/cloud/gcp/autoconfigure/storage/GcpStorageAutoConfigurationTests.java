@@ -54,7 +54,7 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 @SpringBootTest(
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		properties = { "spring.cloud.gcp.storage.auto-createBlob-files=false",
+		properties = { "spring.cloud.gcp.storage.auto-create-files=false",
 				"spring.cloud.gcp.config.enabled=false"
 		})
 public class GcpStorageAutoConfigurationTests {
@@ -75,7 +75,7 @@ public class GcpStorageAutoConfigurationTests {
 	@Test
 	public void testAutoCreateFilesFalse() throws IOException {
 		assertFalse(((GoogleStorageResource) this.googleStorageResource)
-				.isCreateBlobIfNotExists());
+				.isAutoCreateFiles());
 	}
 
 	@SpringBootApplication(exclude = {
