@@ -49,7 +49,15 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 
 	private final SpannerMappingContext spannerMappingContext;
 
-	private final Map<Class, Map<String, Method>> propertyMethodMapping = new HashMap<>();
+	// used for caching the methods used for reading to entities. Does not contain the
+	// methods for
+	// properties with inner types, such as Iterable.
+	private final Map<Class, Method> propertyReadMethodMapping = new HashMap<>();
+
+	// used for caching the methods used for writing to mutations. Does not contain the
+	// methods for
+	// properties with inner types, such as Iterable.
+	private final Map<Class, Method> propertyWriteMethodMapping = new HashMap<>();
 
 	private static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>>
 			writeBuilderIterableMapping =
@@ -94,23 +102,6 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
 		this.spannerMappingContext = spannerMappingContext;
-	}
-
-	private Map<String, Method> getPropertyMethodMappingForType(Class type) {
-		Map<String, Method> mapping = this.propertyMethodMapping.get(type);
-		if (mapping == null) {
-			mapping = new HashMap<>();
-			this.propertyMethodMapping.put(type, mapping);
-		}
-		return mapping;
-	}
-
-	private void cachePropertyMethod(Class type, String colName, Method method) {
-		getPropertyMethodMappingForType(type).put(colName, method);
-	}
-
-	private Method getPropertyMethod(Class type, String colName) {
-		return getPropertyMethodMappingForType(type).get(colName);
 	}
 
 	@Override
@@ -167,7 +158,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 				valueSet = attemptReadIterableValue(property, source, name, accessor);
 			}
 			else {
-				Method getMethod = getPropertyMethod(type, name);
+				Method getMethod = this.propertyReadMethodMapping.get(propType);
 				if (getMethod == null) {
 					for (Method method : source.getClass().getMethods()) {
 						// the retrieval methods are named like getDate or getTimestamp
@@ -184,7 +175,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 						Class retType = method.getReturnType();
 						if (propType.isAssignableFrom(retType)) {
 							getMethod = method;
-							cachePropertyMethod(type, name, method);
+							this.propertyReadMethodMapping.put(propType, method);
 							break;
 						}
 					}
@@ -232,7 +223,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 					ValueBinder<WriteBuilder> valueBinder = sink
 							.set(spannerPersistentProperty.getColumnName());
 
-					boolean valueSet;
+					boolean valueSet = false;
 
 					/*
 					 * Due to type erasure, binder methods for Iterable properties must be
@@ -245,18 +236,32 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 								spannerPersistentProperty);
 					}
 					else {
+						Method writeMethod = this.propertyWriteMethodMapping
+								.get(propertyType);
 						Class testPropertyType = propertyType.isPrimitive()
 								? getBoxedFromPrimitive(propertyType)
 								: propertyType;
 
 						// Attempt an exact match first
-						valueSet = attemptSetValue(value, valueBinder,
-								(paramType) -> paramType.equals(testPropertyType));
-
-						if (!valueSet) {
-							valueSet = attemptSetValue(value, valueBinder,
-									(paramType) -> paramType
+						if (writeMethod == null) {
+							writeMethod = findWriteMethod(
+									(paramType) -> paramType.equals(testPropertyType));
+						}
+						if (writeMethod == null) {
+							writeMethod = findWriteMethod((paramType) -> paramType
 											.isAssignableFrom(testPropertyType));
+						}
+						if (writeMethod != null) {
+							try {
+								writeMethod.invoke(valueBinder, value);
+								this.propertyWriteMethodMapping.put(propertyType,
+										writeMethod);
+								valueSet = true;
+							}
+							catch (ReflectiveOperationException e) {
+								throw new SpannerDataException(
+										"Could not set value for write mutation.", e);
+							}
 						}
 					}
 
@@ -300,8 +305,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 						readerFunction.apply(struct, colName)));
 	}
 
-	private boolean attemptSetValue(Object value, ValueBinder<WriteBuilder> valueBinder,
-			Predicate<Class> matchFunction) {
+	private Method findWriteMethod(Predicate<Class> matchFunction) {
 		for (Method method : ValueBinder.class.getMethods()) {
 			// the binding methods are named like to() or toInt64Array()
 			if (!method.getName().startsWith("to")) {
@@ -314,17 +318,10 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 			}
 
 			if (matchFunction.test(params[0])) {
-				try {
-					method.invoke(valueBinder, value);
-					return true;
-				}
-				catch (ReflectiveOperationException e) {
-					throw new SpannerDataException(
-							"Could not set value for write mutation.", e);
-				}
+				return method;
 			}
 		}
-		return false;
+		return null;
 	}
 
 	private Class getBoxedFromPrimitive(Class primitive) {
