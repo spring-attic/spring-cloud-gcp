@@ -46,8 +46,6 @@ public class GoogleStorageProtocolResolver
 
 	private ConfigurableListableBeanFactory beanFactory;
 
-	private GoogleStorageProtocolResolverSettings settings = new GoogleStorageProtocolResolverSettings();
-
 	GoogleStorageProtocolResolver() {
 	}
 
@@ -75,7 +73,7 @@ public class GoogleStorageProtocolResolver
 		}
 		else {
 			return new GoogleStorageResource(this.beanFactory.getBean(Storage.class), location,
-					this.settings.isAutoCreateFiles());
+					this.beanFactory.getBean(GoogleStorageProtocolResolverSettings.class).isAutoCreateFiles());
 		}
 	}
 

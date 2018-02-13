@@ -23,9 +23,7 @@ package org.springframework.cloud.gcp.storage;
  */
 public class GoogleStorageProtocolResolverSettings {
 
-	/**
-	 * Determines if objects or buckets should be auto-created when the library attempts to read them.
-	 */
+	/** Determines if blobs should be auto-created when the library attempts to write to them. */
 	private boolean autoCreateFiles = true;
 
 	public boolean isAutoCreateFiles() {

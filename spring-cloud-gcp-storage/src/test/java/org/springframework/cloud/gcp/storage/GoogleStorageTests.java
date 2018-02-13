@@ -341,6 +341,11 @@ public class GoogleStorageTests {
 			when(mockedBlob.writer()).thenReturn(writeChannel);
 			return storage;
 		}
+
+		@Bean
+		public static GoogleStorageProtocolResolverSettings googleStorageProtocolResolverSettings() {
+			return new GoogleStorageProtocolResolverSettings();
+		}
 	}
 
 }
