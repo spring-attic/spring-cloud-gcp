@@ -250,7 +250,7 @@ public class SpannerObjectMapperImplTests {
 		assertNull(t2.bytes);
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = SpannerDataException.class)
 	public void readUnexpectedColumnTest() {
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
