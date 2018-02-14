@@ -132,13 +132,13 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public void delete(Class entityClass, Key key) {
-		applyMutationWithClass(this.mutationFactory::delete, entityClass, key);
+	public void delete(Object entity) {
+		applyMutationUsingEntity(this.mutationFactory::delete, entity);
 	}
 
 	@Override
-	public void delete(Object entity) {
-		applyMutationUsingEntity(this.mutationFactory::delete, entity);
+	public void delete(Class entityClass, Key key) {
+		applyMutationWithClass(this.mutationFactory::delete, entityClass, key);
 	}
 
 	@Override

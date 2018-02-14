@@ -51,17 +51,15 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 	private final SpannerMappingContext spannerMappingContext;
 
 	// used for caching the methods used for reading to entities. Does not contain the
-	// methods for
-	// properties with inner types, such as Iterable.
+	// methods for properties with inner types, such as Iterable.
 	private final Map<Class, Method> propertyReadMethodMapping = new HashMap<>();
 
 	// used for caching the methods used for writing to mutations. Does not contain the
-	// methods for
-	// properties with inner types, such as Iterable.
-	private final Map<Class, Method> propertyWriteMethodMapping = new HashMap<>();
+	// methods for properties with inner types, such as Iterable.
+	private final Map<Class, Method> propertyType2ToMethodMap = new HashMap<>();
 
 	private static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>>
-			writeBuilderIterableMapping;
+      iterablePropertyType2ToMethodMap;
 
 	static {
 		// Java 8 has compile errors when using the builder extension methods
@@ -76,7 +74,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 		builder.put(Timestamp.class, ValueBinder::toTimestampArray);
 		builder.put(ByteArray.class, ValueBinder::toBytesArray);
 
-		writeBuilderIterableMapping = builder.build();
+		iterablePropertyType2ToMethodMap = builder.build();
 	}
 
 	private static final Map<Class, BiFunction<Struct, String, List>>
@@ -108,34 +106,25 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 
 	@Override
 	public <R> R read(Class<R> type, Struct source) {
-		R object;
-		try {
-			Constructor<R> constructor = type.getDeclaredConstructor();
-			constructor.setAccessible(true);
-			object = constructor.newInstance();
-		}
-		catch (ReflectiveOperationException e) {
-			throw new SpannerDataException(
-					"Unable to create a new instance of entity using default constructor.",
-					e);
-		}
+    R object = instantiate(type);
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
 				.getPersistentEntity(type);
-		PersistentPropertyAccessor accessor = persistentEntity
-				.getPropertyAccessor(object);
 
-		for (Type.StructField field : source.getType().getStructFields()) {
-			String name = field.getName();
+    PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(object);
+
+		for (Type.StructField structField : source.getType().getStructFields()) {
+			String columnName = structField.getName();
 			SpannerPersistentProperty property = persistentEntity
-					.getPersistentPropertyByColumnName(name);
+					.getPersistentPropertyByColumnName(columnName);
 			if (property == null) {
-				throw new IllegalStateException("Spanner struct contains a column named "
-						+ name
+				throw new SpannerDataException(
+				    String.format("Error trying to read from Spanner struct column named %s"
 						+ " that does not correspond to any property in the entity type "
-						+ type);
+                , columnName
+                , type));
 			}
 			Class propType = property.getType();
-			if (source.isNull(name)) {
+			if (source.isNull(columnName)) {
 				continue;
 			}
 
@@ -147,7 +136,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 			 * Iterable, but is also explicitly supported by spanner.
 			 */
 			if (isIterableNonByteArrayType(propType)) {
-				valueSet = attemptReadIterableValue(property, source, name, accessor);
+				valueSet = attemptReadIterableValue(property, source, columnName, accessor);
 			}
 			else {
 				Method getMethod = this.propertyReadMethodMapping.get(propType);
@@ -156,15 +145,17 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 				}
 				if (getMethod != null) {
 					try {
-						accessor.setProperty(property, getMethod.invoke(source, name));
+						accessor.setProperty(property, getMethod.invoke(source, columnName));
 						this.propertyReadMethodMapping.put(propType, getMethod);
 						valueSet = true;
 					}
 					catch (ReflectiveOperationException e) {
 						throw new SpannerDataException(
-								"Could not set value for property in entity. Value type is "
-										+ getMethod.getReturnType()
-										+ " , entity's property type is " + propType,
+                String.format(
+                    "Could not set value for property in entity. Value type is %s"
+												+ " , entity's property type is %s",
+                    getMethod.getReturnType(),
+                    propType),
 								e);
 					}
 				}
@@ -172,15 +163,30 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 
 			if (!valueSet) {
 				throw new SpannerDataException(
-						"The value in column with name " + name
+						String.format("The value in column with name %s"
 								+ " could not be converted to the corresponding property in the entity."
-								+ " The property's type is " + propType);
+								+ " The property's type is %s.", columnName, propType));
 			}
 		}
 		return object;
 	}
 
-	private Method findReadMethod(Struct source, Class propType) {
+  private <R> R instantiate(Class<R> type) {
+    R object;
+    try {
+      Constructor<R> constructor = type.getDeclaredConstructor();
+      constructor.setAccessible(true);
+      object = constructor.newInstance();
+    }
+    catch (ReflectiveOperationException e) {
+      throw new SpannerDataException(
+          "Unable to create a new instance of entity using default constructor.",
+          e);
+    }
+    return object;
+  }
+
+  private Method findReadMethod(Struct source, Class propType) {
 		for (Method method : source.getClass().getMethods()) {
 			// the retrieval methods are named like getDate or getTimestamp
 			if (!method.getName().startsWith("get")) {
@@ -205,6 +211,11 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 				&& !ByteArray.class.equals(propType);
 	}
 
+  /**
+   * Writes each of the <pre>source</pre> properties to the sink.
+   * @param source
+   * @param sink
+   */
 	@Override
 	public void write(Object source, WriteBuilder sink) {
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
@@ -212,66 +223,84 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 		PersistentPropertyAccessor accessor = persistentEntity
 				.getPropertyAccessor(source);
 		persistentEntity.doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					Object value = accessor.getProperty(spannerPersistentProperty);
-
-					if (value == null) {
-						return;
-					}
-
-					Class<?> propertyType = spannerPersistentProperty.getType();
-					ValueBinder<WriteBuilder> valueBinder = sink
-							.set(spannerPersistentProperty.getColumnName());
-
-					boolean valueSet = false;
-
-					/*
-					 * Due to type erasure, binder methods for Iterable properties must be
-					 * manually specified. ByteArray must be excluded since it implements
-					 * Iterable, but is also explicitly supported by spanner.
-					 */
-					if (isIterableNonByteArrayType(propertyType)) {
-						valueSet = attemptSetIterableValue((Iterable) value, valueBinder,
-								spannerPersistentProperty);
-					}
-					else {
-						Method writeMethod = this.propertyWriteMethodMapping
-								.get(propertyType);
-						Class testPropertyType = propertyType.isPrimitive()
-								? getBoxedFromPrimitive(propertyType)
-								: propertyType;
-
-						// Attempt an exact match first
-						if (writeMethod == null) {
-							writeMethod = findWriteMethod(
-									(paramType) -> paramType.equals(testPropertyType));
-						}
-						if (writeMethod == null) {
-							writeMethod = findWriteMethod((paramType) -> paramType
-											.isAssignableFrom(testPropertyType));
-						}
-						if (writeMethod != null) {
-							try {
-								writeMethod.invoke(valueBinder, value);
-								this.propertyWriteMethodMapping.put(propertyType,
-										writeMethod);
-								valueSet = true;
-							}
-							catch (ReflectiveOperationException e) {
-								throw new SpannerDataException(
-										"Could not set value for write mutation.", e);
-							}
-						}
-					}
-
-					if (!valueSet) {
-						throw new SpannerDataException(String.format(
-								"Unsupported mapping for type: %s", value.getClass()));
-					}
-				});
+				(PropertyHandler<SpannerPersistentProperty>)
+            spannerPersistentProperty-> writeProperty(sink, accessor, spannerPersistentProperty));
 	}
 
-	private <T> boolean handleIterableInnerTypeMapping(
+  /**
+   * <p>For each property this method "set"s the column name and finds the corresponding "to" method
+   * on the {@link ValueBinder} interface
+   * </p>
+   * <pre> {@code
+   *
+   * long singerId = my_singer_id;
+   * Mutation.WriteBuilder writeBuilder = Mutation.newInsertBuilder("Singer")
+   *         .set("SingerId")
+   *         .to(singerId)
+   *         .set("FirstName")
+   *         .to("Billy")
+   *         .set("LastName")
+   *         .to("Joel");
+   * } </pre>
+   *
+   * @param sink
+   * @param accessor
+   * @param property
+   */
+  private void writeProperty(WriteBuilder sink, PersistentPropertyAccessor accessor,
+      SpannerPersistentProperty property) {
+    Object propertyValue = accessor.getProperty(property);
+
+    if (propertyValue == null) {
+      return;
+    }
+
+    Class<?> propertyType = property.getType();
+    ValueBinder<WriteBuilder> valueBinder = sink.set(property.getColumnName());
+
+    boolean valueSet = false;
+
+    /*
+     * Due to type erasure, binder methods for Iterable properties must be
+     * manually specified. ByteArray must be excluded since it implements
+     * Iterable, but is also explicitly supported by spanner.
+     */
+    if (isIterableNonByteArrayType(propertyType)) {
+      valueSet = attemptSetIterableValue((Iterable) propertyValue, valueBinder,
+          property);
+    }
+    else {
+      Method toMethod = this.propertyType2ToMethodMap.get(propertyType);
+
+      Class testPropertyType = boxIfNeeded(propertyType);
+
+      // Attempt an exact match first
+      if (toMethod == null) {
+        toMethod = findToMethod((paramType) -> paramType.equals(testPropertyType));
+      }
+      if (toMethod == null) {
+        toMethod = findToMethod((paramType) -> paramType.isAssignableFrom(testPropertyType));
+      }
+      if (toMethod != null) {
+        try {
+          toMethod.invoke(valueBinder, propertyValue);
+          this.propertyType2ToMethodMap.put(propertyType, toMethod);
+          valueSet = true;
+        }
+        catch (ReflectiveOperationException e) {
+          throw new SpannerDataException(
+              "Could not set value for write mutation.", e);
+        }
+      }
+    }
+
+    if (!valueSet) {
+      throw new SpannerDataException(String.format(
+          "Unsupported mapping for type: %s", propertyValue.getClass()));
+    }
+  }
+
+  private <T> boolean handleIterableInnerTypeMapping(
 			SpannerPersistentProperty spannerPersistentProperty,
 			Map<Class, T> innerTypeMapping, Consumer<T> innerTypeMappingOperation) {
 		Class innerType = spannerPersistentProperty.getColumnInnerType();
@@ -291,7 +320,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 			ValueBinder<WriteBuilder> valueBinder,
 			SpannerPersistentProperty spannerPersistentProperty) {
 		return handleIterableInnerTypeMapping(spannerPersistentProperty,
-				writeBuilderIterableMapping,
+        iterablePropertyType2ToMethodMap,
 				(binderFunction) -> binderFunction.accept(valueBinder, value));
 	}
 
@@ -304,7 +333,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 						readerFunction.apply(struct, colName)));
 	}
 
-	private Method findWriteMethod(Predicate<Class> matchFunction) {
+	private Method findToMethod(Predicate<Class> matchFunction) {
 		for (Method method : ValueBinder.class.getMethods()) {
 			// the binding methods are named like to() or toInt64Array()
 			if (!method.getName().startsWith("to")) {
@@ -323,7 +352,9 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 		return null;
 	}
 
-	private Class getBoxedFromPrimitive(Class primitive) {
-		return Array.get(Array.newInstance(primitive, 1), 0).getClass();
+	private Class boxIfNeeded(Class propertyType) {
+		return propertyType.isPrimitive() ?
+        Array.get(Array.newInstance(propertyType, 1), 0).getClass()
+        : propertyType;
 	}
 }
