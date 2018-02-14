@@ -59,15 +59,14 @@ public class PubSubEmulator extends ExternalResource {
 				"pubsub",
 				"start",
 				"--host-port=localhost:" + this.port);
-		new Thread(() -> {
-			try {
-				LOGGER.info("Starting the emulator with command: " + processBuilder.command());
-				this.emulator = processBuilder.start();
-			}
-			catch (IOException ioe) {
-				LOGGER.info("Could not start Pub/Sub emulator.", ioe);
-			}
-		}).start();
+
+		try {
+			LOGGER.info("Starting the emulator with command: " + processBuilder.command());
+			this.emulator = processBuilder.start();
+		}
+		catch (IOException ioe) {
+			LOGGER.info("Could not start Pub/Sub emulator.", ioe);
+		}
 	}
 
 	@Override
