@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.stream.binder.pubsub;
 
 import org.junit.BeforeClass;
-import org.junit.Rule;
 
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
@@ -38,18 +37,17 @@ public class PubSubMessageChannelBinderTests extends AbstractBinderTests<PubSubT
 		ExtendedConsumerProperties<PubSubConsumerProperties>,
 		ExtendedProducerProperties<PubSubProducerProperties>> {
 
-	@Rule
-	public PubSubEmulator emulator = new PubSubEmulator();
+	private static final String EMULATOR_HOST_ENVVAR_NAME = "PUBSUB_EMULATOR_HOST";
 
 	private PubSubTestBinder binder;
 
 	public PubSubMessageChannelBinderTests() {
-		this.binder = new PubSubTestBinder(this.emulator.getPort());
+		this.binder = new PubSubTestBinder(System.getenv(EMULATOR_HOST_ENVVAR_NAME));
 	}
 
 	@BeforeClass
 	public static void enableTests() {
-		assumeThat(System.getenv("GCP_PUBSUB_EMULATOR")).isNotNull();
+		assumeThat(System.getenv(EMULATOR_HOST_ENVVAR_NAME)).isNotNull();
 	}
 
 	@Override
