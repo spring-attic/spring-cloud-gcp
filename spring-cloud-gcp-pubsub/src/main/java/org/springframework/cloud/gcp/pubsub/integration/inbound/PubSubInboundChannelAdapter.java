@@ -124,6 +124,13 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		return this.messageConverter;
 	}
 
+	/**
+	 * Sets the {@link MessageConverter} to convert the payload of the incoming message from
+	 * Pub/Sub.
+	 * If {@code messageConverter} is null, the payload of the Pub/Sub message is converted to
+	 * {@code byte[]} and returned in that form.
+	 * @param messageConverter converts the payload of the incoming message from Pub/Sub
+	 */
 	public void setMessageConverter(MessageConverter messageConverter) {
 		this.messageConverter = messageConverter;
 	}

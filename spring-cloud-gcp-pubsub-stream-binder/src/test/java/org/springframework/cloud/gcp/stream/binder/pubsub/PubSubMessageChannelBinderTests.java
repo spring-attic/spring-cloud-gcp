@@ -74,7 +74,6 @@ public class PubSubMessageChannelBinderTests extends AbstractBinderTests<PubSubT
 
 	@Override
 	public void testClean() throws Exception {
-		// Do nothing. Just wait a little bit for the emulator to come up.
-		Thread.sleep(1000);
+		// Do nothing. Original test tests for Lifecycle logic that we don't need.
 	}
 }

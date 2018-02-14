@@ -24,6 +24,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.rules.ExternalResource;
 
+import org.springframework.util.SocketUtils;
+
 /**
  * JUnit rule that starts a Pub/Sub emulator.
  *
@@ -33,22 +35,16 @@ public class PubSubEmulator extends ExternalResource {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubEmulator.class);
 
-	private Path cloudSdkPath;
+	private Path cloudSdkPath = Paths.get(System.getProperty("user.home"))
+			.resolve("google-cloud-sdk")
+			.resolve("bin")
+			.resolve(System.getProperty("os.name").toLowerCase().contains("windows")
+					? "gcloud.cmd"
+					: "gcloud");
 
 	private Process emulator;
 
-	private int port;
-
-	public PubSubEmulator() {
-		this.cloudSdkPath = Paths.get(System.getProperty("user.home"))
-				.resolve("google-cloud-sdk")
-				.resolve("bin")
-				.resolve(System.getProperty("os.name").toLowerCase().contains("windows")
-						? "gcloud.cmd"
-						: "gcloud");
-		// A port number between 10000 and 20000.
-		this.port = new Double((Math.random() + 1) * 10000).intValue();
-	}
+	private int port = SocketUtils.findAvailableTcpPort();
 
 	@Override
 	protected void before() throws Throwable {
