@@ -17,12 +17,15 @@
 package org.springframework.cloud.gcp.autoconfigure.trace;
 
 import java.io.IOException;
-import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import brave.Tracing;
+import brave.propagation.CurrentTraceContext;
+import brave.propagation.Propagation;
+import brave.sampler.Sampler;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedCredentialsProvider;
@@ -36,35 +39,34 @@ import com.google.cloud.trace.v1.consumer.TraceConsumer;
 import com.google.cloud.trace.v1.util.RoughTraceSizer;
 import com.google.cloud.trace.v1.util.Sizer;
 import com.google.devtools.cloudtrace.v1.Trace;
+import zipkin2.Span;
+import zipkin2.reporter.Reporter;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.commons.util.IdUtils;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.trace.TraceServiceClientTraceConsumer;
 import org.springframework.cloud.gcp.trace.sleuth.LabelExtractor;
-import org.springframework.cloud.gcp.trace.sleuth.StackdriverTraceSpanListener;
-import org.springframework.cloud.sleuth.Sampler;
+import org.springframework.cloud.gcp.trace.sleuth.SpanTranslator;
+import org.springframework.cloud.gcp.trace.sleuth.StackdriverTraceReporter;
 import org.springframework.cloud.sleuth.SpanAdjuster;
-import org.springframework.cloud.sleuth.SpanNamer;
-import org.springframework.cloud.sleuth.SpanReporter;
 import org.springframework.cloud.sleuth.TraceKeys;
-import org.springframework.cloud.sleuth.Tracer;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
-import org.springframework.cloud.sleuth.log.SpanLogger;
-import org.springframework.cloud.sleuth.sampler.PercentageBasedSampler;
+import org.springframework.cloud.sleuth.sampler.ProbabilityBasedSampler;
 import org.springframework.cloud.sleuth.sampler.SamplerProperties;
-import org.springframework.cloud.sleuth.trace.DefaultTracer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.env.Environment;
 
 /**
  * @author Ray Tsang
@@ -78,11 +80,14 @@ import org.springframework.core.env.Environment;
 @AutoConfigureBefore(TraceAutoConfiguration.class)
 public class StackdriverTraceAutoConfiguration {
 
+	@Autowired(required = false)
+	List<SpanAdjuster> spanAdjusters = new ArrayList<>();
+
 	private GcpProjectIdProvider finalProjectIdProvider;
 
 	private CredentialsProvider finalCredentialsProvider;
 
-	private HeaderProvider headerProvider =	new UsageTrackingHeaderProvider(this.getClass());
+	private HeaderProvider headerProvider = new UsageTrackingHeaderProvider(this.getClass());
 
 	public StackdriverTraceAutoConfiguration(GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider,
@@ -93,46 +98,75 @@ public class StackdriverTraceAutoConfiguration {
 		this.finalCredentialsProvider = gcpTraceProperties.getCredentials().getLocation() != null
 				? FixedCredentialsProvider.create(GoogleCredentials.fromStream(
 						gcpTraceProperties.getCredentials().getLocation().getInputStream())
-				.createScoped(gcpTraceProperties.getCredentials().getScopes()))
+						.createScoped(gcpTraceProperties.getCredentials().getScopes()))
 				: credentialsProvider;
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Sampler defaultTraceSampler(SamplerProperties config) {
-		return new PercentageBasedSampler(config);
+	Tracing sleuthTracing(@Value("${spring.zipkin.service.name:${spring.application.name:default}}") String serviceName,
+			Propagation.Factory factory,
+			CurrentTraceContext currentTraceContext,
+			Reporter<zipkin2.Span> reporter,
+			Sampler sampler) {
+		return Tracing.newBuilder()
+				.sampler(sampler)
+				.traceId128Bit(true)
+				.localServiceName(serviceName)
+				.propagationFactory(factory)
+				.currentTraceContext(currentTraceContext)
+				.spanReporter(adjustedReporter(reporter)).build();
+	}
+
+	private Reporter<zipkin2.Span> adjustedReporter(Reporter<zipkin2.Span> delegate) {
+		return span -> {
+			Span spanToAdjust = span;
+			for (SpanAdjuster spanAdjuster : this.spanAdjusters) {
+				spanToAdjust = spanAdjuster.adjust(spanToAdjust);
+			}
+			delegate.report(spanToAdjust);
+		};
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Random randomForSpanIds() {
-		return new SecureRandom();
+	public Reporter<Span> reporter(
+			TraceConsumer traceConsumer,
+			SpanTranslator spanTranslator) {
+		return new StackdriverTraceReporter(traceConsumer, spanTranslator);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SpanReporter traceSpanReporter(Environment environment,
-			LabelExtractor labelExtractor,
-			List<SpanAdjuster> spanAdjusters, TraceConsumer traceConsumer) {
-		String instanceId = IdUtils.getDefaultInstanceId(environment);
-		return new StackdriverTraceSpanListener(instanceId,
-				this.finalProjectIdProvider.getProjectId(), labelExtractor,	spanAdjusters,
-				traceConsumer);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(Tracer.class)
-	public Tracer sleuthTracer(Sampler sampler, Random random,
-			SpanNamer spanNamer, SpanLogger spanLogger,
-			SpanReporter spanReporter, TraceKeys traceKeys) {
-		return new DefaultTracer(sampler, random, spanNamer, spanLogger,
-				spanReporter, true, traceKeys);
+	public SpanTranslator spanTranslator(LabelExtractor labelExtractor) {
+		return new SpanTranslator(labelExtractor);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	public LabelExtractor traceLabelExtractor(TraceKeys traceKeys) {
 		return new LabelExtractor(traceKeys);
+	}
+
+	@Configuration
+	@ConditionalOnClass(RefreshScope.class)
+	protected static class RefreshScopedProbabilityBasedSamplerConfiguration {
+		@Bean
+		@RefreshScope
+		@ConditionalOnMissingBean
+		public Sampler defaultTraceSampler(SamplerProperties config) {
+			return new ProbabilityBasedSampler(config);
+		}
+	}
+
+	@Configuration
+	@ConditionalOnMissingClass("org.springframework.cloud.context.config.annotation.RefreshScope")
+	protected static class NonRefreshScopeProbabilityBasedSamplerConfiguration {
+		@Bean
+		@ConditionalOnMissingBean
+		public Sampler defaultTraceSampler(SamplerProperties config) {
+			return new ProbabilityBasedSampler(config);
+		}
 	}
 
 	@Configuration
@@ -193,8 +227,7 @@ public class StackdriverTraceAutoConfiguration {
 		public TraceConsumer traceConsumer(
 				TraceServiceClientTraceConsumer traceServiceClientTraceConsumer,
 				Sizer<Trace> traceSizer,
-				@Qualifier("scheduledBufferingExecutorService")
-						ScheduledExecutorService executorService,
+				@Qualifier("scheduledBufferingExecutorService") ScheduledExecutorService executorService,
 				GcpTraceProperties gcpTraceProperties) {
 			return new ScheduledBufferingTraceConsumer(
 					traceServiceClientTraceConsumer,

@@ -21,7 +21,11 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import brave.Span;
+import brave.Tracer;
 import com.google.cloud.trace.v1.consumer.TraceConsumer;
+import com.google.devtools.cloudtrace.v1.Trace;
+import com.google.devtools.cloudtrace.v1.TraceSpan;
 import com.google.devtools.cloudtrace.v1.Traces;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,11 +33,10 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.cloud.sleuth.Span;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
-import org.springframework.cloud.sleuth.trace.DefaultTracer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -48,10 +51,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 		StackdriverTraceAutoConfiguration.class,
 		GcpContextAutoConfiguration.class,
 		TraceAutoConfiguration.class,
-		SleuthLogAutoConfiguration.class },
+		SleuthLogAutoConfiguration.class,
+		RefreshAutoConfiguration.class},
 		properties = {
 		"spring.cloud.gcp.project-id=proj",
-		"spring.sleuth.sampler.percentage=1.0",
+		"spring.sleuth.sampler.probability=1.0",
 		"spring.cloud.gcp.config.enabled=false"
 })
 public abstract class StackdriverTraceAutoConfigurationTests {
@@ -71,7 +75,7 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 		MockConfiguration configuration;
 
 		@Autowired
-		DefaultTracer tracer;
+		Tracer tracer;
 
 		@PostConstruct
 		public void init() {
@@ -80,14 +84,20 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 
 		@Test
 		public void test() {
-			Span span = this.tracer.createSpan("Test Span");
-			this.tracer.close(span);
-
-			// Test that we are using 128bit Trace ID
-			Assert.assertNotEquals(0, span.getTraceIdHigh());
+			Span span = this.tracer.newTrace()
+					.kind(Span.Kind.CLIENT)
+					.name("test")
+					.start();
+			span.finish();
+			span.flush();
 
 			// There should be one trace received
 			Assert.assertEquals(1, this.configuration.tracesList.size());
+			Traces traces = this.configuration.tracesList.get(0);
+			Assert.assertEquals(1, traces.getTracesCount());
+			Trace trace = traces.getTraces(0);
+			Assert.assertEquals(1, trace.getSpansCount());
+			TraceSpan traceSpan = trace.getSpans(0);
 		}
 
 	}
