@@ -29,6 +29,9 @@ import org.springframework.cloud.stream.binder.Spy;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
+ * Integration tests that require the Pub/Sub emulator to be installed and only run if the
+ * GCP_PUBSUB_EMULATOR envvar is present.
+ *
  * @author João André Martins
  */
 public class PubSubMessageChannelBinderTests extends AbstractBinderTests<PubSubTestBinder,
