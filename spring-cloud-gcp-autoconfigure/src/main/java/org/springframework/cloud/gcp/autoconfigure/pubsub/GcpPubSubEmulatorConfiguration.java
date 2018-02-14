@@ -45,7 +45,6 @@ import org.springframework.context.annotation.Configuration;
 public class GcpPubSubEmulatorConfiguration {
 
 	@Bean
-	@ConditionalOnMissingBean
 	public TransportChannelProvider transportChannelProvider(GcpPubSubProperties gcpPubSubProperties) {
 		ManagedChannel channel = ManagedChannelBuilder
 				.forTarget(gcpPubSubProperties.getEmulatorHost())

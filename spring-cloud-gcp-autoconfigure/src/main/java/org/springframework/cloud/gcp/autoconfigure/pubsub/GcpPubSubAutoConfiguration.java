@@ -69,9 +69,12 @@ public class GcpPubSubAutoConfiguration {
 
 	private final HeaderProvider headerProvider = new UsageTrackingHeaderProvider(this.getClass());
 
+	private final TransportChannelProvider transportChannelProvider;
+
 	public GcpPubSubAutoConfiguration(GcpPubSubProperties gcpPubSubProperties,
 			GcpProjectIdProvider gcpProjectIdProvider,
-			CredentialsProvider credentialsProvider) throws IOException {
+			CredentialsProvider credentialsProvider,
+			TransportChannelProvider transportChannelProvider) throws IOException {
 		this.gcpPubSubProperties = gcpPubSubProperties;
 		this.finalProjectIdProvider = gcpPubSubProperties.getProjectId() != null
 				? gcpPubSubProperties::getProjectId
@@ -82,6 +85,7 @@ public class GcpPubSubAutoConfiguration {
 								gcpPubSubProperties.getCredentials().getLocation().getInputStream())
 								.createScoped(gcpPubSubProperties.getCredentials().getScopes()))
 				: credentialsProvider;
+		this.transportChannelProvider = transportChannelProvider;
 	}
 
 	@Bean
@@ -113,7 +117,7 @@ public class GcpPubSubAutoConfiguration {
 		factory.setExecutorProvider(executorProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
 		factory.setHeaderProvider(this.headerProvider);
-		factory.setChannelProvider(transportChannelProvider());
+		factory.setChannelProvider(this.transportChannelProvider);
 
 		return factory;
 	}
@@ -126,7 +130,7 @@ public class GcpPubSubAutoConfiguration {
 		factory.setExecutorProvider(executorProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
 		factory.setHeaderProvider(this.headerProvider);
-		factory.setChannelProvider(transportChannelProvider());
+		factory.setChannelProvider(this.transportChannelProvider);
 		return factory;
 	}
 
@@ -146,7 +150,7 @@ public class GcpPubSubAutoConfiguration {
 					TopicAdminSettings.newBuilder()
 							.setCredentialsProvider(this.finalCredentialsProvider)
 							.setHeaderProvider(this.headerProvider)
-							.setTransportChannelProvider(transportChannelProvider())
+							.setTransportChannelProvider(this.transportChannelProvider)
 							.build());
 		}
 		catch (IOException ioe) {
@@ -162,7 +166,7 @@ public class GcpPubSubAutoConfiguration {
 					SubscriptionAdminSettings.newBuilder()
 							.setCredentialsProvider(this.finalCredentialsProvider)
 							.setHeaderProvider(this.headerProvider)
-							.setTransportChannelProvider(transportChannelProvider())
+							.setTransportChannelProvider(this.transportChannelProvider)
 							.build());
 		}
 		catch (IOException ioe) {
