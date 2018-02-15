@@ -113,9 +113,9 @@ public class GoogleStorageTests {
 		Assert.assertTrue(((GoogleStorageResource) this.bucketResource).bucketExists());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testBucketNotEndingInSlash() {
-		new GoogleStorageResource(this.storage, "gs://test-spring");
+		Assert.assertTrue(new GoogleStorageResource(this.storage, "gs://test-spring").isBucket());
 	}
 
 	@Test(expected = IllegalStateException.class)
