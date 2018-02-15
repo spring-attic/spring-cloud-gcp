@@ -51,8 +51,7 @@ public class GcpContextAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public CredentialsProvider googleCredentials() throws Exception {
-		return new DefaultCredentialsProvider(this.gcpProperties.getCredentials().getScopes(),
-				this.gcpProperties.getCredentials().getLocation());
+		return new DefaultCredentialsProvider(this.gcpProperties);
 	}
 
 	/**

@@ -41,9 +41,7 @@ public class GcpConfigBootstrapConfiguration {
 	public GoogleConfigPropertySourceLocator googleConfigPropertySourceLocator(
 			GcpConfigProperties configProperties) throws IOException {
 		return new GoogleConfigPropertySourceLocator(new DefaultGcpProjectIdProvider(),
-				new DefaultCredentialsProvider(configProperties.getCredentials().getScopes(),
-						configProperties.getCredentials().getLocation()),
-				configProperties);
+				new DefaultCredentialsProvider(configProperties), configProperties);
 	}
 }
 

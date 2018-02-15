@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.autoconfigure.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
+import org.springframework.cloud.gcp.core.CredentialsPropertiesProvider;
 import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
@@ -28,7 +29,7 @@ import org.springframework.cloud.gcp.core.GcpScope;
  * @author João André Martins
  */
 @ConfigurationProperties("spring.cloud.gcp.config")
-public class GcpConfigProperties {
+public class GcpConfigProperties implements CredentialsPropertiesProvider {
 
 	/** Enables Spring Cloud GCP Config. */
 	private boolean enabled;

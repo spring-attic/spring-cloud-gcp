@@ -19,13 +19,14 @@ package org.springframework.cloud.gcp.autoconfigure.core;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
+import org.springframework.cloud.gcp.core.CredentialsPropertiesProvider;
 
 /**
  * @author Vinicius Carvalho
  * @author João André Martins
  */
 @ConfigurationProperties("spring.cloud.gcp")
-public class GcpProperties {
+public class GcpProperties implements CredentialsPropertiesProvider {
 
 	/** GCP project ID where services are running. */
 	private String projectId;

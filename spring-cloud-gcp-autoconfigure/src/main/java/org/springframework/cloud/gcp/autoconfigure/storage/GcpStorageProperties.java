@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.autoconfigure.storage;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
+import org.springframework.cloud.gcp.core.CredentialsPropertiesProvider;
 import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolverSettings;
 
@@ -26,7 +27,8 @@ import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolverSettin
  * @author João André Martins
  */
 @ConfigurationProperties("spring.cloud.gcp.storage")
-public class GcpStorageProperties extends GoogleStorageProtocolResolverSettings {
+public class GcpStorageProperties extends GoogleStorageProtocolResolverSettings implements
+		CredentialsPropertiesProvider {
 
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	@NestedConfigurationProperty
