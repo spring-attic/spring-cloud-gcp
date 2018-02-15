@@ -16,14 +16,17 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub.it;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.mockito.Mockito;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -52,9 +55,6 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.concurrent.ListenableFutureCallback;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
@@ -126,7 +126,7 @@ public class PubSubChannelAdaptersIT {
 		this.inputChannel.send(
 				MessageBuilder.createMessage("I am a message.",  new MessageHeaders(headers)));
 
-		Message<?> message = channel.receive(5000);
+		Message<?> message = this.channel.receive(5000);
 		assertThat(message).isNotNull();
 		assertThat(message.getPayload()).isInstanceOf(String.class);
 		String payload = (String) message.getPayload();
@@ -144,7 +144,7 @@ public class PubSubChannelAdaptersIT {
 		this.inboundChannelAdapter.setMessageConverter(null);
 		this.inputChannel.send(MessageBuilder.withPayload("I am a message.").build());
 
-		Message<?> message = channel.receive(5000);
+		Message<?> message = this.channel.receive(5000);
 		assertThat(message).isNotNull();
 		assertThat(message.getPayload()).isInstanceOf(byte[].class);
 		String stringPayload = new String((byte[]) message.getPayload());
@@ -157,18 +157,18 @@ public class PubSubChannelAdaptersIT {
 		this.inboundChannelAdapter.setAckMode(AckMode.MANUAL);
 		this.inputChannel.send(MessageBuilder.withPayload("I am a message.").build());
 
-		Message<?> message = channel.receive(5000);
+		Message<?> message = this.channel.receive(5000);
 		assertThat(message).isNotNull();
 		AckReplyConsumer acker =
 				(AckReplyConsumer) message.getHeaders().get(GcpHeaders.ACKNOWLEDGEMENT);
 		assertThat(acker).isNotNull();
 		acker.nack();
-		message = channel.receive(5000);
+		message = this.channel.receive(5000);
 		assertThat(message).isNotNull();
 		acker = (AckReplyConsumer) message.getHeaders().get(GcpHeaders.ACKNOWLEDGEMENT);
 		assertThat(acker).isNotNull();
 		acker.ack();
-		message = channel.receive(5000);
+		message = this.channel.receive(5000);
 		assertThat(message).isNull();
 	}
 
@@ -184,11 +184,12 @@ public class PubSubChannelAdaptersIT {
 			@Override
 			public void onSuccess(String result) {
 
-			}});
+			}
+		});
 		this.outboundChannelAdapter.setPublishCallback(callbackSpy);
 		this.inputChannel.send(MessageBuilder.withPayload("I am a message.").build());
 
-		Message<?> message = channel.receive(5000);
+		Message<?> message = this.channel.receive(5000);
 		assertThat(message).isNotNull();
 		verify(callbackSpy, times(1)).onSuccess(any());
 	}
