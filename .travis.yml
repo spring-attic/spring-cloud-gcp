@@ -10,8 +10,9 @@ install:
   - tar -xvzf google-cloud-sdk-189.0.0-linux-x86_64.tar.gz
   - export PATH=$PWD/google-cloud-sdk/bin:$PATH
   - gcloud components update --quiet
-  - gcloud components install beta --quiet
-  - gcloud components install pubsub-emulator --quiet
-script:
+  - gcloud components install beta pubsub-emulator --quiet
+before_script:
   - gcloud beta emulators pubsub start &
   - $(gcloud beta emulators pubsub env-init)
+#script:
+#  - ./mvnw clean install
