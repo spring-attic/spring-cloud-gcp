@@ -16,28 +16,52 @@
 
 package org.springframework.cloud.gcp.trace.sleuth;
 
-import com.google.cloud.trace.v1.consumer.TraceConsumer;
+import java.io.Flushable;
+import java.io.IOException;
+
+import com.google.cloud.trace.v1.consumer.FlushableTraceConsumer;
 import com.google.devtools.cloudtrace.v1.Trace;
 import com.google.devtools.cloudtrace.v1.TraceSpan;
 import com.google.devtools.cloudtrace.v1.Traces;
 import zipkin2.Span;
 import zipkin2.reporter.Reporter;
 
-public class StackdriverTraceReporter implements Reporter<Span> {
-	private final TraceConsumer traceConsumer;
+public class StackdriverTraceReporter implements Reporter<Span>, Flushable {
+	private final String projectId;
+
+	private final FlushableTraceConsumer traceConsumer;
 
 	private final SpanTranslator spanTranslator;
 
-	public StackdriverTraceReporter(TraceConsumer traceConsumer,
+	public StackdriverTraceReporter(String projectId, FlushableTraceConsumer traceConsumer,
 			SpanTranslator spanTranslator) {
+		this.projectId = projectId;
 		this.traceConsumer = traceConsumer;
 		this.spanTranslator = spanTranslator;
+	}
+
+	private String padTraceId(String traceId) {
+		if (traceId.length() == 16) {
+			return "0000000000000000" + traceId;
+		}
+		else {
+			return traceId;
+		}
 	}
 
 	@Override
 	public void report(Span span) {
 		TraceSpan traceSpan = this.spanTranslator.translate(span);
-		this.traceConsumer.receive(Traces.newBuilder()
-				.addTraces(Trace.newBuilder().addSpans(traceSpan).build()).build());
+		Traces traces = Traces.newBuilder()
+				.addTraces(Trace.newBuilder()
+						.setTraceId(padTraceId(span.traceId()))
+						.setProjectId(this.projectId)
+						.addSpans(traceSpan).build())
+				.build();
+		this.traceConsumer.receive(traces);
+	}
+
+	public void flush() throws IOException {
+		this.traceConsumer.flush();
 	}
 }

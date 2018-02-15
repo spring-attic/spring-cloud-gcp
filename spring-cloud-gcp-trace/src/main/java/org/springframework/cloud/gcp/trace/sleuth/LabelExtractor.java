@@ -82,6 +82,7 @@ public class LabelExtractor {
 		Map<String, String> labelRenameMap = new HashMap<>();
 		TraceKeys.Http httpKeys = traceKeys.getHttp();
 		labelRenameMap = new HashMap<>();
+
 		labelRenameMap.put(httpKeys.getHost(), "/http/host");
 		labelRenameMap.put(httpKeys.getMethod(), "/http/method");
 		labelRenameMap.put(httpKeys.getStatusCode(), "/http/status_code");

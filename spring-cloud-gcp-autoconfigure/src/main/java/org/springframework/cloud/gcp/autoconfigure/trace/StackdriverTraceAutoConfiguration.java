@@ -34,6 +34,7 @@ import com.google.api.gax.rpc.HeaderProvider;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.trace.v1.TraceServiceClient;
 import com.google.cloud.trace.v1.TraceServiceSettings;
+import com.google.cloud.trace.v1.consumer.FlushableTraceConsumer;
 import com.google.cloud.trace.v1.consumer.ScheduledBufferingTraceConsumer;
 import com.google.cloud.trace.v1.consumer.TraceConsumer;
 import com.google.cloud.trace.v1.util.RoughTraceSizer;
@@ -131,9 +132,10 @@ public class StackdriverTraceAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public Reporter<Span> reporter(
-			TraceConsumer traceConsumer,
+			GcpProjectIdProvider projectIdProvider,
+			FlushableTraceConsumer traceConsumer,
 			SpanTranslator spanTranslator) {
-		return new StackdriverTraceReporter(traceConsumer, spanTranslator);
+		return new StackdriverTraceReporter(projectIdProvider.getProjectId(), traceConsumer, spanTranslator);
 	}
 
 	@Bean
@@ -224,7 +226,7 @@ public class StackdriverTraceAutoConfiguration {
 		@Primary
 		@Bean
 		@ConditionalOnMissingBean(name = "traceConsumer")
-		public TraceConsumer traceConsumer(
+		public FlushableTraceConsumer traceConsumer(
 				TraceServiceClientTraceConsumer traceServiceClientTraceConsumer,
 				Sizer<Trace> traceSizer,
 				@Qualifier("scheduledBufferingExecutorService") ScheduledExecutorService executorService,

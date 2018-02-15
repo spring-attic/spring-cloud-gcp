@@ -68,7 +68,8 @@ public class SpanTranslator {
 	}
 
 	TraceSpan.Builder translate(TraceSpan.Builder spanBuilder, Span zipkinSpan) {
-		spanBuilder.setName(zipkinSpan.name());
+		// It's possible to have an empty name when the Span is generated from ane error.
+		spanBuilder.setName(zipkinSpan.name() == null ? "" : zipkinSpan.name());
 		SpanKind kind = getSpanKind(zipkinSpan.kind());
 		spanBuilder.setKind(kind);
 		rewriteIds(zipkinSpan, spanBuilder, kind);
@@ -90,7 +91,7 @@ public class SpanTranslator {
 	private void rewriteIds(Span zipkinSpan, TraceSpan.Builder builder, SpanKind kind) {
 		long id = parseUnsignedLong(zipkinSpan.id());
 		long parentId = parseUnsignedLong(zipkinSpan.parentId());
-		if (kind == SpanKind.RPC_CLIENT) {
+		if (kind != SpanKind.RPC_SERVER) {
 			builder.setSpanId(rewriteId(id));
 		}
 		else {
@@ -101,20 +102,7 @@ public class SpanTranslator {
 		// RPC_CLIENT
 		// spans.
 		if (kind == SpanKind.RPC_SERVER) {
-			if (Boolean.TRUE.equals(zipkinSpan.shared())) {
-				// This is a multi-host span.
-				// This means the parent client-side span has the same id as this span. When that fragment
-				// of
-				// the span was converted, it would have had id rewriteId(zipkinSpan.id)
-				builder.setParentSpanId(rewriteId(id));
-			}
-			else {
-				// This span isn't shared: the server "owns" this span and it is a single-host span.
-				// This means the parent RPC_CLIENT span was a separate span with id=zipkinSpan.parentId.
-				// When
-				// that span fragment was converted, it would have had id=rewriteId(zipkinSpan.parentId)
-				builder.setParentSpanId(rewriteId(parentId));
-			}
+			builder.setParentSpanId(rewriteId(parentId));
 		}
 		else {
 			builder.setParentSpanId(parentId);
@@ -128,8 +116,8 @@ public class SpanTranslator {
 		return UnsignedLongs.parseUnsignedLong(id, 16);
 	}
 
-	private long rewriteId(Long id) {
-		if (id == null) {
+	private long rewriteId(long id) {
+		if (id == 0) {
 			return 0;
 		}
 		// To deterministically rewrite the ID, xor it with a random 64-bit constant.

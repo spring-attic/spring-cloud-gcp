@@ -22,7 +22,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import com.google.cloud.trace.v1.consumer.TraceConsumer;
+import com.google.cloud.trace.v1.consumer.FlushableTraceConsumer;
 import com.google.devtools.cloudtrace.v1.Trace;
 import com.google.devtools.cloudtrace.v1.TraceSpan;
 import com.google.devtools.cloudtrace.v1.Traces;
@@ -174,8 +174,13 @@ public class StackdriverTraceReporterTests {
 		}
 
 		@Bean
-		public TraceConsumer traceConsumer() {
-			return new TraceConsumer() {
+		public FlushableTraceConsumer traceConsumer() {
+			return new FlushableTraceConsumer() {
+				@Override
+				public void flush() {
+					// do nothing
+				}
+
 				@Override
 				public void receive(Traces traces) {
 					for (Trace trace : traces.getTracesList()) {
@@ -191,8 +196,8 @@ public class StackdriverTraceReporterTests {
 		}
 
 		@Bean
-		StackdriverTraceReporter reporter(TraceConsumer traceConsumer, SpanTranslator spanTranslator) {
-			return new StackdriverTraceReporter(traceConsumer, spanTranslator);
+		StackdriverTraceReporter reporter(FlushableTraceConsumer traceConsumer, SpanTranslator spanTranslator) {
+			return new StackdriverTraceReporter("dummy-project", traceConsumer, spanTranslator);
 
 		}
 	}
