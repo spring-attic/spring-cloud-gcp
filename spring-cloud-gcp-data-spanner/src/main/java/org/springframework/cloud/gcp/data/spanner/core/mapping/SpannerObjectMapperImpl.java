@@ -35,6 +35,7 @@ import com.google.cloud.spanner.AbstractStructReader;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.StructReader;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.ValueBinder;
 import com.google.common.collect.ImmutableMap;
@@ -141,7 +142,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 			else {
 				Method getMethod = this.propertyReadMethodMapping.get(propType);
 				if (getMethod == null) {
-					getMethod = findReadMethod(source, propType);
+					getMethod = findReadMethod(propType);
 				}
 				if (getMethod != null) {
 					try {
@@ -186,8 +187,8 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 		return object;
 	}
 
-	private Method findReadMethod(Struct source, Class propType) {
-		for (Method method : source.getClass().getMethods()) {
+	private Method findReadMethod(Class propType) {
+		for (Method method : StructReader.class.getMethods()) {
 			// the retrieval methods are named like getDate or getTimestamp
 			if (!method.getName().startsWith("get")) {
 				continue;
