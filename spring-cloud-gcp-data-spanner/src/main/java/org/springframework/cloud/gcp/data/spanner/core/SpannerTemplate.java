@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
@@ -93,14 +95,14 @@ public class SpannerTemplate implements SpannerOperations {
 				.getPersistentEntity(entityClass);
 		ResultSet resultSet = getReadContext().read(persistentEntity.tableName(), keys,
 				persistentEntity.columns(), options);
-		return this.objectMapper.mapToUnmodifiableList(resultSet, entityClass);
+		return this.objectMapper.mapToList(resultSet, entityClass);
 	}
 
 	@Override
 	public <T> List<T> find(Class<T> entityClass, Statement statement,
 			Options.QueryOption... options) {
 		ResultSet resultSet = getReadContext().executeQuery(statement, options);
-		return this.objectMapper.mapToUnmodifiableList(resultSet, entityClass);
+		return this.objectMapper.mapToList(resultSet, entityClass);
 	}
 
 	@Override
@@ -116,50 +118,37 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public void insert(Object object) {
-		Mutation mutation = this.mutationFactory.insert(object);
-		this.databaseClient.write(Arrays.asList(mutation));
+		applyMutationUsingEntity(this.mutationFactory::insert, object);
 	}
 
 	@Override
 	public void update(Object object) {
-		Mutation mutation = this.mutationFactory.update(object);
-		this.databaseClient.write(Arrays.asList(mutation));
+		applyMutationUsingEntity(this.mutationFactory::update, object);
 	}
 
 	@Override
 	public void upsert(Object object) {
-		Mutation mutation = this.mutationFactory.upsert(object);
-		this.databaseClient.write(Arrays.asList(mutation));
-	}
-
-	@Override
-	public void delete(Class entityClass, Key key) {
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
-				.getPersistentEntity(entityClass);
-		String tableName = persistentEntity.tableName();
-		Mutation mutation = Mutation.delete(tableName, key);
-		this.databaseClient.write(Arrays.asList(mutation));
+		applyMutationUsingEntity(this.mutationFactory::upsert, object);
 	}
 
 	@Override
 	public void delete(Object entity) {
-		Mutation mutation = this.mutationFactory.delete(entity);
-		this.databaseClient.write(Arrays.asList(mutation));
+		applyMutationUsingEntity(this.mutationFactory::delete, entity);
+	}
+
+	@Override
+	public void delete(Class entityClass, Key key) {
+		applyMutationWithClass(this.mutationFactory::delete, entityClass, key);
 	}
 
 	@Override
 	public <T> void delete(Class<T> entityClass, Iterable<? extends T> entities) {
-		Mutation mutation = this.mutationFactory.delete(entityClass, entities);
-		this.databaseClient.write(Arrays.asList(mutation));
+		applyMutationWithClass(this.mutationFactory::delete, entityClass, entities);
 	}
 
 	@Override
 	public void delete(Class entityClass, KeySet keys) {
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
-				.getPersistentEntity(entityClass);
-		String tableName = persistentEntity.tableName();
-		Mutation delete = Mutation.delete(tableName, keys);
-		this.databaseClient.write(Arrays.asList(delete));
+		applyMutationWithClass(this.mutationFactory::delete, entityClass, keys);
 	}
 
 	@Override
@@ -170,5 +159,15 @@ public class SpannerTemplate implements SpannerOperations {
 				String.format("select count(*) from %s", persistentEntity.tableName())));
 		resultSet.next();
 		return resultSet.getLong(0);
+	}
+
+	private <T, U> void applyMutationWithClass(BiFunction<T, U, Mutation> function,
+			T arg1,
+			U arg2) {
+		this.databaseClient.write(Arrays.asList(function.apply(arg1, arg2)));
+	}
+
+	private <T> void applyMutationUsingEntity(Function<T, Mutation> function, T arg) {
+		applyMutationWithClass((T t, Object unused) -> function.apply(t), arg, null);
 	}
 }
