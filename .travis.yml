@@ -11,6 +11,7 @@ install:
   - export PATH=$PWD/google-cloud-sdk/bin:$PATH
   - gcloud components update --quiet
   - gcloud components install beta pubsub-emulator --quiet
+  - ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 before_script:
   - gcloud beta emulators pubsub start &
   - $(gcloud beta emulators pubsub env-init)
