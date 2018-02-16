@@ -19,14 +19,15 @@ package org.springframework.cloud.gcp.autoconfigure.pubsub;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
-import org.springframework.cloud.gcp.core.CredentialsPropertiesProvider;
+import org.springframework.cloud.gcp.core.CredentialsSupplier;
 import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 @ConfigurationProperties("spring.cloud.gcp.pubsub")
-public class GcpPubSubProperties implements CredentialsPropertiesProvider {
+public class GcpPubSubProperties implements CredentialsSupplier {
 	/** Number of threads used by every {@link com.google.cloud.pubsub.v1.Subscriber}. */
 	private int subscriberExecutorThreads = 4;
 
