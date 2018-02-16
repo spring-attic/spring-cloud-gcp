@@ -27,6 +27,8 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
+import org.springframework.integration.support.MessageBuilder;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
@@ -67,10 +69,10 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 				this.pubSubTemplate.subscribe(this.subscriptionName, this::receiveMessage);
 	}
 
-	private void receiveMessage(PubsubMessage message, AckReplyConsumer consumer) {
+	private void receiveMessage(PubsubMessage pubsubMessage, AckReplyConsumer consumer) {
 		Map<String, Object> messageHeaders = new HashMap<>();
 
-		message.getAttributesMap().forEach(messageHeaders::put);
+		pubsubMessage.getAttributesMap().forEach(messageHeaders::put);
 
 		if (this.ackMode == AckMode.MANUAL) {
 			// Send the consumer downstream so user decides on when to ack/nack.
@@ -78,9 +80,15 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 
 		try {
-			sendMessage(this.messageConverter.toMessage(
-					message.getData().toStringUtf8(),
-					new MessageHeaders(messageHeaders)));
+			Message<?> internalMessage =
+					this.messageConverter == null
+							? MessageBuilder.withPayload(pubsubMessage.getData().toByteArray())
+							.copyHeaders(messageHeaders)
+							.build()
+							: this.messageConverter.toMessage(pubsubMessage.getData().toByteArray(),
+							new MessageHeaders(messageHeaders));
+
+			sendMessage(internalMessage);
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
@@ -112,13 +120,18 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		this.ackMode = ackMode;
 	}
 
-	public void setMessageConverter(MessageConverter messageConverter) {
-		Assert.notNull(messageConverter,
-				"The specified message converter can't be null.");
-		this.messageConverter = messageConverter;
-	}
-
 	public MessageConverter getMessageConverter() {
 		return this.messageConverter;
+	}
+
+	/**
+	 * Sets the {@link MessageConverter} to convert the payload of the incoming message from
+	 * Pub/Sub.
+	 * If {@code messageConverter} is null, the payload of the Pub/Sub message is converted to
+	 * {@code byte[]} and returned in that form.
+	 * @param messageConverter converts the payload of the incoming message from Pub/Sub
+	 */
+	public void setMessageConverter(MessageConverter messageConverter) {
+		this.messageConverter = messageConverter;
 	}
 }

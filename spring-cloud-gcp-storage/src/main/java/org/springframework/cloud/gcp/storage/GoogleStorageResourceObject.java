@@ -31,8 +31,9 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
 import org.springframework.util.Assert;
 
@@ -43,8 +44,11 @@ import org.springframework.util.Assert;
  * @author Vinicius Carvalho
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
+ * @author João André Martins
  */
 public class GoogleStorageResourceObject implements WritableResource {
+
+	private static final Log LOGGER = LogFactory.getLog(GoogleStorageResourceObject.class);
 
 	private final Storage storage;
 
@@ -52,6 +56,14 @@ public class GoogleStorageResourceObject implements WritableResource {
 
 	private final boolean createBlobIfNotExists;
 
+	/**
+	 * Constructs the resource representation of a file in Google Cloud Storage.
+	 * @param storage the Google Cloud Storage client
+	 * @param location the URL of the file, e.g., gs://your-bucket/your-file-name
+	 * @param createBlobIfNotExists determines the auto-creation of the file in Google Cloud Storage
+	 *                              if an operation that depends on its existence is triggered
+	 *                              (e.g., getting the output stream of a file)
+	 */
 	public GoogleStorageResourceObject(Storage storage, String location,
 			boolean createBlobIfNotExists) {
 		Assert.notNull(storage, "Storage object can not be null");
@@ -71,7 +83,7 @@ public class GoogleStorageResourceObject implements WritableResource {
 	@Override
 	public boolean exists() {
 		try {
-			return getGoogleStorageObject() != null;
+			return getGcsBlob() != null;
 		}
 		catch (IOException e) {
 			return false;
@@ -116,33 +128,52 @@ public class GoogleStorageResourceObject implements WritableResource {
 	 * @return The storage object, will be null if it does not exist in Google Cloud Storage.
 	 * @throws IOException
 	 */
-	public Blob getGoogleStorageObject() throws IOException {
+	public Blob getGcsBlob() throws IOException {
 		return this.storage.get(getBlobId());
 	}
 
 	/**
-	 * Creates a signed URL to an object if it exists. This method will fail if this storage resource
-	 * was not created using service account credentials.
+	 * Creates a signed URL to an object, if it exists. This method will fail if this storage
+	 * resource was not created using service account credentials.
 	 * @param timeUnit the time unit used to determine how long the URL is valid.
 	 * @param timePeriods the number of periods to determine how long the URL is valid.
+	 * @param options specifies additional options for signing URLs
 	 * @return the URL if the object exists, and null if it does not.
 	 * @throws IOException
 	 */
-	public URL createSignedUrl(TimeUnit timeUnit, long timePeriods) throws IOException {
-		Blob blob = this.getGoogleStorageObject();
-		if (blob == null) {
-			return null;
+	public URL createSignedUrl(TimeUnit timeUnit, long timePeriods,
+			Storage.SignUrlOption... options) throws IOException {
+		Assert.notNull(options, "options can't be null.");
+
+		Blob blob = this.getGcsBlob();
+
+		if (blob == null && LOGGER.isWarnEnabled()) {
+			LOGGER.warn("Creating signed URL for non-existing GCS object " + this.location);
 		}
+
 		return this.storage.signUrl(
-				BlobInfo.newBuilder(blob.getBucket(), blob.getName()).build(),
-				timePeriods, timeUnit);
+				BlobInfo.newBuilder(getBlobId()).build(), timePeriods, timeUnit, options);
 	}
 
-	private Blob createBlob() throws IOException {
-		GoogleStorageResourceBucket bucket = getBucket();
+	/**
+	 * Creates the blob that this {@link GoogleStorageResourceObject} represents in Google Cloud
+	 * Storage.
+	 * @return the created blob object; or {@code null} if the object already exists, cannot be
+	 * created or its bucket doesn't exist and cannot be created
+	 * @throws IOException
+	 */
+	public Blob create() throws IOException {
+		GoogleStorageResourceBucket bucket = getResourceBucket();
+
 		if (!bucket.exists()) {
-			bucket.createBucket();
+			if (!bucket.isCreateBucketIfNotExists()) {
+				throw new IllegalStateException("The bucket " + bucket.getFilename()
+						+ " doesn't exist and couldn't be created");
+			}
+
+			bucket.create();
 		}
+
 		return this.storage.create(BlobInfo.newBuilder(getBlobId()).build());
 	}
 
@@ -161,25 +192,42 @@ public class GoogleStorageResourceObject implements WritableResource {
 
 	@Override
 	public long contentLength() throws IOException {
-		return throwExceptionForNullBlob(getGoogleStorageObject()).getSize();
+		return throwExceptionForNullBlob(getGcsBlob()).getSize();
 	}
 
 	@Override
 	public long lastModified() throws IOException {
-		return throwExceptionForNullBlob(getGoogleStorageObject()).getUpdateTime();
+		return throwExceptionForNullBlob(getGcsBlob()).getUpdateTime();
 	}
 
+	/**
+	 * Creates a file in the same bucket as this one. It inherits {@code createBlobIfNotExists}
+	 * from this object.
+	 *
+	 * <p>The file is created if it didn't exist in Google Cloud Storage.
+	 * @param relativePath the URL to a Google Cloud Storage file
+	 * @return the {@link GoogleStorageResourceObject} object for the created file
+	 * @throws IOException
+	 */
 	@Override
-	public Resource createRelative(String relativePath) throws IOException {
+	public GoogleStorageResourceObject createRelative(String relativePath) throws IOException {
 		int lastSlashIndex = this.location.lastIndexOf("/");
 		String absolutePath = this.location.substring(0, lastSlashIndex + 1) + relativePath;
-		return new GoogleStorageResourceObject(this.storage, absolutePath, this.createBlobIfNotExists);
+
+		GoogleStorageResourceObject blobResource = new GoogleStorageResourceObject(
+				this.storage, absolutePath, this.createBlobIfNotExists);
+
+		if (!blobResource.exists()) {
+			blobResource.create();
+		}
+
+		return blobResource;
 	}
 
 	@Override
 	public String getFilename() {
 		try {
-			return throwExceptionForNullBlob(getGoogleStorageObject()).getName();
+			return throwExceptionForNullBlob(getGcsBlob()).getName();
 		}
 		catch (IOException e) {
 			return null;
@@ -193,7 +241,7 @@ public class GoogleStorageResourceObject implements WritableResource {
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		return Channels.newInputStream(throwExceptionForNullBlob(getGoogleStorageObject()).reader());
+		return Channels.newInputStream(throwExceptionForNullBlob(getGcsBlob()).reader());
 	}
 
 	@Override
@@ -201,17 +249,29 @@ public class GoogleStorageResourceObject implements WritableResource {
 		return true;
 	}
 
+	/**
+	 * Returns the output stream for a Google Cloud Storage file.
+	 * @return the object's output stream or {@code null} if the object doesn't exist and cannot be
+	 * created
+	 * @throws IOException
+	 */
 	@Override
 	public OutputStream getOutputStream() throws IOException {
-		Blob blob = getGoogleStorageObject();
-		if ((blob == null || !blob.exists()) && this.createBlobIfNotExists) {
-			blob = createBlob();
+		Blob blob = getGcsBlob();
+
+		if (blob == null || !blob.exists()) {
+			if (!this.createBlobIfNotExists) {
+				throw new FileNotFoundException("The blob was not found: " + this.location);
+			}
+
+			blob = create();
 		}
-		return Channels.newOutputStream(throwExceptionForNullBlob(blob).writer());
+
+		return Channels.newOutputStream(blob.writer());
 	}
 
-	GoogleStorageResourceBucket getBucket() throws IOException {
-		return new GoogleStorageResourceBucket(this.storage, getBlobId().getBucket(),
-				this.createBlobIfNotExists);
+	GoogleStorageResourceBucket getResourceBucket() throws IOException {
+		return new GoogleStorageResourceBucket(
+				this.storage, getBlobId().getBucket(), this.createBlobIfNotExists);
 	}
 }

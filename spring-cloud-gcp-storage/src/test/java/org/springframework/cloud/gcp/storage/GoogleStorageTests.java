@@ -26,6 +26,7 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Bucket;
+import com.google.cloud.storage.HttpMethod;
 import com.google.cloud.storage.Storage;
 
 import org.junit.Assert;
@@ -202,7 +203,7 @@ public class GoogleStorageTests {
 
 		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
 		GoogleStorageResourceObject spyResource = spy(resource);
-		doReturn(this.bucketResource).when(spyResource).getBucket();
+		doReturn(this.bucketResource).when(spyResource).getResourceBucket();
 		OutputStream os = spyResource.getOutputStream();
 		Assert.assertNotNull(os);
 	}
@@ -225,7 +226,7 @@ public class GoogleStorageTests {
 
 		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
 		GoogleStorageResourceObject spyResource = spy(resource);
-		doReturn(this.bucketResource).when(spyResource).getBucket();
+		doReturn(this.bucketResource).when(spyResource).getResourceBucket();
 		OutputStream os = spyResource.getOutputStream();
 		Assert.assertNotNull(os);
 	}
@@ -282,8 +283,8 @@ public class GoogleStorageTests {
 	public void nullSignedUrlForNullBlob() throws IOException {
 		String location = "gs://test-spring/t1/test.png";
 		Storage storage = mock(Storage.class);
-		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage,
-				location);
+		GoogleStorageResourceObject resource =
+				new GoogleStorageResourceObject(storage, location, false);
 		when(storage.get(any(BlobId.class))).thenReturn(null);
 		Assert.assertNull(resource.createSignedUrl(TimeUnit.DAYS, 1));
 	}
@@ -297,8 +298,9 @@ public class GoogleStorageTests {
 		when(blob.getName()).thenReturn("fakeObject");
 		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(storage, location);
 		when(storage.get(any(BlobId.class))).thenReturn(blob);
-		resource.createSignedUrl(TimeUnit.DAYS, 1L);
-		verify(storage, times(1)).signUrl(any(), eq(1L), eq(TimeUnit.DAYS));
+		Storage.SignUrlOption option = Storage.SignUrlOption.httpMethod(HttpMethod.PUT);
+		resource.createSignedUrl(TimeUnit.DAYS, 1L, option);
+		verify(storage, times(1)).signUrl(any(), eq(1L), eq(TimeUnit.DAYS), eq(option));
 	}
 
 	@Configuration

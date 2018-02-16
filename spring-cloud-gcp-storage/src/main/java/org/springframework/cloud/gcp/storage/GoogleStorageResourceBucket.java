@@ -28,7 +28,6 @@ import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.WritableResource;
 import org.springframework.util.Assert;
 
@@ -36,6 +35,7 @@ import org.springframework.util.Assert;
  * Implements {@link WritableResource} for buckets in Google Cloud Storage.
  *
  * @author Chengyuan Zhao
+ * @author João André Martins
  */
 public class GoogleStorageResourceBucket implements WritableResource {
 
@@ -43,8 +43,16 @@ public class GoogleStorageResourceBucket implements WritableResource {
 
 	private final String bucketName;
 
-	private final boolean createBucketIfRequired;
+	private final boolean createBucketIfNotExists;
 
+	/**
+	 * Constructs the resource representation of a GCS bucket.
+	 * @param storage the Google Cloud Storage client
+	 * @param bucketName the name of the bucket
+	 * @param createBucketIfNotExists determines bucket auto-creation when another operation that
+	 *                                depends on the existence of this bucket is executed (e.g.,
+	 *                                creating a file in the bucket)
+	 */
 	public GoogleStorageResourceBucket(Storage storage, String bucketName,
 			boolean createBucketIfNotExists) {
 		Assert.notNull(storage, "Storage object can not be null");
@@ -52,16 +60,23 @@ public class GoogleStorageResourceBucket implements WritableResource {
 
 		this.storage = storage;
 		this.bucketName = bucketName;
-		this.createBucketIfRequired = createBucketIfNotExists;
+		this.createBucketIfNotExists = createBucketIfNotExists;
 	}
 
-	public void createBucket() {
-		this.storage.create(BucketInfo.newBuilder(this.bucketName).build());
+	/**
+	 * Creates the bucket that this {@link GoogleStorageResourceBucket} represents in Google Cloud
+	 * Storage.
+	 * @return the {@link com.google.cloud.storage.Bucket} object for the bucket
+	 * @throws com.google.cloud.storage.StorageException if any errors during bucket creation arise,
+	 * such as if the bucket already exists
+	 */
+	public Bucket create() {
+		return this.storage.create(BucketInfo.newBuilder(this.bucketName).build());
 	}
 
 	@Override
 	public boolean exists() {
-		return resolve() != null;
+		return getGcsBucket() != null;
 	}
 
 	@Override
@@ -109,12 +124,26 @@ public class GoogleStorageResourceBucket implements WritableResource {
 				"Cannot get last-modified for a storage bucket.");
 	}
 
+	/**
+	 * Creates a file within a given bucket. The file resource inherits
+	 * {@code createBlobIfNotExists} from this bucket's {@code createBucketIfNotExists}.
+	 *
+	 * <p>If the file did not exist in Google Cloud Storage, it is created by this method.
+	 * @param relativePath the URL for a Google Cloud Storage bucket
+	 * @return the {@link GoogleStorageResourceObject} object for the created file
+	 * @throws IOException
+	 */
 	@Override
-	public Resource createRelative(String relativePath) throws IOException {
-		return new GoogleStorageResourceObject(this.storage,
+	public GoogleStorageResourceObject createRelative(String relativePath) throws IOException {
+		GoogleStorageResourceObject resource = new GoogleStorageResourceObject(this.storage,
 				getURI().toString() + (relativePath.startsWith("/") ? "" : "/")
 						+ relativePath,
-				this.createBucketIfRequired);
+				this.createBucketIfNotExists);
+		if (!resource.exists()) {
+			resource.create();
+		}
+
+		return resource;
 	}
 
 	@Override
@@ -144,7 +173,11 @@ public class GoogleStorageResourceBucket implements WritableResource {
 				"Cannot get output stream for a storage bucket.");
 	}
 
-	private Bucket resolve() {
+	private Bucket getGcsBucket() {
 		return this.storage.get(this.bucketName);
+	}
+
+	public boolean isCreateBucketIfNotExists() {
+		return this.createBucketIfNotExists;
 	}
 }

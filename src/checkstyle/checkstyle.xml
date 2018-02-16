@@ -94,6 +94,7 @@
                              org.mockito.hamcrest.MockitoHamcrest.*,
                              org.hamcrest.collection.IsCollectionWithSize.*,
                              org.assertj.core.api.Assertions.*,
+                             org.assertj.core.api.Assumptions.*,
                              org.mockito.BDDMockito.*"
                       />
         </module>

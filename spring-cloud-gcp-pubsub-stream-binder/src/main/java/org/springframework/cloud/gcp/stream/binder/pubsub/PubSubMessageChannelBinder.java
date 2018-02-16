@@ -57,25 +57,19 @@ public class PubSubMessageChannelBinder
 	@Override
 	protected MessageHandler createProducerMessageHandler(ProducerDestination destination,
 			ExtendedProducerProperties<PubSubProducerProperties> producerProperties,
-			MessageChannel errorChannel) throws Exception {
-
-		this.provisioningProvider.provisionProducerDestination(
-				destination.getName(), producerProperties);
-
+			MessageChannel errorChannel) {
 		return new PubSubMessageHandler(this.pubSubTemplate, destination.getName());
 	}
 
 	@Override
 	protected MessageProducer createConsumerEndpoint(ConsumerDestination destination, String group,
-			ExtendedConsumerProperties<PubSubConsumerProperties> properties) throws Exception {
+			ExtendedConsumerProperties<PubSubConsumerProperties> properties) {
+		PubSubInboundChannelAdapter inboundAdapter =
+				new PubSubInboundChannelAdapter(this.pubSubTemplate, destination.getName());
+		// Lets Stream do the message payload conversion.
+		inboundAdapter.setMessageConverter(null);
 
-		String consumerName = group == null
-				? destination.getName() : destination.getName() + "-" + group;
-
-		this.provisioningProvider.provisionConsumerDestination(
-				consumerName, group, properties);
-
-		return new PubSubInboundChannelAdapter(this.pubSubTemplate, destination.getName());
+		return inboundAdapter;
 	}
 
 	@Override
@@ -87,6 +81,5 @@ public class PubSubMessageChannelBinder
 	public PubSubProducerProperties getExtendedProducerProperties(String channelName) {
 		return this.pubSubExtendedBindingProperties.getExtendedProducerProperties(channelName);
 	}
-
 
 }
