@@ -14,5 +14,3 @@ install:
 before_script:
   - gcloud beta emulators pubsub start &
   - $(gcloud beta emulators pubsub env-init)
-#script:
-#  - ./mvnw clean install
