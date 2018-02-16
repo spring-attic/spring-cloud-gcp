@@ -200,7 +200,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 			}
 
 			Class retType = method.getReturnType();
-			if (propType.isAssignableFrom(retType)) {
+			if (retType.isAssignableFrom(retType)) {
 				return method;
 			}
 		}
@@ -209,7 +209,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 
 	private boolean isIterableNonByteArrayType(Class propType) {
 		return Iterable.class.isAssignableFrom(propType)
-				&& !ByteArray.class.equals(propType);
+				&& !ByteArray.class.isAssignableFrom(propType);
 	}
 
 	/**

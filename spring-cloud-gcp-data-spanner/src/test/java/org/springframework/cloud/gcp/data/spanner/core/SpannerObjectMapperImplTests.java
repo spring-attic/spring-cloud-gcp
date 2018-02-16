@@ -22,6 +22,7 @@ import java.util.List;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
+import com.google.cloud.TestSubByteArray;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
@@ -29,7 +30,9 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.ValueBinder;
+import com.google.protobuf.ByteString;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -187,7 +190,6 @@ public class SpannerObjectMapperImplTests {
 
 	@Test
 	public void mapToListTest() {
-
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
 				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
@@ -223,6 +225,7 @@ public class SpannerObjectMapperImplTests {
 
 		List<TestEntity> entities = this.objectMapper.mapToList(results,
 				TestEntity.class);
+
 		assertEquals(2, entities.size());
 
 		TestEntity t1 = entities.get(0);
@@ -248,6 +251,41 @@ public class SpannerObjectMapperImplTests {
 		assertEquals(3.33, t2.doubleList.get(0), 0.000001);
 		assertThat(t2.stringList, containsInAnyOrder("string"));
 		assertNull(t2.bytes);
+	}
+
+	@Ignore("We have to fix this if we want to support subclasses. "
+			+ "But I think we should not support subclasses!")
+	@Test
+	public void readWithByteArraySubclass() {
+		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
+				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
+
+		TestEntityWithSubClass entity = this.objectMapper.read(TestEntityWithSubClass.class, struct1);
+
+		assertEquals(TestSubByteArray.copyFrom("string1"), entity.testSubByteArray);
+	}
+
+
+	@Test
+	public void writeWithByteArraySubclass() {
+		TestEntityWithSubClass entity = new TestEntityWithSubClass();
+		entity.id = "key1";
+		entity.testSubByteArray = new TestSubByteArray(ByteString.copyFrom("hello".getBytes()));
+
+		WriteBuilder writeBuilder = mock(WriteBuilder.class);
+
+		ValueBinder<WriteBuilder> idBinder = mock(ValueBinder.class);
+		when(idBinder.to(anyString())).thenReturn(null);
+		when(writeBuilder.set(eq("id"))).thenReturn(idBinder);
+
+		ValueBinder<WriteBuilder> bytesFieldBinder = mock(ValueBinder.class);
+		when(bytesFieldBinder.to((TestSubByteArray) any())).thenReturn(null);
+		when(writeBuilder.set(eq("bytes"))).thenReturn(bytesFieldBinder);
+
+		System.out.println(ByteArray.class.isAssignableFrom(TestSubByteArray.class));
+		this.objectMapper.write(entity, writeBuilder);
+
+		verify(bytesFieldBinder, times(1)).to(eq(entity.testSubByteArray));
 	}
 
 	@Test(expected = SpannerDataException.class)
@@ -278,6 +316,7 @@ public class SpannerObjectMapperImplTests {
 		this.objectMapper.read(TestEntity.class, struct1);
 	}
 
+
 	@Test(expected = SpannerDataException.class)
 	public void writeUnannotatedIterableTest() {
 		FaultyTestEntity ft = new FaultyTestEntity();
@@ -289,14 +328,14 @@ public class SpannerObjectMapperImplTests {
 	@Test(expected = SpannerDataException.class)
 	public void writeUnsupportedTypeIterableTest() {
 		FaultyTestEntity2 ft = new FaultyTestEntity2();
-		ft.unuseableList = new ArrayList<>();
+		ft.listWithUnsupportedInnerType = new ArrayList<TestEntity>();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table_2");
 		this.objectMapper.write(ft, writeBuilder);
 	}
 
 	@Test(expected = SpannerDataException.class)
 	public void readUnmatachableTypesTest() {
-		Struct struct1 = Struct.newBuilder().add("unuseableField", Value.string("key1"))
+		Struct struct1 = Struct.newBuilder().add("fieldWithUnsupportedType", Value.string("key1"))
 				.build();
 		this.objectMapper.read(FaultyTestEntity.class, struct1);
 	}
@@ -304,10 +343,32 @@ public class SpannerObjectMapperImplTests {
 	@Test(expected = SpannerDataException.class)
 	public void writeIncompatibleTypeTest() {
 		FaultyTestEntity ft = new FaultyTestEntity();
-		ft.unuseableField = new TestEntity();
+		ft.fieldWithUnsupportedType = new TestEntity();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
 		this.objectMapper.write(ft, writeBuilder);
 	}
+
+
+	@SpannerTable(name = "subclass_test_table")
+	private static class TestEntityWithSubClass {
+		@Id
+		String id;
+
+		@SpannerColumn(name = "bytes")
+		TestSubByteArray testSubByteArray;
+
+	}
+
+	@SpannerTable(name = "object_test_table")
+	private static class TestEntityWithObject {
+		@Id
+		String id;
+
+		@SpannerColumn(name = "bytes")
+		Object testSubByteArray;
+
+	}
+
 
 	@SpannerTable(name = "custom_test_table")
 	private static class TestEntity {
@@ -356,16 +417,17 @@ public class SpannerObjectMapperImplTests {
 
 	@SpannerTable(name = "faulty_test_table")
 	private static class FaultyTestEntity {
-		TestEntity unuseableField;
+		TestEntity fieldWithUnsupportedType;
 
 		List<Double> doubleList;
 	}
+
 
 	@SpannerTable(name = "faulty_test_table_2")
 	private static class FaultyTestEntity2 {
 
 		@SpannerColumnInnerType(innerType = TestEntity.class)
-		List<TestEntity> unuseableList;
+		List<TestEntity> listWithUnsupportedInnerType;
 	}
 
 	private static class MockResults {
