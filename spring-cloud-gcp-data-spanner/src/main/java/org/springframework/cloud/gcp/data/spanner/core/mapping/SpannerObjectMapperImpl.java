@@ -18,15 +18,12 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -35,7 +32,6 @@ import com.google.cloud.spanner.AbstractStructReader;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
-import com.google.cloud.spanner.StructReader;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.ValueBinder;
 import com.google.common.collect.ImmutableMap;
@@ -50,14 +46,6 @@ import org.springframework.util.Assert;
 public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 
 	private final SpannerMappingContext spannerMappingContext;
-
-	// used for caching the methods used for reading to entities. Does not contain the
-	// methods for properties with inner types, such as Iterable.
-	private final Map<Class, Method> propertyReadMethodMapping = new HashMap<>();
-
-	// used for caching the methods used for writing to mutations. Does not contain the
-	// methods for properties with inner types, such as Iterable.
-	private final Map<Class, Method> propertyType2ToMethodMap = new HashMap<>();
 
 	private static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>>
 			iterablePropertyType2ToMethodMap;
@@ -90,6 +78,50 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 					.put(ByteArray.class, AbstractStructReader::getBytesList)
 					.build();
 
+	private static final Map<Class, BiFunction<Struct, String, ?>> singleItemReadMethodMapping =
+			new ImmutableMap.Builder<Class, BiFunction<Struct, String, ?>>()
+			.put(Boolean.class, AbstractStructReader::getBoolean)
+			.put(Long.class, AbstractStructReader::getLong)
+			.put(String.class, AbstractStructReader::getString)
+			.put(Double.class, AbstractStructReader::getDouble)
+			.put(Timestamp.class, AbstractStructReader::getTimestamp)
+			.put(Date.class, AbstractStructReader::getDate)
+			.put(ByteArray.class, AbstractStructReader::getBytes)
+			.put(double[].class, AbstractStructReader::getDoubleArray)
+			.put(long[].class, AbstractStructReader::getLongArray)
+			.put(boolean[].class, AbstractStructReader::getBooleanArray).build();
+
+	private static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, ?>>
+			singleItemType2ToMethodMap;
+
+	static {
+		ImmutableMap.Builder<Class, BiConsumer<ValueBinder<WriteBuilder>, ?>> builder =
+				new ImmutableMap.Builder<>();
+
+		builder.put(Date.class,
+				((BiConsumer<ValueBinder<WriteBuilder>, Date>) ValueBinder::to));
+		builder.put(Boolean.class,
+				((BiConsumer<ValueBinder<WriteBuilder>, Boolean>) ValueBinder::to));
+		builder.put(Long.class,
+				((BiConsumer<ValueBinder<WriteBuilder>, Long>) ValueBinder::to));
+		builder.put(String.class,
+				((BiConsumer<ValueBinder<WriteBuilder>, String>) ValueBinder::to));
+		builder.put(Double.class,
+				((BiConsumer<ValueBinder<WriteBuilder>, Double>) ValueBinder::to));
+		builder.put(Timestamp.class,
+				((BiConsumer<ValueBinder<WriteBuilder>, Timestamp>) ValueBinder::to));
+		builder.put(ByteArray.class,
+				((BiConsumer<ValueBinder<WriteBuilder>, ByteArray>) ValueBinder::to));
+		builder.put(double[].class,
+				((BiConsumer<ValueBinder<WriteBuilder>, double[]>) ValueBinder::toFloat64Array));
+		builder.put(boolean[].class,
+				((BiConsumer<ValueBinder<WriteBuilder>, boolean[]>) ValueBinder::toBoolArray));
+		builder.put(long[].class,
+				((BiConsumer<ValueBinder<WriteBuilder>, long[]>) ValueBinder::toInt64Array));
+
+		singleItemType2ToMethodMap = builder.build();
+	}
+
 	public SpannerObjectMapperImpl(SpannerMappingContext spannerMappingContext) {
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
@@ -103,6 +135,50 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 			result.add(read(entityClass, resultSet.getCurrentRowAsStruct()));
 		}
 		return result;
+	}
+
+	private static Class boxIfNeeded(Class propertyType) {
+		if (propertyType == null) {
+			return null;
+		}
+		return propertyType.isPrimitive()
+				? Array.get(Array.newInstance(propertyType, 1), 0).getClass()
+				: propertyType;
+	}
+
+	private <R> R instantiate(Class<R> type) {
+		R object;
+		try {
+			Constructor<R> constructor = type.getDeclaredConstructor();
+			constructor.setAccessible(true);
+			object = constructor.newInstance();
+		}
+		catch (ReflectiveOperationException e) {
+			throw new SpannerDataException(
+					"Unable to create a new instance of entity using default constructor.",
+					e);
+		}
+		return object;
+	}
+
+	private boolean isIterableNonByteArrayType(Class propType) {
+		return Iterable.class.isAssignableFrom(propType)
+				&& !ByteArray.class.isAssignableFrom(propType);
+	}
+
+	/**
+	 * Writes each of the source
+	 * properties to the sink.
+	 */
+	@Override
+	public void write(Object source, WriteBuilder sink) {
+		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
+				.getPersistentEntity(source.getClass());
+		PersistentPropertyAccessor accessor = persistentEntity
+				.getPropertyAccessor(source);
+		persistentEntity.doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> writeProperty(
+						sink, accessor, spannerPersistentProperty));
 	}
 
 	@Override
@@ -129,7 +205,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 				continue;
 			}
 
-			boolean valueSet = false;
+			boolean valueSet;
 
 			/*
 			 * Due to type erasure, binder methods for Iterable properties must be
@@ -140,26 +216,8 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 				valueSet = attemptReadIterableValue(property, source, columnName, accessor);
 			}
 			else {
-				Method getMethod = this.propertyReadMethodMapping.get(propType);
-				if (getMethod == null) {
-					getMethod = findReadMethod(propType);
-				}
-				if (getMethod != null) {
-					try {
-						accessor.setProperty(property, getMethod.invoke(source, columnName));
-						this.propertyReadMethodMapping.put(propType, getMethod);
-						valueSet = true;
-					}
-					catch (ReflectiveOperationException e) {
-						throw new SpannerDataException(
-								String.format(
-										"Could not set value for property in entity. Value type is %s"
-												+ " , entity's property type is %s",
-										getMethod.getReturnType(),
-										propType),
-								e);
-					}
-				}
+				valueSet = attemptReadSingleItemValue(property, source, columnName,
+						accessor);
 			}
 
 			if (!valueSet) {
@@ -170,60 +228,6 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 			}
 		}
 		return object;
-	}
-
-	private <R> R instantiate(Class<R> type) {
-		R object;
-		try {
-			Constructor<R> constructor = type.getDeclaredConstructor();
-			constructor.setAccessible(true);
-			object = constructor.newInstance();
-		}
-		catch (ReflectiveOperationException e) {
-			throw new SpannerDataException(
-					"Unable to create a new instance of entity using default constructor.",
-					e);
-		}
-		return object;
-	}
-
-	private Method findReadMethod(Class propType) {
-		for (Method method : StructReader.class.getMethods()) {
-			// the retrieval methods are named like getDate or getTimestamp
-			if (!method.getName().startsWith("get")) {
-				continue;
-			}
-
-			Class[] params = method.getParameterTypes();
-			if (params.length != 1 || !String.class.isAssignableFrom(params[0])) {
-				continue;
-			}
-
-			Class retType = method.getReturnType();
-			if (retType.isAssignableFrom(retType)) {
-				return method;
-			}
-		}
-		return null;
-	}
-
-	private boolean isIterableNonByteArrayType(Class propType) {
-		return Iterable.class.isAssignableFrom(propType)
-				&& !ByteArray.class.isAssignableFrom(propType);
-	}
-
-	/**
-	 * Writes each of the <pre>source</pre> properties to the sink.
-	 */
-	@Override
-	public void write(Object source, WriteBuilder sink) {
-		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
-				.getPersistentEntity(source.getClass());
-		PersistentPropertyAccessor accessor = persistentEntity
-				.getPropertyAccessor(source);
-		persistentEntity.doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>)
-						spannerPersistentProperty -> writeProperty(sink, accessor, spannerPersistentProperty));
 	}
 
 	/**
@@ -252,7 +256,7 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 		Class<?> propertyType = property.getType();
 		ValueBinder<WriteBuilder> valueBinder = sink.set(property.getColumnName());
 
-		boolean valueSet = false;
+		boolean valueSet;
 
 		/*
 		 * Due to type erasure, binder methods for Iterable properties must be
@@ -264,50 +268,13 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 					property);
 		}
 		else {
-			Method toMethod = this.propertyType2ToMethodMap.get(propertyType);
-
-			Class testPropertyType = boxIfNeeded(propertyType);
-
-			// Attempt an exact match first
-			if (toMethod == null) {
-				toMethod = findToMethod((paramType) -> paramType.equals(testPropertyType));
-			}
-			if (toMethod == null) {
-				toMethod = findToMethod((paramType) -> paramType.isAssignableFrom(testPropertyType));
-			}
-			if (toMethod != null) {
-				try {
-					toMethod.invoke(valueBinder, propertyValue);
-					this.propertyType2ToMethodMap.put(propertyType, toMethod);
-					valueSet = true;
-				}
-				catch (ReflectiveOperationException e) {
-					throw new SpannerDataException(
-							"Could not set value for write mutation.", e);
-				}
-			}
+			valueSet = attemptSetSingleItemValue(propertyValue, valueBinder, property);
 		}
 
 		if (!valueSet) {
 			throw new SpannerDataException(String.format(
 					"Unsupported mapping for type: %s", propertyValue.getClass()));
 		}
-	}
-
-	private <T> boolean handleIterableInnerTypeMapping(
-			SpannerPersistentProperty spannerPersistentProperty,
-			Map<Class, T> innerTypeMapping, Consumer<T> innerTypeMappingOperation) {
-		Class innerType = spannerPersistentProperty.getColumnInnerType();
-		if (innerType == null) {
-			return false;
-		}
-		for (Class type : innerTypeMapping.keySet()) {
-			if (type.isAssignableFrom(innerType)) {
-				innerTypeMappingOperation.accept(innerTypeMapping.get(type));
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private boolean attemptSetIterableValue(Iterable value,
@@ -327,28 +294,44 @@ public class SpannerObjectMapperImpl implements SpannerObjectMapper {
 						readerFunction.apply(struct, colName)));
 	}
 
-	private Method findToMethod(Predicate<Class> matchFunction) {
-		for (Method method : ValueBinder.class.getMethods()) {
-			// the binding methods are named like to() or toInt64Array()
-			if (!method.getName().startsWith("to")) {
-				continue;
-			}
-
-			Class[] params = method.getParameterTypes();
-			if (params.length != 1) {
-				continue;
-			}
-
-			if (matchFunction.test(params[0])) {
-				return method;
+	private <T> boolean handleIterableInnerTypeMapping(
+			SpannerPersistentProperty spannerPersistentProperty,
+			Map<Class, T> innerTypeMapping, Consumer<T> innerTypeMappingOperation) {
+		Class innerType = boxIfNeeded(spannerPersistentProperty.getColumnInnerType());
+		if (innerType == null) {
+			return false;
+		}
+		for (Class type : innerTypeMapping.keySet()) {
+			if (type.isAssignableFrom(innerType)) {
+				innerTypeMappingOperation.accept(innerTypeMapping.get(type));
+				return true;
 			}
 		}
-		return null;
+		return false;
 	}
 
-	private Class boxIfNeeded(Class propertyType) {
-		return propertyType.isPrimitive() ?
-				Array.get(Array.newInstance(propertyType, 1), 0).getClass()
-				: propertyType;
+	private boolean attemptReadSingleItemValue(
+			SpannerPersistentProperty spannerPersistentProperty, Struct struct,
+			String colName, PersistentPropertyAccessor accessor) {
+		BiFunction readFunction = singleItemReadMethodMapping
+				.get(boxIfNeeded(spannerPersistentProperty.getType()));
+		if (readFunction == null) {
+			return false;
+		}
+		accessor.setProperty(spannerPersistentProperty,
+				readFunction.apply(struct, colName));
+		return true;
+	}
+
+	private boolean attemptSetSingleItemValue(Object value,
+			ValueBinder<WriteBuilder> valueBinder,
+			SpannerPersistentProperty spannerPersistentProperty) {
+		BiConsumer setterMethod = singleItemType2ToMethodMap
+				.get(boxIfNeeded(spannerPersistentProperty.getType()));
+		if (setterMethod == null) {
+			return false;
+		}
+		setterMethod.accept(valueBinder, value);
+		return true;
 	}
 }
