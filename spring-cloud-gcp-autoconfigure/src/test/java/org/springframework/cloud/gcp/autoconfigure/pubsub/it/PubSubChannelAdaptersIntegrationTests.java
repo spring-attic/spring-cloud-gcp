@@ -49,8 +49,8 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.PollableChannel;
+import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
@@ -104,6 +104,14 @@ public class PubSubChannelAdaptersIntegrationTests {
 	public void setUp() {
 		this.pubSubAdmin.createTopic("desafinado");
 		this.pubSubAdmin.createSubscription("doralice", "desafinado");
+
+		// Sets the defaults of the fields we'll change in later tests, so we don't need to use
+		// @DirtiesContext, which is performance unfriendly.
+		StringMessageConverter stringMessageConverter = new StringMessageConverter();
+		stringMessageConverter.setSerializedPayloadClass(String.class);
+		this.inboundChannelAdapter.setMessageConverter(stringMessageConverter);
+		this.inboundChannelAdapter.setAckMode(AckMode.AUTO);
+		this.outboundChannelAdapter.setPublishCallback(null);
 	}
 
 	@After
@@ -136,7 +144,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 	}
 
 	@Test
-	@DirtiesContext
 	public void sendAndReceiveMessageInBytes() {
 		this.inboundChannelAdapter.setMessageConverter(null);
 		this.inputChannel.send(MessageBuilder.withPayload("I am a message.").build());
@@ -149,7 +156,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 	}
 
 	@Test
-	@DirtiesContext
 	public void sendAndReceiveMessageManualAck() {
 		this.inboundChannelAdapter.setAckMode(AckMode.MANUAL);
 		this.inputChannel.send(MessageBuilder.withPayload("I am a message.").build());
@@ -170,7 +176,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 	}
 
 	@Test
-	@DirtiesContext
 	public void sendAndReceiveMessagePublishCallback() {
 		ListenableFutureCallback<String> callbackSpy = Mockito.spy(new ListenableFutureCallback<String>() {
 			@Override
