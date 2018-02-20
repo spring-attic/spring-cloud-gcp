@@ -30,7 +30,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubEmulatorConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties;
@@ -43,7 +42,6 @@ import org.springframework.cloud.gcp.pubsub.integration.outbound.PubSubMessageHa
 import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
@@ -66,15 +64,14 @@ import static org.mockito.Mockito.verify;
  * @author João André Martins
  */
 @SpringBootTest(
-		properties = {"spring.cloud.gcp.pubsub.emulatorHost=localhost:8085"},
-		classes = {GcpPubSubAutoConfiguration.class,
+		properties = {"spring.cloud.gcp.pubsub.emulatorHost=${PUBSUB_EMULATOR_HOST}"},
+		classes = {PubSubChannelAdaptersIntegrationTests.IntegrationConfiguration.class,
 				GcpPubSubEmulatorConfiguration.class,
-				GcpContextAutoConfiguration.class,
-				PubSubChannelAdaptersIT.IntegrationConfiguration.class
+				GcpPubSubAutoConfiguration.class
 		}
 )
 @RunWith(SpringRunner.class)
-public class PubSubChannelAdaptersIT {
+public class PubSubChannelAdaptersIntegrationTests {
 
 	private static final String EMULATOR_HOST_ENVVAR_NAME = "PUBSUB_EMULATOR_HOST";
 
@@ -175,7 +172,7 @@ public class PubSubChannelAdaptersIT {
 	@Test
 	@DirtiesContext
 	public void sendAndReceiveMessagePublishCallback() {
-		ListenableFutureCallback callbackSpy = Mockito.spy(new ListenableFutureCallback<String>() {
+		ListenableFutureCallback<String> callbackSpy = Mockito.spy(new ListenableFutureCallback<String>() {
 			@Override
 			public void onFailure(Throwable ex) {
 
@@ -199,7 +196,6 @@ public class PubSubChannelAdaptersIT {
 	static class IntegrationConfiguration {
 
 		@Autowired
-		@Lazy
 		private PubSubTemplate pubSubTemplate;
 
 		@Bean
