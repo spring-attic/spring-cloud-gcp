@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,12 +21,10 @@ import java.util.concurrent.Executors;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
@@ -39,6 +37,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
@@ -53,6 +52,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 @Configuration
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
@@ -77,10 +77,7 @@ public class GcpPubSubAutoConfiguration {
 				? gcpPubSubProperties::getProjectId
 				: gcpProjectIdProvider;
 		this.finalCredentialsProvider = gcpPubSubProperties.getCredentials().getLocation() != null
-				? FixedCredentialsProvider.create(
-						GoogleCredentials.fromStream(
-								gcpPubSubProperties.getCredentials().getLocation().getInputStream())
-								.createScoped(gcpPubSubProperties.getCredentials().getScopes()))
+				? new DefaultCredentialsProvider(gcpPubSubProperties)
 				: credentialsProvider;
 	}
 
