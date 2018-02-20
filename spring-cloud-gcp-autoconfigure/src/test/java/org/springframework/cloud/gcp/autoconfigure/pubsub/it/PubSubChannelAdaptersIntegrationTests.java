@@ -166,12 +166,12 @@ public class PubSubChannelAdaptersIntegrationTests {
 				(AckReplyConsumer) message.getHeaders().get(GcpHeaders.ACKNOWLEDGEMENT);
 		assertThat(acker).isNotNull();
 		acker.nack();
-		message = this.channel.receive(5000);
+		message = this.channel.receive(1000);
 		assertThat(message).isNotNull();
 		acker = (AckReplyConsumer) message.getHeaders().get(GcpHeaders.ACKNOWLEDGEMENT);
 		assertThat(acker).isNotNull();
 		acker.ack();
-		message = this.channel.receive(5000);
+		message = this.channel.receive(1000);
 		assertThat(message).isNull();
 	}
 
