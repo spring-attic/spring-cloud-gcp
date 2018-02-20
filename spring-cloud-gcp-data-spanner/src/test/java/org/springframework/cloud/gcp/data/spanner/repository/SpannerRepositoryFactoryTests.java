@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.spanner.repository;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
@@ -28,7 +27,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -38,7 +36,6 @@ import static org.mockito.Mockito.when;
 /**
  * @author Chengyuan Zhao
  */
-@RunWith(SpringRunner.class)
 public class SpannerRepositoryFactoryTests {
 
 	private SpannerRepositoryFactory spannerRepositoryFactory;

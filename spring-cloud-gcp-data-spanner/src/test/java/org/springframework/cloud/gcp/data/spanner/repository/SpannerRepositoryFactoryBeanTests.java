@@ -18,12 +18,10 @@ package org.springframework.cloud.gcp.data.spanner.repository;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -31,7 +29,6 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Chengyuan Zhao
  */
-@RunWith(SpringRunner.class)
 public class SpannerRepositoryFactoryBeanTests {
 
 	private SpannerRepositoryFactoryBean spannerRepositoryFactoryBean;

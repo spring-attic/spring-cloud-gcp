@@ -55,6 +55,7 @@ public class SpannerRepositoryImpl implements SpannerRepository {
 
 	@Override
 	public Iterable saveAll(Iterable entities) {
+		Assert.notNull(entities, "A non-null list of entities is required for saving.");
 		for (Object entity : entities) {
 			save(entity);
 		}
@@ -63,11 +64,13 @@ public class SpannerRepositoryImpl implements SpannerRepository {
 
 	@Override
 	public Optional findById(Object o) {
+		Assert.notNull(o, "A non-null ID is required.");
 		return Optional.ofNullable(this.spannerOperations.find(this.entityType, Key.of(o)));
 	}
 
 	@Override
 	public boolean existsById(Object o) {
+		Assert.notNull(o, "A non-null ID is required.");
 		return findById(o).isPresent();
 	}
 
@@ -92,16 +95,19 @@ public class SpannerRepositoryImpl implements SpannerRepository {
 
 	@Override
 	public void deleteById(Object o) {
+		Assert.notNull(o, "A non-null ID is required.");
 		this.spannerOperations.delete(this.entityType, Key.of(o));
 	}
 
 	@Override
 	public void delete(Object entity) {
+		Assert.notNull(entity, "A non-null entity is required.");
 		this.spannerOperations.delete(entity);
 	}
 
 	@Override
 	public void deleteAll(Iterable entities) {
+		Assert.notNull(entities, "A non-null list of entities is required.");
 		this.spannerOperations.delete(this.entityType, entities);
 	}
 

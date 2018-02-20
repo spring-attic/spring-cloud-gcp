@@ -21,12 +21,8 @@ import java.util.Arrays;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
@@ -46,7 +42,6 @@ import static org.mockito.Mockito.when;
 /**
  * @author Chengyuan Zhao
  */
-@RunWith(SpringRunner.class)
 public class SpannerRepositoryImplTests {
 
 	@Test(expected = IllegalArgumentException.class)
@@ -69,6 +64,42 @@ public class SpannerRepositoryImplTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void saveNullObjectTest() {
 		new SpannerRepositoryImpl(mock(SpannerOperations.class), Object.class).save(null);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void findNullIdTest() {
+		new SpannerRepositoryImpl(mock(SpannerOperations.class), Object.class)
+				.findById(null);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void existsNullIdTest() {
+		new SpannerRepositoryImpl(mock(SpannerOperations.class), Object.class)
+				.existsById(null);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void deleteNullIdTest() {
+		new SpannerRepositoryImpl(mock(SpannerOperations.class), Object.class)
+				.deleteById(null);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void deleteNullEntityTest() {
+		new SpannerRepositoryImpl(mock(SpannerOperations.class), Object.class)
+				.delete(null);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void deleteAllNullEntityTest() {
+		new SpannerRepositoryImpl(mock(SpannerOperations.class), Object.class)
+				.deleteAll(null);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void saveAllNullEntityTest() {
+		new SpannerRepositoryImpl(mock(SpannerOperations.class), Object.class)
+				.saveAll(null);
 	}
 
 	@Test
@@ -149,7 +180,6 @@ public class SpannerRepositoryImplTests {
 	public void deleteByIdTest() {
 		SpannerOperations operations = mock(SpannerOperations.class);
 		String key = "key";
-		Object ret = new Object();
 		new SpannerRepositoryImpl(operations, Object.class).deleteById(key);
 		verify(operations, times(1)).delete(eq(Object.class), eq(Key.of(key)));
 	}
@@ -166,13 +196,10 @@ public class SpannerRepositoryImplTests {
 	public void deleteManyObsTest() {
 		SpannerOperations operations = mock(SpannerOperations.class);
 		Iterable<String> obs = Arrays.asList("ob1", "ob2");
-		doAnswer(new Answer() {
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				Iterable<String> toDelete = invocation.getArgument(1);
-				assertThat(toDelete, containsInAnyOrder("ob1", "ob2"));
-				return null;
-			}
+		doAnswer(invocation -> {
+			Iterable<String> toDelete = invocation.getArgument(1);
+			assertThat(toDelete, containsInAnyOrder("ob1", "ob2"));
+			return null;
 		}).when(operations).delete(eq(String.class), same(obs));
 		new SpannerRepositoryImpl(operations, Object.class).deleteAll(obs);
 	}
