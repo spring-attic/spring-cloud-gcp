@@ -131,7 +131,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 		this.inputChannel.send(
 				MessageBuilder.createMessage("I am a message.",  new MessageHeaders(headers)));
 
-		Message<?> message = this.channel.receive(1000);
+		Message<?> message = this.channel.receive(5000);
 		assertThat(message).isNotNull();
 		assertThat(message.getPayload()).isInstanceOf(String.class);
 		String payload = (String) message.getPayload();
@@ -148,7 +148,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 		this.inboundChannelAdapter.setMessageConverter(null);
 		this.inputChannel.send(MessageBuilder.withPayload("I am a message.").build());
 
-		Message<?> message = this.channel.receive(1000);
+		Message<?> message = this.channel.receive(5000);
 		assertThat(message).isNotNull();
 		assertThat(message.getPayload()).isInstanceOf(byte[].class);
 		String stringPayload = new String((byte[]) message.getPayload());
@@ -160,18 +160,18 @@ public class PubSubChannelAdaptersIntegrationTests {
 		this.inboundChannelAdapter.setAckMode(AckMode.MANUAL);
 		this.inputChannel.send(MessageBuilder.withPayload("I am a message.").build());
 
-		Message<?> message = this.channel.receive(1000);
+		Message<?> message = this.channel.receive(5000);
 		assertThat(message).isNotNull();
 		AckReplyConsumer acker =
 				(AckReplyConsumer) message.getHeaders().get(GcpHeaders.ACKNOWLEDGEMENT);
 		assertThat(acker).isNotNull();
 		acker.nack();
-		message = this.channel.receive(1000);
+		message = this.channel.receive(5000);
 		assertThat(message).isNotNull();
 		acker = (AckReplyConsumer) message.getHeaders().get(GcpHeaders.ACKNOWLEDGEMENT);
 		assertThat(acker).isNotNull();
 		acker.ack();
-		message = this.channel.receive(1000);
+		message = this.channel.receive(5000);
 		assertThat(message).isNull();
 	}
 
@@ -191,7 +191,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 		this.outboundChannelAdapter.setPublishCallback(callbackSpy);
 		this.inputChannel.send(MessageBuilder.withPayload("I am a message.").build());
 
-		Message<?> message = this.channel.receive(1000);
+		Message<?> message = this.channel.receive(5000);
 		assertThat(message).isNotNull();
 		verify(callbackSpy, times(1)).onSuccess(any());
 	}
