@@ -1,4 +1,4 @@
-= Spring Cloud GCP SQL Code Sample
+= Spring Cloud GCP SQL Sample
 
 This code sample demonstrates how to connect to a Google Cloud SQL instance using the
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql/README.adoc[Spring Cloud GCP SQL
@@ -15,7 +15,7 @@ Cloud Project with billing enabled.
 https://console.cloud.google.com/sql/instances[Google Cloud Console Cloud SQL page].
 
 3. Still within the Google Cloud Console SQL page, create a new database in the instance from the
-"Databases" section. **We recommend you to setup a root password** for your instance (in PostgreSQL you have to).
+"Databases" section. **We recommend you to setup a root password** for your instance footnoteref:[passwordless, If you are using MySQL, you can actually create the database instance without root password!]
 **Take note of your root password**, as you will need it in the next step.
 
 4. Open the link:src/main/resources/application.properties[application.properties] file and replace
@@ -44,4 +44,3 @@ The database will be populated based on the link:src/main/resources/schema.sql[s
 link:src/main/resources/data.sql[data.sql] files.
 
 When the application is up, navigate to http://localhost:8080/getTuples in your browser to print the contents of the `users` table.
-

@@ -1,4 +1,4 @@
-= Spring Data JPA with Spring Cloud GCP SQL Code Sample
+= Spring Data JPA with Spring Cloud GCP SQL Sample
 
 This sample application demonstrates how to use
 https://projects.spring.io/spring-data-jpa/[Spring Data JPA] with the
@@ -15,7 +15,7 @@ Cloud Project with billing enabled.
 https://console.cloud.google.com/sql/instances[Google Cloud Console Cloud SQL page].
 
 3. Still within the Google Cloud Console SQL page, create a new database in the instance from the
-"Databases" section. **We recommend you to setup a root password** for your instance (in PostgreSQL you have to).
+"Databases" section. **We recommend you to setup a root password** for your instance footnoteref:[passwordless, if you are using MySQL, you can actually create the database instance without root password!]
 **Take note of your root password**, as you will need it in the next step.
 
 4. Open the link:src/main/resources/application.properties[application.properties] file and replace
