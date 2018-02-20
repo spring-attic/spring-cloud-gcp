@@ -29,7 +29,6 @@ import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -74,14 +73,13 @@ public class SpannerRepositoryFactoryTests {
 				.thenReturn((Class) SpannerRepositoryImpl.class);
 		when(repoInfo.getDomainType()).thenReturn((Class) TestEntity.class);
 		Object repo = this.spannerRepositoryFactory.getTargetRepository(repoInfo);
-		assertTrue(SpannerRepository.class.isAssignableFrom(repo.getClass()));
+		assertEquals(SpannerRepositoryImpl.class, repo.getClass());
 	}
 
 	@Test
 	public void getRepositoryBaseClassTest() {
 		Class baseClass = this.spannerRepositoryFactory.getRepositoryBaseClass(null);
-		assertTrue(baseClass.getDeclaredConstructors().length > 0);
-		assertTrue(SpannerRepository.class.isAssignableFrom(baseClass));
+		assertEquals(SpannerRepositoryImpl.class, baseClass);
 	}
 
 	@SpannerTable(name = "custom_test_table")
