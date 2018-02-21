@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.repository;
+package org.springframework.cloud.gcp.data.spanner.repository.support;
 
 import java.util.Arrays;
 
