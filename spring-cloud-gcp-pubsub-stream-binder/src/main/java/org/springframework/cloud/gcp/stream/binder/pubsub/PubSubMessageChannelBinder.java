@@ -64,7 +64,12 @@ public class PubSubMessageChannelBinder
 	@Override
 	protected MessageProducer createConsumerEndpoint(ConsumerDestination destination, String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties) {
-		return new PubSubInboundChannelAdapter(this.pubSubTemplate, destination.getName());
+		PubSubInboundChannelAdapter inboundAdapter =
+				new PubSubInboundChannelAdapter(this.pubSubTemplate, destination.getName());
+		// Lets Stream do the message payload conversion.
+		inboundAdapter.setMessageConverter(null);
+
+		return inboundAdapter;
 	}
 
 	@Override

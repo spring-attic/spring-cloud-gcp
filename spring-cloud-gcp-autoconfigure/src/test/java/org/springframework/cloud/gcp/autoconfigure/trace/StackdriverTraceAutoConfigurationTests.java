@@ -23,7 +23,7 @@ import javax.annotation.PostConstruct;
 
 import brave.Span;
 import brave.Tracer;
-import com.google.cloud.trace.v1.consumer.TraceConsumer;
+import com.google.cloud.trace.v1.consumer.FlushableTraceConsumer;
 import com.google.devtools.cloudtrace.v1.Trace;
 import com.google.devtools.cloudtrace.v1.TraceSpan;
 import com.google.devtools.cloudtrace.v1.Traces;
@@ -52,12 +52,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 		GcpContextAutoConfiguration.class,
 		TraceAutoConfiguration.class,
 		SleuthLogAutoConfiguration.class,
-		RefreshAutoConfiguration.class},
-		properties = {
-		"spring.cloud.gcp.project-id=proj",
-		"spring.sleuth.sampler.probability=1.0",
-		"spring.cloud.gcp.config.enabled=false"
-})
+		RefreshAutoConfiguration.class }, properties = {
+				"spring.cloud.gcp.project-id=proj",
+				"spring.sleuth.sampler.probability=1.0",
+				"spring.cloud.gcp.config.enabled=false"
+		})
 public abstract class StackdriverTraceAutoConfigurationTests {
 
 	@Configuration
@@ -65,8 +64,18 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 		private List<Traces> tracesList = new ArrayList<>();
 
 		@Bean
-		public TraceConsumer traceConsumer() {
-			return MockConfiguration.this.tracesList::add;
+		public FlushableTraceConsumer traceConsumer() {
+			return new FlushableTraceConsumer() {
+				@Override
+				public void flush() {
+					// do nothing
+				}
+
+				@Override
+				public void receive(Traces traces) {
+					MockConfiguration.this.tracesList.add(traces);
+				}
+			};
 		}
 	}
 
@@ -89,7 +98,6 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 					.name("test")
 					.start();
 			span.finish();
-			span.flush();
 
 			// There should be one trace received
 			Assert.assertEquals(1, this.configuration.tracesList.size());

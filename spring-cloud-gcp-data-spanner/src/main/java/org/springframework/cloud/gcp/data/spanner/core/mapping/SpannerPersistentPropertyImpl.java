@@ -88,6 +88,15 @@ public class SpannerPersistentPropertyImpl
 		return fieldName;
 	}
 
+	@Override
+	public Class getColumnInnerType() {
+		SpannerColumnInnerType annotation = findAnnotation(SpannerColumnInnerType.class);
+		if (annotation == null) {
+			return null;
+		}
+		return annotation.innerType();
+	}
+
 	private String getAnnotatedColumnName() {
 
 		SpannerColumn annotation = findAnnotation(SpannerColumn.class);
