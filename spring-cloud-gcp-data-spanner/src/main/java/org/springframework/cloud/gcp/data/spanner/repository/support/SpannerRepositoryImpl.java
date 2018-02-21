@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.repository;
+package org.springframework.cloud.gcp.data.spanner.repository.support;
 
 import java.util.Optional;
 
@@ -22,6 +22,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.util.Assert;
 
 /**

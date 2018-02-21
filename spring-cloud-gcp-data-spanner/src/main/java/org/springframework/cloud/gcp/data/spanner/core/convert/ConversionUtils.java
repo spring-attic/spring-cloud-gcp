@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,23 +14,31 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.storage;
+package org.springframework.cloud.gcp.data.spanner.core.convert;
+
+import java.lang.reflect.Array;
+
+import com.google.cloud.ByteArray;
+
 
 /**
- * Holds settings for use with the {@link GoogleStorageResource}. These settings are optional.
- *
+ * @author Balint Pato
  * @author Chengyuan Zhao
  */
-public class GoogleStorageProtocolResolverSettings {
+class ConversionUtils {
 
-	/** Determines if blobs should be auto-created when the library attempts to write to them. */
-	private boolean autoCreateFiles = true;
-
-	public boolean isAutoCreateFiles() {
-		return this.autoCreateFiles;
+	static Class boxIfNeeded(Class propertyType) {
+		if (propertyType == null) {
+			return null;
+		}
+		return propertyType.isPrimitive()
+				? Array.get(Array.newInstance(propertyType, 1), 0).getClass()
+				: propertyType;
 	}
 
-	public void setAutoCreateFiles(boolean autoCreateFiles) {
-		this.autoCreateFiles = autoCreateFiles;
+	static boolean isIterableNonByteArrayType(Class propType) {
+		return Iterable.class.isAssignableFrom(propType)
+				&& !ByteArray.class.isAssignableFrom(propType);
 	}
+
 }

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.repository;
+package org.springframework.cloud.gcp.data.spanner.repository.support;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -40,8 +40,8 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport {
 	/**
 	 * Constructor
 	 * @param spannerMappingContext the mapping context used to get mapping metadata for
-   * entity types.
-   * @param spannerOperations the spanner operations object used by Spanner repositories.
+	 * entity types.
+	 * @param spannerOperations the spanner operations object used by Spanner repositories.
 	 */
 	public SpannerRepositoryFactory(SpannerMappingContext spannerMappingContext,
 			SpannerOperations spannerOperations) {
