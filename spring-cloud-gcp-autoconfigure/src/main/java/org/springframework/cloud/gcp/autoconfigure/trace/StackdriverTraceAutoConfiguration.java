@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,10 +25,8 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.rpc.HeaderProvider;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.trace.v1.TraceServiceClient;
 import com.google.cloud.trace.v1.TraceServiceSettings;
 import com.google.cloud.trace.v1.consumer.ScheduledBufferingTraceConsumer;
@@ -44,6 +42,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.commons.util.IdUtils;
+import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.trace.TraceServiceClientTraceConsumer;
@@ -69,6 +68,7 @@ import org.springframework.core.env.Environment;
 /**
  * @author Ray Tsang
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 @Configuration
 @EnableConfigurationProperties({ SamplerProperties.class, GcpTraceProperties.class })
@@ -91,9 +91,7 @@ public class StackdriverTraceAutoConfiguration {
 				? gcpTraceProperties::getProjectId
 				: gcpProjectIdProvider;
 		this.finalCredentialsProvider = gcpTraceProperties.getCredentials().getLocation() != null
-				? FixedCredentialsProvider.create(GoogleCredentials.fromStream(
-						gcpTraceProperties.getCredentials().getLocation().getInputStream())
-				.createScoped(gcpTraceProperties.getCredentials().getScopes()))
+				? new DefaultCredentialsProvider(gcpTraceProperties)
 				: credentialsProvider;
 	}
 

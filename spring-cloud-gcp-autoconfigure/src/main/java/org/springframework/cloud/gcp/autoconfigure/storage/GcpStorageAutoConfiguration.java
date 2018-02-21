@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.autoconfigure.storage;
 import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
@@ -27,6 +26,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
+import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolver;
@@ -42,6 +42,7 @@ import org.springframework.context.annotation.Import;
  *
  * @author Vinicius Carvalho
  * @author Artem Bilan
+ * @author Mike Eltsufin
  *
  * @see GoogleStorageProtocolResolver
  */
@@ -58,10 +59,7 @@ public class GcpStorageAutoConfiguration {
 			GcpProjectIdProvider projectIdProvider) throws IOException {
 		return StorageOptions.newBuilder()
 				.setCredentials(gcpStorageProperties.getCredentials().getLocation() != null
-						? GoogleCredentials
-								.fromStream(gcpStorageProperties.getCredentials()
-										.getLocation().getInputStream())
-								.createScoped(gcpStorageProperties.getCredentials().getScopes())
+						? new DefaultCredentialsProvider(gcpStorageProperties).getCredentials()
 						: credentialsProvider.getCredentials())
 				.setHeaderProvider(new UsageTrackingHeaderProvider(GcpStorageAutoConfiguration.class))
 				.setProjectId(projectIdProvider.getProjectId())

@@ -67,12 +67,14 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 
 	/**
 	 *
-	 * @param providedScopes Overrides OAuth2 scopes list used by the credentials.
-	 * @param providedLocation Location of the OAuth2 credentials private key.
+	 * @param credentialsSupplier Provides properties that can override OAuth2
+	 * scopes list used by the credentials, and the location of the OAuth2 credentials private
+	 * key.
 	 * @throws IOException
 	 */
-	public DefaultCredentialsProvider(List<String> providedScopes, Resource providedLocation) throws IOException {
-		List<String> scopes = resolveScopes(providedScopes);
+	public DefaultCredentialsProvider(CredentialsSupplier credentialsSupplier) throws IOException {
+		List<String> scopes = resolveScopes(credentialsSupplier.getCredentials().getScopes());
+		Resource providedLocation = credentialsSupplier.getCredentials().getLocation();
 
 		if (!StringUtils.isEmpty(providedLocation)) {
 			this.wrappedCredentialsProvider = FixedCredentialsProvider

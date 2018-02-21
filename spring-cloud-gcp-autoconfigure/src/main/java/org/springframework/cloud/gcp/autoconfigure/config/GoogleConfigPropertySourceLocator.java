@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ import java.util.Map;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
-import com.google.auth.oauth2.GoogleCredentials;
 
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
+import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.core.env.Environment;
@@ -44,6 +44,7 @@ import org.springframework.web.client.RestTemplate;
  * Custom {@link PropertySourceLocator} for Google Cloud Runtime Configurator API.
  *
  * @author Jisha Abubaker
+ * @author Mike Eltsufin
  */
 public class GoogleConfigPropertySourceLocator implements PropertySourceLocator {
 
@@ -76,12 +77,8 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		if (gcpConfigProperties.isEnabled()) {
 			Assert.notNull(credentialsProvider, "Credentials provider cannot be null");
 			Assert.notNull(projectIdProvider, "Project ID provider cannot be null");
-			org.springframework.cloud.gcp.core.Credentials configCredentials =
-					gcpConfigProperties.getCredentials();
-			this.credentials = configCredentials != null && configCredentials.getLocation() != null
-					? GoogleCredentials.fromStream(
-							gcpConfigProperties.getCredentials().getLocation().getInputStream())
-					.createScoped(gcpConfigProperties.getCredentials().getScopes())
+			this.credentials = gcpConfigProperties.getCredentials().getLocation() != null
+					? new DefaultCredentialsProvider(gcpConfigProperties).getCredentials()
 					: credentialsProvider.getCredentials();
 			this.projectId = gcpConfigProperties.getProjectId() != null
 					? gcpConfigProperties.getProjectId()

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,15 +19,17 @@ package org.springframework.cloud.gcp.autoconfigure.trace;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
+import org.springframework.cloud.gcp.core.CredentialsSupplier;
 import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
  * Stackdriver Trace Properties.
  *
  * @author Ray Tsang
+ * @author Mike Eltsufin
  */
 @ConfigurationProperties("spring.cloud.gcp.trace")
-public class GcpTraceProperties {
+public class GcpTraceProperties implements CredentialsSupplier {
 	/**
 	 * Number of threads to use by the underlying gRPC channel to send the trace request to
 	 * Stackdriver.
