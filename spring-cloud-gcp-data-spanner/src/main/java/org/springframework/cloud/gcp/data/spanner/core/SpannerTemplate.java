@@ -32,8 +32,8 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerObjectMapper;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.util.Assert;
 
@@ -47,24 +47,24 @@ public class SpannerTemplate implements SpannerOperations {
 
 	private final SpannerMappingContext mappingContext;
 
-	private final SpannerObjectMapper objectMapper;
+	private final SpannerConverter spannerConverter;
 
 	private final SpannerMutationFactory mutationFactory;
 
 	public SpannerTemplate(DatabaseClient databaseClient,
-			SpannerMappingContext mappingContext, SpannerObjectMapper spannerObjectMapper,
+			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
 			SpannerMutationFactory spannerMutationFactory) {
 		Assert.notNull(databaseClient,
 				"A valid database client for Spanner is required.");
 		Assert.notNull(mappingContext,
 				"A valid mapping context for Spanner is required.");
-		Assert.notNull(spannerObjectMapper,
+		Assert.notNull(spannerConverter,
 				"A valid results mapper for Spanner is required.");
 		Assert.notNull(spannerMutationFactory,
 				"A valid Spanner mutation factory is required.");
 		this.databaseClient = databaseClient;
 		this.mappingContext = mappingContext;
-		this.objectMapper = spannerObjectMapper;
+		this.spannerConverter = spannerConverter;
 		this.mutationFactory = spannerMutationFactory;
 	}
 
@@ -85,7 +85,7 @@ public class SpannerTemplate implements SpannerOperations {
 		if (row == null) {
 			return null;
 		}
-		return this.objectMapper.read(entityClass, row);
+		return this.spannerConverter.read(entityClass, row);
 	}
 
 	@Override
@@ -95,14 +95,14 @@ public class SpannerTemplate implements SpannerOperations {
 				.getPersistentEntity(entityClass);
 		ResultSet resultSet = getReadContext().read(persistentEntity.tableName(), keys,
 				persistentEntity.columns(), options);
-		return this.objectMapper.mapToList(resultSet, entityClass);
+		return this.spannerConverter.mapToList(resultSet, entityClass);
 	}
 
 	@Override
 	public <T> List<T> find(Class<T> entityClass, Statement statement,
 			Options.QueryOption... options) {
 		ResultSet resultSet = getReadContext().executeQuery(statement, options);
-		return this.objectMapper.mapToList(resultSet, entityClass);
+		return this.spannerConverter.mapToList(resultSet, entityClass);
 	}
 
 	@Override

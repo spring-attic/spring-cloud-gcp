@@ -14,44 +14,44 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.repository;
-
-import org.junit.Before;
-import org.junit.Test;
+package org.springframework.cloud.gcp.data.spanner.repository.support;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-
 /**
+ * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public class SpannerRepositoryFactoryBeanTests {
-
-	private SpannerRepositoryFactoryBean spannerRepositoryFactoryBean;
+public class SpannerRepositoryFactoryBean extends RepositoryFactoryBeanSupport {
 
 	private SpannerMappingContext spannerMappingContext;
 
 	private SpannerOperations spannerOperations;
 
-	@Before
-	public void setUp() {
-		this.spannerMappingContext = new SpannerMappingContext();
-		this.spannerOperations = mock(SpannerOperations.class);
-		this.spannerRepositoryFactoryBean = new SpannerRepositoryFactoryBean(
-				SpannerRepository.class);
-		this.spannerRepositoryFactoryBean
-				.setSpannerMappingContext(this.spannerMappingContext);
-		this.spannerRepositoryFactoryBean.setSpannerOperations(this.spannerOperations);
+	/**
+	 * Creates a new {@link SpannerRepositoryFactoryBean} for the given repository interface.
+	 *
+	 * @param repositoryInterface must not be {@literal null}.
+	 */
+	public SpannerRepositoryFactoryBean(Class<?> repositoryInterface) {
+		super(repositoryInterface);
 	}
 
-	@Test
-	public void createRepositoryFactoryTest() {
-		RepositoryFactorySupport factory = this.spannerRepositoryFactoryBean
-				.createRepositoryFactory();
-		assertEquals(SpannerRepositoryFactory.class, factory.getClass());
+	public void setSpannerOperations(SpannerOperations operations) {
+		this.spannerOperations = operations;
+	}
+
+	public void setSpannerMappingContext(SpannerMappingContext mappingContext) {
+		super.setMappingContext(mappingContext);
+		this.spannerMappingContext = mappingContext;
+	}
+
+	@Override
+	protected RepositoryFactorySupport createRepositoryFactory() {
+		return new SpannerRepositoryFactory(this.spannerMappingContext,
+				this.spannerOperations);
 	}
 }
