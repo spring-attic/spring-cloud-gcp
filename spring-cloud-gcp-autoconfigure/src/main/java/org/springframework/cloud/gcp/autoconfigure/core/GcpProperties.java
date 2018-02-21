@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,13 +19,15 @@ package org.springframework.cloud.gcp.autoconfigure.core;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
+import org.springframework.cloud.gcp.core.CredentialsSupplier;
 
 /**
  * @author Vinicius Carvalho
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 @ConfigurationProperties("spring.cloud.gcp")
-public class GcpProperties {
+public class GcpProperties implements CredentialsSupplier {
 
 	/** GCP project ID where services are running. */
 	private String projectId;
