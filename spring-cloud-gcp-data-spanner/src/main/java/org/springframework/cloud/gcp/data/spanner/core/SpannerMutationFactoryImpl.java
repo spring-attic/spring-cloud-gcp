@@ -24,8 +24,8 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.Op;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerObjectMapper;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -36,24 +36,24 @@ import org.springframework.util.Assert;
  */
 public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
-	private final SpannerObjectMapper spannerObjectMapper;
+	private final SpannerConverter spannerConverter;
 
 	private final SpannerMappingContext spannerMappingContext;
 
 	/**
 	 * Constructor
-	 * @param spannerObjectMapper The object mapper used to convert between objects and
-	 * Spanner data types.
+	 * @param spannerConverter The object mapper used to convert between objects and Spanner
+	 * data types.
 	 * @param spannerMappingContext The mapping context used to get metadata from entity
 	 * types.
 	 */
-	public SpannerMutationFactoryImpl(SpannerObjectMapper spannerObjectMapper,
+	SpannerMutationFactoryImpl(SpannerConverter spannerConverter,
 			SpannerMappingContext spannerMappingContext) {
-		Assert.notNull(spannerObjectMapper,
+		Assert.notNull(spannerConverter,
 				"A valid results mapper for Spanner is required.");
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
-		this.spannerObjectMapper = spannerObjectMapper;
+		this.spannerConverter = spannerConverter;
 		this.spannerMappingContext = spannerMappingContext;
 	}
 
@@ -110,7 +110,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 				.getPersistentEntity(object.getClass());
 		Mutation.WriteBuilder writeBuilder = writeBuilder(op,
 				persistentEntity.tableName());
-		this.spannerObjectMapper.write(object, writeBuilder);
+		this.spannerConverter.write(object, writeBuilder);
 		return writeBuilder.build();
 	}
 

@@ -33,9 +33,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerObjectMapper;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
 import org.springframework.data.annotation.Id;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -61,7 +61,7 @@ public class SpannerTemplateTests {
 
 	private SpannerMappingContext mappingContext;
 
-	private SpannerObjectMapper objectMapper;
+	private SpannerConverter objectMapper;
 
 	private SpannerMutationFactory mutationFactory;
 
@@ -73,7 +73,7 @@ public class SpannerTemplateTests {
 	public void setUp() {
 		this.databaseClient = mock(DatabaseClient.class);
 		this.mappingContext = new SpannerMappingContext();
-		this.objectMapper = mock(SpannerObjectMapper.class);
+		this.objectMapper = mock(SpannerConverter.class);
 		this.mutationFactory = mock(SpannerMutationFactory.class);
 		this.readContext = mock(ReadContext.class);
 		when(this.databaseClient.singleUse()).thenReturn(this.readContext);
