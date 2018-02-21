@@ -29,7 +29,9 @@ import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
+import com.google.common.annotations.VisibleForTesting;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -40,6 +42,7 @@ import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfigurat
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
+import org.springframework.cloud.gcp.core.cloudfoundry.CfConfiguration;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
@@ -71,14 +74,27 @@ public class GcpPubSubAutoConfiguration {
 
 	public GcpPubSubAutoConfiguration(GcpPubSubProperties gcpPubSubProperties,
 			GcpProjectIdProvider gcpProjectIdProvider,
-			CredentialsProvider credentialsProvider) throws IOException {
+			CredentialsProvider credentialsProvider,
+			@Autowired(required = false) CfConfiguration cfConfiguration) throws IOException {
 		this.gcpPubSubProperties = gcpPubSubProperties;
 		this.finalProjectIdProvider = gcpPubSubProperties.getProjectId() != null
 				? gcpPubSubProperties::getProjectId
 				: gcpProjectIdProvider;
-		this.finalCredentialsProvider = gcpPubSubProperties.getCredentials().getLocation() != null
-				? new DefaultCredentialsProvider(gcpPubSubProperties)
-				: credentialsProvider;
+
+		CredentialsProvider cfCredentialsProvider = null;
+		if (cfConfiguration != null) {
+			cfCredentialsProvider = cfConfiguration.getPubSubCredentialsProvider();
+		}
+
+		if (cfCredentialsProvider != null) {
+			this.finalCredentialsProvider = cfCredentialsProvider;
+		}
+		else if (gcpPubSubProperties.getCredentials().getLocation() != null) {
+			this.finalCredentialsProvider = new DefaultCredentialsProvider(gcpPubSubProperties);
+		}
+		else {
+			this.finalCredentialsProvider = credentialsProvider;
+		}
 	}
 
 	@Bean
@@ -171,5 +187,10 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public TransportChannelProvider transportChannelProvider() {
 		return InstantiatingGrpcChannelProvider.newBuilder().build();
+	}
+
+	@VisibleForTesting
+	CredentialsProvider getCredentialsProvider() {
+		return this.finalCredentialsProvider;
 	}
 }
