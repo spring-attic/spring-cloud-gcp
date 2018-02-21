@@ -19,35 +19,38 @@ dependencies {
 }
 ----
 
-This starter uses Spring Cloud Sleuth and provides a `SpanReporter` that sends the Sleuth's trace information to Stackdriver Trace.
+Spring Boot Starter for Stackdriver Trace uses Spring Cloud Sleuth and auto-configures a
+https://github.com/openzipkin/zipkin-reporter-java/blob/master/core/src/main/java/zipkin2/reporter/Reporter.java[Reporter]
+that sends the Sleuth’s trace information to Stackdriver Trace.
 
-All configurations are optional. You can override a number of default configuration values in addition to the core
-`spring.cloud.gcp.project-id` and `spring.cloud.gcp.credentials.location`.
+This starter will send traces asynchronously using a buffered trace consumer that auto-flushes when its buffered trace
+messages exceed its buffer size or have been buffered for longer than its scheduled delay.
 
-By default, this starter will send trace asynchronously using a flushable trace consumer that auto-flushes when
-its buffered trace messages exceed its buffer size or have been buffered for longer than its scheduled delay.
 
-The following properties are optional:
+There are several parameters you can use to tune the Stackdriver Trace adapter. All configurations are optional:
 
-----
-# Number of threads to use by the underlying gRPC channel to send the trace request to Stackdriver
-spring.cloud.gcp.trace.executor-threads=[NUMBER_OF_SENDER_THREADS]
-
-# Buffer size, defaults to 1% of Runtime.totalMemory(), traces will be flushed to Stackdriver when buffered trace
-# messages exceed this size.
-spring.cloud.gcp.trace.buffer-size-bytes=[BUFFER_SIZE_BYTES]
-
-# Buffered trace messages will be flushed to Stackdriver when buffered longer than scheduled delays (in seconds).
-# Default is 10 seconds
-spring.cloud.gcp.trace.scheduled-delay-seconds=[SCHEDULED_DELAY_SECONDS]
-
-# GCP project ID Trace is served from
-spring.cloud.gcp.trace.project-id=[TRACE_GCP_PROJECT_ID]
-
-# Credentials for the trace service
-spring.cloud.gcp.trace.credentials.location=[CREDENTIALS_FILESYSTEM_LOCATION]
-spring.cloud.gcp.trace.credentials.scope=[COMMA_DELIMITED_SCOPE_LIST]
-----
+|===
+| Name | Description | Optional | Default value
+| `spring.cloud.gcp.trace.enabled` |
+Auto-configure Spring Cloud Sleuth to send traces to Stackdriver Trace. | Yes | `true`
+| `spring.cloud.gcp.trace.executor-threads` |
+Number of threads to use by the underlying gRPC channel to send the trace request to Stackdriver. |
+Yes | `4`
+| `spring.cloud.gcp.trace.buffer-size-bytes` |
+Buffer size in bytes. Traces will be flushed to Stackdriver when buffered trace messages exceed this
+size. | Yes | 1% of Runtime.totalMemory()
+| `spring.cloud.gcp.trace.scheduled-delay-seconds` |
+Buffered trace messages will be flushed to Stackdriver when buffered longer than scheduled delays
+(in seconds) even if the buffered message size didn't exceed the buffer size. | Yes | `10`
+| `spring.cloud.gcp.trace.project-id` |
+Overrides the project ID from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | Yes |
+| `spring.cloud.gcp.trace.credentials.location` |
+Overrides the credentials location from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> |
+Yes |
+| `spring.cloud.gcp.trace.credentials.scopes` |
+Overrides the credentials scopes from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> |
+Yes |
+|===
 
 You can use core Spring Cloud Sleuth properties to control Sleuth's sampling rate, etc.
 Read https://cloud.spring.io/spring-cloud-sleuth/[Sleuth documentation] for more information
@@ -56,12 +59,9 @@ on Sleuth configurations.
 For example, when you are testing to see the traces are going through, you can set the sampling rate to 100%.
 
 ----
-spring.sleuth.sampler.percentage=1                              # Send 100% of the request traces to Stackdriver.
+spring.sleuth.sampler.probability=1                             # Send 100% of the request traces to Stackdriver.
 spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)          # Ignore some URL paths
 ----
-
-Stackdriver Trace requires the use of 128-bit Trace ID. This starter ignores `spring.sleuth.traceId128` property
-and it'll always uses 128-bit Trace ID.
 
 == Enable APIs
 You must enable Stackdriver Trace API from the Google Cloud Console in order to capture traces.

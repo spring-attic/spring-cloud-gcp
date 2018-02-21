@@ -85,6 +85,6 @@ to 100%.
 
 [source]
 ----
-spring.sleuth.sampler.proability=1                      # Send 100% of the request traces to Stackdriver.
+spring.sleuth.sampler.probability=1                     # Send 100% of the request traces to Stackdriver.
 spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.
 ----
