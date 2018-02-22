@@ -9,7 +9,7 @@
 		<groupId>org.springframework.cloud</groupId>
 		<version>1.0.0.BUILD-SNAPSHOT</version>
 	</parent>
-	<groupId>org.springframework.data</groupId>
+	<groupId>org.springframework.cloud</groupId>
 	<artifactId>spring-cloud-gcp-data-spanner</artifactId>
 	<name>Spring Cloud GCP Spanner Module</name>
 	<description>Spring Cloud GCP Spanner Module</description>

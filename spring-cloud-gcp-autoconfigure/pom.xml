@@ -108,6 +108,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Spanner -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gcp-data-spanner</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Trace -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

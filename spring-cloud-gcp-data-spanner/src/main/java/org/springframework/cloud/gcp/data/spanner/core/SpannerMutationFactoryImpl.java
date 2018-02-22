@@ -47,7 +47,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	 * @param spannerMappingContext The mapping context used to get metadata from entity
 	 * types.
 	 */
-	SpannerMutationFactoryImpl(SpannerConverter spannerConverter,
+	public SpannerMutationFactoryImpl(SpannerConverter spannerConverter,
 			SpannerMappingContext spannerMappingContext) {
 		Assert.notNull(spannerConverter,
 				"A valid results mapper for Spanner is required.");
