@@ -26,6 +26,7 @@ import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
@@ -49,6 +50,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.spanner.enabled", matchIfMissing = true)
+@ConditionalOnClass({ SpannerMappingContext.class, SpannerOperations.class,
+		SpannerMutationFactory.class, SpannerConverter.class })
 @EnableConfigurationProperties(GcpSpannerProperties.class)
 public class GcpSpannerAutoConfiguration {
 
