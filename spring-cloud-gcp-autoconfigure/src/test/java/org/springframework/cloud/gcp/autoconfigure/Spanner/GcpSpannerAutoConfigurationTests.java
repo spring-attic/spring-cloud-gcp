@@ -37,7 +37,8 @@ import static org.junit.Assert.assertNotNull;
 		GcpContextAutoConfiguration.class }, properties = {
 				"spring.cloud.gcp.spanner.projectId=testProject",
 				"spring.cloud.gcp.spanner.instanceId=testInstance",
-				"spring.cloud.gcp.spanner.database=testDatabase" })
+				"spring.cloud.gcp.spanner.database=testDatabase",
+				"spring.cloud.gcp.config.enabled=false"})
 @EnableSpannerRepositories
 public class GcpSpannerAutoConfigurationTests {
 
