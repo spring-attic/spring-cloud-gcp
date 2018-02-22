@@ -1,0 +1,38 @@
+= Google Cloud Spanner Spring Boot Starter
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-data-spanner</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-spanner'
+}
+----
+
+
+This starter provides the underpinnings of the Spring Cloud GCP Spanner. It doesn't provide any
+bean to be used by an end-user.
+
+[options="header",]
+|=======================================================================
+| Setting | Optional | Default Value | Meaning
+| `spring.cloud.gcp.spanner.projectId` | Yes | `null` | This is an optional setting to provide a project ID used just for Spanner.
+| `spring.cloud.gcp.spanner.credentials.location` | Yes | Location of the credentials for the
+Spanner service, if different from those in the
+link:../spring-cloud-gcp-starter/README.adoc[GCP Starter] | The filesystem path for a
+credentials private key file
+| `spring.cloud.gcp.spanner.credentials.scopes` | Yes | List of scopes for this service-specific
+credentials |
+| `spring.cloud.gcp.spanner.database` | No | `null` | The name of the Spanner database used
+| `spring.cloud.gcp.spanner.instanceId` | No | `null` | The name of the Spanner instance used
+|=======================================================================
