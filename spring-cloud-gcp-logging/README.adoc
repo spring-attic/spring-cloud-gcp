@@ -53,6 +53,10 @@ and https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-
 
 == Logback Support
 
+There are 2 possibilities to log to Stackdriver via this library with logback:
+
+=== Log via API
+
 For Logback, a `org/springframework/cloud/gcp/logging/logback-appender.xml` file is made available for import to make it
 easier to configure the Logback appender.
 
@@ -72,3 +76,22 @@ Your configuration may then look something like this:
 `STACKDRIVER` appender.
 
 Also see the link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[spring-cloud-gcp-starter-logging] module.
+
+=== Log via Console
+
+If you run your spring boot application in a kubernetes cluster in the google cloud (gke), you can log json directly
+from the console by including `org/springframework/cloud/gcp/logging/logback-json-appender.xml`. The traceId will be set
+correctly.
+
+Your configuration may then look something like this:
+
+[source, xml]
+----
+<configuration>
+  <include resource="org/springframework/cloud/gcp/logging/logback-json-appender.xml" />
+
+  <root level="INFO">
+    <appender-ref ref="CONSOLE_JSON"/>
+  </root>
+</configuration>
+----
