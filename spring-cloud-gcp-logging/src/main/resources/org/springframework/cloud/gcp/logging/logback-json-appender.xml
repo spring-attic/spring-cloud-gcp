@@ -5,7 +5,9 @@ Stackdriver json-log format provided for import.
 <included>
     <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="org.springframework.cloud.gcp.logging.StackdriverJsonLayout"/>
+            <layout class="org.springframework.cloud.gcp.logging.StackdriverJsonLayout">
+                <projectId>${GOOGLE_CLOUD_PROJECT}</projectId>
+            </layout>
         </encoder>
     </appender>
 </included>
