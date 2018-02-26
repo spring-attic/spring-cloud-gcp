@@ -50,11 +50,11 @@ in Spring MVC applications.
 Currently, https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-logging#add-a-stackdriver-logging-handler-to-a-logger[Java Util Logging (JUL)]
 and https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-contrib/google-cloud-logging-logback[Logback] are supported.
 
-== Logback Support
+=== Logback Support
 
 There are 2 possibilities to log to Stackdriver via this library with logback:
 
-=== Log via API
+==== Log via API
 
 For Logback, a `org/springframework/cloud/gcp/logging/logback-appender.xml` file is made available for import to make it
 easier to configure the Logback appender.
@@ -76,7 +76,7 @@ Your configuration may then look something like this:
 
 Also see the link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[spring-cloud-gcp-starter-logging] module.
 
-=== Log via Console
+==== Log via Console
 
 If you run your spring boot application in a kubernetes cluster in the google cloud (gke), you can log json directly
 from the console by including `org/springframework/cloud/gcp/logging/logback-json-appender.xml`. The traceId will be set
