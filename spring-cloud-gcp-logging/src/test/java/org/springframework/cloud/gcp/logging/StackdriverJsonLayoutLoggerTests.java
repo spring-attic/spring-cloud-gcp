@@ -27,8 +27,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.logging.slf4j.MDCContextMap;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -36,7 +34,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Andreas Berger
  */
-@RunWith(MockitoJUnitRunner.class)
 public class StackdriverJsonLayoutLoggerTests {
 
 	private static final Log LOGGER = LogFactory.getLog(StackdriverJsonLayoutLoggerTests.class);

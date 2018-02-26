@@ -166,7 +166,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	 * @return the map which should get rendered as json
 	 */
 	@Override
-	protected Map toJsonMap(ILoggingEvent event) {
+	protected Map<String, Object> toJsonMap(ILoggingEvent event) {
 
 		Map<String, Object> map = new LinkedHashMap<>();
 
