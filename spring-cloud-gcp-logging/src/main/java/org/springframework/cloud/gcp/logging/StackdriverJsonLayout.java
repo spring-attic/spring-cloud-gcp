@@ -18,121 +18,205 @@ package org.springframework.cloud.gcp.logging;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
+import ch.qos.logback.contrib.json.classic.JsonLayout;
 import com.google.cloud.logging.TraceLoggingEnhancer;
 import com.google.gson.Gson;
 
 /**
+ * This class provides a json layout for a logback appender compatible to the stackdriver
+ * log format.
+ *
  * @author Andreas Berger
  */
-public class StackdriverJsonLayout extends ch.qos.logback.contrib.json.classic.JsonLayout {
+public class StackdriverJsonLayout extends JsonLayout {
 
-	public static final String SEVERITY_ATTR_NAME = "severity";
+	/**
+	 * The json field name for the log level (severity)
+	 */
+	public static final String SEVERITY_ATTRIBUTE = "severity";
 
-	public static final String ATTR_NAME_TIMESTAMP_SECONDS = "timestampSeconds";
+	/**
+	 * The json field name for the seconds of the timestamp
+	 */
+	public static final String TIMESTAMP_SECONDS_ATTRIBUTE = "timestampSeconds";
 
-	public static final String ATTR_NAME_TIMESTAMP_NANOS = "timestampNanos";
+	/**
+	 * The json field name for the nanos of the timestamp
+	 */
+	public static final String TIMESTAMP_NANOS_ATTRIBUTE = "timestampNanos";
 
-	public static final String ATTR_NAME_SPAN_ID = "logging.googleapis.com/spanId";
+	/**
+	 * The json field name for the span-id
+	 */
+	public static final String SPAN_ID_ATTRIBUTE = "logging.googleapis.com/spanId";
 
-	public static final String ATTR_NAME_TARCE_ID = "logging.googleapis.com/trace";
+	/**
+	 * The json field name for the trace-id
+	 */
+	public static final String TRACE_ID_ATTRIBUTE = "logging.googleapis.com/trace";
 
-	public static final String SPRING_SLEUTH_TRACE_ID_KEY = "X-B3-TraceId";
+	/**
+	 * The name of the MDC parameter, spring sleuth is storing the trace id at
+	 */
+	public static final String MDC_FIELD_TRACE_ID = "X-B3-TraceId";
 
-	public static final String SPRING_SLEUTH_SPAN_ID_KEY = "X-B3-SpanId";
+	/**
+	 * The name of the MDC parameter, spring sleuth is storing the span id at
+	 */
+	public static final String MDC_FIELD_SPAN_ID = "X-B3-SpanId";
 
-	public static final String SPRING_SLEUTH_SPAN_EXPORT = "X-Span-Export";
+	/**
+	 * The name of the MDC parameter, spring sleuth is storing the span export information at
+	 */
+	public static final String MDC_FIELD_SPAN_EXPORT = "X-Span-Export";
 
 	private static final Set<String> FILTERED_MDC_FIELDS = new HashSet<>(Arrays.asList(
-			SPRING_SLEUTH_TRACE_ID_KEY,
-			SPRING_SLEUTH_SPAN_ID_KEY,
-			SPRING_SLEUTH_SPAN_EXPORT));
+			MDC_FIELD_TRACE_ID,
+			MDC_FIELD_SPAN_ID,
+			MDC_FIELD_SPAN_EXPORT));
 
 	private String projectId;
 
-	protected boolean includeTraceId;
+	private boolean includeTraceId;
 
-	protected boolean includeSpanId;
+	private boolean includeSpanId;
 
+	private boolean includeExceptionInMessage;
+
+	/**
+	 * creates a layout for a logback appender compatible to the stackdriver log format
+	 */
 	public StackdriverJsonLayout() {
-		setAppendLineSeparator(true);
-		setIncludeMessage(false);
-		setIncludeException(false);
-		setIncludeFormattedMessage(false);
+		this.appendLineSeparator = true;
+		this.includeExceptionInMessage = true;
+		this.includeException = false;
 		this.includeTraceId = true;
 		this.includeSpanId = true;
 		Gson formatter = new Gson();
 		setJsonFormatter(formatter::toJson);
 	}
 
+	/**
+	 * @return the google cloud project id relevant for logging the traceId
+	 */
 	public String getProjectId() {
-		return projectId;
+		return this.projectId;
 	}
 
+	/**
+	 * @param projectId the google cloud project id relevant for logging the traceId
+	 */
 	public void setProjectId(String projectId) {
 		this.projectId = projectId;
 	}
 
+	/**
+	 *
+	 * @return true if the traceId should be included into the json
+	 */
+	public boolean isIncludeTraceId() {
+		return this.includeTraceId;
+	}
+
+	/**
+	 * @param includeTraceId true if the traceId should be included into the json
+	 */
+	public void setIncludeTraceId(boolean includeTraceId) {
+		this.includeTraceId = includeTraceId;
+	}
+
+	/**
+	 * @return true if the spanId should be included into the json
+	 */
+	public boolean isIncludeSpanId() {
+		return this.includeSpanId;
+	}
+
+	/**
+	 * @param includeSpanId true if the spanId should be included into the json
+	 */
+	public void setIncludeSpanId(boolean includeSpanId) {
+		this.includeSpanId = includeSpanId;
+	}
+
+	/**
+	 *
+	 * @return true if the exception should be added to the message
+	 */
+	public boolean isIncludeExceptionInMessage() {
+		return this.includeExceptionInMessage;
+	}
+
+	/**
+	 * @param includeExceptionInMessage true if the exception should be added to the message
+	 */
+	public void setIncludeExceptionInMessage(boolean includeExceptionInMessage) {
+		this.includeExceptionInMessage = includeExceptionInMessage;
+	}
+
+	/**
+	 * @param event the logging event
+	 * @return the map which should get rendered as json
+	 */
 	@Override
-	protected void addCustomDataToJsonMap(Map<String, Object> map, ILoggingEvent event) {
-		addTraceId(map, event);
+	protected Map toJsonMap(ILoggingEvent event) {
 
-		String spanId = event.getMDCPropertyMap().get(SPRING_SLEUTH_SPAN_ID_KEY);
-		add(ATTR_NAME_SPAN_ID, this.includeSpanId, spanId, map);
+		Map<String, Object> map = new LinkedHashMap<>();
 
-		String message = event.getFormattedMessage();
-		IThrowableProxy throwableProxy = event.getThrowableProxy();
-		if (throwableProxy != null) {
-			String stackTrace = getThrowableProxyConverter().convert(event);
-			if (stackTrace != null && !stackTrace.equals("")) {
-				message += "\n" + stackTrace;
+		if (this.includeMDC) {
+			event.getMDCPropertyMap().forEach((key, value) -> {
+				if (FILTERED_MDC_FIELDS.contains(key)) {
+					return;
+				}
+				map.put(key, value);
+			});
+		}
+		if (this.includeTimestamp) {
+			map.put(TIMESTAMP_SECONDS_ATTRIBUTE, TimeUnit.MILLISECONDS.toSeconds(event.getTimeStamp()));
+			map.put(TIMESTAMP_NANOS_ATTRIBUTE, TimeUnit.MILLISECONDS.toNanos(event.getTimeStamp() % 1_000));
+		}
+
+		add(SEVERITY_ATTRIBUTE, this.includeLevel, String.valueOf(event.getLevel()), map);
+		add(THREAD_ATTR_NAME, this.includeThreadName, event.getThreadName(), map);
+		add(LOGGER_ATTR_NAME, this.includeLoggerName, event.getLoggerName(), map);
+
+		if (this.includeFormattedMessage) {
+			String message = event.getFormattedMessage();
+			if (this.includeExceptionInMessage) {
+				IThrowableProxy throwableProxy = event.getThrowableProxy();
+				if (throwableProxy != null) {
+					String stackTrace = getThrowableProxyConverter().convert(event);
+					if (stackTrace != null && !stackTrace.equals("")) {
+						message += "\n" + stackTrace;
+					}
+				}
 			}
+			map.put(FORMATTED_MESSAGE_ATTR_NAME, message);
 		}
-		map.put(FORMATTED_MESSAGE_ATTR_NAME, message);
+		add(MESSAGE_ATTR_NAME, this.includeMessage, event.getMessage(), map);
+		add(CONTEXT_ATTR_NAME, this.includeContextName, event.getLoggerContextVO().getName(), map);
+		addThrowableInfo(EXCEPTION_ATTR_NAME, this.includeException, event, map);
+		addTraceId(event, map);
+		add(SPAN_ID_ATTRIBUTE, this.includeSpanId, event.getMDCPropertyMap().get(MDC_FIELD_SPAN_ID), map);
+		addCustomDataToJsonMap(map, event);
+		return map;
 	}
 
-	@Override
-	public void add(String fieldName, boolean field, String value, Map<String, Object> map) {
-		String overriddenFieldName = fieldName;
-		if (fieldName.equals(LEVEL_ATTR_NAME)) {
-			overriddenFieldName = SEVERITY_ATTR_NAME;
-		}
-		super.add(overriddenFieldName, field, value, map);
-	}
-
-	@Override
-	public void addTimestamp(String key, boolean field, long timeStamp, Map<String, Object> map) {
-		map.put(ATTR_NAME_TIMESTAMP_SECONDS, TimeUnit.MILLISECONDS.toSeconds(timeStamp));
-		map.put(ATTR_NAME_TIMESTAMP_NANOS, TimeUnit.MILLISECONDS.toNanos(timeStamp % 1_000));
-	}
-
-	@Override
-	public void addMap(String entryName, boolean field, Map<String, ?> mapValue, Map<String, Object> map) {
-		if (!field) {
-			return;
-		}
-		mapValue.forEach((key, value) -> {
-			if (FILTERED_MDC_FIELDS.contains(key)) {
-				return;
-			}
-			map.put(key, value);
-		});
-
-	}
-
-	protected void addTraceId(Map<String, Object> map, ILoggingEvent event) {
+	private void addTraceId(ILoggingEvent event, Map<String, Object> map) {
 		if (!this.includeTraceId) {
 			return;
 		}
 
 		String traceId = TraceLoggingEnhancer.getCurrentTraceId();
 		if (traceId == null) {
-			traceId = event.getMDCPropertyMap().get(SPRING_SLEUTH_TRACE_ID_KEY);
+			traceId = event.getMDCPropertyMap().get(MDC_FIELD_TRACE_ID);
 		}
 		if (traceId != null) {
 			if (this.projectId != null) {
@@ -140,6 +224,6 @@ public class StackdriverJsonLayout extends ch.qos.logback.contrib.json.classic.J
 			}
 		}
 
-		add(ATTR_NAME_TARCE_ID, this.includeTraceId, traceId, map);
+		add(TRACE_ID_ATTRIBUTE, this.includeTraceId, traceId, map);
 	}
 }

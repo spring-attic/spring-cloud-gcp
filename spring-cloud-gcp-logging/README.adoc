@@ -83,11 +83,22 @@ If you run your spring boot application in a kubernetes cluster in the google cl
 from the console by including `org/springframework/cloud/gcp/logging/logback-json-appender.xml`. The traceId will be set
 correctly.
 
-Your configuration may then look something like this:
+You need the additional dependency:
+
+[source, xml]
+----
+<dependency>
+  <groupId>ch.qos.logback.contrib</groupId>
+  <artifactId>logback-json-classic</artifactId>
+</dependency>
+----
+
+Your logback configuration may then look something like this:
 
 [source, xml]
 ----
 <configuration>
+  <property name="projectId" value="test-project"/>
   <include resource="org/springframework/cloud/gcp/logging/logback-json-appender.xml" />
 
   <root level="INFO">
