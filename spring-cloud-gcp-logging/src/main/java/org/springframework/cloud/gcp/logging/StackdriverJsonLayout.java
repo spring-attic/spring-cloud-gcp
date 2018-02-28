@@ -29,6 +29,8 @@ import ch.qos.logback.contrib.json.classic.JsonLayout;
 import com.google.cloud.logging.TraceLoggingEnhancer;
 import com.google.gson.Gson;
 
+import org.springframework.util.StringUtils;
+
 /**
  * This class provides a JSON layout for a Logback appender compatible to the Stackdriver
  * log format.
@@ -218,8 +220,8 @@ public class StackdriverJsonLayout extends JsonLayout {
 		if (traceId == null) {
 			traceId = event.getMDCPropertyMap().get(MDC_FIELD_TRACE_ID);
 		}
-		if (traceId != null) {
-			if (this.projectId != null) {
+		if (!StringUtils.isEmpty(traceId)) {
+			if (!StringUtils.isEmpty(this.projectId)) {
 				traceId = "projects/" + this.projectId + "/traces/" + traceId;
 			}
 		}
