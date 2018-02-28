@@ -30,7 +30,7 @@ import com.google.cloud.logging.TraceLoggingEnhancer;
 import com.google.gson.Gson;
 
 /**
- * This class provides a json layout for a logback appender compatible to the stackdriver
+ * This class provides a JSON layout for a Logback appender compatible to the Stackdriver
  * log format.
  *
  * @author Andreas Berger
@@ -38,42 +38,42 @@ import com.google.gson.Gson;
 public class StackdriverJsonLayout extends JsonLayout {
 
 	/**
-	 * The json field name for the log level (severity)
+	 * The JSON field name for the log level (severity)
 	 */
 	public static final String SEVERITY_ATTRIBUTE = "severity";
 
 	/**
-	 * The json field name for the seconds of the timestamp
+	 * The JSON field name for the seconds of the timestamp
 	 */
 	public static final String TIMESTAMP_SECONDS_ATTRIBUTE = "timestampSeconds";
 
 	/**
-	 * The json field name for the nanos of the timestamp
+	 * The JSON field name for the nanos of the timestamp
 	 */
 	public static final String TIMESTAMP_NANOS_ATTRIBUTE = "timestampNanos";
 
 	/**
-	 * The json field name for the span-id
+	 * The JSON field name for the span-id
 	 */
 	public static final String SPAN_ID_ATTRIBUTE = "logging.googleapis.com/spanId";
 
 	/**
-	 * The json field name for the trace-id
+	 * The JSON field name for the trace-id
 	 */
 	public static final String TRACE_ID_ATTRIBUTE = "logging.googleapis.com/trace";
 
 	/**
-	 * The name of the MDC parameter, spring sleuth is storing the trace id at
+	 * The name of the MDC parameter, Spring Sleuth is storing the trace id at
 	 */
 	public static final String MDC_FIELD_TRACE_ID = "X-B3-TraceId";
 
 	/**
-	 * The name of the MDC parameter, spring sleuth is storing the span id at
+	 * The name of the MDC parameter, Spring Sleuth is storing the span id at
 	 */
 	public static final String MDC_FIELD_SPAN_ID = "X-B3-SpanId";
 
 	/**
-	 * The name of the MDC parameter, spring sleuth is storing the span export information at
+	 * The name of the MDC parameter, Spring Sleuth is storing the span export information at
 	 */
 	public static final String MDC_FIELD_SPAN_EXPORT = "X-Span-Export";
 
@@ -91,7 +91,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	private boolean includeExceptionInMessage;
 
 	/**
-	 * creates a layout for a logback appender compatible to the stackdriver log format
+	 * creates a layout for a Logback appender compatible to the Stackdriver log format
 	 */
 	public StackdriverJsonLayout() {
 		this.appendLineSeparator = true;
@@ -104,14 +104,14 @@ public class StackdriverJsonLayout extends JsonLayout {
 	}
 
 	/**
-	 * @return the google cloud project id relevant for logging the traceId
+	 * @return the Google Cloud project id relevant for logging the traceId
 	 */
 	public String getProjectId() {
 		return this.projectId;
 	}
 
 	/**
-	 * @param projectId the google cloud project id relevant for logging the traceId
+	 * @param projectId the Google Cloud project id relevant for logging the traceId
 	 */
 	public void setProjectId(String projectId) {
 		this.projectId = projectId;
@@ -119,28 +119,28 @@ public class StackdriverJsonLayout extends JsonLayout {
 
 	/**
 	 *
-	 * @return true if the traceId should be included into the json
+	 * @return true if the traceId should be included into the JSON
 	 */
 	public boolean isIncludeTraceId() {
 		return this.includeTraceId;
 	}
 
 	/**
-	 * @param includeTraceId true if the traceId should be included into the json
+	 * @param includeTraceId true if the traceId should be included into the JSON
 	 */
 	public void setIncludeTraceId(boolean includeTraceId) {
 		this.includeTraceId = includeTraceId;
 	}
 
 	/**
-	 * @return true if the spanId should be included into the json
+	 * @return true if the spanId should be included into the JSON
 	 */
 	public boolean isIncludeSpanId() {
 		return this.includeSpanId;
 	}
 
 	/**
-	 * @param includeSpanId true if the spanId should be included into the json
+	 * @param includeSpanId true if the spanId should be included into the JSON
 	 */
 	public void setIncludeSpanId(boolean includeSpanId) {
 		this.includeSpanId = includeSpanId;
@@ -163,7 +163,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 
 	/**
 	 * @param event the logging event
-	 * @return the map which should get rendered as json
+	 * @return the map which should get rendered as JSON
 	 */
 	@Override
 	protected Map<String, Object> toJsonMap(ILoggingEvent event) {
