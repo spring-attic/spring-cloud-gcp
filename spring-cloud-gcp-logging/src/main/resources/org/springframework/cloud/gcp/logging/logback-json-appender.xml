@@ -9,6 +9,18 @@ Stackdriver json-log format provided for import.
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
             <layout class="org.springframework.cloud.gcp.logging.StackdriverJsonLayout">
                 <projectId>${projectId}</projectId>
+
+                <!--<includeTraceId>true</includeTraceId>-->
+                <!--<includeSpanId>true</includeSpanId>-->
+                <!--<includeLevel>true</includeLevel>-->
+                <!--<includeThreadName>true</includeThreadName>-->
+                <!--<includeMDC>true</includeMDC>-->
+                <!--<includeLoggerName>true</includeLoggerName>-->
+                <!--<includeFormattedMessage>true</includeFormattedMessage>-->
+                <!--<includeExceptionInMessage>true</includeExceptionInMessage>-->
+                <!--<includeContextName>true</includeContextName>-->
+                <!--<includeMessage>false</includeMessage>-->
+                <!--<includeException>false</includeException>-->
             </layout>
         </encoder>
     </appender>
