@@ -220,10 +220,8 @@ public class StackdriverJsonLayout extends JsonLayout {
 		if (traceId == null) {
 			traceId = event.getMDCPropertyMap().get(MDC_FIELD_TRACE_ID);
 		}
-		if (!StringUtils.isEmpty(traceId)) {
-			if (!StringUtils.isEmpty(this.projectId)) {
-				traceId = "projects/" + this.projectId + "/traces/" + traceId;
-			}
+		if (!StringUtils.isEmpty(traceId) && !StringUtils.isEmpty(this.projectId)) {
+			traceId = "projects/" + this.projectId + "/traces/" + traceId;
 		}
 
 		add(TRACE_ID_ATTRIBUTE, this.includeTraceId, traceId, map);
