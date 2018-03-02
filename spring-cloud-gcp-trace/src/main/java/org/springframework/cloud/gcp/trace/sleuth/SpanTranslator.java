@@ -73,10 +73,10 @@ public class SpanTranslator {
 		SpanKind kind = getSpanKind(zipkinSpan.kind());
 		spanBuilder.setKind(kind);
 		rewriteIds(zipkinSpan, spanBuilder, kind);
-		if (zipkinSpan.timestamp() != null) {
+		if (zipkinSpan.timestampAsLong() != 0L) {
 			spanBuilder.setStartTime(createTimestamp(zipkinSpan.timestamp()));
-			if (zipkinSpan.duration() != null) {
-				Timestamp endTime = createTimestamp(zipkinSpan.timestamp() + zipkinSpan.duration());
+			if (zipkinSpan.durationAsLong() != 0) {
+				Timestamp endTime = createTimestamp(zipkinSpan.timestampAsLong() + zipkinSpan.durationAsLong());
 				spanBuilder.setEndTime(endTime);
 			}
 		}
@@ -91,7 +91,7 @@ public class SpanTranslator {
 	private void rewriteIds(Span zipkinSpan, TraceSpan.Builder builder, SpanKind kind) {
 		long id = parseUnsignedLong(zipkinSpan.id());
 		long parentId = parseUnsignedLong(zipkinSpan.parentId());
-		if (kind != SpanKind.RPC_SERVER) {
+		if (kind == SpanKind.RPC_CLIENT) {
 			builder.setSpanId(rewriteId(id));
 		}
 		else {
@@ -102,7 +102,12 @@ public class SpanTranslator {
 		// RPC_CLIENT
 		// spans.
 		if (kind == SpanKind.RPC_SERVER) {
-			builder.setParentSpanId(rewriteId(parentId));
+			if (Boolean.TRUE.equals(zipkinSpan.shared())) {
+				builder.setParentSpanId(rewriteId(id));
+			}
+			else {
+				builder.setParentSpanId(rewriteId(parentId));
+			}
 		}
 		else {
 			builder.setParentSpanId(parentId);

@@ -52,12 +52,14 @@ public class StackdriverTraceReporter implements Reporter<Span>, Flushable {
 	@Override
 	public void report(Span span) {
 		TraceSpan traceSpan = this.spanTranslator.translate(span);
+
 		Traces traces = Traces.newBuilder()
 				.addTraces(Trace.newBuilder()
 						.setTraceId(padTraceId(span.traceId()))
 						.setProjectId(this.projectId)
 						.addSpans(traceSpan).build())
 				.build();
+
 		this.traceConsumer.receive(traces);
 	}
 
