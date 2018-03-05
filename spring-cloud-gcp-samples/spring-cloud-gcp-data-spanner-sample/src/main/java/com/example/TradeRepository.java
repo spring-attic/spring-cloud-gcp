@@ -16,6 +16,8 @@
 
 package com.example;
 
+import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -25,4 +27,11 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface TradeRepository extends CrudRepository<Trade, String> {
+
+	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderByIdDesc(
+			String action, String symbol, String traderId);
+
+	List<Trade> findByAction(String action);
+
+	int countByAction(String action);
 }

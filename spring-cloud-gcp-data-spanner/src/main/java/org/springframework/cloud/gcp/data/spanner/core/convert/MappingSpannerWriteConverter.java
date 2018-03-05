@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -38,7 +39,7 @@ import org.springframework.data.mapping.PropertyHandler;
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-class MappingSpannerWriteConverter implements EntityWriter<Object, WriteBuilder> {
+public class MappingSpannerWriteConverter implements EntityWriter<Object, WriteBuilder> {
 
 	private static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>> iterablePropertyType2ToMethodMap;
 
@@ -58,32 +59,32 @@ class MappingSpannerWriteConverter implements EntityWriter<Object, WriteBuilder>
 		iterablePropertyType2ToMethodMap = builder.build();
 	}
 
-	private static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, ?>> singleItemType2ToMethodMap;
+	public static final Map<Class, BiFunction<ValueBinder, ?, ?>> singleItemType2ToMethodMap;
 
 	static {
-		ImmutableMap.Builder<Class, BiConsumer<ValueBinder<WriteBuilder>, ?>> builder =
+		ImmutableMap.Builder<Class, BiFunction<ValueBinder, ?, ?>> builder =
 				new ImmutableMap.Builder<>();
 
 		builder.put(Date.class,
-				((BiConsumer<ValueBinder<WriteBuilder>, Date>) ValueBinder::to));
+				((BiFunction<ValueBinder, Date, ?>) ValueBinder::to));
 		builder.put(Boolean.class,
-				((BiConsumer<ValueBinder<WriteBuilder>, Boolean>) ValueBinder::to));
+				((BiFunction<ValueBinder, Boolean, ?>) ValueBinder::to));
 		builder.put(Long.class,
-				((BiConsumer<ValueBinder<WriteBuilder>, Long>) ValueBinder::to));
+				((BiFunction<ValueBinder, Long, ?>) ValueBinder::to));
 		builder.put(String.class,
-				((BiConsumer<ValueBinder<WriteBuilder>, String>) ValueBinder::to));
+				((BiFunction<ValueBinder, String, ?>) ValueBinder::to));
 		builder.put(Double.class,
-				((BiConsumer<ValueBinder<WriteBuilder>, Double>) ValueBinder::to));
+				((BiFunction<ValueBinder, Double, ?>) ValueBinder::to));
 		builder.put(Timestamp.class,
-				((BiConsumer<ValueBinder<WriteBuilder>, Timestamp>) ValueBinder::to));
+				((BiFunction<ValueBinder, Timestamp, ?>) ValueBinder::to));
 		builder.put(ByteArray.class,
-				((BiConsumer<ValueBinder<WriteBuilder>, ByteArray>) ValueBinder::to));
+				((BiFunction<ValueBinder, ByteArray, ?>) ValueBinder::to));
 		builder.put(double[].class,
-				((BiConsumer<ValueBinder<WriteBuilder>, double[]>) ValueBinder::toFloat64Array));
+				((BiFunction<ValueBinder, double[], ?>) ValueBinder::toFloat64Array));
 		builder.put(boolean[].class,
-				((BiConsumer<ValueBinder<WriteBuilder>, boolean[]>) ValueBinder::toBoolArray));
+				((BiFunction<ValueBinder, boolean[], ?>) ValueBinder::toBoolArray));
 		builder.put(long[].class,
-				((BiConsumer<ValueBinder<WriteBuilder>, long[]>) ValueBinder::toInt64Array));
+				((BiFunction<ValueBinder, long[], ?>) ValueBinder::toInt64Array));
 
 		singleItemType2ToMethodMap = builder.build();
 	}
@@ -175,11 +176,11 @@ class MappingSpannerWriteConverter implements EntityWriter<Object, WriteBuilder>
 			ValueBinder<WriteBuilder> valueBinder,
 			SpannerPersistentProperty spannerPersistentProperty) {
 		Class innerType = ConversionUtils.boxIfNeeded(spannerPersistentProperty.getType());
-		BiConsumer toMethod = singleItemType2ToMethodMap.get(innerType);
+		BiFunction toMethod = singleItemType2ToMethodMap.get(innerType);
 		if (toMethod == null) {
 			return false;
 		}
-		toMethod.accept(valueBinder, value);
+		toMethod.apply(valueBinder, value);
 		return true;
 	}
 }
