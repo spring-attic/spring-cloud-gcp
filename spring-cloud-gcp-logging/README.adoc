@@ -1,5 +1,4 @@
-= Spring Cloud GCP Stackdriver Logging Support
-
+== Spring Cloud GCP Stackdriver Logging Support
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -51,7 +50,11 @@ in Spring MVC applications.
 Currently, https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-logging#add-a-stackdriver-logging-handler-to-a-logger[Java Util Logging (JUL)]
 and https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-contrib/google-cloud-logging-logback[Logback] are supported.
 
-== Logback Support
+=== Logback Support
+
+There are 2 possibilities to log to Stackdriver via this library with Logback:
+
+==== Log via API
 
 For Logback, a `org/springframework/cloud/gcp/logging/logback-appender.xml` file is made available for import to make it
 easier to configure the Logback appender.
@@ -72,3 +75,84 @@ Your configuration may then look something like this:
 `STACKDRIVER` appender.
 
 Also see the link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[spring-cloud-gcp-starter-logging] module.
+
+==== Log via Console
+
+If you run your Spring Boot application in a Kubernetes cluster in the Google Cloud (GKE) or on App Engine flexible
+environment, you can log JSON directly from the console by including
+`org/springframework/cloud/gcp/logging/logback-json-appender.xml`. The traceId will be set
+correctly.
+
+You need the additional dependency:
+
+[source, xml]
+----
+<dependency>
+  <groupId>ch.qos.logback.contrib</groupId>
+  <artifactId>logback-json-classic</artifactId>
+  <version>0.1.5</version>
+</dependency>
+----
+
+Your Logback configuration may then look something like this:
+
+[source, xml]
+----
+<configuration>
+  <property name="projectId" value="test-project"/>
+  <include resource="org/springframework/cloud/gcp/logging/logback-json-appender.xml" />
+
+  <root level="INFO">
+    <appender-ref ref="CONSOLE_JSON"/>
+  </root>
+</configuration>
+----
+
+If you want to have more control over the log output, you can also configure the `ConsoleAppender` yourself.
+The following properties are available:
+
+[options="header",]
+|=======================================================================
+| Property | Default Value | Description
+| `projectId` |  | Only required for logging the correct traceId: `projects/[PROJECT-ID]/traces/[TRACE-ID]`. If `projectId` is not set, the logged `traceId` will match the one provided by `spring-cloud-gpc-trace`
+| `includeTraceId` | `true` | Should the `traceId` be included
+| `includeSpanId` | `true` | Should the `spanId` be included
+| `includeLevel` | `true` | Should the severity be included
+| `includeThreadName` | `true` | Should the thread name be included
+| `includeMDC` | `true` | Should all MDC properties be included. The MDC properties `X-B3-TraceId`, `X-B3-SpanId` and `X-Span-Export` provided by Spring Sleuth will get excluded as they get handled separately
+| `includeLoggerName` | `true` | Should the name of the logger be included
+| `includeFormattedMessage` | `true` | Should the formatted log message be included.
+| `includeExceptionInMessage` | `true` | Should the stacktrace be appended to the formatted log message. This setting is only evaluated if `includeFormattedMessage` is `true`
+| `includeContextName` | `true` | Should the logging context be included
+| `includeMessage` | `false` | Should the log message with blank placeholders be included
+| `includeException` | `false` | Should the stacktrace be included as a own field
+|=======================================================================
+
+This is an example of such an Logback configuration:
+
+[source, xml]
+----
+<configuration >
+  <property name="projectId" value="${projectId:-${GOOGLE_CLOUD_PROJECT}}"/>
+  
+  <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+      <layout class="org.springframework.cloud.gcp.logging.StackdriverJsonLayout">
+        <projectId>${projectId}</projectId>
+  
+        <!--<includeTraceId>true</includeTraceId>-->
+        <!--<includeSpanId>true</includeSpanId>-->
+        <!--<includeLevel>true</includeLevel>-->
+        <!--<includeThreadName>true</includeThreadName>-->
+        <!--<includeMDC>true</includeMDC>-->
+        <!--<includeLoggerName>true</includeLoggerName>-->
+        <!--<includeFormattedMessage>true</includeFormattedMessage>-->
+        <!--<includeExceptionInMessage>true</includeExceptionInMessage>-->
+        <!--<includeContextName>true</includeContextName>-->
+        <!--<includeMessage>false</includeMessage>-->
+        <!--<includeException>false</includeException>-->
+      </layout>
+    </encoder>
+  </appender>
+</configuration >
+----
