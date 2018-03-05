@@ -64,7 +64,8 @@ public class WebController {
 		this.spannerOperations.findAll(Trade.class).stream()
 				.forEach(trade -> reply.append(trade.toString() + "<br />"));
 
-		reply.append("There are " + this.tradeRepository.countByAction("BUY") +" BUY trades: <br />");
+		reply.append("There are " + this.tradeRepository.countByAction("BUY")
+				+ " BUY trades: <br />");
 
 		this.tradeRepository.findByAction("BUY").stream()
 				.forEach(trade -> reply.append(trade.toString() + "<br />"));
