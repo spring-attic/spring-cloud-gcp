@@ -56,19 +56,20 @@ public class SpannerStatementQueryTests {
 		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
 				queryMethod, spannerOperations, new SpannerMappingContext());
 
-		List<Object> params = new ArrayList<>();
-		params.add("BUY");
-		params.add("abcd");
-		params.add("abc123");
-		params.add(8.88);
-		params.add(3.33);
-		params.add("ignored");
-		params.add("ignored");
-		params.add("blahblah");
-		params.add("ignored");
-		params.add("ignored");
-		params.add(1.11);
-		params.add(2.22);
+		Object[] params = new Object[]{
+		"BUY",
+		"abcd",
+		"abc123",
+		8.88,
+		3.33,
+		"ignored",
+		"ignored",
+		"blahblah",
+		"ignored",
+		"ignored",
+		1.11,
+		2.22,
+		};
 
 		when(spannerOperations.find(any(), (Statement) any(), any()))
 				.thenAnswer(invocation -> {
@@ -84,7 +85,7 @@ public class SpannerStatementQueryTests {
 					return null;
 				});
 
-		partTreeSpannerQuery.execute(params.toArray());
+		partTreeSpannerQuery.execute(params);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -101,12 +102,13 @@ public class SpannerStatementQueryTests {
 		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
 				queryMethod, spannerOperations, new SpannerMappingContext());
 
-		List<Object> params = new ArrayList<>();
-		params.add("BUY");
-		params.add("abcd");
-		params.add("abc123");
+		Object[] params = new Object[] {
+				"BUY",
+				"abcd",
+				"abc123",
+		};
 
-		partTreeSpannerQuery.execute(params.toArray());
+		partTreeSpannerQuery.execute(params);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -123,16 +125,17 @@ public class SpannerStatementQueryTests {
 		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
 				queryMethod, spannerOperations, new SpannerMappingContext());
 
-		List<Object> params = new ArrayList<>();
-		params.add("BUY");
-		params.add("abcd");
-		params.add("abc123");
-		params.add(8.88);
-		params.add(3.33);
-		params.add(new Trade());
-		params.add("ignored");
+		Object[] params = new Object[] {
+				"BUY",
+				"abcd",
+				"abc123",
+				8.88,
+				3.33,
+				new Trade(),
+				"ignored",
+		};
 
-		partTreeSpannerQuery.execute(params.toArray());
+		partTreeSpannerQuery.execute(params);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -149,9 +152,9 @@ public class SpannerStatementQueryTests {
 		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
 				queryMethod, spannerOperations, new SpannerMappingContext());
 
-		List<Object> params = new ArrayList<>();
+		Object[] params = new Object[0];
 
-		partTreeSpannerQuery.execute(params.toArray());
+		partTreeSpannerQuery.execute(params);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
@@ -166,9 +169,9 @@ public class SpannerStatementQueryTests {
 		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
 				queryMethod, spannerOperations, new SpannerMappingContext());
 
-		List<Object> params = new ArrayList<>();
+		Object[] params = new Object[0];
 
-		partTreeSpannerQuery.execute(params.toArray());
+		partTreeSpannerQuery.execute(params);
 	}
 
 	@Test
@@ -183,8 +186,9 @@ public class SpannerStatementQueryTests {
 		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
 				queryMethod, spannerOperations, new SpannerMappingContext());
 
-		List<Object> params = new ArrayList<>();
-		params.add("BUY");
+		Object[] params = new Object[]{
+				"BUY",
+		};
 
 		List<Trade> results = new ArrayList<>();
 		results.add(new Trade());
@@ -192,7 +196,7 @@ public class SpannerStatementQueryTests {
 		when(spannerOperations.find(any(), (Statement) any(), any()))
 				.thenReturn((List) results);
 
-		assertEquals(1, partTreeSpannerQuery.execute(params.toArray()));
+		assertEquals(1, partTreeSpannerQuery.execute(params));
 	}
 
 	@Test
@@ -207,8 +211,9 @@ public class SpannerStatementQueryTests {
 		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
 				queryMethod, spannerOperations, new SpannerMappingContext());
 
-		List<Object> params = new ArrayList<>();
-		params.add("BUY");
+		Object[] params = new Object[]{
+				"BUY",
+		};
 
 		List<Trade> results = new ArrayList<>();
 		results.add(new Trade());
@@ -216,7 +221,7 @@ public class SpannerStatementQueryTests {
 		when(spannerOperations.find(any(), (Statement) any(), any()))
 				.thenReturn((List) results);
 
-		assertTrue((boolean) partTreeSpannerQuery.execute(params.toArray()));
+		assertTrue((boolean) partTreeSpannerQuery.execute(params));
 	}
 
 	@Test
@@ -231,15 +236,16 @@ public class SpannerStatementQueryTests {
 		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
 				queryMethod, spannerOperations, new SpannerMappingContext());
 
-		List<Object> params = new ArrayList<>();
-		params.add("BUY");
+		Object[] params = new Object[]{
+				"BUY",
+		};
 
 		List<Trade> results = new ArrayList<>();
 
 		when(spannerOperations.find(any(), (Statement) any(), any()))
 				.thenReturn((List) results);
 
-		assertFalse((boolean) partTreeSpannerQuery.execute(params.toArray()));
+		assertFalse((boolean) partTreeSpannerQuery.execute(params));
 	}
 
 	@SpannerTable(name = "trades")

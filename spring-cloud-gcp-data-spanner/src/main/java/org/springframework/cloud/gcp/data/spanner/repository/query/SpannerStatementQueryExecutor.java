@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerWri
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.util.Pair;
 
@@ -39,6 +40,38 @@ import org.springframework.data.util.Pair;
  * @author Chengyuan Zhao
  */
 public class SpannerStatementQueryExecutor {
+	/**
+	 * Excecutes a PartTree-based query.
+	 * @param type the type of the underlying entity
+	 * @param tree the parsed metadata of the query
+	 * @param params the parameters of this specific query
+	 * @param spannerOperations used to execute the query
+	 * @param spannerMappingContext used to get metadata about the entity type
+	 * @return A boolean for EXISTS queries, an integer for COUNT queries, and a List of
+	 * entities otherwise.
+	 * @throws UnsupportedOperationException for DELETE queries.
+	 */
+	public static Object executeQuery(Class type, PartTree tree, Object[] params,
+			SpannerOperations spannerOperations,
+			SpannerMappingContext spannerMappingContext) {
+		if (tree.isDelete()) {
+			throw new UnsupportedOperationException(
+					"Delete queries are not supported in Spanner");
+		}
+		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
+				spannerMappingContext, type);
+		List results = spannerOperations.find(type, buildStatementFromSqlWithArgs(
+				sqlAndTags.getFirst(), sqlAndTags.getSecond(), params));
+		if (tree.isCountProjection()) {
+			return results.size();
+		}
+		else if (tree.isExistsProjection()) {
+			return !results.isEmpty();
+		}
+		else {
+			return results;
+		}
+	}
 
 	/**
 	 * Creates a Spanner statement.
@@ -77,14 +110,52 @@ public class SpannerStatementQueryExecutor {
 				.getPersistentEntity(type);
 		List<String> tags = new ArrayList<>();
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("SELECT ");
 
+		buildSelect(tree, stringBuilder);
+		buildFrom(persistentEntity, stringBuilder);
+		buildWhere(tree, persistentEntity, tags, stringBuilder);
+		buildOrderBy(persistentEntity, stringBuilder, tree.getSort());
+		buildLimit(tree, stringBuilder);
+
+		stringBuilder.append(";");
+		return Pair.of(stringBuilder.toString(), tags);
+	}
+
+	private static StringBuilder buildSelect(PartTree tree, StringBuilder stringBuilder) {
+		stringBuilder.append("SELECT ");
 		if (tree.isDistinct()) {
 			stringBuilder.append("DISTINCT ");
 		}
+		stringBuilder.append("* ");
+		return stringBuilder;
+	}
 
-		stringBuilder.append("* FROM " + persistentEntity.tableName() + " ");
+	private static void buildFrom(SpannerPersistentEntity<?> persistentEntity,
+			StringBuilder stringBuilder) {
+		stringBuilder.append("FROM " + persistentEntity.tableName() + " ");
+	}
 
+	private static void buildOrderBy(SpannerPersistentEntity<?> persistentEntity,
+			StringBuilder stringBuilder, Sort sort) {
+		if (sort.isSorted()) {
+			stringBuilder.append("ORDER BY ");
+			StringJoiner orderStrings = new StringJoiner(" , ");
+			sort.iterator().forEachRemaining(o -> orderStrings.add(ordering(persistentEntity, o)));
+			stringBuilder.append(orderStrings.toString());
+		}
+	}
+
+	private static String ordering(SpannerPersistentEntity<?> persistentEntity, Order order) {
+		return persistentEntity.getPersistentProperty(
+				order.getProperty()).getColumnName() + " " + toString(order);
+	}
+
+	private static String toString(Order order) {
+		return order.isAscending() ? "ASC" : "DESC";
+	}
+
+	private static void buildWhere(PartTree tree, SpannerPersistentEntity<?> persistentEntity,
+			List<String> tags, StringBuilder stringBuilder) {
 		if (tree.hasPredicate()) {
 			stringBuilder.append("WHERE ");
 
@@ -149,57 +220,11 @@ public class SpannerStatementQueryExecutor {
 
 			stringBuilder.append(orStrings.toString());
 		}
-
-		Sort sort = tree.getSort();
-		if (sort.isSorted()) {
-			stringBuilder.append("ORDER BY ");
-			StringJoiner orderStrings = new StringJoiner(" , ");
-			sort.iterator().forEachRemaining(order -> {
-				orderStrings.add(persistentEntity
-						.getPersistentProperty(order.getProperty()).getColumnName() + " "
-						+ (order.isAscending() ? "ASC" : "DESC"));
-			});
-			stringBuilder.append(orderStrings.toString());
-		}
-
-		if (tree.isLimiting()) {
-			stringBuilder.append(" LIMIT " + tree.getMaxResults());
-		}
-
-		stringBuilder.append(";");
-		return Pair.of(stringBuilder.toString(), tags);
 	}
 
-	/**
-	 * Excecutes a PartTree-based query.
-	 * @param type the type of the underlying entity
-	 * @param tree the parsed metadata of the query
-	 * @param params the parameters of this specific query
-	 * @param spannerOperations used to execute the query
-	 * @param spannerMappingContext used to get metadata about the entity type
-	 * @return A boolean for EXISTS queries, an integer for COUNT queries, and a List of
-	 * entities otherwise.
-	 * @throws UnsupportedOperationException for DELETE queries.
-	 */
-	public static Object executeQuery(Class type, PartTree tree, Object[] params,
-			SpannerOperations spannerOperations,
-			SpannerMappingContext spannerMappingContext) {
-		if (tree.isDelete()) {
-			throw new UnsupportedOperationException(
-					"Delete queries are not supported in Spanner");
-		}
-		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
-				spannerMappingContext, type);
-		List results = spannerOperations.find(type, buildStatementFromSqlWithArgs(
-				sqlAndTags.getFirst(), sqlAndTags.getSecond(), params));
-		if (tree.isCountProjection()) {
-			return results.size();
-		}
-		else if (tree.isExistsProjection()) {
-			return !results.isEmpty();
-		}
-		else {
-			return results;
+	private static void buildLimit(PartTree tree, StringBuilder stringBuilder) {
+		if (tree.isLimiting()) {
+			stringBuilder.append(" LIMIT " + tree.getMaxResults());
 		}
 	}
 }
