@@ -120,6 +120,7 @@ public class SpannerStatementQueryTests {
 		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
 				queryMethod, spannerOperations, new SpannerMappingContext());
 
+		// There are too few params specified, so the exception will occur. 
 		Object[] params = new Object[] {
 				"BUY",
 				"abcd",
@@ -149,7 +150,7 @@ public class SpannerStatementQueryTests {
 				"abc123",
 				8.88,
 				3.33,
-				new Trade(),
+				new Trade(), // This parameter is an unsupported type for Spanner SQL.
 				"ignored",
 		};
 
