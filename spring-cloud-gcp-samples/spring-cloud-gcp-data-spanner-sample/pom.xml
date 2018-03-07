@@ -9,6 +9,7 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
+	<groupId>com.example</groupId>
 	<artifactId>spring-cloud-gcp-data-spanner-sample</artifactId>
 	<name>Spring Cloud GCP Spring Boot Starter for Spanner Code Sample</name>
 

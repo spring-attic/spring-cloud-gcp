@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.support;
 
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,17 +25,22 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
+import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerQueryLookupStrategy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
+import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.QueryLookupStrategy;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * @author Chengyuan Zhao
+ * @author Balint Pato
  */
 public class SpannerRepositoryFactoryTests {
 
@@ -80,6 +87,13 @@ public class SpannerRepositoryFactoryTests {
 	public void getRepositoryBaseClassTest() {
 		Class baseClass = this.spannerRepositoryFactory.getRepositoryBaseClass(null);
 		assertEquals(SpannerRepositoryImpl.class, baseClass);
+	}
+
+	@Test
+	public void getQueryLookupStrategyTest() {
+		Optional<QueryLookupStrategy> qls = this.spannerRepositoryFactory
+				.getQueryLookupStrategy(null, mock(EvaluationContextProvider.class));
+		assertTrue(qls.get() instanceof SpannerQueryLookupStrategy);
 	}
 
 	@SpannerTable(name = "custom_test_table")
