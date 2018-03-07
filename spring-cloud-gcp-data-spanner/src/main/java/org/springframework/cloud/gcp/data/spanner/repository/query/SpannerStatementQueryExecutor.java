@@ -38,10 +38,11 @@ import org.springframework.data.util.Pair;
  * definitions.
  *
  * @author Chengyuan Zhao
+ * @author Balint Pato
  */
 public class SpannerStatementQueryExecutor {
 	/**
-	 * Excecutes a PartTree-based query.
+	 * Executes a PartTree-based query.
 	 * @param type the type of the underlying entity
 	 * @param tree the parsed metadata of the query
 	 * @param params the parameters of this specific query
@@ -83,7 +84,7 @@ public class SpannerStatementQueryExecutor {
 	 * @throws IllegalArgumentException if the number of tags does not match the number of
 	 * params, or if a param of an unsupported type is given.
 	 */
-	public static Statement buildStatementFromSqlWithArgs(String sql, List<String> tags,
+	private static Statement buildStatementFromSqlWithArgs(String sql, List<String> tags,
 			Object[] params) {
 		if (tags.size() != params.length) {
 			throw new IllegalArgumentException(

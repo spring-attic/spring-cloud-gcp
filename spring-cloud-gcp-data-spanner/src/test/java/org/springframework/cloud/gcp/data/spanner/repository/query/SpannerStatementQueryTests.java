@@ -17,11 +17,13 @@
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Value;
+import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
@@ -33,7 +35,6 @@ import org.springframework.data.repository.query.QueryMethod;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -41,40 +42,56 @@ import static org.mockito.Mockito.when;
 
 /**
  * @author Chengyuan Zhao
+ * @author Balint Pato
  */
 public class SpannerStatementQueryTests {
 
+	private static final Object[] EMPTY_PARAMETERS = new Object[0];
+
+	private SpannerOperations spannerOperations;
+
+	private QueryMethod queryMethod;
+
+	private SpannerMappingContext spannerMappingContext;
+
+	private PartTreeSpannerQuery partTreeSpannerQuery;
+
+	@Before
+	public void initMocks() {
+		this.queryMethod = mock(QueryMethod.class);
+		this.spannerOperations = mock(SpannerOperations.class);
+		this.spannerMappingContext = new SpannerMappingContext();
+	}
+
+	private PartTreeSpannerQuery createQuery() {
+		return new PartTreeSpannerQuery(Trade.class,
+				this.queryMethod, this.spannerOperations, this.spannerMappingContext);
+	}
+
 	@Test
 	public void compoundNameConventionTest() {
-
-		QueryMethod queryMethod = mock(QueryMethod.class);
-
-		when(queryMethod.getName()).thenReturn(
+		when(this.queryMethod.getName()).thenReturn(
 				"findTop3DistinctByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullAndTraderIdLikeAndPriceTrueAndPriceFalse"
 						+ "AndPriceGreaterThanAndPriceLessThanEqualOrderByIdDesc");
+		this.partTreeSpannerQuery = createQuery();
 
-		SpannerOperations spannerOperations = mock(SpannerOperations.class);
-
-		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
-				queryMethod, spannerOperations, new SpannerMappingContext());
-
-		Object[] params = new Object[]{
-		"BUY",
-		"abcd",
-		"abc123",
-		8.88,
-		3.33,
-		"ignored",
-		"ignored",
-		"blahblah",
-		"ignored",
-		"ignored",
-		1.11,
-		2.22,
+		Object[] params = new Object[] {
+				"BUY",
+				"abcd",
+				"abc123",
+				8.88,
+				3.33,
+				"ignored",
+				"ignored",
+				"blahblah",
+				"ignored",
+				"ignored",
+				1.11,
+				2.22,
 		};
 
-		when(spannerOperations.find(any(), (Statement) any(), any()))
+		when(this.spannerOperations.find(any(), (Statement) any(), any()))
 				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
 
@@ -103,22 +120,15 @@ public class SpannerStatementQueryTests {
 					return null;
 				});
 
-		partTreeSpannerQuery.execute(params);
+		this.partTreeSpannerQuery.execute(params);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void unspecifiedParametersTest() {
-
-		QueryMethod queryMethod = mock(QueryMethod.class);
-
-		when(queryMethod.getName()).thenReturn(
+		when(this.queryMethod.getName()).thenReturn(
 				"findTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
-
-		SpannerOperations spannerOperations = mock(SpannerOperations.class);
-
-		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
-				queryMethod, spannerOperations, new SpannerMappingContext());
+		this.partTreeSpannerQuery = createQuery();
 
 		// There are too few params specified, so the exception will occur.
 		Object[] params = new Object[] {
@@ -127,22 +137,15 @@ public class SpannerStatementQueryTests {
 				"abc123",
 		};
 
-		partTreeSpannerQuery.execute(params);
+		this.partTreeSpannerQuery.execute(params);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void unsupportedParamTypeTest() {
-
-		QueryMethod queryMethod = mock(QueryMethod.class);
-
-		when(queryMethod.getName()).thenReturn(
+		when(this.queryMethod.getName()).thenReturn(
 				"findTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
-
-		SpannerOperations spannerOperations = mock(SpannerOperations.class);
-
-		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
-				queryMethod, spannerOperations, new SpannerMappingContext());
+		this.partTreeSpannerQuery = createQuery();
 
 		Object[] params = new Object[] {
 				"BUY",
@@ -154,112 +157,69 @@ public class SpannerStatementQueryTests {
 				"ignored",
 		};
 
-		partTreeSpannerQuery.execute(params);
+		this.partTreeSpannerQuery.execute(params);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void deleteTest() {
-
-		QueryMethod queryMethod = mock(QueryMethod.class);
-
-		when(queryMethod.getName()).thenReturn(
+		//delete is not supported
+		when(this.queryMethod.getName()).thenReturn(
 				"deleteTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
 
-		SpannerOperations spannerOperations = mock(SpannerOperations.class);
+		this.partTreeSpannerQuery = createQuery();
 
-		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
-				queryMethod, spannerOperations, new SpannerMappingContext());
-
-		Object[] params = new Object[0];
-
-		partTreeSpannerQuery.execute(params);
+		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void unSupportedPredicateTest() {
-
-		QueryMethod queryMethod = mock(QueryMethod.class);
-
-		when(queryMethod.getName()).thenReturn("countByTraderIdBetween");
-
-		SpannerOperations spannerOperations = mock(SpannerOperations.class);
-
-		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
-				queryMethod, spannerOperations, new SpannerMappingContext());
-
-		Object[] params = new Object[0];
-
-		partTreeSpannerQuery.execute(params);
+		when(this.queryMethod.getName()).thenReturn("countByTraderIdBetween");
+		this.partTreeSpannerQuery = createQuery();
+		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
 	}
 
 	@Test
-	public void countTest() {
+	public void countShouldReturnSizeOfResultSet() {
+		List<Trade> results = new ArrayList<>();
+		results.add(new Trade());
 
-		QueryMethod queryMethod = mock(QueryMethod.class);
-
-		when(queryMethod.getName()).thenReturn("countByAction");
-
-		SpannerOperations spannerOperations = mock(SpannerOperations.class);
-
-		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
-				queryMethod, spannerOperations, new SpannerMappingContext());
+		queryWithMockResult("countByAction", results);
 
 		Object[] params = new Object[]{
 				"BUY",
 		};
-
-		List<Trade> results = new ArrayList<>();
-		results.add(new Trade());
-
-		when(spannerOperations.find(any(), (Statement) any(), any()))
-				.thenReturn((List) results);
-
-		assertEquals(1, partTreeSpannerQuery.execute(params));
+		assertEquals(1, this.partTreeSpannerQuery.execute(params));
 	}
 
 	@Test
-	public void existsTest() {
+	public void existShouldBeTrueWhenResultSetIsNotEmpty() {
+		List<Trade> results = new ArrayList<>();
+		results.add(new Trade());
 
-		QueryMethod queryMethod = mock(QueryMethod.class);
-
-		when(queryMethod.getName()).thenReturn("existsByAction");
-
-		SpannerOperations spannerOperations = mock(SpannerOperations.class);
-
-		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
-				queryMethod, spannerOperations, new SpannerMappingContext());
+		queryWithMockResult("existsByAction", results);
 
 		Object[] params = new Object[]{
 				"BUY",
 		};
-
-		List<Trade> results = new ArrayList<>();
-		results.add(new Trade());
-
-		when(spannerOperations.find(any(), (Statement) any(), any()))
-				.thenReturn((List) results);
-
-		assertTrue((boolean) partTreeSpannerQuery.execute(params));
-
-		results.clear();
-
-		assertFalse((boolean) partTreeSpannerQuery.execute(params));
+		assertTrue((boolean) this.partTreeSpannerQuery.execute(params));
 	}
 
 	@Test
-	public void getQueryMethodTest() {
+	public void existShouldBeFalseWhenResultSetIsEmpty() {
+		queryWithMockResult("existsByAction", Collections.emptyList());
 
-		QueryMethod queryMethod = mock(QueryMethod.class);
+		Object[] params = new Object[]{
+				"BUY",
+		};
+		assertFalse((boolean) this.partTreeSpannerQuery.execute(params));
+	}
 
-		when(queryMethod.getName()).thenReturn("existsByAction");
-
-		SpannerOperations spannerOperations = mock(SpannerOperations.class);
-
-		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
-				queryMethod, spannerOperations, new SpannerMappingContext());
-
-		assertSame(queryMethod, partTreeSpannerQuery.getQueryMethod());
+	private void queryWithMockResult(String queryName, List results) {
+		when(this.queryMethod.getName()).thenReturn(queryName);
+		this.partTreeSpannerQuery = createQuery();
+		when(this.spannerOperations.find(any(), (Statement) any(), any()))
+				.thenReturn(results);
 	}
 
 	@SpannerTable(name = "trades")
