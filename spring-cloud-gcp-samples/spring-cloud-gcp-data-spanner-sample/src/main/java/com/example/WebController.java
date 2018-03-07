@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Chengyuan Zhao
  */
 @RestController
-@EnableSpannerRepositories
+@EnableSpannerRepositories(namedQueriesLocation = "classpath:/spanner-named-queries.properties")
 public class WebController {
 
 	@Autowired

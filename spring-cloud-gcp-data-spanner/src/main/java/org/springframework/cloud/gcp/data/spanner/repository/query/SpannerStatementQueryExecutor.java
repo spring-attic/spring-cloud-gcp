@@ -34,7 +34,7 @@ import org.springframework.data.util.Pair;
 
 /**
  * Executes Google Spanner query statements using
- * {@link org.springframework.data.repository.query.parser.PartTree}\ parsed method
+ * {@link org.springframework.data.repository.query.parser.PartTree} parsed method
  * definitions.
  *
  * @author Chengyuan Zhao
@@ -84,7 +84,7 @@ public class SpannerStatementQueryExecutor {
 	 * @throws IllegalArgumentException if the number of tags does not match the number of
 	 * params, or if a param of an unsupported type is given.
 	 */
-	private static Statement buildStatementFromSqlWithArgs(String sql, List<String> tags,
+	public static Statement buildStatementFromSqlWithArgs(String sql, List<String> tags,
 			Object[] params) {
 		if (tags.size() != params.length) {
 			throw new IllegalArgumentException(

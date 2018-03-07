@@ -34,4 +34,7 @@ public interface TradeRepository extends CrudRepository<Trade, String> {
 	List<Trade> findByAction(String action);
 
 	int countByAction(String action);
+
+	// This method uses the query from the properties file instead of one generated based on name.
+	List<Trade> fetchByActionNamedQuery(String action);
 }
