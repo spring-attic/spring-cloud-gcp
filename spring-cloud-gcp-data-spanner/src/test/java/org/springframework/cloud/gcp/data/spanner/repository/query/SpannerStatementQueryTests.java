@@ -120,7 +120,7 @@ public class SpannerStatementQueryTests {
 		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
 				queryMethod, spannerOperations, new SpannerMappingContext());
 
-		// There are too few params specified, so the exception will occur. 
+		// There are too few params specified, so the exception will occur.
 		Object[] params = new Object[] {
 				"BUY",
 				"abcd",
@@ -241,28 +241,8 @@ public class SpannerStatementQueryTests {
 				.thenReturn((List) results);
 
 		assertTrue((boolean) partTreeSpannerQuery.execute(params));
-	}
 
-	@Test
-	public void notExistsTest() {
-
-		QueryMethod queryMethod = mock(QueryMethod.class);
-
-		when(queryMethod.getName()).thenReturn("existsByAction");
-
-		SpannerOperations spannerOperations = mock(SpannerOperations.class);
-
-		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
-				queryMethod, spannerOperations, new SpannerMappingContext());
-
-		Object[] params = new Object[]{
-				"BUY",
-		};
-
-		List<Trade> results = new ArrayList<>();
-
-		when(spannerOperations.find(any(), (Statement) any(), any()))
-				.thenReturn((List) results);
+		results.clear();
 
 		assertFalse((boolean) partTreeSpannerQuery.execute(params));
 	}
