@@ -18,8 +18,10 @@ package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Value;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
@@ -31,6 +33,7 @@ import org.springframework.data.repository.query.QueryMethod;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -74,14 +77,29 @@ public class SpannerStatementQueryTests {
 		when(spannerOperations.find(any(), (Statement) any(), any()))
 				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
+
 					assertEquals(
 							"SELECT DISTINCT * FROM trades WHERE ( action=@tag0 AND ticker=@tag1 ) OR "
 									+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 									+ "trader_id=NULL AND trader_id LIKE %@tag7 AND price=TRUE AND price=FALSE AND "
-									+ "price>@tag10 AND price<=@tag11 )ORDER BY id DESC LIMIT 3; {tag0: BUY, tag1:"
-									+ " abcd, tag8: ignored, tag9: ignored, tag10: 1.11, tag6: ignored, tag11: 2.22, "
-									+ "tag7: blahblah, tag4: 3.33, tag5: ignored, tag2: abc123, tag3: 8.88}",
-							statement.toString());
+									+ "price>@tag10 AND price<=@tag11 )ORDER BY id DESC LIMIT 3;",
+							statement.getSql());
+
+					Map<String, Value> paramMap = statement.getParameters();
+
+					assertEquals(params[0], paramMap.get("tag0").getString());
+					assertEquals(params[1], paramMap.get("tag1").getString());
+					assertEquals(params[2], paramMap.get("tag2").getString());
+					assertEquals(params[3], paramMap.get("tag3").getFloat64());
+					assertEquals(params[4], paramMap.get("tag4").getFloat64());
+					assertEquals(params[5], paramMap.get("tag5").getString());
+					assertEquals(params[6], paramMap.get("tag6").getString());
+					assertEquals(params[7], paramMap.get("tag7").getString());
+					assertEquals(params[8], paramMap.get("tag8").getString());
+					assertEquals(params[9], paramMap.get("tag9").getString());
+					assertEquals(params[10], paramMap.get("tag10").getFloat64());
+					assertEquals(params[11], paramMap.get("tag11").getFloat64());
+
 					return null;
 				});
 
@@ -246,6 +264,21 @@ public class SpannerStatementQueryTests {
 				.thenReturn((List) results);
 
 		assertFalse((boolean) partTreeSpannerQuery.execute(params));
+	}
+
+	@Test
+	public void getQueryMethodTest() {
+
+		QueryMethod queryMethod = mock(QueryMethod.class);
+
+		when(queryMethod.getName()).thenReturn("existsByAction");
+
+		SpannerOperations spannerOperations = mock(SpannerOperations.class);
+
+		PartTreeSpannerQuery partTreeSpannerQuery = new PartTreeSpannerQuery(Trade.class,
+				queryMethod, spannerOperations, new SpannerMappingContext());
+
+		assertSame(queryMethod, partTreeSpannerQuery.getQueryMethod());
 	}
 
 	@SpannerTable(name = "trades")
