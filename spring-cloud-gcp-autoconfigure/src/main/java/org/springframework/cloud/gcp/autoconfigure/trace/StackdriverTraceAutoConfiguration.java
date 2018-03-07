@@ -23,6 +23,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import brave.Tracing;
+import brave.http.HttpClientParser;
+import brave.http.HttpServerParser;
 import brave.propagation.CurrentTraceContext;
 import brave.propagation.Propagation;
 import brave.sampler.Sampler;
@@ -57,6 +59,8 @@ import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.trace.TraceServiceClientTraceConsumer;
 import org.springframework.cloud.gcp.trace.sleuth.LabelExtractor;
 import org.springframework.cloud.gcp.trace.sleuth.SpanTranslator;
+import org.springframework.cloud.gcp.trace.sleuth.StackdriverHttpClientParser;
+import org.springframework.cloud.gcp.trace.sleuth.StackdriverHttpServerParser;
 import org.springframework.cloud.gcp.trace.sleuth.StackdriverTraceReporter;
 import org.springframework.cloud.sleuth.SpanAdjuster;
 import org.springframework.cloud.sleuth.TraceKeys;
@@ -77,8 +81,9 @@ import org.springframework.context.annotation.Primary;
 @EnableConfigurationProperties({ SamplerProperties.class, GcpTraceProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.trace.enabled", matchIfMissing = true)
 @ConditionalOnClass(TraceConsumer.class)
-@Import(StackdriverTraceAutoConfiguration.TraceConsumerConfiguration.class)
-@AutoConfigureBefore(TraceAutoConfiguration.class)
+@Import({ StackdriverTraceAutoConfiguration.TraceConsumerConfiguration.class,
+		StackdriverTraceAutoConfiguration.StackdriverTraceHttpAutoconfiguration.class })
+@AutoConfigureBefore({ TraceAutoConfiguration.class })
 public class StackdriverTraceAutoConfiguration {
 
 	@Autowired(required = false)
@@ -103,7 +108,7 @@ public class StackdriverTraceAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	Tracing sleuthTracing(@Value("${spring.zipkin.service.name:${spring.application.name:default}}") String serviceName,
+	Tracing tracing(@Value("${spring.zipkin.service.name:${spring.application.name:default}}") String serviceName,
 			Propagation.Factory factory,
 			CurrentTraceContext currentTraceContext,
 			Reporter<zipkin2.Span> reporter,
@@ -143,6 +148,14 @@ public class StackdriverTraceAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "false", matchIfMissing = true)
+	@ConditionalOnMissingBean
+	public LabelExtractor traceLabelExtractor() {
+		return new LabelExtractor();
+	}
+
+	@Bean
+	@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "true")
 	@ConditionalOnMissingBean
 	public LabelExtractor traceLabelExtractor(TraceKeys traceKeys) {
 		return new LabelExtractor(traceKeys);
@@ -166,6 +179,24 @@ public class StackdriverTraceAutoConfiguration {
 		@ConditionalOnMissingBean
 		public Sampler defaultTraceSampler(SamplerProperties config) {
 			return new ProbabilityBasedSampler(config);
+		}
+	}
+
+	@Configuration
+	@ConditionalOnProperty(name = "spring.sleuth.http.enabled", havingValue = "true", matchIfMissing = true)
+	public static class StackdriverTraceHttpAutoconfiguration {
+		@Bean
+		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "false", matchIfMissing = true)
+		@ConditionalOnMissingBean
+		HttpClientParser stackdriverHttpClientParser() {
+			return new StackdriverHttpClientParser();
+		}
+
+		@Bean
+		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "false", matchIfMissing = true)
+		@ConditionalOnMissingBean
+		HttpServerParser stackdriverHttpServerParser() {
+			return new StackdriverHttpServerParser();
 		}
 	}
 

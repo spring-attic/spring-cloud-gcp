@@ -57,8 +57,12 @@ public class LabelExtractor {
 
 	private final DateFormat timestampFormat;
 
+	public LabelExtractor() {
+		this(newDefaultLabelRenameMap());
+	}
+
 	public LabelExtractor(TraceKeys traceKeys) {
-		this(buildLabelRenameMapFromTraceKeys(traceKeys));
+		this(newDefaultLabelRenameMap(traceKeys));
 	}
 
 	public LabelExtractor(Map<String, String> labelRenameMap) {
@@ -74,21 +78,42 @@ public class LabelExtractor {
 	}
 
 	/**
-	 * Builds a
-	 * @param traceKeys Sleuth's {@link TraceKeys}
-	 * @return A mapping of Sleuth's HTTP trace keys to Stackdriver label keys
+	 * Default Zipkin to Stackdriver tag/label mapping if not using legacy mode.
+	 *
+	 * @return new instance of a Map with the label mapping
 	 */
-	public static Map<String, String> buildLabelRenameMapFromTraceKeys(TraceKeys traceKeys) {
+	public static Map<String, String> newDefaultLabelRenameMap() {
+		Map<String, String> labelRenameMap = new HashMap<>();
+		labelRenameMap = new HashMap<>();
+
+		labelRenameMap.put("http.host", "/http/host");
+		labelRenameMap.put("http.method", "/http/method");
+		labelRenameMap.put("http.status_code", "/http/status_code");
+		labelRenameMap.put("http.request.size", "/http/request/size");
+		labelRenameMap.put("http.response.size", "/http/response/size");
+		labelRenameMap.put("http.url", "/http/url");
+		labelRenameMap.put("http.path", "/http/path");
+		labelRenameMap.put("http.route", "/http/route");
+
+		return labelRenameMap;
+	}
+
+	/**
+	 * Default Sleuth to Stackdriver tag/label mapping if using legacy mode.
+	 * @param traceKeys
+	 * @return new instance of a Map with the label mapping
+	 */
+	public static Map<String, String> newDefaultLabelRenameMap(TraceKeys traceKeys) {
 		Map<String, String> labelRenameMap = new HashMap<>();
 		TraceKeys.Http httpKeys = traceKeys.getHttp();
 		labelRenameMap = new HashMap<>();
-
 		labelRenameMap.put(httpKeys.getHost(), "/http/host");
 		labelRenameMap.put(httpKeys.getMethod(), "/http/method");
 		labelRenameMap.put(httpKeys.getStatusCode(), "/http/status_code");
 		labelRenameMap.put(httpKeys.getRequestSize(), "/http/request/size");
 		labelRenameMap.put(httpKeys.getResponseSize(), "/http/response/size");
 		labelRenameMap.put(httpKeys.getUrl(), "/http/url");
+		labelRenameMap.put(httpKeys.getPath(), "/http/path");
 		return labelRenameMap;
 	}
 

@@ -33,22 +33,32 @@ public class LabelExtractorTests {
 	SimpleDateFormat dateFormatter = new SimpleDateFormat(LabelExtractor.DEFAULT_TIMESTAMP_FORMAT);
 
 	@Test
-	public void testLabelReplacement() {
-		LabelExtractor extractor = new LabelExtractor(new TraceKeys());
+	public void testRpcClientBasics() {
+		LabelExtractor extractor = new LabelExtractor();
+		String instanceId = "localhost";
+		long begin = 1238912378081L;
+		long end = 1238912378123L;
 		Span span = Span.newBuilder()
 				.traceId("123")
 				.id("9999")
+				.timestamp(begin)
+				.duration(end - begin)
 				.putTag("http.host", "localhost")
+				.putTag("custom-tag", "hello")
+				.localEndpoint(Endpoint.newBuilder().serviceName("hello-service").build())
 				.build();
+
 		Map<String, String> labels = extractor.extract(span);
 
-		Assert.assertNotNull("labels shouldn't be null", labels);
+		Assert.assertNotNull("span shouldn't be null", span);
 		Assert.assertEquals("localhost", labels.get("/http/host"));
-		Assert.assertFalse(labels.containsKey("http.host"));
+		Assert.assertEquals("spring-cloud-gcp-trace", labels.get("/agent"));
+		Assert.assertEquals("hello-service", labels.get("/component"));
+		Assert.assertEquals("hello", labels.get("cloud.spring.io/custom-tag"));
 	}
 
 	@Test
-	public void testRpcClientBasics() {
+	public void testRpcClientBasicsTraceKeys() {
 		LabelExtractor extractor = new LabelExtractor(new TraceKeys());
 		String instanceId = "localhost";
 		long begin = 1238912378081L;
@@ -66,9 +76,6 @@ public class LabelExtractorTests {
 		Map<String, String> labels = extractor.extract(span);
 
 		Assert.assertNotNull("span shouldn't be null", span);
-		labels.keySet().stream().forEach(key -> {
-			System.out.println(key + " = " + labels.get(key));
-		});
 		Assert.assertEquals("localhost", labels.get("/http/host"));
 		Assert.assertEquals("spring-cloud-gcp-trace", labels.get("/agent"));
 		Assert.assertEquals("hello-service", labels.get("/component"));
