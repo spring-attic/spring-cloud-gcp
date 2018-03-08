@@ -17,13 +17,13 @@
 package org.springframework.cloud.gcp.data.spanner.repository;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public interface SpannerRepository extends CrudRepository {
+public interface SpannerRepository extends PagingAndSortingRepository {
 
 	/**
 	 * Gets a {@link SpannerOperations}, which allows more-direct access to Google Spanner

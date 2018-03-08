@@ -38,13 +38,17 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -247,6 +251,25 @@ public class SpannerTemplateTests {
 		this.spannerTemplate.count(TestEntity.class);
 		verify(results, times(1)).next();
 		verify(results, times(1)).getLong(eq(0));
+	}
+
+	@Test
+	public void findAllSortTest() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		QueryOption queryOption = mock(QueryOption.class);
+		Sort sort = Sort.by(Order.asc("id"), Order.desc("something"), Order.asc("other"));
+
+		doAnswer(invocation -> {
+			Statement statement = invocation.getArgument(1);
+			assertEquals(
+					"SELECT * FROM custom_test_table ORDER BY id ASC , custom_col DESC , other ASC",
+					statement.getSql());
+			return null;
+		}).when(spyTemplate).find(eq(TestEntity.class), (Statement) any(), any());
+
+		spyTemplate.findAll(TestEntity.class, sort, queryOption);
+		verify(spyTemplate, times(1)).find(eq(TestEntity.class), (Statement) any(),
+				any());
 	}
 
 	@SpannerTable(name = "custom_test_table")
