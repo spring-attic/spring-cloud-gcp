@@ -35,6 +35,8 @@ import com.google.cloud.spanner.Struct;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
+import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
 /**
@@ -114,6 +116,16 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public <T> List<T> findAll(Class<T> entityClass, Options.ReadOption... options) {
 		return this.find(entityClass, KeySet.all(), options);
+	}
+
+	@Override
+	public <T> List<T> findAll(Class<T> entityClass, Sort sort, QueryOption... options) {
+		StringBuilder stringBuilder = new StringBuilder();
+		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
+				.getPersistentEntity(entityClass);
+		stringBuilder.append("SELECT * FROM " + persistentEntity.tableName() + " ");
+		SpannerStatementQueryExecutor.buildOrderBy(persistentEntity, stringBuilder, sort);
+		return find(entityClass, Statement.of(stringBuilder.toString()), options);
 	}
 
 	@Override

@@ -136,7 +136,7 @@ public class SpannerStatementQueryExecutor {
 		stringBuilder.append("FROM " + persistentEntity.tableName() + " ");
 	}
 
-	private static void buildOrderBy(SpannerPersistentEntity<?> persistentEntity,
+	public static void buildOrderBy(SpannerPersistentEntity<?> persistentEntity,
 			StringBuilder stringBuilder, Sort sort) {
 		if (sort.isSorted()) {
 			stringBuilder.append("ORDER BY ");
