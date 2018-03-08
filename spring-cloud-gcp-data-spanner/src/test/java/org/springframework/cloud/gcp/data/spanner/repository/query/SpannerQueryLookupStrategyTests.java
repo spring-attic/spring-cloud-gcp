@@ -43,10 +43,13 @@ public class SpannerQueryLookupStrategyTests {
 
 	private SpannerMappingContext spannerMappingContext;
 
+	private QueryMethod queryMethod;
+
 	@Before
 	public void initMocks() {
 		this.spannerOperations = mock(SpannerOperations.class);
 		this.spannerMappingContext = new SpannerMappingContext();
+		this.queryMethod = mock(QueryMethod.class);
 	}
 
 	@Test
@@ -56,16 +59,14 @@ public class SpannerQueryLookupStrategyTests {
 				new SpannerQueryLookupStrategy(this.spannerMappingContext,
 						this.spannerOperations));
 
-		QueryMethod queryMethod = mock(QueryMethod.class);
-
 		String queryName = "fakeNamedQueryName";
 		String query = "fake query";
 
 		doReturn(Object.class).when(spannerQueryLookupStrategy).getEntityType(any());
-		doReturn(queryMethod).when(spannerQueryLookupStrategy).createQueryMethod(any(),
+		doReturn(this.queryMethod).when(spannerQueryLookupStrategy).createQueryMethod(any(),
 				any(), any());
 
-		when(queryMethod.getNamedQueryName()).thenReturn(queryName);
+		when(this.queryMethod.getNamedQueryName()).thenReturn(queryName);
 
 		NamedQueries namedQueries = mock(NamedQueries.class);
 
@@ -75,7 +76,7 @@ public class SpannerQueryLookupStrategyTests {
 		spannerQueryLookupStrategy.resolveQuery(null, null, null, namedQueries);
 
 		verify(spannerQueryLookupStrategy, times(1))
-				.createSqlSpannerQuery(eq(Object.class), same(queryMethod), eq(query));
+				.createSqlSpannerQuery(eq(Object.class), same(this.queryMethod), eq(query));
 	}
 
 	@Test
@@ -85,17 +86,15 @@ public class SpannerQueryLookupStrategyTests {
 				new SpannerQueryLookupStrategy(this.spannerMappingContext,
 						this.spannerOperations));
 
-		QueryMethod queryMethod = mock(QueryMethod.class);
-
 		String queryName = "fakeNamedQueryName";
 
 		doReturn(Object.class).when(spannerQueryLookupStrategy).getEntityType(any());
-		doReturn(queryMethod).when(spannerQueryLookupStrategy).createQueryMethod(any(),
+		doReturn(this.queryMethod).when(spannerQueryLookupStrategy).createQueryMethod(any(),
 				any(), any());
 		doReturn(null).when(spannerQueryLookupStrategy).createPartTreeSpannerQuery(any(),
 				any());
 
-		when(queryMethod.getNamedQueryName()).thenReturn(queryName);
+		when(this.queryMethod.getNamedQueryName()).thenReturn(queryName);
 
 		NamedQueries namedQueries = mock(NamedQueries.class);
 
@@ -104,6 +103,6 @@ public class SpannerQueryLookupStrategyTests {
 		spannerQueryLookupStrategy.resolveQuery(null, null, null, namedQueries);
 
 		verify(spannerQueryLookupStrategy, times(1))
-				.createPartTreeSpannerQuery(eq(Object.class), same(queryMethod));
+				.createPartTreeSpannerQuery(eq(Object.class), same(this.queryMethod));
 	}
 }
