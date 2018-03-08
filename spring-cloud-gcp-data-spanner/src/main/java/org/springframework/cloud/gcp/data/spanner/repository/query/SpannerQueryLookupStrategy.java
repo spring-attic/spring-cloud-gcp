@@ -47,19 +47,37 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 		this.spannerOperations = spannerOperations;
 	}
 
+	protected Class getEntityType(QueryMethod queryMethod) {
+		return queryMethod.getResultProcessor().getReturnedType().getDomainType();
+	}
+
+	protected QueryMethod createQueryMethod(Method method, RepositoryMetadata metadata,
+			ProjectionFactory factory) {
+		return new QueryMethod(method, metadata, factory);
+	}
+
 	@Override
 	public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata,
 			ProjectionFactory factory, NamedQueries namedQueries) {
-		QueryMethod queryMethod = new QueryMethod(method, metadata, factory);
+		QueryMethod queryMethod = createQueryMethod(method, metadata, factory);
+		Class entityType = getEntityType(queryMethod);
 
 		if (namedQueries.hasQuery(queryMethod.getNamedQueryName())) {
 			String sql = namedQueries.getQuery(queryMethod.getNamedQueryName());
-			throw new UnsupportedOperationException("Could not use SQL: " + sql
-					+ "Only method-name based methods are supported currently.");
+			return createSqlSpannerQuery(entityType, queryMethod, sql);
 		}
 
-		return new PartTreeSpannerQuery(
-				queryMethod.getResultProcessor().getReturnedType().getDomainType(),
-				queryMethod, this.spannerOperations, this.spannerMappingContext);
+		return createPartTreeSpannerQuery(entityType, queryMethod);
+	}
+
+	protected SqlSpannerQuery createSqlSpannerQuery(Class entityType,
+			QueryMethod queryMethod, String sql) {
+		return new SqlSpannerQuery(entityType, queryMethod, this.spannerOperations, sql);
+	}
+
+	protected PartTreeSpannerQuery createPartTreeSpannerQuery(Class entityType,
+			QueryMethod queryMethod) {
+		return new PartTreeSpannerQuery(entityType, queryMethod, this.spannerOperations,
+				this.spannerMappingContext);
 	}
 }
