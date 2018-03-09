@@ -14,13 +14,14 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.repository;
+package org.springframework.cloud.gcp.data.spanner.repository.support;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
 import static org.junit.Assert.assertEquals;

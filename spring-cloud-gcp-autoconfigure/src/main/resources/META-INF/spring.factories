@@ -3,6 +3,7 @@ org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubEmulatorConfiguratio
 org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.logging.StackdriverLoggingAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfiguration,\
+org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration

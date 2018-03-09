@@ -1,0 +1,9 @@
+<configuration >
+    <property name="projectId" value="test-project"/>
+
+    <include resource="org/springframework/cloud/gcp/logging/logback-json-appender.xml"/>
+
+    <root level="WARN">
+        <appender-ref ref="CONSOLE_JSON"/>
+    </root>
+</configuration>

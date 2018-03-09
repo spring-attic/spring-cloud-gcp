@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.core.mapping;
+package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.List;
 
@@ -30,8 +30,9 @@ import org.springframework.data.convert.EntityWriter;
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @author Balint Pato
  */
-public interface SpannerObjectMapper
+public interface SpannerConverter
 		extends EntityReader<Object, Struct>, EntityWriter<Object, Mutation.WriteBuilder> {
 
 	/**

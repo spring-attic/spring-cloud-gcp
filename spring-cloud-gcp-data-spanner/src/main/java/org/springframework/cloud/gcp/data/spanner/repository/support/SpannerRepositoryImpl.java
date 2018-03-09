@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.repository;
+package org.springframework.cloud.gcp.data.spanner.repository.support;
 
 import java.util.Optional;
 
@@ -22,6 +22,10 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
 /**
@@ -114,5 +118,16 @@ public class SpannerRepositoryImpl implements SpannerRepository {
 	@Override
 	public void deleteAll() {
 		this.spannerOperations.delete(this.entityType, KeySet.all());
+	}
+
+	@Override
+	public Iterable findAll(Sort sort) {
+		return this.spannerOperations.findAll(this.entityType, sort);
+	}
+
+	@Override
+	public Page findAll(Pageable pageable) {
+		throw new UnsupportedOperationException(
+				"Retrieving all entities in pages is not currently supported");
 	}
 }

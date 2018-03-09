@@ -24,6 +24,7 @@
 		<module>spring-cloud-gcp-starter-pubsub</module>
 		<module>spring-cloud-gcp-starter-config</module>
 		<module>spring-cloud-gcp-starter-storage</module>
+		<module>spring-cloud-gcp-starter-data-spanner</module>
 		<module>spring-cloud-gcp-starter-trace</module>
 		<module>spring-cloud-gcp-starter-logging</module>
 		<module>spring-cloud-gcp-starter-sql-mysql</module>

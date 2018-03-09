@@ -33,12 +33,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerObjectMapper;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerObjectMapperImpl;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
 import org.springframework.data.annotation.Id;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -63,11 +63,11 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 public class SpannerObjectMapperImplTests {
 
-	private SpannerObjectMapper objectMapper;
+	private SpannerConverter objectMapper;
 
 	@Before
 	public void setUp() {
-		this.objectMapper = new SpannerObjectMapperImpl(new SpannerMappingContext());
+		this.objectMapper = new MappingSpannerConverter(new SpannerMappingContext());
 	}
 
 	@Test
@@ -278,7 +278,6 @@ public class SpannerObjectMapperImplTests {
 		this.objectMapper.read(TestEntity.class, struct1);
 	}
 
-
 	@Test(expected = SpannerDataException.class)
 	public void writeUnannotatedIterableTest() {
 		FaultyTestEntity ft = new FaultyTestEntity();
@@ -361,7 +360,6 @@ public class SpannerObjectMapperImplTests {
 
 		List<Double> doubleList;
 	}
-
 
 	@SpannerTable(name = "faulty_test_table_2")
 	private static class FaultyTestEntity2 {

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.repository;
+package org.springframework.cloud.gcp.data.spanner.repository.support;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -32,12 +32,11 @@ public class SpannerRepositoryFactoryBean extends RepositoryFactoryBeanSupport {
 	private SpannerOperations spannerOperations;
 
 	/**
-	 * Creates a new {@link SpannerRepositoryFactoryBean} for the given repository
-	 * interface.
+	 * Creates a new {@link SpannerRepositoryFactoryBean} for the given repository interface.
 	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 */
-	public SpannerRepositoryFactoryBean(Class<?> repositoryInterface) {
+	public SpannerRepositoryFactoryBean(Class repositoryInterface) {
 		super(repositoryInterface);
 	}
 

@@ -1,0 +1,31 @@
+= Spring Cloud GCP Spanner Starter Example
+
+This code sample demonstrates how to read and write POJOs from Google Spanner using the Spring
+Data Spanner module
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Cloud GCP Spanner Starter].
+
+= Running the example
+
+1. Make sure that you have the Cloud SDK configured by following https://cloud.google.com/sdk/docs/[these instructions].
+
+2. Create a new Spanner instanced named "spring-demo" with a database called "trades"
+and a table also named "trades".
+The columns should be created as follows:
++
+```
+id , STRING
+action , STRING
+price , FLOAT64
+shares , FLOAT64
+symbol , STRING
+trader_id , STRING
+```
+
+3. Place your project ID in the `spring.cloud.gcp.spanner.projectId` setting in `application.properties`
+if you are not providing the project ID from a JSON key file or the SDK.
+
+4. Run the `SpannerApplication` Spring Boot app.
+
+5. Navigate to http://localhost:8080/ in your browser. This causes the app to generate 5 `Trade`
+objects filled with some random data and persists them to the Spanner table created earlier.
+These POJOs are then retrieved and their contents are printed in the browser.

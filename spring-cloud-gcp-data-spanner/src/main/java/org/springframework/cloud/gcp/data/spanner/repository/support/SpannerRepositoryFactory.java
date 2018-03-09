@@ -14,17 +14,24 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.repository;
+package org.springframework.cloud.gcp.data.spanner.repository.support;
+
+import java.util.Optional;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerQueryLookupStrategy;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.PersistentEntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.QueryLookupStrategy;
+import org.springframework.data.repository.query.QueryLookupStrategy.Key;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -40,8 +47,8 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport {
 	/**
 	 * Constructor
 	 * @param spannerMappingContext the mapping context used to get mapping metadata for
-   * entity types.
-   * @param spannerOperations the spanner operations object used by Spanner repositories.
+	 * entity types.
+	 * @param spannerOperations the spanner operations object used by Spanner repositories.
 	 */
 	public SpannerRepositoryFactory(SpannerMappingContext spannerMappingContext,
 			SpannerOperations spannerOperations) {
@@ -76,5 +83,12 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport {
 	@Override
 	protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
 		return SpannerRepositoryImpl.class;
+	}
+
+	@Override
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
+			EvaluationContextProvider evaluationContextProvider) {
+		return Optional.of(new SpannerQueryLookupStrategy(this.spannerMappingContext,
+				this.spannerOperations));
 	}
 }

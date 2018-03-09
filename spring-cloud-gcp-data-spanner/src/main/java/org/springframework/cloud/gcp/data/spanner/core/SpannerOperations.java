@@ -23,6 +23,8 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Statement;
 
+import org.springframework.data.domain.Sort;
+
 /**
  * Defines operations available to use with Spanner.
  *
@@ -85,6 +87,17 @@ public interface SpannerOperations {
 	 * empty list is returned.
 	 */
 	<T> List<T> findAll(Class<T> entityClass, Options.ReadOption... options);
+
+	/**
+	 * Finds all objects of the given type.
+	 * @param entityClass the type of the object to retrieve.
+	 * @param sort the sorting used for the results.
+	 * @param options Spanner query options with which to conduct the query operation.
+	 * @param <T> the type of the object to retrieve.
+	 * @return a list of all objects stored of the given type. If there are no objects an
+	 * empty list is returned.
+	 */
+	<T> List<T> findAll(Class<T> entityClass, Sort sort, Options.QueryOption... options);
 
 	/**
 	 * Deletes an object based on a key.
