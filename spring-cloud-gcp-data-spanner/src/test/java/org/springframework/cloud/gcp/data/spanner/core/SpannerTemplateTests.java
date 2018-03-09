@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.OptionalLong;
 
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
@@ -38,6 +40,8 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -49,6 +53,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -254,7 +259,7 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
-	public void findAllSortTest() {
+	public void findAllSortWithLimitsOffsetTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
 		QueryOption queryOption = mock(QueryOption.class);
 		Sort sort = Sort.by(Order.asc("id"), Order.desc("something"), Order.asc("other"));
@@ -262,14 +267,66 @@ public class SpannerTemplateTests {
 		doAnswer(invocation -> {
 			Statement statement = invocation.getArgument(1);
 			assertEquals(
-					"SELECT * FROM custom_test_table ORDER BY id ASC , custom_col DESC , other ASC",
+					"SELECT * FROM custom_test_table ORDER BY id ASC , custom_col DESC , other ASC LIMIT 3 OFFSET 5;",
 					statement.getSql());
 			return null;
 		}).when(spyTemplate).find(eq(TestEntity.class), (Statement) any(), any());
 
-		spyTemplate.findAll(TestEntity.class, sort, queryOption);
+		spyTemplate.findAll(TestEntity.class, sort, OptionalLong.of(3),
+				OptionalLong.of(5), queryOption);
 		verify(spyTemplate, times(1)).find(eq(TestEntity.class), (Statement) any(),
 				any());
+	}
+
+	@Test
+	public void findAllSortTest() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		QueryOption queryOption = mock(QueryOption.class);
+		Sort sort = mock(Sort.class);
+
+		spyTemplate.findAll(TestEntity.class, sort, queryOption);
+		verify(spyTemplate, times(1)).findAll(eq(TestEntity.class), same(sort),
+				eq(OptionalLong.empty()), eq(OptionalLong.empty()), same(queryOption));
+	}
+
+	@Test
+	public void findAllPageableTest() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		QueryOption queryOption = mock(QueryOption.class);
+		Sort sort = mock(Sort.class);
+		Pageable pageable = mock(Pageable.class);
+
+		long offset = 5L;
+		int limit = 3;
+		long total = 9999;
+
+		when(pageable.getOffset()).thenReturn(offset);
+		when(pageable.getPageSize()).thenReturn(limit);
+		when(pageable.getSort()).thenReturn(sort);
+
+		TestEntity t1 = new TestEntity();
+		t1.id = "a";
+		TestEntity t2 = new TestEntity();
+		t2.id = "b";
+		TestEntity t3 = new TestEntity();
+		t3.id = "c";
+
+		List<TestEntity> items = new ArrayList<>();
+		items.add(t1);
+		items.add(t2);
+		items.add(t3);
+
+		doReturn(items).when(spyTemplate).findAll(eq(TestEntity.class), same(sort),
+				eq(OptionalLong.of(limit)), eq(OptionalLong.of(offset)),
+				same(queryOption));
+		doReturn(total).when(spyTemplate).count(eq(TestEntity.class));
+
+		Page page = spyTemplate.findAll(TestEntity.class, pageable, queryOption);
+		assertEquals(limit, page.getPageable().getPageSize());
+		assertEquals(total, page.getTotalElements());
+		assertEquals("a", ((TestEntity) page.getContent().get(0)).id);
+		assertEquals("b", ((TestEntity) page.getContent().get(1)).id);
+		assertEquals("c", ((TestEntity) page.getContent().get(2)).id);
 	}
 
 	@SpannerTable(name = "custom_test_table")

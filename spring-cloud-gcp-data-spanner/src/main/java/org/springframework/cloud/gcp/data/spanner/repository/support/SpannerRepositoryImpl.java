@@ -127,7 +127,6 @@ public class SpannerRepositoryImpl implements SpannerRepository {
 
 	@Override
 	public Page findAll(Pageable pageable) {
-		throw new UnsupportedOperationException(
-				"Retrieving all entities in pages is not currently supported");
+		return this.spannerOperations.findAll(this.entityType, pageable);
 	}
 }
