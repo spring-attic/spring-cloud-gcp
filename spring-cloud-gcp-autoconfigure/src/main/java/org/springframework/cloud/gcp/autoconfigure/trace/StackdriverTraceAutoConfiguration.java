@@ -116,6 +116,7 @@ public class StackdriverTraceAutoConfiguration {
 		return Tracing.newBuilder()
 				.sampler(sampler)
 				.traceId128Bit(true)
+				.supportsJoin(false)
 				.localServiceName(serviceName)
 				.propagationFactory(factory)
 				.currentTraceContext(currentTraceContext)

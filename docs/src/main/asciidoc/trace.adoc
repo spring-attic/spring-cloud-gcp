@@ -91,6 +91,8 @@ spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.
 
 Spring Cloud GCP Trace does override some Sleuth configurations:
 
-- Spring Cloud GCP Trace always uses 128-bit Trace IDs. This is required by Stackdriver Trace.
-- Spring Cloud GCP provides a `HttpTracing` configuration that behaves more like Spring Cloud Sleuth 1.x.
-  Effectively, it's the same behavior as always setting `spring.sleuth.http.legacy=true`.
+- Always uses 128-bit Trace IDs. This is required by Stackdriver Trace.
+- Does not use Span joins. Span joins will share the span ID between the client and server Spans.
+  Stackdriver requires that every Span ID within a Trace to be unique, so Span joins are not supported.
+- Uses `StackdriverHttpClientParser` and `StackdriverHttpServerParser` by default to populate Stackdriver
+  related fields.
