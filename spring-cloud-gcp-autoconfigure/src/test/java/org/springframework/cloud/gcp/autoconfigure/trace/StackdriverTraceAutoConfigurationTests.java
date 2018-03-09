@@ -23,6 +23,8 @@ import javax.annotation.PostConstruct;
 
 import brave.Span;
 import brave.Tracer;
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.auth.Credentials;
 import com.google.cloud.trace.v1.consumer.FlushableTraceConsumer;
 import com.google.devtools.cloudtrace.v1.Trace;
 import com.google.devtools.cloudtrace.v1.TraceSpan;
@@ -40,6 +42,8 @@ import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Ray Tsang
@@ -76,6 +80,11 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 					MockConfiguration.this.tracesList.add(traces);
 				}
 			};
+		}
+
+		@Bean
+		public static CredentialsProvider googleCredentials() {
+			return () -> mock(Credentials.class);
 		}
 	}
 
