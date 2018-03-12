@@ -65,7 +65,7 @@ import org.springframework.cloud.gcp.trace.sleuth.StackdriverTraceReporter;
 import org.springframework.cloud.sleuth.SpanAdjuster;
 import org.springframework.cloud.sleuth.TraceKeys;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
-import org.springframework.cloud.sleuth.instrument.web.SleuthHttpLegacyProperties;
+import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
 import org.springframework.cloud.sleuth.sampler.ProbabilityBasedSampler;
 import org.springframework.cloud.sleuth.sampler.SamplerProperties;
 import org.springframework.context.annotation.Bean;
@@ -79,7 +79,7 @@ import org.springframework.context.annotation.Primary;
  * @author Mike Eltsufin
  */
 @Configuration
-@EnableConfigurationProperties({ SamplerProperties.class, GcpTraceProperties.class, SleuthHttpLegacyProperties.class })
+@EnableConfigurationProperties({ SamplerProperties.class, GcpTraceProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.trace.enabled", matchIfMissing = true)
 @ConditionalOnClass(TraceConsumer.class)
 @Import({ StackdriverTraceAutoConfiguration.TraceConsumerConfiguration.class,
@@ -150,17 +150,9 @@ public class StackdriverTraceAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "false", matchIfMissing = true)
 	@ConditionalOnMissingBean
 	public LabelExtractor traceLabelExtractor() {
 		return new LabelExtractor();
-	}
-
-	@Bean
-	@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "true")
-	@ConditionalOnMissingBean
-	public LabelExtractor traceLabelExtractor(TraceKeys traceKeys) {
-		return new LabelExtractor(traceKeys);
 	}
 
 	@Configuration
@@ -186,6 +178,7 @@ public class StackdriverTraceAutoConfiguration {
 
 	@Configuration
 	@ConditionalOnProperty(name = "spring.sleuth.http.enabled", havingValue = "true", matchIfMissing = true)
+	@AutoConfigureBefore(TraceHttpAutoConfiguration.class)
 	public static class StackdriverTraceHttpAutoconfiguration {
 		@Bean
 		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "false", matchIfMissing = true)
@@ -199,6 +192,13 @@ public class StackdriverTraceAutoConfiguration {
 		@ConditionalOnMissingBean
 		HttpServerParser stackdriverHttpServerParser() {
 			return new StackdriverHttpServerParser();
+		}
+
+		@Bean
+		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "true")
+		@ConditionalOnMissingBean
+		public LabelExtractor traceLabelExtractor(TraceKeys traceKeys) {
+			return new LabelExtractor(traceKeys);
 		}
 	}
 
