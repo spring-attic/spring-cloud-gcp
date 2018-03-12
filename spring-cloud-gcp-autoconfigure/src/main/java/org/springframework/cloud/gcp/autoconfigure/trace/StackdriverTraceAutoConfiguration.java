@@ -40,7 +40,6 @@ import com.google.cloud.trace.v1.consumer.TraceConsumer;
 import com.google.cloud.trace.v1.util.RoughTraceSizer;
 import com.google.cloud.trace.v1.util.Sizer;
 import com.google.devtools.cloudtrace.v1.Trace;
-import org.springframework.cloud.sleuth.instrument.web.SleuthHttpLegacyProperties;
 import zipkin2.Span;
 import zipkin2.reporter.Reporter;
 
@@ -66,6 +65,7 @@ import org.springframework.cloud.gcp.trace.sleuth.StackdriverTraceReporter;
 import org.springframework.cloud.sleuth.SpanAdjuster;
 import org.springframework.cloud.sleuth.TraceKeys;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
+import org.springframework.cloud.sleuth.instrument.web.SleuthHttpLegacyProperties;
 import org.springframework.cloud.sleuth.sampler.ProbabilityBasedSampler;
 import org.springframework.cloud.sleuth.sampler.SamplerProperties;
 import org.springframework.context.annotation.Bean;
