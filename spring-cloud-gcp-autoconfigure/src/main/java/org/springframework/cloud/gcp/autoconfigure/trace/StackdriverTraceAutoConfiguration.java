@@ -40,6 +40,7 @@ import com.google.cloud.trace.v1.consumer.TraceConsumer;
 import com.google.cloud.trace.v1.util.RoughTraceSizer;
 import com.google.cloud.trace.v1.util.Sizer;
 import com.google.devtools.cloudtrace.v1.Trace;
+import org.springframework.cloud.sleuth.instrument.web.SleuthHttpLegacyProperties;
 import zipkin2.Span;
 import zipkin2.reporter.Reporter;
 
@@ -78,7 +79,7 @@ import org.springframework.context.annotation.Primary;
  * @author Mike Eltsufin
  */
 @Configuration
-@EnableConfigurationProperties({ SamplerProperties.class, GcpTraceProperties.class })
+@EnableConfigurationProperties({ SamplerProperties.class, GcpTraceProperties.class, SleuthHttpLegacyProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.trace.enabled", matchIfMissing = true)
 @ConditionalOnClass(TraceConsumer.class)
 @Import({ StackdriverTraceAutoConfiguration.TraceConsumerConfiguration.class,
