@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -36,6 +37,9 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
@@ -120,12 +124,40 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> List<T> findAll(Class<T> entityClass, Sort sort, QueryOption... options) {
+		return findAll(entityClass, sort, OptionalLong.empty(), OptionalLong.empty(),
+				options);
+	}
+
+	@Override
+	public <T> List<T> findAll(Class<T> entityClass, Sort sort, OptionalLong limit,
+			OptionalLong offset, QueryOption... options) {
+		Assert.notNull(sort, "sort must not be null!");
+
 		StringBuilder stringBuilder = new StringBuilder();
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		stringBuilder.append("SELECT * FROM " + persistentEntity.tableName() + " ");
 		SpannerStatementQueryExecutor.buildOrderBy(persistentEntity, stringBuilder, sort);
+		if (limit != null && limit.isPresent()) {
+			stringBuilder.append(" LIMIT " + limit.getAsLong());
+		}
+		if (offset != null && offset.isPresent()) {
+			stringBuilder.append(" OFFSET " + offset.getAsLong());
+		}
+		stringBuilder.append(";");
 		return find(entityClass, Statement.of(stringBuilder.toString()), options);
+	}
+
+	@Override
+	public <T> Page<T> findAll(Class<T> entityClass, Pageable pageable,
+			QueryOption... options) {
+		Assert.notNull(pageable, "Pageable must not be null!");
+
+		Long count = count(entityClass);
+		List<T> list = findAll(entityClass, pageable.getSort(),
+				OptionalLong.of(pageable.getPageSize()),
+				OptionalLong.of(pageable.getOffset()), options);
+		return new PageImpl(list, pageable, count);
 	}
 
 	@Override
