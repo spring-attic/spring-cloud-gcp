@@ -93,7 +93,7 @@ public class MyApplication {
 	  List<SimpleStudent> ssList =
 	    studentRepository.findTop3DistinctByIdAndNameOrAgeOrderByAgeDesc("someId", "bob", 12);
 
-    List<SimpleStudent> ssList2 = studentRepository.fetchBySomeQuery("some argument");
+	  List<SimpleStudent> ssList2 = studentRepository.fetchBySomeQuery("some argument");
 	}
 }
 
