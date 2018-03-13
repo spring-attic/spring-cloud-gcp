@@ -99,7 +99,7 @@ public class MyApplication {
 
 ----
 
-The https://docs.spring.io/spring-data/jpa/docs/1.5.0.RELEASE/reference/html/repositories.html[query methods]
+The https://docs.spring.io/spring-data/commons/docs/current/reference/html/#repositories.query-methods[query methods]
 in the `StudentRepository` are generated based on the convention of their names
 except for `fetchBySomeQuery`, which is defined in the `spanner-named-queries.properties` file
 like `SimpleStudent.fetchBySomeQuery=SELECT * FROM students WHERE name = @someArg`.
