@@ -28,7 +28,7 @@ import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.pubsub.v1.TopicName;
+import com.google.pubsub.v1.ProjectTopicName;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
@@ -124,7 +124,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 		return this.publishers.computeIfAbsent(topic, key -> {
 			try {
 				Publisher.Builder publisherBuilder =
-						Publisher.newBuilder(TopicName.of(this.projectId, key));
+						Publisher.newBuilder(ProjectTopicName.of(this.projectId, key));
 
 				if (this.executorProvider != null) {
 					publisherBuilder.setExecutorProvider(this.executorProvider);
