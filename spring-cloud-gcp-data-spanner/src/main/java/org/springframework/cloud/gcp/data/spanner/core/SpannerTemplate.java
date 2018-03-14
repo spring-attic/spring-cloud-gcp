@@ -199,10 +199,12 @@ public class SpannerTemplate implements SpannerOperations {
 	public long count(Class entityClass) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		ResultSet resultSet = this.databaseClient.singleUse().executeQuery(Statement.of(
-				String.format("select count(*) from %s", persistentEntity.tableName())));
-		resultSet.next();
-		return resultSet.getLong(0);
+		Statement statement = Statement.of(String.format(
+				"select count(*) from %s", persistentEntity.tableName()));
+		try (ResultSet resultSet = this.databaseClient.singleUse().executeQuery(statement)) {
+			resultSet.next();
+			return resultSet.getLong(0);
+		}
 	}
 
 	private <T, U> void applyMutationWithClass(BiFunction<T, U, Mutation> function,
