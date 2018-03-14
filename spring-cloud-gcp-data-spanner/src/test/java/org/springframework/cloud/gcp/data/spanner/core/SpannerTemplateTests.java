@@ -256,6 +256,7 @@ public class SpannerTemplateTests {
 		this.spannerTemplate.count(TestEntity.class);
 		verify(results, times(1)).next();
 		verify(results, times(1)).getLong(eq(0));
+		verify(results, times(1)).close();
 	}
 
 	@Test
