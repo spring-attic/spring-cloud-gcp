@@ -27,11 +27,11 @@ import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
-import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.stub.GrpcSubscriberStub;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
+import com.google.cloud.pubsub.v1.stub.SubscriberStubSettings;
+import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.PullRequest;
-import com.google.pubsub.v1.SubscriptionName;
 import org.threeten.bp.Duration;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -153,7 +153,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	@Override
 	public Subscriber createSubscriber(String subscriptionName, MessageReceiver receiver) {
 		Subscriber.Builder subscriberBuilder = Subscriber.newBuilder(
-				SubscriptionName.of(this.projectId, subscriptionName), receiver);
+				ProjectSubscriptionName.of(this.projectId, subscriptionName), receiver);
 
 		if (this.channelProvider != null) {
 			subscriberBuilder.setChannelProvider(this.channelProvider);
@@ -196,8 +196,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 		Assert.hasLength(subscriptionName, "The subscription name must be provided.");
 
 		PullRequest.Builder pullRequestBuilder =
-				PullRequest.newBuilder().setSubscription(
-						SubscriptionName.of(this.projectId, subscriptionName).toString());
+				PullRequest.newBuilder().setSubscription(ProjectSubscriptionName.of(
+						this.projectId, subscriptionName).toString());
 
 		if (maxMessages != null) {
 			pullRequestBuilder.setMaxMessages(maxMessages);
@@ -212,8 +212,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	@Override
 	public SubscriberStub createSubscriberStub(RetrySettings retrySettings) {
-		SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder =
-				SubscriptionAdminSettings.newBuilder();
+		SubscriberStubSettings.Builder subscriptionAdminSettingsBuilder =
+				SubscriberStubSettings.newBuilder();
 
 		if (this.credentialsProvider != null) {
 			subscriptionAdminSettingsBuilder.setCredentialsProvider(this.credentialsProvider);
