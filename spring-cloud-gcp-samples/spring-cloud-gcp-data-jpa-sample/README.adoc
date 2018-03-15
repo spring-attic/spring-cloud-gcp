@@ -31,8 +31,8 @@ Boot Starter for Google Cloud SQL.
 Alternatively, http://console.cloud.google.com/iam-admin/serviceaccounts[create a service account
 from the Google Cloud Console] and download its private key.
 Then, uncomment the `spring.cloud.gcp.sql.credentials.location` property in the
-link:src/main/resources/application.properties file and fill its value with the path to your service
-account private key on your local file system, prepended with `file:`.
+link:src/main/resources/application.properties[application.properties] file and fill its value with
+the path to your service account private key on your local file system, prepended with `file:`.
 
 == Running the application
 
