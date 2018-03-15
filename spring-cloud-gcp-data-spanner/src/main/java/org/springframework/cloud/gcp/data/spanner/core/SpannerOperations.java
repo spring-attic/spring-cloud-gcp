@@ -17,12 +17,15 @@
 package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.List;
+import java.util.OptionalLong;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Statement;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 /**
@@ -98,6 +101,33 @@ public interface SpannerOperations {
 	 * empty list is returned.
 	 */
 	<T> List<T> findAll(Class<T> entityClass, Sort sort, Options.QueryOption... options);
+
+	/**
+	 * Finds all objects of the given type.
+	 * @param entityClass the type of the object to retrieve.
+	 * @param sort the sorting used for the results.
+	 * @param limit the number of elements to get at maximum.
+	 * @param offset the number of elements to skip from the beginning according to the
+	 * sort.
+	 * @param options Spanner query options with which to conduct the query operation.
+	 * @param <T> the type of the object to retrieve.
+	 * @return a list of all objects stored of the given type. If there are no objects an
+	 * empty list is returned.
+	 */
+	<T> List<T> findAll(Class<T> entityClass, Sort sort, OptionalLong limit,
+			OptionalLong offset, Options.QueryOption... options);
+
+	/**
+	 * Finds all objects of the given type.
+	 * @param entityClass the type of the object to retrieve.
+	 * @param pageable the paging options for this request.
+	 * @param options Spanner query options with which to conduct the query operation.
+	 * @param <T> the type of the object to retrieve.
+	 * @return a list of all objects stored of the given type. If there are no objects an
+	 * empty list is returned.
+	 */
+	<T> Page<T> findAll(Class<T> entityClass, Pageable pageable,
+			Options.QueryOption... options);
 
 	/**
 	 * Deletes an object based on a key.

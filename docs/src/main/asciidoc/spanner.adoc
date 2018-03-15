@@ -1,0 +1,129 @@
+== Spring Data
+
+http://projects.spring.io/spring-data/[Spring Data]
+is an abstraction for storing and retrieving POJOs in numerous storage technologies.
+Spring Cloud GCP adds Spring Data support for Google Cloud Spanner.
+
+A Spring Boot starter is provided to auto-configure the various Storage components.
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-data-spanner</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-spanner'
+}
+----
+
+
+=== Google Cloud Spanner
+
+Spring Data Spanner allows you to define entity classes and corresponding repository interfaces:
+
+[source,java]
+----
+@SpannerTable(name = "students")
+public class SimpleStudent {
+	@Id
+	String id;
+
+	@SpannerColumn(name = "first_name")
+	String name;
+
+	@SpannerColumnInnerType(innerType = String.class)
+	List<String> teachers;
+
+	int age;
+}
+----
+
+The `@SpannerTable` annotation provides the name of the Spanner table that stores instances of this class, one per row.
+The `@Id` annotation is required and identifies the property corresponding to the primary key column.
+The `@SpannerColumn` annotation optionally provides a different column name than that of the property.
+The `@SpannerColumnInnerType` annotation is required for List properties due to Java's type erasure.
+
+[source,java]
+----
+@Repository
+public interface StudentRepository extends PagingAndSortingRepository<SimpleStudent, String> {
+
+	List<SimpleStudent> findTop3DistinctByIdAndNameOrAgeOrderByAgeDesc(
+			String id, String name, int age);
+
+	int countByAgeLessThanEqual(int age);
+
+	// This method uses the query from the properties file instead of one generated based on name.
+	List<SimpleStudent> fetchBySomeQuery(String someArg);
+}
+
+----
+
+These can be used in an application like this:
+
+[source,java]
+----
+@EnableSpannerRepositories(namedQueriesLocation = "classpath:/spanner-named-queries.properties")
+public class MyApplication {
+
+	@Autowired
+	SpannerOperations spannerOperations;
+
+	@Autowired
+	StudentRepository studentRepository;
+
+	public void demo() {
+
+	  // storing new students
+	  SimpleStudent ss = new SimpleStudent();
+	  ss.name = "student1";
+	  ss.age = 99;
+	  spannerOperations.insert(ss);
+
+	  // getting students from Spanner
+	  List<SimpleStudent> ssList =
+	    studentRepository.findTop3DistinctByIdAndNameOrAgeOrderByAgeDesc("someId", "bob", 12);
+
+	  List<SimpleStudent> ssList2 = studentRepository.fetchBySomeQuery("some argument");
+	}
+}
+
+----
+
+The https://docs.spring.io/spring-data/commons/docs/current/reference/html/#repositories.query-methods[query methods]
+in the `StudentRepository` are generated based on the convention of their names
+except for `fetchBySomeQuery`, which is defined in the `spanner-named-queries.properties` file
+like `SimpleStudent.fetchBySomeQuery=SELECT * FROM students WHERE name = @someArg`.
+
+When defining `StudentRepository`, it is important to note that it extends the
+`PagingAndSortingRepository`, which is supported by Spring Cloud GCP Data Spanner. The first type
+argument refers to the underlying entity, and the second type parameter refers to the `@Id` type
+of that entity. Id types must correspond to one of the https://cloud.google.com/spanner/docs/data-types[supported primary key types in Spanner].
+
+=== Configuration
+
+The Spring Boot Starter for Google Cloud Data Spanner provides the following configuration options:
+
+|===
+| Name | Description | Optional | Default value
+| `spring.cloud.gcp.spanner.projectId` | the GCP project ID to use | Yes | provided by Spring Cloud GCP
+| `spring.cloud.gcp.spanner.instanceId` | Spanner instance to use | No |
+| `spring.cloud.gcp.spanner.database` |
+Spanner database to use | No |
+|===
+
+Custom queries can be defined in properties files provided to the annotation
+`@EnableSpannerRepositories(namedQueriesLocation = "classpath:/[my-named-queries.properties file]")`.
+These query settings take the form `[ClassName].[QueryMethodName]=[query string with tags]`, where Spanner
+tags for parameters have the format `@[tagName]`. The actual names of the tags do not matter as long
+their order matches that defined in the repository interface.
+
