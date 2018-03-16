@@ -49,6 +49,7 @@ public class MappingSpannerConverter implements SpannerConverter {
 		while (resultSet.next()) {
 			result.add(read(entityClass, resultSet.getCurrentRowAsStruct()));
 		}
+		resultSet.close();
 		return result;
 	}
 

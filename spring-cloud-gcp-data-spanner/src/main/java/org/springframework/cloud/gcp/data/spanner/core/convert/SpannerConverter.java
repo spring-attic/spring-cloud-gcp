@@ -37,7 +37,8 @@ public interface SpannerConverter
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to convert.
+	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted
+	 *                  and closed.
 	 * @param entityClass The type of the objects the Spanner results represent.
 	 * @param <T> The type of the objects the Spanner results represent.
 	 * @return A list of objects.

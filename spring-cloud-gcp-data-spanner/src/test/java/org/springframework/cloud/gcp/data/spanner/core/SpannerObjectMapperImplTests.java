@@ -223,6 +223,8 @@ public class SpannerObjectMapperImplTests {
 		List<TestEntity> entities = this.objectMapper.mapToList(results,
 				TestEntity.class);
 
+		verify(results, times(1)).close();
+
 		assertEquals(2, entities.size());
 
 		TestEntity t1 = entities.get(0);

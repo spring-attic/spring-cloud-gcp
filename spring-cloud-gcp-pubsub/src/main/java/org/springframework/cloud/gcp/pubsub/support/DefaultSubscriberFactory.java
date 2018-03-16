@@ -27,11 +27,11 @@ import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
-import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.stub.GrpcSubscriberStub;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
+import com.google.cloud.pubsub.v1.stub.SubscriberStubSettings;
+import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.PullRequest;
-import com.google.pubsub.v1.SubscriptionName;
 import org.threeten.bp.Duration;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -153,7 +153,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	@Override
 	public Subscriber createSubscriber(String subscriptionName, MessageReceiver receiver) {
 		Subscriber.Builder subscriberBuilder = Subscriber.newBuilder(
-				SubscriptionName.of(this.projectId, subscriptionName), receiver);
+				ProjectSubscriptionName.of(this.projectId, subscriptionName), receiver);
 
 		if (this.channelProvider != null) {
 			subscriberBuilder.setChannelProvider(this.channelProvider);
@@ -197,7 +197,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 		PullRequest.Builder pullRequestBuilder =
 				PullRequest.newBuilder().setSubscription(
-						SubscriptionName.of(this.projectId, subscriptionName).toString());
+						ProjectSubscriptionName.of(this.projectId, subscriptionName).toString());
 
 		if (maxMessages != null) {
 			pullRequestBuilder.setMaxMessages(maxMessages);
@@ -212,39 +212,38 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	@Override
 	public SubscriberStub createSubscriberStub(RetrySettings retrySettings) {
-		SubscriptionAdminSettings.Builder subscriptionAdminSettingsBuilder =
-				SubscriptionAdminSettings.newBuilder();
+		SubscriberStubSettings.Builder subscriberStubSettings = SubscriberStubSettings.newBuilder();
 
 		if (this.credentialsProvider != null) {
-			subscriptionAdminSettingsBuilder.setCredentialsProvider(this.credentialsProvider);
+			subscriberStubSettings.setCredentialsProvider(this.credentialsProvider);
 		}
 
 		if (this.pullEndpoint != null) {
-			subscriptionAdminSettingsBuilder.setEndpoint(this.pullEndpoint);
+			subscriberStubSettings.setEndpoint(this.pullEndpoint);
 		}
 
 		if (this.executorProvider != null) {
-			subscriptionAdminSettingsBuilder.setExecutorProvider(this.executorProvider);
+			subscriberStubSettings.setExecutorProvider(this.executorProvider);
 		}
 
 		if (this.headerProvider != null) {
-			subscriptionAdminSettingsBuilder.setHeaderProvider(this.headerProvider);
+			subscriberStubSettings.setHeaderProvider(this.headerProvider);
 		}
 
 		if (this.channelProvider != null) {
-			subscriptionAdminSettingsBuilder.setTransportChannelProvider(this.channelProvider);
+			subscriberStubSettings.setTransportChannelProvider(this.channelProvider);
 		}
 
 		if (this.apiClock != null) {
-			subscriptionAdminSettingsBuilder.setClock(this.apiClock);
+			subscriberStubSettings.setClock(this.apiClock);
 		}
 
 		if (retrySettings != null) {
-			subscriptionAdminSettingsBuilder.pullSettings().setRetrySettings(retrySettings);
+			subscriberStubSettings.pullSettings().setRetrySettings(retrySettings);
 		}
 
 		try {
-			return GrpcSubscriberStub.create(subscriptionAdminSettingsBuilder.build());
+			return GrpcSubscriberStub.create(subscriberStubSettings.build());
 		}
 		catch (IOException e) {
 			throw new RuntimeException("Error creating the SubscriberStub", e);
