@@ -33,7 +33,6 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
@@ -44,7 +43,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -63,7 +61,6 @@ import static org.mockito.Mockito.when;
 /**
  * @author Chengyuan Zhao
  */
-@RunWith(SpringRunner.class)
 public class SpannerTemplateTests {
 
 	private DatabaseClient databaseClient;
