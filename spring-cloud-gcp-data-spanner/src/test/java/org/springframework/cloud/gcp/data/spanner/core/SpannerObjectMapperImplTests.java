@@ -31,7 +31,6 @@ import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.ValueBinder;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
@@ -41,7 +40,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
 import org.springframework.data.annotation.Id;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
@@ -59,7 +57,6 @@ import static org.mockito.Mockito.when;
 /**
  * @author Chengyuan Zhao
  */
-@RunWith(SpringRunner.class)
 public class SpannerObjectMapperImplTests {
 
 	private SpannerConverter objectMapper;
