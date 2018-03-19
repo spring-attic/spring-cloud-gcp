@@ -45,7 +45,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
@@ -187,19 +186,22 @@ public class SpannerObjectMapperImplTests {
 
 	@Test
 	public void mapToListTest() {
+		List<Double> doubleList = new ArrayList<>();
+		doubleList.add(3.33);
+		List<String> stringList = new ArrayList<>();
+		stringList.add("string");
+
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
 				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
 				.add("doubleField", Value.float64(3.33))
 				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
+				.add("doubleList", Value.float64Array(doubleList))
+				.add("stringList", Value.stringArray(stringList))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
 
-		List<Double> doubleList = new ArrayList<>();
-		doubleList.add(3.33);
-		List<String> stringList = new ArrayList<>();
-		stringList.add("string");
 
 		Struct struct2 = Struct.newBuilder().add("id", Value.string("key2"))
 				.add("custom_col", Value.string("string2"))
@@ -210,6 +212,7 @@ public class SpannerObjectMapperImplTests {
 				.add("stringList", Value.stringArray(stringList))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2019, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
+				.add("bytes", Value.bytes(ByteArray.copyFrom("string2")))
 				.build();
 
 		MockResults mockResults = new MockResults();
@@ -220,15 +223,15 @@ public class SpannerObjectMapperImplTests {
 		when(results.getCurrentRowAsStruct())
 				.thenAnswer(invocation -> mockResults.getCurrent());
 
-		List<TestEntity> entities = this.objectMapper.mapToList(results,
-				TestEntity.class);
+		List<TestEntityReduced> entities = this.objectMapper.mapToList(results,
+				TestEntityReduced.class);
 
 		verify(results, times(1)).close();
 
 		assertEquals(2, entities.size());
 
-		TestEntity t1 = entities.get(0);
-		TestEntity t2 = entities.get(1);
+		TestEntityReduced t1 = entities.get(0);
+		TestEntityReduced t2 = entities.get(1);
 
 		assertEquals("key1", t1.id);
 		assertEquals("string1", t1.stringField);
@@ -249,15 +252,14 @@ public class SpannerObjectMapperImplTests {
 		assertEquals(1, t2.doubleList.size());
 		assertEquals(3.33, t2.doubleList.get(0), 0.000001);
 		assertThat(t2.stringList, containsInAnyOrder("string"));
-		assertNull(t2.bytes);
+		assertEquals(ByteArray.copyFrom("string2"), t2.bytes);
 	}
 
 	@Test(expected = SpannerDataException.class)
-	public void readUnexpectedColumnTest() {
+	public void readNotFoundColumnTest() {
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
 				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
-				.add("UNEXPECTED_COLUMN", Value.float64(3.33))
 				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
@@ -352,6 +354,34 @@ public class SpannerObjectMapperImplTests {
 		Date dateField;
 
 		Timestamp timestampField;
+
+		ByteArray bytes;
+	}
+
+	@SpannerTable(name = "custom_test_table_reduced")
+	private static class TestEntityReduced {
+		@Id
+		String id;
+
+		@SpannerColumn(name = "custom_col")
+		String stringField;
+
+		@SpannerColumn(name = "")
+		boolean booleanField;
+
+		long longField;
+
+		double doubleField;
+
+		double[] doubleArray;
+
+		@SpannerColumnInnerType(innerType = Double.class)
+		List<Double> doubleList;
+
+		@SpannerColumnInnerType(innerType = String.class)
+		List<String> stringList;
+
+		Date dateField;
 
 		ByteArray bytes;
 	}

@@ -35,13 +35,6 @@ public interface SpannerPersistentEntity<T>
 	String tableName();
 
 	/**
-	 * Gets the property corresponding to the given column name.
-	 * @param columnName the name of the column corresponding to a stored property.
-	 * @return the property.
-	 */
-	SpannerPersistentProperty getPersistentPropertyByColumnName(String columnName);
-
-	/**
 	 * Gets the column names stored for this entity.
 	 * @return the column names.
 	 */

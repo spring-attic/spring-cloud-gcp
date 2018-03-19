@@ -17,9 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.mapping.model.BasicPersistentEntity;
@@ -40,8 +38,6 @@ public class SpannerPersistentEntityImpl<T>
 
 	private final Set<String> columnNames = new HashSet<>();
 
-	private final Map<String, String> columnNameToPropertyName = new HashMap<>();
-
 	/**
 	 * Creates a {@link SpannerPersistentEntityImpl}
 	 * @param information type information about the underlying entity type.
@@ -60,7 +56,6 @@ public class SpannerPersistentEntityImpl<T>
 	public void addPersistentProperty(SpannerPersistentProperty property) {
 		addPersistentPropertyToPersistentEntity(property);
 		this.columnNames.add(property.getColumnName());
-		this.columnNameToPropertyName.put(property.getColumnName(), property.getName());
 	}
 
 	private void addPersistentPropertyToPersistentEntity(SpannerPersistentProperty property) {
@@ -70,12 +65,6 @@ public class SpannerPersistentEntityImpl<T>
 	@Override
 	public String tableName() {
 		return this.tableName;
-	}
-
-	@Override
-	public SpannerPersistentProperty getPersistentPropertyByColumnName(
-			String columnName) {
-		return getPersistentProperty(this.columnNameToPropertyName.get(columnName));
 	}
 
 	@Override
