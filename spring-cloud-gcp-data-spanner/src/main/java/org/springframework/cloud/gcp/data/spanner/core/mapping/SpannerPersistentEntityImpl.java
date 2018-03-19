@@ -20,12 +20,24 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.expression.BeanFactoryAccessor;
+import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.ParserContext;
+import org.springframework.expression.common.LiteralExpression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 /**
- * Represents a Google Spanner table and its columns' mapping to fields within an entity type.
+ * Represents a Google Spanner table and its columns' mapping to fields within an entity
+ * type.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
@@ -34,9 +46,17 @@ public class SpannerPersistentEntityImpl<T>
 		extends BasicPersistentEntity<T, SpannerPersistentProperty>
 		implements SpannerPersistentEntity<T> {
 
+	private static final ExpressionParser PARSER = new SpelExpressionParser();
+
 	private final String tableName;
 
 	private final Set<String> columnNames = new HashSet<>();
+
+	private final Expression tableNameExpression;
+
+	private StandardEvaluationContext context;
+
+	private final SpannerTable table;
 
 	/**
 	 * Creates a {@link SpannerPersistentEntityImpl}
@@ -48,8 +68,26 @@ public class SpannerPersistentEntityImpl<T>
 		Class<?> rawType = information.getType();
 		String fallback = StringUtils.uncapitalize(rawType.getSimpleName());
 
-		SpannerTable table = this.findAnnotation(SpannerTable.class);
-		this.tableName = table != null && StringUtils.hasText(table.name()) ? table.name() : fallback;
+		this.context = new StandardEvaluationContext();
+
+		this.table = this.findAnnotation(SpannerTable.class);
+		this.tableName = this.hasTableName() ? this.table.name() : fallback;
+		this.tableNameExpression = detectExpression();
+	}
+
+	protected boolean hasTableName() {
+		return this.table != null && StringUtils.hasText(this.table.name());
+	}
+
+	@Nullable
+	private Expression detectExpression() {
+		if (!hasTableName()) {
+			return null;
+		}
+
+		Expression expression = PARSER.parseExpression(this.table.name(), ParserContext.TEMPLATE_EXPRESSION);
+
+		return expression instanceof LiteralExpression ? null : expression;
 	}
 
 	@Override
@@ -64,11 +102,20 @@ public class SpannerPersistentEntityImpl<T>
 
 	@Override
 	public String tableName() {
-		return this.tableName;
+		return this.tableNameExpression == null
+				? this.tableName
+				: this.tableNameExpression.getValue(this.context, String.class);
 	}
 
 	@Override
 	public Iterable<String> columns() {
 		return Collections.unmodifiableSet(this.columnNames);
 	}
+
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.context.addPropertyAccessor(new BeanFactoryAccessor());
+		this.context.setBeanResolver(new BeanFactoryResolver(applicationContext));
+		this.context.setRootObject(applicationContext);
+	}
+
 }

@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
 /**
@@ -26,7 +27,7 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
  * @author Chengyuan Zhao
  */
 public interface SpannerPersistentEntity<T>
-		extends MutablePersistentEntity<T, SpannerPersistentProperty> {
+		extends MutablePersistentEntity<T, SpannerPersistentProperty>, ApplicationContextAware {
 
 	/**
 	 * Gets the name of the Spanner table.
