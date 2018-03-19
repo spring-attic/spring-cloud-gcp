@@ -107,14 +107,14 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	@After
 	public void clean() {
+		// we need to remove the extra bean created even if there is a failure at startup
+		DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) this.applicationContext
+				.getAutowireCapableBeanFactory();
+		beanFactory.destroySingleton("tablePostfix");
 		// this is to reduce duplicated errors reported by surefire plugin
 		if (this.setupFailed) {
 			return;
 		}
-		DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) this.applicationContext
-				.getAutowireCapableBeanFactory();
-		beanFactory
-				.destroySingleton("tablePostfix");
 		String instanceId = this.databaseId.getInstanceId().getInstance();
 		String database = this.databaseId.getDatabase();
 		if (hasDatabaseDefined(instanceId, database)) {

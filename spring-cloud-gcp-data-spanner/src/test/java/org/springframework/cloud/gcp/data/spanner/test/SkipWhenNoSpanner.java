@@ -48,7 +48,6 @@ public class SkipWhenNoSpanner implements TestRule {
 				if (!"true".equals(System.getenv("forceIntegrationTests"))) {
 					testSpannerConnection(databaseAdminClient, instanceId);
 				}
-				System.out.println("EVAL!!! " + description.toString());
 				base.evaluate();
 			}
 		};
