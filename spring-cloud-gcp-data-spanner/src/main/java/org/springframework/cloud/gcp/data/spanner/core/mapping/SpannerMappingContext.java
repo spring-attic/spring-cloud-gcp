@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
