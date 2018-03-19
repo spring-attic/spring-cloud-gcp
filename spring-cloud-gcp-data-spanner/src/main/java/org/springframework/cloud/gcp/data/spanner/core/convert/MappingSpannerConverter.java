@@ -17,7 +17,11 @@
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
@@ -45,12 +49,29 @@ public class MappingSpannerConverter implements SpannerConverter {
 
 	@Override
 	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass) {
+		return mapToList(resultSet, entityClass, Optional.empty());
+	}
+
+	@Override
+	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
+			Optional<Set<String>> includeColumns) {
 		ArrayList<T> result = new ArrayList<>();
 		while (resultSet.next()) {
-			result.add(read(entityClass, resultSet.getCurrentRowAsStruct()));
+			result.add(this.readConverter.read(entityClass,
+					resultSet.getCurrentRowAsStruct(),
+					includeColumns == null || !includeColumns.isPresent() ? null
+							: includeColumns.get()));
 		}
 		resultSet.close();
 		return result;
+	}
+
+	@Override
+	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
+			String... includeColumns) {
+		return mapToList(resultSet, entityClass,
+				includeColumns.length == 0 ? Optional.empty()
+						: Optional.of(new HashSet<>(Arrays.asList(includeColumns))));
 	}
 
 	/**
@@ -67,5 +88,4 @@ public class MappingSpannerConverter implements SpannerConverter {
 	public <R> R read(Class<R> type, Struct source) {
 		return this.readConverter.read(type, source);
 	}
-
 }
