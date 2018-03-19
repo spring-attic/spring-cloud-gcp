@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.springframework.cloud.gcp.data.spanner.test.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
@@ -30,7 +29,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
