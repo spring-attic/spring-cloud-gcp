@@ -20,10 +20,6 @@ import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
-import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Spanner;
-import com.google.cloud.spanner.SpannerOptions;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -32,14 +28,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.data.spanner.config.AbstractSpannerConfiguration;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
-import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -53,7 +46,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass({ SpannerMappingContext.class, SpannerOperations.class,
 		SpannerMutationFactory.class, SpannerConverter.class })
 @EnableConfigurationProperties(GcpSpannerProperties.class)
-public class GcpSpannerAutoConfiguration {
+public class GcpSpannerAutoConfiguration extends AbstractSpannerConfiguration {
 
 	private final String projectId;
 
@@ -76,49 +69,25 @@ public class GcpSpannerAutoConfiguration {
 		this.databaseName = gcpSpannerProperties.getDatabase();
 	}
 
-	@Bean
-	public DatabaseId databaseId() {
-		return DatabaseId.of(this.projectId, this.instanceId, this.databaseName);
+
+	@Override
+	protected String getDatabaseName() {
+		return this.databaseName;
 	}
 
-	@Bean
-	public SpannerOptions spannerOptions() {
-		return SpannerOptions.newBuilder().setProjectId(this.projectId)
-				.setCredentials(this.credentials).build();
+	@Override
+	protected String getInstanceId() {
+		return this.instanceId;
 	}
 
-	@Bean
-	public Spanner spanner(SpannerOptions spannerOptions) {
-		return spannerOptions.getService();
+	@Override
+	protected String getProjectId() {
+		return this.projectId;
 	}
 
-	@Bean
-	public DatabaseClient spannerDatabaseClient(Spanner spanner, DatabaseId databaseId) {
-		return spanner.getDatabaseClient(databaseId);
+	@Override
+	protected Credentials getCredentials() {
+		return this.credentials;
 	}
 
-	@Bean
-	public SpannerMappingContext spannerMappingContext() {
-		return new SpannerMappingContext();
-	}
-
-	@Bean
-	public SpannerOperations spannerOperations(DatabaseClient databaseClient,
-			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
-			SpannerMutationFactory spannerMutationFactory) {
-		return new SpannerTemplate(databaseClient, mappingContext, spannerConverter,
-				spannerMutationFactory);
-	}
-
-	@Bean
-	public SpannerConverter spannerConverter(SpannerMappingContext mappingContext) {
-		return new MappingSpannerConverter(mappingContext);
-	}
-
-	@Bean
-	public SpannerMutationFactory spannerMutationFactory(
-			SpannerConverter spannerConverter,
-			SpannerMappingContext spannerMappingContext) {
-		return new SpannerMutationFactoryImpl(spannerConverter, spannerMappingContext);
-	}
 }
