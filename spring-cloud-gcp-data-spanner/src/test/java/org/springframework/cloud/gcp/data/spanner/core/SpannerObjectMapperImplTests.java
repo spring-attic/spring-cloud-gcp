@@ -198,6 +198,11 @@ public class SpannerObjectMapperImplTests {
 				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
 				.add("doubleList", Value.float64Array(doubleList))
 				.add("stringList", Value.stringArray(stringList))
+				.add("booleanList", Value.boolArray(new boolean[]{}))
+				.add("longList", Value.int64Array(new long[]{}))
+				.add("timestampList", Value.timestampArray(new ArrayList<>()))
+				.add("dateList", Value.dateArray(new ArrayList<>()))
+				.add("bytesList", Value.bytesArray(new ArrayList<>()))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
@@ -210,6 +215,11 @@ public class SpannerObjectMapperImplTests {
 				.add("doubleArray", Value.float64Array(new double[] { 5.55, 5.55 }))
 				.add("doubleList", Value.float64Array(doubleList))
 				.add("stringList", Value.stringArray(stringList))
+				.add("booleanList", Value.boolArray(new boolean[]{}))
+				.add("longList", Value.int64Array(new long[]{}))
+				.add("timestampList", Value.timestampArray(new ArrayList<>()))
+				.add("dateList", Value.dateArray(new ArrayList<>()))
+				.add("bytesList", Value.bytesArray(new ArrayList<>()))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2019, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string2")))
@@ -223,15 +233,15 @@ public class SpannerObjectMapperImplTests {
 		when(results.getCurrentRowAsStruct())
 				.thenAnswer(invocation -> mockResults.getCurrent());
 
-		List<TestEntityReduced> entities = this.objectMapper.mapToList(results,
-				TestEntityReduced.class);
+		List<TestEntity> entities = this.objectMapper.mapToList(results,
+				TestEntity.class);
 
 		verify(results, times(1)).close();
 
 		assertEquals(2, entities.size());
 
-		TestEntityReduced t1 = entities.get(0);
-		TestEntityReduced t2 = entities.get(1);
+		TestEntity t1 = entities.get(0);
+		TestEntity t2 = entities.get(1);
 
 		assertEquals("key1", t1.id);
 		assertEquals("string1", t1.stringField);
@@ -354,34 +364,6 @@ public class SpannerObjectMapperImplTests {
 		Date dateField;
 
 		Timestamp timestampField;
-
-		ByteArray bytes;
-	}
-
-	@SpannerTable(name = "custom_test_table_reduced")
-	private static class TestEntityReduced {
-		@Id
-		String id;
-
-		@SpannerColumn(name = "custom_col")
-		String stringField;
-
-		@SpannerColumn(name = "")
-		boolean booleanField;
-
-		long longField;
-
-		double doubleField;
-
-		double[] doubleArray;
-
-		@SpannerColumnInnerType(innerType = Double.class)
-		List<Double> doubleList;
-
-		@SpannerColumnInnerType(innerType = String.class)
-		List<String> stringList;
-
-		Date dateField;
 
 		ByteArray bytes;
 	}
