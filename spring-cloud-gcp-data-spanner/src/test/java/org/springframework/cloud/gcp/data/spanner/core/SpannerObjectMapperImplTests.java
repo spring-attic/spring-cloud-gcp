@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import com.google.cloud.ByteArray;
@@ -52,6 +53,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -179,6 +181,34 @@ public class SpannerObjectMapperImplTests {
 		verify(dateFieldBinder, times(1)).to(eq(t.dateField));
 		verify(timestampFieldBinder, times(1)).to(eq(t.timestampField));
 		verify(bytesFieldBinder, times(1)).to(eq(t.bytes));
+	}
+
+	@Test
+	public void writeSomeColumnsTest() throws ClassNotFoundException {
+		TestEntity t = new TestEntity();
+		t.id = "key1";
+		t.stringField = "string";
+
+		WriteBuilder writeBuilder = mock(WriteBuilder.class);
+
+		ValueBinder<WriteBuilder> idBinder = mock(ValueBinder.class);
+		when(idBinder.to(anyString())).thenReturn(null);
+		when(writeBuilder.set(eq("id"))).thenReturn(idBinder);
+
+		ValueBinder<WriteBuilder> stringFieldBinder = mock(ValueBinder.class);
+		when(stringFieldBinder.to(anyString())).thenReturn(null);
+		when(writeBuilder.set(eq("custom_col"))).thenReturn(stringFieldBinder);
+
+		ValueBinder<WriteBuilder> booleanFieldBinder = mock(ValueBinder.class);
+		when(booleanFieldBinder.to((Boolean) any())).thenReturn(null);
+		when(writeBuilder.set(eq("booleanField"))).thenReturn(booleanFieldBinder);
+
+		this.objectMapper.write(t, writeBuilder,
+				new HashSet<>(Arrays.asList(new String[] { "id", "custom_col" })));
+
+		verify(idBinder, times(1)).to(eq(t.id));
+		verify(stringFieldBinder, times(1)).to(eq(t.stringField));
+		verifyZeroInteractions(booleanFieldBinder);
 	}
 
 	@Test

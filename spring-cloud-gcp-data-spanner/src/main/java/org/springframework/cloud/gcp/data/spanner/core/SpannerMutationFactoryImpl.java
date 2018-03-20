@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.Set;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
@@ -59,17 +61,21 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
 	@Override
 	public Mutation insert(Object object) {
-		return saveObject(Op.INSERT, object);
+		return saveObject(Op.INSERT, object, null);
 	}
 
 	@Override
-	public Mutation upsert(Object object) {
-		return saveObject(Op.INSERT_OR_UPDATE, object);
+	public Mutation upsert(Object object, Optional<Set<String>> includeColumns) {
+		return saveObject(Op.INSERT_OR_UPDATE, object,
+				includeColumns == null || !includeColumns.isPresent() ? null
+						: includeColumns.get());
 	}
 
 	@Override
-	public Mutation update(Object object) {
-		return saveObject(Op.UPDATE, object);
+	public Mutation update(Object object, Optional<Set<String>> includeColumns) {
+		return saveObject(Op.UPDATE, object,
+				includeColumns == null || !includeColumns.isPresent() ? null
+						: includeColumns.get());
 	}
 
 	@Override
@@ -105,12 +111,12 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 		return delete(entityClass, KeySet.singleKey(key));
 	}
 
-	private Mutation saveObject(Op op, Object object) {
+	private Mutation saveObject(Op op, Object object, Set<String> includeColumns) {
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
 				.getPersistentEntity(object.getClass());
 		Mutation.WriteBuilder writeBuilder = writeBuilder(op,
 				persistentEntity.tableName());
-		this.spannerConverter.write(object, writeBuilder);
+		this.spannerConverter.write(object, writeBuilder, includeColumns);
 		return writeBuilder.build();
 	}
 

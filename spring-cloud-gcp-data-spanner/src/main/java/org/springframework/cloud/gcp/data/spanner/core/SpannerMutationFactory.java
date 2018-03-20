@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.util.Optional;
+import java.util.Set;
+
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
@@ -39,17 +42,21 @@ public interface SpannerMutationFactory {
 	 * Updates or inserts a single object in Spanner. The columns' values corresponding to
 	 * the object's fields are treated according to Mutation.Op.INSERT_OR_UPDATE.
 	 * @param object The object to update or newly insert.
+	 * @param includeColumns The columns to use in the operation. if null or empty
+	 * Optional, then all columns are used.
 	 * @return The mutation operation to perform the action.
 	 */
-	Mutation upsert(Object object);
+	Mutation upsert(Object object, Optional<Set<String>> includeColumns);
 
 	/**
 	 * Updates a single object in Spanner. The columns' values corresponding to the
 	 * object's fields are treated according to Mutation.Op.UPDATE.
 	 * @param object The object to update.
+	 * @param includeColumns The columns to use in the operation. if null or empty
+	 * Optional, then all columns are used.
 	 * @return The mutation operation to perform the action.
 	 */
-	Mutation update(Object object);
+	Mutation update(Object object, Optional<Set<String>> includeColumns);
 
 	/**
 	 * Deletes several objects from Spanner.
