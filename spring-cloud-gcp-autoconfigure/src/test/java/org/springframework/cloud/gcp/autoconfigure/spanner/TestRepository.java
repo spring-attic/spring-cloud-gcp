@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.Spanner;
+package org.springframework.cloud.gcp.autoconfigure.spanner;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
