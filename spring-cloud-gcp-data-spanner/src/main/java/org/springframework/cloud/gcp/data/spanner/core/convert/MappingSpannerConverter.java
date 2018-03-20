@@ -18,8 +18,10 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
 
@@ -53,6 +55,11 @@ public class MappingSpannerConverter implements SpannerConverter {
 		return result;
 	}
 
+	@Override
+	public void write(Object source, WriteBuilder sink, Set<String> includeColumns) {
+		this.writeConverter.write(source, sink, includeColumns);
+	}
+
 	/**
 	 * Writes each of the source properties to the sink.
 	 * @param source entity to be written
@@ -67,5 +74,4 @@ public class MappingSpannerConverter implements SpannerConverter {
 	public <R> R read(Class<R> type, Struct source) {
 		return this.readConverter.read(type, source);
 	}
-
 }

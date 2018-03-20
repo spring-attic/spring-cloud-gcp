@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
@@ -98,13 +99,30 @@ public class MappingSpannerWriteConverter implements EntityWriter<Object, WriteB
 
 	@Override
 	public void write(Object source, WriteBuilder sink) {
+		write(source, sink, null);
+	}
+
+	/**
+	 * Writes an object's properties to the sink.
+	 * @param source the object to write
+	 * @param sink the sink to which to write
+	 * @param includeColumns the properties/columns to write. If null, then all columns
+	 * are written.
+	 */
+	public void write(Object source, WriteBuilder sink, Set<String> includeColumns) {
+		boolean writeAllColumns = includeColumns == null;
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
 				.getPersistentEntity(source.getClass());
 		PersistentPropertyAccessor accessor = persistentEntity
 				.getPropertyAccessor(source);
 		persistentEntity.doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> writeProperty(
-						sink, accessor, spannerPersistentProperty));
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					if (!writeAllColumns && !includeColumns
+							.contains(spannerPersistentProperty.getColumnName())) {
+						return;
+					}
+					writeProperty(sink, accessor, spannerPersistentProperty);
+				});
 	}
 
 	/**

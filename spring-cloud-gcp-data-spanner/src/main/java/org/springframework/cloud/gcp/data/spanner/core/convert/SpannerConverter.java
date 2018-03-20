@@ -17,8 +17,10 @@
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.List;
+import java.util.Set;
 
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
 
@@ -44,4 +46,13 @@ public interface SpannerConverter
 	 * @return A list of objects.
 	 */
 	<T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass);
+
+	/**
+	 * Writes an object's properties to the sink.
+	 * @param source the object to write
+	 * @param sink the sink to which to write
+	 * @param includeColumns the properties/columns to write. If null, then all columns
+	 * are written.
+	 */
+	void write(Object source, WriteBuilder sink, Set<String> includeColumns);
 }
