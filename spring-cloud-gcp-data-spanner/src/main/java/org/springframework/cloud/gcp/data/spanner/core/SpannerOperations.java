@@ -175,15 +175,16 @@ public interface SpannerOperations {
 	 * Update an object in storage.
 	 * @param object the object to update.
 	 * @param includeColumns the columns to upsert. if none are given then all columns are
-	 * updated.
+	 * used
 	 */
 	void update(Object object, String... includeColumns);
 
 	/**
 	 * Update an object in storage.
 	 * @param object the object to update.
-	 * @param includeColumns the columns to update. if none are given then all columns are
-	 * updated.
+	 * @param includeColumns the columns to update. If null or an empty Optional is given, then
+	 * all columns are used. Note that an Optional occupied by an empty Set means that no columns
+	 * will be used.
 	 */
 	void update(Object object, Optional<Set<String>> includeColumns);
 
@@ -204,8 +205,9 @@ public interface SpannerOperations {
 	/**
 	 * Update or insert an object into storage.
 	 * @param object the object to update or insert.
-	 * @param includeColumns the columns to upsert. if none are given then all columns are
-	 * upserted.
+	 * @param includeColumns the columns to upsert. If null or an empty Optional is given, then
+	 * all columns are used. Note that an Optional occupied by an empty Set means that no columns
+	 * will be used.
 	 */
 	void upsert(Object object, Optional<Set<String>> includeColumns);
 
