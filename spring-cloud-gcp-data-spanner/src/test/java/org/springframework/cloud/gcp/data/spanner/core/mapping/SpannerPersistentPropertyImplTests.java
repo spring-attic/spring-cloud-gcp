@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.MappingException;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -62,7 +63,7 @@ public class SpannerPersistentPropertyImplTests {
 
 		entity.columns().forEach(col -> {
 			SpannerPersistentPropertyImpl prop = (SpannerPersistentPropertyImpl) entity
-					.getPersistentPropertyByColumnName(col);
+					.getPersistentProperty(col);
 
 			// Getting the column name will throw an exception because of the mock naming
 			// strategy.
@@ -76,11 +77,11 @@ public class SpannerPersistentPropertyImplTests {
 				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
-		entity.columns().forEach(col -> {
-			SpannerPersistentPropertyImpl prop = (SpannerPersistentPropertyImpl) entity
-					.getPersistentPropertyByColumnName(col);
-			assertSame(prop, prop.createAssociation().getInverse());
-			assertNull(prop.createAssociation().getObverse());
+		entity.doWithProperties((PropertyHandler<SpannerPersistentProperty>) prop -> {
+			assertSame(prop, ((SpannerPersistentPropertyImpl) prop).createAssociation()
+					.getInverse());
+			assertNull(((SpannerPersistentPropertyImpl) prop).createAssociation()
+					.getObverse());
 		});
 	}
 
@@ -90,7 +91,7 @@ public class SpannerPersistentPropertyImplTests {
 				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
-		assertNull(entity.getPersistentPropertyByColumnName("custom_col")
+		assertNull(entity.getPersistentProperty("something")
 				.getColumnInnerType());
 	}
 
@@ -100,7 +101,8 @@ public class SpannerPersistentPropertyImplTests {
 				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class));
 
-		assertEquals(Double.class, entity.getPersistentPropertyByColumnName("doubleList")
+		assertEquals(Double.class,
+				entity.getPersistentProperty("doubleList")
 				.getColumnInnerType());
 	}
 

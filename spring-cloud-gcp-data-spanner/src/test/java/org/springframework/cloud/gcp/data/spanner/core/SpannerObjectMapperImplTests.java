@@ -31,7 +31,6 @@ import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.ValueBinder;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
@@ -41,11 +40,9 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
 import org.springframework.data.annotation.Id;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
@@ -60,7 +57,6 @@ import static org.mockito.Mockito.when;
 /**
  * @author Chengyuan Zhao
  */
-@RunWith(SpringRunner.class)
 public class SpannerObjectMapperImplTests {
 
 	private SpannerConverter objectMapper;
@@ -187,19 +183,27 @@ public class SpannerObjectMapperImplTests {
 
 	@Test
 	public void mapToListTest() {
+		List<Double> doubleList = new ArrayList<>();
+		doubleList.add(3.33);
+		List<String> stringList = new ArrayList<>();
+		stringList.add("string");
+
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
 				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
 				.add("doubleField", Value.float64(3.33))
 				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
+				.add("doubleList", Value.float64Array(doubleList))
+				.add("stringList", Value.stringArray(stringList))
+				.add("booleanList", Value.boolArray(new boolean[]{}))
+				.add("longList", Value.int64Array(new long[]{}))
+				.add("timestampList", Value.timestampArray(new ArrayList<>()))
+				.add("dateList", Value.dateArray(new ArrayList<>()))
+				.add("bytesList", Value.bytesArray(new ArrayList<>()))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
 
-		List<Double> doubleList = new ArrayList<>();
-		doubleList.add(3.33);
-		List<String> stringList = new ArrayList<>();
-		stringList.add("string");
 
 		Struct struct2 = Struct.newBuilder().add("id", Value.string("key2"))
 				.add("custom_col", Value.string("string2"))
@@ -208,8 +212,14 @@ public class SpannerObjectMapperImplTests {
 				.add("doubleArray", Value.float64Array(new double[] { 5.55, 5.55 }))
 				.add("doubleList", Value.float64Array(doubleList))
 				.add("stringList", Value.stringArray(stringList))
+				.add("booleanList", Value.boolArray(new boolean[]{}))
+				.add("longList", Value.int64Array(new long[]{}))
+				.add("timestampList", Value.timestampArray(new ArrayList<>()))
+				.add("dateList", Value.dateArray(new ArrayList<>()))
+				.add("bytesList", Value.bytesArray(new ArrayList<>()))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2019, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
+				.add("bytes", Value.bytes(ByteArray.copyFrom("string2")))
 				.build();
 
 		MockResults mockResults = new MockResults();
@@ -249,15 +259,14 @@ public class SpannerObjectMapperImplTests {
 		assertEquals(1, t2.doubleList.size());
 		assertEquals(3.33, t2.doubleList.get(0), 0.000001);
 		assertThat(t2.stringList, containsInAnyOrder("string"));
-		assertNull(t2.bytes);
+		assertEquals(ByteArray.copyFrom("string2"), t2.bytes);
 	}
 
 	@Test(expected = SpannerDataException.class)
-	public void readUnexpectedColumnTest() {
+	public void readNotFoundColumnTest() {
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
 				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
-				.add("UNEXPECTED_COLUMN", Value.float64(3.33))
 				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
