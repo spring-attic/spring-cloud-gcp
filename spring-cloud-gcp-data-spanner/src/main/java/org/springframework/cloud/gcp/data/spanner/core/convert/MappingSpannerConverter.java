@@ -73,8 +73,8 @@ public class MappingSpannerConverter implements SpannerConverter {
 		return mapToList(resultSet, entityClass,
 				includeColumns.length == 0 ? Optional.empty()
 						: Optional.of(new HashSet<>(Arrays.asList(includeColumns))));
-  }
-  
+	}
+
 	public void write(Object source, WriteBuilder sink, Set<String> includeColumns) {
 		this.writeConverter.write(source, sink, includeColumns);
 	}

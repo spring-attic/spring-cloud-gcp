@@ -35,13 +35,13 @@ import org.springframework.data.convert.EntityWriter;
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
-public interface SpannerConverter
-		extends EntityReader<Object, Struct>, EntityWriter<Object, Mutation.WriteBuilder> {
+public interface SpannerConverter extends EntityReader<Object, Struct>,
+		EntityWriter<Object, Mutation.WriteBuilder> {
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
 	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted
-	 *                  and closed.
+	 * and closed.
 	 * @param entityClass The type of the objects the Spanner results represent.
 	 * @param <T> The type of the objects the Spanner results represent.
 	 * @return A list of objects.
@@ -73,7 +73,8 @@ public interface SpannerConverter
 	 */
 	<T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
 			String... includeColumns);
-  /**
+
+	/**
 	 * Writes an object's properties to the sink.
 	 * @param source the object to write
 	 * @param sink the sink to which to write
