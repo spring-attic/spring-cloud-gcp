@@ -6,12 +6,12 @@ env:
 branches:
   only:
     - master
-script:
-  - ./mvnw test -B -DforceIntegrationTests=true
 cache:
   directories:
     - $HOME/google-cloud-sdk
     - $HOME/.m2
+script:
+  - ./mvnw test -B -DforceIntegrationTests=true
 install:
   - ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 before_script:

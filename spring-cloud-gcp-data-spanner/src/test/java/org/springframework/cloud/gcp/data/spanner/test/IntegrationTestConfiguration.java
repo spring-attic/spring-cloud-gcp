@@ -74,7 +74,7 @@ public class IntegrationTestConfiguration extends AbstractSpannerConfiguration {
 		return mockFailures(com.google.auth.Credentials.class,
 				() -> {
 					try {
-						return new DefaultCredentialsProvider(() -> new Credentials(GcpScope.SPANNER.getUrl()))
+						return new DefaultCredentialsProvider(() -> new Credentials())
 								.getCredentials();
 					}
 					catch (IOException e) {
