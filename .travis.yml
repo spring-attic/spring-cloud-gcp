@@ -1,6 +1,8 @@
 language: java
 jdk:
   - oraclejdk8
+env:
+  - GOOGLE_APPLICATION_CREDENTIALS=travis/admin.json
 branches:
   only:
     - master
@@ -20,5 +22,4 @@ before_install:
   - gcloud components update --quiet
   - gcloud components install beta pubsub-emulator --quiet
   - tar -xzf travis.tar.gz
-  - export GOOGLE_APPLICATION_CREDENTIALS="`pwd`/travis/admin.json"
   - gcloud config set project spring-cloud-gcp-ci
