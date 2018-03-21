@@ -19,13 +19,19 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.springframework.context.ApplicationContext;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 /**
  * @author Chengyuan Zhao
@@ -49,4 +55,40 @@ public class SpannerMappingContextTests {
 		context.setFieldNamingStrategy(strat);
 		assertSame(strat, context.getFieldNamingStrategy());
 	}
+
+	@Test
+	public void testApplicationContextPassing() {
+		SpannerPersistentEntityImpl mockEntity = mock(SpannerPersistentEntityImpl.class);
+		SpannerMappingContext context = createSpannerMappingContextWith(mockEntity);
+		ApplicationContext applicationContext = mock(ApplicationContext.class);
+		context.setApplicationContext(applicationContext);
+
+		context.createPersistentEntity(mock(TypeInformation.class));
+
+		verify(mockEntity, times(1)).setApplicationContext(eq(applicationContext));
+	}
+
+
+	@Test
+	public void testApplicationContextIsNotSet() {
+		SpannerPersistentEntityImpl mockEntity = mock(SpannerPersistentEntityImpl.class);
+		SpannerMappingContext context = createSpannerMappingContextWith(mockEntity);
+
+		context.createPersistentEntity(mock(TypeInformation.class));
+
+		verifyZeroInteractions(mockEntity);
+	}
+
+
+	private SpannerMappingContext createSpannerMappingContextWith(
+			SpannerPersistentEntityImpl mockEntity) {
+		return new SpannerMappingContext() {
+			@Override
+			protected <T> SpannerPersistentEntityImpl<T> constructPersistentEntity(
+					TypeInformation<T> typeInformation) {
+				return mockEntity;
+			}
+		};
+	}
+
 }

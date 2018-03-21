@@ -18,8 +18,11 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.Set;
 
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
@@ -49,6 +52,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -189,8 +193,32 @@ public class SpannerTemplateTests {
 	public void updateTest() {
 		Mutation mutation = Mutation.newUpdateBuilder("custom_test_table").build();
 		TestEntity entity = new TestEntity();
-		when(this.mutationFactory.update(entity)).thenReturn(mutation);
+		when(this.mutationFactory.update(entity, null)).thenReturn(mutation);
 		this.spannerTemplate.update(entity);
+		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
+	}
+
+	@Test
+	public void updateColumnsArrayTest() {
+		Mutation mutation = Mutation.newInsertOrUpdateBuilder("custom_test_table")
+				.build();
+		TestEntity entity = new TestEntity();
+		when(this.mutationFactory.update(same(entity),
+				eq(Optional.of(new HashSet<>(Arrays.asList(new String[] { "a", "b" }))))))
+						.thenReturn(mutation);
+		this.spannerTemplate.update(entity, "a", "b");
+		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
+	}
+
+	@Test
+	public void updateColumnsSetTest() {
+		Mutation mutation = Mutation.newInsertOrUpdateBuilder("custom_test_table")
+				.build();
+		TestEntity entity = new TestEntity();
+		Set<String> cols = new HashSet<>(Arrays.asList(new String[] { "a", "b" }));
+		when(this.mutationFactory.update(same(entity), eq(Optional.of(cols))))
+				.thenReturn(mutation);
+		this.spannerTemplate.update(entity, Optional.of(cols));
 		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
 	}
 
@@ -199,8 +227,32 @@ public class SpannerTemplateTests {
 		Mutation mutation = Mutation.newInsertOrUpdateBuilder("custom_test_table")
 				.build();
 		TestEntity entity = new TestEntity();
-		when(this.mutationFactory.upsert(same(entity))).thenReturn(mutation);
+		when(this.mutationFactory.upsert(same(entity), isNull())).thenReturn(mutation);
 		this.spannerTemplate.upsert(entity);
+		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
+	}
+
+	@Test
+	public void upsertColumnsArrayTest() {
+		Mutation mutation = Mutation.newInsertOrUpdateBuilder("custom_test_table")
+				.build();
+		TestEntity entity = new TestEntity();
+		when(this.mutationFactory.upsert(same(entity),
+				eq(Optional.of(new HashSet<>(Arrays.asList(new String[] { "a", "b" }))))))
+						.thenReturn(mutation);
+		this.spannerTemplate.upsert(entity, "a", "b");
+		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
+	}
+
+	@Test
+	public void upsertColumnsSetTest() {
+		Mutation mutation = Mutation.newInsertOrUpdateBuilder("custom_test_table")
+				.build();
+		TestEntity entity = new TestEntity();
+		Set<String> cols = new HashSet<>(Arrays.asList(new String[] { "a", "b" }));
+		when(this.mutationFactory.upsert(same(entity), eq(Optional.of(cols))))
+				.thenReturn(mutation);
+		this.spannerTemplate.upsert(entity, Optional.of(cols));
 		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
 	}
 
