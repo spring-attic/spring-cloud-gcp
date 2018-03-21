@@ -20,5 +20,5 @@ before_install:
   - gcloud components update --quiet
   - gcloud components install beta pubsub-emulator --quiet
   - tar -xzf travis.tar.gz
-  - gcloud auth active-service-account --key-file travis/admin.json
+  - gcloud auth activate-service-account --key-file travis/admin.json
   - gcloud config set project spring-cloud-gcp-ci
