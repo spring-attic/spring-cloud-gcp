@@ -31,7 +31,6 @@ import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.cloud.gcp.data.spanner.config.AbstractSpannerConfiguration;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
