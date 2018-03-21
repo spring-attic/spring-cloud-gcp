@@ -18,35 +18,34 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import com.google.cloud.spanner.Key;
 
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.mapping.model.MutablePersistentEntity;
+import org.springframework.data.repository.core.support.AbstractEntityInformation;
 
 /**
- * Spanner specific interface for a {@link MutablePersistentEntity} stored
- * in a Google Spanner table.
- *
- * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public interface SpannerPersistentEntity<T>
-		extends MutablePersistentEntity<T, SpannerPersistentProperty>, ApplicationContextAware {
+public class SpannerPersistentEntityInformation<T>
+		extends AbstractEntityInformation<T, Key> {
+
+	private final SpannerPersistentEntity<T> persistentEntity;
 
 	/**
-	 * Gets the name of the Spanner table.
-	 * @return the name of the table.
+	 * Creates a new {@link SpannerPersistentEntityInformation} for the given
+	 * {@link SpannerPersistentEntity}.
+	 *
+	 * @param entity must not be {@literal null}.
 	 */
-	String tableName();
+	public SpannerPersistentEntityInformation(SpannerPersistentEntity<T> entity) {
+		super(entity.getType());
+		this.persistentEntity = entity;
+	}
 
-	/**
-	 * Gets the column names stored for this entity.
-	 * @return the column names.
-	 */
-	Iterable<String> columns();
+	@Override
+	public Key getId(T entity) {
+		return this.persistentEntity.getId(entity);
+	}
 
-	/**
-	 * Gets the Key for an entity instance.
-	 * @param entity the entity whose Key ID will be returned.
-	 * @return
-	 */
-	Key getId(T entity);
+	@Override
+	public Class<Key> getIdType() {
+		return Key.class;
+	}
 }

@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.util.OptionalInt;
+
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
@@ -95,6 +97,21 @@ public class SpannerPersistentPropertyImpl
 			return null;
 		}
 		return annotation.innerType();
+	}
+
+	@Override
+	public OptionalInt getPrimaryKeyOrder() {
+		SpannerPrimaryKeyColumn annotation = findAnnotation(
+				SpannerPrimaryKeyColumn.class);
+		if (annotation == null) {
+			return OptionalInt.empty();
+		}
+		return OptionalInt.of(annotation.keyOrder());
+	}
+
+	@Override
+	public boolean isIdProperty() {
+		return false;
 	}
 
 	private String getAnnotatedColumnName() {

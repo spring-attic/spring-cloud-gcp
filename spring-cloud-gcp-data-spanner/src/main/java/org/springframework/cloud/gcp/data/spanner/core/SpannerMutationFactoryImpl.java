@@ -87,9 +87,9 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 			PersistentPropertyAccessor accessor = persistentEntity
 					.getPropertyAccessor(entity);
 			PersistentProperty idProperty = persistentEntity.getIdProperty();
-			Object value = accessor.getProperty(idProperty);
+			Key value = (Key) accessor.getProperty(idProperty);
 
-			builder.addKey(Key.of(value));
+			builder.addKey(value);
 		}
 		return delete(entityClass, builder.build());
 	}

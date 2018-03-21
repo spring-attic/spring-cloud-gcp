@@ -17,13 +17,23 @@
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+
+import com.google.cloud.ByteArray;
+import com.google.cloud.Date;
+import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.Key.Builder;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.Expression;
@@ -57,6 +67,8 @@ public class SpannerPersistentEntityImpl<T>
 	private StandardEvaluationContext context;
 
 	private final SpannerTable table;
+
+	private final Map<Integer, SpannerPersistentProperty> primaryKeyParts = new HashMap<>();
 
 	/**
 	 * Creates a {@link SpannerPersistentEntityImpl}
@@ -94,10 +106,47 @@ public class SpannerPersistentEntityImpl<T>
 	public void addPersistentProperty(SpannerPersistentProperty property) {
 		addPersistentPropertyToPersistentEntity(property);
 		this.columnNames.add(property.getColumnName());
+
+		if (property.getPrimaryKeyOrder() != null
+				&& property.getPrimaryKeyOrder().isPresent()) {
+			int order = property.getPrimaryKeyOrder().getAsInt();
+			if (this.primaryKeyParts.containsKey(order)) {
+				throw new SpannerDataException(
+						"Two properties were annotated with the same primary key order: "
+								+ property.getColumnName() + " and "
+								+ this.primaryKeyParts.get(order).getColumnName());
+			}
+			this.primaryKeyParts.put(order, property);
+		}
 	}
 
 	private void addPersistentPropertyToPersistentEntity(SpannerPersistentProperty property) {
 		super.addPersistentProperty(property);
+	}
+
+	@Override
+	public SpannerPersistentProperty getIdProperty() {
+		return new SpannerKeyProperty(this, getPrimaryKeyProperties());
+	}
+
+	private SpannerPersistentProperty[] getPrimaryKeyProperties() {
+		SpannerPersistentProperty[] primaryKeyColumns =
+				new SpannerPersistentProperty[this.primaryKeyParts.size()];
+		for (int i = 1; i <= this.primaryKeyParts.size(); i++) {
+			SpannerPersistentProperty keyPart = this.primaryKeyParts.get(i);
+			if (keyPart == null) {
+				throw new SpannerDataException(
+						"The primary key columns were not given a consecutive order. "
+								+ "There is no property annotated with order "
+								+ String.valueOf(i));
+			}
+			primaryKeyColumns[i - 1] = keyPart;
+		}
+		if (primaryKeyColumns.length == 0) {
+			throw new SpannerDataException(
+					"At least one primary key property is required!");
+		}
+		return primaryKeyColumns;
 	}
 
 	@Override
@@ -118,4 +167,86 @@ public class SpannerPersistentEntityImpl<T>
 		this.context.setRootObject(applicationContext);
 	}
 
+	@Override
+	public Key getId(T entity) {
+		PersistentPropertyAccessor accessor = getPropertyAccessor(entity);
+		Builder keyBuilder = Key.newBuilder();
+		for (SpannerPersistentProperty spannerPersistentProperty : getPrimaryKeyProperties()) {
+			if (spannerPersistentProperty.getType().equals(Boolean.class)) {
+				keyBuilder.append(
+						(Boolean) accessor.getProperty(spannerPersistentProperty));
+			}
+			else if (spannerPersistentProperty.getType().equals(Long.class)) {
+				keyBuilder.append((Long) accessor.getProperty(spannerPersistentProperty));
+			}
+			else if (spannerPersistentProperty.getType().equals(long.class)) {
+				keyBuilder.append((long) accessor.getProperty(spannerPersistentProperty));
+			}
+			else if (spannerPersistentProperty.getType().equals(double.class)) {
+				keyBuilder
+						.append((double) accessor.getProperty(spannerPersistentProperty));
+			}
+			else if (spannerPersistentProperty.getType().equals(Double.class)) {
+				keyBuilder
+						.append((Double) accessor.getProperty(spannerPersistentProperty));
+			}
+			else if (spannerPersistentProperty.getType().equals(String.class)) {
+				keyBuilder
+						.append((String) accessor.getProperty(spannerPersistentProperty));
+			}
+			else if (spannerPersistentProperty.getType().equals(ByteArray.class)) {
+				keyBuilder.append(
+						(ByteArray) accessor.getProperty(spannerPersistentProperty));
+			}
+			else if (spannerPersistentProperty.getType().equals(Timestamp.class)) {
+				keyBuilder.append(
+						(Timestamp) accessor.getProperty(spannerPersistentProperty));
+			}
+			else if (spannerPersistentProperty.getType().equals(Date.class)) {
+				keyBuilder.append((Date) accessor.getProperty(spannerPersistentProperty));
+			}
+			else {
+				throw new SpannerDataException(
+						"Could not create primary key using property of type "
+								+ spannerPersistentProperty.getType());
+			}
+		}
+		return keyBuilder.build();
+	}
+
+	@Override
+	public PersistentPropertyAccessor getPropertyAccessor(Object object) {
+		PersistentPropertyAccessor delegatedAccessor = super.getPropertyAccessor(object);
+		return new PersistentPropertyAccessor() {
+
+			@Override
+			public void setProperty(PersistentProperty<?> property,
+					@Nullable Object value) {
+				if (property.isIdProperty()) {
+					throw new SpannerDataException(
+							"Setting the primary key directly via the Key ID property is not supported. "
+									+ "Please set the underlying column properties.");
+				}
+				else {
+					delegatedAccessor.setProperty(property, value);
+				}
+			}
+
+			@Nullable
+			@Override
+			public Object getProperty(PersistentProperty<?> property) {
+				if (property.isIdProperty()) {
+					return getId((T) getBean());
+				}
+				else {
+					return delegatedAccessor.getProperty(property);
+				}
+			}
+
+			@Override
+			public Object getBean() {
+				return delegatedAccessor.getBean();
+			}
+		};
+	}
 }

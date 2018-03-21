@@ -14,23 +14,28 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.repository;
+package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
-import com.google.cloud.spanner.Key;
-
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * @author Ray Tsang
+ * Annotation for a {@link SpannerPersistentEntity} that allows specifying the primary key
+ * columns and their order.
+ *
  * @author Chengyuan Zhao
  */
-public interface SpannerRepository<T> extends PagingAndSortingRepository<T, Key> {
+@Documented
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SpannerPrimaryKeyColumn {
 
 	/**
-	 * Gets a {@link SpannerOperations}, which allows more-direct access to Google Spanner
-	 * functions.
-	 * @return the operations object providing Spanner functions.
+	 * The order of columns that comprise the primary key. Starts at 1 is consecutive.
+	 * @return
 	 */
-	SpannerOperations getSpannerOperations();
+	int keyOrder();
 }
