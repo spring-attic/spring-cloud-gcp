@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 import com.google.cloud.ByteArray;
@@ -73,20 +74,29 @@ class MappingSpannerReadConverter implements EntityReader<Object, Struct> {
 		this.spannerMappingContext = spannerMappingContext;
 	}
 
-	@Override
-	public <R> R read(Class<R> type, Struct source) {
+	/**
+	 * Reads a single POJO from a Spanner row.
+	 * @param type the type of POJO
+	 * @param source the Spanner row
+	 * @param includeColumns the columns to read. If null then all columns will be read.
+	 * @param <R> the type of the POJO.
+	 * @return the POJO
+	 */
+	public <R> R read(Class<R> type, Struct source, Set<String> includeColumns) {
+		boolean readAllColumns = includeColumns == null;
 		R object = instantiate(type);
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
 				.getPersistentEntity(type);
 
-		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(object);
+		PersistentPropertyAccessor accessor = persistentEntity
+				.getPropertyAccessor(object);
 
 		persistentEntity.doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
 					String columnName = spannerPersistentProperty.getColumnName();
-					Class propType = spannerPersistentProperty.getType();
 					try {
-						if (source.isNull(columnName)) {
+						if ((!readAllColumns && !includeColumns.contains(columnName))
+								|| source.isNull(columnName)) {
 							return;
 						}
 					}
@@ -96,6 +106,7 @@ class MappingSpannerReadConverter implements EntityReader<Object, Struct> {
 										+ columnName,
 								e);
 					}
+					Class propType = spannerPersistentProperty.getType();
 
 					boolean valueSet;
 
@@ -123,6 +134,11 @@ class MappingSpannerReadConverter implements EntityReader<Object, Struct> {
 
 				});
 		return object;
+	}
+
+	@Override
+	public <R> R read(Class<R> type, Struct source) {
+		return read(type, source, null);
 	}
 
 	private boolean attemptReadSingleItemValue(

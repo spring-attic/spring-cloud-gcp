@@ -44,6 +44,7 @@ import org.springframework.data.annotation.Id;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
@@ -290,6 +291,54 @@ public class SpannerObjectMapperImplTests {
 		assertEquals(3.33, t2.doubleList.get(0), 0.000001);
 		assertThat(t2.stringList, containsInAnyOrder("string"));
 		assertEquals(ByteArray.copyFrom("string2"), t2.bytes);
+	}
+
+	@Test
+	public void mapToListPartialColumnsTest() {
+		List<Double> doubleList = new ArrayList<>();
+		doubleList.add(3.33);
+		List<String> stringList = new ArrayList<>();
+		stringList.add("string");
+
+		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
+				.add("custom_col", Value.string("string1"))
+				.add("doubleList", Value.float64Array(doubleList))
+				.add("stringList", Value.stringArray(stringList)).build();
+
+		Struct struct2 = Struct.newBuilder().add("id", Value.string("key2"))
+				.add("custom_col", Value.string("string2"))
+				.add("doubleList", Value.float64Array(doubleList))
+				.add("stringList", Value.stringArray(stringList)).build();
+
+		MockResults mockResults = new MockResults();
+		mockResults.structs = Arrays.asList(struct1, struct2);
+
+		ResultSet results = mock(ResultSet.class);
+		when(results.next()).thenAnswer(invocation -> mockResults.next());
+		when(results.getCurrentRowAsStruct())
+				.thenAnswer(invocation -> mockResults.getCurrent());
+
+		List<TestEntity> entities = this.objectMapper.mapToList(results, TestEntity.class,
+				"id", "custom_col");
+
+		verify(results, times(1)).close();
+
+		assertEquals(2, entities.size());
+
+		TestEntity t1 = entities.get(0);
+		TestEntity t2 = entities.get(1);
+
+		assertEquals("key1", t1.id);
+		assertEquals("string1", t1.stringField);
+
+		// This should not have been set
+		assertNull(t1.doubleList);
+
+		assertEquals("key2", t2.id);
+		assertEquals("string2", t2.stringField);
+
+		// This should not have been set
+		assertNull(t2.stringList);
 	}
 
 	@Test(expected = SpannerDataException.class)
