@@ -17,59 +17,60 @@
 package org.springframework.cloud.gcp.autoconfigure.spanner;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.auth.Credentials;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 
 /**
  * @author Chengyuan Zhao
+ * @author João André Martins
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { GcpSpannerAutoConfiguration.class }, properties = {
-				"spring.cloud.gcp.spanner.projectId=testProject",
-				"spring.cloud.gcp.spanner.instanceId=testInstance",
-				"spring.cloud.gcp.spanner.database=testDatabase",
-				"spring.cloud.gcp.config.enabled=false"})
-@EnableSpannerRepositories
 public class GcpSpannerAutoConfigurationTests {
 
-	@Autowired
-	SpannerOperations spannerOperations;
-
-	@Autowired
-	TestRepository testRepository;
+	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+			.withConfiguration(AutoConfigurations.of(GcpSpannerAutoConfiguration.class,
+					GcpContextAutoConfiguration.class))
+			.withUserConfiguration(TestConfiguration.class)
+			.withPropertyValues("spring.cloud.gcp.spanner.project-id=test-project",
+					"spring.cloud.gcp.spanner.instance-id=testInstance",
+					"spring.cloud.gcp.spanner.database=testDatabase");
 
 	@Test
 	public void testSpannerOperationsCreated() {
-		assertNotNull(this.spannerOperations);
+		this.contextRunner.run(context -> {
+			assertThat(context.getBean(SpannerOperations.class)).isNotNull();
+		});
 	}
 
 	@Test
 	public void testTestRepositoryCreated() {
-		assertNotNull(this.testRepository);
+		this.contextRunner.run(context -> {
+			assertThat(context.getBean(TestRepository.class)).isNotNull();
+		});
 	}
 
-	private static class SpannerApplication {
+	@EnableSpannerRepositories
+	static class TestConfiguration {
 
 		@Bean
-		public static CredentialsProvider googleCredentials() {
+		public CredentialsProvider credentialsProvider() {
 			return () -> mock(Credentials.class);
-		}
-
-		@Bean
-		public static GcpProjectIdProvider googleProjectIdProvier() {
-			return () -> "project123";
 		}
 	}
 }
