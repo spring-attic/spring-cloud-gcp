@@ -4,6 +4,8 @@ jdk:
 branches:
   only:
     - master
+script:
+  - ./mvnw test -B -DforceIntegrationTests=true
 install:
   # Install Cloud SDK
   - wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-189.0.0-linux-x86_64.tar.gz
