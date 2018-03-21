@@ -28,9 +28,15 @@ import org.junit.Rule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityImpl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.test.context.ContextConfiguration;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * <p>
@@ -90,38 +96,42 @@ public abstract class AbstractSpannerIntegrationTest {
 
 		if (!hasDatabaseDefined(instanceId, database)) {
 			this.databaseAdminClient.createDatabase(instanceId, database,
-					getCreateSchemaStatements()).waitFor();
+					createSchemaStatements()).waitFor();
 			System.out.println(
-					this.getClass() + " - Integration database created with schema: " + getCreateSchemaStatements());
+					this.getClass() + " - Integration database created with schema: " + createSchemaStatements());
 		}
 		else {
 			this.databaseAdminClient.updateDatabaseDdl(instanceId, database,
-					getCreateSchemaStatements(), null).waitFor();
-			System.out.println(this.getClass() + " - schema created: " + getCreateSchemaStatements());
+					createSchemaStatements(), null).waitFor();
+			System.out.println(this.getClass() + " - schema created: " + createSchemaStatements());
 		}
 	}
 
-	protected abstract Iterable<String> getCreateSchemaStatements();
+	protected abstract Iterable<String> createSchemaStatements();
 
-	protected abstract Iterable<String> getDropSchemaStatements();
+	protected abstract Iterable<String> dropSchemaStatements();
 
 	@After
 	public void clean() {
-		// we need to remove the extra bean created even if there is a failure at startup
-		DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) this.applicationContext
-				.getAutowireCapableBeanFactory();
-		beanFactory.destroySingleton("tablePostfix");
-		// this is to reduce duplicated errors reported by surefire plugin
-		if (this.setupFailed) {
-			return;
+		try {
+			// this is to reduce duplicated errors reported by surefire plugin
+			if (this.setupFailed) {
+				return;
+			}
+			String instanceId = this.databaseId.getInstanceId().getInstance();
+			String database = this.databaseId.getDatabase();
+			if (hasDatabaseDefined(instanceId, database)) {
+				this.databaseAdminClient.updateDatabaseDdl(instanceId, database,
+						dropSchemaStatements(),
+						null).waitFor();
+				System.out.println("Integration database cleaned up!");
+			}
 		}
-		String instanceId = this.databaseId.getInstanceId().getInstance();
-		String database = this.databaseId.getDatabase();
-		if (hasDatabaseDefined(instanceId, database)) {
-			this.databaseAdminClient.updateDatabaseDdl(instanceId, database,
-					getDropSchemaStatements(),
-					null).waitFor();
-			System.out.println("Integration database cleaned up!");
+		finally {
+			// we need to remove the extra bean created even if there is a failure at startup
+			DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) this.applicationContext
+					.getAutowireCapableBeanFactory();
+			beanFactory.destroySingleton("tablePostfix");
 		}
 	}
 
@@ -130,5 +140,13 @@ public abstract class AbstractSpannerIntegrationTest {
 				.stream(this.databaseAdminClient.listDatabases(instanceId).getValues().spliterator(), false)
 				.map(d -> d.getId().getDatabase());
 		return databaseNames.anyMatch(database::equals);
+	}
+
+	protected <T> SpannerPersistentEntity createDummyEntity(Class<T> type) {
+		TypeInformation<T> typeInformation = mock(TypeInformation.class);
+		when(typeInformation.getType()).thenReturn(type);
+		SpannerPersistentEntity dummyTrade = new SpannerPersistentEntityImpl<>(typeInformation);
+		dummyTrade.setApplicationContext(this.applicationContext);
+		return dummyTrade;
 	}
 }

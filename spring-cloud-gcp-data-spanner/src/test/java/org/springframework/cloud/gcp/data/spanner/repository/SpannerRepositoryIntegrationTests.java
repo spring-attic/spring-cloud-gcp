@@ -87,15 +87,19 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		return trades;
 	}
 
-	protected List<String> getCreateSchemaStatements() {
+	@Override
+	protected List<String> createSchemaStatements() {
 		return Arrays.asList(
-				Trade.createDDL(this.tablePostfix));
+				Trade.createDDL(createDummyEntity(Trade.class)));
 	}
 
+
 	@Override
-	protected Iterable<String> getDropSchemaStatements() {
+	protected Iterable<String> dropSchemaStatements() {
 		return Arrays.asList(
-				Trade.dropDDL(this.tablePostfix));
+				Trade.dropDDL(createDummyEntity(Trade.class)));
 	}
+
+
 
 }

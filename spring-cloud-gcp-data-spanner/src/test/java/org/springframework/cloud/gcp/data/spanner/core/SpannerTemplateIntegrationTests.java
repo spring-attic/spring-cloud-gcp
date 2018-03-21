@@ -56,15 +56,15 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 		assertThat(this.spannerOperations.count(Trade.class), is(0L));
 	}
 
-	protected List<String> getCreateSchemaStatements() {
+	protected List<String> createSchemaStatements() {
 		return Arrays.asList(
-				Trade.createDDL(this.tablePostfix));
+				Trade.createDDL(createDummyEntity(Trade.class)));
 	}
 
 	@Override
-	protected Iterable<String> getDropSchemaStatements() {
+	protected Iterable<String> dropSchemaStatements() {
 		return Arrays.asList(
-				Trade.dropDDL(this.tablePostfix));
+				Trade.dropDDL(createDummyEntity(Trade.class)));
 	}
 
 }

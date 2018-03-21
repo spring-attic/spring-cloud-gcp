@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
 import org.springframework.data.annotation.Id;
 
@@ -140,8 +141,8 @@ public class Trade {
 		return t;
 	}
 
-	public static String createDDL(String postfix) {
-		String tableName = TablePostfixResolver.getTableName(Trade.class, postfix);
+	public static String createDDL(SpannerPersistentEntity persistentEntity) {
+		String tableName = persistentEntity.tableName();
 		return "CREATE TABLE " + tableName + "("
 				+ "\tid STRING(128) NOT NULL,\n"
 				+ "\taction STRING(15),\n"
@@ -152,8 +153,8 @@ public class Trade {
 				+ ") PRIMARY KEY (id)";
 	}
 
-	public static String dropDDL(String postfix) {
-		String tableName = TablePostfixResolver.getTableName(Trade.class, postfix);
+	public static String dropDDL(SpannerPersistentEntity persistentEntity) {
+		String tableName = persistentEntity.tableName();
 		return "DROP table " + tableName;
 	}
 }
