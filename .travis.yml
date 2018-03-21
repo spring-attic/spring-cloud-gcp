@@ -2,12 +2,16 @@ language: java
 jdk:
   - oraclejdk8
 env:
-  - GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/spring-cloud-gcp/travis/admin.json
+  - GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/travis/admin.json
 branches:
   only:
     - master
 script:
   - ./mvnw test -B -DforceIntegrationTests=true
+cache:
+  directories:
+    - $HOME/google-cloud-sdk
+    - $HOME/.m2
 install:
   - ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 before_script:
@@ -18,7 +22,8 @@ before_install:
   - openssl aes-256-cbc -K $encrypted_1ef8dfbdb114_key -iv $encrypted_1ef8dfbdb114_iv -in travis.tar.gz.enc -out travis.tar.gz -d
   - wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-189.0.0-linux-x86_64.tar.gz
   - tar -xvzf google-cloud-sdk-189.0.0-linux-x86_64.tar.gz
-  - export PATH=$PWD/google-cloud-sdk/bin:$PATH
+  - mv google-cloud-sdk $HOME/google-cloud-sdk
+  - export PATH=$HOME/google-cloud-sdk/bin:$PATH
   - gcloud components update --quiet
   - gcloud components install beta pubsub-emulator --quiet
   - tar -xzf travis.tar.gz
