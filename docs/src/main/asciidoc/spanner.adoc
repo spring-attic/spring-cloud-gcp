@@ -34,7 +34,7 @@ Spring Data Spanner allows you to define entity classes and corresponding reposi
 ----
 @SpannerTable(name = "students")
 public class SimpleStudent {
-	@Id
+	@SpannerPrimaryKeyColumn(keyOrder = 1)
 	String id;
 
 	@SpannerColumn(name = "first_name")
@@ -48,7 +48,8 @@ public class SimpleStudent {
 ----
 
 The `@SpannerTable` annotation provides the name of the Spanner table that stores instances of this class, one per row.
-The `@Id` annotation is required and identifies the property corresponding to the primary key column.
+The `@SpannerPrimaryKeyColumn` annotation is required and identifies the properties corresponding to the primary key columns in
+order starting with 1 and increasing consecutively.
 The `@SpannerColumn` annotation optionally provides a different column name than that of the property.
 The `@SpannerColumnInnerType` annotation is required for List properties due to Java's type erasure.
 

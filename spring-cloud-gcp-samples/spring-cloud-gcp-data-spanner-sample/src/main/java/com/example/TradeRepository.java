@@ -28,7 +28,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TradeRepository extends CrudRepository<Trade, String> {
 
-	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderByIdDesc(
+	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
 			String action, String symbol, String traderId);
 
 	List<Trade> findByAction(String action);
