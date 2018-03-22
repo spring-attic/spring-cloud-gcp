@@ -81,7 +81,7 @@ public class WebController {
 		allTrades.stream().forEach(
 				trade -> reply.append(this.spannerOperations.getId(trade) + "<br />"));
 
-		tradeRepository.deleteById(
+		this.tradeRepository.deleteById(
 				Key.newBuilder().append(stocks[0]).append(actions[0]).build());
 
 		return reply.toString();
