@@ -56,7 +56,7 @@ The `@SpannerColumnInnerType` annotation is required for List properties due to 
 [source,java]
 ----
 @Repository
-public interface StudentRepository extends PagingAndSortingRepository<SimpleStudent, String> {
+public interface StudentRepository extends PagingAndSortingRepository<SimpleStudent, Key> {
 
 	List<SimpleStudent> findTop3DistinctByIdAndNameOrAgeOrderByAgeDesc(
 			String id, String name, int age);

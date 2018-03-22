@@ -40,8 +40,8 @@ import org.junit.Test;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -379,10 +379,22 @@ public class SpannerTemplateTests {
 		assertEquals("c", ((TestEntity) page.getContent().get(2)).id);
 	}
 
+	@Test
+	public void getIdTest() {
+		TestEntity t = new TestEntity();
+		t.id = "aaa";
+		t.id2 = 3L;
+		assertEquals(Key.newBuilder().append(t.id).append(t.id2).build(),
+				this.spannerTemplate.getId(t));
+	}
+
 	@SpannerTable(name = "custom_test_table")
 	private static class TestEntity {
-		@Id
+		@SpannerPrimaryKeyColumn(keyOrder = 1)
 		String id;
+
+		@SpannerPrimaryKeyColumn(keyOrder = 2)
+		long id2;
 
 		@SpannerColumn(name = "custom_col")
 		String something;

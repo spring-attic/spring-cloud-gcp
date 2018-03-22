@@ -22,9 +22,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.cloud.ByteArray;
-import com.google.cloud.Date;
-import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Key.Builder;
 
@@ -126,7 +123,7 @@ public class SpannerPersistentEntityImpl<T>
 
 	@Override
 	public SpannerPersistentProperty getIdProperty() {
-		return new SpannerKeyProperty(this, getPrimaryKeyProperties());
+		return new SpannerCompositeKeyProperty(this, getPrimaryKeyProperties());
 	}
 
 	private SpannerPersistentProperty[] getPrimaryKeyProperties() {
@@ -172,44 +169,7 @@ public class SpannerPersistentEntityImpl<T>
 		PersistentPropertyAccessor accessor = getPropertyAccessor(entity);
 		Builder keyBuilder = Key.newBuilder();
 		for (SpannerPersistentProperty spannerPersistentProperty : getPrimaryKeyProperties()) {
-			if (spannerPersistentProperty.getType().equals(Boolean.class)) {
-				keyBuilder.append(
-						(Boolean) accessor.getProperty(spannerPersistentProperty));
-			}
-			else if (spannerPersistentProperty.getType().equals(Long.class)) {
-				keyBuilder.append((Long) accessor.getProperty(spannerPersistentProperty));
-			}
-			else if (spannerPersistentProperty.getType().equals(long.class)) {
-				keyBuilder.append((long) accessor.getProperty(spannerPersistentProperty));
-			}
-			else if (spannerPersistentProperty.getType().equals(double.class)) {
-				keyBuilder
-						.append((double) accessor.getProperty(spannerPersistentProperty));
-			}
-			else if (spannerPersistentProperty.getType().equals(Double.class)) {
-				keyBuilder
-						.append((Double) accessor.getProperty(spannerPersistentProperty));
-			}
-			else if (spannerPersistentProperty.getType().equals(String.class)) {
-				keyBuilder
-						.append((String) accessor.getProperty(spannerPersistentProperty));
-			}
-			else if (spannerPersistentProperty.getType().equals(ByteArray.class)) {
-				keyBuilder.append(
-						(ByteArray) accessor.getProperty(spannerPersistentProperty));
-			}
-			else if (spannerPersistentProperty.getType().equals(Timestamp.class)) {
-				keyBuilder.append(
-						(Timestamp) accessor.getProperty(spannerPersistentProperty));
-			}
-			else if (spannerPersistentProperty.getType().equals(Date.class)) {
-				keyBuilder.append((Date) accessor.getProperty(spannerPersistentProperty));
-			}
-			else {
-				throw new SpannerDataException(
-						"Could not create primary key using property of type "
-								+ spannerPersistentProperty.getType());
-			}
+			keyBuilder.appendObject(accessor.getProperty(spannerPersistentProperty));
 		}
 		return keyBuilder.build();
 	}

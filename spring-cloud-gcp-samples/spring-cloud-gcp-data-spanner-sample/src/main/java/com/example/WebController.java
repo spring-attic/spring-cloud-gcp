@@ -18,6 +18,8 @@ package com.example;
 
 import java.util.List;
 
+import com.google.cloud.spanner.Key;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
@@ -78,6 +80,9 @@ public class WebController {
 
 		allTrades.stream().forEach(
 				trade -> reply.append(this.spannerOperations.getId(trade) + "<br />"));
+
+		tradeRepository.deleteById(
+				Key.newBuilder().append(stocks[0]).append(actions[0]).build());
 
 		return reply.toString();
 	}
