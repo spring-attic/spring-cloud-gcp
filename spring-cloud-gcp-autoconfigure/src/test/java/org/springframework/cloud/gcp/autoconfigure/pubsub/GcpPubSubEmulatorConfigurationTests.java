@@ -26,9 +26,11 @@ import org.junit.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 
 /**
  * @author Andreas Berger
+ * @author João André Martins
  */
 public class GcpPubSubEmulatorConfigurationTests {
 
@@ -37,7 +39,8 @@ public class GcpPubSubEmulatorConfigurationTests {
 					"spring.cloud.gcp.projectId=test-project")
 			.withConfiguration(AutoConfigurations.of(GcpPubSubEmulatorConfiguration.class,
 					GcpContextAutoConfiguration.class,
-					GcpPubSubAutoConfiguration.class));
+					GcpPubSubAutoConfiguration.class))
+			.withUserConfiguration(NoCredentialsTestConfiguration.class);
 
 	@Test
 	public void testEmulatorConfig() {
@@ -52,4 +55,11 @@ public class GcpPubSubEmulatorConfigurationTests {
 		});
 	}
 
+	static class NoCredentialsTestConfiguration {
+
+		@Bean
+		public CredentialsProvider noCredentialsProvider() {
+			return new NoCredentialsProvider();
+		}
+	}
 }

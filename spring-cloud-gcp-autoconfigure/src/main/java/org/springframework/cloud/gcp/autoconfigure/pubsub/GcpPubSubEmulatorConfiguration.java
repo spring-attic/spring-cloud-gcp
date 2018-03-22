@@ -53,10 +53,4 @@ public class GcpPubSubEmulatorConfiguration {
 				.build();
 		return FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
 	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public CredentialsProvider credentialsProvider() {
-		return NoCredentialsProvider.create();
-	}
 }
