@@ -73,7 +73,9 @@ public abstract class AbstractSpannerIntegrationTest {
 	@Autowired
 	protected ApplicationContext applicationContext;
 
-	protected String tablePostfix;
+	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
+
+	protected String tableNameSuffix;
 
 	private boolean setupFailed;
 
@@ -89,10 +91,10 @@ public abstract class AbstractSpannerIntegrationTest {
 	}
 
 	protected void createDatabaseWithSchema() {
-		this.tablePostfix = String.valueOf(System.currentTimeMillis());
+		this.tableNameSuffix = String.valueOf(System.currentTimeMillis());
 		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) this.applicationContext)
 				.getBeanFactory();
-		beanFactory.registerSingleton("tablePostfix", this.tablePostfix);
+		beanFactory.registerSingleton("tableNameSuffix", this.tableNameSuffix);
 		String instanceId = this.databaseId.getInstanceId().getInstance();
 		String database = this.databaseId.getDatabase();
 
@@ -149,7 +151,7 @@ public abstract class AbstractSpannerIntegrationTest {
 			// we need to remove the extra bean created even if there is a failure at startup
 			DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) this.applicationContext
 					.getAutowireCapableBeanFactory();
-			beanFactory.destroySingleton("tablePostfix");
+			beanFactory.destroySingleton(TABLE_NAME_SUFFIX_BEAN_NAME);
 		}
 	}
 

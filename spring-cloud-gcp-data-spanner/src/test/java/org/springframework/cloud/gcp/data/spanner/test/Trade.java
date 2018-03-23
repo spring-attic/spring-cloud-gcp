@@ -28,7 +28,7 @@ import org.springframework.data.annotation.Id;
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-@SpannerTable(name = "#{'trades_'.concat(tablePostfix)}")
+@SpannerTable(name = "#{'trades_'.concat(tableNameSuffix)}")
 public class Trade {
 	@Id
 	private String id;
