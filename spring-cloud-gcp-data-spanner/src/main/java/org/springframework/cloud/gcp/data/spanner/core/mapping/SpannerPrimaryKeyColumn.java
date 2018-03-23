@@ -22,6 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
+
 /**
  * Annotation for a {@link SpannerPersistentEntity} that allows specifying the primary key
  * columns and their order.
@@ -37,5 +39,13 @@ public @interface SpannerPrimaryKeyColumn {
 	 * The order of columns that comprise the primary key. Starts at 1 is consecutive.
 	 * @return
 	 */
-	int keyOrder();
+	@AliasFor(attribute = "value")
+	int keyOrder() default 1;
+
+	/**
+	 * The order of columns that comprise the primary key. Starts at 1 is consecutive.
+	 * @return
+	 */
+	@AliasFor(attribute = "keyOrder")
+	int value() default 1;
 }
