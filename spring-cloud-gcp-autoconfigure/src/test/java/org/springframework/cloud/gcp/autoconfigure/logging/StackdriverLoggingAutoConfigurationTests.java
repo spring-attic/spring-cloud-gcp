@@ -21,12 +21,13 @@ import java.util.List;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.cloud.gcp.logging.CompositeTraceIdExtractor;
 import org.springframework.cloud.gcp.logging.TraceIdExtractor;
 import org.springframework.cloud.gcp.logging.TraceIdLoggingWebMvcInterceptor;
 import org.springframework.cloud.gcp.logging.XCloudTraceIdExtractor;
 import org.springframework.cloud.gcp.logging.ZipkinTraceIdExtractor;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,8 +37,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class StackdriverLoggingAutoConfigurationTests {
 
-	private ApplicationContextRunner contextRunner =
-			new ApplicationContextRunner()
+	private WebApplicationContextRunner contextRunner =
+			new WebApplicationContextRunner()
 					.withConfiguration(
 							AutoConfigurations.of(StackdriverLoggingAutoConfiguration.class));
 
@@ -55,6 +56,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 	public void testDisabledConfiguration() {
 		this.contextRunner.withPropertyValues("spring.cloud.gcp.logging.enabled=false")
 				.run(context -> {
+					MockMvcBuilders.webAppContextSetup(context).build();
 					Object[] interceptors = context.getBean(Object[].class);
 					assertThat(countTraceIdInterceptors(interceptors)).isEqualTo(0);
 				});
@@ -63,6 +65,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testRegularConfiguration() {
 		this.contextRunner.run(context -> {
+			MockMvcBuilders.webAppContextSetup(context).build();
 			Object[] interceptors = context.getBean(Object[].class);
 			assertThat(countTraceIdInterceptors(interceptors)).isEqualTo(1);
 		});
