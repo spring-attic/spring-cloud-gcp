@@ -16,6 +16,10 @@
 
 package org.springframework.cloud.gcp.autoconfigure.spanner;
 
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
 import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
@@ -23,16 +27,21 @@ import com.google.auth.Credentials;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.data.spanner.config.AbstractSpannerConfiguration;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -46,7 +55,7 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnClass({ SpannerMappingContext.class, SpannerOperations.class,
 		SpannerMutationFactory.class, SpannerConverter.class })
 @EnableConfigurationProperties(GcpSpannerProperties.class)
-public class GcpSpannerAutoConfiguration extends AbstractSpannerConfiguration {
+public class GcpSpannerAutoConfiguration {
 
 	private final String projectId;
 
@@ -69,25 +78,61 @@ public class GcpSpannerAutoConfiguration extends AbstractSpannerConfiguration {
 		this.databaseName = gcpSpannerProperties.getDatabase();
 	}
 
-
-	@Override
-	protected String getDatabaseName() {
-		return this.databaseName;
+	@Bean
+	@ConditionalOnMissingBean
+	public SpannerOptions spannerOptions() {
+		return SpannerOptions.newBuilder().setProjectId(this.projectId)
+				.setCredentials(this.credentials).build();
 	}
 
-	@Override
-	protected String getInstanceId() {
-		return this.instanceId;
+	@Bean
+	@ConditionalOnMissingBean
+	public DatabaseId databaseId() {
+		return DatabaseId.of(this.projectId, this.instanceId, this.databaseName);
 	}
 
-	@Override
-	protected String getProjectId() {
-		return this.projectId;
+	@Bean
+	@ConditionalOnMissingBean
+	public Spanner spanner(SpannerOptions spannerOptions) {
+		return spannerOptions.getService();
 	}
 
-	@Override
-	protected Credentials getCredentials() {
-		return this.credentials;
+	@Bean
+	@ConditionalOnMissingBean
+	public DatabaseClient spannerDatabaseClient(Spanner spanner, DatabaseId databaseId) {
+		return spanner.getDatabaseClient(databaseId);
 	}
 
+	@Bean
+	@ConditionalOnMissingBean
+	public SpannerMappingContext spannerMappingContext() {
+		return new SpannerMappingContext();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public SpannerOperations spannerOperations() {
+		SpannerMappingContext spannerMappingContext = spannerMappingContext();
+		SpannerConverter spannerConverter = spannerConverter(spannerMappingContext);
+		Spanner spanner = spanner(spannerOptions());
+		DatabaseClient databaseClient = spannerDatabaseClient(spanner, databaseId());
+		SpannerMutationFactory spannerMutationFactory = spannerMutationFactory(spannerConverter,
+				spannerMappingContext);
+		return new SpannerTemplate(databaseClient, spannerMappingContext, spannerConverter,
+				spannerMutationFactory);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public SpannerConverter spannerConverter(SpannerMappingContext mappingContext) {
+		return new MappingSpannerConverter(mappingContext);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public SpannerMutationFactory spannerMutationFactory(
+			SpannerConverter spannerConverter,
+			SpannerMappingContext spannerMappingContext) {
+		return new SpannerMutationFactoryImpl(spannerConverter, spannerMappingContext);
+	}
 }

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.test;
+package org.springframework.cloud.gcp.data.spanner.test.domain;
 
 import java.util.Objects;
 import java.util.UUID;

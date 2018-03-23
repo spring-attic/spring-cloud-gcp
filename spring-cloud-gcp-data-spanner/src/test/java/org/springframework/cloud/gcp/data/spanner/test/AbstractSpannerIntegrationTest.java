@@ -23,19 +23,29 @@ import java.util.stream.StreamSupport;
 
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Spanner;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerAutoConfiguration;
+import org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityImpl;
+import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
+import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest.TestConfiguration;
+import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.util.TypeInformation;
-import org.springframework.test.context.ContextConfiguration;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -57,12 +67,10 @@ import static org.mockito.Mockito.when;
  *
  * @author Balint Pato
  */
-@ContextConfiguration(classes = { IntegrationTestConfiguration.class })
+@SpringBootTest(classes = { TestConfiguration.class, GcpSpannerAutoConfiguration.class })
 public abstract class AbstractSpannerIntegrationTest {
 
-	@Autowired
-	@Rule
-	public SkipWhenNoSpanner skipWhenNoSpanner;
+	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
 
 	@Autowired
 	protected DatabaseAdminClient databaseAdminClient;
@@ -72,8 +80,6 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	@Autowired
 	protected ApplicationContext applicationContext;
-
-	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
 
 	protected String tableNameSuffix;
 
@@ -162,4 +168,36 @@ public abstract class AbstractSpannerIntegrationTest {
 		return databaseNames.anyMatch(database::equals);
 	}
 
+	@Configuration
+	@EnableAutoConfiguration
+	@PropertySource("classpath:application-test.properties")
+	@EnableSpannerRepositories
+	static class TestConfiguration {
+
+		@Value("${test.integration.spanner.db}")
+		private String databaseName;
+
+		@Value("${test.integration.spanner.instance}")
+		private String instanceId;
+
+		@Bean
+		public DatabaseAdminClient databaseAdminClient(Spanner spanner) {
+			return spanner.getDatabaseAdminClient();
+		}
+
+		@Bean
+		public GcpSpannerProperties gcpSpannerProperties() {
+			return new GcpSpannerProperties() {
+				@Override
+				public String getDatabase() {
+					return TestConfiguration.this.databaseName;
+				}
+
+				@Override
+				public String getInstanceId() {
+					return TestConfiguration.this.instanceId;
+				}
+			};
+		}
+	}
 }

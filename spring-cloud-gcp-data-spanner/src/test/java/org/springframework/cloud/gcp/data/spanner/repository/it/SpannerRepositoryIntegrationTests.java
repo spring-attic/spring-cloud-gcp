@@ -25,8 +25,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
-import org.springframework.cloud.gcp.data.spanner.test.Trade;
-import org.springframework.cloud.gcp.data.spanner.test.TradeRepository;
+import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
+import org.springframework.cloud.gcp.data.spanner.test.domain.TradeRepository;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -36,7 +36,6 @@ import static org.junit.Assert.assertThat;
 /**
  * @author Balint Pato
  */
-
 @RunWith(SpringRunner.class)
 public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegrationTest {
 
@@ -83,6 +82,4 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		}
 		return trades;
 	}
-
-
 }
