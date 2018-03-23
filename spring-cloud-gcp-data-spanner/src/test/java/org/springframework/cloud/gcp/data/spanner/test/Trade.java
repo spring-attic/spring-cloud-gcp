@@ -20,7 +20,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
 import org.springframework.data.annotation.Id;
 
@@ -141,8 +140,7 @@ public class Trade {
 		return t;
 	}
 
-	public static String createDDL(SpannerPersistentEntity persistentEntity) {
-		String tableName = persistentEntity.tableName();
+	public static String createDDL(String tableName) {
 		return "CREATE TABLE " + tableName + "("
 				+ "\tid STRING(128) NOT NULL,\n"
 				+ "\taction STRING(15),\n"
@@ -153,8 +151,7 @@ public class Trade {
 				+ ") PRIMARY KEY (id)";
 	}
 
-	public static String dropDDL(SpannerPersistentEntity persistentEntity) {
-		String tableName = persistentEntity.tableName();
+	public static String dropDDL(String tableName) {
 		return "DROP table " + tableName;
 	}
 }

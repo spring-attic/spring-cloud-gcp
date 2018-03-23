@@ -14,10 +14,9 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.repository;
+package org.springframework.cloud.gcp.data.spanner.repository.it;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -49,8 +48,6 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 	@Test
 	public void declarativeQueryMethodTest() {
-		this.tradeRepository.deleteAll();
-
 		List<Trade> trader1BuyTrades = insertTrades("trader1", "BUY", 3);
 		List<Trade> trader1SellTrades = insertTrades("trader1", "SELL", 2);
 		List<Trade> trader2Trades = insertTrades("trader2", "SELL", 3);
@@ -86,20 +83,6 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		}
 		return trades;
 	}
-
-	@Override
-	protected List<String> createSchemaStatements() {
-		return Arrays.asList(
-				Trade.createDDL(createDummyEntity(Trade.class)));
-	}
-
-
-	@Override
-	protected Iterable<String> dropSchemaStatements() {
-		return Arrays.asList(
-				Trade.dropDDL(createDummyEntity(Trade.class)));
-	}
-
 
 
 }

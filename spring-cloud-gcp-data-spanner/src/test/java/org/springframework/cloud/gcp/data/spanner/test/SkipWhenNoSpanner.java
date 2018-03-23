@@ -38,15 +38,15 @@ public class SkipWhenNoSpanner implements TestRule {
 
 	@Override
 	public Statement apply(Statement base, Description description) {
-		DatabaseAdminClient databaseAdminClient = this.databaseAdminClient; // for checkstyle...
-		String instanceId = this.instanceId; // for checkstyle...
 		return new Statement() {
 			@Override
 			public void evaluate() throws Throwable {
 				// tests are going to fail if -DforceIntegrationTests=true and no correct Spanner
 				// setup exists, this is good for CI environments
 				if (!"true".equals(System.getenv("forceIntegrationTests"))) {
-					testSpannerConnection(databaseAdminClient, instanceId);
+					testSpannerConnection(
+							SkipWhenNoSpanner.this.databaseAdminClient,
+							SkipWhenNoSpanner.this.instanceId);
 				}
 				base.evaluate();
 			}

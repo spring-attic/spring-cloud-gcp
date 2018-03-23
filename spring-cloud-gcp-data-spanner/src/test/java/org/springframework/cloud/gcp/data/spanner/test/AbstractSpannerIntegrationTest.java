@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.test;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -107,9 +109,25 @@ public abstract class AbstractSpannerIntegrationTest {
 		}
 	}
 
-	protected abstract Iterable<String> createSchemaStatements();
+	protected List<String> createSchemaStatements() {
+		return Arrays.asList(Trade.createDDL(tableNameFor(Trade.class)));
+	}
 
-	protected abstract Iterable<String> dropSchemaStatements();
+	protected Iterable<String> dropSchemaStatements() {
+		return Arrays.asList(Trade.dropDDL(tableNameFor(Trade.class)));
+	}
+
+	protected String tableNameFor(Class<Trade> type) {
+		return createDummyEntity(type).tableName();
+	}
+
+	protected <T> SpannerPersistentEntity createDummyEntity(Class<T> type) {
+		TypeInformation<T> typeInformation = mock(TypeInformation.class);
+		when(typeInformation.getType()).thenReturn(type);
+		SpannerPersistentEntity dummyTrade = new SpannerPersistentEntityImpl<>(typeInformation);
+		dummyTrade.setApplicationContext(this.applicationContext);
+		return dummyTrade;
+	}
 
 	@After
 	public void clean() {
@@ -142,11 +160,4 @@ public abstract class AbstractSpannerIntegrationTest {
 		return databaseNames.anyMatch(database::equals);
 	}
 
-	protected <T> SpannerPersistentEntity createDummyEntity(Class<T> type) {
-		TypeInformation<T> typeInformation = mock(TypeInformation.class);
-		when(typeInformation.getType()).thenReturn(type);
-		SpannerPersistentEntity dummyTrade = new SpannerPersistentEntityImpl<>(typeInformation);
-		dummyTrade.setApplicationContext(this.applicationContext);
-		return dummyTrade;
-	}
 }

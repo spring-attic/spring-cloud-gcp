@@ -14,16 +14,14 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.core;
-
-import java.util.Arrays;
-import java.util.List;
+package org.springframework.cloud.gcp.data.spanner.core.it;
 
 import com.google.cloud.spanner.Key;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
 import org.springframework.cloud.gcp.data.spanner.test.Trade;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -54,17 +52,6 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 
 		this.spannerOperations.delete(trade);
 		assertThat(this.spannerOperations.count(Trade.class), is(0L));
-	}
-
-	protected List<String> createSchemaStatements() {
-		return Arrays.asList(
-				Trade.createDDL(createDummyEntity(Trade.class)));
-	}
-
-	@Override
-	protected Iterable<String> dropSchemaStatements() {
-		return Arrays.asList(
-				Trade.dropDDL(createDummyEntity(Trade.class)));
 	}
 
 }
