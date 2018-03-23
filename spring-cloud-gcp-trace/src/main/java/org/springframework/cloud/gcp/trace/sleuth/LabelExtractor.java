@@ -20,27 +20,23 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.google.devtools.cloudtrace.v1.TraceSpan;
+import zipkin2.Annotation;
+import zipkin2.Span;
 
-import org.springframework.cloud.sleuth.Log;
-import org.springframework.cloud.sleuth.Span;
 import org.springframework.cloud.sleuth.TraceKeys;
-import org.springframework.util.StringUtils;
 
 /**
  * Translated from Adrian Cole's
  * <a href= "https://github.com/GoogleCloudPlatform/stackdriver-zipkin/">Stackdriver
  * Zipkin Proxy</a>.
  *
- * <p>This extracts Stackdriver Span labels equivalent from Sleuth Span.
+ * <p>This extracts Stackdriver Span labels equivalent from Zipkin Span.
  *
- * <p>Sleuth Span Logs are converted to Stackdriver Span labels by using
- * {@link Log#getEvent()} as the key and {@link Log#getTimestamp()} as the value.
- *
- * <p>Sleuth Span tags with equivalent Stackdriver labels will be renamed to the Stackdriver
- * name. Any Sleuth Span without a Stackdriver label equivalent are renamed to
+ * <p>Zipkin Span annotations with equivalent Stackdriver labels will be renamed to the
+ * Stackdriver name. Any Sleuth Span without a Stackdriver label equivalent are renamed to
  * spring.sleuth/[key_name]
  *
  * @author Ray Tsang
@@ -61,8 +57,12 @@ public class LabelExtractor {
 
 	private final DateFormat timestampFormat;
 
+	public LabelExtractor() {
+		this(newDefaultLabelRenameMap());
+	}
+
 	public LabelExtractor(TraceKeys traceKeys) {
-		this(buildLabelRenameMapFromTraceKeys(traceKeys));
+		this(newDefaultLabelRenameMap(traceKeys));
 	}
 
 	public LabelExtractor(Map<String, String> labelRenameMap) {
@@ -78,11 +78,32 @@ public class LabelExtractor {
 	}
 
 	/**
-	 * Builds a
-	 * @param traceKeys Sleuth's {@link TraceKeys}
-	 * @return A mapping of Sleuth's HTTP trace keys to Stackdriver label keys
+	 * Default Zipkin to Stackdriver tag/label mapping if not using legacy mode.
+	 *
+	 * @return new instance of a Map with the label mapping
 	 */
-	public static Map<String, String> buildLabelRenameMapFromTraceKeys(TraceKeys traceKeys) {
+	public static Map<String, String> newDefaultLabelRenameMap() {
+		Map<String, String> labelRenameMap = new HashMap<>();
+		labelRenameMap = new HashMap<>();
+
+		labelRenameMap.put("http.host", "/http/host");
+		labelRenameMap.put("http.method", "/http/method");
+		labelRenameMap.put("http.status_code", "/http/status_code");
+		labelRenameMap.put("http.request.size", "/http/request/size");
+		labelRenameMap.put("http.response.size", "/http/response/size");
+		labelRenameMap.put("http.url", "/http/url");
+		labelRenameMap.put("http.path", "/http/path");
+		labelRenameMap.put("http.route", "/http/route");
+
+		return labelRenameMap;
+	}
+
+	/**
+	 * Default Sleuth to Stackdriver tag/label mapping if using legacy mode.
+	 * @param traceKeys
+	 * @return new instance of a Map with the label mapping
+	 */
+	public static Map<String, String> newDefaultLabelRenameMap(TraceKeys traceKeys) {
 		Map<String, String> labelRenameMap = new HashMap<>();
 		TraceKeys.Http httpKeys = traceKeys.getHttp();
 		labelRenameMap = new HashMap<>();
@@ -92,36 +113,49 @@ public class LabelExtractor {
 		labelRenameMap.put(httpKeys.getRequestSize(), "/http/request/size");
 		labelRenameMap.put(httpKeys.getResponseSize(), "/http/response/size");
 		labelRenameMap.put(httpKeys.getUrl(), "/http/url");
+		labelRenameMap.put(httpKeys.getPath(), "/http/path");
 		return labelRenameMap;
 	}
 
-	public Map<String, String> extract(Span span, TraceSpan.SpanKind kind, String instanceId) {
-		Map<String, String> labels = new HashMap<>();
-
-		for (Map.Entry<String, String> tag : span.tags().entrySet()) {
-			labels.put(label(tag.getKey()), tag.getValue());
+	/**
+	 * Extracts the Stackdriver span labels that are equivalent to the Zipkin Span
+	 * annotations.
+	 *
+	 * @param zipkinSpan The Zipkin Span
+	 * @return A map of the Stackdriver span labels equivalent to the Zipkin annotations.
+	 */
+	public Map<String, String> extract(Span zipkinSpan) {
+		Map<String, String> result = new LinkedHashMap<>();
+		for (Map.Entry<String, String> tag : zipkinSpan.tags().entrySet()) {
+			result.put(label(tag.getKey()), tag.getValue());
 		}
 
-		for (Log log : span.logs()) {
-			labels.put(label(log.getEvent()), formatTimestamp(log.getTimestamp()));
-		}
-
-		if (span.tags().containsKey(Span.SPAN_PEER_SERVICE_TAG_NAME)) {
-			labels.put("/component", span.tags().get(Span.SPAN_PEER_SERVICE_TAG_NAME));
-		}
-
-		if (span.getParents() == null || span.getParents().isEmpty()) {
-			labels.put("/agent", this.agentName);
-		}
-
-		if ((kind == TraceSpan.SpanKind.RPC_CLIENT || kind == TraceSpan.SpanKind.RPC_SERVER)
-				&& StringUtils.hasText(instanceId)) {
-			if (StringUtils.hasText(instanceId)) {
-				labels.put(label(Span.INSTANCEID), instanceId);
+		// Only use server receive spans to extract endpoint data as spans
+		// will be rewritten into multiple single-host Stackdriver spans. A client send
+		// trace might not show the final destination.
+		if (zipkinSpan.localEndpoint() != null && zipkinSpan.kind() == Span.Kind.SERVER) {
+			if (zipkinSpan.localEndpoint().ipv4() != null) {
+				result.put(label("endpoint.ipv4"), zipkinSpan.localEndpoint().ipv4());
+			}
+			if (zipkinSpan.localEndpoint().ipv6() != null) {
+				result.put(label("endpoint.ipv6"), zipkinSpan.localEndpoint().ipv6());
 			}
 		}
 
-		return labels;
+		for (Annotation annotation : zipkinSpan.annotations()) {
+			result.put(label(annotation.value()), formatTimestamp(annotation.timestamp()));
+		}
+
+		if (zipkinSpan.localEndpoint() != null && !zipkinSpan.localEndpoint().serviceName().isEmpty()) {
+			result.put("/component", zipkinSpan.localEndpoint().serviceName());
+		}
+
+		if (zipkinSpan.parentId() == null) {
+			String agentName = System.getProperty("stackdriver.trace.zipkin.agent", "spring-cloud-gcp-trace");
+			result.put("/agent", agentName);
+		}
+
+		return result;
 	}
 
 	protected String label(String key) {

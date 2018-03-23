@@ -17,15 +17,13 @@
 package org.springframework.cloud.gcp.trace.sleuth;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Map;
 
-import com.google.devtools.cloudtrace.v1.TraceSpan;
 import org.junit.Assert;
 import org.junit.Test;
+import zipkin2.Endpoint;
+import zipkin2.Span;
 
-import org.springframework.cloud.sleuth.Log;
-import org.springframework.cloud.sleuth.Span;
 import org.springframework.cloud.sleuth.TraceKeys;
 
 /**
@@ -35,43 +33,52 @@ public class LabelExtractorTests {
 	SimpleDateFormat dateFormatter = new SimpleDateFormat(LabelExtractor.DEFAULT_TIMESTAMP_FORMAT);
 
 	@Test
-	public void testLabelReplacement() {
-		LabelExtractor extractor = new LabelExtractor(new TraceKeys());
-		Span span = Span.builder()
-				.tag("http.host", "localhost")
+	public void testRpcClientBasics() {
+		LabelExtractor extractor = new LabelExtractor();
+		String instanceId = "localhost";
+		long begin = 1238912378081L;
+		long end = 1238912378123L;
+		Span span = Span.newBuilder()
+				.traceId("123")
+				.id("9999")
+				.timestamp(begin)
+				.duration(end - begin)
+				.putTag("http.host", "localhost")
+				.putTag("custom-tag", "hello")
+				.localEndpoint(Endpoint.newBuilder().serviceName("hello-service").build())
 				.build();
-		Map<String, String> labels = extractor.extract(span, TraceSpan.SpanKind.RPC_CLIENT, null);
 
-		Assert.assertNotNull("labels shouldn't be null", labels);
+		Map<String, String> labels = extractor.extract(span);
+
+		Assert.assertNotNull("span shouldn't be null", span);
 		Assert.assertEquals("localhost", labels.get("/http/host"));
-		Assert.assertFalse(labels.containsKey("http.host"));
+		Assert.assertEquals("spring-cloud-gcp-trace", labels.get("/agent"));
+		Assert.assertEquals("hello-service", labels.get("/component"));
+		Assert.assertEquals("hello", labels.get("cloud.spring.io/custom-tag"));
 	}
 
 	@Test
-	public void testRpcClientBasics() {
+	public void testRpcClientBasicsTraceKeys() {
 		LabelExtractor extractor = new LabelExtractor(new TraceKeys());
 		String instanceId = "localhost";
 		long begin = 1238912378081L;
 		long end = 1238912378123L;
-		Span span = Span.builder()
-				.begin(begin)
-				.end(end)
-				.log(new Log(begin, Span.CLIENT_SEND))
-				.log(new Log(end, Span.CLIENT_RECV))
-				.tag("http.host", "localhost")
-				.tag("custom-tag", "hello")
-				.tag(Span.SPAN_PEER_SERVICE_TAG_NAME, "hello-service")
+		Span span = Span.newBuilder()
+				.traceId("123")
+				.id("9999")
+				.timestamp(begin)
+				.duration(end - begin)
+				.putTag("http.host", "localhost")
+				.putTag("custom-tag", "hello")
+				.localEndpoint(Endpoint.newBuilder().serviceName("hello-service").build())
 				.build();
 
-		Map<String, String> labels = extractor.extract(span, TraceSpan.SpanKind.RPC_CLIENT, "hostname");
+		Map<String, String> labels = extractor.extract(span);
 
 		Assert.assertNotNull("span shouldn't be null", span);
-		Assert.assertEquals(this.dateFormatter.format(new Date(begin)), labels.get("cloud.spring.io/cs"));
-		Assert.assertEquals(this.dateFormatter.format(new Date(end)), labels.get("cloud.spring.io/cr"));
 		Assert.assertEquals("localhost", labels.get("/http/host"));
 		Assert.assertEquals("spring-cloud-gcp-trace", labels.get("/agent"));
 		Assert.assertEquals("hello-service", labels.get("/component"));
-		Assert.assertEquals("hostname", labels.get("cloud.spring.io/spring.instance_id"));
 		Assert.assertEquals("hello", labels.get("cloud.spring.io/custom-tag"));
 	}
 }

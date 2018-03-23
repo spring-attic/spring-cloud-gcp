@@ -21,22 +21,33 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import com.google.cloud.trace.v1.consumer.TraceConsumer;
+import brave.Span;
+import brave.Tracer;
+import brave.Tracing;
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.auth.Credentials;
+import com.google.cloud.trace.v1.consumer.FlushableTraceConsumer;
+import com.google.devtools.cloudtrace.v1.Trace;
+import com.google.devtools.cloudtrace.v1.TraceSpan;
 import com.google.devtools.cloudtrace.v1.Traces;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import zipkin2.reporter.Reporter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.cloud.sleuth.Span;
+import org.springframework.cloud.gcp.trace.sleuth.StackdriverTraceReporter;
+import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
-import org.springframework.cloud.sleuth.trace.DefaultTracer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Ray Tsang
@@ -48,10 +59,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 		StackdriverTraceAutoConfiguration.class,
 		GcpContextAutoConfiguration.class,
 		TraceAutoConfiguration.class,
-		SleuthLogAutoConfiguration.class },
-		properties = {
+		SleuthLogAutoConfiguration.class,
+		RefreshAutoConfiguration.class
+}, properties = {
 		"spring.cloud.gcp.project-id=proj",
-		"spring.sleuth.sampler.percentage=1.0",
+		"spring.sleuth.sampler.probability=1.0",
 		"spring.cloud.gcp.config.enabled=false"
 })
 public abstract class StackdriverTraceAutoConfigurationTests {
@@ -61,8 +73,22 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 		private List<Traces> tracesList = new ArrayList<>();
 
 		@Bean
-		public TraceConsumer traceConsumer() {
-			return MockConfiguration.this.tracesList::add;
+		public static CredentialsProvider googleCredentials() {
+			return () -> mock(Credentials.class);
+		}
+
+		@Bean
+		public FlushableTraceConsumer traceConsumer() {
+			return new FlushableTraceConsumer() {
+				@Override
+				public void flush() {
+				}
+
+				@Override
+				public void receive(Traces traces) {
+					MockConfiguration.this.tracesList.add(traces);
+				}
+			};
 		}
 	}
 
@@ -71,7 +97,16 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 		MockConfiguration configuration;
 
 		@Autowired
-		DefaultTracer tracer;
+		Tracer tracer;
+
+		@Autowired
+		Tracing tracing;
+
+		@Autowired
+		Reporter<zipkin2.Span> reporter;
+
+		@Autowired
+		SleuthProperties sleuthProperties;
 
 		@PostConstruct
 		public void init() {
@@ -80,14 +115,25 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 
 		@Test
 		public void test() {
-			Span span = this.tracer.createSpan("Test Span");
-			this.tracer.close(span);
+			Assert.assertTrue(this.sleuthProperties.isTraceId128());
+			Assert.assertFalse(this.sleuthProperties.isSupportsJoin());
 
-			// Test that we are using 128bit Trace ID
-			Assert.assertNotEquals(0, span.getTraceIdHigh());
+			Assert.assertTrue(this.reporter instanceof StackdriverTraceReporter);
+
+			Span span = this.tracer.newTrace()
+					.start()
+					.kind(Span.Kind.CLIENT)
+					.name("test")
+					.start();
+			span.finish();
 
 			// There should be one trace received
 			Assert.assertEquals(1, this.configuration.tracesList.size());
+			Traces traces = this.configuration.tracesList.get(0);
+			Assert.assertEquals(1, traces.getTracesCount());
+			Trace trace = traces.getTraces(0);
+			Assert.assertEquals(1, trace.getSpansCount());
+			TraceSpan traceSpan = trace.getSpans(0);
 		}
 
 	}
