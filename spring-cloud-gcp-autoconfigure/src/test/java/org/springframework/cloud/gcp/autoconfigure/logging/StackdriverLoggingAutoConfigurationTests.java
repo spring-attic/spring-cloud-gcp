@@ -27,7 +27,6 @@ import org.springframework.cloud.gcp.logging.TraceIdExtractor;
 import org.springframework.cloud.gcp.logging.TraceIdLoggingWebMvcInterceptor;
 import org.springframework.cloud.gcp.logging.XCloudTraceIdExtractor;
 import org.springframework.cloud.gcp.logging.ZipkinTraceIdExtractor;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,32 +41,20 @@ public class StackdriverLoggingAutoConfigurationTests {
 					.withConfiguration(
 							AutoConfigurations.of(StackdriverLoggingAutoConfiguration.class));
 
-	private int countTraceIdInterceptors(Object[] interceptors) {
-		int count = 0;
-		for (int i = 0; i < interceptors.length; i++) {
-			if (interceptors[i] instanceof TraceIdLoggingWebMvcInterceptor) {
-				count++;
-			}
-		}
-		return count;
-	}
-
 	@Test
 	public void testDisabledConfiguration() {
 		this.contextRunner.withPropertyValues("spring.cloud.gcp.logging.enabled=false")
 				.run(context -> {
-					MockMvcBuilders.webAppContextSetup(context).build();
-					Object[] interceptors = context.getBean(Object[].class);
-					assertThat(countTraceIdInterceptors(interceptors)).isEqualTo(0);
+					assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
+							.isEqualTo(0);
 				});
 	}
 
 	@Test
 	public void testRegularConfiguration() {
 		this.contextRunner.run(context -> {
-			MockMvcBuilders.webAppContextSetup(context).build();
-			Object[] interceptors = context.getBean(Object[].class);
-			assertThat(countTraceIdInterceptors(interceptors)).isEqualTo(1);
+			assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
+					.isEqualTo(1);
 		});
 	}
 
