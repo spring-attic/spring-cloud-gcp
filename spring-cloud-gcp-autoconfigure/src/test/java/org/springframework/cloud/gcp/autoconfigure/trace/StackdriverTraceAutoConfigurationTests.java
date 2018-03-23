@@ -23,6 +23,7 @@ import javax.annotation.PostConstruct;
 
 import brave.Span;
 import brave.Tracer;
+import brave.Tracing;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.cloud.trace.v1.consumer.FlushableTraceConsumer;
@@ -32,11 +33,14 @@ import com.google.devtools.cloudtrace.v1.Traces;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import zipkin2.reporter.Reporter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.trace.sleuth.StackdriverTraceReporter;
+import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -56,11 +60,12 @@ import static org.mockito.Mockito.mock;
 		GcpContextAutoConfiguration.class,
 		TraceAutoConfiguration.class,
 		SleuthLogAutoConfiguration.class,
-		RefreshAutoConfiguration.class }, properties = {
-				"spring.cloud.gcp.project-id=proj",
-				"spring.sleuth.sampler.probability=1.0",
-				"spring.cloud.gcp.config.enabled=false"
-		})
+		RefreshAutoConfiguration.class
+}, properties = {
+		"spring.cloud.gcp.project-id=proj",
+		"spring.sleuth.sampler.probability=1.0",
+		"spring.cloud.gcp.config.enabled=false"
+})
 public abstract class StackdriverTraceAutoConfigurationTests {
 
 	@Configuration
@@ -68,11 +73,15 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 		private List<Traces> tracesList = new ArrayList<>();
 
 		@Bean
+		public static CredentialsProvider googleCredentials() {
+			return () -> mock(Credentials.class);
+		}
+
+		@Bean
 		public FlushableTraceConsumer traceConsumer() {
 			return new FlushableTraceConsumer() {
 				@Override
 				public void flush() {
-					// do nothing
 				}
 
 				@Override
@@ -80,11 +89,6 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 					MockConfiguration.this.tracesList.add(traces);
 				}
 			};
-		}
-
-		@Bean
-		public static CredentialsProvider googleCredentials() {
-			return () -> mock(Credentials.class);
 		}
 	}
 
@@ -95,6 +99,15 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 		@Autowired
 		Tracer tracer;
 
+		@Autowired
+		Tracing tracing;
+
+		@Autowired
+		Reporter<zipkin2.Span> reporter;
+
+		@Autowired
+		SleuthProperties sleuthProperties;
+
 		@PostConstruct
 		public void init() {
 			this.configuration.tracesList.clear();
@@ -102,7 +115,13 @@ public abstract class StackdriverTraceAutoConfigurationTests {
 
 		@Test
 		public void test() {
+			Assert.assertTrue(this.sleuthProperties.isTraceId128());
+			Assert.assertFalse(this.sleuthProperties.isSupportsJoin());
+
+			Assert.assertTrue(this.reporter instanceof StackdriverTraceReporter);
+
 			Span span = this.tracer.newTrace()
+					.start()
 					.kind(Span.Kind.CLIENT)
 					.name("test")
 					.start();

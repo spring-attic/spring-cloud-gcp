@@ -22,11 +22,8 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import brave.Tracing;
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
-import brave.propagation.CurrentTraceContext;
-import brave.propagation.Propagation;
 import brave.sampler.Sampler;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
@@ -40,12 +37,10 @@ import com.google.cloud.trace.v1.consumer.TraceConsumer;
 import com.google.cloud.trace.v1.util.RoughTraceSizer;
 import com.google.cloud.trace.v1.util.Sizer;
 import com.google.devtools.cloudtrace.v1.Trace;
-import zipkin2.Span;
 import zipkin2.reporter.Reporter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -64,6 +59,7 @@ import org.springframework.cloud.gcp.trace.sleuth.StackdriverHttpServerParser;
 import org.springframework.cloud.gcp.trace.sleuth.StackdriverTraceReporter;
 import org.springframework.cloud.sleuth.SpanAdjuster;
 import org.springframework.cloud.sleuth.TraceKeys;
+import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
 import org.springframework.cloud.sleuth.sampler.ProbabilityBasedSampler;
@@ -79,7 +75,7 @@ import org.springframework.context.annotation.Primary;
  * @author Mike Eltsufin
  */
 @Configuration
-@EnableConfigurationProperties({ SamplerProperties.class, GcpTraceProperties.class })
+@EnableConfigurationProperties({ SamplerProperties.class, GcpTraceProperties.class, SleuthProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.trace.enabled", matchIfMissing = true)
 @ConditionalOnClass(TraceConsumer.class)
 @Import({ StackdriverTraceAutoConfiguration.TraceConsumerConfiguration.class,
@@ -108,35 +104,16 @@ public class StackdriverTraceAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
-	Tracing tracing(@Value("${spring.zipkin.service.name:${spring.application.name:default}}") String serviceName,
-			Propagation.Factory factory,
-			CurrentTraceContext currentTraceContext,
-			Reporter<zipkin2.Span> reporter,
-			Sampler sampler) {
-		return Tracing.newBuilder()
-				.sampler(sampler)
-				.traceId128Bit(true)
-				.supportsJoin(false)
-				.localServiceName(serviceName)
-				.propagationFactory(factory)
-				.currentTraceContext(currentTraceContext)
-				.spanReporter(adjustedReporter(reporter)).build();
-	}
-
-	private Reporter<zipkin2.Span> adjustedReporter(Reporter<zipkin2.Span> delegate) {
-		return span -> {
-			Span spanToAdjust = span;
-			for (SpanAdjuster spanAdjuster : this.spanAdjusters) {
-				spanToAdjust = spanAdjuster.adjust(spanToAdjust);
-			}
-			delegate.report(spanToAdjust);
-		};
+	@Primary
+	public SleuthProperties stackdriverSleuthProperties(SleuthProperties sleuthProperties) {
+		sleuthProperties.setSupportsJoin(false);
+		sleuthProperties.setTraceId128(true);
+		return sleuthProperties;
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Reporter<Span> reporter(
+	public Reporter<zipkin2.Span> reporter(
 			GcpProjectIdProvider projectIdProvider,
 			FlushableTraceConsumer traceConsumer,
 			SpanTranslator spanTranslator) {
