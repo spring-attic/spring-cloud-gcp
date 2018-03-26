@@ -91,7 +91,6 @@
                              org.hamcrest.CoreMatchers.*,
                              org.hamcrest.Matchers.*,
                              org.hamcrest.MatcherAssert.*,
-                             org.hamcrest.core.Is.*,
                              org.mockito.hamcrest.MockitoHamcrest.*,
                              org.hamcrest.collection.IsCollectionWithSize.*,
                              org.assertj.core.api.Assertions.*,

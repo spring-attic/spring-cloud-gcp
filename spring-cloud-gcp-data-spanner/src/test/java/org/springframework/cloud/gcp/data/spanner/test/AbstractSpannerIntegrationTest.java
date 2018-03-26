@@ -23,42 +23,41 @@ import java.util.stream.StreamSupport;
 
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
-import com.google.cloud.spanner.Spanner;
 import org.junit.After;
 import org.junit.Before;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityImpl;
-import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
-import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest.TestConfiguration;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.util.TypeInformation;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
+ * This class provides the foundation for the integration test framework for Spanner.
+ * Its responsibilities:
+ * <ul>
+ *   <li>initializes the Spring application context</li>
+ *   <li>sets up the database schema</li>
+ *   <li>manages table suffix generation so that parallel test cases don't collide</li>
+ * </ul>
  * <p>
+ * Prerequisites for running integration tests:
+ *
  * For Spanner integration tests, you will need to have an instance predefined, everything
  * else is generated. The instance by default is "integration-instance", which can be
  * overriden in <code>src/test/resources/application-test.properties</code>, the property:
  * <code>test.integration.spanner.instance</code>
  * </p>
  * <p>
- * Within the <code>integration-instance</code> instance, there is a single database for
+ * Within the <code>integration-instance</code> instance, the tests rely on a single database for
  * tests, <code>integration-db</code>. This is automatically created, if doesn't exist.
  * The tables are generated to have a unique postfix, which is updated on the entity
  * annotations as well dynamically to avoid collisions of multiple parallel tests running
@@ -67,7 +66,7 @@ import static org.mockito.Mockito.when;
  *
  * @author Balint Pato
  */
-@SpringBootTest(classes = { TestConfiguration.class, GcpSpannerAutoConfiguration.class })
+@SpringBootTest(classes = { IntegrationTestConfiguration.class })
 public abstract class AbstractSpannerIntegrationTest {
 
 	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
@@ -166,38 +165,5 @@ public abstract class AbstractSpannerIntegrationTest {
 				.stream(this.databaseAdminClient.listDatabases(instanceId).getValues().spliterator(), false)
 				.map(d -> d.getId().getDatabase());
 		return databaseNames.anyMatch(database::equals);
-	}
-
-	@Configuration
-	@EnableAutoConfiguration
-	@PropertySource("classpath:application-test.properties")
-	@EnableSpannerRepositories
-	static class TestConfiguration {
-
-		@Value("${test.integration.spanner.db}")
-		private String databaseName;
-
-		@Value("${test.integration.spanner.instance}")
-		private String instanceId;
-
-		@Bean
-		public DatabaseAdminClient databaseAdminClient(Spanner spanner) {
-			return spanner.getDatabaseAdminClient();
-		}
-
-		@Bean
-		public GcpSpannerProperties gcpSpannerProperties() {
-			return new GcpSpannerProperties() {
-				@Override
-				public String getDatabase() {
-					return TestConfiguration.this.databaseName;
-				}
-
-				@Override
-				public String getInstanceId() {
-					return TestConfiguration.this.instanceId;
-				}
-			};
-		}
 	}
 }
