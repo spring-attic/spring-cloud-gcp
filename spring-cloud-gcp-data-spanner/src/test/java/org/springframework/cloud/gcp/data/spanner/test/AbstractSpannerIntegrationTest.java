@@ -25,6 +25,7 @@ import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -37,6 +38,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.util.TypeInformation;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -83,6 +86,14 @@ public abstract class AbstractSpannerIntegrationTest {
 	protected String tableNameSuffix;
 
 	private boolean setupFailed;
+
+	@BeforeClass
+	public static void checkToRun() {
+		assumeThat("Spanner integration tests are disabled. Please use '-Dit.spanner=true' "
+				+ "to enable them. ",
+				System.getProperty("it.spanner"),
+				is("true"));
+	}
 
 	@Before
 	public void setup() {

@@ -15,7 +15,7 @@
 	<description>Spring Cloud GCP Spanner Module</description>
 	<properties>
 		<main.basedir>${basedir}/../..</main.basedir>
-		<forceIntegrationTests>false</forceIntegrationTests>
+		<it.spanner>false</it.spanner>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -52,7 +52,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<environmentVariables>
-						<forceIntegrationTests>${forceIntegrationTests}</forceIntegrationTests>
+						<forceIntegrationTests>${it.spanner}</forceIntegrationTests>
 					</environmentVariables>
 				</configuration>
 			</plugin>

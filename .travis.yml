@@ -11,7 +11,7 @@ cache:
     - $HOME/google-cloud-sdk
     - $HOME/.m2
 script:
-  - ./mvnw test -B -DforceIntegrationTests=true
+  - ./mvnw test -B -Dit.spanner=true
 install:
   - ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 before_script:
