@@ -25,16 +25,15 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.Options;
-import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.TimestampBound;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -81,59 +80,76 @@ public class SpannerTemplate implements SpannerOperations {
 		return this.databaseClient.singleUse();
 	}
 
+	private ReadContext getReadContext(Timestamp timestamp) {
+		return this.databaseClient.singleUse(TimestampBound.ofReadTimestamp(timestamp));
+	}
+
 	public SpannerMappingContext getMappingContext() {
 		return this.mappingContext;
 	}
 
 	@Override
 	public <T> T find(Class<T> entityClass, Key key) {
-		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
-				.getPersistentEntity(entityClass);
-		Struct row = getReadContext().readRow(persistentEntity.tableName(), key,
-				persistentEntity.columns());
-		if (row == null) {
-			return null;
-		}
-		return this.spannerConverter.read(entityClass, row);
+		return find(entityClass, key, null);
+	}
+
+	@Override
+	public <T> T find(Class<T> entityClass, Key key, SpannerReadQueryOptions options) {
+		List<T> items = find(entityClass, KeySet.singleKey(key), options);
+		return items.isEmpty() ? null : items.get(0);
+	}
+
+	@Override
+	public <T> List<T> find(Class<T> entityClass, KeySet keys) {
+		return find(entityClass, keys, null);
 	}
 
 	@Override
 	public <T> List<T> find(Class<T> entityClass, KeySet keys,
-			Options.ReadOption... options) {
+			SpannerReadQueryOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		ResultSet resultSet = getReadContext().read(persistentEntity.tableName(), keys,
-				persistentEntity.columns(), options);
-		return this.spannerConverter.mapToList(resultSet, entityClass);
+		return this.spannerConverter.mapToList(executeRead(persistentEntity.tableName(),
+				keys, persistentEntity.columns(), options), entityClass);
 	}
 
 	@Override
 	public <T> List<T> find(Class<T> entityClass, Statement statement,
-			Options.QueryOption... options) {
-		ResultSet resultSet = getReadContext().executeQuery(statement, options);
-		return this.spannerConverter.mapToList(resultSet, entityClass);
+			SpannerReadQueryOptions options) {
+		return this.spannerConverter.mapToList(executeQuery(statement, options),
+				entityClass);
 	}
 
 	@Override
-	public <T> List<T> find(Class<T> entityClass, String statement,
-			QueryOption... options) {
-		return find(entityClass, Statement.of(statement), options);
+	public <T> List<T> find(Class<T> entityClass, Statement statement) {
+		return find(entityClass, statement, null);
 	}
 
 	@Override
-	public <T> List<T> findAll(Class<T> entityClass, Options.ReadOption... options) {
-		return this.find(entityClass, KeySet.all(), options);
+	public <T> List<T> findAll(Class<T> entityClass, SpannerReadQueryOptions options) {
+		return find(entityClass, KeySet.all(), options);
 	}
 
 	@Override
-	public <T> List<T> findAll(Class<T> entityClass, Sort sort, QueryOption... options) {
+	public <T> List<T> findAll(Class<T> entityClass) {
+		return findAll(entityClass, (SpannerReadQueryOptions) null);
+	}
+
+	@Override
+	public <T> List<T> findAll(Class<T> entityClass, Sort sort,
+			SpannerReadQueryOptions options) {
 		return findAll(entityClass, sort, OptionalLong.empty(), OptionalLong.empty(),
 				options);
 	}
 
 	@Override
+	public <T> List<T> findAll(Class<T> entityClass, Sort sort) {
+		return findAll(entityClass, sort, null);
+	}
+
+	@Override
 	public <T> List<T> findAll(Class<T> entityClass, Sort sort, OptionalLong limit,
-			OptionalLong offset, QueryOption... options) {
+			OptionalLong offset, SpannerReadQueryOptions options) {
 		Assert.notNull(sort, "sort must not be null!");
 
 		StringBuilder stringBuilder = new StringBuilder();
@@ -152,8 +168,14 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
+	public <T> List<T> findAll(Class<T> entityClass, Sort sort, OptionalLong limit,
+			OptionalLong offset) {
+		return findAll(entityClass, sort, limit, offset, null);
+	}
+
+	@Override
 	public <T> Page<T> findAll(Class<T> entityClass, Pageable pageable,
-			QueryOption... options) {
+			SpannerReadQueryOptions options) {
 		Assert.notNull(pageable, "Pageable must not be null!");
 
 		Long count = count(entityClass);
@@ -161,6 +183,11 @@ public class SpannerTemplate implements SpannerOperations {
 				OptionalLong.of(pageable.getPageSize()),
 				OptionalLong.of(pageable.getOffset()), options);
 		return new PageImpl(list, pageable, count);
+	}
+
+	@Override
+	public <T> Page<T> findAll(Class<T> entityClass, Pageable pageable) {
+		return findAll(entityClass, pageable, null);
 	}
 
 	@Override
@@ -228,9 +255,34 @@ public class SpannerTemplate implements SpannerOperations {
 				.getPersistentEntity(entityClass);
 		Statement statement = Statement.of(String.format(
 				"select count(*) from %s", persistentEntity.tableName()));
-		try (ResultSet resultSet = this.databaseClient.singleUse().executeQuery(statement)) {
+		try (ResultSet resultSet = executeQuery(statement, null)) {
 			resultSet.next();
 			return resultSet.getLong(0);
+		}
+	}
+
+	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
+			SpannerReadQueryOptions options) {
+		if (options == null) {
+			return getReadContext().read(tableName, keys, columns);
+		}
+		else {
+			return (options.hasReadQueryTimestamp()
+					? getReadContext(options.getReadQueryTimestamp())
+					: getReadContext()).read(tableName, keys, columns,
+							options.getReadOptions());
+		}
+	}
+
+	private ResultSet executeQuery(Statement statement, SpannerReadQueryOptions options) {
+		if (options == null) {
+			return getReadContext().executeQuery(statement);
+		}
+		else {
+			return (options.hasReadQueryTimestamp()
+					? getReadContext(options.getReadQueryTimestamp())
+					: getReadContext()).executeQuery(statement,
+							options.getQueryOptions());
 		}
 	}
 

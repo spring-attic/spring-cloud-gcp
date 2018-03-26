@@ -218,7 +218,7 @@ public class SpannerStatementQueryTests {
 	private void queryWithMockResult(String queryName, List results) {
 		when(this.queryMethod.getName()).thenReturn(queryName);
 		this.partTreeSpannerQuery = createQuery();
-		when(this.spannerOperations.find(any(), (Statement) any(), any()))
+		when(this.spannerOperations.find(any(), (Statement) any()))
 				.thenReturn(results);
 	}
 
