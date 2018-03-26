@@ -110,14 +110,10 @@ public class GcpSpannerAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SpannerOperations spannerOperations() {
-		SpannerMappingContext spannerMappingContext = spannerMappingContext();
-		SpannerConverter spannerConverter = spannerConverter(spannerMappingContext);
-		Spanner spanner = spanner(spannerOptions());
-		DatabaseClient databaseClient = spannerDatabaseClient(spanner, databaseId());
-		SpannerMutationFactory spannerMutationFactory = spannerMutationFactory(spannerConverter,
-				spannerMappingContext);
-		return new SpannerTemplate(databaseClient, spannerMappingContext, spannerConverter,
+	public SpannerOperations spannerOperations(DatabaseClient databaseClient,
+			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
+			SpannerMutationFactory spannerMutationFactory) {
+		return new SpannerTemplate(databaseClient, mappingContext, spannerConverter,
 				spannerMutationFactory);
 	}
 
