@@ -164,8 +164,7 @@ public class SpannerPersistentEntityImpl<T>
 		this.context.setRootObject(applicationContext);
 	}
 
-	@Override
-	public Key getId(T entity) {
+	private Key getId(T entity) {
 		PersistentPropertyAccessor accessor = getPropertyAccessor(entity);
 		Builder keyBuilder = Key.newBuilder();
 		for (SpannerPersistentProperty spannerPersistentProperty : getPrimaryKeyProperties()) {

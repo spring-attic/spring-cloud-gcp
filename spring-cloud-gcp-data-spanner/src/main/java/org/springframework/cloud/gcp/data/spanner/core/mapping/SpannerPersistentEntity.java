@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
-import com.google.cloud.spanner.Key;
-
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
@@ -42,11 +40,4 @@ public interface SpannerPersistentEntity<T>
 	 * @return the column names.
 	 */
 	Iterable<String> columns();
-
-	/**
-	 * Gets the Key for an entity instance.
-	 * @param entity the entity whose Key ID will be returned.
-	 * @return
-	 */
-	Key getId(T entity);
 }
