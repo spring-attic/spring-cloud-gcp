@@ -22,6 +22,7 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -55,33 +56,41 @@ import org.springframework.context.annotation.Import;
 @Import(GoogleStorageProtocolResolver.class)
 public class GcpStorageAutoConfiguration {
 
+	private static Credentials CREDENTIALS;
+
+	// This bean needs to be static to be discoverable by our GoogleStorageProtocolResolver,
+	// since GoogleStorageProtocolResolver is a BeanFactoryPostProcessor.
 	@Bean
 	@ConditionalOnMissingBean
 	public static Storage storage(CredentialsProvider credentialsProvider,
 			GcpStorageProperties gcpStorageProperties,
 			GcpProjectIdProvider projectIdProvider,
 			@Autowired(required = false) CfConfiguration cfConfiguration) throws IOException {
-		Credentials credentials;
-
 		CredentialsProvider cfCredentialsProvider = null;
 		if (cfConfiguration != null) {
 			cfCredentialsProvider = cfConfiguration.getStorageCredentialsProvider();
 		}
 
 		if (cfCredentialsProvider != null) {
-			credentials = cfCredentialsProvider.getCredentials();
+			CREDENTIALS = cfCredentialsProvider.getCredentials();
 		}
 		else if (gcpStorageProperties.getCredentials().getLocation() != null) {
-			credentials = new DefaultCredentialsProvider(gcpStorageProperties).getCredentials();
+			CREDENTIALS = new DefaultCredentialsProvider(gcpStorageProperties).getCredentials();
 		}
 		else {
-			credentials = credentialsProvider.getCredentials();
+			CREDENTIALS = credentialsProvider.getCredentials();
 		}
 
 		return StorageOptions.newBuilder()
-				.setCredentials(credentials)
-				.setHeaderProvider(new UsageTrackingHeaderProvider(GcpStorageAutoConfiguration.class))
+				.setCredentials(CREDENTIALS)
+				.setHeaderProvider(
+						new UsageTrackingHeaderProvider(GcpStorageAutoConfiguration.class))
 				.setProjectId(projectIdProvider.getProjectId())
 				.build().getService();
+	}
+
+	@VisibleForTesting
+	Credentials getCredentials() {
+		return CREDENTIALS;
 	}
 }
