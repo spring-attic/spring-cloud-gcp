@@ -27,9 +27,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.query.QueryMethod;
 
@@ -222,7 +222,7 @@ public class SpannerStatementQueryTests {
 				.thenReturn(results);
 	}
 
-	@SpannerTable(name = "trades")
+	@Table(name = "trades")
 	private static class Trade {
 		@Id
 		String id;
@@ -233,10 +233,10 @@ public class SpannerStatementQueryTests {
 
 		Double shares;
 
-		@SpannerColumn(name = "ticker")
+		@Column(name = "ticker")
 		String symbol;
 
-		@SpannerColumn(name = "trader_id")
+		@Column(name = "trader_id")
 		String traderId;
 	}
 }

@@ -89,12 +89,12 @@ public class SpannerPersistentEntityImplTests {
 		assertThat(entity.tableName(), is("table_something"));
 	}
 
-	@SpannerTable(name = "custom_test_table")
+	@Table(name = "custom_test_table")
 	private static class TestEntity {
 		@Id
 		String id;
 
-		@SpannerColumn(name = "custom_col")
+		@Column(name = "custom_col")
 		String something;
 	}
 
@@ -105,7 +105,7 @@ public class SpannerPersistentEntityImplTests {
 		String something;
 	}
 
-	@SpannerTable(name = "")
+	@Table(name = "")
 	private static class EntityEmptyCustomName {
 		@Id
 		String id;
@@ -113,7 +113,7 @@ public class SpannerPersistentEntityImplTests {
 		String something;
 	}
 
-	@SpannerTable(name = "#{'table_'.concat(tablePostfix)}")
+	@Table(name = "#{'table_'.concat(tablePostfix)}")
 	private static class EntityWithExpression {
 		@Id
 		String id;

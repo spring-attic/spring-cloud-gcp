@@ -23,21 +23,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for a {@link SpannerPersistentEntity} that allows specifying a custom table name,
- * instead of deriving it from the entity's class name.
+ * Annotation for a {@link SpannerPersistentProperty} that allows specifying the column name
+ * instead of deriving it from the field's name.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
 @Documented
-@Target(ElementType.TYPE)
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SpannerTable {
+public @interface Column {
 
 	/**
-	 * The name of the table in Spanner, which can differ from the name of the class which it
-	 * annotates
-	 * @return The name of the table
+	 * The custom name of the column in the Spanner table, which can differ from the name of the
+	 * field which it annotates.
+	 * @return the name of the column in the Spanner table
 	 */
 	String name();
 }
