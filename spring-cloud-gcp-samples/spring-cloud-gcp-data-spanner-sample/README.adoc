@@ -13,12 +13,14 @@ and a table also named "trades".
 The columns should be created as follows:
 +
 ```
-id , STRING
-action , STRING
-price , FLOAT64
-shares , FLOAT64
-symbol , STRING
-trader_id , STRING
+CREATE TABLE trades (
+  id STRING(128) NOT NULL,
+  action STRING(15),
+  price FLOAT64,
+  shares FLOAT64,
+  symbol STRING(5),
+  trader_id STRING(128)
+) PRIMARY KEY (id)
 ```
 
 3. Place your project ID in the `spring.cloud.gcp.spanner.projectId` setting in `application.properties`

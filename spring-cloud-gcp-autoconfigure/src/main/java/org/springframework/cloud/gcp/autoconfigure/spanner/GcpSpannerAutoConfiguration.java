@@ -29,6 +29,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
@@ -94,32 +95,38 @@ public class GcpSpannerAutoConfiguration {
 	}
 
 	@Bean
-	public DatabaseId databaseId() {
-		return DatabaseId.of(this.projectId, this.instanceId, this.databaseName);
-	}
-
-	@Bean
+	@ConditionalOnMissingBean
 	public SpannerOptions spannerOptions() {
 		return SpannerOptions.newBuilder().setProjectId(this.projectId)
 				.setCredentials(this.credentials).build();
 	}
 
 	@Bean
+	@ConditionalOnMissingBean
+	public DatabaseId databaseId() {
+		return DatabaseId.of(this.projectId, this.instanceId, this.databaseName);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
 	public Spanner spanner(SpannerOptions spannerOptions) {
 		return spannerOptions.getService();
 	}
 
 	@Bean
+	@ConditionalOnMissingBean
 	public DatabaseClient spannerDatabaseClient(Spanner spanner, DatabaseId databaseId) {
 		return spanner.getDatabaseClient(databaseId);
 	}
 
 	@Bean
+	@ConditionalOnMissingBean
 	public SpannerMappingContext spannerMappingContext() {
 		return new SpannerMappingContext();
 	}
 
 	@Bean
+	@ConditionalOnMissingBean
 	public SpannerOperations spannerOperations(DatabaseClient databaseClient,
 			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
 			SpannerMutationFactory spannerMutationFactory) {
@@ -128,11 +135,13 @@ public class GcpSpannerAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean
 	public SpannerConverter spannerConverter(SpannerMappingContext mappingContext) {
 		return new MappingSpannerConverter(mappingContext);
 	}
 
 	@Bean
+	@ConditionalOnMissingBean
 	public SpannerMutationFactory spannerMutationFactory(
 			SpannerConverter spannerConverter,
 			SpannerMappingContext spannerMappingContext) {

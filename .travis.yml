@@ -1,18 +1,27 @@
 language: java
 jdk:
   - oraclejdk8
+env:
+  - GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/travis/admin.json
 branches:
   only:
     - master
+cache:
+  directories:
+    - $HOME/google-cloud-sdk
+    - $HOME/.m2
+script:
+  - ./mvnw test -B -Dit.spanner=true
 install:
-  # Install Cloud SDK
-  - wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-189.0.0-linux-x86_64.tar.gz
-  - tar -xvzf google-cloud-sdk-189.0.0-linux-x86_64.tar.gz
-  - export PATH=$PWD/google-cloud-sdk/bin:$PATH
-  - gcloud components update --quiet
-  - gcloud components install beta pubsub-emulator --quiet
   - ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 before_script:
   - gcloud beta emulators pubsub start &
   - while [ ! -f ~/.config/gcloud/emulators/pubsub/env.yaml ]; do sleep 1; done
   - $(gcloud beta emulators pubsub env-init)
+before_install:
+  - openssl aes-256-cbc -K $encrypted_1ef8dfbdb114_key -iv $encrypted_1ef8dfbdb114_iv -in travis.tar.gz.enc -out travis.tar.gz -d
+  - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  - gcloud components install beta pubsub-emulator --quiet
+  - tar -xzf travis.tar.gz
+  - gcloud config set project spring-cloud-gcp-ci
