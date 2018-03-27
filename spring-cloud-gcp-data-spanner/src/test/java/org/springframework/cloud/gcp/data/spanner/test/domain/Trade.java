@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
 import org.springframework.data.annotation.Id;
 
@@ -30,7 +31,7 @@ import org.springframework.data.annotation.Id;
  */
 @SpannerTable(name = "#{'trades_'.concat(tableNameSuffix)}")
 public class Trade {
-	@Id
+	@SpannerPrimaryKeyColumn
 	private String id;
 
 	private String action;
