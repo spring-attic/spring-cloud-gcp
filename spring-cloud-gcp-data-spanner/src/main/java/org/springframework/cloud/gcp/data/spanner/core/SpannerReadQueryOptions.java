@@ -39,7 +39,7 @@ public class SpannerReadQueryOptions {
 	private Optional<Timestamp> readQueryTimestamp = Optional.empty();
 
 	/**
-	 * Constructor to create an instance. Use the extention-style add/set functions to add
+	 * Constructor to create an instance. Use the extension-style add/set functions to add
 	 * options and settings.
 	 */
 	public SpannerReadQueryOptions() {
@@ -69,7 +69,7 @@ public class SpannerReadQueryOptions {
 	public Timestamp getReadQueryTimestamp() {
 		if (!hasReadQueryTimestamp()) {
 			throw new UnsupportedOperationException(
-					"Cannot get timestamp beacuse it hasn't been set.");
+					"Cannot get timestamp because it hasn't been set.");
 		}
 		return this.readQueryTimestamp.get();
 	}
