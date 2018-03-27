@@ -15,8 +15,8 @@
 	<description>Spring Cloud GCP Spanner Module</description>
 	<properties>
 		<main.basedir>${basedir}/../..</main.basedir>
+		<it.spanner>false</it.spanner>
 	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.google.cloud</groupId>
@@ -34,5 +34,28 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-gcp-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<environmentVariables>
+						<forceIntegrationTests>${it.spanner}</forceIntegrationTests>
+					</environmentVariables>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
