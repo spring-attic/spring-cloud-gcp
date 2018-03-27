@@ -253,8 +253,14 @@ public class SpannerTemplate implements SpannerOperations {
 			return getReadContext().read(tableName, keys, columns);
 		}
 		else {
-			return (options.hasTimestamp() ? getReadContext(options.getTimestamp())
-					: getReadContext()).read(tableName, keys, columns,
+			ReadContext readContext = (options.hasTimestamp()
+					? getReadContext(options.getTimestamp())
+					: getReadContext());
+			if (options.hasIndex()) {
+				return readContext.readUsingIndex(tableName, options.getIndex(), keys,
+						columns, options.getReadOptions());
+			}
+			return readContext.read(tableName, keys, columns,
 							options.getReadOptions());
 		}
 	}

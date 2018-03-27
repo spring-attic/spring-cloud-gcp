@@ -35,6 +35,8 @@ public class SpannerReadOptions {
 
 	private Optional<Timestamp> timestamp = Optional.empty();
 
+	private Optional<String> index = Optional.empty();
+
 	/**
 	 * Constructor to create an instance. Use the extension-style add/set functions to add
 	 * options and settings.
@@ -68,6 +70,29 @@ public class SpannerReadOptions {
 	public SpannerReadOptions setTimestamp(Timestamp timestamp) {
 		Assert.notNull(timestamp, "A valid timestamp is required!");
 		this.timestamp = Optional.of(timestamp);
+		return this;
+	}
+
+	public SpannerReadOptions unsetIndex() {
+		this.index = Optional.empty();
+		return this;
+	}
+
+	public boolean hasIndex() {
+		return this.index.isPresent();
+	}
+
+	public String getIndex() {
+		if (!hasIndex()) {
+			throw new UnsupportedOperationException(
+					"Cannot get index because it hasn't been set.");
+		}
+		return this.index.get();
+	}
+
+	public SpannerReadOptions setIndex(String index) {
+		Assert.notNull(index, "A valid index is required!");
+		this.index = Optional.of(index);
 		return this;
 	}
 

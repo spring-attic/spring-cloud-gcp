@@ -175,6 +175,21 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
+	public void findMultipleKeysWithIndexTest() {
+		ResultSet results = mock(ResultSet.class);
+		ReadOption readOption = mock(ReadOption.class);
+		SpannerReadOptions options = new SpannerReadOptions().addReadOption(readOption)
+				.setIndex("index");
+		KeySet keySet = KeySet.singleKey(Key.of("key"));
+		when(this.readContext.readUsingIndex(any(), any(), any(), any(), any())).thenReturn(results);
+		this.spannerTemplate.find(TestEntity.class, keySet, options);
+		verify(this.objectMapper, times(1)).mapToList(same(results),
+				eq(TestEntity.class));
+		verify(this.readContext, times(1)).readUsingIndex(eq("custom_test_table"),
+				eq("index"), same(keySet), any(), same(readOption));
+	}
+
+	@Test
 	public void findByStatementTest() {
 		ResultSet results = mock(ResultSet.class);
 		QueryOption queryOption = mock(QueryOption.class);

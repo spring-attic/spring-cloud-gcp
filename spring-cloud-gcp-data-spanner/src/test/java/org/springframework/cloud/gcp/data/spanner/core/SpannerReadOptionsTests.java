@@ -67,4 +67,16 @@ public class SpannerReadOptionsTests {
 		assertThat(Arrays.asList(spannerReadOptions.getReadOptions()),
 				containsInAnyOrder(r1, r2));
 	}
+
+	@Test
+	public void indexTest() {
+		SpannerReadOptions spannerReadOptions = new SpannerReadOptions();
+		String index = "index";
+		assertFalse(spannerReadOptions.hasIndex());
+		spannerReadOptions.setIndex(index);
+		assertTrue(spannerReadOptions.hasIndex());
+		assertEquals(index, spannerReadOptions.getIndex());
+		spannerReadOptions.unsetIndex();
+		assertFalse(spannerReadOptions.hasIndex());
+	}
 }
