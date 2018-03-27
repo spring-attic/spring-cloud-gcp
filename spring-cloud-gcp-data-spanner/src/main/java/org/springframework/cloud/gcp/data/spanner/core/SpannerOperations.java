@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.Set;
 
 import com.google.cloud.spanner.Key;
@@ -56,7 +55,7 @@ public interface SpannerOperations {
 	 * @return an object of the requested type. Returns null if no object could be found
 	 * stored with the given key.
 	 */
-	<T> T find(Class<T> entityClass, Key key, SpannerReadQueryOptions options);
+	<T> T find(Class<T> entityClass, Key key, SpannerReadOptions options);
 
 	/**
 	 * Finds objects stored from their keys.
@@ -67,7 +66,7 @@ public interface SpannerOperations {
 	 * @return a list of objects that could be found using the given keys. If no keys
 	 * could be found the list will be empty.
 	 */
-	<T> List<T> find(Class<T> entityClass, KeySet keys, SpannerReadQueryOptions options);
+	<T> List<T> find(Class<T> entityClass, KeySet keys, SpannerReadOptions options);
 
 	/**
 	 * Finds objects stored from their keys.
@@ -89,7 +88,7 @@ public interface SpannerOperations {
 	 * empty.
 	 */
 	<T> List<T> find(Class<T> entityClass, Statement statement,
-			SpannerReadQueryOptions options);
+			SpannerQueryOptions options);
 
 	/**
 	 * Finds objects by using an SQL statement.
@@ -109,7 +108,7 @@ public interface SpannerOperations {
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
 	 */
-	<T> List<T> findAll(Class<T> entityClass, SpannerReadQueryOptions options);
+	<T> List<T> findAll(Class<T> entityClass, SpannerReadOptions options);
 
 	/**
 	 * Finds all objects of the given type.
@@ -129,7 +128,7 @@ public interface SpannerOperations {
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
 	 */
-	<T> List<T> findAll(Class<T> entityClass, Sort sort, SpannerReadQueryOptions options);
+	<T> List<T> findAll(Class<T> entityClass, Sort sort, SpannerQueryOptions options);
 
 	/**
 	 * Finds all objects of the given type.
@@ -144,35 +143,6 @@ public interface SpannerOperations {
 	/**
 	 * Finds all objects of the given type.
 	 * @param entityClass the type of the object to retrieve.
-	 * @param sort the sorting used for the results.
-	 * @param limit the number of elements to get at maximum.
-	 * @param offset the number of elements to skip from the beginning according to the
-	 * sort.
-	 * @param options Spanner query options with which to conduct the query operation.
-	 * @param <T> the type of the object to retrieve.
-	 * @return a list of all objects stored of the given type. If there are no objects an
-	 * empty list is returned.
-	 */
-	<T> List<T> findAll(Class<T> entityClass, Sort sort, OptionalLong limit,
-			OptionalLong offset, SpannerReadQueryOptions options);
-
-	/**
-	 * Finds all objects of the given type.
-	 * @param entityClass the type of the object to retrieve.
-	 * @param sort the sorting used for the results.
-	 * @param limit the number of elements to get at maximum.
-	 * @param offset the number of elements to skip from the beginning according to the
-	 * sort.
-	 * @param <T> the type of the object to retrieve.
-	 * @return a list of all objects stored of the given type. If there are no objects an
-	 * empty list is returned.
-	 */
-	<T> List<T> findAll(Class<T> entityClass, Sort sort, OptionalLong limit,
-			OptionalLong offset);
-
-	/**
-	 * Finds all objects of the given type.
-	 * @param entityClass the type of the object to retrieve.
 	 * @param pageable the paging options for this request.
 	 * @param options Spanner query options with which to conduct the query operation.
 	 * @param <T> the type of the object to retrieve.
@@ -180,7 +150,7 @@ public interface SpannerOperations {
 	 * empty list is returned.
 	 */
 	<T> Page<T> findAll(Class<T> entityClass, Pageable pageable,
-			SpannerReadQueryOptions options);
+			SpannerQueryOptions options);
 
 	/**
 	 * Finds all objects of the given type.

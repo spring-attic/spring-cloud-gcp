@@ -21,70 +21,57 @@ import java.util.List;
 import java.util.Optional;
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 
 import org.springframework.util.Assert;
 
 /**
- * Encapsulates Spanner read and query options.
+ * Encapsulates Spanner read options.
  * @author Chengyuan Zhao
  */
-public class SpannerReadQueryOptions {
+public class SpannerReadOptions {
 
 	private List<ReadOption> readOptions = new ArrayList<>();
 
-	private List<QueryOption> queryOptions = new ArrayList<>();
-
-	private Optional<Timestamp> readQueryTimestamp = Optional.empty();
+	private Optional<Timestamp> timestamp = Optional.empty();
 
 	/**
 	 * Constructor to create an instance. Use the extention-style add/set functions to add
 	 * options and settings.
 	 */
-	public SpannerReadQueryOptions() {
+	public SpannerReadOptions() {
 	}
 
-	public SpannerReadQueryOptions addReadOption(ReadOption readOption) {
+	public SpannerReadOptions addReadOption(ReadOption readOption) {
 		Assert.notNull(readOption, "Valid read option is required!");
 		this.readOptions.add(readOption);
 		return this;
 	}
 
-	public SpannerReadQueryOptions addQueryOption(QueryOption queryOption) {
-		Assert.notNull(queryOption, "Valid query option is required!");
-		this.queryOptions.add(queryOption);
+	public SpannerReadOptions unsetTimestamp() {
+		this.timestamp = Optional.empty();
 		return this;
 	}
 
-	public SpannerReadQueryOptions unsetReadQueryTimestamp() {
-		this.readQueryTimestamp = Optional.empty();
-		return this;
+	public boolean hasTimestamp() {
+		return this.timestamp.isPresent();
 	}
 
-	public boolean hasReadQueryTimestamp() {
-		return this.readQueryTimestamp.isPresent();
-	}
-
-	public Timestamp getReadQueryTimestamp() {
-		if (!hasReadQueryTimestamp()) {
+	public Timestamp getTimestamp() {
+		if (!hasTimestamp()) {
 			throw new UnsupportedOperationException(
 					"Cannot get timestamp beacuse it hasn't been set.");
 		}
-		return this.readQueryTimestamp.get();
+		return this.timestamp.get();
 	}
 
-	public SpannerReadQueryOptions setReadQueryTimestamp(Timestamp timestamp) {
+	public SpannerReadOptions setTimestamp(Timestamp timestamp) {
 		Assert.notNull(timestamp, "A valid timestamp is required!");
-		this.readQueryTimestamp = Optional.of(timestamp);
+		this.timestamp = Optional.of(timestamp);
 		return this;
 	}
 
 	public ReadOption[] getReadOptions() {
 		return this.readOptions.toArray(new ReadOption[this.readOptions.size()]);
-	}
-
-	public QueryOption[] getQueryOptions() {
-		return this.queryOptions.toArray(new QueryOption[this.queryOptions.size()]);
 	}
 }

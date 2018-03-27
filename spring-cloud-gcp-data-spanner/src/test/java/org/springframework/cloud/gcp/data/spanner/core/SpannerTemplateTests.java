@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.Set;
 
 import com.google.cloud.spanner.DatabaseClient;
@@ -161,20 +160,10 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
-	public void findAllSortOffsetsLimitsTest() {
-		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		Sort sort = mock(Sort.class);
-		spyTemplate.findAll(TestEntity.class, sort, OptionalLong.of(3L),
-				OptionalLong.of(5L));
-		verify(spyTemplate, times(1)).findAll(eq(TestEntity.class), same(sort),
-				eq(OptionalLong.of(3L)), eq(OptionalLong.of(5L)), eq(null));
-	}
-
-	@Test
 	public void findMultipleKeysTest() {
 		ResultSet results = mock(ResultSet.class);
 		ReadOption readOption = mock(ReadOption.class);
-		SpannerReadQueryOptions options = new SpannerReadQueryOptions()
+		SpannerReadOptions options = new SpannerReadOptions()
 				.addReadOption(readOption);
 		KeySet keySet = KeySet.singleKey(Key.of("key"));
 		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
@@ -190,7 +179,7 @@ public class SpannerTemplateTests {
 		ResultSet results = mock(ResultSet.class);
 		QueryOption queryOption = mock(QueryOption.class);
 		Statement statement = Statement.of("test");
-		SpannerReadQueryOptions options = new SpannerReadQueryOptions()
+		SpannerQueryOptions options = new SpannerQueryOptions()
 				.addQueryOption(queryOption);
 		when(this.readContext.executeQuery(any(), any())).thenReturn(results);
 		this.spannerTemplate.find(TestEntity.class, statement, options);
@@ -203,7 +192,7 @@ public class SpannerTemplateTests {
 	@Test
 	public void findAllTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		SpannerReadQueryOptions options = new SpannerReadQueryOptions();
+		SpannerReadOptions options = new SpannerReadOptions();
 		spyTemplate.findAll(TestEntity.class, options);
 		verify(spyTemplate, times(1)).find(eq(TestEntity.class), eq(KeySet.all()),
 				same(options));
@@ -340,7 +329,8 @@ public class SpannerTemplateTests {
 	@Test
 	public void findAllSortWithLimitsOffsetTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		SpannerReadQueryOptions queryOption = new SpannerReadQueryOptions();
+		SpannerQueryOptions queryOption = new SpannerQueryOptions().setLimit(3L)
+				.setOffset(5L);
 		Sort sort = Sort.by(Order.asc("id"), Order.desc("something"), Order.asc("other"));
 
 		doAnswer(invocation -> {
@@ -351,33 +341,22 @@ public class SpannerTemplateTests {
 			return null;
 		}).when(spyTemplate).find(eq(TestEntity.class), (Statement) any(), any());
 
-		spyTemplate.findAll(TestEntity.class, sort, OptionalLong.of(3),
-				OptionalLong.of(5), queryOption);
+		spyTemplate.findAll(TestEntity.class, sort, queryOption);
 		verify(spyTemplate, times(1)).find(eq(TestEntity.class), (Statement) any(),
 				any());
 	}
 
 	@Test
-	public void findAllSortTest() {
-		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		SpannerReadQueryOptions queryOption = new SpannerReadQueryOptions();
-		Sort sort = mock(Sort.class);
-
-		spyTemplate.findAll(TestEntity.class, sort, queryOption);
-		verify(spyTemplate, times(1)).findAll(eq(TestEntity.class), same(sort),
-				eq(OptionalLong.empty()), eq(OptionalLong.empty()), same(queryOption));
-	}
-
-	@Test
 	public void findAllPageableTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		SpannerReadQueryOptions queryOption = new SpannerReadQueryOptions();
 		Sort sort = mock(Sort.class);
 		Pageable pageable = mock(Pageable.class);
 
 		long offset = 5L;
 		int limit = 3;
 		long total = 9999;
+		SpannerQueryOptions queryOption = new SpannerQueryOptions().setOffset(offset)
+				.setLimit(limit);
 
 		when(pageable.getOffset()).thenReturn(offset);
 		when(pageable.getPageSize()).thenReturn(limit);
@@ -396,7 +375,6 @@ public class SpannerTemplateTests {
 		items.add(t3);
 
 		doReturn(items).when(spyTemplate).findAll(eq(TestEntity.class), same(sort),
-				eq(OptionalLong.of(limit)), eq(OptionalLong.of(offset)),
 				same(queryOption));
 		doReturn(total).when(spyTemplate).count(eq(TestEntity.class));
 

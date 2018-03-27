@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -94,7 +93,7 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public <T> T find(Class<T> entityClass, Key key, SpannerReadQueryOptions options) {
+	public <T> T find(Class<T> entityClass, Key key, SpannerReadOptions options) {
 		List<T> items = find(entityClass, KeySet.singleKey(key), options);
 		return items.isEmpty() ? null : items.get(0);
 	}
@@ -106,7 +105,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> List<T> find(Class<T> entityClass, KeySet keys,
-			SpannerReadQueryOptions options) {
+			SpannerReadOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		return this.spannerConverter.mapToList(executeRead(persistentEntity.tableName(),
@@ -115,7 +114,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> List<T> find(Class<T> entityClass, Statement statement,
-			SpannerReadQueryOptions options) {
+			SpannerQueryOptions options) {
 		return this.spannerConverter.mapToList(executeQuery(statement, options),
 				entityClass);
 	}
@@ -126,20 +125,13 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public <T> List<T> findAll(Class<T> entityClass, SpannerReadQueryOptions options) {
+	public <T> List<T> findAll(Class<T> entityClass, SpannerReadOptions options) {
 		return find(entityClass, KeySet.all(), options);
 	}
 
 	@Override
 	public <T> List<T> findAll(Class<T> entityClass) {
-		return findAll(entityClass, (SpannerReadQueryOptions) null);
-	}
-
-	@Override
-	public <T> List<T> findAll(Class<T> entityClass, Sort sort,
-			SpannerReadQueryOptions options) {
-		return findAll(entityClass, sort, OptionalLong.empty(), OptionalLong.empty(),
-				options);
+		return findAll(entityClass, (SpannerReadOptions) null);
 	}
 
 	@Override
@@ -148,8 +140,8 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public <T> List<T> findAll(Class<T> entityClass, Sort sort, OptionalLong limit,
-			OptionalLong offset, SpannerReadQueryOptions options) {
+	public <T> List<T> findAll(Class<T> entityClass, Sort sort,
+			SpannerQueryOptions options) {
 		Assert.notNull(sort, "sort must not be null!");
 
 		StringBuilder stringBuilder = new StringBuilder();
@@ -157,31 +149,25 @@ public class SpannerTemplate implements SpannerOperations {
 				.getPersistentEntity(entityClass);
 		stringBuilder.append("SELECT * FROM " + persistentEntity.tableName() + " ");
 		SpannerStatementQueryExecutor.buildOrderBy(persistentEntity, stringBuilder, sort);
-		if (limit != null && limit.isPresent()) {
-			stringBuilder.append(" LIMIT " + limit.getAsLong());
-		}
-		if (offset != null && offset.isPresent()) {
-			stringBuilder.append(" OFFSET " + offset.getAsLong());
+		if (options != null) {
+			if (options.hasLimit()) {
+				stringBuilder.append(" LIMIT " + options.getLimit());
+			}
+			if (options.hasLimit()) {
+				stringBuilder.append(" OFFSET " + options.getOffset());
+			}
 		}
 		stringBuilder.append(";");
 		return find(entityClass, Statement.of(stringBuilder.toString()), options);
 	}
 
 	@Override
-	public <T> List<T> findAll(Class<T> entityClass, Sort sort, OptionalLong limit,
-			OptionalLong offset) {
-		return findAll(entityClass, sort, limit, offset, null);
-	}
-
-	@Override
 	public <T> Page<T> findAll(Class<T> entityClass, Pageable pageable,
-			SpannerReadQueryOptions options) {
+			SpannerQueryOptions options) {
 		Assert.notNull(pageable, "Pageable must not be null!");
 
 		Long count = count(entityClass);
-		List<T> list = findAll(entityClass, pageable.getSort(),
-				OptionalLong.of(pageable.getPageSize()),
-				OptionalLong.of(pageable.getOffset()), options);
+		List<T> list = findAll(entityClass, pageable.getSort(), options);
 		return new PageImpl(list, pageable, count);
 	}
 
@@ -262,25 +248,23 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
-			SpannerReadQueryOptions options) {
+			SpannerReadOptions options) {
 		if (options == null) {
 			return getReadContext().read(tableName, keys, columns);
 		}
 		else {
-			return (options.hasReadQueryTimestamp()
-					? getReadContext(options.getReadQueryTimestamp())
+			return (options.hasTimestamp() ? getReadContext(options.getTimestamp())
 					: getReadContext()).read(tableName, keys, columns,
 							options.getReadOptions());
 		}
 	}
 
-	private ResultSet executeQuery(Statement statement, SpannerReadQueryOptions options) {
+	private ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
 		if (options == null) {
 			return getReadContext().executeQuery(statement);
 		}
 		else {
-			return (options.hasReadQueryTimestamp()
-					? getReadContext(options.getReadQueryTimestamp())
+			return (options.hasTimestamp() ? getReadContext(options.getTimestamp())
 					: getReadContext()).executeQuery(statement,
 							options.getQueryOptions());
 		}
