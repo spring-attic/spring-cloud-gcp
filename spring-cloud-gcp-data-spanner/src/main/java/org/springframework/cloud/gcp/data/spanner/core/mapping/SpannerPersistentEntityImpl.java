@@ -126,9 +126,13 @@ public class SpannerPersistentEntityImpl<T>
 		return new SpannerCompositeKeyProperty(this, getPrimaryKeyProperties());
 	}
 
-	private SpannerPersistentProperty[] getPrimaryKeyProperties() {
-		SpannerPersistentProperty[] primaryKeyColumns =
-				new SpannerPersistentProperty[this.primaryKeyParts.size()];
+	@Override
+	public void verify() {
+		super.verify();
+		if (this.primaryKeyParts.isEmpty()) {
+			throw new SpannerDataException(
+					"At least one primary key property is required!");
+		}
 		for (int i = 1; i <= this.primaryKeyParts.size(); i++) {
 			SpannerPersistentProperty keyPart = this.primaryKeyParts.get(i);
 			if (keyPart == null) {
@@ -137,11 +141,14 @@ public class SpannerPersistentEntityImpl<T>
 								+ "There is no property annotated with order "
 								+ String.valueOf(i));
 			}
-			primaryKeyColumns[i - 1] = keyPart;
 		}
-		if (primaryKeyColumns.length == 0) {
-			throw new SpannerDataException(
-					"At least one primary key property is required!");
+	}
+
+	private SpannerPersistentProperty[] getPrimaryKeyProperties() {
+		SpannerPersistentProperty[] primaryKeyColumns =
+				new SpannerPersistentProperty[this.primaryKeyParts.size()];
+		for (int i = 1; i <= this.primaryKeyParts.size(); i++) {
+			primaryKeyColumns[i - 1] = this.primaryKeyParts.get(i);
 		}
 		return primaryKeyColumns;
 	}

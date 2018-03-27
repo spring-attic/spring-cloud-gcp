@@ -17,6 +17,13 @@
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.util.OptionalInt;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.google.cloud.ByteArray;
+import com.google.cloud.Date;
+import com.google.cloud.Timestamp;
+import com.google.common.collect.ImmutableSet;
 
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
@@ -26,6 +33,8 @@ import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.util.StreamUtils;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
 
 /**
@@ -38,6 +47,9 @@ import org.springframework.util.StringUtils;
 public class SpannerPersistentPropertyImpl
 		extends AnnotationBasedPersistentProperty<SpannerPersistentProperty>
 		implements SpannerPersistentProperty {
+
+	private final static Set<Class> SPANNER_NATIVE_DATA_TYPES = ImmutableSet
+			.of(ByteArray.class, Timestamp.class, Date.class);
 
 	private FieldNamingStrategy fieldNamingStrategy;
 
@@ -56,6 +68,18 @@ public class SpannerPersistentPropertyImpl
 		this.fieldNamingStrategy = fieldNamingStrategy == null
 				? PropertyNameFieldNamingStrategy.INSTANCE
 				: fieldNamingStrategy;
+	}
+
+	/**
+	 * Excludes Spanner native data types.
+	 */
+	@Override
+	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
+		return StreamUtils
+				.createStreamFromIterator(super.getPersistentEntityTypes().iterator())
+				.filter(typeInfo -> !SPANNER_NATIVE_DATA_TYPES
+						.contains(typeInfo.getType()))
+				.collect(Collectors.toList());
 	}
 
 	@Override
