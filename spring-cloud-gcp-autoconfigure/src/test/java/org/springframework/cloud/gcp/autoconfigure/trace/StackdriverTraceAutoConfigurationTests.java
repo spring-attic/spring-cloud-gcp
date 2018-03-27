@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.trace;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +25,7 @@ import brave.Span;
 import brave.Tracer;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.trace.v1.consumer.FlushableTraceConsumer;
 import com.google.devtools.cloudtrace.v1.Trace;
 import com.google.devtools.cloudtrace.v1.TraceSpan;
@@ -39,6 +42,8 @@ import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -88,6 +93,23 @@ public class StackdriverTraceAutoConfigurationTests {
 			assertThat(trace.getSpansCount()).isEqualTo(1);
 			TraceSpan traceSpan = trace.getSpans(0);
 		});
+	}
+
+	@Test
+	public void testCfCredentials() throws IOException {
+		Resource vcapServicesFile = new ClassPathResource("VCAP_SERVICES");
+		String vcapServicesString =
+				new String(Files.readAllBytes(vcapServicesFile.getFile().toPath()));
+		this.contextRunner.withPropertyValues("VCAP_SERVICES=" + vcapServicesString)
+				.run(context -> {
+					StackdriverTraceAutoConfiguration autoConfiguration =
+							context.getBean(StackdriverTraceAutoConfiguration.class);
+					ServiceAccountCredentials credentials =
+							(ServiceAccountCredentials) autoConfiguration.getCredentialsProvider()
+									.getCredentials();
+					assertThat(credentials.getClientEmail()).isEqualTo("pcf-binding-5df95a11@"
+							+ "graphite-test-spring-cloud-gcp.iam.gserviceaccount.com");
+				});
 	}
 
 	public static class MockConfiguration {
