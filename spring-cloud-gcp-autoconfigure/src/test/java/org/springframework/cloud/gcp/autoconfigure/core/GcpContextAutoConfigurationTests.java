@@ -16,63 +16,40 @@
 
 package org.springframework.cloud.gcp.autoconfigure.core;
 
-import com.google.api.gax.core.CredentialsProvider;
-import com.google.auth.Credentials;
-import org.junit.After;
 import org.junit.Test;
 
-import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 /**
  * @author João André Martins
  */
-@Configuration
 public class GcpContextAutoConfigurationTests {
 
-	private AnnotationConfigApplicationContext context;
-
-	@After
-	public void closeContext() {
-		if (this.context != null) {
-			this.context.close();
-		}
-	}
+	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+			.withConfiguration(AutoConfigurations.of(GcpContextAutoConfiguration.class));
 
 	@Test
 	public void testGetProjectIdProvider_withGcpProperties() {
-		loadEnvironment("spring.cloud.gcp.projectId=test-project");
-		GcpProjectIdProvider provider = this.context.getBean(GcpProjectIdProvider.class);
-
-		assertEquals("test-project", provider.getProjectId());
+		this.contextRunner.withPropertyValues("spring.cloud.gcp.projectId=tonberry")
+				.run(context -> {
+					GcpProjectIdProvider projectIdProvider =
+							context.getBean(GcpProjectIdProvider.class);
+					assertEquals("tonberry", projectIdProvider.getProjectId());
+				});
 	}
 
 	@Test
 	public void testGetProjectIdProvider_withoutGcpProperties() {
-		loadEnvironment();
-		assertTrue(this.context.getBean(GcpProjectIdProvider.class)
-				instanceof DefaultGcpProjectIdProvider);
-	}
-
-	private void loadEnvironment(String... environment) {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		context.register(GcpContextAutoConfiguration.class);
-		context.register(this.getClass());
-		TestPropertyValues.of(environment).applyTo(context);
-		context.refresh();
-		this.context = context;
-	}
-
-	@Bean
-	public CredentialsProvider googleCredentials() {
-		return () -> mock(Credentials.class);
+		this.contextRunner.run(context -> {
+			GcpProjectIdProvider projectIdProvider =
+					context.getBean(GcpProjectIdProvider.class);
+			assertThat(projectIdProvider).isInstanceOf(DefaultGcpProjectIdProvider.class);
+		});
 	}
 }

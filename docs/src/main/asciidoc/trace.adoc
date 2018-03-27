@@ -45,7 +45,7 @@ without modifying existing applications.
 
 === Spring Boot Starter for Stackdriver Trace
 Spring Boot Starter for Stackdriver Trace uses Spring Cloud Sleuth and auto-configures a
-https://github.com/spring-cloud/spring-cloud-sleuth/blob/master/spring-cloud-sleuth-core/src/main/java/org/springframework/cloud/sleuth/SpanReporter.java[SpanReporter]
+https://github.com/openzipkin/zipkin-reporter-java/blob/master/core/src/main/java/zipkin2/reporter/Reporter.java[Reporter]
 that sends the Sleuth’s trace information to Stackdriver Trace.
 
 This starter will send traces asynchronously using a buffered trace consumer that auto-flushes when its buffered trace
@@ -85,9 +85,14 @@ to 100%.
 
 [source]
 ----
-spring.sleuth.sampler.percentage=1                      # Send 100% of the request traces to Stackdriver.
+spring.sleuth.sampler.probability=1                     # Send 100% of the request traces to Stackdriver.
 spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.
 ----
 
-Stackdriver Trace requires the use of 128-bit Trace ID. This starter ignores
-`spring.sleuth.traceId128` property and always uses 128-bit Trace ID.
+Spring Cloud GCP Trace does override some Sleuth configurations:
+
+- Always uses 128-bit Trace IDs. This is required by Stackdriver Trace.
+- Does not use Span joins. Span joins will share the span ID between the client and server Spans.
+  Stackdriver requires that every Span ID within a Trace to be unique, so Span joins are not supported.
+- Uses `StackdriverHttpClientParser` and `StackdriverHttpServerParser` by default to populate Stackdriver
+  related fields.

@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
-import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
@@ -52,11 +50,5 @@ public class GcpPubSubEmulatorConfiguration {
 				.usePlaintext(true)
 				.build();
 		return FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public CredentialsProvider credentialsProvider() {
-		return NoCredentialsProvider.create();
 	}
 }
