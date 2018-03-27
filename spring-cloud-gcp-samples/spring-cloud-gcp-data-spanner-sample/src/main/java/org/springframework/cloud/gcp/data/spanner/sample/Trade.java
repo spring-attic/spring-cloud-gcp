@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.example;
+package org.springframework.cloud.gcp.data.spanner.sample;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
