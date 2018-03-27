@@ -41,7 +41,7 @@ public class SpannerQueryOptions {
 	private OptionalLong offset = OptionalLong.empty();
 
 	/**
-	 * Constructor to create an instance. Use the extention-style add/set functions to add
+	 * Constructor to create an instance. Use the extension-style add/set functions to add
 	 * options and settings.
 	 */
 	public SpannerQueryOptions() {
@@ -75,7 +75,7 @@ public class SpannerQueryOptions {
 	public Timestamp getTimestamp() {
 		if (!hasTimestamp()) {
 			throw new UnsupportedOperationException(
-					"Cannot get timestamp beacuse it hasn't been set.");
+					"Cannot get timestamp because it hasn't been set.");
 		}
 		return this.timestamp.get();
 	}
@@ -93,7 +93,7 @@ public class SpannerQueryOptions {
 	public long getLimit() {
 		if (!hasLimit()) {
 			throw new UnsupportedOperationException(
-					"Cannot get limit beacuse it hasn't been set.");
+					"Cannot get limit because it hasn't been set.");
 		}
 		return this.limit.getAsLong();
 	}
@@ -110,7 +110,7 @@ public class SpannerQueryOptions {
 	public long getOffset() {
 		if (!hasOffset()) {
 			throw new UnsupportedOperationException(
-					"Cannot get offset beacuse it hasn't been set.");
+					"Cannot get offset because it hasn't been set.");
 		}
 		return this.offset.getAsLong();
 	}
