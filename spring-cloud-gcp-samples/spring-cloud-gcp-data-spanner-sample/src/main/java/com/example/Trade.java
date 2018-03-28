@@ -17,6 +17,9 @@
 package com.example;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.annotation.Id;
 
@@ -26,15 +29,15 @@ import org.springframework.data.annotation.Id;
  */
 @Table(name = "trades")
 public class Trade {
-	@Id
-	String id;
 
+	@PrimaryKeyColumn(keyOrder = 2)
 	String action;
 
 	Double price;
 
 	Double shares;
 
+	@PrimaryKeyColumn(keyOrder = 1)
 	String symbol;
 
 	@Column(name = "trader_id")
@@ -42,7 +45,7 @@ public class Trade {
 
 	@Override
 	public String toString() {
-		return "id: " + this.id + " action: " + this.action + " price: "
+		return "action: " + this.action + " price: "
 				+ String.valueOf(this.price) + " shares: " + String.valueOf(this.shares)
 				+ " symbol: " + this.symbol + " trader: " + this.traderId;
 	}

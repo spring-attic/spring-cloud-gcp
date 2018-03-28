@@ -17,13 +17,17 @@
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.Expression;
@@ -57,6 +61,8 @@ public class SpannerPersistentEntityImpl<T>
 	private StandardEvaluationContext context;
 
 	private final Table table;
+
+	private final Map<Integer, SpannerPersistentProperty> primaryKeyParts = new HashMap<>();
 
 	/**
 	 * Creates a {@link SpannerPersistentEntityImpl}
@@ -94,10 +100,54 @@ public class SpannerPersistentEntityImpl<T>
 	public void addPersistentProperty(SpannerPersistentProperty property) {
 		addPersistentPropertyToPersistentEntity(property);
 		this.columnNames.add(property.getColumnName());
+
+		if (property.getPrimaryKeyOrder() != null
+				&& property.getPrimaryKeyOrder().isPresent()) {
+			int order = property.getPrimaryKeyOrder().getAsInt();
+			if (this.primaryKeyParts.containsKey(order)) {
+				throw new SpannerDataException(
+						"Two properties were annotated with the same primary key order: "
+								+ property.getColumnName() + " and "
+								+ this.primaryKeyParts.get(order).getColumnName());
+			}
+			this.primaryKeyParts.put(order, property);
+		}
 	}
 
 	private void addPersistentPropertyToPersistentEntity(SpannerPersistentProperty property) {
 		super.addPersistentProperty(property);
+	}
+
+	@Override
+	public SpannerPersistentProperty getIdProperty() {
+		return new SpannerCompositeKeyProperty(this, getPrimaryKeyProperties());
+	}
+
+	@Override
+	public void verify() {
+		super.verify();
+		if (this.primaryKeyParts.isEmpty()) {
+			throw new SpannerDataException(
+					"At least one primary key property is required!");
+		}
+		for (int i = 1; i <= this.primaryKeyParts.size(); i++) {
+			SpannerPersistentProperty keyPart = this.primaryKeyParts.get(i);
+			if (keyPart == null) {
+				throw new SpannerDataException(
+						"The primary key columns were not given a consecutive order. "
+								+ "There is no property annotated with order "
+								+ String.valueOf(i));
+			}
+		}
+	}
+
+	private SpannerPersistentProperty[] getPrimaryKeyProperties() {
+		SpannerPersistentProperty[] primaryKeyColumns =
+				new SpannerPersistentProperty[this.primaryKeyParts.size()];
+		for (int i = 1; i <= this.primaryKeyParts.size(); i++) {
+			primaryKeyColumns[i - 1] = this.primaryKeyParts.get(i);
+		}
+		return primaryKeyColumns;
 	}
 
 	@Override
@@ -118,4 +168,39 @@ public class SpannerPersistentEntityImpl<T>
 		this.context.setRootObject(applicationContext);
 	}
 
+	@Override
+	public PersistentPropertyAccessor getPropertyAccessor(Object object) {
+		PersistentPropertyAccessor delegatedAccessor = super.getPropertyAccessor(object);
+		return new PersistentPropertyAccessor() {
+
+			@Override
+			public void setProperty(PersistentProperty<?> property,
+					@Nullable Object value) {
+				if (property.isIdProperty()) {
+					throw new SpannerDataException(
+							"Setting the primary key directly via the Key ID property is not supported. "
+									+ "Please set the underlying column properties.");
+				}
+				else {
+					delegatedAccessor.setProperty(property, value);
+				}
+			}
+
+			@Nullable
+			@Override
+			public Object getProperty(PersistentProperty<?> property) {
+				if (property.isIdProperty()) {
+					return ((SpannerCompositeKeyProperty) property).getId(getBean());
+				}
+				else {
+					return delegatedAccessor.getProperty(property);
+				}
+			}
+
+			@Override
+			public Object getBean() {
+				return delegatedAccessor.getBean();
+			}
+		};
+	}
 }

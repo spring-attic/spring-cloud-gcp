@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,7 +18,9 @@ package com.example;
 
 import java.util.List;
 
-import org.springframework.data.repository.CrudRepository;
+import com.google.cloud.spanner.Key;
+
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -26,9 +28,9 @@ import org.springframework.stereotype.Repository;
  * @author Chengyuan Zhao
  */
 @Repository
-public interface TradeRepository extends CrudRepository<Trade, String> {
+public interface TradeRepository extends PagingAndSortingRepository<Trade, Key> {
 
-	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderByIdDesc(
+	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
 			String action, String symbol, String traderId);
 
 	List<Trade> findByAction(String action);

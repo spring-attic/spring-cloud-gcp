@@ -16,16 +16,17 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import io.grpc.Attributes.Key;
 import org.junit.Test;
 
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.expression.spel.SpelEvaluationException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -89,9 +90,45 @@ public class SpannerPersistentEntityImplTests {
 		assertThat(entity.tableName(), is("table_something"));
 	}
 
+	@Test(expected = SpannerDataException.class)
+	public void testDuplicatePrimaryKeyOrder() {
+		new SpannerMappingContext()
+				.getPersistentEntity(EntityWithDuplicatePrimaryKeyOrder.class);
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void testInvalidPrimaryKeyOrder() {
+		new SpannerMappingContext()
+				.getPersistentEntity(EntityWithWronglyOrderedKeys.class).getIdProperty();
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void testNoIdEntity() {
+		new SpannerMappingContext().getPersistentEntity(EntityWithNoId.class)
+				.getIdProperty();
+	}
+
+	@Test
+	public void testGetIdProperty() {
+		assertTrue(new SpannerMappingContext().getPersistentEntity(TestEntity.class)
+				.getIdProperty() instanceof SpannerCompositeKeyProperty);
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void testSetIdProperty() {
+		SpannerPersistentEntityImpl<TestEntity> entity =
+				(SpannerPersistentEntityImpl<TestEntity>) new SpannerMappingContext()
+				.getPersistentEntity(TestEntity.class);
+
+		SpannerPersistentProperty idProperty = entity.getIdProperty();
+
+		TestEntity t = new TestEntity();
+		entity.getPropertyAccessor(t).setProperty(idProperty, Key.of("blah"));
+	}
+
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
-		@Id
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
 		@Column(name = "custom_col")
@@ -99,7 +136,7 @@ public class SpannerPersistentEntityImplTests {
 	}
 
 	private static class EntityNoCustomName {
-		@Id
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
 		String something;
@@ -107,7 +144,7 @@ public class SpannerPersistentEntityImplTests {
 
 	@Table(name = "")
 	private static class EntityEmptyCustomName {
-		@Id
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
 		String something;
@@ -115,9 +152,29 @@ public class SpannerPersistentEntityImplTests {
 
 	@Table(name = "#{'table_'.concat(tablePostfix)}")
 	private static class EntityWithExpression {
-		@Id
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
 		String something;
+	}
+
+	private static class EntityWithDuplicatePrimaryKeyOrder {
+		@PrimaryKeyColumn(keyOrder = 1)
+		String id;
+
+		@PrimaryKeyColumn(keyOrder = 1)
+		String id2;
+	}
+
+	private static class EntityWithWronglyOrderedKeys {
+		@PrimaryKeyColumn(keyOrder = 1)
+		String id;
+
+		@PrimaryKeyColumn(keyOrder = 3)
+		String id2;
+	}
+
+	private static class EntityWithNoId {
+		String id;
 	}
 }

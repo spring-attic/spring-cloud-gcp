@@ -14,20 +14,18 @@
  *  limitations under the License.
  */
 
-package com.example;
+package org.springframework.cloud.gcp.data.spanner.test.domain;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
+import java.util.List;
 
-/**
- * @author Chengyuan Zhao
- */
-@SpringBootApplication
-@EnableSpannerRepositories(namedQueriesLocation = "classpath:spanner-named-queries.properties")
-public class SpannerApplication {
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.stereotype.Repository;
 
-	public static void main(String[] args) {
-		SpringApplication.run(SpannerApplication.class, args);
-	}
+@Repository
+public interface TradeRepository extends PagingAndSortingRepository<Trade, String> {
+
+	List<Trade> findByTraderId(String traderId);
+
+	int countByAction(String action);
+
 }

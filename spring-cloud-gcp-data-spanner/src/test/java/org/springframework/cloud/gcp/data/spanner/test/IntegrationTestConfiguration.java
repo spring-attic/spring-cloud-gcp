@@ -14,25 +14,20 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.spanner;
+package org.springframework.cloud.gcp.data.spanner.test;
 
 import java.io.IOException;
 
-import com.google.api.gax.core.CredentialsProvider;
-import com.google.auth.Credentials;
+import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
 
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
@@ -40,76 +35,80 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
 /**
- * Provides Spring Data classes to use with Google Spanner.
- *
- * @author Chengyuan Zhao
+ * @author Balint Pato
  */
+
 @Configuration
-@AutoConfigureAfter(GcpContextAutoConfiguration.class)
-@ConditionalOnProperty(value = "spring.cloud.gcp.spanner.enabled", matchIfMissing = true)
-@ConditionalOnClass({ SpannerMappingContext.class, SpannerOperations.class,
-		SpannerMutationFactory.class, SpannerConverter.class })
-@EnableConfigurationProperties(GcpSpannerProperties.class)
-public class GcpSpannerAutoConfiguration {
+@PropertySource("application-test.properties")
+@EnableSpannerRepositories
+public class IntegrationTestConfiguration {
 
-	private final String projectId;
+	@Value("${test.integration.spanner.db}")
+	private String databaseName;
 
-	private final String instanceId;
+	@Value("${test.integration.spanner.instance}")
+	private String instanceId;
 
-	private final String databaseName;
-
-	private final Credentials credentials;
-
-	public GcpSpannerAutoConfiguration(GcpSpannerProperties gcpSpannerProperties,
-			GcpProjectIdProvider projectIdProvider,
-			CredentialsProvider credentialsProvider) throws IOException {
-		this.credentials = (gcpSpannerProperties.getCredentials().getLocation() != null
-				? new DefaultCredentialsProvider(gcpSpannerProperties)
-				: credentialsProvider).getCredentials();
-		this.projectId = gcpSpannerProperties.getProjectId() != null
-				? gcpSpannerProperties.getProjectId()
-				: projectIdProvider.getProjectId();
-		this.instanceId = gcpSpannerProperties.getInstanceId();
-		this.databaseName = gcpSpannerProperties.getDatabase();
+	@Bean
+	public String getDatabaseName() {
+		return this.databaseName;
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
+	public String getInstanceId() {
+		return this.instanceId;
+	}
+
+	@Bean
+	public String getProjectId() {
+		return new DefaultGcpProjectIdProvider().getProjectId();
+	}
+
+	@Bean
+	public com.google.auth.Credentials getCredentials() {
+
+		try {
+			return new DefaultCredentialsProvider(Credentials::new)
+					.getCredentials();
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Bean
 	public SpannerOptions spannerOptions() {
-		return SpannerOptions.newBuilder().setProjectId(this.projectId)
-				.setCredentials(this.credentials).build();
+		return SpannerOptions.newBuilder().setProjectId(getProjectId())
+				.setCredentials(getCredentials()).build();
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public DatabaseId databaseId() {
-		return DatabaseId.of(this.projectId, this.instanceId, this.databaseName);
+		return DatabaseId.of(getProjectId(), this.instanceId, this.databaseName);
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public Spanner spanner(SpannerOptions spannerOptions) {
 		return spannerOptions.getService();
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public DatabaseClient spannerDatabaseClient(Spanner spanner, DatabaseId databaseId) {
 		return spanner.getDatabaseClient(databaseId);
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public SpannerMappingContext spannerMappingContext() {
 		return new SpannerMappingContext();
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public SpannerOperations spannerOperations(DatabaseClient databaseClient,
 			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
 			SpannerMutationFactory spannerMutationFactory) {
@@ -118,16 +117,19 @@ public class GcpSpannerAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public SpannerConverter spannerConverter(SpannerMappingContext mappingContext) {
 		return new MappingSpannerConverter(mappingContext);
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public SpannerMutationFactory spannerMutationFactory(
 			SpannerConverter spannerConverter,
 			SpannerMappingContext spannerMappingContext) {
 		return new SpannerMutationFactoryImpl(spannerConverter, spannerMappingContext);
+	}
+
+	@Bean
+	public DatabaseAdminClient databaseAdminClient(Spanner spanner) {
+		return spanner.getDatabaseAdminClient();
 	}
 }

@@ -21,12 +21,12 @@ import java.util.Optional;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityInformation;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerQueryLookupStrategy;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.repository.core.support.PersistentEntityInformation;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
@@ -71,7 +71,7 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport {
 					domainClass.getName()));
 		}
 
-		return new PersistentEntityInformation<>((SpannerPersistentEntity<T>) entity);
+		return new SpannerPersistentEntityInformation(entity);
 	}
 
 	@Override
