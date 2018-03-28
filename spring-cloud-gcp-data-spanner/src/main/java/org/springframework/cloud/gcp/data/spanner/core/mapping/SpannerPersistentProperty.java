@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.util.OptionalInt;
+
 import org.springframework.data.mapping.PersistentProperty;
 
 /**
@@ -41,4 +43,11 @@ public interface SpannerPersistentProperty
 	 * @return the inner type of the column. Returns null if no inner type is specified by annotation.
 	 */
 	Class getColumnInnerType();
+
+	/**
+	 * Gets the order of this column if it is part of the table's primary key. Will be
+	 * empty or null if this column is not part of the primary key.
+	 * @return
+	 */
+	OptionalInt getPrimaryKeyOrder();
 }

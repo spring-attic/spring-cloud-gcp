@@ -28,9 +28,9 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.query.QueryMethod;
 
 import static org.junit.Assert.assertEquals;
@@ -224,7 +224,7 @@ public class SpannerStatementQueryTests {
 
 	@Table(name = "trades")
 	private static class Trade {
-		@Id
+		@PrimaryKeyColumn
 		String id;
 
 		String action;

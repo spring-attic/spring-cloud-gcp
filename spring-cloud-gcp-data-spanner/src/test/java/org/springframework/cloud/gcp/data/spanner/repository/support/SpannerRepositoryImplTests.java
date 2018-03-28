@@ -127,20 +127,20 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void findByIdTest() {
 		SpannerOperations operations = mock(SpannerOperations.class);
-		String key = "key";
+		Key key = Key.of("key");
 		Object ret = new Object();
-		when(operations.find(eq(Object.class), eq(Key.of(key)))).thenReturn(ret);
+		when(operations.find(eq(Object.class), eq(key))).thenReturn(ret);
 		assertEquals(ret,
 				new SpannerRepositoryImpl(operations, Object.class).findById(key).get());
-		verify(operations, times(1)).find(eq(Object.class), eq(Key.of(key)));
+		verify(operations, times(1)).find(eq(Object.class), eq(key));
 	}
 
 	@Test
 	public void existsByIdTestFound() {
 		SpannerOperations operations = mock(SpannerOperations.class);
-		String key = "key";
+		Key key = Key.of("key");
 		Object ret = new Object();
-		when(operations.find(eq(Object.class), eq(Key.of(key)))).thenReturn(ret);
+		when(operations.find(eq(Object.class), eq(key))).thenReturn(ret);
 		assertTrue(new SpannerRepositoryImpl(operations, Object.class).existsById(key));
 	}
 
@@ -149,7 +149,8 @@ public class SpannerRepositoryImplTests {
 		SpannerOperations operations = mock(SpannerOperations.class);
 		when(operations.find(eq(Object.class), any())).thenReturn(null);
 		assertFalse(
-				new SpannerRepositoryImpl(operations, Object.class).existsById("key"));
+				new SpannerRepositoryImpl(operations, Object.class)
+						.existsById(Key.of("key")));
 	}
 
 	@Test
@@ -184,7 +185,7 @@ public class SpannerRepositoryImplTests {
 			return null;
 		});
 		new SpannerRepositoryImpl(operations, Object.class)
-				.findAllById(Arrays.asList("key1", "key2"));
+				.findAllById(Arrays.asList(Key.of("key1"), Key.of("key2")));
 	}
 
 	@Test
@@ -197,9 +198,9 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void deleteByIdTest() {
 		SpannerOperations operations = mock(SpannerOperations.class);
-		String key = "key";
+		Key key = Key.of("key");
 		new SpannerRepositoryImpl(operations, Object.class).deleteById(key);
-		verify(operations, times(1)).delete(eq(Object.class), eq(Key.of(key)));
+		verify(operations, times(1)).delete(eq(Object.class), eq(key));
 	}
 
 	@Test

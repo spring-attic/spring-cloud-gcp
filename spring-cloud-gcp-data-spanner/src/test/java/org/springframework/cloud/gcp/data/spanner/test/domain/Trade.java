@@ -20,8 +20,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
-import org.springframework.data.annotation.Id;
 
 /**
  * @author Ray Tsang
@@ -30,7 +30,7 @@ import org.springframework.data.annotation.Id;
  */
 @Table(name = "#{'trades_'.concat(tableNameSuffix)}")
 public class Trade {
-	@Id
+	@PrimaryKeyColumn
 	private String id;
 
 	private String action;
@@ -44,6 +44,31 @@ public class Trade {
 	@Column(name = "trader_id")
 	private String traderId;
 
+	public static Trade aTrade() {
+		Trade t = new Trade();
+		String tradeId = UUID.randomUUID().toString();
+		String traderId = UUID.randomUUID().toString();
+
+		t.id = tradeId;
+		t.symbol = "ABCD";
+		t.action = "BUY";
+		t.traderId = traderId;
+		t.price = 100.0;
+		t.shares = 12345.6;
+		return t;
+	}
+
+	public static String createDDL(String tableName) {
+		return "CREATE TABLE " + tableName + "(" + "\tid STRING(128) NOT NULL,\n"
+				+ "\taction STRING(15),\n" + "\tprice FLOAT64,\n" + "\tshares FLOAT64,\n"
+				+ "\tsymbol STRING(5),\n" + "\ttrader_id STRING(128),\n"
+				+ ") PRIMARY KEY (id)";
+	}
+
+	public static String dropDDL(String tableName) {
+		return "DROP table " + tableName;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -53,17 +78,18 @@ public class Trade {
 			return false;
 		}
 		Trade trade = (Trade) o;
-		return Objects.equals(this.id, trade.id) &&
-				Objects.equals(this.action, trade.action) &&
-				Objects.equals(this.price, trade.price) &&
-				Objects.equals(this.shares, trade.shares) &&
-				Objects.equals(this.symbol, trade.symbol) &&
-				Objects.equals(this.traderId, trade.traderId);
+		return Objects.equals(this.id, trade.id)
+				&& Objects.equals(this.action, trade.action)
+				&& Objects.equals(this.price, trade.price)
+				&& Objects.equals(this.shares, trade.shares)
+				&& Objects.equals(this.symbol, trade.symbol)
+				&& Objects.equals(this.traderId, trade.traderId);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.id, this.action, this.price, this.shares, this.symbol, this.traderId);
+		return Objects.hash(this.id, this.action, this.price, this.shares, this.symbol,
+				this.traderId);
 	}
 
 	public String getId() {
@@ -116,42 +142,8 @@ public class Trade {
 
 	@Override
 	public String toString() {
-		return "Trade{" +
-				"id='" + this.id + '\'' +
-				", action='" + this.action + '\'' +
-				", price=" + this.price +
-				", shares=" + this.shares +
-				", symbol='" + this.symbol + '\'' +
-				", traderId='" + this.traderId + '\'' +
-				'}';
-	}
-
-	public static Trade aTrade() {
-		Trade t = new Trade();
-		String tradeId = UUID.randomUUID().toString();
-		String traderId = UUID.randomUUID().toString();
-
-		t.id = tradeId;
-		t.symbol = "ABCD";
-		t.action = "BUY";
-		t.traderId = traderId;
-		t.price = 100.0;
-		t.shares = 12345.6;
-		return t;
-	}
-
-	public static String createDDL(String tableName) {
-		return "CREATE TABLE " + tableName + "("
-				+ "\tid STRING(128) NOT NULL,\n"
-				+ "\taction STRING(15),\n"
-				+ "\tprice FLOAT64,\n"
-				+ "\tshares FLOAT64,\n"
-				+ "\tsymbol STRING(5),\n"
-				+ "\ttrader_id STRING(128),\n"
-				+ ") PRIMARY KEY (id)";
-	}
-
-	public static String dropDDL(String tableName) {
-		return "DROP table " + tableName;
+		return "Trade{" + "id='" + this.id + '\'' + ", action='" + this.action + '\''
+				+ ", price=" + this.price + ", shares=" + this.shares + ", symbol='"
+				+ this.symbol + '\'' + ", traderId='" + this.traderId + '\'' + '}';
 	}
 }

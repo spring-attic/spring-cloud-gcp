@@ -37,10 +37,10 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerCon
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
-import org.springframework.data.annotation.Id;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
@@ -401,7 +401,7 @@ public class SpannerObjectMapperImplTests {
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
-		@Id
+		@PrimaryKeyColumn
 		String id;
 
 		@Column(name = "custom_col")
@@ -446,6 +446,9 @@ public class SpannerObjectMapperImplTests {
 
 	@Table(name = "faulty_test_table")
 	private static class FaultyTestEntity {
+		@PrimaryKeyColumn
+		String id;
+
 		TestEntity fieldWithUnsupportedType;
 
 		List<Double> doubleList;
@@ -453,6 +456,8 @@ public class SpannerObjectMapperImplTests {
 
 	@Table(name = "faulty_test_table_2")
 	private static class FaultyTestEntity2 {
+		@PrimaryKeyColumn
+		String id;
 
 		@ColumnInnerType(innerType = TestEntity.class)
 		List<TestEntity> listWithUnsupportedInnerType;

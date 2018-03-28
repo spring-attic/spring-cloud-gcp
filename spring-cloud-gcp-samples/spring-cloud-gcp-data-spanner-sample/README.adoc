@@ -13,15 +13,14 @@ and a table also named "trades".
 The columns should be created as follows:
 +
 ```
-CREATE TABLE trades (
-  id STRING(128) NOT NULL,
-  action STRING(15),
-  price FLOAT64,
-  shares FLOAT64,
-  symbol STRING(5),
-  trader_id STRING(128)
-) PRIMARY KEY (id)
+action , STRING
+price , FLOAT64
+shares , FLOAT64
+symbol , STRING
+trader_id , STRING
 ```
+
+The columns `action` and `symbol` should be set as the composite primary key in that order.
 
 3. Place your project ID in the `spring.cloud.gcp.spanner.projectId` setting in `application.properties`
 if you are not providing the project ID from a JSON key file or the SDK.
@@ -29,5 +28,5 @@ if you are not providing the project ID from a JSON key file or the SDK.
 4. Run the `SpannerApplication` Spring Boot app.
 
 5. Navigate to http://localhost:8080/ in your browser. This causes the app to generate 5 `Trade`
-objects filled with some random data and persists them to the Spanner table created earlier.
+objects filled with some demo data and persists them to the Spanner table created earlier.
 These POJOs are then retrieved and their contents are printed in the browser.
