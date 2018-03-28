@@ -126,51 +126,51 @@ public class SpannerPersistentEntityImplTests {
 		entity.getPropertyAccessor(t).setProperty(idProperty, Key.of("blah"));
 	}
 
-	@SpannerTable(name = "custom_test_table")
+	@Table(name = "custom_test_table")
 	private static class TestEntity {
-		@SpannerPrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
-		@SpannerColumn(name = "custom_col")
+		@Column(name = "custom_col")
 		String something;
 	}
 
 	private static class EntityNoCustomName {
-		@SpannerPrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
 		String something;
 	}
 
-	@SpannerTable(name = "")
+	@Table(name = "")
 	private static class EntityEmptyCustomName {
-		@SpannerPrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
 		String something;
 	}
 
-	@SpannerTable(name = "#{'table_'.concat(tablePostfix)}")
+	@Table(name = "#{'table_'.concat(tablePostfix)}")
 	private static class EntityWithExpression {
-		@SpannerPrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
 		String something;
 	}
 
 	private static class EntityWithDuplicatePrimaryKeyOrder {
-		@SpannerPrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
-		@SpannerPrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id2;
 	}
 
 	private static class EntityWithWronglyOrderedKeys {
-		@SpannerPrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
-		@SpannerPrimaryKeyColumn(keyOrder = 3)
+		@PrimaryKeyColumn(keyOrder = 3)
 		String id2;
 	}
 

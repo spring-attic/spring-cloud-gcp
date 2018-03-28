@@ -117,18 +117,18 @@ public class SpannerPersistentPropertyImplTests {
 		});
 	}
 
-	@SpannerTable(name = "custom_test_table")
+	@Table(name = "custom_test_table")
 	private static class TestEntity {
-		@SpannerPrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
-		@SpannerColumn(name = "custom_col")
+		@Column(name = "custom_col")
 		String something;
 
-		@SpannerColumn(name = "")
+		@Column(name = "")
 		String other;
 
-		@SpannerColumnInnerType(innerType = Double.class)
+		@ColumnInnerType(innerType = Double.class)
 		List<Double> doubleList;
 	}
 }

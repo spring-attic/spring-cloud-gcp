@@ -27,10 +27,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPrimaryKeyColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.repository.query.QueryMethod;
 
 import static org.junit.Assert.assertEquals;
@@ -222,9 +222,9 @@ public class SpannerStatementQueryTests {
 				.thenReturn(results);
 	}
 
-	@SpannerTable(name = "trades")
+	@Table(name = "trades")
 	private static class Trade {
-		@SpannerPrimaryKeyColumn
+		@PrimaryKeyColumn
 		String id;
 
 		String action;
@@ -233,10 +233,10 @@ public class SpannerStatementQueryTests {
 
 		Double shares;
 
-		@SpannerColumn(name = "ticker")
+		@Column(name = "ticker")
 		String symbol;
 
-		@SpannerColumn(name = "trader_id")
+		@Column(name = "trader_id")
 		String traderId;
 	}
 }

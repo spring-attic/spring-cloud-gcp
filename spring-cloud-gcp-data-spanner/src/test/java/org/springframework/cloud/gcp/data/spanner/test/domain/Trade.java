@@ -19,18 +19,18 @@ package org.springframework.cloud.gcp.data.spanner.test.domain;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPrimaryKeyColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 /**
  * @author Ray Tsang
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-@SpannerTable(name = "#{'trades_'.concat(tableNameSuffix)}")
+@Table(name = "#{'trades_'.concat(tableNameSuffix)}")
 public class Trade {
-	@SpannerPrimaryKeyColumn
+	@PrimaryKeyColumn
 	private String id;
 
 	private String action;
@@ -41,7 +41,7 @@ public class Trade {
 
 	private String symbol;
 
-	@SpannerColumn(name = "trader_id")
+	@Column(name = "trader_id")
 	private String traderId;
 
 	public static Trade aTrade() {

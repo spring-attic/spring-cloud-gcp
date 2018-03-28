@@ -16,28 +16,28 @@
 
 package com.example;
 
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPrimaryKeyColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-@SpannerTable(name = "trades")
+@Table(name = "trades")
 public class Trade {
 
-	@SpannerPrimaryKeyColumn(keyOrder = 2)
+	@PrimaryKeyColumn(keyOrder = 2)
 	String action;
 
 	Double price;
 
 	Double shares;
 
-	@SpannerPrimaryKeyColumn(keyOrder = 1)
+	@PrimaryKeyColumn(keyOrder = 1)
 	String symbol;
 
-	@SpannerColumn(name = "trader_id")
+	@Column(name = "trader_id")
 	String traderId;
 
 	@Override

@@ -38,10 +38,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPrimaryKeyColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -388,18 +388,18 @@ public class SpannerTemplateTests {
 				this.spannerTemplate.getId(t));
 	}
 
-	@SpannerTable(name = "custom_test_table")
+	@Table(name = "custom_test_table")
 	private static class TestEntity {
-		@SpannerPrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
-		@SpannerPrimaryKeyColumn(keyOrder = 2)
+		@PrimaryKeyColumn(keyOrder = 2)
 		long id2;
 
-		@SpannerColumn(name = "custom_col")
+		@Column(name = "custom_col")
 		String something;
 
-		@SpannerColumn(name = "")
+		@Column(name = "")
 		String other;
 	}
 }
