@@ -19,9 +19,6 @@ package com.example;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
-import org.springframework.data.annotation.Id;
 
 /**
  * @author Ray Tsang
@@ -45,8 +42,8 @@ public class Trade {
 
 	@Override
 	public String toString() {
-		return "action: " + this.action + " price: "
-				+ String.valueOf(this.price) + " shares: " + String.valueOf(this.shares)
-				+ " symbol: " + this.symbol + " trader: " + this.traderId;
+		return "action: " + this.action + " price: " + String.valueOf(this.price)
+				+ " shares: " + String.valueOf(this.shares) + " symbol: " + this.symbol
+				+ " trader: " + this.traderId;
 	}
 }
