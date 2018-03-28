@@ -97,6 +97,10 @@ public class PubSubChannelAdaptersIntegrationTests {
 	@Autowired
 	private PubSubMessageHandler outboundChannelAdapter;
 
+	private static boolean isSetupDone;
+
+	private static int testsRan = 0;
+
 	@BeforeClass
 	public static void checkEmulatorIsRunning() {
 		assumeThat(System.getenv(EMULATOR_HOST_ENVVAR_NAME)).isNotNull();
@@ -104,6 +108,10 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 	@Before
 	public void setUp() {
+		if (isSetupDone) {
+			return;
+		}
+
 		this.pubSubAdmin.createTopic("desafinado");
 		this.pubSubAdmin.createSubscription("doralice", "desafinado");
 
@@ -114,16 +122,20 @@ public class PubSubChannelAdaptersIntegrationTests {
 		this.inboundChannelAdapter.setMessageConverter(stringMessageConverter);
 		this.inboundChannelAdapter.setAckMode(AckMode.AUTO);
 		this.outboundChannelAdapter.setPublishCallback(null);
+		isSetupDone = true;
 	}
 
 	@After
 	public void tearDown() {
-		this.pubSubAdmin.deleteTopic("desafinado");
-		this.pubSubAdmin.deleteSubscription("doralice");
+		if (testsRan == 4) {
+			this.pubSubAdmin.deleteTopic("desafinado");
+			this.pubSubAdmin.deleteSubscription("doralice");
+		}
 	}
 
 	@Test
 	public void sendAndReceiveMessage() {
+		testsRan++;
 		Map<String, Object> headers = new HashMap<>();
 		// Only String values for now..
 		headers.put("storm", "lift your skinny fists");
@@ -139,7 +151,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 		String payload = (String) message.getPayload();
 		assertThat(payload).isEqualTo("I am a message.");
 
-		assertThat(message.getHeaders().size()).isEqualTo(6);
+		assertThat(message.getHeaders().size()).isEqualTo(7);
 		assertThat(message.getHeaders().get("storm")).isEqualTo("lift your skinny fists");
 		assertThat(message.getHeaders().get("static")).isEqualTo("lift your skinny fists");
 		assertThat(message.getHeaders().get("sleep")).isEqualTo("lift your skinny fists");
@@ -147,6 +159,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 	@Test
 	public void sendAndReceiveMessageInBytes() {
+		testsRan++;
 		this.inboundChannelAdapter.setMessageConverter(null);
 		this.inputChannel.send(MessageBuilder.withPayload("I am a message.").build());
 
@@ -159,6 +172,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 	@Test
 	public void sendAndReceiveMessageManualAck() {
+		testsRan++;
 		this.inboundChannelAdapter.setAckMode(AckMode.MANUAL);
 		this.inputChannel.send(MessageBuilder.withPayload("I am a message.").build());
 
@@ -179,6 +193,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 	@Test
 	public void sendAndReceiveMessagePublishCallback() {
+		testsRan++;
 		ListenableFutureCallback<String> callbackSpy = Mockito.spy(new ListenableFutureCallback<String>() {
 			@Override
 			public void onFailure(Throwable ex) {
