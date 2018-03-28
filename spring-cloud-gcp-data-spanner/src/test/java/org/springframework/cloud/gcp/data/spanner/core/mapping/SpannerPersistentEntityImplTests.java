@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
-import io.grpc.Attributes.Key;
 import org.junit.Test;
 
 import org.springframework.context.ApplicationContext;
@@ -26,7 +25,7 @@ import org.springframework.expression.spel.SpelEvaluationException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -99,31 +98,18 @@ public class SpannerPersistentEntityImplTests {
 	@Test(expected = SpannerDataException.class)
 	public void testInvalidPrimaryKeyOrder() {
 		new SpannerMappingContext()
-				.getPersistentEntity(EntityWithWronglyOrderedKeys.class).getIdProperty();
+				.getPersistentEntity(EntityWithWronglyOrderedKeys.class);
 	}
 
 	@Test(expected = SpannerDataException.class)
 	public void testNoIdEntity() {
-		new SpannerMappingContext().getPersistentEntity(EntityWithNoId.class)
-				.getIdProperty();
+		new SpannerMappingContext().getPersistentEntity(EntityWithNoId.class);
 	}
 
 	@Test
 	public void testGetIdProperty() {
-		assertTrue(new SpannerMappingContext().getPersistentEntity(TestEntity.class)
-				.getIdProperty() instanceof SpannerCompositeKeyProperty);
-	}
-
-	@Test(expected = SpannerDataException.class)
-	public void testSetIdProperty() {
-		SpannerPersistentEntityImpl<TestEntity> entity =
-				(SpannerPersistentEntityImpl<TestEntity>) new SpannerMappingContext()
-				.getPersistentEntity(TestEntity.class);
-
-		SpannerPersistentProperty idProperty = entity.getIdProperty();
-
-		TestEntity t = new TestEntity();
-		entity.getPropertyAccessor(t).setProperty(idProperty, Key.of("blah"));
+		assertNull(new SpannerMappingContext().getPersistentEntity(TestEntity.class)
+				.getIdProperty());
 	}
 
 	@Table(name = "custom_test_table")

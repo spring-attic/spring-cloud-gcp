@@ -89,8 +89,7 @@ public class SpannerTemplate implements SpannerOperations {
 	public Key getId(Object object) {
 		SpannerPersistentEntity persistentEntity = this.mappingContext
 				.getPersistentEntity(object.getClass());
-		return (Key) persistentEntity.getPropertyAccessor(object)
-				.getProperty(persistentEntity.getIdProperty());
+		return persistentEntity.getKey(object);
 	}
 
 	@Override
