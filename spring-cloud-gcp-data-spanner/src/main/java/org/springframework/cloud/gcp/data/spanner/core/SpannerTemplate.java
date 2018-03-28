@@ -17,7 +17,11 @@
 package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -35,6 +39,11 @@ import com.google.cloud.spanner.Struct;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
 /**
@@ -117,18 +126,80 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
+	public <T> List<T> findAll(Class<T> entityClass, Sort sort, QueryOption... options) {
+		return findAll(entityClass, sort, OptionalLong.empty(), OptionalLong.empty(),
+				options);
+	}
+
+	@Override
+	public <T> List<T> findAll(Class<T> entityClass, Sort sort, OptionalLong limit,
+			OptionalLong offset, QueryOption... options) {
+		Assert.notNull(sort, "sort must not be null!");
+
+		StringBuilder stringBuilder = new StringBuilder();
+		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
+				.getPersistentEntity(entityClass);
+		stringBuilder.append("SELECT * FROM " + persistentEntity.tableName() + " ");
+		SpannerStatementQueryExecutor.buildOrderBy(persistentEntity, stringBuilder, sort);
+		if (limit != null && limit.isPresent()) {
+			stringBuilder.append(" LIMIT " + limit.getAsLong());
+		}
+		if (offset != null && offset.isPresent()) {
+			stringBuilder.append(" OFFSET " + offset.getAsLong());
+		}
+		stringBuilder.append(";");
+		return find(entityClass, Statement.of(stringBuilder.toString()), options);
+	}
+
+	@Override
+	public <T> Page<T> findAll(Class<T> entityClass, Pageable pageable,
+			QueryOption... options) {
+		Assert.notNull(pageable, "Pageable must not be null!");
+
+		Long count = count(entityClass);
+		List<T> list = findAll(entityClass, pageable.getSort(),
+				OptionalLong.of(pageable.getPageSize()),
+				OptionalLong.of(pageable.getOffset()), options);
+		return new PageImpl(list, pageable, count);
+	}
+
+	@Override
 	public void insert(Object object) {
 		applyMutationUsingEntity(this.mutationFactory::insert, object);
 	}
 
 	@Override
 	public void update(Object object) {
-		applyMutationUsingEntity(this.mutationFactory::update, object);
+		applyMutationTwoArgs(this.mutationFactory::update, object, null);
+	}
+
+	@Override
+	public void update(Object object, String... includeColumns) {
+		applyMutationTwoArgs(this.mutationFactory::update, object,
+				includeColumns.length == 0 ? null
+						: Optional.of(new HashSet<>(Arrays.asList(includeColumns))));
+	}
+
+	@Override
+	public void update(Object object, Optional<Set<String>> includeColumns) {
+		applyMutationTwoArgs(this.mutationFactory::update, object, includeColumns);
 	}
 
 	@Override
 	public void upsert(Object object) {
-		applyMutationUsingEntity(this.mutationFactory::upsert, object);
+		applyMutationTwoArgs(this.mutationFactory::upsert, object, null);
+	}
+
+	@Override
+	public void upsert(Object object, String... includeColumns) {
+		applyMutationTwoArgs(this.mutationFactory::upsert, object,
+				includeColumns.length == 0 ? null
+						: Optional.of(new HashSet<>(Arrays.asList(includeColumns))));
+	}
+
+	@Override
+	public void upsert(Object object, Optional<Set<String>> includeColumns) {
+		applyMutationTwoArgs(this.mutationFactory::upsert, object, includeColumns);
 	}
 
 	@Override
@@ -138,36 +209,38 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public void delete(Class entityClass, Key key) {
-		applyMutationWithClass(this.mutationFactory::delete, entityClass, key);
+		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, key);
 	}
 
 	@Override
 	public <T> void delete(Class<T> entityClass, Iterable<? extends T> entities) {
-		applyMutationWithClass(this.mutationFactory::delete, entityClass, entities);
+		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, entities);
 	}
 
 	@Override
 	public void delete(Class entityClass, KeySet keys) {
-		applyMutationWithClass(this.mutationFactory::delete, entityClass, keys);
+		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, keys);
 	}
 
 	@Override
 	public long count(Class entityClass) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		ResultSet resultSet = this.databaseClient.singleUse().executeQuery(Statement.of(
-				String.format("select count(*) from %s", persistentEntity.tableName())));
-		resultSet.next();
-		return resultSet.getLong(0);
+		Statement statement = Statement.of(String.format(
+				"select count(*) from %s", persistentEntity.tableName()));
+		try (ResultSet resultSet = this.databaseClient.singleUse().executeQuery(statement)) {
+			resultSet.next();
+			return resultSet.getLong(0);
+		}
 	}
 
-	private <T, U> void applyMutationWithClass(BiFunction<T, U, Mutation> function,
+	private <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,
 			T arg1,
 			U arg2) {
 		this.databaseClient.write(Arrays.asList(function.apply(arg1, arg2)));
 	}
 
 	private <T> void applyMutationUsingEntity(Function<T, Mutation> function, T arg) {
-		applyMutationWithClass((T t, Object unused) -> function.apply(t), arg, null);
+		applyMutationTwoArgs((T t, Object unused) -> function.apply(t), arg, null);
 	}
 }

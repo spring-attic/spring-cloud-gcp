@@ -36,7 +36,7 @@ public class SpannerRepositoryFactoryBean extends RepositoryFactoryBeanSupport {
 	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 */
-	public SpannerRepositoryFactoryBean(Class<?> repositoryInterface) {
+	public SpannerRepositoryFactoryBean(Class repositoryInterface) {
 		super(repositoryInterface);
 	}
 

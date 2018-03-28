@@ -16,58 +16,47 @@
 
 package org.springframework.cloud.gcp.autoconfigure.config;
 
-import org.junit.After;
 import org.junit.Test;
 
-import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Jisha Abubaker
+ * @author João André Martins
  */
 public class GcpConfigBootstrapConfigurationTest {
-	private AnnotationConfigApplicationContext context;
 
-	@After
-	public void closeContext() {
-		if (this.context != null) {
-			this.context.close();
-		}
-	}
+	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+			.withConfiguration(AutoConfigurations.of(GcpConfigBootstrapConfiguration.class));
 
 	@Test
 	public void testConfigurationValueDefaultsAreAsExpected() {
-		loadEnvironment();
-		GcpConfigProperties config = this.context.getBean(GcpConfigProperties.class);
-		assertEquals(config.getName(), null);
-		assertEquals(config.getProfile(), "default");
-		assertEquals(config.getTimeoutMillis(), 60000);
-		assertEquals(config.isEnabled(), false);
+		this.contextRunner.run(context -> {
+			GcpConfigProperties config = context.getBean(GcpConfigProperties.class);
+			assertThat(config.getName()).isNull();
+			assertThat(config.getProfile()).isEqualTo("default");
+			assertThat(config.getTimeoutMillis()).isEqualTo(60000);
+			assertThat(config.isEnabled()).isFalse();
+		});
 	}
 
 	@Test
 	public void testConfigurationValuesAreCorrectlyLoaded() {
-		loadEnvironment("spring.cloud.gcp.config.name=myapp",
+		this.contextRunner.withPropertyValues("spring.cloud.gcp.config.name=myapp",
 				"spring.cloud.gcp.config.profile=prod",
 				"spring.cloud.gcp.config.timeoutMillis=120000",
 				"spring.cloud.gcp.config.enabled=false",
-				"spring.cloud.gcp.config.project-id=pariah");
-		GcpConfigProperties config = this.context.getBean(GcpConfigProperties.class);
-		assertEquals(config.getName(), "myapp");
-		assertEquals(config.getProfile(), "prod");
-		assertEquals(config.getTimeoutMillis(), 120000);
-		assertFalse(config.isEnabled());
-		assertEquals(config.getProjectId(), "pariah");
-	}
-
-	private void loadEnvironment(String... environment) {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		TestPropertyValues.of(environment).applyTo(context);
-		context.register(GcpConfigBootstrapConfiguration.class);
-		context.refresh();
-		this.context = context;
+				"spring.cloud.gcp.config.project-id=pariah")
+				.run(context -> {
+					GcpConfigProperties config = context.getBean(GcpConfigProperties.class);
+					assertThat(config.getName()).isEqualTo("myapp");
+					assertThat(config.getProfile()).isEqualTo("prod");
+					assertThat(config.getTimeoutMillis()).isEqualTo(120000);
+					assertThat(config.isEnabled()).isFalse();
+					assertThat(config.getProjectId()).isEqualTo("pariah");
+				});
 	}
 }

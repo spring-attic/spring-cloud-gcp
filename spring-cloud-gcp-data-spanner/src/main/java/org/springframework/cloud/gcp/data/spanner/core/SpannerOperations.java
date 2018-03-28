@@ -17,11 +17,18 @@
 package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.Set;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Statement;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 /**
  * Defines operations available to use with Spanner.
@@ -87,6 +94,44 @@ public interface SpannerOperations {
 	<T> List<T> findAll(Class<T> entityClass, Options.ReadOption... options);
 
 	/**
+	 * Finds all objects of the given type.
+	 * @param entityClass the type of the object to retrieve.
+	 * @param sort the sorting used for the results.
+	 * @param options Spanner query options with which to conduct the query operation.
+	 * @param <T> the type of the object to retrieve.
+	 * @return a list of all objects stored of the given type. If there are no objects an
+	 * empty list is returned.
+	 */
+	<T> List<T> findAll(Class<T> entityClass, Sort sort, Options.QueryOption... options);
+
+	/**
+	 * Finds all objects of the given type.
+	 * @param entityClass the type of the object to retrieve.
+	 * @param sort the sorting used for the results.
+	 * @param limit the number of elements to get at maximum.
+	 * @param offset the number of elements to skip from the beginning according to the
+	 * sort.
+	 * @param options Spanner query options with which to conduct the query operation.
+	 * @param <T> the type of the object to retrieve.
+	 * @return a list of all objects stored of the given type. If there are no objects an
+	 * empty list is returned.
+	 */
+	<T> List<T> findAll(Class<T> entityClass, Sort sort, OptionalLong limit,
+			OptionalLong offset, Options.QueryOption... options);
+
+	/**
+	 * Finds all objects of the given type.
+	 * @param entityClass the type of the object to retrieve.
+	 * @param pageable the paging options for this request.
+	 * @param options Spanner query options with which to conduct the query operation.
+	 * @param <T> the type of the object to retrieve.
+	 * @return a list of all objects stored of the given type. If there are no objects an
+	 * empty list is returned.
+	 */
+	<T> Page<T> findAll(Class<T> entityClass, Pageable pageable,
+			Options.QueryOption... options);
+
+	/**
 	 * Deletes an object based on a key.
 	 * @param entityClass the type of the object to delete.
 	 * @param key the key of the object to delete from storage.
@@ -127,10 +172,44 @@ public interface SpannerOperations {
 	void update(Object object);
 
 	/**
+	 * Update an object in storage.
+	 * @param object the object to update.
+	 * @param includeColumns the columns to upsert. if none are given then all columns are
+	 * used
+	 */
+	void update(Object object, String... includeColumns);
+
+	/**
+	 * Update an object in storage.
+	 * @param object the object to update.
+	 * @param includeColumns the columns to update. If null or an empty Optional is given, then
+	 * all columns are used. Note that an Optional occupied by an empty Set means that no columns
+	 * will be used.
+	 */
+	void update(Object object, Optional<Set<String>> includeColumns);
+
+	/**
 	 * Update or insert an object into storage.
 	 * @param object the object to update or insert.
 	 */
 	void upsert(Object object);
+
+	/**
+	 * Update or insert an object into storage.
+	 * @param object the object to update or insert.
+	 * @param includeColumns the columns to upsert. if none are given then all columns are
+	 * upserted.
+	 */
+	void upsert(Object object, String... includeColumns);
+
+	/**
+	 * Update or insert an object into storage.
+	 * @param object the object to update or insert.
+	 * @param includeColumns the columns to upsert. If null or an empty Optional is given, then
+	 * all columns are used. Note that an Optional occupied by an empty Set means that no columns
+	 * will be used.
+	 */
+	void upsert(Object object, Optional<Set<String>> includeColumns);
 
 	/**
 	 * Count how many objects are stored of the given type.

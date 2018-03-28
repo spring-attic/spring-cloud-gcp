@@ -22,18 +22,17 @@ import java.util.List;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.rpc.ApiException;
 import com.google.api.gax.rpc.StatusCode;
-import com.google.cloud.pubsub.v1.PagedResponseWrappers;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import com.google.common.collect.Lists;
 import com.google.pubsub.v1.ProjectName;
+import com.google.pubsub.v1.ProjectSubscriptionName;
+import com.google.pubsub.v1.ProjectTopicName;
 import com.google.pubsub.v1.PushConfig;
 import com.google.pubsub.v1.Subscription;
-import com.google.pubsub.v1.SubscriptionName;
 import com.google.pubsub.v1.Topic;
-import com.google.pubsub.v1.TopicName;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.Assert;
@@ -93,7 +92,7 @@ public class PubSubAdmin {
 	public Topic createTopic(String topicName) {
 		Assert.hasText(topicName, "No topic name was specified.");
 
-		return this.topicAdminClient.createTopic(TopicName.of(this.projectId, topicName));
+		return this.topicAdminClient.createTopic(ProjectTopicName.of(this.projectId, topicName));
 	}
 
 	/**
@@ -106,7 +105,7 @@ public class PubSubAdmin {
 		Assert.hasText(topicName, "No topic name was specified.");
 
 		try {
-			return this.topicAdminClient.getTopic(TopicName.of(this.projectId, topicName));
+			return this.topicAdminClient.getTopic(ProjectTopicName.of(this.projectId, topicName));
 		}
 		catch (ApiException aex) {
 			if (aex.getStatusCode().getCode() == StatusCode.Code.NOT_FOUND) {
@@ -125,7 +124,7 @@ public class PubSubAdmin {
 	public void deleteTopic(String topicName) {
 		Assert.hasText(topicName, "No topic name was specified.");
 
-		this.topicAdminClient.deleteTopic(TopicName.of(this.projectId, topicName));
+		this.topicAdminClient.deleteTopic(ProjectTopicName.of(this.projectId, topicName));
 	}
 
 	/**
@@ -134,7 +133,7 @@ public class PubSubAdmin {
 	 * <p>If there are multiple pages, they will all be merged into the same result.
 	 */
 	public List<Topic> listTopics() {
-		PagedResponseWrappers.ListTopicsPagedResponse topicListPage =
+		TopicAdminClient.ListTopicsPagedResponse topicListPage =
 				this.topicAdminClient.listTopics(ProjectName.of(this.projectId));
 
 		return Lists.newArrayList(topicListPage.iterateAll());
@@ -208,8 +207,8 @@ public class PubSubAdmin {
 		}
 
 		return this.subscriptionAdminClient.createSubscription(
-				SubscriptionName.of(this.projectId, subscriptionName),
-				TopicName.of(this.projectId, topicName),
+				ProjectSubscriptionName.of(this.projectId, subscriptionName),
+				ProjectTopicName.of(this.projectId, topicName),
 				pushConfigBuilder.build(),
 				finalAckDeadline);
 	}
@@ -225,7 +224,7 @@ public class PubSubAdmin {
 
 		try {
 			return this.subscriptionAdminClient.getSubscription(
-					SubscriptionName.of(this.projectId, subscriptionName));
+					ProjectSubscriptionName.of(this.projectId, subscriptionName));
 		}
 		catch (ApiException aex) {
 			if (aex.getStatusCode().getCode() == StatusCode.Code.NOT_FOUND) {
@@ -245,7 +244,7 @@ public class PubSubAdmin {
 		Assert.hasText(subscriptionName, "No subscription name was specified");
 
 		this.subscriptionAdminClient.deleteSubscription(
-				SubscriptionName.of(this.projectId, subscriptionName));
+				ProjectSubscriptionName.of(this.projectId, subscriptionName));
 	}
 
 	/**
@@ -254,7 +253,7 @@ public class PubSubAdmin {
 	 * <p>If there are multiple pages, they will all be merged into the same result.
 	 */
 	public List<Subscription> listSubscriptions() {
-		PagedResponseWrappers.ListSubscriptionsPagedResponse subscriptionsPage =
+		SubscriptionAdminClient.ListSubscriptionsPagedResponse subscriptionsPage =
 				this.subscriptionAdminClient.listSubscriptions(ProjectName.of(this.projectId));
 
 		return Lists.newArrayList(subscriptionsPage.iterateAll());

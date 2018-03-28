@@ -105,7 +105,7 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(
-			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
+			@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
 			TransportChannelProvider transportChannelProvider) {
 		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
@@ -119,7 +119,7 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(
-			@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
+			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
 			TransportChannelProvider transportChannelProvider) {
 		DefaultPublisherFactory factory = new DefaultPublisherFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);

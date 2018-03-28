@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.pubsub.support;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.pubsub.v1.Publisher;
+import com.google.pubsub.v1.ProjectTopicName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -42,8 +43,8 @@ public class DefaultPublisherFactoryTests {
 
 		assertEquals(factory.getCache().size(), 1);
 		assertEquals(publisher, factory.getCache().get("testTopic"));
-		assertEquals("testTopic", publisher.getTopicName().getTopic());
-		assertEquals("projectId", publisher.getTopicName().getProject());
+		assertEquals("testTopic", ((ProjectTopicName) publisher.getTopicName()).getTopic());
+		assertEquals("projectId", ((ProjectTopicName) publisher.getTopicName()).getProject());
 	}
 
 	@Test(expected = IllegalArgumentException.class)

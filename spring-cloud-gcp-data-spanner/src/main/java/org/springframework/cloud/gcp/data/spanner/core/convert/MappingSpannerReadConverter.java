@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 import com.google.cloud.ByteArray;
@@ -26,7 +27,6 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractStructReader;
 import com.google.cloud.spanner.Struct;
-import com.google.cloud.spanner.Type;
 import com.google.common.collect.ImmutableMap;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
@@ -35,6 +35,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.convert.EntityReader;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PropertyHandler;
 
 /**
  * @author Balint Pato
@@ -73,53 +74,71 @@ class MappingSpannerReadConverter implements EntityReader<Object, Struct> {
 		this.spannerMappingContext = spannerMappingContext;
 	}
 
-	@Override
-	public <R> R read(Class<R> type, Struct source) {
+	/**
+	 * Reads a single POJO from a Spanner row.
+	 * @param type the type of POJO
+	 * @param source the Spanner row
+	 * @param includeColumns the columns to read. If null then all columns will be read.
+	 * @param <R> the type of the POJO.
+	 * @return the POJO
+	 */
+	public <R> R read(Class<R> type, Struct source, Set<String> includeColumns) {
+		boolean readAllColumns = includeColumns == null;
 		R object = instantiate(type);
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
 				.getPersistentEntity(type);
 
-		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(object);
+		PersistentPropertyAccessor accessor = persistentEntity
+				.getPropertyAccessor(object);
 
-		for (Type.StructField structField : source.getType().getStructFields()) {
-			String columnName = structField.getName();
-			SpannerPersistentProperty property = persistentEntity
-					.getPersistentPropertyByColumnName(columnName);
-			if (property == null) {
-				throw new SpannerDataException(
-						String.format("Error trying to read from Spanner struct column named %s"
-								+ " that does not correspond to any property in the entity type ",
-								columnName,
-								type));
-			}
-			Class propType = property.getType();
-			if (source.isNull(columnName)) {
-				continue;
-			}
+		persistentEntity.doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					String columnName = spannerPersistentProperty.getColumnName();
+					try {
+						if ((!readAllColumns && !includeColumns.contains(columnName))
+								|| source.isNull(columnName)) {
+							return;
+						}
+					}
+					catch (IllegalArgumentException e) {
+						throw new SpannerDataException(
+								"Unable to read column from Spanner results: "
+										+ columnName,
+								e);
+					}
+					Class propType = spannerPersistentProperty.getType();
 
-			boolean valueSet;
+					boolean valueSet;
 
-			/*
-			 * Due to type erasure, binder methods for Iterable properties must be manually specified.
-			 * ByteArray must be excluded since it implements Iterable, but is also explicitly
-			 * supported by spanner.
-			 */
-			if (ConversionUtils.isIterableNonByteArrayType(propType)) {
-				valueSet = attemptReadIterableValue(property, source, columnName, accessor);
-			}
-			else {
-				valueSet = attemptReadSingleItemValue(property, source, columnName,
-						accessor);
-			}
+					/*
+					 * Due to type erasure, binder methods for Iterable properties must be
+					 * manually specified. ByteArray must be excluded since it implements
+					 * Iterable, but is also explicitly supported by spanner.
+					 */
+					if (ConversionUtils.isIterableNonByteArrayType(propType)) {
+						valueSet = attemptReadIterableValue(spannerPersistentProperty,
+								source, columnName, accessor);
+					}
+					else {
+						valueSet = attemptReadSingleItemValue(spannerPersistentProperty,
+								source, columnName, accessor);
+					}
 
-			if (!valueSet) {
-				throw new SpannerDataException(
-						String.format("The value in column with name %s"
-								+ " could not be converted to the corresponding property in the entity."
-								+ " The property's type is %s.", columnName, propType));
-			}
-		}
+					if (!valueSet) {
+						throw new SpannerDataException(String.format(
+								"The value in column with name %s"
+										+ " could not be converted to the corresponding property in the entity."
+										+ " The property's type is %s.",
+								columnName, propType));
+					}
+
+				});
 		return object;
+	}
+
+	@Override
+	public <R> R read(Class<R> type, Struct source) {
+		return read(type, source, null);
 	}
 
 	private boolean attemptReadSingleItemValue(

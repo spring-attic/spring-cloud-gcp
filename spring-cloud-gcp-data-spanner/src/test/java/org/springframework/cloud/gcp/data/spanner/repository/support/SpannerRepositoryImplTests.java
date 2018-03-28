@@ -23,6 +23,8 @@ import com.google.cloud.spanner.KeySet;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
@@ -155,6 +157,22 @@ public class SpannerRepositoryImplTests {
 		SpannerOperations operations = mock(SpannerOperations.class);
 		new SpannerRepositoryImpl(operations, Object.class).findAll();
 		verify(operations, times(1)).findAll(eq(Object.class));
+	}
+
+	@Test
+	public void findAllSortTest() {
+		SpannerOperations operations = mock(SpannerOperations.class);
+		Sort sort = mock(Sort.class);
+		new SpannerRepositoryImpl(operations, Object.class).findAll(sort);
+		verify(operations, times(1)).findAll(eq(Object.class), same(sort));
+	}
+
+	@Test
+	public void findAllPageableTest() {
+		SpannerOperations operations = mock(SpannerOperations.class);
+		Pageable pageable = mock(Pageable.class);
+		new SpannerRepositoryImpl(operations, Object.class).findAll(pageable);
+		verify(operations, times(1)).findAll(eq(Object.class), same(pageable));
 	}
 
 	@Test

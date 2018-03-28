@@ -33,7 +33,7 @@ public class WorkService {
 		this.restTemplate = restTemplate;
 	}
 
-	@NewSpan("busyWork")
+	@NewSpan
 	public void busyWork() {
 		LOGGER.info("starting busy work");
 		for (int i = 0; i < 3; i++) {

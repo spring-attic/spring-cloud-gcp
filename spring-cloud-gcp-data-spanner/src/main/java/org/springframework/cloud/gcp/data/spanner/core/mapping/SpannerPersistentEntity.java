@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
 /**
@@ -26,20 +27,13 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
  * @author Chengyuan Zhao
  */
 public interface SpannerPersistentEntity<T>
-		extends MutablePersistentEntity<T, SpannerPersistentProperty> {
+		extends MutablePersistentEntity<T, SpannerPersistentProperty>, ApplicationContextAware {
 
 	/**
 	 * Gets the name of the Spanner table.
 	 * @return the name of the table.
 	 */
 	String tableName();
-
-	/**
-	 * Gets the property corresponding to the given column name.
-	 * @param columnName the name of the column corresponding to a stored property.
-	 * @return the property.
-	 */
-	SpannerPersistentProperty getPersistentPropertyByColumnName(String columnName);
 
 	/**
 	 * Gets the column names stored for this entity.

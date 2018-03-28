@@ -26,14 +26,12 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.Op;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
 import org.springframework.data.annotation.Id;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
@@ -43,7 +41,6 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Chengyuan Zhao
  */
-@RunWith(SpringRunner.class)
 public class SpannerMutationFactoryImplTests {
 
 	private SpannerMappingContext mappingContext;
@@ -69,14 +66,14 @@ public class SpannerMutationFactoryImplTests {
 
 	@Test
 	public void updateTest() {
-		Mutation mutation = this.spannerMutationFactory.update(new TestEntity());
+		Mutation mutation = this.spannerMutationFactory.update(new TestEntity(), null);
 		assertEquals("custom_test_table", mutation.getTable());
 		assertEquals(Op.UPDATE, mutation.getOperation());
 	}
 
 	@Test
 	public void upsertTest() {
-		Mutation mutation = this.spannerMutationFactory.upsert(new TestEntity());
+		Mutation mutation = this.spannerMutationFactory.upsert(new TestEntity(), null);
 		assertEquals("custom_test_table", mutation.getTable());
 		assertEquals(Op.INSERT_OR_UPDATE, mutation.getOperation());
 	}

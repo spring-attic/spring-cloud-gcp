@@ -16,6 +16,11 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.context.AbstractMappingContext;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.Property;
@@ -24,17 +29,21 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
 /**
- * A mapping context for Google Spanner that provides ways to create persistent entities and properties.
+ * A mapping context for Google Spanner that provides ways to create persistent entities
+ * and properties.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
 public class SpannerMappingContext extends
-		AbstractMappingContext<SpannerPersistentEntity<?>, SpannerPersistentProperty> {
+		AbstractMappingContext<SpannerPersistentEntity<?>, SpannerPersistentProperty> implements
+		ApplicationContextAware {
 
 	private static final FieldNamingStrategy DEFAULT_NAMING_STRATEGY = PropertyNameFieldNamingStrategy.INSTANCE;
 
 	private FieldNamingStrategy fieldNamingStrategy = DEFAULT_NAMING_STRATEGY;
+
+	private ApplicationContext applicationContext;
 
 	public SpannerMappingContext() {
 
@@ -61,6 +70,16 @@ public class SpannerMappingContext extends
 	@Override
 	protected <T> SpannerPersistentEntity<T> createPersistentEntity(
 			TypeInformation<T> typeInformation) {
+		SpannerPersistentEntityImpl<T> persistentEntity = constructPersistentEntity(typeInformation);
+		if (this.applicationContext != null) {
+			persistentEntity.setApplicationContext(this.applicationContext);
+		}
+		return persistentEntity;
+	}
+
+	@VisibleForTesting
+	protected <T> SpannerPersistentEntityImpl<T> constructPersistentEntity(
+			TypeInformation<T> typeInformation) {
 		return new SpannerPersistentEntityImpl<>(typeInformation);
 	}
 
@@ -69,5 +88,10 @@ public class SpannerMappingContext extends
 			SpannerPersistentEntity<?> owner, SimpleTypeHolder simpleTypeHolder) {
 		return new SpannerPersistentPropertyImpl(property, owner, simpleTypeHolder,
 				this.fieldNamingStrategy);
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 }

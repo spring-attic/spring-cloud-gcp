@@ -23,6 +23,7 @@ package org.springframework.cloud.gcp.core;
  */
 public enum GcpScope {
 	PUBSUB("https://www.googleapis.com/auth/pubsub"),
+	SPANNER("https://www.googleapis.com/auth/spanner.data"),
 	SQLADMIN("https://www.googleapis.com/auth/sqlservice.admin"),
 	STORAGE_READ_ONLY("https://www.googleapis.com/auth/devstorage.read_only"),
 	STORAGE_READ_WRITE("https://www.googleapis.com/auth/devstorage.read_write"),
