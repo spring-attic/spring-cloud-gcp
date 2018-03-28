@@ -19,6 +19,8 @@ package org.springframework.cloud.gcp.autoconfigure.pubsub.it;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import org.junit.After;
 import org.junit.Before;
@@ -227,6 +229,11 @@ public class PubSubChannelAdaptersIntegrationTests {
 		@Bean
 		public GcpProjectIdProvider gcpProjectIdProvider() {
 			return () -> "bliss";
+		}
+
+		@Bean
+		public CredentialsProvider credentialsProvider() {
+			return new NoCredentialsProvider();
 		}
 	}
 }
