@@ -99,7 +99,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 	private static boolean isSetupDone;
 
-	private static int testsRan = 0;
+	private static int testsRan;
 
 	@BeforeClass
 	public static void checkEmulatorIsRunning() {
