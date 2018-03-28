@@ -20,7 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import org.junit.After;
 import org.junit.Before;
@@ -36,12 +38,17 @@ import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfigura
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubEmulatorConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import org.springframework.cloud.gcp.pubsub.integration.outbound.PubSubMessageHandler;
+import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
+import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
+import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
+import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -97,8 +104,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 	@Autowired
 	private PubSubMessageHandler outboundChannelAdapter;
 
-	private static boolean isSetupDone;
-
+	// Increment for each added test.
 	private static int testsRan;
 
 	@BeforeClass
@@ -108,12 +114,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 	@Before
 	public void setUp() {
-		if (isSetupDone) {
-			return;
-		}
-
-		this.pubSubAdmin.createTopic("desafinado");
-		this.pubSubAdmin.createSubscription("doralice", "desafinado");
 
 		// Sets the defaults of the fields we'll change in later tests, so we don't need to use
 		// @DirtiesContext, which is performance unfriendly.
@@ -122,7 +122,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 		this.inboundChannelAdapter.setMessageConverter(stringMessageConverter);
 		this.inboundChannelAdapter.setAckMode(AckMode.AUTO);
 		this.outboundChannelAdapter.setPublishCallback(null);
-		isSetupDone = true;
 	}
 
 	@After
@@ -136,6 +135,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 	@Test
 	public void sendAndReceiveMessage() {
 		testsRan++;
+		this.inboundChannelAdapter.setAckMode(AckMode.AUTO);
 		Map<String, Object> headers = new HashMap<>();
 		// Only String values for now..
 		headers.put("storm", "lift your skinny fists");
@@ -151,7 +151,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 		String payload = (String) message.getPayload();
 		assertThat(payload).isEqualTo("I am a message.");
 
-		assertThat(message.getHeaders().size()).isEqualTo(7);
+		assertThat(message.getHeaders().size()).isEqualTo(6);
 		assertThat(message.getHeaders().get("storm")).isEqualTo("lift your skinny fists");
 		assertThat(message.getHeaders().get("static")).isEqualTo("lift your skinny fists");
 		assertThat(message.getHeaders().get("sleep")).isEqualTo("lift your skinny fists");
@@ -249,6 +249,39 @@ public class PubSubChannelAdaptersIntegrationTests {
 		@Bean
 		public CredentialsProvider credentialsProvider() {
 			return new NoCredentialsProvider();
+		}
+
+		@Bean
+		public SubscriberFactory defaultSubscriberFactory(
+				@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
+				TransportChannelProvider transportChannelProvider,
+				PubSubAdmin pubSubAdmin) {
+			pubSubAdmin.createSubscription("doralice", "desafinado");
+
+			DefaultSubscriberFactory factory = new DefaultSubscriberFactory(gcpProjectIdProvider());
+			factory.setExecutorProvider(executorProvider);
+			factory.setCredentialsProvider(credentialsProvider());
+			factory.setHeaderProvider(
+					new UsageTrackingHeaderProvider(GcpPubSubAutoConfiguration.class));
+			factory.setChannelProvider(transportChannelProvider);
+
+			return factory;
+		}
+
+		@Bean
+		public PublisherFactory defaultPublisherFactory(
+				@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
+				TransportChannelProvider transportChannelProvider,
+				PubSubAdmin pubSubAdmin) {
+			pubSubAdmin.createTopic("desafinado");
+
+			DefaultPublisherFactory factory = new DefaultPublisherFactory(gcpProjectIdProvider());
+			factory.setExecutorProvider(executorProvider);
+			factory.setCredentialsProvider(credentialsProvider());
+			factory.setHeaderProvider(
+					new UsageTrackingHeaderProvider(GcpPubSubAutoConfiguration.class));
+			factory.setChannelProvider(transportChannelProvider);
+			return factory;
 		}
 	}
 }
