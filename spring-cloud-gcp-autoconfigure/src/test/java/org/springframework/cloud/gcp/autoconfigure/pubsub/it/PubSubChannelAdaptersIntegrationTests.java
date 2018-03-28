@@ -105,6 +105,10 @@ public class PubSubChannelAdaptersIntegrationTests {
 	private PubSubMessageHandler outboundChannelAdapter;
 
 	// Increment for each added test.
+	// Used in a JUnit5 @AfterAll way, to clean up the Pub/Sub environment after all tests ran.
+	// Can't use @AfterClass, since the PubSubAdmin bean isn't ready at static time.
+	private static final int TOTAL_TESTS = 4;
+
 	private static int testsRan;
 
 	@BeforeClass
@@ -114,7 +118,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 	@Before
 	public void setUp() {
-
 		// Sets the defaults of the fields we'll change in later tests, so we don't need to use
 		// @DirtiesContext, which is performance unfriendly.
 		StringMessageConverter stringMessageConverter = new StringMessageConverter();
@@ -126,7 +129,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 	@After
 	public void tearDown() {
-		if (testsRan == 4) {
+		if (testsRan == TOTAL_TESTS) {
 			this.pubSubAdmin.deleteTopic("desafinado");
 			this.pubSubAdmin.deleteSubscription("doralice");
 		}
@@ -135,7 +138,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 	@Test
 	public void sendAndReceiveMessage() {
 		testsRan++;
-		this.inboundChannelAdapter.setAckMode(AckMode.AUTO);
 		Map<String, Object> headers = new HashMap<>();
 		// Only String values for now..
 		headers.put("storm", "lift your skinny fists");
