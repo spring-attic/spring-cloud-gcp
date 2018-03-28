@@ -106,18 +106,18 @@ public class SpannerPersistentPropertyImplTests {
 				.getColumnInnerType());
 	}
 
-	@SpannerTable(name = "custom_test_table")
+	@Table(name = "custom_test_table")
 	private static class TestEntity {
 		@Id
 		String id;
 
-		@SpannerColumn(name = "custom_col")
+		@Column(name = "custom_col")
 		String something;
 
-		@SpannerColumn(name = "")
+		@Column(name = "")
 		String other;
 
-		@SpannerColumnInnerType(innerType = Double.class)
+		@ColumnInnerType(innerType = Double.class)
 		List<Double> doubleList;
 	}
 }

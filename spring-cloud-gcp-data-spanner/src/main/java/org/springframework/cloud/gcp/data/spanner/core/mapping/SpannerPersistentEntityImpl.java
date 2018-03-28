@@ -56,7 +56,7 @@ public class SpannerPersistentEntityImpl<T>
 
 	private StandardEvaluationContext context;
 
-	private final SpannerTable table;
+	private final Table table;
 
 	/**
 	 * Creates a {@link SpannerPersistentEntityImpl}
@@ -70,7 +70,7 @@ public class SpannerPersistentEntityImpl<T>
 
 		this.context = new StandardEvaluationContext();
 
-		this.table = this.findAnnotation(SpannerTable.class);
+		this.table = this.findAnnotation(Table.class);
 		this.tableName = this.hasTableName() ? this.table.name() : fallback;
 		this.tableNameExpression = detectExpression();
 	}

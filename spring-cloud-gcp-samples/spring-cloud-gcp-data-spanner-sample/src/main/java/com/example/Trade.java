@@ -16,15 +16,15 @@
 
 package com.example;
 
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.annotation.Id;
 
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-@SpannerTable(name = "trades")
+@Table(name = "trades")
 public class Trade {
 	@Id
 	String id;
@@ -37,7 +37,7 @@ public class Trade {
 
 	String symbol;
 
-	@SpannerColumn(name = "trader_id")
+	@Column(name = "trader_id")
 	String traderId;
 
 	@Override
