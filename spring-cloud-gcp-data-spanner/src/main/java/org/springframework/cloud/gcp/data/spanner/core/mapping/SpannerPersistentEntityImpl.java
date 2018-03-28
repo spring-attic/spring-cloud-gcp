@@ -22,9 +22,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.cloud.spanner.Key;
-import com.google.cloud.spanner.Key.Builder;
-
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryAccessor;
@@ -171,15 +168,6 @@ public class SpannerPersistentEntityImpl<T>
 		this.context.setRootObject(applicationContext);
 	}
 
-	private Key getId(T entity) {
-		PersistentPropertyAccessor accessor = getPropertyAccessor(entity);
-		Builder keyBuilder = Key.newBuilder();
-		for (SpannerPersistentProperty spannerPersistentProperty : getPrimaryKeyProperties()) {
-			keyBuilder.appendObject(accessor.getProperty(spannerPersistentProperty));
-		}
-		return keyBuilder.build();
-	}
-
 	@Override
 	public PersistentPropertyAccessor getPropertyAccessor(Object object) {
 		PersistentPropertyAccessor delegatedAccessor = super.getPropertyAccessor(object);
@@ -202,7 +190,7 @@ public class SpannerPersistentEntityImpl<T>
 			@Override
 			public Object getProperty(PersistentProperty<?> property) {
 				if (property.isIdProperty()) {
-					return getId((T) getBean());
+					return ((SpannerCompositeKeyProperty) property).getId(getBean());
 				}
 				else {
 					return delegatedAccessor.getProperty(property);

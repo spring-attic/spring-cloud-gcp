@@ -23,9 +23,11 @@ import java.util.Collections;
 import java.util.OptionalInt;
 
 import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.Key.Builder;
 
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.lang.Nullable;
@@ -51,6 +53,15 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 				"A valid array of primary key properties is required.");
 		this.primaryKeyColumns = primaryKeyColumns;
 		this.spannerPersistentEntity = spannerPersistentEntity;
+	}
+
+	Key getId(Object entity) {
+		PersistentPropertyAccessor accessor = getOwner().getPropertyAccessor(entity);
+		Builder keyBuilder = Key.newBuilder();
+		for (SpannerPersistentProperty spannerPersistentProperty : this.primaryKeyColumns) {
+			keyBuilder.appendObject(accessor.getProperty(spannerPersistentProperty));
+		}
+		return keyBuilder.build();
 	}
 
 	@Override
