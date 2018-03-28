@@ -123,7 +123,7 @@ public class SpannerPersistentEntityImpl<T>
 
 	@Override
 	public SpannerPersistentProperty getIdProperty() {
-		return null;
+		return new SpannerCompositeKeyProperty(this, getPrimaryKeyProperties());
 	}
 
 	@Override
@@ -171,8 +171,7 @@ public class SpannerPersistentEntityImpl<T>
 		this.context.setRootObject(applicationContext);
 	}
 
-	@Override
-	public <T> Key getKey(T entity) {
+	private Key getId(T entity) {
 		PersistentPropertyAccessor accessor = getPropertyAccessor(entity);
 		Builder keyBuilder = Key.newBuilder();
 		for (SpannerPersistentProperty spannerPersistentProperty : getPrimaryKeyProperties()) {
@@ -202,7 +201,12 @@ public class SpannerPersistentEntityImpl<T>
 			@Nullable
 			@Override
 			public Object getProperty(PersistentProperty<?> property) {
-				return delegatedAccessor.getProperty(property);
+				if (property.isIdProperty()) {
+					return getId((T) getBean());
+				}
+				else {
+					return delegatedAccessor.getProperty(property);
+				}
 			}
 
 			@Override
