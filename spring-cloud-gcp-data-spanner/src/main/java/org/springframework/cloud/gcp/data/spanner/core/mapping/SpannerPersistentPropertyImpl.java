@@ -90,7 +90,7 @@ public class SpannerPersistentPropertyImpl
 
 	@Override
 	public Class getColumnInnerType() {
-		SpannerColumnInnerType annotation = findAnnotation(SpannerColumnInnerType.class);
+		ColumnInnerType annotation = findAnnotation(ColumnInnerType.class);
 		if (annotation == null) {
 			return null;
 		}
@@ -99,7 +99,7 @@ public class SpannerPersistentPropertyImpl
 
 	private String getAnnotatedColumnName() {
 
-		SpannerColumn annotation = findAnnotation(SpannerColumn.class);
+		Column annotation = findAnnotation(Column.class);
 
 		if (annotation != null && StringUtils.hasText(annotation.name())) {
 			return annotation.name();

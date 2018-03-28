@@ -35,11 +35,11 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumnInnerType;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.annotation.Id;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -399,15 +399,15 @@ public class SpannerObjectMapperImplTests {
 		this.objectMapper.write(ft, writeBuilder);
 	}
 
-	@SpannerTable(name = "custom_test_table")
+	@Table(name = "custom_test_table")
 	private static class TestEntity {
 		@Id
 		String id;
 
-		@SpannerColumn(name = "custom_col")
+		@Column(name = "custom_col")
 		String stringField;
 
-		@SpannerColumn(name = "")
+		@Column(name = "")
 		boolean booleanField;
 
 		long longField;
@@ -416,25 +416,25 @@ public class SpannerObjectMapperImplTests {
 
 		double[] doubleArray;
 
-		@SpannerColumnInnerType(innerType = Double.class)
+		@ColumnInnerType(innerType = Double.class)
 		List<Double> doubleList;
 
-		@SpannerColumnInnerType(innerType = String.class)
+		@ColumnInnerType(innerType = String.class)
 		List<String> stringList;
 
-		@SpannerColumnInnerType(innerType = Boolean.class)
+		@ColumnInnerType(innerType = Boolean.class)
 		List<Boolean> booleanList;
 
-		@SpannerColumnInnerType(innerType = Long.class)
+		@ColumnInnerType(innerType = Long.class)
 		List<Long> longList;
 
-		@SpannerColumnInnerType(innerType = Timestamp.class)
+		@ColumnInnerType(innerType = Timestamp.class)
 		List<Timestamp> timestampList;
 
-		@SpannerColumnInnerType(innerType = Date.class)
+		@ColumnInnerType(innerType = Date.class)
 		List<Date> dateList;
 
-		@SpannerColumnInnerType(innerType = ByteArray.class)
+		@ColumnInnerType(innerType = ByteArray.class)
 		List<ByteArray> bytesList;
 
 		Date dateField;
@@ -444,17 +444,17 @@ public class SpannerObjectMapperImplTests {
 		ByteArray bytes;
 	}
 
-	@SpannerTable(name = "faulty_test_table")
+	@Table(name = "faulty_test_table")
 	private static class FaultyTestEntity {
 		TestEntity fieldWithUnsupportedType;
 
 		List<Double> doubleList;
 	}
 
-	@SpannerTable(name = "faulty_test_table_2")
+	@Table(name = "faulty_test_table_2")
 	private static class FaultyTestEntity2 {
 
-		@SpannerColumnInnerType(innerType = TestEntity.class)
+		@ColumnInnerType(innerType = TestEntity.class)
 		List<TestEntity> listWithUnsupportedInnerType;
 	}
 

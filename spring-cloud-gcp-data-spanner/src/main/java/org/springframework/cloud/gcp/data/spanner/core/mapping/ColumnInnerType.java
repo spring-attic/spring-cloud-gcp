@@ -23,21 +23,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for a {@link SpannerPersistentProperty} that allows specifying the column name
- * instead of deriving it from the field's name.
+ * Annotation for a {@link SpannerPersistentProperty} that includes an inner-type, such as
+ * an Iterable<>. Type erasure means the inner type of the
+ * property is lost, but the inner type is needed when storing the entity.
  *
- * @author Ray Tsang
  * @author Chengyuan Zhao
  */
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SpannerColumn {
+public @interface ColumnInnerType {
 
 	/**
-	 * The custom name of the column in the Spanner table, which can differ from the name of the
-	 * field which it annotates.
-	 * @return the name of the column in the Spanner table
+	 * The inner type of the property, which has meaning for properties of types such as
+	 * Iterable<>.
+	 * @return the inner type of the property.
 	 */
-	String name();
+	Class innerType();
 }

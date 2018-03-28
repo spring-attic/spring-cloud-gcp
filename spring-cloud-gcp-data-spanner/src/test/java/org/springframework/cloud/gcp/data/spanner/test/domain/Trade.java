@@ -19,8 +19,8 @@ package org.springframework.cloud.gcp.data.spanner.test.domain;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.annotation.Id;
 
 /**
@@ -28,7 +28,7 @@ import org.springframework.data.annotation.Id;
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-@SpannerTable(name = "#{'trades_'.concat(tableNameSuffix)}")
+@Table(name = "#{'trades_'.concat(tableNameSuffix)}")
 public class Trade {
 	@Id
 	private String id;
@@ -41,7 +41,7 @@ public class Trade {
 
 	private String symbol;
 
-	@SpannerColumn(name = "trader_id")
+	@Column(name = "trader_id")
 	private String traderId;
 
 	@Override
