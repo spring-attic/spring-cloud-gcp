@@ -38,11 +38,8 @@ import org.junit.Test;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -88,8 +85,8 @@ public class SpannerTemplateTests {
 		this.mutationFactory = mock(SpannerMutationFactory.class);
 		this.readContext = mock(ReadContext.class);
 		when(this.databaseClient.singleUse()).thenReturn(this.readContext);
-		this.spannerTemplate = new SpannerTemplate(this.databaseClient, this.mappingContext,
-				this.objectMapper, this.mutationFactory);
+		this.spannerTemplate = new SpannerTemplate(this.databaseClient,
+				this.mappingContext, this.objectMapper, this.mutationFactory);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -166,8 +163,7 @@ public class SpannerTemplateTests {
 	public void findMultipleKeysTest() {
 		ResultSet results = mock(ResultSet.class);
 		ReadOption readOption = mock(ReadOption.class);
-		SpannerReadOptions options = new SpannerReadOptions()
-				.addReadOption(readOption);
+		SpannerReadOptions options = new SpannerReadOptions().addReadOption(readOption);
 		KeySet keySet = KeySet.singleKey(Key.of("key"));
 		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
 		this.spannerTemplate.find(TestEntity.class, keySet, options);
@@ -184,7 +180,8 @@ public class SpannerTemplateTests {
 		SpannerReadOptions options = new SpannerReadOptions().addReadOption(readOption)
 				.setIndex("index");
 		KeySet keySet = KeySet.singleKey(Key.of("key"));
-		when(this.readContext.readUsingIndex(any(), any(), any(), any(), any())).thenReturn(results);
+		when(this.readContext.readUsingIndex(any(), any(), any(), any(), any()))
+				.thenReturn(results);
 		this.spannerTemplate.find(TestEntity.class, keySet, options);
 		verify(this.objectMapper, times(1)).mapToList(same(results),
 				eq(TestEntity.class));

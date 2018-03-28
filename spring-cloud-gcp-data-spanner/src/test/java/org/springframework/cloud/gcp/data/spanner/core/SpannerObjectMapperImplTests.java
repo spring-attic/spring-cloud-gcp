@@ -38,13 +38,9 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
-import org.springframework.data.annotation.Id;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
@@ -230,15 +226,14 @@ public class SpannerObjectMapperImplTests {
 				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
 				.add("doubleList", Value.float64Array(doubleList))
 				.add("stringList", Value.stringArray(stringList))
-				.add("booleanList", Value.boolArray(new boolean[]{}))
-				.add("longList", Value.int64Array(new long[]{}))
+				.add("booleanList", Value.boolArray(new boolean[] {}))
+				.add("longList", Value.int64Array(new long[] {}))
 				.add("timestampList", Value.timestampArray(new ArrayList<>()))
 				.add("dateList", Value.dateArray(new ArrayList<>()))
 				.add("bytesList", Value.bytesArray(new ArrayList<>()))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
-
 
 		Struct struct2 = Struct.newBuilder().add("id", Value.string("key2"))
 				.add("custom_col", Value.string("string2"))
@@ -247,15 +242,14 @@ public class SpannerObjectMapperImplTests {
 				.add("doubleArray", Value.float64Array(new double[] { 5.55, 5.55 }))
 				.add("doubleList", Value.float64Array(doubleList))
 				.add("stringList", Value.stringArray(stringList))
-				.add("booleanList", Value.boolArray(new boolean[]{}))
-				.add("longList", Value.int64Array(new long[]{}))
+				.add("booleanList", Value.boolArray(new boolean[] {}))
+				.add("longList", Value.int64Array(new long[] {}))
 				.add("timestampList", Value.timestampArray(new ArrayList<>()))
 				.add("dateList", Value.dateArray(new ArrayList<>()))
 				.add("bytesList", Value.bytesArray(new ArrayList<>()))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2019, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
-				.add("bytes", Value.bytes(ByteArray.copyFrom("string2")))
-				.build();
+				.add("bytes", Value.bytes(ByteArray.copyFrom("string2"))).build();
 
 		MockResults mockResults = new MockResults();
 		mockResults.structs = Arrays.asList(struct1, struct2);
@@ -390,8 +384,8 @@ public class SpannerObjectMapperImplTests {
 
 	@Test(expected = SpannerDataException.class)
 	public void readUnmatachableTypesTest() {
-		Struct struct1 = Struct.newBuilder().add("fieldWithUnsupportedType", Value.string("key1"))
-				.build();
+		Struct struct1 = Struct.newBuilder()
+				.add("fieldWithUnsupportedType", Value.string("key1")).build();
 		this.objectMapper.read(FaultyTestEntity.class, struct1);
 	}
 
