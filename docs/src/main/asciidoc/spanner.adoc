@@ -25,10 +25,35 @@ dependencies {
 }
 ----
 
+This setup takes care of bringing in the latest compatible version of Cloud Java Spanner libraries as well.
 
-=== Google Cloud Spanner
+== Spring Data Spanner
 
-Spring Data Spanner allows you to define entity classes and corresponding repository interfaces:
+
+=== Configuration
+
+To setup Spring Data Spanner, you have to configure connection to Cloud Spanner and Repositories (if you want to use them).
+
+==== Spanner settings
+
+You will need to use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner] to configure Google Cloud Spanner in your Spring application. It contains all the necessary setup that makes it easy to authenticate with your Google Cloud project.
+The following configuration options are available:
+
+|===
+| Name | Description | Optional | Default value
+| `spring.cloud.gcp.spanner.projectId` | the GCP project ID to use | Yes | provided by Spring Cloud GCP
+| `spring.cloud.gcp.spanner.instanceId` | Spanner instance to use | No |
+| `spring.cloud.gcp.spanner.database` |
+Spanner database to use | No |
+|===
+
+==== Repository settings
+
+Spring Data Repositories (see below for functionality) can be configured via the `@EnableSpannerRepositories` annotation on your main configuration file (typically the `@SpringBootApplication` file.
+
+=== Mapping POJO domain objects to Spanner tables using annotations
+
+Spring Data Spanner allows you to map POJOs to Spanner tables:
 
 [source,java]
 ----
@@ -47,16 +72,57 @@ public class SimpleStudent {
 }
 ----
 
-The `@SpannerTable` annotation provides the name of the Spanner table that stores instances of this class, one per row.
-The `@SpannerPrimaryKeyColumn` annotation is required and identifies the properties corresponding to the primary key columns in
+- `@Table` provides the name of the Spanner table that stores instances of this class, one per row.
+- `@PrimaryKeyColumn` annotation is required and identifies the properties corresponding to the primary key columns in
 order starting with 1 and increasing consecutively.
-The `@SpannerColumn` annotation optionally provides a different column name than that of the property.
-The `@SpannerColumnInnerType` annotation is required for List properties due to Java's type erasure.
+- The `@Column` annotation optionally provides a different column name than that of the property.
+- Spanner supports `List` types as fields, the `@ColumnInnerType` annotation is required for `List` properties due to Java's type erasure.
+
+=== Template API
+
+`SpannerOperations` and its implementation, `SpannerTemplate` provides the XYZTemplate pattern familiar for Spring developers and as such provides:
+ - resource management
+ - one stop shop to Spanner operations with the Spring Data POJO mapping and conversion features
+ - exception conversion
+
+After your setup with Spring Boot Starter, you can configure a template simply by adding a member of the `SpannerOperations` interface to your class:
 
 [source,java]
 ----
-@Repository
-public interface StudentRepository extends PagingAndSortingRepository<SimpleStudent, Key> {
+`@Autowire`
+SpannerOperations
+
+
+
+----
+
+=== Supported Types
+
+Spring Data Spanner supports the following types for regular fields:
+
+* `com.google.cloud.ByteArray`
+* `com.google.cloud.Date`
+* `com.google.cloud.Timestamp`
+* `java.lang.Boolean`
+* `java.lang.Long`
+* `java.lang.String`
+* `double[]`
+* `long[]`
+* `boolean[]`
+
+Spring Data Spanner supports the following inner types for `List` fields:
+
+* `com.google.cloud.ByteArray`
+* `com.google.cloud.Date`
+* `com.google.cloud.Timestamp`
+* `java.lang.Boolean`
+* `java.lang.Long`
+* `java.lang.String`
+
+
+[source,java]
+----
+public interface StudentRepository extends SpannerRepository<SimpleStudent> {
 
 	List<SimpleStudent> findTop3DistinctByIdAndNameOrAgeOrderByAgeDesc(
 			String id, String name, int age);
@@ -109,22 +175,3 @@ When defining `StudentRepository`, it is important to note that it extends the
 `PagingAndSortingRepository`, which is supported by Spring Cloud GCP Data Spanner. The first type
 argument refers to the underlying entity, and the second type parameter refers to the `@Id` type
 of that entity. Id types must correspond to one of the https://cloud.google.com/spanner/docs/data-types[supported primary key types in Spanner].
-
-=== Configuration
-
-The Spring Boot Starter for Google Cloud Data Spanner provides the following configuration options:
-
-|===
-| Name | Description | Optional | Default value
-| `spring.cloud.gcp.spanner.projectId` | the GCP project ID to use | Yes | provided by Spring Cloud GCP
-| `spring.cloud.gcp.spanner.instanceId` | Spanner instance to use | No |
-| `spring.cloud.gcp.spanner.database` |
-Spanner database to use | No |
-|===
-
-Custom queries can be defined in properties files provided to the annotation
-`@EnableSpannerRepositories(namedQueriesLocation = "classpath:/[my-named-queries.properties file]")`.
-These query settings take the form `[ClassName].[QueryMethodName]=[query string with tags]`, where Spanner
-tags for parameters have the format `@[tagName]`. The actual names of the tags do not matter as long
-their order matches that defined in the repository interface.
-
