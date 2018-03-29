@@ -13,11 +13,13 @@ and a table also named "trades".
 The columns should be created as follows:
 +
 ```
-action , STRING
-price , FLOAT64
-shares , FLOAT64
-symbol , STRING
-trader_id , STRING
+CREATE TABLE trades (
+  action STRING(15),
+  price FLOAT64,
+  shares FLOAT64,
+  symbol STRING(10),
+  trader_id STRING(128)
+) PRIMARY KEY (action, symbol)
 ```
 
 The columns `action` and `symbol` should be set as the composite primary key in that order.
