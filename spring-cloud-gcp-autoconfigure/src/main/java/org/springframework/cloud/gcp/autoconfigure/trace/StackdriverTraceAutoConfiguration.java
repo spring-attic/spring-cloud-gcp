@@ -36,7 +36,6 @@ import com.google.cloud.trace.v1.consumer.ScheduledBufferingTraceConsumer;
 import com.google.cloud.trace.v1.consumer.TraceConsumer;
 import com.google.cloud.trace.v1.util.RoughTraceSizer;
 import com.google.cloud.trace.v1.util.Sizer;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.devtools.cloudtrace.v1.Trace;
 import zipkin2.reporter.Reporter;
 
@@ -145,11 +144,6 @@ public class StackdriverTraceAutoConfiguration {
 	@ConditionalOnMissingBean
 	public LabelExtractor traceLabelExtractor() {
 		return new LabelExtractor();
-	}
-
-	@VisibleForTesting
-	CredentialsProvider getCredentialsProvider() {
-		return this.finalCredentialsProvider;
 	}
 
 	@Configuration

@@ -24,7 +24,6 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -146,10 +145,5 @@ public class GcpSpannerAutoConfiguration {
 			SpannerConverter spannerConverter,
 			SpannerMappingContext spannerMappingContext) {
 		return new SpannerMutationFactoryImpl(spannerConverter, spannerMappingContext);
-	}
-
-	@VisibleForTesting
-	Credentials getCredentials() {
-		return this.credentials;
 	}
 }

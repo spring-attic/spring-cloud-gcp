@@ -19,9 +19,11 @@ package org.springframework.cloud.gcp.autoconfigure.pubsub;
 import java.io.IOException;
 import java.nio.file.Files;
 
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import org.junit.Test;
 
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
@@ -49,9 +51,11 @@ public class GcpPubSubAutoConfigurationTests {
 				.run(context -> {
 					GcpPubSubAutoConfiguration pubSubAutoConfiguration =
 							context.getBean(GcpPubSubAutoConfiguration.class);
+					CredentialsProvider credentialsProvider =
+							(CredentialsProvider) new DirectFieldAccessor(pubSubAutoConfiguration)
+									.getPropertyValue("finalCredentialsProvider");
 					ServiceAccountCredentials credentials =
-							(ServiceAccountCredentials) pubSubAutoConfiguration
-									.getCredentialsProvider().getCredentials();
+							(ServiceAccountCredentials) credentialsProvider.getCredentials();
 					assertThat(credentials.getClientEmail()).isEqualTo(
 							"pcf-binding-3352ec74@graphite-test-spring-cloud-gcp.iam."
 									+ "gserviceaccount.com");

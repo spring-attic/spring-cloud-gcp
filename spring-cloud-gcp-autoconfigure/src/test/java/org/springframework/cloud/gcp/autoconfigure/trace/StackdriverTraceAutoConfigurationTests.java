@@ -33,6 +33,7 @@ import com.google.devtools.cloudtrace.v1.Traces;
 import org.junit.Test;
 import zipkin2.reporter.Reporter;
 
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
@@ -104,9 +105,11 @@ public class StackdriverTraceAutoConfigurationTests {
 				.run(context -> {
 					StackdriverTraceAutoConfiguration autoConfiguration =
 							context.getBean(StackdriverTraceAutoConfiguration.class);
+					CredentialsProvider credentialsProvider =
+							(CredentialsProvider) new DirectFieldAccessor(autoConfiguration)
+									.getPropertyValue("finalCredentialsProvider");
 					ServiceAccountCredentials credentials =
-							(ServiceAccountCredentials) autoConfiguration.getCredentialsProvider()
-									.getCredentials();
+							(ServiceAccountCredentials) credentialsProvider.getCredentials();
 					assertThat(credentials.getClientEmail()).isEqualTo("pcf-binding-5df95a11@"
 							+ "graphite-test-spring-cloud-gcp.iam.gserviceaccount.com");
 				});

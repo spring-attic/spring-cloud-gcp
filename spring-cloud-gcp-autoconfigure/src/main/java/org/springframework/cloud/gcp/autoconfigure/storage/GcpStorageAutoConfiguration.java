@@ -22,7 +22,6 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -87,10 +86,5 @@ public class GcpStorageAutoConfiguration {
 						new UsageTrackingHeaderProvider(GcpStorageAutoConfiguration.class))
 				.setProjectId(projectIdProvider.getProjectId())
 				.build().getService();
-	}
-
-	@VisibleForTesting
-	Credentials getCredentials() {
-		return CREDENTIALS;
 	}
 }

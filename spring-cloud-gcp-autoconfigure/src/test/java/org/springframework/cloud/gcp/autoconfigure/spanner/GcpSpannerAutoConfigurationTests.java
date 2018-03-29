@@ -24,6 +24,7 @@ import com.google.auth.Credentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import org.junit.Test;
 
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
@@ -74,7 +75,9 @@ public class GcpSpannerAutoConfigurationTests {
 					GcpSpannerAutoConfiguration spannerAutoConfiguration =
 							context.getBean(GcpSpannerAutoConfiguration.class);
 					ServiceAccountCredentials credentials =
-							(ServiceAccountCredentials) spannerAutoConfiguration.getCredentials();
+							(ServiceAccountCredentials) new DirectFieldAccessor(
+									spannerAutoConfiguration)
+									.getPropertyValue("credentials");
 					assertThat(credentials.getClientEmail()).isEqualTo(
 							"pcf-binding-2e9720a8@graphite-test-spring-cloud-gcp.iam."
 									+ "gserviceaccount.com");
