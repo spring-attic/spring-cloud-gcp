@@ -17,8 +17,12 @@
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.lang.reflect.Array;
+import java.util.Collection;
 
 import com.google.cloud.ByteArray;
+import com.google.common.collect.ImmutableSet;
+
+import org.springframework.core.convert.converter.Converter;
 
 
 /**
@@ -26,6 +30,18 @@ import com.google.cloud.ByteArray;
  * @author Chengyuan Zhao
  */
 class ConversionUtils {
+
+	/**
+	 * Converters from common types to those used by Spanner.
+	 */
+	public static final Collection<Converter> DEFAULT_SPANNER_WRITE_CONVERTERS = ImmutableSet
+			.of();
+
+	/**
+	 * Converters from common types to those used by Spanner.
+	 */
+	public static final Collection<Converter> DEFAULT_SPANNER_READ_CONVERTERS = ImmutableSet
+			.of();
 
 	static Class boxIfNeeded(Class propertyType) {
 		if (propertyType == null) {

@@ -27,12 +27,14 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractStructReader;
 import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Type;
 import com.google.common.collect.ImmutableMap;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityReader;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
@@ -41,7 +43,8 @@ import org.springframework.data.mapping.PropertyHandler;
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-class MappingSpannerReadConverter implements EntityReader<Object, Struct> {
+class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
+		implements EntityReader<Object, Struct> {
 
 	private static final Map<Class, BiFunction<Struct, String, List>> readIterableMapping =
 			new ImmutableMap.Builder<Class, BiFunction<Struct, String, List>>()
@@ -67,10 +70,21 @@ class MappingSpannerReadConverter implements EntityReader<Object, Struct> {
 			.put(long[].class, AbstractStructReader::getLongArray)
 			.put(boolean[].class, AbstractStructReader::getBooleanArray).build();
 
+	private static final Map<Type, Class> spannerColumnTypeToJavaTypeMapping = new ImmutableMap.Builder<Type, Class>()
+			.put(Type.bool(), Boolean.class).put(Type.bytes(), ByteArray.class)
+			.put(Type.date(), Date.class).put(Type.float64(), Double.class)
+			.put(Type.int64(), Long.class).put(Type.string(), String.class)
+			.put(Type.array(Type.float64()), double[].class)
+			.put(Type.array(Type.int64()), long[].class)
+			.put(Type.array(Type.bool()), boolean[].class)
+			.put(Type.timestamp(), Timestamp.class).build();
+
 	private final SpannerMappingContext spannerMappingContext;
 
 	MappingSpannerReadConverter(
-			SpannerMappingContext spannerMappingContext) {
+			SpannerMappingContext spannerMappingContext,
+			CustomConversions customConversions) {
+		super(customConversions, null);
 		this.spannerMappingContext = spannerMappingContext;
 	}
 
@@ -114,14 +128,26 @@ class MappingSpannerReadConverter implements EntityReader<Object, Struct> {
 					 * Due to type erasure, binder methods for Iterable properties must be
 					 * manually specified. ByteArray must be excluded since it implements
 					 * Iterable, but is also explicitly supported by spanner.
+					 *
+					 * Also due to type erasure, custom conversions cannot be used for
+					 * iterables because different conversions between lists of different
+					 * types cannot be distinguished.
 					 */
 					if (ConversionUtils.isIterableNonByteArrayType(propType)) {
 						valueSet = attemptReadIterableValue(spannerPersistentProperty,
 								source, columnName, accessor);
 					}
 					else {
-						valueSet = attemptReadSingleItemValue(spannerPersistentProperty,
-								source, columnName, accessor);
+						Class sourceType = this.spannerColumnTypeToJavaTypeMapping
+								.get(source.getColumnType(columnName));
+						if (sourceType != null && canConvert(sourceType, propType)) {
+							valueSet = attemptReadSingleItemValue(
+									spannerPersistentProperty, source, sourceType,
+									columnName, accessor);
+						}
+						else {
+							valueSet = false;
+						}
 					}
 
 					if (!valueSet) {
@@ -143,14 +169,16 @@ class MappingSpannerReadConverter implements EntityReader<Object, Struct> {
 
 	private boolean attemptReadSingleItemValue(
 			SpannerPersistentProperty spannerPersistentProperty, Struct struct,
+			Class sourceType,
 			String colName, PersistentPropertyAccessor accessor) {
 		BiFunction readFunction = singleItemReadMethodMapping
-				.get(ConversionUtils.boxIfNeeded(spannerPersistentProperty.getType()));
+				.get(ConversionUtils.boxIfNeeded(sourceType));
 		if (readFunction == null) {
 			return false;
 		}
 		accessor.setProperty(spannerPersistentProperty,
-				readFunction.apply(struct, colName));
+				convert(readFunction.apply(struct, colName),
+						spannerPersistentProperty.getType()));
 		return true;
 	}
 
