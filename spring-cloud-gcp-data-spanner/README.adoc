@@ -23,14 +23,14 @@ dependencies {
 }
 ----
 
-With our link:../spring-cloud-gcp-starters/spring-cloud-gcp-data-spanner-starter[Spring Boot Spring Data Spanner starter], you can leverage our recommended auto-configuration setup.
-For the starter, add "-starter" to the artifactId, as shown in the coordinates see below.
+With our link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner], you can leverage our recommended auto-configuration setup. (see https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#using-boot-starter[Spring Boot Starters] for more details on what a starter is).
+To use the starter, see the coordinates see below.
 
 [source,xml]
 ----
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-data-spanner-starter</artifactId>
+    <artifactId>spring-cloud-gcp-starter-data-spanner</artifactId>
 </dependency>
 ----
 
@@ -39,11 +39,31 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-spanner-starter'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-spanner'
 }
 ----
 
-Where to go from here?
+==== What's new?
+
+Spring Spanner Data is considered experimental stability.
+
+Features to be released with 1.0.0.M3:
+
+- Mapping POJO domain objects to Spanner tables using annotations
+- SpannerTemplate API:
+   ** Stale read
+   ** Read with secondary indices
+   ** Read with limits and flow control
+- Spring Data Repositories: CrudRepository, PagingAndSortingRepository
+- Declarative query methods
+   ** interface method resolution by naming convention
+   ** read-only SQL via properties files
+- basic Spanner types are support in fields
+- SpEL expressions for table name resolution
+- partial reads and writes
+
+
+====  Where to go from here?
 
 * Try out the link:../spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[Spring Data Spanner Sample application]
 * Detailed documentation: link:../docs/src/main/asciidoc/spanner.adoc[Spring Data Spanner documentation]
