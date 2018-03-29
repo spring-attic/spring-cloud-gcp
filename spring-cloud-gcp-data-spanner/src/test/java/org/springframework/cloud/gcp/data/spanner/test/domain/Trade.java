@@ -33,6 +33,8 @@ public class Trade {
 	@PrimaryKeyColumn
 	private String id;
 
+	private int age;
+
 	private String action;
 
 	private Double price;
@@ -50,6 +52,7 @@ public class Trade {
 		String traderId = UUID.randomUUID().toString();
 
 		t.id = tradeId;
+		t.age = 8;
 		t.symbol = "ABCD";
 		t.action = "BUY";
 		t.traderId = traderId;
@@ -60,7 +63,8 @@ public class Trade {
 
 	public static String createDDL(String tableName) {
 		return "CREATE TABLE " + tableName + "(" + "\tid STRING(128) NOT NULL,\n"
-				+ "\taction STRING(15),\n" + "\tprice FLOAT64,\n" + "\tshares FLOAT64,\n"
+				+ "\tage INT64,\n" + "\taction STRING(15),\n" + "\tprice FLOAT64,\n"
+				+ "\tshares FLOAT64,\n"
 				+ "\tsymbol STRING(5),\n" + "\ttrader_id STRING(128),\n"
 				+ ") PRIMARY KEY (id)";
 	}
@@ -79,6 +83,7 @@ public class Trade {
 		}
 		Trade trade = (Trade) o;
 		return Objects.equals(this.id, trade.id)
+				&& Objects.equals(this.age, trade.age)
 				&& Objects.equals(this.action, trade.action)
 				&& Objects.equals(this.price, trade.price)
 				&& Objects.equals(this.shares, trade.shares)
@@ -88,7 +93,8 @@ public class Trade {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.id, this.action, this.price, this.shares, this.symbol,
+		return Objects.hash(this.id, this.age, this.action, this.price, this.shares,
+				this.symbol,
 				this.traderId);
 	}
 
@@ -98,6 +104,14 @@ public class Trade {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public int getAge() {
+		return this.age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
 	}
 
 	public String getAction() {
@@ -143,7 +157,8 @@ public class Trade {
 	@Override
 	public String toString() {
 		return "Trade{" + "id='" + this.id + '\'' + ", action='" + this.action + '\''
-				+ ", price=" + this.price + ", shares=" + this.shares + ", symbol='"
+				+ ", age=" + this.age + ", price=" + this.price + ", shares="
+				+ this.shares + ", symbol='"
 				+ this.symbol + '\'' + ", traderId='" + this.traderId + '\'' + '}';
 	}
 }
