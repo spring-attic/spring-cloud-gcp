@@ -64,8 +64,8 @@ public class SpannerStatementQueryTests {
 	}
 
 	private PartTreeSpannerQuery createQuery() {
-		return new PartTreeSpannerQuery(Trade.class,
-				this.queryMethod, this.spannerOperations, this.spannerMappingContext);
+		return new PartTreeSpannerQuery(Trade.class, this.queryMethod,
+				this.spannerOperations, this.spannerMappingContext);
 	}
 
 	@Test
@@ -76,20 +76,8 @@ public class SpannerStatementQueryTests {
 						+ "AndPriceGreaterThanAndPriceLessThanEqualOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
 
-		Object[] params = new Object[] {
-				"BUY",
-				"abcd",
-				"abc123",
-				8.88,
-				3.33,
-				"ignored",
-				"ignored",
-				"blahblah",
-				"ignored",
-				"ignored",
-				1.11,
-				2.22,
-		};
+		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, "ignored",
+				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
 
 		when(this.spannerOperations.find(any(), (Statement) any(), any()))
 				.thenAnswer(invocation -> {
@@ -131,11 +119,7 @@ public class SpannerStatementQueryTests {
 		this.partTreeSpannerQuery = createQuery();
 
 		// There are too few params specified, so the exception will occur.
-		Object[] params = new Object[] {
-				"BUY",
-				"abcd",
-				"abc123",
-		};
+		Object[] params = new Object[] { "BUY", "abcd", "abc123", };
 
 		this.partTreeSpannerQuery.execute(params);
 	}
@@ -147,22 +131,15 @@ public class SpannerStatementQueryTests {
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
 
-		Object[] params = new Object[] {
-				"BUY",
-				"abcd",
-				"abc123",
-				8.88,
-				3.33,
-				new Trade(), // This parameter is an unsupported type for Spanner SQL.
-				"ignored",
-		};
+		// This parameter is an unsupported type for Spanner SQL.
+		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, new Trade(), "ignored", };
 
 		this.partTreeSpannerQuery.execute(params);
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void deleteTest() {
-		//delete is not supported
+		// delete is not supported
 		when(this.queryMethod.getName()).thenReturn(
 				"deleteTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
@@ -186,9 +163,7 @@ public class SpannerStatementQueryTests {
 
 		queryWithMockResult("countByAction", results);
 
-		Object[] params = new Object[]{
-				"BUY",
-		};
+		Object[] params = new Object[] { "BUY", };
 		assertEquals(1, this.partTreeSpannerQuery.execute(params));
 	}
 
@@ -199,9 +174,7 @@ public class SpannerStatementQueryTests {
 
 		queryWithMockResult("existsByAction", results);
 
-		Object[] params = new Object[]{
-				"BUY",
-		};
+		Object[] params = new Object[] { "BUY", };
 		assertTrue((boolean) this.partTreeSpannerQuery.execute(params));
 	}
 
@@ -209,17 +182,14 @@ public class SpannerStatementQueryTests {
 	public void existShouldBeFalseWhenResultSetIsEmpty() {
 		queryWithMockResult("existsByAction", Collections.emptyList());
 
-		Object[] params = new Object[]{
-				"BUY",
-		};
+		Object[] params = new Object[] { "BUY", };
 		assertFalse((boolean) this.partTreeSpannerQuery.execute(params));
 	}
 
 	private void queryWithMockResult(String queryName, List results) {
 		when(this.queryMethod.getName()).thenReturn(queryName);
 		this.partTreeSpannerQuery = createQuery();
-		when(this.spannerOperations.find(any(), (Statement) any(), any()))
-				.thenReturn(results);
+		when(this.spannerOperations.find(any(), (Statement) any())).thenReturn(results);
 	}
 
 	@Table(name = "trades")

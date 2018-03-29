@@ -147,7 +147,7 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void existsByIdTestNotFound() {
 		SpannerOperations operations = mock(SpannerOperations.class);
-		when(operations.find(eq(Object.class), any())).thenReturn(null);
+		when(operations.find(eq(Object.class), (Key) any())).thenReturn(null);
 		assertFalse(
 				new SpannerRepositoryImpl(operations, Object.class)
 						.existsById(Key.of("key")));
@@ -179,9 +179,10 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void findAllByIdTest() {
 		SpannerOperations operations = mock(SpannerOperations.class);
-		when(operations.find(eq(Object.class), any())).thenAnswer(invocation -> {
+		when(operations.find(eq(Object.class), (KeySet) any())).thenAnswer(invocation -> {
 			KeySet keys = invocation.getArgument(1);
-			assertThat(keys.getKeys(), containsInAnyOrder("key1", "key2"));
+			assertThat(keys.getKeys(),
+					containsInAnyOrder(Key.of("key2"), Key.of("key1")));
 			return null;
 		});
 		new SpannerRepositoryImpl(operations, Object.class)

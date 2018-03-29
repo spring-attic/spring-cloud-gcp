@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalLong;
 import java.util.Set;
 
 import com.google.cloud.spanner.DatabaseClient;
@@ -33,7 +32,6 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
-import com.google.cloud.spanner.Struct;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -87,8 +85,8 @@ public class SpannerTemplateTests {
 		this.mutationFactory = mock(SpannerMutationFactory.class);
 		this.readContext = mock(ReadContext.class);
 		when(this.databaseClient.singleUse()).thenReturn(this.readContext);
-		this.spannerTemplate = new SpannerTemplate(this.databaseClient, this.mappingContext,
-				this.objectMapper, this.mutationFactory);
+		this.spannerTemplate = new SpannerTemplate(this.databaseClient,
+				this.mappingContext, this.objectMapper, this.mutationFactory);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -128,21 +126,47 @@ public class SpannerTemplateTests {
 
 	@Test
 	public void findSingleKeyTest() {
-		Struct struct = mock(Struct.class);
-		TestEntity result = new TestEntity();
-		when(this.readContext.readRow(any(), any(), any())).thenReturn(struct);
-		when(this.objectMapper.read(eq(TestEntity.class), same(struct))).thenReturn(result);
-		TestEntity entity = this.spannerTemplate.find(TestEntity.class, Key.of("key"));
-		assertSame(result, entity);
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		spyTemplate.find(TestEntity.class, Key.of("key"));
+		verify(spyTemplate, times(1)).find(eq(TestEntity.class), eq(Key.of("key")),
+				eq(null));
+	}
+
+	@Test
+	public void findKeySetTest() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		KeySet keys = KeySet.newBuilder().addKey(Key.of("key1")).addKey(Key.of("key2"))
+				.build();
+		spyTemplate.find(TestEntity.class, keys);
+		verify(spyTemplate, times(1)).find(eq(TestEntity.class), same(keys), eq(null));
+	}
+
+	@Test
+	public void findAllPageableNoOptionsTest() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		Pageable page = mock(Pageable.class);
+		doReturn(null).when(spyTemplate).findAll(eq(TestEntity.class), same(page),
+				eq(null));
+		spyTemplate.findAll(TestEntity.class, page);
+		verify(spyTemplate, times(1)).findAll(eq(TestEntity.class), same(page), eq(null));
+	}
+
+	@Test
+	public void findAllSortNoOptionsTest() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		Sort sort = mock(Sort.class);
+		spyTemplate.findAll(TestEntity.class, sort);
+		verify(spyTemplate, times(1)).findAll(eq(TestEntity.class), same(sort), eq(null));
 	}
 
 	@Test
 	public void findMultipleKeysTest() {
 		ResultSet results = mock(ResultSet.class);
 		ReadOption readOption = mock(ReadOption.class);
+		SpannerReadOptions options = new SpannerReadOptions().addReadOption(readOption);
 		KeySet keySet = KeySet.singleKey(Key.of("key"));
 		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
-		this.spannerTemplate.find(TestEntity.class, keySet, readOption);
+		this.spannerTemplate.find(TestEntity.class, keySet, options);
 		verify(this.objectMapper, times(1)).mapToList(same(results),
 				eq(TestEntity.class));
 		verify(this.readContext, times(1)).read(eq("custom_test_table"), same(keySet),
@@ -150,12 +174,30 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
+	public void findMultipleKeysWithIndexTest() {
+		ResultSet results = mock(ResultSet.class);
+		ReadOption readOption = mock(ReadOption.class);
+		SpannerReadOptions options = new SpannerReadOptions().addReadOption(readOption)
+				.setIndex("index");
+		KeySet keySet = KeySet.singleKey(Key.of("key"));
+		when(this.readContext.readUsingIndex(any(), any(), any(), any(), any()))
+				.thenReturn(results);
+		this.spannerTemplate.find(TestEntity.class, keySet, options);
+		verify(this.objectMapper, times(1)).mapToList(same(results),
+				eq(TestEntity.class));
+		verify(this.readContext, times(1)).readUsingIndex(eq("custom_test_table"),
+				eq("index"), same(keySet), any(), same(readOption));
+	}
+
+	@Test
 	public void findByStatementTest() {
 		ResultSet results = mock(ResultSet.class);
 		QueryOption queryOption = mock(QueryOption.class);
 		Statement statement = Statement.of("test");
+		SpannerQueryOptions options = new SpannerQueryOptions()
+				.addQueryOption(queryOption);
 		when(this.readContext.executeQuery(any(), any())).thenReturn(results);
-		this.spannerTemplate.find(TestEntity.class, statement, queryOption);
+		this.spannerTemplate.find(TestEntity.class, statement, options);
 		verify(this.objectMapper, times(1)).mapToList(same(results),
 				eq(TestEntity.class));
 		verify(this.readContext, times(1)).executeQuery(same(statement),
@@ -163,21 +205,12 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
-	public void findBySqlString() {
-		QueryOption queryOption = mock(QueryOption.class);
-		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		spyTemplate.find(TestEntity.class, "test", queryOption);
-		verify(spyTemplate).find(eq(TestEntity.class), eq(Statement.of("test")),
-				same(queryOption));
-	}
-
-	@Test
 	public void findAllTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		ReadOption readOption = mock(ReadOption.class);
-		spyTemplate.findAll(TestEntity.class, readOption);
+		SpannerReadOptions options = new SpannerReadOptions();
+		spyTemplate.findAll(TestEntity.class, options);
 		verify(spyTemplate, times(1)).find(eq(TestEntity.class), eq(KeySet.all()),
-				same(readOption));
+				same(options));
 	}
 
 	@Test
@@ -311,7 +344,8 @@ public class SpannerTemplateTests {
 	@Test
 	public void findAllSortWithLimitsOffsetTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		QueryOption queryOption = mock(QueryOption.class);
+		SpannerQueryOptions queryOption = new SpannerQueryOptions().setLimit(3L)
+				.setOffset(5L);
 		Sort sort = Sort.by(Order.asc("id"), Order.desc("something"), Order.asc("other"));
 
 		doAnswer(invocation -> {
@@ -322,33 +356,22 @@ public class SpannerTemplateTests {
 			return null;
 		}).when(spyTemplate).find(eq(TestEntity.class), (Statement) any(), any());
 
-		spyTemplate.findAll(TestEntity.class, sort, OptionalLong.of(3),
-				OptionalLong.of(5), queryOption);
+		spyTemplate.findAll(TestEntity.class, sort, queryOption);
 		verify(spyTemplate, times(1)).find(eq(TestEntity.class), (Statement) any(),
 				any());
 	}
 
 	@Test
-	public void findAllSortTest() {
-		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		QueryOption queryOption = mock(QueryOption.class);
-		Sort sort = mock(Sort.class);
-
-		spyTemplate.findAll(TestEntity.class, sort, queryOption);
-		verify(spyTemplate, times(1)).findAll(eq(TestEntity.class), same(sort),
-				eq(OptionalLong.empty()), eq(OptionalLong.empty()), same(queryOption));
-	}
-
-	@Test
 	public void findAllPageableTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		QueryOption queryOption = mock(QueryOption.class);
 		Sort sort = mock(Sort.class);
 		Pageable pageable = mock(Pageable.class);
 
 		long offset = 5L;
 		int limit = 3;
 		long total = 9999;
+		SpannerQueryOptions queryOption = new SpannerQueryOptions().setOffset(offset)
+				.setLimit(limit);
 
 		when(pageable.getOffset()).thenReturn(offset);
 		when(pageable.getPageSize()).thenReturn(limit);
@@ -367,7 +390,6 @@ public class SpannerTemplateTests {
 		items.add(t3);
 
 		doReturn(items).when(spyTemplate).findAll(eq(TestEntity.class), same(sort),
-				eq(OptionalLong.of(limit)), eq(OptionalLong.of(offset)),
 				same(queryOption));
 		doReturn(total).when(spyTemplate).count(eq(TestEntity.class));
 
