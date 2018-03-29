@@ -105,12 +105,13 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(
-			@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider) {
+			@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
+			TransportChannelProvider transportChannelProvider) {
 		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
 		factory.setHeaderProvider(this.headerProvider);
-		factory.setChannelProvider(transportChannelProvider());
+		factory.setChannelProvider(transportChannelProvider);
 
 		return factory;
 	}
@@ -118,12 +119,13 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(
-			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider) {
+			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
+			TransportChannelProvider transportChannelProvider) {
 		DefaultPublisherFactory factory = new DefaultPublisherFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
 		factory.setHeaderProvider(this.headerProvider);
-		factory.setChannelProvider(transportChannelProvider());
+		factory.setChannelProvider(transportChannelProvider);
 		return factory;
 	}
 
@@ -137,13 +139,14 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public TopicAdminClient topicAdminClient() {
+	public TopicAdminClient topicAdminClient(
+			TransportChannelProvider transportChannelProvider) {
 		try {
 			return TopicAdminClient.create(
 					TopicAdminSettings.newBuilder()
 							.setCredentialsProvider(this.finalCredentialsProvider)
 							.setHeaderProvider(this.headerProvider)
-							.setTransportChannelProvider(transportChannelProvider())
+							.setTransportChannelProvider(transportChannelProvider)
 							.build());
 		}
 		catch (IOException ioe) {
@@ -153,13 +156,14 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SubscriptionAdminClient subscriptionAdminClient() {
+	public SubscriptionAdminClient subscriptionAdminClient(
+			TransportChannelProvider transportChannelProvider) {
 		try {
 			return SubscriptionAdminClient.create(
 					SubscriptionAdminSettings.newBuilder()
 							.setCredentialsProvider(this.finalCredentialsProvider)
 							.setHeaderProvider(this.headerProvider)
-							.setTransportChannelProvider(transportChannelProvider())
+							.setTransportChannelProvider(transportChannelProvider)
 							.build());
 		}
 		catch (IOException ioe) {
