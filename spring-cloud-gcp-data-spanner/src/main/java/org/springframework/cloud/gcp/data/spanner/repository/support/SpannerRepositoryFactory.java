@@ -82,7 +82,7 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport {
 
 	@Override
 	protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
-		return SpannerRepositoryImpl.class;
+		return SimpleSpannerRepository.class;
 	}
 
 	@Override
