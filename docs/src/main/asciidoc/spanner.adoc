@@ -6,7 +6,7 @@ Spring Cloud GCP adds Spring Data support for Google Cloud Spanner.
 
 A Spring Boot starter is provided to auto-configure the various Storage components.
 
-Maven coordinates, using Spring Cloud GCP BOM:
+Maven coordinates for the Spring Boot Starter for Spanner, using Spring Cloud GCP BOM:
 
 [source,xml]
 ----
@@ -32,15 +32,15 @@ Spring Data Spanner allows you to define entity classes and corresponding reposi
 
 [source,java]
 ----
-@SpannerTable(name = "students")
+@Table(name = "students")
 public class SimpleStudent {
-	@SpannerPrimaryKeyColumn(keyOrder = 1)
+	@PrimaryKeyColumn(keyOrder = 1)
 	String id;
 
-	@SpannerColumn(name = "first_name")
+	@Column(name = "first_name")
 	String name;
 
-	@SpannerColumnInnerType(innerType = String.class)
+	@ColumnInnerType(innerType = String.class)
 	List<String> teachers;
 
 	int age;

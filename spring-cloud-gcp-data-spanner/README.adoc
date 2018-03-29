@@ -1,0 +1,52 @@
+:ext-relative: adoc
+
+= image:spanner-logo.png[50,50] Spring Data Spanner
+
+Provides a http://projects.spring.io/spring-data/[Spring Data Module] for https://cloud.google.com/spanner/[Google Cloud Spanner].
+
+Maven coordinates for this module only, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-data-spanner</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-spanner'
+}
+----
+
+With our Spring Boot starter, you can leverage our recommended auto-configuration setup.
+For the starter, add "-starter" to the artifactId, as shown in the coordinates see below.
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-data-spanner-starter</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-spanner-starter'
+}
+----
+
+Where to go from here?
+
+* Try out the link:../spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[Spring Data Spanner Sample application]
+* Detailed documentation: link:../docs/src/main/asciidoc/spanner.adoc[Spring Data Spanner documentation]
+* Overall project documentation: https://cloud.spring.io/spring-cloud-gcp[Spring Cloud GCP reference]
+
+
