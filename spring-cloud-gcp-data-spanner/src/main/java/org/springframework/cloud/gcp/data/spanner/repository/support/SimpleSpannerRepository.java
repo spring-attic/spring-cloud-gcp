@@ -31,13 +31,13 @@ import org.springframework.util.Assert;
 /**
  * @author Chengyuan Zhao
  */
-public class SpannerRepositoryImpl<T> implements SpannerRepository<T> {
+public class SimpleSpannerRepository<T> implements SpannerRepository<T> {
 
 	private final SpannerOperations spannerOperations;
 
 	private final Class entityType;
 
-	public SpannerRepositoryImpl(SpannerOperations spannerOperations, Class entityType) {
+	public SimpleSpannerRepository(SpannerOperations spannerOperations, Class entityType) {
 		Assert.notNull(spannerOperations,
 				"A valid SpannerOperations object is required.");
 		Assert.notNull(entityType, "A valid entity type is required.");

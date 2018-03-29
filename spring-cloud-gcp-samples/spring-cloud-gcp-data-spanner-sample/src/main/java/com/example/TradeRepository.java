@@ -18,17 +18,13 @@ package com.example;
 
 import java.util.List;
 
-import com.google.cloud.spanner.Key;
-
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-@Repository
-public interface TradeRepository extends PagingAndSortingRepository<Trade, Key> {
+public interface TradeRepository extends SpannerRepository<Trade> {
 
 	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
 			String action, String symbol, String traderId);

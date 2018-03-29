@@ -84,16 +84,16 @@ public class SpannerRepositoryFactoryTests {
 	public void getTargetRepositoryTest() {
 		RepositoryInformation repoInfo = mock(RepositoryInformation.class);
 		when(repoInfo.getRepositoryBaseClass())
-				.thenReturn((Class) SpannerRepositoryImpl.class);
+				.thenReturn((Class) SimpleSpannerRepository.class);
 		when(repoInfo.getDomainType()).thenReturn((Class) TestEntity.class);
 		Object repo = this.spannerRepositoryFactory.getTargetRepository(repoInfo);
-		assertEquals(SpannerRepositoryImpl.class, repo.getClass());
+		assertEquals(SimpleSpannerRepository.class, repo.getClass());
 	}
 
 	@Test
 	public void getRepositoryBaseClassTest() {
 		Class baseClass = this.spannerRepositoryFactory.getRepositoryBaseClass(null);
-		assertEquals(SpannerRepositoryImpl.class, baseClass);
+		assertEquals(SimpleSpannerRepository.class, baseClass);
 	}
 
 	@Test
