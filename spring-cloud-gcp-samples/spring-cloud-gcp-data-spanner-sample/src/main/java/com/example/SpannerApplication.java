@@ -16,11 +16,15 @@
 
 package com.example;
 
+import com.google.cloud.spanner.Key;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.context.ApplicationContext;
 
 /**
  * @author Chengyuan Zhao
@@ -29,7 +33,63 @@ import org.springframework.data.repository.CrudRepository;
 @EnableSpannerRepositories
 public class SpannerApplication {
 
+	@Autowired
+	SpannerOperations spannerOperations;
+
+	@Autowired
+	TradeRepository tradeRepository;
+
 	public static void main(String[] args) {
 		SpringApplication.run(SpannerApplication.class, args);
 	}
+
+	public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
+		return args -> {
+			this.tradeRepository.deleteAll();
+
+			String[] actions = new String[] { "BUY", "SELL" };
+
+			String[] stocks = new String[] { "stock1", "stock2", "stock3", "stock4",
+					"stock5" };
+
+			String traderId = "demo_trader";
+			for (String stock : stocks) {
+				for (String action : actions) {
+					Trade t = new Trade();
+					t.symbol = stock;
+					t.action = action;
+					t.traderId = traderId;
+					t.price = 100.0;
+					t.shares = 12345.6;
+					this.spannerOperations.insert(t);
+				}
+			}
+
+			StringBuilder reply = new StringBuilder();
+			reply.append("The table for trades has been cleared and "
+					+ this.tradeRepository.count() + " new trades have been inserted:<br />");
+
+			List<Trade> allTrades = this.spannerOperations.findAll(Trade.class);
+			allTrades.stream()
+					.forEach(trade -> reply.append(trade.toString() + "<br />"));
+
+			reply.append("There are " + this.tradeRepository.countByAction("BUY")
+					+ " BUY trades: <br />");
+
+			this.tradeRepository.findByAction("BUY").stream()
+					.forEach(trade -> reply.append(trade.toString() + "<br />"));
+
+			reply.append("These are the Spanner primary keys for the trades:<br />");
+
+			allTrades.stream().forEach(
+					trade -> reply.append(this.spannerOperations.getId(trade) + "<br />"));
+
+			this.tradeRepository.deleteById(
+					Key.newBuilder().append(stocks[0]).append(actions[0]).build());
+
+			System.out.println(reply);
+
+		};
+	}
+
 }
