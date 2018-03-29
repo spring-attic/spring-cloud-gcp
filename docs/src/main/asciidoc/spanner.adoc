@@ -125,9 +125,9 @@ Spring Data Spanner supports the following inner types for `List` fields:
 public interface StudentRepository extends SpannerRepository<SimpleStudent> {
 
 	List<SimpleStudent> findTop3DistinctByIdAndNameOrAgeOrderByAgeDesc(
-			String id, String name, int age);
+			String id, String name, long age);
 
-	int countByAgeLessThanEqual(int age);
+	int countByAgeLessThanEqual(long age);
 
 	// This method uses the query from the properties file instead of one generated based on name.
 	List<SimpleStudent> fetchBySomeQuery(String someArg);
@@ -153,12 +153,12 @@ public class MyApplication {
 	  // storing new students
 	  SimpleStudent ss = new SimpleStudent();
 	  ss.name = "student1";
-	  ss.age = 99;
+	  ss.age = 99L;
 	  spannerOperations.insert(ss);
 
 	  // getting students from Spanner
 	  List<SimpleStudent> ssList =
-	    studentRepository.findTop3DistinctByIdAndNameOrAgeOrderByAgeDesc("someId", "bob", 12);
+	    studentRepository.findTop3DistinctByIdAndNameOrAgeOrderByAgeDesc("someId", "bob", 12L);
 
 	  List<SimpleStudent> ssList2 = studentRepository.fetchBySomeQuery("some argument");
 	}
