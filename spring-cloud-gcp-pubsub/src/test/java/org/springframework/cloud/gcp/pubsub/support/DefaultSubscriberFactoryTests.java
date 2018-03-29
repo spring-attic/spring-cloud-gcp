@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author João André Martins
@@ -41,8 +41,8 @@ public class DefaultSubscriberFactoryTests {
 
 		Subscriber subscriber = factory.createSubscriber("midnight cowboy", (message, consumer) -> { });
 
-		assertEquals("midnight cowboy", subscriber.getSubscriptionName().getSubscription());
-		assertEquals("angeldust", subscriber.getSubscriptionName().getProject());
+		assertThat(subscriber.getSubscriptionNameString())
+				.isEqualTo("projects/angeldust/subscriptions/midnight cowboy");
 	}
 
 	@Test(expected = IllegalArgumentException.class)
