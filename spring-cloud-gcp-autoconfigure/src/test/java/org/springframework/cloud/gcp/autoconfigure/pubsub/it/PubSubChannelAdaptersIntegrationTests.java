@@ -84,11 +84,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 		assumeThat(System.getenv(EMULATOR_HOST_ENVVAR_NAME)).isNotNull();
 	}
 
-	private void tearDown(PubSubAdmin pubSubAdmin) {
-		pubSubAdmin.deleteTopic("desafinado");
-		pubSubAdmin.deleteSubscription("doralice");
-	}
-
 	@Test
 	public void sendAndReceiveMessage() {
 		this.contextRunner.run(context -> {
@@ -112,7 +107,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 			assertThat(message.getHeaders().get("storm")).isEqualTo("lift your skinny fists");
 			assertThat(message.getHeaders().get("static")).isEqualTo("lift your skinny fists");
 			assertThat(message.getHeaders().get("sleep")).isEqualTo("lift your skinny fists");
-			tearDown(context.getBean(PubSubAdmin.class));
 		});
 	}
 
@@ -129,7 +123,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 			assertThat(message.getPayload()).isInstanceOf(byte[].class);
 			String stringPayload = new String((byte[]) message.getPayload());
 			assertThat(stringPayload).isEqualTo("I am a message.");
-			tearDown(context.getBean(PubSubAdmin.class));
 		});
 	}
 
@@ -155,7 +148,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 			acker.ack();
 			message = channel.receive(1000);
 			assertThat(message).isNull();
-			tearDown(context.getBean(PubSubAdmin.class));
 		});
 	}
 
@@ -181,7 +173,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 					context.getBean("outputChannel", PollableChannel.class).receive(5000);
 			assertThat(message).isNotNull();
 			verify(callbackSpy, times(1)).onSuccess(any());
-			tearDown(context.getBean(PubSubAdmin.class));
 		});
 	}
 
@@ -228,7 +219,9 @@ public class PubSubChannelAdaptersIntegrationTests {
 				@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
 				TransportChannelProvider transportChannelProvider,
 				PubSubAdmin pubSubAdmin) {
-			pubSubAdmin.createSubscription("doralice", "desafinado");
+			if (pubSubAdmin.getSubscription("doralice") == null) {
+				pubSubAdmin.createSubscription("doralice", "desafinado");
+			}
 
 			DefaultSubscriberFactory factory = new DefaultSubscriberFactory(gcpProjectIdProvider());
 			factory.setExecutorProvider(executorProvider);
@@ -245,7 +238,9 @@ public class PubSubChannelAdaptersIntegrationTests {
 				@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
 				TransportChannelProvider transportChannelProvider,
 				PubSubAdmin pubSubAdmin) {
-			pubSubAdmin.createTopic("desafinado");
+			if (pubSubAdmin.getTopic("desafinado") == null) {
+				pubSubAdmin.createTopic("desafinado");
+			}
 
 			DefaultPublisherFactory factory = new DefaultPublisherFactory(gcpProjectIdProvider());
 			factory.setExecutorProvider(executorProvider);
