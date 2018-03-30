@@ -9,10 +9,6 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<properties>
-		<spring.boot.mainclass>com.example.SpannerRepositoryExample</spring.boot.mainclass>
-	</properties>
-
 	<groupId>com.example</groupId>
 	<artifactId>spring-cloud-gcp-data-spanner-sample</artifactId>
 	<name>Spring Cloud GCP Spring Boot Starter for Spanner Code Sample</name>
@@ -28,6 +24,8 @@
 		</dependency>
   </dependencies>
 
+	<!-- We have more than 1 main classes,
+	this setup prevents Spring Boot failing at the package phase-->
 	<build>
 		<plugins>
 			<plugin>
@@ -39,7 +37,7 @@
 							<goal>repackage</goal>
 						</goals>
 						<configuration>
-							<mainClass>${spring.boot.mainclass}</mainClass>
+							<mainClass>com.example.SpannerRepositoryExample</mainClass>
 						</configuration>
 					</execution>
 				</executions>
