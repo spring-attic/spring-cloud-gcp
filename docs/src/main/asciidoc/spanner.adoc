@@ -34,17 +34,21 @@ This setup takes care of bringing in the latest compatible version of Cloud Java
 
 === Configuration
 
-To setup Spring Data Spanner, you have to configure connection to Cloud Spanner and Repositories (if you want to use them).
+To setup Spring Data Spanner, you have two things to configure:
+
+1. setup the connection details to Google Cloud Spanner
+2. enable Spring Data Repositories (if you want to use them).
 
 ==== Spanner settings
 
-You will need to use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner] to configure Google Cloud Spanner in your Spring application. It contains all the necessary setup that makes it easy to authenticate with your Google Cloud project.
+You will need to use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner] to autoconfigure Google Cloud Spanner in your Spring application.
+It contains all the necessary setup that makes it easy to authenticate with your Google Cloud project.
 The following configuration options are available:
 
 |===
 | Name | Description | Optional | Default value
-| `spring.cloud.gcp.spanner.projectId` | the GCP project ID to use | Yes | provided by Spring Cloud GCP
-| `spring.cloud.gcp.spanner.instanceId` | Spanner instance to use | No |
+| `spring.cloud.gcp.spanner.project-id` | the GCP project ID to use | Yes | provided by Spring Cloud GCP
+| `spring.cloud.gcp.spanner.instance-id` | Spanner instance to use | No |
 | `spring.cloud.gcp.spanner.database` |
 Spanner database to use | No |
 |===
