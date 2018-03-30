@@ -17,6 +17,7 @@
 package com.example;
 
 import java.util.List;
+
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
@@ -48,11 +49,11 @@ public class Trade {
 	@Override
 	public String toString() {
 		return "Trade{" +
-				"action='" + action + '\'' +
-				", price=" + price +
-				", shares=" + shares +
-				", symbol='" + symbol + '\'' +
-				", traderId='" + traderId +
+				"action='" + this.action + '\'' +
+				", price=" + this.price +
+				", shares=" + this.shares +
+				", symbol='" + this.symbol + '\'' +
+				", traderId='" + this.traderId +
 				'}';
 	}
 }

@@ -16,10 +16,9 @@
 
 package com.example;
 
-import com.google.cloud.spanner.KeySet;
 import java.util.List;
 
-import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.KeySet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -27,10 +26,8 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.domain.Sort;
 
 /**
  * @author Balint Pato
@@ -65,7 +62,7 @@ public class SpannerTemplateExample {
 			t.symbol = "ST2";
 			this.spannerOperations.insert(t);
 
-			List<Trade> tradesByAction = spannerOperations.findAll(Trade.class);
+			List<Trade> tradesByAction = this.spannerOperations.findAll(Trade.class);
 
 			tradesByAction.forEach(System.out::println);
 
