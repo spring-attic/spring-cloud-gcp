@@ -24,7 +24,7 @@ import org.springframework.util.Assert;
 /**
  * @author Chengyuan Zhao
  */
-public class AbstractSpannerCustomConverter {
+public abstract class AbstractSpannerCustomConverter {
 
 	private final CustomConversions customConversions;
 

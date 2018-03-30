@@ -140,14 +140,9 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 					else {
 						Class sourceType = this.spannerColumnTypeToJavaTypeMapping
 								.get(source.getColumnType(columnName));
-						if (sourceType != null && canConvert(sourceType, propType)) {
 							valueSet = attemptReadSingleItemValue(
 									spannerPersistentProperty, source, sourceType,
 									columnName, accessor);
-						}
-						else {
-							valueSet = false;
-						}
 					}
 
 					if (!valueSet) {
@@ -171,14 +166,17 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 			SpannerPersistentProperty spannerPersistentProperty, Struct struct,
 			Class sourceType,
 			String colName, PersistentPropertyAccessor accessor) {
+		Class targetType = spannerPersistentProperty.getType();
+		if (sourceType == null || !canConvert(sourceType, targetType)) {
+			return false;
+		}
 		BiFunction readFunction = singleItemReadMethodMapping
 				.get(ConversionUtils.boxIfNeeded(sourceType));
 		if (readFunction == null) {
 			return false;
 		}
 		accessor.setProperty(spannerPersistentProperty,
-				convert(readFunction.apply(struct, colName),
-						spannerPersistentProperty.getType()));
+				convert(readFunction.apply(struct, colName), targetType));
 		return true;
 	}
 

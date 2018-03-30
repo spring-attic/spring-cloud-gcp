@@ -180,9 +180,6 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 					propertyType);
 			if (!valueSet) {
 				for (Class targetType : this.singleItemType2ToMethodMap.keySet()) {
-					if (!canConvert(propertyType, targetType)) {
-						continue;
-					}
 					valueSet = attemptSetSingleItemValue(propertyValue, valueBinder,
 							targetType);
 					if (valueSet) {
@@ -213,6 +210,9 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 
 	private boolean attemptSetSingleItemValue(Object value,
 			ValueBinder<WriteBuilder> valueBinder, Class targetType) {
+		if (!canConvert(value.getClass(), targetType)) {
+			return false;
+		}
 		Class innerType = ConversionUtils.boxIfNeeded(targetType);
 		BiFunction toMethod = singleItemType2ToMethodMap.get(innerType);
 		if (toMethod == null) {
