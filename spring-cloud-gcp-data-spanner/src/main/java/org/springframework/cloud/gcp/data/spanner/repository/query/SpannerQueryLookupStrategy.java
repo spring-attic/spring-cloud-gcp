@@ -87,9 +87,7 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 
 	protected SqlSpannerQuery createSqlSpannerQuery(Class entityType,
 			QueryMethod queryMethod, String sql) {
-		Spann
-		EvaluationContext evaluationContext = evaluationContextProvider.getEvaluationContext(queryMethod.getParameters(), queryMethod.get);
-		return new SqlSpannerQuery(entityType, queryMethod, this.spannerOperations, sql, evaluationContext, expressionParser);
+		return new SqlSpannerQuery(entityType, queryMethod, this.spannerOperations, sql, evaluationContextProvider, expressionParser);
 	}
 
 	protected PartTreeSpannerQuery createPartTreeSpannerQuery(Class entityType,

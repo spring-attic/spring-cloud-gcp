@@ -22,6 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.expression.EvaluationContext;
@@ -29,6 +30,7 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.ParserContext;
 import org.springframework.expression.common.LiteralExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
 
 /**
@@ -47,19 +49,19 @@ public class SqlSpannerQuery implements RepositoryQuery {
 
 	private final List<String> tags;
 	private final Expression sqlExpression;
-	private EvaluationContext evaluationContext;
+	private EvaluationContextProvider evaluationContextProvider;
 	private SpelExpressionParser expressionParser;
 
 	public SqlSpannerQuery(Class type, QueryMethod queryMethod,
 			SpannerOperations spannerOperations, String sql,
-			EvaluationContext evaluationContext,
+			EvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser) {
 		this.queryMethod = queryMethod;
 		this.entityType = type;
 		this.spannerOperations = spannerOperations;
 		this.sql = sql;
 		this.tags = getTags(sql);
-		this.evaluationContext = evaluationContext;
+		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
 		this.sqlExpression = detectExpression();
 	}
@@ -78,13 +80,14 @@ public class SqlSpannerQuery implements RepositoryQuery {
 	@Override
 	public Object execute(Object[] parameters) {
 		return this.spannerOperations.find(this.entityType, SpannerStatementQueryExecutor
-				.buildStatementFromSqlWithArgs(getSql(), this.tags, parameters));
+				.buildStatementFromSqlWithArgs(getSql(parameters), this.tags, parameters));
 	}
 
-	protected String getSql() {
+	private String getSql(Object[] parameterValues) {
+		EvaluationContext context = evaluationContextProvider.getEvaluationContext(queryMethod.getParameters(), parameterValues);
 		return  this.sqlExpression == null
 				? this.sql
-				: this.sqlExpression.getValue(evaluationContext, String.class);
+				: this.sqlExpression.getValue(context, String.class);
 	}
 
 	@Override

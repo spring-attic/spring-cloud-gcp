@@ -27,7 +27,7 @@ public interface TradeRepository extends SpannerRepository<Trade> {
 
 	int countByAction(String action);
 
-	@Query("SELECT * FROM trade_#{tableNameSuffix} WHERE action=@action")
-	List<Trade> annotatedTradesByAction(String action);
+	@Query("SELECT * FROM trades_#{tableNameSuffix} WHERE action=@action")
+	List<Trade> annotatedTradesByAction(Trade action);
 
 }
