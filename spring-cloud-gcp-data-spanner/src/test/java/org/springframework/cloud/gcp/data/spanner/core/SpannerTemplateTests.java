@@ -37,8 +37,6 @@ import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
@@ -102,12 +100,9 @@ public class SpannerTemplateTests {
 
 		TransactionContext transactionContext = mock(TransactionContext.class);
 
-		when(transactionRunner.run(any())).thenAnswer(new Answer<Object>() {
-			@Override
-			public Object answer(InvocationOnMock invocation) throws Throwable {
-				TransactionCallable transactionCallable = invocation.getArgument(0);
-				return transactionCallable.run(transactionContext);
-			}
+		when(transactionRunner.run(any())).thenAnswer(invocation -> {
+			TransactionCallable transactionCallable = invocation.getArgument(0);
+			return transactionCallable.run(transactionContext);
 		});
 
 		TestEntity t = new TestEntity();

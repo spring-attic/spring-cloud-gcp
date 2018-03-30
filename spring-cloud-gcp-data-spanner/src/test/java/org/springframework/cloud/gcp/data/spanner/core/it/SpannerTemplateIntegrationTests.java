@@ -54,4 +54,19 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 		assertThat(this.spannerOperations.count(Trade.class), is(0L));
 	}
 
+	@Test
+	public void readWriteTransactionTest() {
+		Trade trade = Trade.aTrade();
+		this.spannerOperations.performReadWriteTransaction(transactionOperations -> {
+			transactionOperations.insert(trade);
+
+			// because the insert happens within the same transaction, this count is still
+			// 0
+			assertThat(transactionOperations.count(Trade.class), is(0L));
+			return null;
+		});
+
+		// now that the transaction has completed, the count should be 1
+		assertThat(this.spannerOperations.count(Trade.class), is(1L));
+	}
 }
