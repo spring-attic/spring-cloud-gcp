@@ -32,6 +32,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ReadContext;
+import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
@@ -275,6 +276,21 @@ public class SpannerTemplate implements SpannerOperations {
 						return operations.apply(transactionSpannerTemplate);
 					}
 				});
+	}
+
+	@Override
+	public <T> T performReadOnlyTransaction(Function<SpannerOperations, T> operations,
+			SpannerReadOptions readOptions) {
+		try (ReadOnlyTransaction readOnlyTransaction = readOptions.hasTimestamp()
+				? this.databaseClient.readOnlyTransaction(
+						TimestampBound.ofReadTimestamp(readOptions.getTimestamp()))
+				: this.databaseClient.readOnlyTransaction()) {
+			return operations.apply(new ReadOnlyTransactionSpannerTemplate(
+					SpannerTemplate.this.databaseClient,
+					SpannerTemplate.this.mappingContext,
+					SpannerTemplate.this.spannerConverter,
+					SpannerTemplate.this.mutationFactory, readOnlyTransaction));
+		}
 	}
 
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,

@@ -23,7 +23,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ReadContext;
-import com.google.cloud.spanner.TransactionContext;
+import com.google.cloud.spanner.ReadOnlyTransaction;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
@@ -33,45 +33,46 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
  * A {@link SpannerTemplate} that performs all operations in a single transaction.
  * @author Chengyuan Zhao
  */
-class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
+public class ReadOnlyTransactionSpannerTemplate extends SpannerTemplate {
 
-	private TransactionContext transactionContext;
+	private ReadOnlyTransaction readOnlyTransaction;
 
-	ReadWriteTransactionSpannerTemplate(DatabaseClient databaseClient,
+	ReadOnlyTransactionSpannerTemplate(DatabaseClient databaseClient,
 			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
 			SpannerMutationFactory spannerMutationFactory,
-			TransactionContext transactionContext) {
+			ReadOnlyTransaction readOnlyTransaction) {
 		super(databaseClient, mappingContext, spannerConverter, spannerMutationFactory);
-		this.transactionContext = transactionContext;
+		this.readOnlyTransaction = readOnlyTransaction;
 	}
 
 	@Override
 	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,
 			T arg1, U arg2) {
-		this.transactionContext.buffer(function.apply(arg1, arg2));
+		throw new SpannerDataException(
+				"A read-only transaction template cannot perform" + " mutations.");
 	}
 
 	@Override
 	protected ReadContext getReadContext() {
-		return this.transactionContext;
+		return this.readOnlyTransaction;
 	}
 
 	@Override
 	protected ReadContext getReadContext(Timestamp timestamp) {
 		throw new SpannerDataException(
 				"Getting stale snapshot read contexts is not supported"
-						+ " in read-write transaction templates.");
+						+ " in read-only transaction templates.");
 	}
 
 	@Override
 	public <T> T performReadWriteTransaction(Function<SpannerOperations, T> operations) {
-		throw new SpannerDataException("A read-write transaction template cannot be used"
+		throw new SpannerDataException("A read-only transaction template cannot be used"
 				+ " to perform sub-transactions.");
 	}
 
 	@Override
 	public <T> T performReadOnlyTransaction(Function<SpannerOperations, T> operations, SpannerReadOptions readOptions) {
-		throw new SpannerDataException("A read-write transaction template cannot be used"
+		throw new SpannerDataException("A read-only transaction template cannot be used"
 				+ " to perform sub-transactions.");
 	}
 }

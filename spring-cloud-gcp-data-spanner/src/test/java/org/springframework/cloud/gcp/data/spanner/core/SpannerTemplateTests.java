@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
@@ -30,8 +31,10 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.ReadContext;
+import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
@@ -117,6 +120,27 @@ public class SpannerTemplateTests {
 		assertEquals("all done", finalResult);
 		verify(transactionContext, times(1)).buffer((Mutation) any());
 		verify(transactionContext, times(1)).read(eq("custom_test_table"), any(), any());
+	}
+
+	@Test
+	public void readOnlyTransactionTest() {
+
+		ReadOnlyTransaction readOnlyTransaction = mock(ReadOnlyTransaction.class);
+		when(this.databaseClient.readOnlyTransaction(
+				eq(TimestampBound.ofReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
+						.thenReturn(readOnlyTransaction);
+
+		String finalResult = this.spannerTemplate
+				.performReadOnlyTransaction(spannerOperations -> {
+					List<TestEntity> items = spannerOperations.findAll(TestEntity.class);
+					TestEntity item = spannerOperations.find(TestEntity.class,
+							Key.of("key"));
+					return "all done";
+				}, new SpannerReadOptions()
+						.setTimestamp(Timestamp.ofTimeMicroseconds(333)));
+
+		assertEquals("all done", finalResult);
+		verify(readOnlyTransaction, times(2)).read(eq("custom_test_table"), any(), any());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
