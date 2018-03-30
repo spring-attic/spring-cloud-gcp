@@ -39,7 +39,9 @@ public class SpannerTemplateExample {
 	SpannerOperations spannerOperations;
 
 	public static void main(String[] args) {
-		new SpringApplicationBuilder(SpannerTemplateExample.class).web(WebApplicationType.NONE).run(args);
+		new SpringApplicationBuilder(SpannerTemplateExample.class)
+				.web(WebApplicationType.NONE)
+				.run(args);
 	}
 
 	@Bean

@@ -16,11 +16,14 @@ c.) Create a table, also named "trades". You can define the table via the follow
 
 ```
 CREATE TABLE trades (
-  action STRING(15),
-  price FLOAT64,
-  shares FLOAT64,
-  symbol STRING(10),
-  trader_id STRING(128)
+	action STRING(15),
+	symbol STRING(10),
+	curve ARRAY<FLOAT64>,
+	price FLOAT64,
+	shares FLOAT64,
+	test INT64,
+	testDate DATE,
+	trader_id STRING(128),
 ) PRIMARY KEY (action, symbol)
 ```
 
