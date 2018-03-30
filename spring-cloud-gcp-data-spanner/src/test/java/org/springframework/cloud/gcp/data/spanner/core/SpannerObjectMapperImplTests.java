@@ -41,6 +41,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
+import org.springframework.core.convert.ConversionFailedException;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
@@ -75,6 +76,7 @@ public class SpannerObjectMapperImplTests {
 		t.id = "key1";
 		t.stringField = "string";
 		t.booleanField = true;
+		t.intField = 123;
 		t.longField = 3L;
 		t.doubleField = 3.33;
 		t.doubleArray = new double[] { 3.33, 3.33, 3.33 };
@@ -109,6 +111,10 @@ public class SpannerObjectMapperImplTests {
 		ValueBinder<WriteBuilder> booleanFieldBinder = mock(ValueBinder.class);
 		when(booleanFieldBinder.to((Boolean) any())).thenReturn(null);
 		when(writeBuilder.set(eq("booleanField"))).thenReturn(booleanFieldBinder);
+
+		ValueBinder<WriteBuilder> intFieldBinder = mock(ValueBinder.class);
+		when(intFieldBinder.to(anyLong())).thenReturn(null);
+		when(writeBuilder.set(eq("intField"))).thenReturn(intFieldBinder);
 
 		ValueBinder<WriteBuilder> longFieldBinder = mock(ValueBinder.class);
 		when(longFieldBinder.to(anyLong())).thenReturn(null);
@@ -169,6 +175,7 @@ public class SpannerObjectMapperImplTests {
 		verify(idBinder, times(1)).to(eq(t.id));
 		verify(stringFieldBinder, times(1)).to(eq(t.stringField));
 		verify(booleanFieldBinder, times(1)).to(eq(Boolean.valueOf(t.booleanField)));
+		verify(intFieldBinder, times(1)).to(eq(Long.valueOf(t.intField)));
 		verify(longFieldBinder, times(1)).to(eq(Long.valueOf(t.longField)));
 		verify(doubleFieldBinder, times(1)).to(eq(Double.valueOf(t.doubleField)));
 		verify(doubleArrayFieldBinder, times(1)).toFloat64Array(eq(t.doubleArray));
@@ -221,7 +228,9 @@ public class SpannerObjectMapperImplTests {
 
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
-				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
+				.add("booleanField", Value.bool(true))
+				.add("intField", Value.int64(123L))
+				.add("longField", Value.int64(3L))
 				.add("doubleField", Value.float64(3.33))
 				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
 				.add("doubleList", Value.float64Array(doubleList))
@@ -237,7 +246,9 @@ public class SpannerObjectMapperImplTests {
 
 		Struct struct2 = Struct.newBuilder().add("id", Value.string("key2"))
 				.add("custom_col", Value.string("string2"))
-				.add("booleanField", Value.bool(true)).add("longField", Value.int64(5L))
+				.add("booleanField", Value.bool(true))
+				.add("intField", Value.int64(222L))
+				.add("longField", Value.int64(5L))
 				.add("doubleField", Value.float64(5.55))
 				.add("doubleArray", Value.float64Array(new double[] { 5.55, 5.55 }))
 				.add("doubleList", Value.float64Array(doubleList))
@@ -272,6 +283,7 @@ public class SpannerObjectMapperImplTests {
 		assertEquals("key1", t1.id);
 		assertEquals("string1", t1.stringField);
 		assertEquals(true, t1.booleanField);
+		assertEquals(123, t1.intField);
 		assertEquals(3L, t1.longField);
 		assertEquals(3.33, t1.doubleField, 0.00001);
 		assertEquals(3, t1.doubleArray.length);
@@ -281,6 +293,7 @@ public class SpannerObjectMapperImplTests {
 		assertEquals("key2", t2.id);
 		assertEquals("string2", t2.stringField);
 		assertEquals(true, t2.booleanField);
+		assertEquals(222, t2.intField);
 		assertEquals(5L, t2.longField);
 		assertEquals(5.55, t2.doubleField, 0.00001);
 		assertEquals(2, t2.doubleArray.length);
@@ -352,7 +365,7 @@ public class SpannerObjectMapperImplTests {
 		this.objectMapper.read(TestEntity.class, struct1);
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = ConversionFailedException.class)
 	public void readUnconvertableValueTest() {
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
@@ -413,6 +426,9 @@ public class SpannerObjectMapperImplTests {
 		double doubleField;
 
 		double[] doubleArray;
+
+		// int is not a native Spanner type, so this will utilize custom conversions.
+		int intField;
 
 		@ColumnInnerType(innerType = Double.class)
 		List<Double> doubleList;
