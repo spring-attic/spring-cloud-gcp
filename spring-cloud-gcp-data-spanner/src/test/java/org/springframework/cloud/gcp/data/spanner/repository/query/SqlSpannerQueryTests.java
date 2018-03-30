@@ -27,7 +27,9 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,6 +44,8 @@ public class SqlSpannerQueryTests {
 	private SpannerOperations spannerOperations;
 
 	private QueryMethod queryMethod;
+	private EvaluationContextProvider evaluationContextProvider;
+	private SpelExpressionParser expressionParser;
 
 	@Before
 	public void initMocks() {
@@ -51,7 +55,7 @@ public class SqlSpannerQueryTests {
 
 	private SqlSpannerQuery createQuery(String sql) {
 		return new SqlSpannerQuery(Trade.class, this.queryMethod, this.spannerOperations,
-				sql);
+				sql, evaluationContextProvider, expressionParser);
 	}
 
 	@Test

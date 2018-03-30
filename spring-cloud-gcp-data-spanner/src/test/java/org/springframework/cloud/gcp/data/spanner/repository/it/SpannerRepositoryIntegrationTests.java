@@ -69,6 +69,11 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat("size is not " + allTrades.size() + " in received records: \n"
 				+ trader2TradesRetrieved, trader2TradesRetrieved.size(), is(trader2Trades.size()));
 		assertThat(trader2TradesRetrieved, containsInAnyOrder(trader2Trades.toArray()));
+
+		List<Trade> buyTradesRetrieved = this.tradeRepository.annotatedTradesByAction("BUY");
+		assertThat("size is not " + buyTradesRetrieved.size() + " in received records: \n"
+				+ buyTradesRetrieved, buyTradesRetrieved.size(), is(trader1BuyTrades.size()));
+		assertThat(buyTradesRetrieved, containsInAnyOrder(trader1BuyTrades.toArray()));
 	}
 
 	protected List<Trade> insertTrades(String traderId1, String action, int numTrades) {

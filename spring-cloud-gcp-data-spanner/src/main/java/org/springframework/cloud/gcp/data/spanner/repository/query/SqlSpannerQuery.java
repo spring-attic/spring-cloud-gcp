@@ -24,6 +24,12 @@ import java.util.regex.Pattern;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ParserContext;
+import org.springframework.expression.common.LiteralExpression;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.lang.Nullable;
 
 /**
  * @author Balint Pato
@@ -40,14 +46,22 @@ public class SqlSpannerQuery implements RepositoryQuery {
 	private final String sql;
 
 	private final List<String> tags;
+	private final Expression sqlExpression;
+	private EvaluationContext evaluationContext;
+	private SpelExpressionParser expressionParser;
 
 	public SqlSpannerQuery(Class type, QueryMethod queryMethod,
-			SpannerOperations spannerOperations, String sql) {
+			SpannerOperations spannerOperations, String sql,
+			EvaluationContext evaluationContext,
+			SpelExpressionParser expressionParser) {
 		this.queryMethod = queryMethod;
 		this.entityType = type;
 		this.spannerOperations = spannerOperations;
 		this.sql = sql;
 		this.tags = getTags(sql);
+		this.evaluationContext = evaluationContext;
+		this.expressionParser = expressionParser;
+		this.sqlExpression = detectExpression();
 	}
 
 	private List<String> getTags(String sql) {
@@ -64,11 +78,25 @@ public class SqlSpannerQuery implements RepositoryQuery {
 	@Override
 	public Object execute(Object[] parameters) {
 		return this.spannerOperations.find(this.entityType, SpannerStatementQueryExecutor
-				.buildStatementFromSqlWithArgs(this.sql, this.tags, parameters));
+				.buildStatementFromSqlWithArgs(getSql(), this.tags, parameters));
+	}
+
+	protected String getSql() {
+		return  this.sqlExpression == null
+				? this.sql
+				: this.sqlExpression.getValue(evaluationContext, String.class);
 	}
 
 	@Override
 	public QueryMethod getQueryMethod() {
 		return this.queryMethod;
 	}
+
+
+	@Nullable
+	private Expression detectExpression() {
+		Expression expression = expressionParser.parseExpression(this.sql, ParserContext.TEMPLATE_EXPRESSION);
+		return expression instanceof LiteralExpression ? null : expression;
+	}
+
 }

@@ -19,11 +19,15 @@ package org.springframework.cloud.gcp.data.spanner.test.domain;
 import java.util.List;
 
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
+import org.springframework.cloud.gcp.data.spanner.repository.query.Query;
 
 public interface TradeRepository extends SpannerRepository<Trade> {
 
 	List<Trade> findByTraderId(String traderId);
 
 	int countByAction(String action);
+
+	@Query("SELECT * FROM trade_#{tableNameSuffix} WHERE action=@action")
+	List<Trade> annotatedTradesByAction(String action);
 
 }

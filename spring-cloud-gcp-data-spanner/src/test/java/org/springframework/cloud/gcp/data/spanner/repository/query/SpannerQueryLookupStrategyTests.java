@@ -22,7 +22,9 @@ import org.junit.Test;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.repository.core.NamedQueries;
+import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -46,6 +48,8 @@ public class SpannerQueryLookupStrategyTests {
 	private QueryMethod queryMethod;
 
 	private SpannerQueryLookupStrategy spannerQueryLookupStrategy;
+	private EvaluationContextProvider evaluationContextProvider;
+	private SpelExpressionParser EXPRESSION_PARSER;
 
 	@Before
 	public void initMocks() {
@@ -87,7 +91,7 @@ public class SpannerQueryLookupStrategyTests {
 	private SpannerQueryLookupStrategy getSpannerQueryLookupStrategy() {
 		SpannerQueryLookupStrategy spannerQueryLookupStrategy = spy(
 				new SpannerQueryLookupStrategy(this.spannerMappingContext,
-						this.spannerOperations));
+						this.spannerOperations, evaluationContextProvider, EXPRESSION_PARSER));
 		doReturn(Object.class).when(spannerQueryLookupStrategy).getEntityType(any());
 		doReturn(null).when(spannerQueryLookupStrategy).createPartTreeSpannerQuery(any(),
 				any());
