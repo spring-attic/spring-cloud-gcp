@@ -1,10 +1,12 @@
 :spring-data-commons-ref: https://docs.spring.io/spring-data/data-commons/docs/current/reference/html
 
-== Spring Data
+== Spring Data Spanner
+
+=== Spring Data and Google Cloud Spanner
 
 http://projects.spring.io/spring-data/[Spring Data]
 is an abstraction for storing and retrieving POJOs in numerous storage technologies.
-Spring Cloud GCP adds Spring Data support for Google Cloud Spanner.
+Spring Cloud GCP adds Spring Data support for http://cloud.google.com/spanner/[Google Cloud Spanner].
 
 A Spring Boot starter is provided to auto-configure the various Storage components.
 
@@ -28,8 +30,6 @@ dependencies {
 ----
 
 This setup takes care of bringing in the latest compatible version of Cloud Java Spanner libraries as well.
-
-== Spring Data Spanner
 
 
 === Configuration
@@ -55,7 +55,7 @@ Spring Data Repositories (see below for functionality) can be configured via the
 
 ==== Available beans
 
-With our Spring Boot autoconfiguration your application is able to inject an instance of `DatabaseClient` and `SpannerOperations`, and repositories are enabled, all the user defined repositories extending `SpannerRepository` are exposed as beans as well.
+With our Spring Boot autoconfiguration your application is able to inject an instance of `DatabaseClient` and `SpannerOperations`, and when repositories are enabled, all the user defined repositories extending `SpannerRepository` are exposed as beans as well.
 
 
 === Mapping POJO domain objects to Spanner tables using annotations
@@ -81,7 +81,7 @@ public class Trade {
 	String traderId;
 
 	@ColumnInnerType(innerType = Double.class)
-  List<Double> curve;
+	List<Double> curve;
 }
 ----
 
@@ -100,9 +100,9 @@ For example:
 [source, java]
 ----
 
-@Table(name = "#{'trades_'.concat(tableNameSuffix)}")
+@Table(name = "trades_#{tableNameSuffix}")
 public class Trade {
-// ...
+	// ...
 }
 ----
 
@@ -128,13 +128,13 @@ public class SpannerTemplateExample {
 
   public void doSomething() {
 			this.spannerOperations.delete(Trade.class, KeySet.all());
-      //...
+			//...
 			Trade t = new Trade();
-      //...
+			//...
 			this.spannerOperations.insert(t);
-      //...
+			//...
 			List<Trade> tradesByAction = spannerOperations.findAll(Trade.class);
-      //...
+			//...
 	}
 }
 ----
@@ -190,7 +190,7 @@ public interface TradeRepository extends SpannerRepository<Trade> {
 
 	int countByAction(String action);
 
-  //named method are powerful but can get unwieldy
+	//named method are powerful but can get unwieldy
 	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
   			String action, String symbol, String traderId);
 
@@ -215,17 +215,20 @@ public class MyApplication {
 
 	public void demo() {
 
-	  // storing new students
-	  SimpleStudent ss = new SimpleStudent();
-	  ss.name = "student1";
-	  ss.age = 99L;
-	  spannerOperations.insert(ss);
+		this.tradeRepository.deleteAll(); //defined on CrudRepository
+		String traderId = "demo_trader";
+		Trade t = new Trade();
+		t.symbol = stock;
+		t.action = action;
+		t.traderId = traderId;
+		t.price = 100.0;
+		t.shares = 12345.6;
+		this.spannerOperations.insert(t); //defined on CrudRepository
 
-	  // getting students from Spanner
-	  List<SimpleStudent> ssList =
-	    studentRepository.findTop3DistinctByIdAndNameOrAgeOrderByAgeDesc("someId", "bob", 12L);
+		Iterable<Trade> allTrades = this.tradeRepository.findAll(); //defined on CrudRepository
 
-	  List<SimpleStudent> ssList2 = studentRepository.fetchBySomeQuery("some argument");
+		int count = this.tradeRepository.countByAction("BUY");
+
 	}
 }
 

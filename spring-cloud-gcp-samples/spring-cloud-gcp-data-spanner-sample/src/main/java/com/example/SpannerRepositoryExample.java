@@ -75,7 +75,7 @@ public class SpannerRepositoryExample {
 			System.out.println("The table for trades has been cleared and "
 					+ this.tradeRepository.count() + " new trades have been inserted:");
 
-			List<Trade> allTrades = this.spannerOperations.findAll(Trade.class);
+			Iterable<Trade> allTrades = this.tradeRepository.findAll();
 			allTrades.forEach(System.out::println);
 
 			System.out.println("There are " + this.tradeRepository.countByAction("BUY")
@@ -85,9 +85,7 @@ public class SpannerRepositoryExample {
 
 			System.out.println("These are the Spanner primary keys for the trades:");
 
-			allTrades.stream()
-					.map(trade -> this.spannerOperations.getId(trade))
-					.forEach(System.out::println);
+			allTrades.forEach(t -> System.out.println(this.spannerOperations.getId(t)));
 
 			this.tradeRepository.deleteById(
 					Key.newBuilder().append(stocks[0]).append(actions[0]).build());
