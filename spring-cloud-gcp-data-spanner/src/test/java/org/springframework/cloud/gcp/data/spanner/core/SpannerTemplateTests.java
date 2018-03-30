@@ -32,8 +32,13 @@ import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.TransactionContext;
+import com.google.cloud.spanner.TransactionRunner;
+import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
@@ -87,6 +92,36 @@ public class SpannerTemplateTests {
 		when(this.databaseClient.singleUse()).thenReturn(this.readContext);
 		this.spannerTemplate = new SpannerTemplate(this.databaseClient,
 				this.mappingContext, this.objectMapper, this.mutationFactory);
+	}
+
+	@Test
+	public void readWriteTransactionTest() {
+
+		TransactionRunner transactionRunner = mock(TransactionRunner.class);
+		when(this.databaseClient.readWriteTransaction()).thenReturn(transactionRunner);
+
+		TransactionContext transactionContext = mock(TransactionContext.class);
+
+		when(transactionRunner.run(any())).thenAnswer(new Answer<Object>() {
+			@Override
+			public Object answer(InvocationOnMock invocation) throws Throwable {
+				TransactionCallable transactionCallable = invocation.getArgument(0);
+				return transactionCallable.run(transactionContext);
+			}
+		});
+
+		TestEntity t = new TestEntity();
+
+		String finalResult = this.spannerTemplate
+				.performReadWriteTransaction(spannerOperations -> {
+					List<TestEntity> items = spannerOperations.findAll(TestEntity.class);
+					spannerOperations.update(t);
+					return "all done";
+				});
+
+		assertEquals("all done", finalResult);
+		verify(transactionContext, times(1)).buffer((Mutation) any());
+		verify(transactionContext, times(1)).read(eq("custom_test_table"), any(), any());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
