@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -30,10 +31,12 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
  */
 @Table(name = "#{'trades_'.concat(tableNameSuffix)}")
 public class Trade {
-	@PrimaryKeyColumn
+	@PrimaryKeyColumn(keyOrder = 1)
 	private String id;
 
 	private int age;
+
+	private Instant tradeTime;
 
 	private String action;
 
@@ -43,6 +46,7 @@ public class Trade {
 
 	private String symbol;
 
+	@PrimaryKeyColumn(keyOrder = 2)
 	@Column(name = "trader_id")
 	private String traderId;
 
@@ -56,6 +60,7 @@ public class Trade {
 		t.symbol = "ABCD";
 		t.action = "BUY";
 		t.traderId = traderId;
+		t.tradeTime = Instant.now();
 		t.price = 100.0;
 		t.shares = 12345.6;
 		return t;
@@ -64,9 +69,9 @@ public class Trade {
 	public static String createDDL(String tableName) {
 		return "CREATE TABLE " + tableName + "(" + "\tid STRING(128) NOT NULL,\n"
 				+ "\tage INT64,\n" + "\taction STRING(15),\n" + "\tprice FLOAT64,\n"
-				+ "\tshares FLOAT64,\n"
+				+ "\tshares FLOAT64,\n" + "\ttradeTime TIMESTAMP,\n"
 				+ "\tsymbol STRING(5),\n" + "\ttrader_id STRING(128),\n"
-				+ ") PRIMARY KEY (id)";
+				+ ") PRIMARY KEY (id, trader_id)";
 	}
 
 	public static String dropDDL(String tableName) {
@@ -88,13 +93,14 @@ public class Trade {
 				&& Objects.equals(this.price, trade.price)
 				&& Objects.equals(this.shares, trade.shares)
 				&& Objects.equals(this.symbol, trade.symbol)
+				&& Objects.equals(this.tradeTime, trade.tradeTime)
 				&& Objects.equals(this.traderId, trade.traderId);
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.id, this.age, this.action, this.price, this.shares,
-				this.symbol,
+				this.symbol, this.tradeTime,
 				this.traderId);
 	}
 
@@ -120,6 +126,14 @@ public class Trade {
 
 	public void setAction(String action) {
 		this.action = action;
+	}
+
+	public Instant getTradeTime() {
+		return this.tradeTime;
+	}
+
+	public void setTradeTime(Instant tradeTime) {
+		this.tradeTime = tradeTime;
 	}
 
 	public Double getPrice() {
@@ -158,7 +172,7 @@ public class Trade {
 	public String toString() {
 		return "Trade{" + "id='" + this.id + '\'' + ", action='" + this.action + '\''
 				+ ", age=" + this.age + ", price=" + this.price + ", shares="
-				+ this.shares + ", symbol='"
-				+ this.symbol + '\'' + ", traderId='" + this.traderId + '\'' + '}';
+				+ this.shares + ", symbol='" + this.symbol + ", tradeTime="
+				+ this.tradeTime + '\'' + ", traderId='" + this.traderId + '\'' + '}';
 	}
 }

@@ -128,10 +128,6 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 					 * Due to type erasure, binder methods for Iterable properties must be
 					 * manually specified. ByteArray must be excluded since it implements
 					 * Iterable, but is also explicitly supported by spanner.
-					 *
-					 * Also due to type erasure, custom conversions cannot be used for
-					 * iterables because different conversions between lists of different
-					 * types cannot be distinguished.
 					 */
 					if (ConversionUtils.isIterableNonByteArrayType(propType)) {
 						valueSet = attemptReadIterableValue(spannerPersistentProperty,
@@ -185,14 +181,34 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 			String colName, PersistentPropertyAccessor accessor) {
 
 		Class innerType = ConversionUtils.boxIfNeeded(spannerPersistentProperty.getColumnInnerType());
-		if (innerType == null || !readIterableMapping.containsKey(innerType)) {
+		if (innerType == null) {
 			return false;
 		}
 
-		List iterableValue = readIterableMapping.get(innerType).apply(struct, colName);
-		accessor.setProperty(spannerPersistentProperty, iterableValue);
-		return true;
 
+		// due to checkstyle limit of 3 return statments per function, this variable is
+		// used.
+		boolean valueSet = false;
+
+		if (this.readIterableMapping.containsKey(innerType)) {
+			accessor.setProperty(spannerPersistentProperty,
+					this.readIterableMapping.get(innerType).apply(struct, colName));
+			valueSet = true;
+		}
+
+		if (!valueSet) {
+			for (Class sourceType : this.readIterableMapping.keySet()) {
+				if (canConvert(sourceType, innerType)) {
+					List iterableValue = readIterableMapping.get(sourceType).apply(struct,
+							colName);
+					accessor.setProperty(spannerPersistentProperty, ConversionUtils
+							.convertIterable(iterableValue, innerType, this));
+					valueSet = true;
+					break;
+				}
+			}
+		}
+		return valueSet;
 	}
 
 	private static <R> R instantiate(Class<R> type) {

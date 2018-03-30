@@ -21,6 +21,8 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
@@ -140,4 +142,11 @@ public class ConversionUtils {
 				&& !ByteArray.class.isAssignableFrom(propType);
 	}
 
+	static Iterable convertIterable(Iterable source, Class targetType,
+			AbstractSpannerCustomConverter converter) {
+		return (Iterable) StreamSupport.stream(source.spliterator(), false)
+				.map(item -> converter.convert(item, targetType))
+				.collect(Collectors.toList());
+
+	}
 }
