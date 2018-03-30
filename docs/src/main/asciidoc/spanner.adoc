@@ -1,3 +1,5 @@
+:spring-data-commons-ref: https://docs.spring.io/spring-data/data-commons/docs/current/reference/html
+
 == Spring Data
 
 http://projects.spring.io/spring-data/[Spring Data]
@@ -51,24 +53,35 @@ Spanner database to use | No |
 
 Spring Data Repositories (see below for functionality) can be configured via the `@EnableSpannerRepositories` annotation on your main configuration file (typically the `@SpringBootApplication` file.
 
+==== Available beans
+
+With our Spring Boot autoconfiguration your application is able to inject an instance of `DatabaseClient` and `SpannerOperations`, and repositories are enabled, all the user defined repositories extending `SpannerRepository` are exposed as beans as well.
+
+
 === Mapping POJO domain objects to Spanner tables using annotations
 
 Spring Data Spanner allows you to map POJOs to Spanner tables:
 
 [source,java]
 ----
-@Table(name = "students")
-public class SimpleStudent {
+@Table(name = "trades")
+public class Trade {
+
+	@PrimaryKeyColumn(keyOrder = 2)
+	String action;
+
+	Double price;
+
+	Double shares;
+
 	@PrimaryKeyColumn(keyOrder = 1)
-	String id;
+	String symbol;
 
-	@Column(name = "first_name")
-	String name;
+	@Column(name = "trader_id")
+	String traderId;
 
-	@ColumnInnerType(innerType = String.class)
-	List<String> teachers;
-
-	int age;
+	@ColumnInnerType(innerType = Double.class)
+  List<Double> curve;
 }
 ----
 
@@ -78,23 +91,65 @@ order starting with 1 and increasing consecutively.
 - The `@Column` annotation optionally provides a different column name than that of the property.
 - Spanner supports `List` types as fields, the `@ColumnInnerType` annotation is required for `List` properties due to Java's type erasure.
 
+#### SpEL expressions for table names
+
+In some cases you might want the `@Table` table name to be determined dynamically. In this case, you can use https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#expressions[Spring Expression Language].
+
+For example:
+
+[source, java]
+----
+
+@Table(name = "#{'trades_'.concat(tableNameSuffix)}")
+public class Trade {
+// ...
+}
+----
+
+This table name will be resolved only if `tableNameSuffix` value/bean in the Spring `applicationContext` is defined, and then, for exapmle if it has the value "123", it will be `trades_123`.
+
 === Template API
 
 `SpannerOperations` and its implementation, `SpannerTemplate` provides the XYZTemplate pattern familiar for Spring developers and as such provides:
+
  - resource management
  - one stop shop to Spanner operations with the Spring Data POJO mapping and conversion features
  - exception conversion
 
-After your setup with Spring Boot Starter, you can configure a template simply by adding a member of the `SpannerOperations` interface to your class:
+After your setup with Spring Boot Starter, you can configure a template simply by injecting a member of the `SpannerOperations` interface to your class:
 
 [source,java]
 ----
-`@Autowire`
-SpannerOperations
+@SpringBootApplication
+public class SpannerTemplateExample {
 
+	@Autowired
+	SpannerOperations spannerTemplate;
 
-
+  public void doSomething() {
+			this.spannerOperations.delete(Trade.class, KeySet.all());
+      //...
+			Trade t = new Trade();
+      //...
+			this.spannerOperations.insert(t);
+      //...
+			List<Trade> tradesByAction = spannerOperations.findAll(Trade.class);
+      //...
+	}
+}
 ----
+
+The Template API provides convenience methods for:
+
+- https://cloud.google.com/spanner/docs/reads[Reads], and by providing SpannerReadOptions and SpannerQueryOptions
+   ** Stale read
+   ** Read with secondary indices
+   ** Read with limits and flow control
+- https://cloud.google.com/spanner/docs/reads#execute_a_query[Queries]
+- DML operations (delete, insert, update, upsert)
+- partial reads: you can define a set of columns to be read into your entity
+- partial writes: if you have only a few properties that you want to persist from your entity, you can select those
+
 
 === Supported Types
 
@@ -120,22 +175,32 @@ Spring Data Spanner supports the following inner types for `List` fields:
 * `java.lang.String`
 
 
+=== Repositories
+
+{spring-data-commons-ref}/#repositories[Spring Data Repositories] are a powerful abstraction that can save you a lot of typing.
+For Spring Data Spanner, the code inheriting `SpannerRepository` gets all the benefits of `CrudRepository` and `PagingAndSortingRepository` as well, meaning you get by default a lot of generated methods, ready to use.
+
+For example:
+
 [source,java]
 ----
-public interface StudentRepository extends SpannerRepository<SimpleStudent> {
+public interface TradeRepository extends SpannerRepository<Trade> {
 
-	List<SimpleStudent> findTop3DistinctByIdAndNameOrAgeOrderByAgeDesc(
-			String id, String name, long age);
+	List<Trade> findByAction(String action);
 
-	int countByAgeLessThanEqual(long age);
+	int countByAction(String action);
+
+  //named method are powerful but can get unwieldy
+	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
+  			String action, String symbol, String traderId);
 
 	// This method uses the query from the properties file instead of one generated based on name.
-	List<SimpleStudent> fetchBySomeQuery(String someArg);
-}
+	List<Trade> fetchByActionNamedQuery(String action);
 
+}
 ----
 
-These can be used in an application like this:
+This repository can be used without an actual implementation!
 
 [source,java]
 ----
@@ -166,12 +231,37 @@ public class MyApplication {
 
 ----
 
-The https://docs.spring.io/spring-data/commons/docs/current/reference/html/#repositories.query-methods[query methods]
-in the `StudentRepository` are generated based on the convention of their names
-except for `fetchBySomeQuery`, which is defined in the `spanner-named-queries.properties` file
-like `SimpleStudent.fetchBySomeQuery=SELECT * FROM students WHERE name = @someArg`.
+=== Query methods
 
-When defining `StudentRepository`, it is important to note that it extends the
-`PagingAndSortingRepository`, which is supported by Spring Cloud GCP Data Spanner. The first type
-argument refers to the underlying entity, and the second type parameter refers to the `@Id` type
-of that entity. Id types must correspond to one of the https://cloud.google.com/spanner/docs/data-types[supported primary key types in Spanner].
+
+==== Resolving methods by name
+
+In the example above, the {spring-data-commons-ref}/#repositories.query-methods[query methods]
+in `TradeRepository` are generated based on the convention of their names.
+
+`List<Trade> findByAction(String action)` would translate to a `SELECT * FROM trades WHERE action = ?`.
+
+You can think about the little bit extreme `List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(String action, String symbol, String traderId);` as
+
+[source, sql]
+----
+SELECT DISTINCT * FROM trades
+WHERE ACTION = ? AND SYMBOL = ? AND Or TRADER_ID = ?
+ORDER BY SYMBOL DESC
+LIMIT 3
+----
+
+==== Mapping SQL to repository methods using properties file
+
+
+In the example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the naming convention.
+The query for it is defined in the `spanner-named-queries.properties` file
+
+[source, properties]
+----
+Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0`
+----
+
+==== Mapping SQL to repository methods using annotation
+
+TODO
