@@ -24,7 +24,6 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
 import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +37,8 @@ public class GcpSpannerAutoConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpSpannerAutoConfiguration.class,
-					GcpContextAutoConfiguration.class))
+					GcpContextAutoConfiguration.class,
+					SpannerRepositoriesAutoConfiguration.class))
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.spanner.project-id=test-project",
 					"spring.cloud.gcp.spanner.instance-id=testInstance",
@@ -58,7 +58,6 @@ public class GcpSpannerAutoConfigurationTests {
 		});
 	}
 
-	@EnableSpannerRepositories
 	static class TestConfiguration {
 
 		@Bean
