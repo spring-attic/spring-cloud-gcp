@@ -27,8 +27,6 @@ CREATE TABLE trades (
 3. Place your project ID in the `spring.cloud.gcp.spanner.projectId` setting in `application.properties`
 if you are not providing the project ID from a JSON key file or the SDK.
 
-4. Run the `SpannerApplication` Spring Boot app.
-
-5. Navigate to http://localhost:8080/ in your browser. This causes the app to generate five `Trade`
+4. Run the `SpannerRepositoryExample` or the `SpannerTemplateExample` Spring Boot console apps. This causes the app to generate sample `Trade`
 objects filled with some demo data and persists them to the Spanner table created earlier.
 These POJOs are then retrieved and their contents are printed in the browser.

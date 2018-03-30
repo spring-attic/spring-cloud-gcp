@@ -16,22 +16,26 @@
 
 package com.example;
 
-import com.google.cloud.spanner.Key;
 import java.util.List;
+
+import com.google.cloud.spanner.Key;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 
 /**
  * @author Chengyuan Zhao
+ * @author Balint Pato
  */
 @SpringBootApplication
-@EnableSpannerRepositories
-public class SpannerApplication {
+@EnableSpannerRepositories(namedQueriesLocation = "classpath:spanner-named-queries.properties")
+public class SpannerRepositoryExample {
 
 	@Autowired
 	SpannerOperations spannerOperations;
@@ -40,10 +44,13 @@ public class SpannerApplication {
 	TradeRepository tradeRepository;
 
 	public static void main(String[] args) {
-		SpringApplication.run(SpannerApplication.class, args);
+		new SpringApplicationBuilder(SpannerRepositoryExample.class)
+				.web(WebApplicationType.NONE)
+				.run(args);
 	}
 
-	public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
+	@Bean
+	public CommandLineRunner commandLineRunner() {
 		return args -> {
 			this.tradeRepository.deleteAll();
 
@@ -65,30 +72,27 @@ public class SpannerApplication {
 				}
 			}
 
-			StringBuilder reply = new StringBuilder();
-			reply.append("The table for trades has been cleared and "
-					+ this.tradeRepository.count() + " new trades have been inserted:<br />");
+			System.out.println("The table for trades has been cleared and "
+					+ this.tradeRepository.count() + " new trades have been inserted:");
 
 			List<Trade> allTrades = this.spannerOperations.findAll(Trade.class);
+			allTrades.forEach(System.out::println);
+
+			System.out.println("There are " + this.tradeRepository.countByAction("BUY")
+					+ " BUY trades: ");
+
+			this.tradeRepository.findByAction("BUY").forEach(System.out::println);
+
+			System.out.println("These are the Spanner primary keys for the trades:");
+
 			allTrades.stream()
-					.forEach(trade -> reply.append(trade.toString() + "<br />"));
-
-			reply.append("There are " + this.tradeRepository.countByAction("BUY")
-					+ " BUY trades: <br />");
-
-			this.tradeRepository.findByAction("BUY").stream()
-					.forEach(trade -> reply.append(trade.toString() + "<br />"));
-
-			reply.append("These are the Spanner primary keys for the trades:<br />");
-
-			allTrades.stream().forEach(
-					trade -> reply.append(this.spannerOperations.getId(trade) + "<br />"));
+					.map(trade -> this.spannerOperations.getId(trade))
+					.forEach(System.out::println);
 
 			this.tradeRepository.deleteById(
 					Key.newBuilder().append(stocks[0]).append(actions[0]).build());
 
-			System.out.println(reply);
-
+			System.exit(0);
 		};
 	}
 
