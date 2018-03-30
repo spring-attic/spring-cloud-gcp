@@ -9,6 +9,10 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
+	<properties>
+		<spring.boot.mainclass>com.example.SpannerRepositoryExample</spring.boot.mainclass>
+	</properties>
+
 	<groupId>com.example</groupId>
 	<artifactId>spring-cloud-gcp-data-spanner-sample</artifactId>
 	<name>Spring Cloud GCP Spring Boot Starter for Spanner Code Sample</name>
@@ -20,7 +24,26 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
   </dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<mainClass>${spring.boot.mainclass}</mainClass>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
