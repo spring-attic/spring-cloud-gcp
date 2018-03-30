@@ -33,6 +33,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
@@ -80,7 +81,9 @@ public class GcpSpannerAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SpannerOptions spannerOptions() {
-		return SpannerOptions.newBuilder().setProjectId(this.projectId)
+		return SpannerOptions.newBuilder()
+				.setProjectId(this.projectId)
+				.setHeaderProvider(new UsageTrackingHeaderProvider(this.getClass()))
 				.setCredentials(this.credentials).build();
 	}
 
