@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
@@ -33,6 +35,8 @@ import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
+import com.google.cloud.spanner.TransactionContext;
+import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -75,11 +79,11 @@ public class SpannerTemplate implements SpannerOperations {
 		this.mutationFactory = spannerMutationFactory;
 	}
 
-	private ReadContext getReadContext() {
+	protected ReadContext getReadContext() {
 		return this.databaseClient.singleUse();
 	}
 
-	private ReadContext getReadContext(Timestamp timestamp) {
+	protected ReadContext getReadContext(Timestamp timestamp) {
 		return this.databaseClient.singleUse(TimestampBound.ofReadTimestamp(timestamp));
 	}
 
@@ -255,6 +259,24 @@ public class SpannerTemplate implements SpannerOperations {
 		}
 	}
 
+	@Override
+	public <T> T performReadWriteTransaction(Function<SpannerOperations, T> operations) {
+		return this.databaseClient.readWriteTransaction()
+				.run(new TransactionCallable<T>() {
+					@Nullable
+					@Override
+					public T run(TransactionContext transaction) throws Exception {
+						ReadWriteTransactionSpannerTemplate transactionSpannerTemplate =
+								new ReadWriteTransactionSpannerTemplate(
+								SpannerTemplate.this.databaseClient,
+								SpannerTemplate.this.mappingContext,
+								SpannerTemplate.this.spannerConverter,
+								SpannerTemplate.this.mutationFactory, transaction);
+						return operations.apply(transactionSpannerTemplate);
+					}
+				});
+	}
+
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
 			SpannerReadOptions options) {
 		if (options == null) {
@@ -284,7 +306,7 @@ public class SpannerTemplate implements SpannerOperations {
 		}
 	}
 
-	private <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,
+	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,
 			T arg1,
 			U arg2) {
 		this.databaseClient.write(Arrays.asList(function.apply(arg1, arg2)));
