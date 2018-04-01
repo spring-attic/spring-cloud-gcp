@@ -212,7 +212,7 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 
 		if (!valueSet && struct.getColumnType(colName).getArrayElementType().getCode() == Type.Code.STRUCT) {
 			List<Struct> iterableValue = struct.getStructList(colName);
-			Iterable convertedIterableValue = StreamSupport.stream(iterableValue.spliterator(), false)
+			Iterable convertedIterableValue = (Iterable) StreamSupport.stream(iterableValue.spliterator(), false)
 					.map(item -> read(innerType, item))
 					.collect(Collectors.toList());
 			accessor.setProperty(spannerPersistentProperty, convertedIterableValue);
