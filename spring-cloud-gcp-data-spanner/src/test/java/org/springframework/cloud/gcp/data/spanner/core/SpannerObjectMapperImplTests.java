@@ -29,8 +29,10 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.ValueBinder;
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -394,6 +396,20 @@ public class SpannerObjectMapperImplTests {
 		assertNull(t2.stringList);
 	}
 
+	@Test
+	public void readNestedStructTest() {
+		Struct innerStruct = Struct.newBuilder().add("value", Value.string("value")).build();
+		Struct outerStruct = Struct.newBuilder().add("id", Value.string("key1"))
+				.add("innerTestEntities", ImmutableList.of(Type.StructField.of("value", Type.string())),
+						ImmutableList.of(innerStruct))
+				.build();
+
+		OuterTestEntity result = this.objectMapper.read(OuterTestEntity.class, outerStruct);
+		assertEquals("key1", result.id);
+		assertEquals(1, result.innerTestEntities.size());
+		assertEquals("value", result.innerTestEntities.get(0).value);
+	}
+
 	@Test(expected = SpannerDataException.class)
 	public void readNotFoundColumnTest() {
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
@@ -520,6 +536,19 @@ public class SpannerObjectMapperImplTests {
 
 		@ColumnInnerType(innerType = TestEntity.class)
 		List<TestEntity> listWithUnsupportedInnerType;
+	}
+
+	@Table(name = "outer_test_entity")
+	private static class OuterTestEntity {
+		@PrimaryKeyColumn
+		String id;
+
+		@ColumnInnerType(innerType = InnerTestEntity.class)
+		List<InnerTestEntity> innerTestEntities;
+	}
+
+	private static class InnerTestEntity {
+		String value;
 	}
 
 	private static class MockResults {

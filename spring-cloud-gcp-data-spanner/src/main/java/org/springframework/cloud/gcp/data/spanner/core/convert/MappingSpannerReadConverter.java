@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -185,7 +187,6 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 			return false;
 		}
 
-
 		// due to checkstyle limit of 3 return statments per function, this variable is
 		// used.
 		boolean valueSet = false;
@@ -208,6 +209,16 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 				}
 			}
 		}
+
+		if (!valueSet && struct.getColumnType(colName).getArrayElementType().getCode() == Type.Code.STRUCT) {
+			List<Struct> iterableValue = struct.getStructList(colName);
+			Iterable convertedIterableValue = StreamSupport.stream(iterableValue.spliterator(), false)
+					.map(item -> read(innerType, item))
+					.collect(Collectors.toList());
+			accessor.setProperty(spannerPersistentProperty, convertedIterableValue);
+			valueSet = true;
+		}
+
 		return valueSet;
 	}
 
