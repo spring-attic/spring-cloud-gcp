@@ -38,6 +38,20 @@ import org.springframework.data.domain.Sort;
 public interface SpannerOperations {
 
 	/**
+	 * Gets the DDL string to create the table for the given entity in Spanner.
+	 * @param entityClass the entity type.
+	 * @return the DDL string.
+	 */
+	String getCreateTableDDLString(Class entityClass);
+
+	/**
+	 * Gets the DDL string to drop the table for the given entity in Spanner.
+	 * @param entityClass the entity type.
+	 * @return the DDL string.
+	 */
+	String getDropTableDDLString(Class entityClass);
+
+	/**
 	 * Gets the key for the given object.
 	 * @param object
 	 * @return

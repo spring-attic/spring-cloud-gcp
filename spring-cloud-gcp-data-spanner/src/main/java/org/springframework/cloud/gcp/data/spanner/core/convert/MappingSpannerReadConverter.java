@@ -48,7 +48,7 @@ import org.springframework.data.mapping.PropertyHandler;
 class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		implements EntityReader<Object, Struct> {
 
-	private static final Map<Class, BiFunction<Struct, String, List>> readIterableMapping =
+	static final Map<Class, BiFunction<Struct, String, List>> readIterableMapping =
 			new ImmutableMap.Builder<Class, BiFunction<Struct, String, List>>()
 			.put(Boolean.class, AbstractStructReader::getBooleanList)
 			.put(Long.class, AbstractStructReader::getLongList)
@@ -59,7 +59,7 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 			.put(ByteArray.class, AbstractStructReader::getBytesList)
 			.build();
 
-	private static final Map<Class, BiFunction<Struct, String, ?>> singleItemReadMethodMapping =
+	static final Map<Class, BiFunction<Struct, String, ?>> singleItemReadMethodMapping =
 			new ImmutableMap.Builder<Class, BiFunction<Struct, String, ?>>()
 			.put(Boolean.class, AbstractStructReader::getBoolean)
 			.put(Long.class, AbstractStructReader::getLong)

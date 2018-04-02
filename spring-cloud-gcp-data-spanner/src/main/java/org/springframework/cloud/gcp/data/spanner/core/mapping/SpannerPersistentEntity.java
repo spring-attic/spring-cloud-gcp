@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import org.springframework.cloud.gcp.data.spanner.core.convert.AbstractSpannerCustomConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
@@ -43,9 +45,11 @@ public interface SpannerPersistentEntity<T>
 
 	/**
 	 * Gets the Spanner DDL statement to create the table corresponding to this entity.
+	 * @param spannerConverter used to determine what Spanner column types to chose
+	 * for the entity's properties.
 	 * @return the DDL statement to create the table.
 	 */
-	String getCreateTableSqlString();
+	String getCreateTableSqlString(SpannerConverter spannerConverter);
 
 	/**
 	 * Gets the Spanner DDL statement to drop the table corresponding to this entity.

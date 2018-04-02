@@ -24,7 +24,9 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 import org.springframework.beans.BeansException;
+import org.springframework.cloud.gcp.data.spanner.core.convert.AbstractSpannerCustomConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
@@ -166,16 +168,16 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
-	public String getCreateTableSqlString() {
+	public String getCreateTableSqlString(SpannerConverter spannerConverter) {
 		StringBuilder stringBuilder = new StringBuilder(
 				"CREATE TABLE " + tableName() + " ( ");
 
 		StringJoiner columnStrings = new StringJoiner(" , ");
 		this.doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					columnStrings.add("\'" + spannerPersistentProperty.getColumnName()
-							+ "\' " + ConversionUtils
-									.getColumnDDLString(spannerPersistentProperty));
+					columnStrings.add(spannerPersistentProperty.getColumnName()
+							+ " " + ConversionUtils
+									.getColumnDDLString(spannerPersistentProperty, spannerConverter));
 				});
 
 		stringBuilder.append(columnStrings.toString() + " ) PRIMARY KEY ( ");

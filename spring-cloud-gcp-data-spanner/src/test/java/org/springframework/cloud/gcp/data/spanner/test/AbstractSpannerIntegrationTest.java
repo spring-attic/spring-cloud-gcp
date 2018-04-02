@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
@@ -72,6 +73,9 @@ public abstract class AbstractSpannerIntegrationTest {
 	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
 
 	@Autowired
+	protected SpannerOperations spannerOperations;
+
+	@Autowired
 	protected DatabaseAdminClient databaseAdminClient;
 
 	@Autowired
@@ -81,9 +85,6 @@ public abstract class AbstractSpannerIntegrationTest {
 	protected ApplicationContext applicationContext;
 
 	protected String tableNameSuffix;
-
-	@Autowired
-	protected SpannerMappingContext spannerMappingContext;
 
 	private boolean setupFailed;
 
@@ -128,18 +129,11 @@ public abstract class AbstractSpannerIntegrationTest {
 	}
 
 	protected List<String> createSchemaStatements() {
-		return Arrays.asList(createEntity(Trade.class).getCreateTableSqlString());
+		return Arrays.asList(this.spannerOperations.getCreateTableDDLString(Trade.class));
 	}
 
 	protected Iterable<String> dropSchemaStatements() {
-		return Arrays.asList(createEntity(Trade.class).getDropTableSqlString());
-	}
-
-	protected <T> SpannerPersistentEntity createEntity(Class<T> type) {
-		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
-				.getPersistentEntity(type);
-		persistentEntity.setApplicationContext(this.applicationContext);
-		return persistentEntity;
+		return Arrays.asList(this.spannerOperations.getDropTableDDLString(Trade.class));
 	}
 
 	@After

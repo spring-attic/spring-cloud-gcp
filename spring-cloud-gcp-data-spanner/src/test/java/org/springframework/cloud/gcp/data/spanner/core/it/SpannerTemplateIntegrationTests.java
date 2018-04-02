@@ -39,9 +39,6 @@ import static org.junit.Assert.assertThat;
 @RunWith(SpringRunner.class)
 public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationTest {
 
-	@Autowired
-	protected SpannerOperations spannerOperations;
-
 	@Test
 	public void insertAndDeleteSequence() {
 		assertThat(this.spannerOperations.count(Trade.class), is(0L));

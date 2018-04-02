@@ -93,6 +93,18 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
+	public String getCreateTableDDLString(Class entityClass) {
+		return this.mappingContext
+				.getPersistentEntity(entityClass).getCreateTableSqlString(this.spannerConverter);
+	}
+
+	@Override
+	public String getDropTableDDLString(Class entityClass) {
+		return this.mappingContext
+				.getPersistentEntity(entityClass).getDropTableSqlString();
+	}
+
+	@Override
 	public Key getId(Object object) {
 		SpannerPersistentEntity persistentEntity = this.mappingContext
 				.getPersistentEntity(object.getClass());

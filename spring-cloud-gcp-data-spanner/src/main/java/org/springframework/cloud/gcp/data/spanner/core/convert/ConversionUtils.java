@@ -22,6 +22,9 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -45,7 +48,8 @@ import org.springframework.util.Assert;
  */
 public class ConversionUtils {
 
-	public static final Map<Type, Class> SPANNER_COLUMN_TYPE_TO_JAVA_TYPE_MAPPING = new ImmutableMap.Builder<Type, Class>()
+	public static final Map<Type, Class> SPANNER_COLUMN_TYPE_TO_JAVA_TYPE_MAPPING =
+			new ImmutableMap.Builder<Type, Class>()
 			.put(Type.bool(), Boolean.class).put(Type.bytes(), ByteArray.class)
 			.put(Type.date(), com.google.cloud.Date.class)
 			.put(Type.float64(), Double.class).put(Type.int64(), Long.class)
@@ -75,9 +79,36 @@ public class ConversionUtils {
 						: "");
 	}
 
+	private static Class getFirstFullyConvertableType(
+			SpannerConverter spannerConverter,
+			Class originalType, Set<Class> spannerTypes, boolean isArrayInnerType) {
+		if (spannerTypes.contains(originalType)) {
+			return originalType;
+		}
+		for (Class spannerType : spannerTypes) {
+			if(isArrayInnerType
+					&& spannerConverter.canHandlePropertyTypeForArrayRead(originalType,spannerType)
+					&& spannerConverter.canHandlePropertyTypeForArrayWrite(originalType, spannerType)) {
+				return spannerType;
+			}
+			else if(!isArrayInnerType
+					&& spannerConverter.canHandlePropertyTypeForSingularRead(originalType,spannerType)
+					&& spannerConverter.canHandlePropertyTypeForSingularWrite(originalType, spannerType)){
+				return spannerType;
+			}
+		}
+		return null;
+	}
+
 	public static String getColumnDDLString(
-			SpannerPersistentProperty spannerPersistentProperty) {
+			SpannerPersistentProperty spannerPersistentProperty,
+			SpannerConverter spannerConverter ) {
 		Class columnType = spannerPersistentProperty.getType();
+
+		BiFunction<Class, Boolean, Class> getBasicSpannerJavaColType = (originalType, isArrayInnerType) -> getFirstFullyConvertableType(
+				spannerConverter, originalType,
+				JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING.keySet(), isArrayInnerType);
+
 		if (isIterableNonByteArrayType(columnType)) {
 			Class innerType = spannerPersistentProperty.getColumnInnerType();
 			if (innerType == null) {
@@ -85,9 +116,11 @@ public class ConversionUtils {
 						"Cannot get column DDL for iterable type without annotated inner type.");
 			}
 			return getTypeDDLString(
-					Type.array(JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING.get(innerType)));
+					Type.array(JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
+							.get(getBasicSpannerJavaColType.apply(innerType, true))));
 		}
-		Type spannerColumnType = JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING.get(columnType);
+		Type spannerColumnType = JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
+				.get(getBasicSpannerJavaColType.apply(columnType, false));
 		if (spannerColumnType == null) {
 			throw new SpannerDataException(
 					"Could not find suitable Spanner column type for property type:"

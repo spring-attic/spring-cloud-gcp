@@ -40,9 +40,6 @@ import static org.junit.Assert.assertThat;
 public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegrationTest {
 
 	@Autowired
-	SpannerOperations spannerOperations;
-
-	@Autowired
 	TradeRepository tradeRepository;
 
 	@Test
