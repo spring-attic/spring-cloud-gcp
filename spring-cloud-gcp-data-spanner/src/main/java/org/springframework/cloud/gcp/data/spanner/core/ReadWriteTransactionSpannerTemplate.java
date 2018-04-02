@@ -31,6 +31,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 
 /**
  * A {@link SpannerTemplate} that performs all operations in a single transaction.
+ * This template is not intended for the user to directly instantiate.
  * @author Chengyuan Zhao
  */
 class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
@@ -65,13 +66,13 @@ class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
 
 	@Override
 	public <T> T performReadWriteTransaction(Function<SpannerOperations, T> operations) {
-		throw new SpannerDataException("A read-write transaction template cannot be used"
-				+ " to perform sub-transactions.");
+		throw new SpannerDataException("A read-write transaction is already under execution. "
+				+ "Opening sub-transactions is not supported!");
 	}
 
 	@Override
 	public <T> T performReadOnlyTransaction(Function<SpannerOperations, T> operations, SpannerReadOptions readOptions) {
-		throw new SpannerDataException("A read-write transaction template cannot be used"
-				+ " to perform sub-transactions.");
+		throw new SpannerDataException("A read-write transaction is already under execution. "
+				+ "Opening sub-transactions is not supported!");
 	}
 }
