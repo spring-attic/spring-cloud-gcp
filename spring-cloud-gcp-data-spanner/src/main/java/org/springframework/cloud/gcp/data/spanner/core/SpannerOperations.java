@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.core;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
@@ -255,4 +256,24 @@ public interface SpannerOperations {
 	 * @return the number of stored objects.
 	 */
 	long count(Class entityClass);
+
+	/**
+	 * Performs multiple read and write operations in a single transaction.
+	 * @param operations the function representing the operations to perform using a
+	 * SpannerOperations based on a single transaction.
+	 * @param <T> the final return type of the operations.
+	 * @return the final result of the transaction.
+	 */
+	<T> T performReadWriteTransaction(Function<SpannerOperations, T> operations);
+
+	/**
+	 * Performs multiple read-only operations in a single transaction.
+	 * @param operations the function representing the operations to perform using a
+	 * SpannerOperations based on a single transaction.
+	 * @param readOptions allows the user to specify staleness for the read transaction
+	 * @param <T> the final return type of the operations.
+	 * @return the final result of the transaction.
+	 */
+	<T> T performReadOnlyTransaction(Function<SpannerOperations, T> operations,
+			SpannerReadOptions readOptions);
 }
