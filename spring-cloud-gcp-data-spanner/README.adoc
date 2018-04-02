@@ -45,7 +45,7 @@ dependencies {
 
 ==== What's new?
 
-Spring Spanner Data is considered experimental stability.
+Spring Spanner Data is considered Alpha stability.
 
 Features to be released with 1.0.0.M3:
 
