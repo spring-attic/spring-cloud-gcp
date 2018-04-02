@@ -16,8 +16,6 @@
 
 package com.example;
 
-import java.util.List;
-
 import com.google.cloud.spanner.Key;
 
 import org.springframework.beans.factory.annotation.Autowired;

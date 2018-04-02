@@ -34,10 +34,10 @@ This setup takes care of bringing in the latest compatible version of Cloud Java
 
 === Configuration
 
-To setup Spring Data Spanner, you have two things to configure:
+To setup Spring Data Spanner, you have to configure the following:
 
-1. setup the connection details to Google Cloud Spanner
-2. enable Spring Data Repositories (if you want to use them).
+* setup the connection details to Google Cloud Spanner
+* enable Spring Data Repositories (optional).
 
 ==== Spanner settings
 
@@ -47,19 +47,31 @@ The following configuration options are available:
 
 |===
 | Name | Description | Optional | Default value
-| `spring.cloud.gcp.spanner.project-id` | the GCP project ID to use | Yes | provided by Spring Cloud GCP
 | `spring.cloud.gcp.spanner.instance-id` | Spanner instance to use | No |
 | `spring.cloud.gcp.spanner.database` |
 Spanner database to use | No |
+| `spring.cloud.gcp.pubsub.project-id` | GCP project ID where the Google Cloud Pub/Sub API
+is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
+| Yes |
+| `spring.cloud.gcp.pubsub.credentials.location` | OAuth2 credentials for authenticating with the
+Google Cloud Spanner API, if different from the ones in the
+<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | Yes |
+| `spring.cloud.gcp.pubsub.credentials.scopes` |
+https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
+Spanner credentials | Yes | https://www.googleapis.com/auth/spanner.data
 |===
 
 ==== Repository settings
 
-Spring Data Repositories (see below for functionality) can be configured via the `@EnableSpannerRepositories` annotation on your main configuration file (typically the `@SpringBootApplication` file.
+Spring Data Repositories can be configured via the `@EnableSpannerRepositories` annotation on your main `@Configuration` class.
 
-==== Available beans
+==== Autoconfiguration
 
-With our Spring Boot autoconfiguration your application is able to inject an instance of `DatabaseClient` and `SpannerOperations`, and when repositories are enabled, all the user defined repositories extending `SpannerRepository` are exposed as beans as well.
+Our Spring Boot autoconfiguration creates the following beans available in the Spring application context:
+
+- an instance of `SpannerTemplate`,
+- an instance of all the user defined repositories extending `SpannerRepository`, when repositories are enabled
+- an instance of 'DatabaseClient` from the Spanner java client libraries, for convenience and lower level API access
 
 
 === Mapping POJO domain objects to Spanner tables using annotations
@@ -110,17 +122,17 @@ public class Trade {
 }
 ----
 
-This table name will be resolved only if `tableNameSuffix` value/bean in the Spring `applicationContext` is defined, and then, for exapmle if it has the value "123", it will be `trades_123`.
+This table name will be resolved only if `tableNameSuffix` value/bean in the Spring `applicationContext` is defined, and then, for example if it has the value "123", it will be `trades_123`.
 
 === Template API
 
-`SpannerOperations` and its implementation, `SpannerTemplate` provides the XYZTemplate pattern familiar for Spring developers and as such provides:
+`SpannerOperations` and its implementation, `SpannerTemplate` provides the Template pattern familiar for Spring developers and as such provides:
 
- - resource management
- - one stop shop to Spanner operations with the Spring Data POJO mapping and conversion features
- - exception conversion
+ - Resource management,
+ - One-stop-shop to Spanner operations with the Spring Data POJO mapping and conversion features
+ - Exception conversion
 
-After your setup with Spring Boot Starter, you can configure a template simply by injecting a member of the `SpannerOperations` interface to your class:
+Using the autoconfiguration provided by our Spring Boot Starter for Spanner, your Spring application context will contain a fully configured `SpannerTemplate` object that you can easily autowire in your application:
 
 [source,java]
 ----
@@ -153,6 +165,8 @@ The Template API provides convenience methods for:
 - DML operations (delete, insert, update, upsert)
 - partial reads: you can define a set of columns to be read into your entity
 - partial writes: if you have only a few properties that you want to persist from your entity, you can select those
+- Read-only transactions
+- Locking read-write transactions
 
 
 === Supported Types
@@ -164,6 +178,7 @@ Spring Data Spanner supports the following types for regular fields:
 * `com.google.cloud.Timestamp`
 * `java.lang.Boolean`
 * `java.lang.Long`
+* `java.lang.Integer`
 * `java.lang.String`
 * `double[]`
 * `long[]`
@@ -176,6 +191,7 @@ Spring Data Spanner supports the following inner types for `List` fields:
 * `com.google.cloud.Timestamp`
 * `java.lang.Boolean`
 * `java.lang.Long`
+* `java.lang.Integer`
 * `java.lang.String`
 
 
@@ -244,11 +260,11 @@ public class MyApplication {
 ==== Resolving methods by name
 
 In the example above, the {spring-data-commons-ref}/#repositories.query-methods[query methods]
-in `TradeRepository` are generated based on the convention of their names.
+in `TradeRepository` are generated based on the name of the methods, using the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
 
 `List<Trade> findByAction(String action)` would translate to a `SELECT * FROM trades WHERE action = ?`.
 
-You can think about the little bit extreme `List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(String action, String symbol, String traderId);` as
+The function `List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(String action, String symbol, String traderId);` will be translated as the equivalent of this SQL query:
 
 [source, sql]
 ----
@@ -258,17 +274,22 @@ ORDER BY SYMBOL DESC
 LIMIT 3
 ----
 
-==== Mapping SQL to repository methods using properties file
+==== Mapping SQL to repository methods
 
 
-In the example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the naming convention.
-The query for it is defined in the `spanner-named-queries.properties` file
+The example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
+
+The query for the method can be defined in one of two ways:
+
+ * namedQueries properties file
+ * using the `@Query` annotation
+
+In the example above the `namedQueriesLocation` attribute on `@EnableSpannerRepositories` is pointing to the `spanner-named-queries.properties` file. You can specify the query for a method in the properties file by providing the SQL as the value for the "interface.method" property:
 
 [source, properties]
 ----
 Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0`
 ----
 
-==== Mapping SQL to repository methods using annotation
+Using the `@Query` annotation, the example would also work:
 
-TODO
