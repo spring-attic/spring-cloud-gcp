@@ -197,8 +197,8 @@ Spring Data Spanner supports the following inner types for `List` fields:
 
 === Repositories
 
-{spring-data-commons-ref}/#repositories[Spring Data Repositories] are a powerful abstraction that can save you a lot of typing.
-For Spring Data Spanner, the code inheriting `SpannerRepository` gets all the benefits of `CrudRepository` and `PagingAndSortingRepository` as well, meaning you get by default a lot of generated methods, ready to use.
+{spring-data-commons-ref}/#repositories[Spring Data Repositories] are a powerful abstraction that can save you a lot of boilerplate code.
+For Spring Data Spanner, the code inheriting `SpannerRepository` gets all the benefits of `CrudRepository` and `PagingAndSortingRepository` as well.
 
 For example:
 
@@ -220,7 +220,7 @@ public interface TradeRepository extends SpannerRepository<Trade> {
 }
 ----
 
-This repository can be used without an actual implementation!
+This repository can be injected without an actual implementation, as Spring Data generates a proxy behind the scenes.
 
 [source,java]
 ----
@@ -277,11 +277,11 @@ LIMIT 3
 ==== Mapping SQL to repository methods
 
 
-The example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
+The example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention], we have to map a Spanner parametrized SQL query to it.
 
-The query for the method can be defined in one of two ways:
+The SQL query for the method can be mapped to repository methods in one of two ways:
 
- * namedQueries properties file
+ * `namedQueries` properties file
  * using the `@Query` annotation
 
 In the example above the `namedQueriesLocation` attribute on `@EnableSpannerRepositories` is pointing to the `spanner-named-queries.properties` file. You can specify the query for a method in the properties file by providing the SQL as the value for the "interface.method" property:
@@ -291,5 +291,10 @@ In the example above the `namedQueriesLocation` attribute on `@EnableSpannerRepo
 Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0`
 ----
 
-Using the `@Query` annotation, the example would also work:
+Using the `@Query` annotation, the example would work the following way:
 
+[source, java]
+----
+  @Query("SELECT * FROM trades WHERE trades.action = @tag0")
+	List<Trade> fetchByActionNamedQuery(String action);
+----
