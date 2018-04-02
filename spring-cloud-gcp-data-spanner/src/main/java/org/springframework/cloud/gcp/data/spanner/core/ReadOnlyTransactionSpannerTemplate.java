@@ -50,7 +50,7 @@ class ReadOnlyTransactionSpannerTemplate extends SpannerTemplate {
 	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,
 			T arg1, U arg2) {
 		throw new SpannerDataException(
-				"A read-only transaction template cannot perform" + " mutations.");
+				"A read-only transaction template cannot perform mutations.");
 	}
 
 	@Override
