@@ -58,7 +58,10 @@ Features to be released with 1.0.0.M3:
 - Declarative query methods
    ** interface method resolution by naming convention
    ** read-only SQL via properties files
-- basic Spanner types are support in fields
+- supported field types for POJOs:
+   ** built-in support for basic Spanner types
+   ** built-in support for common Java types
+   ** any Java type can be supported with user defined type conversions
 - SpEL expressions for table name resolution
 - partial reads and writes
 

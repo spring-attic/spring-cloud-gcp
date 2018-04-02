@@ -97,7 +97,7 @@ public @interface EnableSpannerRepositories {
 
 	/**
 	 * Configures the location of where to find the Spring Data named queries properties
-	 * file. Will default to {@code ""}.
+	 * file. Will default to empty string.
 	 *
 	 * @return
 	 */
