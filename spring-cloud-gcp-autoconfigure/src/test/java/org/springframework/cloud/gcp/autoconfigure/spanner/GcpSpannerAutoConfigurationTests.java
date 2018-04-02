@@ -20,6 +20,7 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import org.junit.Test;
 
+import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
@@ -58,6 +59,7 @@ public class GcpSpannerAutoConfigurationTests {
 		});
 	}
 
+	@AutoConfigurationPackage
 	static class TestConfiguration {
 
 		@Bean
