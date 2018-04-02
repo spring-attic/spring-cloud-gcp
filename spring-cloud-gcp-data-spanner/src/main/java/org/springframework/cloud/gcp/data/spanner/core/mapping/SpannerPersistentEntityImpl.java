@@ -126,10 +126,6 @@ public class SpannerPersistentEntityImpl<T>
 	@Override
 	public void verify() {
 		super.verify();
-		if (this.primaryKeyParts.isEmpty()) {
-			throw new SpannerDataException(
-					"At least one primary key property is required!");
-		}
 		for (int i = 1; i <= this.primaryKeyParts.size(); i++) {
 			SpannerPersistentProperty keyPart = this.primaryKeyParts.get(i);
 			if (keyPart == null) {
@@ -142,6 +138,10 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	private SpannerPersistentProperty[] getPrimaryKeyProperties() {
+		if (this.primaryKeyParts.isEmpty()) {
+			throw new SpannerDataException(
+					"At least one primary key property is required!");
+		}
 		SpannerPersistentProperty[] primaryKeyColumns =
 				new SpannerPersistentProperty[this.primaryKeyParts.size()];
 		for (int i = 1; i <= this.primaryKeyParts.size(); i++) {

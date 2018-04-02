@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -128,10 +130,6 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 					 * Due to type erasure, binder methods for Iterable properties must be
 					 * manually specified. ByteArray must be excluded since it implements
 					 * Iterable, but is also explicitly supported by spanner.
-					 *
-					 * Also due to type erasure, custom conversions cannot be used for
-					 * iterables because different conversions between lists of different
-					 * types cannot be distinguished.
 					 */
 					if (ConversionUtils.isIterableNonByteArrayType(propType)) {
 						valueSet = attemptReadIterableValue(spannerPersistentProperty,
@@ -140,14 +138,9 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 					else {
 						Class sourceType = this.spannerColumnTypeToJavaTypeMapping
 								.get(source.getColumnType(columnName));
-						if (sourceType != null && canConvert(sourceType, propType)) {
 							valueSet = attemptReadSingleItemValue(
 									spannerPersistentProperty, source, sourceType,
 									columnName, accessor);
-						}
-						else {
-							valueSet = false;
-						}
 					}
 
 					if (!valueSet) {
@@ -171,14 +164,17 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 			SpannerPersistentProperty spannerPersistentProperty, Struct struct,
 			Class sourceType,
 			String colName, PersistentPropertyAccessor accessor) {
+		Class targetType = spannerPersistentProperty.getType();
+		if (sourceType == null || !canConvert(sourceType, targetType)) {
+			return false;
+		}
 		BiFunction readFunction = singleItemReadMethodMapping
 				.get(ConversionUtils.boxIfNeeded(sourceType));
 		if (readFunction == null) {
 			return false;
 		}
 		accessor.setProperty(spannerPersistentProperty,
-				convert(readFunction.apply(struct, colName),
-						spannerPersistentProperty.getType()));
+				convert(readFunction.apply(struct, colName), targetType));
 		return true;
 	}
 
@@ -187,14 +183,43 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 			String colName, PersistentPropertyAccessor accessor) {
 
 		Class innerType = ConversionUtils.boxIfNeeded(spannerPersistentProperty.getColumnInnerType());
-		if (innerType == null || !readIterableMapping.containsKey(innerType)) {
+		if (innerType == null) {
 			return false;
 		}
 
-		List iterableValue = readIterableMapping.get(innerType).apply(struct, colName);
-		accessor.setProperty(spannerPersistentProperty, iterableValue);
-		return true;
+		// due to checkstyle limit of 3 return statments per function, this variable is
+		// used.
+		boolean valueSet = false;
 
+		if (this.readIterableMapping.containsKey(innerType)) {
+			accessor.setProperty(spannerPersistentProperty,
+					this.readIterableMapping.get(innerType).apply(struct, colName));
+			valueSet = true;
+		}
+
+		if (!valueSet) {
+			for (Class sourceType : this.readIterableMapping.keySet()) {
+				if (canConvert(sourceType, innerType)) {
+					List iterableValue = readIterableMapping.get(sourceType).apply(struct,
+							colName);
+					accessor.setProperty(spannerPersistentProperty, ConversionUtils
+							.convertIterable(iterableValue, innerType, this));
+					valueSet = true;
+					break;
+				}
+			}
+		}
+
+		if (!valueSet && struct.getColumnType(colName).getArrayElementType().getCode() == Type.Code.STRUCT) {
+			List<Struct> iterableValue = struct.getStructList(colName);
+			Iterable convertedIterableValue = (Iterable) StreamSupport.stream(iterableValue.spliterator(), false)
+					.map(item -> read(innerType, item))
+					.collect(Collectors.toList());
+			accessor.setProperty(spannerPersistentProperty, convertedIterableValue);
+			valueSet = true;
+		}
+
+		return valueSet;
 	}
 
 	private static <R> R instantiate(Class<R> type) {

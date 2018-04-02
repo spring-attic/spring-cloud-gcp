@@ -160,16 +160,12 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 		Class<?> propertyType = property.getType();
 		ValueBinder<WriteBuilder> valueBinder = sink.set(property.getColumnName());
 
-		boolean valueSet = false;
+		boolean valueSet;
 
 		/*
 		 * Due to type erasure, binder methods for Iterable properties must be manually
 		 * specified. ByteArray must be excluded since it implements Iterable, but is also
 		 * explicitly supported by spanner.
-		 *
-		 * Also due to type erasure, custom conversions cannot be used for iterables
-		 * because different conversions between lists of different types cannot be
-		 * distinguished.
 		 */
 		if (ConversionUtils.isIterableNonByteArrayType(propertyType)) {
 			valueSet = attemptSetIterableValue((Iterable) propertyValue, valueBinder,
@@ -180,9 +176,6 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 					propertyType);
 			if (!valueSet) {
 				for (Class targetType : this.singleItemType2ToMethodMap.keySet()) {
-					if (!canConvert(propertyType, targetType)) {
-						continue;
-					}
 					valueSet = attemptSetSingleItemValue(propertyValue, valueBinder,
 							targetType);
 					if (valueSet) {
@@ -203,16 +196,40 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 			SpannerPersistentProperty spannerPersistentProperty) {
 
 		Class innerType = ConversionUtils.boxIfNeeded(spannerPersistentProperty.getColumnInnerType());
-		if (innerType == null || !iterablePropertyType2ToMethodMap.containsKey(innerType)) {
+		if (innerType == null) {
 			return false;
 		}
-		BiConsumer toMethod = iterablePropertyType2ToMethodMap.get(innerType);
-		toMethod.accept(valueBinder, value);
-		return true;
+
+		// due to checkstyle limit of 3 return statments per function, this variable is
+		// used.
+		boolean valueSet = false;
+
+		if (this.iterablePropertyType2ToMethodMap.containsKey(innerType)) {
+			this.iterablePropertyType2ToMethodMap.get(innerType).accept(valueBinder,
+					value);
+			valueSet = true;
+		}
+
+		if (!valueSet) {
+			for (Class targetType : this.iterablePropertyType2ToMethodMap.keySet()) {
+				if (canConvert(innerType, targetType)) {
+					BiConsumer toMethod = iterablePropertyType2ToMethodMap
+							.get(targetType);
+					toMethod.accept(valueBinder,
+							ConversionUtils.convertIterable(value, targetType, this));
+					valueSet = true;
+					break;
+				}
+			}
+		}
+		return valueSet;
 	}
 
 	private boolean attemptSetSingleItemValue(Object value,
 			ValueBinder<WriteBuilder> valueBinder, Class targetType) {
+		if (!canConvert(value.getClass(), targetType)) {
+			return false;
+		}
 		Class innerType = ConversionUtils.boxIfNeeded(targetType);
 		BiFunction toMethod = singleItemType2ToMethodMap.get(innerType);
 		if (toMethod == null) {

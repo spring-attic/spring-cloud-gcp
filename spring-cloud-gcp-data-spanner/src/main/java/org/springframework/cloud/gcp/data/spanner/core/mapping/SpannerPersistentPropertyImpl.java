@@ -17,13 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.util.OptionalInt;
-import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.google.cloud.ByteArray;
-import com.google.cloud.Date;
-import com.google.cloud.Timestamp;
-import com.google.common.collect.ImmutableSet;
 
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
@@ -48,9 +42,6 @@ public class SpannerPersistentPropertyImpl
 		extends AnnotationBasedPersistentProperty<SpannerPersistentProperty>
 		implements SpannerPersistentProperty {
 
-	private final static Set<Class> SPANNER_NATIVE_DATA_TYPES = ImmutableSet
-			.of(ByteArray.class, Timestamp.class, Date.class);
-
 	private FieldNamingStrategy fieldNamingStrategy;
 
 	/**
@@ -71,14 +62,13 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	/**
-	 * Excludes Spanner native data types.
+	 * Only provides types that are also annotated with {@link Table}.
 	 */
 	@Override
 	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
 		return StreamUtils
 				.createStreamFromIterator(super.getPersistentEntityTypes().iterator())
-				.filter(typeInfo -> !SPANNER_NATIVE_DATA_TYPES
-						.contains(typeInfo.getType()))
+				.filter(typeInfo -> typeInfo.getType().isAnnotationPresent(Table.class))
 				.collect(Collectors.toList());
 	}
 

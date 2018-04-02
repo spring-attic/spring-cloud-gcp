@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -28,8 +29,10 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.ValueBinder;
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -98,6 +101,22 @@ public class SpannerObjectMapperImplTests {
 		t.bytesList = new ArrayList<>();
 		t.bytesList.add(t.bytes);
 
+		Instant i1 = Instant.ofEpochSecond(111);
+		Instant i2 = Instant.ofEpochSecond(222);
+		Instant i3 = Instant.ofEpochSecond(333);
+		t.momentsInTime = new ArrayList<>();
+		t.momentsInTime.add(i1);
+		t.momentsInTime.add(i2);
+		t.momentsInTime.add(i3);
+
+		Timestamp t1 = Timestamp.ofTimeSecondsAndNanos(111, 0);
+		Timestamp t2 = Timestamp.ofTimeSecondsAndNanos(222, 0);
+		Timestamp t3 = Timestamp.ofTimeSecondsAndNanos(333, 0);
+		List<Timestamp> timestamps = new ArrayList<>();
+		timestamps.add(t1);
+		timestamps.add(t2);
+		timestamps.add(t3);
+
 		WriteBuilder writeBuilder = mock(WriteBuilder.class);
 
 		ValueBinder<WriteBuilder> idBinder = mock(ValueBinder.class);
@@ -154,6 +173,10 @@ public class SpannerObjectMapperImplTests {
 		when(dateListFieldBinder.toDateArray(any())).thenReturn(null);
 		when(writeBuilder.set(eq("dateList"))).thenReturn(dateListFieldBinder);
 
+		ValueBinder<WriteBuilder> instantListFieldBinder = mock(ValueBinder.class);
+		when(instantListFieldBinder.toTimestampArray(any())).thenReturn(null);
+		when(writeBuilder.set(eq("momentsInTime"))).thenReturn(instantListFieldBinder);
+
 		ValueBinder<WriteBuilder> bytesListFieldBinder = mock(ValueBinder.class);
 		when(bytesListFieldBinder.toDateArray(any())).thenReturn(null);
 		when(writeBuilder.set(eq("bytesList"))).thenReturn(bytesListFieldBinder);
@@ -189,6 +212,7 @@ public class SpannerObjectMapperImplTests {
 		verify(dateFieldBinder, times(1)).to(eq(t.dateField));
 		verify(timestampFieldBinder, times(1)).to(eq(t.timestampField));
 		verify(bytesFieldBinder, times(1)).to(eq(t.bytes));
+		verify(instantListFieldBinder, times(1)).toTimestampArray(eq(timestamps));
 	}
 
 	@Test
@@ -226,6 +250,22 @@ public class SpannerObjectMapperImplTests {
 		List<String> stringList = new ArrayList<>();
 		stringList.add("string");
 
+		Instant i1 = Instant.ofEpochSecond(111);
+		Instant i2 = Instant.ofEpochSecond(222);
+		Instant i3 = Instant.ofEpochSecond(333);
+		List<Instant> instants = new ArrayList<>();
+		instants.add(i1);
+		instants.add(i2);
+		instants.add(i3);
+
+		Timestamp ts1 = Timestamp.ofTimeSecondsAndNanos(111, 0);
+		Timestamp ts2 = Timestamp.ofTimeSecondsAndNanos(222, 0);
+		Timestamp ts3 = Timestamp.ofTimeSecondsAndNanos(333, 0);
+		List<Timestamp> timestamps = new ArrayList<>();
+		timestamps.add(ts1);
+		timestamps.add(ts2);
+		timestamps.add(ts3);
+
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
 				.add("booleanField", Value.bool(true))
@@ -242,7 +282,8 @@ public class SpannerObjectMapperImplTests {
 				.add("bytesList", Value.bytesArray(new ArrayList<>()))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
-				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
+				.add("bytes", Value.bytes(ByteArray.copyFrom("string1")))
+				.add("momentsInTime", Value.timestampArray(timestamps)).build();
 
 		Struct struct2 = Struct.newBuilder().add("id", Value.string("key2"))
 				.add("custom_col", Value.string("string2"))
@@ -260,6 +301,7 @@ public class SpannerObjectMapperImplTests {
 				.add("bytesList", Value.bytesArray(new ArrayList<>()))
 				.add("dateField", Value.date(Date.fromYearMonthDay(2019, 11, 22)))
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
+				.add("momentsInTime", Value.timestampArray(timestamps))
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string2"))).build();
 
 		MockResults mockResults = new MockResults();
@@ -288,6 +330,7 @@ public class SpannerObjectMapperImplTests {
 		assertEquals(3.33, t1.doubleField, 0.00001);
 		assertEquals(3, t1.doubleArray.length);
 		assertEquals(2018, t1.dateField.getYear());
+		assertEquals(instants, t1.momentsInTime);
 		assertEquals(ByteArray.copyFrom("string1"), t1.bytes);
 
 		assertEquals("key2", t2.id);
@@ -300,6 +343,7 @@ public class SpannerObjectMapperImplTests {
 		assertEquals(2019, t2.dateField.getYear());
 		assertEquals(1, t2.doubleList.size());
 		assertEquals(3.33, t2.doubleList.get(0), 0.000001);
+		assertEquals(instants, t2.momentsInTime);
 		assertThat(t2.stringList, containsInAnyOrder("string"));
 		assertEquals(ByteArray.copyFrom("string2"), t2.bytes);
 	}
@@ -350,6 +394,20 @@ public class SpannerObjectMapperImplTests {
 
 		// This should not have been set
 		assertNull(t2.stringList);
+	}
+
+	@Test
+	public void readNestedStructTest() {
+		Struct innerStruct = Struct.newBuilder().add("value", Value.string("value")).build();
+		Struct outerStruct = Struct.newBuilder().add("id", Value.string("key1"))
+				.add("innerTestEntities", ImmutableList.of(Type.StructField.of("value", Type.string())),
+						ImmutableList.of(innerStruct))
+				.build();
+
+		OuterTestEntity result = this.objectMapper.read(OuterTestEntity.class, outerStruct);
+		assertEquals("key1", result.id);
+		assertEquals(1, result.innerTestEntities.size());
+		assertEquals("value", result.innerTestEntities.get(0).value);
 	}
 
 	@Test(expected = SpannerDataException.class)
@@ -451,6 +509,9 @@ public class SpannerObjectMapperImplTests {
 		@ColumnInnerType(innerType = ByteArray.class)
 		List<ByteArray> bytesList;
 
+		@ColumnInnerType(innerType = Instant.class)
+		List<Instant> momentsInTime;
+
 		Date dateField;
 
 		Timestamp timestampField;
@@ -475,6 +536,19 @@ public class SpannerObjectMapperImplTests {
 
 		@ColumnInnerType(innerType = TestEntity.class)
 		List<TestEntity> listWithUnsupportedInnerType;
+	}
+
+	@Table(name = "outer_test_entity")
+	private static class OuterTestEntity {
+		@PrimaryKeyColumn
+		String id;
+
+		@ColumnInnerType(innerType = InnerTestEntity.class)
+		List<InnerTestEntity> innerTestEntities;
+	}
+
+	private static class InnerTestEntity {
+		String value;
 	}
 
 	private static class MockResults {
