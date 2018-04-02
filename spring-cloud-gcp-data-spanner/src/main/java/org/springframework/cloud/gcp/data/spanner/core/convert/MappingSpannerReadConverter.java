@@ -72,15 +72,6 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 			.put(long[].class, AbstractStructReader::getLongArray)
 			.put(boolean[].class, AbstractStructReader::getBooleanArray).build();
 
-	private static final Map<Type, Class> spannerColumnTypeToJavaTypeMapping = new ImmutableMap.Builder<Type, Class>()
-			.put(Type.bool(), Boolean.class).put(Type.bytes(), ByteArray.class)
-			.put(Type.date(), Date.class).put(Type.float64(), Double.class)
-			.put(Type.int64(), Long.class).put(Type.string(), String.class)
-			.put(Type.array(Type.float64()), double[].class)
-			.put(Type.array(Type.int64()), long[].class)
-			.put(Type.array(Type.bool()), boolean[].class)
-			.put(Type.timestamp(), Timestamp.class).build();
-
 	private final SpannerMappingContext spannerMappingContext;
 
 	MappingSpannerReadConverter(
@@ -136,7 +127,7 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 								source, columnName, accessor);
 					}
 					else {
-						Class sourceType = this.spannerColumnTypeToJavaTypeMapping
+						Class sourceType = ConversionUtils.SPANNER_COLUMN_TYPE_TO_JAVA_TYPE_MAPPING
 								.get(source.getColumnType(columnName));
 							valueSet = attemptReadSingleItemValue(
 									spannerPersistentProperty, source, sourceType,

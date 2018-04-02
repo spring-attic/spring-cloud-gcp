@@ -31,17 +31,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityImpl;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.data.util.TypeInformation;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * This class provides the foundation for the integration test framework for Spanner.
@@ -84,6 +81,9 @@ public abstract class AbstractSpannerIntegrationTest {
 	protected ApplicationContext applicationContext;
 
 	protected String tableNameSuffix;
+
+	@Autowired
+	protected SpannerMappingContext spannerMappingContext;
 
 	private boolean setupFailed;
 
@@ -128,23 +128,18 @@ public abstract class AbstractSpannerIntegrationTest {
 	}
 
 	protected List<String> createSchemaStatements() {
-		return Arrays.asList(Trade.createDDL(tableNameFor(Trade.class)));
+		return Arrays.asList(createEntity(Trade.class).getCreateTableSqlString());
 	}
 
 	protected Iterable<String> dropSchemaStatements() {
-		return Arrays.asList(Trade.dropDDL(tableNameFor(Trade.class)));
+		return Arrays.asList(createEntity(Trade.class).getDropTableSqlString());
 	}
 
-	protected String tableNameFor(Class<Trade> type) {
-		return createDummyEntity(type).tableName();
-	}
-
-	protected <T> SpannerPersistentEntity createDummyEntity(Class<T> type) {
-		TypeInformation<T> typeInformation = mock(TypeInformation.class);
-		when(typeInformation.getType()).thenReturn(type);
-		SpannerPersistentEntity dummyTrade = new SpannerPersistentEntityImpl<>(typeInformation);
-		dummyTrade.setApplicationContext(this.applicationContext);
-		return dummyTrade;
+	protected <T> SpannerPersistentEntity createEntity(Class<T> type) {
+		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
+				.getPersistentEntity(type);
+		persistentEntity.setApplicationContext(this.applicationContext);
+		return persistentEntity;
 	}
 
 	@After

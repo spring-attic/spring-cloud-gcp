@@ -40,4 +40,16 @@ public interface SpannerPersistentEntity<T>
 	 * @return the column names.
 	 */
 	Iterable<String> columns();
+
+	/**
+	 * Gets the Spanner DDL statement to create the table corresponding to this entity.
+	 * @return the DDL statement to create the table.
+	 */
+	String getCreateTableSqlString();
+
+	/**
+	 * Gets the Spanner DDL statement to drop the table corresponding to this entity.
+	 * @return the DDL statement to drop the table.
+	 */
+	String getDropTableSqlString();
 }

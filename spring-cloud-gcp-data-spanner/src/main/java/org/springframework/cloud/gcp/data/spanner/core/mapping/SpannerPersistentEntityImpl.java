@@ -21,13 +21,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.springframework.beans.BeansException;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.Expression;
@@ -160,6 +163,36 @@ public class SpannerPersistentEntityImpl<T>
 	@Override
 	public Iterable<String> columns() {
 		return Collections.unmodifiableSet(this.columnNames);
+	}
+
+	@Override
+	public String getCreateTableSqlString() {
+		StringBuilder stringBuilder = new StringBuilder(
+				"CREATE TABLE " + tableName() + " ( ");
+
+		StringJoiner columnStrings = new StringJoiner(" , ");
+		this.doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					columnStrings.add("\'" + spannerPersistentProperty.getColumnName()
+							+ "\' " + ConversionUtils
+									.getColumnDDLString(spannerPersistentProperty));
+				});
+
+		stringBuilder.append(columnStrings.toString() + " ) PRIMARY KEY ( ");
+
+		StringJoiner keyStrings = new StringJoiner(" , ");
+
+		for (SpannerPersistentProperty keyProp : getPrimaryKeyProperties()) {
+			keyStrings.add(keyProp.getColumnName());
+		}
+
+		stringBuilder.append(keyStrings.toString() + " )");
+		return stringBuilder.toString();
+	}
+
+	@Override
+	public String getDropTableSqlString() {
+		return "DROP TABLE " + tableName();
 	}
 
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
