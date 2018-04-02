@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
-import org.springframework.cloud.gcp.data.spanner.core.convert.AbstractSpannerCustomConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.model.MutablePersistentEntity;

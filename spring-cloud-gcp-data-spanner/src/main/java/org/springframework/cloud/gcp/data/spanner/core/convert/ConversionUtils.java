@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -63,8 +62,7 @@ public class ConversionUtils {
 
 	static {
 		ImmutableMap.Builder<Class, Type> builder = new Builder<>();
-		SPANNER_COLUMN_TYPE_TO_JAVA_TYPE_MAPPING.keySet().stream()
-				.filter(type -> type.getCode() != Code.ARRAY).forEach(type -> builder
+		SPANNER_COLUMN_TYPE_TO_JAVA_TYPE_MAPPING.keySet().stream().forEach(type -> builder
 						.put(SPANNER_COLUMN_TYPE_TO_JAVA_TYPE_MAPPING.get(type), type));
 		JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING = builder.build();
 	}
@@ -79,35 +77,44 @@ public class ConversionUtils {
 						: "");
 	}
 
-	private static Class getFirstFullyConvertableType(
-			SpannerConverter spannerConverter,
-			Class originalType, Set<Class> spannerTypes, boolean isArrayInnerType) {
+	private static Class getFirstFullyConvertableType(SpannerConverter spannerConverter,
+			Class originalType, boolean isArrayInnerType) {
+		Set<Class> spannerTypes = (isArrayInnerType
+				? MappingSpannerWriteConverter.iterablePropertyType2ToMethodMap
+				: MappingSpannerWriteConverter.singleItemType2ToMethodMap).keySet();
 		if (spannerTypes.contains(originalType)) {
 			return originalType;
 		}
+		Class ret = null;
 		for (Class spannerType : spannerTypes) {
-			if(isArrayInnerType
-					&& spannerConverter.canHandlePropertyTypeForArrayRead(originalType,spannerType)
-					&& spannerConverter.canHandlePropertyTypeForArrayWrite(originalType, spannerType)) {
-				return spannerType;
+			if (isArrayInnerType
+					&& spannerConverter.canHandlePropertyTypeForArrayRead(originalType,
+							spannerType)
+					&& spannerConverter.canHandlePropertyTypeForArrayWrite(originalType,
+							spannerType)) {
+				ret = spannerType;
+				break;
 			}
-			else if(!isArrayInnerType
-					&& spannerConverter.canHandlePropertyTypeForSingularRead(originalType,spannerType)
-					&& spannerConverter.canHandlePropertyTypeForSingularWrite(originalType, spannerType)){
-				return spannerType;
+			else if (!isArrayInnerType
+					&& spannerConverter.canHandlePropertyTypeForSingularRead(originalType,
+							spannerType)
+					&& spannerConverter.canHandlePropertyTypeForSingularWrite(
+							originalType, spannerType)) {
+				ret = spannerType;
+				break;
 			}
 		}
-		return null;
+		return ret;
 	}
 
 	public static String getColumnDDLString(
 			SpannerPersistentProperty spannerPersistentProperty,
-			SpannerConverter spannerConverter ) {
+			SpannerConverter spannerConverter) {
 		Class columnType = spannerPersistentProperty.getType();
 
-		BiFunction<Class, Boolean, Class> getBasicSpannerJavaColType = (originalType, isArrayInnerType) -> getFirstFullyConvertableType(
-				spannerConverter, originalType,
-				JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING.keySet(), isArrayInnerType);
+		BiFunction<Class, Boolean, Class> getBasicSpannerJavaColType = (originalType,
+				isArrayInnerType) -> getFirstFullyConvertableType(spannerConverter,
+						boxIfNeeded(originalType), isArrayInnerType);
 
 		if (isIterableNonByteArrayType(columnType)) {
 			Class innerType = spannerPersistentProperty.getColumnInnerType();
@@ -115,9 +122,14 @@ public class ConversionUtils {
 				throw new SpannerDataException(
 						"Cannot get column DDL for iterable type without annotated inner type.");
 			}
-			return getTypeDDLString(
-					Type.array(JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
-							.get(getBasicSpannerJavaColType.apply(innerType, true))));
+			Type spannerSupportedInnerType = JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
+					.get(getBasicSpannerJavaColType.apply(innerType, true));
+			if (spannerSupportedInnerType == null) {
+				throw new SpannerDataException(
+						"Could not find suitable Spanner column type for property type:"
+								+ columnType);
+			}
+			return getTypeDDLString(Type.array(spannerSupportedInnerType));
 		}
 		Type spannerColumnType = JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
 				.get(getBasicSpannerJavaColType.apply(columnType, false));

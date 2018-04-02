@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
@@ -41,8 +42,10 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
@@ -405,7 +408,8 @@ public class SpannerTemplateTests {
 		doAnswer(invocation -> {
 			Statement statement = invocation.getArgument(1);
 			assertEquals(
-					"SELECT * FROM custom_test_table ORDER BY id ASC , custom_col DESC , other ASC LIMIT 3 OFFSET 5;",
+					"SELECT * FROM custom_test_table ORDER BY id ASC , "
+							+ "custom_col DESC , other ASC LIMIT 3 OFFSET 5;",
 					statement.getSql());
 			return null;
 		}).when(spyTemplate).find(eq(TestEntity.class), (Statement) any(), any());
@@ -464,6 +468,24 @@ public class SpannerTemplateTests {
 				this.spannerTemplate.getId(t));
 	}
 
+	@Test
+	public void getDropDDLTest() {
+		assertEquals("DROP TABLE custom_test_table",
+				this.spannerTemplate.getDropTableDDLString(TestEntity.class));
+	}
+
+	@Test
+	public void getCreateDDLTest() {
+		SpannerTemplate spannerTemplate = new SpannerTemplate(this.databaseClient,
+				this.mappingContext, new MappingSpannerConverter(this.mappingContext),
+				this.mutationFactory);
+		assertEquals("CREATE TABLE custom_test_table ( id STRING(MAX) , id2 INT64 "
+				+ ", custom_col STRING(MAX) , other STRING(MAX) , bytes BYTES(MAX) "
+				+ ", bytesList ARRAY<BYTES(MAX)> , integerList ARRAY<INT64> "
+				+ ", doubles ARRAY<FLOAT64> ) PRIMARY KEY ( id , id2 )",
+				spannerTemplate.getCreateTableDDLString(TestEntity.class));
+	}
+
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
 		@PrimaryKeyColumn(keyOrder = 1)
@@ -477,5 +499,15 @@ public class SpannerTemplateTests {
 
 		@Column(name = "")
 		String other;
+
+		ByteArray bytes;
+
+		@ColumnInnerType(innerType = ByteArray.class)
+		List<ByteArray> bytesList;
+
+		@ColumnInnerType(innerType = Integer.class)
+		List<Integer> integerList;
+
+		double[] doubles;
 	}
 }

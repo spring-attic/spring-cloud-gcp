@@ -113,36 +113,42 @@ public class MappingSpannerConverter implements SpannerConverter {
 	@Override
 	public boolean canHandlePropertyTypeForSingularRead(Class type,
 			Class spannerSupportedType) {
-		if (!MappingSpannerReadConverter.singleItemReadMethodMapping.containsKey(spannerSupportedType)) {
+		if (!MappingSpannerReadConverter.singleItemReadMethodMapping
+				.containsKey(spannerSupportedType)) {
 			throw new SpannerDataException(
 					"The given spannerSupportedType type is not a known "
 							+ "Spanner directly-supported column type: "
 							+ spannerSupportedType);
 		}
-		return type.equals(spannerSupportedType) || this.readConverter.canConvert(spannerSupportedType, type);
+		return type.equals(spannerSupportedType)
+				|| this.readConverter.canConvert(spannerSupportedType, type);
 	}
 
 	@Override
 	public boolean canHandlePropertyTypeForArrayRead(Class type,
 			Class spannerSupportedArrayInnerType) {
-		if (!MappingSpannerReadConverter.readIterableMapping.containsKey(spannerSupportedArrayInnerType)) {
+		if (!MappingSpannerReadConverter.readIterableMapping
+				.containsKey(spannerSupportedArrayInnerType)) {
 			throw new SpannerDataException(
 					"The given spannerSupportedArrayInnerType is not a known Spanner "
 							+ "directly-supported array column inner-type: "
 							+ spannerSupportedArrayInnerType);
 		}
-		return type.equals(spannerSupportedArrayInnerType) ||this.readConverter.canConvert(spannerSupportedArrayInnerType, type);
+		return type.equals(spannerSupportedArrayInnerType)
+				|| this.readConverter.canConvert(spannerSupportedArrayInnerType, type);
 	}
 
 	@Override
 	public boolean canHandlePropertyTypeForSingularWrite(Class type,
 			Class spannerSupportedType) {
-		if (!MappingSpannerWriteConverter.singleItemType2ToMethodMap.containsKey(spannerSupportedType)) {
+		if (!MappingSpannerWriteConverter.singleItemType2ToMethodMap
+				.containsKey(spannerSupportedType)) {
 			throw new SpannerDataException(
 					"The given spannerSupportedType is not a known Spanner directly-supported column type: "
 							+ spannerSupportedType);
 		}
-		return type.equals(spannerSupportedType) || this.writeConverter.canConvert(type, spannerSupportedType);
+		return type.equals(spannerSupportedType)
+				|| this.writeConverter.canConvert(type, spannerSupportedType);
 	}
 
 	@Override
@@ -155,7 +161,8 @@ public class MappingSpannerConverter implements SpannerConverter {
 							+ "Spanner directly-supported column type: "
 							+ spannerSupportedArrayInnerType);
 		}
-		return type.equals(spannerSupportedArrayInnerType) || this.writeConverter.canConvert(type, spannerSupportedArrayInnerType);
+		return type.equals(spannerSupportedArrayInnerType)
+				|| this.writeConverter.canConvert(type, spannerSupportedArrayInnerType);
 	}
 
 	/**
