@@ -77,9 +77,9 @@ public class ConversionUtils {
 						: "");
 	}
 
-	private static Class getFirstFullyConvertableType(SpannerConverter spannerConverter,
-			Class originalType, boolean isArrayInnerType) {
-		Set<Class> spannerTypes = (isArrayInnerType
+	private static Class getFullyConvertableType(SpannerConverter spannerConverter,
+			Class originalType, boolean isIterableInnerType) {
+		Set<Class> spannerTypes = (isIterableInnerType
 				? MappingSpannerWriteConverter.iterablePropertyType2ToMethodMap
 				: MappingSpannerWriteConverter.singleItemType2ToMethodMap).keySet();
 		if (spannerTypes.contains(originalType)) {
@@ -87,7 +87,7 @@ public class ConversionUtils {
 		}
 		Class ret = null;
 		for (Class spannerType : spannerTypes) {
-			if (isArrayInnerType
+			if (isIterableInnerType
 					&& spannerConverter.canHandlePropertyTypeForArrayRead(originalType,
 							spannerType)
 					&& spannerConverter.canHandlePropertyTypeForArrayWrite(originalType,
@@ -95,7 +95,7 @@ public class ConversionUtils {
 				ret = spannerType;
 				break;
 			}
-			else if (!isArrayInnerType
+			else if (!isIterableInnerType
 					&& spannerConverter.canHandlePropertyTypeForSingularRead(originalType,
 							spannerType)
 					&& spannerConverter.canHandlePropertyTypeForSingularWrite(
@@ -113,8 +113,8 @@ public class ConversionUtils {
 		Class columnType = spannerPersistentProperty.getType();
 
 		BiFunction<Class, Boolean, Class> getBasicSpannerJavaColType = (originalType,
-				isArrayInnerType) -> getFirstFullyConvertableType(spannerConverter,
-						boxIfNeeded(originalType), isArrayInnerType);
+				isIterableInnerType) -> getFullyConvertableType(spannerConverter,
+						boxIfNeeded(originalType), isIterableInnerType);
 
 		if (isIterableNonByteArrayType(columnType)) {
 			Class innerType = spannerPersistentProperty.getColumnInnerType();
@@ -126,8 +126,8 @@ public class ConversionUtils {
 					.get(getBasicSpannerJavaColType.apply(innerType, true));
 			if (spannerSupportedInnerType == null) {
 				throw new SpannerDataException(
-						"Could not find suitable Spanner column type for property type:"
-								+ columnType);
+						"Could not find suitable Spanner column inner type for property type:"
+								+ innerType);
 			}
 			return getTypeDDLString(Type.array(spannerSupportedInnerType));
 		}
