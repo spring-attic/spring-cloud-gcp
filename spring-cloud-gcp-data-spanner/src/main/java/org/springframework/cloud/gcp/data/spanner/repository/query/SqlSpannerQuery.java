@@ -16,13 +16,21 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.core.MethodParameter;
 import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.Param;
+import org.springframework.data.repository.query.Parameter;
+import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.expression.EvaluationContext;
@@ -30,7 +38,6 @@ import org.springframework.expression.Expression;
 import org.springframework.expression.ParserContext;
 import org.springframework.expression.common.LiteralExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
 
 /**
@@ -48,8 +55,11 @@ public class SqlSpannerQuery implements RepositoryQuery {
 	private final String sql;
 
 	private final List<String> tags;
+
 	private final Expression sqlExpression;
+
 	private EvaluationContextProvider evaluationContextProvider;
+
 	private SpelExpressionParser expressionParser;
 
 	public SqlSpannerQuery(Class type, QueryMethod queryMethod,
@@ -79,14 +89,17 @@ public class SqlSpannerQuery implements RepositoryQuery {
 
 	@Override
 	public Object execute(Object[] parameters) {
-		return this.spannerOperations.find(this.entityType, SpannerStatementQueryExecutor
-				.buildStatementFromSqlWithArgs(getSql(parameters), this.tags, parameters));
+		return this.spannerOperations.find(this.entityType,
+				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
+						getSql(parameters), this.tags,
+						filterOutSpelParameters(parameters)));
 	}
 
-	private String getSql(Object[] parameterValues) {
-		EvaluationContext context = evaluationContextProvider.getEvaluationContext(queryMethod.getParameters(), parameterValues);
-		return  this.sqlExpression == null
-				? this.sql
+	@VisibleForTesting
+	String getSql(Object[] parameterValues) {
+		EvaluationContext context = this.evaluationContextProvider
+				.getEvaluationContext(this.queryMethod.getParameters(), parameterValues);
+		return this.sqlExpression == null ? this.sql
 				: this.sqlExpression.getValue(context, String.class);
 	}
 
@@ -95,10 +108,48 @@ public class SqlSpannerQuery implements RepositoryQuery {
 		return this.queryMethod;
 	}
 
+	@VisibleForTesting
+	Object[] filterOutSpelParameters(Object[] rawParams) {
+		List<Object> filtered = new ArrayList<>();
+		Parameters parameters = getQueryMethod().getParameters();
+		for (int i = 0; i < parameters.getNumberOfParameters(); i++) {
+			// non-SpEL args will not have a name here
+			if (!getSpelParamName(parameters, i).isPresent()) {
+				filtered.add(rawParams[i]);
+			}
+		}
+		return filtered.toArray();
+	}
+
+	/*
+	 * The underlying MethodParameter of Parameter is not directly accessible, so we
+	 * cannot directly check for a SpEL name, and we must use reflection.
+	 */
+	@VisibleForTesting
+	Optional<String> getSpelParamName(Parameters params, int index) {
+		Parameter param = params.getParameter(index);
+		for (Field methodParameterField : param.getClass().getDeclaredFields()) {
+			if (methodParameterField.getType() == MethodParameter.class) {
+				methodParameterField.setAccessible(true);
+				try {
+					MethodParameter methodParameter = (MethodParameter) methodParameterField
+							.get(param);
+					if (methodParameter.hasParameterAnnotation(Param.class)) {
+						return param.getName();
+					}
+				}
+				catch (IllegalAccessException e) {
+					continue;
+				}
+			}
+		}
+		return Optional.empty();
+	}
 
 	@Nullable
 	private Expression detectExpression() {
-		Expression expression = expressionParser.parseExpression(this.sql, ParserContext.TEMPLATE_EXPRESSION);
+		Expression expression = this.expressionParser.parseExpression(this.sql,
+				ParserContext.TEMPLATE_EXPRESSION);
 		return expression instanceof LiteralExpression ? null : expression;
 	}
 

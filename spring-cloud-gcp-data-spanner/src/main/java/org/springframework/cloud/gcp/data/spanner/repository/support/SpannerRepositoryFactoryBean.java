@@ -34,6 +34,7 @@ public class SpannerRepositoryFactoryBean extends RepositoryFactoryBeanSupport i
 	private SpannerMappingContext spannerMappingContext;
 
 	private SpannerOperations spannerOperations;
+
 	private ApplicationContext applicationContext;
 
 	/**
@@ -59,7 +60,7 @@ public class SpannerRepositoryFactoryBean extends RepositoryFactoryBeanSupport i
 		SpannerRepositoryFactory spannerRepositoryFactory = new SpannerRepositoryFactory(
 				this.spannerMappingContext,
 				this.spannerOperations);
-		spannerRepositoryFactory.setApplicationContext(applicationContext);
+		spannerRepositoryFactory.setApplicationContext(this.applicationContext);
 		return spannerRepositoryFactory;
 	}
 

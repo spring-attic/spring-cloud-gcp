@@ -27,7 +27,6 @@ import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
-import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
 
@@ -42,6 +41,7 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 	private final SpannerMappingContext spannerMappingContext;
 
 	private EvaluationContextProvider evaluationContextProvider;
+
 	private SpelExpressionParser expressionParser;
 
 	public SpannerQueryLookupStrategy(SpannerMappingContext spannerMappingContext,
@@ -51,7 +51,8 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 		Assert.notNull(spannerMappingContext,
 				"A valid SpannerMappingContext is required.");
 		Assert.notNull(spannerOperations, "A valid SpannerOperations is required.");
-		Assert.notNull(evaluationContextProvider, "A valid EvaluationContextProvider is required.");
+		Assert.notNull(evaluationContextProvider,
+				"A valid EvaluationContextProvider is required.");
 		Assert.notNull(expressionParser, "A valid SpelExpressionParser is required.");
 		this.spannerMappingContext = spannerMappingContext;
 		this.evaluationContextProvider = evaluationContextProvider;
@@ -63,9 +64,10 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 		return queryMethod.getResultProcessor().getReturnedType().getDomainType();
 	}
 
-	protected SpannerQueryMethod createQueryMethod(Method method, RepositoryMetadata metadata,
-			ProjectionFactory factory) {
-		return new SpannerQueryMethod(method, metadata, factory, spannerMappingContext);
+	protected SpannerQueryMethod createQueryMethod(Method method,
+			RepositoryMetadata metadata, ProjectionFactory factory) {
+		return new SpannerQueryMethod(method, metadata, factory,
+				this.spannerMappingContext);
 	}
 
 	@Override
@@ -77,7 +79,8 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 		if (namedQueries.hasQuery(queryMethod.getNamedQueryName())) {
 			String sql = namedQueries.getQuery(queryMethod.getNamedQueryName());
 			return createSqlSpannerQuery(entityType, queryMethod, sql);
-		} else if (queryMethod.hasAnnotatedQuery()) {
+		}
+		else if (queryMethod.hasAnnotatedQuery()) {
 			String sql = queryMethod.getQueryAnnotation().value();
 			return createSqlSpannerQuery(entityType, queryMethod, sql);
 		}
@@ -87,7 +90,8 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 
 	protected SqlSpannerQuery createSqlSpannerQuery(Class entityType,
 			QueryMethod queryMethod, String sql) {
-		return new SqlSpannerQuery(entityType, queryMethod, this.spannerOperations, sql, evaluationContextProvider, expressionParser);
+		return new SqlSpannerQuery(entityType, queryMethod, this.spannerOperations, sql,
+				this.evaluationContextProvider, this.expressionParser);
 	}
 
 	protected PartTreeSpannerQuery createPartTreeSpannerQuery(Class entityType,

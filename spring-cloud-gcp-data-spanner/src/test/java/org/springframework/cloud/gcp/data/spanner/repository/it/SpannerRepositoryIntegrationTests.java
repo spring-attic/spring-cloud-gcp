@@ -31,10 +31,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 /**
  * @author Balint Pato
+ * @author Chengyuan Zhao
  */
 @RunWith(SpringRunner.class)
 public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegrationTest {
@@ -59,21 +61,35 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.tradeRepository.count(), is(8L));
 
 		List<Trade> allTradesRetrieved = this.spannerOperations.findAll(Trade.class);
-		assertThat("size is not " + allTrades.size() + " in received records: \n"
-				+ allTradesRetrieved, allTradesRetrieved.size(), is(allTrades.size()));
+		assertThat(
+				"size is not " + allTrades.size() + " in received records: \n"
+						+ allTradesRetrieved,
+				allTradesRetrieved.size(), is(allTrades.size()));
 		assertThat(allTradesRetrieved, containsInAnyOrder(allTrades.toArray()));
 
 		assertThat(this.tradeRepository.countByAction("BUY"), is(3));
 
-		List<Trade> trader2TradesRetrieved = this.tradeRepository.findByTraderId("trader2");
-		assertThat("size is not " + allTrades.size() + " in received records: \n"
-				+ trader2TradesRetrieved, trader2TradesRetrieved.size(), is(trader2Trades.size()));
+		List<Trade> trader2TradesRetrieved = this.tradeRepository
+				.findByTraderId("trader2");
+		assertThat(
+				"size is not " + allTrades.size() + " in received records: \n"
+						+ trader2TradesRetrieved,
+				trader2TradesRetrieved.size(), is(trader2Trades.size()));
 		assertThat(trader2TradesRetrieved, containsInAnyOrder(trader2Trades.toArray()));
 
-		List<Trade> buyTradesRetrieved = this.tradeRepository.annotatedTradesByAction("BUY");
-		assertThat("size is not " + buyTradesRetrieved.size() + " in received records: \n"
-				+ buyTradesRetrieved, buyTradesRetrieved.size(), is(trader1BuyTrades.size()));
-		assertThat(buyTradesRetrieved, containsInAnyOrder(trader1BuyTrades.toArray()));
+		Trade t = new Trade();
+		t.setAction("BUY");
+		List<Trade> buyTradesRetrievedSpel = this.tradeRepository
+				.annotatedTradesByAction(t);
+		List<Trade> buyTradesRetrieved = this.tradeRepository
+				.annotatedTradesByAction("BUY");
+		assertEquals(buyTradesRetrieved, buyTradesRetrievedSpel);
+		assertThat(
+				"size is not " + buyTradesRetrievedSpel.size()
+						+ " in received records: \n" + buyTradesRetrievedSpel,
+				buyTradesRetrievedSpel.size(), is(trader1BuyTrades.size()));
+		assertThat(buyTradesRetrievedSpel,
+				containsInAnyOrder(trader1BuyTrades.toArray()));
 	}
 
 	protected List<Trade> insertTrades(String traderId1, String action, int numTrades) {

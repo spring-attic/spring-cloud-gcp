@@ -47,8 +47,8 @@ import org.springframework.util.Assert;
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public class SpannerRepositoryFactory extends RepositoryFactorySupport implements
-		ApplicationContextAware {
+public class SpannerRepositoryFactory extends RepositoryFactorySupport
+		implements ApplicationContextAware {
 
 	private static final SpelExpressionParser EXPRESSION_PARSER = new SpelExpressionParser();
 
@@ -62,7 +62,8 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport implement
 	 * Constructor
 	 * @param spannerMappingContext the mapping context used to get mapping metadata for
 	 * entity types.
-	 * @param spannerOperations the spanner operations object used by Spanner repositories.
+	 * @param spannerOperations the spanner operations object used by Spanner
+	 * repositories.
 	 */
 	public SpannerRepositoryFactory(SpannerMappingContext spannerMappingContext,
 			SpannerOperations spannerOperations) {
@@ -104,28 +105,31 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport implement
 			EvaluationContextProvider evaluationContextProvider) {
 
 		return Optional.of(new SpannerQueryLookupStrategy(this.spannerMappingContext,
-				this.spannerOperations, delegateContextProvider(evaluationContextProvider), EXPRESSION_PARSER));
+				this.spannerOperations,
+				delegateContextProvider(evaluationContextProvider), EXPRESSION_PARSER));
 	}
 
 	private EvaluationContextProvider delegateContextProvider(
 			EvaluationContextProvider evaluationContextProvider) {
 		return new EvaluationContextProvider() {
 			@Override
-			public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(T parameters,
-					Object[] parameterValues) {
-				StandardEvaluationContext evaluationContext =
-						(StandardEvaluationContext) evaluationContextProvider
+			public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(
+					T parameters, Object[] parameterValues) {
+				StandardEvaluationContext evaluationContext = (StandardEvaluationContext) evaluationContextProvider
 						.getEvaluationContext(parameters, parameterValues);
-				evaluationContext.setRootObject(applicationContext);
+				evaluationContext
+						.setRootObject(SpannerRepositoryFactory.this.applicationContext);
 				evaluationContext.addPropertyAccessor(new BeanFactoryAccessor());
-				evaluationContext.setBeanResolver(new BeanFactoryResolver(applicationContext));
+				evaluationContext.setBeanResolver(new BeanFactoryResolver(
+						SpannerRepositoryFactory.this.applicationContext));
 				return evaluationContext;
 			}
 		};
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(ApplicationContext applicationContext)
+			throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 }

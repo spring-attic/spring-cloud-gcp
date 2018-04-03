@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.cloud.gcp.data.spanner.repository.query.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface TradeRepository extends SpannerRepository<Trade> {
 
@@ -27,7 +28,9 @@ public interface TradeRepository extends SpannerRepository<Trade> {
 
 	int countByAction(String action);
 
-	@Query("SELECT * FROM trades_#{tableNameSuffix} WHERE action=@action")
-	List<Trade> annotatedTradesByAction(Trade action);
+	@Query("SELECT * FROM trades_#{tableNameSuffix} WHERE action='#{#trade.action}'")
+	List<Trade> annotatedTradesByAction(@Param("trade")Trade action);
 
+	@Query("SELECT * FROM trades_#{tableNameSuffix} WHERE action=@action")
+	List<Trade> annotatedTradesByAction(String action);
 }
