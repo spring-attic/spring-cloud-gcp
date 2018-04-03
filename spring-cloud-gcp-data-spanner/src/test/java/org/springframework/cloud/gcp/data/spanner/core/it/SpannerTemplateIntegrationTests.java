@@ -22,6 +22,8 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerReadOptions;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -31,6 +33,7 @@ import static org.junit.Assert.assertThat;
 
 /**
  * @author Balint Pato
+ * @author Chengyuan Zhao
  */
 
 @RunWith(SpringRunner.class)
@@ -55,4 +58,29 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 		assertThat(this.spannerOperations.count(Trade.class), is(0L));
 	}
 
+	@Test
+	public void readWriteTransactionTest() {
+		Trade trade = Trade.aTrade();
+		this.spannerOperations.performReadWriteTransaction(transactionOperations -> {
+			transactionOperations.insert(trade);
+
+			// because the insert happens within the same transaction, this count is still
+			// 0
+			assertThat(transactionOperations.count(Trade.class), is(0L));
+			return null;
+		});
+
+		// now that the transaction has completed, the count should be 1
+		assertThat(this.spannerOperations.count(Trade.class), is(1L));
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void readOnlyTransactionTest() {
+		Trade trade = Trade.aTrade();
+		this.spannerOperations.performReadOnlyTransaction(transactionOperations -> {
+			// cannot do mutate in a read-only transaction
+			transactionOperations.insert(trade);
+			return null;
+		}, new SpannerReadOptions());
+	}
 }
