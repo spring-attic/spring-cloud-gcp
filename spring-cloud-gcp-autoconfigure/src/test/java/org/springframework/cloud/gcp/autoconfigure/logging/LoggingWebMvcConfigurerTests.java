@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.logging;
+package org.springframework.cloud.gcp.autoconfigure.logging;
 
 import java.util.List;
 

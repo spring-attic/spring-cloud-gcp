@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.logging;
+package org.springframework.cloud.gcp.autoconfigure.logging;
 
 import org.junit.Test;
 
@@ -28,32 +28,13 @@ import static org.junit.Assert.assertThat;
  * @author Chengyuan Zhao
  */
 
-public class CompositeTraceIdExtractorTests {
+public class ZipkinTraceIdExtractorTests {
 
 	private static final String TEST_TRACE_ID = "105445aa7843bc8bf206b120001000";
 
-	private static final String TEST_TRACE_ID_2 = "205445aa7843bc8bf206b120001000";
-
-	private static final String TEST_TRACE_ID_WITH_SPAN = "105445aa7843bc8bf206b120001000/0;o=1";
-
-	private static final String TRACE_ID_HEADER = "X-CLOUD-TRACE-CONTEXT";
-
 	private static final String B3_TRACE_ID_HEADER = "X-B3-TraceId";
 
-	private CompositeTraceIdExtractor extractor = new CompositeTraceIdExtractor(
-			new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor());
-
-	@Test
-	public void testExtractTraceIdFromRequestPriority() {
-
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.addHeader(TRACE_ID_HEADER, TEST_TRACE_ID_WITH_SPAN);
-		request.addHeader(B3_TRACE_ID_HEADER, TEST_TRACE_ID_2);
-
-		String traceId = this.extractor.extractTraceIdFromRequest(request);
-
-		assertThat(traceId, is(TEST_TRACE_ID));
-	}
+	private ZipkinTraceIdExtractor extractor = new ZipkinTraceIdExtractor();
 
 	@Test
 	public void testExtractTraceIdFromRequest_missing() {
@@ -62,5 +43,15 @@ public class CompositeTraceIdExtractorTests {
 		String traceId = this.extractor.extractTraceIdFromRequest(request);
 
 		assertThat(traceId, nullValue());
+	}
+
+	@Test
+	public void testExtractTraceIdFromRequest() {
+		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader(B3_TRACE_ID_HEADER, TEST_TRACE_ID);
+
+		String traceId = this.extractor.extractTraceIdFromRequest(request);
+
+		assertThat(traceId, is(TEST_TRACE_ID));
 	}
 }

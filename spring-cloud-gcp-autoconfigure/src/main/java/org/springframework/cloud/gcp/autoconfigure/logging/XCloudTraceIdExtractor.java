@@ -14,21 +14,29 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.logging;
+package org.springframework.cloud.gcp.autoconfigure.logging;
 
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Extracts trace IDs from HTTP requests using the X-B3-TraceId header.
+ * Extracts trace IDs from HTTP requests using the x-cloud-trace-context header.
  *
  * @author Chengyuan Zhao
  */
-public class ZipkinTraceIdExtractor implements TraceIdExtractor {
+public class XCloudTraceIdExtractor implements TraceIdExtractor {
 
-	public static final String X_B3_TRACE_HEADER = "X-B3-TraceId";
+	public static final String X_CLOUD_TRACE_HEADER = "x-cloud-trace-context";
 
 	@Override
 	public String extractTraceIdFromRequest(HttpServletRequest req) {
-		return req.getHeader(X_B3_TRACE_HEADER);
+		String traceId = req.getHeader(X_CLOUD_TRACE_HEADER);
+
+		if (traceId != null) {
+			int slash = traceId.indexOf('/');
+			if (slash >= 0) {
+				traceId = traceId.substring(0, slash);
+			}
+		}
+		return traceId;
 	}
 }

@@ -14,22 +14,21 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.logging;
+package org.springframework.cloud.gcp.autoconfigure.logging;
 
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * An extractor that can provide a trace ID from an HTTP request.
+ * Extracts trace IDs from HTTP requests using the X-B3-TraceId header.
  *
  * @author Chengyuan Zhao
  */
-public interface TraceIdExtractor {
+public class ZipkinTraceIdExtractor implements TraceIdExtractor {
 
-	/**
-	 * Extract trace ID from the HTTP request.
-	 *
-	 * @param req The HTTP servlet request.
-	 * @return The trace ID or null, if none found.
-	 */
-	String extractTraceIdFromRequest(HttpServletRequest req);
+	public static final String X_B3_TRACE_HEADER = "X-B3-TraceId";
+
+	@Override
+	public String extractTraceIdFromRequest(HttpServletRequest req) {
+		return req.getHeader(X_B3_TRACE_HEADER);
+	}
 }

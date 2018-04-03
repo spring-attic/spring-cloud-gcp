@@ -36,11 +36,15 @@
             <artifactId>spring-cloud-gcp-logging</artifactId>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <scope>test</scope>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback.contrib</groupId>
+            <artifactId>logback-json-classic</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <!-- Pub/Sub -->

@@ -21,5 +21,9 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-gcp-logging</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback.contrib</groupId>
+			<artifactId>logback-json-classic</artifactId>
+		</dependency>
 	</dependencies>
 </project>

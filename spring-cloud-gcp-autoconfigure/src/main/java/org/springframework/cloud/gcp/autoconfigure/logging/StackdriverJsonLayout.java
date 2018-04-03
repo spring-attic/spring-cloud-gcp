@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.logging;
+package org.springframework.cloud.gcp.autoconfigure.logging;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -186,8 +186,8 @@ public class StackdriverJsonLayout extends JsonLayout {
 		}
 
 		add(SEVERITY_ATTRIBUTE, this.includeLevel, String.valueOf(event.getLevel()), map);
-		add(THREAD_ATTR_NAME, this.includeThreadName, event.getThreadName(), map);
-		add(LOGGER_ATTR_NAME, this.includeLoggerName, event.getLoggerName(), map);
+		add(JsonLayout.THREAD_ATTR_NAME, this.includeThreadName, event.getThreadName(), map);
+		add(JsonLayout.LOGGER_ATTR_NAME, this.includeLoggerName, event.getLoggerName(), map);
 
 		if (this.includeFormattedMessage) {
 			String message = event.getFormattedMessage();
@@ -200,11 +200,11 @@ public class StackdriverJsonLayout extends JsonLayout {
 					}
 				}
 			}
-			map.put(FORMATTED_MESSAGE_ATTR_NAME, message);
+			map.put(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, message);
 		}
-		add(MESSAGE_ATTR_NAME, this.includeMessage, event.getMessage(), map);
-		add(CONTEXT_ATTR_NAME, this.includeContextName, event.getLoggerContextVO().getName(), map);
-		addThrowableInfo(EXCEPTION_ATTR_NAME, this.includeException, event, map);
+		add(JsonLayout.MESSAGE_ATTR_NAME, this.includeMessage, event.getMessage(), map);
+		add(JsonLayout.CONTEXT_ATTR_NAME, this.includeContextName, event.getLoggerContextVO().getName(), map);
+		addThrowableInfo(JsonLayout.EXCEPTION_ATTR_NAME, this.includeException, event, map);
 		addTraceId(event, map);
 		add(SPAN_ID_ATTRIBUTE, this.includeSpanId, event.getMDCPropertyMap().get(MDC_FIELD_SPAN_ID), map);
 		addCustomDataToJsonMap(map, event);

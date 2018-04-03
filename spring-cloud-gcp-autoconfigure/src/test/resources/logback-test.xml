@@ -17,4 +17,12 @@
 		<appender-ref ref="STDOUT" />
 	</root>
 
+	<include resource="org/springframework/cloud/gcp/logging/logback-json-appender.xml"/>
+
+	<root level="WARN">
+		<appender-ref ref="CONSOLE_JSON"/>
+	</root>
+
+	<property name="projectId" value="test-project"/>
+
 </configuration>

@@ -14,8 +14,9 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.logging;
+package org.springframework.cloud.gcp.autoconfigure.logging;
 
+import com.google.cloud.logging.TraceLoggingEnhancer;
 import org.junit.Test;
 
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -25,33 +26,38 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  */
 
-public class ZipkinTraceIdExtractorTests {
+public class TraceIdLoggingWebMvcInterceptorTests {
 
 	private static final String TEST_TRACE_ID = "105445aa7843bc8bf206b120001000";
 
-	private static final String B3_TRACE_ID_HEADER = "X-B3-TraceId";
+	private static final String TEST_TRACE_ID_WITH_SPAN = "105445aa7843bc8bf206b120001000/0;o=1";
 
-	private ZipkinTraceIdExtractor extractor = new ZipkinTraceIdExtractor();
+	private static final String TRACE_ID_HEADER = "X-CLOUD-TRACE-CONTEXT";
+
+	private TraceIdLoggingWebMvcInterceptor interceptor =
+			new TraceIdLoggingWebMvcInterceptor(new XCloudTraceIdExtractor());
 
 	@Test
-	public void testExtractTraceIdFromRequest_missing() {
+	public void testPreHandle() throws Exception {
 		MockHttpServletRequest request = new MockHttpServletRequest();
+		request.addHeader(TRACE_ID_HEADER, TEST_TRACE_ID_WITH_SPAN);
 
-		String traceId = this.extractor.extractTraceIdFromRequest(request);
+		TraceLoggingEnhancer.setCurrentTraceId(null);
 
-		assertThat(traceId, nullValue());
+		this.interceptor.preHandle(request, null, null);
+
+		assertThat(TraceLoggingEnhancer.getCurrentTraceId(), is(TEST_TRACE_ID));
 	}
 
 	@Test
-	public void testExtractTraceIdFromRequest() {
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.addHeader(B3_TRACE_ID_HEADER, TEST_TRACE_ID);
+	public void testAfterCompletion() throws Exception {
+		TraceLoggingEnhancer.setCurrentTraceId(TEST_TRACE_ID);
 
-		String traceId = this.extractor.extractTraceIdFromRequest(request);
+		this.interceptor.afterCompletion(null, null, null, null);
 
-		assertThat(traceId, is(TEST_TRACE_ID));
+		assertThat(TraceLoggingEnhancer.getCurrentTraceId(), nullValue());
 	}
 }
