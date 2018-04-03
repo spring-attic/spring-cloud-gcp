@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +30,9 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.convert.CustomConversions.StoreConversions;
 import org.springframework.util.Assert;
 
 /**
@@ -44,8 +48,34 @@ public class MappingSpannerConverter implements SpannerConverter {
 	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext) {
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
-		this.readConverter = new MappingSpannerReadConverter(spannerMappingContext);
-		this.writeConverter = new MappingSpannerWriteConverter(spannerMappingContext);
+		this.readConverter = new MappingSpannerReadConverter(spannerMappingContext,
+				getCustomConversions(ConversionUtils.DEFAULT_SPANNER_READ_CONVERTERS));
+		this.writeConverter = new MappingSpannerWriteConverter(spannerMappingContext,
+				getCustomConversions(ConversionUtils.DEFAULT_SPANNER_WRITE_CONVERTERS));
+	}
+
+	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext,
+			Collection<Converter> writeConverters, Collection<Converter> readConverters) {
+		Assert.notNull(spannerMappingContext,
+				"A valid mapping context for Spanner is required.");
+		this.readConverter = new MappingSpannerReadConverter(spannerMappingContext,
+				getCustomConversions(readConverters));
+		this.writeConverter = new MappingSpannerWriteConverter(spannerMappingContext,
+				getCustomConversions(writeConverters));
+	}
+
+	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext,
+			CustomConversions writeConversions, CustomConversions readConversions) {
+		Assert.notNull(spannerMappingContext,
+				"A valid mapping context for Spanner is required.");
+		this.readConverter = new MappingSpannerReadConverter(spannerMappingContext,
+				readConversions);
+		this.writeConverter = new MappingSpannerWriteConverter(spannerMappingContext,
+				writeConversions);
+	}
+
+	private CustomConversions getCustomConversions(Collection<Converter> converters) {
+		return new CustomConversions(StoreConversions.NONE, converters);
 	}
 
 	@Override

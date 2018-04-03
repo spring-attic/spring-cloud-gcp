@@ -22,22 +22,30 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.springframework.core.annotation.AliasFor;
+
 /**
- * Annotation for a {@link SpannerPersistentProperty} that allows specifying the column name
- * instead of deriving it from the field's name.
+ * Annotation for a {@link SpannerPersistentEntity} that allows specifying the primary key
+ * columns and their order.
  *
- * @author Ray Tsang
  * @author Chengyuan Zhao
  */
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface SpannerColumn {
+public @interface PrimaryKeyColumn {
 
 	/**
-	 * The custom name of the column in the Spanner table, which can differ from the name of the
-	 * field which it annotates.
-	 * @return the name of the column in the Spanner table
+	 * The order of columns that comprise the primary key. Starts at 1 is consecutive.
+	 * @return
 	 */
-	String name();
+	@AliasFor(attribute = "value")
+	int keyOrder() default 1;
+
+	/**
+	 * The order of columns that comprise the primary key. Starts at 1 is consecutive.
+	 * @return
+	 */
+	@AliasFor(attribute = "keyOrder")
+	int value() default 1;
 }

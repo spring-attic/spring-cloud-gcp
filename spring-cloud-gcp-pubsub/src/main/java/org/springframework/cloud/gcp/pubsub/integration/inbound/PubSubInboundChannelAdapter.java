@@ -85,7 +85,8 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 							? MessageBuilder.withPayload(pubsubMessage.getData().toByteArray())
 							.copyHeaders(messageHeaders)
 							.build()
-							: this.messageConverter.toMessage(pubsubMessage.getData().toStringUtf8(),
+							: this.messageConverter.toMessage(
+									pubsubMessage.getData().toStringUtf8(),
 							new MessageHeaders(messageHeaders));
 
 			sendMessage(internalMessage);

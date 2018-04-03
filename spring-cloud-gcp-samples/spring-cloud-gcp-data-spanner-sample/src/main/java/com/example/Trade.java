@@ -1,5 +1,5 @@
 /*
- *  Copyright 2018 original author or authors.
+ *  Copyright 2017 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,34 +16,34 @@
 
 package com.example;
 
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
-import org.springframework.data.annotation.Id;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-@SpannerTable(name = "trades")
+@Table(name = "trades")
 public class Trade {
-	@Id
-	String id;
 
+	@PrimaryKeyColumn(keyOrder = 2)
 	String action;
 
 	Double price;
 
 	Double shares;
 
+	@PrimaryKeyColumn(keyOrder = 1)
 	String symbol;
 
-	@SpannerColumn(name = "trader_id")
+	@Column(name = "trader_id")
 	String traderId;
 
 	@Override
 	public String toString() {
-		return "id: " + this.id + " action: " + this.action + " price: "
-				+ String.valueOf(this.price) + " shares: " + String.valueOf(this.shares)
-				+ " symbol: " + this.symbol + " trader: " + this.traderId;
+		return "action: " + this.action + " price: " + String.valueOf(this.price)
+				+ " shares: " + String.valueOf(this.shares) + " symbol: " + this.symbol
+				+ " trader: " + this.traderId;
 	}
 }

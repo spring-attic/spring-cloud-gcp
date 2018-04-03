@@ -28,10 +28,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
-import org.springframework.data.annotation.Id;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
@@ -138,15 +138,15 @@ public class SpannerMutationFactoryImplTests {
 		assertThat(keys, containsInAnyOrder("key1"));
 	}
 
-	@SpannerTable(name = "custom_test_table")
+	@Table(name = "custom_test_table")
 	private static class TestEntity {
-		@Id
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
-		@SpannerColumn(name = "custom_col")
+		@Column(name = "custom_col")
 		String something;
 
-		@SpannerColumn(name = "")
+		@Column(name = "")
 		String other;
 	}
 }

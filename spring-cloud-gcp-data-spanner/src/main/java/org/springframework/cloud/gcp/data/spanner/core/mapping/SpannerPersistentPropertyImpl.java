@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.util.OptionalInt;
+import java.util.stream.Collectors;
+
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
@@ -24,6 +27,8 @@ import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.util.StreamUtils;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
 
 /**
@@ -54,6 +59,17 @@ public class SpannerPersistentPropertyImpl
 		this.fieldNamingStrategy = fieldNamingStrategy == null
 				? PropertyNameFieldNamingStrategy.INSTANCE
 				: fieldNamingStrategy;
+	}
+
+	/**
+	 * Only provides types that are also annotated with {@link Table}.
+	 */
+	@Override
+	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
+		return StreamUtils
+				.createStreamFromIterator(super.getPersistentEntityTypes().iterator())
+				.filter(typeInfo -> typeInfo.getType().isAnnotationPresent(Table.class))
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -90,16 +106,31 @@ public class SpannerPersistentPropertyImpl
 
 	@Override
 	public Class getColumnInnerType() {
-		SpannerColumnInnerType annotation = findAnnotation(SpannerColumnInnerType.class);
+		ColumnInnerType annotation = findAnnotation(ColumnInnerType.class);
 		if (annotation == null) {
 			return null;
 		}
 		return annotation.innerType();
 	}
 
+	@Override
+	public OptionalInt getPrimaryKeyOrder() {
+		PrimaryKeyColumn annotation = findAnnotation(
+				PrimaryKeyColumn.class);
+		if (annotation == null) {
+			return OptionalInt.empty();
+		}
+		return OptionalInt.of(annotation.keyOrder());
+	}
+
+	@Override
+	public boolean isIdProperty() {
+		return false;
+	}
+
 	private String getAnnotatedColumnName() {
 
-		SpannerColumn annotation = findAnnotation(SpannerColumn.class);
+		Column annotation = findAnnotation(Column.class);
 
 		if (annotation != null && StringUtils.hasText(annotation.name())) {
 			return annotation.name();

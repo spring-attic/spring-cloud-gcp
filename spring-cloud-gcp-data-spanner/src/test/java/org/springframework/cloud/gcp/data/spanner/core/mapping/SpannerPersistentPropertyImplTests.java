@@ -21,7 +21,6 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
@@ -30,6 +29,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.ArgumentMatchers.any;
@@ -106,18 +106,29 @@ public class SpannerPersistentPropertyImplTests {
 				.getColumnInnerType());
 	}
 
-	@SpannerTable(name = "custom_test_table")
+	@Test
+	public void testNoPojoIdProperties() {
+		SpannerPersistentEntityImpl<TestEntity> entity =
+				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
+				.getPersistentEntity(TestEntity.class));
+
+		entity.doWithProperties((PropertyHandler<SpannerPersistentProperty>) prop -> {
+			assertFalse(prop.isIdProperty());
+		});
+	}
+
+	@Table(name = "custom_test_table")
 	private static class TestEntity {
-		@Id
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
-		@SpannerColumn(name = "custom_col")
+		@Column(name = "custom_col")
 		String something;
 
-		@SpannerColumn(name = "")
+		@Column(name = "")
 		String other;
 
-		@SpannerColumnInnerType(innerType = Double.class)
+		@ColumnInnerType(innerType = Double.class)
 		List<Double> doubleList;
 	}
 }

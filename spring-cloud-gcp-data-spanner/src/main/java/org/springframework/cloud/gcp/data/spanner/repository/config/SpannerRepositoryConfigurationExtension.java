@@ -16,9 +16,15 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.config;
 
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Collections;
+
 import org.w3c.dom.Element;
 
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
+import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.cloud.gcp.data.spanner.repository.support.SpannerRepositoryFactoryBean;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.data.config.ParsingUtils;
@@ -53,6 +59,16 @@ public class SpannerRepositoryConfigurationExtension
 		builder.addPropertyReference("spannerMappingContext",
 				attributes.getString("spannerMappingContextRef"));
 
+	}
+
+	@Override
+	protected Collection<Class<? extends Annotation>> getIdentifyingAnnotations() {
+		return Collections.singleton(Table.class);
+	}
+
+	@Override
+	protected Collection<Class<?>> getIdentifyingTypes() {
+		return Collections.singleton(SpannerRepository.class);
 	}
 
 	@Override

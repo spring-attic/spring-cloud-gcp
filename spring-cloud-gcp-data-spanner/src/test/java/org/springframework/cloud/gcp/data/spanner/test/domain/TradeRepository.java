@@ -18,11 +18,9 @@ package org.springframework.cloud.gcp.data.spanner.test.domain;
 
 import java.util.List;
 
-import org.springframework.data.repository.PagingAndSortingRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 
-@Repository
-public interface TradeRepository extends PagingAndSortingRepository<Trade, String> {
+public interface TradeRepository extends SpannerRepository<Trade> {
 
 	List<Trade> findByTraderId(String traderId);
 

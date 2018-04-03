@@ -18,17 +18,15 @@ package com.example;
 
 import java.util.List;
 
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-@Repository
-public interface TradeRepository extends CrudRepository<Trade, String> {
+public interface TradeRepository extends SpannerRepository<Trade> {
 
-	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderByIdDesc(
+	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
 			String action, String symbol, String traderId);
 
 	List<Trade> findByAction(String action);

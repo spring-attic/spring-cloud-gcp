@@ -18,15 +18,16 @@ package org.springframework.cloud.gcp.data.spanner.repository.support;
 
 import java.util.Optional;
 
+import com.google.cloud.spanner.Key;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerTable;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerQueryLookupStrategy;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
@@ -63,7 +64,13 @@ public class SpannerRepositoryFactoryTests {
 		EntityInformation entityInformation = this.spannerRepositoryFactory
 				.getEntityInformation(TestEntity.class);
 		assertEquals(TestEntity.class, entityInformation.getJavaType());
-		assertEquals(String.class, entityInformation.getIdType());
+		assertEquals(Key.class, entityInformation.getIdType());
+
+		TestEntity t = new TestEntity();
+		t.id = "a";
+		t.id2 = 3L;
+		assertEquals(Key.newBuilder().append(t.id).append(t.id2).build(),
+				entityInformation.getId(t));
 	}
 
 	@Test(expected = MappingException.class)
@@ -77,16 +84,16 @@ public class SpannerRepositoryFactoryTests {
 	public void getTargetRepositoryTest() {
 		RepositoryInformation repoInfo = mock(RepositoryInformation.class);
 		when(repoInfo.getRepositoryBaseClass())
-				.thenReturn((Class) SpannerRepositoryImpl.class);
+				.thenReturn((Class) SimpleSpannerRepository.class);
 		when(repoInfo.getDomainType()).thenReturn((Class) TestEntity.class);
 		Object repo = this.spannerRepositoryFactory.getTargetRepository(repoInfo);
-		assertEquals(SpannerRepositoryImpl.class, repo.getClass());
+		assertEquals(SimpleSpannerRepository.class, repo.getClass());
 	}
 
 	@Test
 	public void getRepositoryBaseClassTest() {
 		Class baseClass = this.spannerRepositoryFactory.getRepositoryBaseClass(null);
-		assertEquals(SpannerRepositoryImpl.class, baseClass);
+		assertEquals(SimpleSpannerRepository.class, baseClass);
 	}
 
 	@Test
@@ -96,12 +103,15 @@ public class SpannerRepositoryFactoryTests {
 		assertTrue(qls.get() instanceof SpannerQueryLookupStrategy);
 	}
 
-	@SpannerTable(name = "custom_test_table")
+	@Table(name = "custom_test_table")
 	private static class TestEntity {
-		@Id
+		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
 
-		@SpannerColumn(name = "custom_col")
+		@PrimaryKeyColumn(keyOrder = 2)
+		long id2;
+
+		@Column(name = "custom_col")
 		String something;
 	}
 }

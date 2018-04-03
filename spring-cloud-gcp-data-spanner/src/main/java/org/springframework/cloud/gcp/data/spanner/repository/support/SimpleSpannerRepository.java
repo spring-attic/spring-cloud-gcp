@@ -31,13 +31,13 @@ import org.springframework.util.Assert;
 /**
  * @author Chengyuan Zhao
  */
-public class SpannerRepositoryImpl implements SpannerRepository {
+public class SimpleSpannerRepository<T> implements SpannerRepository<T> {
 
 	private final SpannerOperations spannerOperations;
 
 	private final Class entityType;
 
-	public SpannerRepositoryImpl(SpannerOperations spannerOperations, Class entityType) {
+	public SimpleSpannerRepository(SpannerOperations spannerOperations, Class entityType) {
 		Assert.notNull(spannerOperations,
 				"A valid SpannerOperations object is required.");
 		Assert.notNull(entityType, "A valid entity type is required.");
@@ -67,15 +67,15 @@ public class SpannerRepositoryImpl implements SpannerRepository {
 	}
 
 	@Override
-	public Optional findById(Object o) {
-		Assert.notNull(o, "A non-null ID is required.");
-		return Optional.ofNullable(this.spannerOperations.find(this.entityType, Key.of(o)));
+	public Optional findById(Key key) {
+		Assert.notNull(key, "A non-null ID is required.");
+		return Optional.ofNullable(this.spannerOperations.find(this.entityType, key));
 	}
 
 	@Override
-	public boolean existsById(Object o) {
-		Assert.notNull(o, "A non-null ID is required.");
-		return findById(o).isPresent();
+	public boolean existsById(Key key) {
+		Assert.notNull(key, "A non-null ID is required.");
+		return findById(key).isPresent();
 	}
 
 	@Override
@@ -84,10 +84,10 @@ public class SpannerRepositoryImpl implements SpannerRepository {
 	}
 
 	@Override
-	public Iterable findAllById(Iterable iterable) {
+	public Iterable findAllById(Iterable<Key> iterable) {
 		KeySet.Builder builder = KeySet.newBuilder();
-		for (Object id : iterable) {
-			builder.addKey(Key.of(id));
+		for (Key id : iterable) {
+			builder.addKey(id);
 		}
 		return this.spannerOperations.find(this.entityType, builder.build());
 	}
@@ -98,9 +98,9 @@ public class SpannerRepositoryImpl implements SpannerRepository {
 	}
 
 	@Override
-	public void deleteById(Object o) {
-		Assert.notNull(o, "A non-null ID is required.");
-		this.spannerOperations.delete(this.entityType, Key.of(o));
+	public void deleteById(Key key) {
+		Assert.notNull(key, "A non-null ID is required.");
+		this.spannerOperations.delete(this.entityType, key);
 	}
 
 	@Override

@@ -32,6 +32,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityWriter;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
@@ -40,7 +41,8 @@ import org.springframework.data.mapping.PropertyHandler;
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-public class MappingSpannerWriteConverter implements EntityWriter<Object, WriteBuilder> {
+public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
+		implements EntityWriter<Object, WriteBuilder> {
 
 	private static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>> iterablePropertyType2ToMethodMap;
 
@@ -93,7 +95,9 @@ public class MappingSpannerWriteConverter implements EntityWriter<Object, WriteB
 	private final SpannerMappingContext spannerMappingContext;
 
 	MappingSpannerWriteConverter(
-			SpannerMappingContext spannerMappingContext) {
+			SpannerMappingContext spannerMappingContext,
+			CustomConversions customConversions) {
+		super(customConversions, null);
 		this.spannerMappingContext = spannerMappingContext;
 	}
 
@@ -159,16 +163,26 @@ public class MappingSpannerWriteConverter implements EntityWriter<Object, WriteB
 		boolean valueSet;
 
 		/*
-		 * Due to type erasure, binder methods for Iterable properties must be manually specified.
-		 * ByteArray must be excluded since it implements Iterable, but is also explicitly
-		 * supported by spanner.
+		 * Due to type erasure, binder methods for Iterable properties must be manually
+		 * specified. ByteArray must be excluded since it implements Iterable, but is also
+		 * explicitly supported by spanner.
 		 */
 		if (ConversionUtils.isIterableNonByteArrayType(propertyType)) {
 			valueSet = attemptSetIterableValue((Iterable) propertyValue, valueBinder,
 					property);
 		}
 		else {
-			valueSet = attemptSetSingleItemValue(propertyValue, valueBinder, property);
+			valueSet = attemptSetSingleItemValue(propertyValue, valueBinder,
+					propertyType);
+			if (!valueSet) {
+				for (Class targetType : this.singleItemType2ToMethodMap.keySet()) {
+					valueSet = attemptSetSingleItemValue(propertyValue, valueBinder,
+							targetType);
+					if (valueSet) {
+						break;
+					}
+				}
+			}
 		}
 
 		if (!valueSet) {
@@ -182,23 +196,46 @@ public class MappingSpannerWriteConverter implements EntityWriter<Object, WriteB
 			SpannerPersistentProperty spannerPersistentProperty) {
 
 		Class innerType = ConversionUtils.boxIfNeeded(spannerPersistentProperty.getColumnInnerType());
-		if (innerType == null || !iterablePropertyType2ToMethodMap.containsKey(innerType)) {
+		if (innerType == null) {
 			return false;
 		}
-		BiConsumer toMethod = iterablePropertyType2ToMethodMap.get(innerType);
-		toMethod.accept(valueBinder, value);
-		return true;
+
+		// due to checkstyle limit of 3 return statments per function, this variable is
+		// used.
+		boolean valueSet = false;
+
+		if (this.iterablePropertyType2ToMethodMap.containsKey(innerType)) {
+			this.iterablePropertyType2ToMethodMap.get(innerType).accept(valueBinder,
+					value);
+			valueSet = true;
+		}
+
+		if (!valueSet) {
+			for (Class targetType : this.iterablePropertyType2ToMethodMap.keySet()) {
+				if (canConvert(innerType, targetType)) {
+					BiConsumer toMethod = iterablePropertyType2ToMethodMap
+							.get(targetType);
+					toMethod.accept(valueBinder,
+							ConversionUtils.convertIterable(value, targetType, this));
+					valueSet = true;
+					break;
+				}
+			}
+		}
+		return valueSet;
 	}
 
 	private boolean attemptSetSingleItemValue(Object value,
-			ValueBinder<WriteBuilder> valueBinder,
-			SpannerPersistentProperty spannerPersistentProperty) {
-		Class innerType = ConversionUtils.boxIfNeeded(spannerPersistentProperty.getType());
+			ValueBinder<WriteBuilder> valueBinder, Class targetType) {
+		if (!canConvert(value.getClass(), targetType)) {
+			return false;
+		}
+		Class innerType = ConversionUtils.boxIfNeeded(targetType);
 		BiFunction toMethod = singleItemType2ToMethodMap.get(innerType);
 		if (toMethod == null) {
 			return false;
 		}
-		toMethod.apply(valueBinder, value);
+		toMethod.apply(valueBinder, convert(value, targetType));
 		return true;
 	}
 }
