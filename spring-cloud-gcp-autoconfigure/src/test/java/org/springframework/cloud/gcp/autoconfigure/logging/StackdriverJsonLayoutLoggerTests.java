@@ -36,7 +36,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class StackdriverJsonLayoutLoggerTests {
 
-	private static final Log LOGGER = LogFactory.getLog(StackdriverJsonLayoutLoggerTests.class);
+	private static final Log LOGGER = LogFactory.getLog("StackdriverJsonLayoutLoggerTests");
 
 	@Test
 	public void testEmulatorConfig() {
@@ -57,7 +57,7 @@ public class StackdriverJsonLayoutLoggerTests {
 
 			checkData(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, "test", data);
 			checkData(StackdriverJsonLayout.SEVERITY_ATTRIBUTE, "WARN", data);
-			checkData(StackdriverJsonLayout.LOGGER_ATTR_NAME, StackdriverJsonLayoutLoggerTests.class.getName(), data);
+			checkData(StackdriverJsonLayout.LOGGER_ATTR_NAME, "StackdriverJsonLayoutLoggerTests", data);
 			checkData(StackdriverJsonLayout.TRACE_ID_ATTRIBUTE, "projects/test-project/traces/trace123", data);
 			checkData(StackdriverJsonLayout.SPAN_ID_ATTRIBUTE, "span123", data);
 			checkData("foo", "bar", data);
