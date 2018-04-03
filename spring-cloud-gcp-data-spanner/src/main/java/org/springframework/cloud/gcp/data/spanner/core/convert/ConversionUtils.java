@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -112,10 +111,6 @@ public class ConversionUtils {
 			SpannerConverter spannerConverter) {
 		Class columnType = spannerPersistentProperty.getType();
 
-		BiFunction<Class, Boolean, Class> getBasicSpannerJavaColType = (originalType,
-				isIterableInnerType) -> getFullyConvertableType(spannerConverter,
-						boxIfNeeded(originalType), isIterableInnerType);
-
 		if (isIterableNonByteArrayType(columnType)) {
 			Class innerType = spannerPersistentProperty.getColumnInnerType();
 			if (innerType == null) {
@@ -123,7 +118,7 @@ public class ConversionUtils {
 						"Cannot get column DDL for iterable type without annotated inner type.");
 			}
 			Type spannerSupportedInnerType = JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
-					.get(getBasicSpannerJavaColType.apply(innerType, true));
+					.get(getFullyConvertableType(spannerConverter, innerType, true));
 			if (spannerSupportedInnerType == null) {
 				throw new SpannerDataException(
 						"Could not find suitable Spanner column inner type for property type:"
@@ -132,7 +127,7 @@ public class ConversionUtils {
 			return getTypeDDLString(Type.array(spannerSupportedInnerType));
 		}
 		Type spannerColumnType = JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
-				.get(getBasicSpannerJavaColType.apply(columnType, false));
+				.get(getFullyConvertableType(spannerConverter, columnType, false));
 		if (spannerColumnType == null) {
 			throw new SpannerDataException(
 					"Could not find suitable Spanner column type for property type:"

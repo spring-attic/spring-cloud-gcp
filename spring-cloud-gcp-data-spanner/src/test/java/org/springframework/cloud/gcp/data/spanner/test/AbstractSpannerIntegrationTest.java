@@ -64,6 +64,7 @@ import static org.junit.Assume.assumeThat;
  * </p>
  *
  * @author Balint Pato
+ * @author Chengyuan Zhao
  */
 @SpringBootTest(classes = { IntegrationTestConfiguration.class })
 public abstract class AbstractSpannerIntegrationTest {
