@@ -120,7 +120,7 @@ public class Trade {
 }
 ----
 
-This table name will be resolved only if `tableNameSuffix` value/bean in the Spring `applicationContext` is defined, and then, for example if it has the value "123", it will be `trades_123`.
+The table name will be resolved only if the `tableNameSuffix` value/bean in the Spring `applicationContext` is defined, and then, for example if `tableNameSuffix` has the value "123", the table name will resolve to `trades_123`.
 
 === Template API
 
