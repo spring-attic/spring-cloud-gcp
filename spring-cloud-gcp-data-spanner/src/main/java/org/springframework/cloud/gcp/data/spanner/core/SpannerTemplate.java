@@ -129,25 +129,30 @@ public class SpannerTemplate implements SpannerOperations {
 				.getPersistentEntity(entityClass);
 		return resolveChildEntities(
 				this.spannerConverter.mapToList(executeRead(persistentEntity.tableName(),
-						keys, persistentEntity.columns(), options), entityClass));
+						keys, persistentEntity.columns(), options), entityClass),
+				options != null && options.hasTimestamp() ? options.getTimestamp()
+						: null);
 	}
 
 	@Override
 	public <T> List<T> find(Class<T> entityClass, Statement statement,
 			SpannerQueryOptions options) {
+		Timestamp timestamp = options != null && options.hasTimestamp()
+				? options.getTimestamp()
+				: null;
 		return resolveChildEntities(this.spannerConverter
-				.mapToList(executeQuery(statement, options), entityClass));
+				.mapToList(executeQuery(statement, options), entityClass), timestamp);
 	}
 
-	private List resolveChildEntities(List entities) {
+	private List resolveChildEntities(List entities, Timestamp timestamp) {
 		for (Object entity : entities) {
-			resolveChildEntity(entity);
+			resolveChildEntity(entity, timestamp);
 		}
 		return entities;
 	}
 
 	@VisibleForTesting
-	void resolveChildEntity(Object entity) {
+	void resolveChildEntity(Object entity, Timestamp timestamp) {
 		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
 				.getPersistentEntity(entity.getClass());
 
@@ -164,7 +169,10 @@ public class SpannerTemplate implements SpannerOperations {
 										SpannerStatementQueryExecutor
 												.getChildrenRowsQuery(
 														spannerPersistentEntity, entity,
-														childTable));
+														childTable),
+										timestamp == null ? null
+												: new SpannerQueryOptions()
+														.setTimestamp(timestamp));
 
 						/*
 						 * If the property is a single item then we retrieve it

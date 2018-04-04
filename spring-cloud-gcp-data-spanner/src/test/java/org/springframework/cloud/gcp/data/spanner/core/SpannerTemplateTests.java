@@ -475,9 +475,9 @@ public class SpannerTemplateTests {
 		c.id3 = "key3";
 
 		doReturn(Arrays.asList(new ChildEntity[] { c })).when(spyTemplate)
-				.find(eq(ChildEntity.class), (Statement) any());
+				.find(eq(ChildEntity.class), (Statement) any(), isNull());
 
-		spyTemplate.resolveChildEntity(p);
+		spyTemplate.resolveChildEntity(p, null);
 
 		assertSame(c, p.childEntity);
 		assertTrue(p.childEntities instanceof SpannerLazyList);
