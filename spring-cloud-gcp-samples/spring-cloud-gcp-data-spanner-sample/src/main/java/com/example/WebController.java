@@ -16,7 +16,6 @@
 
 package com.example;
 
-import com.google.cloud.spanner.KeySet;
 import java.util.List;
 
 import com.google.cloud.spanner.Key;
@@ -58,14 +57,6 @@ public class WebController {
 				t.price = 100.0;
 				t.shares = 12345.6;
 				this.spannerOperations.insert(t);
-
-				for(int i = 1; i <= 5; i++){
-					SubTrade st = new SubTrade();
-					st.symbol = t.symbol;
-					st.action = t.action;
-					st.index = i;
-					this.spannerOperations.insert(st);
-				}
 			}
 		}
 
@@ -90,8 +81,6 @@ public class WebController {
 
 		this.tradeRepository.deleteById(
 				Key.newBuilder().append(stocks[0]).append(actions[0]).build());
-
-		List<SubTrade> subTrades = this.spannerOperations.find(SubTrade.class, KeySet.singleKey(Key.newBuilder().append("stock1").append("BUY").build()));
 
 		return reply.toString();
 	}
