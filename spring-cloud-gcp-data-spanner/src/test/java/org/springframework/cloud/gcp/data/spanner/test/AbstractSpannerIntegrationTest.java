@@ -72,7 +72,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(classes = { IntegrationTestConfiguration.class })
 public abstract class AbstractSpannerIntegrationTest {
 
-	public static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
+	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
 
 	@Autowired
 	protected DatabaseAdminClient databaseAdminClient;
