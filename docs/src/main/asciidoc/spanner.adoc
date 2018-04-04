@@ -248,7 +248,7 @@ We have to define the two converters:
 
 [source, java]
 ----
-  public static class PersonWriteConverter implements Converter<Person, String> {
+  public class PersonWriteConverter implements Converter<Person, String> {
 
     @Override
     public String convert(Person person) {
@@ -256,7 +256,7 @@ We have to define the two converters:
     }
   }
 
-  public static class PersonReadConverter implements Converter<String, Person> {
+  public class PersonReadConverter implements Converter<String, Person> {
 
     @Override
     public Person convert(String s) {
