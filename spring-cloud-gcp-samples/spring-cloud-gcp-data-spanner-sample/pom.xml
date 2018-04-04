@@ -11,7 +11,7 @@
 
 	<groupId>com.example</groupId>
 	<artifactId>spring-cloud-gcp-data-spanner-sample</artifactId>
-	<name>Spring Cloud GCP Spring Boot Starter for Spanner Code Sample</name>
+	<name>Spring Cloud GCP Spanner Code Sample</name>
 
 	<dependencies>
 		<dependency>
