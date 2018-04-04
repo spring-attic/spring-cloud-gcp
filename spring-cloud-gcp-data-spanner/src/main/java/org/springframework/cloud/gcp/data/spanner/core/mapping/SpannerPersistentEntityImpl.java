@@ -144,7 +144,8 @@ public class SpannerPersistentEntityImpl<T>
 		}
 	}
 
-	SpannerPersistentProperty[] getPrimaryKeyProperties() {
+	@Override
+	public SpannerPersistentProperty[] getPrimaryKeyProperties() {
 		if (this.primaryKeyParts.isEmpty()) {
 			throw new SpannerDataException(
 					"At least one primary key property is required!");

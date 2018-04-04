@@ -27,8 +27,10 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerWriteConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.util.Pair;
 
@@ -72,6 +74,40 @@ public class SpannerStatementQueryExecutor {
 		else {
 			return results;
 		}
+	}
+
+	/**
+	 * Gets a query that returns the rows associated with a parent entity. This function
+	 * is intended to be used with parent-child interleaved tables, so that the retrieval
+	 * of all child rows having the parent's key values is efficient.
+	 * @param parentPersistentEntity the persistent entity of the parent table.
+	 * @param parentObject the parent object whose children to get.
+	 * @param childTable the name of the child table.
+	 * @return the Spanner statement to perform the retrieval.
+	 */
+	public static Statement getChildrenRowsQuery(
+			SpannerPersistentEntity parentPersistentEntity, Object parentObject,
+			String childTable) {
+		StringBuilder sb = new StringBuilder("SELECT * FROM " + childTable + " WHERE ");
+		StringJoiner sj = new StringJoiner(" and ");
+
+		List<String> tags = new ArrayList<>();
+		List keyParts = new ArrayList();
+
+		PersistentPropertyAccessor accessor = parentPersistentEntity
+				.getPropertyAccessor(parentObject);
+
+		int tagNum = 0;
+		for (SpannerPersistentProperty keyProp : parentPersistentEntity
+				.getPrimaryKeyProperties()) {
+			String tagName = "tag" + tagNum;
+			sj.add(keyProp.getColumnName() + " = @" + tagName);
+			tags.add(tagName);
+			keyParts.add(accessor.getProperty(keyProp));
+			tagNum++;
+		}
+		return buildStatementFromSqlWithArgs(sb.toString() + sj.toString(), tags,
+				keyParts.toArray());
 	}
 
 	/**

@@ -43,7 +43,9 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerLazyList;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.domain.Page;
@@ -52,8 +54,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -458,6 +462,32 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
+	public void resolveChildEntityTest() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+
+		ParentEntity p = new ParentEntity();
+		p.id = "key";
+		p.id2 = "key2";
+
+		ChildEntity c = new ChildEntity();
+		c.id = "key";
+		c.id_2 = "key2";
+		c.id3 = "key3";
+
+		doReturn(Arrays.asList(new ChildEntity[] { c })).when(spyTemplate)
+				.find(eq(ChildEntity.class), (Statement) any());
+
+		spyTemplate.resolveChildEntity(p);
+
+		assertSame(c, p.childEntity);
+		assertTrue(p.childEntities instanceof SpannerLazyList);
+		assertFalse(((SpannerLazyList) p.childEntities).hasBeenEvaluated());
+		assertEquals(1, p.childEntities.size());
+		assertTrue(((SpannerLazyList) p.childEntities).hasBeenEvaluated());
+		assertSame(c, p.childEntities.get(0));
+	}
+
+	@Test
 	public void getIdTest() {
 		TestEntity t = new TestEntity();
 		t.id = "aaa";
@@ -479,5 +509,38 @@ public class SpannerTemplateTests {
 
 		@Column(name = "")
 		String other;
+	}
+
+	@Table(name = "parent_test_table")
+	private static class ParentEntity {
+		@PrimaryKeyColumn(keyOrder = 1)
+		String id;
+
+		@PrimaryKeyColumn(keyOrder = 2)
+		@Column(name = "id_2")
+		String id2;
+
+		@Column(name = "custom_col")
+		String something;
+
+		@Column(name = "")
+		String other;
+
+		ChildEntity childEntity;
+
+		@ColumnInnerType(innerType = ChildEntity.class)
+		List<ChildEntity> childEntities;
+	}
+
+	@Table(name = "child_test_table")
+	private static class ChildEntity {
+		@PrimaryKeyColumn(keyOrder = 1)
+		String id;
+
+		@PrimaryKeyColumn(keyOrder = 2)
+		String id_2;
+
+		@PrimaryKeyColumn(keyOrder = 3)
+		String id3;
 	}
 }

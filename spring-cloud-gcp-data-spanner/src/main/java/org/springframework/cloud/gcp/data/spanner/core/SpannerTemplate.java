@@ -38,15 +38,21 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.annotations.VisibleForTesting;
 
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerLazyList;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.Assert;
 
 /**
@@ -121,15 +127,73 @@ public class SpannerTemplate implements SpannerOperations {
 			SpannerReadOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		return this.spannerConverter.mapToList(executeRead(persistentEntity.tableName(),
-				keys, persistentEntity.columns(), options), entityClass);
+		return resolveChildEntities(
+				this.spannerConverter.mapToList(executeRead(persistentEntity.tableName(),
+						keys, persistentEntity.columns(), options), entityClass));
 	}
 
 	@Override
 	public <T> List<T> find(Class<T> entityClass, Statement statement,
 			SpannerQueryOptions options) {
-		return this.spannerConverter.mapToList(executeQuery(statement, options),
-				entityClass);
+		return resolveChildEntities(this.spannerConverter
+				.mapToList(executeQuery(statement, options), entityClass));
+	}
+
+	private List resolveChildEntities(List entities) {
+		for (Object entity : entities) {
+			resolveChildEntity(entity);
+		}
+		return entities;
+	}
+
+	@VisibleForTesting
+	void resolveChildEntity(Object entity) {
+		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
+				.getPersistentEntity(entity.getClass());
+
+		PersistentPropertyAccessor accessor = spannerPersistentEntity
+				.getPropertyAccessor(entity);
+
+		spannerPersistentEntity.doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					if (ConversionUtils
+							.isSpannerTableProperty(spannerPersistentProperty)) {
+
+						BiFunction<Class, String, List> getChildRows = (propType,
+								childTable) -> find(propType,
+										SpannerStatementQueryExecutor
+												.getChildrenRowsQuery(
+														spannerPersistentEntity, entity,
+														childTable));
+
+						/*
+						 * If the property is a single item then we retrieve it
+						 * immediately. However, to prevent an exploding number of
+						 * retrievals, List-type child properties are retrieved lazily.
+						 */
+						if (!ConversionUtils.isIterableNonByteArrayType(
+								spannerPersistentProperty.getType())) {
+							Class propType = spannerPersistentProperty.getType();
+							SpannerPersistentEntity childPersistentEntity = this.mappingContext
+									.getPersistentEntity(propType);
+							accessor.setProperty(spannerPersistentProperty,
+									getChildRows
+											.apply(propType,
+													childPersistentEntity.tableName())
+											.get(0));
+						}
+						else {
+							Class propType = spannerPersistentProperty
+									.getColumnInnerType();
+							SpannerPersistentEntity childPersistentEntity = this.mappingContext
+									.getPersistentEntity(propType);
+							accessor.setProperty(spannerPersistentProperty,
+									new SpannerLazyList<>(
+											() -> getChildRows.apply(propType,
+													childPersistentEntity.tableName())));
+						}
+					}
+				});
 	}
 
 	@Override

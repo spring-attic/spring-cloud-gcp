@@ -16,14 +16,19 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
+import com.google.cloud.spanner.Statement;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.query.QueryMethod;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
@@ -53,6 +58,22 @@ public class SpannerQueryLookupStrategyTests {
 		this.spannerMappingContext = new SpannerMappingContext();
 		this.queryMethod = mock(QueryMethod.class);
 		this.spannerQueryLookupStrategy = getSpannerQueryLookupStrategy();
+	}
+
+	@Test
+	public void getChildrenRowsQueryTest() {
+		TestEntity t = new TestEntity();
+		t.id = "key";
+		t.id2 = "key2";
+		Statement statement = SpannerStatementQueryExecutor.getChildrenRowsQuery(
+				this.spannerMappingContext.getPersistentEntity(TestEntity.class), t,
+				"child_test_table");
+
+		assertEquals("SELECT * FROM child_test_table WHERE id = @tag0 and id_2 = @tag1",
+				statement.getSql());
+		assertEquals(2, statement.getParameters().size());
+		assertEquals("key", statement.getParameters().get("tag0").getString());
+		assertEquals("key2", statement.getParameters().get("tag1").getString());
 	}
 
 	@Test
@@ -94,5 +115,35 @@ public class SpannerQueryLookupStrategyTests {
 		doReturn(this.queryMethod).when(spannerQueryLookupStrategy)
 				.createQueryMethod(any(), any(), any());
 		return spannerQueryLookupStrategy;
+	}
+
+	@Table(name = "custom_test_table")
+	private static class TestEntity {
+		@PrimaryKeyColumn(keyOrder = 1)
+		String id;
+
+		@PrimaryKeyColumn(keyOrder = 2)
+		@Column(name = "id_2")
+		String id2;
+
+		@Column(name = "custom_col")
+		String something;
+
+		@Column(name = "")
+		String other;
+
+		ChildEntity childEntity;
+	}
+
+	@Table(name = "child_test_table")
+	private static class ChildEntity {
+		@PrimaryKeyColumn(keyOrder = 1)
+		String id;
+
+		@PrimaryKeyColumn(keyOrder = 2)
+		String id_2;
+
+		@PrimaryKeyColumn(keyOrder = 3)
+		String id3;
 	}
 }
