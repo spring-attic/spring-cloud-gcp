@@ -2,8 +2,6 @@
 
 == Spring Data Spanner
 
-=== Spring Data and Google Cloud Spanner
-
 http://projects.spring.io/spring-data/[Spring Data]
 is an abstraction for storing and retrieving POJOs in numerous storage technologies.
 Spring Cloud GCP adds Spring Data support for http://cloud.google.com/spanner/[Google Cloud Spanner].
@@ -41,7 +39,7 @@ To setup Spring Data Spanner, you have to configure the following:
 
 ==== Spanner settings
 
-You will need to use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner] to autoconfigure Google Cloud Spanner in your Spring application.
+You can the use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner] to autoconfigure Google Cloud Spanner in your Spring application.
 It contains all the necessary setup that makes it easy to authenticate with your Google Cloud project.
 The following configuration options are available:
 
@@ -50,7 +48,7 @@ The following configuration options are available:
 | `spring.cloud.gcp.spanner.instance-id` | Spanner instance to use | No |
 | `spring.cloud.gcp.spanner.database` |
 Spanner database to use | No |
-| `spring.cloud.gcp.spanner.project-id` | GCP project ID where the Google Cloud Pub/Sub API
+| `spring.cloud.gcp.spanner.project-id` | GCP project ID where the Google Cloud Spanner API
 is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
 | Yes |
 | `spring.cloud.gcp.spanner.credentials.location` | OAuth2 credentials for authenticating with the
@@ -142,15 +140,15 @@ public class SpannerTemplateExample {
 	@Autowired
 	SpannerOperations spannerTemplate;
 
-  public void doSomething() {
-			this.spannerOperations.delete(Trade.class, KeySet.all());
-			//...
-			Trade t = new Trade();
-			//...
-			this.spannerOperations.insert(t);
-			//...
-			List<Trade> tradesByAction = spannerOperations.findAll(Trade.class);
-			//...
+	public void doSomething() {
+		this.spannerOperations.delete(Trade.class, KeySet.all());
+		//...
+		Trade t = new Trade();
+		//...
+		this.spannerOperations.insert(t);
+		//...
+		List<Trade> tradesByAction = spannerOperations.findAll(Trade.class);
+		//...
 	}
 }
 ----
@@ -163,8 +161,8 @@ The Template API provides convenience methods for:
    ** Read with limits and flow control
 - https://cloud.google.com/spanner/docs/reads#execute_a_query[Queries]
 - DML operations (delete, insert, update, upsert)
-- partial reads: you can define a set of columns to be read into your entity
-- partial writes: if you have only a few properties that you want to persist from your entity, you can select those
+- Partial reads: You can define a set of columns to be read into your entity.
+- Partial writes: if you have only a few properties that you want to persist from your entity, you can select those.
 - Read-only transactions
 - Locking read-write transactions
 
@@ -210,7 +208,7 @@ public interface TradeRepository extends SpannerRepository<Trade> {
 
 	int countByAction(String action);
 
-	//named method are powerful but can get unwieldy
+	// Named methods are powerful, but can get unwieldy
 	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
   			String action, String symbol, String traderId);
 
