@@ -97,7 +97,7 @@ public @interface EnableSpannerRepositories {
 
 	/**
 	 * Configures the location of where to find the Spring Data named queries properties
-	 * file. Will default to empty string.
+	 * file. Will default to {@link META-INF/spanner-named-queries.properties}
 	 *
 	 * @return
 	 */

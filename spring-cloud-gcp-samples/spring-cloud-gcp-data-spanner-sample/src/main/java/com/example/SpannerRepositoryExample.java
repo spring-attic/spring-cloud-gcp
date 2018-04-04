@@ -32,7 +32,6 @@ import org.springframework.context.annotation.Bean;
  * @author Balint Pato
  */
 @SpringBootApplication
-@EnableSpannerRepositories(namedQueriesLocation = "classpath:spanner-named-queries.properties")
 public class SpannerRepositoryExample {
 
 	@Autowired
