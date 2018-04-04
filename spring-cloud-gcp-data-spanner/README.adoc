@@ -23,7 +23,7 @@ dependencies {
 }
 ----
 
-With our link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner], you can leverage our recommended auto-configuration setup. (see https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#using-boot-starter[Spring Boot Starters] for more details on what a starter is).
+We provide a link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner], with which you can leverage our recommended auto-configuration setup.
 To use the starter, see the coordinates see below.
 
 [source,xml]
