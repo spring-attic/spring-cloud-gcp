@@ -16,10 +16,10 @@
 
 package com.example;
 
+import java.util.UUID;
+
 import com.google.cloud.spanner.Key;
 
-import java.util.Random;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.WebApplicationType;

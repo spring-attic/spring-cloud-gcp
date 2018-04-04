@@ -62,6 +62,7 @@ Spanner credentials | Yes | https://www.googleapis.com/auth/spanner.data
 ==== Repository settings
 
 Spring Data Repositories can be configured via the `@EnableSpannerRepositories` annotation on your main `@Configuration` class.
+With our Spring Boot Starter for Spring Data Spanner, `@EnableSpannerRepositories` is automatically added, it is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-spanner/src/main/java/org/springframework/cloud/gcp/data/spanner/repository/config/EnableSpannerRepositories.java[`@EnableSpannerRepositories`].
 
 ==== Autoconfiguration
 
