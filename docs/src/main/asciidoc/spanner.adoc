@@ -389,16 +389,9 @@ Using the `@Query` annotation, there are two possibilities:
   List<Trade> fetchByActionNamedQuery(String action);
 ----
 [start=2]
-. using named parameters with `:`
+. using SpEL expressions with named parameters:
 [source, java]
 ----
-  @Query("SELECT * FROM trades WHERE trades.action = :action")
-  List<Trade> fetchByActionNamedQuery(String action);
+  @Query("SELECT * FROM trades_#{tableNameSuffix} WHERE trades.action = '#{#trade.action}")
+  List<Trade> fetchByActionNamedQuery(@Param("trade") Trade myTrade);
 ----
-. using SpEL expressions `:`
-[source, java]
-----
-  @Query("SELECT * FROM trades WHERE trades.action = :action")
-  List<Trade> fetchByActionNamedQuery(String action);
-----
-
