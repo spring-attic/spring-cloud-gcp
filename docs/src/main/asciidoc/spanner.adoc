@@ -174,24 +174,33 @@ Spring Data Spanner supports the following types for regular fields:
 * `com.google.cloud.ByteArray`
 * `com.google.cloud.Date`
 * `com.google.cloud.Timestamp`
-* `java.lang.Boolean`
-* `java.lang.Long`
-* `java.lang.Integer`
+* `java.lang.Boolean`, `boolean`
+* `java.lang.Long`, `long`
+* `java.lang.Integer`, `int`
 * `java.lang.String`
 * `double[]`
 * `long[]`
 * `boolean[]`
+* `java.util.Date`
+* `java.util.Instant`
+* `java.sql.Date`
 
-Spring Data Spanner supports the following inner types for `List` fields:
+
+For `ARRAY` Spanner types, you'll need to use `List` in the fields. For the inner type of a `List` field, Spring Data Spanner supports the following inner types:
 
 * `com.google.cloud.ByteArray`
 * `com.google.cloud.Date`
 * `com.google.cloud.Timestamp`
-* `java.lang.Boolean`
-* `java.lang.Long`
-* `java.lang.Integer`
+* `java.lang.Boolean`, `boolean`
+* `java.lang.Long`, `long`
+* `java.lang.Integer`, `int`
 * `java.lang.String`
+* `java.util.Date`
+* `java.util.Instant`
+* `java.sql.Date`
 
+// === Custom conversions
+//TODO when we have a proper way to expose custom conversions
 
 === Repositories
 

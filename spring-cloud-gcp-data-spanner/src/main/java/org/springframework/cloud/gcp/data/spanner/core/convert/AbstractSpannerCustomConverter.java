@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.CustomConversions;
@@ -28,7 +29,7 @@ public abstract class AbstractSpannerCustomConverter {
 
 	private final CustomConversions customConversions;
 
-	private final GenericConversionService conversionService;
+	private final ConfigurableConversionService conversionService;
 
 	/**
 	 * Constructor
