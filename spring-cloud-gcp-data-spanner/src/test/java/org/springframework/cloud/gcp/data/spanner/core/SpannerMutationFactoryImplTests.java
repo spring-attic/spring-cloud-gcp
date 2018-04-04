@@ -103,7 +103,6 @@ public class SpannerMutationFactoryImplTests {
 
 		assertEquals("child_test_table", childMutation.getTable());
 		assertEquals(Op.UPDATE, childMutation.getOperation());
-		;
 	}
 
 	@Test
@@ -128,7 +127,6 @@ public class SpannerMutationFactoryImplTests {
 
 		assertEquals("child_test_table", childMutation.getTable());
 		assertEquals(Op.INSERT_OR_UPDATE, childMutation.getOperation());
-		;
 	}
 
 	@Test
