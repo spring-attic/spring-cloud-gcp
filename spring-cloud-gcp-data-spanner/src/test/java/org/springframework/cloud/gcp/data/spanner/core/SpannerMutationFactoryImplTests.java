@@ -59,25 +59,76 @@ public class SpannerMutationFactoryImplTests {
 
 	@Test
 	public void insertTest() {
-		Mutation mutation = this.spannerMutationFactory.insert(new TestEntity()).get(0);
-		assertEquals("custom_test_table", mutation.getTable());
-		assertEquals(Op.INSERT, mutation.getOperation());
+		TestEntity t = new TestEntity();
+		List<Mutation> mutations = this.spannerMutationFactory.insert(t);
+
+		Mutation parentMutation = mutations.get(0);
+		assertEquals(1, mutations.size());
+
+		t.childEntity = new ChildEntity();
+
+		assertEquals("custom_test_table", parentMutation.getTable());
+		assertEquals(Op.INSERT, parentMutation.getOperation());
+
+		mutations = this.spannerMutationFactory.insert(t);
+		parentMutation = mutations.get(0);
+		Mutation childMutation = mutations.get(1);
+
+		assertEquals("custom_test_table", parentMutation.getTable());
+		assertEquals(Op.INSERT, parentMutation.getOperation());
+
+		assertEquals("child_test_table", childMutation.getTable());
+		assertEquals(Op.INSERT, childMutation.getOperation());
 	}
 
 	@Test
 	public void updateTest() {
-		Mutation mutation = this.spannerMutationFactory.update(new TestEntity(), null)
-				.get(0);
-		assertEquals("custom_test_table", mutation.getTable());
-		assertEquals(Op.UPDATE, mutation.getOperation());
+		TestEntity t = new TestEntity();
+		List<Mutation> mutations = this.spannerMutationFactory.update(t, null);
+
+		Mutation parentMutation = mutations.get(0);
+		assertEquals(1, mutations.size());
+
+		t.childEntity = new ChildEntity();
+
+		assertEquals("custom_test_table", parentMutation.getTable());
+		assertEquals(Op.UPDATE, parentMutation.getOperation());
+
+		mutations = this.spannerMutationFactory.update(t, null);
+		parentMutation = mutations.get(0);
+		Mutation childMutation = mutations.get(1);
+
+		assertEquals("custom_test_table", parentMutation.getTable());
+		assertEquals(Op.UPDATE, parentMutation.getOperation());
+
+		assertEquals("child_test_table", childMutation.getTable());
+		assertEquals(Op.UPDATE, childMutation.getOperation());
+		;
 	}
 
 	@Test
 	public void upsertTest() {
-		Mutation mutation = this.spannerMutationFactory.upsert(new TestEntity(), null)
-				.get(0);
-		assertEquals("custom_test_table", mutation.getTable());
-		assertEquals(Op.INSERT_OR_UPDATE, mutation.getOperation());
+		TestEntity t = new TestEntity();
+		List<Mutation> mutations = this.spannerMutationFactory.upsert(t, null);
+
+		Mutation parentMutation = mutations.get(0);
+		assertEquals(1, mutations.size());
+
+		t.childEntity = new ChildEntity();
+
+		assertEquals("custom_test_table", parentMutation.getTable());
+		assertEquals(Op.INSERT_OR_UPDATE, parentMutation.getOperation());
+
+		mutations = this.spannerMutationFactory.upsert(t, null);
+		parentMutation = mutations.get(0);
+		Mutation childMutation = mutations.get(1);
+
+		assertEquals("custom_test_table", parentMutation.getTable());
+		assertEquals(Op.INSERT_OR_UPDATE, parentMutation.getOperation());
+
+		assertEquals("child_test_table", childMutation.getTable());
+		assertEquals(Op.INSERT_OR_UPDATE, childMutation.getOperation());
+		;
 	}
 
 	@Test
@@ -150,5 +201,16 @@ public class SpannerMutationFactoryImplTests {
 
 		@Column(name = "")
 		String other;
+
+		ChildEntity childEntity;
+	}
+
+	@Table(name = "child_test_table")
+	private static class ChildEntity {
+		@PrimaryKeyColumn(keyOrder = 1)
+		String id;
+
+		@PrimaryKeyColumn(keyOrder = 2)
+		String id2;
 	}
 }

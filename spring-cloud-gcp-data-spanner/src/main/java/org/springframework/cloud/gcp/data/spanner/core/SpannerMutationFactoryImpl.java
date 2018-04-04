@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -27,11 +28,14 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.Op;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.Assert;
 
 /**
@@ -115,10 +119,25 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	private List<Mutation> saveObject(Op op, Object object, Set<String> includeColumns) {
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
 				.getPersistentEntity(object.getClass());
+		List<Mutation> mutations = new ArrayList<>();
 		Mutation.WriteBuilder writeBuilder = writeBuilder(op,
 				persistentEntity.tableName());
 		this.spannerConverter.write(object, writeBuilder, includeColumns);
-		return Arrays.asList(writeBuilder.build());
+		mutations.add(writeBuilder.build());
+		persistentEntity.doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					if (ConversionUtils
+							.isSpannerTableProperty(spannerPersistentProperty)) {
+
+						Object child = persistentEntity.getPropertyAccessor(object)
+								.getProperty(spannerPersistentProperty);
+
+						if (child != null) {
+							mutations.addAll(saveObject(op, child, includeColumns));
+						}
+					}
+				});
+		return mutations;
 	}
 
 	private WriteBuilder writeBuilder(Op op, String tableName) {
