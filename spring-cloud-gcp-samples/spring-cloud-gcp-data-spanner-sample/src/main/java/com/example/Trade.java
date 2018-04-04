@@ -46,6 +46,8 @@ public class Trade {
 	@ColumnInnerType(innerType = Double.class)
 	List<Double> curve;
 
+	Person person;
+
 	@Override
 	public String toString() {
 		return "Trade{" +
@@ -54,6 +56,7 @@ public class Trade {
 				", shares=" + this.shares +
 				", symbol='" + this.symbol + '\'' +
 				", traderId='" + this.traderId +
+				", person='" + this.person +
 				'}';
 	}
 }

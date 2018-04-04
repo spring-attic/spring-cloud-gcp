@@ -20,8 +20,7 @@ CREATE TABLE trades (
 	curve ARRAY<FLOAT64>,
 	price FLOAT64,
 	shares FLOAT64,
-	test INT64,
-	testDate DATE,
+	person STRING(MAX),
 	trader_id STRING(128),
 ) PRIMARY KEY (action, symbol)
 ```

@@ -18,6 +18,8 @@ package com.example;
 
 import com.google.cloud.spanner.Key;
 
+import java.util.Random;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.WebApplicationType;
@@ -64,6 +66,10 @@ public class SpannerRepositoryExample {
 					t.traderId = traderId;
 					t.price = 100.0;
 					t.shares = 12345.6;
+					Person person = new Person();
+					person.firstName = UUID.randomUUID().toString();
+					person.lastName = UUID.randomUUID().toString();
+					t.person = person;
 					this.spannerOperations.insert(t);
 				}
 			}

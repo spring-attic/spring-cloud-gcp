@@ -199,8 +199,91 @@ For `ARRAY` Spanner types, you'll need to use `List` in the fields. For the inne
 * `java.util.Instant`
 * `java.sql.Date`
 
-// === Custom conversions
-//TODO when we have a proper way to expose custom conversions
+=== Custom type conversions
+
+Custom converters can be used extending the type support for user defined types.
+
+. Converters need to implement the `org.springframework.core.convert.converter.Converter` interface both directions.
+. The user defined type needs to be mapped to one the basic types supported by Spanner:
+
+* `com.google.cloud.ByteArray`
+* `com.google.cloud.Date`
+* `com.google.cloud.Timestamp`
+* `java.lang.Boolean`, `boolean`
+* `java.lang.Long`, `long`
+* `java.lang.String`
+* `double[]`
+* `long[]`
+* `boolean[]`
+
+. An instance of both Converters need to be passed in to a `MappingSpannerConverter` which then has to be made available as a `@Bean` for `SpannerConverter`.
+
+For example:
+
+We would like to have a field of type `Person` on our `Trade` POJO:
+[source, java]
+----
+
+@Table(name = "trades")
+public class Trade {
+  //...
+  Person person;
+  //...
+}
+----
+
+Where Person is a simple class:
+
+[source, java]
+----
+public class Person {
+
+  public String firstName;
+  public String lastName;
+
+}
+----
+
+We have to define the two converters:
+
+[source, java]
+----
+  public static class PersonWriteConverter implements Converter<Person, String> {
+
+    @Override
+    public String convert(Person person) {
+      return person.firstName + " " + person.lastName;
+    }
+  }
+
+  public static class PersonReadConverter implements Converter<String, Person> {
+
+    @Override
+    public Person convert(String s) {
+      Person person = new Person();
+      person.firstName = s.split(" ")[0];
+      person.lastName = s.split(" ")[1];
+      return person;
+    }
+  }
+----
+
+That will be configured in our `@Configuration` file:
+
+[source, java]
+----
+@Configuration
+public class ConverterConfiguration {
+
+	@Bean
+	public SpannerConverter spannerConverter(SpannerMappingContext spannerMappingContext) {
+		return new MappingSpannerConverter(spannerMappingContext,
+				Arrays.asList(new PersonWriteConverter()),
+				Arrays.asList(new PersonReadConverter()));
+	}
+}
+----
+
 
 === Repositories
 
@@ -297,10 +380,25 @@ In the example above the `namedQueriesLocation` attribute on `@EnableSpannerRepo
 Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0`
 ----
 
-Using the `@Query` annotation, the example would work the following way:
+Using the `@Query` annotation, there are two possibilities:
 
+. using positional parameters with `@`
 [source, java]
 ----
   @Query("SELECT * FROM trades WHERE trades.action = @tag0")
-	List<Trade> fetchByActionNamedQuery(String action);
+  List<Trade> fetchByActionNamedQuery(String action);
 ----
+[start=2]
+. using named parameters with `:`
+[source, java]
+----
+  @Query("SELECT * FROM trades WHERE trades.action = :action")
+  List<Trade> fetchByActionNamedQuery(String action);
+----
+. using SpEL expressions `:`
+[source, java]
+----
+  @Query("SELECT * FROM trades WHERE trades.action = :action")
+  List<Trade> fetchByActionNamedQuery(String action);
+----
+
