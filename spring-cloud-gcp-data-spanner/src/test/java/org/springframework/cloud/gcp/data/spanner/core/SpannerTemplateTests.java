@@ -112,13 +112,13 @@ public class SpannerTemplateTests {
 
 		String finalResult = this.spannerTemplate
 				.performReadWriteTransaction(spannerOperations -> {
-					List<TestEntity> items = spannerOperations.findAll(TestEntity.class);
+					spannerOperations.findAll(TestEntity.class);
 					spannerOperations.update(t);
 					return "all done";
 				});
 
 		assertEquals("all done", finalResult);
-		verify(transactionContext, times(1)).buffer((Mutation) any());
+		verify(transactionContext, times(1)).buffer((List<Mutation>) any());
 		verify(transactionContext, times(1)).read(eq("custom_test_table"), any(), any());
 	}
 
@@ -271,7 +271,7 @@ public class SpannerTemplateTests {
 	public void insertTest() {
 		Mutation mutation = Mutation.newInsertBuilder("custom_test_table").build();
 		TestEntity entity = new TestEntity();
-		when(this.mutationFactory.insert(entity)).thenReturn(mutation);
+		when(this.mutationFactory.insert(entity)).thenReturn(Arrays.asList(mutation));
 		this.spannerTemplate.insert(entity);
 		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
 	}
@@ -280,7 +280,8 @@ public class SpannerTemplateTests {
 	public void updateTest() {
 		Mutation mutation = Mutation.newUpdateBuilder("custom_test_table").build();
 		TestEntity entity = new TestEntity();
-		when(this.mutationFactory.update(entity, null)).thenReturn(mutation);
+		when(this.mutationFactory.update(entity, null))
+				.thenReturn(Arrays.asList(mutation));
 		this.spannerTemplate.update(entity);
 		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
 	}
@@ -292,7 +293,7 @@ public class SpannerTemplateTests {
 		TestEntity entity = new TestEntity();
 		when(this.mutationFactory.update(same(entity),
 				eq(Optional.of(new HashSet<>(Arrays.asList(new String[] { "a", "b" }))))))
-						.thenReturn(mutation);
+						.thenReturn(Arrays.asList(mutation));
 		this.spannerTemplate.update(entity, "a", "b");
 		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
 	}
@@ -304,7 +305,7 @@ public class SpannerTemplateTests {
 		TestEntity entity = new TestEntity();
 		Set<String> cols = new HashSet<>(Arrays.asList(new String[] { "a", "b" }));
 		when(this.mutationFactory.update(same(entity), eq(Optional.of(cols))))
-				.thenReturn(mutation);
+				.thenReturn(Arrays.asList(mutation));
 		this.spannerTemplate.update(entity, Optional.of(cols));
 		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
 	}
@@ -314,7 +315,8 @@ public class SpannerTemplateTests {
 		Mutation mutation = Mutation.newInsertOrUpdateBuilder("custom_test_table")
 				.build();
 		TestEntity entity = new TestEntity();
-		when(this.mutationFactory.upsert(same(entity), isNull())).thenReturn(mutation);
+		when(this.mutationFactory.upsert(same(entity), isNull()))
+				.thenReturn(Arrays.asList(mutation));
 		this.spannerTemplate.upsert(entity);
 		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
 	}
@@ -326,7 +328,7 @@ public class SpannerTemplateTests {
 		TestEntity entity = new TestEntity();
 		when(this.mutationFactory.upsert(same(entity),
 				eq(Optional.of(new HashSet<>(Arrays.asList(new String[] { "a", "b" }))))))
-						.thenReturn(mutation);
+						.thenReturn(Arrays.asList(mutation));
 		this.spannerTemplate.upsert(entity, "a", "b");
 		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
 	}
@@ -338,7 +340,7 @@ public class SpannerTemplateTests {
 		TestEntity entity = new TestEntity();
 		Set<String> cols = new HashSet<>(Arrays.asList(new String[] { "a", "b" }));
 		when(this.mutationFactory.upsert(same(entity), eq(Optional.of(cols))))
-				.thenReturn(mutation);
+				.thenReturn(Arrays.asList(mutation));
 		this.spannerTemplate.upsert(entity, Optional.of(cols));
 		verify(this.databaseClient, times(1)).write(eq(Arrays.asList(mutation)));
 	}

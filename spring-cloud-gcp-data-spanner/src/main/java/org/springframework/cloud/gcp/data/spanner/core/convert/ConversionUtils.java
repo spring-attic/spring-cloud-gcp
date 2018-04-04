@@ -28,6 +28,8 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
 import com.google.common.collect.ImmutableSet;
 
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 
@@ -128,6 +130,24 @@ public class ConversionUtils {
 			.of(SPANNER_TO_JAVA_DATE_CONVERTER, TIMESTAMP_INSTANT_CONVERTER, SPANNER_TO_JAVA_BYTE_ARRAY_CONVERTER,
 					SPANNER_TO_JAVA_TIMESTAMP_CONVERTER);
 
+	/**
+	 * returns true if the given SpannerPersistentProperty refers to entities stored in a
+	 * Spanner table. returns false otherwise.
+	 * @param spannerPersistentProperty
+	 * @return
+	 */
+	public static boolean isSpannerTableProperty(
+			SpannerPersistentProperty spannerPersistentProperty) {
+		Class innerType = spannerPersistentProperty.getColumnInnerType();
+		if (spannerPersistentProperty.getType().isAnnotationPresent(Table.class)) {
+			return true;
+		}
+		else if (innerType != null && innerType.isAnnotationPresent(Table.class)) {
+			return true;
+		}
+		return false;
+	}
+
 	static Class boxIfNeeded(Class propertyType) {
 		if (propertyType == null) {
 			return null;
@@ -137,7 +157,7 @@ public class ConversionUtils {
 				: propertyType;
 	}
 
-	static boolean isIterableNonByteArrayType(Class propType) {
+	public static boolean isIterableNonByteArrayType(Class propType) {
 		return Iterable.class.isAssignableFrom(propType)
 				&& !ByteArray.class.isAssignableFrom(propType);
 	}

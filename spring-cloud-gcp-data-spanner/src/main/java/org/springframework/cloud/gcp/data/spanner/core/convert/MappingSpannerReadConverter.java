@@ -112,7 +112,13 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 					String columnName = spannerPersistentProperty.getColumnName();
 					try {
 						if ((!readAllColumns && !includeColumns.contains(columnName))
-								|| source.isNull(columnName)) {
+								|| source.isNull(columnName)
+								/*
+								 * Indicates that the property is another Spanner table entity and
+								 * will be handled at the template level.
+								 */
+								|| ConversionUtils.isSpannerTableProperty(
+										spannerPersistentProperty)) {
 							return;
 						}
 					}
@@ -122,6 +128,7 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 										+ columnName,
 								e);
 					}
+
 					Class propType = spannerPersistentProperty.getType();
 
 					boolean valueSet;
@@ -150,7 +157,6 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 										+ " The property's type is %s.",
 								columnName, propType));
 					}
-
 				});
 		return object;
 	}

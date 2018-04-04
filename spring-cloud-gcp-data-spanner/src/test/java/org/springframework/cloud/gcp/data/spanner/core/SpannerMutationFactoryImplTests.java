@@ -59,21 +59,23 @@ public class SpannerMutationFactoryImplTests {
 
 	@Test
 	public void insertTest() {
-		Mutation mutation = this.spannerMutationFactory.insert(new TestEntity());
+		Mutation mutation = this.spannerMutationFactory.insert(new TestEntity()).get(0);
 		assertEquals("custom_test_table", mutation.getTable());
 		assertEquals(Op.INSERT, mutation.getOperation());
 	}
 
 	@Test
 	public void updateTest() {
-		Mutation mutation = this.spannerMutationFactory.update(new TestEntity(), null);
+		Mutation mutation = this.spannerMutationFactory.update(new TestEntity(), null)
+				.get(0);
 		assertEquals("custom_test_table", mutation.getTable());
 		assertEquals(Op.UPDATE, mutation.getOperation());
 	}
 
 	@Test
 	public void upsertTest() {
-		Mutation mutation = this.spannerMutationFactory.upsert(new TestEntity(), null);
+		Mutation mutation = this.spannerMutationFactory.upsert(new TestEntity(), null)
+				.get(0);
 		assertEquals("custom_test_table", mutation.getTable());
 		assertEquals(Op.INSERT_OR_UPDATE, mutation.getOperation());
 	}

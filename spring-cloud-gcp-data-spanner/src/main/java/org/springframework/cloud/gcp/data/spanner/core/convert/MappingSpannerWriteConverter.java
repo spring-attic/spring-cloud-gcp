@@ -121,8 +121,14 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 				.getPropertyAccessor(source);
 		persistentEntity.doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					if (!writeAllColumns && !includeColumns
-							.contains(spannerPersistentProperty.getColumnName())) {
+					if ((!writeAllColumns && !includeColumns
+							.contains(spannerPersistentProperty.getColumnName()))
+							/*
+							 * Indicates that the property is another Spanner table entity
+							 * and will be handled at the template level.
+							 */
+							|| ConversionUtils
+									.isSpannerTableProperty(spannerPersistentProperty)) {
 						return;
 					}
 					writeProperty(sink, accessor, spannerPersistentProperty);
@@ -197,7 +203,9 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 
 		Class innerType = ConversionUtils.boxIfNeeded(spannerPersistentProperty.getColumnInnerType());
 		if (innerType == null) {
-			return false;
+			throw new SpannerDataException(
+					"A list type must be annotated with its inner type: "
+							+ spannerPersistentProperty.getColumnName());
 		}
 
 		// due to checkstyle limit of 3 return statments per function, this variable is

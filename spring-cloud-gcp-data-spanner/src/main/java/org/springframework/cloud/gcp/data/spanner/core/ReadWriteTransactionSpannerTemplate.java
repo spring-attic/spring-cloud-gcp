@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -47,7 +48,7 @@ class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
 	}
 
 	@Override
-	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,
+	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, List<Mutation>> function,
 			T arg1, U arg2) {
 		this.transactionContext.buffer(function.apply(arg1, arg2));
 	}

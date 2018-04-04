@@ -446,26 +446,39 @@ public class SpannerObjectMapperImplTests {
 	}
 
 	@Test(expected = SpannerDataException.class)
-	public void writeUnsupportedTypeIterableTest() {
-		FaultyTestEntity2 ft = new FaultyTestEntity2();
-		ft.listWithUnsupportedInnerType = new ArrayList<TestEntity>();
-		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table_2");
-		this.objectMapper.write(ft, writeBuilder);
-	}
-
-	@Test(expected = SpannerDataException.class)
 	public void readUnmatachableTypesTest() {
 		Struct struct1 = Struct.newBuilder()
 				.add("fieldWithUnsupportedType", Value.string("key1")).build();
-		this.objectMapper.read(FaultyTestEntity.class, struct1);
+		this.objectMapper.read(SmallTestEntity.class, struct1);
+	}
+
+	@Test
+	public void writeSpannerTableEntityType() {
+		SmallTestEntity ft = new SmallTestEntity();
+		ft.fieldWithUnsupportedType = new SmallTestChildEntity();
+		ft.id = "test";
+		ft.doubleList = new ArrayList<>();
+		WriteBuilder writeBuilder = Mutation.newInsertBuilder("small_test_table");
+		this.objectMapper.write(ft, writeBuilder);
+		assertThat(writeBuilder.build().getColumns(),
+				containsInAnyOrder("id", "doubleList"));
 	}
 
 	@Test(expected = SpannerDataException.class)
-	public void writeIncompatibleTypeTest() {
-		FaultyTestEntity ft = new FaultyTestEntity();
-		ft.fieldWithUnsupportedType = new TestEntity();
-		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
+	public void detectWrongParentChildRelationship() {
+		IneligbleParentEntity ft = new IneligbleParentEntity();
+		ft.testEntity = new TestEntity();
+		ft.id = "test";
+		WriteBuilder writeBuilder = Mutation.newInsertBuilder("ineligable_parent");
 		this.objectMapper.write(ft, writeBuilder);
+	}
+
+	@Table(name = "ineligable_parent")
+	private static class IneligbleParentEntity {
+		@PrimaryKeyColumn
+		String id;
+
+		TestEntity testEntity;
 	}
 
 	@Table(name = "custom_test_table")
@@ -524,18 +537,30 @@ public class SpannerObjectMapperImplTests {
 		@PrimaryKeyColumn
 		String id;
 
-		TestEntity fieldWithUnsupportedType;
-
 		List<Double> doubleList;
 	}
 
-	@Table(name = "faulty_test_table_2")
-	private static class FaultyTestEntity2 {
+	@Table(name = "small_test_table")
+	private static class SmallTestEntity {
 		@PrimaryKeyColumn
 		String id;
 
-		@ColumnInnerType(innerType = TestEntity.class)
-		List<TestEntity> listWithUnsupportedInnerType;
+		SmallTestChildEntity fieldWithUnsupportedType;
+
+		@ColumnInnerType(innerType = SmallTestChildEntity.class)
+		List<SmallTestChildEntity> listWithUnsupportedInnerType;
+
+		@ColumnInnerType(innerType = Double.class)
+		List<Double> doubleList;
+	}
+
+	@Table(name = "small_test_table_child")
+	private static class SmallTestChildEntity {
+		@PrimaryKeyColumn
+		String id;
+
+		@PrimaryKeyColumn(keyOrder = 2)
+		String id2;
 	}
 
 	@Table(name = "outer_test_entity")
