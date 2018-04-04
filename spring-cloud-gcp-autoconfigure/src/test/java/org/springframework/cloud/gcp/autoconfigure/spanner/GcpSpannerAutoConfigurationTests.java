@@ -16,16 +16,23 @@
 
 package org.springframework.cloud.gcp.autoconfigure.spanner;
 
+import java.io.IOException;
+import java.nio.file.Files;
+
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import org.junit.Test;
 
+import org.springframework.beans.DirectFieldAccessor;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -57,6 +64,25 @@ public class GcpSpannerAutoConfigurationTests {
 		this.contextRunner.run(context -> {
 			assertThat(context.getBean(TestRepository.class)).isNotNull();
 		});
+	}
+
+	@Test
+	public void testCfCredentials() throws IOException {
+		Resource vcapServicesFile = new ClassPathResource("VCAP_SERVICES");
+		String vcapServicesString =
+				new String(Files.readAllBytes(vcapServicesFile.getFile().toPath()));
+		this.contextRunner.withSystemProperties("VCAP_SERVICES=" + vcapServicesString)
+				.run(context -> {
+					GcpSpannerAutoConfiguration spannerAutoConfiguration =
+							context.getBean(GcpSpannerAutoConfiguration.class);
+					ServiceAccountCredentials credentials =
+							(ServiceAccountCredentials) new DirectFieldAccessor(
+									spannerAutoConfiguration)
+									.getPropertyValue("credentials");
+					assertThat(credentials.getClientEmail()).isEqualTo(
+							"pcf-binding-2e9720a8@graphite-test-spring-cloud-gcp.iam."
+									+ "gserviceaccount.com");
+				});
 	}
 
 	@AutoConfigurationPackage

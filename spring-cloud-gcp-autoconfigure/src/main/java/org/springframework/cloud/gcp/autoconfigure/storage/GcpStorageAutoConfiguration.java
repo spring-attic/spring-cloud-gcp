@@ -19,9 +19,11 @@ package org.springframework.cloud.gcp.autoconfigure.storage;
 import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.auth.Credentials;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -29,6 +31,7 @@ import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
+import org.springframework.cloud.gcp.core.cloudfoundry.CfConfiguration;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolver;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolverSettings;
 import org.springframework.context.annotation.Bean;
@@ -52,16 +55,35 @@ import org.springframework.context.annotation.Import;
 @Import(GoogleStorageProtocolResolver.class)
 public class GcpStorageAutoConfiguration {
 
+	private static Credentials CREDENTIALS;
+
+	// This bean needs to be static to be discoverable by our GoogleStorageProtocolResolver,
+	// since GoogleStorageProtocolResolver is a BeanFactoryPostProcessor.
 	@Bean
 	@ConditionalOnMissingBean
 	public static Storage storage(CredentialsProvider credentialsProvider,
 			GcpStorageProperties gcpStorageProperties,
-			GcpProjectIdProvider projectIdProvider) throws IOException {
+			GcpProjectIdProvider projectIdProvider,
+			@Autowired(required = false) CfConfiguration cfConfiguration) throws IOException {
+		CredentialsProvider cfCredentialsProvider = null;
+		if (cfConfiguration != null) {
+			cfCredentialsProvider = cfConfiguration.getStorageCredentialsProvider();
+		}
+
+		if (cfCredentialsProvider != null) {
+			CREDENTIALS = cfCredentialsProvider.getCredentials();
+		}
+		else if (gcpStorageProperties.getCredentials().getLocation() != null) {
+			CREDENTIALS = new DefaultCredentialsProvider(gcpStorageProperties).getCredentials();
+		}
+		else {
+			CREDENTIALS = credentialsProvider.getCredentials();
+		}
+
 		return StorageOptions.newBuilder()
-				.setCredentials(gcpStorageProperties.getCredentials().getLocation() != null
-						? new DefaultCredentialsProvider(gcpStorageProperties).getCredentials()
-						: credentialsProvider.getCredentials())
-				.setHeaderProvider(new UsageTrackingHeaderProvider(GcpStorageAutoConfiguration.class))
+				.setCredentials(CREDENTIALS)
+				.setHeaderProvider(
+						new UsageTrackingHeaderProvider(GcpStorageAutoConfiguration.class))
 				.setProjectId(projectIdProvider.getProjectId())
 				.build().getService();
 	}

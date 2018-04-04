@@ -51,6 +51,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
+import org.springframework.cloud.gcp.core.cloudfoundry.CfConfiguration;
 import org.springframework.cloud.gcp.trace.TraceServiceClientTraceConsumer;
 import org.springframework.cloud.gcp.trace.sleuth.LabelExtractor;
 import org.springframework.cloud.gcp.trace.sleuth.SpanTranslator;
@@ -94,13 +95,26 @@ public class StackdriverTraceAutoConfiguration {
 
 	public StackdriverTraceAutoConfiguration(GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider,
-			GcpTraceProperties gcpTraceProperties) throws IOException {
+			GcpTraceProperties gcpTraceProperties,
+			@Autowired(required = false) CfConfiguration cfConfiguration) throws IOException {
 		this.finalProjectIdProvider = gcpTraceProperties.getProjectId() != null
 				? gcpTraceProperties::getProjectId
 				: gcpProjectIdProvider;
-		this.finalCredentialsProvider = gcpTraceProperties.getCredentials().getLocation() != null
-				? new DefaultCredentialsProvider(gcpTraceProperties)
-				: credentialsProvider;
+
+		CredentialsProvider cfCredentialsProvider = null;
+		if (cfConfiguration != null) {
+			cfCredentialsProvider = cfConfiguration.getTraceCredentialsProvider();
+		}
+
+		if (cfCredentialsProvider != null) {
+			this.finalCredentialsProvider = cfCredentialsProvider;
+		}
+		else if (gcpTraceProperties.getCredentials().getLocation() != null) {
+			this.finalCredentialsProvider = new DefaultCredentialsProvider(gcpTraceProperties);
+		}
+		else {
+			this.finalCredentialsProvider = credentialsProvider;
+		}
 	}
 
 	@Bean
