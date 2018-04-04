@@ -38,6 +38,7 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -79,7 +80,7 @@ public class SpannerTemplateTests {
 
 	private SpannerMappingContext mappingContext;
 
-	private SpannerConverter objectMapper;
+	private SpannerConverter spannerConverter;
 
 	private SpannerMutationFactory mutationFactory;
 
@@ -91,12 +92,12 @@ public class SpannerTemplateTests {
 	public void setUp() {
 		this.databaseClient = mock(DatabaseClient.class);
 		this.mappingContext = new SpannerMappingContext();
-		this.objectMapper = mock(SpannerConverter.class);
+		this.spannerConverter = mock(SpannerConverter.class);
 		this.mutationFactory = mock(SpannerMutationFactory.class);
 		this.readContext = mock(ReadContext.class);
 		when(this.databaseClient.singleUse()).thenReturn(this.readContext);
 		this.spannerTemplate = new SpannerTemplate(this.databaseClient,
-				this.mappingContext, this.objectMapper, this.mutationFactory);
+				this.mappingContext, this.spannerConverter, this.mutationFactory);
 	}
 
 	@Test
@@ -149,13 +150,13 @@ public class SpannerTemplateTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void nullDatabaseClientTest() {
-		new SpannerTemplate(null, this.mappingContext, this.objectMapper,
+		new SpannerTemplate(null, this.mappingContext, this.spannerConverter,
 				this.mutationFactory);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void nullMappingContextTest() {
-		new SpannerTemplate(this.databaseClient, null, this.objectMapper,
+		new SpannerTemplate(this.databaseClient, null, this.spannerConverter,
 				this.mutationFactory);
 	}
 
@@ -167,7 +168,8 @@ public class SpannerTemplateTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void nullMutationFactoryTest() {
-		new SpannerTemplate(this.databaseClient, this.mappingContext, this.objectMapper,
+		new SpannerTemplate(this.databaseClient, this.mappingContext,
+				this.spannerConverter,
 				null);
 	}
 
@@ -225,7 +227,7 @@ public class SpannerTemplateTests {
 		KeySet keySet = KeySet.singleKey(Key.of("key"));
 		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
 		this.spannerTemplate.find(TestEntity.class, keySet, options);
-		verify(this.objectMapper, times(1)).mapToList(same(results),
+		verify(this.spannerConverter, times(1)).mapToList(same(results),
 				eq(TestEntity.class));
 		verify(this.readContext, times(1)).read(eq("custom_test_table"), same(keySet),
 				any(), same(readOption));
@@ -241,7 +243,7 @@ public class SpannerTemplateTests {
 		when(this.readContext.readUsingIndex(any(), any(), any(), any(), any()))
 				.thenReturn(results);
 		this.spannerTemplate.find(TestEntity.class, keySet, options);
-		verify(this.objectMapper, times(1)).mapToList(same(results),
+		verify(this.spannerConverter, times(1)).mapToList(same(results),
 				eq(TestEntity.class));
 		verify(this.readContext, times(1)).readUsingIndex(eq("custom_test_table"),
 				eq("index"), same(keySet), any(), same(readOption));
@@ -256,7 +258,7 @@ public class SpannerTemplateTests {
 				.addQueryOption(queryOption);
 		when(this.readContext.executeQuery(any(), any())).thenReturn(results);
 		this.spannerTemplate.find(TestEntity.class, statement, options);
-		verify(this.objectMapper, times(1)).mapToList(same(results),
+		verify(this.spannerConverter, times(1)).mapToList(same(results),
 				eq(TestEntity.class));
 		verify(this.readContext, times(1)).executeQuery(same(statement),
 				same(queryOption));
@@ -463,8 +465,6 @@ public class SpannerTemplateTests {
 
 	@Test
 	public void resolveChildEntityTest() {
-		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-
 		ParentEntity p = new ParentEntity();
 		p.id = "key";
 		p.id2 = "key2";
@@ -474,10 +474,18 @@ public class SpannerTemplateTests {
 		c.id_2 = "key2";
 		c.id3 = "key3";
 
-		doReturn(Arrays.asList(new ChildEntity[] { c })).when(spyTemplate)
-				.find(eq(ChildEntity.class), (Statement) any(), isNull());
+		GrandChildEntity gc = new GrandChildEntity();
+		gc.id = "key";
+		gc.id_2 = "key2";
+		gc.id3 = "key3";
+		gc.id4 = "key4";
 
-		spyTemplate.resolveChildEntity(p, null);
+		when(this.spannerConverter.mapToList(any(), eq(ChildEntity.class)))
+				.thenReturn(ImmutableList.of(c));
+		when(this.spannerConverter.mapToList(any(), eq(GrandChildEntity.class)))
+				.thenReturn(ImmutableList.of(gc));
+
+		this.spannerTemplate.resolveChildEntity(p, null);
 
 		assertSame(c, p.childEntity);
 		assertTrue(p.childEntities instanceof SpannerLazyList);
@@ -485,6 +493,13 @@ public class SpannerTemplateTests {
 		assertEquals(1, p.childEntities.size());
 		assertTrue(((SpannerLazyList) p.childEntities).hasBeenEvaluated());
 		assertSame(c, p.childEntities.get(0));
+
+		assertSame(gc, p.childEntity.childEntity);
+		assertTrue(p.childEntity.childEntities instanceof SpannerLazyList);
+		assertFalse(((SpannerLazyList) p.childEntity.childEntities).hasBeenEvaluated());
+		assertEquals(1, p.childEntity.childEntities.size());
+		assertTrue(((SpannerLazyList) p.childEntity.childEntities).hasBeenEvaluated());
+		assertSame(gc, p.childEntity.childEntities.get(0));
 	}
 
 	@Test
@@ -542,5 +557,25 @@ public class SpannerTemplateTests {
 
 		@PrimaryKeyColumn(keyOrder = 3)
 		String id3;
+
+		GrandChildEntity childEntity;
+
+		@ColumnInnerType(innerType = GrandChildEntity.class)
+		List<GrandChildEntity> childEntities;
+	}
+
+	@Table(name = "grand_child_test_table")
+	private static class GrandChildEntity {
+		@PrimaryKeyColumn(keyOrder = 1)
+		String id;
+
+		@PrimaryKeyColumn(keyOrder = 2)
+		String id_2;
+
+		@PrimaryKeyColumn(keyOrder = 3)
+		String id3;
+
+		@PrimaryKeyColumn(keyOrder = 4)
+		String id4;
 	}
 }
