@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Chengyuan Zhao
  */
-public class MappingSchemaGeneratorTests {
+public class MappingSchemaOperationsTests {
 
 	private SpannerMappingContext spannerMappingContext;
 
