@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.repository.support;
 
 import java.util.Arrays;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import org.junit.Test;
@@ -132,6 +133,29 @@ public class SpannerRepositoryImplTests {
 		when(operations.find(eq(Object.class), eq(key))).thenReturn(ret);
 		assertEquals(ret,
 				new SimpleSpannerRepository(operations, Object.class).findById(key).get());
+		verify(operations, times(1)).find(eq(Object.class), eq(key));
+	}
+
+	@Test
+	public void findByIdSingleItemTest() {
+		SpannerOperations operations = mock(SpannerOperations.class);
+		Key key = Key.of("key");
+		Object ret = new Object();
+		when(operations.find(eq(Object.class), eq(key))).thenReturn(ret);
+		assertEquals(ret, new SimpleSpannerRepository(operations, Object.class)
+				.findById("key").get());
+		verify(operations, times(1)).find(eq(Object.class), eq(key));
+	}
+
+	@Test
+	public void findByIdListItemsTest() {
+		SpannerOperations operations = mock(SpannerOperations.class);
+		Timestamp timestamp = Timestamp.ofTimeMicroseconds(333);
+		Key key = Key.of("key", timestamp);
+		Object ret = new Object();
+		when(operations.find(eq(Object.class), eq(key))).thenReturn(ret);
+		assertEquals(ret, new SimpleSpannerRepository(operations, Object.class)
+				.findById(new Object[] { "key", timestamp }).get());
 		verify(operations, times(1)).find(eq(Object.class), eq(key));
 	}
 
