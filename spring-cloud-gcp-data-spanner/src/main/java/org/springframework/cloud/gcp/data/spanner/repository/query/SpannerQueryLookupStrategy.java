@@ -91,7 +91,8 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 	protected SqlSpannerQuery createSqlSpannerQuery(Class entityType,
 			QueryMethod queryMethod, String sql) {
 		return new SqlSpannerQuery(entityType, queryMethod, this.spannerOperations, sql,
-				this.evaluationContextProvider, this.expressionParser);
+				this.evaluationContextProvider, this.expressionParser,
+				this.spannerMappingContext);
 	}
 
 	protected PartTreeSpannerQuery createPartTreeSpannerQuery(Class entityType,

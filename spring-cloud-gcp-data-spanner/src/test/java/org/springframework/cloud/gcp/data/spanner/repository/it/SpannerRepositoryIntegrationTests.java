@@ -31,7 +31,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -77,18 +76,13 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				trader2TradesRetrieved.size(), is(trader2Trades.size()));
 		assertThat(trader2TradesRetrieved, containsInAnyOrder(trader2Trades.toArray()));
 
-		Trade t = new Trade();
-		t.setAction("BUY");
-		List<Trade> buyTradesRetrievedSpel = this.tradeRepository
-				.annotatedTradesByAction(t);
 		List<Trade> buyTradesRetrieved = this.tradeRepository
 				.annotatedTradesByAction("BUY");
-		assertEquals(buyTradesRetrieved, buyTradesRetrievedSpel);
 		assertThat(
-				"size is not " + buyTradesRetrievedSpel.size()
-						+ " in received records: \n" + buyTradesRetrievedSpel,
-				buyTradesRetrievedSpel.size(), is(trader1BuyTrades.size()));
-		assertThat(buyTradesRetrievedSpel,
+				"size is not " + buyTradesRetrieved.size() + " in received records: \n"
+						+ buyTradesRetrieved,
+				buyTradesRetrieved.size(), is(trader1BuyTrades.size()));
+		assertThat(buyTradesRetrieved,
 				containsInAnyOrder(trader1BuyTrades.toArray()));
 	}
 
