@@ -393,6 +393,6 @@ Table names can be used directly, for example, "trades" in the above example. Al
 
 [source, java]
 ----
-  @Query("SELECT * FROM %com.example.Trade% WHERE trades.action = @tag0")
+  @Query("SELECT * FROM :com.example.Trade: WHERE trades.action = @tag0")
   List<Trade> fetchByActionNamedQuery(String action);
 ----
