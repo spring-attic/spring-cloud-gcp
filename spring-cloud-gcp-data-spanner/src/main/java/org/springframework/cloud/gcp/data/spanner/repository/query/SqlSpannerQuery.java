@@ -68,7 +68,7 @@ public class SqlSpannerQuery implements RepositoryQuery {
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
 		this.spannerMappingContext = spannerMappingContext;
-		this.sql = resolveEntityClassNames(sql);
+		this.sql = sql;
 	}
 
 	private List<String> getTags(String sql) {
@@ -116,7 +116,7 @@ public class SqlSpannerQuery implements RepositoryQuery {
 	public Object execute(Object[] parameters) {
 		return this.spannerOperations.find(this.entityType,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
-						this.sql, this.tags, parameters));
+						resolveEntityClassNames(this.sql), this.tags, parameters));
 	}
 
 	@Override
