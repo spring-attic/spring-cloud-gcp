@@ -35,16 +35,16 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Chengyuan Zhao
  */
-public class MappingSchemaOperationsTests {
+public class SpannerSchemaOperationsTests {
 
 	private SpannerMappingContext spannerMappingContext;
 
-	private MappingSchemaOperations mappingSchemaGenerator;
+	private SpannerSchemaOperations mappingSchemaGenerator;
 
 	@Before
 	public void setUp() {
 		this.spannerMappingContext = new SpannerMappingContext();
-		this.mappingSchemaGenerator = new MappingSchemaOperations(
+		this.mappingSchemaGenerator = new SpannerSchemaOperations(
 				this.spannerMappingContext,
 				new MappingSpannerConverter(this.spannerMappingContext));
 	}

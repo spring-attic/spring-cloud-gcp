@@ -22,7 +22,7 @@ import com.google.cloud.spanner.Key;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.admin.MappingSchemaOperations;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaOperations;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,7 +40,7 @@ public class WebController {
 	TradeRepository tradeRepository;
 
 	@Autowired
-	MappingSchemaOperations mappingSchemaOperations;
+	SpannerSchemaOperations spannerSchemaOperations;
 
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String demoSpanner() {
@@ -81,7 +81,7 @@ public class WebController {
 		reply.append("These are the Spanner primary keys for the trades:<br />");
 
 		allTrades.stream().forEach(
-				trade -> reply.append(this.mappingSchemaOperations.getId(trade) + "<br />"));
+				trade -> reply.append(this.spannerSchemaOperations.getId(trade) + "<br />"));
 
 		this.tradeRepository.deleteById(
 				Key.newBuilder().append(stocks[0]).append(actions[0]).build());
