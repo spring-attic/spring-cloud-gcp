@@ -1,29 +1,27 @@
 language: java
 jdk:
-- oraclejdk8
+  - oraclejdk8
 env:
-- GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/travis/admin.json
+  - GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/travis/admin.json
 branches:
   only:
-  - master
+    - master
 cache:
   directories:
-  - "$HOME/google-cloud-sdk"
-  - "$HOME/.m2"
+    - $HOME/google-cloud-sdk
+    - $HOME/.m2
 script:
-- "./mvnw test -B -Dit.spanner=true"
+  - ./mvnw test -B -Dit.spanner=true
 install:
-- "./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V"
+  - ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 before_script:
-- gcloud beta emulators pubsub start &
-- while [ ! -f ~/.config/gcloud/emulators/pubsub/env.yaml ]; do sleep 1; done
-- "$(gcloud beta emulators pubsub env-init)"
+  - gcloud beta emulators pubsub start &
+  - while [ ! -f ~/.config/gcloud/emulators/pubsub/env.yaml ]; do sleep 1; done
+  - $(gcloud beta emulators pubsub env-init)
 before_install:
-- echo "khm... $encrypted_5c865b234b57_iv"
-- openssl aes-256-cbc -K $encrypted_5c865b234b57_key -iv $encrypted_5c865b234b57_iv -in travis.tar.gz.enc -out travis.tar.gz -d
-- if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export
-  CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
-- source $HOME/google-cloud-sdk/path.bash.inc
-- gcloud components install beta pubsub-emulator --quiet
-- tar -xzf travis.tar.gz
-- gcloud config set project spring-cloud-gcp-ci
+  - openssl aes-256-cbc -K $encrypted_1ef8dfbdb114_key -iv $encrypted_1ef8dfbdb114_iv -in travis.tar.gz.enc -out travis.tar.gz -d
+  - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  - gcloud components install beta pubsub-emulator --quiet
+  - tar -xzf travis.tar.gz
+  - gcloud config set project spring-cloud-gcp-ci
