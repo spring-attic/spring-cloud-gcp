@@ -42,7 +42,6 @@ import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
@@ -466,24 +465,6 @@ public class SpannerTemplateTests {
 		t.id2 = 3L;
 		assertEquals(Key.newBuilder().append(t.id).append(t.id2).build(),
 				this.spannerTemplate.getId(t));
-	}
-
-	@Test
-	public void getDropDDLTest() {
-		assertEquals("DROP TABLE custom_test_table",
-				this.spannerTemplate.getDropTableDDLString(TestEntity.class));
-	}
-
-	@Test
-	public void getCreateDDLTest() {
-		SpannerTemplate spannerTemplate = new SpannerTemplate(this.databaseClient,
-				this.mappingContext, new MappingSpannerConverter(this.mappingContext),
-				this.mutationFactory);
-		assertEquals("CREATE TABLE custom_test_table ( id STRING(MAX) , id2 INT64 "
-				+ ", custom_col STRING(MAX) , other STRING(MAX) , bytes BYTES(MAX) "
-				+ ", bytesList ARRAY<BYTES(MAX)> , integerList ARRAY<INT64> "
-				+ ", doubles ARRAY<FLOAT64> ) PRIMARY KEY ( id , id2 )",
-				spannerTemplate.getCreateTableDDLString(TestEntity.class));
 	}
 
 	@Table(name = "custom_test_table")

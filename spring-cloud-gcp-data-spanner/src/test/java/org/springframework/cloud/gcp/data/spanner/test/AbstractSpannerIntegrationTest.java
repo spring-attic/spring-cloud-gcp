@@ -32,6 +32,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.admin.MappingSchemaGenerator;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -83,6 +84,9 @@ public abstract class AbstractSpannerIntegrationTest {
 	@Autowired
 	protected ApplicationContext applicationContext;
 
+	@Autowired
+	MappingSchemaGenerator mappingSchemaGenerator;
+
 	protected String tableNameSuffix;
 
 	private boolean setupFailed;
@@ -131,11 +135,13 @@ public abstract class AbstractSpannerIntegrationTest {
 	}
 
 	protected List<String> createSchemaStatements() {
-		return Arrays.asList(this.spannerOperations.getCreateTableDDLString(Trade.class));
+		return Arrays
+				.asList(this.mappingSchemaGenerator.getCreateTableDDLString(Trade.class));
 	}
 
 	protected Iterable<String> dropSchemaStatements() {
-		return Arrays.asList(this.spannerOperations.getDropTableDDLString(Trade.class));
+		return Arrays
+				.asList(this.mappingSchemaGenerator.getDropTableDDLString(Trade.class));
 	}
 
 	@After

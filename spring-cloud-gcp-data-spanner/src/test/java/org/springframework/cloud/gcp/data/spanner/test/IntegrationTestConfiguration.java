@@ -32,6 +32,7 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.admin.MappingSchemaGenerator;
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -131,5 +132,12 @@ public class IntegrationTestConfiguration {
 	@Bean
 	public DatabaseAdminClient databaseAdminClient(Spanner spanner) {
 		return spanner.getDatabaseAdminClient();
+	}
+
+	@Bean
+	public MappingSchemaGenerator mappingSchemaGenerator(
+			SpannerMappingContext spannerMappingContext,
+			SpannerConverter spannerConverter) {
+		return new MappingSchemaGenerator(spannerMappingContext, spannerConverter);
 	}
 }
