@@ -43,6 +43,11 @@ public class Credentials {
 	 */
 	private Resource location;
 
+	/**
+	 * The base64 encoded contents of an OAuth2 account private key, on the JSON format.
+	 */
+	private String encodedKey;
+
 	public Credentials(String... defaultScopes) {
 		this.scopes.addAll(Arrays.asList(defaultScopes));
 	}
@@ -63,4 +68,11 @@ public class Credentials {
 		this.location = location;
 	}
 
+	public String getEncodedKey() {
+		return this.encodedKey;
+	}
+
+	public void setEncodedKey(String encodedKey) {
+		this.encodedKey = encodedKey;
+	}
 }
