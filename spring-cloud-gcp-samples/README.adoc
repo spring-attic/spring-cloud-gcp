@@ -44,5 +44,5 @@ trace IDs for requests to your application and store data about those requests i
 https://cloud.google.com/trace/[Google Stackdriver Trace].
 
 - link:spring-cloud-gcp-vision-api-sample[Spring Cloud GCP Vision API Sample]:
-Exemplifies how to use Spring Cloud GCP to improve the general usage of Google Cloud Client
-Libraries.
+Provides an example of how to use Spring Cloud GCP to improve the general usability of Google Cloud
+Client Libraries.
