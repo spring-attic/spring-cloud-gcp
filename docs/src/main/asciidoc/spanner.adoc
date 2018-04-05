@@ -381,18 +381,18 @@ In the example above the `namedQueriesLocation` attribute on `@EnableSpannerRepo
 Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0`
 ----
 
-Using the `@Query` annotation, there are two possibilities:
+Using the `@Query` annotation:
 
-. using positional parameters with `@`
 [source, java]
 ----
   @Query("SELECT * FROM trades WHERE trades.action = @tag0")
   List<Trade> fetchByActionNamedQuery(String action);
 ----
-[start=2]
-. using SpEL expressions with named parameters:
+
+Table names can be used directly, for example, "trades" in the above example. Alternatively, table names can be resolved from the `@Table` annotation on domain classes as well. In this case, the query should refer to table names with fully qualified classnames between `%` characters: `%fully.qualified.ClassName%`. A full example would look like this:
+
 [source, java]
 ----
-  @Query("SELECT * FROM trades_#{tableNameSuffix} WHERE trades.action = '#{#trade.action}'")
-  List<Trade> fetchByActionNamedQuery(@Param("trade") Trade myTrade);
+  @Query("SELECT * FROM %com.example.Trade% WHERE trades.action = @tag0")
+  List<Trade> fetchByActionNamedQuery(String action);
 ----

@@ -4,33 +4,34 @@ import org.springframework.core.convert.converter.Converter;
 
 public class Person {
 
-  public String firstName;
-  public String lastName;
+	public String firstName;
 
-  @Override
-  public String toString() {
-    return "Person{" +
-        "firstName='" + firstName + '\'' +
-        ", lastName='" + lastName + '\'' +
-        '}';
-  }
+	public String lastName;
 
-  public static class PersonWriteConverter implements Converter<Person, String> {
+	@Override
+	public String toString() {
+		return "Person{" +
+				"firstName='" + firstName + '\'' +
+				", lastName='" + lastName + '\'' +
+				'}';
+	}
 
-    @Override
-    public String convert(Person person) {
-      return person.firstName + " " + person.lastName;
-    }
-  }
+	public static class PersonWriteConverter implements Converter<Person, String> {
 
-  public static class PersonReadConverter implements Converter<String, Person> {
+		@Override
+		public String convert(Person person) {
+			return person.firstName + " " + person.lastName;
+		}
+	}
 
-    @Override
-    public Person convert(String s) {
-      Person person = new Person();
-      person.firstName = s.split(" ")[0];
-      person.lastName = s.split(" ")[1];
-      return person;
-    }
-  }
+	public static class PersonReadConverter implements Converter<String, Person> {
+
+		@Override
+		public Person convert(String s) {
+			Person person = new Person();
+			person.firstName = s.split(" ")[0];
+			person.lastName = s.split(" ")[1];
+			return person;
+		}
+	}
 }

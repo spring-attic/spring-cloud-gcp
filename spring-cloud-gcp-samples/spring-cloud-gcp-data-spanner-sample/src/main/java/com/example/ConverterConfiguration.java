@@ -14,7 +14,7 @@ public class ConverterConfiguration {
 	@Bean
 	public SpannerConverter spannerConverter(SpannerMappingContext spannerMappingContext) {
 		return new MappingSpannerConverter(spannerMappingContext,
-        Arrays.asList(new Person.PersonWriteConverter()),
-        Arrays.asList(new Person.PersonReadConverter()));
+				Arrays.asList(new Person.PersonWriteConverter()),
+				Arrays.asList(new Person.PersonReadConverter()));
 	}
 }
