@@ -19,8 +19,7 @@ before_script:
 - while [ ! -f ~/.config/gcloud/emulators/pubsub/env.yaml ]; do sleep 1; done
 - "$(gcloud beta emulators pubsub env-init)"
 before_install:
-- openssl aes-256-cbc -K $encrypted_5c865b234b57_key -iv $encrypted_5c865b234b57_iv
-  -in travis.tar.gz.enc -out travis.tar.gz -d
+- openssl aes-256-cbc -K $encrypted_5c865b234b57_key -iv 0 -in travis.tar.gz.enc -out travis.tar.gz -d
 - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export
   CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
 - source $HOME/google-cloud-sdk/path.bash.inc
