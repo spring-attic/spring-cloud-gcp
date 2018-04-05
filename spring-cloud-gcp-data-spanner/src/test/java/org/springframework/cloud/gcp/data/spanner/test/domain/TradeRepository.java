@@ -27,7 +27,7 @@ public interface TradeRepository extends SpannerRepository<Trade> {
 
 	int countByAction(String action);
 
-	@Query("SELECT * FROM #org.springframework.cloud.gcp.data.spanner.test.domain.Trade#"
+	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
 			+ " WHERE action=@action")
 	List<Trade> annotatedTradesByAction(String action);
 }

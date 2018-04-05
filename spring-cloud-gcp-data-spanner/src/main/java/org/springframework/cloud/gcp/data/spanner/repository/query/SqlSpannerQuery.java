@@ -38,7 +38,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 public class SqlSpannerQuery implements RepositoryQuery {
 
 	// A character that isn't used in SQL
-	private static String ENTITY_CLASS_NAME_BOOKEND = "#";
+	private static String ENTITY_CLASS_NAME_BOOKEND = ":";
 
 	private final QueryMethod queryMethod;
 

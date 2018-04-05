@@ -76,14 +76,15 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 		SpannerQueryMethod queryMethod = createQueryMethod(method, metadata, factory);
 		Class entityType = getEntityType(queryMethod);
 
-		if (namedQueries.hasQuery(queryMethod.getNamedQueryName())) {
-			String sql = namedQueries.getQuery(queryMethod.getNamedQueryName());
-			return createSqlSpannerQuery(entityType, queryMethod, sql);
-		}
-		else if (queryMethod.hasAnnotatedQuery()) {
+		if (queryMethod.hasAnnotatedQuery()) {
 			String sql = queryMethod.getQueryAnnotation().value();
 			return createSqlSpannerQuery(entityType, queryMethod, sql);
 		}
+		else if (namedQueries.hasQuery(queryMethod.getNamedQueryName())) {
+			String sql = namedQueries.getQuery(queryMethod.getNamedQueryName());
+			return createSqlSpannerQuery(entityType, queryMethod, sql);
+		}
+
 
 		return createPartTreeSpannerQuery(entityType, queryMethod);
 	}
