@@ -38,12 +38,12 @@ public class MappingSchemaGeneratorTests {
 
 	private SpannerMappingContext spannerMappingContext;
 
-	private MappingSchemaGenerator mappingSchemaGenerator;
+	private MappingSchemaOperations mappingSchemaGenerator;
 
 	@Before
 	public void setUp() {
 		this.spannerMappingContext = new SpannerMappingContext();
-		this.mappingSchemaGenerator = new MappingSchemaGenerator(
+		this.mappingSchemaGenerator = new MappingSchemaOperations(
 				this.spannerMappingContext,
 				new MappingSpannerConverter(this.spannerMappingContext));
 	}

@@ -32,7 +32,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.admin.MappingSchemaGenerator;
+import org.springframework.cloud.gcp.data.spanner.core.admin.MappingSchemaOperations;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -85,7 +85,7 @@ public abstract class AbstractSpannerIntegrationTest {
 	protected ApplicationContext applicationContext;
 
 	@Autowired
-	MappingSchemaGenerator mappingSchemaGenerator;
+	MappingSchemaOperations mappingSchemaGenerator;
 
 	protected String tableNameSuffix;
 

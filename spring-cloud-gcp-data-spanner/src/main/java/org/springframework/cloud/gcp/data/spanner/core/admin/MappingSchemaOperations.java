@@ -29,13 +29,13 @@ import org.springframework.util.Assert;
 /**
  * @author Chengyuan Zhao
  */
-public class MappingSchemaGenerator {
+public class MappingSchemaOperations {
 
 	private final SpannerMappingContext mappingContext;
 
 	private final SpannerConverter spannerConverter;
 
-	public MappingSchemaGenerator(SpannerMappingContext mappingContext,
+	public MappingSchemaOperations(SpannerMappingContext mappingContext,
 			SpannerConverter spannerConverter) {
 		Assert.notNull(mappingContext,
 				"A valid mapping context for Spanner is required.");
