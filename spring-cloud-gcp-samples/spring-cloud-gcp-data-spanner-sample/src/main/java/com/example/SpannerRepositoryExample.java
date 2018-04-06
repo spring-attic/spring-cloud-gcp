@@ -26,6 +26,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -40,6 +41,9 @@ public class SpannerRepositoryExample {
 
 	@Autowired
 	TradeRepository tradeRepository;
+
+	@Autowired
+	SpannerSchemaUtils spannerSchemaOperations;
 
 	public static void main(String[] args) {
 		new SpringApplicationBuilder(SpannerRepositoryExample.class)
@@ -87,7 +91,7 @@ public class SpannerRepositoryExample {
 
 			System.out.println("These are the Spanner primary keys for the trades:");
 
-			allTrades.forEach(t -> System.out.println(this.spannerOperations.getId(t)));
+			allTrades.forEach(t -> System.out.println(this.spannerSchemaOperations.getId(t)));
 
 			this.tradeRepository.deleteById(
 					Key.newBuilder().append(stocks[0]).append(actions[0]).build());
