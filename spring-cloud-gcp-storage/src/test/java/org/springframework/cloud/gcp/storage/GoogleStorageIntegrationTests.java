@@ -29,8 +29,8 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.StreamUtils;
 
@@ -44,7 +44,7 @@ import static org.junit.Assume.assumeThat;
  * @author Chengyuan Zhao
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { GoogleStorageIntegrationTestsConfiguration.class })
+@ContextConfiguration(classes = { GoogleStorageIntegrationTestsConfiguration.class })
 public class GoogleStorageIntegrationTests {
 
 	private static final String CHILD_RELATIVE_NAME = "child";
