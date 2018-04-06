@@ -44,8 +44,7 @@ public class SpannerSchemaUtilsTests {
 	@Before
 	public void setUp() {
 		this.spannerMappingContext = new SpannerMappingContext();
-		this.spannerSchemaUtils = new SpannerSchemaUtils(
-				this.spannerMappingContext,
+		this.spannerSchemaUtils = new SpannerSchemaUtils(this.spannerMappingContext,
 				new MappingSpannerConverter(this.spannerMappingContext));
 	}
 
@@ -64,14 +63,14 @@ public class SpannerSchemaUtilsTests {
 				this.spannerSchemaUtils.getCreateTableDDLString(TestEntity.class));
 	}
 
-  @Test
-  public void getIdTest() {
-    TestEntity t = new TestEntity();
-    t.id = "aaa";
-    t.id2 = 3L;
-    assertEquals(Key.newBuilder().append(t.id).append(t.id2).build(),
-        this.spannerSchemaUtils.getId(t));
-  }
+	@Test
+	public void getIdTest() {
+		TestEntity t = new TestEntity();
+		t.id = "aaa";
+		t.id2 = 3L;
+		assertEquals(Key.newBuilder().append(t.id).append(t.id2).build(),
+				this.spannerSchemaUtils.getId(t));
+	}
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
