@@ -28,5 +28,10 @@
 			<artifactId>spring-integration-file</artifactId>
 			<optional>true</optional>
 		</dependency>
-	</dependencies>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-gcp-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 </project>
