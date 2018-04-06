@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import com.google.cloud.spanner.Key;
+
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -47,6 +49,18 @@ public class SpannerSchemaUtils {
 				"A valid results mapper for Spanner is required.");
 		this.mappingContext = mappingContext;
 		this.spannerConverter = spannerConverter;
+	}
+
+	/**
+	 * Gets the key for the given object.
+	 * @param object
+	 * @return
+	 */
+	public Key getId(Object object) {
+		SpannerPersistentEntity persistentEntity = this.mappingContext
+				.getPersistentEntity(object.getClass());
+		return (Key) persistentEntity.getPropertyAccessor(object)
+				.getProperty(persistentEntity.getIdProperty());
 	}
 
 	/**

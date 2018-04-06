@@ -43,7 +43,7 @@ import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundCha
 import org.springframework.cloud.gcp.pubsub.integration.outbound.PubSubMessageHandler;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
-import org.springframework.cloud.gcp.pubsub.support.GcpHeaders;
+import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.context.annotation.Bean;
@@ -138,12 +138,12 @@ public class PubSubChannelAdaptersIntegrationTests {
 			Message<?> message = channel.receive(5000);
 			assertThat(message).isNotNull();
 			AckReplyConsumer acker =
-					(AckReplyConsumer) message.getHeaders().get(GcpHeaders.ACKNOWLEDGEMENT);
+					(AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
 			assertThat(acker).isNotNull();
 			acker.nack();
 			message = channel.receive(1000);
 			assertThat(message).isNotNull();
-			acker = (AckReplyConsumer) message.getHeaders().get(GcpHeaders.ACKNOWLEDGEMENT);
+			acker = (AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
 			assertThat(acker).isNotNull();
 			acker.ack();
 			message = channel.receive(1000);

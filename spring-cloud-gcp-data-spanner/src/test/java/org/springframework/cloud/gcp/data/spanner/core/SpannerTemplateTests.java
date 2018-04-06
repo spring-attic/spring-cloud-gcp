@@ -504,15 +504,6 @@ public class SpannerTemplateTests {
 		assertSame(gc, p.childEntity.childEntities.get(0));
 	}
 
-	@Test
-	public void getIdTest() {
-		TestEntity t = new TestEntity();
-		t.id = "aaa";
-		t.id2 = 3L;
-		assertEquals(Key.newBuilder().append(t.id).append(t.id2).build(),
-				this.spannerTemplate.getId(t));
-	}
-
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
 		@PrimaryKeyColumn(keyOrder = 1)
