@@ -16,6 +16,10 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.admin;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.StringJoiner;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
@@ -64,6 +68,12 @@ public class MappingSchemaOperations {
 		StringJoiner columnStrings = new StringJoiner(" , ");
 		spannerPersistentEntity.doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					// Child entities do not directly appear as columns, but are related
+					// by their primary keys
+					if (ConversionUtils
+							.isSpannerTableProperty(spannerPersistentProperty)) {
+						return;
+					}
 					columnStrings
 							.add(spannerPersistentProperty.getColumnName() + " "
 									+ ConversionUtils.getColumnDDLString(
@@ -82,6 +92,47 @@ public class MappingSchemaOperations {
 
 		stringBuilder.append(keyStrings.toString() + " )");
 		return stringBuilder.toString();
+	}
+
+	/**
+	 * Gets a list of DDL strings to create the tables rooted at the given entity class.
+	 * The DDL-create strings are ordered in the list starting with the given root class
+	 * and are topologically sorted.
+	 * @param entityClass
+	 * @return
+	 */
+	public List<String> getCreateTableDDLStringsForHierarchy(Class entityClass) {
+		List<String> ddlStrings = new ArrayList<>();
+		getCreateTableDDLStringsForHierarchy(null, entityClass, ddlStrings,
+				new HashSet<>());
+		return ddlStrings;
+	}
+
+	private void getCreateTableDDLStringsForHierarchy(String parentTable,
+			Class entityClass, List<String> ddlStrings, Set<Class> seenClasses) {
+		if (seenClasses.contains(entityClass)) {
+			return;
+		}
+		ddlStrings.add(getCreateTableDDLString(entityClass) + (parentTable == null ? ""
+				: ", INTERLEAVE IN PARENT " + parentTable + " ON DELETE CASCADE"));
+		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
+				.getPersistentEntity(entityClass);
+		spannerPersistentEntity.doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					if (ConversionUtils
+							.isSpannerTableProperty(spannerPersistentProperty)) {
+
+						Class propertyType = spannerPersistentProperty.getType();
+
+						getCreateTableDDLStringsForHierarchy(
+								spannerPersistentEntity.tableName(),
+								ConversionUtils.isIterableNonByteArrayType(propertyType)
+										? spannerPersistentProperty.getColumnInnerType()
+										: propertyType,
+								ddlStrings, seenClasses);
+					}
+				});
+		seenClasses.add(entityClass);
 	}
 
 	/**
