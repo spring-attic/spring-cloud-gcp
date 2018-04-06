@@ -12,6 +12,7 @@ cache:
     - $HOME/.m2
 script:
   - ./mvnw test -B -Dit.spanner=true
+  - ./mvnw test -B -Dit.storage=true
 install:
   - ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 before_script:
