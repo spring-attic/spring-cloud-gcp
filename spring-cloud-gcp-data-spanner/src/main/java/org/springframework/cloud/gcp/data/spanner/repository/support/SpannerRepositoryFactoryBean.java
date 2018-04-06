@@ -16,8 +16,11 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.support;
 
+import org.springframework.beans.BeansException;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
@@ -25,11 +28,14 @@ import org.springframework.data.repository.core.support.RepositoryFactorySupport
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public class SpannerRepositoryFactoryBean extends RepositoryFactoryBeanSupport {
+public class SpannerRepositoryFactoryBean extends RepositoryFactoryBeanSupport implements
+		ApplicationContextAware {
 
 	private SpannerMappingContext spannerMappingContext;
 
 	private SpannerOperations spannerOperations;
+
+	private ApplicationContext applicationContext;
 
 	/**
 	 * Creates a new {@link SpannerRepositoryFactoryBean} for the given repository interface.
@@ -51,7 +57,15 @@ public class SpannerRepositoryFactoryBean extends RepositoryFactoryBeanSupport {
 
 	@Override
 	protected RepositoryFactorySupport createRepositoryFactory() {
-		return new SpannerRepositoryFactory(this.spannerMappingContext,
+		SpannerRepositoryFactory spannerRepositoryFactory = new SpannerRepositoryFactory(
+				this.spannerMappingContext,
 				this.spannerOperations);
+		spannerRepositoryFactory.setApplicationContext(this.applicationContext);
+		return spannerRepositoryFactory;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 }

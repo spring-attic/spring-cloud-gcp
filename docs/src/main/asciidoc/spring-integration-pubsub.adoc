@@ -81,7 +81,7 @@ On automatic acking, a message is acked with GCP Pub/Sub if the adapter sent it 
 no exceptions were thrown.
 If a `RuntimeException` is thrown while the message is processed, then the message is nacked.
 On manual acking, the adapter attaches an `AckReplyConsumer` object to the `Message` headers, which
-users can extract using the `GcpHeaders.ACKNOWLEDGEMENT` key and use to (n)ack a message.
+users can extract using the `GcpPubSubHeaders.ACKNOWLEDGEMENT` key and use to (n)ack a message.
 
 [source,java]
 ----
@@ -91,7 +91,7 @@ public MessageHandler messageReceiver() {
     return message -> {
         LOGGER.info("Message arrived! Payload: " + message.getPayload());
         AckReplyConsumer consumer =
-              message.getHeaders().get(GcpHeaders.ACKNOWLEDGEMENT, AckReplyConsumer.class);
+              message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT, AckReplyConsumer.class);
         consumer.ack();
     };
 }
@@ -126,3 +126,19 @@ waits indefinitely for a response.
 It is possible to set user-defined callbacks for the `publish()` call in `PubSubMessageHandler`
 through the `setPublishFutureCallback()` method.
 These are useful to process the message ID, in case of success, or the error if any was thrown.
+
+To override the default destination you can use the `GcpPubSubHeaders.DESTINATION` header.
+
+[source,java]
+----
+
+@Autowired
+private MessageChannel pubsubOutputChannel;
+
+public void handleMessage(Message<?> msg) throws MessagingException {
+    final Message<?> message = MessageBuilder
+        .withPayload(msg.getPayload())
+        .setHeader(GcpPubSubHeaders.TOPIC, "customTopic").build();
+    pubsubOutputChannel.send(message);
+}
+----

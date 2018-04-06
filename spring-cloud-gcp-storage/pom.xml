@@ -1,32 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<artifactId>spring-cloud-gcp</artifactId>
-		<groupId>org.springframework.cloud</groupId>
-		<version>1.0.0.BUILD-SNAPSHOT</version>
-	</parent>
-	<artifactId>spring-cloud-gcp-storage</artifactId>
-	<name>Spring Cloud GCP Storage Module</name>
-	<description>Spring Cloud GCP Storage Module</description>
-	<properties>
-		<main.basedir>${basedir}/../..</main.basedir>
-	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-storage</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.integration</groupId>
-			<artifactId>spring-integration-file</artifactId>
-			<optional>true</optional>
-		</dependency>
-	</dependencies>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>spring-cloud-gcp</artifactId>
+    <groupId>org.springframework.cloud</groupId>
+    <version>1.0.0.BUILD-SNAPSHOT</version>
+  </parent>
+  <artifactId>spring-cloud-gcp-storage</artifactId>
+  <name>Spring Cloud GCP Storage Module</name>
+  <description>Spring Cloud GCP Storage Module</description>
+  <properties>
+    <main.basedir>${basedir}/../..</main.basedir>
+    <it.storage>false</it.storage>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-storage</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.integration</groupId>
+      <artifactId>spring-integration-file</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-gcp-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <environmentVariables>
+            <forceIntegrationTests>${it.storage}</forceIntegrationTests>
+          </environmentVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

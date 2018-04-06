@@ -30,13 +30,13 @@ import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityImpl;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.test.context.ContextConfiguration;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
@@ -69,7 +69,7 @@ import static org.mockito.Mockito.when;
  *
  * @author Balint Pato
  */
-@SpringBootTest(classes = { IntegrationTestConfiguration.class })
+@ContextConfiguration(classes = { IntegrationTestConfiguration.class })
 public abstract class AbstractSpannerIntegrationTest {
 
 	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";

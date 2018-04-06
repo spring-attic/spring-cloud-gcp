@@ -1,12 +1,12 @@
 = Spring Cloud GCP Logging Starter Example
 
 This sample application demonstrates using the
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[Spring Cloud GCP Logging Starter] in your code.
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[Spring Cloud GCP Logging
+Starter] to store and group logs by trace ID, with the Google Stackdriver Logging API.
 
 == Setup & Configuration
 1. Create a Google Cloud Platform Project
-1. Have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and
-initialized and logged in with
+1. Have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, initialized and logged in with
 https://developers.google.com/identity/protocols/application-default-credentials[application
 default credentials].
 
@@ -32,7 +32,7 @@ in the `x-cloud-trace-context` header.
 See the link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[Spring Cloud GCP Logging Starter]
 for other options for this setting.
 
-To see the logged lines, navigate to the https://pantheon.corp.google.com/logs/viewer[Logging section of the Cloud Console].
+To see the logged lines, navigate to the https://console.cloud.google.com/logs/viewer[Logging section of the Cloud Console].
 Select the `Global` resource and look under the `spring.log` channel to see the logged text.
 
 If your application is deployed to Google App Engine (GAE) or Google Kubernetes Engine (GKE),

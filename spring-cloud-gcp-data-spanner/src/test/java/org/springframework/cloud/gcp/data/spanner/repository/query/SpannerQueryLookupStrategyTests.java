@@ -22,7 +22,8 @@ import org.junit.Test;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.repository.core.NamedQueries;
-import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -43,15 +44,21 @@ public class SpannerQueryLookupStrategyTests {
 
 	private SpannerMappingContext spannerMappingContext;
 
-	private QueryMethod queryMethod;
+	private SpannerQueryMethod queryMethod;
 
 	private SpannerQueryLookupStrategy spannerQueryLookupStrategy;
+
+	private EvaluationContextProvider evaluationContextProvider;
+
+	private SpelExpressionParser spelExpressionParser;
 
 	@Before
 	public void initMocks() {
 		this.spannerOperations = mock(SpannerOperations.class);
 		this.spannerMappingContext = new SpannerMappingContext();
-		this.queryMethod = mock(QueryMethod.class);
+		this.queryMethod = mock(SpannerQueryMethod.class);
+		this.evaluationContextProvider = mock(EvaluationContextProvider.class);
+		this.spelExpressionParser = new SpelExpressionParser();
 		this.spannerQueryLookupStrategy = getSpannerQueryLookupStrategy();
 	}
 
@@ -67,8 +74,8 @@ public class SpannerQueryLookupStrategyTests {
 
 		this.spannerQueryLookupStrategy.resolveQuery(null, null, null, namedQueries);
 
-		verify(this.spannerQueryLookupStrategy, times(1))
-				.createSqlSpannerQuery(eq(Object.class), same(this.queryMethod), eq(query));
+		verify(this.spannerQueryLookupStrategy, times(1)).createSqlSpannerQuery(
+				eq(Object.class), same(this.queryMethod), eq(query));
 	}
 
 	@Test
@@ -87,7 +94,8 @@ public class SpannerQueryLookupStrategyTests {
 	private SpannerQueryLookupStrategy getSpannerQueryLookupStrategy() {
 		SpannerQueryLookupStrategy spannerQueryLookupStrategy = spy(
 				new SpannerQueryLookupStrategy(this.spannerMappingContext,
-						this.spannerOperations));
+						this.spannerOperations, this.evaluationContextProvider,
+						this.spelExpressionParser));
 		doReturn(Object.class).when(spannerQueryLookupStrategy).getEntityType(any());
 		doReturn(null).when(spannerQueryLookupStrategy).createPartTreeSpannerQuery(any(),
 				any());

@@ -16,12 +16,15 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.support;
 
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.Function;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +34,7 @@ import org.springframework.util.Assert;
 /**
  * @author Chengyuan Zhao
  */
-public class SimpleSpannerRepository<T> implements SpannerRepository<T> {
+public class SimpleSpannerRepository implements SpannerRepository {
 
 	private final SpannerOperations spannerOperations;
 
@@ -67,13 +70,14 @@ public class SimpleSpannerRepository<T> implements SpannerRepository<T> {
 	}
 
 	@Override
-	public Optional findById(Key key) {
+	public Optional findById(Object key) {
 		Assert.notNull(key, "A non-null ID is required.");
-		return Optional.ofNullable(this.spannerOperations.find(this.entityType, key));
+		return doIfKey(key, k -> Optional
+				.ofNullable(this.spannerOperations.find(this.entityType, k)));
 	}
 
 	@Override
-	public boolean existsById(Key key) {
+	public boolean existsById(Object key) {
 		Assert.notNull(key, "A non-null ID is required.");
 		return findById(key).isPresent();
 	}
@@ -84,10 +88,10 @@ public class SimpleSpannerRepository<T> implements SpannerRepository<T> {
 	}
 
 	@Override
-	public Iterable findAllById(Iterable<Key> iterable) {
+	public Iterable findAllById(Iterable iterable) {
 		KeySet.Builder builder = KeySet.newBuilder();
-		for (Key id : iterable) {
-			builder.addKey(id);
+		for (Object id : iterable) {
+			doIfKey(id, k -> builder.addKey(k));
 		}
 		return this.spannerOperations.find(this.entityType, builder.build());
 	}
@@ -98,9 +102,12 @@ public class SimpleSpannerRepository<T> implements SpannerRepository<T> {
 	}
 
 	@Override
-	public void deleteById(Key key) {
+	public void deleteById(Object key) {
 		Assert.notNull(key, "A non-null ID is required.");
-		this.spannerOperations.delete(this.entityType, key);
+		doIfKey(key, k -> {
+			this.spannerOperations.delete(this.entityType, k);
+			return null;
+		});
 	}
 
 	@Override
@@ -128,5 +135,27 @@ public class SimpleSpannerRepository<T> implements SpannerRepository<T> {
 	@Override
 	public Page findAll(Pageable pageable) {
 		return this.spannerOperations.findAll(this.entityType, pageable);
+	}
+
+	private <T> T doIfKey(Object key, Function<Key, T> operation) {
+		Key k;
+		boolean isIterable = Iterable.class.isAssignableFrom(key.getClass());
+		boolean isArray = Object[].class.isAssignableFrom(key.getClass());
+		if (isIterable || isArray) {
+			Key.Builder kb = Key.newBuilder();
+			for (Object keyPart : (isArray ? (Arrays.asList((Object[]) key))
+					: ((Iterable) key))) {
+				kb.appendObject(keyPart);
+			}
+			k = kb.build();
+			if (k.size() == 0) {
+				throw new SpannerDataException(
+						"A key must have at least one component, but 0 were given.");
+			}
+		}
+		else {
+			k = key instanceof Key ? (Key) key : Key.of(key);
+		}
+		return operation.apply(k);
 	}
 }
