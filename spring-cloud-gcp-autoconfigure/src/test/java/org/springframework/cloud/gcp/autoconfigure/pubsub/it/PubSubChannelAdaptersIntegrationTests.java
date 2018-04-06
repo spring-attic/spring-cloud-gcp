@@ -89,6 +89,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 		this.contextRunner.run(context -> {
 			Map<String, Object> headers = new HashMap<>();
 			// Only String values for now..
+			// an insignificant change
 			headers.put("storm", "lift your skinny fists");
 			headers.put("static", "lift your skinny fists");
 			headers.put("sleep", "lift your skinny fists");
