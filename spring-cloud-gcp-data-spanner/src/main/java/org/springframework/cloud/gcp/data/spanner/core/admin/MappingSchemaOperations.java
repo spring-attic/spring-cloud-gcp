@@ -118,20 +118,13 @@ public class MappingSchemaOperations {
 		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		spannerPersistentEntity.doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					if (ConversionUtils
-							.isSpannerTableProperty(spannerPersistentProperty)) {
-
-						Class propertyType = spannerPersistentProperty.getType();
-
-						getCreateTableDDLStringsForHierarchy(
-								spannerPersistentEntity.tableName(),
-								ConversionUtils.isIterableNonByteArrayType(propertyType)
-										? spannerPersistentProperty.getColumnInnerType()
-										: propertyType,
-								ddlStrings, seenClasses);
-					}
-				});
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> ConversionUtils
+						.applyIfChildEntityType(spannerPersistentProperty, childType -> {
+							getCreateTableDDLStringsForHierarchy(
+									spannerPersistentEntity.tableName(), childType,
+									ddlStrings, seenClasses);
+							return null;
+						}));
 		seenClasses.add(entityClass);
 	}
 

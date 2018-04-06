@@ -160,48 +160,45 @@ public class SpannerTemplate implements SpannerOperations {
 				.getPropertyAccessor(entity);
 
 		spannerPersistentEntity.doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					if (ConversionUtils
-							.isSpannerTableProperty(spannerPersistentProperty)) {
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> ConversionUtils
+						.applyIfChildEntityType(spannerPersistentProperty, childType -> {
 
-						BiFunction<Class, String, List> getChildRows = (propType,
-								childTable) -> find(propType,
-										SpannerStatementQueryExecutor
-												.getChildrenRowsQuery(
-														spannerPersistentEntity, entity,
-														childTable),
-										timestamp == null ? null
-												: new SpannerQueryOptions()
-														.setTimestamp(timestamp));
+							BiFunction<Class, String, List> getChildRows = (propType,
+									childTable) -> find(propType,
+											SpannerStatementQueryExecutor
+													.getChildrenRowsQuery(
+															spannerPersistentEntity,
+															entity, childTable),
+											timestamp == null ? null
+													: new SpannerQueryOptions()
+															.setTimestamp(timestamp));
 
-						/*
-						 * If the property is a single item then we retrieve it
-						 * immediately. However, to prevent an exploding number of
-						 * retrievals, List-type child properties are retrieved lazily.
-						 */
-						if (!ConversionUtils.isIterableNonByteArrayType(
-								spannerPersistentProperty.getType())) {
-							Class propType = spannerPersistentProperty.getType();
-							SpannerPersistentEntity childPersistentEntity = this.mappingContext
-									.getPersistentEntity(propType);
-							accessor.setProperty(spannerPersistentProperty,
-									getChildRows
-											.apply(propType,
-													childPersistentEntity.tableName())
-											.get(0));
-						}
-						else {
-							Class propType = spannerPersistentProperty
-									.getColumnInnerType();
-							SpannerPersistentEntity childPersistentEntity = this.mappingContext
-									.getPersistentEntity(propType);
-							accessor.setProperty(spannerPersistentProperty,
-									new SpannerLazyList<>(
-											() -> getChildRows.apply(propType,
-													childPersistentEntity.tableName())));
-						}
-					}
-				});
+							/*
+							 * If the property is a single item then we retrieve it
+							 * immediately. However, to prevent an exploding number of
+							 * retrievals, List-type child properties are retrieved
+							 * lazily.
+							 */
+							if (!ConversionUtils.isIterableNonByteArrayType(
+									spannerPersistentProperty.getType())) {
+								SpannerPersistentEntity childPersistentEntity = this.mappingContext
+										.getPersistentEntity(childType);
+								accessor.setProperty(spannerPersistentProperty,
+										getChildRows
+												.apply(childType,
+														childPersistentEntity.tableName())
+												.get(0));
+							}
+							else {
+								SpannerPersistentEntity childPersistentEntity = this.mappingContext
+										.getPersistentEntity(childType);
+								accessor.setProperty(spannerPersistentProperty,
+										new SpannerLazyList<>(() -> getChildRows.apply(
+												childType,
+												childPersistentEntity.tableName())));
+							}
+							return null;
+						}));
 	}
 
 	@Override

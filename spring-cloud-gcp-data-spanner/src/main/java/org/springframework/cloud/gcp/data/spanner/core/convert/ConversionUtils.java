@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -261,11 +262,32 @@ public class ConversionUtils {
 				&& !ByteArray.class.isAssignableFrom(propType);
 	}
 
+	/**
+	 * Applies the provided function on the underlying child-entity class if the property
+	 * is indeed a child entity and returns the result. Returns null if the property is
+	 * not a child entity.
+	 * @param spannerPersistentProperty the property to check if it is a child entity.
+	 * @param function the function to apply to the child entity's class.
+	 * @param <T> the result type.
+	 * @return returns the result of the given function if the property is a child entity.
+	 * returns null otherwise.
+	 */
+	public static <T> T applyIfChildEntityType(
+			SpannerPersistentProperty spannerPersistentProperty,
+			Function<Class, T> function) {
+		if (!isSpannerTableProperty(spannerPersistentProperty)) {
+			return null;
+		}
+		Class propType = spannerPersistentProperty.getType();
+		return function.apply(isIterableNonByteArrayType(propType)
+				? spannerPersistentProperty.getColumnInnerType()
+				: propType);
+	}
+
 	static Iterable convertIterable(Iterable source, Class targetType,
 			AbstractSpannerCustomConverter converter) {
 		return (Iterable) StreamSupport.stream(source.spliterator(), false)
 				.map(item -> converter.convert(item, targetType))
 				.collect(Collectors.toList());
-
 	}
 }

@@ -99,47 +99,50 @@ public class SpannerMappingContext extends
 
 	@Override
 	public SpannerPersistentEntity<?> getPersistentEntity(TypeInformation<?> type) {
-		SpannerPersistentEntityImpl spannerPersistentEntity = (SpannerPersistentEntityImpl) super.getPersistentEntity(
+		SpannerPersistentEntityImpl spannerPersistentEntity = (SpannerPersistentEntityImpl)
+				super.getPersistentEntity(
 				type);
 
 		// verify that any child Table entities obey the Spanner parent-child key
 		// structure.
 		spannerPersistentEntity.doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					if (!ConversionUtils
-							.isSpannerTableProperty(spannerPersistentProperty)) {
-						return;
-					}
-					Class subEntityType = ConversionUtils.isIterableNonByteArrayType(
-							spannerPersistentProperty.getType())
-									? spannerPersistentProperty.getColumnInnerType()
-									: spannerPersistentProperty.getType();
 
-					SpannerPersistentEntityImpl childEntity = (SpannerPersistentEntityImpl) super.getPersistentEntity(
-							subEntityType);
+					ConversionUtils.applyIfChildEntityType(spannerPersistentProperty,
+							childType -> {
+								SpannerPersistentEntityImpl childEntity =
+										(SpannerPersistentEntityImpl) super.getPersistentEntity(
+										childType);
 
-					SpannerPersistentProperty[] primaryKeyProperties = spannerPersistentEntity
-							.getPrimaryKeyProperties();
-					SpannerPersistentProperty[] childKeyProperties = childEntity
-							.getPrimaryKeyProperties();
+								SpannerPersistentProperty[] primaryKeyProperties = spannerPersistentEntity
+										.getPrimaryKeyProperties();
+								SpannerPersistentProperty[] childKeyProperties = childEntity
+										.getPrimaryKeyProperties();
 
-					if (primaryKeyProperties.length >= childKeyProperties.length) {
-						throw new SpannerDataException(
-								"A child table must contain the primary key columns of its "
-										+ "parent in the same order starting the first column with additional"
-										+ " key columns after.");
-					}
+								if (primaryKeyProperties.length >= childKeyProperties.length) {
+									throw new SpannerDataException(
+											"A child table must contain the primary key columns of its "
+													+ "parent in the same order starting the first "
+													+ "column with additional"
+													+ " key columns after.");
+								}
 
-					for (int i = 0; i < primaryKeyProperties.length; i++) {
-						SpannerPersistentProperty parentKey = primaryKeyProperties[i];
-						SpannerPersistentProperty childKey = childKeyProperties[i];
-						if (!parentKey.getColumnName().equals(childKey.getColumnName())
-								|| !parentKey.getType().equals(childKey.getType())) {
-							throw new SpannerDataException(
-									"The child primary key column at position " + (i + 1)
-											+ " does not match that of its parent");
-						}
-					}
+								for (int i = 0; i < primaryKeyProperties.length; i++) {
+									SpannerPersistentProperty parentKey = primaryKeyProperties[i];
+									SpannerPersistentProperty childKey = childKeyProperties[i];
+									if (!parentKey.getColumnName()
+											.equals(childKey.getColumnName())
+											|| !parentKey.getType()
+													.equals(childKey.getType())) {
+										throw new SpannerDataException(
+												"The child primary key column at position "
+														+ (i + 1)
+														+ " does not match that of its parent");
+									}
+								}
+								return null;
+							});
+
 				});
 
 		return spannerPersistentEntity;
