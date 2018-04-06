@@ -18,13 +18,11 @@ package com.example;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
 
 /**
  * @author Chengyuan Zhao
  */
 @SpringBootApplication
-@EnableSpannerRepositories(namedQueriesLocation = "classpath:spanner-named-queries.properties")
 public class SpannerApplication {
 
 	public static void main(String[] args) {

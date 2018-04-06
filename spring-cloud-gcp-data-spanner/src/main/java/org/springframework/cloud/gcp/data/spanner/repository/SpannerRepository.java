@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository;
 
-import com.google.cloud.spanner.Key;
-
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
@@ -25,7 +23,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public interface SpannerRepository<T> extends PagingAndSortingRepository<T, Key> {
+public interface SpannerRepository<T, ID> extends PagingAndSortingRepository<T, ID> {
 
 	/**
 	 * Gets a {@link SpannerOperations}, which allows more-direct access to Google Spanner

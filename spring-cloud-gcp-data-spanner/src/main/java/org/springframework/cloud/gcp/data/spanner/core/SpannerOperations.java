@@ -38,13 +38,6 @@ import org.springframework.data.domain.Sort;
 public interface SpannerOperations {
 
 	/**
-	 * Gets the key for the given object.
-	 * @param object
-	 * @return
-	 */
-	Key getId(Object object);
-
-	/**
 	 * Finds a single stored object using a key.
 	 * @param entityClass the type of the object to retrieve.
 	 * @param key the key of the object.

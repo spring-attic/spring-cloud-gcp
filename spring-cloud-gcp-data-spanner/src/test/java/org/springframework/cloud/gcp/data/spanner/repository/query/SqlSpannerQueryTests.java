@@ -25,13 +25,19 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
-import org.springframework.data.annotation.Id;
+import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -43,35 +49,49 @@ public class SqlSpannerQueryTests {
 
 	private QueryMethod queryMethod;
 
+	private EvaluationContextProvider evaluationContextProvider;
+
+	private SpelExpressionParser expressionParser;
+
 	@Before
 	public void initMocks() {
 		this.queryMethod = mock(QueryMethod.class);
 		this.spannerOperations = mock(SpannerOperations.class);
+		this.expressionParser = new SpelExpressionParser();
 	}
 
 	private SqlSpannerQuery createQuery(String sql) {
 		return new SqlSpannerQuery(Trade.class, this.queryMethod, this.spannerOperations,
-				sql);
+				sql, this.evaluationContextProvider, this.expressionParser,
+				new SpannerMappingContext());
 	}
 
 	@Test
 	public void compoundNameConventionTest() {
 
-		String sql = "SELECT DISTINCT * FROM trades WHERE ( action=@tag0 AND ticker=@tag1 ) OR "
+		String sql = "SELECT DISTINCT * FROM "
+				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:"
+				+ " WHERE ( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3;";
 
-		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
+		String entityResolvedSql = "SELECT DISTINCT * FROM " + "trades"
+				+ " WHERE ( action=@tag0 AND ticker=@tag1 ) OR "
+				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
+				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
+				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3;";
 
 		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, "blahblah",
 				1.11, 2.22, };
 
-		when(this.spannerOperations.find(any(), (Statement) any(), any()))
+		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
+
+		when(this.spannerOperations.find(eq(Trade.class), (Statement) any()))
 				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
 
-					assertEquals(sql, statement.getSql());
+					assertEquals(entityResolvedSql, statement.getSql());
 
 					Map<String, Value> paramMap = statement.getParameters();
 
@@ -88,11 +108,13 @@ public class SqlSpannerQueryTests {
 				});
 
 		sqlSpannerQuery.execute(params);
+
+		verify(this.spannerOperations, times(1)).find(any(), (Statement) any());
 	}
 
 	@Table(name = "trades")
 	private static class Trade {
-		@Id
+		@PrimaryKeyColumn
 		String id;
 
 		String action;

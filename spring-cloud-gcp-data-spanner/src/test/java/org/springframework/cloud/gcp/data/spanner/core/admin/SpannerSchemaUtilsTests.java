@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.core.admin;
 import java.util.List;
 
 import com.google.cloud.ByteArray;
+import com.google.cloud.spanner.Key;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,12 +39,12 @@ public class SpannerSchemaUtilsTests {
 
 	private SpannerMappingContext spannerMappingContext;
 
-	private SpannerSchemaUtils mappingSchemaGenerator;
+	private SpannerSchemaUtils spannerSchemaUtils;
 
 	@Before
 	public void setUp() {
 		this.spannerMappingContext = new SpannerMappingContext();
-		this.mappingSchemaGenerator = new SpannerSchemaUtils(
+		this.spannerSchemaUtils = new SpannerSchemaUtils(
 				this.spannerMappingContext,
 				new MappingSpannerConverter(this.spannerMappingContext));
 	}
@@ -51,7 +52,7 @@ public class SpannerSchemaUtilsTests {
 	@Test
 	public void getDropDDLTest() {
 		assertEquals("DROP TABLE custom_test_table",
-				this.mappingSchemaGenerator.getDropTableDDLString(TestEntity.class));
+				this.spannerSchemaUtils.getDropTableDDLString(TestEntity.class));
 	}
 
 	@Test
@@ -60,8 +61,17 @@ public class SpannerSchemaUtilsTests {
 				+ ", custom_col STRING(MAX) , other STRING(MAX) , bytes BYTES(MAX) "
 				+ ", bytesList ARRAY<BYTES(MAX)> , integerList ARRAY<INT64> "
 				+ ", doubles ARRAY<FLOAT64> ) PRIMARY KEY ( id , id2 )",
-				this.mappingSchemaGenerator.getCreateTableDDLString(TestEntity.class));
+				this.spannerSchemaUtils.getCreateTableDDLString(TestEntity.class));
 	}
+
+  @Test
+  public void getIdTest() {
+    TestEntity t = new TestEntity();
+    t.id = "aaa";
+    t.id2 = 3L;
+    assertEquals(Key.newBuilder().append(t.id).append(t.id2).build(),
+        this.spannerSchemaUtils.getId(t));
+  }
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {

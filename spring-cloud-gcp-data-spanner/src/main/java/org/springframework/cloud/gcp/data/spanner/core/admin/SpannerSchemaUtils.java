@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.admin;
 
+import com.google.cloud.spanner.Key;
 import java.util.StringJoiner;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
@@ -44,6 +45,18 @@ public class SpannerSchemaUtils {
 		this.mappingContext = mappingContext;
 		this.spannerConverter = spannerConverter;
 	}
+
+  /**
+   * Gets the key for the given object.
+   * @param object
+   * @return
+   */
+  public Key getId(Object object) {
+    SpannerPersistentEntity persistentEntity = this.mappingContext
+        .getPersistentEntity(object.getClass());
+    return (Key) persistentEntity.getPropertyAccessor(object)
+        .getProperty(persistentEntity.getIdProperty());
+  }
 
 	/**
 	 * Gets the DDL string to create the table for the given entity in Spanner. This is

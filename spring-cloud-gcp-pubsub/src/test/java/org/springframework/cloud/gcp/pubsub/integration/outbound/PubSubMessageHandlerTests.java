@@ -28,6 +28,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.expression.Expression;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
@@ -73,6 +74,17 @@ public class PubSubMessageHandlerTests {
 		this.adapter.handleMessage(this.message);
 		verify(this.pubSubTemplate, times(1))
 				.publish(eq("testTopic"),
+						eq(ByteString.copyFrom("testPayload", Charset.defaultCharset())),
+						isA(Map.class));
+	}
+
+	@Test
+	public void testPublishDynamicTopic() {
+		Message<?> dynamicMessage = new GenericMessage<>("testPayload",
+						ImmutableMap.of("key1", "value1", "key2", "value2", GcpPubSubHeaders.TOPIC, "dynamicTopic"));
+		this.adapter.handleMessage(dynamicMessage);
+		verify(this.pubSubTemplate, times(1))
+			.publish(eq("dynamicTopic"),
 						eq(ByteString.copyFrom("testPayload", Charset.defaultCharset())),
 						isA(Map.class));
 	}
