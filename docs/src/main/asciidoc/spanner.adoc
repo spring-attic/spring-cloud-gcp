@@ -34,8 +34,8 @@ This setup takes care of bringing in the latest compatible version of Cloud Java
 
 To setup Spring Data Spanner, you have to configure the following:
 
-* setup the connection details to Google Cloud Spanner
-* enable Spring Data Repositories (optional).
+* Setup the connection details to Google Cloud Spanner.
+* Enable Spring Data Repositories (optional).
 
 ==== Spanner settings
 
@@ -68,7 +68,7 @@ With our Spring Boot Starter for Spring Data Spanner, `@EnableSpannerRepositorie
 
 Our Spring Boot autoconfiguration creates the following beans available in the Spring application context:
 
-- an instance of `SpannerTemplate`,
+- an instance of `SpannerTemplate`
 - an instance of all the user defined repositories extending `SpannerRepository`, when repositories are enabled
 - an instance of 'DatabaseClient` from the Spanner java client libraries, for convenience and lower level API access
 
@@ -127,7 +127,7 @@ The table name will be resolved only if the `tableNameSuffix` value/bean in the 
 
 `SpannerOperations` and its implementation, `SpannerTemplate` provides the Template pattern familiar for Spring developers and as such provides:
 
- - Resource management,
+ - Resource management
  - One-stop-shop to Spanner operations with the Spring Data POJO mapping and conversion features
  - Exception conversion
 
@@ -389,7 +389,7 @@ Using the `@Query` annotation:
   List<Trade> fetchByActionNamedQuery(String action);
 ----
 
-Table names can be used directly, for example, "trades" in the above example. Alternatively, table names can be resolved from the `@Table` annotation on domain classes as well. In this case, the query should refer to table names with fully qualified classnames between `%` characters: `%fully.qualified.ClassName%`. A full example would look like this:
+Table names can be used directly, for example, "trades" in the above example. Alternatively, table names can be resolved from the `@Table` annotation on domain classes as well. In this case, the query should refer to table names with fully qualified classnames between `:` characters: `:fully.qualified.ClassName:`. A full example would look like this:
 
 [source, java]
 ----
