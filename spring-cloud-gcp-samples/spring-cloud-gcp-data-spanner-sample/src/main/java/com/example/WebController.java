@@ -22,7 +22,7 @@ import com.google.cloud.spanner.Key;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaOperations;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,7 +40,7 @@ public class WebController {
 	TradeRepository tradeRepository;
 
 	@Autowired
-	SpannerSchemaOperations spannerSchemaOperations;
+	SpannerSchemaUtils spannerSchemaOperations;
 
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String demoSpanner() {

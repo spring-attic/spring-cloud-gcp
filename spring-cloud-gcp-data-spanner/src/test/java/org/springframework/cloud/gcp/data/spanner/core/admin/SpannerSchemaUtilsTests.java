@@ -35,16 +35,16 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author Chengyuan Zhao
  */
-public class SpannerSchemaOperationsTests {
+public class SpannerSchemaUtilsTests {
 
 	private SpannerMappingContext spannerMappingContext;
 
-	private SpannerSchemaOperations mappingSchemaGenerator;
+	private SpannerSchemaUtils spannerSchemaUtils;
 
 	@Before
 	public void setUp() {
 		this.spannerMappingContext = new SpannerMappingContext();
-		this.mappingSchemaGenerator = new SpannerSchemaOperations(
+		this.spannerSchemaUtils = new SpannerSchemaUtils(
 				this.spannerMappingContext,
 				new MappingSpannerConverter(this.spannerMappingContext));
 	}
@@ -55,7 +55,7 @@ public class SpannerSchemaOperationsTests {
 		t.id = "aaa";
 		t.id2 = 3L;
 		assertEquals(Key.newBuilder().append(t.id).append(t.id2).build(),
-				this.mappingSchemaGenerator.getId(t));
+				this.spannerSchemaUtils.getId(t));
 	}
 
 	@Table(name = "custom_test_table")

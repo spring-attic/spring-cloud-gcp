@@ -24,6 +24,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -147,6 +148,10 @@ public class SimpleSpannerRepository implements SpannerRepository {
 				kb.appendObject(keyPart);
 			}
 			k = kb.build();
+			if (k.size() == 0) {
+				throw new SpannerDataException(
+						"A key must have at least one component, but 0 were given.");
+			}
 		}
 		else {
 			k = key instanceof Key ? (Key) key : Key.of(key);

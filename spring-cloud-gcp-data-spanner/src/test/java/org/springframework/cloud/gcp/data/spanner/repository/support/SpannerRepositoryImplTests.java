@@ -24,6 +24,7 @@ import com.google.cloud.spanner.KeySet;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
@@ -157,6 +158,13 @@ public class SpannerRepositoryImplTests {
 		assertEquals(ret, new SimpleSpannerRepository(operations, Object.class)
 				.findById(new Object[] { "key", timestamp }).get());
 		verify(operations, times(1)).find(eq(Object.class), eq(key));
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void findByIdEmptyKeyTest() {
+		SpannerOperations operations = mock(SpannerOperations.class);
+		new SimpleSpannerRepository(operations, Object.class).findById(new Object[] {})
+				.get();
 	}
 
 	@Test

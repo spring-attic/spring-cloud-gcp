@@ -24,15 +24,17 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.util.Assert;
 
 /**
+ *	Contains functions related to the table schema of entities.
+ *
  * @author Chengyuan Zhao
  */
-public class SpannerSchemaOperations {
+public class SpannerSchemaUtils {
 
 	private final SpannerMappingContext mappingContext;
 
 	private final SpannerConverter spannerConverter;
 
-	public SpannerSchemaOperations(SpannerMappingContext mappingContext,
+	public SpannerSchemaUtils(SpannerMappingContext mappingContext,
 			SpannerConverter spannerConverter) {
 		Assert.notNull(mappingContext,
 				"A valid mapping context for Spanner is required.");
