@@ -31,25 +31,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityImpl;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.admin.MappingSchemaOperations;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.data.util.TypeInformation;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
- * This class provides the foundation for the integration test framework for Spanner.
- * Its responsibilities:
+ * This class provides the foundation for the integration test framework for Spanner. Its
+ * responsibilities:
  * <ul>
- *   <li>initializes the Spring application context</li>
- *   <li>sets up the database schema</li>
- *   <li>manages table suffix generation so that parallel test cases don't collide</li>
+ * <li>initializes the Spring application context</li>
+ * <li>sets up the database schema</li>
+ * <li>manages table suffix generation so that parallel test cases don't collide</li>
  * </ul>
  * <p>
  * Prerequisites for running integration tests:
@@ -60,19 +57,23 @@ import static org.mockito.Mockito.when;
  * <code>test.integration.spanner.instance</code>
  * </p>
  * <p>
- * Within the <code>integration-instance</code> instance, the tests rely on a single database for
- * tests, <code>integration-db</code>. This is automatically created, if doesn't exist.
- * The tables are generated to have a unique suffix, which is updated on the entity
- * annotations as well dynamically to avoid collisions of multiple parallel tests running
- * against the same instance.
+ * Within the <code>integration-instance</code> instance, the tests rely on a single
+ * database for tests, <code>integration-db</code>. This is automatically created, if
+ * doesn't exist. The tables are generated to have a unique suffix, which is updated on
+ * the entity annotations as well dynamically to avoid collisions of multiple parallel
+ * tests running against the same instance.
  * </p>
  *
  * @author Balint Pato
+ * @author Chengyuan Zhao
  */
 @SpringBootTest(classes = { IntegrationTestConfiguration.class })
 public abstract class AbstractSpannerIntegrationTest {
 
 	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
+
+	@Autowired
+	protected SpannerOperations spannerOperations;
 
 	@Autowired
 	protected DatabaseAdminClient databaseAdminClient;
@@ -83,16 +84,19 @@ public abstract class AbstractSpannerIntegrationTest {
 	@Autowired
 	protected ApplicationContext applicationContext;
 
+	@Autowired
+	MappingSchemaOperations mappingSchemaGenerator;
+
 	protected String tableNameSuffix;
 
 	private boolean setupFailed;
 
 	@BeforeClass
 	public static void checkToRun() {
-		assumeThat("Spanner integration tests are disabled. Please use '-Dit.spanner=true' "
-				+ "to enable them. ",
-				System.getProperty("it.spanner"),
-				is("true"));
+		assumeThat(
+				"Spanner integration tests are disabled. Please use '-Dit.spanner=true' "
+						+ "to enable them. ",
+				System.getProperty("it.spanner"), is("true"));
 	}
 
 	@Before
@@ -115,36 +119,29 @@ public abstract class AbstractSpannerIntegrationTest {
 		String database = this.databaseId.getDatabase();
 
 		if (!hasDatabaseDefined(instanceId, database)) {
-			this.databaseAdminClient.createDatabase(instanceId, database,
-					createSchemaStatements()).waitFor();
+			this.databaseAdminClient
+					.createDatabase(instanceId, database, createSchemaStatements())
+					.waitFor();
 			System.out.println(
-					this.getClass() + " - Integration database created with schema: " + createSchemaStatements());
+					this.getClass() + " - Integration database created with schema: "
+							+ createSchemaStatements());
 		}
 		else {
 			this.databaseAdminClient.updateDatabaseDdl(instanceId, database,
 					createSchemaStatements(), null).waitFor();
-			System.out.println(this.getClass() + " - schema created: " + createSchemaStatements());
+			System.out.println(
+					this.getClass() + " - schema created: " + createSchemaStatements());
 		}
 	}
 
 	protected List<String> createSchemaStatements() {
-		return Arrays.asList(Trade.createDDL(tableNameFor(Trade.class)));
+		return Arrays
+				.asList(this.mappingSchemaGenerator.getCreateTableDDLString(Trade.class));
 	}
 
 	protected Iterable<String> dropSchemaStatements() {
-		return Arrays.asList(Trade.dropDDL(tableNameFor(Trade.class)));
-	}
-
-	protected String tableNameFor(Class<Trade> type) {
-		return createDummyEntity(type).tableName();
-	}
-
-	protected <T> SpannerPersistentEntity createDummyEntity(Class<T> type) {
-		TypeInformation<T> typeInformation = mock(TypeInformation.class);
-		when(typeInformation.getType()).thenReturn(type);
-		SpannerPersistentEntity dummyTrade = new SpannerPersistentEntityImpl<>(typeInformation);
-		dummyTrade.setApplicationContext(this.applicationContext);
-		return dummyTrade;
+		return Arrays
+				.asList(this.mappingSchemaGenerator.getDropTableDDLString(Trade.class));
 	}
 
 	@After
@@ -158,13 +155,13 @@ public abstract class AbstractSpannerIntegrationTest {
 			String database = this.databaseId.getDatabase();
 			if (hasDatabaseDefined(instanceId, database)) {
 				this.databaseAdminClient.updateDatabaseDdl(instanceId, database,
-						dropSchemaStatements(),
-						null).waitFor();
+						dropSchemaStatements(), null).waitFor();
 				System.out.println("Integration database cleaned up!");
 			}
 		}
 		finally {
-			// we need to remove the extra bean created even if there is a failure at startup
+			// we need to remove the extra bean created even if there is a failure at
+			// startup
 			DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) this.applicationContext
 					.getAutowireCapableBeanFactory();
 			beanFactory.destroySingleton(TABLE_NAME_SUFFIX_BEAN_NAME);
@@ -172,8 +169,8 @@ public abstract class AbstractSpannerIntegrationTest {
 	}
 
 	private boolean hasDatabaseDefined(String instanceId, String database) {
-		Stream<String> databaseNames = StreamSupport
-				.stream(this.databaseAdminClient.listDatabases(instanceId).getValues().spliterator(), false)
+		Stream<String> databaseNames = StreamSupport.stream(this.databaseAdminClient
+				.listDatabases(instanceId).getValues().spliterator(), false)
 				.map(d -> d.getId().getDatabase());
 		return databaseNames.anyMatch(database::equals);
 	}

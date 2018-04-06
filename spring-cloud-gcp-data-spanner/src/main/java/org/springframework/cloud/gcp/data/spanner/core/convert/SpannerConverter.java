@@ -82,4 +82,44 @@ public interface SpannerConverter extends EntityReader<Object, Struct>,
 	 * are written.
 	 */
 	void write(Object source, WriteBuilder sink, Set<String> includeColumns);
+
+	/**
+	 * Determines if this converter can handle the given types for writing to Spanner
+	 * @param type the type of the property that data will be converted from Spanner in to
+	 * @param spannerSupportedType the desired Spanner supported type for reading.
+	 * @return true if the conversion is possible. false otherwise
+	 * @throws org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException if
+	 * the given desired Spanner supported type is not actually a supported Spanner type
+	 */
+	boolean canHandlePropertyTypeForSingularRead(Class type, Class spannerSupportedType);
+
+	/**
+	 * Determines if this converter can handle the given types for writing to Spanner
+	 * @param type the type of the property that data will be converted from Spanner in to
+	 * @param spannerSupportedArrayInnerType the desired Spanner supported type for reading.
+	 * @return true if the conversion is possible. false otherwise
+	 * @throws org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException if
+	 * the given desired Spanner supported type is not actually a supported Spanner type
+	 */
+	boolean canHandlePropertyTypeForArrayRead(Class type, Class spannerSupportedArrayInnerType);
+
+	/**
+	 * Determines if this converter can handle the given types for writing to Spanner
+	 * @param type the type of the property to be written to Spanner
+	 * @param spannerSupportedType the desired Spanner supported type for writing.
+	 * @return true if the conversion is possible. false otherwise
+	 * @throws org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException if
+	 * the given desired Spanner supported type is not actually a supported Spanner type
+	 */
+	boolean canHandlePropertyTypeForSingularWrite(Class type, Class spannerSupportedType);
+
+	/**
+	 * Determines if this converter can handle the given types for writing to Spanner
+	 * @param type the type of the property to be written to Spanner
+	 * @param spannerSupportedArrayInnerType the desired Spanner supported type for writing.
+	 * @return true if the conversion is possible. false otherwise
+	 * @throws org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException if
+	 * the given desired Spanner supported type is not actually a supported Spanner type
+	 */
+	boolean canHandlePropertyTypeForArrayWrite(Class type, Class spannerSupportedArrayInnerType);
 }
