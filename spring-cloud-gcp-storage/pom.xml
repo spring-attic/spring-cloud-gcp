@@ -13,6 +13,7 @@
 	<description>Spring Cloud GCP Storage Module</description>
 	<properties>
 		<main.basedir>${basedir}/../..</main.basedir>
+		<it.storage>false</it.storage>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -34,4 +35,17 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<environmentVariables>
+						<forceIntegrationTests>${it.storage}</forceIntegrationTests>
+					</environmentVariables>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
