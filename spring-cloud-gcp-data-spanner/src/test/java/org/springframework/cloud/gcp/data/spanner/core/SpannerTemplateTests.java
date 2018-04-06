@@ -455,15 +455,6 @@ public class SpannerTemplateTests {
 		assertEquals("c", ((TestEntity) page.getContent().get(2)).id);
 	}
 
-	@Test
-	public void getIdTest() {
-		TestEntity t = new TestEntity();
-		t.id = "aaa";
-		t.id2 = 3L;
-		assertEquals(Key.newBuilder().append(t.id).append(t.id2).build(),
-				this.spannerTemplate.getId(t));
-	}
-
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
 		@PrimaryKeyColumn(keyOrder = 1)
