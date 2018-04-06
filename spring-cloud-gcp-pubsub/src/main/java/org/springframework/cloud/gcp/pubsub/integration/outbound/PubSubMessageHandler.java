@@ -25,6 +25,7 @@ import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.integration.expression.ExpressionUtils;
@@ -95,9 +96,12 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		Map<String, String> headers = new HashMap<>();
 		message.getHeaders().forEach(
 				(key, value) -> headers.put(key, value.toString()));
-
+		String destTopic = this.topic;
+		if (headers.containsKey(GcpPubSubHeaders.TOPIC)) {
+			destTopic = headers.get(GcpPubSubHeaders.TOPIC);
+		}
 		ListenableFuture<String> pubsubFuture =
-				this.pubSubTemplate.publish(this.topic, pubsubPayload, headers);
+				this.pubSubTemplate.publish(destTopic, pubsubPayload, headers);
 
 		if (this.publishCallback != null) {
 			pubsubFuture.addCallback(this.publishCallback);
