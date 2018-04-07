@@ -18,15 +18,13 @@ package com.example;
 
 import java.util.List;
 
-import com.google.cloud.spanner.Key;
-
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public interface TradeRepository extends SpannerRepository<Trade, Key> {
+public interface TradeRepository extends SpannerRepository<Trade> {
 
 	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
 			String action, String symbol, String traderId);
