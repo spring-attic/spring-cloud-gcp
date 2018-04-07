@@ -34,7 +34,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
- * Represents an persistent property just to represent Spanner primary keys, and does not
+ * Represents an persistent property just to represent spanner primary keys, and does not
  * correspond to actual properties of POJOs, as it might even be a composite, multi-column key.
  *
  * @author Chengyuan Zhao
@@ -48,7 +48,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	public SpannerCompositeKeyProperty(SpannerPersistentEntity spannerPersistentEntity,
 			SpannerPersistentProperty[] primaryKeyColumns) {
 		Assert.notNull(spannerPersistentEntity,
-				"A valid Spanner persistent entity is required.");
+				"A valid spanner persistent entity is required.");
 		Assert.notNull(primaryKeyColumns,
 				"A valid array of primary key properties is required.");
 		this.primaryKeyColumns = primaryKeyColumns;

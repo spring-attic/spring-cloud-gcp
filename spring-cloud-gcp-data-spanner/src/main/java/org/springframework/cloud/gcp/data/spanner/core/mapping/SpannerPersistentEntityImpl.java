@@ -40,7 +40,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.StringUtils;
 
 /**
- * Represents a Google Spanner table and its columns' mapping to fields within an entity
+ * Represents a Google spanner table and its columns' mapping to fields within an entity
  * type.
  *
  * @author Ray Tsang

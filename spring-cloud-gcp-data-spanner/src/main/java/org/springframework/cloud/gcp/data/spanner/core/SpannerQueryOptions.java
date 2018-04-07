@@ -27,7 +27,7 @@ import com.google.cloud.spanner.Options.QueryOption;
 import org.springframework.util.Assert;
 
 /**
- * Encapsulates Spanner query options.
+ * Encapsulates spanner query options.
  * @author Chengyuan Zhao
  */
 public class SpannerQueryOptions {

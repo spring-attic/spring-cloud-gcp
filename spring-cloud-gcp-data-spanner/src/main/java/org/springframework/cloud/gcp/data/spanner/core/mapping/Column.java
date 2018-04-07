@@ -35,9 +35,9 @@ import java.lang.annotation.Target;
 public @interface Column {
 
 	/**
-	 * The custom name of the column in the Spanner table, which can differ from the name of the
+	 * The custom name of the column in the spanner table, which can differ from the name of the
 	 * field which it annotates.
-	 * @return the name of the column in the Spanner table
+	 * @return the name of the column in the spanner table
 	 */
 	String name();
 }

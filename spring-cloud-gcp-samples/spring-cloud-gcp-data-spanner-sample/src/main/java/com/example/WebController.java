@@ -78,7 +78,7 @@ public class WebController {
 		this.tradeRepository.findByAction("BUY").stream()
 				.forEach(trade -> reply.append(trade.toString() + "<br />"));
 
-		reply.append("These are the Spanner primary keys for the trades:<br />");
+		reply.append("These are the spanner primary keys for the trades:<br />");
 
 		allTrades.stream().forEach(
 				trade -> reply.append(this.spannerSchemaOperations.getId(trade) + "<br />"));

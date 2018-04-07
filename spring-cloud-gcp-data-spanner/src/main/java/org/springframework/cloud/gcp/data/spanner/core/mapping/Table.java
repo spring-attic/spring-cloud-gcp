@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
 public @interface Table {
 
 	/**
-	 * The name of the table in Spanner, which can differ from the name of the class which it
+	 * The name of the table in spanner, which can differ from the name of the class which it
 	 * annotates
 	 * @return The name of the table
 	 */

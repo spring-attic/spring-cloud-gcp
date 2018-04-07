@@ -47,7 +47,7 @@ public class MappingSpannerConverter implements SpannerConverter {
 
 	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext) {
 		Assert.notNull(spannerMappingContext,
-				"A valid mapping context for Spanner is required.");
+				"A valid mapping context for spanner is required.");
 		this.readConverter = new MappingSpannerReadConverter(spannerMappingContext,
 				getCustomConversions(ConversionUtils.DEFAULT_SPANNER_READ_CONVERTERS));
 		this.writeConverter = new MappingSpannerWriteConverter(spannerMappingContext,
@@ -57,7 +57,7 @@ public class MappingSpannerConverter implements SpannerConverter {
 	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext,
 			Collection<Converter> writeConverters, Collection<Converter> readConverters) {
 		Assert.notNull(spannerMappingContext,
-				"A valid mapping context for Spanner is required.");
+				"A valid mapping context for spanner is required.");
 		this.readConverter = new MappingSpannerReadConverter(spannerMappingContext,
 				getCustomConversions(readConverters));
 		this.writeConverter = new MappingSpannerWriteConverter(spannerMappingContext,
@@ -67,7 +67,7 @@ public class MappingSpannerConverter implements SpannerConverter {
 	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext,
 			CustomConversions writeConversions, CustomConversions readConversions) {
 		Assert.notNull(spannerMappingContext,
-				"A valid mapping context for Spanner is required.");
+				"A valid mapping context for spanner is required.");
 		this.readConverter = new MappingSpannerReadConverter(spannerMappingContext,
 				readConversions);
 		this.writeConverter = new MappingSpannerWriteConverter(spannerMappingContext,

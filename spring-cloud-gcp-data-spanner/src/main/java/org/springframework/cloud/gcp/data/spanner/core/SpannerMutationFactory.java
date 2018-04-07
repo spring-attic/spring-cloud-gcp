@@ -24,7 +24,7 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 
 /**
- * Interface for a factory that creates Spanner mutation operation objects.
+ * Interface for a factory that creates spanner mutation operation objects.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
@@ -32,14 +32,14 @@ import com.google.cloud.spanner.Mutation;
 public interface SpannerMutationFactory {
 
 	/**
-	 * Stores a single object in Spanner.
+	 * Stores a single object in spanner.
 	 * @param object The object to store.
 	 * @return The mutation operation which will store the object.
 	 */
 	Mutation insert(Object object);
 
 	/**
-	 * Updates or inserts a single object in Spanner. The columns' values corresponding to
+	 * Updates or inserts a single object in spanner. The columns' values corresponding to
 	 * the object's fields are treated according to Mutation.Op.INSERT_OR_UPDATE.
 	 * @param object The object to update or newly insert.
 	 * @param includeColumns The columns to use in the operation. if null or empty
@@ -49,7 +49,7 @@ public interface SpannerMutationFactory {
 	Mutation upsert(Object object, Optional<Set<String>> includeColumns);
 
 	/**
-	 * Updates a single object in Spanner. The columns' values corresponding to the
+	 * Updates a single object in spanner. The columns' values corresponding to the
 	 * object's fields are treated according to Mutation.Op.UPDATE.
 	 * @param object The object to update.
 	 * @param includeColumns The columns to use in the operation. if null or empty
@@ -59,7 +59,7 @@ public interface SpannerMutationFactory {
 	Mutation update(Object object, Optional<Set<String>> includeColumns);
 
 	/**
-	 * Deletes several objects from Spanner.
+	 * Deletes several objects from spanner.
 	 * @param entityClass The type of the objects to delete.
 	 * @param entities A list of objects to delete. Each object can be a subtype of
 	 * entityClass.
@@ -69,14 +69,14 @@ public interface SpannerMutationFactory {
 	<T> Mutation delete(Class<T> entityClass, Iterable<? extends T> entities);
 
 	/**
-	 * Deletes a single object from Spanner.
+	 * Deletes a single object from spanner.
 	 * @param object The object to delete.
 	 * @return The delete mutation.
 	 */
 	Mutation delete(Object object);
 
 	/**
-	 * Deletes a set of keys from Spanner.
+	 * Deletes a set of keys from spanner.
 	 * @param entityClass The type of the entity to delete.
 	 * @param keys The keys of the objects to delete.
 	 * @return The delete mutation.
@@ -84,7 +84,7 @@ public interface SpannerMutationFactory {
 	Mutation delete(Class entityClass, KeySet keys);
 
 	/**
-	 * Deletes a key from Spanner.
+	 * Deletes a key from spanner.
 	 * @param entityClass The type of the entity to delete.
 	 * @param key The key of the object to delete.
 	 * @return The delete mutation.

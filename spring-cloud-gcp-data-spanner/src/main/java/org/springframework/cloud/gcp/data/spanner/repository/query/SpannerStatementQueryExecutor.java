@@ -33,7 +33,7 @@ import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.util.Pair;
 
 /**
- * Executes Google Spanner query statements using
+ * Executes Google spanner query statements using
  * {@link org.springframework.data.repository.query.parser.PartTree} parsed method
  * definitions.
  *
@@ -57,7 +57,7 @@ public class SpannerStatementQueryExecutor {
 			SpannerMappingContext spannerMappingContext) {
 		if (tree.isDelete()) {
 			throw new UnsupportedOperationException(
-					"Delete queries are not supported in Spanner");
+					"Delete queries are not supported in spanner");
 		}
 		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
 				spannerMappingContext, type);
@@ -75,12 +75,12 @@ public class SpannerStatementQueryExecutor {
 	}
 
 	/**
-	 * Creates a Spanner statement.
+	 * Creates a spanner statement.
 	 * @param sql the SQL string with tags.
 	 * @param tags the tags that appear in the SQL string.
 	 * @param params the parameters to substitute the tags. The ordering must be the same
 	 * as the tags.
-	 * @return an SQL statement ready to use with Spanner.
+	 * @return an SQL statement ready to use with spanner.
 	 * @throws IllegalArgumentException if the number of tags does not match the number of
 	 * params, or if a param of an unsupported type is given.
 	 */

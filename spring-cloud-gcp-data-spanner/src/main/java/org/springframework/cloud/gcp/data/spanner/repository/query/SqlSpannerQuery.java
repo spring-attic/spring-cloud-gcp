@@ -76,7 +76,7 @@ public class SqlSpannerQuery implements RepositoryQuery {
 		Matcher matcher = pattern.matcher(sql);
 		List<String> tags = new ArrayList<>();
 		while (matcher.find()) {
-			// The initial '@' character must be excluded for Spanner
+			// The initial '@' character must be excluded for spanner
 			tags.add(matcher.group().substring(1));
 		}
 		return tags;
@@ -94,7 +94,7 @@ public class SqlSpannerQuery implements RepositoryQuery {
 							.getPersistentEntity(entityClass);
 					if (spannerPersistentEntity == null) {
 						throw new SpannerDataException(
-								"The class used in the SQL statement is not a Spanner persistent entity: "
+								"The class used in the SQL statement is not a spanner persistent entity: "
 										+ className);
 					}
 					joiner.add(spannerPersistentEntity.tableName());

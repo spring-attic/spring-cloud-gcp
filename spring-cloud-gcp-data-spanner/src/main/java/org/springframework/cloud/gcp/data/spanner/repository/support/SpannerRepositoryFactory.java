@@ -62,15 +62,15 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport
 	 * Constructor
 	 * @param spannerMappingContext the mapping context used to get mapping metadata for
 	 * entity types.
-	 * @param spannerOperations the spanner operations object used by Spanner
+	 * @param spannerOperations the spanner operations object used by spanner
 	 * repositories.
 	 */
 	public SpannerRepositoryFactory(SpannerMappingContext spannerMappingContext,
 			SpannerOperations spannerOperations) {
 		Assert.notNull(spannerMappingContext,
-				"A valid Spanner mapping context is required.");
+				"A valid spanner mapping context is required.");
 		Assert.notNull(spannerOperations,
-				"A valid Spanner operations object is required.");
+				"A valid spanner operations object is required.");
 		this.spannerMappingContext = spannerMappingContext;
 		this.spannerOperations = spannerOperations;
 	}

@@ -34,7 +34,7 @@ import org.springframework.data.annotation.QueryAnnotation;
 @QueryAnnotation
 public @interface Query {
 	/**
-	 * Takes a Spanner SQL string to define the actual query to be executed. This one will
+	 * Takes a spanner SQL string to define the actual query to be executed. This one will
 	 * take precedence over the method name then.
 	 *
 	 * @return

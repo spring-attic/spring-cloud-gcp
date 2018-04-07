@@ -115,14 +115,14 @@ public class ConversionUtils {
 	};
 
 	/**
-	 * Converters from common types to those used by Spanner.
+	 * Converters from common types to those used by spanner.
 	 */
 	public static final Collection<Converter> DEFAULT_SPANNER_WRITE_CONVERTERS = ImmutableSet
 			.of(JAVA_TO_SPANNER_DATE_CONVERTER, INSTANT_TIMESTAMP_CONVERTER, JAVA_TO_SPANNER_BYTE_ARRAY_CONVERTER,
 					JAVA_TO_SPANNER_TIMESTAMP_CONVERTER);
 
 	/**
-	 * Converters from common types to those used by Spanner.
+	 * Converters from common types to those used by spanner.
 	 */
 	public static final Collection<Converter> DEFAULT_SPANNER_READ_CONVERTERS = ImmutableSet
 			.of(SPANNER_TO_JAVA_DATE_CONVERTER, TIMESTAMP_INSTANT_CONVERTER, SPANNER_TO_JAVA_BYTE_ARRAY_CONVERTER,

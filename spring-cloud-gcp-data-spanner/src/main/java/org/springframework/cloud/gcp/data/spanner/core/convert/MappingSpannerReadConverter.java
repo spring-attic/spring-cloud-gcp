@@ -91,9 +91,9 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 	}
 
 	/**
-	 * Reads a single POJO from a Spanner row.
+	 * Reads a single POJO from a spanner row.
 	 * @param type the type of POJO
-	 * @param source the Spanner row
+	 * @param source the spanner row
 	 * @param includeColumns the columns to read. If null then all columns will be read.
 	 * @param <R> the type of the POJO.
 	 * @return the POJO
@@ -118,7 +118,7 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 					}
 					catch (IllegalArgumentException e) {
 						throw new SpannerDataException(
-								"Unable to read column from Spanner results: "
+								"Unable to read column from spanner results: "
 										+ columnName,
 								e);
 					}

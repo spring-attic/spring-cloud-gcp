@@ -20,8 +20,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
 /**
- * Spanner specific interface for a {@link MutablePersistentEntity} stored
- * in a Google Spanner table.
+ * spanner specific interface for a {@link MutablePersistentEntity} stored
+ * in a Google spanner table.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
@@ -30,7 +30,7 @@ public interface SpannerPersistentEntity<T>
 		extends MutablePersistentEntity<T, SpannerPersistentProperty>, ApplicationContextAware {
 
 	/**
-	 * Gets the name of the Spanner table.
+	 * Gets the name of the spanner table.
 	 * @return the name of the table.
 	 */
 	String tableName();
