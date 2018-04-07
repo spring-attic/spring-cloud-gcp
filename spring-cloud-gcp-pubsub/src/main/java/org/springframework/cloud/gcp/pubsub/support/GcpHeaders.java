@@ -21,11 +21,9 @@ package org.springframework.cloud.gcp.pubsub.support;
  *
  * @author João André Martins
  */
-public abstract class GcpPubSubHeaders {
+public abstract class GcpHeaders {
 
-	private static final String PREFIX = "gcp_pubsub_";
+	private static final String PREFIX = "gcp_";
 
 	public static final String ACKNOWLEDGEMENT = PREFIX + "pub_sub_acknowledgement";
-
-	public static final String TOPIC = PREFIX + "topic";
 }
