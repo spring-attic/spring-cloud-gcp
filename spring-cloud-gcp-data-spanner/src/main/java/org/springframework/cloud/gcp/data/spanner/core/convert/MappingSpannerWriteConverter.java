@@ -235,7 +235,8 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 		if (toMethod == null) {
 			return false;
 		}
-		toMethod.apply(valueBinder, convert(value, targetType));
+		// We're just checking for the bind to have succeeded, we don't need to chain the result.
+		Object ignored = toMethod.apply(valueBinder, convert(value, targetType));
 		return true;
 	}
 }
