@@ -26,7 +26,7 @@ import com.google.cloud.spanner.Options.ReadOption;
 import org.springframework.util.Assert;
 
 /**
- * Encapsulates spanner read options.
+ * Encapsulates Spanner read options.
  * @author Chengyuan Zhao
  */
 public class SpannerReadOptions {

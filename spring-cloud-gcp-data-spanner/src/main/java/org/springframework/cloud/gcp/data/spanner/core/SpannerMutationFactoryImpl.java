@@ -44,7 +44,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
 	/**
 	 * Constructor
-	 * @param spannerConverter The object mapper used to convert between objects and spanner
+	 * @param spannerConverter The object mapper used to convert between objects and Spanner
 	 * data types.
 	 * @param spannerMappingContext The mapping context used to get metadata from entity
 	 * types.
@@ -52,9 +52,9 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	public SpannerMutationFactoryImpl(SpannerConverter spannerConverter,
 			SpannerMappingContext spannerMappingContext) {
 		Assert.notNull(spannerConverter,
-				"A valid results mapper for spanner is required.");
+				"A valid results mapper for Spanner is required.");
 		Assert.notNull(spannerMappingContext,
-				"A valid mapping context for spanner is required.");
+				"A valid mapping context for Spanner is required.");
 		this.spannerConverter = spannerConverter;
 		this.spannerMappingContext = spannerMappingContext;
 	}

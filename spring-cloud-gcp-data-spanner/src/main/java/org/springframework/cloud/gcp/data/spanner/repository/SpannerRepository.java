@@ -26,9 +26,9 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 public interface SpannerRepository<T, ID> extends PagingAndSortingRepository<T, ID> {
 
 	/**
-	 * Gets a {@link SpannerOperations}, which allows more-direct access to Google spanner
+	 * Gets a {@link SpannerOperations}, which allows more-direct access to Google Spanner
 	 * functions.
-	 * @return the operations object providing spanner functions.
+	 * @return the operations object providing Spanner functions.
 	 */
 	SpannerOperations getSpannerOperations();
 }

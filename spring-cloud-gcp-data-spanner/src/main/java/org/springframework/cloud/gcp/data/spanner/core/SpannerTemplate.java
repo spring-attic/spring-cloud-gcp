@@ -67,13 +67,13 @@ public class SpannerTemplate implements SpannerOperations {
 			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
 			SpannerMutationFactory spannerMutationFactory) {
 		Assert.notNull(databaseClient,
-				"A valid database client for spanner is required.");
+				"A valid database client for Spanner is required.");
 		Assert.notNull(mappingContext,
-				"A valid mapping context for spanner is required.");
+				"A valid mapping context for Spanner is required.");
 		Assert.notNull(spannerConverter,
-				"A valid results mapper for spanner is required.");
+				"A valid results mapper for Spanner is required.");
 		Assert.notNull(spannerMutationFactory,
-				"A valid spanner mutation factory is required.");
+				"A valid Spanner mutation factory is required.");
 		this.databaseClient = databaseClient;
 		this.mappingContext = mappingContext;
 		this.spannerConverter = spannerConverter;

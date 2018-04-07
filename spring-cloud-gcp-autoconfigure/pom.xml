@@ -123,7 +123,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- spanner -->
+        <!-- Spanner -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-gcp-data-spanner</artifactId>

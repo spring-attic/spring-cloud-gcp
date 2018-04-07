@@ -131,7 +131,7 @@ public class SpannerStatementQueryTests {
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
 
-		// This parameter is an unsupported type for spanner SQL.
+		// This parameter is an unsupported type for Spanner SQL.
 		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, new Trade(), "ignored", };
 
 		this.partTreeSpannerQuery.execute(params);

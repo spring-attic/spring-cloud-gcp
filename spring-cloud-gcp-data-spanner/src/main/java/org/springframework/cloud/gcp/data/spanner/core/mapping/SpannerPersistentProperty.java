@@ -22,7 +22,7 @@ import org.springframework.data.mapping.PersistentProperty;
 
 /**
  * Interface for a {@link PersistentProperty} of a {@link SpannerPersistentEntity}
- * to be stored in a Google spanner table.
+ * to be stored in a Google Spanner table.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
@@ -31,7 +31,7 @@ public interface SpannerPersistentProperty
 		extends PersistentProperty<SpannerPersistentProperty> {
 
 	/**
-	 * Gets the name of the column in the Google spanner table mapped to this property.
+	 * Gets the name of the column in the Google Spanner table mapped to this property.
 	 *
 	 * @return the name of the column.
 	 */
@@ -39,7 +39,7 @@ public interface SpannerPersistentProperty
 
 	/**
 	 * Gets the inner type of the column, which is meaningful for columns of type ARRAY in Google
-	 * spanner.
+	 * Spanner.
 	 * @return the inner type of the column. Returns null if no inner type is specified by annotation.
 	 */
 	Class getColumnInnerType();

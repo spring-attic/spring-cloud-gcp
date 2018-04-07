@@ -44,7 +44,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * This class provides the foundation for the integration test framework for spanner.
+ * This class provides the foundation for the integration test framework for Spanner.
  * Its responsibilities:
  * <ul>
  *   <li>initializes the Spring application context</li>
@@ -54,7 +54,7 @@ import static org.mockito.Mockito.when;
  * <p>
  * Prerequisites for running integration tests:
  *
- * For spanner integration tests, you will need to have an instance predefined, everything
+ * For Spanner integration tests, you will need to have an instance predefined, everything
  * else is generated. The instance by default is "integration-instance", which can be
  * overriden in <code>src/test/resources/application-test.properties</code>, the property:
  * <code>test.integration.spanner.instance</code>
@@ -89,7 +89,7 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	@BeforeClass
 	public static void checkToRun() {
-		assumeThat("spanner integration tests are disabled. Please use '-Dit.spanner=true' "
+		assumeThat("Spanner integration tests are disabled. Please use '-Dit.spanner=true' "
 				+ "to enable them. ",
 				System.getProperty("it.spanner"),
 				is("true"));

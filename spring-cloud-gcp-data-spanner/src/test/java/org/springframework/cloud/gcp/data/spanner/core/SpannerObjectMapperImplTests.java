@@ -485,7 +485,7 @@ public class SpannerObjectMapperImplTests {
 
 		double[] doubleArray;
 
-		// int is not a native spanner type, so this will utilize custom conversions.
+		// int is not a native Spanner type, so this will utilize custom conversions.
 		int intField;
 
 		@ColumnInnerType(innerType = Double.class)

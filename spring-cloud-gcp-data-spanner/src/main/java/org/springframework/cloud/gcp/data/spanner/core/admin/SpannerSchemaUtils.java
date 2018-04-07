@@ -37,9 +37,9 @@ public class SpannerSchemaUtils {
 	public SpannerSchemaUtils(SpannerMappingContext mappingContext,
 			SpannerConverter spannerConverter) {
 		Assert.notNull(mappingContext,
-				"A valid mapping context for spanner is required.");
+				"A valid mapping context for Spanner is required.");
 		Assert.notNull(spannerConverter,
-				"A valid results mapper for spanner is required.");
+				"A valid results mapper for Spanner is required.");
 		this.mappingContext = mappingContext;
 		this.spannerConverter = spannerConverter;
 	}
