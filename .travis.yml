@@ -23,6 +23,6 @@ before_install:
   - openssl aes-256-cbc -K $encrypted_1ef8dfbdb114_key -iv $encrypted_1ef8dfbdb114_iv -in travis.tar.gz.enc -out travis.tar.gz -d
   - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
   - source $HOME/google-cloud-sdk/path.bash.inc
-  - gcloud components install beta pubsub-emulator --quiet
+  - gcloud components install pubsub-emulator --quiet
   - tar -xzf travis.tar.gz
   - gcloud config set project spring-cloud-gcp-ci
