@@ -105,7 +105,7 @@ Maven coordinates, using Spring Cloud GCP BOM:
 ----
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-logging</artifactId>
+    <artifactId>spring-cloud-gcp-starter-logging</artifactId>
 </dependency>
 ----
 
@@ -114,7 +114,7 @@ Gradle coordinates:
 [source]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-logging'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-logging'
 }
 ----
 
@@ -155,14 +155,14 @@ There are 2 possibilities to log to Stackdriver via this library with Logback:
 
 ===== Log via API
 
-For Logback, a `org/springframework/cloud/gcp/logging/logback-appender.xml` file is made available for import to make it
-easier to configure the Logback appender.
+For Logback, a `org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml` file is
+made available for import to make it easier to configure the Logback appender.
 
 Your configuration may then look something like this:
 [source, xml]
 ----
 <configuration>
-  <include resource="org/springframework/cloud/gcp/logging/logback-appender.xml" />
+  <include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml" />
 
   <root level="INFO">
     <appender-ref ref="STACKDRIVER" />

@@ -31,7 +31,7 @@ import org.springframework.context.annotation.Import;
  * @author Chengyuan Zhao
  */
 @Configuration
-@ConditionalOnClass({ TraceIdLoggingWebMvcInterceptor.class, TraceLoggingEnhancer.class })
+@ConditionalOnClass(TraceLoggingEnhancer.class)
 @EnableConfigurationProperties({ StackdriverLoggingProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.logging.enabled", matchIfMissing = true)
 @Import(LoggingWebMvcConfigurer.class)
