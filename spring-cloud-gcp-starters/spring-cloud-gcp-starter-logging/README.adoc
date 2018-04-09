@@ -45,7 +45,7 @@ and https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-
 
 == Getting Started
 
-For Logback, a `org/springframework/cloud/gcp/logging/logback-appender.xml` is made available for import to make it
+For Logback, a `org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml` is made available for import to make it
 easier to configure the Logback appender.
 It defines the `STACKDRIVER` appender that will send logs to Stackdriver Logging.
 
@@ -53,7 +53,7 @@ Your Logback configuration may look something like this:
 [source, xml]
 ----
 <configuration>
-  <include resource="org/springframework/cloud/gcp/logging/logback-appender.xml" />
+  <include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml" />
 
   <root level="INFO">
     <appender-ref ref="STACKDRIVER" />
