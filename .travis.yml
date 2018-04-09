@@ -11,8 +11,7 @@ cache:
     - $HOME/google-cloud-sdk
     - $HOME/.m2
 script:
-  - ./mvnw test -B -Dit.spanner=true
-  - ./mvnw test -B -Dit.storage=true
+  - ./mvnw test -B ${INTEGRATION_TEST_FLAGS}
 install:
   - ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 before_script:
@@ -20,9 +19,12 @@ before_script:
   - while [ ! -f ~/.config/gcloud/emulators/pubsub/env.yaml ]; do sleep 1; done
   - $(gcloud beta emulators pubsub env-init)
 before_install:
-  - openssl aes-256-cbc -K $encrypted_1ef8dfbdb114_key -iv $encrypted_1ef8dfbdb114_iv -in travis.tar.gz.enc -out travis.tar.gz -d
+  - if [ "$TRAVIS_SECURE_ENV_VARS" != "false" ]; then
+        openssl aes-256-cbc -K $encrypted_1ef8dfbdb114_key -iv $encrypted_1ef8dfbdb114_iv -in travis.tar.gz.enc -out travis.tar.gz -d;
+        tar -xzf travis.tar.gz;
+        export INTEGRATION_TEST_FLAGS="-Dit.spanner=true -Dit.storage=true";
+      fi
   - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
   - source $HOME/google-cloud-sdk/path.bash.inc
   - gcloud components install beta pubsub-emulator --quiet
-  - tar -xzf travis.tar.gz
   - gcloud config set project spring-cloud-gcp-ci
