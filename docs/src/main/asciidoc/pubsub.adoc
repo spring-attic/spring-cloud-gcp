@@ -265,5 +265,5 @@ Google Cloud Pub/Sub API, if different from the ones in the
 <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | Yes |
 | `spring.cloud.gcp.pubsub.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
-Config credentials | Yes | https://www.googleapis.com/auth/pubsub
+Pub/Sub credentials | Yes | https://www.googleapis.com/auth/pubsub
 |===

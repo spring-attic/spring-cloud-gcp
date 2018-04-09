@@ -77,5 +77,5 @@ Google Cloud Storage API, if different from the ones in the
 <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | Yes |
 | `spring.cloud.gcp.storage.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
-Config credentials | Yes | https://www.googleapis.com/auth/devstorage.read_write
+Storage credentials | Yes | https://www.googleapis.com/auth/devstorage.read_write
 |===

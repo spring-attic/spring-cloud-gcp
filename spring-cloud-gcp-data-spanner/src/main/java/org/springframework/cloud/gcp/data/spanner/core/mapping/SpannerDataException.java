@@ -16,13 +16,14 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import org.springframework.dao.DataAccessException;
+
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @author Balint Pato
  */
-public class SpannerDataException extends RuntimeException {
-	public SpannerDataException() {
-	}
+public class SpannerDataException extends DataAccessException {
 
 	public SpannerDataException(String message) {
 		super(message);
@@ -32,12 +33,4 @@ public class SpannerDataException extends RuntimeException {
 		super(message, cause);
 	}
 
-	public SpannerDataException(Throwable cause) {
-		super(cause);
-	}
-
-	public SpannerDataException(String message, Throwable cause,
-			boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
 }
