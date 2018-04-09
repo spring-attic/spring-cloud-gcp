@@ -39,5 +39,5 @@ public @interface Table {
 	 * annotates
 	 * @return The name of the table
 	 */
-	String name();
+	String name() default "";
 }
