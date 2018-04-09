@@ -63,7 +63,6 @@ Features to be released with 1.0.0.M3:
    ** built-in support for common Java types
    ** any Java type can be supported with user defined type conversions
 - SpEL expressions for table name resolution
-- SpEL expressions for SQL queries
 - partial reads and writes
 
 
