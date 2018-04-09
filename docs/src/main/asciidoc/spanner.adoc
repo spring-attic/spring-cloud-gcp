@@ -323,7 +323,7 @@ For example:
 
 [source,java]
 ----
-public interface TradeRepository extends PagingAndSortingRepository<Trade> {
+public interface TradeRepository extends PagingAndSortingRepository<Trade, String> {
 
 	List<Trade> findByAction(String action);
 
