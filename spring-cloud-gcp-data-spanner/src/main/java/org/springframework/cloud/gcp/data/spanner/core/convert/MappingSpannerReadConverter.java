@@ -102,14 +102,15 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
 					String columnName = spannerPersistentProperty.getColumnName();
 					try {
-						if ((!readAllColumns && !includeColumns.contains(columnName))
-								|| source.isNull(columnName)
-								/*
-								 * Indicates that the property is another Spanner table entity and
-								 * will be handled at the template level.
-								 */
-								|| ConversionUtils.isSpannerTableProperty(
-										spannerPersistentProperty)) {
+						if (/*
+							 * Indicates that the property is another Spanner table entity
+							 * and will be handled at the template level.
+							 */
+							ConversionUtils.isSpannerTableProperty(spannerPersistentProperty)
+									|| (!readAllColumns
+											&& !includeColumns.contains(columnName))
+									|| source.isNull(columnName)
+						) {
 							return;
 						}
 					}

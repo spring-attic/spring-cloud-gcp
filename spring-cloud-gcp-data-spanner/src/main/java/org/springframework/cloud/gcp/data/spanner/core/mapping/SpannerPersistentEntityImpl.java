@@ -101,7 +101,9 @@ public class SpannerPersistentEntityImpl<T>
 	@Override
 	public void addPersistentProperty(SpannerPersistentProperty property) {
 		addPersistentPropertyToPersistentEntity(property);
-		this.columnNames.add(property.getColumnName());
+		if (!ConversionUtils.isSpannerTableProperty(property)) {
+			this.columnNames.add(property.getColumnName());
+		}
 
 		if (ConversionUtils.isIterableNonByteArrayType(property.getType())
 				&& property.getColumnInnerType() == null) {

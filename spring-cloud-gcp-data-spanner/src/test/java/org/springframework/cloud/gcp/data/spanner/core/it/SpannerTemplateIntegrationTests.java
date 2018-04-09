@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.it;
 
+import java.util.Arrays;
+
 import com.google.cloud.spanner.Key;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,10 +25,13 @@ import org.junit.runner.RunWith;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerReadOptions;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
+import org.springframework.cloud.gcp.data.spanner.test.domain.SharesTransaction;
+import org.springframework.cloud.gcp.data.spanner.test.domain.SubTrade;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -44,13 +49,43 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 		Trade trade = Trade.aTrade();
 		this.spannerOperations.insert(trade);
 		assertThat(this.spannerOperations.count(Trade.class), is(1L));
+		assertThat(this.spannerOperations.count(SubTrade.class), is(0L));
+		assertThat(this.spannerOperations.count(SharesTransaction.class), is(0L));
+
+		SubTrade subTrade = new SubTrade();
+		subTrade.setTradeId(trade.getId());
+		subTrade.setTraderId(trade.getTraderId());
+		subTrade.setSubtradeId("a");
+		trade.setSubTrades(Arrays.asList(subTrade));
+
+		SharesTransaction sharesTransaction = new SharesTransaction();
+		sharesTransaction.setTradeId(subTrade.getTradeId());
+		sharesTransaction.setSubtradeId(subTrade.getSubtradeId());
+		sharesTransaction.setTraderId(trade.getTraderId());
+		sharesTransaction.setTransId("b");
+		sharesTransaction.setSize(3);
+		subTrade.setTransactionList(Arrays.asList(sharesTransaction));
+
+		this.spannerOperations.upsert(trade);
+
+		assertThat(this.spannerOperations.count(Trade.class), is(1L));
+		assertThat(this.spannerOperations.count(SubTrade.class), is(1L));
+		assertThat(this.spannerOperations.count(SharesTransaction.class), is(1L));
 
 		Trade retrievedTrade = this.spannerOperations.find(Trade.class,
 				Key.of(trade.getId(), trade.getTraderId()));
 		assertThat(retrievedTrade, is(trade));
+		assertEquals("a", retrievedTrade.getSubTrades().get(0).getSubtradeId());
+		assertEquals(1, retrievedTrade.getSubTrades().size());
+		assertEquals("b", retrievedTrade.getSubTrades().get(0).getTransactionList().get(0)
+				.getTransId());
+		assertEquals(1, retrievedTrade.getSubTrades().get(0).getTransactionList().size());
 
+		// cascading delete should delete all children
 		this.spannerOperations.delete(trade);
 		assertThat(this.spannerOperations.count(Trade.class), is(0L));
+		assertThat(this.spannerOperations.count(SubTrade.class), is(0L));
+		assertThat(this.spannerOperations.count(SharesTransaction.class), is(0L));
 	}
 
 	@Test

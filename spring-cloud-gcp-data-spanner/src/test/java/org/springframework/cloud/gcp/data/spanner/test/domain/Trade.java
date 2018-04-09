@@ -56,6 +56,17 @@ public class Trade {
 	@ColumnInnerType(innerType = Instant.class)
 	private List<Instant> executionTimes;
 
+	@ColumnInnerType(innerType = SubTrade.class)
+	private List<SubTrade> subTrades;
+
+	public List<SubTrade> getSubTrades() {
+		return this.subTrades;
+	}
+
+	public void setSubTrades(List<SubTrade> subTrades) {
+		this.subTrades = subTrades;
+	}
+
 	public static Trade aTrade() {
 		Trade t = new Trade();
 		String tradeId = UUID.randomUUID().toString();

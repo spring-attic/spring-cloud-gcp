@@ -31,6 +31,7 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
@@ -62,6 +63,7 @@ public class SpannerMutationFactoryImplTests {
 	public void insertTest() {
 		TestEntity t = new TestEntity();
 		List<Mutation> mutations = this.spannerMutationFactory.insert(t);
+		t.id = "a";
 
 		Mutation parentMutation = mutations.get(0);
 		assertEquals(1, mutations.size());
@@ -70,10 +72,13 @@ public class SpannerMutationFactoryImplTests {
 		assertEquals(Op.INSERT, parentMutation.getOperation());
 
 		ChildEntity c1 = new ChildEntity();
+		c1.id = t.id;
 		c1.id2 = "c1";
 		ChildEntity c2 = new ChildEntity();
+		c2.id = t.id;
 		c2.id2 = "c2";
 		ChildEntity c3 = new ChildEntity();
+		c3.id = t.id;
 		c3.id2 = "c3";
 
 		t.childEntity = c1;
@@ -93,16 +98,51 @@ public class SpannerMutationFactoryImplTests {
 		}
 	}
 
+	@Test(expected = SpannerDataException.class)
+	public void insertChildMismatchIdTest() {
+		TestEntity t = new TestEntity();
+		t.id = "a";
+
+		ChildEntity c1 = new ChildEntity();
+		c1.id = "b";
+		c1.id2 = "c1";
+
+		t.childEntity = c1;
+
+		// throws exception because child entity's id column does not match that of its
+		// parent.
+		this.spannerMutationFactory.insert(t);
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void insertChildrenMismatchIdTest() {
+		TestEntity t = new TestEntity();
+		t.id = "a";
+
+		ChildEntity c1 = new ChildEntity();
+		c1.id = "b";
+		c1.id2 = "c1";
+
+		t.childEntities = Arrays.asList(c1);
+
+		// throws exception because child entity's id column does not match that of its
+		// parent.
+		this.spannerMutationFactory.insert(t);
+	}
+
 	@Test
 	public void updateTest() {
 		TestEntity t = new TestEntity();
 		List<Mutation> mutations = this.spannerMutationFactory.update(t, null);
+		t.id = "a";
 
 		Mutation parentMutation = mutations.get(0);
 		assertEquals(1, mutations.size());
 
-		t.childEntity = new ChildEntity();
+		ChildEntity c = new ChildEntity();
+		c.id = t.id;
 
+		t.childEntity = c;
 		assertEquals("custom_test_table", parentMutation.getTable());
 		assertEquals(Op.UPDATE, parentMutation.getOperation());
 
@@ -121,11 +161,15 @@ public class SpannerMutationFactoryImplTests {
 	public void upsertTest() {
 		TestEntity t = new TestEntity();
 		List<Mutation> mutations = this.spannerMutationFactory.upsert(t, null);
+		t.id = "a";
 
 		Mutation parentMutation = mutations.get(0);
 		assertEquals(1, mutations.size());
 
-		t.childEntity = new ChildEntity();
+		ChildEntity c = new ChildEntity();
+		c.id = t.id;
+
+		t.childEntity = c;
 
 		assertEquals("custom_test_table", parentMutation.getTable());
 		assertEquals(Op.INSERT_OR_UPDATE, parentMutation.getOperation());

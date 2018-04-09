@@ -171,8 +171,7 @@ public class SpannerSchemaUtils {
 			return;
 		}
 		seenClasses.add(entityClass);
-		dropStrings.add(0, "DROP TABLE "
-				+ this.mappingContext.getPersistentEntity(entityClass).tableName());
+		dropStrings.add(0, getDropTableDDLString(entityClass));
 		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		spannerPersistentEntity.doWithProperties(

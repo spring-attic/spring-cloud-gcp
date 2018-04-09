@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.spanner.test;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -135,13 +134,8 @@ public abstract class AbstractSpannerIntegrationTest {
 	}
 
 	protected List<String> createSchemaStatements() {
-		return Arrays
-				.asList(this.mappingSchemaGenerator.getCreateTableDDLString(Trade.class));
-	}
-
-	protected Iterable<String> dropSchemaStatements() {
-		return Arrays
-				.asList(this.mappingSchemaGenerator.getDropTableDDLString(Trade.class));
+		return this.mappingSchemaGenerator
+				.getCreateTableDDLStringsForHierarchy(Trade.class);
 	}
 
 	@After
@@ -155,7 +149,9 @@ public abstract class AbstractSpannerIntegrationTest {
 			String database = this.databaseId.getDatabase();
 			if (hasDatabaseDefined(instanceId, database)) {
 				this.databaseAdminClient.updateDatabaseDdl(instanceId, database,
-						dropSchemaStatements(), null).waitFor();
+						this.mappingSchemaGenerator
+								.getDropTableDDLStringsForHierarchy(Trade.class),
+						null).waitFor();
 				System.out.println("Integration database cleaned up!");
 			}
 		}
