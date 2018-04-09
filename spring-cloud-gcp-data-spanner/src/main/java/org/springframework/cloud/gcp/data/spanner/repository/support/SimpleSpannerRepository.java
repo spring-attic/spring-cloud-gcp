@@ -24,6 +24,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerReadOptions;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.domain.Page;
@@ -51,6 +52,17 @@ public class SimpleSpannerRepository implements SpannerRepository {
 	@Override
 	public SpannerOperations getSpannerOperations() {
 		return this.spannerOperations;
+	}
+
+	@Override
+	public Object performReadOnlyTransaction(Function operations,
+			SpannerReadOptions readOptions) {
+		return this.spannerOperations.performReadOnlyTransaction(operations, readOptions);
+	}
+
+	@Override
+	public Object performReadWriteTransaction(Function operations) {
+		return this.spannerOperations.performReadWriteTransaction(operations);
 	}
 
 	@Override

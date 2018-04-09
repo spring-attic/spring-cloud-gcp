@@ -16,7 +16,10 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository;
 
+import java.util.function.Function;
+
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerReadOptions;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
@@ -31,4 +34,24 @@ public interface SpannerRepository<T, ID> extends PagingAndSortingRepository<T, 
 	 * @return the operations object providing Spanner functions.
 	 */
 	SpannerOperations getSpannerOperations();
+
+	/**
+	 * Performs multiple read and write operations in a single transaction.
+	 * @param operations the function representing the operations to perform using a
+	 * SpannerOperations based on a single transaction.
+	 * @param <A> the final return type of the operations.
+	 * @return the final result of the transaction.
+	 */
+	<A> A performReadWriteTransaction(Function<SpannerOperations, A> operations);
+
+	/**
+	 * Performs multiple read-only operations in a single transaction.
+	 * @param operations the function representing the operations to perform using a
+	 * SpannerOperations based on a single transaction.
+	 * @param readOptions allows the user to specify staleness for the read transaction
+	 * @param <A> the final return type of the operations.
+	 * @return the final result of the transaction.
+	 */
+	<A> A performReadOnlyTransaction(Function<SpannerOperations, A> operations,
+			SpannerReadOptions readOptions);
 }
