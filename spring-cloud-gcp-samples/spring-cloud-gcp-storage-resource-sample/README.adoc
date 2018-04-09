@@ -14,7 +14,6 @@ Cloud SDK.
 ```
 $ BUCKET=spring-bucket-$USER
 $ gsutil makebucket gs://$BUCKET
-$ gsutil copy my-file.txt gs://$BUCKET
 ```
 
 3. Transfer the local `my-file.txt` file to the bucket.
