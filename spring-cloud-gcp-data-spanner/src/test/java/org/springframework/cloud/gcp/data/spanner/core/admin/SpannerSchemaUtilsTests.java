@@ -73,7 +73,7 @@ public class SpannerSchemaUtilsTests {
 	}
 
 	@Test
-	public void getCreateDDLHierachyTest() {
+	public void getCreateDDLHierarchyTest() {
 		List<String> createStrings = this.spannerSchemaUtils
 				.getCreateTableDDLStringsForHierarchy(ParentEntity.class);
 		assertEquals(3, createStrings.size());
@@ -91,6 +91,16 @@ public class SpannerSchemaUtilsTests {
 						+ "id3 STRING(MAX) , id4 STRING(MAX) ) PRIMARY KEY ( id , id_2 , id3 , id4 ), "
 						+ "INTERLEAVE IN PARENT child_test_table ON DELETE CASCADE",
 				createStrings.get(2));
+	}
+
+	@Test
+	public void getDropDDLHierarchyTest() {
+		List<String> dropStrings = this.spannerSchemaUtils
+				.getDropTableDDLStringsForHierarchy(ParentEntity.class);
+		assertEquals(3, dropStrings.size());
+		assertEquals("DROP TABLE grand_child_test_table", dropStrings.get(0));
+		assertEquals("DROP TABLE child_test_table", dropStrings.get(1));
+		assertEquals("DROP TABLE parent_test_table", dropStrings.get(2));
 	}
 
 	@Table(name = "custom_test_table")

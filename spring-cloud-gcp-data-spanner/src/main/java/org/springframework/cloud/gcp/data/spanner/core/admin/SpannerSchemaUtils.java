@@ -151,4 +151,36 @@ public class SpannerSchemaUtils {
 		return "DROP TABLE "
 				+ this.mappingContext.getPersistentEntity(entityClass).tableName();
 	}
+
+	/**
+	 * Gets the DDL strings to drop the tables of this entity and all of its sub-entities.
+	 * The list is given in reverse topological sort, since parent tables cannot be
+	 * dropped before their children tables.
+	 * @param entityClass the root entity whose table to drop
+	 * @return the list of drop DDL strings
+	 */
+	public List<String> getDropTableDDLStringsForHierarchy(Class entityClass) {
+		List<String> ddlStrings = new ArrayList<>();
+		getDropTableDDLStringsForHierarchy(entityClass, ddlStrings, new HashSet<>());
+		return ddlStrings;
+	}
+
+	private void getDropTableDDLStringsForHierarchy(Class entityClass,
+			List<String> dropStrings, Set<Class> seenClasses) {
+		if (seenClasses.contains(entityClass)) {
+			return;
+		}
+		seenClasses.add(entityClass);
+		dropStrings.add(0, "DROP TABLE "
+				+ this.mappingContext.getPersistentEntity(entityClass).tableName());
+		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
+				.getPersistentEntity(entityClass);
+		spannerPersistentEntity.doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> ConversionUtils
+						.applyIfChildEntityType(spannerPersistentProperty, childType -> {
+							getDropTableDDLStringsForHierarchy(childType, dropStrings,
+									seenClasses);
+							return null;
+						}));
+	}
 }
