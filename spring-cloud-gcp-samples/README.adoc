@@ -1,0 +1,48 @@
+= Spring Cloud GCP Code Samples
+
+Each code sample in this folder exemplifies how to use one Spring Cloud GCP integration.
+
+- link:spring-cloud-gcp-config-sample[Spring Cloud GCP Config Sample]:
+Uses Spring Cloud Config to set the value of the app's parameters.
+Values are stored by the
+https://cloud.google.com/deployment-manager/runtime-configurator/reference/rest/[Google
+Runtime Configuration API].
+
+- link:spring-cloud-gcp-data-jpa-sample[Spring Cloud GCP Data JPA Sample]:
+Uses https://projects.spring.io/spring-data-jpa/[Spring Data JPA] to create a table in a
+https://cloud.google.com/sql/docs/[Google Cloud SQL] instance, populate it and read back
+the inserted values.
+
+- link:spring-cloud-gcp-data-spanner-sample[Spring Cloud GCP Data Spanner Sample]:
+Uses Spring Data Spanner to create a table in
+https://cloud.google.com/spanner/[Google Cloud Spanner], add some records to it and read them back.
+
+- link:spring-cloud-gcp-integration-pubsub-sample[Spring Cloud GCP Integration Pub/Sub Sample]:
+Uses Spring Integration channel adapters to exchange messages through
+https://cloud.google.com/pubsub/docs/[Google Cloud Pub/Sub].
+
+- link:spring-cloud-gcp-logging-sample[Spring Cloud GCP Logging Sample]:
+Uses the https://cloud.google.com/logging/docs/[Stackdriver Logging API] to store and group logs by
+trace ID.
+
+- link:spring-cloud-gcp-pubsub-sample[Spring Cloud GCP Pub/Sub Sample]:
+Uses the Spring Cloud GCP Pub/Sub abstraction to exchange messages.
+
+- link:spring-cloud-gcp-sql-sample[Spring Cloud GCP SQL Sample]:
+Connects to a https://cloud.google.com/sql/docs/[Google Cloud SQL] instance using best practices.
+Populates database with values and reads them.
+
+- link:spring-cloud-gcp-storage-resource-sample[Spring Cloud GCP Storage Sample]:
+Uses the
+https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/core/io/Resource.html[Spring Resource]
+abstraction to read and write files to
+https://cloud.google.com/storage/[Google Cloud Storage].
+
+- link:spring-cloud-gcp-trace-sample[Spring Cloud GCP Trace Sample]:
+Uses https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] to automatically generate
+trace IDs for requests to your application and store data about those requests in
+https://cloud.google.com/trace/[Google Stackdriver Trace].
+
+- link:spring-cloud-gcp-vision-api-sample[Spring Cloud GCP Vision API Sample]:
+Provides an example of how to use Spring Cloud GCP to improve the general usability of Google Cloud
+Client Libraries.

@@ -1,12 +1,14 @@
-== Spring Data
+:spring-data-commons-ref: https://docs.spring.io/spring-data/data-commons/docs/current/reference/html
+
+== Spring Data Spanner
 
 http://projects.spring.io/spring-data/[Spring Data]
 is an abstraction for storing and retrieving POJOs in numerous storage technologies.
-Spring Cloud GCP adds Spring Data support for Google Cloud Spanner.
+Spring Cloud GCP adds Spring Data support for http://cloud.google.com/spanner/[Google Cloud Spanner].
 
 A Spring Boot starter is provided to auto-configure the various Storage components.
 
-Maven coordinates, using Spring Cloud GCP BOM:
+Maven coordinates for the Spring Boot Starter for Spanner, using Spring Cloud GCP BOM:
 
 [source,xml]
 ----
@@ -25,55 +27,294 @@ dependencies {
 }
 ----
 
+This setup takes care of bringing in the latest compatible version of Cloud Java Spanner libraries as well.
 
-=== Google Cloud Spanner
 
-Spring Data Spanner allows you to define entity classes and corresponding repository interfaces:
+=== Configuration
+
+To setup Spring Data Spanner, you have to configure the following:
+
+* Setup the connection details to Google Cloud Spanner.
+* Enable Spring Data Repositories (optional).
+
+==== Spanner settings
+
+You can the use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner] to autoconfigure Google Cloud Spanner in your Spring application.
+It contains all the necessary setup that makes it easy to authenticate with your Google Cloud project.
+The following configuration options are available:
+
+|===
+| Name | Description | Optional | Default value
+| `spring.cloud.gcp.spanner.instance-id` | Spanner instance to use | No |
+| `spring.cloud.gcp.spanner.database` |
+Spanner database to use | No |
+| `spring.cloud.gcp.spanner.project-id` | GCP project ID where the Google Cloud Spanner API
+is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
+| Yes |
+| `spring.cloud.gcp.spanner.credentials.location` | OAuth2 credentials for authenticating with the
+Google Cloud Spanner API, if different from the ones in the
+<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | Yes |
+| `spring.cloud.gcp.spanner.credentials.scopes` |
+https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
+Spanner credentials | Yes | https://www.googleapis.com/auth/spanner.data
+|===
+
+==== Repository settings
+
+Spring Data Repositories can be configured via the `@EnableSpannerRepositories` annotation on your main `@Configuration` class.
+With our Spring Boot Starter for Spring Data Spanner, `@EnableSpannerRepositories` is automatically added, it is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-spanner/src/main/java/org/springframework/cloud/gcp/data/spanner/repository/config/EnableSpannerRepositories.java[`@EnableSpannerRepositories`].
+
+==== Autoconfiguration
+
+Our Spring Boot autoconfiguration creates the following beans available in the Spring application context:
+
+- an instance of `SpannerTemplate`
+- an instance of all the user defined repositories extending `SpannerRepository`, when repositories are enabled
+- an instance of 'DatabaseClient` from the Spanner java client libraries, for convenience and lower level API access
+
+
+=== Mapping POJO domain objects to Spanner tables using annotations
+
+Spring Data Spanner allows you to map POJOs to Spanner tables:
 
 [source,java]
 ----
-@SpannerTable(name = "students")
-public class SimpleStudent {
-	@SpannerPrimaryKeyColumn(keyOrder = 1)
-	String id;
+@Table(name = "trades")
+public class Trade {
 
-	@SpannerColumn(name = "first_name")
-	String name;
+	@PrimaryKeyColumn(keyOrder = 2)
+	String action;
 
-	@SpannerColumnInnerType(innerType = String.class)
-	List<String> teachers;
+	Double price;
 
-	int age;
+	Double shares;
+
+	@PrimaryKeyColumn(keyOrder = 1)
+	String symbol;
+
+	@Column(name = "trader_id")
+	String traderId;
+
+	@ColumnInnerType(innerType = Double.class)
+	List<Double> curve;
 }
 ----
 
-The `@SpannerTable` annotation provides the name of the Spanner table that stores instances of this class, one per row.
-The `@SpannerPrimaryKeyColumn` annotation is required and identifies the properties corresponding to the primary key columns in
+- `@Table` provides the name of the Spanner table that stores instances of this class, one per row.
+- `@PrimaryKeyColumn` annotation is required and identifies the properties corresponding to the primary key columns in
 order starting with 1 and increasing consecutively.
-The `@SpannerColumn` annotation optionally provides a different column name than that of the property.
-The `@SpannerColumnInnerType` annotation is required for List properties due to Java's type erasure.
+- The `@Column` annotation optionally provides a different column name than that of the property.
+- Spanner supports `List` types as fields, the `@ColumnInnerType` annotation is required for `List` properties due to Java's type erasure.
+
+#### SpEL expressions for table names
+
+In some cases you might want the `@Table` table name to be determined dynamically. In this case, you can use https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#expressions[Spring Expression Language].
+
+For example:
+
+[source, java]
+----
+
+@Table(name = "trades_#{tableNameSuffix}")
+public class Trade {
+	// ...
+}
+----
+
+The table name will be resolved only if the `tableNameSuffix` value/bean in the Spring `applicationContext` is defined, and then, for example if `tableNameSuffix` has the value "123", the table name will resolve to `trades_123`.
+
+=== Template API
+
+`SpannerOperations` and its implementation, `SpannerTemplate` provides the Template pattern familiar for Spring developers and as such provides:
+
+ - Resource management
+ - One-stop-shop to Spanner operations with the Spring Data POJO mapping and conversion features
+ - Exception conversion
+
+Using the autoconfiguration provided by our Spring Boot Starter for Spanner, your Spring application context will contain a fully configured `SpannerTemplate` object that you can easily autowire in your application:
 
 [source,java]
 ----
-@Repository
-public interface StudentRepository extends PagingAndSortingRepository<SimpleStudent, Key> {
+@SpringBootApplication
+public class SpannerTemplateExample {
 
-	List<SimpleStudent> findTop3DistinctByIdAndNameOrAgeOrderByAgeDesc(
-			String id, String name, int age);
+	@Autowired
+	SpannerOperations spannerTemplate;
 
-	int countByAgeLessThanEqual(int age);
+	public void doSomething() {
+		this.spannerOperations.delete(Trade.class, KeySet.all());
+		//...
+		Trade t = new Trade();
+		//...
+		this.spannerOperations.insert(t);
+		//...
+		List<Trade> tradesByAction = spannerOperations.findAll(Trade.class);
+		//...
+	}
+}
+----
+
+The Template API provides convenience methods for:
+
+- https://cloud.google.com/spanner/docs/reads[Reads], and by providing SpannerReadOptions and SpannerQueryOptions
+   ** Stale read
+   ** Read with secondary indices
+   ** Read with limits and flow control
+- https://cloud.google.com/spanner/docs/reads#execute_a_query[Queries]
+- DML operations (delete, insert, update, upsert)
+- Partial reads: You can define a set of columns to be read into your entity.
+- Partial writes: if you have only a few properties that you want to persist from your entity, you can select those.
+- Read-only transactions
+- Locking read-write transactions
+
+
+=== Supported Types
+
+Spring Data Spanner supports the following types for regular fields:
+
+* `com.google.cloud.ByteArray`
+* `com.google.cloud.Date`
+* `com.google.cloud.Timestamp`
+* `java.lang.Boolean`, `boolean`
+* `java.lang.Long`, `long`
+* `java.lang.Integer`, `int`
+* `java.lang.String`
+* `double[]`
+* `long[]`
+* `boolean[]`
+* `java.util.Date`
+* `java.util.Instant`
+* `java.sql.Date`
+
+
+For `ARRAY` Spanner types, you'll need to use `List` in the fields. For the inner type of a `List` field, Spring Data Spanner supports the following inner types:
+
+* `com.google.cloud.ByteArray`
+* `com.google.cloud.Date`
+* `com.google.cloud.Timestamp`
+* `java.lang.Boolean`, `boolean`
+* `java.lang.Long`, `long`
+* `java.lang.Integer`, `int`
+* `java.lang.String`
+* `java.util.Date`
+* `java.util.Instant`
+* `java.sql.Date`
+
+=== Custom type conversions
+
+Custom converters can be used extending the type support for user defined types.
+
+. Converters need to implement the `org.springframework.core.convert.converter.Converter` interface both directions.
+. The user defined type needs to be mapped to one the basic types supported by Spanner:
+
+* `com.google.cloud.ByteArray`
+* `com.google.cloud.Date`
+* `com.google.cloud.Timestamp`
+* `java.lang.Boolean`, `boolean`
+* `java.lang.Long`, `long`
+* `java.lang.String`
+* `double[]`
+* `long[]`
+* `boolean[]`
+
+. An instance of both Converters need to be passed in to a `MappingSpannerConverter` which then has to be made available as a `@Bean` for `SpannerConverter`.
+
+For example:
+
+We would like to have a field of type `Person` on our `Trade` POJO:
+[source, java]
+----
+
+@Table(name = "trades")
+public class Trade {
+  //...
+  Person person;
+  //...
+}
+----
+
+Where Person is a simple class:
+
+[source, java]
+----
+public class Person {
+
+  public String firstName;
+  public String lastName;
+
+}
+----
+
+We have to define the two converters:
+
+[source, java]
+----
+  public class PersonWriteConverter implements Converter<Person, String> {
+
+    @Override
+    public String convert(Person person) {
+      return person.firstName + " " + person.lastName;
+    }
+  }
+
+  public class PersonReadConverter implements Converter<String, Person> {
+
+    @Override
+    public Person convert(String s) {
+      Person person = new Person();
+      person.firstName = s.split(" ")[0];
+      person.lastName = s.split(" ")[1];
+      return person;
+    }
+  }
+----
+
+That will be configured in our `@Configuration` file:
+
+[source, java]
+----
+@Configuration
+public class ConverterConfiguration {
+
+	@Bean
+	public SpannerConverter spannerConverter(SpannerMappingContext spannerMappingContext) {
+		return new MappingSpannerConverter(spannerMappingContext,
+				Arrays.asList(new PersonWriteConverter()),
+				Arrays.asList(new PersonReadConverter()));
+	}
+}
+----
+
+
+=== Repositories
+
+{spring-data-commons-ref}/#repositories[Spring Data Repositories] are a powerful abstraction that can save you a lot of boilerplate code.
+For Spring Data Spanner, the code inheriting `SpannerRepository` gets all the benefits of `CrudRepository` and `PagingAndSortingRepository` as well.
+
+For example:
+
+[source,java]
+----
+public interface TradeRepository extends SpannerRepository<Trade> {
+
+	List<Trade> findByAction(String action);
+
+	int countByAction(String action);
+
+	// Named methods are powerful, but can get unwieldy
+	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
+  			String action, String symbol, String traderId);
 
 	// This method uses the query from the properties file instead of one generated based on name.
-	List<SimpleStudent> fetchBySomeQuery(String someArg);
-}
+	List<Trade> fetchByActionNamedQuery(String action);
 
+}
 ----
 
-These can be used in an application like this:
+This repository can be injected without an actual implementation, as Spring Data generates a proxy behind the scenes.
 
 [source,java]
 ----
-@EnableSpannerRepositories(namedQueriesLocation = "classpath:/spanner-named-queries.properties")
 public class MyApplication {
 
 	@Autowired
@@ -84,47 +325,74 @@ public class MyApplication {
 
 	public void demo() {
 
-	  // storing new students
-	  SimpleStudent ss = new SimpleStudent();
-	  ss.name = "student1";
-	  ss.age = 99;
-	  spannerOperations.insert(ss);
+		this.tradeRepository.deleteAll(); //defined on CrudRepository
+		String traderId = "demo_trader";
+		Trade t = new Trade();
+		t.symbol = stock;
+		t.action = action;
+		t.traderId = traderId;
+		t.price = 100.0;
+		t.shares = 12345.6;
+		this.spannerOperations.insert(t); //defined on CrudRepository
 
-	  // getting students from Spanner
-	  List<SimpleStudent> ssList =
-	    studentRepository.findTop3DistinctByIdAndNameOrAgeOrderByAgeDesc("someId", "bob", 12);
+		Iterable<Trade> allTrades = this.tradeRepository.findAll(); //defined on CrudRepository
 
-	  List<SimpleStudent> ssList2 = studentRepository.fetchBySomeQuery("some argument");
+		int count = this.tradeRepository.countByAction("BUY");
+
 	}
 }
 
 ----
 
-The https://docs.spring.io/spring-data/commons/docs/current/reference/html/#repositories.query-methods[query methods]
-in the `StudentRepository` are generated based on the convention of their names
-except for `fetchBySomeQuery`, which is defined in the `spanner-named-queries.properties` file
-like `SimpleStudent.fetchBySomeQuery=SELECT * FROM students WHERE name = @someArg`.
+=== Query methods
 
-When defining `StudentRepository`, it is important to note that it extends the
-`PagingAndSortingRepository`, which is supported by Spring Cloud GCP Data Spanner. The first type
-argument refers to the underlying entity, and the second type parameter refers to the `@Id` type
-of that entity. Id types must correspond to one of the https://cloud.google.com/spanner/docs/data-types[supported primary key types in Spanner].
 
-=== Configuration
+==== Resolving methods by name
 
-The Spring Boot Starter for Google Cloud Data Spanner provides the following configuration options:
+In the example above, the {spring-data-commons-ref}/#repositories.query-methods[query methods]
+in `TradeRepository` are generated based on the name of the methods, using the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
 
-|===
-| Name | Description | Optional | Default value
-| `spring.cloud.gcp.spanner.projectId` | the GCP project ID to use | Yes | provided by Spring Cloud GCP
-| `spring.cloud.gcp.spanner.instanceId` | Spanner instance to use | No |
-| `spring.cloud.gcp.spanner.database` |
-Spanner database to use | No |
-|===
+`List<Trade> findByAction(String action)` would translate to a `SELECT * FROM trades WHERE action = ?`.
 
-Custom queries can be defined in properties files provided to the annotation
-`@EnableSpannerRepositories(namedQueriesLocation = "classpath:/[my-named-queries.properties file]")`.
-These query settings take the form `[ClassName].[QueryMethodName]=[query string with tags]`, where Spanner
-tags for parameters have the format `@[tagName]`. The actual names of the tags do not matter as long
-their order matches that defined in the repository interface.
+The function `List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(String action, String symbol, String traderId);` will be translated as the equivalent of this SQL query:
 
+[source, sql]
+----
+SELECT DISTINCT * FROM trades
+WHERE ACTION = ? AND SYMBOL = ? AND Or TRADER_ID = ?
+ORDER BY SYMBOL DESC
+LIMIT 3
+----
+
+==== Mapping SQL to repository methods
+
+
+The example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention], we have to map a Spanner parametrized SQL query to it.
+
+The SQL query for the method can be mapped to repository methods in one of two ways:
+
+ * `namedQueries` properties file
+ * using the `@Query` annotation
+
+In the example above the `namedQueriesLocation` attribute on `@EnableSpannerRepositories` is pointing to the `META-INF/spanner-named-queries.properties` file. You can specify the query for a method in the properties file by providing the SQL as the value for the "interface.method" property:
+
+[source, properties]
+----
+Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0`
+----
+
+Using the `@Query` annotation:
+
+[source, java]
+----
+  @Query("SELECT * FROM trades WHERE trades.action = @tag0")
+  List<Trade> fetchByActionNamedQuery(String action);
+----
+
+Table names can be used directly, for example, "trades" in the above example. Alternatively, table names can be resolved from the `@Table` annotation on domain classes as well. In this case, the query should refer to table names with fully qualified classnames between `:` characters: `:fully.qualified.ClassName:`. A full example would look like this:
+
+[source, java]
+----
+  @Query("SELECT * FROM :com.example.Trade: WHERE trades.action = @tag0")
+  List<Trade> fetchByActionNamedQuery(String action);
+----

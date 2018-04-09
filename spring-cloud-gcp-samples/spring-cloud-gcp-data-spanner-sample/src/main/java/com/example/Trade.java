@@ -16,7 +16,10 @@
 
 package com.example;
 
+import java.util.List;
+
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
@@ -40,10 +43,20 @@ public class Trade {
 	@Column(name = "trader_id")
 	String traderId;
 
+	@ColumnInnerType(innerType = Double.class)
+	List<Double> curve;
+
+	Person person;
+
 	@Override
 	public String toString() {
-		return "action: " + this.action + " price: " + String.valueOf(this.price)
-				+ " shares: " + String.valueOf(this.shares) + " symbol: " + this.symbol
-				+ " trader: " + this.traderId;
+		return "Trade{" +
+				"action='" + this.action + '\'' +
+				", price=" + this.price +
+				", shares=" + this.shares +
+				", symbol='" + this.symbol + '\'' +
+				", traderId='" + this.traderId +
+				", person='" + this.person +
+				'}';
 	}
 }
