@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
@@ -65,20 +66,31 @@ public class SpannerMutationFactoryImplTests {
 		Mutation parentMutation = mutations.get(0);
 		assertEquals(1, mutations.size());
 
-		t.childEntity = new ChildEntity();
-
 		assertEquals("custom_test_table", parentMutation.getTable());
 		assertEquals(Op.INSERT, parentMutation.getOperation());
+
+		ChildEntity c1 = new ChildEntity();
+		c1.id2 = "c1";
+		ChildEntity c2 = new ChildEntity();
+		c2.id2 = "c2";
+		ChildEntity c3 = new ChildEntity();
+		c3.id2 = "c3";
+
+		t.childEntity = c1;
+		t.childEntities = Arrays.asList(new ChildEntity[] { c2, c3 });
 
 		mutations = this.spannerMutationFactory.insert(t);
 		parentMutation = mutations.get(0);
-		Mutation childMutation = mutations.get(1);
+		assertEquals(4, mutations.size());
+		List<Mutation> childMutations = mutations.subList(1, mutations.size());
 
 		assertEquals("custom_test_table", parentMutation.getTable());
 		assertEquals(Op.INSERT, parentMutation.getOperation());
 
-		assertEquals("child_test_table", childMutation.getTable());
-		assertEquals(Op.INSERT, childMutation.getOperation());
+		for (Mutation childMutation : childMutations) {
+			assertEquals("child_test_table", childMutation.getTable());
+			assertEquals(Op.INSERT, childMutation.getOperation());
+		}
 	}
 
 	@Test
@@ -201,6 +213,9 @@ public class SpannerMutationFactoryImplTests {
 		String other;
 
 		ChildEntity childEntity;
+
+		@ColumnInnerType(innerType = ChildEntity.class)
+		List<ChildEntity> childEntities;
 	}
 
 	@Table(name = "child_test_table")

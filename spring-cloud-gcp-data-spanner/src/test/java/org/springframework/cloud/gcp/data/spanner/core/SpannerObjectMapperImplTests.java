@@ -448,14 +448,14 @@ public class SpannerObjectMapperImplTests {
 	@Test(expected = SpannerDataException.class)
 	public void readUnmatachableTypesTest() {
 		Struct struct1 = Struct.newBuilder()
-				.add("fieldWithUnsupportedType", Value.string("key1")).build();
+				.add("childEntity", Value.string("key1")).build();
 		this.objectMapper.read(SmallTestEntity.class, struct1);
 	}
 
 	@Test
 	public void writeSpannerTableEntityType() {
 		SmallTestEntity ft = new SmallTestEntity();
-		ft.fieldWithUnsupportedType = new SmallTestChildEntity();
+		ft.childEntity = new SmallTestChildEntity();
 		ft.id = "test";
 		ft.doubleList = new ArrayList<>();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("small_test_table");
@@ -545,10 +545,10 @@ public class SpannerObjectMapperImplTests {
 		@PrimaryKeyColumn
 		String id;
 
-		SmallTestChildEntity fieldWithUnsupportedType;
+		SmallTestChildEntity childEntity;
 
 		@ColumnInnerType(innerType = SmallTestChildEntity.class)
-		List<SmallTestChildEntity> listWithUnsupportedInnerType;
+		List<SmallTestChildEntity> smallTestChildEntities;
 
 		@ColumnInnerType(innerType = Double.class)
 		List<Double> doubleList;

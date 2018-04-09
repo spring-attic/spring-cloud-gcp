@@ -129,11 +129,25 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 					if (ConversionUtils
 							.isSpannerTableProperty(spannerPersistentProperty)) {
 
-						Object child = persistentEntity.getPropertyAccessor(object)
-								.getProperty(spannerPersistentProperty);
+						if (ConversionUtils.isIterableNonByteArrayType(
+								spannerPersistentProperty.getType())) {
+							Iterable kids = (Iterable) persistentEntity
+									.getPropertyAccessor(object)
+									.getProperty(spannerPersistentProperty);
+							if (kids != null) {
+								for (Object child : kids) {
+									mutations.addAll(
+											saveObject(op, child, includeColumns));
+								}
+							}
+						}
+						else {
+							Object child = persistentEntity.getPropertyAccessor(object)
+									.getProperty(spannerPersistentProperty);
 
-						if (child != null) {
-							mutations.addAll(saveObject(op, child, includeColumns));
+							if (child != null) {
+								mutations.addAll(saveObject(op, child, includeColumns));
+							}
 						}
 					}
 				});
