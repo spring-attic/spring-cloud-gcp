@@ -142,7 +142,7 @@ public class SpannerPersistentEntityImplTests {
 		String something;
 	}
 
-	@Table(name = "")
+	@Table
 	private static class EntityEmptyCustomName {
 		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
