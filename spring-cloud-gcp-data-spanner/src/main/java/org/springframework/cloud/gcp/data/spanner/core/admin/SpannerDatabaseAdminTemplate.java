@@ -79,7 +79,7 @@ public class SpannerDatabaseAdminTemplate {
 
 	/**
 	 * Get the instance ID used to perform database operations.
-	 * @return
+	 * @return the instance ID string.
 	 */
 	public String getInstanceId() {
 		return this.databaseId.getInstanceId().getInstance();
@@ -87,7 +87,7 @@ public class SpannerDatabaseAdminTemplate {
 
 	/**
 	 * Get the database ID used to perform database operations.
-	 * @return
+	 * @return the database ID string.
 	 */
 	public String getDatabase() {
 		return this.databaseId.getDatabase();
@@ -96,7 +96,7 @@ public class SpannerDatabaseAdminTemplate {
 	/**
 	 * Returns true if the configured database ID refers to an existing database. False
 	 * otherwise.
-	 * @return
+	 * @return true if the database exists, and false if it does not.
 	 */
 	public boolean databaseExists() {
 		for (Database db : this.databaseAdminClient.listDatabases(getInstanceId())
