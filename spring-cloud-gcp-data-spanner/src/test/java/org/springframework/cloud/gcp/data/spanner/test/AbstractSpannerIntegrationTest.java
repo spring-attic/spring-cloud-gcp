@@ -131,6 +131,12 @@ public abstract class AbstractSpannerIntegrationTest {
 			System.out.println(
 					this.getClass() + " - schema created: " + createSchemaStatements());
 		}
+
+		System.out.println("Database DDL: ");
+		this.databaseAdminClient
+				.getDatabase(this.databaseId.getInstanceId().getInstance(),
+						this.databaseId.getDatabase())
+				.getDdl().forEach(s -> System.out.println(s));
 	}
 
 	protected List<String> createSchemaStatements() {
