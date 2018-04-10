@@ -115,7 +115,7 @@ starter.
 
 [source,java]
 ----
-public Topic createTopic(String topicName)
+public Topic createTopic(String defaultTopicName)
 ----
 
 Here is an example of how to create a Google Cloud Pub/Sub topic:
@@ -123,7 +123,7 @@ Here is an example of how to create a Google Cloud Pub/Sub topic:
 [source,java]
 ----
 public void newTopic() {
-    pubSubAdmin.createTopic("topicName");
+    pubSubAdmin.createTopic("defaultTopicName");
 }
 ----
 
@@ -133,7 +133,7 @@ public void newTopic() {
 
 [source,java]
 ----
-public void deleteTopic(String topicName)
+public void deleteTopic(String defaultTopicName)
 ----
 
 Here is an example of how to delete a Google Cloud Pub/Sub topic:
@@ -141,7 +141,7 @@ Here is an example of how to delete a Google Cloud Pub/Sub topic:
 [source,java]
 ----
 public void deleteTopic() {
-    pubSubAdmin.deleteTopic("topicName");
+    pubSubAdmin.deleteTopic("defaultTopicName");
 }
 ----
 
@@ -174,7 +174,7 @@ public List<String> listTopics() {
 
 [source,java]
 ----
-public Subscription createSubscription(String subscriptionName, String topicName, Integer ackDeadline, String pushEndpoint)
+public Subscription createSubscription(String defaultSubscriptionName, String defaultTopicName, Integer ackDeadline, String pushEndpoint)
 ----
 
 Here is an example of how to create a Google Cloud Pub/Sub subscription:
@@ -182,7 +182,7 @@ Here is an example of how to create a Google Cloud Pub/Sub subscription:
 [source,java]
 ----
 public void newSubscription() {
-    pubSubAdmin.createSubscription("subscriptionName", "topicName", 10, “http://my.endpoint/push”);
+    pubSubAdmin.createSubscription("defaultSubscriptionName", "defaultTopicName", 10, “http://my.endpoint/push”);
 }
 ----
 
@@ -192,17 +192,17 @@ If `pushEndpoint` isn’t specified, the subscription uses message pulling, inst
 
 [source,java]
 ----
-public Subscription createSubscription(String subscriptionName, String topicName)
+public Subscription createSubscription(String defaultSubscriptionName, String defaultTopicName)
 ----
 
 [source,java]
 ----
-public Subscription createSubscription(String subscriptionName, String topicName, Integer ackDeadline)
+public Subscription createSubscription(String defaultSubscriptionName, String defaultTopicName, Integer ackDeadline)
 ----
 
 [source,java]
 ----
-public Subscription createSubscription(String subscriptionName, String topicName, String pushEndpoint)
+public Subscription createSubscription(String defaultSubscriptionName, String defaultTopicName, String pushEndpoint)
 ----
 
 ==== Deleting a subscription
@@ -211,7 +211,7 @@ public Subscription createSubscription(String subscriptionName, String topicName
 
 [source,java]
 ----
-public void deleteSubscription(String subscriptionName)
+public void deleteSubscription(String defaultSubscriptionName)
 ----
 
 Here is an example of how to delete a Google Cloud Pub/Sub subscription:
@@ -219,7 +219,7 @@ Here is an example of how to delete a Google Cloud Pub/Sub subscription:
 [source,java]
 ----
 public void deleteSubscription() {
-    pubSubAdmin.deleteSubscription("subscriptionName");
+    pubSubAdmin.deleteSubscription("defaultSubscriptionName");
 }
 ----
 
