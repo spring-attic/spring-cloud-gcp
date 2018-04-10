@@ -57,13 +57,13 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 		pubsub("google-pubsub",
 				ImmutableMap.of("ProjectId", "project-id",
-				"PrivateKeyData", "credentials.encoded-key",
-				"topic_name", "default-topic-name",
-				"subscription_name", "default-subscription-name")),
+						"PrivateKeyData", "credentials.encoded-key",
+						"topic_name", "default-topic-name",
+						"subscription_name", "default-subscription-name")),
 		storage("google-storage",
 				ImmutableMap.of("ProjectId", "project-id",
-				"PrivateKeyData", "credentials.encoded-key",
-				"bucket_name", "default-bucket-name")),
+						"PrivateKeyData", "credentials.encoded-key",
+						"bucket_name", "default-bucket-name")),
 		spanner("google-spanner",
 				ImmutableMap.of("ProjectId", "project-id",
 						"PrivateKeyData", "credentials.encoded-key",
@@ -130,7 +130,7 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 		}
 
 		if (serviceBindings.size() != 1) {
-			LOGGER.info("The service " + service.getCfServiceName() + " has to be bound to a "
+			LOGGER.warn("The service " + service.getCfServiceName() + " has to be bound to a "
 					+ "Cloud Foundry application once and only once.");
 			return properties;
 		}
