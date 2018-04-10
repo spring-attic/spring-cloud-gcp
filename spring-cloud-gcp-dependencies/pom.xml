@@ -16,6 +16,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
+		<google-cloud-bom.version>0.43.0-alpha</google-cloud-bom.version>
 		<cloud-trace-java.version>0.5.0</cloud-trace-java.version>
 	</properties>
 
@@ -157,6 +158,15 @@
 						<artifactId>guava-jdk5</artifactId>
 					</exclusion>
 				</exclusions>
+			</dependency>
+
+			<!--google-cloud-java BOM-->
+			<dependency>
+				<groupId>com.google.cloud</groupId>
+				<artifactId>google-cloud-bom</artifactId>
+				<version>${google-cloud-bom.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 
 			<!-- spring-cloud-gcp-starter -->
