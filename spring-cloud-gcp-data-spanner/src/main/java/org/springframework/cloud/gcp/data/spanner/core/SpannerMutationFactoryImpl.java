@@ -29,6 +29,7 @@ import com.google.cloud.spanner.Mutation.WriteBuilder;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.WrappedKey;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.util.Assert;
@@ -87,7 +88,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 			PersistentPropertyAccessor accessor = persistentEntity
 					.getPropertyAccessor(entity);
 			PersistentProperty idProperty = persistentEntity.getIdProperty();
-			Key value = (Key) accessor.getProperty(idProperty);
+			Key value = ((WrappedKey) accessor.getProperty(idProperty)).getSpannerKey();
 
 			builder.addKey(value);
 		}

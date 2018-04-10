@@ -25,6 +25,7 @@ import org.springframework.expression.spel.SpelEvaluationException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -115,6 +116,32 @@ public class SpannerPersistentEntityImplTests {
 	}
 
 	@Test
+	public void testToString() {
+		SpannerPersistentEntityImpl<MultiKeyEntity> entity =
+				(SpannerPersistentEntityImpl<MultiKeyEntity>) new SpannerMappingContext()
+						.getPersistentEntity(MultiKeyEntity.class);
+		MultiKeyEntity t = new MultiKeyEntity();
+		t.id = "abc";
+		t.id2 = "def";
+		Object identifier = entity.getIdentifierAccessor(t).getIdentifier();
+		assertThat(identifier, instanceOf(WrappedKey.class));
+		assertThat(identifier.toString(), is("abc,def"));
+	}
+
+	@Test
+	public void testToStringWithNulls() {
+		SpannerPersistentEntityImpl<MultiKeyEntity> entity =
+				(SpannerPersistentEntityImpl<MultiKeyEntity>) new SpannerMappingContext()
+						.getPersistentEntity(MultiKeyEntity.class);
+		MultiKeyEntity t = new MultiKeyEntity();
+		t.id = "abc";
+		t.id2 = null;
+		Object identifier = entity.getIdentifierAccessor(t).getIdentifier();
+		assertThat(identifier, instanceOf(WrappedKey.class));
+		assertThat(identifier.toString(), is("abc,null"));
+	}
+
+	@Test
 	public void testHasIdProperty() {
 		assertTrue(new SpannerMappingContext().getPersistentEntity(TestEntity.class)
 				.hasIdProperty());
@@ -138,6 +165,18 @@ public class SpannerPersistentEntityImplTests {
 	private static class TestEntity {
 		@PrimaryKeyColumn(keyOrder = 1)
 		String id;
+
+		@Column(name = "custom_col")
+		String something;
+	}
+
+	@Table(name = "custom_test_table_multi")
+	private static class MultiKeyEntity {
+		@PrimaryKeyColumn(keyOrder = 1)
+		String id;
+
+		@PrimaryKeyColumn(keyOrder = 2)
+		String id2;
 
 		@Column(name = "custom_col")
 		String something;
