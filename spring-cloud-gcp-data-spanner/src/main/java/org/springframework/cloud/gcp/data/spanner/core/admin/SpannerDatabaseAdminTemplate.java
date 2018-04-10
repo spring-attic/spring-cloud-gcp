@@ -16,6 +16,11 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.admin;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
@@ -90,5 +95,32 @@ public class SpannerDatabaseAdminTemplate {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Returns a map of parent and child table relationships in the database at the
+	 * moment.
+	 * @return A map where the keys are parent table names, and the value is a set of that
+	 * parent's children.
+	 */
+	public Map<String, Set<String>> getParentChildTablesMap() {
+		Map<String, Set<String>> relationships = new HashMap<>();
+		for (String ddl : this.databaseAdminClient
+				.getDatabase(getInstanceId(), getDatabase()).getDdl()) {
+			if (!ddl.contains("INTERLEAVE IN PARENT")
+					|| !ddl.startsWith("CREATE TABLE ")) {
+				continue;
+			}
+			String child = ddl.split(" ")[2];
+			String parent = ddl.substring(ddl.indexOf("INTERLEAVE IN PARENT"))
+					.split(" ")[3];
+			Set<String> children = relationships.get(parent);
+			if (children == null) {
+				children = new HashSet<>();
+				relationships.put(parent, children);
+			}
+			children.add(child);
+		}
+		return relationships;
 	}
 }
