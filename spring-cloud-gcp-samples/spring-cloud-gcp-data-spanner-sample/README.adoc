@@ -9,7 +9,6 @@ link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Sprin
 
 . Setup the database
 .. Create a new Spanner instance named "spring-demo".
-For testing, choose the cheapest region possible for you and only 1 region instance should suffice.
 .. Create with a database called "trades"
 .. Create a table, also named "trades".
 You can define the table via the following DDL
