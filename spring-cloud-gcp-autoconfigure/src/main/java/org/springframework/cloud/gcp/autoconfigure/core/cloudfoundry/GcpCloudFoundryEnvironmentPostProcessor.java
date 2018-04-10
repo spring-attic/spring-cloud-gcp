@@ -63,7 +63,7 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 		storage("google-storage",
 				ImmutableMap.of("ProjectId", "project-id",
 				"PrivateKeyData", "credentials.encodedKey",
-				"bucket_name", "bucket-name")),
+				"bucket_name", "default-bucket-name")),
 		spanner("google-spanner",
 				ImmutableMap.of("ProjectId", "project-id",
 						"PrivateKeyData", "credentials.encodedKey",
