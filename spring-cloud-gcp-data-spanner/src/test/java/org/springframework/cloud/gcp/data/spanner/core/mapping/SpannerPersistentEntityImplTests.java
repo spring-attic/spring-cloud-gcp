@@ -114,6 +114,13 @@ public class SpannerPersistentEntityImplTests {
 				.getIdProperty() instanceof SpannerCompositeKeyProperty);
 	}
 
+	@Test
+	public void testHasIdProperty() {
+		assertTrue(new SpannerMappingContext().getPersistentEntity(TestEntity.class)
+				.hasIdProperty());
+	}
+
+
 	@Test(expected = SpannerDataException.class)
 	public void testSetIdProperty() {
 		SpannerPersistentEntityImpl<TestEntity> entity =
@@ -125,6 +132,7 @@ public class SpannerPersistentEntityImplTests {
 		TestEntity t = new TestEntity();
 		entity.getPropertyAccessor(t).setProperty(idProperty, Key.of("blah"));
 	}
+
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
