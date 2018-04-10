@@ -141,7 +141,7 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 		service.getCfPropNameToGcp().forEach(
 				(cfPropKey, gcpPropKey) -> properties.put(
 						prefix + gcpPropKey,
-            credentialsMap.get(cfPropKey)));
+						credentialsMap.get(cfPropKey)));
 
 		return properties;
 	}
