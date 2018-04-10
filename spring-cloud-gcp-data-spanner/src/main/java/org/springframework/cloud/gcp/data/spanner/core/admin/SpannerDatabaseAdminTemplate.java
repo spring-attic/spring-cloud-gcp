@@ -38,7 +38,10 @@ public class SpannerDatabaseAdminTemplate {
 	private final DatabaseId databaseId;
 
 	/**
-	 * Constructor.
+	 * Constructor that takes in the database admin client used to perform operations and the
+	 * {@link DatabaseId} object holding the project, instance, and database IDs used for all
+	 * operations. While operations can be optionally performed for a database that does not yet
+	 * exist, the project and instance IDs must already exist for Spanner.
 	 * @param databaseAdminClient the client used to create databases and execute DDL
 	 * statements.
 	 * @param databaseId the combination of Spanner Instance Id and Database Id. While
@@ -54,7 +57,7 @@ public class SpannerDatabaseAdminTemplate {
 	}
 
 	/**
-	 * Executes the given DDL strings in order and creates the database if it does not
+	 * Execute the given DDL strings in order and creates the database if it does not
 	 * exist.
 	 * @param ddlStrings
 	 * @param createDatabaseIfNotExists Has no effect if the database already exists.
@@ -74,11 +77,19 @@ public class SpannerDatabaseAdminTemplate {
 		}
 	}
 
-	private String getInstanceId() {
+	/**
+	 * Get the instance ID used to perform database operations.
+	 * @return
+	 */
+	public String getInstanceId() {
 		return this.databaseId.getInstanceId().getInstance();
 	}
 
-	private String getDatabase() {
+	/**
+	 * Get the database ID used to perform database operations.
+	 * @return
+	 */
+	public String getDatabase() {
 		return this.databaseId.getDatabase();
 	}
 
@@ -98,7 +109,7 @@ public class SpannerDatabaseAdminTemplate {
 	}
 
 	/**
-	 * Returns a map of parent and child table relationships in the database at the
+	 * Return a map of parent and child table relationships in the database at the
 	 * moment.
 	 * @return A map where the keys are parent table names, and the value is a set of that
 	 * parent's children.
