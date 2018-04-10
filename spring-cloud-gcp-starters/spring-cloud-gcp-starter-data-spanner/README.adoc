@@ -26,7 +26,7 @@ bean to be used by an end-user.
 [options="header",]
 |=======================================================================
 | Setting | Optional | Default Value | Meaning
-| `spring.cloud.gcp.spanner.projectId` | Yes | `null` | This is an optional setting to provide a project ID used just for Spanner.
+| `spring.cloud.gcp.spanner.project-id` | Yes | `null` | This is an optional setting to provide a project ID used just for Spanner.
 | `spring.cloud.gcp.spanner.credentials.location` | Yes | Location of the credentials for the
 Spanner service, if different from those in the
 link:../spring-cloud-gcp-starter/README.adoc[GCP Starter] | The filesystem path for a

@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
+import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Spanner;
@@ -38,6 +39,7 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
@@ -141,5 +143,18 @@ public class GcpSpannerAutoConfiguration {
 			SpannerMappingContext spannerMappingContext,
 			SpannerConverter spannerConverter) {
 		return new SpannerSchemaUtils(spannerMappingContext, spannerConverter);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
+			DatabaseAdminClient databaseAdminClient, DatabaseId databaseId) {
+		return new SpannerDatabaseAdminTemplate(databaseAdminClient, databaseId);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public DatabaseAdminClient databaseAdminClient(Spanner spanner) {
+		return spanner.getDatabaseAdminClient();
 	}
 }
