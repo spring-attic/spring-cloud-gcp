@@ -36,6 +36,8 @@ include::spring-integration.adoc[]
 
 include::trace.adoc[]
 
+include::logging.adoc[]
+
 include::config.adoc[]
 
 include::spanner.adoc[]
