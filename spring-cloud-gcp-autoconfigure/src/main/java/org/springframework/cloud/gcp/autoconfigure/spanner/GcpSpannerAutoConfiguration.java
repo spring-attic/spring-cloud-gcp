@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
-import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Spanner;
@@ -148,13 +147,8 @@ public class GcpSpannerAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
-			DatabaseAdminClient databaseAdminClient, DatabaseId databaseId) {
-		return new SpannerDatabaseAdminTemplate(databaseAdminClient, databaseId);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public DatabaseAdminClient databaseAdminClient(Spanner spanner) {
-		return spanner.getDatabaseAdminClient();
+			Spanner spanner, DatabaseId databaseId) {
+		return new SpannerDatabaseAdminTemplate(spanner.getDatabaseAdminClient(),
+				databaseId);
 	}
 }
