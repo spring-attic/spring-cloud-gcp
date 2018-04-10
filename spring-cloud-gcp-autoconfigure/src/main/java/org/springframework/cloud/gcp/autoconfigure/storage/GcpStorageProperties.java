@@ -31,22 +31,11 @@ import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolverSettin
 public class GcpStorageProperties extends GoogleStorageProtocolResolverSettings implements
 		CredentialsSupplier {
 
-	/** The default bucket that should be used. Useful for environments like Cloud Foundry. */
-	private String defaultBucketName;
-
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.STORAGE_READ_WRITE.getUrl());
 
 	public Credentials getCredentials() {
 		return this.credentials;
-	}
-
-	public String getDefaultBucketName() {
-		return this.defaultBucketName;
-	}
-
-	public void setDefaultBucketName(String defaultBucketName) {
-		this.defaultBucketName = defaultBucketName;
 	}
 }

@@ -47,14 +47,6 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.PUBSUB.getUrl());
 
-	/** The default topic that should be used. Useful for environments like Cloud Foundry. */
-	private String defaultTopicName;
-
-	/**
-	 * The default subscription that should be used. Useful for environments like Cloud Foundry.
-	 */
-	private String defaultSubscriptionName;
-
 	public int getSubscriberExecutorThreads() {
 		return this.subscriberExecutorThreads;
 	}
@@ -89,21 +81,5 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 	public void setEmulatorHost(String emulatorHost) {
 		this.emulatorHost = emulatorHost;
-	}
-
-	public String getDefaultTopicName() {
-		return this.defaultTopicName;
-	}
-
-	public void setDefaultTopicName(String defaultTopicName) {
-		this.defaultTopicName = defaultTopicName;
-	}
-
-	public String getDefaultSubscriptionName() {
-		return this.defaultSubscriptionName;
-	}
-
-	public void setDefaultSubscriptionName(String defaultSubscriptionName) {
-		this.defaultSubscriptionName = defaultSubscriptionName;
 	}
 }
