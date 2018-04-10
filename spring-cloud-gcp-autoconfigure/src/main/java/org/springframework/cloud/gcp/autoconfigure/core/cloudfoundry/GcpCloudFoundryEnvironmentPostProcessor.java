@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.autoconfigure.core.cloudfoundry;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -110,13 +109,14 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 			Map<String, Object> vcapMap =
 					this.parser.parseMap(environment.getProperty(VCAP_SERVICES_ENVVAR));
 
-			Properties gcpCfPubSubProps = new Properties();
+			Properties gcpCfServiceProperties = new Properties();
 
-			Arrays.stream(GcpCfService.values()).forEach(cfService ->
-					gcpCfPubSubProps.putAll(retrieveCfProperties(vcapMap, cfService)));
+			for (GcpCfService cfService : GcpCfService.values()) {
+				gcpCfServiceProperties.putAll(retrieveCfProperties(vcapMap, cfService));
+			}
 
 			environment.getPropertySources()
-					.addFirst(new PropertiesPropertySource("gcpCf", gcpCfPubSubProps));
+					.addFirst(new PropertiesPropertySource("gcpCf", gcpCfServiceProperties));
 		}
 	}
 
