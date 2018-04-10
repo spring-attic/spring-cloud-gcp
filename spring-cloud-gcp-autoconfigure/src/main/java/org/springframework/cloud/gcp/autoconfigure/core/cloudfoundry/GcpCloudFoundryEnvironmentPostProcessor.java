@@ -57,20 +57,20 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 		pubsub("google-pubsub",
 				ImmutableMap.of("ProjectId", "project-id",
-				"PrivateKeyData", "credentials.encodedKey",
+				"PrivateKeyData", "credentials.encoded-key",
 				"topic_name", "default-topic-name",
 				"subscription_name", "default-subscription-name")),
 		storage("google-storage",
 				ImmutableMap.of("ProjectId", "project-id",
-				"PrivateKeyData", "credentials.encodedKey",
+				"PrivateKeyData", "credentials.encoded-key",
 				"bucket_name", "default-bucket-name")),
 		spanner("google-spanner",
 				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encodedKey",
+						"PrivateKeyData", "credentials.encoded-key",
 						"instance_id", "instance-id")),
 		trace("google-stackdriver-trace",
 				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encodedKey"));
+						"PrivateKeyData", "credentials.encoded-key"));
 
 		/**
 		 * Name of the GCP Cloud Foundry service in the VCAP_SERVICES JSON.
