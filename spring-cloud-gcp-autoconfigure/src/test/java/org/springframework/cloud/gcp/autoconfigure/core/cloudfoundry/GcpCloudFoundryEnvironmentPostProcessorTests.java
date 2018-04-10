@@ -67,7 +67,7 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 							context.getBean(GcpStorageProperties.class);
 					assertThat(storageProperties.getCredentials().getEncodedKey())
 					.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-storage"));
-					assertThat(storageProperties.getBucketName())
+					assertThat(storageProperties.getDefaultBucketName())
 							.isEqualTo("pcf_sb_3_1521133498440717694");
 
 					GcpSpannerProperties spannerProperties =
