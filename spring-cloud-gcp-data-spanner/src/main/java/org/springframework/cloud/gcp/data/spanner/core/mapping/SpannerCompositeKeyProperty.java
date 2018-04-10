@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.OptionalInt;
+import java.util.StringJoiner;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Key.Builder;
@@ -55,13 +56,13 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 		this.spannerPersistentEntity = spannerPersistentEntity;
 	}
 
-	Key getId(Object entity) {
+	WrappedKey getId(Object entity) {
 		PersistentPropertyAccessor accessor = getOwner().getPropertyAccessor(entity);
 		Builder keyBuilder = Key.newBuilder();
 		for (SpannerPersistentProperty spannerPersistentProperty : this.primaryKeyColumns) {
 			keyBuilder.appendObject(accessor.getProperty(spannerPersistentProperty));
 		}
-		return keyBuilder.build();
+		return new WrappedKey(keyBuilder.build());
 	}
 
 	@Override
@@ -224,5 +225,20 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	@Override
 	public boolean usePropertyAccess() {
 		return false;
+	}
+
+	class WrappedKey {
+		private Key spannerKey;
+
+		public WrappedKey(Key spannerKey) {
+			this.spannerKey = spannerKey;
+		}
+
+		@Override
+		public String toString() {
+			StringJoiner stringJoiner = new StringJoiner(",");
+			spannerKey.getParts().forEach(part -> stringJoiner.add(part.toString()));
+			return stringJoiner.toString();
+		}
 	}
 }
