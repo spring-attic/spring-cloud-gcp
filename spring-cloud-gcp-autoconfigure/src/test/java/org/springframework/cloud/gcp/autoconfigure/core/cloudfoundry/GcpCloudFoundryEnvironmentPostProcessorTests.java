@@ -58,16 +58,16 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 							.isEqualTo("graphite-test-spring-cloud-gcp");
 					assertThat(pubSubProperties.getCredentials().getEncodedKey())
 					.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-pubsub"));
-					assertThat(pubSubProperties.getDefaultTopicName())
+					assertThat(pubSubProperties.getTopicName())
 							.isEqualTo("pcf_sb_4_1521138145589148714");
-					assertThat(pubSubProperties.getDefaultSubscriptionName())
+					assertThat(pubSubProperties.getSubscriptionName())
 							.isEqualTo("mysubscription");
 
 					GcpStorageProperties storageProperties =
 							context.getBean(GcpStorageProperties.class);
 					assertThat(storageProperties.getCredentials().getEncodedKey())
 					.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-storage"));
-					assertThat(storageProperties.getDefaultBucketName())
+					assertThat(storageProperties.getBucketName())
 							.isEqualTo("pcf_sb_3_1521133498440717694");
 
 					GcpSpannerProperties spannerProperties =

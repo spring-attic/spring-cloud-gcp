@@ -56,7 +56,7 @@ public PubSubInboundChannelAdapter messageChannelAdapter(
     @Qualifier("pubsubInputChannel") MessageChannel inputChannel,
     SubscriberFactory subscriberFactory) {
     PubSubInboundChannelAdapter adapter =
-        new PubSubInboundChannelAdapter(subscriberFactory, "defaultSubscriptionName");
+        new PubSubInboundChannelAdapter(subscriberFactory, "subscriptionName");
     adapter.setOutputChannel(inputChannel);
     adapter.setAckMode(AckMode.MANUAL);
 
@@ -112,7 +112,7 @@ on the user application side.
 @Bean
 @ServiceActivator(inputChannel = "pubsubOutputChannel")
 public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
-    return new PubSubMessageHandler(pubsubTemplate, "defaultTopicName");
+    return new PubSubMessageHandler(pubsubTemplate, "topicName");
 }
 ----
 
