@@ -123,26 +123,25 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 	private static Properties retrieveCfProperties(Map<String, Object> vcapMap,
 			GcpCfService service) {
 		Properties properties = new Properties();
-		List<Object> pubSubBindings = (List<Object>) vcapMap.get(service.getCfServiceName());
+		List<Object> serviceBindings = (List<Object>) vcapMap.get(service.getCfServiceName());
 
-		if (pubSubBindings == null) {
+		if (serviceBindings == null) {
 			return properties;
 		}
 
-		if (pubSubBindings.size() != 1) {
+		if (serviceBindings.size() != 1) {
 			LOGGER.info("The service " + service.getCfServiceName() + " has to be bound to a "
 					+ "Cloud Foundry application once and only once.");
 			return properties;
 		}
 
-		Map<String, Object> pubSubBinding = (Map<String, Object>) pubSubBindings.get(0);
-		Map<String, String> credentialsMap = (Map<String, String>) pubSubBinding.get("credentials");
-
-		service.getCfPropNameToGcp().forEach((cfPropKey, gcpPropKey) -> {
-			properties.put(SPRING_CLOUD_GCP_PROPERTY_PREFIX + service.name() + "."
-							+ gcpPropKey,
-					(String) credentialsMap.get(cfPropKey));
-		});
+		Map<String, Object> serviceBinding = (Map<String, Object>) serviceBindings.get(0);
+		Map<String, String> credentialsMap = (Map<String, String>) serviceBinding.get("credentials");
+		String prefix = SPRING_CLOUD_GCP_PROPERTY_PREFIX + service.name() + ".";
+		service.getCfPropNameToGcp().forEach(
+				(cfPropKey, gcpPropKey) -> properties.put(
+						prefix + gcpPropKey,
+            credentialsMap.get(cfPropKey)));
 
 		return properties;
 	}
