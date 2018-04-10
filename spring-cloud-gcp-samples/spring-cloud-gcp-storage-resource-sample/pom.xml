@@ -10,7 +10,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>spring-cloud-gcp-storage-resource-sample</artifactId>
-	<name>Spring Cloud GCP Spring Boot Starter for Storage Code Sample</name>
+	<name>Spring Cloud GCP Storage Sample</name>
 
 	<dependencies>
 		<dependency>
