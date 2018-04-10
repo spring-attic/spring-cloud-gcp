@@ -40,7 +40,7 @@ https://cla.pivotal.io/[Contributor License Agreement]
 4. Fork the repository, develop and test your code changes
 
 5. Ensure that your code adheres to the
-https://github.com/spring-projects/spring-framework/wiki/Spring-Framework-Code-Style[Spring Style
+https://github.com/spring-projects/spring-framework/wiki/Code-Style[Spring Style
 Guide]
 
 6. Ensure your code has an appropriate set of unit tests which all pass
