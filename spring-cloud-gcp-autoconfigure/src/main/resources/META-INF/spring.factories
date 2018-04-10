@@ -11,3 +11,6 @@ org.springframework.cloud.gcp.autoconfigure.spanner.SpannerRepositoriesAutoConfi
 
 org.springframework.cloud.bootstrap.BootstrapConfiguration=\
 org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration
+
+org.springframework.boot.env.EnvironmentPostProcessor=\
+org.springframework.cloud.gcp.autoconfigure.core.cloudfoundry.GcpCloudFoundryEnvironmentPostProcessor
