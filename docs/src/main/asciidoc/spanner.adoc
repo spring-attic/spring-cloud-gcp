@@ -91,6 +91,26 @@ Spring Data Spanner allows you to map POJOs to Spanner tables:
 
 [source,java]
 ----
+@Table(name = "my_things")
+public class MyThing {
+
+	@PrimaryKeyColumn
+	String name;
+
+	Double price;
+}
+----
+
+- `@Table` provides the name of the Spanner table that stores instances of this class, one per row.
+This annotation is optional, and if not given the name of the table is inferred from the class name
+with the first character uncapitalized.
+- `@PrimaryKeyColumn` annotation is required and identifies the ID property corresponding
+the the primary key.
+
+Spanner also supports composite primary keys of multiple columns:
+
+[source,java]
+----
 @Table(name = "trades")
 public class Trade {
 
@@ -111,15 +131,14 @@ public class Trade {
 	List<Double> curve;
 }
 ----
-
-- `@Table` provides the name of the Spanner table that stores instances of this class, one per row.
-- `@PrimaryKeyColumn` annotation is required and identifies the properties corresponding to the
+- The `keyOrder` parameter to `@PrimaryKeyColumn` identifies the properties corresponding to the
 primary key columns in order, starting with 1 and increasing consecutively.
 - The `@Column` annotation optionally provides a different column name than that of the property.
+If this annotation is not present, then the property name is taken from the Java field name.
 - Spanner supports `List` types as fields, the `@ColumnInnerType` annotation is required for `List`
 properties due to Java's type erasure.
 
-#### SpEL expressions for table names
+==== SpEL expressions for table names
 
 In some cases, you might want the `@Table` table name to be determined dynamically.
 To do that, you can use
@@ -141,59 +160,13 @@ The table name will be resolved only if the `tableNameSuffix` value/bean in the 
 context is defined.
 For example, if `tableNameSuffix` has the value "123", the table name will resolve to `trades_123`.
 
-=== Template API
+==== Relationships
 
-`SpannerOperations` and its implementation, `SpannerTemplate`, provides the Template pattern
-familiar to Spring developers.
-It provides:
-
- - Resource management
- - One-stop-shop to Spanner operations with the Spring Data POJO mapping and conversion features
- - Exception conversion
-
-Using the `autoconfigure` provided by our Spring Boot Starter for Spanner, your Spring application
-context will contain a fully configured `SpannerTemplate` object that you can easily autowire in
-your application:
-
-[source,java]
-----
-@SpringBootApplication
-public class SpannerTemplateExample {
-
-	@Autowired
-	SpannerOperations spannerTemplate;
-
-	public void doSomething() {
-		this.spannerOperations.delete(Trade.class, KeySet.all());
-		//...
-		Trade t = new Trade();
-		//...
-		this.spannerOperations.insert(t);
-		//...
-		List<Trade> tradesByAction = spannerOperations.findAll(Trade.class);
-		//...
-	}
-}
-----
-
-The Template API provides convenience methods for:
-
-- https://cloud.google.com/spanner/docs/reads[Reads], and by providing SpannerReadOptions and
-SpannerQueryOptions
-   ** Stale read
-   ** Read with secondary indices
-   ** Read with limits and flow control
-- https://cloud.google.com/spanner/docs/reads#execute_a_query[Queries]
-- DML operations (delete, insert, update, upsert)
-- Partial reads
-   ** You can define a set of columns to be read into your entity
-- Partial writes
-   ** Persist only a few properties from your entity
-- Read-only transactions
-- Locking read-write transactions
+Currently we do not support relationships between tables within the domain types, but this is being
+worked on.
 
 
-=== Supported Types
+==== Supported Types
 
 Spring Data Spanner supports the following types for regular fields:
 
@@ -226,7 +199,7 @@ field, Spring Data Spanner supports the following inner types:
 * `java.util.Instant`
 * `java.sql.Date`
 
-=== Custom type conversions
+==== Custom type conversions
 
 Custom converters can be used extending the type support for user defined types.
 
@@ -314,6 +287,60 @@ public class ConverterConfiguration {
 ----
 
 
+=== Template API
+
+`SpannerOperations` and its implementation, `SpannerTemplate`, provides the Template pattern
+familiar to Spring developers.
+It provides:
+
+ - Resource management
+ - One-stop-shop to Spanner operations with the Spring Data POJO mapping and conversion features
+ - Exception conversion
+
+Using the `autoconfigure` provided by our Spring Boot Starter for Spanner, your Spring application
+context will contain a fully configured `SpannerTemplate` object that you can easily autowire in
+your application:
+
+[source,java]
+----
+@SpringBootApplication
+public class SpannerTemplateExample {
+
+	@Autowired
+	SpannerOperations spannerTemplate;
+
+	public void doSomething() {
+		this.spannerOperations.delete(Trade.class, KeySet.all());
+		//...
+		Trade t = new Trade();
+		//...
+		this.spannerOperations.insert(t);
+		//...
+		List<Trade> tradesByAction = spannerOperations.findAll(Trade.class);
+		//...
+	}
+}
+----
+
+The Template API provides convenience methods for:
+
+- https://cloud.google.com/spanner/docs/reads[Reads], and by providing SpannerReadOptions and
+SpannerQueryOptions
+   ** Stale read
+   ** Read with secondary indices
+   ** Read with limits and flow control
+- https://cloud.google.com/spanner/docs/reads#execute_a_query[Queries]
+- DML operations (delete, insert, update, upsert)
+- Partial reads
+   ** You can define a set of columns to be read into your entity
+- Partial writes
+   ** Persist only a few properties from your entity
+- Read-only transactions
+- Locking read-write transactions
+
+For read-only and locking read-write transactions, users provide a `java.util.Function`
+utilizing a single-transaction `SpannerOperations` that is executed in a single transaction.
+
 === Repositories
 
 {spring-data-commons-ref}/#repositories[Spring Data Repositories] are a powerful abstraction that
@@ -323,7 +350,8 @@ For example:
 
 [source,java]
 ----
-public interface TradeRepository extends PagingAndSortingRepository<Trade, String> {
+@RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
 
 	List<Trade> findByAction(String action);
 
@@ -341,6 +369,23 @@ public interface TradeRepository extends PagingAndSortingRepository<Trade, Strin
 
 Spring Data generates a working implementation of the specified interface, which can be conveniently
 autowired into an application.
+
+The `Trade` type parameter to `SpannerRepository` refers to the underlying domain type.
+The second type parameter, `String[]` in this case, refers to the type of the key of the domain
+type.
+For POJOs with multiple columns comprising the primary key, this ID type parameter can be any
+descendant of `Object[]` compatible with all primary key properties, any descendant of `Iterable`,
+or `com.google.cloud.spanner.Key`. If the domain POJO type only has a single primary key column,
+then the primary key property type can be used or the `Key` type.
+
+The `@RepositoryRestResource` annotation allows the repository to act as a REST endpoint when
+used in a Spring Boot application.
+For example, you can retrieve all `Trade` objects in the repository by using
+`curl http://<server>:<port>/trades`, or any specific trade via
+`curl http://<server>:<port>/trades/<symbol>,<action>`.
+You can also write trades using
+`curl -XPOST -H"Content-Type: application/json" -d@test.json http://<server>:<port>/trades/`
+where the file `test.json` holds the JSON representation of a `Trade` object.
 
 [source,java]
 ----
