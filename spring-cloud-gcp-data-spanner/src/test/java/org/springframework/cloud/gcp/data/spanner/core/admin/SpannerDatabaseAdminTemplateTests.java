@@ -57,7 +57,7 @@ public class SpannerDatabaseAdminTemplateTests {
 		Database database = mock(Database.class);
 		when(this.databaseAdminClient.getDatabase(any(), any())).thenReturn(database);
 		when(database.getDdl()).thenReturn(Arrays.asList(new String[] {
-				"CREATE TABLE grandpa ( col a, col b ) primary key (a);",
+				"CREATE TABLE grandpa ( col a, col b ) primary key (a)",
 				"CREATE TABLE parent_a ( col a, col b ) primary key (a), "
 				+ "INTERLEAVE IN PARENT grandpa ON DELETE CASCADE",
 				"CREATE TABLE parent_b ( col a, col b ) primary key (a), "

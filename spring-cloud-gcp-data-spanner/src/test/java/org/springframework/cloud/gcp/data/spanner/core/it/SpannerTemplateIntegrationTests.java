@@ -17,19 +17,24 @@
 package org.springframework.cloud.gcp.data.spanner.core.it;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Set;
 
 import com.google.cloud.spanner.Key;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerReadOptions;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
 import org.springframework.cloud.gcp.data.spanner.test.domain.SharesTransaction;
 import org.springframework.cloud.gcp.data.spanner.test.domain.SubTrade;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -41,6 +46,9 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
 public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationTest {
+
+	@Autowired
+	SpannerMappingContext spannerMappingContext;
 
 	@Test
 	public void insertAndDeleteSequence() {
@@ -71,6 +79,19 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 		assertThat(this.spannerOperations.count(Trade.class), is(1L));
 		assertThat(this.spannerOperations.count(SubTrade.class), is(1L));
 		assertThat(this.spannerOperations.count(SharesTransaction.class), is(1L));
+
+		Map<String, Set<String>> relationships = this.spannerDatabaseAdminTemplate
+				.getParentChildTablesMap();
+		String tradeTableName = this.spannerMappingContext
+				.getPersistentEntity(Trade.class).tableName();
+		String subTradeTableName = this.spannerMappingContext
+				.getPersistentEntity(SubTrade.class).tableName();
+		String sharesTransactionTableName = this.spannerMappingContext
+				.getPersistentEntity(SharesTransaction.class).tableName();
+		assertThat(relationships.get(tradeTableName),
+				containsInAnyOrder(subTradeTableName));
+		assertThat(relationships.get(subTradeTableName),
+				containsInAnyOrder(sharesTransactionTableName));
 
 		Trade retrievedTrade = this.spannerOperations.find(Trade.class,
 				Key.of(trade.getId(), trade.getTraderId()));

@@ -25,15 +25,13 @@ import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityImpl;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
@@ -74,7 +72,7 @@ public abstract class AbstractSpannerIntegrationTest {
 	protected SpannerOperations spannerOperations;
 
 	@Autowired
-	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
+	protected SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
 
 	@Autowired
 	protected ApplicationContext applicationContext;
@@ -120,12 +118,6 @@ public abstract class AbstractSpannerIntegrationTest {
 		}
 		this.spannerDatabaseAdminTemplate.executeDDLStrings(createSchemaStatements(),
 				true);
-
-		System.out.println("Database DDL: ");
-		this.databaseAdminClient
-				.getDatabase(this.databaseId.getInstanceId().getInstance(),
-						this.databaseId.getDatabase())
-				.getDdl().forEach(s -> System.out.println(s));
 	}
 
 	protected List<String> createSchemaStatements() {
@@ -140,7 +132,10 @@ public abstract class AbstractSpannerIntegrationTest {
 			if (this.setupFailed) {
 				return;
 			}
-			this.spannerDatabaseAdminTemplate.executeDDLStrings(dropSchemaStatements(),
+			this.spannerDatabaseAdminTemplate
+					.executeDDLStrings(
+							this.mappingSchemaGenerator
+									.getDropTableDDLStringsForHierarchy(Trade.class),
 					false);
 			System.out.println("Integration database cleaned up!");
 		}
