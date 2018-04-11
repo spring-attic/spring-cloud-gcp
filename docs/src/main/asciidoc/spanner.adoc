@@ -474,13 +474,7 @@ ORDER BY SYMBOL DESC
 LIMIT 3
 ----
 
-==== Query methods with named queries properties
-//TODO
-
-
-==== Query methods with annotation
-//TODO
-
+==== Custom SQL query methods
 
 The example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the
 {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation
@@ -491,6 +485,8 @@ The SQL query for the method can be mapped to repository methods in one of two w
  * `namedQueries` properties file
  * using the `@Query` annotation
 
+===== Query methods with named queries properties
+
 By default, the `namedQueriesLocation` attribute on `@EnableSpannerRepositories` points to the
 `META-INF/spanner-named-queries.properties` file.
 You can specify the query for a method in the properties file by providing the SQL as the value for
@@ -500,6 +496,8 @@ the "interface.method" property:
 ----
 Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0`
 ----
+
+===== Query methods with annotation
 
 Using the `@Query` annotation:
 
@@ -522,6 +520,7 @@ A full example would look like:
   List<Trade> fetchByActionNamedQuery(String action);
 ----
 
+This allows table names evaluated with SpEL to be used in custom queries. 
 
 ==== REST Repositories
 
