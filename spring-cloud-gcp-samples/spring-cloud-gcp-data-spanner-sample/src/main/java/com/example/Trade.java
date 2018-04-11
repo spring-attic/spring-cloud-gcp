@@ -31,8 +31,13 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 @Table(name = "trades")
 public class Trade {
 
+	@PrimaryKey(keyOrder = 2)
+	@Column(name = "trade_id")
+	private String tradeId;
+
 	@PrimaryKey(keyOrder = 1)
-	private Long id;
+	@Column(name = "trader_id")
+	private String traderId;
 
 	private String action;
 
@@ -42,19 +47,15 @@ public class Trade {
 
 	private String symbol;
 
-	@PrimaryKey(keyOrder = 2)
-	@Column(name = "trader_id")
-	private String traderId;
-
 	@ColumnInnerType(innerType = Double.class)
 	private List<Double> curve;
 
 	public Trade() {
 	}
 
-	public Trade(Long id, String action, Double price, Double shares, String symbol, String traderId,
+	public Trade(String tradeId, String action, Double price, Double shares, String symbol, String traderId,
 			List<Double> curve) {
-		this.id = id;
+		this.tradeId = tradeId;
 		this.action = action;
 		this.price = price;
 		this.shares = shares;
@@ -63,12 +64,20 @@ public class Trade {
 		this.curve = curve;
 	}
 
-	public Long getId() {
-		return this.id;
+	public String getTradeId() {
+		return this.tradeId;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setTradeId(String tradeId) {
+		this.tradeId = tradeId;
+	}
+
+	public String getTraderId() {
+		return this.traderId;
+	}
+
+	public void setTraderId(String traderId) {
+		this.traderId = traderId;
 	}
 
 	public String getAction() {
@@ -103,14 +112,6 @@ public class Trade {
 		this.symbol = symbol;
 	}
 
-	public String getTraderId() {
-		return this.traderId;
-	}
-
-	public void setTraderId(String traderId) {
-		this.traderId = traderId;
-	}
-
 	public List<Double> getCurve() {
 		return this.curve;
 	}
@@ -122,12 +123,12 @@ public class Trade {
 	@Override
 	public String toString() {
 		return "Trade{" +
-				"id=" + this.id +
+				"tradeId=" + this.tradeId +
+				", traderId='" + this.traderId + '\'' +
 				", action='" + this.action + '\'' +
 				", price=" + this.price +
 				", shares=" + this.shares +
 				", symbol='" + this.symbol + '\'' +
-				", traderId='" + this.traderId + '\'' +
 				", curve=" + this.curve +
 				'}';
 	}

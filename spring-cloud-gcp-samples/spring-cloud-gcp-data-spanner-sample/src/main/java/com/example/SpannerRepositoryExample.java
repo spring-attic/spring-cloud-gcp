@@ -36,6 +36,9 @@ import org.springframework.context.annotation.Bean;
 public class SpannerRepositoryExample {
 
 	@Autowired
+	TraderRepository traderRepository;
+
+	@Autowired
 	TradeRepository tradeRepository;
 
 	@Autowired
@@ -48,23 +51,30 @@ public class SpannerRepositoryExample {
 	@Bean
 	public CommandLineRunner commandLineRunner() {
 		return args -> {
+
+			this.traderRepository.deleteAll();
 			this.tradeRepository.deleteAll();
+
+			this.traderRepository.save(new Trader("demo_trader1", "John", "Doe"));
+			this.traderRepository.save(new Trader("demo_trader2", "Mary", "Jane"));
+			this.traderRepository.save(new Trader("demo_trader3", "Scott", "Smith"));
+
 			this.tradeRepository
-					.save(new Trade(1L, "BUY", 100.0, 50.0, "STOCK1", "demo_trader1", Arrays.asList(99.0, 101.00)));
+					.save(new Trade("1", "BUY", 100.0, 50.0, "STOCK1", "demo_trader1", Arrays.asList(99.0, 101.00)));
 			this.tradeRepository
-					.save(new Trade(2L, "BUY", 105.0, 60.0, "STOCK2", "demo_trader1", Arrays.asList(99.0, 101.00)));
+					.save(new Trade("2", "BUY", 105.0, 60.0, "STOCK2", "demo_trader1", Arrays.asList(99.0, 101.00)));
 			this.tradeRepository
-					.save(new Trade(3L, "BUY", 100.0, 50.0, "STOCK1", "demo_trader1", Arrays.asList(99.0, 101.00)));
+					.save(new Trade("3", "BUY", 100.0, 50.0, "STOCK1", "demo_trader1", Arrays.asList(99.0, 101.00)));
 			this.tradeRepository
-					.save(new Trade(1L, "BUY", 100.0, 70.0, "STOCK2", "demo_trader2", Arrays.asList(99.0, 101.00)));
+					.save(new Trade("1", "BUY", 100.0, 70.0, "STOCK2", "demo_trader2", Arrays.asList(99.0, 101.00)));
 			this.tradeRepository
-					.save(new Trade(2L, "BUY", 103.0, 50.0, "STOCK1", "demo_trader2", Arrays.asList(99.0, 101.00)));
+					.save(new Trade("2", "BUY", 103.0, 50.0, "STOCK1", "demo_trader2", Arrays.asList(99.0, 101.00)));
 			this.tradeRepository
-					.save(new Trade(3L, "SELL", 100.0, 52.0, "STOCK2", "demo_trader2", Arrays.asList(99.0, 101.00)));
+					.save(new Trade("3", "SELL", 100.0, 52.0, "STOCK2", "demo_trader2", Arrays.asList(99.0, 101.00)));
 			this.tradeRepository
-					.save(new Trade(1L, "SELL", 98.0, 50.0, "STOCK1", "demo_trader3", Arrays.asList(99.0, 101.00)));
+					.save(new Trade("1", "SELL", 98.0, 50.0, "STOCK1", "demo_trader3", Arrays.asList(99.0, 101.00)));
 			this.tradeRepository
-					.save(new Trade(2L, "SELL", 110.0, 50.0, "STOCK2", "demo_trader3", Arrays.asList(99.0, 101.00)));
+					.save(new Trade("2", "SELL", 110.0, 50.0, "STOCK2", "demo_trader3", Arrays.asList(99.0, 101.00)));
 
 			System.out.println("The table for trades has been cleared and "
 					+ this.tradeRepository.count() + " new trades have been inserted:");

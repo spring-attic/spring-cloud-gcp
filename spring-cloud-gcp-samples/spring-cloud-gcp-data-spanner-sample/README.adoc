@@ -10,18 +10,24 @@ link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Sprin
 . Setup the database
 .. Create a new Spanner instance named "spring-demo".
 .. Create with a database called "trades"
-.. Create a table, also named "trades".
-You can define the table via the following DDL
+.. Create two tables called "traders" and "trades" using the schema below:
 ```
+CREATE TABLE traders (
+    trader_id STRING(MAX),
+    first_name STRING(100),
+    last_name STRING(100),
+) PRIMARY KEY (trader_id);
+
 CREATE TABLE trades (
-	id INT64,
-	action STRING(15),
-	symbol STRING(10),
-	curve ARRAY<FLOAT64>,
-	price FLOAT64,
-	shares FLOAT64,
-	trader_id STRING(128),
-) PRIMARY KEY (id, trader_id)
+    trader_id STRING(MAX),
+    trade_id STRING(MAX),
+    action STRING(15),
+    symbol STRING(10),
+    curve ARRAY<FLOAT64>,
+    price FLOAT64,
+    shares FLOAT64,
+    person STRING(MAX)
+) PRIMARY KEY (trader_id, trade_id)
 ```
 [start=2]
 . https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login[If
@@ -41,7 +47,7 @@ These POJOs are then retrieved and their contents are printed in the browser.
 Note that the sample application, still running, also provides REST endpoints.
 For example, you can retrieve all `Trade` objects in the repository by using
 `curl http://localhost:8080/trades`, or any specific trade via
-`curl http://localhost:8080/trades/<id>,<trader_id>`. This is achieved using
+`curl http://localhost:8080/trades/<trader_id>,<trade_id>`. This is achieved using
 https://projects.spring.io/spring-data-rest/:[Spring Data REST] and the `@RepositoryRestResource`
 annotation.
 
