@@ -31,8 +31,8 @@ import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
-import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -75,8 +75,7 @@ public class IntegrationTestConfiguration {
 	public com.google.auth.Credentials getCredentials() {
 
 		try {
-			return new DefaultCredentialsProvider(Credentials::new)
-					.getCredentials();
+			return new DefaultCredentialsProvider(Credentials::new).getCredentials();
 		}
 		catch (IOException e) {
 			throw new RuntimeException(e);
@@ -134,12 +133,12 @@ public class IntegrationTestConfiguration {
 		return spanner.getDatabaseAdminClient();
 	}
 
-  @Bean
-  public SpannerSchemaUtils mappingSchemaGenerator(
-      SpannerMappingContext spannerMappingContext,
-      SpannerConverter spannerConverter) {
-    return new SpannerSchemaUtils(spannerMappingContext, spannerConverter);
-  }
+	@Bean
+	public SpannerSchemaUtils spannerSchemaUtils(
+			SpannerMappingContext spannerMappingContext,
+			SpannerConverter spannerConverter) {
+		return new SpannerSchemaUtils(spannerMappingContext, spannerConverter);
+	}
 
 	@Bean
 	public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(

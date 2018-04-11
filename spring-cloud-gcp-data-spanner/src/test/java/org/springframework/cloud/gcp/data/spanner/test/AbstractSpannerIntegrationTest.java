@@ -18,11 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.DatabaseId;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,20 +27,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityImpl;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.test.context.ContextConfiguration;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * This class provides the foundation for the integration test framework for Spanner. Its
@@ -82,15 +73,15 @@ public abstract class AbstractSpannerIntegrationTest {
 	protected SpannerOperations spannerOperations;
 
 	@Autowired
-	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
-
-	@Autowired
 	protected ApplicationContext applicationContext;
 
 	protected String tableNameSuffix;
 
 	@Autowired
-	SpannerSchemaUtils mappingSchemaGenerator;
+	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
+
+	@Autowired
+	SpannerSchemaUtils spannerSchemaUtils;
 
 	private boolean setupFailed;
 
@@ -115,16 +106,18 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	protected void createDatabaseWithSchema() {
 		this.tableNameSuffix = String.valueOf(System.currentTimeMillis());
-		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) this.applicationContext)
-				.getBeanFactory();
+		ConfigurableListableBeanFactory beanFactory =
+				((ConfigurableApplicationContext) this.applicationContext).getBeanFactory();
 		beanFactory.registerSingleton("tableNameSuffix", this.tableNameSuffix);
 
 		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
 			System.out.println(
-					this.getClass() + " - Integration database created with schema: " + createSchemaStatements());
+					this.getClass() + " - Integration database created with schema: "
+							+ createSchemaStatements());
 		}
 		else {
-			System.out.println(this.getClass() + " - schema created: " + createSchemaStatements());
+			System.out.println(
+					this.getClass() + " - schema created: " + createSchemaStatements());
 		}
 		this.spannerDatabaseAdminTemplate.executeDdlStrings(createSchemaStatements(),
 				true);
@@ -132,12 +125,12 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	protected List<String> createSchemaStatements() {
 		return Arrays
-				.asList(this.mappingSchemaGenerator.getCreateTableDDLString(Trade.class));
+				.asList(this.spannerSchemaUtils.getCreateTableDDLString(Trade.class));
 	}
 
 	protected Iterable<String> dropSchemaStatements() {
 		return Arrays
-				.asList(this.mappingSchemaGenerator.getDropTableDDLString(Trade.class));
+				.asList(this.spannerSchemaUtils.getDropTableDDLString(Trade.class));
 	}
 
 	@After
