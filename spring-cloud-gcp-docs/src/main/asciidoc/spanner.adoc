@@ -746,6 +746,8 @@ The SQL query for the method can be mapped to repository methods in one of two w
  * `namedQueries` properties file
  * using the `@Query` annotation
 
+The names of the tags of the SQL correspond to the `@Param` annotated names of the method parameters.
+
 ===== Query methods with named queries properties
 
 By default, the `namedQueriesLocation` attribute on `@EnableSpannerRepositories` points to the
@@ -762,7 +764,7 @@ Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0
 ----
 public interface TradeRepository extends CrudRepository<Trade, String[]> {
 	// This method uses the query from the properties file instead of one generated based on name.
-	List<Trade> fetchByActionNamedQuery(String action);
+	List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
 }
 ----
 ===== Query methods with annotation
@@ -773,7 +775,7 @@ Using the `@Query` annotation:
 ----
 public interface TradeRepository extends CrudRepository<Trade, String[]> {
     @Query("SELECT * FROM trades WHERE trades.action = @tag0")
-    List<Trade> fetchByActionNamedQuery(String action);
+    List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
 }
 ----
 

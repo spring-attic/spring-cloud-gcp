@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.util.Map;
+import java.util.Optional;
 
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Value;
@@ -29,11 +30,14 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.Parameter;
+import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -85,6 +89,20 @@ public class SqlSpannerQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, "blahblah",
 				1.11, 2.22, };
+
+		String[] paramNames = new String[] { "tag0", "tag1", "tag2", "tag3", "tag4",
+				"tag5", "tag6", "tag7" };
+
+		Parameters parameters = mock(Parameters.class);
+
+		when(this.queryMethod.getParameters()).thenReturn(parameters);
+		when(parameters.getNumberOfParameters()).thenReturn(paramNames.length);
+		when(parameters.getParameter(anyInt())).thenAnswer(invocation -> {
+			int index = invocation.getArgument(0);
+			Parameter param = mock(Parameter.class);
+			when(param.getName()).thenReturn(Optional.of(paramNames[index]));
+			return param;
+		});
 
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
 

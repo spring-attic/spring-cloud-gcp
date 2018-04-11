@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +27,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -63,20 +65,24 @@ public class SqlSpannerQuery implements RepositoryQuery {
 		this.queryMethod = queryMethod;
 		this.entityType = type;
 		this.spannerOperations = spannerOperations;
-		this.tags = getTags(sql);
+		this.tags = getTags();
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
 		this.spannerMappingContext = spannerMappingContext;
 		this.sql = sql;
 	}
 
-	private List<String> getTags(String sql) {
-		Pattern pattern = Pattern.compile("@[^\\{^\\s][\\S]+[^\\}^\\s]");
-		Matcher matcher = pattern.matcher(sql);
+	private List<String> getTags() {
 		List<String> tags = new ArrayList<>();
-		while (matcher.find()) {
-			// The initial '@' character must be excluded for Spanner
-			tags.add(matcher.group().substring(1));
+		Parameters parameters = getQueryMethod().getParameters();
+		for (int i = 0; i < parameters.getNumberOfParameters(); i++) {
+			Optional<String> paramName = parameters.getParameter(i).getName();
+			if (!paramName.isPresent()) {
+				throw new SpannerDataException(
+						"Query method has a parameter without a valid name: "
+								+ getQueryMethod().getName());
+			}
+			tags.add(paramName.get());
 		}
 		return tags;
 	}
