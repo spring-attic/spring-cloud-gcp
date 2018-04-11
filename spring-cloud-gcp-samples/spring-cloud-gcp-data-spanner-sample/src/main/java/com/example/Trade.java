@@ -64,7 +64,7 @@ public class Trade {
 	}
 
 	public Long getSequence() {
-		return sequence;
+		return this.sequence;
 	}
 
 	public void setSequence(Long sequence) {
@@ -72,7 +72,7 @@ public class Trade {
 	}
 
 	public String getAction() {
-		return action;
+		return this.action;
 	}
 
 	public void setAction(String action) {
@@ -80,7 +80,7 @@ public class Trade {
 	}
 
 	public Double getPrice() {
-		return price;
+		return this.price;
 	}
 
 	public void setPrice(Double price) {
@@ -88,7 +88,7 @@ public class Trade {
 	}
 
 	public Double getShares() {
-		return shares;
+		return this.shares;
 	}
 
 	public void setShares(Double shares) {
@@ -96,7 +96,7 @@ public class Trade {
 	}
 
 	public String getSymbol() {
-		return symbol;
+		return this.symbol;
 	}
 
 	public void setSymbol(String symbol) {
@@ -104,7 +104,7 @@ public class Trade {
 	}
 
 	public String getTraderId() {
-		return traderId;
+		return this.traderId;
 	}
 
 	public void setTraderId(String traderId) {
@@ -112,22 +112,23 @@ public class Trade {
 	}
 
 	public List<Double> getCurve() {
-		return curve;
+		return this.curve;
 	}
 
 	public void setCurve(List<Double> curve) {
 		this.curve = curve;
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return "Trade{" +
-				"sequence=" + sequence +
-				", action='" + action + '\'' +
-				", price=" + price +
-				", shares=" + shares +
-				", symbol='" + symbol + '\'' +
-				", traderId='" + traderId + '\'' +
-				", curve=" + curve +
+				"sequence=" + this.sequence +
+				", action='" + this.action + '\'' +
+				", price=" + this.price +
+				", shares=" + this.shares +
+				", symbol='" + this.symbol + '\'' +
+				", traderId='" + this.traderId + '\'' +
+				", curve=" + this.curve +
 				'}';
 	}
 }

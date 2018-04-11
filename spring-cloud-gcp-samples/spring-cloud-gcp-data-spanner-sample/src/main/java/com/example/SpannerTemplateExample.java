@@ -51,16 +51,16 @@ public class SpannerTemplateExample {
 		return args -> {
 			this.spannerOperations.delete(Trade.class, KeySet.all());
 
-			Trade t = new Trade(1l, "BUY", 100.0, 50.0, "STOCK1", "template_trader1", Arrays.asList(99.0, 101.00));
+			Trade t = new Trade(1L, "BUY", 100.0, 50.0, "STOCK1", "template_trader1", Arrays.asList(99.0, 101.00));
 
 			this.spannerOperations.insert(t);
 
-			t.setSequence(2l);
+			t.setSequence(2L);
 			t.setTraderId("template_trader1");
 			t.setAction("SELL");
 			this.spannerOperations.insert(t);
 
-			t.setSequence(1l);
+			t.setSequence(1L);
 			t.setTraderId("template_trader2");
 			this.spannerOperations.insert(t);
 
