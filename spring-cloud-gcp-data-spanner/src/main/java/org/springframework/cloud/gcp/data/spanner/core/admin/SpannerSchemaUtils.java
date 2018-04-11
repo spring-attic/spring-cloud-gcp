@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.spanner.core.admin;
 
 import com.google.cloud.spanner.Key;
 
-import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.util.Assert;
@@ -32,16 +31,10 @@ public class SpannerSchemaUtils {
 
 	private final SpannerMappingContext mappingContext;
 
-	private final SpannerConverter spannerConverter;
-
-	public SpannerSchemaUtils(SpannerMappingContext mappingContext,
-			SpannerConverter spannerConverter) {
+	public SpannerSchemaUtils(SpannerMappingContext mappingContext) {
 		Assert.notNull(mappingContext,
 				"A valid mapping context for Spanner is required.");
-		Assert.notNull(spannerConverter,
-				"A valid results mapper for Spanner is required.");
 		this.mappingContext = mappingContext;
-		this.spannerConverter = spannerConverter;
 	}
 
 	/**
@@ -49,7 +42,7 @@ public class SpannerSchemaUtils {
 	 * @param object
 	 * @return
 	 */
-	public Key getId(Object object) {
+	public Key getKey(Object object) {
 		SpannerPersistentEntity persistentEntity = this.mappingContext
 				.getPersistentEntity(object.getClass());
 		return (Key) persistentEntity.getPropertyAccessor(object)

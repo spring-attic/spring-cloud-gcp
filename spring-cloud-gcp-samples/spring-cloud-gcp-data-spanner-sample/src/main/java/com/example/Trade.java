@@ -26,37 +26,108 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  */
 @Table(name = "trades")
 public class Trade {
 
-	@PrimaryKey(keyOrder = 2)
-	String action;
-
-	Double price;
-
-	Double shares;
-
 	@PrimaryKey(keyOrder = 1)
-	String symbol;
+	private Long sequence;
 
+	private String action;
+
+	private Double price;
+
+	private Double shares;
+
+	private String symbol;
+
+	@PrimaryKey(keyOrder = 2)
 	@Column(name = "trader_id")
-	String traderId;
+	private String traderId;
 
 	@ColumnInnerType(innerType = Double.class)
-	List<Double> curve;
+	private List<Double> curve;
 
-	Person person;
+	public Trade() {
+	}
 
-	@Override
-	public String toString() {
+	public Trade(Long sequence, String action, Double price, Double shares, String symbol, String traderId,
+			List<Double> curve) {
+		this.sequence = sequence;
+		this.action = action;
+		this.price = price;
+		this.shares = shares;
+		this.symbol = symbol;
+		this.traderId = traderId;
+		this.curve = curve;
+	}
+
+	public Long getSequence() {
+		return sequence;
+	}
+
+	public void setSequence(Long sequence) {
+		this.sequence = sequence;
+	}
+
+	public String getAction() {
+		return action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
+	}
+
+	public Double getPrice() {
+		return price;
+	}
+
+	public void setPrice(Double price) {
+		this.price = price;
+	}
+
+	public Double getShares() {
+		return shares;
+	}
+
+	public void setShares(Double shares) {
+		this.shares = shares;
+	}
+
+	public String getSymbol() {
+		return symbol;
+	}
+
+	public void setSymbol(String symbol) {
+		this.symbol = symbol;
+	}
+
+	public String getTraderId() {
+		return traderId;
+	}
+
+	public void setTraderId(String traderId) {
+		this.traderId = traderId;
+	}
+
+	public List<Double> getCurve() {
+		return curve;
+	}
+
+	public void setCurve(List<Double> curve) {
+		this.curve = curve;
+	}
+
+	@Override public String toString() {
 		return "Trade{" +
-				"action='" + this.action + '\'' +
-				", price=" + this.price +
-				", shares=" + this.shares +
-				", symbol='" + this.symbol + '\'' +
-				", traderId='" + this.traderId +
-				", person='" + this.person +
+				"sequence=" + sequence +
+				", action='" + action + '\'' +
+				", price=" + price +
+				", shares=" + shares +
+				", symbol='" + symbol + '\'' +
+				", traderId='" + traderId + '\'' +
+				", curve=" + curve +
 				'}';
 	}
 }
