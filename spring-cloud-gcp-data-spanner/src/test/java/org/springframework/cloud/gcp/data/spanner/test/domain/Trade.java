@@ -25,6 +25,7 @@ import java.util.UUID;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 /**
@@ -34,7 +35,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
  */
 @Table(name = "#{'trades_'.concat(tableNameSuffix)}")
 public class Trade {
-	@PrimaryKeyColumn(keyOrder = 1)
+	@PrimaryKey(keyOrder = 1)
 	private String id;
 
 	private int age;
@@ -49,7 +50,7 @@ public class Trade {
 
 	private String symbol;
 
-	@PrimaryKeyColumn(keyOrder = 2)
+	@PrimaryKey(keyOrder = 2)
 	@Column(name = "trader_id")
 	private String traderId;
 

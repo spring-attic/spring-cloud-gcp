@@ -115,8 +115,8 @@ public class SpannerPersistentPropertyImpl
 
 	@Override
 	public OptionalInt getPrimaryKeyOrder() {
-		PrimaryKeyColumn annotation = findAnnotation(
-				PrimaryKeyColumn.class);
+		PrimaryKey annotation = findAnnotation(
+				PrimaryKey.class);
 		if (annotation == null) {
 			return OptionalInt.empty();
 		}

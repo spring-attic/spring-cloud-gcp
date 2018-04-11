@@ -97,9 +97,10 @@ public class StackdriverTraceAutoConfiguration {
 		this.finalProjectIdProvider = gcpTraceProperties.getProjectId() != null
 				? gcpTraceProperties::getProjectId
 				: gcpProjectIdProvider;
-		this.finalCredentialsProvider = gcpTraceProperties.getCredentials().getLocation() != null
-				? new DefaultCredentialsProvider(gcpTraceProperties)
-				: credentialsProvider;
+		this.finalCredentialsProvider =
+				gcpTraceProperties.getCredentials().hasKey()
+						? new DefaultCredentialsProvider(gcpTraceProperties)
+						: credentialsProvider;
 	}
 
 	@Bean
@@ -113,10 +114,12 @@ public class StackdriverTraceAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public Reporter<zipkin2.Span> reporter(
-			GcpProjectIdProvider projectIdProvider,
 			FlushableTraceConsumer traceConsumer,
 			SpanTranslator spanTranslator) {
-		return new StackdriverTraceReporter(projectIdProvider.getProjectId(), traceConsumer, spanTranslator);
+		return new StackdriverTraceReporter(
+				this.finalProjectIdProvider.getProjectId(),
+				traceConsumer,
+				spanTranslator);
 	}
 
 	@Bean

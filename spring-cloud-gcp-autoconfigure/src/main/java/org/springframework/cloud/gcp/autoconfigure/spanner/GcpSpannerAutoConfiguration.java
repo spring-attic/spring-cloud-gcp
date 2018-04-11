@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
-import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Spanner;
@@ -71,7 +70,7 @@ public class GcpSpannerAutoConfiguration {
 	public GcpSpannerAutoConfiguration(GcpSpannerProperties gcpSpannerProperties,
 			GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
-		this.credentials = (gcpSpannerProperties.getCredentials().getLocation() != null
+		this.credentials = (gcpSpannerProperties.getCredentials().hasKey()
 				? new DefaultCredentialsProvider(gcpSpannerProperties)
 				: credentialsProvider).getCredentials();
 		this.projectId = gcpSpannerProperties.getProjectId() != null
@@ -116,7 +115,7 @@ public class GcpSpannerAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SpannerOperations spannerOperations(DatabaseClient databaseClient,
+	public SpannerTemplate spannerTemplate(DatabaseClient databaseClient,
 			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
 			SpannerMutationFactory spannerMutationFactory) {
 		return new SpannerTemplate(databaseClient, mappingContext, spannerConverter,
@@ -148,13 +147,8 @@ public class GcpSpannerAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
-			DatabaseAdminClient databaseAdminClient, DatabaseId databaseId) {
-		return new SpannerDatabaseAdminTemplate(databaseAdminClient, databaseId);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public DatabaseAdminClient databaseAdminClient(Spanner spanner) {
-		return spanner.getDatabaseAdminClient();
+			Spanner spanner, DatabaseId databaseId) {
+		return new SpannerDatabaseAdminTemplate(spanner.getDatabaseAdminClient(),
+				databaseId);
 	}
 }

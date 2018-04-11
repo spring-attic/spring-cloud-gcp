@@ -36,3 +36,13 @@ link:src/main/resources/application.properties[application.properties] file and 
 . Run the `SpannerRepositoryExample` or the `SpannerTemplateExample` Spring Boot console apps. This causes the app to generate sample `Trade`
 objects filled with some demo data and persists them to the Spanner table created earlier.
 These POJOs are then retrieved and their contents are printed in the browser.
+
+
+Note that the sample application, still running, also provides REST endpoints.
+For example, you can retrieve all `Trade` objects in the repository by using
+`curl http://localhost:8080/trades`, or any specific trade via
+`curl http://localhost:8080/trades/<symbol>,<action>`.
+
+You can also write trades using
+`curl -XPOST -H"Content-Type: application/json" -d@test.json http://localhost:8080/trades/`
+where the file `test.json` holds the JSON representation of a `Trade` object.

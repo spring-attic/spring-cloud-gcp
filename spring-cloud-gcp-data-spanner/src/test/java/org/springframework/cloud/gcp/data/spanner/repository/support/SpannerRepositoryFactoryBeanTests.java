@@ -46,7 +46,7 @@ public class SpannerRepositoryFactoryBeanTests {
 				SpannerRepository.class);
 		this.spannerRepositoryFactoryBean
 				.setSpannerMappingContext(this.spannerMappingContext);
-		this.spannerRepositoryFactoryBean.setSpannerOperations(this.spannerOperations);
+		this.spannerRepositoryFactoryBean.setSpannerTemplate(this.spannerOperations);
 	}
 
 	@Test

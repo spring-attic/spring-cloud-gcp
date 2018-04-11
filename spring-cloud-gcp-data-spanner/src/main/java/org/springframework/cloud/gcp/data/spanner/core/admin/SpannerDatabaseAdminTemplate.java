@@ -25,6 +25,7 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.util.Assert;
 
 /**
@@ -38,7 +39,10 @@ public class SpannerDatabaseAdminTemplate {
 	private final DatabaseId databaseId;
 
 	/**
-	 * Constructor.
+	 * Constructor that takes in the database admin client used to perform operations and the
+	 * {@link DatabaseId} object holding the project, instance, and database IDs used for all
+	 * operations. While operations can be optionally performed for a database that does not yet
+	 * exist, the project and instance IDs must already exist for Spanner.
 	 * @param databaseAdminClient the client used to create databases and execute DDL
 	 * statements.
 	 * @param databaseId the combination of Spanner Instance Id and Database Id. While
@@ -54,16 +58,16 @@ public class SpannerDatabaseAdminTemplate {
 	}
 
 	/**
-	 * Executes the given DDL strings in order and creates the database if it does not
+	 * Execute the given DDL strings in order and creates the database if it does not
 	 * exist.
 	 * @param ddlStrings
 	 * @param createDatabaseIfNotExists Has no effect if the database already exists.
 	 * Otherwise, if True then the database is created and the DDL strings are executed;
 	 * the DDL is not executed if False.
 	 */
-	public void executeDDLStrings(Iterable<String> ddlStrings,
+	public void executeDdlStrings(Iterable<String> ddlStrings,
 			boolean createDatabaseIfNotExists) {
-		if (!databaseExists() && createDatabaseIfNotExists) {
+		if (createDatabaseIfNotExists && !databaseExists()) {
 			this.databaseAdminClient
 					.createDatabase(getInstanceId(), getDatabase(), ddlStrings).waitFor();
 		}
@@ -72,20 +76,33 @@ public class SpannerDatabaseAdminTemplate {
 					.updateDatabaseDdl(getInstanceId(), getDatabase(), ddlStrings, null)
 					.waitFor();
 		}
+		else {
+			throw new SpannerDataException(
+					"DDL could not be executed because the database does"
+							+ " not exist and it was not auto-created");
+		}
 	}
 
-	private String getInstanceId() {
+	/**
+	 * Get the instance ID used to perform database operations.
+	 * @return the instance ID string.
+	 */
+	public String getInstanceId() {
 		return this.databaseId.getInstanceId().getInstance();
 	}
 
-	private String getDatabase() {
+	/**
+	 * Get the database ID used to perform database operations.
+	 * @return the database ID string.
+	 */
+	public String getDatabase() {
 		return this.databaseId.getDatabase();
 	}
 
 	/**
 	 * Returns true if the configured database ID refers to an existing database. False
 	 * otherwise.
-	 * @return
+	 * @return true if the database exists, and false if it does not.
 	 */
 	public boolean databaseExists() {
 		for (Database db : this.databaseAdminClient.listDatabases(getInstanceId())
@@ -98,7 +115,7 @@ public class SpannerDatabaseAdminTemplate {
 	}
 
 	/**
-	 * Returns a map of parent and child table relationships in the database at the
+	 * Return a map of parent and child table relationships in the database at the
 	 * moment.
 	 * @return A map where the keys are parent table names, and the value is a set of that
 	 * parent's children.

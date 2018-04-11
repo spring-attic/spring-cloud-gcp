@@ -116,7 +116,7 @@ public abstract class AbstractSpannerIntegrationTest {
 		else {
 			System.out.println(this.getClass() + " - schema created: " + createSchemaStatements());
 		}
-		this.spannerDatabaseAdminTemplate.executeDDLStrings(createSchemaStatements(),
+		this.spannerDatabaseAdminTemplate.executeDdlStrings(createSchemaStatements(),
 				true);
 	}
 
@@ -133,7 +133,7 @@ public abstract class AbstractSpannerIntegrationTest {
 				return;
 			}
 			this.spannerDatabaseAdminTemplate
-					.executeDDLStrings(
+					.executeDdlStrings(
 							this.mappingSchemaGenerator
 									.getDropTableDDLStringsForHierarchy(Trade.class),
 					false);

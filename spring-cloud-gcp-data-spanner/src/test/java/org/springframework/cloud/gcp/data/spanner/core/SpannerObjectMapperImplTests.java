@@ -40,7 +40,7 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerCon
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
@@ -483,7 +483,7 @@ public class SpannerObjectMapperImplTests {
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
-		@PrimaryKeyColumn
+		@PrimaryKey
 		String id;
 
 		@Column(name = "custom_col")
@@ -534,7 +534,7 @@ public class SpannerObjectMapperImplTests {
 
 	@Table(name = "faulty_test_table")
 	private static class FaultyTestEntity {
-		@PrimaryKeyColumn
+		@PrimaryKey
 		String id;
 
 		List<Double> doubleList;
@@ -565,7 +565,7 @@ public class SpannerObjectMapperImplTests {
 
 	@Table(name = "outer_test_entity")
 	private static class OuterTestEntity {
-		@PrimaryKeyColumn
+		@PrimaryKey
 		String id;
 
 		@ColumnInnerType(innerType = InnerTestEntity.class)
@@ -573,6 +573,7 @@ public class SpannerObjectMapperImplTests {
 	}
 
 	private static class InnerTestEntity {
+		@PrimaryKey
 		String value;
 	}
 

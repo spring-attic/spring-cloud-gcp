@@ -54,8 +54,8 @@ public class SpannerRepositoryConfigurationExtension
 			AnnotationRepositoryConfigurationSource config) {
 		AnnotationAttributes attributes = config.getAttributes();
 
-		builder.addPropertyReference("spannerOperations",
-				attributes.getString("spannerOperationsRef"));
+		builder.addPropertyReference("spannerTemplate",
+				attributes.getString("spannerTemplateRef"));
 		builder.addPropertyReference("spannerMappingContext",
 				attributes.getString("spannerMappingContextRef"));
 
@@ -76,8 +76,8 @@ public class SpannerRepositoryConfigurationExtension
 			XmlRepositoryConfigurationSource config) {
 		Element element = config.getElement();
 
-		ParsingUtils.setPropertyReference(builder, element, "spanner-operations-ref",
-				"spannerOperations");
+		ParsingUtils.setPropertyReference(builder, element, "spanner-template-ref",
+				"spannerTemplate");
 		ParsingUtils.setPropertyReference(builder, element, "spanner-mapping-context-ref",
 				"spannerMappingContext");
 	}
