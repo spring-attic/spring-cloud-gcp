@@ -391,7 +391,6 @@ Using `SpannerTemplate` you can execute SQL queries that map to POJOs:
 ...
 ----
 
-Main benefits of queries is using SQL, and that you have access to sorting and limiting number of rows returned.
 
 ==== Read
 
@@ -409,7 +408,7 @@ Using `SpannerTemplate` you can execute reads, for example:
 Main benefit of reads over queries is reading multiple rows of a certain pattern of keys is much easier using the features of the https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-spanner/src/main/java/com/google/cloud/spanner/KeySet.java[`KeySet`] class.
 
 
-==== Advanced Query/Read
+==== Advanced reads
 
 ===== Stale read
 
@@ -421,29 +420,89 @@ With `SpannerTemplate` you can specify the `Timestamp` by setting it on `Spanner
 
 [source,java]
 ----
-...
+
+//...
+// a read with options:
+
   SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setTimestamp(Timestamp.now());
   List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
-...
-/// OR
-...
+
+//...
+
+//...
+// a query with options:
+
   SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setTimestamp(Timestamp.now());
   List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
-...
+
+//...
 ----
 
 
 ===== Read from a secondary index
-//TODO
 
-===== Read with limits and flow control
-//TODO
+Using a https://cloud.google.com/spanner/docs/secondary-indexes[secondary index] is only available for Reads.
+The following shows how to read rows from a table using a https://cloud.google.com/spanner/docs/secondary-indexes[secondary index] simply by setting `index` on `SpannerReadOptions`:
+
+[source,java]
+----
+//...
+
+  SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setIndex("TradesByTrader");
+  List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
+
+//...
+----
+
+
+===== Read with offsets and limits
+
+Limits and offsets are only supported by Queries.
+The following will get only the first two rows of the query:
+
+[source,java]
+----
+//...
+
+  SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setLimit(2).setOffset(3);
+  List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
+
+//...
+----
+
+Note that the above is equivalent of executing `SELECT * FROM trades LIMIT 2 OFFSET 3`.
+
+===== Sorting
+
+Reads don't support sorting.
+Queries on the Template API support sorting through standard SQL and also via Spring Data Sort API:
+
+[source,java]
+----
+//...
+
+  List<Trade> trades = this.spannerTemplate.queryAll(Trade.class, Sort.by("action")););
+
+//...
+----
 
 
 ===== Partial read
 
 Partial read is only possible when using Queries. In case the rows returned by query have fewer columns than the entity that it will be mapped to, Spring Data will map the returned columns and leave the rest as they of the columns are.
 
+
+===== Summary of options for Query vs Read
+
+|===
+| Feature | Query supports it | Read supports it
+| SQL  | yes | no
+| Partial read | yes | no
+| Limits | yes | yes
+| Secondary index | yes | yes
+| Read using index range | no | no
+| Sorting | yes | no
+|===
 
 ==== Write / Update
 
