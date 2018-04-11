@@ -146,9 +146,9 @@ public class Trade {
 	@Column(name = "trade_id")
 	private String tradeId;
 
-    @PrimaryKey(keyOrder = 1)
-    @Column(name = "trader_id")
-    private String traderId;
+	@PrimaryKey(keyOrder = 1)
+	@Column(name = "trader_id")
+	private String traderId;
 
 	private String action;
 
