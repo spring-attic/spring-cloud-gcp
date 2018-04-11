@@ -7,7 +7,7 @@
 	<parent>
 		<artifactId>spring-cloud-gcp</artifactId>
 		<groupId>org.springframework.cloud</groupId>
-		<version>1.0.0.BUILD-SNAPSHOT</version>
+		<version>1.0.0.M3</version>
 	</parent>
 	<groupId>org.springframework.cloud</groupId>
 	<artifactId>spring-cloud-gcp-data-spanner</artifactId>
