@@ -26,7 +26,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
-import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
@@ -58,10 +57,8 @@ public class GcpStorageAutoConfiguration {
 	public static Storage storage(CredentialsProvider credentialsProvider,
 			GcpStorageProperties gcpStorageProperties,
 			GcpProjectIdProvider projectIdProvider) throws IOException {
-		Credentials propertiesCredentials = gcpStorageProperties.getCredentials();
 		return StorageOptions.newBuilder()
-				.setCredentials(propertiesCredentials.getLocation() != null
-						|| propertiesCredentials.getEncodedKey() != null
+				.setCredentials(gcpStorageProperties.getCredentials().hasKey()
 						? new DefaultCredentialsProvider(gcpStorageProperties).getCredentials()
 						: credentialsProvider.getCredentials())
 				.setHeaderProvider(

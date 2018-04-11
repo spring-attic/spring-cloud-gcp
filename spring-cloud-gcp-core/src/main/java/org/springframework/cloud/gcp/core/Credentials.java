@@ -75,4 +75,8 @@ public class Credentials {
 	public void setEncodedKey(String encodedKey) {
 		this.encodedKey = encodedKey;
 	}
+
+	public boolean hasKey() {
+		return this.encodedKey != null || this.location != null;
+	}
 }
