@@ -141,17 +141,19 @@ You have to annotate all of your POJO's fields that the primary key consists of 
 public class Trade {
 
 	@PrimaryKey(keyOrder = 1)
-	String symbol;
+	private Long sequence;
+
+	private String action;
+
+	private Double price;
+
+	private Double shares;
+
+	private String symbol;
 
 	@PrimaryKey(keyOrder = 2)
-	String action;
-
-	Double price;
-
-	Double shares;
-
 	@Column(name = "trader_id")
-	String traderId;
+	private String traderId;
 
 }
 ----
@@ -165,6 +167,7 @@ In our example the DDL to create the table and its primary key is as follows:
 CREATE TABLE trades (
 	action STRING(15),
 	symbol STRING(10),
+	curve ARRAY<FLOAT64>,
 	price FLOAT64,
 	shares FLOAT64,
 	person STRING(MAX),
