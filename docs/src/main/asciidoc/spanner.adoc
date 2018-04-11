@@ -85,7 +85,7 @@ are enabled
 lower level API access
 
 
-=== Mapping POJO domain objects to Spanner tables using annotations
+=== Object Mapping
 
 Spring Data Spanner allows you to map POJOs to Spanner tables:
 
@@ -101,44 +101,14 @@ public class MyThing {
 }
 ----
 
+
+==== Table Name
+
 - `@Table` provides the name of the Spanner table that stores instances of this class, one per row.
 This annotation is optional, and if not given the name of the table is inferred from the class name
 with the first character uncapitalized.
-- `@PrimaryKey` annotation is required even if you have a single column ID and identifies the ID property corresponding
-the the primary key.
 
-Spanner also supports composite primary keys of multiple columns:
-
-[source,java]
-----
-@Table(name = "trades")
-public class Trade {
-
-	@PrimaryKey(keyOrder = 2)
-	String action;
-
-	Double price;
-
-	Double shares;
-
-	@PrimaryKey(keyOrder = 1)
-	String symbol;
-
-	@Column(name = "trader_id")
-	String traderId;
-
-	@ColumnInnerType(innerType = Double.class)
-	List<Double> curve;
-}
-----
-- The `keyOrder` parameter to `@PrimaryKey` identifies the properties corresponding to the
-primary key columns in order, starting with 1 and increasing consecutively.
-- The `@Column` annotation optionally provides a different column name than that of the property.
-If this annotation is not present, then the property name is taken from the Java field name.
-- Spanner supports `List` types as fields, the `@ColumnInnerType` annotation is required for `List`
-properties due to Java's type erasure.
-
-==== SpEL expressions for table names
+===== SpEL expressions for table names
 
 In some cases, you might want the `@Table` table name to be determined dynamically.
 To do that, you can use
@@ -159,6 +129,47 @@ public class Trade {
 The table name will be resolved only if the `tableNameSuffix` value/bean in the Spring application
 context is defined.
 For example, if `tableNameSuffix` has the value "123", the table name will resolve to `trades_123`.
+
+==== Primary Keys
+
+`@PrimaryKey` annotation is required even if you have a single column ID and identifies the ID property corresponding
+the the primary key.
+
+Spanner also supports composite primary keys of multiple columns:
+
+[source,java]
+----
+@Table(name = "trades")
+public class Trade {
+
+	@PrimaryKey(keyOrder = 1)
+	String symbol;
+
+	@PrimaryKey(keyOrder = 2)
+	String action;
+
+	Double price;
+
+	Double shares;
+
+	@Column(name = "trader_id")
+	String traderId;
+
+	@ColumnInnerType(innerType = Double.class)
+	List<Double> curve;
+}
+----
+- The `keyOrder` parameter to `@PrimaryKey` identifies the properties corresponding to the
+primary key columns in order, starting with 1 and increasing consecutively.
+
+
+==== Columns
+
+- The `@Column` annotation optionally provides a different column name than that of the property.
+If this annotation is not present, then the property name is taken from the Java field name.
+- Spanner supports `List` types as fields, the `@ColumnInnerType` annotation is required for `List`
+properties due to Java's type erasure.
+
 
 ==== Relationships
 
@@ -199,7 +210,7 @@ field, Spring Data Spanner supports the following inner types:
 * `java.util.Instant`
 * `java.sql.Date`
 
-==== Custom type conversions
+==== Custom types
 
 Custom converters can be used extending the type support for user defined types.
 
@@ -287,7 +298,7 @@ public class ConverterConfiguration {
 ----
 
 
-=== Template API
+=== Spanner Template
 
 `SpannerOperations` and its implementation, `SpannerTemplate`, provides the Template pattern
 familiar to Spring developers.
@@ -322,6 +333,36 @@ public class SpannerTemplateExample {
 }
 ----
 
+==== Read
+//TODO
+===== Simple Read
+//TODO
+===== Partial Read
+//TODO
+===== Read with secondary indices
+//TODO
+===== Read with limits and flow control
+//TODO
+
+
+==== Query
+//TODO
+==== Write / Update
+//TODO
+===== Insert
+//TODO
+===== Update
+//TODO
+===== Upsert
+//TODO
+===== Partial Write
+
+==== Transaction
+
+===== Read/Write Transaction
+
+===== Read-only Transaction
+
 The Template API provides convenience methods for:
 
 - https://cloud.google.com/spanner/docs/reads[Reads], and by providing SpannerReadOptions and
@@ -342,6 +383,12 @@ For read-only and locking read-write transactions, users provide a `java.util.Fu
 utilizing a single-transaction `SpannerOperations` that is executed in a single transaction.
 
 === Repositories
+
+==== CRUD Repository
+//TODO
+==== Paging and Sorting Repository
+//TODO
+
 
 {spring-data-commons-ref}/#repositories[Spring Data Repositories] are a powerful abstraction that
 can save you a lot of boilerplate code.
@@ -418,10 +465,7 @@ public class MyApplication {
 
 ----
 
-=== Query methods
-
-
-==== Resolving methods by name
+==== Query methods by convention
 
 In the example above, the {spring-data-commons-ref}/#repositories.query-methods[query methods]
 in `TradeRepository` are generated based on the name of the methods, using the
@@ -440,7 +484,12 @@ ORDER BY SYMBOL DESC
 LIMIT 3
 ----
 
-==== Mapping SQL to repository methods
+==== Query methods with named queries properties
+//TODO
+
+
+==== Query methods with annotation
+//TODO
 
 
 The example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the
@@ -482,3 +531,8 @@ A full example would look like:
   @Query("SELECT * FROM :com.example.Trade: WHERE trades.action = @tag0")
   List<Trade> fetchByActionNamedQuery(String action);
 ----
+
+
+==== REST Repositories
+
+//TODO
