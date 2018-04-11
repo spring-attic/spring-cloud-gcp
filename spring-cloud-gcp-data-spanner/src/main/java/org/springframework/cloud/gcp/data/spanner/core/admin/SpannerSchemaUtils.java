@@ -21,7 +21,6 @@ import com.google.cloud.spanner.Key;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.WrappedKey;
 import org.springframework.util.Assert;
 
 /**
@@ -53,8 +52,7 @@ public class SpannerSchemaUtils {
 	public Key getId(Object object) {
 		SpannerPersistentEntity persistentEntity = this.mappingContext
 				.getPersistentEntity(object.getClass());
-		WrappedKey wrappedKey = (WrappedKey) persistentEntity.getPropertyAccessor(object)
+		return (Key) persistentEntity.getPropertyAccessor(object)
 				.getProperty(persistentEntity.getIdProperty());
-		return wrappedKey.getSpannerKey();
 	}
 }

@@ -41,9 +41,8 @@ public class SpannerPersistentEntityInformation<T>
 
 	@Override
 	public Key getId(T entity) {
-		WrappedKey wrappedKey = (WrappedKey) this.persistentEntity.getPropertyAccessor(entity)
+		return (Key) this.persistentEntity.getPropertyAccessor(entity)
 				.getProperty(this.persistentEntity.getIdProperty());
-		return wrappedKey.getSpannerKey();
 	}
 
 	@Override

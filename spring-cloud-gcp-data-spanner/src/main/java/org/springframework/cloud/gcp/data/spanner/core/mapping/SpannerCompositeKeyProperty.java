@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.OptionalInt;
+import java.util.StringJoiner;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Key.Builder;
@@ -226,4 +227,18 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 		return false;
 	}
 
+	class WrappedKey {
+		private Key spannerKey;
+
+		public WrappedKey(Key spannerKey) {
+			this.spannerKey = spannerKey;
+		}
+
+		@Override
+		public String toString() {
+			StringJoiner stringJoiner = new StringJoiner(",");
+			spannerKey.getParts().forEach(part -> stringJoiner.add(part.toString()));
+			return stringJoiner.toString();
+		}
+	}
 }
