@@ -24,7 +24,7 @@
 	</scm>
 
 	<modules>
-		<module>docs</module>
+		<module>spring-cloud-gcp-docs</module>
 		<module>spring-cloud-gcp-dependencies</module>
 		<module>spring-cloud-gcp-pubsub</module>
 		<module>spring-cloud-gcp-core</module>
