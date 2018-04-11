@@ -489,7 +489,7 @@ Queries on the Template API support sorting through standard SQL and also via Sp
 
 ===== Partial read
 
-Partial read is only possible when using Queries. In case the rows returned by query have less columns than the entity that it will be mapped to, Spring Data will map the returned columns and leave the rest as they of the columns are.
+Partial read is only possible when using Queries. In case the rows returned by query have fewer columns than the entity that it will be mapped to, Spring Data will map the returned columns and leave the rest as they of the columns are.
 
 
 ===== Summary of options for Query vs Read
@@ -505,14 +505,40 @@ Partial read is only possible when using Queries. In case the rows returned by q
 |===
 
 ==== Write / Update
-//TODO
+
+The write methods of `SpannerOperations` accept a POJO and writes all of its properties to Spanner.
+The corresponding Spanner table and entity metadata is obtained from the given object's actual type.
+
+If a POJO was retrieved from Spanner and its primary key properties values were changed and then
+written or updated, the operation will occur as if against a row with the new primary key values. The row with the
+original primary key values will not be affected.
+
 ===== Insert
-//TODO
+
+The `insert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner,
+which means the operation will fail if a row with the POJO's primary key already exists in the table.
+
 ===== Update
-//TODO
+
+The `update` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner,
+which means the operation will fail if the POJO's primary key does not already exist in the table.
+
 ===== Upsert
-//TODO
+
+The `upsert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner
+using update-or-insert.
+
 ===== Partial Write
+
+The write methods of `SpannerOperations` operate by default on all properties within the given object,
+but also accept `String[]` and `Optional<Set<String>>` of column names. If the `Optional` of set of
+column names is empty, then all columns are written to Spanner. However, if the Optional is occupied
+by an empty set, then no columns will be written.
+
+==== Transactions
+
+`SpannerOperations` provides methods to run `java.util.Function` objects within a single transaction
+while making available the read and write methods from `SpannerOperations`.
 
 ===== Read/Write Transaction
 
