@@ -50,7 +50,7 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 		this.spannerOperations.insert(trade);
 		assertThat(this.spannerOperations.count(Trade.class), is(1L));
 
-		Trade retrievedTrade = this.spannerOperations.find(Trade.class,
+		Trade retrievedTrade = this.spannerOperations.read(Trade.class,
 				Key.of(trade.getId(), trade.getTraderId()));
 		assertThat(retrievedTrade, is(trade));
 

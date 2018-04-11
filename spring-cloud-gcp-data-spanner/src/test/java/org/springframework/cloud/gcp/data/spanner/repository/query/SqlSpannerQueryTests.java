@@ -87,7 +87,7 @@ public class SqlSpannerQueryTests {
 
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
 
-		when(this.spannerOperations.find(eq(Trade.class), (Statement) any()))
+		when(this.spannerOperations.query(eq(Trade.class), (Statement) any()))
 				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
 
@@ -109,7 +109,7 @@ public class SqlSpannerQueryTests {
 
 		sqlSpannerQuery.execute(params);
 
-		verify(this.spannerOperations, times(1)).find(any(), (Statement) any());
+		verify(this.spannerOperations, times(1)).query(any(), (Statement) any());
 	}
 
 	@Table(name = "trades")

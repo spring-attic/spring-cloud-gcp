@@ -114,7 +114,7 @@ public class SqlSpannerQuery implements RepositoryQuery {
 
 	@Override
 	public Object execute(Object[] parameters) {
-		return this.spannerOperations.find(this.entityType,
+		return this.spannerOperations.query(this.entityType,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 						resolveEntityClassNames(this.sql), this.tags, parameters));
 	}

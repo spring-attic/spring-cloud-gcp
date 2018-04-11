@@ -75,51 +75,36 @@ https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-da
 
 ==== Autoconfiguration
 
-Our Spring Boot autoconfiguration creates the following beans available in the Spring application
-context:
+Our Spring Boot autoconfiguration creates the following beans available in the Spring application context:
 
 - an instance of `SpannerTemplate`
-- an instance of all user defined repositories extending `SpannerRepository`, when repositories
-are enabled
-- an instance of `DatabaseClient` from the Google Cloud Java Client for Spanner, for convenience and
-lower level API access
+- an instance of all user defined repositories extending `CrudRepository` or `PagingAndSortingRepository`, when repositories are enabled
+- an instance of `DatabaseClient` from the Google Cloud Java Client for Spanner, for convenience and lower level API access
 
 
-=== Mapping POJO domain objects to Spanner tables using annotations
+=== Object Mapping
 
-Spring Data Spanner allows you to map POJOs to Spanner tables:
+Spring Data Spanner allows you to map domain POJOs to Spanner tables via annotations:
 
 [source,java]
 ----
-@Table(name = "trades")
-public class Trade {
+@Table(name = "my_things")
+public class MyThing {
 
-	@PrimaryKey(keyOrder = 2)
-	String action;
+	@PrimaryKey
+	String name;
 
 	Double price;
-
-	Double shares;
-
-	@PrimaryKey(keyOrder = 1)
-	String symbol;
-
-	@Column(name = "trader_id")
-	String traderId;
-
-	@ColumnInnerType(innerType = Double.class)
-	List<Double> curve;
 }
 ----
 
-- `@Table` provides the name of the Spanner table that stores instances of this class, one per row.
-- `@PrimaryKey` annotation is required and identifies the properties corresponding to the
-primary key columns in order, starting with 1 and increasing consecutively.
-- The `@Column` annotation optionally provides a different column name than that of the property.
-- Spanner supports `List` types as fields, the `@ColumnInnerType` annotation is required for `List`
-properties due to Java's type erasure.
 
-#### SpEL expressions for table names
+==== Table
+
+The `@Table` annotation can provide the name of the Spanner table that stores instances of the annotated class, one per row.
+This annotation is optional, and if not given, the name of the table is inferred from the class name with the first character uncapitalized.
+
+===== SpEL expressions for table names
 
 In some cases, you might want the `@Table` table name to be determined dynamically.
 To do that, you can use
@@ -141,59 +126,73 @@ The table name will be resolved only if the `tableNameSuffix` value/bean in the 
 context is defined.
 For example, if `tableNameSuffix` has the value "123", the table name will resolve to `trades_123`.
 
-=== Template API
+==== Primary Keys
 
-`SpannerOperations` and its implementation, `SpannerTemplate`, provides the Template pattern
-familiar to Spring developers.
-It provides:
+For a simple table, you may only have a primary key consisting of a single column.
+Even in that case, the `@PrimaryKey` annotation is required.
+`@PrimaryKey` identifies the one or more ID properties corresponding to the primary key.
 
- - Resource management
- - One-stop-shop to Spanner operations with the Spring Data POJO mapping and conversion features
- - Exception conversion
-
-Using the `autoconfigure` provided by our Spring Boot Starter for Spanner, your Spring application
-context will contain a fully configured `SpannerTemplate` object that you can easily autowire in
-your application:
+Spanner has first class support for composite primary keys of multiple columns.
+You have to annotate all of your POJO's fields that the primary key consists of with `@PrimaryKey` as below:
 
 [source,java]
 ----
-@SpringBootApplication
-public class SpannerTemplateExample {
+@Table(name = "trades")
+public class Trade {
 
-	@Autowired
-	SpannerOperations spannerTemplate;
+	@PrimaryKey(keyOrder = 1)
+	private Long id;
 
-	public void doSomething() {
-		this.spannerOperations.delete(Trade.class, KeySet.all());
-		//...
-		Trade t = new Trade();
-		//...
-		this.spannerOperations.insert(t);
-		//...
-		List<Trade> tradesByAction = spannerOperations.findAll(Trade.class);
-		//...
-	}
+	private String action;
+
+	private Double price;
+
+	private Double shares;
+
+	private String symbol;
+
+	@PrimaryKey(keyOrder = 2)
+	@Column(name = "trader_id")
+	private String traderId;
+
 }
 ----
 
-The Template API provides convenience methods for:
+The `keyOrder` parameter of `@PrimaryKey` identifies the properties corresponding to the primary key columns in order, starting with 1 and increasing consecutively.
+Order is important and must reflect the order defined in the Spanner schema.
+In our example the DDL to create the table and its primary key is as follows:
 
-- https://cloud.google.com/spanner/docs/reads[Reads], and by providing SpannerReadOptions and
-SpannerQueryOptions
-   ** Stale read
-   ** Read with secondary indices
-   ** Read with limits and flow control
-- https://cloud.google.com/spanner/docs/reads#execute_a_query[Queries]
-- DML operations (delete, insert, update, upsert)
-- Partial reads
-   ** You can define a set of columns to be read into your entity
-- Partial writes
-   ** Persist only a few properties from your entity
-- Read-only transactions
-- Locking read-write transactions
+[source,sql]
+----
+CREATE TABLE trades (
+	action STRING(15),
+	symbol STRING(10),
+	price FLOAT64,
+	shares FLOAT64,
+	person STRING(MAX),
+	trader_id STRING(128),
+) PRIMARY KEY (action, symbol)
+----
+
+Spanner does not have automatic ID generation.
+For most use-cases, sequential IDs should be used with caution to avoid creating data hotspots in the system.
+Read https://cloud.google.com/spanner/docs/schema-and-data-model#primary_keys[Spanner Primary Keys documentation] for a better understanding of primary keys and recommended practices.
 
 
-=== Supported Types
+==== Columns
+
+All accessible properties on POJOs are automatically recognized as a Spanner column.
+Column naming is generated by the `PropertyNameFieldNamingStrategy` by default defined on the `SpannerMappingContext` bean.
+The `@Column` annotation optionally provides a different column name than that of the property.
+
+
+==== Relationships
+
+Currently there is no support to map relationships between objects.
+I.e., currently we do not have ways to establish parent-children relationships directly via annotations.
+This feature is actively being worked on.
+
+==== Supported Types
 
 Spring Data Spanner supports the following types for regular fields:
 
@@ -212,6 +211,19 @@ Spring Data Spanner supports the following types for regular fields:
 * `java.sql.Date`
 
 
+==== Lists
+
+Spanner supports `List` types as fields, the `@ColumnInnerType` annotation is required for `List`
+properties due to Java's type erasure.
+
+Example:
+
+[source,java]
+----
+	@ColumnInnerType(innerType = Double.class)
+	List<Double> curve;
+----
+
 For `ARRAY` Spanner types, you'll need to use `List` in the fields. For the inner type of a `List`
 field, Spring Data Spanner supports the following inner types:
 
@@ -226,7 +238,7 @@ field, Spring Data Spanner supports the following inner types:
 * `java.util.Instant`
 * `java.sql.Date`
 
-=== Custom type conversions
+==== Custom types
 
 Custom converters can be used extending the type support for user defined types.
 
@@ -314,7 +326,320 @@ public class ConverterConfiguration {
 ----
 
 
+=== Spanner Template
+
+`SpannerOperations` and its implementation, `SpannerTemplate`, provides the Template pattern
+familiar to Spring developers.
+It provides:
+
+ - Resource management
+ - One-stop-shop to Spanner operations with the Spring Data POJO mapping and conversion features
+ - Exception conversion
+
+Using the `autoconfigure` provided by our Spring Boot Starter for Spanner, your Spring application
+context will contain a fully configured `SpannerTemplate` object that you can easily autowire in
+your application:
+
+[source,java]
+----
+@SpringBootApplication
+public class SpannerTemplateExample {
+
+	@Autowired
+	SpannerTemplate spannerTemplate;
+
+	public void doSomething() {
+		this.spannerTemplate.delete(Trade.class, KeySet.all());
+		//...
+		Trade t = new Trade();
+		//...
+		this.spannerTemplate.insert(t);
+		//...
+		List<Trade> tradesByAction = spannerTemplate.findAll(Trade.class);
+		//...
+	}
+}
+----
+
+The Template API provides convenience methods for:
+
+- https://cloud.google.com/spanner/docs/reads[Reads], and by providing SpannerReadOptions and
+SpannerQueryOptions
+   ** Stale read
+   ** Read with secondary indices
+   ** Read with limits and offsets
+   ** Read with sorting
+- https://cloud.google.com/spanner/docs/reads#execute_a_query[Queries]
+- DML operations (delete, insert, update, upsert)
+- Partial reads
+   ** You can define a set of columns to be read into your entity
+- Partial writes
+   ** Persist only a few properties from your entity
+- Read-only transactions
+- Locking read-write transactions
+
+==== SQL Query
+
+Spanner has SQL support for running read-only queries.
+All the query related methods start with `query` on `SpannerTemplate`.
+Using `SpannerTemplate` you can execute SQL queries that map to POJOs:
+
+[source,java]
+----
+...
+		List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"));
+...
+----
+
+
+==== Read
+
+Spanner exposes a https://cloud.google.com/spanner/docs/reads[Read API] for reading single row or multiple rows in a table or in a secondary index.
+
+Using `SpannerTemplate` you can execute reads, for example:
+
+[source,java]
+----
+...
+		List<Trade> trades = this.spannerTemplate.readAll(Trade.class);
+...
+----
+
+Main benefit of reads over queries is reading multiple rows of a certain pattern of keys is much easier using the features of the https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-spanner/src/main/java/com/google/cloud/spanner/KeySet.java[`KeySet`] class.
+
+
+==== Advanced reads
+
+===== Stale read
+
+All reads and queries are *strong reads* by default.
+A *strong read* is a read at a current timestamp and is guaranteed to see all data that has been committed up until the start of this read.
+A *stale read* on the other hand is read at a timestamp in the past.
+Cloud Spanner allows you to determine how current the data should be when you read data.
+With `SpannerTemplate` you can specify the `Timestamp` by setting it on `SpannerQueryOptions` or `SpannerReadOptions` to the appropriate read or query methods:
+
+[source,java]
+----
+
+//...
+// a read with options:
+
+  SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setTimestamp(Timestamp.now());
+  List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
+
+//...
+
+//...
+// a query with options:
+
+  SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setTimestamp(Timestamp.now());
+  List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
+
+//...
+----
+
+
+===== Read from a secondary index
+
+Using a https://cloud.google.com/spanner/docs/secondary-indexes[secondary index] is available for Reads via the Template API and it is also implicitly available via SQL for Queries.
+
+The following shows how to read rows from a table using a https://cloud.google.com/spanner/docs/secondary-indexes[secondary index] simply by setting `index` on `SpannerReadOptions`:
+
+[source,java]
+----
+//...
+
+  SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setIndex("TradesByTrader");
+  List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
+
+//...
+----
+
+
+===== Read with offsets and limits
+
+Limits and offsets are only supported by Queries.
+The following will get only the first two rows of the query:
+
+[source,java]
+----
+//...
+
+  SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setLimit(2).setOffset(3);
+  List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
+
+//...
+----
+
+Note that the above is equivalent of executing `SELECT * FROM trades LIMIT 2 OFFSET 3`.
+
+===== Sorting
+
+Reads don't support sorting.
+Queries on the Template API support sorting through standard SQL and also via Spring Data Sort API:
+
+[source,java]
+----
+//...
+
+  List<Trade> trades = this.spannerTemplate.queryAll(Trade.class, Sort.by("action")););
+
+//...
+----
+
+
+===== Partial read
+
+Partial read is only possible when using Queries. In case the rows returned by query have fewer columns than the entity that it will be mapped to, Spring Data will map the returned columns and leave the rest as they of the columns are.
+
+
+===== Summary of options for Query vs Read
+
+|===
+| Feature | Query supports it | Read supports it
+| SQL  | yes | no
+| Partial read | yes | no
+| Limits | yes | no
+| Offsets | yes | no
+| Secondary index | yes | yes
+| Read using index range | no | yes
+| Sorting | yes | no
+|===
+
+==== Write / Update
+
+The write methods of `SpannerOperations` accept a POJO and writes all of its properties to Spanner.
+The corresponding Spanner table and entity metadata is obtained from the given object's actual type.
+
+If a POJO was retrieved from Spanner and its primary key properties values were changed and then
+written or updated, the operation will occur as if against a row with the new primary key values. The row with the
+original primary key values will not be affected.
+
+===== Insert
+
+The `insert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner,
+which means the operation will fail if a row with the POJO's primary key already exists in the table.
+
+[source, java]
+----
+  Trade t = new Trade();
+  this.spannerOperations.insert(t);
+----
+
+===== Update
+
+The `update` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner,
+which means the operation will fail if the POJO's primary key does not already exist in the table.
+
+[source, java]
+----
+  ///... t was retrieved from a previous operation
+  this.spannerOperations.update(t);
+----
+
+===== Upsert
+
+The `upsert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner
+using update-or-insert.
+
+[source, java]
+----
+  ///... t was retrieved from a previous operation or it's new
+  this.spannerOperations.upsert(t);
+----
+
+===== Partial Update
+
+The update methods of `SpannerOperations` operate by default on all properties within the given object,
+but also accept `String[]` and `Optional<Set<String>>` of column names. If the `Optional` of set of
+column names is empty, then all columns are written to Spanner. However, if the Optional is occupied
+by an empty set, then no columns will be written.
+
+
+[source, java]
+----
+  ///... t was retrieved from a previous operation or it's new
+  this.spannerOperations.update(t, "symbol", "action");
+----
+
+==== Transactions
+
+`SpannerOperations` provides methods to run `java.util.Function` objects within a single transaction
+while making available the read and write methods from `SpannerOperations`.
+
+===== Read/Write Transaction
+
+Read and write transactions are provided by `SpannerOperations` via the `performReadWriteTransaction` method:
+
+[source,java]
+----
+
+@Autowired
+SpannerOperations mySpannerOperations;
+
+public String doWorkInsideTransaction() {
+  return mySpannerOperations.performReadWriteTransaction(
+    transActionSpannerOperations -> {
+      // work with transActionSpannerOperations here. It is also a SpannerOperations object.
+
+      return "transaction completed";
+    }
+  );
+}
+----
+
+The `performReadWriteTransaction` method accepts a `Function` that is provided an instance of a
+`SpannerOperations` object. The final returned value and type of the function is determined by the user.
+You can use this object just as you would a regular `SpannerOperations` with
+a few exceptions:
+
+- Its read functionality cannot perform stale reads, because all reads and writes happen at the single
+point in time of the transaction.
+- It cannot perform sub-transactions via `performReadWriteTransaction` or `performReadOnlyTransaction`.
+
+As these read-write transactions are locking, it is recommended that you use the `performReadOnlyTransaction`
+if your function does not perform any writes.
+
+===== Read-only Transaction
+
+The `performReadOnlyTransaction` method is used to perform read-only transactions using a `SpannerOperations`:
+
+[source,java]
+----
+
+@Autowired
+SpannerOperations mySpannerOperations;
+
+public String doWorkInsideTransaction() {
+  return mySpannerOperations.performReadOnlyTransaction(
+    transActionSpannerOperations -> {
+      // work with transActionSpannerOperations here. It is also a SpannerOperations object.
+
+      return "transaction completed";
+    }
+  );
+}
+----
+
+The `performReadOnlyTransaction` method accepts a `Function` that is provided an instance of a
+`SpannerOperations` object. This method also accepts a `ReadOptions` object, but the only
+attribute used is the timestamp used to determine the snapshot in time to perform the reads in
+the transaction. If the timestamp is not set in the read options the transaction is run against
+the current state of the database.
+The final returned value and type of the function is determined by the user.
+You can use this object just as you would a regular `SpannerOperations` with
+a few exceptions:
+
+- Its read functionality cannot perform stale reads, because all reads happen at the single
+point in time of the transaction.
+- It cannot perform sub-transactions via `performReadWriteTransaction` or `performReadOnlyTransaction`
+- It cannot perform any write operations.
+
+Because read-only transactions are non-locking and can be performed on points in time in the past, these
+are recommended for functions that do not perform write operations.
+
 === Repositories
+
 
 {spring-data-commons-ref}/#repositories[Spring Data Repositories] are a powerful abstraction that
 can save you a lot of boilerplate code.
@@ -323,7 +648,7 @@ For example:
 
 [source,java]
 ----
-public interface TradeRepository extends PagingAndSortingRepository<Trade, String> {
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
 
 	List<Trade> findByAction(String action);
 
@@ -341,6 +666,14 @@ public interface TradeRepository extends PagingAndSortingRepository<Trade, Strin
 
 Spring Data generates a working implementation of the specified interface, which can be conveniently
 autowired into an application.
+
+The `Trade` type parameter to `CrudRepository` refers to the underlying domain type.
+The second type parameter, `String[]` in this case, refers to the type of the key of the domain
+type.
+For POJOs with multiple columns comprising the primary key, this ID type parameter can be any
+descendant of `Object[]` compatible with all primary key properties, any descendant of `Iterable`,
+or `com.google.cloud.spanner.Key`. If the domain POJO type only has a single primary key column,
+then the primary key property type can be used or the `Key` type.
 
 [source,java]
 ----
@@ -373,10 +706,18 @@ public class MyApplication {
 
 ----
 
-=== Query methods
+==== CRUD Repository
+
+`CrudRepository` methods work as expected, with one thing Spanner specific: the `save` and `saveAll` methods work as update-or-insert.
+
+==== Paging and Sorting Repository
+
+You can also use `PagingAndSortingRepository` with Spanner Spring Data. The sorting and pageable `findAll`
+methods available from this interface operate on the current state of the Spanner database. As a
+result, beware that the state of the database (and the results) might change when moving page to page.
 
 
-==== Resolving methods by name
+==== Query methods by convention
 
 In the example above, the {spring-data-commons-ref}/#repositories.query-methods[query methods]
 in `TradeRepository` are generated based on the name of the methods, using the
@@ -395,8 +736,7 @@ ORDER BY SYMBOL DESC
 LIMIT 3
 ----
 
-==== Mapping SQL to repository methods
-
+==== Custom SQL query methods
 
 The example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the
 {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation
@@ -407,6 +747,8 @@ The SQL query for the method can be mapped to repository methods in one of two w
  * `namedQueries` properties file
  * using the `@Query` annotation
 
+===== Query methods with named queries properties
+
 By default, the `namedQueriesLocation` attribute on `@EnableSpannerRepositories` points to the
 `META-INF/spanner-named-queries.properties` file.
 You can specify the query for a method in the properties file by providing the SQL as the value for
@@ -416,6 +758,8 @@ the "interface.method" property:
 ----
 Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0`
 ----
+
+===== Query methods with annotation
 
 Using the `@Query` annotation:
 
@@ -436,4 +780,65 @@ A full example would look like:
 ----
   @Query("SELECT * FROM :com.example.Trade: WHERE trades.action = @tag0")
   List<Trade> fetchByActionNamedQuery(String action);
+----
+
+This allows table names evaluated with SpEL to be used in custom queries.
+
+==== REST Repositories
+
+When running with Spring Boot, repositories can act as REST services by simply annotating them:
+
+[source,java]
+----
+@RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
+
+	List<Trade> findByAction(String action);
+
+	int countByAction(String action);
+
+	// Named methods are powerful, but can get unwieldy
+	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
+  			String action, String symbol, String traderId);
+
+	// This method uses the query from the properties file instead of one generated based on name.
+	List<Trade> fetchByActionNamedQuery(String action);
+
+}
+----
+
+The `@RepositoryRestResource` annotation makes this repository available via REST.
+For example, you can retrieve all `Trade` objects in the repository by using
+`curl \http://<server>:<port>/trades`, or any specific trade via
+`curl \http://<server>:<port>/trades/<id>,<trader_id>`.
+
+The separator between your primary key components, `id` and `trader_id` in this case, is a comma
+by default, but can be configured to any string not found in your key values by extending the
+`SpannerKeyIdConverter` class:
+
+[source,java]
+----
+@Component
+class MySpecialIdConverter extends SpannerKeyIdConverter {
+
+    @Override
+    protected String getUrlIdSeparator() {
+        return ":";
+    }
+}
+----
+
+
+You can also write trades using
+`curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/`
+where the file `test.json` holds the JSON representation of a `Trade` object.
+
+Include this dependency in your `pom.xml` to enable Spring Data REST Repositories:
+
+[source,xml]
+----
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-rest</artifactId>
+		</dependency>
 ----

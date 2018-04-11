@@ -79,7 +79,7 @@ public class SpannerStatementQueryTests {
 		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, "ignored",
 				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
 
-		when(this.spannerOperations.find(any(), (Statement) any(), any()))
+		when(this.spannerOperations.query(any(), (Statement) any(), any()))
 				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
 
@@ -189,7 +189,7 @@ public class SpannerStatementQueryTests {
 	private void queryWithMockResult(String queryName, List results) {
 		when(this.queryMethod.getName()).thenReturn(queryName);
 		this.partTreeSpannerQuery = createQuery();
-		when(this.spannerOperations.find(any(), (Statement) any())).thenReturn(results);
+		when(this.spannerOperations.query(any(), (Statement) any())).thenReturn(results);
 	}
 
 	@Table(name = "trades")

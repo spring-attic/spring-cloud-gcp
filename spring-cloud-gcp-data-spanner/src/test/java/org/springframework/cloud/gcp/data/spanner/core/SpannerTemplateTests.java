@@ -112,7 +112,7 @@ public class SpannerTemplateTests {
 
 		String finalResult = this.spannerTemplate
 				.performReadWriteTransaction(spannerOperations -> {
-					List<TestEntity> items = spannerOperations.findAll(TestEntity.class);
+					List<TestEntity> items = spannerOperations.readAll(TestEntity.class);
 					spannerOperations.update(t);
 					return "all done";
 				});
@@ -132,8 +132,8 @@ public class SpannerTemplateTests {
 
 		String finalResult = this.spannerTemplate
 				.performReadOnlyTransaction(spannerOperations -> {
-					List<TestEntity> items = spannerOperations.findAll(TestEntity.class);
-					TestEntity item = spannerOperations.find(TestEntity.class,
+					List<TestEntity> items = spannerOperations.readAll(TestEntity.class);
+					TestEntity item = spannerOperations.read(TestEntity.class,
 							Key.of("key"));
 					return "all done";
 				}, new SpannerReadOptions()
@@ -175,14 +175,14 @@ public class SpannerTemplateTests {
 	@Test
 	public void findSingleKeyNullTest() {
 		when(this.readContext.read(any(), any(), any())).thenReturn(null);
-		assertNull(this.spannerTemplate.find(TestEntity.class, Key.of("key")));
+		assertNull(this.spannerTemplate.read(TestEntity.class, Key.of("key")));
 	}
 
 	@Test
 	public void findSingleKeyTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		spyTemplate.find(TestEntity.class, Key.of("key"));
-		verify(spyTemplate, times(1)).find(eq(TestEntity.class), eq(Key.of("key")),
+		spyTemplate.read(TestEntity.class, Key.of("key"));
+		verify(spyTemplate, times(1)).read(eq(TestEntity.class), eq(Key.of("key")),
 				eq(null));
 	}
 
@@ -191,8 +191,8 @@ public class SpannerTemplateTests {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
 		KeySet keys = KeySet.newBuilder().addKey(Key.of("key1")).addKey(Key.of("key2"))
 				.build();
-		spyTemplate.find(TestEntity.class, keys);
-		verify(spyTemplate, times(1)).find(eq(TestEntity.class), same(keys), eq(null));
+		spyTemplate.read(TestEntity.class, keys);
+		verify(spyTemplate, times(1)).read(eq(TestEntity.class), same(keys), eq(null));
 	}
 
 	@Test
@@ -220,7 +220,7 @@ public class SpannerTemplateTests {
 		SpannerReadOptions options = new SpannerReadOptions().addReadOption(readOption);
 		KeySet keySet = KeySet.singleKey(Key.of("key"));
 		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
-		this.spannerTemplate.find(TestEntity.class, keySet, options);
+		this.spannerTemplate.read(TestEntity.class, keySet, options);
 		verify(this.objectMapper, times(1)).mapToList(same(results),
 				eq(TestEntity.class));
 		verify(this.readContext, times(1)).read(eq("custom_test_table"), same(keySet),
@@ -236,7 +236,7 @@ public class SpannerTemplateTests {
 		KeySet keySet = KeySet.singleKey(Key.of("key"));
 		when(this.readContext.readUsingIndex(any(), any(), any(), any(), any()))
 				.thenReturn(results);
-		this.spannerTemplate.find(TestEntity.class, keySet, options);
+		this.spannerTemplate.read(TestEntity.class, keySet, options);
 		verify(this.objectMapper, times(1)).mapToList(same(results),
 				eq(TestEntity.class));
 		verify(this.readContext, times(1)).readUsingIndex(eq("custom_test_table"),
@@ -251,7 +251,7 @@ public class SpannerTemplateTests {
 		SpannerQueryOptions options = new SpannerQueryOptions()
 				.addQueryOption(queryOption);
 		when(this.readContext.executeQuery(any(), any())).thenReturn(results);
-		this.spannerTemplate.find(TestEntity.class, statement, options);
+		this.spannerTemplate.query(TestEntity.class, statement, options);
 		verify(this.objectMapper, times(1)).mapToList(same(results),
 				eq(TestEntity.class));
 		verify(this.readContext, times(1)).executeQuery(same(statement),
@@ -262,8 +262,8 @@ public class SpannerTemplateTests {
 	public void findAllTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
 		SpannerReadOptions options = new SpannerReadOptions();
-		spyTemplate.findAll(TestEntity.class, options);
-		verify(spyTemplate, times(1)).find(eq(TestEntity.class), eq(KeySet.all()),
+		spyTemplate.readAll(TestEntity.class, options);
+		verify(spyTemplate, times(1)).read(eq(TestEntity.class), eq(KeySet.all()),
 				same(options));
 	}
 
@@ -408,10 +408,10 @@ public class SpannerTemplateTests {
 					"SELECT * FROM custom_test_table ORDER BY id ASC , custom_col DESC , other ASC LIMIT 3 OFFSET 5;",
 					statement.getSql());
 			return null;
-		}).when(spyTemplate).find(eq(TestEntity.class), (Statement) any(), any());
+		}).when(spyTemplate).query(eq(TestEntity.class), (Statement) any(), any());
 
 		spyTemplate.findAll(TestEntity.class, sort, queryOption);
-		verify(spyTemplate, times(1)).find(eq(TestEntity.class), (Statement) any(),
+		verify(spyTemplate, times(1)).query(eq(TestEntity.class), (Statement) any(),
 				any());
 	}
 
