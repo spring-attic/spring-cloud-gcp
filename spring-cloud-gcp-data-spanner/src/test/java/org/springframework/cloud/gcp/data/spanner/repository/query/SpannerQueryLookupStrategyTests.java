@@ -16,9 +16,9 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
-import com.google.cloud.spanner.Statement;
 import java.util.Optional;
 
+import com.google.cloud.spanner.Statement;
 import org.junit.Before;
 import org.junit.Test;
 
