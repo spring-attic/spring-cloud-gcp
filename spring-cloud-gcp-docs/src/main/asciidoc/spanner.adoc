@@ -716,7 +716,7 @@ The function `List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymb
 [source, sql]
 ----
 SELECT DISTINCT * FROM trades
-WHERE ACTION = ? AND SYMBOL = ? AND Or TRADER_ID = ?
+WHERE ACTION = ? AND SYMBOL = ? AND TRADER_ID = ?
 ORDER BY SYMBOL DESC
 LIMIT 3
 ----
@@ -741,7 +741,7 @@ the "interface.method" property:
 
 [source, properties]
 ----
-Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0`
+Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0
 ----
 
 ===== Query methods with annotation
