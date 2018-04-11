@@ -200,6 +200,7 @@ Spring Data Spanner supports the following types for regular fields:
 * `com.google.cloud.Date`
 * `com.google.cloud.Timestamp`
 * `java.lang.Boolean`, `boolean`
+* `java.lang.Double`, `double`
 * `java.lang.Long`, `long`
 * `java.lang.Integer`, `int`
 * `java.lang.String`
@@ -231,6 +232,7 @@ Spring Data Spanner supports the following inner types:
 * `com.google.cloud.Date`
 * `com.google.cloud.Timestamp`
 * `java.lang.Boolean`, `boolean`
+* `java.lang.Double`, `double`
 * `java.lang.Long`, `long`
 * `java.lang.Integer`, `int`
 * `java.lang.String`
@@ -250,6 +252,7 @@ both directions.
 * `com.google.cloud.Date`
 * `com.google.cloud.Timestamp`
 * `java.lang.Boolean`, `boolean`
+* `java.lang.Double`, `double`
 * `java.lang.Long`, `long`
 * `java.lang.String`
 * `double[]`
@@ -466,7 +469,7 @@ Queries on the Template API support sorting through standard SQL and also via Sp
 
 [source,java]
 ----
-List<Trade> trades = this.spannerTemplate.queryAll(Trade.class, Sort.by("action")););
+List<Trade> trades = this.spannerTemplate.queryAll(Trade.class, Sort.by("action"));
 ----
 
 
