@@ -88,13 +88,16 @@ Spring Data Spanner allows you to map domain POJOs to Spanner tables via annotat
 
 [source,java]
 ----
-@Table(name = "my_things")
-public class MyThing {
+@Table(name = "traders")
+public class Trader {
 
 	@PrimaryKey
-	String name;
+	@Column(name = "trader_id")
+	String traderId;
 
-	Double price;
+	String firstName;
+
+	String lastName;
 }
 ----
 
@@ -139,9 +142,13 @@ You have to annotate all of your POJO's fields that the primary key consists of 
 ----
 @Table(name = "trades")
 public class Trade {
+	@PrimaryKey(keyOrder = 2)
+	@Column(name = "trade_id")
+	private String tradeId;
 
-	@PrimaryKey(keyOrder = 1)
-	private Long id;
+    @PrimaryKey(keyOrder = 1)
+    @Column(name = "trader_id")
+    private String traderId;
 
 	private String action;
 
@@ -150,11 +157,6 @@ public class Trade {
 	private Double shares;
 
 	private String symbol;
-
-	@PrimaryKey(keyOrder = 2)
-	@Column(name = "trader_id")
-	private String traderId;
-
 }
 ----
 
@@ -165,13 +167,13 @@ In our example the DDL to create the table and its primary key is as follows:
 [source,sql]
 ----
 CREATE TABLE trades (
-	action STRING(15),
-	symbol STRING(10),
-	price FLOAT64,
-	shares FLOAT64,
-	person STRING(MAX),
-	trader_id STRING(128),
-) PRIMARY KEY (action, symbol)
+    trader_id STRING(MAX),
+    trade_id STRING(MAX),
+    action STRING(15),
+    symbol STRING(10),
+    price FLOAT64,
+    shares FLOAT64
+) PRIMARY KEY (trader_id, trade_id)
 ----
 
 Spanner does not have automatic ID generation.
@@ -200,6 +202,7 @@ Spring Data Spanner supports the following types for regular fields:
 * `com.google.cloud.Date`
 * `com.google.cloud.Timestamp`
 * `java.lang.Boolean`, `boolean`
+* `java.lang.Double`, `double`
 * `java.lang.Long`, `long`
 * `java.lang.Integer`, `int`
 * `java.lang.String`
@@ -213,24 +216,25 @@ Spring Data Spanner supports the following types for regular fields:
 
 ==== Lists
 
-Spanner supports `List` types as fields, the `@ColumnInnerType` annotation is required for `List`
-properties due to Java's type erasure.
+Spanner supports `ARRAY` types for columns.
+`ARRAY` columns are mapped to `List` fields in POJOS.
+When using `List`, the `@ColumnInnerType` annotation is required to specify what is the type of the elements.
 
 Example:
 
 [source,java]
 ----
-	@ColumnInnerType(innerType = Double.class)
-	List<Double> curve;
+@ColumnInnerType(innerType = Double.class)
+List<Double> curve;
 ----
 
-For `ARRAY` Spanner types, you'll need to use `List` in the fields. For the inner type of a `List`
-field, Spring Data Spanner supports the following inner types:
+Spring Data Spanner supports the following inner types:
 
 * `com.google.cloud.ByteArray`
 * `com.google.cloud.Date`
 * `com.google.cloud.Timestamp`
 * `java.lang.Boolean`, `boolean`
+* `java.lang.Double`, `double`
 * `java.lang.Long`, `long`
 * `java.lang.Integer`, `int`
 * `java.lang.String`
@@ -250,6 +254,7 @@ both directions.
 * `com.google.cloud.Date`
 * `com.google.cloud.Timestamp`
 * `java.lang.Boolean`, `boolean`
+* `java.lang.Double`, `double`
 * `java.lang.Long`, `long`
 * `java.lang.String`
 * `double[]`
@@ -386,9 +391,7 @@ Using `SpannerTemplate` you can execute SQL queries that map to POJOs:
 
 [source,java]
 ----
-...
-		List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"));
-...
+List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"));
 ----
 
 
@@ -400,9 +403,7 @@ Using `SpannerTemplate` you can execute reads, for example:
 
 [source,java]
 ----
-...
-		List<Trade> trades = this.spannerTemplate.readAll(Trade.class);
-...
+List<Trade> trades = this.spannerTemplate.readAll(Trade.class);
 ----
 
 Main benefit of reads over queries is reading multiple rows of a certain pattern of keys is much easier using the features of the https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-spanner/src/main/java/com/google/cloud/spanner/KeySet.java[`KeySet`] class.
@@ -418,24 +419,22 @@ A *stale read* on the other hand is read at a timestamp in the past.
 Cloud Spanner allows you to determine how current the data should be when you read data.
 With `SpannerTemplate` you can specify the `Timestamp` by setting it on `SpannerQueryOptions` or `SpannerReadOptions` to the appropriate read or query methods:
 
+Reads:
+
 [source,java]
 ----
-
-//...
 // a read with options:
+SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setTimestamp(Timestamp.now());
+List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
+----
 
-  SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setTimestamp(Timestamp.now());
-  List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
+Queries:
 
-//...
-
-//...
+[source,java]
+----
 // a query with options:
-
-  SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setTimestamp(Timestamp.now());
-  List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
-
-//...
+SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setTimestamp(Timestamp.now());
+List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
 ----
 
 
@@ -447,12 +446,8 @@ The following shows how to read rows from a table using a https://cloud.google.c
 
 [source,java]
 ----
-//...
-
-  SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setIndex("TradesByTrader");
-  List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
-
-//...
+SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setIndex("TradesByTrader");
+List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
 ----
 
 
@@ -463,12 +458,8 @@ The following will get only the first two rows of the query:
 
 [source,java]
 ----
-//...
-
-  SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setLimit(2).setOffset(3);
-  List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
-
-//...
+SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setLimit(2).setOffset(3);
+List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
 ----
 
 Note that the above is equivalent of executing `SELECT * FROM trades LIMIT 2 OFFSET 3`.
@@ -480,11 +471,7 @@ Queries on the Template API support sorting through standard SQL and also via Sp
 
 [source,java]
 ----
-//...
-
-  List<Trade> trades = this.spannerTemplate.queryAll(Trade.class, Sort.by("action")););
-
-//...
+List<Trade> trades = this.spannerTemplate.queryAll(Trade.class, Sort.by("action"));
 ----
 
 
@@ -522,8 +509,8 @@ which means the operation will fail if a row with the POJO's primary key already
 
 [source, java]
 ----
-  Trade t = new Trade();
-  this.spannerOperations.insert(t);
+Trade t = new Trade();
+this.spannerOperations.insert(t);
 ----
 
 ===== Update
@@ -533,8 +520,8 @@ which means the operation will fail if the POJO's primary key does not already e
 
 [source, java]
 ----
-  ///... t was retrieved from a previous operation
-  this.spannerOperations.update(t);
+// t was retrieved from a previous operation
+this.spannerOperations.update(t);
 ----
 
 ===== Upsert
@@ -544,8 +531,8 @@ using update-or-insert.
 
 [source, java]
 ----
-  ///... t was retrieved from a previous operation or it's new
-  this.spannerOperations.upsert(t);
+// t was retrieved from a previous operation or it's new
+this.spannerOperations.upsert(t);
 ----
 
 ===== Partial Update
@@ -558,8 +545,8 @@ by an empty set, then no columns will be written.
 
 [source, java]
 ----
-  ///... t was retrieved from a previous operation or it's new
-  this.spannerOperations.update(t, "symbol", "action");
+// t was retrieved from a previous operation or it's new
+this.spannerOperations.update(t, "symbol", "action");
 ----
 
 ==== Transactions
@@ -648,32 +635,31 @@ For example:
 
 [source,java]
 ----
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
-
-	List<Trade> findByAction(String action);
-
-	int countByAction(String action);
-
-	// Named methods are powerful, but can get unwieldy
-	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
-  			String action, String symbol, String traderId);
-
-	// This method uses the query from the properties file instead of one generated based on name.
-	List<Trade> fetchByActionNamedQuery(String action);
-
+public interface TraderRepository extends CrudRepository<Trader, String> {
 }
 ----
 
 Spring Data generates a working implementation of the specified interface, which can be conveniently
 autowired into an application.
 
-The `Trade` type parameter to `CrudRepository` refers to the underlying domain type.
-The second type parameter, `String[]` in this case, refers to the type of the key of the domain
+The `Trader` type parameter to `CrudRepository` refers to the underlying domain type.
+The second type parameter, `String` in this case, refers to the type of the key of the domain
 type.
-For POJOs with multiple columns comprising the primary key, this ID type parameter can be any
+
+
+For POJOs with a composite primary key, this ID type parameter can be any
 descendant of `Object[]` compatible with all primary key properties, any descendant of `Iterable`,
 or `com.google.cloud.spanner.Key`. If the domain POJO type only has a single primary key column,
 then the primary key property type can be used or the `Key` type.
+
+For example in case of Trades, that belong to a Trader, `TradeRepository` would look like this:
+
+[source,java]
+----
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
+
+}
+----
 
 [source,java]
 ----
@@ -719,6 +705,19 @@ result, beware that the state of the database (and the results) might change whe
 
 ==== Query methods by convention
 
+[source, java]
+----
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
+    List<Trade> findByAction(String action);
+
+	int countByAction(String action);
+
+	// Named methods are powerful, but can get unwieldy
+	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
+  			String action, String symbol, String traderId);
+}
+----
+
 In the example above, the {spring-data-commons-ref}/#repositories.query-methods[query methods]
 in `TradeRepository` are generated based on the name of the methods, using the
 {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation
@@ -731,7 +730,7 @@ The function `List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymb
 [source, sql]
 ----
 SELECT DISTINCT * FROM trades
-WHERE ACTION = ? AND SYMBOL = ? AND Or TRADER_ID = ?
+WHERE ACTION = ? AND SYMBOL = ? AND TRADER_ID = ?
 ORDER BY SYMBOL DESC
 LIMIT 3
 ----
@@ -756,17 +755,26 @@ the "interface.method" property:
 
 [source, properties]
 ----
-Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0`
+Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0
 ----
 
+[source, java]
+----
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
+	// This method uses the query from the properties file instead of one generated based on name.
+	List<Trade> fetchByActionNamedQuery(String action);
+}
+----
 ===== Query methods with annotation
 
 Using the `@Query` annotation:
 
 [source, java]
 ----
-  @Query("SELECT * FROM trades WHERE trades.action = @tag0")
-  List<Trade> fetchByActionNamedQuery(String action);
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
+    @Query("SELECT * FROM trades WHERE trades.action = @tag0")
+    List<Trade> fetchByActionNamedQuery(String action);
+}
 ----
 
 Table names can be used directly.
@@ -778,8 +786,8 @@ A full example would look like:
 
 [source, java]
 ----
-  @Query("SELECT * FROM :com.example.Trade: WHERE trades.action = @tag0")
-  List<Trade> fetchByActionNamedQuery(String action);
+@Query("SELECT * FROM :com.example.Trade: WHERE trades.action = @tag0")
+List<Trade> fetchByActionNamedQuery(String action);
 ----
 
 This allows table names evaluated with SpEL to be used in custom queries.
@@ -792,25 +800,13 @@ When running with Spring Boot, repositories can act as REST services by simply a
 ----
 @RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
 public interface TradeRepository extends CrudRepository<Trade, String[]> {
-
-	List<Trade> findByAction(String action);
-
-	int countByAction(String action);
-
-	// Named methods are powerful, but can get unwieldy
-	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
-  			String action, String symbol, String traderId);
-
-	// This method uses the query from the properties file instead of one generated based on name.
-	List<Trade> fetchByActionNamedQuery(String action);
-
 }
 ----
 
 The `@RepositoryRestResource` annotation makes this repository available via REST.
 For example, you can retrieve all `Trade` objects in the repository by using
 `curl \http://<server>:<port>/trades`, or any specific trade via
-`curl \http://<server>:<port>/trades/<id>,<trader_id>`.
+`curl \http://<server>:<port>/trades/<trader_id>,<trade_id>`.
 
 The separator between your primary key components, `id` and `trader_id` in this case, is a comma
 by default, but can be configured to any string not found in your key values by extending the
@@ -837,8 +833,8 @@ Include this dependency in your `pom.xml` to enable Spring Data REST Repositorie
 
 [source,xml]
 ----
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-rest</artifactId>
-		</dependency>
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-data-rest</artifactId>
+</dependency>
 ----

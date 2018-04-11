@@ -197,7 +197,7 @@ public class SpannerRepositoryImplTests {
 		SpannerOperations operations = mock(SpannerOperations.class);
 		Sort sort = mock(Sort.class);
 		new SimpleSpannerRepository(operations, Object.class).findAll(sort);
-		verify(operations, times(1)).findAll(eq(Object.class), same(sort));
+		verify(operations, times(1)).queryAll(eq(Object.class), same(sort));
 	}
 
 	@Test
@@ -205,7 +205,7 @@ public class SpannerRepositoryImplTests {
 		SpannerOperations operations = mock(SpannerOperations.class);
 		Pageable pageable = mock(Pageable.class);
 		new SimpleSpannerRepository(operations, Object.class).findAll(pageable);
-		verify(operations, times(1)).findAll(eq(Object.class), same(pageable));
+		verify(operations, times(1)).queryAll(eq(Object.class), same(pageable));
 	}
 
 	@Test

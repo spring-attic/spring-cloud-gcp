@@ -199,18 +199,18 @@ public class SpannerTemplateTests {
 	public void findAllPageableNoOptionsTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
 		Pageable page = mock(Pageable.class);
-		doReturn(null).when(spyTemplate).findAll(eq(TestEntity.class), same(page),
+		doReturn(null).when(spyTemplate).queryAll(eq(TestEntity.class), same(page),
 				eq(null));
-		spyTemplate.findAll(TestEntity.class, page);
-		verify(spyTemplate, times(1)).findAll(eq(TestEntity.class), same(page), eq(null));
+		spyTemplate.queryAll(TestEntity.class, page);
+		verify(spyTemplate, times(1)).queryAll(eq(TestEntity.class), same(page), eq(null));
 	}
 
 	@Test
 	public void findAllSortNoOptionsTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
 		Sort sort = mock(Sort.class);
-		spyTemplate.findAll(TestEntity.class, sort);
-		verify(spyTemplate, times(1)).findAll(eq(TestEntity.class), same(sort), eq(null));
+		spyTemplate.queryAll(TestEntity.class, sort);
+		verify(spyTemplate, times(1)).queryAll(eq(TestEntity.class), same(sort), eq(null));
 	}
 
 	@Test
@@ -410,7 +410,7 @@ public class SpannerTemplateTests {
 			return null;
 		}).when(spyTemplate).query(eq(TestEntity.class), (Statement) any(), any());
 
-		spyTemplate.findAll(TestEntity.class, sort, queryOption);
+		spyTemplate.queryAll(TestEntity.class, sort, queryOption);
 		verify(spyTemplate, times(1)).query(eq(TestEntity.class), (Statement) any(),
 				any());
 	}
@@ -443,11 +443,11 @@ public class SpannerTemplateTests {
 		items.add(t2);
 		items.add(t3);
 
-		doReturn(items).when(spyTemplate).findAll(eq(TestEntity.class), same(sort),
+		doReturn(items).when(spyTemplate).queryAll(eq(TestEntity.class), same(sort),
 				same(queryOption));
 		doReturn(total).when(spyTemplate).count(eq(TestEntity.class));
 
-		Page page = spyTemplate.findAll(TestEntity.class, pageable, queryOption);
+		Page page = spyTemplate.queryAll(TestEntity.class, pageable, queryOption);
 		assertEquals(limit, page.getPageable().getPageSize());
 		assertEquals(total, page.getTotalElements());
 		assertEquals("a", ((TestEntity) page.getContent().get(0)).id);
