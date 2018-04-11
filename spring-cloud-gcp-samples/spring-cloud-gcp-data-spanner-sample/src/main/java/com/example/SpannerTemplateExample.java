@@ -27,7 +27,6 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 /**
@@ -47,20 +46,25 @@ public class SpannerTemplateExample {
 	}
 
 	@Bean
-	public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
+	public CommandLineRunner commandLineRunner() {
 		return args -> {
+			this.spannerOperations.delete(Trader.class, KeySet.all());
 			this.spannerOperations.delete(Trade.class, KeySet.all());
 
-			Trade t = new Trade(1L, "BUY", 100.0, 50.0, "STOCK1", "template_trader1", Arrays.asList(99.0, 101.00));
+			Trader trader = new Trader("template_trader1", "John", "Doe");
+
+			this.spannerOperations.insert(trader);
+
+			Trade t = new Trade("1", "BUY", 100.0, 50.0, "STOCK1", "template_trader1", Arrays.asList(99.0, 101.00));
 
 			this.spannerOperations.insert(t);
 
-			t.setId(2L);
+			t.setTradeId("2");
 			t.setTraderId("template_trader1");
 			t.setAction("SELL");
 			this.spannerOperations.insert(t);
 
-			t.setId(1L);
+			t.setTradeId("1");
 			t.setTraderId("template_trader2");
 			this.spannerOperations.insert(t);
 
