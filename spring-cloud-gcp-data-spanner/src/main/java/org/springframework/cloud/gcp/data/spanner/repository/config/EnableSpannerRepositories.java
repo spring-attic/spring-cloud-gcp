@@ -120,7 +120,7 @@ public @interface EnableSpannerRepositories {
 	 *
 	 * @return
 	 */
-	String spannerOperationsRef() default "spannerOperations";
+	String spannerTemplateRef() default "spannerTemplate";
 
 	/**
 	 * Configures the name of the

@@ -114,7 +114,7 @@ public class GcpSpannerAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SpannerOperations spannerOperations(DatabaseClient databaseClient,
+	public SpannerTemplate spannerTemplate(DatabaseClient databaseClient,
 			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
 			SpannerMutationFactory spannerMutationFactory) {
 		return new SpannerTemplate(databaseClient, mappingContext, spannerConverter,
