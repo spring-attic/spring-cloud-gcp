@@ -141,7 +141,7 @@ You have to annotate all of your POJO's fields that the primary key consists of 
 public class Trade {
 
 	@PrimaryKey(keyOrder = 1)
-	private Long sequence;
+	private Long id;
 
 	private String action;
 
@@ -810,9 +810,9 @@ public interface TradeRepository extends CrudRepository<Trade, String[]> {
 The `@RepositoryRestResource` annotation makes this repository available via REST.
 For example, you can retrieve all `Trade` objects in the repository by using
 `curl \http://<server>:<port>/trades`, or any specific trade via
-`curl \http://<server>:<port>/trades/<sequence>,<trader_id>`.
+`curl \http://<server>:<port>/trades/<id>,<trader_id>`.
 
-The separator between your primary key components, `sequence` and `trader_id` in this case, is a comma
+The separator between your primary key components, `id` and `trader_id` in this case, is a comma
 by default, but can be configured to any string not found in your key values by extending the
 `SpannerKeyIdConverter` class:
 
