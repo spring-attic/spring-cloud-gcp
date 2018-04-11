@@ -47,29 +47,29 @@ dependencies {
 
 Spring Spanner Data is considered Alpha stability.
 
-Features to be released with 1.0.0.M3:
+Features in 1.0.0.M3:
 
 - Mapping POJO domain objects to Spanner tables using annotations
-- SpannerTemplate API:
-   ** Stale read
-   ** Read with secondary indices
-   ** Read with limits and flow control
-- Spring Data Repositories: CrudRepository, PagingAndSortingRepository
-- Declarative query methods
-   ** interface method resolution by naming convention
-   ** read-only SQL via properties files
-- supported field types for POJOs:
    ** built-in support for basic Spanner types
    ** built-in support for common Java types
    ** any Java type can be supported with user defined type conversions
-- SpEL expressions for table name resolution
-- partial reads and writes
-
+   ** SpEL expressions for table name resolution
+- SpannerTemplate API:
+   ** Stale read
+   ** Read with secondary indices
+   ** Read with limits and offset 
+   ** Read with Sorting
+   ** Partial reads
+   ** Partial writes
+- Spring Data Repositories: CrudRepository, PagingAndSortingRepository
+   ** Query methods by naming convention
+   ** Query methods by named queries in properties files 
+   ** Query methods by annotation
 
 ====  Where to go from here?
 
 * Try out the link:../spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[Spring Data Spanner Sample application]
-* Detailed documentation: link:../docs/src/main/asciidoc/spanner.adoc[Spring Data Spanner documentation]
+* Detailed documentation: link:../spring-cloud-gcp-docs/src/main/asciidoc/spanner.adoc[Spring Data Spanner documentation]
 * Overall project documentation: https://cloud.spring.io/spring-cloud-gcp[Spring Cloud GCP reference]
 
 

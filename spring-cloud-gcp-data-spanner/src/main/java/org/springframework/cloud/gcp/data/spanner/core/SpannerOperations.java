@@ -129,7 +129,7 @@ public interface SpannerOperations {
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
 	 */
-	<T> List<T> findAll(Class<T> entityClass, Sort sort, SpannerQueryOptions options);
+	<T> List<T> queryAll(Class<T> entityClass, Sort sort, SpannerQueryOptions options);
 
 	/**
 	 * Finds all objects of the given type.
@@ -139,7 +139,7 @@ public interface SpannerOperations {
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
 	 */
-	<T> List<T> findAll(Class<T> entityClass, Sort sort);
+	<T> List<T> queryAll(Class<T> entityClass, Sort sort);
 
 	/**
 	 * Finds all objects of the given type.
@@ -150,7 +150,7 @@ public interface SpannerOperations {
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
 	 */
-	<T> Page<T> findAll(Class<T> entityClass, Pageable pageable,
+	<T> Page<T> queryAll(Class<T> entityClass, Pageable pageable,
 			SpannerQueryOptions options);
 
 	/**
@@ -161,7 +161,7 @@ public interface SpannerOperations {
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
 	 */
-	<T> Page<T> findAll(Class<T> entityClass, Pageable pageable);
+	<T> Page<T> queryAll(Class<T> entityClass, Pageable pageable);
 
 	/**
 	 * Deletes an object based on a key.

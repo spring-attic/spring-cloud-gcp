@@ -18,7 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringJoiner;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +27,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -64,52 +65,53 @@ public class SqlSpannerQuery implements RepositoryQuery {
 		this.queryMethod = queryMethod;
 		this.entityType = type;
 		this.spannerOperations = spannerOperations;
-		this.tags = getTags(sql);
+		this.tags = getTags();
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
 		this.spannerMappingContext = spannerMappingContext;
 		this.sql = sql;
 	}
 
-	private List<String> getTags(String sql) {
-		Pattern pattern = Pattern.compile("@\\S+");
-		Matcher matcher = pattern.matcher(sql);
+	private List<String> getTags() {
 		List<String> tags = new ArrayList<>();
-		while (matcher.find()) {
-			// The initial '@' character must be excluded for Spanner
-			tags.add(matcher.group().substring(1));
+		Parameters parameters = getQueryMethod().getParameters();
+		for (int i = 0; i < parameters.getNumberOfParameters(); i++) {
+			Optional<String> paramName = parameters.getParameter(i).getName();
+			if (!paramName.isPresent()) {
+				throw new SpannerDataException(
+						"Query method has a parameter without a valid name: "
+								+ getQueryMethod().getName());
+			}
+			tags.add(paramName.get());
 		}
 		return tags;
 	}
 
 	private String resolveEntityClassNames(String sql) {
-		StringJoiner joiner = new StringJoiner(" ");
-		for (String part : sql.split("\\s+")) {
-			if (part.length() > 2 && part.startsWith(ENTITY_CLASS_NAME_BOOKEND)
-					&& part.endsWith(ENTITY_CLASS_NAME_BOOKEND)) {
-				String className = part.substring(1, part.length() - 1);
-				try {
-					Class entityClass = Class.forName(className);
-					SpannerPersistentEntity spannerPersistentEntity = this.spannerMappingContext
-							.getPersistentEntity(entityClass);
-					if (spannerPersistentEntity == null) {
-						throw new SpannerDataException(
-								"The class used in the SQL statement is not a Spanner persistent entity: "
-										+ className);
-					}
-					joiner.add(spannerPersistentEntity.tableName());
-				}
-				catch (ClassNotFoundException e) {
+		Pattern pattern = Pattern.compile("\\:\\S+\\:");
+		Matcher matcher = pattern.matcher(sql);
+		String result = sql;
+		while (matcher.find()) {
+			String matched = matcher.group();
+			String className = matched.substring(1, matched.length() - 1);
+			try {
+				Class entityClass = Class.forName(className);
+				SpannerPersistentEntity spannerPersistentEntity = this.spannerMappingContext
+						.getPersistentEntity(entityClass);
+				if (spannerPersistentEntity == null) {
 					throw new SpannerDataException(
-							"The class name does not refer to an available entity type: "
+							"The class used in the SQL statement is not a Spanner persistent entity: "
 									+ className);
 				}
+				result = result.replace(matched, spannerPersistentEntity.tableName());
 			}
-			else {
-				joiner.add(part);
+			catch (ClassNotFoundException e) {
+				throw new SpannerDataException(
+						"The class name does not refer to an available entity type: "
+								+ className);
 			}
 		}
-		return joiner.toString();
+		return result;
 	}
 
 	@Override
