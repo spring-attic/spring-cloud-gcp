@@ -136,7 +136,7 @@ public class SpannerPersistentEntityImplTests {
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id;
 
 		@Column(name = "custom_col")
@@ -144,7 +144,7 @@ public class SpannerPersistentEntityImplTests {
 	}
 
 	private static class EntityNoCustomName {
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id;
 
 		String something;
@@ -152,7 +152,7 @@ public class SpannerPersistentEntityImplTests {
 
 	@Table
 	private static class EntityEmptyCustomName {
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id;
 
 		String something;
@@ -160,25 +160,25 @@ public class SpannerPersistentEntityImplTests {
 
 	@Table(name = "#{'table_'.concat(tablePostfix)}")
 	private static class EntityWithExpression {
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id;
 
 		String something;
 	}
 
 	private static class EntityWithDuplicatePrimaryKeyOrder {
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id;
 
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id2;
 	}
 
 	private static class EntityWithWronglyOrderedKeys {
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id;
 
-		@PrimaryKeyColumn(keyOrder = 3)
+		@PrimaryKey(keyOrder = 3)
 		String id2;
 	}
 
