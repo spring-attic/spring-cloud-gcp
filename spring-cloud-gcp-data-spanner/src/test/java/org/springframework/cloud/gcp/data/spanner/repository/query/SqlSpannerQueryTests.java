@@ -71,12 +71,13 @@ public class SqlSpannerQueryTests {
 
 		String sql = "SELECT DISTINCT * FROM "
 				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:"
+				+ "@{index=fakeindex}"
 				+ " WHERE ( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3;";
 
-		String entityResolvedSql = "SELECT DISTINCT * FROM " + "trades"
+		String entityResolvedSql = "SELECT DISTINCT * FROM " + "trades@{index=fakeindex}"
 				+ " WHERE ( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
