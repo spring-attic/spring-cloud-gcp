@@ -442,18 +442,44 @@ With `SpannerTemplate` you can specify the `Timestamp` by setting it on `Spanner
 
 ===== Partial read
 
-In case your Query or Read returns less columns than the entity that it is mapped to, Spring Data will map the returned columns and leave the rest as they of the columns are.
+In case your Query or Read returns fewer columns than the entity that it is mapped to, Spring Data will map the returned columns and leave the rest as they of the columns are.
 
 
 ==== Write / Update
-//TODO
+
+The write methods of `SpannerOperations` accept a POJO and writes all of its properties to Spanner.
+The corresponding Spanner table and entity metadata is obtained from the given object's actual type.
+
+If a POJO was retrieved from Spanner and its primary key properties values were changed and then
+written or updated, the operation will occur as if against a row with the new primary key values. The row with the
+original primary key values will not be affected.
+
 ===== Insert
-//TODO
+
+The `insert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner,
+which means the operation will fail if a row with the POJO's primary key already exists in the table.
+
 ===== Update
-//TODO
+
+The `update` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner,
+which means the operation will fail if the POJO's primary key does not already exist in the table.
+
 ===== Upsert
-//TODO
+
+The `upsert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner
+using update-or-insert.
+
 ===== Partial Write
+
+The write methods of `SpannerOperations` operate by default on all properties within the given object,
+but also accept `String[]` and `Optional<Set<String>>` of column names. If the `Optional` of set of
+column names is empty, then all columns are written to Spanner. However, if the Optional is occupied
+by an empty set, then no columns will be written.
+
+==== Transactions
+
+`SpannerOperations` provides methods to run `java.util.Function` objects within a single transaction
+while making available the read and write methods from `SpannerOperations`.
 
 ===== Read/Write Transaction
 
