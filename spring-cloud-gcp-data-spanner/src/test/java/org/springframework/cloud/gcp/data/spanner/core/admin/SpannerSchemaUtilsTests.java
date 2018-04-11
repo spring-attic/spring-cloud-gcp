@@ -69,7 +69,7 @@ public class SpannerSchemaUtilsTests {
 		t.id = "aaa";
 		t.id2 = 3L;
 		assertEquals(Key.newBuilder().append(t.id).append(t.id2).build(),
-				this.spannerSchemaUtils.getId(t));
+				this.spannerSchemaUtils.getKey(t));
 	}
 
 	@Test

@@ -33,6 +33,8 @@ import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.Assert;
 
 /**
+ *	Contains functions related to the table schema of entities.
+ *
  * @author Chengyuan Zhao
  */
 public class SpannerSchemaUtils {
@@ -56,7 +58,7 @@ public class SpannerSchemaUtils {
 	 * @param object
 	 * @return
 	 */
-	public Key getId(Object object) {
+	public Key getKey(Object object) {
 		SpannerPersistentEntity persistentEntity = this.mappingContext
 				.getPersistentEntity(object.getClass());
 		return (Key) persistentEntity.getPropertyAccessor(object)

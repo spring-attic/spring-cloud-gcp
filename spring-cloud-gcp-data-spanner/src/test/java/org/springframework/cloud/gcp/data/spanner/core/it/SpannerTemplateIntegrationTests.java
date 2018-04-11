@@ -93,7 +93,7 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 		assertThat(relationships.get(subTradeTableName),
 				containsInAnyOrder(sharesTransactionTableName));
 
-		Trade retrievedTrade = this.spannerOperations.find(Trade.class,
+		Trade retrievedTrade = this.spannerOperations.read(Trade.class,
 				Key.of(trade.getId(), trade.getTraderId()));
 		assertThat(retrievedTrade, is(trade));
 		assertEquals("a", retrievedTrade.getSubTrades().get(0).getSubtradeId());

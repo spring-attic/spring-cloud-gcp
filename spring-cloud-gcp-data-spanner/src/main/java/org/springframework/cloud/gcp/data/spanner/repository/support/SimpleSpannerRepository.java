@@ -73,7 +73,7 @@ public class SimpleSpannerRepository implements SpannerRepository {
 	public Optional findById(Object key) {
 		Assert.notNull(key, "A non-null ID is required.");
 		return doIfKey(key, k -> Optional
-				.ofNullable(this.spannerOperations.find(this.entityType, k)));
+				.ofNullable(this.spannerOperations.read(this.entityType, k)));
 	}
 
 	@Override
@@ -84,7 +84,7 @@ public class SimpleSpannerRepository implements SpannerRepository {
 
 	@Override
 	public Iterable findAll() {
-		return this.spannerOperations.findAll(this.entityType);
+		return this.spannerOperations.readAll(this.entityType);
 	}
 
 	@Override
@@ -93,7 +93,7 @@ public class SimpleSpannerRepository implements SpannerRepository {
 		for (Object id : iterable) {
 			doIfKey(id, k -> builder.addKey(k));
 		}
-		return this.spannerOperations.find(this.entityType, builder.build());
+		return this.spannerOperations.read(this.entityType, builder.build());
 	}
 
 	@Override

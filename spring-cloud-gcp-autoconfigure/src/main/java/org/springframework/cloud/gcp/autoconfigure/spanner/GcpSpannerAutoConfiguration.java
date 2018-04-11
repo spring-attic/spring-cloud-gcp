@@ -141,7 +141,7 @@ public class GcpSpannerAutoConfiguration {
 	public SpannerSchemaUtils spannerSchemaUtils(
 			SpannerMappingContext spannerMappingContext,
 			SpannerConverter spannerConverter) {
-		return new SpannerSchemaUtils(spannerMappingContext, spannerConverter);
+		return new SpannerSchemaUtils(spannerMappingContext);
 	}
 
 	@Bean

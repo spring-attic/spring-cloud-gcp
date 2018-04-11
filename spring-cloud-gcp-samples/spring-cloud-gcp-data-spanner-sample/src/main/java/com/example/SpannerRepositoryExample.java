@@ -16,7 +16,7 @@
 
 package com.example;
 
-import java.util.UUID;
+import java.util.Arrays;
 
 import com.google.cloud.spanner.Key;
 
@@ -24,25 +24,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.context.annotation.Bean;
 
 /**
  * @author Chengyuan Zhao
  * @author Balint Pato
+ * @author Mike Eltsufin
  */
 @SpringBootApplication
 public class SpannerRepositoryExample {
 
 	@Autowired
-	SpannerOperations spannerOperations;
-
-	@Autowired
 	TradeRepository tradeRepository;
 
 	@Autowired
-	SpannerSchemaUtils spannerSchemaOperations;
+	SpannerSchemaUtils spannerSchemaUtils;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpannerRepositoryExample.class, args);
@@ -52,28 +49,22 @@ public class SpannerRepositoryExample {
 	public CommandLineRunner commandLineRunner() {
 		return args -> {
 			this.tradeRepository.deleteAll();
-
-			String[] actions = new String[] { "BUY", "SELL" };
-
-			String[] stocks = new String[] { "stock1", "stock2", "stock3", "stock4",
-					"stock5" };
-
-			String traderId = "demo_trader";
-			for (String stock : stocks) {
-				for (String action : actions) {
-					Trade t = new Trade();
-					t.symbol = stock;
-					t.action = action;
-					t.traderId = traderId;
-					t.price = 100.0;
-					t.shares = 12345.6;
-					Person person = new Person();
-					person.firstName = UUID.randomUUID().toString();
-					person.lastName = UUID.randomUUID().toString();
-					t.person = person;
-					this.spannerOperations.insert(t);
-				}
-			}
+			this.tradeRepository
+					.save(new Trade(1L, "BUY", 100.0, 50.0, "STOCK1", "demo_trader1", Arrays.asList(99.0, 101.00)));
+			this.tradeRepository
+					.save(new Trade(2L, "BUY", 105.0, 60.0, "STOCK2", "demo_trader1", Arrays.asList(99.0, 101.00)));
+			this.tradeRepository
+					.save(new Trade(3L, "BUY", 100.0, 50.0, "STOCK1", "demo_trader1", Arrays.asList(99.0, 101.00)));
+			this.tradeRepository
+					.save(new Trade(1L, "BUY", 100.0, 70.0, "STOCK2", "demo_trader2", Arrays.asList(99.0, 101.00)));
+			this.tradeRepository
+					.save(new Trade(2L, "BUY", 103.0, 50.0, "STOCK1", "demo_trader2", Arrays.asList(99.0, 101.00)));
+			this.tradeRepository
+					.save(new Trade(3L, "SELL", 100.0, 52.0, "STOCK2", "demo_trader2", Arrays.asList(99.0, 101.00)));
+			this.tradeRepository
+					.save(new Trade(1L, "SELL", 98.0, 50.0, "STOCK1", "demo_trader3", Arrays.asList(99.0, 101.00)));
+			this.tradeRepository
+					.save(new Trade(2L, "SELL", 110.0, 50.0, "STOCK2", "demo_trader3", Arrays.asList(99.0, 101.00)));
 
 			System.out.println("The table for trades has been cleared and "
 					+ this.tradeRepository.count() + " new trades have been inserted:");
@@ -88,10 +79,12 @@ public class SpannerRepositoryExample {
 
 			System.out.println("These are the Spanner primary keys for the trades:");
 
-			allTrades.forEach(t -> System.out.println(this.spannerSchemaOperations.getId(t)));
+			allTrades.forEach(t -> {
+				Key key = this.spannerSchemaUtils.getKey(t);
+				System.out.println(key);
+			});
 
-			this.tradeRepository.deleteById(
-					Key.newBuilder().append(stocks[0]).append(actions[0]).build());
+			System.out.println("Try http://localhost:8080/trades in the browser to see all trades.");
 		};
 	}
 
