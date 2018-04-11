@@ -30,15 +30,21 @@ import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityImpl;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.data.util.TypeInformation;
+import org.springframework.test.context.ContextConfiguration;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * This class provides the foundation for the integration test framework for Spanner. Its
@@ -67,7 +73,7 @@ import static org.junit.Assume.assumeThat;
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-@SpringBootTest(classes = { IntegrationTestConfiguration.class })
+@ContextConfiguration(classes = { IntegrationTestConfiguration.class })
 public abstract class AbstractSpannerIntegrationTest {
 
 	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
@@ -76,10 +82,7 @@ public abstract class AbstractSpannerIntegrationTest {
 	protected SpannerOperations spannerOperations;
 
 	@Autowired
-	protected DatabaseAdminClient databaseAdminClient;
-
-	@Autowired
-	protected DatabaseId databaseId;
+	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
 
 	@Autowired
 	protected ApplicationContext applicationContext;
@@ -115,23 +118,16 @@ public abstract class AbstractSpannerIntegrationTest {
 		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) this.applicationContext)
 				.getBeanFactory();
 		beanFactory.registerSingleton("tableNameSuffix", this.tableNameSuffix);
-		String instanceId = this.databaseId.getInstanceId().getInstance();
-		String database = this.databaseId.getDatabase();
 
-		if (!hasDatabaseDefined(instanceId, database)) {
-			this.databaseAdminClient
-					.createDatabase(instanceId, database, createSchemaStatements())
-					.waitFor();
+		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
 			System.out.println(
-					this.getClass() + " - Integration database created with schema: "
-							+ createSchemaStatements());
+					this.getClass() + " - Integration database created with schema: " + createSchemaStatements());
 		}
 		else {
-			this.databaseAdminClient.updateDatabaseDdl(instanceId, database,
-					createSchemaStatements(), null).waitFor();
-			System.out.println(
-					this.getClass() + " - schema created: " + createSchemaStatements());
+			System.out.println(this.getClass() + " - schema created: " + createSchemaStatements());
 		}
+		this.spannerDatabaseAdminTemplate.executeDdlStrings(createSchemaStatements(),
+				true);
 	}
 
 	protected List<String> createSchemaStatements() {
@@ -151,13 +147,9 @@ public abstract class AbstractSpannerIntegrationTest {
 			if (this.setupFailed) {
 				return;
 			}
-			String instanceId = this.databaseId.getInstanceId().getInstance();
-			String database = this.databaseId.getDatabase();
-			if (hasDatabaseDefined(instanceId, database)) {
-				this.databaseAdminClient.updateDatabaseDdl(instanceId, database,
-						dropSchemaStatements(), null).waitFor();
-				System.out.println("Integration database cleaned up!");
-			}
+			this.spannerDatabaseAdminTemplate.executeDdlStrings(dropSchemaStatements(),
+					false);
+			System.out.println("Integration database cleaned up!");
 		}
 		finally {
 			// we need to remove the extra bean created even if there is a failure at
@@ -166,12 +158,5 @@ public abstract class AbstractSpannerIntegrationTest {
 					.getAutowireCapableBeanFactory();
 			beanFactory.destroySingleton(TABLE_NAME_SUFFIX_BEAN_NAME);
 		}
-	}
-
-	private boolean hasDatabaseDefined(String instanceId, String database) {
-		Stream<String> databaseNames = StreamSupport.stream(this.databaseAdminClient
-				.listDatabases(instanceId).getValues().spliterator(), false)
-				.map(d -> d.getId().getDatabase());
-		return databaseNames.anyMatch(database::equals);
 	}
 }
