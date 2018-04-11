@@ -41,3 +41,5 @@ include::logging.adoc[]
 include::config.adoc[]
 
 include::spanner.adoc[]
+
+include::cloudfoundry.adoc[]
