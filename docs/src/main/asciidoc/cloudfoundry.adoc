@@ -1,0 +1,15 @@
+== Cloud Foundry
+
+Spring Cloud GCP provides support for Cloud Foundry's
+https://docs.pivotal.io/partners/gcp-sb/index.html[GCP Service Broker].
+Our Pub/Sub, Spanner, Storage and Stackdriver Trace starters are Cloud Foundry aware and
+retrieve properties like project ID, credentials, etc., that are used in auto configuration.
+
+In cases like Pub/Sub's topic and subscription, or Storage's bucket name, where those parameters
+are not used in auto configuration, you can fetch them using the VCAP mapping provided by Spring
+Boot.
+For example, to retrieve the provisioned Pub/Sub topic, you can use the
+`vcap.services.mypubsub.credentials.topic_name` property from the application environment.
+
+NOTE: If the same service is bound to the same application more than once, the auto configuration
+will not be able to choose among bindings and will not be activated for that service.

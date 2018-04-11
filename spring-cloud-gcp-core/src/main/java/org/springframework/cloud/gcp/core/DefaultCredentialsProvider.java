@@ -16,9 +16,11 @@
 
 package org.springframework.cloud.gcp.core;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -66,7 +68,16 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 	}
 
 	/**
+	 * The credentials provided by this object originate from the following sources:
+	 * <ul>
+	 *     <li>*.credentials.location: Credentials built from JSON content inside the file pointed
+	 *     to by this property,</li>
+	 *     <li>*.credentials.encoded-key: Credentials built from JSON String, encoded on
+	 *     base64,</li>
+	 *     <li>Google Cloud Client Libraries default credentials provider.</li>
+	 * </ul>
 	 *
+	 * <p>If credentials are provided by one source, the next sources are discarded.
 	 * @param credentialsSupplier Provides properties that can override OAuth2
 	 * scopes list used by the credentials, and the location of the OAuth2 credentials private
 	 * key.
@@ -75,11 +86,18 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 	public DefaultCredentialsProvider(CredentialsSupplier credentialsSupplier) throws IOException {
 		List<String> scopes = resolveScopes(credentialsSupplier.getCredentials().getScopes());
 		Resource providedLocation = credentialsSupplier.getCredentials().getLocation();
+		String encodedKey = credentialsSupplier.getCredentials().getEncodedKey();
 
 		if (!StringUtils.isEmpty(providedLocation)) {
 			this.wrappedCredentialsProvider = FixedCredentialsProvider
 					.create(GoogleCredentials.fromStream(
 							providedLocation.getInputStream())
+							.createScoped(scopes));
+		}
+		else if (!StringUtils.isEmpty(encodedKey)) {
+			this.wrappedCredentialsProvider = FixedCredentialsProvider.create(
+					GoogleCredentials.fromStream(
+							new ByteArrayInputStream(Base64.getDecoder().decode(encodedKey)))
 							.createScoped(scopes));
 		}
 		else {

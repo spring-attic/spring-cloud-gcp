@@ -129,6 +129,11 @@
             <artifactId>spring-cloud-gcp-data-spanner</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-rest-webmvc</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <!-- Trace -->
         <dependency>

@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
+import org.springframework.expression.common.LiteralExpression;
 import org.springframework.integration.expression.ExpressionUtils;
 import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.handler.AbstractMessageHandler;
@@ -55,7 +56,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private MessageConverter messageConverter = new StringMessageConverter();
 
-	private String topic;
+	private Expression topicExpression;
 
 	private boolean sync;
 
@@ -67,15 +68,18 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
-		this.topic = topic;
+		this.topicExpression = new LiteralExpression(topic);
 	}
 
 	@Override
 	protected void handleMessageInternal(Message<?> message) throws Exception {
 		Object payload = message.getPayload();
+		String topic = message.getHeaders().containsKey(GcpPubSubHeaders.TOPIC)
+				? message.getHeaders().get(GcpPubSubHeaders.TOPIC, String.class)
+				: this.topicExpression.getValue(this.evaluationContext, message, String.class);
 
 		if (payload instanceof PubsubMessage) {
-			this.pubSubTemplate.publish(this.topic, (PubsubMessage) payload);
+			this.pubSubTemplate.publish(topic, (PubsubMessage) payload);
 			return;
 		}
 
@@ -96,12 +100,9 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		Map<String, String> headers = new HashMap<>();
 		message.getHeaders().forEach(
 				(key, value) -> headers.put(key, value.toString()));
-		String destTopic = this.topic;
-		if (headers.containsKey(GcpPubSubHeaders.TOPIC)) {
-			destTopic = headers.get(GcpPubSubHeaders.TOPIC);
-		}
+
 		ListenableFuture<String> pubsubFuture =
-				this.pubSubTemplate.publish(destTopic, pubsubPayload, headers);
+				this.pubSubTemplate.publish(topic, pubsubPayload, headers);
 
 		if (this.publishCallback != null) {
 			pubsubFuture.addCallback(this.publishCallback);
@@ -187,6 +188,34 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	 */
 	public void setPublishCallback(ListenableFutureCallback<String> publishCallback) {
 		this.publishCallback = publishCallback;
+	}
+
+	public Expression getTopicExpression() {
+		return this.topicExpression;
+	}
+
+	/**
+	 * Set the SpEL expression for the topic this adapter sends messages to.
+	 * @param topicExpression SpEL expression representing the topic name
+	 */
+	public void setTopicExpression(Expression topicExpression) {
+		this.topicExpression = topicExpression;
+	}
+
+	/**
+	 * Set the topic where this adapter sends messages to.
+	 * @param topic topic name
+	 */
+	public void setTopic(String topic) {
+		this.topicExpression = new LiteralExpression(topic);
+	}
+
+	/**
+	 * Set the topic expression string that is evaluated into an actual expression.
+	 * @param topicExpressionString topic expression string
+	 */
+	public void setTopicExpressionString(String topicExpressionString) {
+		this.topicExpression = this.EXPRESSION_PARSER.parseExpression(topicExpressionString);
 	}
 
 	@Override

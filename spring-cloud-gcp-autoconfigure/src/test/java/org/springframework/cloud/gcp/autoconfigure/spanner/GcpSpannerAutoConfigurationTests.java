@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -41,7 +42,8 @@ public class GcpSpannerAutoConfigurationTests {
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpSpannerAutoConfiguration.class,
 					GcpContextAutoConfiguration.class,
-					SpannerRepositoriesAutoConfiguration.class))
+					SpannerRepositoriesAutoConfiguration.class,
+					SpannerKeyRestSupportAutoConfiguration.class))
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.spanner.project-id=test-project",
 					"spring.cloud.gcp.spanner.instance-id=testInstance",
@@ -74,6 +76,15 @@ public class GcpSpannerAutoConfigurationTests {
 			assertThat(context.getBean(SpannerSchemaUtils.class)).isNotNull();
 		});
 	}
+
+  @Test
+  public void testIdConverterCreated() {
+    this.contextRunner.run(context -> {
+      BackendIdConverter idConverter = context.getBean(BackendIdConverter.class);
+      assertThat(idConverter).isNotNull();
+      assertThat(idConverter).isInstanceOf(SpannerKeyIdConverter.class);
+    });
+  }
 
 	@AutoConfigurationPackage
 	static class TestConfiguration {

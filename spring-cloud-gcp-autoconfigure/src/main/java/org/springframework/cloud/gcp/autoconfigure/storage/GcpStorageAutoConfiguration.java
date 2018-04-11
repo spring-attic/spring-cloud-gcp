@@ -58,10 +58,11 @@ public class GcpStorageAutoConfiguration {
 			GcpStorageProperties gcpStorageProperties,
 			GcpProjectIdProvider projectIdProvider) throws IOException {
 		return StorageOptions.newBuilder()
-				.setCredentials(gcpStorageProperties.getCredentials().getLocation() != null
+				.setCredentials(gcpStorageProperties.getCredentials().hasKey()
 						? new DefaultCredentialsProvider(gcpStorageProperties).getCredentials()
 						: credentialsProvider.getCredentials())
-				.setHeaderProvider(new UsageTrackingHeaderProvider(GcpStorageAutoConfiguration.class))
+				.setHeaderProvider(
+						new UsageTrackingHeaderProvider(GcpStorageAutoConfiguration.class))
 				.setProjectId(projectIdProvider.getProjectId())
 				.build().getService();
 	}

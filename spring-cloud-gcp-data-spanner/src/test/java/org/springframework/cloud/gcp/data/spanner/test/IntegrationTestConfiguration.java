@@ -30,7 +30,6 @@ import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
@@ -110,7 +109,7 @@ public class IntegrationTestConfiguration {
 	}
 
 	@Bean
-	public SpannerOperations spannerOperations(DatabaseClient databaseClient,
+	public SpannerTemplate spannerTemplate(DatabaseClient databaseClient,
 			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
 			SpannerMutationFactory spannerMutationFactory) {
 		return new SpannerTemplate(databaseClient, mappingContext, spannerConverter,

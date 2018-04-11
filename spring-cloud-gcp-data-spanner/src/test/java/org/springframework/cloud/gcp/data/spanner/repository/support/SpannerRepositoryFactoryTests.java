@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerQueryLookupStrategy;
@@ -105,10 +105,10 @@ public class SpannerRepositoryFactoryTests {
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id;
 
-		@PrimaryKeyColumn(keyOrder = 2)
+		@PrimaryKey(keyOrder = 2)
 		long id2;
 
 		@Column(name = "custom_col")
