@@ -17,7 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 /**
@@ -26,18 +26,18 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 @Table(name = "#{'sharestransactions_'.concat(tableNameSuffix)}")
 public class SharesTransaction {
 
-	@PrimaryKeyColumn(keyOrder = 1)
+	@PrimaryKey(keyOrder = 1)
 	@Column(name = "id")
 	private String tradeId;
 
-	@PrimaryKeyColumn(keyOrder = 2)
+	@PrimaryKey(keyOrder = 2)
 	@Column(name = "trader_id")
 	private String traderId;
 
-	@PrimaryKeyColumn(keyOrder = 3)
+	@PrimaryKey(keyOrder = 3)
 	private String subtradeId;
 
-	@PrimaryKeyColumn(keyOrder = 4)
+	@PrimaryKey(keyOrder = 4)
 	private String transId;
 
 	private int size;

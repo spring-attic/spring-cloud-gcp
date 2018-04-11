@@ -29,9 +29,8 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
@@ -265,10 +264,10 @@ public class SpannerMutationFactoryImplTests {
 
 	@Table(name = "child_test_table")
 	private static class ChildEntity {
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id;
 
-		@PrimaryKeyColumn(keyOrder = 2)
+		@PrimaryKey(keyOrder = 2)
 		String id2;
 	}
 }

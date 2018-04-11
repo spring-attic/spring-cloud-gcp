@@ -46,9 +46,8 @@ import org.junit.Test;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerLazyList;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerLazyList;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.domain.Page;
@@ -532,10 +531,10 @@ public class SpannerTemplateTests {
 
 	@Table(name = "parent_test_table")
 	private static class ParentEntity {
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id;
 
-		@PrimaryKeyColumn(keyOrder = 2)
+		@PrimaryKey(keyOrder = 2)
 		@Column(name = "id_2")
 		String id2;
 
@@ -553,13 +552,13 @@ public class SpannerTemplateTests {
 
 	@Table(name = "child_test_table")
 	private static class ChildEntity {
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id;
 
-		@PrimaryKeyColumn(keyOrder = 2)
+		@PrimaryKey(keyOrder = 2)
 		String id_2;
 
-		@PrimaryKeyColumn(keyOrder = 3)
+		@PrimaryKey(keyOrder = 3)
 		String id3;
 
 		GrandChildEntity childEntity;
@@ -570,16 +569,16 @@ public class SpannerTemplateTests {
 
 	@Table(name = "grand_child_test_table")
 	private static class GrandChildEntity {
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id;
 
-		@PrimaryKeyColumn(keyOrder = 2)
+		@PrimaryKey(keyOrder = 2)
 		String id_2;
 
-		@PrimaryKeyColumn(keyOrder = 3)
+		@PrimaryKey(keyOrder = 3)
 		String id3;
 
-		@PrimaryKeyColumn(keyOrder = 4)
+		@PrimaryKey(keyOrder = 4)
 		String id4;
 	}
 }

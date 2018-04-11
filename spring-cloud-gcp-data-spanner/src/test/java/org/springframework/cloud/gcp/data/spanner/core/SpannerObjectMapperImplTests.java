@@ -475,7 +475,7 @@ public class SpannerObjectMapperImplTests {
 
 	@Table(name = "ineligable_parent")
 	private static class IneligbleParentEntity {
-		@PrimaryKeyColumn
+		@PrimaryKey
 		String id;
 
 		TestEntity testEntity;
@@ -542,7 +542,7 @@ public class SpannerObjectMapperImplTests {
 
 	@Table(name = "small_test_table")
 	private static class SmallTestEntity {
-		@PrimaryKeyColumn
+		@PrimaryKey
 		String id;
 
 		SmallTestChildEntity childEntity;
@@ -556,10 +556,10 @@ public class SpannerObjectMapperImplTests {
 
 	@Table(name = "small_test_table_child")
 	private static class SmallTestChildEntity {
-		@PrimaryKeyColumn
+		@PrimaryKey
 		String id;
 
-		@PrimaryKeyColumn(keyOrder = 2)
+		@PrimaryKey(keyOrder = 2)
 		String id2;
 	}
 

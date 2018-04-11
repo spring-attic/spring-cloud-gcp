@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 /**
@@ -29,15 +29,15 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 @Table(name = "#{'subtrades_'.concat(tableNameSuffix)}")
 public class SubTrade {
 
-	@PrimaryKeyColumn(keyOrder = 1)
+	@PrimaryKey(keyOrder = 1)
 	@Column(name = "id")
 	private String tradeId;
 
-	@PrimaryKeyColumn(keyOrder = 2)
+	@PrimaryKey(keyOrder = 2)
 	@Column(name = "trader_id")
 	private String traderId;
 
-	@PrimaryKeyColumn(keyOrder = 3)
+	@PrimaryKey(keyOrder = 3)
 	private String subtradeId;
 
 	@ColumnInnerType(innerType = SharesTransaction.class)
