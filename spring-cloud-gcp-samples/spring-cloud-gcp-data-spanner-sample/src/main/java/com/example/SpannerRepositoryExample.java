@@ -22,9 +22,8 @@ import com.google.cloud.spanner.Key;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.context.annotation.Bean;
@@ -46,9 +45,7 @@ public class SpannerRepositoryExample {
 	SpannerSchemaUtils spannerSchemaOperations;
 
 	public static void main(String[] args) {
-		new SpringApplicationBuilder(SpannerRepositoryExample.class)
-				.web(WebApplicationType.NONE)
-				.run(args);
+		SpringApplication.run(SpannerRepositoryExample.class, args);
 	}
 
 	@Bean
@@ -95,8 +92,6 @@ public class SpannerRepositoryExample {
 
 			this.tradeRepository.deleteById(
 					Key.newBuilder().append(stocks[0]).append(actions[0]).build());
-
-			System.exit(0);
 		};
 	}
 

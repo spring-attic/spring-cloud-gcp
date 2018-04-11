@@ -33,7 +33,7 @@ import org.springframework.core.annotation.AliasFor;
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PrimaryKeyColumn {
+public @interface PrimaryKey {
 
 	/**
 	 * The order of columns that comprise the primary key. Starts at 1 is consecutive.

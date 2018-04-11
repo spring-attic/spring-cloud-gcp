@@ -119,7 +119,7 @@ public class SpannerPersistentPropertyImplTests {
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id;
 
 		@Column(name = "custom_col")
