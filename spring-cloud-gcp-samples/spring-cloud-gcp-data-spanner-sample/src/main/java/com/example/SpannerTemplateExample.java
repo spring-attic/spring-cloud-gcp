@@ -28,7 +28,6 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.domain.Sort;
 
 /**
  * @author Balint Pato
@@ -56,8 +55,6 @@ public class SpannerTemplateExample {
 			t.traderId = "1234";
 			t.price = 100.0;
 			t.shares = 12345.6;
-
-			List<Trade> trades = this.spannerOperations.findAll(Trade.class, Sort.by("action"));
 
 			this.spannerOperations.insert(t);
 			t.action = "SELL";
