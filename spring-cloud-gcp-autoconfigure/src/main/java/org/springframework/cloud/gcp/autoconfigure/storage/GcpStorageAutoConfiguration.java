@@ -58,10 +58,8 @@ public class GcpStorageAutoConfiguration {
 	public static Storage storage(CredentialsProvider credentialsProvider,
 			GcpStorageProperties gcpStorageProperties,
 			GcpProjectIdProvider projectIdProvider) throws IOException {
-		Credentials propertiesCredentials = gcpStorageProperties.getCredentials();
 		return StorageOptions.newBuilder()
-				.setCredentials(propertiesCredentials.getLocation() != null
-						|| propertiesCredentials.getEncodedKey() != null
+				.setCredentials(gcpStorageProperties.getCredentials().hasKey()
 						? new DefaultCredentialsProvider(gcpStorageProperties).getCredentials()
 						: credentialsProvider.getCredentials())
 				.setHeaderProvider(

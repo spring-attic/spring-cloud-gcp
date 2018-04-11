@@ -98,10 +98,9 @@ public class StackdriverTraceAutoConfiguration {
 				? gcpTraceProperties::getProjectId
 				: gcpProjectIdProvider;
 		this.finalCredentialsProvider =
-				gcpTraceProperties.getCredentials().getLocation() != null
-						|| gcpTraceProperties.getCredentials().getEncodedKey() != null
-				? new DefaultCredentialsProvider(gcpTraceProperties)
-				: credentialsProvider;
+				gcpTraceProperties.getCredentials().hasKey()
+						? new DefaultCredentialsProvider(gcpTraceProperties)
+						: credentialsProvider;
 	}
 
 	@Bean
