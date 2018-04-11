@@ -413,11 +413,6 @@ utilizing a single-transaction `SpannerOperations` that is executed in a single 
 
 === Repositories
 
-==== CRUD Repository
-//TODO
-==== Paging and Sorting Repository
-//TODO
-
 
 {spring-data-commons-ref}/#repositories[Spring Data Repositories] are a powerful abstraction that
 can save you a lot of boilerplate code.
@@ -426,7 +421,6 @@ For example:
 
 [source,java]
 ----
-@RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
 public interface TradeRepository extends SpannerRepository<Trade, String[]> {
 
 	List<Trade> findByAction(String action);
@@ -453,15 +447,6 @@ For POJOs with multiple columns comprising the primary key, this ID type paramet
 descendant of `Object[]` compatible with all primary key properties, any descendant of `Iterable`,
 or `com.google.cloud.spanner.Key`. If the domain POJO type only has a single primary key column,
 then the primary key property type can be used or the `Key` type.
-
-The `@RepositoryRestResource` annotation allows the repository to act as a REST endpoint when
-used in a Spring Boot application.
-For example, you can retrieve all `Trade` objects in the repository by using
-`curl \http://<server>:<port>/trades`, or any specific trade via
-`curl \http://<server>:<port>/trades/<symbol>,<action>`.
-You can also write trades using
-`curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/`
-where the file `test.json` holds the JSON representation of a `Trade` object.
 
 [source,java]
 ----
@@ -494,6 +479,17 @@ public class MyApplication {
 
 ----
 
+==== CRUD Repository
+
+By extending the `SpannerRepository`, you can use the `CrudRepository` methods. The `save` and
+`saveAll` methods work as update-or-insert.
+
+==== Paging and Sorting Repository
+`SpannerRepository` also extends `PagingAndSortingRepository`. The sorting and pageable `findAll`
+methods available from this interface operate on the current state of the Spanner database. As a
+result, beware that the state of the database (and the results) might change when moving page to page.
+
+
 ==== Query methods by convention
 
 In the example above, the {spring-data-commons-ref}/#repositories.query-methods[query methods]
@@ -513,13 +509,7 @@ ORDER BY SYMBOL DESC
 LIMIT 3
 ----
 
-==== Query methods with named queries properties
-//TODO
-
-
-==== Query methods with annotation
-//TODO
-
+==== Custom SQL query methods
 
 The example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the
 {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation
@@ -530,6 +520,8 @@ The SQL query for the method can be mapped to repository methods in one of two w
  * `namedQueries` properties file
  * using the `@Query` annotation
 
+===== Query methods with named queries properties
+
 By default, the `namedQueriesLocation` attribute on `@EnableSpannerRepositories` points to the
 `META-INF/spanner-named-queries.properties` file.
 You can specify the query for a method in the properties file by providing the SQL as the value for
@@ -539,6 +531,8 @@ the "interface.method" property:
 ----
 Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0`
 ----
+
+===== Query methods with annotation
 
 Using the `@Query` annotation:
 
@@ -561,7 +555,63 @@ A full example would look like:
   List<Trade> fetchByActionNamedQuery(String action);
 ----
 
+This allows table names evaluated with SpEL to be used in custom queries.
 
 ==== REST Repositories
 
-//TODO
+When running with Spring Boot, repositories can act as REST services by simply annotating them:
+
+[source,java]
+----
+@RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
+
+	List<Trade> findByAction(String action);
+
+	int countByAction(String action);
+
+	// Named methods are powerful, but can get unwieldy
+	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
+  			String action, String symbol, String traderId);
+
+	// This method uses the query from the properties file instead of one generated based on name.
+	List<Trade> fetchByActionNamedQuery(String action);
+
+}
+----
+
+The `@RepositoryRestResource` annotation makes this repository available via REST.
+For example, you can retrieve all `Trade` objects in the repository by using
+`curl \http://<server>:<port>/trades`, or any specific trade via
+`curl \http://<server>:<port>/trades/<symbol>,<action>`.
+
+The separator between your primary key components, `symbol` and `action` in this case, is a comma
+by default, but can be configured to any string not found in your key values by extending the
+`SpannerKeyIdConverter` class:
+
+[source,java]
+----
+@Component
+class MySpecialIdConverter extends SpannerKeyIdConverter {
+
+    @Override
+    protected String getUrlIdSeparator() {
+        return ":";
+    }
+}
+----
+
+
+You can also write trades using
+`curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/`
+where the file `test.json` holds the JSON representation of a `Trade` object.
+
+Include this dependency in your `pom.xml` to enable Spring Data REST Repositories:
+
+[source,xml]
+----
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-rest</artifactId>
+		</dependency>
+----
