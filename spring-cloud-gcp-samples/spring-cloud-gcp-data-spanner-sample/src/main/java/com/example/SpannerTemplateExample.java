@@ -26,10 +26,9 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerReadOptions;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.Sort;
 
 /**
  * @author Balint Pato
@@ -58,9 +57,9 @@ public class SpannerTemplateExample {
 			t.price = 100.0;
 			t.shares = 12345.6;
 
+			List<Trade> trades = this.spannerOperations.queryAll(Trade.class, Sort.by("action"));
 
-
-			List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
+			this.spannerOperations.insert(t);
 			t.action = "SELL";
 
 			this.spannerOperations.insert(t);

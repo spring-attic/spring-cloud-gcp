@@ -448,21 +448,40 @@ The following shows how to read rows from a table using a https://cloud.google.c
 ----
 //...
 
-  SpannerReadOptions spannerReadOptions = newn SpannerReadOptions().setIndex("TradesByTrader");
+  SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setIndex("TradesByTrader");
   List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
 
 //...
 ----
 
 
-===== Read with limits
+===== Read with offsets and limits
+
+Limits and offsets are only supported by Queries.
+The following will get only the first two rows of the query:
 
 [source,java]
 ----
 //...
 
-  SpannerReadOptions spannerReadOptions = newn SpannerReadOptions().setIndex("TradesByTrader");
-  List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
+  SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setLimit(2).setOffset(3);
+  List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
+
+//...
+----
+
+Note that the above is equivalent of executing `SELECT * FROM trades LIMIT 2 OFFSET 3`.
+
+===== Sorting
+
+Reads don't support sorting.
+Queries on the Template API support sorting through standard SQL and also via Spring Data Sort API:
+
+[source,java]
+----
+//...
+
+  List<Trade> trades = this.spannerTemplate.queryAll(Trade.class, Sort.by("action")););
 
 //...
 ----
@@ -474,7 +493,6 @@ Partial read is only possible when using Queries. In case the rows returned by q
 
 
 ===== Summary of options for Query vs Read
-
 
 |===
 | Feature | Query supports it | Read supports it
