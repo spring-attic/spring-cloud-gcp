@@ -45,7 +45,7 @@ public interface SpannerOperations {
 	 * @return an object of the requested type. Returns null if no object could be found
 	 * stored with the given key.
 	 */
-	<T> T find(Class<T> entityClass, Key key);
+	<T> T read(Class<T> entityClass, Key key);
 
 	/**
 	 * Finds a single stored object using a key.
@@ -56,7 +56,7 @@ public interface SpannerOperations {
 	 * @return an object of the requested type. Returns null if no object could be found
 	 * stored with the given key.
 	 */
-	<T> T find(Class<T> entityClass, Key key, SpannerReadOptions options);
+	<T> T read(Class<T> entityClass, Key key, SpannerReadOptions options);
 
 	/**
 	 * Finds objects stored from their keys.
@@ -67,7 +67,7 @@ public interface SpannerOperations {
 	 * @return a list of objects that could be found using the given keys. If no keys
 	 * could be found the list will be empty.
 	 */
-	<T> List<T> find(Class<T> entityClass, KeySet keys, SpannerReadOptions options);
+	<T> List<T> read(Class<T> entityClass, KeySet keys, SpannerReadOptions options);
 
 	/**
 	 * Finds objects stored from their keys.
@@ -77,7 +77,7 @@ public interface SpannerOperations {
 	 * @return a list of objects that could be found using the given keys. If no keys
 	 * could be found the list will be empty.
 	 */
-	<T> List<T> find(Class<T> entityClass, KeySet keys);
+	<T> List<T> read(Class<T> entityClass, KeySet keys);
 
 	/**
 	 * Finds objects by using an SQL statement.
@@ -88,7 +88,7 @@ public interface SpannerOperations {
 	 * @return a list of the objects found. If no keys could be found the list will be
 	 * empty.
 	 */
-	<T> List<T> find(Class<T> entityClass, Statement statement,
+	<T> List<T> query(Class<T> entityClass, Statement statement,
 			SpannerQueryOptions options);
 
 	/**
@@ -99,7 +99,7 @@ public interface SpannerOperations {
 	 * @return a list of the objects found. If no keys could be found the list will be
 	 * empty.
 	 */
-	<T> List<T> find(Class<T> entityClass, Statement statement);
+	<T> List<T> query(Class<T> entityClass, Statement statement);
 
 	/**
 	 * Finds all objects of the given type.
@@ -109,7 +109,7 @@ public interface SpannerOperations {
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
 	 */
-	<T> List<T> findAll(Class<T> entityClass, SpannerReadOptions options);
+	<T> List<T> readAll(Class<T> entityClass, SpannerReadOptions options);
 
 	/**
 	 * Finds all objects of the given type.
@@ -118,7 +118,7 @@ public interface SpannerOperations {
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
 	 */
-	<T> List<T> findAll(Class<T> entityClass);
+	<T> List<T> readAll(Class<T> entityClass);
 
 	/**
 	 * Finds all objects of the given type.

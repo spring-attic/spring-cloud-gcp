@@ -131,10 +131,10 @@ public class SpannerRepositoryImplTests {
 		SpannerOperations operations = mock(SpannerOperations.class);
 		Key key = Key.of("key");
 		Object ret = new Object();
-		when(operations.find(eq(Object.class), eq(key))).thenReturn(ret);
+		when(operations.read(eq(Object.class), eq(key))).thenReturn(ret);
 		assertEquals(ret,
 				new SimpleSpannerRepository(operations, Object.class).findById(key).get());
-		verify(operations, times(1)).find(eq(Object.class), eq(key));
+		verify(operations, times(1)).read(eq(Object.class), eq(key));
 	}
 
 	@Test
@@ -142,10 +142,10 @@ public class SpannerRepositoryImplTests {
 		SpannerOperations operations = mock(SpannerOperations.class);
 		Key key = Key.of("key");
 		Object ret = new Object();
-		when(operations.find(eq(Object.class), eq(key))).thenReturn(ret);
+		when(operations.read(eq(Object.class), eq(key))).thenReturn(ret);
 		assertEquals(ret, new SimpleSpannerRepository(operations, Object.class)
 				.findById("key").get());
-		verify(operations, times(1)).find(eq(Object.class), eq(key));
+		verify(operations, times(1)).read(eq(Object.class), eq(key));
 	}
 
 	@Test
@@ -154,10 +154,10 @@ public class SpannerRepositoryImplTests {
 		Timestamp timestamp = Timestamp.ofTimeMicroseconds(333);
 		Key key = Key.of("key", timestamp);
 		Object ret = new Object();
-		when(operations.find(eq(Object.class), eq(key))).thenReturn(ret);
+		when(operations.read(eq(Object.class), eq(key))).thenReturn(ret);
 		assertEquals(ret, new SimpleSpannerRepository(operations, Object.class)
 				.findById(new Object[] { "key", timestamp }).get());
-		verify(operations, times(1)).find(eq(Object.class), eq(key));
+		verify(operations, times(1)).read(eq(Object.class), eq(key));
 	}
 
 	@Test(expected = SpannerDataException.class)
@@ -172,14 +172,14 @@ public class SpannerRepositoryImplTests {
 		SpannerOperations operations = mock(SpannerOperations.class);
 		Key key = Key.of("key");
 		Object ret = new Object();
-		when(operations.find(eq(Object.class), eq(key))).thenReturn(ret);
+		when(operations.read(eq(Object.class), eq(key))).thenReturn(ret);
 		assertTrue(new SimpleSpannerRepository(operations, Object.class).existsById(key));
 	}
 
 	@Test
 	public void existsByIdTestNotFound() {
 		SpannerOperations operations = mock(SpannerOperations.class);
-		when(operations.find(eq(Object.class), (Key) any())).thenReturn(null);
+		when(operations.read(eq(Object.class), (Key) any())).thenReturn(null);
 		assertFalse(
 				new SimpleSpannerRepository(operations, Object.class)
 						.existsById(Key.of("key")));
@@ -189,7 +189,7 @@ public class SpannerRepositoryImplTests {
 	public void findAllTest() {
 		SpannerOperations operations = mock(SpannerOperations.class);
 		new SimpleSpannerRepository(operations, Object.class).findAll();
-		verify(operations, times(1)).findAll(eq(Object.class));
+		verify(operations, times(1)).readAll(eq(Object.class));
 	}
 
 	@Test
@@ -211,7 +211,7 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void findAllByIdTest() {
 		SpannerOperations operations = mock(SpannerOperations.class);
-		when(operations.find(eq(Object.class), (KeySet) any())).thenAnswer(invocation -> {
+		when(operations.read(eq(Object.class), (KeySet) any())).thenAnswer(invocation -> {
 			KeySet keys = invocation.getArgument(1);
 			assertThat(keys.getKeys(),
 					containsInAnyOrder(Key.of("key2"), Key.of("key1")));
