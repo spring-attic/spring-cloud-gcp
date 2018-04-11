@@ -156,7 +156,7 @@ public class SpannerTemplate implements SpannerOperations {
 						.applyIfChildEntityType(spannerPersistentProperty, childType -> {
 
 							BiFunction<Class, String, List> getChildRows = (propType,
-									childTable) -> find(propType,
+									childTable) -> query(propType,
 											SpannerStatementQueryExecutor
 													.getChildrenRowsQuery(
 															spannerPersistentEntity,
