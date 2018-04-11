@@ -167,7 +167,6 @@ In our example the DDL to create the table and its primary key is as follows:
 CREATE TABLE trades (
 	action STRING(15),
 	symbol STRING(10),
-	curve ARRAY<FLOAT64>,
 	price FLOAT64,
 	shares FLOAT64,
 	person STRING(MAX),
