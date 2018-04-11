@@ -63,6 +63,7 @@ public class SpannerPersistentEntityImpl<T>
 	private final Table table;
 
 	private final Map<Integer, SpannerPersistentProperty> primaryKeyParts = new HashMap<>();
+
 	private SpannerPersistentProperty idProperty;
 
 	/**
