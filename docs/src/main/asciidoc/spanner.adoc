@@ -333,6 +333,22 @@ public class SpannerTemplateExample {
 }
 ----
 
+The Template API provides convenience methods for:
+
+- https://cloud.google.com/spanner/docs/reads[Reads], and by providing SpannerReadOptions and
+SpannerQueryOptions
+   ** Stale read
+   ** Read with secondary indices
+   ** Read with limits and flow control
+- https://cloud.google.com/spanner/docs/reads#execute_a_query[Queries]
+- DML operations (delete, insert, update, upsert)
+- Partial reads
+   ** You can define a set of columns to be read into your entity
+- Partial writes
+   ** Persist only a few properties from your entity
+- Read-only transactions
+- Locking read-write transactions
+
 ==== Read
 //TODO
 ===== Simple Read
@@ -357,30 +373,76 @@ public class SpannerTemplateExample {
 //TODO
 ===== Partial Write
 
-==== Transaction
-
 ===== Read/Write Transaction
+
+Read and write transactions are provided by `SpannerOperations` via the `performReadWriteTransaction` method:
+
+[source,java]
+----
+
+@Autowired
+SpannerOperations mySpannerOperations;
+
+public String doWorkInsideTransaction() {
+  return mySpannerOperations.performReadWriteTransaction(
+    transActionSpannerOperations -> {
+      // work with transActionSpannerOperations here. It is also a SpannerOperations object.
+
+      return "transaction completed";
+    }
+  );
+}
+----
+
+The `performReadWriteTransaction` method accepts a `Function` that is provided an instance of a
+`SpannerOperations` object. The final returned value and type of the function is determined by the user.
+You can use this object just as you would a regular `SpannerOperations` with
+a few exceptions:
+
+- Its read functionality cannot perform stale reads, because all reads and writes happen at the single
+point in time of the transaction.
+- It cannot perform sub-transactions via `performReadWriteTransaction` or `performReadOnlyTransaction`.
+
+As these read-write transactions are locking, it is recommended that you use the `performReadOnlyTransaction`
+if your function does not perform any writes.
 
 ===== Read-only Transaction
 
-The Template API provides convenience methods for:
+The `performReadOnlyTransaction` method is used to perform read-only transactions using a `SpannerOperations`:
 
-- https://cloud.google.com/spanner/docs/reads[Reads], and by providing SpannerReadOptions and
-SpannerQueryOptions
-   ** Stale read
-   ** Read with secondary indices
-   ** Read with limits and flow control
-- https://cloud.google.com/spanner/docs/reads#execute_a_query[Queries]
-- DML operations (delete, insert, update, upsert)
-- Partial reads
-   ** You can define a set of columns to be read into your entity
-- Partial writes
-   ** Persist only a few properties from your entity
-- Read-only transactions
-- Locking read-write transactions
+[source,java]
+----
 
-For read-only and locking read-write transactions, users provide a `java.util.Function`
-utilizing a single-transaction `SpannerOperations` that is executed in a single transaction.
+@Autowired
+SpannerOperations mySpannerOperations;
+
+public String doWorkInsideTransaction() {
+  return mySpannerOperations.performReadOnlyTransaction(
+    transActionSpannerOperations -> {
+      // work with transActionSpannerOperations here. It is also a SpannerOperations object.
+
+      return "transaction completed";
+    }
+  );
+}
+----
+
+The `performReadOnlyTransaction` method accepts a `Function` that is provided an instance of a
+`SpannerOperations` object. This method also accepts a `ReadOptions` object, but the only
+attribute used is the timestamp used to determine the snapshot in time to perform the reads in
+the transaction. If the timestamp is not set in the read options the transaction is run against
+the current state of the database.
+The final returned value and type of the function is determined by the user.
+You can use this object just as you would a regular `SpannerOperations` with
+a few exceptions:
+
+- Its read functionality cannot perform stale reads, because all reads happen at the single
+point in time of the transaction.
+- It cannot perform sub-transactions via `performReadWriteTransaction` or `performReadOnlyTransaction`
+- It cannot perform any write operations.
+
+Because read-only transactions are non-locking and can be performed on points in time in the past, these
+are recommended for functions that do not perform write operations.
 
 === Repositories
 
