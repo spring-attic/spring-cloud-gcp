@@ -88,13 +88,16 @@ Spring Data Spanner allows you to map domain POJOs to Spanner tables via annotat
 
 [source,java]
 ----
-@Table(name = "my_things")
-public class MyThing {
+@Table(name = "traders")
+public class Trader {
 
 	@PrimaryKey
-	String name;
+	@Column(name = "trader_id")
+	String traderId;
 
-	Double price;
+	String firstName;
+
+	String lastName;
 }
 ----
 
@@ -140,8 +143,9 @@ You have to annotate all of your POJO's fields that the primary key consists of 
 @Table(name = "trades")
 public class Trade {
 
-	@PrimaryKey(keyOrder = 1)
-	private Long id;
+	@PrimaryKey(keyOrder = 2)
+	@Column(name = "trade_id")
+	private String tradeId;
 
 	private String action;
 
@@ -151,7 +155,7 @@ public class Trade {
 
 	private String symbol;
 
-	@PrimaryKey(keyOrder = 2)
+	@PrimaryKey(keyOrder = 1)
 	@Column(name = "trader_id")
 	private String traderId;
 
@@ -165,13 +169,14 @@ In our example the DDL to create the table and its primary key is as follows:
 [source,sql]
 ----
 CREATE TABLE trades (
+    trader_id STRING(MAX),
+	trade_id STRING(MAX),
 	action STRING(15),
 	symbol STRING(10),
 	price FLOAT64,
 	shares FLOAT64,
-	person STRING(MAX),
-	trader_id STRING(128),
-) PRIMARY KEY (action, symbol)
+	person STRING(MAX)
+) PRIMARY KEY (trader_id, trade_id)
 ----
 
 Spanner does not have automatic ID generation.
