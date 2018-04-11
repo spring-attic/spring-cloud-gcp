@@ -113,7 +113,7 @@ public abstract class AbstractSpannerIntegrationTest {
 		else {
 			System.out.println(this.getClass() + " - schema created: " + createSchemaStatements());
 		}
-		this.spannerDatabaseAdminTemplate.executeDDLStrings(createSchemaStatements(),
+		this.spannerDatabaseAdminTemplate.executeDdlStrings(createSchemaStatements(),
 				true);
 	}
 
@@ -144,7 +144,7 @@ public abstract class AbstractSpannerIntegrationTest {
 			if (this.setupFailed) {
 				return;
 			}
-			this.spannerDatabaseAdminTemplate.executeDDLStrings(dropSchemaStatements(),
+			this.spannerDatabaseAdminTemplate.executeDdlStrings(dropSchemaStatements(),
 					false);
 			System.out.println("Integration database cleaned up!");
 		}

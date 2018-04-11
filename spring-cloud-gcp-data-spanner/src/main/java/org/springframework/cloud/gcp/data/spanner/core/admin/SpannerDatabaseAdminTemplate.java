@@ -25,6 +25,7 @@ import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseId;
 
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.util.Assert;
 
 /**
@@ -64,9 +65,9 @@ public class SpannerDatabaseAdminTemplate {
 	 * Otherwise, if True then the database is created and the DDL strings are executed;
 	 * the DDL is not executed if False.
 	 */
-	public void executeDDLStrings(Iterable<String> ddlStrings,
+	public void executeDdlStrings(Iterable<String> ddlStrings,
 			boolean createDatabaseIfNotExists) {
-		if (!databaseExists() && createDatabaseIfNotExists) {
+		if (createDatabaseIfNotExists && !databaseExists()) {
 			this.databaseAdminClient
 					.createDatabase(getInstanceId(), getDatabase(), ddlStrings).waitFor();
 		}
@@ -74,6 +75,11 @@ public class SpannerDatabaseAdminTemplate {
 			this.databaseAdminClient
 					.updateDatabaseDdl(getInstanceId(), getDatabase(), ddlStrings, null)
 					.waitFor();
+		}
+		else {
+			throw new SpannerDataException(
+					"DDL could not be executed because the database does"
+							+ " not exist and it was not auto-created");
 		}
 	}
 
