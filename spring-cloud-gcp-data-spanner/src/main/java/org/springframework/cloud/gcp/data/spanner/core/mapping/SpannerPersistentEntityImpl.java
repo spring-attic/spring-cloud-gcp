@@ -64,6 +64,8 @@ public class SpannerPersistentEntityImpl<T>
 
 	private final Map<Integer, SpannerPersistentProperty> primaryKeyParts = new HashMap<>();
 
+	private SpannerPersistentProperty idProperty;
+
 	/**
 	 * Creates a {@link SpannerPersistentEntityImpl}
 	 * @param information type information about the underlying entity type.
@@ -120,7 +122,12 @@ public class SpannerPersistentEntityImpl<T>
 
 	@Override
 	public SpannerPersistentProperty getIdProperty() {
-		return new SpannerCompositeKeyProperty(this, getPrimaryKeyProperties());
+		return this.idProperty;
+	}
+
+	@Override
+	public boolean hasIdProperty() {
+		return this.idProperty != null;
 	}
 
 	@Override
@@ -135,6 +142,7 @@ public class SpannerPersistentEntityImpl<T>
 								+ String.valueOf(i));
 			}
 		}
+		this.idProperty = new SpannerCompositeKeyProperty(this, getPrimaryKeyProperties());
 	}
 
 	private SpannerPersistentProperty[] getPrimaryKeyProperties() {
