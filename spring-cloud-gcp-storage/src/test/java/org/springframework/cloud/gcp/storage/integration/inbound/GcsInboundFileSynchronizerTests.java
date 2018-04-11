@@ -68,14 +68,16 @@ public class GcsInboundFileSynchronizerTests {
 
 		if (Files.exists(testDirectory)) {
 			if (Files.isDirectory(testDirectory)) {
-				Files.list(testDirectory).forEach(path -> {
-					try {
-						Files.delete(path);
-					}
-					catch (IOException ioe) {
-						LOGGER.info("Error deleting test file.", ioe);
-					}
-				});
+				try (Stream<Path> files = Files.list(testDirectory)) {
+					files.forEach(path -> {
+						try {
+							Files.delete(path);
+						}
+						catch (IOException ioe) {
+							LOGGER.info("Error deleting test file.", ioe);
+						}
+					});
+				}
 			}
 
 			Files.delete(testDirectory);

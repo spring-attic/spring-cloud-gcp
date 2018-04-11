@@ -21,11 +21,13 @@ import java.util.List;
 import com.google.cloud.spanner.Key;
 
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
+@RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
 public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
 	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(

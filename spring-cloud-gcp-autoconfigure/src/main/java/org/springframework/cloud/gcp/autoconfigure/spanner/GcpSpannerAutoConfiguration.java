@@ -69,7 +69,7 @@ public class GcpSpannerAutoConfiguration {
 	public GcpSpannerAutoConfiguration(GcpSpannerProperties gcpSpannerProperties,
 			GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
-		this.credentials = (gcpSpannerProperties.getCredentials().getLocation() != null
+		this.credentials = (gcpSpannerProperties.getCredentials().hasKey()
 				? new DefaultCredentialsProvider(gcpSpannerProperties)
 				: credentialsProvider).getCredentials();
 		this.projectId = gcpSpannerProperties.getProjectId() != null
@@ -114,7 +114,7 @@ public class GcpSpannerAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SpannerOperations spannerOperations(DatabaseClient databaseClient,
+	public SpannerTemplate spannerTemplate(DatabaseClient databaseClient,
 			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
 			SpannerMutationFactory spannerMutationFactory) {
 		return new SpannerTemplate(databaseClient, mappingContext, spannerConverter,

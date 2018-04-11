@@ -97,7 +97,7 @@ public @interface EnableSpannerRepositories {
 
 	/**
 	 * Configures the location of where to find the Spring Data named queries properties
-	 * file. Will default to {@code META-INF/spanner-named-queries.properties}.
+	 * file. Will default to {@code META-INF/spanner-named-queries.properties}
 	 *
 	 * @return
 	 */
@@ -120,7 +120,7 @@ public @interface EnableSpannerRepositories {
 	 *
 	 * @return
 	 */
-	String spannerOperationsRef() default "spannerOperations";
+	String spannerTemplateRef() default "spannerTemplate";
 
 	/**
 	 * Configures the name of the

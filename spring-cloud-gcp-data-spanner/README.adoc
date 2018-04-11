@@ -1,0 +1,75 @@
+:ext-relative: adoc
+
+= image:spanner-logo.png[50,50] Spring Data Spanner
+
+Provides a http://projects.spring.io/spring-data/[Spring Data Module] for https://cloud.google.com/spanner/[Google Cloud Spanner].
+
+Maven coordinates for this module only, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-data-spanner</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-spanner'
+}
+----
+
+We provide a link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner], with which you can leverage our recommended auto-configuration setup.
+To use the starter, see the coordinates see below.
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-data-spanner</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-spanner'
+}
+----
+
+==== Features
+
+Spring Spanner Data is considered Alpha stability.
+
+Features to be released with 1.0.0.M3:
+
+- Mapping POJO domain objects to Spanner tables using annotations
+- SpannerTemplate API:
+   ** Stale read
+   ** Read with secondary indices
+   ** Read with limits and flow control
+- Spring Data Repositories: CrudRepository, PagingAndSortingRepository
+- Declarative query methods
+   ** interface method resolution by naming convention
+   ** read-only SQL via properties files
+- supported field types for POJOs:
+   ** built-in support for basic Spanner types
+   ** built-in support for common Java types
+   ** any Java type can be supported with user defined type conversions
+- SpEL expressions for table name resolution
+- partial reads and writes
+
+
+====  Where to go from here?
+
+* Try out the link:../spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[Spring Data Spanner Sample application]
+* Detailed documentation: link:../docs/src/main/asciidoc/spanner.adoc[Spring Data Spanner documentation]
+* Overall project documentation: https://cloud.spring.io/spring-cloud-gcp[Spring Cloud GCP reference]
+
+
