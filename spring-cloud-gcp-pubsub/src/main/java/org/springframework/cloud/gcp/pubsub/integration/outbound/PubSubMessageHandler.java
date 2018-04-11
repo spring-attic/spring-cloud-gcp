@@ -210,6 +210,14 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		this.topicExpression = new LiteralExpression(topic);
 	}
 
+	/**
+	 * Set the topic expression string that is evaluated into an actual expression.
+	 * @param topicExpressionString topic expression string
+	 */
+	public void setTopicExpressionString(String topicExpressionString) {
+		this.topicExpression = this.EXPRESSION_PARSER.parseExpression(topicExpressionString);
+	}
+
 	@Override
 	protected void onInit() throws Exception {
 		super.onInit();
