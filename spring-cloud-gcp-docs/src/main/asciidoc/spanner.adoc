@@ -222,8 +222,8 @@ Example:
 
 [source,java]
 ----
-	@ColumnInnerType(innerType = Double.class)
-	List<Double> curve;
+@ColumnInnerType(innerType = Double.class)
+List<Double> curve;
 ----
 
 Spring Data Spanner supports the following inner types:
