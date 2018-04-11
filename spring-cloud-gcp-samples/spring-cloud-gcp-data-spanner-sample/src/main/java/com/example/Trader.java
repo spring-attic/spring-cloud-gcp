@@ -45,7 +45,7 @@ public class Trader {
 	}
 
 	public String getTraderId() {
-		return traderId;
+		return this.traderId;
 	}
 
 	public void setTraderId(String traderId) {
@@ -53,7 +53,7 @@ public class Trader {
 	}
 
 	public String getFirstName() {
-		return firstName;
+		return this.firstName;
 	}
 
 	public void setFirstName(String firstName) {
@@ -61,18 +61,19 @@ public class Trader {
 	}
 
 	public String getLastName() {
-		return lastName;
+		return this.lastName;
 	}
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
 
-	@Override public String toString() {
+	@Override
+	public String toString() {
 		return "Trader{" +
-				"traderId='" + traderId + '\'' +
-				", firstName='" + firstName + '\'' +
-				", lastName='" + lastName + '\'' +
+				"traderId='" + this.traderId + '\'' +
+				", firstName='" + this.firstName + '\'' +
+				", lastName='" + this.lastName + '\'' +
 				'}';
 	}
 }
