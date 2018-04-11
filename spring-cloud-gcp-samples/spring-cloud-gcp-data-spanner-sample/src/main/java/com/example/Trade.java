@@ -17,7 +17,7 @@
 package com.example;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 /**
@@ -27,14 +27,14 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 @Table(name = "trades")
 public class Trade {
 
-	@PrimaryKeyColumn(keyOrder = 2)
+	@PrimaryKey(keyOrder = 2)
 	String action;
 
 	Double price;
 
 	Double shares;
 
-	@PrimaryKeyColumn(keyOrder = 1)
+	@PrimaryKey(keyOrder = 1)
 	String symbol;
 
 	@Column(name = "trader_id")

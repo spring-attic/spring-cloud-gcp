@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKeyColumn;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
@@ -140,7 +140,7 @@ public class SpannerMutationFactoryImplTests {
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
-		@PrimaryKeyColumn(keyOrder = 1)
+		@PrimaryKey(keyOrder = 1)
 		String id;
 
 		@Column(name = "custom_col")
