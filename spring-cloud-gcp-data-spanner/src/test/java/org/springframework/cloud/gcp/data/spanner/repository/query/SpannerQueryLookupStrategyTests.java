@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
+import java.util.Optional;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,9 +25,12 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.Parameter;
+import org.springframework.data.repository.query.Parameters;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
@@ -68,6 +73,16 @@ public class SpannerQueryLookupStrategyTests {
 		String query = "fake query";
 		when(this.queryMethod.getNamedQueryName()).thenReturn(queryName);
 		NamedQueries namedQueries = mock(NamedQueries.class);
+
+		Parameters parameters = mock(Parameters.class);
+
+		when(this.queryMethod.getParameters()).thenReturn(parameters);
+		when(parameters.getNumberOfParameters()).thenReturn(1);
+		when(parameters.getParameter(anyInt())).thenAnswer(invocation -> {
+			Parameter param = mock(Parameter.class);
+			when(param.getName()).thenReturn(Optional.of("tag"));
+			return param;
+		});
 
 		when(namedQueries.hasQuery(eq(queryName))).thenReturn(true);
 		when(namedQueries.getQuery(eq(queryName))).thenReturn(query);
