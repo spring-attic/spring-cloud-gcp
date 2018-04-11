@@ -78,9 +78,6 @@ public abstract class AbstractSpannerIntegrationTest {
 	protected ApplicationContext applicationContext;
 
 	@Autowired
-	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
-
-	@Autowired
 	SpannerSchemaUtils spannerSchemaUtils;
 
 	protected String tableNameSuffix;
@@ -114,7 +111,8 @@ public abstract class AbstractSpannerIntegrationTest {
 
 		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
 			System.out.println(
-					this.getClass() + " - Integration database created with schema: " + createSchemaStatements());
+					this.getClass() + " - Integration database created with schema: "
+							+ createSchemaStatements());
 		}
 		else {
 			System.out.println(this.getClass() + " - schema created: " + createSchemaStatements());
@@ -124,7 +122,7 @@ public abstract class AbstractSpannerIntegrationTest {
 	}
 
 	protected List<String> createSchemaStatements() {
-		return this.mappingSchemaGenerator
+		return this.spannerSchemaUtils
 				.getCreateTableDDLStringsForHierarchy(Trade.class);
 	}
 
@@ -137,7 +135,7 @@ public abstract class AbstractSpannerIntegrationTest {
 			}
 			this.spannerDatabaseAdminTemplate
 					.executeDdlStrings(
-							this.mappingSchemaGenerator
+							this.spannerSchemaUtils
 									.getDropTableDDLStringsForHierarchy(Trade.class),
 					false);
 			System.out.println("Integration database cleaned up!");
