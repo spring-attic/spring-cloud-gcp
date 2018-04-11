@@ -96,7 +96,7 @@ public @interface EnableSpannerRepositories {
 	Class repositoryFactoryBeanClass() default SpannerRepositoryFactoryBean.class;
 
 	/**
-	 * Configures the location of where to find the Spring Data named queries properties
+	 * Configures the location of where to read the Spring Data named queries properties
 	 * file. Will default to {@code META-INF/spanner-named-queries.properties}
 	 *
 	 * @return

@@ -61,7 +61,7 @@ public class SpannerStatementQueryExecutor {
 		}
 		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
 				spannerMappingContext, type);
-		List results = spannerOperations.find(type, buildStatementFromSqlWithArgs(
+		List results = spannerOperations.query(type, buildStatementFromSqlWithArgs(
 				sqlAndTags.getFirst(), sqlAndTags.getSecond(), params));
 		if (tree.isCountProjection()) {
 			return results.size();

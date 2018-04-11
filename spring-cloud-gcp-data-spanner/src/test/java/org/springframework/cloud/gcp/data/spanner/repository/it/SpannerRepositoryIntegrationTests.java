@@ -59,7 +59,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		assertThat(this.tradeRepository.count(), is(8L));
 
-		List<Trade> allTradesRetrieved = this.spannerOperations.findAll(Trade.class);
+		List<Trade> allTradesRetrieved = this.spannerOperations.readAll(Trade.class);
 		assertThat(
 				"size is not " + allTrades.size() + " in received records: \n"
 						+ allTradesRetrieved,
