@@ -26,37 +26,109 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  */
 @Table(name = "trades")
 public class Trade {
 
-	@PrimaryKey(keyOrder = 2)
-	String action;
-
-	Double price;
-
-	Double shares;
-
 	@PrimaryKey(keyOrder = 1)
-	String symbol;
+	private Long id;
 
+	private String action;
+
+	private Double price;
+
+	private Double shares;
+
+	private String symbol;
+
+	@PrimaryKey(keyOrder = 2)
 	@Column(name = "trader_id")
-	String traderId;
+	private String traderId;
 
 	@ColumnInnerType(innerType = Double.class)
-	List<Double> curve;
+	private List<Double> curve;
 
-	Person person;
+	public Trade() {
+	}
+
+	public Trade(Long id, String action, Double price, Double shares, String symbol, String traderId,
+			List<Double> curve) {
+		this.id = id;
+		this.action = action;
+		this.price = price;
+		this.shares = shares;
+		this.symbol = symbol;
+		this.traderId = traderId;
+		this.curve = curve;
+	}
+
+	public Long getId() {
+		return this.id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getAction() {
+		return this.action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
+	}
+
+	public Double getPrice() {
+		return this.price;
+	}
+
+	public void setPrice(Double price) {
+		this.price = price;
+	}
+
+	public Double getShares() {
+		return this.shares;
+	}
+
+	public void setShares(Double shares) {
+		this.shares = shares;
+	}
+
+	public String getSymbol() {
+		return this.symbol;
+	}
+
+	public void setSymbol(String symbol) {
+		this.symbol = symbol;
+	}
+
+	public String getTraderId() {
+		return this.traderId;
+	}
+
+	public void setTraderId(String traderId) {
+		this.traderId = traderId;
+	}
+
+	public List<Double> getCurve() {
+		return this.curve;
+	}
+
+	public void setCurve(List<Double> curve) {
+		this.curve = curve;
+	}
 
 	@Override
 	public String toString() {
 		return "Trade{" +
-				"action='" + this.action + '\'' +
+				"id=" + this.id +
+				", action='" + this.action + '\'' +
 				", price=" + this.price +
 				", shares=" + this.shares +
 				", symbol='" + this.symbol + '\'' +
-				", traderId='" + this.traderId +
-				", person='" + this.person +
+				", traderId='" + this.traderId + '\'' +
+				", curve=" + this.curve +
 				'}';
 	}
 }
