@@ -428,10 +428,10 @@ then the primary key property type can be used or the `Key` type.
 The `@RepositoryRestResource` annotation allows the repository to act as a REST endpoint when
 used in a Spring Boot application.
 For example, you can retrieve all `Trade` objects in the repository by using
-`curl http://<server>:<port>/trades`, or any specific trade via
-`curl http://<server>:<port>/trades/<symbol>,<action>`.
+`curl \http://<server>:<port>/trades`, or any specific trade via
+`curl \http://<server>:<port>/trades/<symbol>,<action>`.
 You can also write trades using
-`curl -XPOST -H"Content-Type: application/json" -d@test.json http://<server>:<port>/trades/`
+`curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/`
 where the file `test.json` holds the JSON representation of a `Trade` object.
 
 [source,java]
