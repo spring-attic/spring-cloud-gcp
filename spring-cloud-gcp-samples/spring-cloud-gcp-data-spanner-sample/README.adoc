@@ -14,7 +14,7 @@ link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Sprin
 You can define the table via the following DDL
 ```
 CREATE TABLE trades (
-    sequence INT64,
+	sequence INT64,
 	action STRING(15),
 	symbol STRING(10),
 	curve ARRAY<FLOAT64>,
