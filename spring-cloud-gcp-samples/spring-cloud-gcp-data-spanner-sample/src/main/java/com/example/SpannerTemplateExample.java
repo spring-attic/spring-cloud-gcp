@@ -55,12 +55,12 @@ public class SpannerTemplateExample {
 
 			this.spannerOperations.insert(t);
 
-			t.setSequence(2L);
+			t.setId(2L);
 			t.setTraderId("template_trader1");
 			t.setAction("SELL");
 			this.spannerOperations.insert(t);
 
-			t.setSequence(1L);
+			t.setId(1L);
 			t.setTraderId("template_trader2");
 			this.spannerOperations.insert(t);
 

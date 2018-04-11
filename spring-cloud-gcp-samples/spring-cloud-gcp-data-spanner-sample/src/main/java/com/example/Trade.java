@@ -32,7 +32,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 public class Trade {
 
 	@PrimaryKey(keyOrder = 1)
-	private Long sequence;
+	private Long id;
 
 	private String action;
 
@@ -52,9 +52,9 @@ public class Trade {
 	public Trade() {
 	}
 
-	public Trade(Long sequence, String action, Double price, Double shares, String symbol, String traderId,
+	public Trade(Long id, String action, Double price, Double shares, String symbol, String traderId,
 			List<Double> curve) {
-		this.sequence = sequence;
+		this.id = id;
 		this.action = action;
 		this.price = price;
 		this.shares = shares;
@@ -63,12 +63,12 @@ public class Trade {
 		this.curve = curve;
 	}
 
-	public Long getSequence() {
-		return this.sequence;
+	public Long getId() {
+		return this.id;
 	}
 
-	public void setSequence(Long sequence) {
-		this.sequence = sequence;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getAction() {
@@ -122,7 +122,7 @@ public class Trade {
 	@Override
 	public String toString() {
 		return "Trade{" +
-				"sequence=" + this.sequence +
+				"id=" + this.id +
 				", action='" + this.action + '\'' +
 				", price=" + this.price +
 				", shares=" + this.shares +
