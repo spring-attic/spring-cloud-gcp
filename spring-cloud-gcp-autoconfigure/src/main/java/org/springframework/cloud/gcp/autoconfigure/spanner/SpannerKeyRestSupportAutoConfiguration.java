@@ -29,13 +29,12 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 
 @Configuration
 @AutoConfigureAfter(GcpSpannerAutoConfiguration.class)
-@ConditionalOnMissingBean({ BackendIdConverter.class })
 @ConditionalOnClass({ BackendIdConverter.class })
 public class SpannerKeyRestSupportAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public BackendIdConverter backendIdConverter() {
+	public BackendIdConverter spannerKeyIdConverter() {
 		return new SpannerKeyIdConverter();
 	}
 

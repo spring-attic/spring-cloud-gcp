@@ -21,12 +21,18 @@ import java.util.StringJoiner;
 
 import com.google.cloud.spanner.Key;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 
 /**
  * @author Balint Pato
  */
 public class SpannerKeyIdConverter implements BackendIdConverter {
+
+	@Autowired
+	private SpannerMappingContext mappingContext;
 
 	@Override
 	public Serializable fromRequestId(String id, Class<?> entityType) {
@@ -35,7 +41,7 @@ public class SpannerKeyIdConverter implements BackendIdConverter {
 	}
 
 	protected String getUrlIdSeparator() {
-		return "_";
+		return ",";
 	}
 
 	@Override
@@ -48,6 +54,11 @@ public class SpannerKeyIdConverter implements BackendIdConverter {
 
 	@Override
 	public boolean supports(Class<?> type) {
-		return true;
+		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
+				.getPersistentEntity(type);
+
+		return persistentEntity != null
+				&& persistentEntity.getIdProperty() != null
+				&& persistentEntity.getIdProperty().getActualType().equals(Key.class);
 	}
 }
