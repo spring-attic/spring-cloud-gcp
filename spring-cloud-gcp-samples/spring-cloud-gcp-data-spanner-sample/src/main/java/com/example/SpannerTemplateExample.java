@@ -26,6 +26,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerReadOptions;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
@@ -56,7 +57,7 @@ public class SpannerTemplateExample {
 			t.price = 100.0;
 			t.shares = 12345.6;
 
-			this.spannerOperations.insert(t);
+			this.spannerOperations.findAll(Trade.class, new SpannerReadOptions().setIndex())insert(t);
 			t.action = "SELL";
 
 			this.spannerOperations.insert(t);
