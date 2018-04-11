@@ -142,10 +142,13 @@ You have to annotate all of your POJO's fields that the primary key consists of 
 ----
 @Table(name = "trades")
 public class Trade {
-
 	@PrimaryKey(keyOrder = 2)
 	@Column(name = "trade_id")
 	private String tradeId;
+
+    @PrimaryKey(keyOrder = 1)
+    @Column(name = "trader_id")
+    private String traderId;
 
 	private String action;
 
@@ -154,11 +157,6 @@ public class Trade {
 	private Double shares;
 
 	private String symbol;
-
-	@PrimaryKey(keyOrder = 1)
-	@Column(name = "trader_id")
-	private String traderId;
-
 }
 ----
 
@@ -170,12 +168,12 @@ In our example the DDL to create the table and its primary key is as follows:
 ----
 CREATE TABLE trades (
     trader_id STRING(MAX),
-	trade_id STRING(MAX),
-	action STRING(15),
-	symbol STRING(10),
-	price FLOAT64,
-	shares FLOAT64,
-	person STRING(MAX)
+    trade_id STRING(MAX),
+    action STRING(15),
+    symbol STRING(10),
+    price FLOAT64,
+    shares FLOAT64,
+    person STRING(MAX)
 ) PRIMARY KEY (trader_id, trade_id)
 ----
 
