@@ -347,16 +347,16 @@ your application:
 public class SpannerTemplateExample {
 
 	@Autowired
-	SpannerOperations spannerTemplate;
+	SpannerTemplate spannerTemplate;
 
 	public void doSomething() {
-		this.spannerOperations.delete(Trade.class, KeySet.all());
+		this.spannerTemplate.delete(Trade.class, KeySet.all());
 		//...
 		Trade t = new Trade();
 		//...
-		this.spannerOperations.insert(t);
+		this.spannerTemplate.insert(t);
 		//...
-		List<Trade> tradesByAction = spannerOperations.findAll(Trade.class);
+		List<Trade> tradesByAction = spannerTemplate.findAll(Trade.class);
 		//...
 	}
 }
@@ -378,20 +378,73 @@ SpannerQueryOptions
 - Read-only transactions
 - Locking read-write transactions
 
+==== SQL Query
+
+Spanner has SQL support for running read-only queries.
+All the query related methods start with `query` on `SpannerTemplate`.
+Using `SpannerTemplate` you can execute SQL queries that map to POJOs:
+
+[source,java]
+----
+...
+		List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"));
+...
+----
+
+Main benefits of queries is using SQL, and that you have access to sorting and limiting number of rows returned.
+
 ==== Read
+
+Spanner exposes a https://cloud.google.com/spanner/docs/reads[Read API] for reading single row or multiple rows in a table or in a secondary index.
+
+Using `SpannerTemplate` you can execute reads, for example:
+
+[source,java]
+----
+...
+		List<Trade> trades = this.spannerTemplate.readAll(Trade.class);
+...
+----
+
+Main benefit of reads over queries is reading multiple rows of a certain pattern of keys is much easier using the features of the https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-spanner/src/main/java/com/google/cloud/spanner/KeySet.java[`KeySet`] class.
+
+
+==== Advanced Query/Read
+
+===== Stale read
+
+All reads and queries are *strong reads* by default.
+A *strong read* is a read at a current timestamp and is guaranteed to see all data that has been committed up until the start of this read.
+A *stale read* on the other hand is read at a timestamp in the past.
+Cloud Spanner allows you to determine how current the data should be when you read data.
+With `SpannerTemplate` you can specify the `Timestamp` by setting it on `SpannerQueryOptions` or `SpannerReadOptions` to the appropriate read or query methods:
+
+[source,java]
+----
+...
+			SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setTimestamp(Timestamp.now());
+			List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
+...
+/// OR
+...
+			SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setTimestamp(Timestamp.now());
+			List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
+...
+----
+
+
+===== Read from a secondary index
 //TODO
-===== Simple Read
-//TODO
-===== Partial Read
-//TODO
-===== Read with secondary indices
-//TODO
+
 ===== Read with limits and flow control
 //TODO
 
 
-==== Query
-//TODO
+===== Partial read
+
+In case your Query or Read returns less columns than the entity that it is mapped to, Spring Data will map the returned columns and leave the rest as they of the columns are.
+
+
 ==== Write / Update
 //TODO
 ===== Insert
