@@ -56,7 +56,7 @@ public class SpannerTemplateExample {
 			t.price = 100.0;
 			t.shares = 12345.6;
 
-			this.spannerOperations.insert(t);
+			this.spannerOperations.upsert(t, "symbol", "action");
 			t.action = "SELL";
 
 			this.spannerOperations.insert(t);

@@ -481,7 +481,7 @@ Queries on the Template API support sorting through standard SQL and also via Sp
 ----
 //...
 
-  List<Trade> trades = this.spannerTemplate.findAll(Trade.class, Sort.by("action")););
+  List<Trade> trades = this.spannerTemplate.queryAll(Trade.class, Sort.by("action")););
 
 //...
 ----
@@ -518,22 +518,47 @@ original primary key values will not be affected.
 The `insert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner,
 which means the operation will fail if a row with the POJO's primary key already exists in the table.
 
+[source, java]
+----
+  Trade t = new Trade();
+  this.spannerOperations.insert(t);
+----
+
 ===== Update
 
 The `update` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner,
 which means the operation will fail if the POJO's primary key does not already exist in the table.
+
+[source, java]
+----
+  ///... t was retrieved from a previous operation
+  this.spannerOperations.update(t);
+----
 
 ===== Upsert
 
 The `upsert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner
 using update-or-insert.
 
-===== Partial Write
+[source, java]
+----
+  ///... t was retrieved from a previous operation or it's new
+  this.spannerOperations.upsert(t);
+----
 
-The write methods of `SpannerOperations` operate by default on all properties within the given object,
+===== Partial Update
+
+The update methods of `SpannerOperations` operate by default on all properties within the given object,
 but also accept `String[]` and `Optional<Set<String>>` of column names. If the `Optional` of set of
 column names is empty, then all columns are written to Spanner. However, if the Optional is occupied
 by an empty set, then no columns will be written.
+
+
+[source, java]
+----
+  ///... t was retrieved from a previous operation or it's new
+  this.spannerOperations.update(t, "symbol", "action");
+----
 
 ==== Transactions
 
