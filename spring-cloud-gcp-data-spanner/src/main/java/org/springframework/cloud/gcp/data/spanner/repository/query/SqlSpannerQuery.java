@@ -77,7 +77,7 @@ public class SqlSpannerQuery implements RepositoryQuery {
 		Parameters parameters = getQueryMethod().getParameters();
 		for (int i = 0; i < parameters.getNumberOfParameters(); i++) {
 			Optional<String> paramName = parameters.getParameter(i).getName();
-			if (!paramName.isPresent() || paramName.get() == null) {
+			if (!paramName.isPresent()) {
 				throw new SpannerDataException(
 						"Query method has a parameter without a valid name: "
 								+ getQueryMethod().getName());
