@@ -384,11 +384,6 @@ utilizing a single-transaction `SpannerOperations` that is executed in a single 
 
 === Repositories
 
-==== CRUD Repository
-//TODO
-==== Paging and Sorting Repository
-//TODO
-
 
 {spring-data-commons-ref}/#repositories[Spring Data Repositories] are a powerful abstraction that
 can save you a lot of boilerplate code.
@@ -455,6 +450,17 @@ public class MyApplication {
 
 ----
 
+==== CRUD Repository
+
+By extending the `SpannerRepository`, you can use the `CrudRepository` methods. The `save` and
+`saveAll` methods work as update-or-insert.
+
+==== Paging and Sorting Repository
+`SpannerRepository` also extends `PagingAndSortingRepository`. The sorting and pageable `findAll`
+methods available from this interface operate on the current state of the Spanner database. As a
+result, beware that the state of the database (and the results) might change when moving page to page.
+
+
 ==== Query methods by convention
 
 In the example above, the {spring-data-commons-ref}/#repositories.query-methods[query methods]
@@ -520,7 +526,7 @@ A full example would look like:
   List<Trade> fetchByActionNamedQuery(String action);
 ----
 
-This allows table names evaluated with SpEL to be used in custom queries. 
+This allows table names evaluated with SpEL to be used in custom queries.
 
 ==== REST Repositories
 
