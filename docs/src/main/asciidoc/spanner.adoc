@@ -94,7 +94,7 @@ Spring Data Spanner allows you to map POJOs to Spanner tables:
 @Table(name = "my_things")
 public class MyThing {
 
-	@PrimaryKeyColumn
+	@PrimaryKey
 	String name;
 
 	Double price;
@@ -104,7 +104,7 @@ public class MyThing {
 - `@Table` provides the name of the Spanner table that stores instances of this class, one per row.
 This annotation is optional, and if not given the name of the table is inferred from the class name
 with the first character uncapitalized.
-- `@PrimaryKeyColumn` annotation is required and identifies the ID property corresponding
+- `@PrimaryKey` annotation is required even if you have a single column ID and identifies the ID property corresponding
 the the primary key.
 
 Spanner also supports composite primary keys of multiple columns:
@@ -114,14 +114,14 @@ Spanner also supports composite primary keys of multiple columns:
 @Table(name = "trades")
 public class Trade {
 
-	@PrimaryKeyColumn(keyOrder = 2)
+	@PrimaryKey(keyOrder = 2)
 	String action;
 
 	Double price;
 
 	Double shares;
 
-	@PrimaryKeyColumn(keyOrder = 1)
+	@PrimaryKey(keyOrder = 1)
 	String symbol;
 
 	@Column(name = "trader_id")
@@ -131,7 +131,7 @@ public class Trade {
 	List<Double> curve;
 }
 ----
-- The `keyOrder` parameter to `@PrimaryKeyColumn` identifies the properties corresponding to the
+- The `keyOrder` parameter to `@PrimaryKey` identifies the properties corresponding to the
 primary key columns in order, starting with 1 and increasing consecutively.
 - The `@Column` annotation optionally provides a different column name than that of the property.
 If this annotation is not present, then the property name is taken from the Java field name.
