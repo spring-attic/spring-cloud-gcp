@@ -638,32 +638,31 @@ For example:
 
 [source,java]
 ----
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
-
-	List<Trade> findByAction(String action);
-
-	int countByAction(String action);
-
-	// Named methods are powerful, but can get unwieldy
-	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
-  			String action, String symbol, String traderId);
-
-	// This method uses the query from the properties file instead of one generated based on name.
-	List<Trade> fetchByActionNamedQuery(String action);
-
+public interface TraderRepository extends CrudRepository<Trader, String> {
 }
 ----
 
 Spring Data generates a working implementation of the specified interface, which can be conveniently
 autowired into an application.
 
-The `Trade` type parameter to `CrudRepository` refers to the underlying domain type.
-The second type parameter, `String[]` in this case, refers to the type of the key of the domain
+The `Trader` type parameter to `CrudRepository` refers to the underlying domain type.
+The second type parameter, `String` in this case, refers to the type of the key of the domain
 type.
-For POJOs with multiple columns comprising the primary key, this ID type parameter can be any
+
+
+For POJOs with a composite primary key, this ID type parameter can be any
 descendant of `Object[]` compatible with all primary key properties, any descendant of `Iterable`,
 or `com.google.cloud.spanner.Key`. If the domain POJO type only has a single primary key column,
 then the primary key property type can be used or the `Key` type.
+
+For example in case of Trades, that belong to a Trader, `TradeRepository` would look like this:
+
+[source,java]
+----
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
+
+}
+----
 
 [source,java]
 ----
@@ -709,6 +708,19 @@ result, beware that the state of the database (and the results) might change whe
 
 ==== Query methods by convention
 
+[source, java]
+----
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
+    List<Trade> findByAction(String action);
+
+	int countByAction(String action);
+
+	// Named methods are powerful, but can get unwieldy
+	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
+  			String action, String symbol, String traderId);
+}
+----
+
 In the example above, the {spring-data-commons-ref}/#repositories.query-methods[query methods]
 in `TradeRepository` are generated based on the name of the methods, using the
 {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation
@@ -749,14 +761,23 @@ the "interface.method" property:
 Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0
 ----
 
+[source, java]
+----
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
+	// This method uses the query from the properties file instead of one generated based on name.
+	List<Trade> fetchByActionNamedQuery(String action);
+}
+----
 ===== Query methods with annotation
 
 Using the `@Query` annotation:
 
 [source, java]
 ----
-@Query("SELECT * FROM trades WHERE trades.action = @tag0")
-List<Trade> fetchByActionNamedQuery(String action);
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
+    @Query("SELECT * FROM trades WHERE trades.action = @tag0")
+    List<Trade> fetchByActionNamedQuery(String action);
+}
 ----
 
 Table names can be used directly.
@@ -782,18 +803,6 @@ When running with Spring Boot, repositories can act as REST services by simply a
 ----
 @RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
 public interface TradeRepository extends CrudRepository<Trade, String[]> {
-
-	List<Trade> findByAction(String action);
-
-	int countByAction(String action);
-
-	// Named methods are powerful, but can get unwieldy
-	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
-  			String action, String symbol, String traderId);
-
-	// This method uses the query from the properties file instead of one generated based on name.
-	List<Trade> fetchByActionNamedQuery(String action);
-
 }
 ----
 
