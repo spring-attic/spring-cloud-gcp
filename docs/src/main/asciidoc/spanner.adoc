@@ -481,7 +481,7 @@ Queries on the Template API support sorting through standard SQL and also via Sp
 ----
 //...
 
-  List<Trade> trades = this.spannerTemplate.queryAll(Trade.class, Sort.by("action")););
+  List<Trade> trades = this.spannerTemplate.findAll(Trade.class, Sort.by("action")););
 
 //...
 ----
