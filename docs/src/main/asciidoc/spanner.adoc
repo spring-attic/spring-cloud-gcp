@@ -365,7 +365,8 @@ The Template API provides convenience methods for:
 SpannerQueryOptions
    ** Stale read
    ** Read with secondary indices
-   ** Read with limits and flow control
+   ** Read with limits and offsets
+   ** Read with sorting
 - https://cloud.google.com/spanner/docs/reads#execute_a_query[Queries]
 - DML operations (delete, insert, update, upsert)
 - Partial reads
@@ -438,7 +439,8 @@ With `SpannerTemplate` you can specify the `Timestamp` by setting it on `Spanner
 
 ===== Read from a secondary index
 
-Using a https://cloud.google.com/spanner/docs/secondary-indexes[secondary index] is only available for Reads.
+Using a https://cloud.google.com/spanner/docs/secondary-indexes[secondary index] is available for Reads via the Template API and it is also implicitly available via SQL for Queries.
+
 The following shows how to read rows from a table using a https://cloud.google.com/spanner/docs/secondary-indexes[secondary index] simply by setting `index` on `SpannerReadOptions`:
 
 [source,java]
@@ -495,9 +497,10 @@ Partial read is only possible when using Queries. In case the rows returned by q
 | Feature | Query supports it | Read supports it
 | SQL  | yes | no
 | Partial read | yes | no
-| Limits | yes | yes
+| Limits | yes | no
+| Offsets | yes | no
 | Secondary index | yes | yes
-| Read using index range | no | no
+| Read using index range | no | yes
 | Sorting | yes | no
 |===
 
