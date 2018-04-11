@@ -397,7 +397,6 @@ For example:
 
 [source,java]
 ----
-@RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
 public interface TradeRepository extends SpannerRepository<Trade, String[]> {
 
 	List<Trade> findByAction(String action);
@@ -424,15 +423,6 @@ For POJOs with multiple columns comprising the primary key, this ID type paramet
 descendant of `Object[]` compatible with all primary key properties, any descendant of `Iterable`,
 or `com.google.cloud.spanner.Key`. If the domain POJO type only has a single primary key column,
 then the primary key property type can be used or the `Key` type.
-
-The `@RepositoryRestResource` annotation allows the repository to act as a REST endpoint when
-used in a Spring Boot application.
-For example, you can retrieve all `Trade` objects in the repository by using
-`curl \http://<server>:<port>/trades`, or any specific trade via
-`curl \http://<server>:<port>/trades/<symbol>,<action>`.
-You can also write trades using
-`curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/`
-where the file `test.json` holds the JSON representation of a `Trade` object.
 
 [source,java]
 ----
@@ -535,4 +525,59 @@ A full example would look like:
 
 ==== REST Repositories
 
-//TODO
+When running with Spring Boot, repositories can act as REST services by simply annotating them:
+
+[source,java]
+----
+@RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
+
+	List<Trade> findByAction(String action);
+
+	int countByAction(String action);
+
+	// Named methods are powerful, but can get unwieldy
+	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
+  			String action, String symbol, String traderId);
+
+	// This method uses the query from the properties file instead of one generated based on name.
+	List<Trade> fetchByActionNamedQuery(String action);
+
+}
+----
+
+The `@RepositoryRestResource` annotation makes this repository available via REST.
+For example, you can retrieve all `Trade` objects in the repository by using
+`curl \http://<server>:<port>/trades`, or any specific trade via
+`curl \http://<server>:<port>/trades/<symbol>,<action>`.
+
+The separator between your primary key components, `symbol` and `action` in this case, is a comma
+by default, but can be configured to any string not found in your key values by extending the
+`SpannerKeyIdConverter` class:
+
+[source,java]
+----
+@Component
+class MySpecialIdConverter extends SpannerKeyIdConverter {
+
+    @Override
+    protected String getUrlIdSeparator() {
+        return ":";
+    }
+}
+----
+
+
+You can also write trades using
+`curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/`
+where the file `test.json` holds the JSON representation of a `Trade` object.
+
+Include this dependency in your `pom.xml` to enable Spring Data REST Repositories:
+
+[source,xml]
+----
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-rest</artifactId>
+		</dependency>
+----
