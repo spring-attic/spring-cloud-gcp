@@ -78,7 +78,10 @@ public abstract class AbstractSpannerIntegrationTest {
 	protected ApplicationContext applicationContext;
 
 	@Autowired
-	SpannerSchemaUtils mappingSchemaGenerator;
+	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
+
+	@Autowired
+	SpannerSchemaUtils spannerSchemaUtils;
 
 	protected String tableNameSuffix;
 
@@ -105,8 +108,8 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	protected void createDatabaseWithSchema() {
 		this.tableNameSuffix = String.valueOf(System.currentTimeMillis());
-		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) this.applicationContext)
-				.getBeanFactory();
+		ConfigurableListableBeanFactory beanFactory =
+				((ConfigurableApplicationContext) this.applicationContext).getBeanFactory();
 		beanFactory.registerSingleton("tableNameSuffix", this.tableNameSuffix);
 
 		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {

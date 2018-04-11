@@ -75,7 +75,8 @@ public class IntegrationTestConfiguration {
 	public com.google.auth.Credentials getCredentials() {
 
 		try {
-			return new DefaultCredentialsProvider(Credentials::new).getCredentials();
+			return new DefaultCredentialsProvider(Credentials::new)
+					.getCredentials();
 		}
 		catch (IOException e) {
 			throw new RuntimeException(e);
