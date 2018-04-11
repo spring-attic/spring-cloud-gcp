@@ -16,6 +16,7 @@
 
 package com.example;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.cloud.spanner.KeySet;
@@ -31,12 +32,13 @@ import org.springframework.context.annotation.Bean;
 
 /**
  * @author Balint Pato
+ * @author Mike Eltsufin
  */
 @SpringBootApplication
 public class SpannerTemplateExample {
 
 	@Autowired
-	SpannerOperations spannerOperations;
+	private SpannerOperations spannerOperations;
 
 	public static void main(String[] args) {
 		new SpringApplicationBuilder(SpannerTemplateExample.class)
@@ -49,19 +51,17 @@ public class SpannerTemplateExample {
 		return args -> {
 			this.spannerOperations.delete(Trade.class, KeySet.all());
 
-			Trade t = new Trade();
-			t.symbol = "ST1";
-			t.action = "BUY";
-			t.traderId = "1234";
-			t.price = 100.0;
-			t.shares = 12345.6;
-
-			this.spannerOperations.upsert(t, "symbol", "action");
-			t.action = "SELL";
+			Trade t = new Trade(1L, "BUY", 100.0, 50.0, "STOCK1", "template_trader1", Arrays.asList(99.0, 101.00));
 
 			this.spannerOperations.insert(t);
 
-			t.symbol = "ST2";
+			t.setId(2L);
+			t.setTraderId("template_trader1");
+			t.setAction("SELL");
+			this.spannerOperations.insert(t);
+
+			t.setId(1L);
+			t.setTraderId("template_trader2");
 			this.spannerOperations.insert(t);
 
 			List<Trade> tradesByAction = this.spannerOperations.readAll(Trade.class);

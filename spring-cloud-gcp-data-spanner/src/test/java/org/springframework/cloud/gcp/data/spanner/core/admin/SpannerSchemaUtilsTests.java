@@ -23,7 +23,6 @@ import com.google.cloud.spanner.Key;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -45,8 +44,7 @@ public class SpannerSchemaUtilsTests {
 	public void setUp() {
 		this.spannerMappingContext = new SpannerMappingContext();
 		this.spannerSchemaUtils = new SpannerSchemaUtils(
-				this.spannerMappingContext,
-				new MappingSpannerConverter(this.spannerMappingContext));
+				this.spannerMappingContext);
 	}
 
 	@Test
@@ -55,7 +53,7 @@ public class SpannerSchemaUtilsTests {
 		t.id = "aaa";
 		t.id2 = 3L;
 		assertEquals(Key.newBuilder().append(t.id).append(t.id2).build(),
-				this.spannerSchemaUtils.getId(t));
+				this.spannerSchemaUtils.getKey(t));
 	}
 
 	@Table(name = "custom_test_table")
