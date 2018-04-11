@@ -114,10 +114,12 @@ public class StackdriverTraceAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public Reporter<zipkin2.Span> reporter(
-			GcpProjectIdProvider projectIdProvider,
 			FlushableTraceConsumer traceConsumer,
 			SpanTranslator spanTranslator) {
-		return new StackdriverTraceReporter(projectIdProvider.getProjectId(), traceConsumer, spanTranslator);
+		return new StackdriverTraceReporter(
+				this.finalProjectIdProvider.getProjectId(),
+				traceConsumer,
+				spanTranslator);
 	}
 
 	@Bean
