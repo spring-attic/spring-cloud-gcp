@@ -75,14 +75,11 @@ https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-da
 
 ==== Autoconfiguration
 
-Our Spring Boot autoconfiguration creates the following beans available in the Spring application
-context:
+Our Spring Boot autoconfiguration creates the following beans available in the Spring application context:
 
 - an instance of `SpannerTemplate`
-- an instance of all user defined repositories extending `SpannerRepository`, when repositories
-are enabled
-- an instance of `DatabaseClient` from the Google Cloud Java Client for Spanner, for convenience and
-lower level API access
+- an instance of all user defined repositories extending `CrudRepository` or `PagingAndSortingRepository`, when repositories are enabled
+- an instance of `DatabaseClient` from the Google Cloud Java Client for Spanner, for convenience and lower level API access
 
 
 === Object Mapping
@@ -102,7 +99,7 @@ public class MyThing {
 ----
 
 
-==== Table Name
+==== Table
 
 The `@Table` annotation can provide the name of the Spanner table that stores instances of the annotated class, one per row.
 This annotation is optional, and if not given, the name of the table is inferred from the class name with the first character uncapitalized.
@@ -646,7 +643,7 @@ For example:
 
 [source,java]
 ----
-public interface TradeRepository extends SpannerRepository<Trade, String[]> {
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
 
 	List<Trade> findByAction(String action);
 
@@ -665,7 +662,7 @@ public interface TradeRepository extends SpannerRepository<Trade, String[]> {
 Spring Data generates a working implementation of the specified interface, which can be conveniently
 autowired into an application.
 
-The `Trade` type parameter to `SpannerRepository` refers to the underlying domain type.
+The `Trade` type parameter to `CrudRepository` refers to the underlying domain type.
 The second type parameter, `String[]` in this case, refers to the type of the key of the domain
 type.
 For POJOs with multiple columns comprising the primary key, this ID type parameter can be any
@@ -706,11 +703,11 @@ public class MyApplication {
 
 ==== CRUD Repository
 
-By extending the `SpannerRepository`, you can use the `CrudRepository` methods. The `save` and
-`saveAll` methods work as update-or-insert.
+`CrudRepository` methods work as expected, with one thing Spanner specific: the `save` and `saveAll` methods work as update-or-insert.
 
 ==== Paging and Sorting Repository
-`SpannerRepository` also extends `PagingAndSortingRepository`. The sorting and pageable `findAll`
+
+You can also use `PagingAndSortingRepository` with Spanner Spring Data. The sorting and pageable `findAll`
 methods available from this interface operate on the current state of the Spanner database. As a
 result, beware that the state of the database (and the results) might change when moving page to page.
 
@@ -789,7 +786,7 @@ When running with Spring Boot, repositories can act as REST services by simply a
 [source,java]
 ----
 @RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
-public interface TradeRepository extends SpannerRepository<Trade, String[]> {
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
 
 	List<Trade> findByAction(String action);
 
