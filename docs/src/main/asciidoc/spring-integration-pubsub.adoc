@@ -142,3 +142,5 @@ public void handleMessage(Message<?> msg) throws MessagingException {
     pubsubOutputChannel.send(message);
 }
 ----
+
+It is also possible to set an SpEL expression for the topic with the `setTopicExpression()` or `setTopicExpressionString()` methods.

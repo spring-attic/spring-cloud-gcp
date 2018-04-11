@@ -93,23 +93,23 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public <T> T find(Class<T> entityClass, Key key) {
-		return find(entityClass, key, null);
+	public <T> T read(Class<T> entityClass, Key key) {
+		return read(entityClass, key, null);
 	}
 
 	@Override
-	public <T> T find(Class<T> entityClass, Key key, SpannerReadOptions options) {
-		List<T> items = find(entityClass, KeySet.singleKey(key), options);
+	public <T> T read(Class<T> entityClass, Key key, SpannerReadOptions options) {
+		List<T> items = read(entityClass, KeySet.singleKey(key), options);
 		return items.isEmpty() ? null : items.get(0);
 	}
 
 	@Override
-	public <T> List<T> find(Class<T> entityClass, KeySet keys) {
-		return find(entityClass, keys, null);
+	public <T> List<T> read(Class<T> entityClass, KeySet keys) {
+		return read(entityClass, keys, null);
 	}
 
 	@Override
-	public <T> List<T> find(Class<T> entityClass, KeySet keys,
+	public <T> List<T> read(Class<T> entityClass, KeySet keys,
 			SpannerReadOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
@@ -118,25 +118,25 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public <T> List<T> find(Class<T> entityClass, Statement statement,
+	public <T> List<T> query(Class<T> entityClass, Statement statement,
 			SpannerQueryOptions options) {
 		return this.spannerConverter.mapToList(executeQuery(statement, options),
 				entityClass);
 	}
 
 	@Override
-	public <T> List<T> find(Class<T> entityClass, Statement statement) {
-		return find(entityClass, statement, null);
+	public <T> List<T> query(Class<T> entityClass, Statement statement) {
+		return query(entityClass, statement, null);
 	}
 
 	@Override
-	public <T> List<T> findAll(Class<T> entityClass, SpannerReadOptions options) {
-		return find(entityClass, KeySet.all(), options);
+	public <T> List<T> readAll(Class<T> entityClass, SpannerReadOptions options) {
+		return read(entityClass, KeySet.all(), options);
 	}
 
 	@Override
-	public <T> List<T> findAll(Class<T> entityClass) {
-		return findAll(entityClass, (SpannerReadOptions) null);
+	public <T> List<T> readAll(Class<T> entityClass) {
+		return readAll(entityClass, (SpannerReadOptions) null);
 	}
 
 	@Override
@@ -163,7 +163,7 @@ public class SpannerTemplate implements SpannerOperations {
 			}
 		}
 		stringBuilder.append(";");
-		return find(entityClass, Statement.of(stringBuilder.toString()), options);
+		return query(entityClass, Statement.of(stringBuilder.toString()), options);
 	}
 
 	@Override

@@ -55,6 +55,7 @@ public class SpannerTemplateExample {
 
 			this.spannerOperations.insert(t);
 
+      t.action = "SELL";
 			t.setSequence(2L);
 			t.setTraderId("template_trader1");
 			t.setAction("SELL");
@@ -64,7 +65,7 @@ public class SpannerTemplateExample {
 			t.setTraderId("template_trader2");
 			this.spannerOperations.insert(t);
 
-			List<Trade> tradesByAction = this.spannerOperations.findAll(Trade.class);
+			List<Trade> tradesByAction = this.spannerOperations.readAll(Trade.class);
 
 			tradesByAction.forEach(System.out::println);
 
