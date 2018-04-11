@@ -386,9 +386,9 @@ Using `SpannerTemplate` you can execute SQL queries that map to POJOs:
 
 [source,java]
 ----
-  //...
-  List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"));
-  //...
+...
+		List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"));
+...
 ----
 
 
@@ -400,9 +400,9 @@ Using `SpannerTemplate` you can execute reads, for example:
 
 [source,java]
 ----
-  //...
-  List<Trade> trades = this.spannerTemplate.readAll(Trade.class);
-  //...
+...
+		List<Trade> trades = this.spannerTemplate.readAll(Trade.class);
+...
 ----
 
 Main benefit of reads over queries is reading multiple rows of a certain pattern of keys is much easier using the features of the https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-spanner/src/main/java/com/google/cloud/spanner/KeySet.java[`KeySet`] class.
@@ -421,19 +421,21 @@ With `SpannerTemplate` you can specify the `Timestamp` by setting it on `Spanner
 [source,java]
 ----
 
-  // a read with options:
+//...
+// a read with options:
 
   SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setTimestamp(Timestamp.now());
   List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
 
-  //...
+//...
 
-  // a query with options:
+//...
+// a query with options:
 
   SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setTimestamp(Timestamp.now());
   List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
 
-  //...
+//...
 ----
 
 
@@ -445,12 +447,12 @@ The following shows how to read rows from a table using a https://cloud.google.c
 
 [source,java]
 ----
-  //...
+//...
 
   SpannerReadOptions spannerReadOptions = new SpannerReadOptions().setIndex("TradesByTrader");
   List<Trade> trades = this.spannerTemplate.readAll(Trade.class, spannerReadOptions);
 
-  //...
+//...
 ----
 
 
@@ -461,12 +463,12 @@ The following will get only the first two rows of the query:
 
 [source,java]
 ----
-  //...
+//...
 
   SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions().setLimit(2).setOffset(3);
   List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"), spannerQueryOptions);
 
-  //...
+//...
 ----
 
 Note that the above is equivalent of executing `SELECT * FROM trades LIMIT 2 OFFSET 3`.
