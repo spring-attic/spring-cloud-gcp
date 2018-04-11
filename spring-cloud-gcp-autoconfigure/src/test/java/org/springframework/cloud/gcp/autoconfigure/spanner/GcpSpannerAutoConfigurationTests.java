@@ -77,14 +77,14 @@ public class GcpSpannerAutoConfigurationTests {
 		});
 	}
 
-  @Test
-  public void testIdConverterCreated() {
-    this.contextRunner.run(context -> {
-      BackendIdConverter idConverter = context.getBean(BackendIdConverter.class);
-      assertThat(idConverter).isNotNull();
-      assertThat(idConverter).isInstanceOf(SpannerKeyIdConverter.class);
-    });
-  }
+	@Test
+	public void testIdConverterCreated() {
+		this.contextRunner.run(context -> {
+			BackendIdConverter idConverter = context.getBean(BackendIdConverter.class);
+			assertThat(idConverter).isNotNull();
+			assertThat(idConverter).isInstanceOf(SpannerKeyIdConverter.class);
+		});
+	}
 
 	@AutoConfigurationPackage
 	static class TestConfiguration {
