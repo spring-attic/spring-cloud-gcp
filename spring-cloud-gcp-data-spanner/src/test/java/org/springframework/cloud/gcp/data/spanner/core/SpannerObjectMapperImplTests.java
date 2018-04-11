@@ -548,7 +548,7 @@ public class SpannerObjectMapperImplTests {
 	}
 
 	private static class InnerTestEntity {
-		@PrimaryKeyColumn
+		@PrimaryKey
 		String value;
 	}
 
