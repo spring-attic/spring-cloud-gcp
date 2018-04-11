@@ -172,8 +172,7 @@ CREATE TABLE trades (
     action STRING(15),
     symbol STRING(10),
     price FLOAT64,
-    shares FLOAT64,
-    person STRING(MAX)
+    shares FLOAT64
 ) PRIMARY KEY (trader_id, trade_id)
 ----
 
@@ -807,7 +806,7 @@ public interface TradeRepository extends CrudRepository<Trade, String[]> {
 The `@RepositoryRestResource` annotation makes this repository available via REST.
 For example, you can retrieve all `Trade` objects in the repository by using
 `curl \http://<server>:<port>/trades`, or any specific trade via
-`curl \http://<server>:<port>/trades/<id>,<trader_id>`.
+`curl \http://<server>:<port>/trades/<trader_id>,<trade_id>`.
 
 The separator between your primary key components, `id` and `trader_id` in this case, is a comma
 by default, but can be configured to any string not found in your key values by extending the
