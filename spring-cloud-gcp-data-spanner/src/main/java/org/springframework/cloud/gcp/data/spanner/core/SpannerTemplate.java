@@ -273,9 +273,11 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public <T> T performReadOnlyTransaction(Function<SpannerOperations, T> operations,
 			SpannerReadOptions readOptions) {
-		try (ReadOnlyTransaction readOnlyTransaction = readOptions.hasTimestamp()
+		SpannerReadOptions options = readOptions == null ? new SpannerReadOptions()
+				: readOptions;
+		try (ReadOnlyTransaction readOnlyTransaction = options.hasTimestamp()
 				? this.databaseClient.readOnlyTransaction(
-						TimestampBound.ofReadTimestamp(readOptions.getTimestamp()))
+						TimestampBound.ofReadTimestamp(options.getTimestamp()))
 				: this.databaseClient.readOnlyTransaction()) {
 			return operations.apply(new ReadOnlyTransactionSpannerTemplate(
 					SpannerTemplate.this.databaseClient,

@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.repository.support;
 
 import java.util.Arrays;
+import java.util.function.Function;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
@@ -263,4 +264,26 @@ public class SpannerRepositoryImplTests {
 		verify(operations, times(1)).delete(eq(Object.class), eq(KeySet.all()));
 	}
 
+	@Test
+	public void readOnlyTransactionTest() {
+		SpannerOperations operations = mock(SpannerOperations.class);
+		when(operations.performReadOnlyTransaction(any(), any()))
+				.thenAnswer(invocation -> {
+					Function f = invocation.getArgument(0);
+					return f.apply(operations);
+				});
+		assertEquals("test", new SimpleSpannerRepository(operations, Object.class)
+				.performReadOnlyTransaction(repo -> "test"));
+	}
+
+	@Test
+	public void readWriteTransactionTest() {
+		SpannerOperations operations = mock(SpannerOperations.class);
+		when(operations.performReadWriteTransaction(any())).thenAnswer(invocation -> {
+			Function f = invocation.getArgument(0);
+			return f.apply(operations);
+		});
+		assertEquals("test", new SimpleSpannerRepository(operations, Object.class)
+				.performReadWriteTransaction(repo -> "test"));
+	}
 }
