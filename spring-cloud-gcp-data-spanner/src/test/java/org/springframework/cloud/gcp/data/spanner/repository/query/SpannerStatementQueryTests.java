@@ -37,7 +37,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 /**
@@ -163,8 +165,13 @@ public class SpannerStatementQueryTests {
 
 		queryWithMockResult("countByAction", results);
 
+		PartTreeSpannerQuery spyQuery = spy(this.partTreeSpannerQuery);
+
+		doAnswer(invocation -> invocation.getArgument(0)).when(spyQuery)
+				.processRawObjectForProjection(any());
+
 		Object[] params = new Object[] { "BUY", };
-		assertEquals(1, this.partTreeSpannerQuery.execute(params));
+		assertEquals(1, spyQuery.execute(params));
 	}
 
 	@Test
@@ -174,16 +181,26 @@ public class SpannerStatementQueryTests {
 
 		queryWithMockResult("existsByAction", results);
 
+		PartTreeSpannerQuery spyQuery = spy(this.partTreeSpannerQuery);
+
+		doAnswer(invocation -> invocation.getArgument(0)).when(spyQuery)
+				.processRawObjectForProjection(any());
+
 		Object[] params = new Object[] { "BUY", };
-		assertTrue((boolean) this.partTreeSpannerQuery.execute(params));
+		assertTrue((boolean) spyQuery.execute(params));
 	}
 
 	@Test
 	public void existShouldBeFalseWhenResultSetIsEmpty() {
 		queryWithMockResult("existsByAction", Collections.emptyList());
 
+		PartTreeSpannerQuery spyQuery = spy(this.partTreeSpannerQuery);
+
+		doAnswer(invocation -> invocation.getArgument(0)).when(spyQuery)
+				.processRawObjectForProjection(any());
+
 		Object[] params = new Object[] { "BUY", };
-		assertFalse((boolean) this.partTreeSpannerQuery.execute(params));
+		assertFalse((boolean) spyQuery.execute(params));
 	}
 
 	private void queryWithMockResult(String queryName, List results) {

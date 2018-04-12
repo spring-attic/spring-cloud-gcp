@@ -26,11 +26,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
+import org.springframework.cloud.gcp.data.spanner.test.domain.TradeProjection;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeRepository;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -76,6 +78,14 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				trader2TradesRetrieved.size(), is(trader2Trades.size()));
 		assertThat(trader2TradesRetrieved, containsInAnyOrder(trader2Trades.toArray()));
 
+		List<TradeProjection> tradeProjectionsRetrieved = this.tradeRepository
+				.findByAction("BUY");
+		assertEquals(3, tradeProjectionsRetrieved.size());
+		for (TradeProjection tradeProjection : tradeProjectionsRetrieved) {
+			assertEquals("BUY", tradeProjection.getAction());
+			assertEquals("ABCD BUY", tradeProjection.getSymbolAndAction());
+		}
+
 		List<Trade> buyTradesRetrieved = this.tradeRepository
 				.annotatedTradesByAction("BUY");
 		assertThat(
@@ -92,6 +102,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 			Trade t = Trade.aTrade();
 			t.setAction(action);
 			t.setTraderId(traderId1);
+			t.setSymbol("ABCD");
 			trades.add(t);
 			this.spannerOperations.insert(t);
 		}

@@ -29,29 +29,20 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
-import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 /**
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-public class SqlSpannerQuery implements RepositoryQuery {
+public class SqlSpannerQuery extends AbstractSpannerQuery {
 
 	// A character that isn't used in SQL
 	private static String ENTITY_CLASS_NAME_BOOKEND = ":";
 
-	private final QueryMethod queryMethod;
-
-	private final Class entityType;
-
-	private final SpannerOperations spannerOperations;
-
 	private final String sql;
 
 	private final List<String> tags;
-
-	private final SpannerMappingContext spannerMappingContext;
 
 	private EvaluationContextProvider evaluationContextProvider;
 
@@ -62,13 +53,10 @@ public class SqlSpannerQuery implements RepositoryQuery {
 			EvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser,
 			SpannerMappingContext spannerMappingContext) {
-		this.queryMethod = queryMethod;
-		this.entityType = type;
-		this.spannerOperations = spannerOperations;
+		super(type, queryMethod, spannerOperations, spannerMappingContext);
 		this.tags = getTags();
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
-		this.spannerMappingContext = spannerMappingContext;
 		this.sql = sql;
 	}
 
@@ -115,14 +103,9 @@ public class SqlSpannerQuery implements RepositoryQuery {
 	}
 
 	@Override
-	public Object execute(Object[] parameters) {
+	public Object executeRawResult(Object[] parameters) {
 		return this.spannerOperations.query(this.entityType,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 						resolveEntityClassNames(this.sql), this.tags, parameters));
-	}
-
-	@Override
-	public QueryMethod getQueryMethod() {
-		return this.queryMethod;
 	}
 }

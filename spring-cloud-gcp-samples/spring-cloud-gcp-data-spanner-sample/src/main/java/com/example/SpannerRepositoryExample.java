@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import com.google.cloud.spanner.Key;
 
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -86,6 +87,10 @@ public class SpannerRepositoryExample {
 					+ " BUY trades: ");
 
 			this.tradeRepository.findByAction("BUY").forEach(System.out::println);
+
+			System.out.println("There areBLAHHHHHHHHHHH");
+
+			this.tradeRepository.findBySymbol("STOCK1").forEach(onlyaction -> onlyaction.getAction());
 
 			System.out.println("These are the Spanner primary keys for the trades:");
 
