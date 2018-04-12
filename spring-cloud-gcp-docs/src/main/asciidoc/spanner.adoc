@@ -705,7 +705,7 @@ result, beware that the state of the database (and the results) might change whe
 ==== Spanner Repository
 
 The `SpannerRepository` extends the `PagingAndSortingRepository`, but adds the read-only and the read-write
-transaction functionality provided by Spanner. These transactions work very similarly to the
+transaction functionality provided by Spanner. These transactions work very similarly to
 those of `SpannerOperations`, but is specific to the repository's domain type and provides repository functions
 instead of template functions.
 
