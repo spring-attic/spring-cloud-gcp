@@ -40,6 +40,4 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
 	// This method uses the query from the properties file instead of one generated based on name.
 	List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
-
-	List<OnlyAction> findBySymbol(String action);
 }
