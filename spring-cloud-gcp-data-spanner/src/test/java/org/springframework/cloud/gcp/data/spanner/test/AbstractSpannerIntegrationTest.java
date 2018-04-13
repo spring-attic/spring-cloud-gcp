@@ -29,6 +29,9 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityImpl;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -71,6 +74,9 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	@Autowired
 	protected SpannerOperations spannerOperations;
+
+	@Autowired
+	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
 
 	@Autowired
 	protected ApplicationContext applicationContext;

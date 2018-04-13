@@ -16,28 +16,14 @@
 
 package com.example;
 
-import java.util.List;
-
-import com.google.cloud.spanner.Key;
-
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-@RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
-public interface TradeRepository extends SpannerRepository<Trade, Key> {
+@RepositoryRestResource(collectionResourceRel = "traders", path = "traders")
+public interface TraderRepository extends SpannerRepository<Trader, String> {
 
-	List<Trade> findTop3DistinctByActionAndSymbolOrTraderIdOrderBySymbolDesc(
-			String action, String symbol, String traderId);
-
-	List<Trade> findByAction(String action);
-
-	int countByAction(String action);
-
-	// This method uses the query from the properties file instead of one generated based on name.
-	List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
 }

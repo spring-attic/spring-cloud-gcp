@@ -140,12 +140,12 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public <T> List<T> findAll(Class<T> entityClass, Sort sort) {
-		return findAll(entityClass, sort, null);
+	public <T> List<T> queryAll(Class<T> entityClass, Sort sort) {
+		return queryAll(entityClass, sort, null);
 	}
 
 	@Override
-	public <T> List<T> findAll(Class<T> entityClass, Sort sort,
+	public <T> List<T> queryAll(Class<T> entityClass, Sort sort,
 			SpannerQueryOptions options) {
 		Assert.notNull(sort, "sort must not be null!");
 
@@ -167,18 +167,18 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public <T> Page<T> findAll(Class<T> entityClass, Pageable pageable,
+	public <T> Page<T> queryAll(Class<T> entityClass, Pageable pageable,
 			SpannerQueryOptions options) {
 		Assert.notNull(pageable, "Pageable must not be null!");
 
 		Long count = count(entityClass);
-		List<T> list = findAll(entityClass, pageable.getSort(), options);
+		List<T> list = queryAll(entityClass, pageable.getSort(), options);
 		return new PageImpl(list, pageable, count);
 	}
 
 	@Override
-	public <T> Page<T> findAll(Class<T> entityClass, Pageable pageable) {
-		return findAll(entityClass, pageable, null);
+	public <T> Page<T> queryAll(Class<T> entityClass, Pageable pageable) {
+		return queryAll(entityClass, pageable, null);
 	}
 
 	@Override

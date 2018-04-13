@@ -22,6 +22,7 @@ import com.google.cloud.spanner.Key;
 
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.cloud.gcp.data.spanner.repository.query.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
@@ -31,5 +32,5 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
 	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
 			+ " WHERE action=@action")
-	List<Trade> annotatedTradesByAction(String action);
+	List<Trade> annotatedTradesByAction(@Param("action") String action);
 }

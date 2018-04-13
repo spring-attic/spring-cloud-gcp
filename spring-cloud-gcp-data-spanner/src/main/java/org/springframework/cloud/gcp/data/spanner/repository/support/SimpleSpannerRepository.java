@@ -129,12 +129,12 @@ public class SimpleSpannerRepository implements SpannerRepository {
 
 	@Override
 	public Iterable findAll(Sort sort) {
-		return this.spannerOperations.findAll(this.entityType, sort);
+		return this.spannerOperations.queryAll(this.entityType, sort);
 	}
 
 	@Override
 	public Page findAll(Pageable pageable) {
-		return this.spannerOperations.findAll(this.entityType, pageable);
+		return this.spannerOperations.queryAll(this.entityType, pageable);
 	}
 
 	private <T> T doIfKey(Object key, Function<Key, T> operation) {
