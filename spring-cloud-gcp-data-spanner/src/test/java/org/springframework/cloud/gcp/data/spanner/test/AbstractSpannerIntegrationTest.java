@@ -29,9 +29,6 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
-import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityImpl;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -48,16 +45,16 @@ import static org.junit.Assume.assumeThat;
  * <li>sets up the database schema</li>
  * <li>manages table suffix generation so that parallel test cases don't collide</li>
  * </ul>
- * <p>
- * Prerequisites for running integration tests:
  *
- * For Spanner integration tests, you will need to have an instance predefined, everything
+ * <p>Prerequisites for running integration tests:
+ *
+ * <p>For Spanner integration tests, you will need to have an instance predefined, everything
  * else is generated. The instance by default is "integration-instance", which can be
  * overriden in <code>src/test/resources/application-test.properties</code>, the property:
  * <code>test.integration.spanner.instance</code>
  * </p>
- * <p>
- * Within the <code>integration-instance</code> instance, the tests rely on a single
+ *
+ * <p>Within the <code>integration-instance</code> instance, the tests rely on a single
  * database for tests, <code>integration-db</code>. This is automatically created, if
  * doesn't exist. The tables are generated to have a unique suffix, which is updated on
  * the entity annotations as well dynamically to avoid collisions of multiple parallel
@@ -74,9 +71,6 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	@Autowired
 	protected SpannerOperations spannerOperations;
-
-	@Autowired
-	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
 
 	@Autowired
 	protected ApplicationContext applicationContext;
