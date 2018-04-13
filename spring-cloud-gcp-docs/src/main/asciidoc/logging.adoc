@@ -80,7 +80,7 @@ Also see the link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[
 
 If you run your Spring Boot application in a Kubernetes cluster in the Google Cloud (GKE) or on App Engine flexible
 environment, you can log JSON directly from the console by including
-`org/springframework/cloud/gcp/logging/logback-json-appender.xml`. The traceId will be set
+`org/springframework/cloud/gcp/autoconfigure/logging/logback-json-appender.xml`. The traceId will be set
 correctly.
 
 You need the additional dependency:
@@ -99,8 +99,7 @@ Your Logback configuration may then look something like this:
 [source, xml]
 ----
 <configuration>
-  <property name="projectId" value="test-project"/>
-  <include resource="org/springframework/cloud/gcp/logging/logback-json-appender.xml" />
+  <include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml" />
 
   <root level="INFO">
     <appender-ref ref="CONSOLE_JSON"/>
