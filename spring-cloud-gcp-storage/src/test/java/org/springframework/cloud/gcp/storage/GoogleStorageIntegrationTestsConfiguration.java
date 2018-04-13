@@ -61,9 +61,4 @@ public class GoogleStorageIntegrationTestsConfiguration {
 			throw new RuntimeException(e);
 		}
 	}
-
-	@Bean
-	public GoogleStorageProtocolResolverSettings googleStorageProtocolResolverSettings() {
-		return new GoogleStorageProtocolResolverSettings();
-	}
 }

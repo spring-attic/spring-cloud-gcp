@@ -21,6 +21,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ResourceLoaderAware;
@@ -66,15 +67,22 @@ public class GoogleStorageProtocolResolver
 		}
 	}
 
+	private GoogleStorageProtocolResolverSettings getSettings() {
+		try {
+			return this.beanFactory.getBean(GoogleStorageProtocolResolverSettings.class);
+		}
+		catch (NoSuchBeanDefinitionException e) {
+			return GoogleStorageProtocolResolverSettings
+					.DEFAULT_GOOGLE_STORAGE_PROTOCOL_RESOLVER_SETTINGS;
+		}
+	}
+
 	@Override
 	public Resource resolve(String location, ResourceLoader resourceLoader) {
 		if (!location.startsWith(PROTOCOL)) {
 			return null;
 		}
-		else {
-			return new GoogleStorageResource(this.beanFactory.getBean(Storage.class), location,
-					this.beanFactory.getBean(GoogleStorageProtocolResolverSettings.class).isAutoCreateFiles());
-		}
+		return new GoogleStorageResource(this.beanFactory.getBean(Storage.class),
+				location, getSettings().isAutoCreateFiles());
 	}
-
 }
