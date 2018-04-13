@@ -34,22 +34,22 @@ dependencies {
 The following parameters are configurable in Spring Cloud GCP Config:
 
 |===
-| Name | Description | Optional | Default value
-| `spring.cloud.gcp.config.enabled` | Enables the Config client | Yes | `false`
+| Name | Description | Required | Default value
+| `spring.cloud.gcp.config.enabled` | Enables the Config client | No | `false`
 | `spring.cloud.gcp.config.name` |
-Name of your application | No |
+Name of your application | Yes |
 | `spring.cloud.gcp.config.profile` |
-Configuration's Spring profile (e.g., prod) | Yes | `default`
+Configuration's Spring profile (e.g., prod) | No | `default`
 | `spring.cloud.gcp.config.timeout-millis` | Timeout in milliseconds for connecting to the Google
-Runtime Configuration API | Yes | `60000`
+Runtime Configuration API | No | `60000`
 | `spring.cloud.gcp.config.project-id` | GCP project ID where the Google Runtime Configuration API
 is hosted
-| Yes |
+| No |
 | `spring.cloud.gcp.config.credentials.location` | OAuth2 credentials for authenticating with the
-Google Runtime Configuration API | Yes |
+Google Runtime Configuration API | No |
 | `spring.cloud.gcp.config.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
-Config credentials | Yes | https://www.googleapis.com/auth/cloudruntimeconfig
+Config credentials | No | https://www.googleapis.com/auth/cloudruntimeconfig
 |===
 
 NOTE: These properties should be specified in a
