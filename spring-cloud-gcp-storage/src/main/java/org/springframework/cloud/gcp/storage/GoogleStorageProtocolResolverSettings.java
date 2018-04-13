@@ -26,7 +26,7 @@ public class GoogleStorageProtocolResolverSettings {
 	/**
 	 * Gets an instance of this object with the default settings.
 	 */
-	public static GoogleStorageProtocolResolverSettings
+	public static final GoogleStorageProtocolResolverSettings
 			DEFAULT_GOOGLE_STORAGE_PROTOCOL_RESOLVER_SETTINGS
 			= new GoogleStorageProtocolResolverSettings();
 
