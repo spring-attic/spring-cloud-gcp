@@ -285,7 +285,16 @@ public class SpannerTemplate implements SpannerOperations {
 		}
 	}
 
-	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
+	/**
+	 * Performs a read on Spanner.
+	 * @param tableName the name of the table to read from
+	 * @param keys the keys of the rows to retrieve
+	 * @param columns the columns to retrieve.
+	 * @param options the options which which to perform the read. For example, staleness
+	 * of read or secondary index.
+	 * @return The {@link ResultSet} of rows.
+	 */
+	public ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
 			SpannerReadOptions options) {
 		if (options == null) {
 			return getReadContext().read(tableName, keys, columns);
@@ -303,7 +312,13 @@ public class SpannerTemplate implements SpannerOperations {
 		}
 	}
 
-	private ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
+	/**
+	 * Performs a read operation using an SQL statement.
+	 * @param statement the statement holding the SQL and parameters to run.
+	 * @param options the query options. For example, the staleness of the read.
+	 * @return The {@link ResultSet} of rows.
+	 */
+	public ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
 		if (options == null) {
 			return getReadContext().executeQuery(statement);
 		}
