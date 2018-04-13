@@ -16,9 +16,14 @@
 
 package com.example;
 
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Paths;
+
 import com.google.cloud.storage.Storage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.storage.integration.GcsRemoteFileTemplate;
@@ -36,10 +41,6 @@ import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.expression.ValueExpression;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
-
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Paths;
 
 /**
  * @author João André Martins
