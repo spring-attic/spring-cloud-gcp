@@ -37,12 +37,12 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
- * This class provides the foundation for the integration test framework for Spanner. Its
- * responsibilities:
+ * This class provides the foundation for the integration test framework for Spanner.
+ * Its responsibilities:
  * <ul>
- * <li>initializes the Spring application context</li>
- * <li>sets up the database schema</li>
- * <li>manages table suffix generation so that parallel test cases don't collide</li>
+ *   <li>initializes the Spring application context</li>
+ *   <li>sets up the database schema</li>
+ *   <li>manages table suffix generation so that parallel test cases don't collide</li>
  * </ul>
  * <p>
  * Prerequisites for running integration tests:
@@ -53,11 +53,11 @@ import static org.junit.Assume.assumeThat;
  * <code>test.integration.spanner.instance</code>
  * </p>
  * <p>
- * Within the <code>integration-instance</code> instance, the tests rely on a single
- * database for tests, <code>integration-db</code>. This is automatically created, if
- * doesn't exist. The tables are generated to have a unique suffix, which is updated on
- * the entity annotations as well dynamically to avoid collisions of multiple parallel
- * tests running against the same instance.
+ * Within the <code>integration-instance</code> instance, the tests rely on a single database for
+ * tests, <code>integration-db</code>. This is automatically created, if doesn't exist.
+ * The tables are generated to have a unique suffix, which is updated on the entity
+ * annotations as well dynamically to avoid collisions of multiple parallel tests running
+ * against the same instance.
  * </p>
  *
  * @author Balint Pato
@@ -141,8 +141,7 @@ public abstract class AbstractSpannerIntegrationTest {
 			System.out.println("Integration database cleaned up!");
 		}
 		finally {
-			// we need to remove the extra bean created even if there is a failure at
-			// startup
+			// we need to remove the extra bean created even if there is a failure at startup
 			DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) this.applicationContext
 					.getAutowireCapableBeanFactory();
 			beanFactory.destroySingleton(TABLE_NAME_SUFFIX_BEAN_NAME);
