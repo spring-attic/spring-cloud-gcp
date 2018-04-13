@@ -151,12 +151,4 @@ public class GcpSpannerAutoConfiguration {
 		return new SpannerDatabaseAdminTemplate(spanner.getDatabaseAdminClient(),
 				databaseId);
 	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
-			Spanner spanner, DatabaseId databaseId) {
-		return new SpannerDatabaseAdminTemplate(spanner.getDatabaseAdminClient(),
-				databaseId);
-	}
 }
