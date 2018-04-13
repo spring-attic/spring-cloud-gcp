@@ -124,6 +124,11 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	@Override
+	public boolean isMapped() {
+		return findAnnotation(NotMapped.class) == null;
+	}
+
+	@Override
 	public boolean isIdProperty() {
 		return false;
 	}
