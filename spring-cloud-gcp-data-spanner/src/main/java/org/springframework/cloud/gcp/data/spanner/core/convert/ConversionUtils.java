@@ -37,6 +37,31 @@ import org.springframework.lang.Nullable;
  */
 public class ConversionUtils {
 
+	public static final Converter<java.sql.Date, com.google.cloud.Date>
+			JAVA_SQL_TO_SPANNER_DATE_CONVERTER =
+			new Converter<java.sql.Date, com.google.cloud.Date>() {
+				@Nullable
+				@Override
+				public com.google.cloud.Date convert(java.sql.Date date) {
+					Calendar cal = Calendar.getInstance();
+					cal.setTime(date);
+					return com.google.cloud.Date.fromYearMonthDay(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1,
+							cal.get(Calendar.DAY_OF_MONTH));
+				}
+			};
+
+	public static final Converter<com.google.cloud.Date, java.sql.Date>
+			SPANNER_TO_JAVA_SQL_DATE_CONVERTER =
+			new Converter<com.google.cloud.Date, java.sql.Date>() {
+				@Nullable
+				@Override
+				public java.sql.Date convert(com.google.cloud.Date date) {
+					Calendar cal = Calendar.getInstance();
+					cal.set(date.getYear(), date.getMonth() - 1, date.getDayOfMonth());
+					return new java.sql.Date(cal.getTimeInMillis());
+				}
+			};
+
 	public static final Converter<Date, com.google.cloud.Date> JAVA_TO_SPANNER_DATE_CONVERTER =
 			new Converter<Date, com.google.cloud.Date>() {
 		@Nullable
@@ -119,14 +144,14 @@ public class ConversionUtils {
 	 */
 	public static final Collection<Converter> DEFAULT_SPANNER_WRITE_CONVERTERS = ImmutableSet
 			.of(JAVA_TO_SPANNER_DATE_CONVERTER, INSTANT_TIMESTAMP_CONVERTER, JAVA_TO_SPANNER_BYTE_ARRAY_CONVERTER,
-					JAVA_TO_SPANNER_TIMESTAMP_CONVERTER);
+					JAVA_TO_SPANNER_TIMESTAMP_CONVERTER, JAVA_SQL_TO_SPANNER_DATE_CONVERTER);
 
 	/**
 	 * Converters from common types to those used by Spanner.
 	 */
 	public static final Collection<Converter> DEFAULT_SPANNER_READ_CONVERTERS = ImmutableSet
 			.of(SPANNER_TO_JAVA_DATE_CONVERTER, TIMESTAMP_INSTANT_CONVERTER, SPANNER_TO_JAVA_BYTE_ARRAY_CONVERTER,
-					SPANNER_TO_JAVA_TIMESTAMP_CONVERTER);
+					SPANNER_TO_JAVA_TIMESTAMP_CONVERTER, SPANNER_TO_JAVA_SQL_DATE_CONVERTER);
 
 	static Class boxIfNeeded(Class propertyType) {
 		if (propertyType == null) {

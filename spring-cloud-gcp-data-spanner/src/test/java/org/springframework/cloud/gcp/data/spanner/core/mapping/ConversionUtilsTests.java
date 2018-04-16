@@ -39,6 +39,13 @@ public class ConversionUtilsTests {
 	}
 
 	@Test
+	public void sqlDateConversionTest() {
+		Date date = Date.fromYearMonthDay(2018, 3, 29);
+		assertEquals(date, ConversionUtils.JAVA_SQL_TO_SPANNER_DATE_CONVERTER
+				.convert(ConversionUtils.SPANNER_TO_JAVA_SQL_DATE_CONVERTER.convert(date)));
+	}
+
+	@Test
 	public void timestampInstantConversionTest() {
 		Timestamp timestamp = Timestamp.ofTimeMicroseconds(12345678);
 		assertEquals(timestamp, ConversionUtils.INSTANT_TIMESTAMP_CONVERTER
