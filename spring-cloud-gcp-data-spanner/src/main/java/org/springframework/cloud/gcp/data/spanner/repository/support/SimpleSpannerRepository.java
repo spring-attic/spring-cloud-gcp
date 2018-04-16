@@ -44,7 +44,7 @@ import org.springframework.util.Assert;
 public class SimpleSpannerRepository implements SpannerRepository {
 
 	private static Set<Class> SPANNER_KEY_COMPATIBLE_TYPES = ImmutableSet
-			.<Class> builder().add(Boolean.class).add(Integer.class).add(Long.class)
+			.<Class>builder().add(Boolean.class).add(Integer.class).add(Long.class)
 			.add(Float.class).add(Double.class).add(String.class).add(ByteArray.class)
 			.add(Timestamp.class).add(com.google.cloud.Date.class).build();
 

@@ -45,7 +45,7 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 		implements SpannerConverter {
 
 	private static final Collection<Converter> DEFAULT_SPANNER_CONVERTERS = ImmutableSet
-			.<Converter> builder()
+			.<Converter>builder()
 			.addAll(ConversionUtils.DEFAULT_SPANNER_WRITE_CONVERTERS)
 			.addAll(ConversionUtils.DEFAULT_SPANNER_READ_CONVERTERS).build();
 
