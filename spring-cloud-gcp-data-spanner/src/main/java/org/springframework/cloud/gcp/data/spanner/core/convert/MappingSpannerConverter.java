@@ -28,6 +28,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
+import com.google.common.collect.ImmutableList;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.core.convert.converter.Converter;
@@ -39,13 +40,15 @@ import org.springframework.util.Assert;
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-public class MappingSpannerConverter implements SpannerConverter {
+public class MappingSpannerConverter extends AbstractSpannerCustomConverter
+		implements SpannerConverter {
 
 	private final MappingSpannerReadConverter readConverter;
 
 	private final MappingSpannerWriteConverter writeConverter;
 
 	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext) {
+		super(getCustomConversions(ConversionUtils.DEFAULT_SPANNER_CONVERTERS), null);
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
 		this.readConverter = new MappingSpannerReadConverter(spannerMappingContext,
@@ -56,6 +59,8 @@ public class MappingSpannerConverter implements SpannerConverter {
 
 	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext,
 			Collection<Converter> writeConverters, Collection<Converter> readConverters) {
+		super(getCustomConversions(ImmutableList.<Converter>builder()
+				.addAll(readConverters).addAll(writeConverters).build()), null);
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
 		this.readConverter = new MappingSpannerReadConverter(spannerMappingContext,
@@ -64,17 +69,8 @@ public class MappingSpannerConverter implements SpannerConverter {
 				getCustomConversions(writeConverters));
 	}
 
-	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext,
-			CustomConversions writeConversions, CustomConversions readConversions) {
-		Assert.notNull(spannerMappingContext,
-				"A valid mapping context for Spanner is required.");
-		this.readConverter = new MappingSpannerReadConverter(spannerMappingContext,
-				readConversions);
-		this.writeConverter = new MappingSpannerWriteConverter(spannerMappingContext,
-				writeConversions);
-	}
-
-	private CustomConversions getCustomConversions(Collection<Converter> converters) {
+	private static CustomConversions getCustomConversions(
+			Collection<Converter> converters) {
 		return new CustomConversions(StoreConversions.NONE, converters);
 	}
 
@@ -107,6 +103,16 @@ public class MappingSpannerConverter implements SpannerConverter {
 
 	public void write(Object source, WriteBuilder sink, Set<String> includeColumns) {
 		this.writeConverter.write(source, sink, includeColumns);
+	}
+
+	@Override
+	public boolean canConvert(Class sourceType, Class targetType) {
+		return super.canConvert(sourceType, targetType);
+	}
+
+	@Override
+	public Object convert(Object source, Class targetType) {
+		return super.convert(source, targetType);
 	}
 
 	/**

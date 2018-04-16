@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -128,7 +129,19 @@ public class ConversionUtils {
 			.of(SPANNER_TO_JAVA_DATE_CONVERTER, TIMESTAMP_INSTANT_CONVERTER, SPANNER_TO_JAVA_BYTE_ARRAY_CONVERTER,
 					SPANNER_TO_JAVA_TIMESTAMP_CONVERTER);
 
-	static Class boxIfNeeded(Class propertyType) {
+	/**
+	 * Converters to and from Spanner types.
+	 */
+	public static final Collection<Converter> DEFAULT_SPANNER_CONVERTERS = ImmutableSet
+			.<Converter>builder().addAll(DEFAULT_SPANNER_WRITE_CONVERTERS)
+			.addAll(DEFAULT_SPANNER_READ_CONVERTERS).build();
+
+	public static Set<Class> SPANNER_KEY_COMPATIBLE_TYPES = ImmutableSet.<Class>builder()
+			.add(Boolean.class).add(Integer.class).add(Long.class).add(Float.class)
+			.add(Double.class).add(String.class).add(ByteArray.class).add(Timestamp.class)
+			.add(com.google.cloud.Date.class).build();
+
+	public static Class boxIfNeeded(Class propertyType) {
 		if (propertyType == null) {
 			return null;
 		}
