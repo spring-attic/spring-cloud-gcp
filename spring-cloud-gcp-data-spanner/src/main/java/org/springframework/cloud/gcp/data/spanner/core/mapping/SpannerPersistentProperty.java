@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.util.OptionalInt;
+import java.util.OptionalLong;
 
 import org.springframework.data.mapping.PersistentProperty;
 
@@ -50,4 +51,10 @@ public interface SpannerPersistentProperty
 	 * @return
 	 */
 	OptionalInt getPrimaryKeyOrder();
+
+	/**
+	 * Gets the maximum data length of the column if provided.
+	 * @return
+	 */
+	OptionalLong getMaxColumnLength();
 }

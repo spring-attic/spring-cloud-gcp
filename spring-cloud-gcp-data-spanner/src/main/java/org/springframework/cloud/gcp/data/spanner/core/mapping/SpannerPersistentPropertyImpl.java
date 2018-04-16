@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.stream.Collectors;
 
 import org.springframework.data.mapping.Association;
@@ -121,6 +122,15 @@ public class SpannerPersistentPropertyImpl
 			return OptionalInt.empty();
 		}
 		return OptionalInt.of(annotation.keyOrder());
+	}
+
+	@Override
+	public OptionalLong getMaxColumnLength() {
+		ColumnLength annotation = findAnnotation(ColumnLength.class);
+		if (annotation == null) {
+			return OptionalLong.empty();
+		}
+		return OptionalLong.of(annotation.maxLength());
 	}
 
 	@Override

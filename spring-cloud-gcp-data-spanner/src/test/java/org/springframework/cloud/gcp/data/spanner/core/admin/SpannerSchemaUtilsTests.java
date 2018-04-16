@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnLength;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
@@ -57,8 +58,8 @@ public class SpannerSchemaUtilsTests {
 	@Test
 	public void getCreateDDLTest() {
 		assertEquals("CREATE TABLE custom_test_table ( id STRING(MAX) , id2 INT64 "
-				+ ", custom_col STRING(MAX) , other STRING(MAX) , bytes BYTES(MAX) "
-				+ ", bytesList ARRAY<BYTES(MAX)> , integerList ARRAY<INT64> "
+				+ ", custom_col STRING(MAX) , other STRING(333) , bytes BYTES(MAX) "
+				+ ", bytesList ARRAY<BYTES(111)> , integerList ARRAY<INT64> "
 				+ ", doubles ARRAY<FLOAT64> ) PRIMARY KEY ( id , id2 )",
 				this.spannerSchemaUtils.getCreateTableDDLString(TestEntity.class));
 	}
@@ -83,11 +84,13 @@ public class SpannerSchemaUtilsTests {
 		@Column(name = "custom_col")
 		String something;
 
+		@ColumnLength(maxLength = 333)
 		@Column(name = "")
 		String other;
 
 		ByteArray bytes;
 
+		@ColumnLength(maxLength = 111)
 		@ColumnInnerType(innerType = ByteArray.class)
 		List<ByteArray> bytesList;
 

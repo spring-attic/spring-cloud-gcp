@@ -22,6 +22,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -66,13 +67,15 @@ public class ConversionUtils {
 		JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING = builder.build();
 	}
 
-	private static String getTypeDDLString(Type type) {
+	private static String getTypeDDLString(Type type, OptionalLong dataLength) {
 		Assert.notNull(type, "A valid Spanner column type is required.");
 		if (type.getCode() == Code.ARRAY) {
-			return "ARRAY<" + getTypeDDLString(type.getArrayElementType()) + ">";
+			return "ARRAY<" + getTypeDDLString(type.getArrayElementType(), dataLength)
+					+ ">";
 		}
 		return type.toString()
-				+ (type.getCode() == Code.STRING || type.getCode() == Code.BYTES ? "(MAX)"
+				+ (type.getCode() == Code.STRING || type.getCode() == Code.BYTES ? "("
+						+ (dataLength.isPresent() ? dataLength.getAsLong() : "MAX") + ")"
 						: "");
 	}
 
@@ -124,7 +127,8 @@ public class ConversionUtils {
 						"Could not find suitable Spanner column inner type for property type:"
 								+ innerType);
 			}
-			return getTypeDDLString(Type.array(spannerSupportedInnerType));
+			return getTypeDDLString(Type.array(spannerSupportedInnerType),
+					spannerPersistentProperty.getMaxColumnLength());
 		}
 		Type spannerColumnType = JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
 				.get(getFullyConvertableType(spannerConverter, columnType, false));
@@ -133,7 +137,8 @@ public class ConversionUtils {
 					"Could not find suitable Spanner column type for property type:"
 							+ columnType);
 		}
-		return getTypeDDLString(spannerColumnType);
+		return getTypeDDLString(spannerColumnType,
+				spannerPersistentProperty.getMaxColumnLength());
 	}
 
 	public static final Converter<Date, com.google.cloud.Date> JAVA_TO_SPANNER_DATE_CONVERTER =
