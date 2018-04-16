@@ -60,17 +60,13 @@ public class MappingSpannerConverter implements SpannerConverter {
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
 		this.readConverter = new MappingSpannerReadConverter(spannerMappingContext,
-				getCustomConversions(
-						ImmutableList.<Converter> builder()
-								.addAll(ConversionUtils.DEFAULT_SPANNER_READ_CONVERTERS)
-								.addAll(readConverters)
-								.build()));
+				getCustomConversions(ImmutableList.<Converter>builder()
+						.addAll(ConversionUtils.DEFAULT_SPANNER_READ_CONVERTERS)
+						.addAll(readConverters).build()));
 		this.writeConverter = new MappingSpannerWriteConverter(spannerMappingContext,
-				getCustomConversions(
-						ImmutableList.<Converter> builder()
-								.addAll(ConversionUtils.DEFAULT_SPANNER_WRITE_CONVERTERS)
-								.addAll(writeConverters)
-								.build()));
+				getCustomConversions(ImmutableList.<Converter>builder()
+						.addAll(ConversionUtils.DEFAULT_SPANNER_WRITE_CONVERTERS)
+						.addAll(writeConverters).build()));
 	}
 
 	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext,
