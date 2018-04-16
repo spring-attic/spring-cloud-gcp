@@ -17,10 +17,13 @@
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
@@ -50,6 +53,20 @@ public class Trade {
 	@Column(name = "trader_id")
 	private String traderId;
 
+	@ColumnInnerType(innerType = Instant.class)
+	private List<Instant> executionTimes;
+
+	@ColumnInnerType(innerType = SubTrade.class)
+	private List<SubTrade> subTrades;
+
+	public List<SubTrade> getSubTrades() {
+		return this.subTrades;
+	}
+
+	public void setSubTrades(List<SubTrade> subTrades) {
+		this.subTrades = subTrades;
+	}
+
 	public static Trade aTrade() {
 		Trade t = new Trade();
 		String tradeId = UUID.randomUUID().toString();
@@ -63,19 +80,11 @@ public class Trade {
 		t.tradeTime = Instant.now();
 		t.price = 100.0;
 		t.shares = 12345.6;
+		t.executionTimes = new ArrayList<>();
+		for (int i = 1; i <= 5; i++) {
+			t.executionTimes.add(Instant.ofEpochSecond(i));
+		}
 		return t;
-	}
-
-	public static String createDDL(String tableName) {
-		return "CREATE TABLE " + tableName + "(" + "\tid STRING(128) NOT NULL,\n"
-				+ "\tage INT64,\n" + "\taction STRING(15),\n" + "\tprice FLOAT64,\n"
-				+ "\tshares FLOAT64,\n" + "\ttradeTime TIMESTAMP,\n"
-				+ "\tsymbol STRING(5),\n" + "\ttrader_id STRING(128),\n"
-				+ ") PRIMARY KEY (id, trader_id)";
-	}
-
-	public static String dropDDL(String tableName) {
-		return "DROP table " + tableName;
 	}
 
 	@Override
@@ -87,8 +96,7 @@ public class Trade {
 			return false;
 		}
 		Trade trade = (Trade) o;
-		return Objects.equals(this.id, trade.id)
-				&& Objects.equals(this.age, trade.age)
+		return Objects.equals(this.id, trade.id) && Objects.equals(this.age, trade.age)
 				&& Objects.equals(this.action, trade.action)
 				&& Objects.equals(this.price, trade.price)
 				&& Objects.equals(this.shares, trade.shares)
@@ -100,8 +108,7 @@ public class Trade {
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.id, this.age, this.action, this.price, this.shares,
-				this.symbol, this.tradeTime,
-				this.traderId);
+				this.symbol, this.tradeTime, this.traderId, this.executionTimes);
 	}
 
 	public String getId() {
@@ -174,5 +181,13 @@ public class Trade {
 				+ ", age=" + this.age + ", price=" + this.price + ", shares="
 				+ this.shares + ", symbol='" + this.symbol + ", tradeTime="
 				+ this.tradeTime + '\'' + ", traderId='" + this.traderId + '\'' + '}';
+	}
+
+	public List<Instant> getExecutionTimes() {
+		return this.executionTimes;
+	}
+
+	public void setExecutionTimes(List<Instant> executionTimes) {
+		this.executionTimes = executionTimes;
 	}
 }

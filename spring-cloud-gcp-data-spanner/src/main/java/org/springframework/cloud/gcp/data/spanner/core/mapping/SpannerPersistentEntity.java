@@ -40,4 +40,10 @@ public interface SpannerPersistentEntity<T>
 	 * @return the column names.
 	 */
 	Iterable<String> columns();
+
+	/**
+	 * Gets the properties that comprise the primary key in order.
+	 * @return
+	 */
+	SpannerPersistentProperty[] getPrimaryKeyProperties();
 }

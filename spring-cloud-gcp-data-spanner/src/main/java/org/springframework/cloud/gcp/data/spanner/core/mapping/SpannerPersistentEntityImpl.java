@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.BeansException;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
@@ -58,11 +59,11 @@ public class SpannerPersistentEntityImpl<T>
 
 	private final Expression tableNameExpression;
 
-	private StandardEvaluationContext context;
-
 	private final Table table;
 
 	private final Map<Integer, SpannerPersistentProperty> primaryKeyParts = new HashMap<>();
+
+	private StandardEvaluationContext context;
 
 	private SpannerPersistentProperty idProperty;
 
@@ -93,7 +94,8 @@ public class SpannerPersistentEntityImpl<T>
 			return null;
 		}
 
-		Expression expression = PARSER.parseExpression(this.table.name(), ParserContext.TEMPLATE_EXPRESSION);
+		Expression expression = PARSER.parseExpression(this.table.name(),
+				ParserContext.TEMPLATE_EXPRESSION);
 
 		return expression instanceof LiteralExpression ? null : expression;
 	}
@@ -104,7 +106,15 @@ public class SpannerPersistentEntityImpl<T>
 			return;
 		}
 		addPersistentPropertyToPersistentEntity(property);
-		this.columnNames.add(property.getColumnName());
+		if (!ConversionUtils.isSpannerTableProperty(property)) {
+			this.columnNames.add(property.getColumnName());
+		}
+
+		if (ConversionUtils.isIterableNonByteArrayType(property.getType())
+				&& property.getColumnInnerType() == null) {
+			throw new SpannerDataException(
+					"A list property must be annotated with its inner type: " + property);
+		}
 
 		if (property.getPrimaryKeyOrder() != null
 				&& property.getPrimaryKeyOrder().isPresent()) {
@@ -119,7 +129,8 @@ public class SpannerPersistentEntityImpl<T>
 		}
 	}
 
-	private void addPersistentPropertyToPersistentEntity(SpannerPersistentProperty property) {
+	private void addPersistentPropertyToPersistentEntity(
+			SpannerPersistentProperty property) {
 		super.addPersistentProperty(property);
 	}
 
@@ -148,13 +159,14 @@ public class SpannerPersistentEntityImpl<T>
 		this.idProperty = new SpannerCompositeKeyProperty(this, getPrimaryKeyProperties());
 	}
 
-	private SpannerPersistentProperty[] getPrimaryKeyProperties() {
+	@Override
+	public SpannerPersistentProperty[] getPrimaryKeyProperties() {
 		if (this.primaryKeyParts.isEmpty()) {
 			throw new SpannerDataException(
 					"At least one primary key property is required!");
 		}
-		SpannerPersistentProperty[] primaryKeyColumns =
-				new SpannerPersistentProperty[this.primaryKeyParts.size()];
+		SpannerPersistentProperty[] primaryKeyColumns = new SpannerPersistentProperty[this.primaryKeyParts
+				.size()];
 		for (int i = 1; i <= this.primaryKeyParts.size(); i++) {
 			primaryKeyColumns[i - 1] = this.primaryKeyParts.get(i);
 		}
@@ -163,8 +175,7 @@ public class SpannerPersistentEntityImpl<T>
 
 	@Override
 	public String tableName() {
-		return this.tableNameExpression == null
-				? this.tableName
+		return this.tableNameExpression == null ? this.tableName
 				: this.tableNameExpression.getValue(this.context, String.class);
 	}
 
@@ -173,7 +184,8 @@ public class SpannerPersistentEntityImpl<T>
 		return Collections.unmodifiableSet(this.columnNames);
 	}
 
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(ApplicationContext applicationContext)
+			throws BeansException {
 		this.context.addPropertyAccessor(new BeanFactoryAccessor());
 		this.context.setBeanResolver(new BeanFactoryResolver(applicationContext));
 		this.context.setRootObject(applicationContext);

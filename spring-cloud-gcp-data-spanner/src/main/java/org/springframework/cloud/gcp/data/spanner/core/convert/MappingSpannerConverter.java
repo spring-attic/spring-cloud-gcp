@@ -29,6 +29,7 @@ import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
 
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.CustomConversions;
@@ -107,6 +108,61 @@ public class MappingSpannerConverter implements SpannerConverter {
 
 	public void write(Object source, WriteBuilder sink, Set<String> includeColumns) {
 		this.writeConverter.write(source, sink, includeColumns);
+	}
+
+	@Override
+	public boolean canHandlePropertyTypeForSingularRead(Class type,
+			Class spannerSupportedType) {
+		if (!MappingSpannerReadConverter.singleItemReadMethodMapping
+				.containsKey(spannerSupportedType)) {
+			throw new SpannerDataException(
+					"The given spannerSupportedType type is not a known "
+							+ "Spanner directly-supported column type: "
+							+ spannerSupportedType);
+		}
+		return type.equals(spannerSupportedType)
+				|| this.readConverter.canConvert(spannerSupportedType, type);
+	}
+
+	@Override
+	public boolean canHandlePropertyTypeForArrayRead(Class type,
+			Class spannerSupportedArrayInnerType) {
+		if (!MappingSpannerReadConverter.readIterableMapping
+				.containsKey(spannerSupportedArrayInnerType)) {
+			throw new SpannerDataException(
+					"The given spannerSupportedArrayInnerType is not a known Spanner "
+							+ "directly-supported array column inner-type: "
+							+ spannerSupportedArrayInnerType);
+		}
+		return type.equals(spannerSupportedArrayInnerType)
+				|| this.readConverter.canConvert(spannerSupportedArrayInnerType, type);
+	}
+
+	@Override
+	public boolean canHandlePropertyTypeForSingularWrite(Class type,
+			Class spannerSupportedType) {
+		if (!MappingSpannerWriteConverter.singleItemType2ToMethodMap
+				.containsKey(spannerSupportedType)) {
+			throw new SpannerDataException(
+					"The given spannerSupportedType is not a known Spanner directly-supported column type: "
+							+ spannerSupportedType);
+		}
+		return type.equals(spannerSupportedType)
+				|| this.writeConverter.canConvert(type, spannerSupportedType);
+	}
+
+	@Override
+	public boolean canHandlePropertyTypeForArrayWrite(Class type,
+			Class spannerSupportedArrayInnerType) {
+		if (!MappingSpannerWriteConverter.iterablePropertyType2ToMethodMap
+				.containsKey(spannerSupportedArrayInnerType)) {
+			throw new SpannerDataException(
+					"The given spannerSupportedArrayInnerType is not a known "
+							+ "Spanner directly-supported column type: "
+							+ spannerSupportedArrayInnerType);
+		}
+		return type.equals(spannerSupportedArrayInnerType)
+				|| this.writeConverter.canConvert(type, spannerSupportedArrayInnerType);
 	}
 
 	/**

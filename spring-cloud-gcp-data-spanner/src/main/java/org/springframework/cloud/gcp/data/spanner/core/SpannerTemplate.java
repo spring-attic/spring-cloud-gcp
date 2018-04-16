@@ -38,15 +38,21 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.annotations.VisibleForTesting;
 
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerLazyList;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.Assert;
 
 /**
@@ -113,15 +119,78 @@ public class SpannerTemplate implements SpannerOperations {
 			SpannerReadOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		return this.spannerConverter.mapToList(executeRead(persistentEntity.tableName(),
-				keys, persistentEntity.columns(), options), entityClass);
+		return resolveChildEntities(
+				this.spannerConverter.mapToList(executeRead(persistentEntity.tableName(),
+						keys, persistentEntity.columns(), options), entityClass),
+				options != null && options.hasTimestamp() ? options.getTimestamp()
+						: null);
 	}
 
 	@Override
 	public <T> List<T> query(Class<T> entityClass, Statement statement,
 			SpannerQueryOptions options) {
-		return this.spannerConverter.mapToList(executeQuery(statement, options),
-				entityClass);
+		Timestamp timestamp = options != null && options.hasTimestamp()
+				? options.getTimestamp()
+				: null;
+		return resolveChildEntities(this.spannerConverter
+				.mapToList(executeQuery(statement, options), entityClass), timestamp);
+	}
+
+	private List resolveChildEntities(List entities, Timestamp timestamp) {
+		for (Object entity : entities) {
+			resolveChildEntity(entity, timestamp);
+		}
+		return entities;
+	}
+
+	@VisibleForTesting
+	void resolveChildEntity(Object entity, Timestamp timestamp) {
+		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
+				.getPersistentEntity(entity.getClass());
+
+		PersistentPropertyAccessor accessor = spannerPersistentEntity
+				.getPropertyAccessor(entity);
+
+		spannerPersistentEntity.doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> ConversionUtils
+						.applyIfChildEntityType(spannerPersistentProperty, childType -> {
+
+							BiFunction<Class, String, List> getChildRows = (propType,
+									childTable) -> query(propType,
+											SpannerStatementQueryExecutor
+													.getChildrenRowsQuery(
+															spannerPersistentEntity,
+															entity, childTable),
+											timestamp == null ? null
+													: new SpannerQueryOptions()
+															.setTimestamp(timestamp));
+
+							/*
+							 * If the property is a single item then we retrieve it
+							 * immediately. However, to prevent an exploding number of
+							 * retrievals, List-type child properties are retrieved
+							 * lazily.
+							 */
+							if (!ConversionUtils.isIterableNonByteArrayType(
+									spannerPersistentProperty.getType())) {
+								SpannerPersistentEntity childPersistentEntity = this.mappingContext
+										.getPersistentEntity(childType);
+								accessor.setProperty(spannerPersistentProperty,
+										getChildRows
+												.apply(childType,
+														childPersistentEntity.tableName())
+												.get(0));
+							}
+							else {
+								SpannerPersistentEntity childPersistentEntity = this.mappingContext
+										.getPersistentEntity(childType);
+								accessor.setProperty(spannerPersistentProperty,
+										new SpannerLazyList<>(() -> getChildRows.apply(
+												childType,
+												childPersistentEntity.tableName())));
+							}
+							return null;
+						}));
 	}
 
 	@Override
@@ -222,22 +291,26 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public void delete(Object entity) {
-		applyMutationUsingEntity(this.mutationFactory::delete, entity);
+		applyMutationUsingEntity(x -> Arrays.asList(this.mutationFactory.delete(x)),
+				entity);
 	}
 
 	@Override
 	public void delete(Class entityClass, Key key) {
-		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, key);
+		applyMutationTwoArgs((x, y) -> Arrays.asList(this.mutationFactory.delete(x, y)),
+				entityClass, key);
 	}
 
 	@Override
 	public <T> void delete(Class<T> entityClass, Iterable<? extends T> entities) {
-		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, entities);
+		applyMutationTwoArgs((x, y) -> Arrays.asList(this.mutationFactory.delete(x, y)),
+				entityClass, entities);
 	}
 
 	@Override
 	public void delete(Class entityClass, KeySet keys) {
-		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, keys);
+		applyMutationTwoArgs((x, y) -> Arrays.asList(this.mutationFactory.delete(x, y)),
+				entityClass, keys);
 	}
 
 	@Override
@@ -314,13 +387,14 @@ public class SpannerTemplate implements SpannerOperations {
 		}
 	}
 
-	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,
+	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, List<Mutation>> function,
 			T arg1,
 			U arg2) {
-		this.databaseClient.write(Arrays.asList(function.apply(arg1, arg2)));
+		this.databaseClient.write(function.apply(arg1, arg2));
 	}
 
-	private <T> void applyMutationUsingEntity(Function<T, Mutation> function, T arg) {
+	private <T> void applyMutationUsingEntity(Function<T, List<Mutation>> function,
+			T arg) {
 		applyMutationTwoArgs((T t, Object unused) -> function.apply(t), arg, null);
 	}
 }

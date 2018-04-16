@@ -16,9 +16,12 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
@@ -26,11 +29,15 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.Op;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.Assert;
 
 /**
@@ -60,19 +67,19 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	}
 
 	@Override
-	public Mutation insert(Object object) {
+	public List<Mutation> insert(Object object) {
 		return saveObject(Op.INSERT, object, null);
 	}
 
 	@Override
-	public Mutation upsert(Object object, Optional<Set<String>> includeColumns) {
+	public List<Mutation> upsert(Object object, Optional<Set<String>> includeColumns) {
 		return saveObject(Op.INSERT_OR_UPDATE, object,
 				includeColumns == null || !includeColumns.isPresent() ? null
 						: includeColumns.get());
 	}
 
 	@Override
-	public Mutation update(Object object, Optional<Set<String>> includeColumns) {
+	public List<Mutation> update(Object object, Optional<Set<String>> includeColumns) {
 		return saveObject(Op.UPDATE, object,
 				includeColumns == null || !includeColumns.isPresent() ? null
 						: includeColumns.get());
@@ -111,13 +118,73 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 		return delete(entityClass, KeySet.singleKey(key));
 	}
 
-	private Mutation saveObject(Op op, Object object, Set<String> includeColumns) {
+	private List<Mutation> saveObject(Op op, Object object, Set<String> includeColumns) {
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
 				.getPersistentEntity(object.getClass());
+		List<Mutation> mutations = new ArrayList<>();
 		Mutation.WriteBuilder writeBuilder = writeBuilder(op,
 				persistentEntity.tableName());
 		this.spannerConverter.write(object, writeBuilder, includeColumns);
-		return writeBuilder.build();
+		mutations.add(writeBuilder.build());
+
+		BiConsumer<Class, Object> verifyPkMatches = (childType,
+				childObject) -> verifyChildHasParentId(persistentEntity, object,
+						this.spannerMappingContext.getPersistentEntity(childType),
+						childObject);
+
+		persistentEntity.doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					if (ConversionUtils
+							.isSpannerTableProperty(spannerPersistentProperty)) {
+
+						if (ConversionUtils.isIterableNonByteArrayType(
+								spannerPersistentProperty.getType())) {
+							Iterable kids = (Iterable) persistentEntity
+									.getPropertyAccessor(object)
+									.getProperty(spannerPersistentProperty);
+							if (kids != null) {
+								for (Object child : kids) {
+									verifyPkMatches.accept(spannerPersistentProperty
+											.getColumnInnerType(), child);
+									mutations.addAll(
+											saveObject(op, child, includeColumns));
+								}
+							}
+						}
+						else {
+							Object child = persistentEntity.getPropertyAccessor(object)
+									.getProperty(spannerPersistentProperty);
+
+							if (child != null) {
+								verifyPkMatches.accept(
+										spannerPersistentProperty.getType(), child);
+								mutations.addAll(saveObject(op, child, includeColumns));
+							}
+						}
+					}
+				});
+		return mutations;
+	}
+
+	private void verifyChildHasParentId(SpannerPersistentEntity parentEntity,
+			Object parentObject, SpannerPersistentEntity childEntity,
+			Object childObject) {
+		SpannerPersistentProperty[] parentPK = parentEntity.getPrimaryKeyProperties();
+		SpannerPersistentProperty[] childPK = childEntity.getPrimaryKeyProperties();
+		PersistentPropertyAccessor parentAccessor = parentEntity
+				.getPropertyAccessor(parentObject);
+		PersistentPropertyAccessor childAccessor = childEntity
+				.getPropertyAccessor(childObject);
+		for (int i = 0; i < parentPK.length; i++) {
+			if (!parentAccessor.getProperty(parentPK[i])
+					.equals(childAccessor.getProperty(childPK[i]))) {
+				throw new SpannerDataException(
+						"A child entity's common primary key columns with its parent must "
+								+ "have the same values. Primary key component " + i
+								+ " does not match for entities: "
+								+ parentEntity.getType() + " " + childEntity.getType());
+			}
+		}
 	}
 
 	private WriteBuilder writeBuilder(Op op, String tableName) {
