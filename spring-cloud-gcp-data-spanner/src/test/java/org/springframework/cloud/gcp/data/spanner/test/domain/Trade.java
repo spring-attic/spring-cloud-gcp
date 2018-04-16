@@ -17,10 +17,11 @@
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
 import java.time.Instant;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
+
+import org.assertj.core.util.DateUtil;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -84,13 +85,6 @@ public class Trade {
 		return "DROP table " + tableName;
 	}
 
-	private String getyyyymmddDate(Date date) {
-		Calendar c = Calendar.getInstance();
-		c.setTime(date);
-		return c.get(Calendar.YEAR) + "-" + c.get(Calendar.MONTH) + "-"
-				+ c.get(Calendar.DAY_OF_MONTH);
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -111,14 +105,14 @@ public class Trade {
 				&& Objects.equals(this.traderId, trade.traderId)
 				// java Date contains the time of day, but Spanner Date is only specific
 				// to the day.
-				&& Objects.equals(getyyyymmddDate(this.tradeDate),
-						getyyyymmddDate(trade.tradeDate));
+				&& Objects.equals(DateUtil.truncateTime(this.tradeDate),
+						DateUtil.truncateTime(trade.tradeDate));
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.id, this.age, this.action, this.price, this.shares,
-				this.symbol, this.tradeTime, getyyyymmddDate(this.tradeDate),
+				this.symbol, this.tradeTime, DateUtil.truncateTime(this.tradeDate),
 				this.traderId);
 	}
 
@@ -191,7 +185,7 @@ public class Trade {
 		return "Trade{" + "id='" + this.id + '\'' + ", action='" + this.action + '\''
 				+ ", age=" + this.age + ", price=" + this.price + ", shares="
 				+ this.shares + ", symbol='" + this.symbol + ", tradeTime="
-				+ this.tradeTime + ", tradeDate='" + getyyyymmddDate(this.tradeDate)
+				+ this.tradeTime + ", tradeDate='" + DateUtil.truncateTime(this.tradeDate)
 				+ '\'' + ", traderId='" + this.traderId + '\'' + '}';
 	}
 
