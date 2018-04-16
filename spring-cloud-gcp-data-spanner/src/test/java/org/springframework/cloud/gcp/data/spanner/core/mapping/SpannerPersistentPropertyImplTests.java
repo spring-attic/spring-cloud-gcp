@@ -30,6 +30,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.ArgumentMatchers.any;
@@ -117,6 +118,17 @@ public class SpannerPersistentPropertyImplTests {
 		});
 	}
 
+	@Test
+	public void testIgnoredProperty() {
+		SpannerPersistentEntityImpl<TestEntity> entity =
+				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
+				.getPersistentEntity(TestEntity.class));
+
+		entity.doWithProperties((PropertyHandler<SpannerPersistentProperty>) prop -> {
+			assertNotEquals("not_mapped", prop.getColumnName());
+		});
+	}
+
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
 		@PrimaryKey(keyOrder = 1)
@@ -130,5 +142,9 @@ public class SpannerPersistentPropertyImplTests {
 
 		@ColumnInnerType(innerType = Double.class)
 		List<Double> doubleList;
+
+		@NotMapped
+		@Column(name = "not_mapped")
+		String notMappedString;
 	}
 }

@@ -1,0 +1,24 @@
+= Spring Integration Channel Adapters for Google Cloud Storage Code Sample
+
+This code sample demonstrates how to use the Spring Integration Channel Adapters for Google Cloud Storage (GCS).
+We will use the Inbound and Outbound Channel Adapters to periodically probe for files in a GCS bucket and, in the presence of files, propagate them to the local file system and another GCS bucket.
+
+== Running the code sample
+
+1. Configure your credentials by following link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter[these instructions].
++
+Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials], Spring will auto-discover those parameters for you.
+
+2. Go to the https://console.cloud.google.com/storage[Google Cloud Storage] section of the Google Cloud Console and create two buckets, one where the adapters will listen for files (i.e., the input bucket) and another one where the oubound adapter will write new files (i.e., the output bucket).
+
+3. In the link:src/main/resources/applications.properties[application.properties] file, change the value of the `gcsBucketName` constant to the input bucket name and `gcsWriteBucket` to the output bucket name.
++
+In the same file, set the `localDirectory` constant to a folder in your local file system where the non-streaming Inbound Channel Adapter will save files to.
+
+4. Run the application by running the `mvn spring-boot:run` goal in the sample's root folder.
+
+5. Copy a file to the input bucket, using the Google Cloud Console or the `gsutil` command line interface and wait at least 5 seconds.
+
+6. Verify that the file was copied to your local file system and to the output bucket.
+
+7. Stop your app and clean up the created files, if you wish.

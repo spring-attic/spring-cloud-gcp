@@ -101,6 +101,9 @@ public class SpannerPersistentEntityImpl<T>
 
 	@Override
 	public void addPersistentProperty(SpannerPersistentProperty property) {
+		if (!property.isMapped()) {
+			return;
+		}
 		addPersistentPropertyToPersistentEntity(property);
 		this.columnNames.add(property.getColumnName());
 

@@ -48,19 +48,19 @@ project.
 The following configuration options are available:
 
 |===
-| Name | Description | Optional | Default value
-| `spring.cloud.gcp.spanner.instance-id` | Spanner instance to use | No |
+| Name | Description | Required | Default value
+| `spring.cloud.gcp.spanner.instance-id` | Spanner instance to use | Yes |
 | `spring.cloud.gcp.spanner.database` |
-Spanner database to use | No |
+Spanner database to use | Yes |
 | `spring.cloud.gcp.spanner.project-id` | GCP project ID where the Google Cloud Spanner API
 is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
-| Yes |
+| No |
 | `spring.cloud.gcp.spanner.credentials.location` | OAuth2 credentials for authenticating with the
 Google Cloud Spanner API, if different from the ones in the
-<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | Yes |
+<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
 | `spring.cloud.gcp.spanner.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
-Spanner credentials | Yes | https://www.googleapis.com/auth/spanner.data
+Spanner credentials | No | https://www.googleapis.com/auth/spanner.data
 |===
 
 ==== Repository settings

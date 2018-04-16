@@ -57,4 +57,11 @@ public interface SpannerPersistentProperty
 	 * @return
 	 */
 	OptionalLong getMaxColumnLength();
+
+	/**
+	 * True if property corresponds to a column a Spanner table or child entities stored in Spanner.
+	 * False otherwise.
+	 * @return True if this property will be mapped to and from Spanner. False otherwise.
+	 */
+	boolean isMapped();
 }

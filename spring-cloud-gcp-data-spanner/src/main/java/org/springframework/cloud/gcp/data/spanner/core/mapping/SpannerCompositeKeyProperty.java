@@ -81,6 +81,11 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	@Override
+	public boolean isMapped() {
+		return false;
+	}
+
+	@Override
 	public OptionalLong getMaxColumnLength() {
 		return OptionalLong.empty();
 	}

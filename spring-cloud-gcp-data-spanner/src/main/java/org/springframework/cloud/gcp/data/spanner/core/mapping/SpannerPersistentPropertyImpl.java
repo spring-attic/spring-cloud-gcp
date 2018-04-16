@@ -125,6 +125,11 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	@Override
+	public boolean isMapped() {
+		return findAnnotation(NotMapped.class) == null;
+	}
+
+	@Override
 	public OptionalLong getMaxColumnLength() {
 		ColumnLength annotation = findAnnotation(ColumnLength.class);
 		if (annotation == null) {
