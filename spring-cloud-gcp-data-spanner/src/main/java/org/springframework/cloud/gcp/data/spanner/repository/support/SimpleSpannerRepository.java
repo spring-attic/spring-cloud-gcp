@@ -18,10 +18,14 @@ package org.springframework.cloud.gcp.data.spanner.repository.support;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
+import com.google.cloud.ByteArray;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
+import com.google.common.collect.ImmutableSet;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
@@ -38,6 +42,11 @@ import org.springframework.util.Assert;
  * @author Chengyuan Zhao
  */
 public class SimpleSpannerRepository implements SpannerRepository {
+
+	private static Set<Class> SPANNER_KEY_COMPATIBLE_TYPES = ImmutableSet
+			.<Class> builder().add(Boolean.class).add(Integer.class).add(Long.class)
+			.add(Float.class).add(Double.class).add(String.class).add(ByteArray.class)
+			.add(Timestamp.class).add(com.google.cloud.Date.class).build();
 
 	private final SpannerTemplate spannerTemplate;
 
@@ -163,7 +172,7 @@ public class SimpleSpannerRepository implements SpannerRepository {
 	}
 
 	private Object convertKeyPart(Object object) {
-		if (ConversionUtils.SPANNER_KEY_COMPATIBLE_TYPES
+		if (SPANNER_KEY_COMPATIBLE_TYPES
 				.contains(ConversionUtils.boxIfNeeded(object.getClass()))) {
 			return object;
 		}
@@ -175,7 +184,7 @@ public class SimpleSpannerRepository implements SpannerRepository {
 		 */
 		for (Class validKeyType : MappingSpannerWriteConverter.singleItemType2ToMethodMap
 				.keySet()) {
-			if (!ConversionUtils.SPANNER_KEY_COMPATIBLE_TYPES.contains(validKeyType)) {
+			if (!SPANNER_KEY_COMPATIBLE_TYPES.contains(validKeyType)) {
 				continue;
 			}
 			if (this.spannerTemplate.getSpannerConverter().canConvert(object.getClass(),

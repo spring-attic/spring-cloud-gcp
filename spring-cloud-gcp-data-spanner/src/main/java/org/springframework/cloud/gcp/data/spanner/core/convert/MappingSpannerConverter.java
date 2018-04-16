@@ -29,6 +29,7 @@ import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.core.convert.converter.Converter;
@@ -43,12 +44,17 @@ import org.springframework.util.Assert;
 public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 		implements SpannerConverter {
 
+	private static final Collection<Converter> DEFAULT_SPANNER_CONVERTERS = ImmutableSet
+			.<Converter> builder()
+			.addAll(ConversionUtils.DEFAULT_SPANNER_WRITE_CONVERTERS)
+			.addAll(ConversionUtils.DEFAULT_SPANNER_READ_CONVERTERS).build();
+
 	private final MappingSpannerReadConverter readConverter;
 
 	private final MappingSpannerWriteConverter writeConverter;
 
 	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext) {
-		super(getCustomConversions(ConversionUtils.DEFAULT_SPANNER_CONVERTERS), null);
+		super(getCustomConversions(DEFAULT_SPANNER_CONVERTERS), null);
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
 		this.readConverter = new MappingSpannerReadConverter(spannerMappingContext,
