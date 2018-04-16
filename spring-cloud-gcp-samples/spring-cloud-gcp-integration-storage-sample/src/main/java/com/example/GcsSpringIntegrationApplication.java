@@ -24,6 +24,7 @@ import com.google.cloud.storage.Storage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.storage.integration.GcsRemoteFileTemplate;
@@ -48,21 +49,19 @@ import org.springframework.messaging.MessageHandler;
 @SpringBootApplication
 public class GcsSpringIntegrationApplication {
 
-	private static final String GCS_BUCKET_NAME = "[YOUR_BUCKET_NAME]";
+	@Value("gcs-bucket-name")
+	private static String GCS_BUCKET_NAME;
 
-	private static final String GCS_WRITE_BUCKET = "[YOUR_WRITE_BUCKET_NAME]";
+	@Value("gcs-write-bucket")
+	private static String GCS_WRITE_BUCKET;
 
-	private static final String LOCAL_DIRECTORY = "[YOUR_LOCAL_FILE_SYSTEM_TEMP_FILE_FOLDER]";
+	@Value("local-directory")
+	private static String LOCAL_DIRECTORY;
 
 	private static final Log LOGGER = LogFactory.getLog(GcsSpringIntegrationApplication.class);
 
 	public static void main(String[] args) {
 		SpringApplication.run(GcsSpringIntegrationApplication.class, args);
-	}
-
-	@Bean
-	public MessageChannel newFileChannel() {
-		return new DirectChannel();
 	}
 
 	@Bean
@@ -86,11 +85,6 @@ public class GcsSpringIntegrationApplication {
 			LOGGER.info("File " + file.getName() + " received by the non-streaming inbound "
 					+ "channel adapter.");
 		};
-	}
-
-	@Bean
-	public MessageChannel copyChannel() {
-		return new DirectChannel();
 	}
 
 	@Bean
