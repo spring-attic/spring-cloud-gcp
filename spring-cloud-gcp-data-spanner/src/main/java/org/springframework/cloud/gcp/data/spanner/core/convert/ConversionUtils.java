@@ -79,7 +79,7 @@ public class ConversionUtils {
 						: "");
 	}
 
-	private static Class getFullyConvertableType(SpannerConverter spannerConverter,
+	private static Class getSpannerJavaType(SpannerConverter spannerConverter,
 			Class originalType, boolean isIterableInnerType) {
 		Set<Class> spannerTypes = (isIterableInnerType
 				? MappingSpannerWriteConverter.iterablePropertyType2ToMethodMap
@@ -121,7 +121,7 @@ public class ConversionUtils {
 						"Cannot get column DDL for iterable type without annotated inner type.");
 			}
 			Type spannerSupportedInnerType = JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
-					.get(getFullyConvertableType(spannerConverter, innerType, true));
+					.get(getSpannerJavaType(spannerConverter, innerType, true));
 			if (spannerSupportedInnerType == null) {
 				throw new SpannerDataException(
 						"Could not find suitable Spanner column inner type for property type:"
@@ -131,7 +131,7 @@ public class ConversionUtils {
 					spannerPersistentProperty.getMaxColumnLength());
 		}
 		Type spannerColumnType = JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
-				.get(getFullyConvertableType(spannerConverter, columnType, false));
+				.get(getSpannerJavaType(spannerConverter, columnType, false));
 		if (spannerColumnType == null) {
 			throw new SpannerDataException(
 					"Could not find suitable Spanner column type for property type:"
