@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.google.cloud.ByteArray;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
@@ -49,9 +51,23 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 			.addAll(ConversionUtils.DEFAULT_SPANNER_WRITE_CONVERTERS)
 			.addAll(ConversionUtils.DEFAULT_SPANNER_READ_CONVERTERS).build();
 
+	private static Set<Class> SPANNER_KEY_COMPATIBLE_TYPES = ImmutableSet
+			.<Class>builder().add(Boolean.class).add(Integer.class).add(Long.class)
+			.add(Float.class).add(Double.class).add(String.class).add(ByteArray.class)
+			.add(Timestamp.class).add(com.google.cloud.Date.class).build();
+
 	private final MappingSpannerReadConverter readConverter;
 
 	private final MappingSpannerWriteConverter writeConverter;
+
+	/**
+	 * return true if the given type is one that can be used as a component to a Spanner Key.
+	 * @param type
+	 * @return
+	 */
+	public static boolean isValidSpannerKeyType(Class type) {
+		return SPANNER_KEY_COMPATIBLE_TYPES.contains(type);
+	}
 
 	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext) {
 		super(getCustomConversions(DEFAULT_SPANNER_CONVERTERS), null);
