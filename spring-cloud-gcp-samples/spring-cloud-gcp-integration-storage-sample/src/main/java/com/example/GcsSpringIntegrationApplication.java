@@ -66,11 +66,11 @@ public class GcsSpringIntegrationApplication {
 	@InboundChannelAdapter(channel = "new-file-channel", poller = @Poller(fixedDelay = "5000"))
 	public MessageSource<File> synchronizerAdapter(Storage gcs) {
 		GcsInboundFileSynchronizer synchronizer = new GcsInboundFileSynchronizer(gcs);
-		synchronizer.setRemoteDirectory(gcsBucketName);
+		synchronizer.setRemoteDirectory(this.gcsBucketName);
 
 		GcsInboundFileSynchronizingMessageSource synchAdapter =
 				new GcsInboundFileSynchronizingMessageSource(synchronizer);
-		synchAdapter.setLocalDirectory(Paths.get(localDirectory).toFile());
+		synchAdapter.setLocalDirectory(Paths.get(this.localDirectory).toFile());
 
 		return synchAdapter;
 	}
@@ -90,7 +90,7 @@ public class GcsSpringIntegrationApplication {
 	public MessageSource<InputStream> streamingAdapter(Storage gcs) {
 		GcsStreamingMessageSource adapter = new GcsStreamingMessageSource(
 				new GcsRemoteFileTemplate(new GcsSessionFactory(gcs)));
-		adapter.setRemoteDirectory(gcsBucketName);
+		adapter.setRemoteDirectory(this.gcsBucketName);
 		return adapter;
 	}
 
@@ -100,7 +100,7 @@ public class GcsSpringIntegrationApplication {
 		GcsMessageHandler outboundChannelAdapter =
 				new GcsMessageHandler(new GcsSessionFactory(gcs));
 		outboundChannelAdapter.setRemoteDirectoryExpression(
-				new ValueExpression<>(gcsWriteBucket));
+				new ValueExpression<>(this.gcsWriteBucket));
 
 		return outboundChannelAdapter;
 	}
