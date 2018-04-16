@@ -37,10 +37,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.InboundChannelAdapter;
 import org.springframework.integration.annotation.Poller;
 import org.springframework.integration.annotation.ServiceActivator;
-import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.expression.ValueExpression;
-import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 
 /**
@@ -49,14 +47,14 @@ import org.springframework.messaging.MessageHandler;
 @SpringBootApplication
 public class GcsSpringIntegrationApplication {
 
-	@Value("gcs-bucket-name")
-	private static String GCS_BUCKET_NAME;
+	@Value("${gcs-bucket-name}")
+	private String gcsBucketName;
 
-	@Value("gcs-write-bucket")
-	private static String GCS_WRITE_BUCKET;
+	@Value("${gcs-write-bucket}")
+	private String gcsWriteBucket;
 
-	@Value("local-directory")
-	private static String LOCAL_DIRECTORY;
+	@Value("${local-directory}")
+	private String localDirectory;
 
 	private static final Log LOGGER = LogFactory.getLog(GcsSpringIntegrationApplication.class);
 
@@ -68,11 +66,11 @@ public class GcsSpringIntegrationApplication {
 	@InboundChannelAdapter(channel = "new-file-channel", poller = @Poller(fixedDelay = "5000"))
 	public MessageSource<File> synchronizerAdapter(Storage gcs) {
 		GcsInboundFileSynchronizer synchronizer = new GcsInboundFileSynchronizer(gcs);
-		synchronizer.setRemoteDirectory(GCS_BUCKET_NAME);
+		synchronizer.setRemoteDirectory(gcsBucketName);
 
 		GcsInboundFileSynchronizingMessageSource synchAdapter =
 				new GcsInboundFileSynchronizingMessageSource(synchronizer);
-		synchAdapter.setLocalDirectory(Paths.get(LOCAL_DIRECTORY).toFile());
+		synchAdapter.setLocalDirectory(Paths.get(localDirectory).toFile());
 
 		return synchAdapter;
 	}
@@ -92,7 +90,7 @@ public class GcsSpringIntegrationApplication {
 	public MessageSource<InputStream> streamingAdapter(Storage gcs) {
 		GcsStreamingMessageSource adapter = new GcsStreamingMessageSource(
 				new GcsRemoteFileTemplate(new GcsSessionFactory(gcs)));
-		adapter.setRemoteDirectory(GCS_BUCKET_NAME);
+		adapter.setRemoteDirectory(gcsBucketName);
 		return adapter;
 	}
 
@@ -102,7 +100,7 @@ public class GcsSpringIntegrationApplication {
 		GcsMessageHandler outboundChannelAdapter =
 				new GcsMessageHandler(new GcsSessionFactory(gcs));
 		outboundChannelAdapter.setRemoteDirectoryExpression(
-				new ValueExpression<>(GCS_WRITE_BUCKET));
+				new ValueExpression<>(gcsWriteBucket));
 
 		return outboundChannelAdapter;
 	}
