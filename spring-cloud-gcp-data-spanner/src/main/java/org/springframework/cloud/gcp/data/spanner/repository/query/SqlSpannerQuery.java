@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
@@ -106,6 +107,7 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 	public Object executeRawResult(Object[] parameters) {
 		return this.spannerOperations.query(this.entityType,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
-						resolveEntityClassNames(this.sql), this.tags, parameters));
+						resolveEntityClassNames(this.sql), this.tags, parameters),
+				new SpannerQueryOptions().setAllowMissingResultSetColumns(true));
 	}
 }

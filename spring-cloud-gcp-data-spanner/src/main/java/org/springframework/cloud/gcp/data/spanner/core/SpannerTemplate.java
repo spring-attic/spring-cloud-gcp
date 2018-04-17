@@ -121,7 +121,8 @@ public class SpannerTemplate implements SpannerOperations {
 	public <T> List<T> query(Class<T> entityClass, Statement statement,
 			SpannerQueryOptions options) {
 		return this.spannerConverter.mapToList(executeQuery(statement, options),
-				entityClass);
+				entityClass, Optional.empty(),
+				options == null ? false : options.isAllowMissingResultSetColumns());
 	}
 
 	@Override

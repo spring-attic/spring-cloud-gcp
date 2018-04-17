@@ -56,10 +56,12 @@ public interface SpannerConverter extends EntityReader<Object, Struct>,
 	 * @param <T> The type of the objects the Spanner results represent.
 	 * @param includeColumns the Set of columns to read. If the Set is not present or this
 	 * param is null then all columns will be read.
+	 * @param allowMissingColumns if true, then properties with no corresponding column
+	 * are not mapped. If false, then an exception is thrown.
 	 * @return A list of objects.
 	 */
 	<T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
-			Optional<Set<String>> includeColumns);
+			Optional<Set<String>> includeColumns, boolean allowMissingColumns);
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
