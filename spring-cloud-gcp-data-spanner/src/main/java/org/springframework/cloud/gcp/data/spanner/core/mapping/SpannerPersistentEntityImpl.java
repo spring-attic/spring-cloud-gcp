@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -51,6 +52,9 @@ public class SpannerPersistentEntityImpl<T>
 		implements SpannerPersistentEntity<T> {
 
 	private static final ExpressionParser PARSER = new SpelExpressionParser();
+
+	private static final Pattern TABLE_NAME_ILLEGAL_CHAR_PATTERN = Pattern
+			.compile("[^a-zA-Z0-9_]");
 
 	private final String tableName;
 
@@ -163,9 +167,19 @@ public class SpannerPersistentEntityImpl<T>
 
 	@Override
 	public String tableName() {
-		return this.tableNameExpression == null
+		return validateTableName(this.tableNameExpression == null
 				? this.tableName
-				: this.tableNameExpression.getValue(this.context, String.class);
+						: this.tableNameExpression.getValue(this.context, String.class));
+	}
+
+	// Because SpEL expressions in table name definitions are allowed, validation is
+	// required.
+	private String validateTableName(String name) {
+		if (TABLE_NAME_ILLEGAL_CHAR_PATTERN.matcher(name).find()) {
+			throw new SpannerDataException("Only letters, numbers, and underscores are "
+					+ "allowed in table names: " + name);
+		}
+		return name;
 	}
 
 	@Override
