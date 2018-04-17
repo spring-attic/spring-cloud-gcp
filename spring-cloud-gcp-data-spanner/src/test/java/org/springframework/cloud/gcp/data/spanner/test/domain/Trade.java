@@ -18,8 +18,8 @@ package org.springframework.cloud.gcp.data.spanner.test.domain;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -107,7 +107,8 @@ public class Trade {
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.id, this.age, this.action, this.price, this.shares,
-				this.symbol, this.tradeTime,  DateUtil.truncateTime(this.tradeDate),this.traderId, this.executionTimes);
+				this.symbol, this.tradeTime, DateUtil.truncateTime(this.tradeDate),
+				this.traderId, this.executionTimes);
 	}
 
 	public String getId() {
