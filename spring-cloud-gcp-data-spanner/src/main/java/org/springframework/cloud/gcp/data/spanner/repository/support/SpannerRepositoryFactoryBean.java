@@ -17,7 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.repository.support;
 
 import org.springframework.beans.BeansException;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -33,7 +33,7 @@ public class SpannerRepositoryFactoryBean extends RepositoryFactoryBeanSupport i
 
 	private SpannerMappingContext spannerMappingContext;
 
-	private SpannerOperations spannerTemplate;
+	private SpannerTemplate spannerTemplate;
 
 	private ApplicationContext applicationContext;
 
@@ -46,8 +46,8 @@ public class SpannerRepositoryFactoryBean extends RepositoryFactoryBeanSupport i
 		super(repositoryInterface);
 	}
 
-	public void setSpannerTemplate(SpannerOperations operations) {
-		this.spannerTemplate = operations;
+	public void setSpannerTemplate(SpannerTemplate spannerTemplate) {
+		this.spannerTemplate = spannerTemplate;
 	}
 
 	public void setSpannerMappingContext(SpannerMappingContext mappingContext) {

@@ -14,21 +14,21 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.repository;
+package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * @author Ray Tsang
+ * Annotation for an entity's field that causes the field to be ignored by Spring Data Spanner.
+ *
  * @author Chengyuan Zhao
  */
-public interface SpannerRepository<T, ID> extends PagingAndSortingRepository<T, ID> {
-
-	/**
-	 * Gets a {@link SpannerOperations}, which allows more-direct access to Google Spanner
-	 * functions.
-	 * @return the operations object providing Spanner functions.
-	 */
-	SpannerOperations getSpannerTemplate();
+@Documented
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface NotMapped {
 }

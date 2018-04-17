@@ -19,7 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.repository.support;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
@@ -36,17 +36,17 @@ public class SpannerRepositoryFactoryBeanTests {
 
 	private SpannerMappingContext spannerMappingContext;
 
-	private SpannerOperations spannerOperations;
+	private SpannerTemplate spannerTemplate;
 
 	@Before
 	public void setUp() {
 		this.spannerMappingContext = new SpannerMappingContext();
-		this.spannerOperations = mock(SpannerOperations.class);
+		this.spannerTemplate = mock(SpannerTemplate.class);
 		this.spannerRepositoryFactoryBean = new SpannerRepositoryFactoryBean(
 				SpannerRepository.class);
 		this.spannerRepositoryFactoryBean
 				.setSpannerMappingContext(this.spannerMappingContext);
-		this.spannerRepositoryFactoryBean.setSpannerTemplate(this.spannerOperations);
+		this.spannerRepositoryFactoryBean.setSpannerTemplate(this.spannerTemplate);
 	}
 
 	@Test
