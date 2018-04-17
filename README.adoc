@@ -31,7 +31,7 @@ start working on one, please take a look at our link:CONTRIBUTING.adoc[collabora
 
 == Spring Initializr
 
-Spring Initializr contains Spring Cloud GCP autoconfiguration support through the `GCP Support` entry.
+Spring Initializr contains Spring Cloud GCP auto-configuration support through the `GCP Support` entry.
 
 `GCP Messaging` contains the Spring Cloud GCP messaging support with Google Cloud Pub/Sub working out of the box.
 
