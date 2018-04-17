@@ -16,8 +16,11 @@
 
 package org.springframework.cloud.gcp.autoconfigure.sql;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Base64;
 import java.util.Collections;
 
 import com.google.api.client.auth.oauth2.Credential;
@@ -41,29 +44,43 @@ public class SqlCredentialFactory implements CredentialFactory {
 	public static final String CREDENTIAL_LOCATION_PROPERTY_NAME =
 			"GOOGLE_CLOUD_SQL_CREDS_LOCATION";
 
+	public static final String CREDENTIAL_ENCODED_KEY_PROPERTY_NAME =
+			"GOOGLE_CLOUD_SQL_ENCODED_KEY";
+
 	private static final Log LOGGER = LogFactory.getLog(SqlCredentialFactory.class);
 
 	@Override
 	public Credential create() {
-		// TODO(joaomartins): Consider supporting Spring Resources as credential locations. There
-		// would need to be a way to create or inject a Spring context here statically, to load
-		// the resource from there.
 		String credentialResourceLocation = System.getProperty(CREDENTIAL_LOCATION_PROPERTY_NAME);
-		if (credentialResourceLocation == null) {
+		String encodedCredential = System.getProperty(CREDENTIAL_ENCODED_KEY_PROPERTY_NAME);
+
+		if (credentialResourceLocation == null && encodedCredential == null) {
 			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug(CREDENTIAL_LOCATION_PROPERTY_NAME + " property does not exist. "
+				LOGGER.debug(CREDENTIAL_LOCATION_PROPERTY_NAME + " and "
+						+ CREDENTIAL_ENCODED_KEY_PROPERTY_NAME + " properties do not exist. "
 						+ "Socket factory will use application default credentials.");
 			}
 			return null;
 		}
 
+		InputStream credentialsInputStream;
+
 		try {
-			return GoogleCredential.fromStream(new FileInputStream(credentialResourceLocation))
+			if (encodedCredential != null) {
+				credentialsInputStream = new ByteArrayInputStream(
+						Base64.getDecoder().decode(encodedCredential.getBytes()));
+			}
+			else {
+				credentialsInputStream = new FileInputStream(credentialResourceLocation);
+			}
+
+			return GoogleCredential.fromStream(credentialsInputStream)
 					.createScoped(Collections.singleton(GcpScope.SQLADMIN.getUrl()));
 		}
 		catch (IOException ioe) {
 			LOGGER.warn("There was an error loading Cloud SQL credential.", ioe);
 			return null;
 		}
+
 	}
 }

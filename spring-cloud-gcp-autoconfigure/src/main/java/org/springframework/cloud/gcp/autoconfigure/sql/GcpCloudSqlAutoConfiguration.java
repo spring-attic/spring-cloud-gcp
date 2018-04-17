@@ -22,10 +22,8 @@ import java.io.IOException;
 import javax.sql.DataSource;
 
 import com.google.cloud.sql.CredentialFactory;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -41,6 +39,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.autoconfigure.core.AppEngineCondition;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
+import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
@@ -58,7 +57,8 @@ import org.springframework.util.StringUtils;
  */
 @Configuration
 @ConditionalOnClass({ DataSource.class, EmbeddedDatabaseType.class })
-@ConditionalOnProperty(name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(
+		name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties({ GcpCloudSqlProperties.class, DataSourceProperties.class })
 @AutoConfigureBefore({
 		DataSourceAutoConfiguration.class,
@@ -105,12 +105,14 @@ public class GcpCloudSqlAutoConfiguration {
 	 * The MySql Configuration for the {@link DefaultCloudSqlJdbcInfoProvider}
 	 * based on the {@link DatabaseType#MYSQL}.
 	 */
-	@ConditionalOnClass({ com.google.cloud.sql.mysql.SocketFactory.class, com.mysql.jdbc.Driver.class })
+	@ConditionalOnClass({ com.google.cloud.sql.mysql.SocketFactory.class,
+			com.mysql.jdbc.Driver.class })
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
 	static class MySqlJdbcInfoProviderConfiguration {
 
 		@Bean
-		public CloudSqlJdbcInfoProvider defaultMySqlJdbcInfoProvider(GcpCloudSqlProperties gcpCloudSqlProperties) {
+		public CloudSqlJdbcInfoProvider defaultMySqlJdbcInfoProvider(
+				GcpCloudSqlProperties gcpCloudSqlProperties) {
 			CloudSqlJdbcInfoProvider defaultProvider =
 					new DefaultCloudSqlJdbcInfoProvider(gcpCloudSqlProperties, DatabaseType.MYSQL);
 
@@ -130,14 +132,16 @@ public class GcpCloudSqlAutoConfiguration {
 	 * The PostgreSql Configuration for the {@link DefaultCloudSqlJdbcInfoProvider}
 	 * based on the {@link DatabaseType#POSTGRESQL}.
 	 */
-	@ConditionalOnClass({ com.google.cloud.sql.postgres.SocketFactory.class, org.postgresql.Driver.class })
+	@ConditionalOnClass({ com.google.cloud.sql.postgres.SocketFactory.class,
+			org.postgresql.Driver.class })
 	@ConditionalOnMissingBean(CloudSqlJdbcInfoProvider.class)
 	static class PostgreSqlJdbcInfoProviderConfiguration {
 
 		@Bean
-		public CloudSqlJdbcInfoProvider defaultPostgreSqlJdbcInfoProvider(GcpCloudSqlProperties gcpCloudSqlProperties) {
-			CloudSqlJdbcInfoProvider defaultProvider =
-					new DefaultCloudSqlJdbcInfoProvider(gcpCloudSqlProperties, DatabaseType.POSTGRESQL);
+		public CloudSqlJdbcInfoProvider defaultPostgreSqlJdbcInfoProvider(
+				GcpCloudSqlProperties gcpCloudSqlProperties) {
+			CloudSqlJdbcInfoProvider defaultProvider = new DefaultCloudSqlJdbcInfoProvider(
+					gcpCloudSqlProperties, DatabaseType.POSTGRESQL);
 
 			if (LOGGER.isInfoEnabled()) {
 				LOGGER.info("Default " + DatabaseType.POSTGRESQL.name()
@@ -164,14 +168,16 @@ public class GcpCloudSqlAutoConfiguration {
 		@Bean
 		@Primary
 		@ConditionalOnBean(CloudSqlJdbcInfoProvider.class)
-		public DataSourceProperties cloudSqlDataSourceProperties(GcpCloudSqlProperties gcpCloudSqlProperties,
+		public DataSourceProperties cloudSqlDataSourceProperties(
+				GcpCloudSqlProperties gcpCloudSqlProperties,
 				DataSourceProperties properties,
 				GcpProperties gcpProperties,
 				CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider) {
 
 			if (StringUtils.isEmpty(properties.getUsername())) {
 				properties.setUsername("root");
-				LOGGER.warn("spring.datasource.username is not specified. Setting default username.");
+				LOGGER.warn("spring.datasource.username is not specified. "
+						+ "Setting default username.");
 			}
 			if (StringUtils.isEmpty(properties.getDriverClassName())) {
 				properties.setDriverClassName(cloudSqlJdbcInfoProvider.getJdbcDriverClass());
@@ -184,10 +190,16 @@ public class GcpCloudSqlAutoConfiguration {
 				properties.setUrl(cloudSqlJdbcInfoProvider.getJdbcUrl());
 			}
 			else {
-				LOGGER.warn("spring.datasource.url is specified. Not using generated Cloud SQL configuration");
+				LOGGER.warn("spring.datasource.url is specified. "
+						+ "Not using generated Cloud SQL configuration");
 			}
 
-			setCredentialsProperty(gcpCloudSqlProperties, gcpProperties);
+			if (gcpCloudSqlProperties.getCredentials().getEncodedKey() != null) {
+				setCredentialsEncodedKeyProperty(gcpCloudSqlProperties);
+			}
+			else {
+				setCredentialsFileProperty(gcpCloudSqlProperties, gcpProperties);
+			}
 
 			return properties;
 		}
@@ -206,19 +218,22 @@ public class GcpCloudSqlAutoConfiguration {
 		 * <p>If user didn't specify credentials, the socket factory already does the right thing by
 		 * using the application default credentials by default. So we don't need to do anything.
 		 */
-		private void setCredentialsProperty(GcpCloudSqlProperties gcpCloudSqlProperties, GcpProperties gcpProperties) {
+		private void setCredentialsFileProperty(GcpCloudSqlProperties gcpCloudSqlProperties,
+				GcpProperties gcpProperties) {
 			File credentialsLocationFile;
 
 			try {
 				// First tries the SQL configuration credential.
-				if (gcpCloudSqlProperties != null
-						&& gcpCloudSqlProperties.getCredentials() != null) {
-					credentialsLocationFile = gcpCloudSqlProperties.getCredentials().getLocation().getFile();
+				if (gcpCloudSqlProperties.getCredentials().getLocation() != null) {
+					credentialsLocationFile =
+							gcpCloudSqlProperties.getCredentials().getLocation().getFile();
 				}
 				// Then, the global credential.
-				else if (gcpProperties != null && gcpProperties.getCredentials().getLocation() != null) {
+				else if (gcpProperties != null
+						&& gcpProperties.getCredentials().getLocation() != null) {
 					// A resource might not be in the filesystem, but the Cloud SQL credential must.
-					credentialsLocationFile = gcpProperties.getCredentials().getLocation().getFile();
+					credentialsLocationFile =
+							gcpProperties.getCredentials().getLocation().getFile();
 				}
 				else {
 					// Do nothing, let sockets factory use application default credentials.
@@ -246,6 +261,19 @@ public class GcpCloudSqlAutoConfiguration {
 					SqlCredentialFactory.class.getName());
 		}
 
-	}
+		private void setCredentialsEncodedKeyProperty(GcpCloudSqlProperties gcpCloudSqlProperties) {
+			Credentials credentials = gcpCloudSqlProperties.getCredentials();
 
+			if (credentials.getEncodedKey() == null) {
+				LOGGER.info("SQL properties contain no encoded key. Can't set credentials.");
+				return;
+			}
+
+			System.setProperty(SqlCredentialFactory.CREDENTIAL_ENCODED_KEY_PROPERTY_NAME,
+					credentials.getEncodedKey());
+
+			System.setProperty(CredentialFactory.CREDENTIAL_FACTORY_PROPERTY,
+					SqlCredentialFactory.class.getName());
+		}
+	}
 }

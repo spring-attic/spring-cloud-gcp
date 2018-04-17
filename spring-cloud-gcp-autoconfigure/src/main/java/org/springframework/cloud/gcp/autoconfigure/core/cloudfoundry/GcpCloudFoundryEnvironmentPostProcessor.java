@@ -16,9 +16,12 @@
 
 package org.springframework.cloud.gcp.autoconfigure.core.cloudfoundry;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.logging.Log;
@@ -55,19 +58,31 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 	private enum GcpCfService {
 
-		pubsub("google-pubsub",
+		PUBSUB("google-pubsub", "pubsub",
 				ImmutableMap.of("ProjectId", "project-id",
 						"PrivateKeyData", "credentials.encoded-key")),
-		storage("google-storage",
+		STORAGE("google-storage", "storage",
 				ImmutableMap.of("ProjectId", "project-id",
 						"PrivateKeyData", "credentials.encoded-key")),
-		spanner("google-spanner",
+		SPANNER("google-spanner", "spanner",
 				ImmutableMap.of("ProjectId", "project-id",
 						"PrivateKeyData", "credentials.encoded-key",
 						"instance_id", "instance-id")),
-		trace("google-stackdriver-trace",
+		TRACE("google-stackdriver-trace", "trace",
 				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encoded-key"));
+						"PrivateKeyData", "credentials.encoded-key")),
+		MYSQL("google-cloudsql-mysql", "sql",
+				ImmutableMap.of("ProjectId", "project-id",
+						"PrivateKeyData", "credentials.encoded-key",
+						"database_name", "database-name",
+						"region", "region",
+						"instance_name", "instance-name")),
+		POSTGRES("google-cloudsql-postgres", "sql",
+				ImmutableMap.of("ProjectId", "project-id",
+						"PrivateKeyData", "credentials.encoded-key",
+						"database_name", "database-name",
+						"region", "region",
+						"instance_name", "instance-name"));
 
 		/**
 		 * Name of the GCP Cloud Foundry service in the VCAP_SERVICES JSON.
@@ -75,9 +90,14 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 		private String cfServiceName;
 
 		/**
+		 * Name of the Spring Cloud GCP property.
+		 */
+		private String gcpServiceName;
+
+		/**
 		 * Direct mapping of GCP service broker field names in VCAP_SERVICES JSON to Spring Cloud
-		 * GCP property names. {@link #retrieveCfProperties(Map, GcpCfService)} uses this map to
-		 * perform the actual transformation.
+		 * GCP property names. {@link #retrieveCfProperties(Map, String, String, Map)} uses this map
+		 * to perform the actual transformation.
 		 *
 		 * <p>For instance, "ProjectId" for the "google-storage" service will map to
 		 * "spring.cloud.gcp.storage.project-id" field.</p>
@@ -85,8 +105,10 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 		private Map<String, String> cfPropNameToGcp;
 
 		GcpCfService(String cfServiceName,
+				String gcpServiceName,
 				Map<String, String> cfPropNameToGcp) {
 			this.cfServiceName = cfServiceName;
+			this.gcpServiceName = gcpServiceName;
 			this.cfPropNameToGcp = cfPropNameToGcp;
 		}
 
@@ -96,6 +118,10 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 		public Map<String, String> getCfPropNameToGcp() {
 			return this.cfPropNameToGcp;
+		}
+
+		public String getGcpServiceName() {
+			return this.gcpServiceName;
 		}
 	}
 
@@ -108,8 +134,31 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 			Properties gcpCfServiceProperties = new Properties();
 
-			for (GcpCfService cfService : GcpCfService.values()) {
-				gcpCfServiceProperties.putAll(retrieveCfProperties(vcapMap, cfService));
+			Set<GcpCfService> servicesToMap = new HashSet<>(Arrays.asList(GcpCfService.values()));
+			if (vcapMap.containsKey(GcpCfService.MYSQL.getCfServiceName())
+					&& vcapMap.containsKey(GcpCfService.POSTGRES.getCfServiceName())) {
+				LOGGER.warn("Both MySQL and PostgreSQL bound to the app. "
+						+ "Not configuring Cloud SQL.");
+				servicesToMap.remove(GcpCfService.MYSQL);
+				servicesToMap.remove(GcpCfService.POSTGRES);
+			}
+
+			servicesToMap.forEach(
+					service -> gcpCfServiceProperties.putAll(
+							retrieveCfProperties(
+									vcapMap,
+									service.getGcpServiceName(),
+									service.getCfServiceName(),
+									service.getCfPropNameToGcp())));
+
+			// For Cloud SQL, the instance connection name must be built from three fields.
+			if (gcpCfServiceProperties.containsKey("spring.cloud.gcp.sql.instance-name")) {
+				String instanceConnectionName =
+						gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.project-id") + ":"
+						+ gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.region") + ":"
+						+ gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.instance-name");
+				gcpCfServiceProperties.put("spring.cloud.gcp.sql.instance-connection-name",
+						instanceConnectionName);
 			}
 
 			environment.getPropertySources()
@@ -118,24 +167,24 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 	}
 
 	private static Properties retrieveCfProperties(Map<String, Object> vcapMap,
-			GcpCfService service) {
+			String gcpServiceName, String cfServiceName, Map<String, String> fieldsToMap) {
 		Properties properties = new Properties();
-		List<Object> serviceBindings = (List<Object>) vcapMap.get(service.getCfServiceName());
+		List<Object> serviceBindings = (List<Object>) vcapMap.get(cfServiceName);
 
 		if (serviceBindings == null) {
 			return properties;
 		}
 
 		if (serviceBindings.size() != 1) {
-			LOGGER.warn("The service " + service.getCfServiceName() + " has to be bound to a "
+			LOGGER.warn("The service " + cfServiceName + " has to be bound to a "
 					+ "Cloud Foundry application once and only once.");
 			return properties;
 		}
 
 		Map<String, Object> serviceBinding = (Map<String, Object>) serviceBindings.get(0);
 		Map<String, String> credentialsMap = (Map<String, String>) serviceBinding.get("credentials");
-		String prefix = SPRING_CLOUD_GCP_PROPERTY_PREFIX + service.name() + ".";
-		service.getCfPropNameToGcp().forEach(
+		String prefix = SPRING_CLOUD_GCP_PROPERTY_PREFIX + gcpServiceName + ".";
+		fieldsToMap.forEach(
 				(cfPropKey, gcpPropKey) -> properties.put(
 						prefix + gcpPropKey,
 						credentialsMap.get(cfPropKey)));
