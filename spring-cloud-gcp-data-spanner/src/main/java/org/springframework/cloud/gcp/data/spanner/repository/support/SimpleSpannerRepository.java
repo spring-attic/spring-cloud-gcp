@@ -26,8 +26,7 @@ import com.google.cloud.spanner.KeySet;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
-import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
-import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerWriteConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.domain.Page;
@@ -164,7 +163,8 @@ public class SimpleSpannerRepository implements SpannerRepository {
 	}
 
 	private Object convertKeyPart(Object object) {
-		if (MappingSpannerConverter
+		SpannerConverter spannerConverter = this.spannerTemplate.getSpannerConverter();
+		if (spannerConverter
 				.isValidSpannerKeyType(ConversionUtils.boxIfNeeded(object.getClass()))) {
 			return object;
 		}
@@ -174,14 +174,13 @@ public class SimpleSpannerRepository implements SpannerRepository {
 		 * Double, we want both the this key conversion and the write converter to choose
 		 * the same.
 		 */
-		for (Class validKeyType : MappingSpannerWriteConverter.singleItemType2ToMethodMap
-				.keySet()) {
-			if (!MappingSpannerConverter.isValidSpannerKeyType(validKeyType)) {
+		for (Class validKeyType : spannerConverter.directlyWriteableSpannerTypes()) {
+			if (!spannerConverter.isValidSpannerKeyType(validKeyType)) {
 				continue;
 			}
-			if (this.spannerTemplate.getSpannerConverter().canConvert(object.getClass(),
+			if (spannerConverter.canConvert(object.getClass(),
 					validKeyType)) {
-				return this.spannerTemplate.getSpannerConverter().convert(object,
+				return spannerConverter.convert(object,
 						validKeyType);
 			}
 		}

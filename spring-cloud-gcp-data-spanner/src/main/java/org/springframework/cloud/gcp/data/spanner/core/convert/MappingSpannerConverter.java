@@ -60,13 +60,14 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 
 	private final MappingSpannerWriteConverter writeConverter;
 
-	/**
-	 * return true if the given type is one that can be used as a component to a Spanner Key.
-	 * @param type
-	 * @return
-	 */
-	public static boolean isValidSpannerKeyType(Class type) {
+	@Override
+	public boolean isValidSpannerKeyType(Class type) {
 		return SPANNER_KEY_COMPATIBLE_TYPES.contains(type);
+	}
+
+	@Override
+	public Set<Class> directlyWriteableSpannerTypes() {
+		return MappingSpannerWriteConverter.singleItemType2ToMethodMap.keySet();
 	}
 
 	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext) {
