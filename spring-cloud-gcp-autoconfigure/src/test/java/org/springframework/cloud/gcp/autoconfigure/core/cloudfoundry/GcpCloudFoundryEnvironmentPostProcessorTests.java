@@ -29,6 +29,7 @@ import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties;
 import org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties;
+import org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlProperties;
 import org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageProperties;
 import org.springframework.cloud.gcp.autoconfigure.trace.GcpTraceProperties;
 import org.springframework.core.io.ClassPathResource;
@@ -77,7 +78,15 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 					assertThat(traceProperties.getProjectId())
 							.isEqualTo("graphite-test-spring-cloud-gcp");
 					assertThat(traceProperties.getCredentials().getEncodedKey())
-					.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-stackdriver-trace"));
+							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-stackdriver-trace"));
+
+					GcpCloudSqlProperties sqlProperties = context.getBean(GcpCloudSqlProperties.class);
+					assertThat(sqlProperties.getCredentials().getEncodedKey())
+							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-cloudsql-postgres"));
+					assertThat(sqlProperties.getInstanceConnectionName())
+							.isEqualTo("graphite-test-spring-cloud-gcp:us-central1:pcf-sb-3-1521233681947276465");
+					assertThat(sqlProperties.getDatabaseName())
+							.isEqualTo("pcf-sb-4-1521234236513507790");
 				});
 	}
 
@@ -89,7 +98,7 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 	}
 
 	@EnableConfigurationProperties({GcpPubSubProperties.class, GcpStorageProperties.class,
-			GcpSpannerProperties.class, GcpTraceProperties.class})
+			GcpSpannerProperties.class, GcpTraceProperties.class, GcpCloudSqlProperties.class})
 	static class GcpCfEnvPPTestConfiguration {
 
 	}

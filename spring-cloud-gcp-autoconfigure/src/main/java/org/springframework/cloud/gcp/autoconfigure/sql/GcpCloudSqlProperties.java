@@ -17,7 +17,7 @@
 package org.springframework.cloud.gcp.autoconfigure.sql;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.core.io.Resource;
+import org.springframework.cloud.gcp.core.Credentials;
 
 /**
  * Google Cloud SQL properties.
@@ -33,7 +33,7 @@ public class GcpCloudSqlProperties {
 	private String instanceConnectionName;
 
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
-	private Credentials credentials;
+	private Credentials credentials = new Credentials();
 
 	public String getDatabaseName() {
 		return this.databaseName;
@@ -57,17 +57,5 @@ public class GcpCloudSqlProperties {
 
 	public void setCredentials(Credentials credentials) {
 		this.credentials = credentials;
-	}
-
-	public static class Credentials {
-		private Resource location;
-
-		public Resource getLocation() {
-			return this.location;
-		}
-
-		public void setLocation(Resource location) {
-			this.location = location;
-		}
 	}
 }
