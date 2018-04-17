@@ -23,6 +23,13 @@ package org.springframework.cloud.gcp.storage;
  */
 public class GoogleStorageProtocolResolverSettings {
 
+	/**
+	 * Gets an instance of this object with the default settings.
+	 */
+	public static final GoogleStorageProtocolResolverSettings
+			DEFAULT_GOOGLE_STORAGE_PROTOCOL_RESOLVER_SETTINGS
+			= new GoogleStorageProtocolResolverSettings();
+
 	/** Determines if blobs should be auto-created when the library attempts to write to them. */
 	private boolean autoCreateFiles = true;
 
