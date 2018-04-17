@@ -38,6 +38,7 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
@@ -141,5 +142,13 @@ public class GcpSpannerAutoConfiguration {
 			SpannerMappingContext spannerMappingContext,
 			SpannerConverter spannerConverter) {
 		return new SpannerSchemaUtils(spannerMappingContext);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
+			Spanner spanner, DatabaseId databaseId) {
+		return new SpannerDatabaseAdminTemplate(spanner.getDatabaseAdminClient(),
+				databaseId);
 	}
 }

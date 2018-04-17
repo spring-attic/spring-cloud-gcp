@@ -54,26 +54,26 @@ messages exceed its buffer size or have been buffered for longer than its schedu
 There are several parameters you can use to tune the Stackdriver Trace adapter. All configurations are optional:
 
 |===
-| Name | Description | Optional | Default value
+| Name | Description | Required | Default value
 | `spring.cloud.gcp.trace.enabled` |
-Auto-configure Spring Cloud Sleuth to send traces to Stackdriver Trace. | Yes | `true`
+Auto-configure Spring Cloud Sleuth to send traces to Stackdriver Trace. | No | `true`
 | `spring.cloud.gcp.trace.executor-threads` |
 Number of threads to use by the underlying gRPC channel to send the trace request to Stackdriver. |
-Yes | `4`
+No | `4`
 | `spring.cloud.gcp.trace.buffer-size-bytes` |
 Buffer size in bytes. Traces will be flushed to Stackdriver when buffered trace messages exceed this
-size. | Yes | 1% of Runtime.totalMemory()
+size. | No | 1% of Runtime.totalMemory()
 | `spring.cloud.gcp.trace.scheduled-delay-seconds` |
 Buffered trace messages will be flushed to Stackdriver when buffered longer than scheduled delays
-(in seconds) even if the buffered message size didn't exceed the buffer size. | Yes | `10`
+(in seconds) even if the buffered message size didn't exceed the buffer size. | No | `10`
 | `spring.cloud.gcp.trace.project-id` |
-Overrides the project ID from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | Yes |
+Overrides the project ID from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
 | `spring.cloud.gcp.trace.credentials.location` |
 Overrides the credentials location from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> |
-Yes |
+No |
 | `spring.cloud.gcp.trace.credentials.scopes` |
 Overrides the credentials scopes from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> |
-Yes |
+No |
 |===
 
 You can use core Spring Cloud Sleuth properties to control Sleuth’s sampling rate, etc.

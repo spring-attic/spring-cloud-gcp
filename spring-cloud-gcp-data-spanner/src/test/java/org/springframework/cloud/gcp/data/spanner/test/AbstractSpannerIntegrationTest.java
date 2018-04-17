@@ -18,11 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-import com.google.cloud.spanner.DatabaseAdminClient;
-import com.google.cloud.spanner.DatabaseId;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -30,6 +26,7 @@ import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityImpl;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
@@ -75,10 +72,7 @@ public abstract class AbstractSpannerIntegrationTest {
 	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
 
 	@Autowired
-	protected DatabaseAdminClient databaseAdminClient;
-
-	@Autowired
-	protected DatabaseId databaseId;
+	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
 
 	@Autowired
 	protected ApplicationContext applicationContext;
@@ -111,20 +105,16 @@ public abstract class AbstractSpannerIntegrationTest {
 		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) this.applicationContext)
 				.getBeanFactory();
 		beanFactory.registerSingleton("tableNameSuffix", this.tableNameSuffix);
-		String instanceId = this.databaseId.getInstanceId().getInstance();
-		String database = this.databaseId.getDatabase();
 
-		if (!hasDatabaseDefined(instanceId, database)) {
-			this.databaseAdminClient.createDatabase(instanceId, database,
-					createSchemaStatements()).waitFor();
+		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
 			System.out.println(
 					this.getClass() + " - Integration database created with schema: " + createSchemaStatements());
 		}
 		else {
-			this.databaseAdminClient.updateDatabaseDdl(instanceId, database,
-					createSchemaStatements(), null).waitFor();
 			System.out.println(this.getClass() + " - schema created: " + createSchemaStatements());
 		}
+		this.spannerDatabaseAdminTemplate.executeDdlStrings(createSchemaStatements(),
+				true);
 	}
 
 	protected List<String> createSchemaStatements() {
@@ -154,14 +144,9 @@ public abstract class AbstractSpannerIntegrationTest {
 			if (this.setupFailed) {
 				return;
 			}
-			String instanceId = this.databaseId.getInstanceId().getInstance();
-			String database = this.databaseId.getDatabase();
-			if (hasDatabaseDefined(instanceId, database)) {
-				this.databaseAdminClient.updateDatabaseDdl(instanceId, database,
-						dropSchemaStatements(),
-						null).waitFor();
-				System.out.println("Integration database cleaned up!");
-			}
+			this.spannerDatabaseAdminTemplate.executeDdlStrings(dropSchemaStatements(),
+					false);
+			System.out.println("Integration database cleaned up!");
 		}
 		finally {
 			// we need to remove the extra bean created even if there is a failure at startup
@@ -169,12 +154,5 @@ public abstract class AbstractSpannerIntegrationTest {
 					.getAutowireCapableBeanFactory();
 			beanFactory.destroySingleton(TABLE_NAME_SUFFIX_BEAN_NAME);
 		}
-	}
-
-	private boolean hasDatabaseDefined(String instanceId, String database) {
-		Stream<String> databaseNames = StreamSupport
-				.stream(this.databaseAdminClient.listDatabases(instanceId).getValues().spliterator(), false)
-				.map(d -> d.getId().getDatabase());
-		return databaseNames.anyMatch(database::equals);
 	}
 }

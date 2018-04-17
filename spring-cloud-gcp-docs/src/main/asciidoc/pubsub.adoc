@@ -251,19 +251,19 @@ public List<String> listSubscriptions() {
 The Spring Boot starter for Google Cloud Pub/Sub provides the following configuration options:
 
 |===
-| Name | Description | Optional | Default value
-| `spring.cloud.gcp.pubsub.enabled` | Enables or disables Pub/Sub auto-configuration | Yes | `true`
+| Name | Description | Required | Default value
+| `spring.cloud.gcp.pubsub.enabled` | Enables or disables Pub/Sub auto-configuration | No | `true`
 | `spring.cloud.gcp.pubsub.subscriber-executor-threads` | Number of threads used by `Subscriber`
-instances created by `SubscriberFactory` | Yes | 4
+instances created by `SubscriberFactory` | No | 4
 | `spring.cloud.gcp.pubsub.publisher-executor-threads` | Number of threads used by `Publisher`
-instances created by `PublisherFactory` | Yes | 4
+instances created by `PublisherFactory` | No | 4
 | `spring.cloud.gcp.pubsub.project-id` | GCP project ID where the Google Cloud Pub/Sub API
 is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
-| Yes |
+| No |
 | `spring.cloud.gcp.pubsub.credentials.location` | OAuth2 credentials for authenticating with the
 Google Cloud Pub/Sub API, if different from the ones in the
-<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | Yes |
+<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
 | `spring.cloud.gcp.pubsub.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
-Pub/Sub credentials | Yes | https://www.googleapis.com/auth/pubsub
+Pub/Sub credentials | No | https://www.googleapis.com/auth/pubsub
 |===

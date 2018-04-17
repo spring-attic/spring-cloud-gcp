@@ -32,7 +32,7 @@ public interface SpannerRepository<T, ID> extends PagingAndSortingRepository<T, 
 	 * functions.
 	 * @return the operations object providing Spanner functions.
 	 */
-	SpannerOperations getSpannerOperations();
+	SpannerOperations getSpannerTemplate();
 
 	/**
 	 * Performs multiple read and write operations in a single transaction.

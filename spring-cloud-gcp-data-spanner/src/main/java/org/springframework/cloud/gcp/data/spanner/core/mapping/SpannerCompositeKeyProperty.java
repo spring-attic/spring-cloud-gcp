@@ -80,6 +80,11 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	@Override
+	public boolean isMapped() {
+		return false;
+	}
+
+	@Override
 	public PersistentEntity<?, SpannerPersistentProperty> getOwner() {
 		return this.spannerPersistentEntity;
 	}
