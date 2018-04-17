@@ -29,6 +29,14 @@ We would love to hear from you.
 If you want to collaborate in the project, we would also love to get your Pull Requests. Before you
 start working on one, please take a look at our link:CONTRIBUTING.adoc[collaboration manual].
 
+== Spring Initializr
+
+Spring Initializr contains Spring Cloud GCP autoconfguration support through the `GCP Support` entry.
+
+`GCP Messaging` contains the Spring Cloud GCP messaging support with Google Cloud Pub/Sub working out of the box.
+
+Similarly to `GCP Messaging`, `GCP Storage` contains the Google Cloud Storage support with no other dependencies needed.
+
 == Spring Milestones Maven Repository
 
 Currently, the Maven artifacts for the project are only available in the Spring Milestones repository.

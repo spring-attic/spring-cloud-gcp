@@ -24,6 +24,8 @@ Currently, Spring Cloud GCP lets you leverage the power and simplicity of the Sp
 
 include::dependency-management.adoc[]
 
+include::getting-started.adoc[]
+
 include::core.adoc[]
 
 include::pubsub.adoc[]

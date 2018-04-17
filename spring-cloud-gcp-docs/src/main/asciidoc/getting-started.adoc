@@ -1,0 +1,31 @@
+== Getting started
+
+There are many available resources to get you up to speed with our libraries as quickly as possible.
+
+=== Spring Initializr
+
+There are three entries in http://start.spring.io/[Spring Initializr] for Spring Cloud GCP:
+
+- GCP Support
+- GCP Messaging
+- GCP Storage
+
+The GCP Support entry contains autoconfiguration support for every Spring Cloud GCP integration.
+Most of the autoconfiguration code is only enabled if other dependencies are added to the classpath.
+
+The GCP Messaging entry adds the GCP Support entry and all the required dependencies so that the Google Cloud Pub/Sub integrations work out of the box.
+
+The GCP Storage entry adds the GCP Support entry and all the required dependencies so that the Google Cloud Storage integrations work out of the box.
+
+=== Code Samples
+
+There are https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples[code samples] available that demonstrate the usage of all our integrations.
+
+=== Code Challenges
+
+In a code challenge, you perform a task step by step, using one integration.
+There are a number of challenges available in the https://codelabs.developers.google.com/spring[Google Developers Codelabs] page.
+
+=== Getting Started Guides
+
+A Spring Getting Started guide on messaging with Spring Integration Channel Adapters for Google Cloud Pub/Sub is available from https://spring.io/guides/gs/messaging-gcp-pubsub/[Spring Guides].
