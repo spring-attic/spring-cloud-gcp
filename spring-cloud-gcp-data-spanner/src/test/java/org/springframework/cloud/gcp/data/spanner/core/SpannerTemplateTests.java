@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -199,10 +200,20 @@ public class SpannerTemplateTests {
 	public void findAllPageableNoOptionsTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
 		Pageable page = mock(Pageable.class);
-		doReturn(null).when(spyTemplate).queryAll(eq(TestEntity.class), same(page),
-				eq(null));
+		Sort sort = Sort.by(Order.asc("id"));
+		when(page.getSort()).thenReturn(sort);
+		when(page.getOffset()).thenReturn(3L);
+		when(page.getPageSize()).thenReturn(5);
+		doReturn(1L).when(spyTemplate).count(eq(TestEntity.class));
+		doAnswer(invocation -> {
+			Statement statement = invocation.getArgument(1);
+			assertEquals(
+					"SELECT * FROM custom_test_table ORDER BY id ASC LIMIT 5 OFFSET 3;",
+					statement.getSql());
+			return Collections.emptyList();
+		}).when(spyTemplate).query(eq(TestEntity.class), any(), any());
 		spyTemplate.queryAll(TestEntity.class, page);
-		verify(spyTemplate, times(1)).queryAll(eq(TestEntity.class), same(page), eq(null));
+		verify(spyTemplate, times(1)).query(eq(TestEntity.class), any(), any());
 	}
 
 	@Test

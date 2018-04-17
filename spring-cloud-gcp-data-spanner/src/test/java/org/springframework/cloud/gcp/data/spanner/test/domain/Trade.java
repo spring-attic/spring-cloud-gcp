@@ -17,8 +17,11 @@
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.Objects;
 import java.util.UUID;
+
+import org.assertj.core.util.DateUtil;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -37,6 +40,8 @@ public class Trade {
 	private int age;
 
 	private Instant tradeTime;
+
+	private Date tradeDate;
 
 	private String action;
 
@@ -60,7 +65,8 @@ public class Trade {
 		t.symbol = "ABCD";
 		t.action = "BUY";
 		t.traderId = traderId;
-		t.tradeTime = Instant.now();
+		t.tradeTime = Instant.ofEpochSecond(333);
+		t.tradeDate = Date.from(t.tradeTime);
 		t.price = 100.0;
 		t.shares = 12345.6;
 		return t;
@@ -70,6 +76,7 @@ public class Trade {
 		return "CREATE TABLE " + tableName + "(" + "\tid STRING(128) NOT NULL,\n"
 				+ "\tage INT64,\n" + "\taction STRING(15),\n" + "\tprice FLOAT64,\n"
 				+ "\tshares FLOAT64,\n" + "\ttradeTime TIMESTAMP,\n"
+				+ "\ttradeDate DATE,\n"
 				+ "\tsymbol STRING(5),\n" + "\ttrader_id STRING(128),\n"
 				+ ") PRIMARY KEY (id, trader_id)";
 	}
@@ -87,6 +94,7 @@ public class Trade {
 			return false;
 		}
 		Trade trade = (Trade) o;
+
 		return Objects.equals(this.id, trade.id)
 				&& Objects.equals(this.age, trade.age)
 				&& Objects.equals(this.action, trade.action)
@@ -94,13 +102,17 @@ public class Trade {
 				&& Objects.equals(this.shares, trade.shares)
 				&& Objects.equals(this.symbol, trade.symbol)
 				&& Objects.equals(this.tradeTime, trade.tradeTime)
-				&& Objects.equals(this.traderId, trade.traderId);
+				&& Objects.equals(this.traderId, trade.traderId)
+				// java Date contains the time of day, but Spanner Date is only specific
+				// to the day.
+				&& Objects.equals(DateUtil.truncateTime(this.tradeDate),
+						DateUtil.truncateTime(trade.tradeDate));
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.id, this.age, this.action, this.price, this.shares,
-				this.symbol, this.tradeTime,
+				this.symbol, this.tradeTime, DateUtil.truncateTime(this.tradeDate),
 				this.traderId);
 	}
 
@@ -173,6 +185,15 @@ public class Trade {
 		return "Trade{" + "id='" + this.id + '\'' + ", action='" + this.action + '\''
 				+ ", age=" + this.age + ", price=" + this.price + ", shares="
 				+ this.shares + ", symbol='" + this.symbol + ", tradeTime="
-				+ this.tradeTime + '\'' + ", traderId='" + this.traderId + '\'' + '}';
+				+ this.tradeTime + ", tradeDate='" + DateUtil.truncateTime(this.tradeDate)
+				+ '\'' + ", traderId='" + this.traderId + '\'' + '}';
+	}
+
+	public Date getTradeDate() {
+		return this.tradeDate;
+	}
+
+	public void setTradeDate(Date tradeDate) {
+		this.tradeDate = tradeDate;
 	}
 }

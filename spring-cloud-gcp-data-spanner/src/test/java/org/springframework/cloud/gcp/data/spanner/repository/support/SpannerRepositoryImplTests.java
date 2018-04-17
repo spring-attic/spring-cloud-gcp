@@ -23,8 +23,11 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
+import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
@@ -55,212 +58,225 @@ public class SpannerRepositoryImplTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void constructorNullEntityTypeTest() {
-		new SimpleSpannerRepository(mock(SpannerOperations.class), null);
+		new SimpleSpannerRepository(mock(SpannerTemplate.class), null);
 	}
 
 	@Test
 	public void getSpannerOperationsTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
-		assertSame(operations, new SimpleSpannerRepository(operations, Object.class)
-				.getSpannerOperations());
+		SpannerTemplate template = mock(SpannerTemplate.class);
+		assertSame(template,
+				new SimpleSpannerRepository(template, Object.class).getSpannerTemplate());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void saveNullObjectTest() {
-		new SimpleSpannerRepository(mock(SpannerOperations.class), Object.class).save(null);
+		new SimpleSpannerRepository(mock(SpannerTemplate.class), Object.class).save(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void findNullIdTest() {
-		new SimpleSpannerRepository(mock(SpannerOperations.class), Object.class)
+		new SimpleSpannerRepository(mock(SpannerTemplate.class), Object.class)
 				.findById(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void existsNullIdTest() {
-		new SimpleSpannerRepository(mock(SpannerOperations.class), Object.class)
+		new SimpleSpannerRepository(mock(SpannerTemplate.class), Object.class)
 				.existsById(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void deleteNullIdTest() {
-		new SimpleSpannerRepository(mock(SpannerOperations.class), Object.class)
+		new SimpleSpannerRepository(mock(SpannerTemplate.class), Object.class)
 				.deleteById(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void deleteNullEntityTest() {
-		new SimpleSpannerRepository(mock(SpannerOperations.class), Object.class)
+		new SimpleSpannerRepository(mock(SpannerTemplate.class), Object.class)
 				.delete(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void deleteAllNullEntityTest() {
-		new SimpleSpannerRepository(mock(SpannerOperations.class), Object.class)
+		new SimpleSpannerRepository(mock(SpannerTemplate.class), Object.class)
 				.deleteAll(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void saveAllNullEntityTest() {
-		new SimpleSpannerRepository(mock(SpannerOperations.class), Object.class)
+		new SimpleSpannerRepository(mock(SpannerTemplate.class), Object.class)
 				.saveAll(null);
 	}
 
 	@Test
 	public void saveTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
+		SpannerTemplate template = mock(SpannerTemplate.class);
 		Object ob = new Object();
-		assertEquals(ob, new SimpleSpannerRepository(operations, Object.class).save(ob));
-		verify(operations, times(1)).upsert(eq(ob));
+		assertEquals(ob, new SimpleSpannerRepository(template, Object.class).save(ob));
+		verify(template, times(1)).upsert(eq(ob));
 	}
 
 	@Test
 	public void saveAllTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
+		SpannerTemplate template = mock(SpannerTemplate.class);
 		Object ob = new Object();
 		Object ob2 = new Object();
-		Iterable<Object> ret = new SimpleSpannerRepository(operations, Object.class)
+		Iterable<Object> ret = new SimpleSpannerRepository(template, Object.class)
 				.saveAll(Arrays.asList(ob, ob2));
 		assertThat(ret, containsInAnyOrder(ob, ob2));
-		verify(operations, times(1)).upsert(eq(ob));
-		verify(operations, times(1)).upsert(eq(ob2));
+		verify(template, times(1)).upsert(eq(ob));
+		verify(template, times(1)).upsert(eq(ob2));
 	}
 
 	@Test
 	public void findByIdTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
+		SpannerTemplate template = mock(SpannerTemplate.class);
 		Key key = Key.of("key");
 		Object ret = new Object();
-		when(operations.read(eq(Object.class), eq(key))).thenReturn(ret);
+		when(template.read(eq(Object.class), eq(key))).thenReturn(ret);
 		assertEquals(ret,
-				new SimpleSpannerRepository(operations, Object.class).findById(key).get());
-		verify(operations, times(1)).read(eq(Object.class), eq(key));
+				new SimpleSpannerRepository(template, Object.class).findById(key).get());
+		verify(template, times(1)).read(eq(Object.class), eq(key));
 	}
 
 	@Test
 	public void findByIdSingleItemTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
-		Key key = Key.of("key");
+		SpannerTemplate template = mock(SpannerTemplate.class);
+		// A real converter with the default converters is needed to test below. A java
+		// time type is given as a key and must be converted to Timestamp.
+		when(template.getSpannerConverter())
+				.thenReturn(new MappingSpannerConverter(new SpannerMappingContext()));
+		Timestamp timestamp = Timestamp.ofTimeMicroseconds(333);
+		Key key = Key.of(timestamp);
 		Object ret = new Object();
-		when(operations.read(eq(Object.class), eq(key))).thenReturn(ret);
-		assertEquals(ret, new SimpleSpannerRepository(operations, Object.class)
-				.findById("key").get());
-		verify(operations, times(1)).read(eq(Object.class), eq(key));
+		when(template.read(eq(Object.class), eq(key))).thenReturn(ret);
+		assertEquals(ret,
+				new SimpleSpannerRepository(template, Object.class).findById(
+						ConversionUtils.TIMESTAMP_INSTANT_CONVERTER.convert(timestamp))
+						.get());
+		verify(template, times(1)).read(eq(Object.class), eq(key));
 	}
 
 	@Test
 	public void findByIdListItemsTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
+		SpannerTemplate template = mock(SpannerTemplate.class);
+		// A real converter with the default converters is needed to test below. A java
+		// time type is given as a key and must be converted to Timestamp.
+		when(template.getSpannerConverter())
+				.thenReturn(new MappingSpannerConverter(new SpannerMappingContext()));
 		Timestamp timestamp = Timestamp.ofTimeMicroseconds(333);
 		Key key = Key.of("key", timestamp);
 		Object ret = new Object();
-		when(operations.read(eq(Object.class), eq(key))).thenReturn(ret);
-		assertEquals(ret, new SimpleSpannerRepository(operations, Object.class)
-				.findById(new Object[] { "key", timestamp }).get());
-		verify(operations, times(1)).read(eq(Object.class), eq(key));
+		when(template.read(eq(Object.class), eq(key))).thenReturn(ret);
+		assertEquals(ret, new SimpleSpannerRepository(template, Object.class)
+				.findById(new Object[] { "key",
+						ConversionUtils.TIMESTAMP_INSTANT_CONVERTER.convert(timestamp) })
+				.get());
+		verify(template, times(1)).read(eq(Object.class), eq(key));
 	}
 
 	@Test(expected = SpannerDataException.class)
 	public void findByIdEmptyKeyTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
-		new SimpleSpannerRepository(operations, Object.class).findById(new Object[] {})
+		SpannerTemplate template = mock(SpannerTemplate.class);
+		new SimpleSpannerRepository(template, Object.class).findById(new Object[] {})
 				.get();
 	}
 
 	@Test
 	public void existsByIdTestFound() {
-		SpannerOperations operations = mock(SpannerOperations.class);
+		SpannerTemplate template = mock(SpannerTemplate.class);
 		Key key = Key.of("key");
 		Object ret = new Object();
-		when(operations.read(eq(Object.class), eq(key))).thenReturn(ret);
-		assertTrue(new SimpleSpannerRepository(operations, Object.class).existsById(key));
+		when(template.read(eq(Object.class), eq(key))).thenReturn(ret);
+		assertTrue(new SimpleSpannerRepository(template, Object.class).existsById(key));
 	}
 
 	@Test
 	public void existsByIdTestNotFound() {
-		SpannerOperations operations = mock(SpannerOperations.class);
-		when(operations.read(eq(Object.class), (Key) any())).thenReturn(null);
+		SpannerTemplate template = mock(SpannerTemplate.class);
+		when(template.read(eq(Object.class), (Key) any())).thenReturn(null);
 		assertFalse(
-				new SimpleSpannerRepository(operations, Object.class)
+				new SimpleSpannerRepository(template, Object.class)
 						.existsById(Key.of("key")));
 	}
 
 	@Test
 	public void findAllTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
-		new SimpleSpannerRepository(operations, Object.class).findAll();
-		verify(operations, times(1)).readAll(eq(Object.class));
+		SpannerTemplate template = mock(SpannerTemplate.class);
+		new SimpleSpannerRepository(template, Object.class).findAll();
+		verify(template, times(1)).readAll(eq(Object.class));
 	}
 
 	@Test
 	public void findAllSortTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
+		SpannerTemplate template = mock(SpannerTemplate.class);
 		Sort sort = mock(Sort.class);
-		new SimpleSpannerRepository(operations, Object.class).findAll(sort);
-		verify(operations, times(1)).queryAll(eq(Object.class), same(sort));
+		new SimpleSpannerRepository(template, Object.class).findAll(sort);
+		verify(template, times(1)).queryAll(eq(Object.class), same(sort));
 	}
 
 	@Test
 	public void findAllPageableTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
+		SpannerTemplate template = mock(SpannerTemplate.class);
 		Pageable pageable = mock(Pageable.class);
-		new SimpleSpannerRepository(operations, Object.class).findAll(pageable);
-		verify(operations, times(1)).queryAll(eq(Object.class), same(pageable));
+		new SimpleSpannerRepository(template, Object.class).findAll(pageable);
+		verify(template, times(1)).queryAll(eq(Object.class), same(pageable));
 	}
 
 	@Test
 	public void findAllByIdTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
-		when(operations.read(eq(Object.class), (KeySet) any())).thenAnswer(invocation -> {
+		SpannerTemplate template = mock(SpannerTemplate.class);
+		when(template.read(eq(Object.class), (KeySet) any())).thenAnswer(invocation -> {
 			KeySet keys = invocation.getArgument(1);
 			assertThat(keys.getKeys(),
 					containsInAnyOrder(Key.of("key2"), Key.of("key1")));
 			return null;
 		});
-		new SimpleSpannerRepository(operations, Object.class)
+		new SimpleSpannerRepository(template, Object.class)
 				.findAllById(Arrays.asList(Key.of("key1"), Key.of("key2")));
 	}
 
 	@Test
 	public void countTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
-		new SimpleSpannerRepository(operations, Object.class).count();
-		verify(operations, times(1)).count(eq(Object.class));
+		SpannerTemplate template = mock(SpannerTemplate.class);
+		new SimpleSpannerRepository(template, Object.class).count();
+		verify(template, times(1)).count(eq(Object.class));
 	}
 
 	@Test
 	public void deleteByIdTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
+		SpannerTemplate template = mock(SpannerTemplate.class);
 		Key key = Key.of("key");
-		new SimpleSpannerRepository(operations, Object.class).deleteById(key);
-		verify(operations, times(1)).delete(eq(Object.class), eq(key));
+		new SimpleSpannerRepository(template, Object.class).deleteById(key);
+		verify(template, times(1)).delete(eq(Object.class), eq(key));
 	}
 
 	@Test
 	public void deleteTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
+		SpannerTemplate template = mock(SpannerTemplate.class);
 		Object ob = new Object();
-		new SimpleSpannerRepository(operations, Object.class).delete(ob);
-		verify(operations, times(1)).delete(eq(ob));
+		new SimpleSpannerRepository(template, Object.class).delete(ob);
+		verify(template, times(1)).delete(eq(ob));
 	}
 
 	@Test
 	public void deleteManyObsTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
+		SpannerTemplate template = mock(SpannerTemplate.class);
 		Iterable<String> obs = Arrays.asList("ob1", "ob2");
 		doAnswer(invocation -> {
 			Iterable<String> toDelete = invocation.getArgument(1);
 			assertThat(toDelete, containsInAnyOrder("ob1", "ob2"));
 			return null;
-		}).when(operations).delete(eq(String.class), same(obs));
-		new SimpleSpannerRepository(operations, Object.class).deleteAll(obs);
+		}).when(template).delete(eq(String.class), same(obs));
+		new SimpleSpannerRepository(template, Object.class).deleteAll(obs);
 	}
 
 	@Test
 	public void deleteAllTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
-		new SimpleSpannerRepository(operations, Object.class).deleteAll();
-		verify(operations, times(1)).delete(eq(Object.class), eq(KeySet.all()));
+		SpannerTemplate template = mock(SpannerTemplate.class);
+		new SimpleSpannerRepository(template, Object.class).deleteAll();
+		verify(template, times(1)).delete(eq(Object.class), eq(KeySet.all()));
 	}
 
 }

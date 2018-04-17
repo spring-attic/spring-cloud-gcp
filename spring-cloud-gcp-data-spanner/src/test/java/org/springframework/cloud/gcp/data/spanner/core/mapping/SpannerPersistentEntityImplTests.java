@@ -20,12 +20,15 @@ import io.grpc.Attributes.Key;
 import org.junit.Test;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.expression.spel.SpelEvaluationException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -120,7 +123,6 @@ public class SpannerPersistentEntityImplTests {
 				.hasIdProperty());
 	}
 
-
 	@Test(expected = SpannerDataException.class)
 	public void testSetIdProperty() {
 		SpannerPersistentEntityImpl<TestEntity> entity =
@@ -133,6 +135,19 @@ public class SpannerPersistentEntityImplTests {
 		entity.getPropertyAccessor(t).setProperty(idProperty, Key.of("blah"));
 	}
 
+	@Test
+	public void testIgnoredProperty() {
+		TestEntity t = new TestEntity();
+		t.id = "a";
+		t.something = "a";
+		t.notMapped = "b";
+		SpannerPersistentEntity p = new SpannerMappingContext()
+				.getPersistentEntity(TestEntity.class);
+		PersistentPropertyAccessor accessor = p.getPropertyAccessor(t);
+		p.doWithProperties((PropertyHandler) property -> {
+			assertNotEquals("b", accessor.getProperty(property));
+		});
+	}
 
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
@@ -141,6 +156,9 @@ public class SpannerPersistentEntityImplTests {
 
 		@Column(name = "custom_col")
 		String something;
+
+		@NotMapped
+		String notMapped;
 	}
 
 	private static class EntityNoCustomName {
