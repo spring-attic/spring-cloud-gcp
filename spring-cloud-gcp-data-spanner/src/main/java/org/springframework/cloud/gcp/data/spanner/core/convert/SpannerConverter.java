@@ -82,4 +82,34 @@ public interface SpannerConverter extends EntityReader<Object, Struct>,
 	 * are written.
 	 */
 	void write(Object source, WriteBuilder sink, Set<String> includeColumns);
+
+	/**
+	 * Returns true if this converter can convert from the source type to the target type.
+	 * @param sourceType the starting type
+	 * @param targetType the desired target type
+	 * @return
+	 */
+	boolean canConvert(Class sourceType, Class targetType);
+
+	/**
+	 * Converts the given object to the desired target type.
+	 * @param source the object to convert
+	 * @param targetType the desired target type
+	 * @return the converted object.
+	 */
+	Object convert(Object source, Class targetType);
+
+	/**
+	 * Return true if the given type is one that can be used as a component to a Spanner
+	 * Key.
+	 * @param type
+	 * @return
+	 */
+	boolean isValidSpannerKeyType(Class type);
+
+	/**
+	 * Return the set of classes directly writeable to Spanner without conversion.
+	 * @return
+	 */
+	Set<Class> directlyWriteableSpannerTypes();
 }

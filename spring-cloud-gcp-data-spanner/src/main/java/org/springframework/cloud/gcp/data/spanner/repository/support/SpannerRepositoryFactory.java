@@ -19,7 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.repository.support;
 import java.util.Optional;
 
 import org.springframework.beans.BeansException;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityInformation;
@@ -54,7 +54,7 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport
 
 	private final SpannerMappingContext spannerMappingContext;
 
-	private final SpannerOperations spannerOperations;
+	private final SpannerTemplate spannerTemplate;
 
 	private ApplicationContext applicationContext;
 
@@ -62,17 +62,15 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport
 	 * Constructor
 	 * @param spannerMappingContext the mapping context used to get mapping metadata for
 	 * entity types.
-	 * @param spannerOperations the spanner operations object used by Spanner
-	 * repositories.
+	 * @param spannerTemplate the spanner operations object used by Spanner repositories.
 	 */
 	public SpannerRepositoryFactory(SpannerMappingContext spannerMappingContext,
-			SpannerOperations spannerOperations) {
+			SpannerTemplate spannerTemplate) {
 		Assert.notNull(spannerMappingContext,
 				"A valid Spanner mapping context is required.");
-		Assert.notNull(spannerOperations,
-				"A valid Spanner operations object is required.");
+		Assert.notNull(spannerTemplate, "A valid Spanner template object is required.");
 		this.spannerMappingContext = spannerMappingContext;
-		this.spannerOperations = spannerOperations;
+		this.spannerTemplate = spannerTemplate;
 	}
 
 	@Override
@@ -91,7 +89,7 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport
 
 	@Override
 	protected Object getTargetRepository(RepositoryInformation metadata) {
-		return getTargetRepositoryViaReflection(metadata, this.spannerOperations,
+		return getTargetRepositoryViaReflection(metadata, this.spannerTemplate,
 				metadata.getDomainType());
 	}
 
@@ -105,7 +103,7 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport
 			EvaluationContextProvider evaluationContextProvider) {
 
 		return Optional.of(new SpannerQueryLookupStrategy(this.spannerMappingContext,
-				this.spannerOperations,
+				this.spannerTemplate,
 				delegateContextProvider(evaluationContextProvider), EXPRESSION_PARSER));
 	}
 

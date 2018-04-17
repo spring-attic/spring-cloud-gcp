@@ -153,7 +153,7 @@ public class ConversionUtils {
 			.of(SPANNER_TO_JAVA_DATE_CONVERTER, TIMESTAMP_INSTANT_CONVERTER, SPANNER_TO_JAVA_BYTE_ARRAY_CONVERTER,
 					SPANNER_TO_JAVA_TIMESTAMP_CONVERTER, SPANNER_TO_JAVA_SQL_DATE_CONVERTER);
 
-	static Class boxIfNeeded(Class propertyType) {
+	public static Class boxIfNeeded(Class propertyType) {
 		if (propertyType == null) {
 			return null;
 		}

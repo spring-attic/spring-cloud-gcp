@@ -92,6 +92,10 @@ public class SpannerTemplate implements SpannerOperations {
 		return this.mappingContext;
 	}
 
+	public SpannerConverter getSpannerConverter() {
+		return this.spannerConverter;
+	}
+
 	@Override
 	public <T> T read(Class<T> entityClass, Key key) {
 		return read(entityClass, key, null);
