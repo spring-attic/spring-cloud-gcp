@@ -65,13 +65,14 @@ class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
 	}
 
 	@Override
-	public <T> T performReadWriteTransaction(Function<SpannerOperations, T> operations) {
+	public <T> T performReadWriteTransaction(Function<SpannerTemplate, T> operations) {
 		throw new SpannerDataException("A read-write transaction is already under execution. "
 				+ "Opening sub-transactions is not supported!");
 	}
 
 	@Override
-	public <T> T performReadOnlyTransaction(Function<SpannerOperations, T> operations, SpannerReadOptions readOptions) {
+	public <T> T performReadOnlyTransaction(Function<SpannerTemplate, T> operations,
+			SpannerReadOptions readOptions) {
 		throw new SpannerDataException("A read-write transaction is already under execution. "
 				+ "Opening sub-transactions is not supported!");
 	}

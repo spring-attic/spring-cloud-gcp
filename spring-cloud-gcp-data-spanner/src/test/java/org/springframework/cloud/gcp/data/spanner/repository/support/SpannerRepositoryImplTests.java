@@ -282,24 +282,24 @@ public class SpannerRepositoryImplTests {
 
 	@Test
 	public void readOnlyTransactionTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
-		when(operations.performReadOnlyTransaction(any(), any()))
+		SpannerTemplate template = mock(SpannerTemplate.class);
+		when(template.performReadOnlyTransaction(any(), any()))
 				.thenAnswer(invocation -> {
 					Function f = invocation.getArgument(0);
-					return f.apply(operations);
+					return f.apply(template);
 				});
-		assertEquals("test", new SimpleSpannerRepository(operations, Object.class)
+		assertEquals("test", new SimpleSpannerRepository(template, Object.class)
 				.performReadOnlyTransaction(repo -> "test"));
 	}
 
 	@Test
 	public void readWriteTransactionTest() {
-		SpannerOperations operations = mock(SpannerOperations.class);
-		when(operations.performReadWriteTransaction(any())).thenAnswer(invocation -> {
+		SpannerTemplate template = mock(SpannerTemplate.class);
+		when(template.performReadWriteTransaction(any())).thenAnswer(invocation -> {
 			Function f = invocation.getArgument(0);
-			return f.apply(operations);
+			return f.apply(template);
 		});
-		assertEquals("test", new SimpleSpannerRepository(operations, Object.class)
+		assertEquals("test", new SimpleSpannerRepository(template, Object.class)
 				.performReadWriteTransaction(repo -> "test"));
 	}
 }

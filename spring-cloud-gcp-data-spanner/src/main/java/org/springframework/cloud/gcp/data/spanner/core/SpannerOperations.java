@@ -257,7 +257,7 @@ public interface SpannerOperations {
 	 * @param <T> the final return type of the operations.
 	 * @return the final result of the transaction.
 	 */
-	<T> T performReadWriteTransaction(Function<SpannerOperations, T> operations);
+	<T> T performReadWriteTransaction(Function<SpannerTemplate, T> operations);
 
 	/**
 	 * Performs multiple read-only operations in a single transaction.
@@ -267,6 +267,6 @@ public interface SpannerOperations {
 	 * @param <T> the final return type of the operations.
 	 * @return the final result of the transaction.
 	 */
-	<T> T performReadOnlyTransaction(Function<SpannerOperations, T> operations,
+	<T> T performReadOnlyTransaction(Function<SpannerTemplate, T> operations,
 			SpannerReadOptions readOptions);
 }

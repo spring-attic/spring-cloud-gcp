@@ -258,7 +258,7 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public <T> T performReadWriteTransaction(Function<SpannerOperations, T> operations) {
+	public <T> T performReadWriteTransaction(Function<SpannerTemplate, T> operations) {
 		return this.databaseClient.readWriteTransaction()
 				.run(new TransactionCallable<T>() {
 					@Nullable
@@ -276,7 +276,7 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public <T> T performReadOnlyTransaction(Function<SpannerOperations, T> operations,
+	public <T> T performReadOnlyTransaction(Function<SpannerTemplate, T> operations,
 			SpannerReadOptions readOptions) {
 		SpannerReadOptions options = readOptions == null ? new SpannerReadOptions()
 				: readOptions;
