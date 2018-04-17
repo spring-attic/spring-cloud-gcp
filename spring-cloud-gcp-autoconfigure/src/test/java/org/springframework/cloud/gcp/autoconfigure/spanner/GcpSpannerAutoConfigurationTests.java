@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerSqlTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.context.annotation.Bean;
@@ -60,6 +61,13 @@ public class GcpSpannerAutoConfigurationTests {
 	public void testTestRepositoryCreated() {
 		this.contextRunner.run(context -> {
 			assertThat(context.getBean(TestRepository.class)).isNotNull();
+		});
+	}
+
+	@Test
+	public void testSpannerSqlTemplateCreated() {
+		this.contextRunner.run(context -> {
+			assertThat(context.getBean(SpannerSqlTemplate.class)).isNotNull();
 		});
 	}
 
