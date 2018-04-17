@@ -228,8 +228,7 @@ public class GcpCloudSqlAutoConfiguration {
 
 			try {
 				// First tries the SQL configuration credential.
-				if (gcpCloudSqlProperties != null
-						&& gcpCloudSqlProperties.getCredentials() != null) {
+				if (gcpCloudSqlProperties.getCredentials().getLocation() != null) {
 					credentialsLocationFile =
 							gcpCloudSqlProperties.getCredentials().getLocation().getFile();
 				}

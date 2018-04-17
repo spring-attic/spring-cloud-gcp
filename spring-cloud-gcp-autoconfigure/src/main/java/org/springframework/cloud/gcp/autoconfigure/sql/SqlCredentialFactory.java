@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Base64;
 import java.util.Collections;
 
 import com.google.api.client.auth.oauth2.Credential;
@@ -66,7 +67,8 @@ public class SqlCredentialFactory implements CredentialFactory {
 
 		try {
 			if (encodedCredential != null) {
-				credentialsInputStream = new ByteArrayInputStream(encodedCredential.getBytes());
+				credentialsInputStream = new ByteArrayInputStream(
+						Base64.getDecoder().decode(encodedCredential.getBytes()));
 			}
 			else {
 				credentialsInputStream = new FileInputStream(credentialResourceLocation);
