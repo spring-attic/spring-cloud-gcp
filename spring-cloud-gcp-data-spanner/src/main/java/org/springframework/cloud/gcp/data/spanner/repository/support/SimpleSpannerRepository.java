@@ -24,6 +24,9 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.domain.Page;
@@ -36,27 +39,26 @@ import org.springframework.util.Assert;
  */
 public class SimpleSpannerRepository implements SpannerRepository {
 
-	private final SpannerOperations spannerOperations;
+	private final SpannerTemplate spannerTemplate;
 
 	private final Class entityType;
 
-	public SimpleSpannerRepository(SpannerOperations spannerOperations, Class entityType) {
-		Assert.notNull(spannerOperations,
-				"A valid SpannerOperations object is required.");
+	public SimpleSpannerRepository(SpannerTemplate spannerTemplate, Class entityType) {
+		Assert.notNull(spannerTemplate, "A valid SpannerTemplate object is required.");
 		Assert.notNull(entityType, "A valid entity type is required.");
-		this.spannerOperations = spannerOperations;
+		this.spannerTemplate = spannerTemplate;
 		this.entityType = entityType;
 	}
 
 	@Override
-	public SpannerOperations getSpannerOperations() {
-		return this.spannerOperations;
+	public SpannerOperations getSpannerTemplate() {
+		return this.spannerTemplate;
 	}
 
 	@Override
 	public Object save(Object entity) {
 		Assert.notNull(entity, "A non-null entity is required for saving.");
-		this.spannerOperations.upsert(entity);
+		this.spannerTemplate.upsert(entity);
 		return entity;
 	}
 
@@ -73,7 +75,7 @@ public class SimpleSpannerRepository implements SpannerRepository {
 	public Optional findById(Object key) {
 		Assert.notNull(key, "A non-null ID is required.");
 		return doIfKey(key, k -> Optional
-				.ofNullable(this.spannerOperations.read(this.entityType, k)));
+				.ofNullable(this.spannerTemplate.read(this.entityType, k)));
 	}
 
 	@Override
@@ -84,7 +86,7 @@ public class SimpleSpannerRepository implements SpannerRepository {
 
 	@Override
 	public Iterable findAll() {
-		return this.spannerOperations.readAll(this.entityType);
+		return this.spannerTemplate.readAll(this.entityType);
 	}
 
 	@Override
@@ -93,19 +95,19 @@ public class SimpleSpannerRepository implements SpannerRepository {
 		for (Object id : iterable) {
 			doIfKey(id, k -> builder.addKey(k));
 		}
-		return this.spannerOperations.read(this.entityType, builder.build());
+		return this.spannerTemplate.read(this.entityType, builder.build());
 	}
 
 	@Override
 	public long count() {
-		return this.spannerOperations.count(this.entityType);
+		return this.spannerTemplate.count(this.entityType);
 	}
 
 	@Override
 	public void deleteById(Object key) {
 		Assert.notNull(key, "A non-null ID is required.");
 		doIfKey(key, k -> {
-			this.spannerOperations.delete(this.entityType, k);
+			this.spannerTemplate.delete(this.entityType, k);
 			return null;
 		});
 	}
@@ -113,28 +115,28 @@ public class SimpleSpannerRepository implements SpannerRepository {
 	@Override
 	public void delete(Object entity) {
 		Assert.notNull(entity, "A non-null entity is required.");
-		this.spannerOperations.delete(entity);
+		this.spannerTemplate.delete(entity);
 	}
 
 	@Override
 	public void deleteAll(Iterable entities) {
 		Assert.notNull(entities, "A non-null list of entities is required.");
-		this.spannerOperations.delete(this.entityType, entities);
+		this.spannerTemplate.delete(this.entityType, entities);
 	}
 
 	@Override
 	public void deleteAll() {
-		this.spannerOperations.delete(this.entityType, KeySet.all());
+		this.spannerTemplate.delete(this.entityType, KeySet.all());
 	}
 
 	@Override
 	public Iterable findAll(Sort sort) {
-		return this.spannerOperations.queryAll(this.entityType, sort);
+		return this.spannerTemplate.queryAll(this.entityType, sort);
 	}
 
 	@Override
 	public Page findAll(Pageable pageable) {
-		return this.spannerOperations.queryAll(this.entityType, pageable);
+		return this.spannerTemplate.queryAll(this.entityType, pageable);
 	}
 
 	private <T> T doIfKey(Object key, Function<Key, T> operation) {
@@ -145,7 +147,7 @@ public class SimpleSpannerRepository implements SpannerRepository {
 			Key.Builder kb = Key.newBuilder();
 			for (Object keyPart : (isArray ? (Arrays.asList((Object[]) key))
 					: ((Iterable) key))) {
-				kb.appendObject(keyPart);
+				kb.appendObject(convertKeyPart(keyPart));
 			}
 			k = kb.build();
 			if (k.size() == 0) {
@@ -154,8 +156,36 @@ public class SimpleSpannerRepository implements SpannerRepository {
 			}
 		}
 		else {
-			k = key instanceof Key ? (Key) key : Key.of(key);
+			k = Key.class.isAssignableFrom(key.getClass()) ? (Key) key
+					: Key.of(convertKeyPart(key));
 		}
 		return operation.apply(k);
+	}
+
+	private Object convertKeyPart(Object object) {
+		SpannerConverter spannerConverter = this.spannerTemplate.getSpannerConverter();
+		if (spannerConverter
+				.isValidSpannerKeyType(ConversionUtils.boxIfNeeded(object.getClass()))) {
+			return object;
+		}
+		/*
+		 * Iterate through the supported Key component types in the same order as the
+		 * write converter. For example, if a type can be converted to both String and
+		 * Double, we want both the this key conversion and the write converter to choose
+		 * the same.
+		 */
+		for (Class validKeyType : spannerConverter.directlyWriteableSpannerTypes()) {
+			if (!spannerConverter.isValidSpannerKeyType(validKeyType)) {
+				continue;
+			}
+			if (spannerConverter.canConvert(object.getClass(),
+					validKeyType)) {
+				return spannerConverter.convert(object,
+						validKeyType);
+			}
+		}
+		throw new SpannerDataException(
+				"The given object type couldn't be built into a Spanner Key: "
+						+ object.getClass());
 	}
 }

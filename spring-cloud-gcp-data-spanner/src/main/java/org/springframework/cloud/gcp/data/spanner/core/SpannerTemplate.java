@@ -92,6 +92,10 @@ public class SpannerTemplate implements SpannerOperations {
 		return this.mappingContext;
 	}
 
+	public SpannerConverter getSpannerConverter() {
+		return this.spannerConverter;
+	}
+
 	@Override
 	public <T> T read(Class<T> entityClass, Key key) {
 		return read(entityClass, key, null);
@@ -178,7 +182,8 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> Page<T> queryAll(Class<T> entityClass, Pageable pageable) {
-		return queryAll(entityClass, pageable, null);
+		return queryAll(entityClass, pageable, new SpannerQueryOptions()
+				.setOffset(pageable.getOffset()).setLimit(pageable.getPageSize()));
 	}
 
 	@Override

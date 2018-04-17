@@ -60,3 +60,7 @@ is used.
 https://developers.google.com/identity/protocols/googlescopes[Google OAuth2 scopes] for Google
 Cloud Platform services that the credentials returned by the provided `CredentialsProvider` support.
 If unspecified, list of default scopes for every service supported by this project is used.
+
+== Spring Initializr
+
+This starter is available from Spring Initializr through the `GCP Support` entry.

@@ -35,3 +35,7 @@ credentials private key file
 | `spring.cloud.gcp.storage.credentials.scopes` | No | List of scopes for this service-specific
 credentials |
 |=======================================================================
+
+== Spring Initializr
+
+This starter is available from Spring Initializr through the `GCP Storage` entry.

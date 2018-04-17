@@ -21,6 +21,8 @@ https://cloud.google.com/spanner/[Google Cloud Spanner], add some records to it 
 Uses Spring Integration channel adapters to exchange messages through
 https://cloud.google.com/pubsub/docs/[Google Cloud Pub/Sub].
 
+- link:spring-cloud-gcp-integration-storage-sample[Spring Cloud GCP Integration Storage Sample]: Uses Spring Integration channel adapters to synchronize and write files to a Google Cloud Storage bucket.
+
 - link:spring-cloud-gcp-logging-sample[Spring Cloud GCP Logging Sample]:
 Uses the https://cloud.google.com/logging/docs/[Stackdriver Logging API] to store and group logs by
 trace ID.

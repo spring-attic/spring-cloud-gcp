@@ -149,6 +149,35 @@ public class SpannerPersistentEntityImplTests {
 		});
 	}
 
+	@Test(expected = SpannerDataException.class)
+	public void testInvalidTableName() {
+		SpannerPersistentEntityImpl<EntityBadName> entity = new SpannerPersistentEntityImpl<>(
+				ClassTypeInformation.from(EntityBadName.class));
+		entity.tableName();
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void testSpELInvalidName() {
+		SpannerPersistentEntityImpl<EntityWithExpression> entity = new SpannerPersistentEntityImpl<>(
+				ClassTypeInformation.from(EntityWithExpression.class));
+
+		ApplicationContext applicationContext = mock(ApplicationContext.class);
+		when(applicationContext.getBean("tablePostfix"))
+				.thenReturn("; DROP TABLE your_table;");
+		when(applicationContext.containsBean("tablePostfix")).thenReturn(true);
+
+		entity.setApplicationContext(applicationContext);
+		entity.tableName();
+	}
+
+	@Table(name = ";DROP TABLE your_table;")
+	private static class EntityBadName {
+		@PrimaryKey(keyOrder = 1)
+		String id;
+
+		String something;
+	}
+
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
 		@PrimaryKey(keyOrder = 1)

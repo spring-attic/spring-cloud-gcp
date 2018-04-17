@@ -22,7 +22,7 @@ import com.google.cloud.spanner.Key;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -49,14 +49,14 @@ public class SpannerRepositoryFactoryTests {
 
 	private SpannerMappingContext spannerMappingContext;
 
-	private SpannerOperations spannerOperations;
+	private SpannerTemplate spannerTemplate;
 
 	@Before
 	public void setUp() {
 		this.spannerMappingContext = new SpannerMappingContext();
-		this.spannerOperations = mock(SpannerOperations.class);
+		this.spannerTemplate = mock(SpannerTemplate.class);
 		this.spannerRepositoryFactory = new SpannerRepositoryFactory(
-				this.spannerMappingContext, this.spannerOperations);
+				this.spannerMappingContext, this.spannerTemplate);
 	}
 
 	@Test
@@ -76,7 +76,7 @@ public class SpannerRepositoryFactoryTests {
 	@Test(expected = MappingException.class)
 	public void getEntityInformationNotAvailableTest() {
 		SpannerRepositoryFactory factory = new SpannerRepositoryFactory(
-				mock(SpannerMappingContext.class), this.spannerOperations);
+				mock(SpannerMappingContext.class), this.spannerTemplate);
 		factory.getEntityInformation(TestEntity.class);
 	}
 
