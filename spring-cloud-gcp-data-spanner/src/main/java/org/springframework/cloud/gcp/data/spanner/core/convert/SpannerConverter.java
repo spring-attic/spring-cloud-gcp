@@ -84,46 +84,6 @@ public interface SpannerConverter extends EntityReader<Object, Struct>,
 	void write(Object source, WriteBuilder sink, Set<String> includeColumns);
 
 	/**
-	 * Determines if this converter can handle the given types for writing to Spanner
-	 * @param type the type of the property that data will be converted from Spanner in to
-	 * @param spannerSupportedType the desired Spanner supported type for reading.
-	 * @return true if the conversion is possible. false otherwise
-	 * @throws org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException if
-	 * the given desired Spanner supported type is not actually a supported Spanner type
-	 */
-	boolean canHandlePropertyTypeForSingularRead(Class type, Class spannerSupportedType);
-
-	/**
-	 * Determines if this converter can handle the given types for writing to Spanner
-	 * @param type the type of the property that data will be converted from Spanner in to
-	 * @param spannerSupportedArrayInnerType the desired Spanner supported type for reading.
-	 * @return true if the conversion is possible. false otherwise
-	 * @throws org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException if
-	 * the given desired Spanner supported type is not actually a supported Spanner type
-	 */
-	boolean canHandlePropertyTypeForArrayRead(Class type, Class spannerSupportedArrayInnerType);
-
-	/**
-	 * Determines if this converter can handle the given types for writing to Spanner
-	 * @param type the type of the property to be written to Spanner
-	 * @param spannerSupportedType the desired Spanner supported type for writing.
-	 * @return true if the conversion is possible. false otherwise
-	 * @throws org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException if
-	 * the given desired Spanner supported type is not actually a supported Spanner type
-	 */
-	boolean canHandlePropertyTypeForSingularWrite(Class type, Class spannerSupportedType);
-
-	/**
-	 * Determines if this converter can handle the given types for writing to Spanner
-	 * @param type the type of the property to be written to Spanner
-	 * @param spannerSupportedArrayInnerType the desired Spanner supported type for writing.
-	 * @return true if the conversion is possible. false otherwise
-	 * @throws org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException if
-	 * the given desired Spanner supported type is not actually a supported Spanner type
-	 */
-	boolean canHandlePropertyTypeForArrayWrite(Class type, Class spannerSupportedArrayInnerType);
-
-	/**
 	 * Returns true if this converter can convert from the source type to the target type.
 	 * @param sourceType the starting type
 	 * @param targetType the desired target type
@@ -152,4 +112,15 @@ public interface SpannerConverter extends EntityReader<Object, Struct>,
 	 * @return
 	 */
 	Set<Class> directlyWriteableSpannerTypes();
+
+	/**
+	 * Gets the type that will work for both read and writes with Spanner directly.
+	 * @param originalType the original type that is possibly convertable by this
+	 * converter.
+	 * @param isIterableInnerType true if the given type refers to an inner type. This is
+	 * significant because Spanner does not support the same types as singular items and
+	 * as array elements.
+	 * @return the Java type that works directly with Spanner.
+	 */
+	Class getSpannerJavaType(Class originalType, boolean isIterableInnerType);
 }

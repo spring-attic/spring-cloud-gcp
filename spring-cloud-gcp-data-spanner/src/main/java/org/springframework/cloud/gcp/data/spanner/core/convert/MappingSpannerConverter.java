@@ -140,7 +140,32 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 	}
 
 	@Override
-	public boolean canHandlePropertyTypeForSingularRead(Class type,
+	public Class getSpannerJavaType(Class originalType, boolean isIterableInnerType) {
+		Set<Class> spannerTypes = (isIterableInnerType
+				? MappingSpannerWriteConverter.iterablePropertyType2ToMethodMap
+				: MappingSpannerWriteConverter.singleItemType2ToMethodMap).keySet();
+		if (spannerTypes.contains(originalType)) {
+			return originalType;
+		}
+		Class ret = null;
+		for (Class spannerType : spannerTypes) {
+			if (isIterableInnerType
+					&& canHandlePropertyTypeForArrayRead(originalType, spannerType)
+					&& canHandlePropertyTypeForArrayWrite(originalType, spannerType)) {
+				ret = spannerType;
+				break;
+			}
+			else if (!isIterableInnerType
+					&& canHandlePropertyTypeForSingularRead(originalType, spannerType)
+					&& canHandlePropertyTypeForSingularWrite(originalType, spannerType)) {
+				ret = spannerType;
+				break;
+			}
+		}
+		return ret;
+	}
+
+	private boolean canHandlePropertyTypeForSingularRead(Class type,
 			Class spannerSupportedType) {
 		if (!MappingSpannerReadConverter.singleItemReadMethodMapping
 				.containsKey(spannerSupportedType)) {
@@ -153,8 +178,7 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 				|| this.readConverter.canConvert(spannerSupportedType, type);
 	}
 
-	@Override
-	public boolean canHandlePropertyTypeForArrayRead(Class type,
+	private boolean canHandlePropertyTypeForArrayRead(Class type,
 			Class spannerSupportedArrayInnerType) {
 		if (!MappingSpannerReadConverter.readIterableMapping
 				.containsKey(spannerSupportedArrayInnerType)) {
@@ -167,8 +191,7 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 				|| this.readConverter.canConvert(spannerSupportedArrayInnerType, type);
 	}
 
-	@Override
-	public boolean canHandlePropertyTypeForSingularWrite(Class type,
+	private boolean canHandlePropertyTypeForSingularWrite(Class type,
 			Class spannerSupportedType) {
 		if (!MappingSpannerWriteConverter.singleItemType2ToMethodMap
 				.containsKey(spannerSupportedType)) {
@@ -180,8 +203,7 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 				|| this.writeConverter.canConvert(type, spannerSupportedType);
 	}
 
-	@Override
-	public boolean canHandlePropertyTypeForArrayWrite(Class type,
+	private boolean canHandlePropertyTypeForArrayWrite(Class type,
 			Class spannerSupportedArrayInnerType) {
 		if (!MappingSpannerWriteConverter.iterablePropertyType2ToMethodMap
 				.containsKey(spannerSupportedArrayInnerType)) {

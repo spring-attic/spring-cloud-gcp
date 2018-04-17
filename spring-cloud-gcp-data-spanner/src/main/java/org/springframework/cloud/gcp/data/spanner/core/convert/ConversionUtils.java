@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 import java.util.OptionalLong;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -104,36 +103,6 @@ public class ConversionUtils {
 						: "");
 	}
 
-	private static Class getSpannerJavaType(SpannerConverter spannerConverter,
-			Class originalType, boolean isIterableInnerType) {
-		Set<Class> spannerTypes = (isIterableInnerType
-				? MappingSpannerWriteConverter.iterablePropertyType2ToMethodMap
-				: MappingSpannerWriteConverter.singleItemType2ToMethodMap).keySet();
-		if (spannerTypes.contains(originalType)) {
-			return originalType;
-		}
-		Class ret = null;
-		for (Class spannerType : spannerTypes) {
-			if (isIterableInnerType
-					&& spannerConverter.canHandlePropertyTypeForArrayRead(originalType,
-							spannerType)
-					&& spannerConverter.canHandlePropertyTypeForArrayWrite(originalType,
-							spannerType)) {
-				ret = spannerType;
-				break;
-			}
-			else if (!isIterableInnerType
-					&& spannerConverter.canHandlePropertyTypeForSingularRead(originalType,
-							spannerType)
-					&& spannerConverter.canHandlePropertyTypeForSingularWrite(
-							originalType, spannerType)) {
-				ret = spannerType;
-				break;
-			}
-		}
-		return ret;
-	}
-
 	public static String getColumnDDLString(
 			SpannerPersistentProperty spannerPersistentProperty,
 			SpannerConverter spannerConverter) {
@@ -146,7 +115,7 @@ public class ConversionUtils {
 						"Cannot get column DDL for iterable type without annotated inner type.");
 			}
 			Type spannerSupportedInnerType = JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
-					.get(getSpannerJavaType(spannerConverter, innerType, true));
+					.get(spannerConverter.getSpannerJavaType(innerType, true));
 			if (spannerSupportedInnerType == null) {
 				throw new SpannerDataException(
 						"Could not find suitable Spanner column inner type for property type:"
@@ -156,7 +125,7 @@ public class ConversionUtils {
 					spannerPersistentProperty.getMaxColumnLength());
 		}
 		Type spannerColumnType = JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
-				.get(getSpannerJavaType(spannerConverter, columnType, false));
+				.get(spannerConverter.getSpannerJavaType(columnType, false));
 		if (spannerColumnType == null) {
 			throw new SpannerDataException(
 					"Could not find suitable Spanner column type for property type:"
