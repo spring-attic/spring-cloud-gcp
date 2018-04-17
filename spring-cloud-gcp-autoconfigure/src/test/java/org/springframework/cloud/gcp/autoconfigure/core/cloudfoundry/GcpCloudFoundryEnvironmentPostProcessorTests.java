@@ -90,6 +90,20 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 				});
 	}
 
+	@Test
+	public void test2Sqls() throws IOException {
+		String vcapFileContents = new String(Files.readAllBytes(
+				new ClassPathResource("VCAP_SERVICES_2_SQL").getFile().toPath()));
+		this.contextRunner.withSystemProperties("VCAP_SERVICES=" + vcapFileContents)
+				.run(context -> {
+					GcpCloudSqlProperties sqlProperties =
+							context.getBean(GcpCloudSqlProperties.class);
+					assertThat(sqlProperties.getDatabaseName()).isNull();
+					assertThat(sqlProperties.getInstanceConnectionName()).isNull();
+					assertThat(sqlProperties.getCredentials().getEncodedKey()).isNull();
+				});
+	}
+
 	private String getPrivateKeyDataFromJson(String json, String serviceName) {
 		JsonParser parser = JsonParserFactory.getJsonParser();
 		Map<String, Object> vcapMap = parser.parseMap(json);

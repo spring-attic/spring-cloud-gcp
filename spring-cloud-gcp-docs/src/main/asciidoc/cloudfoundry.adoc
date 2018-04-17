@@ -7,5 +7,4 @@ In cases like Pub/Sub's topic and subscription, or Storage's bucket name, where 
 For example, to retrieve the provisioned Pub/Sub topic, you can use the `vcap.services.mypubsub.credentials.topic_name` property from the application environment.
 
 NOTE: If the same service is bound to the same application more than once, the auto configuration will not be able to choose among bindings and will not be activated for that service.
-
-NOTE: If Cloud SQL MySQL and PostgreSQL are simultaneously enabled in your Cloud Foundry app, the PostgreSQL settings will have precedence over the MySQL ones.
+This includes both MySQL and PostgreSQL bindings to the same app.

@@ -17,9 +17,11 @@
 package org.springframework.cloud.gcp.autoconfigure.core.cloudfoundry;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.logging.Log;
@@ -94,8 +96,8 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 		/**
 		 * Direct mapping of GCP service broker field names in VCAP_SERVICES JSON to Spring Cloud
-		 * GCP property names. {@link #retrieveCfProperties(Map, GcpCfService)} uses this map to
-		 * perform the actual transformation.
+		 * GCP property names. {@link #retrieveCfProperties(Map, String, String, Map)} uses this map
+		 * to perform the actual transformation.
 		 *
 		 * <p>For instance, "ProjectId" for the "google-storage" service will map to
 		 * "spring.cloud.gcp.storage.project-id" field.</p>
@@ -132,7 +134,16 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 			Properties gcpCfServiceProperties = new Properties();
 
-			Arrays.stream(GcpCfService.values()).forEach(
+			Set<GcpCfService> servicesToMap = new HashSet<>(Arrays.asList(GcpCfService.values()));
+			if (vcapMap.containsKey(GcpCfService.MYSQL.getCfServiceName())
+					&& vcapMap.containsKey(GcpCfService.POSTGRES.getCfServiceName())) {
+				LOGGER.warn("Both MySQL and PostgreSQL bound to the app. "
+						+ "Not configuring Cloud SQL.");
+				servicesToMap.remove(GcpCfService.MYSQL);
+				servicesToMap.remove(GcpCfService.POSTGRES);
+			}
+
+			servicesToMap.forEach(
 					service -> gcpCfServiceProperties.putAll(
 							retrieveCfProperties(
 									vcapMap,

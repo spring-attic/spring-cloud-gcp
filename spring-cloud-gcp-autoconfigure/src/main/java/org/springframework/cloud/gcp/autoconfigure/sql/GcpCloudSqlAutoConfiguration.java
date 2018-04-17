@@ -39,14 +39,12 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.autoconfigure.core.AppEngineCondition;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
-import org.springframework.cloud.gcp.autoconfigure.core.cloudfoundry.GcpCloudFoundryEnvironmentPostProcessor;
 import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.util.StringUtils;
 
@@ -174,8 +172,7 @@ public class GcpCloudSqlAutoConfiguration {
 				GcpCloudSqlProperties gcpCloudSqlProperties,
 				DataSourceProperties properties,
 				GcpProperties gcpProperties,
-				CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider,
-				Environment environment) {
+				CloudSqlJdbcInfoProvider cloudSqlJdbcInfoProvider) {
 
 			if (StringUtils.isEmpty(properties.getUsername())) {
 				properties.setUsername("root");
@@ -197,8 +194,7 @@ public class GcpCloudSqlAutoConfiguration {
 						+ "Not using generated Cloud SQL configuration");
 			}
 
-			if (environment.getProperty(
-					GcpCloudFoundryEnvironmentPostProcessor.VCAP_SERVICES_ENVVAR) != null) {
+			if (gcpCloudSqlProperties.getCredentials().getEncodedKey() != null) {
 				setCredentialsEncodedKeyProperty(gcpCloudSqlProperties);
 			}
 			else {
