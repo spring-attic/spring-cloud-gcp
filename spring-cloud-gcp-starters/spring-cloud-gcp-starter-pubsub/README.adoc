@@ -42,6 +42,6 @@ publisher executor.
 the link:../spring-cloud-gcp-starter/README.adoc[GCP Support Starter], in case the Google Cloud
 Pub/Sub service is hosted from a different GCP project ID.
 
-== Spring Initializr
+== `start.spring.io`
 
 This starter is available from Spring Initializr through the `GCP Messaging` entry.
