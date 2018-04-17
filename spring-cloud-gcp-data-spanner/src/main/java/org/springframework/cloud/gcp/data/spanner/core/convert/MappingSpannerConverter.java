@@ -30,6 +30,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -56,7 +57,17 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 			.add(Float.class).add(Double.class).add(String.class).add(ByteArray.class)
 			.add(Timestamp.class).add(com.google.cloud.Date.class).build();
 
+	@VisibleForTesting
+	MappingSpannerReadConverter getReadConverter() {
+		return this.readConverter;
+	}
+
 	private final MappingSpannerReadConverter readConverter;
+
+	@VisibleForTesting
+	MappingSpannerWriteConverter getWriteConverter() {
+		return this.writeConverter;
+	}
 
 	private final MappingSpannerWriteConverter writeConverter;
 
@@ -82,7 +93,8 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 
 	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext,
 			Collection<Converter> writeConverters, Collection<Converter> readConverters) {
-		super(getCustomConversions(ImmutableList.<Converter>builder()
+		super(getCustomConversions(
+				ImmutableList.<Converter>builder().addAll(DEFAULT_SPANNER_CONVERTERS)
 				.addAll(readConverters).addAll(writeConverters).build()), null);
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
