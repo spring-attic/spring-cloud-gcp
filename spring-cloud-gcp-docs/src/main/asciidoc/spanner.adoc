@@ -848,8 +848,7 @@ Include this dependency in your `pom.xml` to enable Spring Data REST Repositorie
 
 === Database and Schema Admin
 
-Databases and tables inside Spanner instances can be created automatically from your domain object
-Java code:
+Databases and tables inside Spanner instances can be created automatically from `SpannerPersistentEntity` objects:
 
 [source,java]
 ----
