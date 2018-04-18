@@ -37,7 +37,7 @@ import org.springframework.util.Assert;
 /**
  * @author Chengyuan Zhao
  */
-public class SimpleSpannerRepository implements SpannerRepository {
+public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> {
 
 	private final SpannerTemplate spannerTemplate;
 
@@ -53,6 +53,26 @@ public class SimpleSpannerRepository implements SpannerRepository {
 	@Override
 	public SpannerOperations getSpannerTemplate() {
 		return this.spannerTemplate;
+	}
+
+	@Override
+	public <A> A performReadOnlyTransaction(
+			Function<SpannerRepository<T, ID>, A> operations) {
+		return this.spannerTemplate
+				.performReadOnlyTransaction(
+						transactionSpannerOperations -> operations
+								.apply(new SimpleSpannerRepository<T, ID>(
+										transactionSpannerOperations, this.entityType)),
+						null);
+	}
+
+	@Override
+	public <A> A performReadWriteTransaction(
+			Function<SpannerRepository<T, ID>, A> operations) {
+		return this.spannerTemplate
+				.performReadWriteTransaction(transactionSpannerOperations -> operations
+						.apply(new SimpleSpannerRepository<T, ID>(transactionSpannerOperations,
+								this.entityType)));
 	}
 
 	@Override

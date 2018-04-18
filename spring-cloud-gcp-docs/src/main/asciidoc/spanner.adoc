@@ -707,6 +707,31 @@ You can also use `PagingAndSortingRepository` with Spanner Spring Data. The sort
 methods available from this interface operate on the current state of the Spanner database. As a
 result, beware that the state of the database (and the results) might change when moving page to page.
 
+==== Spanner Repository
+
+The `SpannerRepository` extends the `PagingAndSortingRepository`, but adds the read-only and the read-write
+transaction functionality provided by Spanner. These transactions work very similarly to
+those of `SpannerOperations`, but is specific to the repository's domain type and provides repository functions
+instead of template functions.
+
+For example, this is a read-write transaction:
+
+[source,java]
+----
+
+@Autowired
+SpannerRepository myRepo;
+
+public String doWorkInsideTransaction() {
+  return myRepo.performReadOnlyTransaction(
+    transactionSpannerRepo -> {
+      // work with the single-transaction transactionSpannerRepo here. This is a SpannerRepository object.
+
+      return "transaction completed";
+    }
+  );
+}
+----
 
 ==== Query methods by convention
 
