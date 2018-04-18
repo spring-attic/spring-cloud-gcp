@@ -829,6 +829,9 @@ Projections can be provided by name-convention-based query methods as well as by
 If using custom SQL queries, you can further restrict the columns retrieved from Spanner to just
 those required by the projection to improve performance.
 
+Properties of projection types defined using SpEL use the fixed name `target` for the underlying
+domain object. As a result accessing underlying properties take the form `target.<property-name>`.
+
 ==== REST Repositories
 
 When running with Spring Boot, repositories can act as REST services by simply annotating them:
