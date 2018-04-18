@@ -17,48 +17,22 @@ Most of the autoconfiguration code is only enabled if other dependencies are add
 |Spring Cloud GCP Starter |Required dependencies
 
 |Config
-|_None_
+|org.springframework.cloud:spring-cloud-gcp-starter-config
 
 |Spanner
-|- org.springframework.cloud:spring-cloud-gcp-data-spanner
-
-- org.springframework:spring-tx
+|org.springframework.cloud:spring-cloud-gcp-starter-data-spanner
 
 |Logging
-|- ch.qos.logback.contrib:logback-json-classic
-
-- com.google.cloud:google-cloud-logging-logback
-
-- org.springframework:spring-webmvc
-
-|Pub/Sub
-|org.springframework.cloud:spring-cloud-gcp-pubsub
+|org.springframework.cloud:spring-cloud-gcp-starter-logging
 
 |SQL - MySql
-|- org.springframework.boot:spring-boot-starter-jdbc
-
-- com.google.cloud.sql:mysql-socket-factory
-
-- mysql:mysql-connector-java
+|org.springframework.cloud:spring-cloud-gcp-starter-sql-mysql
 
 |SQL - PostgreSQL
-|- org.springframework.boot:spring-boot-starter-jdbc
-
-- com.google.cloud.sql:postgres-socket-factory
-
-- org.postgresql:postgresql
-
-|Storage
-|org.springframework.cloud:spring-cloud-gcp-storage
+|org.springframework.cloud:spring-cloud-gcp-starter-sql-postgres
 
 |Trace
-|- org.springframework.cloud:spring-cloud-starter-sleuth
-
-- com.google.cloud:google-cloud-trace
-
-- com.google.cloud.trace.v1:sink
-
-- com.google.api:gax
+|org.springframework.cloud:spring-cloud-gcp-starter-trace
 
 |===
 
