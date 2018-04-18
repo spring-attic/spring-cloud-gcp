@@ -122,7 +122,7 @@ public class SpannerTemplate implements SpannerOperations {
 			SpannerQueryOptions options) {
 		return this.spannerConverter.mapToList(executeQuery(statement, options),
 				entityClass, Optional.empty(),
-				options == null ? false : options.isAllowMissingResultSetColumns());
+				options == null ? false : options.isAllowPartialRead());
 	}
 
 	@Override

@@ -801,8 +801,7 @@ List<Trade> fetchByActionNamedQuery(String action);
 This allows table names evaluated with SpEL to be used in custom queries.
 
 ==== Projections
-
-Spring Data Spanner supports projections. You can define projection interfaces based
+Spring Data Spanner supports {spring-data-commons-ref}/#projections[projections]. You can define projection interfaces based
 on domain types and add query methods that return them in your repository:
 
 [source, java]

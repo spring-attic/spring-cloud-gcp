@@ -40,7 +40,7 @@ public class SpannerQueryOptions {
 
 	private OptionalLong offset = OptionalLong.empty();
 
-	private boolean allowMissingResultSetColumns;
+	private boolean allowPartialRead;
 
 	/**
 	 * Constructor to create an instance. Use the extension-style add/set functions to add
@@ -126,13 +126,13 @@ public class SpannerQueryOptions {
 		return this.queryOptions.toArray(new QueryOption[this.queryOptions.size()]);
 	}
 
-	public boolean isAllowMissingResultSetColumns() {
-		return this.allowMissingResultSetColumns;
+	public boolean isAllowPartialRead() {
+		return this.allowPartialRead;
 	}
 
-	public SpannerQueryOptions setAllowMissingResultSetColumns(
-			boolean allowMissingResultSetColumns) {
-		this.allowMissingResultSetColumns = allowMissingResultSetColumns;
+	public SpannerQueryOptions setAllowPartialRead(
+			boolean allowPartialRead) {
+		this.allowPartialRead = allowPartialRead;
 		return this;
 	}
 }

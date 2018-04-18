@@ -108,6 +108,6 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		return this.spannerOperations.query(this.entityType,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 						resolveEntityClassNames(this.sql), this.tags, parameters),
-				new SpannerQueryOptions().setAllowMissingResultSetColumns(true));
+				new SpannerQueryOptions().setAllowPartialRead(true));
 	}
 }

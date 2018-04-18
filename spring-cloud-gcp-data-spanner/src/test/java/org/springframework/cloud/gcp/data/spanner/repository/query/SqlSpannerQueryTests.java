@@ -112,7 +112,7 @@ public class SqlSpannerQueryTests {
 				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
 					SpannerQueryOptions queryOptions = invocation.getArgument(2);
-					assertTrue(queryOptions.isAllowMissingResultSetColumns());
+					assertTrue(queryOptions.isAllowPartialRead());
 
 					assertEquals(entityResolvedSql, statement.getSql());
 
