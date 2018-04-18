@@ -116,18 +116,18 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 
 	@Override
 	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass) {
-		return mapToList(resultSet, entityClass, Optional.empty());
+		return mapToList(resultSet, entityClass, Optional.empty(), false);
 	}
 
 	@Override
 	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
-			Optional<Set<String>> includeColumns) {
+			Optional<Set<String>> includeColumns, boolean allowMissingColumns) {
 		ArrayList<T> result = new ArrayList<>();
 		while (resultSet.next()) {
 			result.add(this.readConverter.read(entityClass,
 					resultSet.getCurrentRowAsStruct(),
 					includeColumns == null || !includeColumns.isPresent() ? null
-							: includeColumns.get()));
+							: includeColumns.get(), allowMissingColumns));
 		}
 		resultSet.close();
 		return result;
@@ -138,7 +138,7 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 			String... includeColumns) {
 		return mapToList(resultSet, entityClass,
 				includeColumns.length == 0 ? Optional.empty()
-						: Optional.of(new HashSet<>(Arrays.asList(includeColumns))));
+						: Optional.of(new HashSet<>(Arrays.asList(includeColumns))), false);
 	}
 
 	public void write(Object source, WriteBuilder sink, Set<String> includeColumns) {

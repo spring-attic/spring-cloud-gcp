@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -36,6 +37,7 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -106,9 +108,11 @@ public class SqlSpannerQueryTests {
 
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
 
-		when(this.spannerOperations.query(eq(Trade.class), (Statement) any()))
+		when(this.spannerOperations.query(eq(Trade.class), (Statement) any(), any()))
 				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
+					SpannerQueryOptions queryOptions = invocation.getArgument(2);
+					assertTrue(queryOptions.isAllowPartialRead());
 
 					assertEquals(entityResolvedSql, statement.getSql());
 
@@ -128,7 +132,7 @@ public class SqlSpannerQueryTests {
 
 		sqlSpannerQuery.execute(params);
 
-		verify(this.spannerOperations, times(1)).query(any(), (Statement) any());
+		verify(this.spannerOperations, times(1)).query(any(), (Statement) any(), any());
 	}
 
 	@Table(name = "trades")

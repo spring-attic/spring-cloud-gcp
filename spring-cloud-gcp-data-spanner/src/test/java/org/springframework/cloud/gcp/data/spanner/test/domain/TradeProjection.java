@@ -16,23 +16,15 @@
 
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
-import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 
-import com.google.cloud.spanner.Key;
+/**
+ * @author Chengyuan Zhao
+ */
+public interface TradeProjection {
 
-import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
-import org.springframework.cloud.gcp.data.spanner.repository.query.Query;
-import org.springframework.data.repository.query.Param;
+	String getAction();
 
-public interface TradeRepository extends SpannerRepository<Trade, Key> {
-
-	List<Trade> findByTraderId(String traderId);
-
-	int countByAction(String action);
-
-	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
-			+ " WHERE action=@action")
-	List<Trade> annotatedTradesByAction(@Param("action") String action);
-
-	List<TradeProjection> findByAction(String action);
+	@Value("#{target.symbol + ' ' + target.action}")
+	String getSymbolAndAction();
 }

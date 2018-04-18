@@ -484,6 +484,12 @@ List<Trade> trades = this.spannerTemplate.queryAll(Trade.class, Sort.by("action"
 
 Partial read is only possible when using Queries. In case the rows returned by query have fewer columns than the entity that it will be mapped to, Spring Data will map the returned columns and leave the rest as they of the columns are.
 
+[source,java]
+----
+List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT action, symbol FROM trades"),
+    new SpannerQueryOptions().setAllowMissingResultSetColumns(true));
+----
+
 
 ===== Summary of options for Query vs Read
 
@@ -823,6 +829,38 @@ List<Trade> fetchByActionNamedQuery(String action);
 ----
 
 This allows table names evaluated with SpEL to be used in custom queries.
+
+==== Projections
+Spring Data Spanner supports {spring-data-commons-ref}/#projections[projections]. You can define projection interfaces based
+on domain types and add query methods that return them in your repository:
+
+[source, java]
+----
+public interface TradeProjection {
+
+	String getAction();
+
+	@Value("#{target.symbol + ' ' + target.action}")
+	String getSymbolAndAction();
+}
+
+public interface TradeRepository extends SpannerRepository<Trade, Key> {
+
+	List<Trade> findByTraderId(String traderId);
+
+	List<TradeProjection> findByAction(String action);
+
+	@Query("SELECT action, symbol FROM trades WHERE action = @action")
+	List<TradeProjection> findByQuery(String action);
+}
+----
+
+Projections can be provided by name-convention-based query methods as well as by custom SQL queries.
+If using custom SQL queries, you can further restrict the columns retrieved from Spanner to just
+those required by the projection to improve performance.
+
+Properties of projection types defined using SpEL use the fixed name `target` for the underlying
+domain object. As a result accessing underlying properties take the form `target.<property-name>`.
 
 ==== REST Repositories
 

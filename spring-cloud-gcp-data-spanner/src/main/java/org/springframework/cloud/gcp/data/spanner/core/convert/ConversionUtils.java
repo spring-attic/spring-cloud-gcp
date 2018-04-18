@@ -235,7 +235,7 @@ public class ConversionUtils {
 				: propertyType;
 	}
 
-	static boolean isIterableNonByteArrayType(Class propType) {
+	public static boolean isIterableNonByteArrayType(Class propType) {
 		return Iterable.class.isAssignableFrom(propType)
 				&& !ByteArray.class.isAssignableFrom(propType);
 	}

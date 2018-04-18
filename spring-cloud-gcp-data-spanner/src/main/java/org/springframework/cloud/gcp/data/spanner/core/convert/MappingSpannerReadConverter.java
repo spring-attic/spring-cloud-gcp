@@ -86,10 +86,13 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 	 * @param type the type of POJO
 	 * @param source the Spanner row
 	 * @param includeColumns the columns to read. If null then all columns will be read.
+	 * @param allowMissingColumns if true, then properties with no corresponding column
+	 * are not mapped. If false, then an exception is thrown.
 	 * @param <R> the type of the POJO.
 	 * @return the POJO
 	 */
-	public <R> R read(Class<R> type, Struct source, Set<String> includeColumns) {
+	public <R> R read(Class<R> type, Struct source, Set<String> includeColumns,
+			boolean allowMissingColumns) {
 		boolean readAllColumns = includeColumns == null;
 		R object = instantiate(type);
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
@@ -108,10 +111,12 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 						}
 					}
 					catch (IllegalArgumentException e) {
-						throw new SpannerDataException(
-								"Unable to read column from Spanner results: "
-										+ columnName,
-								e);
+						if (!allowMissingColumns) {
+							throw new SpannerDataException(
+									"Unable to read column from Spanner results: "
+											+ columnName,
+									e);
+						}
 					}
 					Class propType = spannerPersistentProperty.getType();
 
@@ -148,7 +153,7 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 
 	@Override
 	public <R> R read(Class<R> type, Struct source) {
-		return read(type, source, null);
+		return read(type, source, null, false);
 	}
 
 	private boolean attemptReadSingleItemValue(

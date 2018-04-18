@@ -19,24 +19,15 @@ package org.springframework.cloud.gcp.data.spanner.repository.query;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.repository.query.QueryMethod;
-import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.data.repository.query.parser.PartTree;
 
 /**
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-public class PartTreeSpannerQuery implements RepositoryQuery {
-
-	private final QueryMethod queryMethod;
-
-	private final SpannerOperations spannerOperations;
-
-	private final SpannerMappingContext spannerMappingContext;
+public class PartTreeSpannerQuery extends AbstractSpannerQuery {
 
 	private final PartTree tree;
-
-	private final Class entityType;
 
 	/**
 	 * Constructor
@@ -48,21 +39,13 @@ public class PartTreeSpannerQuery implements RepositoryQuery {
 	public PartTreeSpannerQuery(Class type, QueryMethod queryMethod,
 			SpannerOperations spannerOperations,
 			SpannerMappingContext spannerMappingContext) {
-		this.queryMethod = queryMethod;
-		this.entityType = type;
+		super(type, queryMethod, spannerOperations, spannerMappingContext);
 		this.tree = new PartTree(queryMethod.getName(), type);
-		this.spannerOperations = spannerOperations;
-		this.spannerMappingContext = spannerMappingContext;
 	}
 
 	@Override
-	public Object execute(Object[] parameters) {
+	protected Object executeRawResult(Object[] parameters) {
 		return SpannerStatementQueryExecutor.executeQuery(this.entityType, this.tree,
 				parameters, this.spannerOperations, this.spannerMappingContext);
-	}
-
-	@Override
-	public QueryMethod getQueryMethod() {
-		return this.queryMethod;
 	}
 }

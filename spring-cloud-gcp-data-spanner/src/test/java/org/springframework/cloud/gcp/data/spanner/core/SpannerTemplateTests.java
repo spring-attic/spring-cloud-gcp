@@ -266,7 +266,7 @@ public class SpannerTemplateTests {
 		when(this.readContext.executeQuery(any(), any())).thenReturn(results);
 		this.spannerTemplate.query(TestEntity.class, statement, options);
 		verify(this.objectMapper, times(1)).mapToList(same(results),
-				eq(TestEntity.class));
+				eq(TestEntity.class), eq(Optional.empty()), eq(false));
 		verify(this.readContext, times(1)).executeQuery(same(statement),
 				same(queryOption));
 	}

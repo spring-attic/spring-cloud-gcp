@@ -40,6 +40,8 @@ public class SpannerQueryOptions {
 
 	private OptionalLong offset = OptionalLong.empty();
 
+	private boolean allowPartialRead;
+
 	/**
 	 * Constructor to create an instance. Use the extension-style add/set functions to add
 	 * options and settings.
@@ -122,5 +124,15 @@ public class SpannerQueryOptions {
 
 	public QueryOption[] getQueryOptions() {
 		return this.queryOptions.toArray(new QueryOption[this.queryOptions.size()]);
+	}
+
+	public boolean isAllowPartialRead() {
+		return this.allowPartialRead;
+	}
+
+	public SpannerQueryOptions setAllowPartialRead(
+			boolean allowPartialRead) {
+		this.allowPartialRead = allowPartialRead;
+		return this;
 	}
 }
