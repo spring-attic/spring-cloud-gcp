@@ -10,8 +10,31 @@ There are three entries in http://start.spring.io/[Spring Initializr] for Spring
 - GCP Messaging
 - GCP Storage
 
-The GCP Support entry contains autoconfiguration support for every Spring Cloud GCP integration.
+The GCP Support entry contains auto-configuration support for every Spring Cloud GCP integration.
 Most of the autoconfiguration code is only enabled if other dependencies are added to the classpath.
+
+|===
+|Spring Cloud GCP Starter |Required dependencies
+
+|Config
+|org.springframework.cloud:spring-cloud-gcp-starter-config
+
+|Spanner
+|org.springframework.cloud:spring-cloud-gcp-starter-data-spanner
+
+|Logging
+|org.springframework.cloud:spring-cloud-gcp-starter-logging
+
+|SQL - MySql
+|org.springframework.cloud:spring-cloud-gcp-starter-sql-mysql
+
+|SQL - PostgreSQL
+|org.springframework.cloud:spring-cloud-gcp-starter-sql-postgres
+
+|Trace
+|org.springframework.cloud:spring-cloud-gcp-starter-trace
+
+|===
 
 The GCP Messaging entry adds the GCP Support entry and all the required dependencies so that the Google Cloud Pub/Sub integrations work out of the box.
 

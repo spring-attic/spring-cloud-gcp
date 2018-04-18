@@ -4,7 +4,7 @@ This project makes it easy for Spring users to run their applications on Google 
 You can check our project website http://cloud.spring.io/spring-cloud-gcp[here].
 
 For a deep dive into the project, refer to the
-https://docs.spring.io/spring-cloud-gcp/docs/1.0.0.M2/reference/htmlsingle/[Spring
+https://docs.spring.io/spring-cloud-gcp/docs/1.0.0.M3/reference/htmlsingle/[Spring
 Cloud GCP Reference Document].
 
 Currently, this repository provides support for:
@@ -33,7 +33,7 @@ start working on one, please take a look at our link:CONTRIBUTING.adoc[collabora
 
 == Spring Initializr
 
-Spring Initializr contains Spring Cloud GCP autoconfguration support through the `GCP Support` entry.
+Spring Initializr contains Spring Cloud GCP auto-configuration support through the `GCP Support` entry.
 
 `GCP Messaging` contains the Spring Cloud GCP messaging support with Google Cloud Pub/Sub working out of the box.
 

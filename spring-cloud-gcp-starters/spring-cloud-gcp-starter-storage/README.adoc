@@ -36,6 +36,6 @@ credentials private key file
 credentials |
 |=======================================================================
 
-== Spring Initializr
+== `start.spring.io`
 
 This starter is available from Spring Initializr through the `GCP Storage` entry.
