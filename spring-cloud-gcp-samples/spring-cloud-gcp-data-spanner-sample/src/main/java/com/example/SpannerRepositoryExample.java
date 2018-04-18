@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.context.annotation.Bean;
 
@@ -36,13 +37,16 @@ import org.springframework.context.annotation.Bean;
 public class SpannerRepositoryExample {
 
 	@Autowired
-	TraderRepository traderRepository;
+	private TraderRepository traderRepository;
 
 	@Autowired
-	TradeRepository tradeRepository;
+	private TradeRepository tradeRepository;
 
 	@Autowired
-	SpannerSchemaUtils spannerSchemaUtils;
+	private SpannerSchemaUtils spannerSchemaUtils;
+
+	@Autowired
+	private SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SpannerRepositoryExample.class, args);
@@ -51,6 +55,8 @@ public class SpannerRepositoryExample {
 	@Bean
 	public CommandLineRunner commandLineRunner() {
 		return args -> {
+
+			createTablesIfNotExists();
 
 			this.traderRepository.deleteAll();
 			this.tradeRepository.deleteAll();
@@ -98,4 +104,17 @@ public class SpannerRepositoryExample {
 		};
 	}
 
+	private void createTablesIfNotExists() {
+		if (!this.spannerDatabaseAdminTemplate.tableExists("trades")) {
+			this.spannerDatabaseAdminTemplate.executeDdlStrings(
+					Arrays.asList(
+							this.spannerSchemaUtils.getCreateTableDDLString(Trade.class)),
+					true);
+		}
+
+		if (!this.spannerDatabaseAdminTemplate.tableExists("traders")) {
+			this.spannerDatabaseAdminTemplate.executeDdlStrings(Arrays.asList(
+					this.spannerSchemaUtils.getCreateTableDDLString(Trader.class)), true);
+		}
+	}
 }

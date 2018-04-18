@@ -7,28 +7,8 @@ link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Sprin
 = Running the example
 
 
-. Setup the database
-.. Create a new Spanner instance named "spring-demo".
-.. Create with a database called "trades"
-.. Create two tables called "traders" and "trades" using the schema below:
-```
-CREATE TABLE traders (
-    trader_id STRING(MAX),
-    first_name STRING(100),
-    last_name STRING(100),
-) PRIMARY KEY (trader_id);
-
-CREATE TABLE trades (
-    trader_id STRING(MAX),
-    trade_id STRING(MAX),
-    action STRING(15),
-    symbol STRING(10),
-    curve ARRAY<FLOAT64>,
-    price FLOAT64,
-    shares FLOAT64,
-    person STRING(MAX)
-) PRIMARY KEY (trader_id, trade_id)
-```
+. Create a new Spanner instance named "spring-demo". The example application
+will create the database and tables if they do not already exist.
 [start=2]
 . https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login[If
 you are authenticated in the Cloud SDK], your credentials will be automatically found by the Spring

@@ -140,4 +140,29 @@ public class SpannerDatabaseAdminTemplate {
 		}
 		return relationships;
 	}
+
+	/**
+	 * Return a set of the tables that currently exist in the database.
+	 * @return A set of table names.
+	 */
+	public Set<String> getTables() {
+		Set<String> tables = new HashSet<>();
+		for (String ddl : this.databaseAdminClient
+				.getDatabase(getInstanceId(), getDatabase()).getDdl()) {
+			if (!ddl.startsWith("CREATE TABLE ")) {
+				continue;
+			}
+			tables.add(ddl.split(" ")[2]);
+		}
+		return tables;
+	}
+
+	/**
+	 * Returns true if the given table name exists in the database currently.
+	 * @param table the name of the table.
+	 * @return true if the table exists, false otherwise.
+	 */
+	public boolean tableExists(String table) {
+		return databaseExists() && getTables().contains(table);
+	}
 }
