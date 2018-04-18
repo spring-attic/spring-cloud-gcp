@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
@@ -44,6 +45,7 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
@@ -416,7 +418,8 @@ public class SpannerTemplateTests {
 		doAnswer(invocation -> {
 			Statement statement = invocation.getArgument(1);
 			assertEquals(
-					"SELECT * FROM custom_test_table ORDER BY id ASC , custom_col DESC , other ASC LIMIT 3 OFFSET 5;",
+					"SELECT * FROM custom_test_table ORDER BY id ASC , "
+							+ "custom_col DESC , other ASC LIMIT 3 OFFSET 5;",
 					statement.getSql());
 			return null;
 		}).when(spyTemplate).query(eq(TestEntity.class), (Statement) any(), any());
@@ -479,5 +482,15 @@ public class SpannerTemplateTests {
 
 		@Column(name = "")
 		String other;
+
+		ByteArray bytes;
+
+		@ColumnInnerType(innerType = ByteArray.class)
+		List<ByteArray> bytesList;
+
+		@ColumnInnerType(innerType = Integer.class)
+		List<Integer> integerList;
+
+		double[] doubles;
 	}
 }

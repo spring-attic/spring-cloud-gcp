@@ -16,34 +16,26 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.mapping.model.MutablePersistentEntity;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Spanner specific interface for a {@link MutablePersistentEntity} stored
- * in a Google Spanner table.
+ * Annotation for a {@link SpannerPersistentProperty} that is optional. If present, it
+ * tells the maximum length for columns where it is relevant (STRING, BYTES).
  *
- * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public interface SpannerPersistentEntity<T>
-		extends MutablePersistentEntity<T, SpannerPersistentProperty>, ApplicationContextAware {
-
+@Documented
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ColumnLength {
 	/**
-	 * Gets the name of the Spanner table.
-	 * @return the name of the table.
+	 * The maximum length of the column in Spanner terms. For example, for STRING columns
+	 * this refers to the number of characters. For BYTES columns this refers to the
+	 * number of bytes.
 	 */
-	String tableName();
-
-	/**
-	 * Gets the column names stored for this entity.
-	 * @return the column names.
-	 */
-	Iterable<String> columns();
-
-	/**
-	 * Gets the primary key properties in order.
-	 * @return
-	 */
-	SpannerPersistentProperty[] getPrimaryKeyProperties();
+	long maxLength();
 }

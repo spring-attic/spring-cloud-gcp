@@ -44,7 +44,7 @@ import org.springframework.data.mapping.PropertyHandler;
 public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 		implements EntityWriter<Object, WriteBuilder> {
 
-	private static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>> iterablePropertyType2ToMethodMap;
+	static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>> iterablePropertyType2ToMethodMap;
 
 	static {
 		// Java 8 has compile errors when using the builder extension methods

@@ -112,4 +112,15 @@ public interface SpannerConverter extends EntityReader<Object, Struct>,
 	 * @return
 	 */
 	Set<Class> directlyWriteableSpannerTypes();
+
+	/**
+	 * Gets the type that will work for both read and writes with Spanner directly.
+	 * @param originalType the original type that is possibly convertable by this
+	 * converter.
+	 * @param isIterableInnerType true if the given type refers to an inner type. This is
+	 * significant because Spanner does not support the same types as singular items and
+	 * as array elements.
+	 * @return the Java type that works directly with Spanner.
+	 */
+	Class getSpannerJavaType(Class originalType, boolean isIterableInnerType);
 }

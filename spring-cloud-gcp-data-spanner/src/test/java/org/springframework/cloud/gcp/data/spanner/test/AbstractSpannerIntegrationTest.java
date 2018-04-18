@@ -26,45 +26,43 @@ import org.junit.BeforeClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntityImpl;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.test.context.ContextConfiguration;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
- * This class provides the foundation for the integration test framework for Spanner.
- * Its responsibilities:
+ * This class provides the foundation for the integration test framework for Spanner. Its
+ * responsibilities:
  * <ul>
- *   <li>initializes the Spring application context</li>
- *   <li>sets up the database schema</li>
- *   <li>manages table suffix generation so that parallel test cases don't collide</li>
+ * <li>initializes the Spring application context</li>
+ * <li>sets up the database schema</li>
+ * <li>manages table suffix generation so that parallel test cases don't collide</li>
  * </ul>
- * <p>
- * Prerequisites for running integration tests:
  *
- * For Spanner integration tests, you will need to have an instance predefined, everything
+ * <p>Prerequisites for running integration tests:
+ *
+ * <p>For Spanner integration tests, you will need to have an instance predefined, everything
  * else is generated. The instance by default is "integration-instance", which can be
  * overriden in <code>src/test/resources/application-test.properties</code>, the property:
  * <code>test.integration.spanner.instance</code>
  * </p>
- * <p>
- * Within the <code>integration-instance</code> instance, the tests rely on a single database for
- * tests, <code>integration-db</code>. This is automatically created, if doesn't exist.
- * The tables are generated to have a unique suffix, which is updated on the entity
- * annotations as well dynamically to avoid collisions of multiple parallel tests running
- * against the same instance.
+ *
+ * <p>Within the <code>integration-instance</code> instance, the tests rely on a single
+ * database for tests, <code>integration-db</code>. This is automatically created, if
+ * doesn't exist. The tables are generated to have a unique suffix, which is updated on
+ * the entity annotations as well dynamically to avoid collisions of multiple parallel
+ * tests running against the same instance.
  * </p>
  *
  * @author Balint Pato
+ * @author Chengyuan Zhao
  */
 @ContextConfiguration(classes = { IntegrationTestConfiguration.class })
 public abstract class AbstractSpannerIntegrationTest {
@@ -72,21 +70,27 @@ public abstract class AbstractSpannerIntegrationTest {
 	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
 
 	@Autowired
-	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
+	protected SpannerOperations spannerOperations;
 
 	@Autowired
 	protected ApplicationContext applicationContext;
 
 	protected String tableNameSuffix;
 
+	@Autowired
+	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
+
+	@Autowired
+	SpannerSchemaUtils spannerSchemaUtils;
+
 	private boolean setupFailed;
 
 	@BeforeClass
 	public static void checkToRun() {
-		assumeThat("Spanner integration tests are disabled. Please use '-Dit.spanner=true' "
-				+ "to enable them. ",
-				System.getProperty("it.spanner"),
-				is("true"));
+		assumeThat(
+				"Spanner integration tests are disabled. Please use '-Dit.spanner=true' "
+						+ "to enable them. ",
+				System.getProperty("it.spanner"), is("true"));
 	}
 
 	@Before
@@ -102,39 +106,31 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	protected void createDatabaseWithSchema() {
 		this.tableNameSuffix = String.valueOf(System.currentTimeMillis());
-		ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) this.applicationContext)
-				.getBeanFactory();
+		ConfigurableListableBeanFactory beanFactory =
+				((ConfigurableApplicationContext) this.applicationContext).getBeanFactory();
 		beanFactory.registerSingleton("tableNameSuffix", this.tableNameSuffix);
 
 		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
 			System.out.println(
-					this.getClass() + " - Integration database created with schema: " + createSchemaStatements());
+					this.getClass() + " - Integration database created with schema: "
+							+ createSchemaStatements());
 		}
 		else {
-			System.out.println(this.getClass() + " - schema created: " + createSchemaStatements());
+			System.out.println(
+					this.getClass() + " - schema created: " + createSchemaStatements());
 		}
 		this.spannerDatabaseAdminTemplate.executeDdlStrings(createSchemaStatements(),
 				true);
 	}
 
 	protected List<String> createSchemaStatements() {
-		return Arrays.asList(Trade.createDDL(tableNameFor(Trade.class)));
+		return Arrays
+				.asList(this.spannerSchemaUtils.getCreateTableDDLString(Trade.class));
 	}
 
 	protected Iterable<String> dropSchemaStatements() {
-		return Arrays.asList(Trade.dropDDL(tableNameFor(Trade.class)));
-	}
-
-	protected String tableNameFor(Class<Trade> type) {
-		return createDummyEntity(type).tableName();
-	}
-
-	protected <T> SpannerPersistentEntity createDummyEntity(Class<T> type) {
-		TypeInformation<T> typeInformation = mock(TypeInformation.class);
-		when(typeInformation.getType()).thenReturn(type);
-		SpannerPersistentEntity dummyTrade = new SpannerPersistentEntityImpl<>(typeInformation);
-		dummyTrade.setApplicationContext(this.applicationContext);
-		return dummyTrade;
+		return Arrays
+				.asList(this.spannerSchemaUtils.getDropTableDDLString(Trade.class));
 	}
 
 	@After
@@ -149,7 +145,8 @@ public abstract class AbstractSpannerIntegrationTest {
 			System.out.println("Integration database cleaned up!");
 		}
 		finally {
-			// we need to remove the extra bean created even if there is a failure at startup
+			// we need to remove the extra bean created even if there is a failure at
+			// startup
 			DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) this.applicationContext
 					.getAutowireCapableBeanFactory();
 			beanFactory.destroySingleton(TABLE_NAME_SUFFIX_BEAN_NAME);

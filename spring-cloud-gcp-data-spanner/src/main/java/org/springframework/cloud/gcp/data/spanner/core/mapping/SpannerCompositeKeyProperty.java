@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.OptionalInt;
+import java.util.OptionalLong;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Key.Builder;
@@ -82,6 +83,11 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	@Override
 	public boolean isMapped() {
 		return false;
+	}
+
+	@Override
+	public OptionalLong getMaxColumnLength() {
+		return OptionalLong.empty();
 	}
 
 	@Override

@@ -21,15 +21,24 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
+import java.util.OptionalLong;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.Type.Code;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 
 /**
  * @author Balint Pato
@@ -61,6 +70,70 @@ public class ConversionUtils {
 					return new java.sql.Date(cal.getTimeInMillis());
 				}
 			};
+
+	public static final Map<Type, Class> SPANNER_COLUMN_TYPE_TO_JAVA_TYPE_MAPPING =
+			new ImmutableMap.Builder<Type, Class>()
+			.put(Type.bool(), Boolean.class).put(Type.bytes(), ByteArray.class)
+			.put(Type.date(), com.google.cloud.Date.class)
+			.put(Type.float64(), Double.class).put(Type.int64(), Long.class)
+			.put(Type.string(), String.class)
+			.put(Type.array(Type.float64()), double[].class)
+			.put(Type.array(Type.int64()), long[].class)
+			.put(Type.array(Type.bool()), boolean[].class)
+			.put(Type.timestamp(), Timestamp.class).build();
+
+	private static final Map<Class, Type> JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING;
+
+	static {
+		ImmutableMap.Builder<Class, Type> builder = new Builder<>();
+		SPANNER_COLUMN_TYPE_TO_JAVA_TYPE_MAPPING.keySet().stream().forEach(type -> builder
+						.put(SPANNER_COLUMN_TYPE_TO_JAVA_TYPE_MAPPING.get(type), type));
+		JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING = builder.build();
+	}
+
+	private static String getTypeDDLString(Type type, OptionalLong dataLength) {
+		Assert.notNull(type, "A valid Spanner column type is required.");
+		if (type.getCode() == Code.ARRAY) {
+			return "ARRAY<" + getTypeDDLString(type.getArrayElementType(), dataLength)
+					+ ">";
+		}
+		return type.toString()
+				+ (type.getCode() == Code.STRING || type.getCode() == Code.BYTES ? "("
+						+ (dataLength.isPresent() ? dataLength.getAsLong() : "MAX") + ")"
+						: "");
+	}
+
+	public static String getColumnDDLString(
+			SpannerPersistentProperty spannerPersistentProperty,
+			SpannerConverter spannerConverter) {
+		Class columnType = spannerPersistentProperty.getType();
+
+		if (isIterableNonByteArrayType(columnType)) {
+			Class innerType = spannerPersistentProperty.getColumnInnerType();
+			if (innerType == null) {
+				throw new SpannerDataException(
+						"Cannot get column DDL for iterable type without annotated inner type.");
+			}
+			Type spannerSupportedInnerType = JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
+					.get(spannerConverter.getSpannerJavaType(innerType, true));
+			if (spannerSupportedInnerType == null) {
+				throw new SpannerDataException(
+						"Could not find suitable Spanner column inner type for property type:"
+								+ innerType);
+			}
+			return getTypeDDLString(Type.array(spannerSupportedInnerType),
+					spannerPersistentProperty.getMaxColumnLength());
+		}
+		Type spannerColumnType = JAVA_TYPE_TO_SPANNER_COLUMN_TYPE_MAPPING
+				.get(spannerConverter.getSpannerJavaType(columnType, false));
+		if (spannerColumnType == null) {
+			throw new SpannerDataException(
+					"Could not find suitable Spanner column type for property type:"
+							+ columnType);
+		}
+		return getTypeDDLString(spannerColumnType,
+				spannerPersistentProperty.getMaxColumnLength());
+	}
 
 	public static final Converter<Date, com.google.cloud.Date> JAVA_TO_SPANNER_DATE_CONVERTER =
 			new Converter<Date, com.google.cloud.Date>() {

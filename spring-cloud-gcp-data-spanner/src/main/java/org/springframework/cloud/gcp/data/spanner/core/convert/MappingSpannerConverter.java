@@ -34,6 +34,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.CustomConversions;
@@ -152,6 +153,83 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 	@Override
 	public Object convert(Object source, Class targetType) {
 		return super.convert(source, targetType);
+	}
+
+	@Override
+	public Class getSpannerJavaType(Class originalType, boolean isIterableInnerType) {
+		Set<Class> spannerTypes = (isIterableInnerType
+				? MappingSpannerWriteConverter.iterablePropertyType2ToMethodMap
+				: MappingSpannerWriteConverter.singleItemType2ToMethodMap).keySet();
+		if (spannerTypes.contains(originalType)) {
+			return originalType;
+		}
+		Class ret = null;
+		for (Class spannerType : spannerTypes) {
+			if (isIterableInnerType
+					&& canHandlePropertyTypeForArrayRead(originalType, spannerType)
+					&& canHandlePropertyTypeForArrayWrite(originalType, spannerType)) {
+				ret = spannerType;
+				break;
+			}
+			else if (!isIterableInnerType
+					&& canHandlePropertyTypeForSingularRead(originalType, spannerType)
+					&& canHandlePropertyTypeForSingularWrite(originalType, spannerType)) {
+				ret = spannerType;
+				break;
+			}
+		}
+		return ret;
+	}
+
+	private boolean canHandlePropertyTypeForSingularRead(Class type,
+			Class spannerSupportedType) {
+		if (!MappingSpannerReadConverter.singleItemReadMethodMapping
+				.containsKey(spannerSupportedType)) {
+			throw new SpannerDataException(
+					"The given spannerSupportedType type is not a known "
+							+ "Spanner directly-supported column type: "
+							+ spannerSupportedType);
+		}
+		return type.equals(spannerSupportedType)
+				|| this.readConverter.canConvert(spannerSupportedType, type);
+	}
+
+	private boolean canHandlePropertyTypeForArrayRead(Class type,
+			Class spannerSupportedArrayInnerType) {
+		if (!MappingSpannerReadConverter.readIterableMapping
+				.containsKey(spannerSupportedArrayInnerType)) {
+			throw new SpannerDataException(
+					"The given spannerSupportedArrayInnerType is not a known Spanner "
+							+ "directly-supported array column inner-type: "
+							+ spannerSupportedArrayInnerType);
+		}
+		return type.equals(spannerSupportedArrayInnerType)
+				|| this.readConverter.canConvert(spannerSupportedArrayInnerType, type);
+	}
+
+	private boolean canHandlePropertyTypeForSingularWrite(Class type,
+			Class spannerSupportedType) {
+		if (!MappingSpannerWriteConverter.singleItemType2ToMethodMap
+				.containsKey(spannerSupportedType)) {
+			throw new SpannerDataException(
+					"The given spannerSupportedType is not a known Spanner directly-supported column type: "
+							+ spannerSupportedType);
+		}
+		return type.equals(spannerSupportedType)
+				|| this.writeConverter.canConvert(type, spannerSupportedType);
+	}
+
+	private boolean canHandlePropertyTypeForArrayWrite(Class type,
+			Class spannerSupportedArrayInnerType) {
+		if (!MappingSpannerWriteConverter.iterablePropertyType2ToMethodMap
+				.containsKey(spannerSupportedArrayInnerType)) {
+			throw new SpannerDataException(
+					"The given spannerSupportedArrayInnerType is not a known "
+							+ "Spanner directly-supported column type: "
+							+ spannerSupportedArrayInnerType);
+		}
+		return type.equals(spannerSupportedArrayInnerType)
+				|| this.writeConverter.canConvert(type, spannerSupportedArrayInnerType);
 	}
 
 	/**
