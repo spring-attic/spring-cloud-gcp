@@ -61,6 +61,13 @@ Google Cloud Spanner API, if different from the ones in the
 | `spring.cloud.gcp.spanner.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
 Spanner credentials | No | https://www.googleapis.com/auth/spanner.data
+| `spring.cloud.gcp.spanner.numRpcChannels` | Number of gRPC channels used to connect to Spanner | No | 4 - Determined by Spanner client library
+| `spring.cloud.gcp.spanner.prefetchChunks` | Number of chunks prefetched by Spanner for read and query | No | 4 - Determined by Spanner client library
+| `spring.cloud.gcp.spanner.minSessions` | Minimum number of sessions maintained in the session pool | No | 0 - Determined by Spanner client library
+| `spring.cloud.gcp.spanner.maxSessions` | Maximum number of sessions session pool can have | No | 400 - Determined by Spanner client library
+| `spring.cloud.gcp.spanner.maxIdleSessions` | Maximum number of idle sessions session pool will maintain | No | 0 - Determined by Spanner client library
+| `spring.cloud.gcp.spanner.writeSessionsFraction` | Fraction of sessions to be kept prepared for write transactions | No | 0.2 - Determined by Spanner client library
+| `spring.cloud.gcp.spanner.keepAliveIntervalMinutes` | How long to keep idle sessions alive | No | 30 - Determined by Spanner client library
 |===
 
 ==== Repository settings
