@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import com.google.api.client.util.ArrayMap;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,6 +57,19 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 	private int order = ConfigFileApplicationListener.DEFAULT_ORDER - 1;
 
+	private static Map<String, String> sqlPropertyMap;
+
+	static {
+		sqlPropertyMap = new ArrayMap<>();
+		sqlPropertyMap.put("ProjectId", "project-id");
+		sqlPropertyMap.put("PrivateKeyData", "credentials.encoded-key");
+		sqlPropertyMap.put("database_name", "database-name");
+		sqlPropertyMap.put("region", "region");
+		sqlPropertyMap.put("instance_name", "instance-name");
+		sqlPropertyMap.put("Username", "username");
+		sqlPropertyMap.put("Password", "password");
+	}
+
 	private enum GcpCfService {
 
 		PUBSUB("google-pubsub", "pubsub",
@@ -71,18 +85,8 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 		TRACE("google-stackdriver-trace", "trace",
 				ImmutableMap.of("ProjectId", "project-id",
 						"PrivateKeyData", "credentials.encoded-key")),
-		MYSQL("google-cloudsql-mysql", "sql",
-				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encoded-key",
-						"database_name", "database-name",
-						"region", "region",
-						"instance_name", "instance-name")),
-		POSTGRES("google-cloudsql-postgres", "sql",
-				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encoded-key",
-						"database_name", "database-name",
-						"region", "region",
-						"instance_name", "instance-name"));
+		MYSQL("google-cloudsql-mysql", "sql", sqlPropertyMap),
+		POSTGRES("google-cloudsql-postgres", "sql", sqlPropertyMap);
 
 		/**
 		 * Name of the GCP Cloud Foundry service in the VCAP_SERVICES JSON.
@@ -151,7 +155,8 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 									service.getCfServiceName(),
 									service.getCfPropNameToGcp())));
 
-			// For Cloud SQL, the instance connection name must be built from three fields.
+			// For Cloud SQL, there are some exceptions to the rule.
+			// The instance connection name must be built from three fields.
 			if (gcpCfServiceProperties.containsKey("spring.cloud.gcp.sql.instance-name")) {
 				String instanceConnectionName =
 						gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.project-id") + ":"
@@ -159,6 +164,15 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 						+ gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.instance-name");
 				gcpCfServiceProperties.put("spring.cloud.gcp.sql.instance-connection-name",
 						instanceConnectionName);
+			}
+			// The username and password should be in the generic DataSourceProperties.
+			if (gcpCfServiceProperties.containsKey("spring.cloud.gcp.sql.username")) {
+				gcpCfServiceProperties.put("spring.datasource.username",
+						gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.username"));
+			}
+			if (gcpCfServiceProperties.containsKey("spring.cloud.gcp.sql.password")) {
+				gcpCfServiceProperties.put("spring.datasource.password",
+						gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.password"));
 			}
 
 			environment.getPropertySources()
