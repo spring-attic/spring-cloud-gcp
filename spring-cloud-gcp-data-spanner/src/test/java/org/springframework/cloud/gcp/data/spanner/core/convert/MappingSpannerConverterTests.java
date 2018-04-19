@@ -30,7 +30,6 @@ import com.google.cloud.spanner.Value;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.MockResults;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.core.convert.converter.Converter;
