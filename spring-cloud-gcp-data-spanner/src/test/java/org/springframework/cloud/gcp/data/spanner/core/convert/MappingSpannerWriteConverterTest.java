@@ -31,9 +31,9 @@ import com.google.cloud.spanner.ValueBinder;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.spanner.core.convert.Entities.FaultyTestEntity;
-import org.springframework.cloud.gcp.data.spanner.core.convert.Entities.FaultyTestEntity2;
-import org.springframework.cloud.gcp.data.spanner.core.convert.Entities.TestEntity;
+import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity;
+import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity2;
+import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.convert.CustomConversions;

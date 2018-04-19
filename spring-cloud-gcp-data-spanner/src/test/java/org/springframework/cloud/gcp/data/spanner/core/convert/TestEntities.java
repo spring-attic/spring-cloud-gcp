@@ -22,7 +22,6 @@ import java.util.List;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.Struct;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -31,7 +30,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 /**
  * @author Balint Pato
  */
-public class Entities {
+public class TestEntities {
 
 	@Table(name = "custom_test_table")
 	static class TestEntity {
@@ -105,24 +104,6 @@ public class Entities {
 	static class InnerTestEntity {
 		@PrimaryKey
 		String value;
-	}
-
-	static class MockResults {
-		List<Struct> structs;
-
-		int counter = -1;
-
-		boolean next() {
-			if (this.counter < this.structs.size() - 1) {
-				this.counter++;
-				return true;
-			}
-			return false;
-		}
-
-		Struct getCurrent() {
-			return this.structs.get(this.counter);
-		}
 	}
 
 }

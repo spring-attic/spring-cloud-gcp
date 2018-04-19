@@ -30,8 +30,8 @@ import com.google.cloud.spanner.Value;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.spanner.core.convert.Entities.MockResults;
-import org.springframework.cloud.gcp.data.spanner.core.convert.Entities.TestEntity;
+import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.MockResults;
+import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
@@ -267,4 +267,21 @@ public class MappingSpannerConverterTests {
 	private interface JavaType {
 	}
 
+	static class MockResults {
+		List<Struct> structs;
+
+		int counter = -1;
+
+		boolean next() {
+			if (this.counter < this.structs.size() - 1) {
+				this.counter++;
+				return true;
+			}
+			return false;
+		}
+
+		Struct getCurrent() {
+			return this.structs.get(this.counter);
+		}
+	}
 }
