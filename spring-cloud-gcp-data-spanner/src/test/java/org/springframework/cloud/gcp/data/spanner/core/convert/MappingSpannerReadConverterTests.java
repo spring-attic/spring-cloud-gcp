@@ -37,18 +37,18 @@ public class MappingSpannerReadConverterTests {
 			.<String>builder().add("getColumnIndex").add("getStructList")
 			.add("getColumnType").build();
 
-  // Checks that the converter is aware of all Spanner struct getter types
-  @Test
-  public void allKnownMappingTypesTest() throws NoSuchFieldException {
-    for( Method method: Struct.class.getMethods()){
+	// Checks that the converter is aware of all Spanner struct getter types
+	@Test
+	public void allKnownMappingTypesTest() throws NoSuchFieldException {
+		for (Method method : Struct.class.getMethods()) {
 			String methodName = method.getName();
 			// ignoring private methods, ones not named like a getter. Getters must also
 			// only take the column index or name
 			if (!Modifier.isPublic(method.getModifiers()) || !methodName.startsWith("get")
 					|| method.getParameterCount() != 1
 					|| DISREGARDED_METHOD_NAMES.contains(methodName)) {
-        continue;
-      }
+				continue;
+			}
 			Class returnType = ConversionUtils.boxIfNeeded(method.getReturnType());
 			if (ConversionUtils.isIterableNonByteArrayType(returnType)) {
 				Class innerReturnType = (Class) ((ParameterizedType) method
@@ -62,5 +62,5 @@ public class MappingSpannerReadConverterTests {
 						hasItem(returnType));
 			}
 		}
-  }
+	}
 }
