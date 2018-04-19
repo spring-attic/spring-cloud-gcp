@@ -87,16 +87,6 @@ public class SpannerPersistentPropertyImplTests {
 	}
 
 	@Test
-	public void testColumnInnerTypeNull() {
-		SpannerPersistentEntityImpl<TestEntity> entity =
-				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
-				.getPersistentEntity(TestEntity.class));
-
-		assertNull(entity.getPersistentProperty("something")
-				.getColumnInnerType());
-	}
-
-	@Test
 	public void testColumnInnerType() {
 		SpannerPersistentEntityImpl<TestEntity> entity =
 				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
@@ -140,7 +130,6 @@ public class SpannerPersistentPropertyImplTests {
 		@Column(name = "")
 		String other;
 
-		@ColumnInnerType(innerType = Double.class)
 		List<Double> doubleList;
 
 		@NotMapped

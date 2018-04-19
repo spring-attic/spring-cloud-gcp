@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
@@ -87,6 +88,11 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 							.isEqualTo("graphite-test-spring-cloud-gcp:us-central1:pcf-sb-3-1521233681947276465");
 					assertThat(sqlProperties.getDatabaseName())
 							.isEqualTo("pcf-sb-4-1521234236513507790");
+
+					DataSourceProperties dataSourceProperties = context.getBean(DataSourceProperties.class);
+					assertThat(dataSourceProperties.getUsername()).isEqualTo("fa6bb781-c76d-42");
+					assertThat(dataSourceProperties.getPassword())
+							.isEqualTo("IxEQ63FRxSUSgoDWKbqEHmhY6D9h4nro1fja8lnP48s=");
 				});
 	}
 
@@ -112,7 +118,8 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 	}
 
 	@EnableConfigurationProperties({GcpPubSubProperties.class, GcpStorageProperties.class,
-			GcpSpannerProperties.class, GcpTraceProperties.class, GcpCloudSqlProperties.class})
+			GcpSpannerProperties.class, GcpTraceProperties.class, GcpCloudSqlProperties.class,
+			DataSourceProperties.class})
 	static class GcpCfEnvPPTestConfiguration {
 
 	}

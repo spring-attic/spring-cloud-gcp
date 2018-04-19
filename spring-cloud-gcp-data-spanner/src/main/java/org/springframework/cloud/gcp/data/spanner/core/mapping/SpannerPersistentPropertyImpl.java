@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.util.List;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.stream.Collectors;
@@ -107,11 +108,13 @@ public class SpannerPersistentPropertyImpl
 
 	@Override
 	public Class getColumnInnerType() {
-		ColumnInnerType annotation = findAnnotation(ColumnInnerType.class);
-		if (annotation == null) {
-			return null;
+		TypeInformation ti = getTypeInformation();
+		List<TypeInformation> typeParams = ti.getTypeArguments();
+		if (typeParams.size() != 1) {
+			throw new SpannerDataException("More than a single type parameter found. "
+					+ "Only collections of one type parameter are supported.");
 		}
-		return annotation.innerType();
+		return typeParams.get(0).getType();
 	}
 
 	@Override
