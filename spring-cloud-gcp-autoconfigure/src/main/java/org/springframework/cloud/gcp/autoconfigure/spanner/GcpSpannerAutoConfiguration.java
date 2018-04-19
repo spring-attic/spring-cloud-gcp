@@ -111,10 +111,10 @@ public class GcpSpannerAutoConfiguration {
 				.setProjectId(this.projectId)
 				.setHeaderProvider(new UsageTrackingHeaderProvider(this.getClass()))
 				.setCredentials(this.credentials);
-		if (this.numRpcChannels > 0) {
+		if (this.numRpcChannels >= 0) {
 			builder.setNumChannels(this.numRpcChannels);
 		}
-		if (this.prefetchChunks > 0) {
+		if (this.prefetchChunks >= 0) {
 			builder.setPrefetchChunks(this.prefetchChunks);
 		}
 		if (sessionPoolOptions != null) {
@@ -127,23 +127,23 @@ public class GcpSpannerAutoConfiguration {
 	@ConditionalOnMissingBean
 	public SessionPoolOptions sessionPoolOptions() {
 		SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
-		if (this.minSessions > 0) {
+		if (this.minSessions >= 0) {
 			builder.setMinSessions(this.minSessions);
 		}
 
-		if (this.maxSessions > 0) {
+		if (this.maxSessions >= 0) {
 			builder.setMaxSessions(this.maxSessions);
 		}
 
-		if (this.maxIdleSessions > 0) {
+		if (this.maxIdleSessions >= 0) {
 			builder.setMaxIdleSessions(this.maxIdleSessions);
 		}
 
-		if (this.writeSessionsFraction > 0) {
+		if (this.writeSessionsFraction >= 0) {
 			builder.setWriteSessionsFraction(this.writeSessionsFraction);
 		}
 
-		if (this.keepAliveIntervalMinutes > 0) {
+		if (this.keepAliveIntervalMinutes >= 0) {
 			builder.setKeepAliveIntervalMinutes(this.keepAliveIntervalMinutes);
 		}
 		return builder.build();
