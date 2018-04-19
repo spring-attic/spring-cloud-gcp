@@ -150,19 +150,6 @@ public class SqlSpannerQueryTests {
 	}
 
 	@Test(expected = SpannerDataException.class)
-	public void multiStatementDisallowedTest() {
-		String sql = "SELECT * FROM table; SELECT * FROM table2;";
-
-		Parameters parameters = mock(Parameters.class);
-		when(this.queryMethod.getParameters()).thenReturn(parameters);
-		when(parameters.getNumberOfParameters()).thenReturn(0);
-
-		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
-
-		sqlSpannerQuery.execute(new Object[] {});
-	}
-
-	@Test(expected = SpannerDataException.class)
 	public void multiplePageableSortTest() {
 		String sql = "SELECT * FROM table;";
 
