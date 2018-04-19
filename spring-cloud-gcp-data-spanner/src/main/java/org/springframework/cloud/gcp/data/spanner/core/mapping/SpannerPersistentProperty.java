@@ -39,9 +39,9 @@ public interface SpannerPersistentProperty
 	String getColumnName();
 
 	/**
-	 * Gets the inner type of the column, which is meaningful for columns of type ARRAY in Google
-	 * Spanner.
-	 * @return the inner type of the column. Returns null if no inner type is specified by annotation.
+	 * Gets the inner type of the column, which is meaningful for columns of type ARRAY in
+	 * Google Spanner.
+	 * @return the inner type of the column.
 	 */
 	Class getColumnInnerType();
 

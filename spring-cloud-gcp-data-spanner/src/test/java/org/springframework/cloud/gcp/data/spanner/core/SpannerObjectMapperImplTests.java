@@ -39,7 +39,6 @@ import org.junit.Test;
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -438,14 +437,6 @@ public class SpannerObjectMapperImplTests {
 	}
 
 	@Test(expected = SpannerDataException.class)
-	public void writeUnannotatedIterableTest() {
-		FaultyTestEntity ft = new FaultyTestEntity();
-		ft.doubleList = new ArrayList<>();
-		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
-		this.objectMapper.write(ft, writeBuilder);
-	}
-
-	@Test(expected = SpannerDataException.class)
 	public void writeUnsupportedTypeIterableTest() {
 		FaultyTestEntity2 ft = new FaultyTestEntity2();
 		ft.listWithUnsupportedInnerType = new ArrayList<TestEntity>();
@@ -488,28 +479,20 @@ public class SpannerObjectMapperImplTests {
 		// int is not a native Spanner type, so this will utilize custom conversions.
 		int intField;
 
-		@ColumnInnerType(innerType = Double.class)
 		List<Double> doubleList;
 
-		@ColumnInnerType(innerType = String.class)
 		List<String> stringList;
 
-		@ColumnInnerType(innerType = Boolean.class)
 		List<Boolean> booleanList;
 
-		@ColumnInnerType(innerType = Long.class)
 		List<Long> longList;
 
-		@ColumnInnerType(innerType = Timestamp.class)
 		List<Timestamp> timestampList;
 
-		@ColumnInnerType(innerType = Date.class)
 		List<Date> dateList;
 
-		@ColumnInnerType(innerType = ByteArray.class)
 		List<ByteArray> bytesList;
 
-		@ColumnInnerType(innerType = Instant.class)
 		List<Instant> momentsInTime;
 
 		Date dateField;
@@ -534,7 +517,6 @@ public class SpannerObjectMapperImplTests {
 		@PrimaryKey
 		String id;
 
-		@ColumnInnerType(innerType = TestEntity.class)
 		List<TestEntity> listWithUnsupportedInnerType;
 	}
 
@@ -543,7 +525,6 @@ public class SpannerObjectMapperImplTests {
 		@PrimaryKey
 		String id;
 
-		@ColumnInnerType(innerType = InnerTestEntity.class)
 		List<InnerTestEntity> innerTestEntities;
 	}
 
