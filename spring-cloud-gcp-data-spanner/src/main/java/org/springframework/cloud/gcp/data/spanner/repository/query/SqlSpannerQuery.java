@@ -64,11 +64,6 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
 		this.sql = StringUtils.trimTrailingCharacter(sql.trim(), ';');
-		if (this.sql.contains(";")) {
-			throw new SpannerDataException(
-					"A select query must be a single SQL statement "
-							+ "optionally ending with a semi-colon.");
-		}
 	}
 
 	private boolean isPageableSort(Class type) {
@@ -80,14 +75,14 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		Parameters parameters = getQueryMethod().getParameters();
 		for (int i = 0; i < parameters.getNumberOfParameters(); i++) {
 			Parameter param = parameters.getParameter(i);
+			if (isPageableSort(param.getType())) {
+				continue;
+			}
 			Optional<String> paramName = param.getName();
 			if (!paramName.isPresent()) {
 				throw new SpannerDataException(
 						"Query method has a parameter without a valid name: "
 								+ getQueryMethod().getName());
-			}
-			if (isPageableSort(param.getType())) {
-				continue;
 			}
 			tags.add(paramName.get());
 		}
