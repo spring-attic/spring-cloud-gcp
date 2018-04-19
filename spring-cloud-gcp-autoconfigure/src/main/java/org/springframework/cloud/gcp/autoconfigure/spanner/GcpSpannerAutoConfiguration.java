@@ -117,9 +117,7 @@ public class GcpSpannerAutoConfiguration {
 		if (this.prefetchChunks >= 0) {
 			builder.setPrefetchChunks(this.prefetchChunks);
 		}
-		if (sessionPoolOptions != null) {
-			builder.setSessionPoolOption(sessionPoolOptions);
-		}
+		builder.setSessionPoolOption(sessionPoolOptions);
 		return builder.build();
 	}
 
