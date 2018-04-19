@@ -81,8 +81,6 @@ public class TestEntities {
 		String id;
 
 		TestEntity fieldWithUnsupportedType;
-
-		List<Double> doubleList;
 	}
 
 	@Table(name = "faulty_test_table_2")

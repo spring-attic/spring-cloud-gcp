@@ -236,14 +236,6 @@ public class MappingSpannerWriteConverterTest {
 	}
 
 	@Test(expected = SpannerDataException.class)
-	public void writeUnannotatedIterableTest() {
-		FaultyTestEntity ft = new FaultyTestEntity();
-		ft.doubleList = new ArrayList<>();
-		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
-		this.writeConverter.write(ft, writeBuilder);
-	}
-
-	@Test(expected = SpannerDataException.class)
 	public void writeUnsupportedTypeIterableTest() {
 		FaultyTestEntity2 ft = new FaultyTestEntity2();
 		ft.listWithUnsupportedInnerType = new ArrayList<TestEntity>();
