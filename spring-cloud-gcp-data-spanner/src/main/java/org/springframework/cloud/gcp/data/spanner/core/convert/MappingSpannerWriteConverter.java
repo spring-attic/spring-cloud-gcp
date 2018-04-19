@@ -33,7 +33,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.convert.EntityWriter;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 
@@ -42,7 +41,7 @@ import org.springframework.data.mapping.PropertyHandler;
  * @author Chengyuan Zhao
  */
 public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
-		implements EntityWriter<Object, WriteBuilder> {
+		implements SpannerEntityWriter {
 
 	static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>> iterablePropertyType2ToMethodMap;
 
