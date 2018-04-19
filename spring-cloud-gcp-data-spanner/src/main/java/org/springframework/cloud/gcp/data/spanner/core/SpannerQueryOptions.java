@@ -24,6 +24,7 @@ import java.util.OptionalLong;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.QueryOption;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
 /**
@@ -39,6 +40,8 @@ public class SpannerQueryOptions {
 	private OptionalLong limit = OptionalLong.empty();
 
 	private OptionalLong offset = OptionalLong.empty();
+
+	private Sort sort = Sort.unsorted();
 
 	private boolean allowPartialRead;
 
@@ -133,6 +136,16 @@ public class SpannerQueryOptions {
 	public SpannerQueryOptions setAllowPartialRead(
 			boolean allowPartialRead) {
 		this.allowPartialRead = allowPartialRead;
+		return this;
+	}
+
+	public Sort getSort() {
+		return this.sort;
+	}
+
+	public SpannerQueryOptions setSort(Sort sort) {
+		Assert.notNull(sort, "A valid sort is required.");
+		this.sort = sort;
 		return this;
 	}
 }

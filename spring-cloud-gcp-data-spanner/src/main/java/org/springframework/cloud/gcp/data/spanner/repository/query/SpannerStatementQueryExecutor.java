@@ -86,6 +86,9 @@ public class SpannerStatementQueryExecutor {
 	 */
 	public static Statement buildStatementFromSqlWithArgs(String sql, List<String> tags,
 			Object[] params) {
+		if (tags == null && params == null) {
+			return Statement.of(sql);
+		}
 		if (tags.size() != params.length) {
 			throw new IllegalArgumentException(
 					"The number of tags does match the number of params.");

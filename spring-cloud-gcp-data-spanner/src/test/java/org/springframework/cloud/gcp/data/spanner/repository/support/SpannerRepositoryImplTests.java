@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.support;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -24,6 +25,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import org.junit.Test;
 
+import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
@@ -213,16 +215,32 @@ public class SpannerRepositoryImplTests {
 	public void findAllSortTest() {
 		SpannerTemplate template = mock(SpannerTemplate.class);
 		Sort sort = mock(Sort.class);
+		when(template.queryAll(eq(Object.class), any())).thenAnswer(invocation -> {
+			SpannerQueryOptions spannerQueryOptions = invocation.getArgument(1);
+			assertSame(sort, spannerQueryOptions.getSort());
+			return null;
+		});
 		new SimpleSpannerRepository(template, Object.class).findAll(sort);
-		verify(template, times(1)).queryAll(eq(Object.class), same(sort));
+		verify(template, times(1)).queryAll(eq(Object.class), any());
 	}
 
 	@Test
 	public void findAllPageableTest() {
 		SpannerTemplate template = mock(SpannerTemplate.class);
 		Pageable pageable = mock(Pageable.class);
+		Sort sort = mock(Sort.class);
+		when(pageable.getSort()).thenReturn(sort);
+		when(pageable.getOffset()).thenReturn(3L);
+		when(pageable.getPageSize()).thenReturn(5);
+		when(template.queryAll(eq(Object.class), any())).thenAnswer(invocation -> {
+			SpannerQueryOptions spannerQueryOptions = invocation.getArgument(1);
+			assertSame(sort, spannerQueryOptions.getSort());
+			assertEquals(3L, spannerQueryOptions.getOffset());
+			assertEquals(5L, spannerQueryOptions.getLimit());
+			return new ArrayList<>();
+		});
 		new SimpleSpannerRepository(template, Object.class).findAll(pageable);
-		verify(template, times(1)).queryAll(eq(Object.class), same(pageable));
+		verify(template, times(1)).queryAll(eq(Object.class), any());
 	}
 
 	@Test

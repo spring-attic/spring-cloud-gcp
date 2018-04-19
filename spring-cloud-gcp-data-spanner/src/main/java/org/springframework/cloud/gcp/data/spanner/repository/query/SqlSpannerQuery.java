@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.data.spanner.repository.query;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -116,22 +115,6 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		return result;
 	}
 
-	private String applyPageable(Pageable pageable, String sql) {
-		return applySort(pageable.getSort(), sql) + " LIMIT " + pageable.getPageSize()
-				+ " OFFSET " + pageable.getOffset();
-	}
-
-	private String applySort(Sort sort, String sql) {
-		if (sort == null || sort.isUnsorted()) {
-			return sql;
-		}
-		String s = "SELECT * FROM (" + sql + ") ORDER BY ";
-		StringJoiner sj = new StringJoiner(" , ");
-		sort.iterator().forEachRemaining(
-				o -> sj.add(o.getProperty() + (o.isAscending() ? " ASC" : " DESC")));
-		return s + sj.toString();
-	}
-
 	@Override
 	public Object executeRawResult(Object[] parameters) {
 		List<Object> params = new ArrayList();
@@ -160,20 +143,21 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 			}
 		}
 
-		String sql = resolveEntityClassNames(this.sql);
+		SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions()
+				.setAllowPartialRead(true);
 
 		if (pageable == null) {
 			if (sort != null) {
-				sql = applySort(sort, sql);
+				spannerQueryOptions.setSort(sort);
 			}
 		}
 		else {
-			sql = applyPageable(pageable, sql);
+			spannerQueryOptions.setSort(pageable.getSort())
+					.setOffset(pageable.getOffset()).setLimit(pageable.getPageSize());
 		}
 
 		return this.spannerOperations.query(this.entityType,
-				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
-						sql, this.tags, params.toArray()),
-				new SpannerQueryOptions().setAllowPartialRead(true));
+				resolveEntityClassNames(this.sql), this.tags, params.toArray(),
+				spannerQueryOptions);
 	}
 }

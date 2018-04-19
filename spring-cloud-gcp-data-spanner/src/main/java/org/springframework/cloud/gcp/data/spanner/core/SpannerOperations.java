@@ -25,10 +25,6 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Statement;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-
 /**
  * Defines operations available to use with Spanner.
  *
@@ -82,13 +78,16 @@ public interface SpannerOperations {
 	/**
 	 * Finds objects by using an SQL statement.
 	 * @param entityClass the type of object to retrieve.
-	 * @param statement the SQL statement used to select the objects.
+	 * @param sql the SQL string to execute. this string can have Spanner param tags.
+	 * @param tags the names of the tags to use
+	 * @param params the values to attach those tags, in the same order.
 	 * @param options Spanner read options with which to conduct the read operation.
 	 * @param <T> the type of object to retrieve.
 	 * @return a list of the objects found. If no keys could be found the list will be
 	 * empty.
 	 */
-	<T> List<T> query(Class<T> entityClass, Statement statement,
+	<T> List<T> query(Class<T> entityClass, String sql, List<String> tags,
+			Object[] params,
 			SpannerQueryOptions options);
 
 	/**
@@ -123,45 +122,12 @@ public interface SpannerOperations {
 	/**
 	 * Finds all objects of the given type.
 	 * @param entityClass the type of the object to retrieve.
-	 * @param sort the sorting used for the results.
 	 * @param options Spanner query options with which to conduct the query operation.
 	 * @param <T> the type of the object to retrieve.
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
 	 */
-	<T> List<T> queryAll(Class<T> entityClass, Sort sort, SpannerQueryOptions options);
-
-	/**
-	 * Finds all objects of the given type.
-	 * @param entityClass the type of the object to retrieve.
-	 * @param sort the sorting used for the results.
-	 * @param <T> the type of the object to retrieve.
-	 * @return a list of all objects stored of the given type. If there are no objects an
-	 * empty list is returned.
-	 */
-	<T> List<T> queryAll(Class<T> entityClass, Sort sort);
-
-	/**
-	 * Finds all objects of the given type.
-	 * @param entityClass the type of the object to retrieve.
-	 * @param pageable the paging options for this request.
-	 * @param options Spanner query options with which to conduct the query operation.
-	 * @param <T> the type of the object to retrieve.
-	 * @return a list of all objects stored of the given type. If there are no objects an
-	 * empty list is returned.
-	 */
-	<T> Page<T> queryAll(Class<T> entityClass, Pageable pageable,
-			SpannerQueryOptions options);
-
-	/**
-	 * Finds all objects of the given type.
-	 * @param entityClass the type of the object to retrieve.
-	 * @param pageable the paging options for this request.
-	 * @param <T> the type of the object to retrieve.
-	 * @return a list of all objects stored of the given type. If there are no objects an
-	 * empty list is returned.
-	 */
-	<T> Page<T> queryAll(Class<T> entityClass, Pageable pageable);
+	<T> List<T> queryAll(Class<T> entityClass, SpannerQueryOptions options);
 
 	/**
 	 * Deletes an object based on a key.
