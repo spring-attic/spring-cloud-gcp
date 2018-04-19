@@ -24,6 +24,7 @@ import com.google.cloud.spanner.Mutation.WriteBuilder;
 import org.springframework.data.convert.EntityWriter;
 
 /**
+ * @author Chengyuan Zhao
  * @author Balint Pato
  */
 public interface SpannerEntityWriter extends EntityWriter<Object, Mutation.WriteBuilder> {

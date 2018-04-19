@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 /**
+ * @author Chengyuan Zhao
  * @author Balint Pato
  */
 public class TestEntities {
