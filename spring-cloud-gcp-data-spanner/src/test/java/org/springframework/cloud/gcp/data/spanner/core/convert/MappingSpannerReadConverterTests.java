@@ -16,52 +16,51 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
-import com.google.cloud.spanner.Struct;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.List;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.util.Set;
+
+import com.google.cloud.spanner.Struct;
+import com.google.common.collect.ImmutableSet;
 import org.junit.Test;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
-import org.springframework.data.mapping.PropertyHandler;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
 
 /**
  * @author Chengyuan Zhao
  */
 public class MappingSpannerReadConverterTests {
 
+	private static final Set<String> DISREGARDED_METHOD_NAMES = ImmutableSet
+			.<String>builder().add("getColumnIndex").add("getStructList")
+			.add("getColumnType").build();
+
   // Checks that the converter is aware of all Spanner struct getter types
   @Test
   public void allKnownMappingTypesTest() throws NoSuchFieldException {
-
-    new SpannerMappingContext().getPersistentEntity(Entity.class).doWithProperties(
-        new PropertyHandler<SpannerPersistentProperty>() {
-          @Override
-          public void doWithPersistentProperty(SpannerPersistentProperty persistentProperty) {
-            int x =1;
-          }
-        });
-
-    Type t = Entity.class.getField("test").getGenericType();
-
     for( Method method: Struct.class.getMethods()){
-
-      // ignoring private methods
-      if(!method.isAccessible()){
+			String methodName = method.getName();
+			// ignoring private methods, ones not named like a getter. Getters must also
+			// only take the column index or name
+			if (!Modifier.isPublic(method.getModifiers()) || !methodName.startsWith("get")
+					|| method.getParameterCount() != 1
+					|| DISREGARDED_METHOD_NAMES.contains(methodName)) {
         continue;
       }
-
-
-      Type returnedType = method.getGenericReturnType();
-    }
-  }
-
-  private class Entity{
-
-    @PrimaryKey
-        int x;
-
-    List<Integer> test;
+			Class returnType = ConversionUtils.boxIfNeeded(method.getReturnType());
+			if (ConversionUtils.isIterableNonByteArrayType(returnType)) {
+				Class innerReturnType = (Class) ((ParameterizedType) method
+						.getGenericReturnType()).getActualTypeArguments()[0];
+				assertThat(MappingSpannerReadConverter.readIterableMapping.keySet(),
+						hasItem(innerReturnType));
+			}
+			else {
+				assertThat(
+						MappingSpannerReadConverter.singleItemReadMethodMapping.keySet(),
+						hasItem(returnType));
+			}
+		}
   }
 }
