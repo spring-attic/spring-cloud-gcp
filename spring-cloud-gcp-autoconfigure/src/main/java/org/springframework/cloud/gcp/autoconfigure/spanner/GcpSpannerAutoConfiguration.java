@@ -22,8 +22,10 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.SessionPoolOptions;
 import com.google.cloud.spanner.Spanner;
 import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.SpannerOptions.Builder;
 
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -67,6 +69,20 @@ public class GcpSpannerAutoConfiguration {
 
 	private final Credentials credentials;
 
+	private final int numRpcChannels;
+
+	private final int prefetchChunks;
+
+	private final int minSessions;
+
+	private final int maxSessions;
+
+	private final int maxIdleSessions;
+
+	private final float writeSessionsFraction;
+
+	private final int keepAliveIntervalMinutes;
+
 	public GcpSpannerAutoConfiguration(GcpSpannerProperties gcpSpannerProperties,
 			GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
@@ -78,15 +94,57 @@ public class GcpSpannerAutoConfiguration {
 				: projectIdProvider.getProjectId();
 		this.instanceId = gcpSpannerProperties.getInstanceId();
 		this.databaseName = gcpSpannerProperties.getDatabase();
+		this.numRpcChannels = gcpSpannerProperties.getNumRpcChannels();
+		this.prefetchChunks = gcpSpannerProperties.getPrefetchChunks();
+		this.minSessions = gcpSpannerProperties.getMinSessions();
+		this.maxSessions = gcpSpannerProperties.getMaxSessions();
+		this.maxIdleSessions = gcpSpannerProperties.getMaxIdleSessions();
+		this.writeSessionsFraction = gcpSpannerProperties.getWriteSessionsFraction();
+		this.keepAliveIntervalMinutes = gcpSpannerProperties
+				.getKeepAliveIntervalMinutes();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SpannerOptions spannerOptions() {
-		return SpannerOptions.newBuilder()
+	public SpannerOptions spannerOptions(SessionPoolOptions sessionPoolOptions) {
+		Builder builder = SpannerOptions.newBuilder()
 				.setProjectId(this.projectId)
 				.setHeaderProvider(new UsageTrackingHeaderProvider(this.getClass()))
-				.setCredentials(this.credentials).build();
+				.setCredentials(this.credentials);
+		if (this.numRpcChannels >= 0) {
+			builder.setNumChannels(this.numRpcChannels);
+		}
+		if (this.prefetchChunks >= 0) {
+			builder.setPrefetchChunks(this.prefetchChunks);
+		}
+		builder.setSessionPoolOption(sessionPoolOptions);
+		return builder.build();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public SessionPoolOptions sessionPoolOptions() {
+		SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
+		if (this.minSessions >= 0) {
+			builder.setMinSessions(this.minSessions);
+		}
+
+		if (this.maxSessions >= 0) {
+			builder.setMaxSessions(this.maxSessions);
+		}
+
+		if (this.maxIdleSessions >= 0) {
+			builder.setMaxIdleSessions(this.maxIdleSessions);
+		}
+
+		if (this.writeSessionsFraction >= 0) {
+			builder.setWriteSessionsFraction(this.writeSessionsFraction);
+		}
+
+		if (this.keepAliveIntervalMinutes >= 0) {
+			builder.setKeepAliveIntervalMinutes(this.keepAliveIntervalMinutes);
+		}
+		return builder.build();
 	}
 
 	@Bean

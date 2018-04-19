@@ -39,6 +39,27 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 
 	private String database;
 
+	// Default value is negative to indicate to use Spanner default number.
+	private int numRpcChannels = -1;
+
+	// Default value is negative to indicate to use Spanner default number.
+	private int prefetchChunks = -1;
+
+	// Default value is negative to indicate to use Spanner default number.
+	private int minSessions = -1;
+
+	// Default value is negative to indicate to use Spanner default number.
+	private int maxSessions = -1;
+
+	// Default value is negative to indicate to use Spanner default number.
+	private int maxIdleSessions = -1;
+
+	// Default value is negative to indicate to use Spanner default number.
+	private float writeSessionsFraction = -1;
+
+	// Default value is negative to indicate to use Spanner default number.
+	private int keepAliveIntervalMinutes = -1;
+
 	public Credentials getCredentials() {
 		return this.credentials;
 	}
@@ -65,5 +86,61 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 
 	public void setDatabase(String database) {
 		this.database = database;
+	}
+
+	public int getNumRpcChannels() {
+		return this.numRpcChannels;
+	}
+
+	public void setNumRpcChannels(int numRpcChannels) {
+		this.numRpcChannels = numRpcChannels;
+	}
+
+	public int getPrefetchChunks() {
+		return this.prefetchChunks;
+	}
+
+	public void setPrefetchChunks(int prefetchChunks) {
+		this.prefetchChunks = prefetchChunks;
+	}
+
+	public int getMinSessions() {
+		return this.minSessions;
+	}
+
+	public void setMinSessions(int minSessions) {
+		this.minSessions = minSessions;
+	}
+
+	public int getMaxSessions() {
+		return this.maxSessions;
+	}
+
+	public void setMaxSessions(int maxSessions) {
+		this.maxSessions = maxSessions;
+	}
+
+	public int getMaxIdleSessions() {
+		return this.maxIdleSessions;
+	}
+
+	public void setMaxIdleSessions(int maxIdleSessions) {
+		this.maxIdleSessions = maxIdleSessions;
+	}
+
+	public float getWriteSessionsFraction() {
+		return this.writeSessionsFraction;
+	}
+
+	public void setWriteSessionsFraction(float writeSessionsFraction) {
+		this.writeSessionsFraction = writeSessionsFraction;
+	}
+
+	public int getKeepAliveIntervalMinutes() {
+		return this.keepAliveIntervalMinutes;
+	}
+
+	public void setKeepAliveIntervalMinutes(int keepAliveIntervalMinutes) {
+		this.keepAliveIntervalMinutes = keepAliveIntervalMinutes;
 	}
 }
