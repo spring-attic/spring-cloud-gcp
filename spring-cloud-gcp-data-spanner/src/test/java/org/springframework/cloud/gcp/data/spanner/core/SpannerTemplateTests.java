@@ -45,7 +45,6 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
@@ -485,10 +484,8 @@ public class SpannerTemplateTests {
 
 		ByteArray bytes;
 
-		@ColumnInnerType(innerType = ByteArray.class)
 		List<ByteArray> bytesList;
 
-		@ColumnInnerType(innerType = Integer.class)
 		List<Integer> integerList;
 
 		double[] doubles;

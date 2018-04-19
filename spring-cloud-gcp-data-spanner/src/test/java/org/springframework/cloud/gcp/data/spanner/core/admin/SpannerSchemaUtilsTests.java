@@ -25,7 +25,6 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnLength;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -91,10 +90,8 @@ public class SpannerSchemaUtilsTests {
 		ByteArray bytes;
 
 		@ColumnLength(maxLength = 111)
-		@ColumnInnerType(innerType = ByteArray.class)
 		List<ByteArray> bytesList;
 
-		@ColumnInnerType(innerType = Integer.class)
 		List<Integer> integerList;
 
 		double[] doubles;

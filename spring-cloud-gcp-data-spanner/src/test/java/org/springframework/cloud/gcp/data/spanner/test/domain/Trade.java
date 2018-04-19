@@ -26,7 +26,6 @@ import java.util.UUID;
 import org.assertj.core.util.DateUtil;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnInnerType;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
@@ -58,7 +57,6 @@ public class Trade {
 	@Column(name = "trader_id")
 	private String traderId;
 
-	@ColumnInnerType(innerType = Instant.class)
 	private List<Instant> executionTimes;
 
 	public static Trade aTrade() {

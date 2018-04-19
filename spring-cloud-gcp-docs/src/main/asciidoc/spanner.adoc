@@ -230,13 +230,11 @@ Spring Data Spanner supports the following types for regular fields:
 
 Spanner supports `ARRAY` types for columns.
 `ARRAY` columns are mapped to `List` fields in POJOS.
-When using `List`, the `@ColumnInnerType` annotation is required to specify what is the type of the elements.
 
 Example:
 
 [source,java]
 ----
-@ColumnInnerType(innerType = Double.class)
 List<Double> curve;
 ----
 
