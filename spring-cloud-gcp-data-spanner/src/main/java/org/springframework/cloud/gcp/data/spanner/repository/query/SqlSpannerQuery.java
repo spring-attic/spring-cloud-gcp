@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.repository.query;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,10 +28,14 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Balint Pato
@@ -58,18 +63,31 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		this.tags = getTags();
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
-		this.sql = sql;
+		this.sql = StringUtils.trimTrailingCharacter(sql.trim(), ';');
+		if (this.sql.contains(";")) {
+			throw new SpannerDataException(
+					"A select query must be a single SQL statement "
+							+ "optionally ending with a semi-colon.");
+		}
+	}
+
+	private boolean isPageableSort(Class type) {
+		return Pageable.class.isAssignableFrom(type) || Sort.class.isAssignableFrom(type);
 	}
 
 	private List<String> getTags() {
 		List<String> tags = new ArrayList<>();
 		Parameters parameters = getQueryMethod().getParameters();
 		for (int i = 0; i < parameters.getNumberOfParameters(); i++) {
-			Optional<String> paramName = parameters.getParameter(i).getName();
+			Parameter param = parameters.getParameter(i);
+			Optional<String> paramName = param.getName();
 			if (!paramName.isPresent()) {
 				throw new SpannerDataException(
 						"Query method has a parameter without a valid name: "
 								+ getQueryMethod().getName());
+			}
+			if (isPageableSort(param.getType())) {
+				continue;
 			}
 			tags.add(paramName.get());
 		}
@@ -103,11 +121,64 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		return result;
 	}
 
+	private String applyPageable(Pageable pageable, String sql) {
+		return applySort(pageable.getSort(), sql) + " LIMIT " + pageable.getPageSize()
+				+ " OFFSET " + pageable.getOffset();
+	}
+
+	private String applySort(Sort sort, String sql) {
+		if (sort == null || sort.isUnsorted()) {
+			return sql;
+		}
+		String s = "SELECT * FROM (" + sql + ") ORDER BY ";
+		StringJoiner sj = new StringJoiner(" , ");
+		sort.iterator().forEachRemaining(
+				o -> sj.add(o.getProperty() + (o.isAscending() ? " ASC" : " DESC")));
+		return s + sj.toString();
+	}
+
 	@Override
 	public Object executeRawResult(Object[] parameters) {
+		List<Object> params = new ArrayList();
+
+		Pageable pageable = null;
+		Sort sort = null;
+
+		for (Object param : parameters) {
+			Class paramClass = param.getClass();
+			if (isPageableSort(paramClass)) {
+				if (pageable != null || sort != null) {
+					throw new SpannerDataException(
+							"Only a single Pageable or Sort param is allowed.");
+				}
+				else {
+					if (Pageable.class.isAssignableFrom(paramClass)) {
+						pageable = (Pageable) param;
+					}
+					else {
+						sort = (Sort) param;
+					}
+				}
+			}
+			else {
+				params.add(param);
+			}
+		}
+
+		String sql = resolveEntityClassNames(this.sql);
+
+		if (pageable == null) {
+			if (sort != null) {
+				sql = applySort(sort, sql);
+			}
+		}
+		else {
+			sql = applyPageable(pageable, sql);
+		}
+
 		return this.spannerOperations.query(this.entityType,
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
-						resolveEntityClassNames(this.sql), this.tags, parameters),
+						sql, this.tags, params.toArray()),
 				new SpannerQueryOptions().setAllowPartialRead(true));
 	}
 }
