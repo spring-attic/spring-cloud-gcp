@@ -175,10 +175,11 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	private String applySort(Sort sort, String sql) {
+		String s = "SELECT * FROM (" + sql + ")";
 		if (sort == null || sort.isUnsorted()) {
-			return sql;
+			return s;
 		}
-		String s = "SELECT * FROM (" + sql + ") ORDER BY ";
+		s += " ORDER BY ";
 		StringJoiner sj = new StringJoiner(" , ");
 		sort.iterator().forEachRemaining(
 				o -> sj.add(o.getProperty() + (o.isAscending() ? " ASC" : " DESC")));

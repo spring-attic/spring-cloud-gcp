@@ -229,14 +229,13 @@ public class SpannerTemplateTests {
 	public void findByStatementTest() {
 		ResultSet results = mock(ResultSet.class);
 		QueryOption queryOption = mock(QueryOption.class);
-		Statement statement = Statement.of("test");
 		SpannerQueryOptions options = new SpannerQueryOptions()
 				.addQueryOption(queryOption);
 		when(this.readContext.executeQuery(any(), any())).thenReturn(results);
 		this.spannerTemplate.query(TestEntity.class, "test", null, null, options);
 		verify(this.objectMapper, times(1)).mapToList(same(results),
 				eq(TestEntity.class), eq(Optional.empty()), eq(false));
-		verify(this.readContext, times(1)).executeQuery(eq(statement),
+		verify(this.readContext, times(1)).executeQuery(eq(Statement.of("SELECT * FROM (test)")),
 				same(queryOption));
 	}
 
@@ -393,6 +392,25 @@ public class SpannerTemplateTests {
 		}).when(spyTemplate).query(eq(TestEntity.class), any(), any(), any(), any());
 
 		spyTemplate.queryAll(TestEntity.class, queryOption.setSort(sort));
+		verify(spyTemplate, times(1)).query(eq(TestEntity.class), any(), any(), any(),
+				any());
+	}
+
+	@Test
+	public void findAllNoSortWithLimitsOffsetTest() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		SpannerQueryOptions queryOption = new SpannerQueryOptions().setLimit(3L)
+				.setOffset(5L);
+
+		doAnswer(invocation -> {
+			assertEquals(
+					"SELECT * FROM (SELECT * FROM custom_test_table) "
+							+ "LIMIT 3 OFFSET 5",
+					invocation.getArgument(1));
+			return null;
+		}).when(spyTemplate).query(eq(TestEntity.class), any(), any(), any(), any());
+
+		spyTemplate.queryAll(TestEntity.class, queryOption);
 		verify(spyTemplate, times(1)).query(eq(TestEntity.class), any(), any(), any(),
 				any());
 	}
