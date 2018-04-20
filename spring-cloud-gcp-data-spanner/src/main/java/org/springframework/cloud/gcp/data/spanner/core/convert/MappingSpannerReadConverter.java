@@ -37,7 +37,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.convert.EntityReader;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 
@@ -46,7 +45,7 @@ import org.springframework.data.mapping.PropertyHandler;
  * @author Chengyuan Zhao
  */
 class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
-		implements EntityReader<Object, Struct> {
+		implements SpannerEntityReader {
 
 	static final Map<Class, BiFunction<Struct, String, List>> readIterableMapping =
 			new ImmutableMap.Builder<Class, BiFunction<Struct, String, List>>()

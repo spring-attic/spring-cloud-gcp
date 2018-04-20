@@ -58,29 +58,9 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 			.add(Float.class).add(Double.class).add(String.class).add(ByteArray.class)
 			.add(Timestamp.class).add(com.google.cloud.Date.class).build();
 
-	@VisibleForTesting
-	MappingSpannerReadConverter getReadConverter() {
-		return this.readConverter;
-	}
-
 	private final MappingSpannerReadConverter readConverter;
 
-	@VisibleForTesting
-	MappingSpannerWriteConverter getWriteConverter() {
-		return this.writeConverter;
-	}
-
 	private final MappingSpannerWriteConverter writeConverter;
-
-	@Override
-	public boolean isValidSpannerKeyType(Class type) {
-		return SPANNER_KEY_COMPATIBLE_TYPES.contains(type);
-	}
-
-	@Override
-	public Set<Class> directlyWriteableSpannerTypes() {
-		return MappingSpannerWriteConverter.singleItemType2ToMethodMap.keySet();
-	}
 
 	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext) {
 		super(getCustomConversions(DEFAULT_SPANNER_CONVERTERS), null);
@@ -96,7 +76,8 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 			Collection<Converter> writeConverters, Collection<Converter> readConverters) {
 		super(getCustomConversions(
 				ImmutableList.<Converter>builder().addAll(DEFAULT_SPANNER_CONVERTERS)
-				.addAll(readConverters).addAll(writeConverters).build()), null);
+						.addAll(readConverters).addAll(writeConverters).build()),
+				null);
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
 		this.readConverter = new MappingSpannerReadConverter(spannerMappingContext,
@@ -114,6 +95,26 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 		return new CustomConversions(StoreConversions.NONE, converters);
 	}
 
+	@VisibleForTesting
+	MappingSpannerReadConverter getReadConverter() {
+		return this.readConverter;
+	}
+
+	@VisibleForTesting
+	MappingSpannerWriteConverter getWriteConverter() {
+		return this.writeConverter;
+	}
+
+	@Override
+	public boolean isValidSpannerKeyType(Class type) {
+		return SPANNER_KEY_COMPATIBLE_TYPES.contains(type);
+	}
+
+	@Override
+	public Set<Class> directlyWriteableSpannerTypes() {
+		return MappingSpannerWriteConverter.singleItemType2ToMethodMap.keySet();
+	}
+
 	@Override
 	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass) {
 		return mapToList(resultSet, entityClass, Optional.empty(), false);
@@ -127,7 +128,8 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 			result.add(this.readConverter.read(entityClass,
 					resultSet.getCurrentRowAsStruct(),
 					includeColumns == null || !includeColumns.isPresent() ? null
-							: includeColumns.get(), allowMissingColumns));
+							: includeColumns.get(),
+					allowMissingColumns));
 		}
 		resultSet.close();
 		return result;
@@ -138,11 +140,8 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 			String... includeColumns) {
 		return mapToList(resultSet, entityClass,
 				includeColumns.length == 0 ? Optional.empty()
-						: Optional.of(new HashSet<>(Arrays.asList(includeColumns))), false);
-	}
-
-	public void write(Object source, WriteBuilder sink, Set<String> includeColumns) {
-		this.writeConverter.write(source, sink, includeColumns);
+						: Optional.of(new HashSet<>(Arrays.asList(includeColumns))),
+				false);
 	}
 
 	@Override
@@ -240,6 +239,11 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 	@Override
 	public void write(Object source, Mutation.WriteBuilder sink) {
 		this.writeConverter.write(source, sink);
+	}
+
+	@Override
+	public void write(Object source, WriteBuilder sink, Set<String> includeColumns) {
+		this.writeConverter.write(source, sink, includeColumns);
 	}
 
 	@Override

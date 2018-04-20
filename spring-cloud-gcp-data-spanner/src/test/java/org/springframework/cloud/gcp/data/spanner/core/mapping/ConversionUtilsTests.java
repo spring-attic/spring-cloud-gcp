@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
-
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;

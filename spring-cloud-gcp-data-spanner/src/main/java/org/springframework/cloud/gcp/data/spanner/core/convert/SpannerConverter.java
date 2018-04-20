@@ -20,13 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.Struct;
-
-import org.springframework.data.convert.EntityReader;
-import org.springframework.data.convert.EntityWriter;
 
 /**
  * Interface for mappers that can populate fields from Spanner results.
@@ -35,8 +29,7 @@ import org.springframework.data.convert.EntityWriter;
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
-public interface SpannerConverter extends EntityReader<Object, Struct>,
-		EntityWriter<Object, Mutation.WriteBuilder> {
+public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWriter {
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
@@ -75,15 +68,6 @@ public interface SpannerConverter extends EntityReader<Object, Struct>,
 	 */
 	<T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
 			String... includeColumns);
-
-	/**
-	 * Writes an object's properties to the sink.
-	 * @param source the object to write
-	 * @param sink the sink to which to write
-	 * @param includeColumns the properties/columns to write. If null, then all columns
-	 * are written.
-	 */
-	void write(Object source, WriteBuilder sink, Set<String> includeColumns);
 
 	/**
 	 * Returns true if this converter can convert from the source type to the target type.
