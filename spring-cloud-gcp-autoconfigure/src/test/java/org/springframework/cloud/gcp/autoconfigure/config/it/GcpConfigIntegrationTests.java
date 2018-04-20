@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.autoconfigure.config.it;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -24,6 +25,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
@@ -33,21 +35,30 @@ import static org.assertj.core.api.Assumptions.assumeThat;
  */
 public class GcpConfigIntegrationTests {
 
-	private ApplicationContext context = new SpringApplicationBuilder()
-			.sources(GcpContextAutoConfiguration.class, GcpConfigBootstrapConfiguration.class)
-			.web(WebApplicationType.NONE)
-			.properties("spring.cloud.gcp.config.enabled=true",
-					"spring.cloud.gcp.config.name=myapp",
-					"spring.cloud.gcp.config.profile=prod")
-			.run();
+	private ConfigurableApplicationContext context;
 
 	@BeforeClass
 	public static void enableTests() {
 		assumeThat(System.getProperty("it.config")).isEqualTo("true");
 	}
 
+	@After
+	public void close() {
+		if (this.context == null) {
+			this.context.close();
+		}
+	}
+
 	@Test
 	public void testConfiguration() {
+		this.context = new SpringApplicationBuilder()
+				.sources(GcpContextAutoConfiguration.class, GcpConfigBootstrapConfiguration.class)
+				.web(WebApplicationType.NONE)
+				.properties("spring.cloud.gcp.config.enabled=true",
+						"spring.cloud.gcp.config.name=myapp",
+						"spring.cloud.gcp.config.profile=prod")
+				.run();
+
 		assertThat(this.context.getEnvironment().getProperty("myapp.queue-size"))
 				.isEqualTo("200");
 		assertThat(this.context.getEnvironment().getProperty("myapp.feature-x-enabled"))
