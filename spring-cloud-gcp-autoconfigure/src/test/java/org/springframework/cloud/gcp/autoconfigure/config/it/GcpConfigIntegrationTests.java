@@ -24,7 +24,6 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,7 +43,7 @@ public class GcpConfigIntegrationTests {
 
 	@After
 	public void close() {
-		if (this.context == null) {
+		if (this.context != null) {
 			this.context.close();
 		}
 	}
