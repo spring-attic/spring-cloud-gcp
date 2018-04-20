@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -31,6 +32,8 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
@@ -38,6 +41,8 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -62,6 +67,8 @@ public class SpannerTemplate implements SpannerOperations {
 	private final SpannerConverter spannerConverter;
 
 	private final SpannerMutationFactory mutationFactory;
+
+	private static final Log LOGGER = LogFactory.getLog(SpannerTemplate.class);
 
 	public SpannerTemplate(DatabaseClient databaseClient,
 			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
@@ -295,17 +302,34 @@ public class SpannerTemplate implements SpannerOperations {
 
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
 			SpannerReadOptions options) {
+		StringBuilder logSb = new StringBuilder("Executing read on table " + tableName
+				+ " with keys: " + keys + " and columns: ");
+		StringJoiner sj = new StringJoiner(",");
+		columns.forEach(col -> sj.add(col));
+		logSb.append(sj.toString());
 		if (options == null) {
+			LOGGER.debug(logSb.toString());
 			return getReadContext().read(tableName, keys, columns);
 		}
 		else {
-			ReadContext readContext = (options.hasTimestamp()
-					? getReadContext(options.getTimestamp())
-					: getReadContext());
+			ReadContext readContext;
+			if (options.hasTimestamp()) {
+				readContext = getReadContext(options.getTimestamp());
+				logSb.append(" at timestamp " + options.getTimestamp());
+			}
+			else {
+				readContext = getReadContext();
+			}
+			for (ReadOption readOption : options.getReadOptions()) {
+				logSb.append(" with option: " + readOption);
+			}
 			if (options.hasIndex()) {
+				LOGGER.debug(
+						logSb.toString() + " secondary index: " + options.getIndex());
 				return readContext.readUsingIndex(tableName, options.getIndex(), keys,
 						columns, options.getReadOptions());
 			}
+			LOGGER.debug(logSb.toString());
 			return readContext.read(tableName, keys, columns,
 							options.getReadOptions());
 		}
@@ -313,9 +337,18 @@ public class SpannerTemplate implements SpannerOperations {
 
 	private ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
 		if (options == null) {
+			LOGGER.debug("Executing query without additional options: " + statement);
 			return getReadContext().executeQuery(statement);
 		}
 		else {
+			StringBuilder logSb = new StringBuilder("Executing query"
+					+ (options.hasTimestamp() ? " at timestamp" + options.getTimestamp()
+							: ""));
+			for (QueryOption queryOption : options.getQueryOptions()) {
+				logSb.append(" with option: " + queryOption);
+			}
+			logSb.append(" : " + statement);
+			LOGGER.debug(logSb.toString());
 			return (options.hasTimestamp() ? getReadContext(options.getTimestamp())
 					: getReadContext()).executeQuery(statement,
 							options.getQueryOptions());
@@ -325,7 +358,9 @@ public class SpannerTemplate implements SpannerOperations {
 	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,
 			T arg1,
 			U arg2) {
-		this.databaseClient.write(Arrays.asList(function.apply(arg1, arg2)));
+		Mutation mutation = function.apply(arg1, arg2);
+		LOGGER.debug("Applying Mutation: " + mutation);
+		this.databaseClient.write(Arrays.asList(mutation));
 	}
 
 	private <T> void applyMutationUsingEntity(Function<T, Mutation> function, T arg) {
