@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.autoconfigure.config.it;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration;
