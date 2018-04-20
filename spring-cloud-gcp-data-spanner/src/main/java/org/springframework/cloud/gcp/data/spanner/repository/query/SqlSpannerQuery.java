@@ -198,7 +198,7 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 
 		String sql;
 
-		public QueryTagValue(List<String> tags, Object[] params, String sql) {
+		QueryTagValue(List<String> tags, Object[] params, String sql) {
 			this.tags = tags;
 			this.intialParams = params;
 			this.sql = sql;
