@@ -82,5 +82,5 @@ public class PubSubTemplateIntegrationTests {
 			assertThat(pubSubAdmin.listTopics().size()).isEqualTo(0);
 			assertThat(pubSubAdmin.listSubscriptions().size()).isEqualTo(0);
 		});
-	};
+	}
 }
