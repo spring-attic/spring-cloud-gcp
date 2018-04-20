@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.hasItem;
  */
 public class MappingSpannerWriteConverterTests {
 
-	// Checks that the converter is aware of all Spanner struct getter types
+	// Checks that the converter is aware of all Spanner mutation binder types
 	@Test
 	public void allKnownMappingTypesTest() throws NoSuchFieldException {
 		for (Method method : ValueBinder.class.getMethods()) {
