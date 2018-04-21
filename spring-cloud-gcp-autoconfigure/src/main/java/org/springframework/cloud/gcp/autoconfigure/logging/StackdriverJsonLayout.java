@@ -29,6 +29,8 @@ import ch.qos.logback.contrib.json.classic.JsonLayout;
 import com.google.cloud.logging.TraceLoggingEnhancer;
 import com.google.gson.Gson;
 
+import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.StringUtils;
 
 /**
@@ -161,6 +163,17 @@ public class StackdriverJsonLayout extends JsonLayout {
 	 */
 	public void setIncludeExceptionInMessage(boolean includeExceptionInMessage) {
 		this.includeExceptionInMessage = includeExceptionInMessage;
+	}
+
+	@Override
+	public void start() {
+		super.start();
+
+		// If no Project ID set, then attempt to resolve it with the default project ID provider
+		if (StringUtils.isEmpty(this.projectId) || this.projectId.endsWith("_IS_UNDEFINED")) {
+			GcpProjectIdProvider projectIdProvider = new DefaultGcpProjectIdProvider();
+			this.projectId = projectIdProvider.getProjectId();
+		}
 	}
 
 	/**
