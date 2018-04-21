@@ -211,6 +211,15 @@ public class StackdriverJsonLayout extends JsonLayout {
 		return map;
 	}
 
+	protected String formatTraceId(final String traceId) {
+		// Trace IDs are either 64-bit or 128-bit, which is 16-digit hex, or 32-digit hex.
+		// If traceId is 64-bit (16-digit hex), then we need to prepend 0's to make a 32-digit hex.
+		if (traceId != null && traceId.length() == 16) {
+			return "0000000000000000" + traceId;
+		}
+		return traceId;
+	}
+
 	private void addTraceId(ILoggingEvent event, Map<String, Object> map) {
 		if (!this.includeTraceId) {
 			return;
@@ -223,7 +232,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 		if (!StringUtils.isEmpty(traceId)
 			&& !StringUtils.isEmpty(this.projectId)
 			&& !this.projectId.endsWith("_IS_UNDEFINED")) {
-			traceId = "projects/" + this.projectId + "/traces/" + traceId;
+			traceId = "projects/" + this.projectId + "/traces/" + formatTraceId(traceId);
 		}
 
 		add(TRACE_ID_ATTRIBUTE, this.includeTraceId, traceId, map);

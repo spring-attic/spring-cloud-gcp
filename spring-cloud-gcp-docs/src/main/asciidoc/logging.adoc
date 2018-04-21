@@ -114,7 +114,7 @@ The following properties are available:
 [options="header",]
 |=======================================================================
 | Property | Default Value | Description
-| `projectId` |  | Only required for logging the correct traceId: `projects/[PROJECT-ID]/traces/[TRACE-ID]`. If `projectId` is not set, the logged `traceId` will match the one provided by `spring-cloud-gpc-trace`
+| `projectId` |  | Only required for logging the correct traceId: `projects/[PROJECT-ID]/traces/[TRACE-ID]`. If `projectId` is not set, the logged `traceId` will match the one provided by `spring-cloud-gcp-trace`
 | `includeTraceId` | `true` | Should the `traceId` be included
 | `includeSpanId` | `true` | Should the `spanId` be included
 | `includeLevel` | `true` | Should the severity be included
