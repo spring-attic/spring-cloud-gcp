@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.autoconfigure.spanner;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
@@ -29,7 +30,7 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 
 @Configuration
 @AutoConfigureAfter(GcpSpannerAutoConfiguration.class)
-@ConditionalOnClass({ BackendIdConverter.class })
+@ConditionalOnClass({ BackendIdConverter.class, SpannerMappingContext.class})
 public class SpannerKeyRestSupportAutoConfiguration {
 
 	@Bean
