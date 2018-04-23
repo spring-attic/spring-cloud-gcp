@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.core.admin;
 
 import java.util.List;
+import java.util.OptionalLong;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.Key;
@@ -24,13 +25,17 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnLength;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Chengyuan Zhao
@@ -41,11 +46,14 @@ public class SpannerSchemaUtilsTests {
 
 	private SpannerSchemaUtils spannerSchemaUtils;
 
+	private SpannerConverter spannerConverter;
+
 	@Before
 	public void setUp() {
 		this.spannerMappingContext = new SpannerMappingContext();
 		this.spannerSchemaUtils = new SpannerSchemaUtils(this.spannerMappingContext,
 				new MappingSpannerConverter(this.spannerMappingContext));
+		this.spannerConverter = new MappingSpannerConverter(this.spannerMappingContext);
 	}
 
 	@Test
@@ -61,6 +69,72 @@ public class SpannerSchemaUtilsTests {
 				+ ", bytesList ARRAY<BYTES(111)> , integerList ARRAY<INT64> "
 				+ ", doubles ARRAY<FLOAT64> ) PRIMARY KEY ( id , id2 )",
 				this.spannerSchemaUtils.getCreateTableDDLString(TestEntity.class));
+	}
+
+	@Test
+	public void createDDLString() {
+		assertColumnDDL(String.class, null,
+				"id", OptionalLong.empty(),
+				"id STRING(MAX)");
+	}
+
+	@Test
+	public void createDDLStringCustomLength() {
+		assertColumnDDL(String.class, null,
+				"id", OptionalLong.of(333L),
+				"id STRING(333)");
+	}
+
+	@Test
+	public void createDDLBytesMax() {
+		assertColumnDDL(ByteArray.class, null,
+				"bytes", OptionalLong.empty(),
+				"bytes BYTES(MAX)");
+	}
+
+	@Test
+	public void createDDLBytesCustomLength() {
+		assertColumnDDL(ByteArray.class, null,
+				"bytes", OptionalLong.of(333L),
+				"bytes BYTES(333)");
+	}
+
+	@Test
+	public void ddlForListOfByteArray() {
+		assertColumnDDL(List.class, ByteArray.class,
+				"bytesList", OptionalLong.of(111L),
+				"bytesList ARRAY<BYTES(111)>");
+	}
+
+	@Test
+	public void ddlForDoubleArray() {
+		assertColumnDDL(double[].class, null,
+				"doubles", OptionalLong.of(111L),
+				"doubles ARRAY<FLOAT64>");
+	}
+
+	@Test
+	public void ddlForListOfListOfIntegers() {
+		assertColumnDDL(List.class, Integer.class,
+				"integerList", OptionalLong.empty(),
+				"integerList ARRAY<INT64>");
+	}
+
+	@Test
+	public void ddlForListOfListOfDoubles() {
+		assertColumnDDL(List.class, Double.class,
+				"doubleList", OptionalLong.empty(),
+				"doubleList ARRAY<FLOAT64>");
+	}
+
+	private void assertColumnDDL(Class clazz, Class innerClazz, String name, OptionalLong length, String expectedDDL) {
+		SpannerPersistentProperty spannerPersistentProperty = mock(SpannerPersistentProperty.class);
+		when(spannerPersistentProperty.getType()).thenReturn(clazz);
+		when(spannerPersistentProperty.getColumnName()).thenReturn(name);
+		when(spannerPersistentProperty.getMaxColumnLength()).thenReturn(length);
+		when(spannerPersistentProperty.getColumnInnerType()).thenReturn(innerClazz);
+		assertEquals(expectedDDL,
+				this.spannerSchemaUtils.getColumnDDLString(spannerPersistentProperty, this.spannerConverter));
 	}
 
 	@Test

@@ -34,8 +34,8 @@ import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
 
 /**
- * Represents an implementation for {@link SpannerPersistentProperty}, which is a property of a
- * {@link SpannerPersistentEntity} stored in a Google Spanner table.
+ * Represents an implementation for {@link SpannerPersistentProperty}, which is a property
+ * of a {@link SpannerPersistentEntity} stored in a Google Spanner table.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
@@ -52,7 +52,8 @@ public class SpannerPersistentPropertyImpl
 	 * @param property the property to store
 	 * @param owner the entity to which this property belongs
 	 * @param simpleTypeHolder
-	 * @param fieldNamingStrategy the naming strategy used to get the column name of this property
+	 * @param fieldNamingStrategy the naming strategy used to get the column name of this
+	 * property
 	 */
 	public SpannerPersistentPropertyImpl(Property property,
 			PersistentEntity<?, SpannerPersistentProperty> owner,
@@ -80,11 +81,11 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	/**
-	 * Gets the name of the column in the Google Spanner table mapped to this property.
-	 * The column name is resolved using the {@link FieldNamingStrategy} passed in to the
+	 * Gets the name of the column in the Google Spanner table mapped to this property. The
+	 * column name is resolved using the {@link FieldNamingStrategy} passed in to the
 	 * {@link SpannerPersistentPropertyImpl#SpannerPersistentPropertyImpl(Property, PersistentEntity,
-	 * SimpleTypeHolder, FieldNamingStrategy)} constructor.
-	 * This is by default the by default
+	 * SimpleTypeHolder, FieldNamingStrategy)}
+	 * constructor. This is by default the by default
 	 *
 	 * @return the name of the column.
 	 * @throws {@link MappingException} if the resolution fails
@@ -111,8 +112,9 @@ public class SpannerPersistentPropertyImpl
 		TypeInformation ti = getTypeInformation();
 		List<TypeInformation> typeParams = ti.getTypeArguments();
 		if (typeParams.size() != 1) {
-			throw new SpannerDataException("More than a single type parameter found. "
-					+ "Only collections of one type parameter are supported.");
+			throw new SpannerDataException("in field '" + getColumnName()
+					+ "': Unsupported number of type parameters found: " + typeParams.size()
+					+ " Only collections of exactly 1 type parameter are supported.");
 		}
 		return typeParams.get(0).getType();
 	}
