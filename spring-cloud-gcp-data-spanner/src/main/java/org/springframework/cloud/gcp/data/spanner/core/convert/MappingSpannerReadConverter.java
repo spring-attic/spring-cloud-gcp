@@ -121,52 +121,77 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 
 		persistentEntity.doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					String columnName = spannerPersistentProperty.getColumnName();
-					try {
-						if ((!readAllColumns && !includeColumns.contains(columnName))
-								|| source.isNull(columnName)) {
-							return;
-						}
-					}
-					catch (IllegalArgumentException e) {
-						if (!allowMissingColumns) {
-							throw new SpannerDataException(
-									"Unable to read column from Spanner results: "
-											+ columnName,
-									e);
-						}
-					}
-					Class propType = spannerPersistentProperty.getType();
-
-					Object value;
-
-					/*
-					 * Due to type erasure, binder methods for Iterable properties must be manually specified.
-					 * ByteArray must be excluded since it implements Iterable, but is also explicitly
-					 * supported by spanner.
-					 */
-					if (ConversionUtils.isIterableNonByteArrayType(propType)) {
-						value = readIterableWithConversion(spannerPersistentProperty, source, columnName);
-					}
-					else {
-						value = readSingleWithConversion(
-								spannerPersistentProperty, source,
-								columnName);
-					}
-
-					if (value == null) {
-						throw new SpannerDataException(String.format(
-								"The value in column with name %s"
-										+ " could not be converted to the corresponding property in the entity."
-										+ " The property's type is %s.",
-								columnName, propType));
-					}
-					else {
+					if (!shouldSkipProperty(source,
+							spannerPersistentProperty,
+							includeColumns,
+							readAllColumns,
+							allowMissingColumns)) {
+						Object value = readWithConversion(source, spannerPersistentProperty);
 						accessor.setProperty(spannerPersistentProperty, value);
 					}
 
 				});
 		return object;
+	}
+
+	private boolean shouldSkipProperty(Struct struct,
+																		 SpannerPersistentProperty spannerPersistentProperty,
+																		 Set<String> includeColumns,
+																		 boolean readAllColumns,
+																		 boolean allowMissingColumns) {
+		String columnName = spannerPersistentProperty.getColumnName();
+		boolean notRequiredByPartialRead = !readAllColumns && !includeColumns.contains(columnName);
+
+		return notRequiredByPartialRead
+				|| isMissingColumn(struct, allowMissingColumns, columnName)
+				|| struct.isNull(columnName);
+	}
+
+	private boolean isMissingColumn(Struct struct, boolean allowMissingColumns,
+																	String columnName) {
+		boolean missingColumn = !hasColumn(struct, columnName);
+		if (missingColumn && !allowMissingColumns) {
+			throw new SpannerDataException(
+					"Unable to read column from Spanner results: "
+							+ columnName);
+		}
+		return missingColumn;
+	}
+
+	private boolean hasColumn(Struct struct, String columnName) {
+		boolean hasColumn = false;
+		for (Type.StructField f : struct.getType().getStructFields()) {
+			if (f.getName().equals(columnName)) {
+				hasColumn = true;
+				break;
+			}
+		}
+		return hasColumn;
+	}
+
+	protected Object readWithConversion(Struct source, SpannerPersistentProperty spannerPersistentProperty) {
+		Class propType = spannerPersistentProperty.getType();
+		Object value;
+		/*
+		 * Due to type erasure, binder methods for Iterable properties must be manually specified.
+		 * ByteArray must be excluded since it implements Iterable, but is also explicitly
+		 * supported by spanner.
+		 */
+		if (ConversionUtils.isIterableNonByteArrayType(propType)) {
+			value = readIterableWithConversion(spannerPersistentProperty, source);
+		}
+		else {
+			value = readSingleWithConversion(spannerPersistentProperty, source);
+		}
+
+		if (value == null) {
+			throw new SpannerDataException(String.format(
+					"The value in column with name %s"
+							+ " could not be converted to the corresponding property in the entity."
+							+ " The property's type is %s.",
+					spannerPersistentProperty.getColumnName(), propType));
+		}
+		return value;
 	}
 
 	@Override
@@ -190,21 +215,21 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		return result;
 	}
 
-	private Object readSingleWithConversion(SpannerPersistentProperty spannerPersistentProperty, Struct struct, String colName) {
+	private Object readSingleWithConversion(SpannerPersistentProperty spannerPersistentProperty, Struct struct) {
+		String colName = spannerPersistentProperty.getColumnName();
 		Type colType = struct.getColumnType(colName);
 		Type.Code code = colType.getCode();
 		Class sourceType = code.equals(Type.Code.ARRAY)
-						? ConversionUtils.getArrayJavaClassFor(colType.getArrayElementType().getCode())
-						: ConversionUtils.getSimpleJavaClassFor(code);
+				? ConversionUtils.getArrayJavaClassFor(colType.getArrayElementType().getCode())
+				: ConversionUtils.getSimpleJavaClassFor(code);
 		Class targetType = spannerPersistentProperty.getType();
 		BiFunction readFunction = singleItemReadMethodMapping.get(sourceType);
 		Object value = readFunction.apply(struct, colName);
 		return convert(value, targetType);
 	}
 
-	private Object readIterableWithConversion(SpannerPersistentProperty spannerPersistentProperty, Struct struct,
-																						String colName) {
-
+	private Object readIterableWithConversion(SpannerPersistentProperty spannerPersistentProperty, Struct struct) {
+		String colName = spannerPersistentProperty.getColumnName();
 		Type.Code innerTypeCode = struct.getColumnType(colName).getArrayElementType().getCode();
 		Class clazz = ConversionUtils.getSimpleJavaClassFor(innerTypeCode);
 		BiFunction<Struct, String, List> readMethod = readIterableMapping.get(clazz);
@@ -214,11 +239,9 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 	}
 
 	private List<Object> convertList(List listValue, Class targetInnerType) {
-		Class itemType = ConversionUtils.boxIfNeeded(targetInnerType);
-
 		List<Object> convList = new ArrayList<>();
 		for (Object item : listValue) {
-			convList.add(convert(item, itemType));
+			convList.add(convert(item, targetInnerType));
 		}
 		return convList;
 	}
