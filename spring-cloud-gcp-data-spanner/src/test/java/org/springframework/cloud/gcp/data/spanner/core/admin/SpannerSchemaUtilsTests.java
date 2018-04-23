@@ -134,7 +134,7 @@ public class SpannerSchemaUtilsTests {
 		when(spannerPersistentProperty.getMaxColumnLength()).thenReturn(length);
 		when(spannerPersistentProperty.getColumnInnerType()).thenReturn(innerClazz);
 		assertEquals(expectedDDL,
-				SpannerSchemaUtils.getColumnDDLString(spannerPersistentProperty, this.spannerConverter));
+				this.spannerSchemaUtils.getColumnDDLString(spannerPersistentProperty, this.spannerConverter));
 	}
 
 	@Test

@@ -49,7 +49,7 @@ public class MappingSpannerReadConverterTest {
 	public void setup() {
 		this.readConverter = new MappingSpannerReadConverter(new SpannerMappingContext(),
 				new CustomConversions(StoreConversions.NONE,
-						ConversionUtils.DEFAULT_SPANNER_READ_CONVERTERS));
+						SpannerConverters.DEFAULT_SPANNER_READ_CONVERTERS));
 	}
 
 	@Test

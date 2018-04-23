@@ -62,7 +62,7 @@ public class MappingSpannerWriteConverterTest {
 	public void setup() {
 		this.writeConverter = new MappingSpannerWriteConverter(new SpannerMappingContext(),
 				new CustomConversions(StoreConversions.NONE,
-						ConversionUtils.DEFAULT_SPANNER_WRITE_CONVERTERS));
+						SpannerConverters.DEFAULT_SPANNER_WRITE_CONVERTERS));
 	}
 
 	@Test

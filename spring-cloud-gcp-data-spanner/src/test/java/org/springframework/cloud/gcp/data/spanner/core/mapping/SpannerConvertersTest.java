@@ -21,47 +21,47 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverters;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author Chengyuan Zhao
  */
-public class ConversionUtilsTests {
+public class SpannerConvertersTest {
 
 	@Test
 	public void dateConversionTest() {
 		Date date = Date.fromYearMonthDay(2018, 3, 29);
-		assertEquals(date, ConversionUtils.JAVA_TO_SPANNER_DATE_CONVERTER
-				.convert(ConversionUtils.SPANNER_TO_JAVA_DATE_CONVERTER.convert(date)));
+		assertEquals(date, SpannerConverters.JAVA_TO_SPANNER_DATE_CONVERTER
+				.convert(SpannerConverters.SPANNER_TO_JAVA_DATE_CONVERTER.convert(date)));
 	}
 
 	@Test
 	public void sqlDateConversionTest() {
 		Date date = Date.fromYearMonthDay(2018, 3, 29);
-		assertEquals(date, ConversionUtils.JAVA_SQL_TO_SPANNER_DATE_CONVERTER
-				.convert(ConversionUtils.SPANNER_TO_JAVA_SQL_DATE_CONVERTER.convert(date)));
+		assertEquals(date, SpannerConverters.JAVA_SQL_TO_SPANNER_DATE_CONVERTER
+				.convert(SpannerConverters.SPANNER_TO_JAVA_SQL_DATE_CONVERTER.convert(date)));
 	}
 
 	@Test
 	public void timestampInstantConversionTest() {
 		Timestamp timestamp = Timestamp.ofTimeMicroseconds(12345678);
-		assertEquals(timestamp, ConversionUtils.INSTANT_TIMESTAMP_CONVERTER
-				.convert(ConversionUtils.TIMESTAMP_INSTANT_CONVERTER.convert(timestamp)));
+		assertEquals(timestamp, SpannerConverters.INSTANT_TIMESTAMP_CONVERTER
+				.convert(SpannerConverters.TIMESTAMP_INSTANT_CONVERTER.convert(timestamp)));
 	}
 
 	@Test
 	public void timestampConversionTest() {
 		Timestamp timestamp = Timestamp.ofTimeMicroseconds(12345678);
-		assertEquals(timestamp, ConversionUtils.JAVA_TO_SPANNER_TIMESTAMP_CONVERTER
-				.convert(ConversionUtils.SPANNER_TO_JAVA_TIMESTAMP_CONVERTER.convert(timestamp)));
+		assertEquals(timestamp, SpannerConverters.JAVA_TO_SPANNER_TIMESTAMP_CONVERTER
+				.convert(SpannerConverters.SPANNER_TO_JAVA_TIMESTAMP_CONVERTER.convert(timestamp)));
 	}
 
 	@Test
 	public void bytesConversionTest() {
 		ByteArray byteArray = ByteArray.copyFrom("some bytes");
-		assertEquals(byteArray, ConversionUtils.JAVA_TO_SPANNER_BYTE_ARRAY_CONVERTER
-				.convert(ConversionUtils.SPANNER_TO_JAVA_BYTE_ARRAY_CONVERTER.convert(byteArray)));
+		assertEquals(byteArray, SpannerConverters.JAVA_TO_SPANNER_BYTE_ARRAY_CONVERTER
+				.convert(SpannerConverters.SPANNER_TO_JAVA_BYTE_ARRAY_CONVERTER.convert(byteArray)));
 	}
 }

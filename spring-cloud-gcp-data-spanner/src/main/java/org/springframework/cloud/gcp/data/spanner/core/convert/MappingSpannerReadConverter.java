@@ -76,12 +76,14 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 					.put(boolean[].class, AbstractStructReader::getBooleanArray).build();
 
 	private final SpannerMappingContext spannerMappingContext;
+	private final SpannerTypeMapper spannerTypeMapper;
 
 	MappingSpannerReadConverter(
 			SpannerMappingContext spannerMappingContext,
 			CustomConversions customConversions) {
 		super(customConversions, null);
 		this.spannerMappingContext = spannerMappingContext;
+		this.spannerTypeMapper = new SpannerTypeMapper();
 	}
 
 	private static <R> R instantiate(Class<R> type) {
@@ -220,8 +222,8 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		Type colType = struct.getColumnType(colName);
 		Type.Code code = colType.getCode();
 		Class sourceType = code.equals(Type.Code.ARRAY)
-				? ConversionUtils.getArrayJavaClassFor(colType.getArrayElementType().getCode())
-				: ConversionUtils.getSimpleJavaClassFor(code);
+				? this.spannerTypeMapper.getArrayJavaClassFor(colType.getArrayElementType().getCode())
+				: this.spannerTypeMapper.getSimpleJavaClassFor(code);
 		Class targetType = spannerPersistentProperty.getType();
 		BiFunction readFunction = singleItemReadMethodMapping.get(sourceType);
 		Object value = readFunction.apply(struct, colName);
@@ -231,7 +233,7 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 	private Object readIterableWithConversion(SpannerPersistentProperty spannerPersistentProperty, Struct struct) {
 		String colName = spannerPersistentProperty.getColumnName();
 		Type.Code innerTypeCode = struct.getColumnType(colName).getArrayElementType().getCode();
-		Class clazz = ConversionUtils.getSimpleJavaClassFor(innerTypeCode);
+		Class clazz = this.spannerTypeMapper.getSimpleJavaClassFor(innerTypeCode);
 		BiFunction<Struct, String, List> readMethod = readIterableMapping.get(clazz);
 		List listValue = readMethod.apply(struct, colName);
 

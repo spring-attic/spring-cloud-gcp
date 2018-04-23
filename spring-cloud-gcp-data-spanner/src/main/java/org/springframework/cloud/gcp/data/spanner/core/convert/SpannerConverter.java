@@ -108,5 +108,5 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 	 * as array elements.
 	 * @return the Java type that works directly with Spanner.
 	 */
-	Class getSpannerJavaType(Class originalType, boolean isIterableInnerType);
+	Class getCorrespondingSpannerJavaType(Class originalType, boolean isIterableInnerType);
 }
