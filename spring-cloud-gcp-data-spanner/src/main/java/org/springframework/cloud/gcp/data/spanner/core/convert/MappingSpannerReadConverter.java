@@ -76,6 +76,7 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 					.put(boolean[].class, AbstractStructReader::getBooleanArray).build();
 
 	private final SpannerMappingContext spannerMappingContext;
+
 	private final SpannerTypeMapper spannerTypeMapper;
 
 	MappingSpannerReadConverter(
@@ -137,10 +138,10 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 	}
 
 	private boolean shouldSkipProperty(Struct struct,
-																		 SpannerPersistentProperty spannerPersistentProperty,
-																		 Set<String> includeColumns,
-																		 boolean readAllColumns,
-																		 boolean allowMissingColumns) {
+			SpannerPersistentProperty spannerPersistentProperty,
+			Set<String> includeColumns,
+			boolean readAllColumns,
+			boolean allowMissingColumns) {
 		String columnName = spannerPersistentProperty.getColumnName();
 		boolean notRequiredByPartialRead = !readAllColumns && !includeColumns.contains(columnName);
 
@@ -150,7 +151,7 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 	}
 
 	private boolean isMissingColumn(Struct struct, boolean allowMissingColumns,
-																	String columnName) {
+			String columnName) {
 		boolean missingColumn = !hasColumn(struct, columnName);
 		if (missingColumn && !allowMissingColumns) {
 			throw new SpannerDataException(

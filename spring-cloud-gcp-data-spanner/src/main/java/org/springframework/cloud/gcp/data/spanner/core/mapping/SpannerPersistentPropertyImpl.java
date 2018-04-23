@@ -83,7 +83,8 @@ public class SpannerPersistentPropertyImpl
 	/**
 	 * Gets the name of the column in the Google Spanner table mapped to this property. The
 	 * column name is resolved using the {@link FieldNamingStrategy} passed in to the
-	 * {@link SpannerPersistentPropertyImpl#SpannerPersistentPropertyImpl(Property, PersistentEntity, SimpleTypeHolder, FieldNamingStrategy)}
+	 * {@link SpannerPersistentPropertyImpl#SpannerPersistentPropertyImpl(Property, PersistentEntity,
+	 * SimpleTypeHolder, FieldNamingStrategy)}
 	 * constructor. This is by default the by default
 	 *
 	 * @return the name of the column.
