@@ -47,29 +47,33 @@ import org.springframework.data.mapping.PropertyHandler;
 class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		implements SpannerEntityReader {
 
+	// @formatter:off
 	static final Map<Class, BiFunction<Struct, String, List>> readIterableMapping =
 			new ImmutableMap.Builder<Class, BiFunction<Struct, String, List>>()
-			.put(Boolean.class, AbstractStructReader::getBooleanList)
-			.put(Long.class, AbstractStructReader::getLongList)
-			.put(String.class, AbstractStructReader::getStringList)
-			.put(Double.class, AbstractStructReader::getDoubleList)
-			.put(Timestamp.class, AbstractStructReader::getTimestampList)
-			.put(Date.class, AbstractStructReader::getDateList)
-			.put(ByteArray.class, AbstractStructReader::getBytesList)
-			.build();
+					// @formatter:on
+					.put(Boolean.class, AbstractStructReader::getBooleanList)
+					.put(Long.class, AbstractStructReader::getLongList)
+					.put(String.class, AbstractStructReader::getStringList)
+					.put(Double.class, AbstractStructReader::getDoubleList)
+					.put(Timestamp.class, AbstractStructReader::getTimestampList)
+					.put(Date.class, AbstractStructReader::getDateList)
+					.put(ByteArray.class, AbstractStructReader::getBytesList)
+					.build();
 
+	// @formatter:off
 	static final Map<Class, BiFunction<Struct, String, ?>> singleItemReadMethodMapping =
 			new ImmutableMap.Builder<Class, BiFunction<Struct, String, ?>>()
-			.put(Boolean.class, AbstractStructReader::getBoolean)
-			.put(Long.class, AbstractStructReader::getLong)
-			.put(String.class, AbstractStructReader::getString)
-			.put(Double.class, AbstractStructReader::getDouble)
-			.put(Timestamp.class, AbstractStructReader::getTimestamp)
-			.put(Date.class, AbstractStructReader::getDate)
-			.put(ByteArray.class, AbstractStructReader::getBytes)
-			.put(double[].class, AbstractStructReader::getDoubleArray)
-			.put(long[].class, AbstractStructReader::getLongArray)
-			.put(boolean[].class, AbstractStructReader::getBooleanArray).build();
+					// @formatter:on
+					.put(Boolean.class, AbstractStructReader::getBoolean)
+					.put(Long.class, AbstractStructReader::getLong)
+					.put(String.class, AbstractStructReader::getString)
+					.put(Double.class, AbstractStructReader::getDouble)
+					.put(Timestamp.class, AbstractStructReader::getTimestamp)
+					.put(Date.class, AbstractStructReader::getDate)
+					.put(ByteArray.class, AbstractStructReader::getBytes)
+					.put(double[].class, AbstractStructReader::getDoubleArray)
+					.put(long[].class, AbstractStructReader::getLongArray)
+					.put(boolean[].class, AbstractStructReader::getBooleanArray).build();
 
 	private final SpannerMappingContext spannerMappingContext;
 
@@ -78,6 +82,21 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 			CustomConversions customConversions) {
 		super(customConversions, null);
 		this.spannerMappingContext = spannerMappingContext;
+	}
+
+	private static <R> R instantiate(Class<R> type) {
+		R object;
+		try {
+			Constructor<R> constructor = type.getDeclaredConstructor();
+			constructor.setAccessible(true);
+			object = constructor.newInstance();
+		}
+		catch (ReflectiveOperationException e) {
+			throw new SpannerDataException(
+					"Unable to create a new instance of entity using default constructor.",
+					e);
+		}
+		return object;
 	}
 
 	/**
@@ -131,11 +150,15 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 								source, columnName, accessor);
 					}
 					else {
-						Class sourceType = ConversionUtils.SPANNER_COLUMN_TYPE_TO_JAVA_TYPE_MAPPING
-								.get(source.getColumnType(columnName));
-							valueSet = attemptReadSingleItemValue(
-									spannerPersistentProperty, source, sourceType,
-									columnName, accessor);
+						Type colType = source.getColumnType(columnName);
+						Type.Code code = colType.getCode();
+						Class sourceType = code.equals(Type.Code.ARRAY)
+										? ConversionUtils.getArrayJavaClassFor(colType.getArrayElementType().getCode())
+										: ConversionUtils.getSimpleJavaClassFor(code);
+
+						valueSet = attemptReadSingleItemValue(
+								spannerPersistentProperty, source, sourceType,
+								columnName, accessor);
 					}
 
 					if (!valueSet) {
@@ -215,21 +238,6 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		}
 
 		return valueSet;
-	}
-
-	private static <R> R instantiate(Class<R> type) {
-		R object;
-		try {
-			Constructor<R> constructor = type.getDeclaredConstructor();
-			constructor.setAccessible(true);
-			object = constructor.newInstance();
-		}
-		catch (ReflectiveOperationException e) {
-			throw new SpannerDataException(
-					"Unable to create a new instance of entity using default constructor.",
-					e);
-		}
-		return object;
 	}
 
 }

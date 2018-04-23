@@ -16,20 +16,24 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.admin;
 
+import java.util.OptionalLong;
 import java.util.StringJoiner;
 
 import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.Type;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.Assert;
 
+
 /**
- *	Contains functions related to the table schema of entities.
+ * Contains functions related to the table schema of entities.
  *
  * @author Chengyuan Zhao
  */
@@ -47,6 +51,60 @@ public class SpannerSchemaUtils {
 				"A valid results mapper for Spanner is required.");
 		this.mappingContext = mappingContext;
 		this.spannerConverter = spannerConverter;
+	}
+
+	private static String getTypeDDLString(Type.Code type, boolean isArray, OptionalLong dataLength) {
+		Assert.notNull(type, "A valid Spanner column type is required.");
+		if (isArray) {
+			return "ARRAY<" + getTypeDDLString(type, false, dataLength) + ">";
+		}
+		return type.toString()
+				+ (type == Type.Code.STRING || type == Type.Code.BYTES
+						? "(" + (dataLength.isPresent() ? dataLength.getAsLong() : "MAX") + ")"
+						: "");
+	}
+
+	public static String getColumnDDLString(
+			SpannerPersistentProperty spannerPersistentProperty, SpannerConverter spannerConverter) {
+		Class columnType = spannerPersistentProperty.getType();
+		String ddlString;
+		if (ConversionUtils.isIterableNonByteArrayType(columnType)) {
+			Class innerType = spannerPersistentProperty.getColumnInnerType();
+			if (innerType == null) {
+				throw new SpannerDataException(
+						"Cannot get column DDL for iterable type without "
+								+ "annotated"
+								+ " "
+								+ "inner "
+								+ "type"
+								+ ".");
+			}
+			Type.Code spannerSupportedInnerType = ConversionUtils.JAVA_TYPE_TO_SPANNER_SIMPLE_COLUMN_TYPE_MAPPING.get(
+					spannerConverter.getSpannerJavaType(innerType, true));
+			if (spannerSupportedInnerType == null) {
+				throw new SpannerDataException(
+						"Could not find suitable Spanner column inner type for "
+								+ "property type:"
+								+ innerType);
+			}
+			ddlString = getTypeDDLString(spannerSupportedInnerType, true,
+					spannerPersistentProperty.getMaxColumnLength());
+		}
+		else {
+			Class spannerJavaType = spannerConverter.getSpannerJavaType(columnType, false);
+			Type.Code spannerColumnType = spannerJavaType.isArray()
+					? ConversionUtils.JAVA_TYPE_TO_SPANNER_ARRAY_COLUMN_TYPE_MAPPING.get(spannerJavaType)
+					: ConversionUtils.JAVA_TYPE_TO_SPANNER_SIMPLE_COLUMN_TYPE_MAPPING.get(spannerJavaType);
+
+			if (spannerColumnType == null) {
+				throw new SpannerDataException(
+						"Could not find suitable Spanner column type for property " + "type:" + columnType);
+			}
+
+			ddlString = getTypeDDLString(spannerColumnType, spannerJavaType.isArray(),
+					spannerPersistentProperty.getMaxColumnLength());
+		}
+		return spannerPersistentProperty.getColumnName() + " " + ddlString;
 	}
 
 	/**
@@ -79,13 +137,10 @@ public class SpannerSchemaUtils {
 
 		StringJoiner columnStrings = new StringJoiner(" , ");
 		spannerPersistentEntity.doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					columnStrings
-							.add(spannerPersistentProperty.getColumnName() + " "
-									+ ConversionUtils.getColumnDDLString(
-											spannerPersistentProperty,
-											this.spannerConverter));
-				});
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> columnStrings
+						.add(getColumnDDLString(
+								spannerPersistentProperty,
+								this.spannerConverter)));
 
 		stringBuilder.append(columnStrings.toString() + " ) PRIMARY KEY ( ");
 
