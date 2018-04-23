@@ -56,7 +56,8 @@ public class MappingSpannerReadConverterTest {
 	public void readNestedStructTest() {
 		Struct innerStruct = Struct.newBuilder().add("value", Value.string("value")).build();
 		Struct outerStruct = Struct.newBuilder().add("id", Value.string("key1"))
-				.add("innerTestEntities", ImmutableList.of(Type.StructField.of("value", Type.string())),
+				.add("innerTestEntities",
+						ImmutableList.of(Type.StructField.of("value", Type.string())),
 						ImmutableList.of(innerStruct))
 				.build();
 
@@ -98,6 +99,13 @@ public class MappingSpannerReadConverterTest {
 		Struct struct1 = Struct.newBuilder()
 				.add("fieldWithUnsupportedType", Value.string("key1")).build();
 		this.readConverter.read(FaultyTestEntity.class, struct1);
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void zeroArgsListShouldThrowError() {
+		Struct struct1 = Struct.newBuilder()
+				.add("zeroArgsListOfObjects", Value.stringArray(ImmutableList.of("hello", "world"))).build();
+		this.readConverter.read(TestEntities.TestEntityWithListWithZeroTypeArgs.class, struct1);
 	}
 
 }

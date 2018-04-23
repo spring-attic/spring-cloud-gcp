@@ -235,12 +235,12 @@ public class ConversionUtils {
 		JAVA_TYPE_TO_SPANNER_ARRAY_COLUMN_TYPE_MAPPING = builder.build();
 	}
 
-	public static Class boxIfNeeded(Class propertyType) {
+	public static <T> Class<T> boxIfNeeded(Class<T> propertyType) {
 		if (propertyType == null) {
 			return null;
 		}
 		return propertyType.isPrimitive()
-				? Array.get(Array.newInstance(propertyType, 1), 0).getClass()
+				? (Class<T>) Array.get(Array.newInstance(propertyType, 1), 0).getClass()
 				: propertyType;
 	}
 

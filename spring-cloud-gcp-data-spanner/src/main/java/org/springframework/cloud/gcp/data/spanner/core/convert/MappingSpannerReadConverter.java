@@ -17,12 +17,11 @@
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -58,6 +57,7 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 					.put(Timestamp.class, AbstractStructReader::getTimestampList)
 					.put(Date.class, AbstractStructReader::getDateList)
 					.put(ByteArray.class, AbstractStructReader::getBytesList)
+					.put(Struct.class, AbstractStructReader::getStructList)
 					.build();
 
 	// @formatter:off
@@ -104,8 +104,8 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 	 * @param type the type of POJO
 	 * @param source the Spanner row
 	 * @param includeColumns the columns to read. If null then all columns will be read.
-	 * @param allowMissingColumns if true, then properties with no corresponding column
-	 * are not mapped. If false, then an exception is thrown.
+	 * @param allowMissingColumns if true, then properties with no corresponding column are
+	 * not mapped. If false, then an exception is thrown.
 	 * @param <R> the type of the POJO.
 	 * @return the POJO
 	 */
@@ -138,35 +138,31 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 					}
 					Class propType = spannerPersistentProperty.getType();
 
-					boolean valueSet;
+					Object value;
 
 					/*
-					 * Due to type erasure, binder methods for Iterable properties must be
-					 * manually specified. ByteArray must be excluded since it implements
-					 * Iterable, but is also explicitly supported by spanner.
+					 * Due to type erasure, binder methods for Iterable properties must be manually specified.
+					 * ByteArray must be excluded since it implements Iterable, but is also explicitly
+					 * supported by spanner.
 					 */
 					if (ConversionUtils.isIterableNonByteArrayType(propType)) {
-						valueSet = attemptReadIterableValue(spannerPersistentProperty,
-								source, columnName, accessor);
+						value = readIterableWithConversion(spannerPersistentProperty, source, columnName);
 					}
 					else {
-						Type colType = source.getColumnType(columnName);
-						Type.Code code = colType.getCode();
-						Class sourceType = code.equals(Type.Code.ARRAY)
-										? ConversionUtils.getArrayJavaClassFor(colType.getArrayElementType().getCode())
-										: ConversionUtils.getSimpleJavaClassFor(code);
-
-						valueSet = attemptReadSingleItemValue(
-								spannerPersistentProperty, source, sourceType,
-								columnName, accessor);
+						value = readSingleWithConversion(
+								spannerPersistentProperty, source,
+								columnName);
 					}
 
-					if (!valueSet) {
+					if (value == null) {
 						throw new SpannerDataException(String.format(
 								"The value in column with name %s"
 										+ " could not be converted to the corresponding property in the entity."
 										+ " The property's type is %s.",
 								columnName, propType));
+					}
+					else {
+						accessor.setProperty(spannerPersistentProperty, value);
 					}
 
 				});
@@ -178,66 +174,53 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		return read(type, source, null, false);
 	}
 
-	private boolean attemptReadSingleItemValue(
-			SpannerPersistentProperty spannerPersistentProperty, Struct struct,
-			Class sourceType,
-			String colName, PersistentPropertyAccessor accessor) {
-		Class targetType = spannerPersistentProperty.getType();
-		if (sourceType == null || !canConvert(sourceType, targetType)) {
-			return false;
+	@Override
+	public <T> T convert(Object sourceValue, Class<T> targetType) {
+		Class<?> sourceClass = sourceValue.getClass();
+		T result = null;
+		if (targetType.isAssignableFrom(sourceClass)) {
+			return (T) sourceValue;
 		}
-		BiFunction readFunction = singleItemReadMethodMapping
-				.get(ConversionUtils.boxIfNeeded(sourceType));
-		if (readFunction == null) {
-			return false;
+		else if (Struct.class.isAssignableFrom(sourceClass)) {
+			result = read(targetType, (Struct) sourceValue);
 		}
-		accessor.setProperty(spannerPersistentProperty,
-				convert(readFunction.apply(struct, colName), targetType));
-		return true;
+		else if (canConvert(sourceClass, targetType)) {
+			result = super.convert(sourceValue, targetType);
+		}
+		return result;
 	}
 
-	private boolean attemptReadIterableValue(
-			SpannerPersistentProperty spannerPersistentProperty, Struct struct,
-			String colName, PersistentPropertyAccessor accessor) {
+	private Object readSingleWithConversion(SpannerPersistentProperty spannerPersistentProperty, Struct struct, String colName) {
+		Type colType = struct.getColumnType(colName);
+		Type.Code code = colType.getCode();
+		Class sourceType = code.equals(Type.Code.ARRAY)
+						? ConversionUtils.getArrayJavaClassFor(colType.getArrayElementType().getCode())
+						: ConversionUtils.getSimpleJavaClassFor(code);
+		Class targetType = spannerPersistentProperty.getType();
+		BiFunction readFunction = singleItemReadMethodMapping.get(sourceType);
+		Object value = readFunction.apply(struct, colName);
+		return convert(value, targetType);
+	}
 
-		Class innerType = ConversionUtils.boxIfNeeded(spannerPersistentProperty.getColumnInnerType());
-		if (innerType == null) {
-			return false;
+	private Object readIterableWithConversion(SpannerPersistentProperty spannerPersistentProperty, Struct struct,
+																						String colName) {
+
+		Type.Code innerTypeCode = struct.getColumnType(colName).getArrayElementType().getCode();
+		Class clazz = ConversionUtils.getSimpleJavaClassFor(innerTypeCode);
+		BiFunction<Struct, String, List> readMethod = readIterableMapping.get(clazz);
+		List listValue = readMethod.apply(struct, colName);
+
+		return convertList(listValue, spannerPersistentProperty.getColumnInnerType());
+	}
+
+	private List<Object> convertList(List listValue, Class targetInnerType) {
+		Class itemType = ConversionUtils.boxIfNeeded(targetInnerType);
+
+		List<Object> convList = new ArrayList<>();
+		for (Object item : listValue) {
+			convList.add(convert(item, itemType));
 		}
-
-		// due to checkstyle limit of 3 return statments per function, this variable is
-		// used.
-		boolean valueSet = false;
-
-		if (this.readIterableMapping.containsKey(innerType)) {
-			accessor.setProperty(spannerPersistentProperty,
-					this.readIterableMapping.get(innerType).apply(struct, colName));
-			valueSet = true;
-		}
-
-		if (!valueSet) {
-			for (Class sourceType : this.readIterableMapping.keySet()) {
-				if (canConvert(sourceType, innerType)) {
-					List iterableValue = readIterableMapping.get(sourceType).apply(struct,
-							colName);
-					accessor.setProperty(spannerPersistentProperty, ConversionUtils
-							.convertIterable(iterableValue, innerType, this));
-					valueSet = true;
-					break;
-				}
-			}
-		}
-
-		if (!valueSet && struct.getColumnType(colName).getArrayElementType().getCode() == Type.Code.STRUCT) {
-			List<Struct> iterableValue = struct.getStructList(colName);
-			Iterable convertedIterableValue = (Iterable) StreamSupport.stream(iterableValue.spliterator(), false)
-					.map(item -> read(innerType, item))
-					.collect(Collectors.toList());
-			accessor.setProperty(spannerPersistentProperty, convertedIterableValue);
-			valueSet = true;
-		}
-
-		return valueSet;
+		return convList;
 	}
 
 }
