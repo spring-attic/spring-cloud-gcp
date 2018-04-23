@@ -118,4 +118,39 @@ public class TestEntities {
 		@PrimaryKey
 		List zeroArgsListOfObjects;
 	}
+
+	@Table(name = "outer_test_entity")
+	static class OuterTestEntityWithConstructor {
+		@PrimaryKey
+		String id;
+
+		List<InnerTestEntity> innerTestEntities;
+
+		OuterTestEntityWithConstructor(String id, List<InnerTestEntity> innerTestEntities) {
+			this.id = id;
+			this.innerTestEntities = innerTestEntities;
+		}
+	}
+
+	@Table(name = "custom_test_table")
+	static class PartialConstructor {
+		@PrimaryKey
+		String id;
+
+		@Column(name = "custom_col")
+		String stringField;
+
+		@Column(name = "")
+		boolean booleanField;
+
+		long longField;
+
+		double doubleField;
+
+		PartialConstructor(String id, String stringField, boolean booleanField) {
+			this.id = id;
+			this.stringField = stringField;
+			this.booleanField = booleanField;
+		}
+	}
 }

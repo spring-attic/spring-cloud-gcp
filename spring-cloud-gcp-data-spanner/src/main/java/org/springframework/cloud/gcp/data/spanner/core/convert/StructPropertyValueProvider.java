@@ -42,6 +42,10 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 
 	@Override
 	public Object getPropertyValue(SpannerPersistentProperty spannerPersistentProperty) {
+		String colName = spannerPersistentProperty.getColumnName();
+		if (!this.structAccessor.hasColumn(colName)) {
+			throw new SpannerDataException("Column not found: " + colName);
+		}
 		Class propType = spannerPersistentProperty.getType();
 		Object value;
 		if (ConversionUtils.isIterableNonByteArrayType(propType)) {

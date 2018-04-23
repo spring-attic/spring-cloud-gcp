@@ -16,8 +16,10 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 import com.google.cloud.ByteArray;
@@ -29,8 +31,8 @@ import com.google.cloud.spanner.Type;
 import com.google.common.collect.ImmutableMap;
 
 /**
- * A convenience wrapper class around Struct to make reading columns easier
- * without knowing their type.
+ * A convenience wrapper class around Struct to make reading columns easier without
+ * knowing their type.
  *
  * @author Balint Pato
  */
@@ -69,9 +71,12 @@ class StructAccessor {
 
 	private Struct struct;
 
+	private Set<String> columnNamesIndex;
+
 	StructAccessor(Struct struct) {
 		this.struct = struct;
 		this.spannerTypeMapper = new SpannerTypeMapper();
+		this.columnNamesIndex = indexColumnNames();
 	}
 
 	public Object getSingleValue(String colName) {
@@ -92,17 +97,18 @@ class StructAccessor {
 	}
 
 	public boolean hasColumn(String columnName) {
-		boolean hasColumn = false;
-		for (Type.StructField f : this.struct.getType().getStructFields()) {
-			if (f.getName().equals(columnName)) {
-				hasColumn = true;
-				break;
-			}
-		}
-		return hasColumn;
+		return columnNamesIndex.contains(columnName);
 	}
 
 	public boolean isNull(String columnName) {
 		return this.struct.isNull(columnName);
+	}
+
+	private Set<String> indexColumnNames() {
+		Set<String> cols = new HashSet<>();
+		for (Type.StructField f : this.struct.getType().getStructFields()) {
+			cols.add(f.getName());
+		}
+		return cols;
 	}
 }
