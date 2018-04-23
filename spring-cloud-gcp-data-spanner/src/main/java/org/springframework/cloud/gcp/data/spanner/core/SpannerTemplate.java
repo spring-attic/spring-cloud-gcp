@@ -302,11 +302,15 @@ public class SpannerTemplate implements SpannerOperations {
 
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
 			SpannerReadOptions options) {
-		StringBuilder logSb = new StringBuilder("Executing read on table " + tableName
-				+ " with keys: " + keys + " and columns: ");
-		StringJoiner sj = new StringJoiner(",");
-		columns.forEach(col -> sj.add(col));
-		logSb.append(sj.toString());
+		StringBuilder logSb = new StringBuilder(LOGGER.isDebugEnabled()
+				? "Executing read on table " + tableName + " with keys: " + keys
+						+ " and columns: "
+				: "Debug mode log not enabled.");
+		if (LOGGER.isDebugEnabled()) {
+			StringJoiner sj = new StringJoiner(",");
+			columns.forEach(col -> sj.add(col));
+			logSb.append(sj.toString());
+		}
 		if (options == null) {
 			LOGGER.debug(logSb.toString());
 			return getReadContext().read(tableName, keys, columns);
@@ -315,17 +319,24 @@ public class SpannerTemplate implements SpannerOperations {
 			ReadContext readContext;
 			if (options.hasTimestamp()) {
 				readContext = getReadContext(options.getTimestamp());
-				logSb.append(" at timestamp " + options.getTimestamp());
+				if (LOGGER.isDebugEnabled()) {
+					logSb.append(" at timestamp " + options.getTimestamp());
+				}
 			}
 			else {
 				readContext = getReadContext();
 			}
-			for (ReadOption readOption : options.getReadOptions()) {
-				logSb.append(" with option: " + readOption);
+			if (LOGGER.isDebugEnabled()) {
+				for (ReadOption readOption : options.getReadOptions()) {
+					logSb.append(" with option: " + readOption);
+				}
 			}
 			if (options.hasIndex()) {
+				if (LOGGER.isDebugEnabled()) {
+					logSb.append(" secondary index: " + options.getIndex());
+				}
 				LOGGER.debug(
-						logSb.toString() + " secondary index: " + options.getIndex());
+						logSb.toString());
 				return readContext.readUsingIndex(tableName, options.getIndex(), keys,
 						columns, options.getReadOptions());
 			}
