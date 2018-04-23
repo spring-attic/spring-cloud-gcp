@@ -56,21 +56,6 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		this.instantiators = new EntityInstantiators();
 	}
 
-	private static <R> R instantiate(Class<R> type) {
-		R object;
-		try {
-			Constructor<R> constructor = type.getDeclaredConstructor();
-			constructor.setAccessible(true);
-			object = constructor.newInstance();
-		}
-		catch (ReflectiveOperationException e) {
-			throw new SpannerDataException(
-					"Unable to create a new instance of entity using default constructor.",
-					e);
-		}
-		return object;
-	}
-
 	/**
 	 * Reads a single POJO from a Spanner row.
 	 * @param type the type of POJO

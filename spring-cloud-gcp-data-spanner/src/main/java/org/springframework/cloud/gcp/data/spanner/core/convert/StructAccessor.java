@@ -97,7 +97,7 @@ class StructAccessor {
 	}
 
 	public boolean hasColumn(String columnName) {
-		return columnNamesIndex.contains(columnName);
+		return this.columnNamesIndex.contains(columnName);
 	}
 
 	public boolean isNull(String columnName) {
