@@ -35,7 +35,9 @@ import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.CustomConversions.StoreConversions;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Chengyuan Zhao
@@ -99,6 +101,16 @@ public class MappingSpannerReadConverterTest {
 		Struct struct1 = Struct.newBuilder()
 				.add("fieldWithUnsupportedType", Value.string("key1")).build();
 		this.readConverter.read(FaultyTestEntity.class, struct1);
+	}
+
+	@Test
+	public void shouldReadEntityWithNoDefaultConstructor() {
+		Struct row = Struct.newBuilder()
+				.add("id", Value.string("1234")).build();
+		TestEntities.SimpleConstructorTester result = this.readConverter
+				.read(TestEntities.SimpleConstructorTester.class, row);
+
+		assertThat(result.id, is("1234"));
 	}
 
 	@Test(expected = SpannerDataException.class)

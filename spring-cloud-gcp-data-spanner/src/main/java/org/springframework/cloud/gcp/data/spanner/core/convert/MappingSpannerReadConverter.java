@@ -19,23 +19,17 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
 
-import com.google.cloud.ByteArray;
-import com.google.cloud.Date;
-import com.google.cloud.Timestamp;
-import com.google.cloud.spanner.AbstractStructReader;
 import com.google.cloud.spanner.Struct;
-import com.google.cloud.spanner.Type;
-import com.google.common.collect.ImmutableMap;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 
@@ -46,45 +40,17 @@ import org.springframework.data.mapping.PropertyHandler;
 class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		implements SpannerEntityReader {
 
-	// @formatter:off
-	static final Map<Class, BiFunction<Struct, String, List>> readIterableMapping =
-			new ImmutableMap.Builder<Class, BiFunction<Struct, String, List>>()
-					// @formatter:on
-					.put(Boolean.class, AbstractStructReader::getBooleanList)
-					.put(Long.class, AbstractStructReader::getLongList)
-					.put(String.class, AbstractStructReader::getStringList)
-					.put(Double.class, AbstractStructReader::getDoubleList)
-					.put(Timestamp.class, AbstractStructReader::getTimestampList)
-					.put(Date.class, AbstractStructReader::getDateList)
-					.put(ByteArray.class, AbstractStructReader::getBytesList)
-					.put(Struct.class, AbstractStructReader::getStructList)
-					.build();
-
-	// @formatter:off
-	static final Map<Class, BiFunction<Struct, String, ?>> singleItemReadMethodMapping =
-			new ImmutableMap.Builder<Class, BiFunction<Struct, String, ?>>()
-					// @formatter:on
-					.put(Boolean.class, AbstractStructReader::getBoolean)
-					.put(Long.class, AbstractStructReader::getLong)
-					.put(String.class, AbstractStructReader::getString)
-					.put(Double.class, AbstractStructReader::getDouble)
-					.put(Timestamp.class, AbstractStructReader::getTimestamp)
-					.put(Date.class, AbstractStructReader::getDate)
-					.put(ByteArray.class, AbstractStructReader::getBytes)
-					.put(double[].class, AbstractStructReader::getDoubleArray)
-					.put(long[].class, AbstractStructReader::getLongArray)
-					.put(boolean[].class, AbstractStructReader::getBooleanArray).build();
-
 	private final SpannerMappingContext spannerMappingContext;
 
-	private final SpannerTypeMapper spannerTypeMapper;
+	private EntityInstantiators instantiators;
 
 	MappingSpannerReadConverter(
 			SpannerMappingContext spannerMappingContext,
 			CustomConversions customConversions) {
 		super(customConversions, null);
 		this.spannerMappingContext = spannerMappingContext;
-		this.spannerTypeMapper = new SpannerTypeMapper();
+
+		this.instantiators = new EntityInstantiators();
 	}
 
 	private static <R> R instantiate(Class<R> type) {
@@ -119,17 +85,22 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
 				.getPersistentEntity(type);
 
-		PersistentPropertyAccessor accessor = persistentEntity
-				.getPropertyAccessor(object);
+		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(object);
+
+		StructAccessor structAccessor = new StructAccessor(source);
+
+		StructPropertyValueProvider parameterValueProvider = new StructPropertyValueProvider(structAccessor, this);
 
 		persistentEntity.doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					if (!shouldSkipProperty(source,
+					if (!shouldSkipProperty(
+							structAccessor,
 							spannerPersistentProperty,
 							includeColumns,
 							readAllColumns,
 							allowMissingColumns)) {
-						Object value = readWithConversion(source, spannerPersistentProperty);
+
+						Object value = parameterValueProvider.getPropertyValue(spannerPersistentProperty);
 						accessor.setProperty(spannerPersistentProperty, value);
 					}
 
@@ -137,7 +108,7 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		return object;
 	}
 
-	private boolean shouldSkipProperty(Struct struct,
+	private boolean shouldSkipProperty(StructAccessor struct,
 			SpannerPersistentProperty spannerPersistentProperty,
 			Set<String> includeColumns,
 			boolean readAllColumns,
@@ -150,51 +121,15 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 				|| struct.isNull(columnName);
 	}
 
-	private boolean isMissingColumn(Struct struct, boolean allowMissingColumns,
+	private boolean isMissingColumn(StructAccessor struct, boolean allowMissingColumns,
 			String columnName) {
-		boolean missingColumn = !hasColumn(struct, columnName);
+		boolean missingColumn = !struct.hasColumn(columnName);
 		if (missingColumn && !allowMissingColumns) {
 			throw new SpannerDataException(
 					"Unable to read column from Spanner results: "
 							+ columnName);
 		}
 		return missingColumn;
-	}
-
-	private boolean hasColumn(Struct struct, String columnName) {
-		boolean hasColumn = false;
-		for (Type.StructField f : struct.getType().getStructFields()) {
-			if (f.getName().equals(columnName)) {
-				hasColumn = true;
-				break;
-			}
-		}
-		return hasColumn;
-	}
-
-	protected Object readWithConversion(Struct source, SpannerPersistentProperty spannerPersistentProperty) {
-		Class propType = spannerPersistentProperty.getType();
-		Object value;
-		/*
-		 * Due to type erasure, binder methods for Iterable properties must be manually specified.
-		 * ByteArray must be excluded since it implements Iterable, but is also explicitly
-		 * supported by spanner.
-		 */
-		if (ConversionUtils.isIterableNonByteArrayType(propType)) {
-			value = readIterableWithConversion(spannerPersistentProperty, source);
-		}
-		else {
-			value = readSingleWithConversion(spannerPersistentProperty, source);
-		}
-
-		if (value == null) {
-			throw new SpannerDataException(String.format(
-					"The value in column with name %s"
-							+ " could not be converted to the corresponding property in the entity."
-							+ " The property's type is %s.",
-					spannerPersistentProperty.getColumnName(), propType));
-		}
-		return value;
 	}
 
 	@Override
@@ -218,30 +153,7 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		return result;
 	}
 
-	private Object readSingleWithConversion(SpannerPersistentProperty spannerPersistentProperty, Struct struct) {
-		String colName = spannerPersistentProperty.getColumnName();
-		Type colType = struct.getColumnType(colName);
-		Type.Code code = colType.getCode();
-		Class sourceType = code.equals(Type.Code.ARRAY)
-				? this.spannerTypeMapper.getArrayJavaClassFor(colType.getArrayElementType().getCode())
-				: this.spannerTypeMapper.getSimpleJavaClassFor(code);
-		Class targetType = spannerPersistentProperty.getType();
-		BiFunction readFunction = singleItemReadMethodMapping.get(sourceType);
-		Object value = readFunction.apply(struct, colName);
-		return convert(value, targetType);
-	}
-
-	private Object readIterableWithConversion(SpannerPersistentProperty spannerPersistentProperty, Struct struct) {
-		String colName = spannerPersistentProperty.getColumnName();
-		Type.Code innerTypeCode = struct.getColumnType(colName).getArrayElementType().getCode();
-		Class clazz = this.spannerTypeMapper.getSimpleJavaClassFor(innerTypeCode);
-		BiFunction<Struct, String, List> readMethod = readIterableMapping.get(clazz);
-		List listValue = readMethod.apply(struct, colName);
-
-		return convertList(listValue, spannerPersistentProperty.getColumnInnerType());
-	}
-
-	private List<Object> convertList(List listValue, Class targetInnerType) {
+	List<Object> convertList(List listValue, Class targetInnerType) {
 		List<Object> convList = new ArrayList<>();
 		for (Object item : listValue) {
 			convList.add(convert(item, targetInnerType));

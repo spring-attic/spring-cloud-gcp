@@ -182,7 +182,7 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 
 	private boolean canHandlePropertyTypeForSingularRead(Class type,
 			Class spannerSupportedType) {
-		if (!MappingSpannerReadConverter.singleItemReadMethodMapping
+		if (!StructAccessor.singleItemReadMethodMapping
 				.containsKey(spannerSupportedType)) {
 			throw new SpannerDataException(
 					"The given spannerSupportedType type is not a known "
@@ -195,7 +195,7 @@ public class MappingSpannerConverter extends AbstractSpannerCustomConverter
 
 	private boolean canHandlePropertyTypeForArrayRead(Class type,
 			Class spannerSupportedArrayInnerType) {
-		if (!MappingSpannerReadConverter.readIterableMapping
+		if (!StructAccessor.readIterableMapping
 				.containsKey(spannerSupportedArrayInnerType)) {
 			throw new SpannerDataException(
 					"The given spannerSupportedArrayInnerType is not a known Spanner "
