@@ -305,7 +305,7 @@ public class SpannerTemplate implements SpannerOperations {
 		StringBuilder logSb = new StringBuilder(LOGGER.isDebugEnabled()
 				? "Executing read on table " + tableName + " with keys: " + keys
 						+ " and columns: "
-				: "Debug mode log not enabled.");
+				: "Executing Read. Debug mode log not enabled.");
 		if (LOGGER.isDebugEnabled()) {
 			StringJoiner sj = new StringJoiner(",");
 			columns.forEach(col -> sj.add(col));
@@ -352,13 +352,18 @@ public class SpannerTemplate implements SpannerOperations {
 			return getReadContext().executeQuery(statement);
 		}
 		else {
-			StringBuilder logSb = new StringBuilder("Executing query"
+			StringBuilder logSb = new StringBuilder(
+					LOGGER.isDebugEnabled()
+							? "Executing query"
 					+ (options.hasTimestamp() ? " at timestamp" + options.getTimestamp()
-							: ""));
-			for (QueryOption queryOption : options.getQueryOptions()) {
-				logSb.append(" with option: " + queryOption);
-			}
+									: "")
+					: "Executing query. Debug mode log is not enabled.");
+			if (LOGGER.isDebugEnabled()) {
+				for (QueryOption queryOption : options.getQueryOptions()) {
+					logSb.append(" with option: " + queryOption);
+				}
 			logSb.append(" : " + statement);
+			}
 			LOGGER.debug(logSb.toString());
 			return (options.hasTimestamp() ? getReadContext(options.getTimestamp())
 					: getReadContext()).executeQuery(statement,
