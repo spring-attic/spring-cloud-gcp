@@ -47,20 +47,16 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 			throw new SpannerDataException("Column not found: " + colName);
 		}
 		Class propType = spannerPersistentProperty.getType();
-		Object value;
-		if (ConversionUtils.isIterableNonByteArrayType(propType)) {
-			value = readIterableWithConversion(spannerPersistentProperty, this.structAccessor);
-		}
-		else {
-			value = readSingleWithConversion(spannerPersistentProperty, this.structAccessor);
-		}
+		Object value = ConversionUtils.isIterableNonByteArrayType(propType)
+				? readIterableWithConversion(spannerPersistentProperty, this.structAccessor)
+				: readSingleWithConversion(spannerPersistentProperty, this.structAccessor);
 
 		if (value == null) {
 			throw new SpannerDataException(String.format(
 					"The value in column with name %s"
 							+ " could not be converted to the corresponding property in the entity."
 							+ " The property's type is %s.",
-					spannerPersistentProperty.getColumnName(), propType));
+					colName, propType));
 		}
 		return value;
 
