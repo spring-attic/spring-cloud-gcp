@@ -28,12 +28,12 @@ import com.google.cloud.ByteArray;
  */
 public class ConversionUtils {
 
-	public static <T> Class<T> boxIfNeeded(Class<T> propertyType) {
+	public static Class boxIfNeeded(Class propertyType) {
 		if (propertyType == null) {
 			return null;
 		}
 		return propertyType.isPrimitive()
-				? (Class<T>) Array.get(Array.newInstance(propertyType, 1), 0).getClass()
+				? Array.get(Array.newInstance(propertyType, 1), 0).getClass()
 				: propertyType;
 	}
 
