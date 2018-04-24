@@ -17,8 +17,8 @@
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.lang.reflect.Array;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.cloud.ByteArray;
 
@@ -43,8 +43,8 @@ public class ConversionUtils {
 
 	static Iterable convertIterable(
 			Iterable source, Class targetType, AbstractSpannerCustomConverter converter) {
-		return (Iterable) StreamSupport.stream(source.spliterator(), false)
-				.map(item -> converter.convert(item, targetType))
-				.collect(Collectors.toList());
+		List result = new ArrayList();
+		source.forEach(item -> result.add(converter.convert(item, targetType)));
+		return result;
 	}
 }
