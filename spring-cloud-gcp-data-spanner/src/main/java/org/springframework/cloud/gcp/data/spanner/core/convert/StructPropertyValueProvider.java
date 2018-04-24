@@ -48,8 +48,8 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 		}
 		Class propType = spannerPersistentProperty.getType();
 		Object value = ConversionUtils.isIterableNonByteArrayType(propType)
-				? readIterableWithConversion(spannerPersistentProperty, this.structAccessor)
-				: readSingleWithConversion(spannerPersistentProperty, this.structAccessor);
+				? readIterableWithConversion(spannerPersistentProperty)
+				: readSingleWithConversion(spannerPersistentProperty);
 
 		if (value == null) {
 			throw new SpannerDataException(String.format(
@@ -62,18 +62,16 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 
 	}
 
-	private Object readSingleWithConversion(SpannerPersistentProperty spannerPersistentProperty,
-			StructAccessor struct) {
+	private Object readSingleWithConversion(SpannerPersistentProperty spannerPersistentProperty) {
 		String colName = spannerPersistentProperty.getColumnName();
 		Class targetType = spannerPersistentProperty.getType();
-		Object value = struct.getSingleValue(colName);
+		Object value = this.structAccessor.getSingleValue(colName);
 		return this.readConverter.convert(value, targetType);
 	}
 
-	private Object readIterableWithConversion(SpannerPersistentProperty spannerPersistentProperty,
-			StructAccessor struct) {
+	private Iterable readIterableWithConversion(SpannerPersistentProperty spannerPersistentProperty) {
 		String colName = spannerPersistentProperty.getColumnName();
-		List listValue = struct.getListValue(colName);
+		List listValue = this.structAccessor.getListValue(colName);
 		return ConversionUtils.convertIterable(
 						listValue,
 						spannerPersistentProperty.getColumnInnerType(),

@@ -77,7 +77,7 @@ public class MappingSpannerReadConverterTest {
 
 	@Test(expected = SpannerDataException.class)
 	public void readNotFoundColumnTest() {
-		Struct struct1 = Struct.newBuilder()
+		Struct struct = Struct.newBuilder()
 				.add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
 				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
@@ -86,12 +86,12 @@ public class MappingSpannerReadConverterTest {
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
 
-		this.readConverter.read(TestEntity.class, struct1);
+		this.readConverter.read(TestEntity.class, struct);
 	}
 
 	@Test(expected = ConversionFailedException.class)
 	public void readUnconvertableValueTest() {
-		Struct struct1 = Struct.newBuilder()
+		Struct struct = Struct.newBuilder()
 				.add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
 				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
@@ -101,14 +101,14 @@ public class MappingSpannerReadConverterTest {
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
 
-		this.readConverter.read(TestEntity.class, struct1);
+		this.readConverter.read(TestEntity.class, struct);
 	}
 
 	@Test(expected = SpannerDataException.class)
 	public void readUnmatachableTypesTest() {
-		Struct struct1 = Struct.newBuilder()
+		Struct struct = Struct.newBuilder()
 				.add("fieldWithUnsupportedType", Value.string("key1")).build();
-		this.readConverter.read(FaultyTestEntity.class, struct1);
+		this.readConverter.read(FaultyTestEntity.class, struct);
 	}
 
 	@Test
@@ -139,14 +139,14 @@ public class MappingSpannerReadConverterTest {
 
 	@Test
 	public void testPartialConstructor() {
-		Struct struct1 = Struct.newBuilder()
+		Struct struct = Struct.newBuilder()
 				.add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
 				.add("booleanField", Value.bool(true))
 				.add("longField", Value.int64(3L))
 				.add("doubleField", Value.float64(3.14)).build();
 
-		this.readConverter.read(TestEntities.PartialConstructor.class, struct1);
+		this.readConverter.read(TestEntities.PartialConstructor.class, struct);
 	}
 
 	@Test
@@ -156,10 +156,8 @@ public class MappingSpannerReadConverterTest {
 		when(row.getType()).thenReturn(Type.struct(ImmutableList.of(Type.StructField.of("id", Type.string()))));
 		when(row.getColumnType("id")).thenReturn(Type.string());
 
-
 		TestEntities.SimpleConstructorTester result = this.readConverter
-						.read(TestEntities.SimpleConstructorTester.class, row);
-
+				.read(TestEntities.SimpleConstructorTester.class, row);
 
 		assertThat(result.id, is("1234"));
 		verify(row, times(1)).getString("id");
@@ -167,20 +165,20 @@ public class MappingSpannerReadConverterTest {
 
 	@Test(expected = SpannerDataException.class)
 	public void testPartialConstructorWithNotEnoughArgs() {
-		Struct struct1 = Struct.newBuilder()
-						.add("id", Value.string("key1"))
-						.add("booleanField", Value.bool(true))
-						.add("longField", Value.int64(3L))
-						.add("doubleField", Value.float64(3.14)).build();
+		Struct struct = Struct.newBuilder()
+				.add("id", Value.string("key1"))
+				.add("booleanField", Value.bool(true))
+				.add("longField", Value.int64(3L))
+				.add("doubleField", Value.float64(3.14)).build();
 
-		this.readConverter.read(TestEntities.PartialConstructor.class, struct1);
+		this.readConverter.read(TestEntities.PartialConstructor.class, struct);
 	}
 
 	@Test(expected = SpannerDataException.class)
 	public void zeroArgsListShouldThrowError() {
-		Struct struct1 = Struct.newBuilder()
+		Struct struct = Struct.newBuilder()
 				.add("zeroArgsListOfObjects", Value.stringArray(ImmutableList.of("hello", "world"))).build();
-		this.readConverter.read(TestEntities.TestEntityWithListWithZeroTypeArgs.class, struct1);
+		this.readConverter.read(TestEntities.TestEntityWithListWithZeroTypeArgs.class, struct);
 	}
 
 }

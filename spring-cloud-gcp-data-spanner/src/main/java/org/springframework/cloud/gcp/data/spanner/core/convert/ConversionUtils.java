@@ -41,9 +41,9 @@ public class ConversionUtils {
 		return Iterable.class.isAssignableFrom(propType) && !ByteArray.class.isAssignableFrom(propType);
 	}
 
-	static Iterable convertIterable(
-			Iterable source, Class targetType, AbstractSpannerCustomConverter converter) {
-		List result = new ArrayList();
+	static <T> Iterable<T> convertIterable(
+			Iterable source, Class<T> targetType, AbstractSpannerCustomConverter converter) {
+		List<T> result = new ArrayList<>();
 		source.forEach(item -> result.add(converter.convert(item, targetType)));
 		return result;
 	}
