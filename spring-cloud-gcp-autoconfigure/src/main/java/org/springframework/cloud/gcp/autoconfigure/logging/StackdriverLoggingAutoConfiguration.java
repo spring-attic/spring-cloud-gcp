@@ -24,6 +24,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.CompositeTraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractor;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractorType;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.ZipkinTraceIdExtractor;
 import org.springframework.context.annotation.Bean;
@@ -52,9 +53,9 @@ public class StackdriverLoggingAutoConfiguration {
 	@ConditionalOnMissingBean
 	public TraceIdExtractor traceIdExtractor(
 			StackdriverLoggingProperties loggingProperties) {
-		TraceIdExtractor.Type checkedType = loggingProperties.getTraceIdExtractor();
+		TraceIdExtractorType checkedType = loggingProperties.getTraceIdExtractor();
 		if (checkedType == null) {
-			checkedType = TraceIdExtractor.Type.XCLOUD_ZIPKIN;
+			checkedType = TraceIdExtractorType.XCLOUD_ZIPKIN;
 		}
 		TraceIdExtractor extractor;
 		switch (checkedType) {

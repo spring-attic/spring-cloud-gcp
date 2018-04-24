@@ -70,7 +70,7 @@ public class StackdriverLoggingIntegrationTests {
 
 	@BeforeClass
 	public static void enableTests() {
-		assumeThat("it.logging").isEqualTo("true");
+		assumeThat(System.getProperty("it.logging")).isEqualTo("true");
 	}
 
 	@Test
@@ -80,22 +80,25 @@ public class StackdriverLoggingIntegrationTests {
 		connection.setRequestProperty("x-cloud-trace-context", "everything-zen");
 		connection.getResponseMessage();
 		connection.disconnect();
-		// Allows the client library some time to flush the logs.
-		Thread.sleep(2000);
 
 		CredentialsProvider credentialsProvider = this.credentialsProvider;
 		Logging logClient = LoggingOptions.newBuilder()
 				.setCredentials(credentialsProvider.getCredentials())
 				.build().getService();
 		GcpProjectIdProvider projectIdProvider = this.projectIdProvider;
-		Page<LogEntry> page = logClient.listLogEntries(
-				Logging.EntryListOption.filter("textPayload:\"#$%^&" + NOW + "\" AND"
-						+ " logName=\"projects/" + projectIdProvider.getProjectId()
-						+ "/logs/spring.log\""));
+		Page<LogEntry> page;
 		int pageSize = 0;
-		for (LogEntry entry : page.getValues()) {
-			pageSize++;
-		}
+		int counter = 0;
+		do {
+			Thread.sleep(100);
+			page = logClient.listLogEntries(
+					Logging.EntryListOption.filter("textPayload:\"#$%^&" + NOW + "\" AND"
+							+ " logName=\"projects/" + projectIdProvider.getProjectId()
+							+ "/logs/spring.log\""));
+			for (LogEntry entry : page.getValues()) {
+				pageSize++;
+			}
+		} while (pageSize == 0 && counter++ < 2);
 		assertThat(pageSize).isEqualTo(1);
 		assertThat(page.getValues().iterator().next().getLabels().get("trace_id"))
 				.isEqualTo("everything-zen");
