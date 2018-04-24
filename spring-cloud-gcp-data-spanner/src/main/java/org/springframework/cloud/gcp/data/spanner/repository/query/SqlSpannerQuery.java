@@ -92,7 +92,13 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 						"Query method has a parameter without a valid name: "
 								+ getQueryMethod().getName());
 			}
-			tags.add(paramName.get());
+			String name = paramName.get();
+			if (seen.contains(name)) {
+				throw new SpannerDataException(
+						"More than one param has the same name: " + name);
+			}
+			seen.add(name);
+			tags.add(name);
 		}
 		return tags;
 	}
