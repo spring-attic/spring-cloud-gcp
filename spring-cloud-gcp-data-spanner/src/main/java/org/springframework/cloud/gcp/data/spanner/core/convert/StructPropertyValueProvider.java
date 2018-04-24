@@ -74,6 +74,9 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 			StructAccessor struct) {
 		String colName = spannerPersistentProperty.getColumnName();
 		List listValue = struct.getListValue(colName);
-		return this.readConverter.convertList(listValue, spannerPersistentProperty.getColumnInnerType());
+		return ConversionUtils.convertIterable(
+						listValue,
+						spannerPersistentProperty.getColumnInnerType(),
+						this.readConverter);
 	}
 }

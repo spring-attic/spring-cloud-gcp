@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import com.google.cloud.spanner.Struct;
@@ -151,13 +149,4 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		}
 		return result;
 	}
-
-	List<Object> convertList(List listValue, Class targetInnerType) {
-		List<Object> convList = new ArrayList<>();
-		for (Object item : listValue) {
-			convList.add(convert(item, targetInnerType));
-		}
-		return convList;
-	}
-
 }
