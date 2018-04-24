@@ -22,6 +22,10 @@ import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.CompositeTraceIdExtractor;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractor;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.ZipkinTraceIdExtractor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -69,7 +73,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testGetTraceIdExtractorsPrioritizeXCloudTrace() {
 		StackdriverLoggingProperties properties = new StackdriverLoggingProperties();
-		properties.setTraceIdExtractor(TraceIdExtractorType.XCLOUD_ZIPKIN);
+		properties.setTraceIdExtractor(TraceIdExtractor.Type.XCLOUD_ZIPKIN);
 		List<TraceIdExtractor> extractors =
 				((CompositeTraceIdExtractor) new StackdriverLoggingAutoConfiguration()
 						.traceIdExtractor(properties)).getExtractors();
@@ -82,7 +86,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testGetTraceIdExtractorsPrioritizeZipkinTrace() {
 		StackdriverLoggingProperties properties = new StackdriverLoggingProperties();
-		properties.setTraceIdExtractor(TraceIdExtractorType.ZIPKIN_XCLOUD);
+		properties.setTraceIdExtractor(TraceIdExtractor.Type.ZIPKIN_XCLOUD);
 		List<TraceIdExtractor> extractors =
 				((CompositeTraceIdExtractor) new StackdriverLoggingAutoConfiguration()
 						.traceIdExtractor(properties)).getExtractors();
@@ -95,7 +99,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testGetTraceIdExtractorsOnlyXCloud() {
 		StackdriverLoggingProperties properties = new StackdriverLoggingProperties();
-		properties.setTraceIdExtractor(TraceIdExtractorType.XCLOUD);
+		properties.setTraceIdExtractor(TraceIdExtractor.Type.XCLOUD);
 
 		assertThat(new StackdriverLoggingAutoConfiguration().traceIdExtractor(properties))
 				.isInstanceOf(XCloudTraceIdExtractor.class);
@@ -104,7 +108,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testGetTraceIdExtractorsOnlyZipkin() {
 		StackdriverLoggingProperties properties = new StackdriverLoggingProperties();
-		properties.setTraceIdExtractor(TraceIdExtractorType.ZIPKIN);
+		properties.setTraceIdExtractor(TraceIdExtractor.Type.ZIPKIN);
 
 		assertThat(new StackdriverLoggingAutoConfiguration().traceIdExtractor(properties))
 				.isInstanceOf(ZipkinTraceIdExtractor.class);

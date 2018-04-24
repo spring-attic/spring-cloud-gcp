@@ -1,0 +1,114 @@
+/*
+ *  Copyright 2018 original author or authors.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+package org.springframework.cloud.gcp.autoconfigure.logging.it;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.time.LocalDateTime;
+
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.paging.Page;
+import com.google.cloud.logging.LogEntry;
+import com.google.cloud.logging.Logging;
+import com.google.cloud.logging.LoggingOptions;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlAutoConfiguration;
+import org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageAutoConfiguration;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * @author João André Martins
+ */
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@RunWith(SpringRunner.class)
+public class StackdriverLoggingIntegrationTests {
+
+	private static final Log LOGGER = LogFactory.getLog(StackdriverLoggingIntegrationTests.class);
+
+	@Autowired
+	private GcpProjectIdProvider projectIdProvider;
+
+	@Autowired
+	private CredentialsProvider credentialsProvider;
+
+	@LocalServerPort
+	private int port;
+
+	private static final LocalDateTime NOW = LocalDateTime.now();
+
+	@Test
+	public void test() throws InterruptedException, IOException {
+		URL url = new URL("http://localhost:" + this.port);
+		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		connection.setRequestProperty("x-cloud-trace-context", "everything-zen");
+		connection.getResponseMessage();
+		connection.disconnect();
+		// Allows the client library some time to flush the logs.
+		Thread.sleep(2000);
+
+		CredentialsProvider credentialsProvider = this.credentialsProvider;
+		Logging logClient = LoggingOptions.newBuilder()
+				.setCredentials(credentialsProvider.getCredentials())
+				.build().getService();
+		GcpProjectIdProvider projectIdProvider = this.projectIdProvider;
+		Page<LogEntry> page = logClient.listLogEntries(
+				Logging.EntryListOption.filter("textPayload:\"#$%^&" + NOW + "\" AND"
+						+ " logName=\"projects/" + projectIdProvider.getProjectId()
+						+ "/logs/spring.log\""));
+		int pageSize = 0;
+		for (LogEntry entry : page.getValues()) {
+			pageSize++;
+		}
+		assertThat(pageSize).isEqualTo(1);
+		assertThat(page.getValues().iterator().next().getLabels().get("trace_id"))
+				.isEqualTo("everything-zen");
+	}
+
+	@RestController
+	@SpringBootApplication(exclude = {
+			GcpCloudSqlAutoConfiguration.class,
+			GcpStorageAutoConfiguration.class,
+			DataSourceAutoConfiguration.class
+	})
+	static class LoggingApplication {
+
+		public static void main(String[] args) {
+			SpringApplication.run(LoggingApplication.class, args);
+		}
+
+		@GetMapping
+		public void log() {
+			LOGGER.error("#$%^&" + NOW);
+		}
+	}
+}

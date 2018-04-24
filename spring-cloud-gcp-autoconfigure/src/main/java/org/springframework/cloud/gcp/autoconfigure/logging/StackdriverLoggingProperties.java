@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.autoconfigure.logging;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractor;
 
 /**
  * @author Chengyuan Zhao
@@ -25,13 +26,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class StackdriverLoggingProperties {
 
 	/** Determines which header to extract from HTTP request as the trace ID. */
-	private TraceIdExtractorType traceIdExtractor;
+	private TraceIdExtractor.Type traceIdExtractor;
 
-	public TraceIdExtractorType getTraceIdExtractor() {
+	public TraceIdExtractor.Type getTraceIdExtractor() {
 		return this.traceIdExtractor;
 	}
 
-	public void setTraceIdExtractor(TraceIdExtractorType traceIdExtractor) {
+	public void setTraceIdExtractor(TraceIdExtractor.Type traceIdExtractor) {
 		this.traceIdExtractor = traceIdExtractor;
 	}
 }
