@@ -60,6 +60,8 @@ import org.springframework.util.Assert;
  */
 public class SpannerTemplate implements SpannerOperations {
 
+	private static final Log LOGGER = LogFactory.getLog(SpannerTemplate.class);
+
 	private final DatabaseClient databaseClient;
 
 	private final SpannerMappingContext mappingContext;
@@ -67,8 +69,6 @@ public class SpannerTemplate implements SpannerOperations {
 	private final SpannerConverter spannerConverter;
 
 	private final SpannerMutationFactory mutationFactory;
-
-	private static final Log LOGGER = LogFactory.getLog(SpannerTemplate.class);
 
 	public SpannerTemplate(DatabaseClient databaseClient,
 			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
@@ -271,13 +271,14 @@ public class SpannerTemplate implements SpannerOperations {
 				.run(new TransactionCallable<T>() {
 					@Nullable
 					@Override
-					public T run(TransactionContext transaction) throws Exception {
+					public T run(TransactionContext transaction) { // @formatter:off
 						ReadWriteTransactionSpannerTemplate transactionSpannerTemplate =
-								new ReadWriteTransactionSpannerTemplate(
-								SpannerTemplate.this.databaseClient,
-								SpannerTemplate.this.mappingContext,
-								SpannerTemplate.this.spannerConverter,
-								SpannerTemplate.this.mutationFactory, transaction);
+										new ReadWriteTransactionSpannerTemplate(
+										// @formatter:on
+										SpannerTemplate.this.databaseClient,
+										SpannerTemplate.this.mappingContext,
+										SpannerTemplate.this.spannerConverter,
+										SpannerTemplate.this.mutationFactory, transaction);
 						return operations.apply(transactionSpannerTemplate);
 					}
 				});
@@ -302,48 +303,55 @@ public class SpannerTemplate implements SpannerOperations {
 
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
 			SpannerReadOptions options) {
-		StringBuilder logSb = new StringBuilder(LOGGER.isDebugEnabled()
-				? "Executing read on table " + tableName + " with keys: " + keys
-						+ " and columns: "
-				: "Executing Read. Debug mode log not enabled.");
+
 		if (LOGGER.isDebugEnabled()) {
-			StringJoiner sj = new StringJoiner(",");
-			columns.forEach(col -> sj.add(col));
-			logSb.append(sj.toString());
+			StringBuilder logs = logColumns(tableName, keys, columns);
+			logReadOptions(options, logs);
+			LOGGER.debug(logs.toString());
 		}
+
 		if (options == null) {
-			LOGGER.debug(logSb.toString());
 			return getReadContext().read(tableName, keys, columns);
 		}
-		else {
-			ReadContext readContext;
-			if (options.hasTimestamp()) {
-				readContext = getReadContext(options.getTimestamp());
-				if (LOGGER.isDebugEnabled()) {
-					logSb.append(" at timestamp " + options.getTimestamp());
-				}
-			}
-			else {
-				readContext = getReadContext();
-			}
-			if (LOGGER.isDebugEnabled()) {
-				for (ReadOption readOption : options.getReadOptions()) {
-					logSb.append(" with option: " + readOption);
-				}
-			}
-			if (options.hasIndex()) {
-				if (LOGGER.isDebugEnabled()) {
-					logSb.append(" secondary index: " + options.getIndex());
-				}
-				LOGGER.debug(
-						logSb.toString());
-				return readContext.readUsingIndex(tableName, options.getIndex(), keys,
-						columns, options.getReadOptions());
-			}
-			LOGGER.debug(logSb.toString());
-			return readContext.read(tableName, keys, columns,
-							options.getReadOptions());
+
+		ReadContext readContext = options.hasTimestamp()
+				? getReadContext(options.getTimestamp())
+				: getReadContext();
+
+		if (options.hasIndex()) {
+			return readContext.readUsingIndex(tableName, options.getIndex(), keys,
+					columns, options.getReadOptions());
 		}
+
+		return readContext.read(tableName, keys, columns,
+				options.getReadOptions());
+	}
+
+	private void logReadOptions(SpannerReadOptions options, StringBuilder logs) {
+		if (options == null) {
+			return;
+		}
+		if (options.hasTimestamp()) {
+			logs.append(" at timestamp " + options.getTimestamp());
+		}
+		for (ReadOption readOption : options.getReadOptions()) {
+			logs.append(" with option: " + readOption);
+		}
+		if (options.hasIndex()) {
+			logs.append(" secondary index: " + options.getIndex());
+		}
+	}
+
+	private StringBuilder logColumns(String tableName, KeySet keys, Iterable<String> columns) {
+		StringBuilder logSb = new StringBuilder("Executing read on table "
+				+ tableName
+				+ " with keys: "
+				+ keys
+				+ " and columns: ");
+		StringJoiner sj = new StringJoiner(",");
+		columns.forEach(col -> sj.add(col));
+		logSb.append(sj.toString());
+		return logSb;
 	}
 
 	private ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
@@ -355,14 +363,14 @@ public class SpannerTemplate implements SpannerOperations {
 			StringBuilder logSb = new StringBuilder(
 					LOGGER.isDebugEnabled()
 							? "Executing query"
-					+ (options.hasTimestamp() ? " at timestamp" + options.getTimestamp()
-									: "")
-					: "Executing query. Debug mode log is not enabled.");
+									+ (options.hasTimestamp() ? " at timestamp" + options.getTimestamp()
+											: "")
+							: "Executing query. Debug mode log is not enabled.");
 			if (LOGGER.isDebugEnabled()) {
 				for (QueryOption queryOption : options.getQueryOptions()) {
 					logSb.append(" with option: " + queryOption);
 				}
-			logSb.append(" : " + statement);
+				logSb.append(" : " + statement);
 			}
 			LOGGER.debug(logSb.toString());
 			return (options.hasTimestamp() ? getReadContext(options.getTimestamp())
