@@ -35,6 +35,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ParserContext;
 import org.springframework.expression.common.CompositeStringExpression;
@@ -122,16 +123,17 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		StringBuilder sb = new StringBuilder();
 		Map<Object, String> valueToTag = new HashMap<>();
 		int tagNum = 0;
+		EvaluationContext evaluationContext = this.evaluationContextProvider
+				.getEvaluationContext(this.queryMethod.getParameters(),
+						queryTagValue.intialParams);
 		for (Expression expression : expressions) {
 			if (expression instanceof LiteralExpression) {
 				sb.append(expression.getValue(String.class));
 			}
 			else if (expression instanceof SpelExpression) {
-				Object value = expression.getValue(this.evaluationContextProvider
-						.getEvaluationContext(this.queryMethod.getParameters(),
-								queryTagValue.intialParams));
+				Object value = expression.getValue(evaluationContext);
 				if (valueToTag.containsKey(value)) {
-					sb.append("@" + valueToTag.get(value));
+					sb.append("@").append(valueToTag.get(value));
 				}
 				else {
 					String newTag;
@@ -143,7 +145,7 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 					valueToTag.put(value, newTag);
 					queryTagValue.params.add(value);
 					queryTagValue.tags.add(newTag);
-					sb.append("@" + newTag);
+					sb.append("@").append(newTag);
 				}
 			}
 			else {
