@@ -69,7 +69,7 @@ public class StackdriverLoggingIntegrationTests {
 	private static final LocalDateTime NOW = LocalDateTime.now();
 
 	@BeforeClass
-	public void enableTests() {
+	public static void enableTests() {
 		assumeThat("it.logging").isEqualTo("true");
 	}
 
