@@ -28,6 +28,7 @@ import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.LoggingOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,6 +46,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * @author João André Martins
@@ -65,6 +67,11 @@ public class StackdriverLoggingIntegrationTests {
 	private int port;
 
 	private static final LocalDateTime NOW = LocalDateTime.now();
+
+	@BeforeClass
+	public void enableTests() {
+		assumeThat("it.logging").isEqualTo("true");
+	}
 
 	@Test
 	public void test() throws InterruptedException, IOException {
