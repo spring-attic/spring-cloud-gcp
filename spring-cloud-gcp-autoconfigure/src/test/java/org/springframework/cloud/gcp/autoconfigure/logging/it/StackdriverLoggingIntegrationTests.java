@@ -98,7 +98,7 @@ public class StackdriverLoggingIntegrationTests {
 			for (LogEntry entry : page.getValues()) {
 				pageSize++;
 			}
-		} while (pageSize == 0 && counter++ < 2);
+		} while (pageSize == 0 && counter++ < 20);
 		assertThat(pageSize).isEqualTo(1);
 		assertThat(page.getValues().iterator().next().getLabels().get("trace_id"))
 				.isEqualTo("everything-zen");
@@ -111,10 +111,6 @@ public class StackdriverLoggingIntegrationTests {
 			DataSourceAutoConfiguration.class
 	})
 	static class LoggingApplication {
-
-		public static void main(String[] args) {
-			SpringApplication.run(LoggingApplication.class, args);
-		}
 
 		@GetMapping
 		public void log() {
