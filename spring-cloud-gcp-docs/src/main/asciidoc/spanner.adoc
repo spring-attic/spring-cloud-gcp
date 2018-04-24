@@ -114,6 +114,33 @@ public class Trader {
 Spring Data Spanner will ignore any property annotated with `@NotMapped`. These properties will
 not be written to or read from Spanner.
 
+==== Constructors
+
+Simple constructors are supported on POJOs. The constructor arguments can be a subset of the persistent properties or all of them. Constructor arguments that do not map to a persistent property are not supported.
+
+[source,java]
+----
+@Table(name = "traders")
+public class Trader {
+	@PrimaryKey
+	@Column(name = "trader_id")
+	String traderId;
+
+	String firstName;
+
+	String lastName;
+
+	@NotMapped
+	Double temporaryNumber;
+
+	public Trader(String traderId, String firstName) {
+	    this.traderId = traderId;
+	    this.firstName = firstName;
+	}
+}
+----
+
+
 ==== Table
 
 The `@Table` annotation can provide the name of the Spanner table that stores instances of the annotated class, one per row.
