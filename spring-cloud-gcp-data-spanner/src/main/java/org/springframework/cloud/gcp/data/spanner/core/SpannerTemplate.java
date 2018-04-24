@@ -316,6 +316,12 @@ public class SpannerTemplate implements SpannerOperations {
 			return getReadContext().read(tableName, keys, columns);
 		}
 		else {
+			if (LOGGER.isDebugEnabled()) {
+				for (ReadOption readOption : options.getReadOptions()) {
+					logSb.append(" with option: " + readOption);
+				}
+			}
+
 			ReadContext readContext;
 			if (options.hasTimestamp()) {
 				readContext = getReadContext(options.getTimestamp());
@@ -326,23 +332,21 @@ public class SpannerTemplate implements SpannerOperations {
 			else {
 				readContext = getReadContext();
 			}
-			if (LOGGER.isDebugEnabled()) {
-				for (ReadOption readOption : options.getReadOptions()) {
-					logSb.append(" with option: " + readOption);
-				}
-			}
+
+			ResultSet results;
 			if (options.hasIndex()) {
 				if (LOGGER.isDebugEnabled()) {
 					logSb.append(" secondary index: " + options.getIndex());
 				}
-				LOGGER.debug(
-						logSb.toString());
-				return readContext.readUsingIndex(tableName, options.getIndex(), keys,
+				results = readContext.readUsingIndex(tableName, options.getIndex(), keys,
 						columns, options.getReadOptions());
 			}
+			else {
+				results = readContext.read(tableName, keys, columns,
+						options.getReadOptions());
+			}
 			LOGGER.debug(logSb.toString());
-			return readContext.read(tableName, keys, columns,
-							options.getReadOptions());
+			return results;
 		}
 	}
 
