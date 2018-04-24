@@ -53,12 +53,12 @@ public class MappingSpannerReadConverterTests {
 			if (ConversionUtils.isIterableNonByteArrayType(returnType)) {
 				Class innerReturnType = (Class) ((ParameterizedType) method
 						.getGenericReturnType()).getActualTypeArguments()[0];
-				assertThat(MappingSpannerReadConverter.readIterableMapping.keySet(),
+				assertThat(StructAccessor.readIterableMapping.keySet(),
 						hasItem(innerReturnType));
 			}
 			else {
 				assertThat(
-						MappingSpannerReadConverter.singleItemReadMethodMapping.keySet(),
+								StructAccessor.singleItemReadMethodMapping.keySet(),
 						hasItem(returnType));
 			}
 		}
