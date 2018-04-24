@@ -835,6 +835,16 @@ List<Trade> fetchByActionNamedQuery(String action);
 
 This allows table names evaluated with SpEL to be used in custom queries.
 
+SpEL can also be used to provide SQL parameters:
+
+[source, java]
+----
+@Query("SELECT * FROM :com.example.Trade: WHERE trades.action = @tag0
+  AND price > #{#priceRadius * -1} AND price < #{#priceRadius * 2}")
+List<Trade> fetchByActionNamedQuery(String action, Double priceRadius);
+----
+
+
 ==== Projections
 Spring Data Spanner supports {spring-data-commons-ref}/#projections[projections]. You can define projection interfaces based
 on domain types and add query methods that return them in your repository:
