@@ -168,7 +168,7 @@ public class SpannerTemplate implements SpannerOperations {
 			if (options.hasLimit()) {
 				r.append(" LIMIT " + options.getLimit());
 			}
-			if (options.hasLimit()) {
+			if (options.hasOffset()) {
 				r.append(" OFFSET " + options.getOffset());
 			}
 		return r.toString();
