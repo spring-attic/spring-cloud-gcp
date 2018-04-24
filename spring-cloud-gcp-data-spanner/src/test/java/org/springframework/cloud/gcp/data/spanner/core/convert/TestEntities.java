@@ -105,4 +105,9 @@ public class TestEntities {
 		String value;
 	}
 
+
+	static class TestEntityWithListWithZeroTypeArgs {
+		@PrimaryKey
+		List zeroArgsListOfObjects;
+	}
 }

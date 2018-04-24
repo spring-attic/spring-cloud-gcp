@@ -17,12 +17,11 @@
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -47,174 +46,45 @@ import org.springframework.data.mapping.PropertyHandler;
 class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		implements SpannerEntityReader {
 
+	// @formatter:off
 	static final Map<Class, BiFunction<Struct, String, List>> readIterableMapping =
 			new ImmutableMap.Builder<Class, BiFunction<Struct, String, List>>()
-			.put(Boolean.class, AbstractStructReader::getBooleanList)
-			.put(Long.class, AbstractStructReader::getLongList)
-			.put(String.class, AbstractStructReader::getStringList)
-			.put(Double.class, AbstractStructReader::getDoubleList)
-			.put(Timestamp.class, AbstractStructReader::getTimestampList)
-			.put(Date.class, AbstractStructReader::getDateList)
-			.put(ByteArray.class, AbstractStructReader::getBytesList)
-			.build();
+					// @formatter:on
+					.put(Boolean.class, AbstractStructReader::getBooleanList)
+					.put(Long.class, AbstractStructReader::getLongList)
+					.put(String.class, AbstractStructReader::getStringList)
+					.put(Double.class, AbstractStructReader::getDoubleList)
+					.put(Timestamp.class, AbstractStructReader::getTimestampList)
+					.put(Date.class, AbstractStructReader::getDateList)
+					.put(ByteArray.class, AbstractStructReader::getBytesList)
+					.put(Struct.class, AbstractStructReader::getStructList)
+					.build();
 
+	// @formatter:off
 	static final Map<Class, BiFunction<Struct, String, ?>> singleItemReadMethodMapping =
 			new ImmutableMap.Builder<Class, BiFunction<Struct, String, ?>>()
-			.put(Boolean.class, AbstractStructReader::getBoolean)
-			.put(Long.class, AbstractStructReader::getLong)
-			.put(String.class, AbstractStructReader::getString)
-			.put(Double.class, AbstractStructReader::getDouble)
-			.put(Timestamp.class, AbstractStructReader::getTimestamp)
-			.put(Date.class, AbstractStructReader::getDate)
-			.put(ByteArray.class, AbstractStructReader::getBytes)
-			.put(double[].class, AbstractStructReader::getDoubleArray)
-			.put(long[].class, AbstractStructReader::getLongArray)
-			.put(boolean[].class, AbstractStructReader::getBooleanArray).build();
+					// @formatter:on
+					.put(Boolean.class, AbstractStructReader::getBoolean)
+					.put(Long.class, AbstractStructReader::getLong)
+					.put(String.class, AbstractStructReader::getString)
+					.put(Double.class, AbstractStructReader::getDouble)
+					.put(Timestamp.class, AbstractStructReader::getTimestamp)
+					.put(Date.class, AbstractStructReader::getDate)
+					.put(ByteArray.class, AbstractStructReader::getBytes)
+					.put(double[].class, AbstractStructReader::getDoubleArray)
+					.put(long[].class, AbstractStructReader::getLongArray)
+					.put(boolean[].class, AbstractStructReader::getBooleanArray).build();
 
 	private final SpannerMappingContext spannerMappingContext;
+
+	private final SpannerTypeMapper spannerTypeMapper;
 
 	MappingSpannerReadConverter(
 			SpannerMappingContext spannerMappingContext,
 			CustomConversions customConversions) {
 		super(customConversions, null);
 		this.spannerMappingContext = spannerMappingContext;
-	}
-
-	/**
-	 * Reads a single POJO from a Spanner row.
-	 * @param type the type of POJO
-	 * @param source the Spanner row
-	 * @param includeColumns the columns to read. If null then all columns will be read.
-	 * @param allowMissingColumns if true, then properties with no corresponding column
-	 * are not mapped. If false, then an exception is thrown.
-	 * @param <R> the type of the POJO.
-	 * @return the POJO
-	 */
-	public <R> R read(Class<R> type, Struct source, Set<String> includeColumns,
-			boolean allowMissingColumns) {
-		boolean readAllColumns = includeColumns == null;
-		R object = instantiate(type);
-		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
-				.getPersistentEntity(type);
-
-		PersistentPropertyAccessor accessor = persistentEntity
-				.getPropertyAccessor(object);
-
-		persistentEntity.doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					String columnName = spannerPersistentProperty.getColumnName();
-					try {
-						if ((!readAllColumns && !includeColumns.contains(columnName))
-								|| source.isNull(columnName)) {
-							return;
-						}
-					}
-					catch (IllegalArgumentException e) {
-						if (!allowMissingColumns) {
-							throw new SpannerDataException(
-									"Unable to read column from Spanner results: "
-											+ columnName,
-									e);
-						}
-					}
-					Class propType = spannerPersistentProperty.getType();
-
-					boolean valueSet;
-
-					/*
-					 * Due to type erasure, binder methods for Iterable properties must be
-					 * manually specified. ByteArray must be excluded since it implements
-					 * Iterable, but is also explicitly supported by spanner.
-					 */
-					if (ConversionUtils.isIterableNonByteArrayType(propType)) {
-						valueSet = attemptReadIterableValue(spannerPersistentProperty,
-								source, columnName, accessor);
-					}
-					else {
-						Class sourceType = ConversionUtils.SPANNER_COLUMN_TYPE_TO_JAVA_TYPE_MAPPING
-								.get(source.getColumnType(columnName));
-							valueSet = attemptReadSingleItemValue(
-									spannerPersistentProperty, source, sourceType,
-									columnName, accessor);
-					}
-
-					if (!valueSet) {
-						throw new SpannerDataException(String.format(
-								"The value in column with name %s"
-										+ " could not be converted to the corresponding property in the entity."
-										+ " The property's type is %s.",
-								columnName, propType));
-					}
-
-				});
-		return object;
-	}
-
-	@Override
-	public <R> R read(Class<R> type, Struct source) {
-		return read(type, source, null, false);
-	}
-
-	private boolean attemptReadSingleItemValue(
-			SpannerPersistentProperty spannerPersistentProperty, Struct struct,
-			Class sourceType,
-			String colName, PersistentPropertyAccessor accessor) {
-		Class targetType = spannerPersistentProperty.getType();
-		if (sourceType == null || !canConvert(sourceType, targetType)) {
-			return false;
-		}
-		BiFunction readFunction = singleItemReadMethodMapping
-				.get(ConversionUtils.boxIfNeeded(sourceType));
-		if (readFunction == null) {
-			return false;
-		}
-		accessor.setProperty(spannerPersistentProperty,
-				convert(readFunction.apply(struct, colName), targetType));
-		return true;
-	}
-
-	private boolean attemptReadIterableValue(
-			SpannerPersistentProperty spannerPersistentProperty, Struct struct,
-			String colName, PersistentPropertyAccessor accessor) {
-
-		Class innerType = ConversionUtils.boxIfNeeded(spannerPersistentProperty.getColumnInnerType());
-		if (innerType == null) {
-			return false;
-		}
-
-		// due to checkstyle limit of 3 return statments per function, this variable is
-		// used.
-		boolean valueSet = false;
-
-		if (this.readIterableMapping.containsKey(innerType)) {
-			accessor.setProperty(spannerPersistentProperty,
-					this.readIterableMapping.get(innerType).apply(struct, colName));
-			valueSet = true;
-		}
-
-		if (!valueSet) {
-			for (Class sourceType : this.readIterableMapping.keySet()) {
-				if (canConvert(sourceType, innerType)) {
-					List iterableValue = readIterableMapping.get(sourceType).apply(struct,
-							colName);
-					accessor.setProperty(spannerPersistentProperty, ConversionUtils
-							.convertIterable(iterableValue, innerType, this));
-					valueSet = true;
-					break;
-				}
-			}
-		}
-
-		if (!valueSet && struct.getColumnType(colName).getArrayElementType().getCode() == Type.Code.STRUCT) {
-			List<Struct> iterableValue = struct.getStructList(colName);
-			Iterable convertedIterableValue = (Iterable) StreamSupport.stream(iterableValue.spliterator(), false)
-					.map(item -> read(innerType, item))
-					.collect(Collectors.toList());
-			accessor.setProperty(spannerPersistentProperty, convertedIterableValue);
-			valueSet = true;
-		}
-
-		return valueSet;
+		this.spannerTypeMapper = new SpannerTypeMapper();
 	}
 
 	private static <R> R instantiate(Class<R> type) {
@@ -230,6 +100,153 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 					e);
 		}
 		return object;
+	}
+
+	/**
+	 * Reads a single POJO from a Spanner row.
+	 * @param type the type of POJO
+	 * @param source the Spanner row
+	 * @param includeColumns the columns to read. If null then all columns will be read.
+	 * @param allowMissingColumns if true, then properties with no corresponding column are
+	 * not mapped. If false, then an exception is thrown.
+	 * @param <R> the type of the POJO.
+	 * @return the POJO
+	 */
+	public <R> R read(Class<R> type, Struct source, Set<String> includeColumns,
+			boolean allowMissingColumns) {
+		boolean readAllColumns = includeColumns == null;
+		R object = instantiate(type);
+		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
+				.getPersistentEntity(type);
+
+		PersistentPropertyAccessor accessor = persistentEntity
+				.getPropertyAccessor(object);
+
+		persistentEntity.doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					if (!shouldSkipProperty(source,
+							spannerPersistentProperty,
+							includeColumns,
+							readAllColumns,
+							allowMissingColumns)) {
+						Object value = readWithConversion(source, spannerPersistentProperty);
+						accessor.setProperty(spannerPersistentProperty, value);
+					}
+
+				});
+		return object;
+	}
+
+	private boolean shouldSkipProperty(Struct struct,
+			SpannerPersistentProperty spannerPersistentProperty,
+			Set<String> includeColumns,
+			boolean readAllColumns,
+			boolean allowMissingColumns) {
+		String columnName = spannerPersistentProperty.getColumnName();
+		boolean notRequiredByPartialRead = !readAllColumns && !includeColumns.contains(columnName);
+
+		return notRequiredByPartialRead
+				|| isMissingColumn(struct, allowMissingColumns, columnName)
+				|| struct.isNull(columnName);
+	}
+
+	private boolean isMissingColumn(Struct struct, boolean allowMissingColumns,
+			String columnName) {
+		boolean missingColumn = !hasColumn(struct, columnName);
+		if (missingColumn && !allowMissingColumns) {
+			throw new SpannerDataException(
+					"Unable to read column from Spanner results: "
+							+ columnName);
+		}
+		return missingColumn;
+	}
+
+	private boolean hasColumn(Struct struct, String columnName) {
+		boolean hasColumn = false;
+		for (Type.StructField f : struct.getType().getStructFields()) {
+			if (f.getName().equals(columnName)) {
+				hasColumn = true;
+				break;
+			}
+		}
+		return hasColumn;
+	}
+
+	protected Object readWithConversion(Struct source, SpannerPersistentProperty spannerPersistentProperty) {
+		Class propType = spannerPersistentProperty.getType();
+		Object value;
+		/*
+		 * Due to type erasure, binder methods for Iterable properties must be manually specified.
+		 * ByteArray must be excluded since it implements Iterable, but is also explicitly
+		 * supported by spanner.
+		 */
+		if (ConversionUtils.isIterableNonByteArrayType(propType)) {
+			value = readIterableWithConversion(spannerPersistentProperty, source);
+		}
+		else {
+			value = readSingleWithConversion(spannerPersistentProperty, source);
+		}
+
+		if (value == null) {
+			throw new SpannerDataException(String.format(
+					"The value in column with name %s"
+							+ " could not be converted to the corresponding property in the entity."
+							+ " The property's type is %s.",
+					spannerPersistentProperty.getColumnName(), propType));
+		}
+		return value;
+	}
+
+	@Override
+	public <R> R read(Class<R> type, Struct source) {
+		return read(type, source, null, false);
+	}
+
+	@Override
+	public <T> T convert(Object sourceValue, Class<T> targetType) {
+		Class<?> sourceClass = sourceValue.getClass();
+		T result = null;
+		if (targetType.isAssignableFrom(sourceClass)) {
+			return (T) sourceValue;
+		}
+		else if (Struct.class.isAssignableFrom(sourceClass)) {
+			result = read(targetType, (Struct) sourceValue);
+		}
+		else if (canConvert(sourceClass, targetType)) {
+			result = super.convert(sourceValue, targetType);
+		}
+		return result;
+	}
+
+	private Object readSingleWithConversion(SpannerPersistentProperty spannerPersistentProperty, Struct struct) {
+		String colName = spannerPersistentProperty.getColumnName();
+		Type colType = struct.getColumnType(colName);
+		Type.Code code = colType.getCode();
+		Class sourceType = code.equals(Type.Code.ARRAY)
+				? this.spannerTypeMapper.getArrayJavaClassFor(colType.getArrayElementType().getCode())
+				: this.spannerTypeMapper.getSimpleJavaClassFor(code);
+		Class targetType = spannerPersistentProperty.getType();
+		BiFunction readFunction = singleItemReadMethodMapping.get(sourceType);
+		Object value = readFunction.apply(struct, colName);
+		return convert(value, targetType);
+	}
+
+	private Object readIterableWithConversion(SpannerPersistentProperty spannerPersistentProperty, Struct struct) {
+		String colName = spannerPersistentProperty.getColumnName();
+		Type.Code innerTypeCode = struct.getColumnType(colName).getArrayElementType().getCode();
+		Class clazz = this.spannerTypeMapper.getSimpleJavaClassFor(innerTypeCode);
+		BiFunction<Struct, String, List> readMethod = readIterableMapping.get(clazz);
+		List listValue = readMethod.apply(struct, colName);
+
+		return convertList(listValue, spannerPersistentProperty.getColumnInnerType());
+	}
+
+	private List<Object> convertList(List listValue, Class targetInnerType) {
+		List<Object> convList = new ArrayList<>();
+		for (Object item : listValue) {
+			convList.add(convert(item, targetInnerType));
+		}
+		return convList;
 	}
 
 }
