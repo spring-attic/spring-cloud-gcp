@@ -129,13 +129,11 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 					throw new SpannerDataException(
 							"Only a single Pageable or Sort param is allowed.");
 				}
-				else {
-					if (Pageable.class.isAssignableFrom(paramClass)) {
+				else if (Pageable.class.isAssignableFrom(paramClass)) {
 						pageable = (Pageable) param;
-					}
-					else {
-						sort = (Sort) param;
-					}
+				}
+				else {
+					sort = (Sort) param;
 				}
 			}
 			else {

@@ -164,14 +164,14 @@ public class SpannerTemplate implements SpannerOperations {
 
 	public String applySortingPagingQueryOptions(SpannerQueryOptions options,
 			String sql) {
-		String r = applySort(options.getSort(), sql);
+		StringBuilder r = new StringBuilder(applySort(options.getSort(), sql));
 			if (options.hasLimit()) {
-			r += " LIMIT " + options.getLimit();
+				r.append(" LIMIT " + options.getLimit());
 			}
 			if (options.hasLimit()) {
-			r += " OFFSET " + options.getOffset();
+				r.append(" OFFSET " + options.getOffset());
 			}
-		return r;
+		return r.toString();
 	}
 
 	private String applySort(Sort sort, String sql) {
