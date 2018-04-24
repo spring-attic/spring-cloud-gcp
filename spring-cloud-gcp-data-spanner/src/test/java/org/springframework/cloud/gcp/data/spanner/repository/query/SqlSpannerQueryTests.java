@@ -156,8 +156,8 @@ public class SqlSpannerQueryTests {
 			assertEquals(params[6], paramMap.get("tag5").getString());
 			assertEquals(params[7], paramMap.get("tag6").getFloat64());
 			assertEquals(params[8], paramMap.get("tag7").getFloat64());
-					assertEquals(-8.88, paramMap.get("SpELtag1").getFloat64(), 0.00001);
-					assertEquals(-3.33, paramMap.get("SpELtag2").getFloat64(), 0.00001);
+			assertEquals(-8.88, paramMap.get("SpELtag1").getFloat64(), 0.00001);
+			assertEquals(-3.33, paramMap.get("SpELtag2").getFloat64(), 0.00001);
 
 			return null;
 		}).when(this.spannerTemplate).executeQuery(any(), any());

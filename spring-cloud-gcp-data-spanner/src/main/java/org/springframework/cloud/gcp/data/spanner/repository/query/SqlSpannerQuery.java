@@ -131,7 +131,7 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		int tagNum = 0;
 		EvaluationContext evaluationContext = this.evaluationContextProvider
 				.getEvaluationContext(this.queryMethod.getParameters(),
-						queryTagValue.intialParams);
+						queryTagValue.rawParams);
 		for (Expression expression : expressions) {
 			if (expression instanceof LiteralExpression) {
 				sb.append(expression.getValue(String.class));
@@ -165,7 +165,7 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 
 	@Override
 	public Object executeRawResult(Object[] parameters) {
-		List<Object> params = new ArrayList();
+		List params = new ArrayList();
 
 		Pageable pageable = null;
 		Sort sort = null;
@@ -204,12 +204,14 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 
 
 		QueryTagValue queryTagValue = new QueryTagValue(getParamTags(), parameters,
+				params.toArray(),
 				resolveEntityClassNames(this.sql));
 
 		resolveSpELTags(queryTagValue);
 
 		return this.spannerOperations.query(this.entityType,
-				resolveEntityClassNames(this.sql), this.tags, params.toArray(),
+				resolveEntityClassNames(queryTagValue.sql), queryTagValue.tags,
+				queryTagValue.params.toArray(),
 				spannerQueryOptions);
 	}
 
@@ -239,14 +241,18 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 
 		final Object[] intialParams;
 
+		final Object[] rawParams;
+
 		String sql;
 
-		QueryTagValue(List<String> tags, Object[] params, String sql) {
+		QueryTagValue(List<String> tags, Object[] rawParams, Object[] params,
+				String sql) {
 			this.tags = tags;
 			this.intialParams = params;
 			this.sql = sql;
 			this.initialTags = new HashSet<>(tags);
 			this.params = new ArrayList<>(Arrays.asList(params));
+			this.rawParams = rawParams;
 		}
 	}
 }
