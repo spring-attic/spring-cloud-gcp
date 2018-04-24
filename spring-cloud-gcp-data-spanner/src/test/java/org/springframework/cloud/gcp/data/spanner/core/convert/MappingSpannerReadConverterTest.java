@@ -138,7 +138,7 @@ public class MappingSpannerReadConverterTest {
 	}
 
 	@Test
-	public void testPartialConstructor() throws Exception {
+	public void testPartialConstructor() {
 		Struct struct1 = Struct.newBuilder()
 				.add("id", Value.string("key1"))
 				.add("custom_col", Value.string("string1"))
@@ -150,7 +150,7 @@ public class MappingSpannerReadConverterTest {
 	}
 
 	@Test
-	public void ensureConstructorArgsAreReadOnce() throws Exception {
+	public void ensureConstructorArgsAreReadOnce() {
 		Struct row = mock(Struct.class);
 		when(row.getString("id")).thenReturn("1234");
 		when(row.getType()).thenReturn(Type.struct(ImmutableList.of(Type.StructField.of("id", Type.string()))));
@@ -166,7 +166,7 @@ public class MappingSpannerReadConverterTest {
 	}
 
 	@Test(expected = SpannerDataException.class)
-	public void testPartialConstructorWithNotEnoughArgs() throws Exception {
+	public void testPartialConstructorWithNotEnoughArgs() {
 		Struct struct1 = Struct.newBuilder()
 						.add("id", Value.string("key1"))
 						.add("booleanField", Value.bool(true))
