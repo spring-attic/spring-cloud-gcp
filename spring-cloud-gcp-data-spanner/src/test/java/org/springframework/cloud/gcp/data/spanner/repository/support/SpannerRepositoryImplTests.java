@@ -27,8 +27,8 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
-import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverters;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.domain.Pageable;
@@ -156,7 +156,7 @@ public class SpannerRepositoryImplTests {
 		when(template.read(eq(Object.class), eq(key))).thenReturn(ret);
 		assertEquals(ret,
 				new SimpleSpannerRepository(template, Object.class).findById(
-						ConversionUtils.TIMESTAMP_INSTANT_CONVERTER.convert(timestamp))
+						SpannerConverters.TIMESTAMP_INSTANT_CONVERTER.convert(timestamp))
 						.get());
 		verify(template, times(1)).read(eq(Object.class), eq(key));
 	}
@@ -174,7 +174,7 @@ public class SpannerRepositoryImplTests {
 		when(template.read(eq(Object.class), eq(key))).thenReturn(ret);
 		assertEquals(ret, new SimpleSpannerRepository(template, Object.class)
 				.findById(new Object[] { "key",
-						ConversionUtils.TIMESTAMP_INSTANT_CONVERTER.convert(timestamp) })
+								SpannerConverters.TIMESTAMP_INSTANT_CONVERTER.convert(timestamp) })
 				.get());
 		verify(template, times(1)).read(eq(Object.class), eq(key));
 	}

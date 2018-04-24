@@ -14,14 +14,16 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.storage;
+package org.springframework.cloud.gcp.storage.it;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
+import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -29,6 +31,16 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gcp.core.Credentials;
+import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
+import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolver;
+import org.springframework.cloud.gcp.storage.GoogleStorageResource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -44,7 +56,8 @@ import static org.junit.Assume.assumeThat;
  * @author Chengyuan Zhao
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = { GoogleStorageIntegrationTestsConfiguration.class })
+@ContextConfiguration(classes = {
+		GoogleStorageIntegrationTests.GoogleStorageIntegrationTestsConfiguration.class })
 public class GoogleStorageIntegrationTests {
 
 	private static final String CHILD_RELATIVE_NAME = "child";
@@ -111,6 +124,35 @@ public class GoogleStorageIntegrationTests {
 
 		try (InputStream is = childResource.getInputStream()) {
 			assertEquals(message, StreamUtils.copyToString(is, Charset.defaultCharset()));
+		}
+	}
+
+	@Configuration
+	@PropertySource("application-test.properties")
+	@Import(GoogleStorageProtocolResolver.class)
+	public static class GoogleStorageIntegrationTestsConfiguration {
+
+		@Bean
+		public static Storage storage(CredentialsProvider credentialsProvider,
+				GcpProjectIdProvider projectIdProvider) throws IOException {
+			return StorageOptions.newBuilder()
+					.setCredentials(credentialsProvider.getCredentials())
+					.setProjectId(projectIdProvider.getProjectId()).build().getService();
+		}
+
+		@Bean
+		public GcpProjectIdProvider gcpProjectIdProvider() {
+			return new DefaultGcpProjectIdProvider();
+		}
+
+		@Bean
+		public CredentialsProvider credentialsProvider() {
+			try {
+				return new DefaultCredentialsProvider(Credentials::new);
+			}
+			catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 }

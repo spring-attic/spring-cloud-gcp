@@ -17,8 +17,13 @@
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,6 +38,12 @@ import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ParserContext;
+import org.springframework.expression.common.CompositeStringExpression;
+import org.springframework.expression.common.LiteralExpression;
+import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.StringUtils;
 
@@ -47,8 +58,6 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 
 	private final String sql;
 
-	private final List<String> tags;
-
 	private EvaluationContextProvider evaluationContextProvider;
 
 	private SpelExpressionParser expressionParser;
@@ -59,7 +68,6 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 			SpelExpressionParser expressionParser,
 			SpannerMappingContext spannerMappingContext) {
 		super(type, queryMethod, spannerOperations, spannerMappingContext);
-		this.tags = getTags();
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
 		this.sql = StringUtils.trimTrailingCharacter(sql.trim(), ';');
@@ -69,8 +77,9 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		return Pageable.class.isAssignableFrom(type) || Sort.class.isAssignableFrom(type);
 	}
 
-	private List<String> getTags() {
+	private List<String> getParamTags() {
 		List<String> tags = new ArrayList<>();
+		Set<String> seen = new HashSet<>();
 		Parameters parameters = getQueryMethod().getParameters();
 		for (int i = 0; i < parameters.getNumberOfParameters(); i++) {
 			Parameter param = parameters.getParameter(i);
@@ -115,6 +124,45 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		return result;
 	}
 
+	private void resolveSpELTags(QueryTagValue queryTagValue) {
+		Expression[] expressions = detectExpressions(queryTagValue.sql);
+		StringBuilder sb = new StringBuilder();
+		Map<Object, String> valueToTag = new HashMap<>();
+		int tagNum = 0;
+		EvaluationContext evaluationContext = this.evaluationContextProvider
+				.getEvaluationContext(this.queryMethod.getParameters(),
+						queryTagValue.intialParams);
+		for (Expression expression : expressions) {
+			if (expression instanceof LiteralExpression) {
+				sb.append(expression.getValue(String.class));
+			}
+			else if (expression instanceof SpelExpression) {
+				Object value = expression.getValue(evaluationContext);
+				if (valueToTag.containsKey(value)) {
+					sb.append("@").append(valueToTag.get(value));
+				}
+				else {
+					String newTag;
+					do {
+						tagNum++;
+						newTag = "SpELtag" + tagNum;
+					}
+					while (queryTagValue.initialTags.contains(newTag));
+					valueToTag.put(value, newTag);
+					queryTagValue.params.add(value);
+					queryTagValue.tags.add(newTag);
+					sb.append("@").append(newTag);
+				}
+			}
+			else {
+				throw new SpannerDataException(
+						"Unexpected expression type. SQL queries are expected to be "
+								+ "concatenation of Literal and SpEL expressions.");
+			}
+		}
+		queryTagValue.sql = sb.toString();
+	}
+
 	@Override
 	public Object executeRawResult(Object[] parameters) {
 		List<Object> params = new ArrayList();
@@ -154,8 +202,51 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 					.setOffset(pageable.getOffset()).setLimit(pageable.getPageSize());
 		}
 
+
+		QueryTagValue queryTagValue = new QueryTagValue(getParamTags(), parameters,
+				resolveEntityClassNames(this.sql));
+
+		resolveSpELTags(queryTagValue);
+
 		return this.spannerOperations.query(this.entityType,
 				resolveEntityClassNames(this.sql), this.tags, params.toArray(),
 				spannerQueryOptions);
+	}
+
+	private Expression[] detectExpressions(String sql) {
+		Expression expression = this.expressionParser.parseExpression(sql,
+				ParserContext.TEMPLATE_EXPRESSION);
+		if (expression instanceof LiteralExpression) {
+			return new Expression[] { expression };
+		}
+		else if (expression instanceof CompositeStringExpression) {
+			return ((CompositeStringExpression) expression).getExpressions();
+		}
+		else {
+			throw new SpannerDataException("Unexpected expression type. "
+					+ "Query can either contain no SpEL expressions or have SpEL expressions in the SQL.");
+		}
+	}
+
+	// Convenience class to hold a grouping of SQL, tags, and parameter values.
+	private static class QueryTagValue {
+
+		List<String> tags;
+
+		final Set<String> initialTags;
+
+		List<Object> params;
+
+		final Object[] intialParams;
+
+		String sql;
+
+		QueryTagValue(List<String> tags, Object[] params, String sql) {
+			this.tags = tags;
+			this.intialParams = params;
+			this.sql = sql;
+			this.initialTags = new HashSet<>(tags);
+			this.params = new ArrayList<>(Arrays.asList(params));
+		}
 	}
 }

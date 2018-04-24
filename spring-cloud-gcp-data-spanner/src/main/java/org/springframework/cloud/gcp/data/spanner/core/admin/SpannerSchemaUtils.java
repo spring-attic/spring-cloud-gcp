@@ -16,12 +16,16 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.admin;
 
+import java.util.OptionalLong;
 import java.util.StringJoiner;
 
 import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.Type;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
@@ -29,7 +33,7 @@ import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.Assert;
 
 /**
- *	Contains functions related to the table schema of entities.
+ * Contains functions related to the table schema of entities.
  *
  * @author Chengyuan Zhao
  */
@@ -39,6 +43,8 @@ public class SpannerSchemaUtils {
 
 	private final SpannerConverter spannerConverter;
 
+	private final SpannerTypeMapper spannerTypeMapper;
+
 	public SpannerSchemaUtils(SpannerMappingContext mappingContext,
 			SpannerConverter spannerConverter) {
 		Assert.notNull(mappingContext,
@@ -47,6 +53,62 @@ public class SpannerSchemaUtils {
 				"A valid results mapper for Spanner is required.");
 		this.mappingContext = mappingContext;
 		this.spannerConverter = spannerConverter;
+		this.spannerTypeMapper = new SpannerTypeMapper();
+	}
+
+	private String getTypeDDLString(Type.Code type, boolean isArray, OptionalLong dataLength) {
+		Assert.notNull(type, "A valid Spanner column type is required.");
+		if (isArray) {
+			return "ARRAY<" + getTypeDDLString(type, false, dataLength) + ">";
+		}
+		return type.toString()
+				+ (type == Type.Code.STRING || type == Type.Code.BYTES
+						? "(" + (dataLength.isPresent() ? dataLength.getAsLong() : "MAX") + ")"
+						: "");
+	}
+
+	public String getColumnDDLString(
+			SpannerPersistentProperty spannerPersistentProperty, SpannerConverter spannerConverter) {
+		Class columnType = spannerPersistentProperty.getType();
+		String ddlString;
+		if (ConversionUtils.isIterableNonByteArrayType(columnType)) {
+			Class innerType = spannerPersistentProperty.getColumnInnerType();
+			if (innerType == null) {
+				throw new SpannerDataException(
+						"Cannot get column DDL for iterable type without "
+								+ "annotated"
+								+ " "
+								+ "inner "
+								+ "type"
+								+ ".");
+			}
+			Class spannerJavaType = spannerConverter.getCorrespondingSpannerJavaType(innerType, true);
+			Type.Code spannerSupportedInnerType = this.spannerTypeMapper.getSimpleTypeCodeForJavaType(spannerJavaType);
+
+			if (spannerSupportedInnerType == null) {
+				throw new SpannerDataException(
+						"Could not find suitable Spanner column inner type for "
+								+ "property type:"
+								+ innerType);
+			}
+			ddlString = getTypeDDLString(spannerSupportedInnerType, true,
+					spannerPersistentProperty.getMaxColumnLength());
+		}
+		else {
+			Class spannerJavaType = spannerConverter.getCorrespondingSpannerJavaType(columnType, false);
+			Type.Code spannerColumnType = spannerJavaType.isArray()
+					? this.spannerTypeMapper.getArrayTypeCodeForJavaType(spannerJavaType)
+					: this.spannerTypeMapper.getSimpleTypeCodeForJavaType(spannerJavaType);
+
+			if (spannerColumnType == null) {
+				throw new SpannerDataException(
+						"Could not find suitable Spanner column type for property " + "type:" + columnType);
+			}
+
+			ddlString = getTypeDDLString(spannerColumnType, spannerJavaType.isArray(),
+					spannerPersistentProperty.getMaxColumnLength());
+		}
+		return spannerPersistentProperty.getColumnName() + " " + ddlString;
 	}
 
 	/**
@@ -62,11 +124,10 @@ public class SpannerSchemaUtils {
 	}
 
 	/**
-	 * Gets the DDL string to create the table for the given entity in Spanner. This is
-	 * just one of the possible schemas that can support the given entity type. The
-	 * specific schema is determined by the configured property type converters used by
-	 * the read and write methods in this SpannerOperations and will be compatible with
-	 * those methods.
+	 * Gets the DDL string to create the table for the given entity in Spanner. This is just
+	 * one of the possible schemas that can support the given entity type. The specific schema
+	 * is determined by the configured property type converters used by the read and write
+	 * methods in this SpannerOperations and will be compatible with those methods.
 	 * @param entityClass the entity type.
 	 * @return the DDL string.
 	 */
@@ -79,13 +140,10 @@ public class SpannerSchemaUtils {
 
 		StringJoiner columnStrings = new StringJoiner(" , ");
 		spannerPersistentEntity.doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					columnStrings
-							.add(spannerPersistentProperty.getColumnName() + " "
-									+ ConversionUtils.getColumnDDLString(
-											spannerPersistentProperty,
-											this.spannerConverter));
-				});
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> columnStrings
+						.add(getColumnDDLString(
+								spannerPersistentProperty,
+								this.spannerConverter)));
 
 		stringBuilder.append(columnStrings.toString() + " ) PRIMARY KEY ( ");
 

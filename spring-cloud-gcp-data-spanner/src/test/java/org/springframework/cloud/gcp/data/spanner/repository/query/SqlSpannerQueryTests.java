@@ -42,7 +42,9 @@ import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -79,6 +81,7 @@ public class SqlSpannerQueryTests {
 				new SpannerMappingContext(), mock(SpannerConverter.class),
 				mock(SpannerMutationFactory.class)));
 		this.expressionParser = new SpelExpressionParser();
+		this.evaluationContextProvider = mock(EvaluationContextProvider.class);
 	}
 
 	private SqlSpannerQuery createQuery(String sql) {
@@ -93,14 +96,15 @@ public class SqlSpannerQueryTests {
 		String sql = "SELECT DISTINCT * FROM "
 				+ ":org.springframework.cloud.gcp.data.spanner.repository.query.SqlSpannerQueryTests$Trade:"
 				+ "@{index=fakeindex}"
-				+ " WHERE ( action=@tag0 AND ticker=@tag1 ) OR "
+				+ " WHERE price=#{#tag3 * -1} AND price<>#{#tag3 * -1} OR "
+				+ "price<>#{#tag4 * -1} AND " + "( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3;";
 
-		String entityResolvedSql = "SELECT * FROM (SELECT DISTINCT * FROM "
-				+ "trades@{index=fakeindex}"
-				+ " WHERE ( action=@tag0 AND ticker=@tag1 ) OR "
+		String entityResolvedSql = "SELECT * FROM (SELECT DISTINCT * FROM " + "trades@{index=fakeindex}"
+				+ " WHERE price=@SpELtag1 AND price<>@SpELtag1 OR price<>@SpELtag2 AND "
+				+ "( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3) "
@@ -126,6 +130,13 @@ public class SqlSpannerQueryTests {
 			return param;
 		});
 
+		EvaluationContext evaluationContext = new StandardEvaluationContext();
+		for (int i = 0; i < params.length; i++) {
+			evaluationContext.setVariable(paramNames[i], params[i]);
+		}
+		when(this.evaluationContextProvider.getEvaluationContext(any(), any()))
+				.thenReturn(evaluationContext);
+
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
 
 		doAnswer(invocation -> {
@@ -145,6 +156,8 @@ public class SqlSpannerQueryTests {
 			assertEquals(params[6], paramMap.get("tag5").getString());
 			assertEquals(params[7], paramMap.get("tag6").getFloat64());
 			assertEquals(params[8], paramMap.get("tag7").getFloat64());
+					assertEquals(-8.88, paramMap.get("SpELtag1").getFloat64(), 0.00001);
+					assertEquals(-3.33, paramMap.get("SpELtag2").getFloat64(), 0.00001);
 
 			return null;
 		}).when(this.spannerTemplate).executeQuery(any(), any());
