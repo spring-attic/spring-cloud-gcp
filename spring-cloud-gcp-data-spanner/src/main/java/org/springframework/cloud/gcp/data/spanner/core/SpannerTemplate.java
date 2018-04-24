@@ -355,28 +355,34 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	private ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
+		ResultSet resultSet;
 		if (options == null) {
-			LOGGER.debug("Executing query without additional options: " + statement);
-			return getReadContext().executeQuery(statement);
+			resultSet = getReadContext().executeQuery(statement);
 		}
 		else {
-			StringBuilder logSb = new StringBuilder(
-					LOGGER.isDebugEnabled()
-							? "Executing query"
-									+ (options.hasTimestamp() ? " at timestamp" + options.getTimestamp()
-											: "")
-							: "Executing query. Debug mode log is not enabled.");
-			if (LOGGER.isDebugEnabled()) {
+			resultSet = (options.hasTimestamp() ? getReadContext(options.getTimestamp())
+					: getReadContext()).executeQuery(statement,
+							options.getQueryOptions());
+		}
+		if (LOGGER.isDebugEnabled()) {
+			String message;
+			if (options == null) {
+				message = "Executing query without additional options: " + statement;
+			}
+			else {
+				StringBuilder logSb = new StringBuilder(
+						"Executing query" + (options.hasTimestamp()
+								? " at timestamp" + options.getTimestamp()
+								: ""));
 				for (QueryOption queryOption : options.getQueryOptions()) {
 					logSb.append(" with option: " + queryOption);
 				}
 				logSb.append(" : " + statement);
+				message = logSb.toString();
 			}
-			LOGGER.debug(logSb.toString());
-			return (options.hasTimestamp() ? getReadContext(options.getTimestamp())
-					: getReadContext()).executeQuery(statement,
-							options.getQueryOptions());
+			LOGGER.debug(message);
 		}
+		return resultSet;
 	}
 
 	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,
