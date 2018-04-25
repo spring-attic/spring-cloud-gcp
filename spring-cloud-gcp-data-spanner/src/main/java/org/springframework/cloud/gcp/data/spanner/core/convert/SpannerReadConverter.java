@@ -28,6 +28,7 @@ import org.springframework.data.convert.CustomConversions;
 
 /**
  * @author Balint Pato
+ * @author Chengyuan Zhao
  */
 public class SpannerReadConverter extends SpannerCustomConverter {
 
