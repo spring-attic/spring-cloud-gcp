@@ -149,6 +149,6 @@ public class GcpSpannerAutoConfiguration {
 	public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
 			Spanner spanner, DatabaseId databaseId) {
 		return new SpannerDatabaseAdminTemplate(spanner.getDatabaseAdminClient(),
-				databaseId);
+				spanner.getDatabaseClient(databaseId), databaseId);
 	}
 }
