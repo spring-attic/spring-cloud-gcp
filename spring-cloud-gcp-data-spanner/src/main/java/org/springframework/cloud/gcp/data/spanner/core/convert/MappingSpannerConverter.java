@@ -249,4 +249,12 @@ public class MappingSpannerConverter implements SpannerConverter {
 	public <R> R read(Class<R> type, Struct source) {
 		return this.entityReader.read(type, source);
 	}
+
+	public SpannerWriteConverter getWriteConverter() {
+		return writeConverter;
+	}
+
+	public SpannerReadConverter getReadConverter() {
+		return readConverter;
+	}
 }
