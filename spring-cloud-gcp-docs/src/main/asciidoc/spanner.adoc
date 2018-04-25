@@ -116,7 +116,10 @@ not be written to or read from Spanner.
 
 ==== Constructors
 
-Simple constructors are supported on POJOs. The constructor arguments can be a subset of the persistent properties or all of them. Constructor arguments that do not map to a persistent property are not supported.
+Simple constructors are supported on POJOs.
+The constructor arguments can be a subset of the persistent properties.
+Every constructor argument needs to have the same name and type as a persistent property on the entity and the constructor should set the property from the given argument.
+Arguments that are not directly set to properties are not supported.
 
 [source,java]
 ----
