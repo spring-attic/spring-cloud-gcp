@@ -16,7 +16,10 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.google.cloud.spanner.Struct;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
@@ -24,20 +27,24 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
 
 /**
  * A {@link PropertyValueProvider} based on a Struct that uses the
- * {@link MappingSpannerReadConverter} to convert resulting values from the
+ * {@link ConverterAwareMappingSpannerEntityReader} to readConvert resulting values from the
  * {@link StructAccessor}
  *
  * @author Balint Pato
  */
 class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersistentProperty> {
 
-	private final MappingSpannerReadConverter readConverter;
+	private final AbstractSpannerCustomConverter readConverter;
+
+	private SpannerEntityReader entityReader;
 
 	private StructAccessor structAccessor;
 
-	StructPropertyValueProvider(StructAccessor structAccessor, MappingSpannerReadConverter readConverter) {
+	StructPropertyValueProvider(StructAccessor structAccessor, AbstractSpannerCustomConverter readConverter,
+			SpannerEntityReader entityReader) {
 		this.structAccessor = structAccessor;
 		this.readConverter = readConverter;
+		this.entityReader = entityReader;
 	}
 
 	@Override
@@ -66,15 +73,25 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 		String colName = spannerPersistentProperty.getColumnName();
 		Class targetType = spannerPersistentProperty.getType();
 		Object value = this.structAccessor.getSingleValue(colName);
-		return this.readConverter.convert(value, targetType);
+		return convertOrRead(targetType, value);
+	}
+
+	private <T> T convertOrRead(Class<T> targetType, Object sourceValue) {
+		Class<?> sourceClass = sourceValue.getClass();
+		return Struct.class.isAssignableFrom(sourceClass)
+				? this.entityReader.read(targetType, (Struct) sourceValue)
+				: this.readConverter.convert(sourceValue, targetType);
 	}
 
 	private Iterable readIterableWithConversion(SpannerPersistentProperty spannerPersistentProperty) {
 		String colName = spannerPersistentProperty.getColumnName();
 		List listValue = this.structAccessor.getListValue(colName);
-		return ConversionUtils.convertIterable(
-						listValue,
-						spannerPersistentProperty.getColumnInnerType(),
-						this.readConverter);
+		return convertOrReadIterable(listValue, spannerPersistentProperty.getColumnInnerType());
+	}
+
+	private <T> Iterable<T> convertOrReadIterable(Iterable source, Class<T> targetType) {
+		List<T> result = new ArrayList<>();
+		source.forEach(item -> result.add(convertOrRead(targetType, item)));
+		return result;
 	}
 }

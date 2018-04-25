@@ -33,7 +33,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.convert.CustomConversions.StoreConversions;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -47,15 +46,20 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
-public class MappingSpannerReadConverterTest {
+public class ConverterAwareMappingSpannerEntityReaderTest {
 
 	private SpannerEntityReader readConverter;
 
+	private SpannerReadConverter spannerReadConverter;
+
 	@Before
 	public void setup() {
-		this.readConverter = new MappingSpannerReadConverter(new SpannerMappingContext(),
-				new CustomConversions(StoreConversions.NONE,
-						SpannerConverters.DEFAULT_SPANNER_READ_CONVERTERS));
+		CustomConversions customConversions = new CustomConversions(CustomConversions.StoreConversions.NONE,
+				SpannerConverters.DEFAULT_SPANNER_READ_CONVERTERS);
+		this.spannerReadConverter = new SpannerReadConverter(customConversions);
+		this.readConverter = new ConverterAwareMappingSpannerEntityReader(
+				new SpannerMappingContext(),
+				this.spannerReadConverter);
 	}
 
 	@Test

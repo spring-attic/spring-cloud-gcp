@@ -16,7 +16,9 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.support;
 
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.google.cloud.Timestamp;
@@ -152,10 +154,14 @@ public class SpannerRepositoryImplTests {
 		Key key = Key.of(timestamp);
 		Object ret = new Object();
 		when(template.read(eq(Object.class), eq(key))).thenReturn(ret);
-		assertEquals(ret,
-				new SimpleSpannerRepository(template, Object.class).findById(
-						SpannerConverters.TIMESTAMP_INSTANT_CONVERTER.convert(timestamp))
-						.get());
+
+
+		Instant convertedInstant = SpannerConverters.TIMESTAMP_INSTANT_CONVERTER.convert(timestamp);
+		SimpleSpannerRepository repo = new SimpleSpannerRepository(template, Object.class);
+		Optional actualResult = repo.findById(convertedInstant);
+
+		assertTrue("Should have returned a value, but was empty!", actualResult.isPresent());
+		assertEquals(ret, actualResult.get());
 		verify(template, times(1)).read(eq(Object.class), eq(key));
 	}
 
@@ -168,8 +174,10 @@ public class SpannerRepositoryImplTests {
 				.thenReturn(new MappingSpannerConverter(new SpannerMappingContext()));
 		Timestamp timestamp = Timestamp.ofTimeMicroseconds(333);
 		Key key = Key.of("key", timestamp);
+
 		Object ret = new Object();
 		when(template.read(eq(Object.class), eq(key))).thenReturn(ret);
+
 		assertEquals(ret, new SimpleSpannerRepository(template, Object.class)
 				.findById(new Object[] { "key",
 								SpannerConverters.TIMESTAMP_INSTANT_CONVERTER.convert(timestamp) })

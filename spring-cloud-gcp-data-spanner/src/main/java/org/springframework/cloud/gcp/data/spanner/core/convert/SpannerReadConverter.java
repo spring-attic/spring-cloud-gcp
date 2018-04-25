@@ -16,22 +16,33 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
-import java.util.Set;
-
-import com.google.cloud.spanner.Struct;
-
-import org.springframework.data.convert.EntityReader;
+import org.springframework.data.convert.CustomConversions;
 
 /**
  * @author Balint Pato
  */
-interface SpannerEntityReader extends EntityReader<Object, Struct> {
+public class SpannerReadConverter extends AbstractSpannerCustomConverter {
 
-	<R> R read(Class<R> type, Struct source, Set<String> includeColumns,
-			boolean allowMissingColumns);
+	public SpannerReadConverter(CustomConversions customConversions) {
+		super(customConversions, null);
+	}
 
 	@Override
-	default <R> R read(Class<R> type, Struct source) {
-		return read(type, source, null, false);
+	public <T> T convert(Object sourceValue, Class<T> targetType) {
+		Class<?> sourceClass = sourceValue.getClass();
+		T result = null;
+		if (targetType.isAssignableFrom(sourceClass)) {
+			return (T) sourceValue;
+		}
+		else if (super.canConvert(sourceClass, targetType)) {
+			result = super.convert(sourceValue, targetType);
+		}
+		return result;
 	}
+
+	@Override
+	protected boolean canConvert(Class sourceType, Class targetType) {
+		return super.canConvert(sourceType, targetType);
+	}
+
 }

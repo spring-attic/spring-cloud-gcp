@@ -24,7 +24,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
-import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -37,20 +36,21 @@ import org.springframework.data.mapping.model.PersistentEntityParameterValueProv
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
-		implements SpannerEntityReader {
+class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 
 	private final SpannerMappingContext spannerMappingContext;
 
 	private EntityInstantiators instantiators;
 
-	MappingSpannerReadConverter(
-			SpannerMappingContext spannerMappingContext,
-			CustomConversions customConversions) {
-		super(customConversions, null);
+	private SpannerReadConverter converter;
+
+	ConverterAwareMappingSpannerEntityReader(SpannerMappingContext spannerMappingContext,
+			SpannerReadConverter spannerReadConverter) {
 		this.spannerMappingContext = spannerMappingContext;
 
 		this.instantiators = new EntityInstantiators();
+
+		this.converter = spannerReadConverter;
 	}
 
 	/**
@@ -71,7 +71,10 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 
 		StructAccessor structAccessor = new StructAccessor(source);
 
-		StructPropertyValueProvider propertyValueProvider = new StructPropertyValueProvider(structAccessor, this);
+		StructPropertyValueProvider propertyValueProvider = new StructPropertyValueProvider(
+				structAccessor,
+				this.converter,
+				this);
 
 		PreferredConstructor<?, SpannerPersistentProperty> persistenceConstructor = persistentEntity
 				.getPersistenceConstructor();
@@ -129,24 +132,4 @@ class MappingSpannerReadConverter extends AbstractSpannerCustomConverter
 		return missingColumn;
 	}
 
-	@Override
-	public <R> R read(Class<R> type, Struct source) {
-		return read(type, source, null, false);
-	}
-
-	@Override
-	public <T> T convert(Object sourceValue, Class<T> targetType) {
-		Class<?> sourceClass = sourceValue.getClass();
-		T result = null;
-		if (targetType.isAssignableFrom(sourceClass)) {
-			return (T) sourceValue;
-		}
-		else if (Struct.class.isAssignableFrom(sourceClass)) {
-			result = read(targetType, (Struct) sourceValue);
-		}
-		else if (canConvert(sourceClass, targetType)) {
-			result = super.convert(sourceValue, targetType);
-		}
-		return result;
-	}
 }

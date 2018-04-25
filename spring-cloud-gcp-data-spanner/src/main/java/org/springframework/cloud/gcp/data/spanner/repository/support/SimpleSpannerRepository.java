@@ -94,8 +94,10 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	@Override
 	public Optional findById(Object key) {
 		Assert.notNull(key, "A non-null ID is required.");
-		return doIfKey(key, k -> Optional
-				.ofNullable(this.spannerTemplate.read(this.entityType, k)));
+		return doIfKey(key, k -> {
+			Object result = this.spannerTemplate.read(this.entityType, k);
+			return Optional.ofNullable(result);
+		});
 	}
 
 	@Override
@@ -189,19 +191,16 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 			return object;
 		}
 		/*
-		 * Iterate through the supported Key component types in the same order as the
-		 * write converter. For example, if a type can be converted to both String and
-		 * Double, we want both the this key conversion and the write converter to choose
-		 * the same.
+		 * Iterate through the supported Key component types in the same order as the write
+		 * converter. For example, if a type can be converted to both String and Double, we want
+		 * both the this key conversion and the write converter to choose the same.
 		 */
 		for (Class validKeyType : spannerConverter.directlyWriteableSpannerTypes()) {
 			if (!spannerConverter.isValidSpannerKeyType(validKeyType)) {
 				continue;
 			}
-			if (spannerConverter.canConvert(object.getClass(),
-					validKeyType)) {
-				return spannerConverter.convert(object,
-						validKeyType);
+			if (spannerConverter.canWriteConvert(object.getClass(), validKeyType)) {
+				return spannerConverter.writeConvert(object, validKeyType);
 			}
 		}
 		throw new SpannerDataException(

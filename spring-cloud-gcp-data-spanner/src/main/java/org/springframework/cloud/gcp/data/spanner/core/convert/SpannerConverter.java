@@ -33,7 +33,7 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted
+	 * @param resultSet The Spanner results to readConvert. The ResultSet will be exhausted
 	 * and closed.
 	 * @param entityClass The type of the objects the Spanner results represent.
 	 * @param <T> The type of the objects the Spanner results represent.
@@ -43,7 +43,7 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted
+	 * @param resultSet The Spanner results to readConvert. The ResultSet will be exhausted
 	 * and closed.
 	 * @param entityClass The type of the objects the Spanner results represent.
 	 * @param <T> The type of the objects the Spanner results represent.
@@ -58,7 +58,7 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted
+	 * @param resultSet The Spanner results to readConvert. The ResultSet will be exhausted
 	 * and closed.
 	 * @param entityClass The type of the objects the Spanner results represent.
 	 * @param <T> The type of the objects the Spanner results represent.
@@ -70,20 +70,37 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 			String... includeColumns);
 
 	/**
-	 * Returns true if this converter can convert from the source type to the target type.
+	 * Returns true if this converter can readConvert from the source type to the target type.
 	 * @param sourceType the starting type
 	 * @param targetType the desired target type
 	 * @return
 	 */
-	boolean canConvert(Class sourceType, Class targetType);
+	boolean canWriteConvert(Class sourceType, Class targetType);
 
 	/**
 	 * Converts the given object to the desired target type.
-	 * @param source the object to convert
+	 * @param source the object to readConvert
 	 * @param targetType the desired target type
 	 * @return the converted object.
 	 */
-	Object convert(Object source, Class targetType);
+	Object readConvert(Object source, Class targetType);
+
+
+	/**
+	 * Returns true if this converter can readConvert from the source type to the target type.
+	 * @param sourceType the starting type
+	 * @param targetType the desired target type
+	 * @return
+	 */
+	boolean canReadConvert(Class sourceType, Class targetType);
+
+	/**
+	 * Converts the given object to the desired target type.
+	 * @param source the object to readConvert
+	 * @param targetType the desired target type
+	 * @return the converted object.
+	 */
+	Object writeConvert(Object source, Class targetType);
 
 	/**
 	 * Return true if the given type is one that can be used as a component to a Spanner

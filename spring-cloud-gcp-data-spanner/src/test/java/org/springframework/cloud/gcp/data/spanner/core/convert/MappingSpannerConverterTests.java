@@ -99,13 +99,10 @@ public class MappingSpannerConverterTests {
 	private void verifyCanConvert(MappingSpannerConverter converter, Class javaType,
 			Class spannerType) {
 		MappingSpannerWriteConverter writeConverter = converter.getWriteConverter();
-		MappingSpannerReadConverter readConverter = converter.getReadConverter();
+		ConverterAwareMappingSpannerEntityReader readConverter = converter.getEntityReader();
 
-		assertTrue(converter.canConvert(javaType, spannerType));
-		assertTrue(converter.canConvert(spannerType, javaType));
-
-		assertTrue(writeConverter.canConvert(javaType, spannerType));
-		assertTrue(readConverter.canConvert(spannerType, javaType));
+		assertTrue(converter.canWriteConvert(javaType, spannerType));
+		assertTrue(converter.canReadConvert(spannerType, javaType));
 	}
 
 	@Test
