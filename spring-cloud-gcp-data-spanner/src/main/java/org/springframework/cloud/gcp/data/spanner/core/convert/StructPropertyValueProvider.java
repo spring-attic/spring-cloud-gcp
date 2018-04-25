@@ -34,13 +34,13 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
  */
 class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersistentProperty> {
 
-	private final AbstractSpannerCustomConverter readConverter;
+	private final SpannerCustomConverter readConverter;
 
 	private SpannerEntityReader entityReader;
 
 	private StructAccessor structAccessor;
 
-	StructPropertyValueProvider(StructAccessor structAccessor, AbstractSpannerCustomConverter readConverter,
+	StructPropertyValueProvider(StructAccessor structAccessor, SpannerCustomConverter readConverter,
 			SpannerEntityReader entityReader) {
 		this.structAccessor = structAccessor;
 		this.readConverter = readConverter;

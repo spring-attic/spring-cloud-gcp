@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.util.Collection;
+
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.ConfigurableConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -25,7 +28,7 @@ import org.springframework.util.Assert;
 /**
  * @author Chengyuan Zhao
  */
-public abstract class AbstractSpannerCustomConverter {
+public class SpannerCustomConverter {
 
 	private final CustomConversions customConversions;
 
@@ -36,8 +39,8 @@ public abstract class AbstractSpannerCustomConverter {
 	 * @param customConversions must not be null.
 	 * @param conversionService if null, then {@link DefaultConversionService} is used.
 	 */
-	public AbstractSpannerCustomConverter(CustomConversions customConversions,
-			GenericConversionService conversionService) {
+	public SpannerCustomConverter(CustomConversions customConversions,
+																GenericConversionService conversionService) {
 		Assert.notNull(customConversions, "Valid custom conversions are required!");
 		this.customConversions = customConversions;
 		this.conversionService = conversionService == null
@@ -54,10 +57,17 @@ public abstract class AbstractSpannerCustomConverter {
 				|| this.conversionService.canConvert(boxedSourceType, boxedTargetType);
 	}
 
-	protected <T> T convert(Object source, Class<T> targetType) {
+	protected <T> T convert(Object sourceValue, Class<T> targetType) {
+		Class<?> boxedSourceType = ConversionUtils.boxIfNeeded(sourceValue.getClass());
 		Class<T> boxedTargetType = ConversionUtils.boxIfNeeded(targetType);
-		return (ConversionUtils.boxIfNeeded(source.getClass()).equals(boxedTargetType))
-				? (T) source
-				: this.conversionService.convert(source, boxedTargetType);
+		return boxedTargetType.isAssignableFrom(boxedSourceType)
+						? (T) sourceValue
+						: this.conversionService.convert(sourceValue, boxedTargetType);
 	}
+
+	protected static CustomConversions getCustomConversions(
+					Collection<Converter> converters) {
+		return new CustomConversions(CustomConversions.StoreConversions.NONE, converters);
+	}
+
 }

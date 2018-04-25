@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.hasItem;
 /**
  * @author Chengyuan Zhao
  */
-public class MappingSpannerWriteConverterTests {
+public class SpannerWriteMethodCoverageTest {
 
 	// Checks that the converter is aware of all Spanner mutation binder types
 	@Test

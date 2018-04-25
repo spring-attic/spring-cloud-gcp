@@ -54,9 +54,7 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 
 	@Before
 	public void setup() {
-		CustomConversions customConversions = new CustomConversions(CustomConversions.StoreConversions.NONE,
-				SpannerConverters.DEFAULT_SPANNER_READ_CONVERTERS);
-		this.spannerReadConverter = new SpannerReadConverter(customConversions);
+		this.spannerReadConverter = new SpannerReadConverter();
 		this.readConverter = new ConverterAwareMappingSpannerEntityReader(
 				new SpannerMappingContext(),
 				this.spannerReadConverter);

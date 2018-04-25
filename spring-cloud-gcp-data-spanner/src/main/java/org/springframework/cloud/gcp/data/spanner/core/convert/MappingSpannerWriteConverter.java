@@ -32,7 +32,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
-import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 
@@ -40,15 +39,18 @@ import org.springframework.data.mapping.PropertyHandler;
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
-		implements SpannerEntityWriter {
+public class MappingSpannerWriteConverter implements SpannerEntityWriter {
+
+	public static final Map<Class, BiFunction<ValueBinder, ?, ?>> singleItemType2ToMethodMap;
 
 	static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>> iterablePropertyType2ToMethodMap;
 
 	static {
 		// Java 8 has compile errors when using the builder extension methods
+		// @formatter:off
 		ImmutableMap.Builder<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>> builder =
-				new ImmutableMap.Builder<>();
+						new ImmutableMap.Builder<>();
+		// @formatter:on
 
 		builder.put(Date.class, ValueBinder::toDateArray);
 		builder.put(Boolean.class, ValueBinder::toBoolArray);
@@ -61,11 +63,8 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 		iterablePropertyType2ToMethodMap = builder.build();
 	}
 
-	public static final Map<Class, BiFunction<ValueBinder, ?, ?>> singleItemType2ToMethodMap;
-
 	static {
-		ImmutableMap.Builder<Class, BiFunction<ValueBinder, ?, ?>> builder =
-				new ImmutableMap.Builder<>();
+		ImmutableMap.Builder<Class, BiFunction<ValueBinder, ?, ?>> builder = new ImmutableMap.Builder<>();
 
 		builder.put(Date.class,
 				((BiFunction<ValueBinder, Date, ?>) ValueBinder::to));
@@ -93,11 +92,11 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 
 	private final SpannerMappingContext spannerMappingContext;
 
-	MappingSpannerWriteConverter(
-			SpannerMappingContext spannerMappingContext,
-			CustomConversions customConversions) {
-		super(customConversions, null);
+	private final SpannerWriteConverter writeConverter;
+
+	MappingSpannerWriteConverter(SpannerMappingContext spannerMappingContext, SpannerWriteConverter writeConverter) {
 		this.spannerMappingContext = spannerMappingContext;
+		this.writeConverter = writeConverter;
 	}
 
 	@Override
@@ -109,8 +108,8 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 	 * Writes an object's properties to the sink.
 	 * @param source the object to write
 	 * @param sink the sink to which to write
-	 * @param includeColumns the properties/columns to write. If null, then all columns
-	 * are written.
+	 * @param includeColumns the properties/columns to write. If null, then all columns are
+	 * written.
 	 */
 	public void write(Object source, WriteBuilder sink, Set<String> includeColumns) {
 		boolean writeAllColumns = includeColumns == null;
@@ -127,6 +126,8 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 					writeProperty(sink, accessor, spannerPersistentProperty);
 				});
 	}
+
+	// @formatter:off
 
 	/**
 	 * <p>
@@ -148,6 +149,7 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 	 * }
 	 * </pre>
 	 */
+	// @formatter:on
 	private void writeProperty(WriteBuilder sink, PersistentPropertyAccessor accessor,
 			SpannerPersistentProperty property) {
 		Object propertyValue = accessor.getProperty(property);
@@ -162,9 +164,9 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 		boolean valueSet;
 
 		/*
-		 * Due to type erasure, binder methods for Iterable properties must be manually
-		 * specified. ByteArray must be excluded since it implements Iterable, but is also
-		 * explicitly supported by spanner.
+		 * Due to type erasure, binder methods for Iterable properties must be manually specified.
+		 * ByteArray must be excluded since it implements Iterable, but is also explicitly
+		 * supported by spanner.
 		 */
 		if (ConversionUtils.isIterableNonByteArrayType(propertyType)) {
 			valueSet = attemptSetIterableValue((Iterable) propertyValue, valueBinder,
@@ -211,11 +213,11 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 
 		if (!valueSet) {
 			for (Class targetType : this.iterablePropertyType2ToMethodMap.keySet()) {
-				if (canConvert(innerType, targetType)) {
+				if (this.writeConverter.canConvert(innerType, targetType)) {
 					BiConsumer toMethod = iterablePropertyType2ToMethodMap
 							.get(targetType);
 					toMethod.accept(valueBinder,
-							ConversionUtils.convertIterable(value, targetType, this));
+							ConversionUtils.convertIterable(value, targetType, this.writeConverter));
 					valueSet = true;
 					break;
 				}
@@ -226,7 +228,7 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 
 	private boolean attemptSetSingleItemValue(Object value,
 			ValueBinder<WriteBuilder> valueBinder, Class targetType) {
-		if (!canConvert(value.getClass(), targetType)) {
+		if (!this.writeConverter.canConvert(value.getClass(), targetType)) {
 			return false;
 		}
 		Class innerType = ConversionUtils.boxIfNeeded(targetType);
@@ -235,7 +237,7 @@ public class MappingSpannerWriteConverter extends AbstractSpannerCustomConverter
 			return false;
 		}
 		// We're just checking for the bind to have succeeded, we don't need to chain the result.
-		Object ignored = toMethod.apply(valueBinder, convert(value, targetType));
+		Object ignored = toMethod.apply(valueBinder, this.writeConverter.convert(value, targetType));
 		return true;
 	}
 }

@@ -29,26 +29,25 @@ import org.springframework.data.convert.CustomConversions;
 /**
  * @author Balint Pato
  */
-public class SpannerReadConverter extends SpannerCustomConverter {
+public class SpannerWriteConverter extends SpannerCustomConverter {
 
-	public SpannerReadConverter() {
+	public SpannerWriteConverter() {
 		this((Collection<Converter>) null);
 	}
 
-	public SpannerReadConverter(Collection<Converter> readConverters) {
+	public SpannerWriteConverter(Collection<Converter> readConverters) {
 		this(getCustomConversions(ImmutableList.<Converter>builder()
-				.addAll(SpannerConverters.DEFAULT_SPANNER_READ_CONVERTERS)
+				.addAll(SpannerConverters.DEFAULT_SPANNER_WRITE_CONVERTERS)
 				.addAll(Optional.ofNullable(readConverters)
 						.orElse(Collections.emptyList()))
 				.build()));
 	}
 
-	public SpannerReadConverter(CustomConversions customConversions) {
+	public SpannerWriteConverter(CustomConversions customConversions) {
 		this(customConversions, null);
 	}
 
-	public SpannerReadConverter(CustomConversions customConversions, GenericConversionService conversionService) {
+	public SpannerWriteConverter(CustomConversions customConversions, GenericConversionService conversionService) {
 		super(customConversions, conversionService);
 	}
-
 }

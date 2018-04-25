@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -32,14 +31,11 @@ import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.convert.CustomConversions.StoreConversions;
 import org.springframework.util.Assert;
 
 /**
@@ -62,9 +58,11 @@ public class MappingSpannerConverter implements SpannerConverter {
 
 	private final ConverterAwareMappingSpannerEntityReader entityReader;
 
-	private final MappingSpannerWriteConverter writeConverter;
+	private final MappingSpannerWriteConverter entityWriter;
 
 	private final SpannerReadConverter readConverter;
+
+	private final SpannerWriteConverter writeConverter;
 
 	public MappingSpannerConverter(SpannerMappingContext spannerMappingContext) {
 		this(spannerMappingContext, null, null);
@@ -75,33 +73,10 @@ public class MappingSpannerConverter implements SpannerConverter {
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
 
-		this.readConverter = createReadConverter(readConverters);
+		this.readConverter = new SpannerReadConverter(readConverters);
 		this.entityReader = new ConverterAwareMappingSpannerEntityReader(spannerMappingContext, this.readConverter);
-		this.writeConverter = createWriteConverter(spannerMappingContext, writeConverters);
-	}
-
-	private static CustomConversions getCustomConversions(
-			Collection<Converter> converters) {
-		return new CustomConversions(StoreConversions.NONE, converters);
-	}
-
-	protected MappingSpannerWriteConverter createWriteConverter(SpannerMappingContext spannerMappingContext,
-			Collection<Converter> writeConverters) {
-		Collection<Converter> safeWriteConverters = Optional.ofNullable(writeConverters)
-				.orElse(Collections.emptyList());
-		return new MappingSpannerWriteConverter(spannerMappingContext,
-				getCustomConversions(
-						ImmutableList.<Converter>builder().addAll(SpannerConverters.DEFAULT_SPANNER_WRITE_CONVERTERS)
-								.addAll(safeWriteConverters).build()));
-	}
-
-	protected SpannerReadConverter createReadConverter(Collection<Converter> readConverters) {
-		Collection<Converter> safeReadConverters = Optional.ofNullable(readConverters)
-				.orElse(Collections.emptyList());
-		return new SpannerReadConverter(
-				getCustomConversions(ImmutableList.<Converter>builder()
-						.addAll(SpannerConverters.DEFAULT_SPANNER_READ_CONVERTERS)
-						.addAll(safeReadConverters).build()));
+		this.writeConverter = new SpannerWriteConverter(writeConverters);
+		this.entityWriter = new MappingSpannerWriteConverter(spannerMappingContext, this.writeConverter);
 	}
 
 	@VisibleForTesting
@@ -110,8 +85,8 @@ public class MappingSpannerConverter implements SpannerConverter {
 	}
 
 	@VisibleForTesting
-	MappingSpannerWriteConverter getWriteConverter() {
-		return this.writeConverter;
+	MappingSpannerWriteConverter getEntityWriter() {
+		return this.entityWriter;
 	}
 
 	@Override
@@ -257,12 +232,12 @@ public class MappingSpannerConverter implements SpannerConverter {
 	 */
 	@Override
 	public void write(Object source, Mutation.WriteBuilder sink) {
-		this.writeConverter.write(source, sink);
+		this.entityWriter.write(source, sink);
 	}
 
 	@Override
 	public void write(Object source, WriteBuilder sink, Set<String> includeColumns) {
-		this.writeConverter.write(source, sink, includeColumns);
+		this.entityWriter.write(source, sink, includeColumns);
 	}
 
 	@Override

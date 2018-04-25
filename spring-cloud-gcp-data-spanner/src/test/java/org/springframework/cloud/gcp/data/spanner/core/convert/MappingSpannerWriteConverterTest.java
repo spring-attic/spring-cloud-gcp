@@ -37,7 +37,6 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.Test
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.convert.CustomConversions.StoreConversions;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
@@ -56,13 +55,14 @@ import static org.mockito.Mockito.when;
  */
 public class MappingSpannerWriteConverterTest {
 
-	private SpannerEntityWriter writeConverter;
+	private SpannerEntityWriter spannerEntityWriter;
+
+	private SpannerWriteConverter writeConverter;
 
 	@Before
 	public void setup() {
-		this.writeConverter = new MappingSpannerWriteConverter(new SpannerMappingContext(),
-				new CustomConversions(StoreConversions.NONE,
-						SpannerConverters.DEFAULT_SPANNER_WRITE_CONVERTERS));
+		this.writeConverter = new SpannerWriteConverter();
+		this.spannerEntityWriter = new MappingSpannerWriteConverter(new SpannerMappingContext(), this.writeConverter);
 	}
 
 	@Test
@@ -185,7 +185,7 @@ public class MappingSpannerWriteConverterTest {
 		when(bytesFieldBinder.to((ByteArray) any())).thenReturn(null);
 		when(writeBuilder.set(eq("bytes"))).thenReturn(bytesFieldBinder);
 
-		this.writeConverter.write(t, writeBuilder);
+		this.spannerEntityWriter.write(t, writeBuilder);
 
 		verify(idBinder, times(1)).to(eq(t.id));
 		verify(stringFieldBinder, times(1)).to(eq(t.stringField));
@@ -227,7 +227,7 @@ public class MappingSpannerWriteConverterTest {
 		when(booleanFieldBinder.to((Boolean) any())).thenReturn(null);
 		when(writeBuilder.set(eq("booleanField"))).thenReturn(booleanFieldBinder);
 
-		this.writeConverter.write(t, writeBuilder,
+		this.spannerEntityWriter.write(t, writeBuilder,
 				new HashSet<>(Arrays.asList(new String[] { "id", "custom_col" })));
 
 		verify(idBinder, times(1)).to(eq(t.id));
@@ -240,7 +240,7 @@ public class MappingSpannerWriteConverterTest {
 		FaultyTestEntity2 ft = new FaultyTestEntity2();
 		ft.listWithUnsupportedInnerType = new ArrayList<TestEntity>();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table_2");
-		this.writeConverter.write(ft, writeBuilder);
+		this.spannerEntityWriter.write(ft, writeBuilder);
 	}
 
 	@Test(expected = SpannerDataException.class)
@@ -248,7 +248,7 @@ public class MappingSpannerWriteConverterTest {
 		FaultyTestEntity ft = new FaultyTestEntity();
 		ft.fieldWithUnsupportedType = new TestEntity();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
-		this.writeConverter.write(ft, writeBuilder);
+		this.spannerEntityWriter.write(ft, writeBuilder);
 	}
 
 }

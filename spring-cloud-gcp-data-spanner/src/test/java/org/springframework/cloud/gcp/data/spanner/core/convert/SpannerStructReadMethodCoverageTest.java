@@ -31,11 +31,14 @@ import static org.hamcrest.Matchers.hasItem;
 /**
  * @author Chengyuan Zhao
  */
-public class ConverterAwareMappingSpannerEntityReaderTests {
+public class SpannerStructReadMethodCoverageTest {
 
 	private static final Set<String> DISREGARDED_METHOD_NAMES = ImmutableSet
-			.<String>builder().add("getColumnIndex").add("getStructList")
-			.add("getColumnType").build();
+			.<String>builder()
+			.add("getColumnIndex")
+			.add("getStructList")
+			.add("getColumnType")
+			.build();
 
 	// Checks that the converter is aware of all Spanner struct getter types
 	@Test
@@ -58,7 +61,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 			}
 			else {
 				assertThat(
-								StructAccessor.singleItemReadMethodMapping.keySet(),
+						StructAccessor.singleItemReadMethodMapping.keySet(),
 						hasItem(returnType));
 			}
 		}
