@@ -22,6 +22,11 @@ import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.CompositeTraceIdExtractor;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractor;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractorType;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.ZipkinTraceIdExtractor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

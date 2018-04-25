@@ -17,6 +17,9 @@
 package org.springframework.cloud.gcp.autoconfigure.logging;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.CompositeTraceIdExtractor;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.ZipkinTraceIdExtractor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;

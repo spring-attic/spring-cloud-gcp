@@ -14,22 +14,29 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.logging;
+package org.springframework.cloud.gcp.autoconfigure.logging.extractors;
 
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * An extractor that can provide a trace ID from an HTTP request.
+ * Extracts trace IDs from HTTP requests using the x-cloud-trace-context header.
  *
  * @author Chengyuan Zhao
  */
-public interface TraceIdExtractor {
+public class XCloudTraceIdExtractor implements TraceIdExtractor {
 
-	/**
-	 * Extract trace ID from the HTTP request.
-	 *
-	 * @param req The HTTP servlet request.
-	 * @return The trace ID or null, if none found.
-	 */
-	String extractTraceIdFromRequest(HttpServletRequest req);
+	public static final String X_CLOUD_TRACE_HEADER = "x-cloud-trace-context";
+
+	@Override
+	public String extractTraceIdFromRequest(HttpServletRequest req) {
+		String traceId = req.getHeader(X_CLOUD_TRACE_HEADER);
+
+		if (traceId != null) {
+			int slash = traceId.indexOf('/');
+			if (slash >= 0) {
+				traceId = traceId.substring(0, slash);
+			}
+		}
+		return traceId;
+	}
 }
