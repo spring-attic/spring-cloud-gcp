@@ -33,7 +33,7 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to readConvert. The ResultSet will be exhausted
+	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted
 	 * and closed.
 	 * @param entityClass The type of the objects the Spanner results represent.
 	 * @param <T> The type of the objects the Spanner results represent.
@@ -43,7 +43,7 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to readConvert. The ResultSet will be exhausted
+	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted
 	 * and closed.
 	 * @param entityClass The type of the objects the Spanner results represent.
 	 * @param <T> The type of the objects the Spanner results represent.
@@ -58,7 +58,7 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to readConvert. The ResultSet will be exhausted
+	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted
 	 * and closed.
 	 * @param entityClass The type of the objects the Spanner results represent.
 	 * @param <T> The type of the objects the Spanner results represent.
@@ -70,7 +70,7 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 			String... includeColumns);
 
 	/**
-	 * Returns true if this converter can readConvert from the source type to the target type.
+	 * Returns true if this converter can convert from the source type to the target type.
 	 * @param sourceType the starting type
 	 * @param targetType the desired target type
 	 * @return
@@ -79,7 +79,7 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 
 	/**
 	 * Converts the given object to the desired target type.
-	 * @param source the object to readConvert
+	 * @param source the object to convert
 	 * @param targetType the desired target type
 	 * @return the converted object.
 	 */
@@ -87,7 +87,7 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 
 
 	/**
-	 * Returns true if this converter can readConvert from the source type to the target type.
+	 * Returns true if this converter can convert from the source type to the target type.
 	 * @param sourceType the starting type
 	 * @param targetType the desired target type
 	 * @return
@@ -96,7 +96,7 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 
 	/**
 	 * Converts the given object to the desired target type.
-	 * @param source the object to readConvert
+	 * @param source the object to convert
 	 * @param targetType the desired target type
 	 * @return the converted object.
 	 */

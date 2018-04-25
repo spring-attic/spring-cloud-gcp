@@ -44,7 +44,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
 	/**
 	 * Constructor
-	 * @param spannerConverter The object mapper used to readConvert between objects and Spanner
+	 * @param spannerConverter The object mapper used to convert between objects and Spanner
 	 * data types.
 	 * @param spannerMappingContext The mapping context used to get metadata from entity
 	 * types.

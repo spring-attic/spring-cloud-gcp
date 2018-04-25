@@ -27,7 +27,7 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
 
 /**
  * A {@link PropertyValueProvider} based on a Struct that uses the
- * {@link ConverterAwareMappingSpannerEntityReader} to readConvert resulting values from the
+ * {@link ConverterAwareMappingSpannerEntityReader} to convert resulting values from the
  * {@link StructAccessor}
  *
  * @author Balint Pato
