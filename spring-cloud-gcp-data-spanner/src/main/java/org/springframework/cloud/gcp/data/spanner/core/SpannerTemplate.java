@@ -38,6 +38,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -90,6 +91,23 @@ public class SpannerTemplate implements SpannerOperations {
 
 	public SpannerMappingContext getMappingContext() {
 		return this.mappingContext;
+	}
+
+	public SpannerSqlTemplate getSpannerSqlTemplate() {
+		return new SpannerSqlTemplate() {
+			@Override
+			protected ResultSet executeRead(String tableName, KeySet keys,
+					Iterable<String> columns, SpannerReadOptions options) {
+				return SpannerTemplate.this.executeRead(tableName, keys, columns,
+						options);
+			}
+
+			@Override
+			protected ResultSet executeQuery(Statement statement,
+					SpannerQueryOptions options) {
+				return SpannerTemplate.this.executeQuery(statement, options);
+			}
+		};
 	}
 
 	public SpannerConverter getSpannerConverter() {
@@ -293,7 +311,8 @@ public class SpannerTemplate implements SpannerOperations {
 		}
 	}
 
-	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
+	@VisibleForTesting
+	ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
 			SpannerReadOptions options) {
 		if (options == null) {
 			return getReadContext().read(tableName, keys, columns);
@@ -307,11 +326,12 @@ public class SpannerTemplate implements SpannerOperations {
 						columns, options.getReadOptions());
 			}
 			return readContext.read(tableName, keys, columns,
-							options.getReadOptions());
+					options.getReadOptions());
 		}
 	}
 
-	private ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
+	@VisibleForTesting
+	ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
 		if (options == null) {
 			return getReadContext().executeQuery(statement);
 		}
