@@ -32,7 +32,6 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.Test
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.core.convert.ConversionFailedException;
-import org.springframework.data.convert.CustomConversions;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
