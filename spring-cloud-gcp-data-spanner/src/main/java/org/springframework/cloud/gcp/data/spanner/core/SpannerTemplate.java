@@ -41,9 +41,9 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -354,7 +354,6 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@VisibleForTesting
 	public ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
-	private ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
 		ResultSet resultSet;
 		if (options == null) {
 			resultSet = getReadContext().executeQuery(statement);
