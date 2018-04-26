@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.logging;
+package org.springframework.cloud.gcp.autoconfigure.logging.extractors;
 
 import javax.servlet.http.HttpServletRequest;
 

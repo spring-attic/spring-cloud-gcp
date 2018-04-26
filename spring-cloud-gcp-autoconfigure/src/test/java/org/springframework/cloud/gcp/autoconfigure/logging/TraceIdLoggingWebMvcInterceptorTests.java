@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.autoconfigure.logging;
 import com.google.cloud.logging.TraceLoggingEnhancer;
 import org.junit.Test;
 
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import static org.hamcrest.Matchers.is;

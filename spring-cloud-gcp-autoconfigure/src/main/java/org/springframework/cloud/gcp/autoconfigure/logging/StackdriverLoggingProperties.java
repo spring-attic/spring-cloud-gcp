@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.autoconfigure.logging;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractorType;
 
 /**
  * @author Chengyuan Zhao
