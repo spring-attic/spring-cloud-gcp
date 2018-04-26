@@ -23,4 +23,9 @@
 		<appender-ref ref="STDOUT" />
 	</logger>
 
+	<include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml"/>
+	<logger name="org.springframework.cloud.gcp.autoconfigure.logging.it.StackdriverLoggingIntegrationTests" level="warn">
+		<appender-ref ref="STACKDRIVER" />
+	</logger>
+
 </configuration>

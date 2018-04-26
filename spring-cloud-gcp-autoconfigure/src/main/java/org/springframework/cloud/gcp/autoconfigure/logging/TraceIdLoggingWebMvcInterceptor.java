@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.cloud.logging.TraceLoggingEnhancer;
 
+import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractor;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
