@@ -171,13 +171,6 @@ public class StackdriverTraceAutoConfiguration {
 		HttpServerParser stackdriverHttpServerParser() {
 			return new StackdriverHttpServerParser();
 		}
-
-		@Bean
-		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "true")
-		@ConditionalOnMissingBean
-		public LabelExtractor traceLabelExtractor() {
-			return new LabelExtractor();
-		}
 	}
 
 	@Configuration
