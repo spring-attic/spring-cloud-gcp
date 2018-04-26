@@ -27,7 +27,7 @@ import com.google.cloud.spanner.Mutation.Op;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -45,14 +45,14 @@ public class SpannerMutationFactoryImplTests {
 
 	private SpannerMappingContext mappingContext;
 
-	private SpannerConverter objectMapper;
+	private SpannerEntityProcessor objectMapper;
 
 	private SpannerMutationFactoryImpl spannerMutationFactory;
 
 	@Before
 	public void setUp() {
 		this.mappingContext = new SpannerMappingContext();
-		this.objectMapper = mock(SpannerConverter.class);
+		this.objectMapper = mock(SpannerEntityProcessor.class);
 		this.spannerMutationFactory = new SpannerMutationFactoryImpl(this.objectMapper,
 				this.mappingContext);
 	}

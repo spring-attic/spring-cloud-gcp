@@ -114,6 +114,36 @@ public class Trader {
 Spring Data Spanner will ignore any property annotated with `@NotMapped`. These properties will
 not be written to or read from Spanner.
 
+==== Constructors
+
+Simple constructors are supported on POJOs.
+The constructor arguments can be a subset of the persistent properties.
+Every constructor argument needs to have the same name and type as a persistent property on the entity and the constructor should set the property from the given argument.
+Arguments that are not directly set to properties are not supported.
+
+[source,java]
+----
+@Table(name = "traders")
+public class Trader {
+	@PrimaryKey
+	@Column(name = "trader_id")
+	String traderId;
+
+	String firstName;
+
+	String lastName;
+
+	@NotMapped
+	Double temporaryNumber;
+
+	public Trader(String traderId, String firstName) {
+	    this.traderId = traderId;
+	    this.firstName = firstName;
+	}
+}
+----
+
+
 ==== Table
 
 The `@Table` annotation can provide the name of the Spanner table that stores instances of the annotated class, one per row.
@@ -271,8 +301,8 @@ both directions.
 * `long[]`
 * `boolean[]`
 
-. An instance of both Converters needs to be passed to a `MappingSpannerConverter`, which then has
-to be made available as a `@Bean` for `SpannerConverter`.
+. An instance of both Converters needs to be passed to a `ConverterAwareMappingSpannerEntityProcessor`, which then has
+to be made available as a `@Bean` for `SpannerEntityProcessor`.
 
 For example:
 
@@ -332,8 +362,8 @@ That will be configured in our `@Configuration` file:
 public class ConverterConfiguration {
 
 	@Bean
-	public SpannerConverter spannerConverter(SpannerMappingContext spannerMappingContext) {
-		return new MappingSpannerConverter(spannerMappingContext,
+	public SpannerEntityProcessor spannerEntityProcessor(SpannerMappingContext spannerMappingContext) {
+		return new ConverterAwareMappingSpannerEntityProcessor(spannerMappingContext,
 				Arrays.asList(new PersonWriteConverter()),
 				Arrays.asList(new PersonReadConverter()));
 	}

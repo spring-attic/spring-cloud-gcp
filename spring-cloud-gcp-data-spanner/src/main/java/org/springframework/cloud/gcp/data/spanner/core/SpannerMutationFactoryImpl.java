@@ -26,7 +26,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.Op;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 
-import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -38,24 +38,24 @@ import org.springframework.util.Assert;
  */
 public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
-	private final SpannerConverter spannerConverter;
+	private final SpannerEntityProcessor spannerEntityProcessor;
 
 	private final SpannerMappingContext spannerMappingContext;
 
 	/**
 	 * Constructor
-	 * @param spannerConverter The object mapper used to convert between objects and Spanner
+	 * @param spannerEntityProcessor The object mapper used to convert between objects and Spanner
 	 * data types.
 	 * @param spannerMappingContext The mapping context used to get metadata from entity
 	 * types.
 	 */
-	public SpannerMutationFactoryImpl(SpannerConverter spannerConverter,
+	public SpannerMutationFactoryImpl(SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMappingContext spannerMappingContext) {
-		Assert.notNull(spannerConverter,
+		Assert.notNull(spannerEntityProcessor,
 				"A valid results mapper for Spanner is required.");
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Spanner is required.");
-		this.spannerConverter = spannerConverter;
+		this.spannerEntityProcessor = spannerEntityProcessor;
 		this.spannerMappingContext = spannerMappingContext;
 	}
 
@@ -116,7 +116,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 				.getPersistentEntity(object.getClass());
 		Mutation.WriteBuilder writeBuilder = writeBuilder(op,
 				persistentEntity.tableName());
-		this.spannerConverter.write(object, writeBuilder, includeColumns);
+		this.spannerEntityProcessor.write(object, writeBuilder, includeColumns);
 		return writeBuilder.build();
 	}
 

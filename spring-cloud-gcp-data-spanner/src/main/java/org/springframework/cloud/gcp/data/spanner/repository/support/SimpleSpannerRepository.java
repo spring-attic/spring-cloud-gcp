@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.support;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -25,9 +24,6 @@ import com.google.cloud.spanner.KeySet;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
-import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
-import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -94,8 +90,10 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	@Override
 	public Optional findById(Object key) {
 		Assert.notNull(key, "A non-null ID is required.");
-		return doIfKey(key, k -> Optional
-				.ofNullable(this.spannerTemplate.read(this.entityType, k)));
+		return doIfKey(key, k -> {
+			Object result = this.spannerTemplate.read(this.entityType, k);
+			return Optional.ofNullable(result);
+		});
 	}
 
 	@Override
@@ -160,52 +158,8 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	}
 
 	private <T> T doIfKey(Object key, Function<Key, T> operation) {
-		Key k;
-		boolean isIterable = Iterable.class.isAssignableFrom(key.getClass());
-		boolean isArray = Object[].class.isAssignableFrom(key.getClass());
-		if (isIterable || isArray) {
-			Key.Builder kb = Key.newBuilder();
-			for (Object keyPart : (isArray ? (Arrays.asList((Object[]) key))
-					: ((Iterable) key))) {
-				kb.appendObject(convertKeyPart(keyPart));
-			}
-			k = kb.build();
-			if (k.size() == 0) {
-				throw new SpannerDataException(
-						"A key must have at least one component, but 0 were given.");
-			}
-		}
-		else {
-			k = Key.class.isAssignableFrom(key.getClass()) ? (Key) key
-					: Key.of(convertKeyPart(key));
-		}
+		Key k = this.spannerTemplate.getSpannerEntityProcessor().writeToKey(key);
 		return operation.apply(k);
 	}
 
-	private Object convertKeyPart(Object object) {
-		SpannerConverter spannerConverter = this.spannerTemplate.getSpannerConverter();
-		if (spannerConverter
-				.isValidSpannerKeyType(ConversionUtils.boxIfNeeded(object.getClass()))) {
-			return object;
-		}
-		/*
-		 * Iterate through the supported Key component types in the same order as the
-		 * write converter. For example, if a type can be converted to both String and
-		 * Double, we want both the this key conversion and the write converter to choose
-		 * the same.
-		 */
-		for (Class validKeyType : spannerConverter.directlyWriteableSpannerTypes()) {
-			if (!spannerConverter.isValidSpannerKeyType(validKeyType)) {
-				continue;
-			}
-			if (spannerConverter.canConvert(object.getClass(),
-					validKeyType)) {
-				return spannerConverter.convert(object,
-						validKeyType);
-			}
-		}
-		throw new SpannerDataException(
-				"The given object type couldn't be built into a Spanner Key: "
-						+ object.getClass());
-	}
 }

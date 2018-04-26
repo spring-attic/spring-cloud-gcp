@@ -25,20 +25,22 @@ import java.util.List;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ValueBinder;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runners.Parameterized;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity2;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.convert.CustomConversions.StoreConversions;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -54,15 +56,17 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
-public class MappingSpannerWriteConverterTest {
+public class ConverterAwareMappingSpannerEntityWriterTest {
 
-	private SpannerEntityWriter writeConverter;
+	private SpannerEntityWriter spannerEntityWriter;
+
+	private SpannerWriteConverter writeConverter;
 
 	@Before
 	public void setup() {
-		this.writeConverter = new MappingSpannerWriteConverter(new SpannerMappingContext(),
-				new CustomConversions(StoreConversions.NONE,
-						SpannerConverters.DEFAULT_SPANNER_WRITE_CONVERTERS));
+		this.writeConverter = new SpannerWriteConverter();
+		this.spannerEntityWriter = new ConverterAwareMappingSpannerEntityWriter(new SpannerMappingContext(),
+				this.writeConverter);
 	}
 
 	@Test
@@ -185,7 +189,7 @@ public class MappingSpannerWriteConverterTest {
 		when(bytesFieldBinder.to((ByteArray) any())).thenReturn(null);
 		when(writeBuilder.set(eq("bytes"))).thenReturn(bytesFieldBinder);
 
-		this.writeConverter.write(t, writeBuilder);
+		this.spannerEntityWriter.write(t, writeBuilder);
 
 		verify(idBinder, times(1)).to(eq(t.id));
 		verify(stringFieldBinder, times(1)).to(eq(t.stringField));
@@ -227,7 +231,7 @@ public class MappingSpannerWriteConverterTest {
 		when(booleanFieldBinder.to((Boolean) any())).thenReturn(null);
 		when(writeBuilder.set(eq("booleanField"))).thenReturn(booleanFieldBinder);
 
-		this.writeConverter.write(t, writeBuilder,
+		this.spannerEntityWriter.write(t, writeBuilder,
 				new HashSet<>(Arrays.asList(new String[] { "id", "custom_col" })));
 
 		verify(idBinder, times(1)).to(eq(t.id));
@@ -240,7 +244,7 @@ public class MappingSpannerWriteConverterTest {
 		FaultyTestEntity2 ft = new FaultyTestEntity2();
 		ft.listWithUnsupportedInnerType = new ArrayList<TestEntity>();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table_2");
-		this.writeConverter.write(ft, writeBuilder);
+		this.spannerEntityWriter.write(ft, writeBuilder);
 	}
 
 	@Test(expected = SpannerDataException.class)
@@ -248,7 +252,19 @@ public class MappingSpannerWriteConverterTest {
 		FaultyTestEntity ft = new FaultyTestEntity();
 		ft.fieldWithUnsupportedType = new TestEntity();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
-		this.writeConverter.write(ft, writeBuilder);
+		this.spannerEntityWriter.write(ft, writeBuilder);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void writingNullToKeyShouldThrowException() {
+		this.spannerEntityWriter.writeToKey(null);
+	}
+
+	@Test
+	@Parameterized.Parameters
+	public void writeValidColumnToKey() {
+		Key key = this.spannerEntityWriter.writeToKey(true);
+		assertThat(key, is(Key.of(true)));
 	}
 
 }

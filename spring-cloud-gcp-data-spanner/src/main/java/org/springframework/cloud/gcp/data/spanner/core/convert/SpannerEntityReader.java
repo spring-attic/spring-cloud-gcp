@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.util.Set;
+
 import com.google.cloud.spanner.Struct;
 
 import org.springframework.data.convert.EntityReader;
@@ -25,4 +27,11 @@ import org.springframework.data.convert.EntityReader;
  */
 interface SpannerEntityReader extends EntityReader<Object, Struct> {
 
+	<R> R read(Class<R> type, Struct source, Set<String> includeColumns,
+			boolean allowMissingColumns);
+
+	@Override
+	default <R> R read(Class<R> type, Struct source) {
+		return read(type, source, null, false);
+	}
 }

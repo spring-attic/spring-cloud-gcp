@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.Set;
 
+import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 
@@ -38,4 +39,5 @@ public interface SpannerEntityWriter extends EntityWriter<Object, Mutation.Write
 	 */
 	void write(Object source, WriteBuilder sink, Set<String> includeColumns);
 
+	Key writeToKey(Object key);
 }

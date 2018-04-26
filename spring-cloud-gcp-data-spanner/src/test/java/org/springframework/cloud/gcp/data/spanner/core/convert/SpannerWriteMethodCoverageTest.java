@@ -29,7 +29,7 @@ import static org.hamcrest.Matchers.hasItem;
 /**
  * @author Chengyuan Zhao
  */
-public class MappingSpannerWriteConverterTests {
+public class SpannerWriteMethodCoverageTest {
 
 	// Checks that the converter is aware of all Spanner mutation binder types
 	@Test
@@ -48,12 +48,12 @@ public class MappingSpannerWriteConverterTests {
 			if (ConversionUtils.isIterableNonByteArrayType(paramType)) {
 				Class innerParamType = (Class) ((ParameterizedType) method
 						.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
-				assertThat(MappingSpannerWriteConverter.iterablePropertyType2ToMethodMap
+				assertThat(ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap
 						.keySet(), hasItem(innerParamType));
 			}
 			else {
 				assertThat(
-						MappingSpannerWriteConverter.singleItemType2ToMethodMap.keySet(),
+						ConverterAwareMappingSpannerEntityWriter.singleItemType2ToMethodMap.keySet(),
 						hasItem(paramType));
 			}
 		}

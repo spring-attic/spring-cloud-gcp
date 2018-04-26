@@ -23,18 +23,19 @@ import java.util.Set;
 import com.google.cloud.spanner.ResultSet;
 
 /**
- * Interface for mappers that can populate fields from Spanner results.
+ * Interface for processors that can populate fields from Spanner Structs and write them
+ * to Spanner Mutations.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
-public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWriter {
+public interface SpannerEntityProcessor extends SpannerEntityReader, SpannerEntityWriter {
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted
-	 * and closed.
+	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted and
+	 * closed.
 	 * @param entityClass The type of the objects the Spanner results represent.
 	 * @param <T> The type of the objects the Spanner results represent.
 	 * @return A list of objects.
@@ -43,14 +44,14 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted
-	 * and closed.
+	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted and
+	 * closed.
 	 * @param entityClass The type of the objects the Spanner results represent.
 	 * @param <T> The type of the objects the Spanner results represent.
 	 * @param includeColumns the Set of columns to read. If the Set is not present or this
 	 * param is null then all columns will be read.
-	 * @param allowMissingColumns if true, then properties with no corresponding column
-	 * are not mapped. If false, then an exception is thrown.
+	 * @param allowMissingColumns if true, then properties with no corresponding column are
+	 * not mapped. If false, then an exception is thrown.
 	 * @return A list of objects.
 	 */
 	<T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
@@ -58,55 +59,25 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted
-	 * and closed.
+	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted and
+	 * closed.
 	 * @param entityClass The type of the objects the Spanner results represent.
 	 * @param <T> The type of the objects the Spanner results represent.
-	 * @param includeColumns the columns to read. If none are provided then all columns
-	 * are read.
+	 * @param includeColumns the columns to read. If none are provided then all columns are
+	 * read.
 	 * @return A list of objects.
 	 */
 	<T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
 			String... includeColumns);
 
 	/**
-	 * Returns true if this converter can convert from the source type to the target type.
-	 * @param sourceType the starting type
-	 * @param targetType the desired target type
-	 * @return
-	 */
-	boolean canConvert(Class sourceType, Class targetType);
-
-	/**
-	 * Converts the given object to the desired target type.
-	 * @param source the object to convert
-	 * @param targetType the desired target type
-	 * @return the converted object.
-	 */
-	Object convert(Object source, Class targetType);
-
-	/**
-	 * Return true if the given type is one that can be used as a component to a Spanner
-	 * Key.
-	 * @param type
-	 * @return
-	 */
-	boolean isValidSpannerKeyType(Class type);
-
-	/**
-	 * Return the set of classes directly writeable to Spanner without conversion.
-	 * @return
-	 */
-	Set<Class> directlyWriteableSpannerTypes();
-
-	/**
 	 * Gets the type that will work for both read and writes with Spanner directly.
-	 * @param originalType the original type that is possibly convertable by this
-	 * converter.
+	 * @param originalType the original type that is possibly convertable by this converter.
 	 * @param isIterableInnerType true if the given type refers to an inner type. This is
-	 * significant because Spanner does not support the same types as singular items and
-	 * as array elements.
+	 * significant because Spanner does not support the same types as singular items and as
+	 * array elements.
 	 * @return the Java type that works directly with Spanner.
 	 */
 	Class getCorrespondingSpannerJavaType(Class originalType, boolean isIterableInnerType);
+
 }

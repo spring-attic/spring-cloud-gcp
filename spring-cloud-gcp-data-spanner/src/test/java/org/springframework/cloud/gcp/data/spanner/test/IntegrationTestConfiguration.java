@@ -33,8 +33,8 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImp
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
-import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
-import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
 import org.springframework.context.annotation.Bean;
@@ -110,22 +110,22 @@ public class IntegrationTestConfiguration {
 
 	@Bean
 	public SpannerTemplate spannerTemplate(DatabaseClient databaseClient,
-			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
+			SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMutationFactory spannerMutationFactory) {
-		return new SpannerTemplate(databaseClient, mappingContext, spannerConverter,
+		return new SpannerTemplate(databaseClient, mappingContext, spannerEntityProcessor,
 				spannerMutationFactory);
 	}
 
 	@Bean
-	public SpannerConverter spannerConverter(SpannerMappingContext mappingContext) {
-		return new MappingSpannerConverter(mappingContext);
+	public SpannerEntityProcessor spannerConverter(SpannerMappingContext mappingContext) {
+		return new ConverterAwareMappingSpannerEntityProcessor(mappingContext);
 	}
 
 	@Bean
 	public SpannerMutationFactory spannerMutationFactory(
-			SpannerConverter spannerConverter,
+			SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMappingContext spannerMappingContext) {
-		return new SpannerMutationFactoryImpl(spannerConverter, spannerMappingContext);
+		return new SpannerMutationFactoryImpl(spannerEntityProcessor, spannerMappingContext);
 	}
 
 	@Bean
@@ -136,8 +136,8 @@ public class IntegrationTestConfiguration {
 	@Bean
 	public SpannerSchemaUtils spannerSchemaUtils(
 			SpannerMappingContext spannerMappingContext,
-			SpannerConverter spannerConverter) {
-		return new SpannerSchemaUtils(spannerMappingContext, spannerConverter);
+			SpannerEntityProcessor spannerEntityProcessor) {
+		return new SpannerSchemaUtils(spannerMappingContext, spannerEntityProcessor);
 	}
 
 	@Bean
