@@ -51,14 +51,14 @@ public abstract class SpannerCustomConverter {
 		this.customConversions.registerConvertersIn(this.conversionService);
 	}
 
-	protected boolean canConvert(Class sourceType, Class targetType) {
+	public boolean canConvert(Class sourceType, Class targetType) {
 		Class boxedTargetType = ConversionUtils.boxIfNeeded(targetType);
 		Class boxedSourceType = ConversionUtils.boxIfNeeded(sourceType);
 		return boxedSourceType.equals(boxedTargetType)
 				|| this.conversionService.canConvert(boxedSourceType, boxedTargetType);
 	}
 
-	protected <T> T convert(Object sourceValue, Class<T> targetType) {
+	public <T> T convert(Object sourceValue, Class<T> targetType) {
 		Class<?> boxedSourceType = ConversionUtils.boxIfNeeded(sourceValue.getClass());
 		Class<T> boxedTargetType = ConversionUtils.boxIfNeeded(targetType);
 		return boxedTargetType.isAssignableFrom(boxedSourceType)

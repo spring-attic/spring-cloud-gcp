@@ -101,9 +101,6 @@ public class MappingSpannerConverterTests {
 		SpannerWriteConverter writeConverter = converter.getWriteConverter();
 		SpannerReadConverter readConverter = converter.getReadConverter();
 
-		assertTrue(converter.canWriteConvert(javaType, spannerType));
-		assertTrue(converter.canReadConvert(spannerType, javaType));
-
 		assertTrue(writeConverter.canConvert(javaType, spannerType));
 		assertTrue(readConverter.canConvert(spannerType, javaType));
 	}

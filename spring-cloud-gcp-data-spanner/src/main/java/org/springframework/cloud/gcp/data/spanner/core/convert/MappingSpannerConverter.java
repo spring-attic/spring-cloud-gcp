@@ -30,7 +30,6 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
@@ -79,16 +78,6 @@ public class MappingSpannerConverter implements SpannerConverter {
 		this.entityWriter = new MappingSpannerWriteConverter(spannerMappingContext, this.writeConverter);
 	}
 
-	@VisibleForTesting
-	ConverterAwareMappingSpannerEntityReader getEntityReader() {
-		return this.entityReader;
-	}
-
-	@VisibleForTesting
-	MappingSpannerWriteConverter getEntityWriter() {
-		return this.entityWriter;
-	}
-
 	@Override
 	public boolean isValidSpannerKeyType(Class type) {
 		return SPANNER_KEY_COMPATIBLE_TYPES.contains(type);
@@ -126,26 +115,6 @@ public class MappingSpannerConverter implements SpannerConverter {
 				includeColumns.length == 0 ? Optional.empty()
 						: Optional.of(new HashSet<>(Arrays.asList(includeColumns))),
 				false);
-	}
-
-	@Override
-	public boolean canWriteConvert(Class sourceType, Class targetType) {
-		return this.writeConverter.canConvert(sourceType, targetType);
-	}
-
-	@Override
-	public Object readConvert(Object source, Class targetType) {
-		return this.readConverter.convert(source, targetType);
-	}
-
-	@Override
-	public boolean canReadConvert(Class sourceType, Class targetType) {
-		return this.readConverter.canConvert(sourceType, targetType);
-	}
-
-	@Override
-	public Object writeConvert(Object source, Class targetType) {
-		return this.writeConverter.convert(source, targetType);
 	}
 
 	@Override
@@ -250,11 +219,13 @@ public class MappingSpannerConverter implements SpannerConverter {
 		return this.entityReader.read(type, source);
 	}
 
+	@Override
 	public SpannerWriteConverter getWriteConverter() {
-		return writeConverter;
+		return this.writeConverter;
 	}
 
+	@Override
 	public SpannerReadConverter getReadConverter() {
-		return readConverter;
+		return this.readConverter;
 	}
 }

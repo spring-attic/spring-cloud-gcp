@@ -199,8 +199,8 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 			if (!spannerConverter.isValidSpannerKeyType(validKeyType)) {
 				continue;
 			}
-			if (spannerConverter.canWriteConvert(object.getClass(), validKeyType)) {
-				return spannerConverter.writeConvert(object, validKeyType);
+			if (spannerConverter.getWriteConverter().canConvert(object.getClass(), validKeyType)) {
+				return spannerConverter.getWriteConverter().convert(object, validKeyType);
 			}
 		}
 		throw new SpannerDataException(
