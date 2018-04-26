@@ -23,7 +23,11 @@ import java.util.Set;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.util.Assert;
@@ -34,27 +38,42 @@ import org.springframework.util.Assert;
  */
 public class SpannerDatabaseAdminTemplate {
 
+	private static final String TABLE_NAME_COL_NAME = "table_name";
+
+	private static final String PARENT_TABLE_NAME_COL_NAME = "parent_table_name";
+
+	private static final Statement TABLE_AND_PARENT_QUERY = Statement
+			.of("SELECT t." + TABLE_NAME_COL_NAME + ", t." + PARENT_TABLE_NAME_COL_NAME
+					+ " FROM information_schema.tables AS t");
+
 	private final DatabaseAdminClient databaseAdminClient;
 
 	private final DatabaseId databaseId;
 
+	private final DatabaseClient databaseClient;
+
 	/**
-	 * Constructor that takes in the database admin client used to perform operations and the
-	 * {@link DatabaseId} object holding the project, instance, and database IDs used for all
-	 * operations. While operations can be optionally performed for a database that does not yet
-	 * exist, the project and instance IDs must already exist for Spanner.
+	 * Constructor that takes in the database admin client used to perform operations and
+	 * the {@link DatabaseId} object holding the project, instance, and database IDs used
+	 * for all operations. While operations can be optionally performed for a database
+	 * that does not yet exist, the project and instance IDs must already exist for
+	 * Spanner.
 	 * @param databaseAdminClient the client used to create databases and execute DDL
 	 * statements.
+	 * @param databaseClient the client used to access schema information tables.
 	 * @param databaseId the combination of Spanner Instance Id and Database Id. While
 	 * databases can be created automatically by this template, instances determine
 	 * billing and are not created automatically.
 	 */
 	public SpannerDatabaseAdminTemplate(DatabaseAdminClient databaseAdminClient,
+			DatabaseClient databaseClient,
 			DatabaseId databaseId) {
 		Assert.notNull(databaseAdminClient, "A valid database admin client is required.");
 		Assert.notNull(databaseId, "A valid database ID is required.");
+		Assert.notNull(databaseClient, "A valid database client is required.");
 		this.databaseAdminClient = databaseAdminClient;
 		this.databaseId = databaseId;
+		this.databaseClient = databaseClient;
 	}
 
 	/**
@@ -115,6 +134,25 @@ public class SpannerDatabaseAdminTemplate {
 	}
 
 	/**
+	 * Return a map where key is the table name and the value is the parent table name. If
+	 * the table name in the key has no parent then the value is null.
+	 * @return the map of the table names.
+	 */
+	public Map<String, String> getChildParentTablesMap() {
+		Map<String, String> relationships = new HashMap<>();
+		ResultSet results = this.databaseClient.singleUse()
+				.executeQuery(TABLE_AND_PARENT_QUERY);
+		while (results.next()) {
+			Struct row = results.getCurrentRowAsStruct();
+			relationships.put(row.getString(TABLE_NAME_COL_NAME),
+					row.isNull(PARENT_TABLE_NAME_COL_NAME) ? null
+							: row.getString(PARENT_TABLE_NAME_COL_NAME));
+		}
+		results.close();
+		return relationships;
+	}
+
+	/**
 	 * Return a map of parent and child table relationships in the database at the
 	 * moment.
 	 * @return A map where the keys are parent table names, and the value is a set of that
@@ -122,15 +160,12 @@ public class SpannerDatabaseAdminTemplate {
 	 */
 	public Map<String, Set<String>> getParentChildTablesMap() {
 		Map<String, Set<String>> relationships = new HashMap<>();
-		for (String ddl : this.databaseAdminClient
-				.getDatabase(getInstanceId(), getDatabase()).getDdl()) {
-			if (!ddl.contains("INTERLEAVE IN PARENT")
-					|| !ddl.startsWith("CREATE TABLE ")) {
+		Map<String, String> childToParent = getChildParentTablesMap();
+		for (String child : childToParent.keySet()) {
+			if (childToParent.get(child) == null) {
 				continue;
 			}
-			String child = ddl.split(" ")[2];
-			String parent = ddl.substring(ddl.indexOf("INTERLEAVE IN PARENT"))
-					.split(" ")[3];
+			String parent = childToParent.get(child);
 			Set<String> children = relationships.get(parent);
 			if (children == null) {
 				children = new HashSet<>();
@@ -139,5 +174,22 @@ public class SpannerDatabaseAdminTemplate {
 			children.add(child);
 		}
 		return relationships;
+	}
+
+	/**
+	 * Return a set of the tables that currently exist in the database.
+	 * @return A set of table names.
+	 */
+	public Set<String> getTables() {
+		return getChildParentTablesMap().keySet();
+	}
+
+	/**
+	 * Returns true if the given table name exists in the database currently.
+	 * @param table the name of the table.
+	 * @return true if the table exists, false otherwise.
+	 */
+	public boolean tableExists(String table) {
+		return databaseExists() && getTables().contains(table);
 	}
 }

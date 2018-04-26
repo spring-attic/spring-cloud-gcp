@@ -142,7 +142,7 @@ public class IntegrationTestConfiguration {
 
 	@Bean
 	public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
-			DatabaseAdminClient databaseAdminClient, DatabaseId databaseId) {
-		return new SpannerDatabaseAdminTemplate(databaseAdminClient, databaseId);
+			DatabaseAdminClient databaseAdminClient, DatabaseClient databaseClient, DatabaseId databaseId) {
+		return new SpannerDatabaseAdminTemplate(databaseAdminClient, databaseClient, databaseId);
 	}
 }

@@ -953,3 +953,25 @@ Include this dependency in your `pom.xml` to enable Spring Data REST Repositorie
   <artifactId>spring-boot-starter-data-rest</artifactId>
 </dependency>
 ----
+
+=== Database and Schema Admin
+
+Databases and tables inside Spanner instances can be created automatically from `SpannerPersistentEntity` objects:
+
+[source,java]
+----
+@Autowired
+private SpannerSchemaUtils spannerSchemaUtils;
+
+@Autowired
+private SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
+
+public void createTable(SpannerPersistentEntity entity) {
+	if(!spannerDatabaseAdminTemplate.tableExists(entity.tableName()){
+
+	  // The boolean parameter indicates that the database will be created if it does not exist.
+	  spannerDatabaseAdminTemplate.executeDdlStrings(Arrays.asList(
+            spannerSchemaUtils.getCreateTableDDLString(entity.getType())), true);
+	}
+}
+----
