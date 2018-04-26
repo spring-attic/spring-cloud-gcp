@@ -183,35 +183,31 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void findAllSortTest() {
 		Sort sort = mock(Sort.class);
-		new SimpleSpannerRepository(this.template, Object.class).findAll(sort);
-		verify(this.template, times(1)).queryAll(eq(Object.class), same(sort));
-		when(template.queryAll(eq(Object.class), any())).thenAnswer(invocation -> {
+		when(this.template.queryAll(eq(Object.class), any())).thenAnswer(invocation -> {
 			SpannerQueryOptions spannerQueryOptions = invocation.getArgument(1);
 			assertSame(sort, spannerQueryOptions.getSort());
 			return null;
 		});
-		new SimpleSpannerRepository(template, Object.class).findAll(sort);
-		verify(template, times(1)).queryAll(eq(Object.class), any());
+		new SimpleSpannerRepository(this.template, Object.class).findAll(sort);
+		verify(this.template, times(1)).queryAll(eq(Object.class), any());
 	}
 
 	@Test
 	public void findAllPageableTest() {
 		Pageable pageable = mock(Pageable.class);
-		new SimpleSpannerRepository(this.template, Object.class).findAll(pageable);
-		verify(this.template, times(1)).queryAll(eq(Object.class), same(pageable));
 		Sort sort = mock(Sort.class);
 		when(pageable.getSort()).thenReturn(sort);
 		when(pageable.getOffset()).thenReturn(3L);
 		when(pageable.getPageSize()).thenReturn(5);
-		when(template.queryAll(eq(Object.class), any())).thenAnswer(invocation -> {
+		when(this.template.queryAll(eq(Object.class), any())).thenAnswer(invocation -> {
 			SpannerQueryOptions spannerQueryOptions = invocation.getArgument(1);
 			assertSame(sort, spannerQueryOptions.getSort());
 			assertEquals(3L, spannerQueryOptions.getOffset());
 			assertEquals(5L, spannerQueryOptions.getLimit());
 			return new ArrayList<>();
 		});
-		new SimpleSpannerRepository(template, Object.class).findAll(pageable);
-		verify(template, times(1)).queryAll(eq(Object.class), any());
+		new SimpleSpannerRepository(this.template, Object.class).findAll(pageable);
+		verify(this.template, times(1)).queryAll(eq(Object.class), any());
 	}
 
 	@Test

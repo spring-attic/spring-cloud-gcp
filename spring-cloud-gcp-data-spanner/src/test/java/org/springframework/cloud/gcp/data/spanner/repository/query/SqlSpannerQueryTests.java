@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
-import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
@@ -78,7 +78,7 @@ public class SqlSpannerQueryTests {
 	public void initMocks() {
 		this.queryMethod = mock(QueryMethod.class);
 		this.spannerTemplate = spy(new SpannerTemplate(mock(DatabaseClient.class),
-				new SpannerMappingContext(), mock(SpannerConverter.class),
+				new SpannerMappingContext(), mock(SpannerEntityProcessor.class),
 				mock(SpannerMutationFactory.class)));
 		this.expressionParser = new SpelExpressionParser();
 		this.evaluationContextProvider = mock(EvaluationContextProvider.class);

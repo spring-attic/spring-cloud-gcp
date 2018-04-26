@@ -136,7 +136,7 @@ public class SpannerTemplate implements SpannerOperations {
 			allowPartialRead = options.isAllowPartialRead();
 			finalSql = applySortingPagingQueryOptions(options, sql);
 		}
-		return this.spannerConverter.mapToList(
+		return this.spannerEntityProcessor.mapToList(
 				executeQuery(SpannerStatementQueryExecutor
 						.buildStatementFromSqlWithArgs(finalSql, tags, params), options),
 				entityClass, Optional.empty(),
@@ -145,7 +145,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> List<T> query(Class<T> entityClass, Statement statement) {
-		return this.spannerConverter.mapToList(executeQuery(statement, null), entityClass,
+		return this.spannerEntityProcessor.mapToList(executeQuery(statement, null), entityClass,
 				Optional.empty(), true);
 	}
 
