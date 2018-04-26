@@ -73,7 +73,7 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		this.sql = StringUtils.trimTrailingCharacter(sql.trim(), ';');
 	}
 
-	private boolean isPageableSort(Class type) {
+	private boolean isPageableOrSort(Class type) {
 		return Pageable.class.isAssignableFrom(type) || Sort.class.isAssignableFrom(type);
 	}
 
@@ -83,7 +83,7 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		Parameters parameters = getQueryMethod().getParameters();
 		for (int i = 0; i < parameters.getNumberOfParameters(); i++) {
 			Parameter param = parameters.getParameter(i);
-			if (isPageableSort(param.getType())) {
+			if (isPageableOrSort(param.getType())) {
 				continue;
 			}
 			Optional<String> paramName = param.getName();
@@ -178,7 +178,7 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 
 		for (Object param : parameters) {
 			Class paramClass = param.getClass();
-			if (isPageableSort(paramClass)) {
+			if (isPageableOrSort(paramClass)) {
 				if (pageable != null || sort != null) {
 					throw new SpannerDataException(
 							"Only a single Pageable or Sort param is allowed.");

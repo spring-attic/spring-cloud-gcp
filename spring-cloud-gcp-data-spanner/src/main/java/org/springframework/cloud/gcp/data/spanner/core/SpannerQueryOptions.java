@@ -73,6 +73,11 @@ public class SpannerQueryOptions {
 		return this;
 	}
 
+	public SpannerQueryOptions unsetSort() {
+		this.sort = Sort.unsorted();
+		return this;
+	}
+
 	public boolean hasTimestamp() {
 		return this.timestamp.isPresent();
 	}
