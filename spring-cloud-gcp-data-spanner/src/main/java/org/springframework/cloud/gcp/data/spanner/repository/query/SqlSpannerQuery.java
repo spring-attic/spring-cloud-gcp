@@ -32,7 +32,10 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.EvaluationContextProvider;
+import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.expression.EvaluationContext;
@@ -42,6 +45,7 @@ import org.springframework.expression.common.CompositeStringExpression;
 import org.springframework.expression.common.LiteralExpression;
 import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Balint Pato
@@ -66,7 +70,11 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		super(type, queryMethod, spannerOperations, spannerMappingContext);
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
-		this.sql = sql;
+		this.sql = StringUtils.trimTrailingCharacter(sql.trim(), ';');
+	}
+
+	private boolean isPageableOrSort(Class type) {
+		return Pageable.class.isAssignableFrom(type) || Sort.class.isAssignableFrom(type);
 	}
 
 	private List<String> getParamTags() {
@@ -74,7 +82,11 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		Set<String> seen = new HashSet<>();
 		Parameters parameters = getQueryMethod().getParameters();
 		for (int i = 0; i < parameters.getNumberOfParameters(); i++) {
-			Optional<String> paramName = parameters.getParameter(i).getName();
+			Parameter param = parameters.getParameter(i);
+			if (isPageableOrSort(param.getType())) {
+				continue;
+			}
+			Optional<String> paramName = param.getName();
 			if (!paramName.isPresent()) {
 				throw new SpannerDataException(
 						"Query method has a parameter without a valid name: "
@@ -83,7 +95,7 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 			String name = paramName.get();
 			if (seen.contains(name)) {
 				throw new SpannerDataException(
-						"More than one param has same name: " + name);
+						"More than one param has the same name: " + name);
 			}
 			seen.add(name);
 			tags.add(name);
@@ -125,7 +137,7 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 		int tagNum = 0;
 		EvaluationContext evaluationContext = this.evaluationContextProvider
 				.getEvaluationContext(this.queryMethod.getParameters(),
-						queryTagValue.intialParams);
+						queryTagValue.rawParams);
 		for (Expression expression : expressions) {
 			if (expression instanceof LiteralExpression) {
 				sb.append(expression.getValue(String.class));
@@ -159,17 +171,54 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 
 	@Override
 	public Object executeRawResult(Object[] parameters) {
+		List params = new ArrayList();
+
+		Pageable pageable = null;
+		Sort sort = null;
+
+		for (Object param : parameters) {
+			Class paramClass = param.getClass();
+			if (isPageableOrSort(paramClass)) {
+				if (pageable != null || sort != null) {
+					throw new SpannerDataException(
+							"Only a single Pageable or Sort param is allowed.");
+				}
+				else if (Pageable.class.isAssignableFrom(paramClass)) {
+						pageable = (Pageable) param;
+				}
+				else {
+					sort = (Sort) param;
+				}
+			}
+			else {
+				params.add(param);
+			}
+		}
+
+		SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions()
+				.setAllowPartialRead(true);
+
+		if (pageable == null) {
+			if (sort != null) {
+				spannerQueryOptions.setSort(sort);
+			}
+		}
+		else {
+			spannerQueryOptions.setSort(pageable.getSort())
+					.setOffset(pageable.getOffset()).setLimit(pageable.getPageSize());
+		}
+
 
 		QueryTagValue queryTagValue = new QueryTagValue(getParamTags(), parameters,
+				params.toArray(),
 				resolveEntityClassNames(this.sql));
 
 		resolveSpELTags(queryTagValue);
 
 		return this.spannerOperations.query(this.entityType,
-				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
-						queryTagValue.sql, queryTagValue.tags,
-						queryTagValue.params.toArray()),
-				new SpannerQueryOptions().setAllowPartialRead(true));
+				resolveEntityClassNames(queryTagValue.sql), queryTagValue.tags,
+				queryTagValue.params.toArray(),
+				spannerQueryOptions);
 	}
 
 	private Expression[] detectExpressions(String sql) {
@@ -198,14 +247,18 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 
 		final Object[] intialParams;
 
+		final Object[] rawParams;
+
 		String sql;
 
-		QueryTagValue(List<String> tags, Object[] params, String sql) {
+		QueryTagValue(List<String> tags, Object[] rawParams, Object[] params,
+				String sql) {
 			this.tags = tags;
 			this.intialParams = params;
 			this.sql = sql;
 			this.initialTags = new HashSet<>(tags);
 			this.params = new ArrayList<>(Arrays.asList(params));
+			this.rawParams = rawParams;
 		}
 	}
 }

@@ -27,12 +27,15 @@ import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegratio
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeProjection;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Balint Pato
@@ -90,6 +93,13 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				buyTradesRetrieved.size(), is(trader1BuyTrades.size()));
 		assertThat(buyTradesRetrieved,
 				containsInAnyOrder(trader1BuyTrades.toArray()));
+
+		List<Trade> customSortedTrades = this.tradeRepository.sortedTrades(PageRequest
+				.of(2, 2, org.springframework.data.domain.Sort.by(Order.asc("id"))));
+
+		assertEquals(2, customSortedTrades.size());
+		assertTrue(customSortedTrades.get(0).getId()
+				.compareTo(customSortedTrades.get(1).getId()) < 0);
 	}
 
 	protected List<Trade> insertTrades(String traderId1, String action, int numTrades) {

@@ -22,6 +22,7 @@ import com.google.cloud.spanner.Key;
 
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.cloud.gcp.data.spanner.repository.query.Query;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 
 public interface TradeRepository extends SpannerRepository<Trade, Key> {
@@ -31,8 +32,14 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 	int countByAction(String action);
 
 	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
-			+ " WHERE action=@action AND action=#{#action}")
+			+ " WHERE action=@action AND action=#{#action} ORDER BY action desc")
 	List<Trade> annotatedTradesByAction(@Param("action") String action);
 
 	List<TradeProjection> findByAction(String action);
+
+	// The sort is defined in the query string here, but can be overriden by the Pageable
+	// param.
+	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
+			+ " ORDER BY action DESC")
+	List<Trade> sortedTrades(Pageable pageable);
 }

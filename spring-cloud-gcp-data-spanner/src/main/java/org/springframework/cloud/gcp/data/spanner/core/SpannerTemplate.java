@@ -41,6 +41,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -48,9 +49,6 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
@@ -129,16 +127,26 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public <T> List<T> query(Class<T> entityClass, Statement statement,
+	public <T> List<T> query(Class<T> entityClass, String sql, List<String> tags,
+			Object[] params,
 			SpannerQueryOptions options) {
-		return this.spannerEntityProcessor.mapToList(executeQuery(statement, options),
+		String finalSql = sql;
+		boolean allowPartialRead = false;
+		if (options != null) {
+			allowPartialRead = options.isAllowPartialRead();
+			finalSql = applySortingPagingQueryOptions(options, sql);
+		}
+		return this.spannerEntityProcessor.mapToList(
+				executeQuery(SpannerStatementQueryExecutor
+						.buildStatementFromSqlWithArgs(finalSql, tags, params), options),
 				entityClass, Optional.empty(),
-				options == null ? false : options.isAllowPartialRead());
+				allowPartialRead);
 	}
 
 	@Override
 	public <T> List<T> query(Class<T> entityClass, Statement statement) {
-		return query(entityClass, statement, null);
+		return this.spannerEntityProcessor.mapToList(executeQuery(statement, null), entityClass,
+				Optional.empty(), true);
 	}
 
 	@Override
@@ -148,50 +156,43 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> List<T> readAll(Class<T> entityClass) {
-		return readAll(entityClass, (SpannerReadOptions) null);
+		return readAll(entityClass, null);
 	}
 
 	@Override
-	public <T> List<T> queryAll(Class<T> entityClass, Sort sort) {
-		return queryAll(entityClass, sort, null);
-	}
-
-	@Override
-	public <T> List<T> queryAll(Class<T> entityClass, Sort sort,
-			SpannerQueryOptions options) {
-		Assert.notNull(sort, "sort must not be null!");
-
-		StringBuilder stringBuilder = new StringBuilder();
+	public <T> List<T> queryAll(Class<T> entityClass, SpannerQueryOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		stringBuilder.append("SELECT * FROM " + persistentEntity.tableName() + " ");
-		SpannerStatementQueryExecutor.buildOrderBy(persistentEntity, stringBuilder, sort);
-		if (options != null) {
+		String sql = "SELECT * FROM " + persistentEntity.tableName();
+		return query(entityClass, applySortingPagingQueryOptions(options, sql), null,
+				null, options);
+	}
+
+	public String applySortingPagingQueryOptions(SpannerQueryOptions options,
+			String sql) {
+		StringBuilder sb = applySort(options.getSort(), wrapAsSubSelect(sql));
 			if (options.hasLimit()) {
-				stringBuilder.append(" LIMIT " + options.getLimit());
+				sb.append(" LIMIT ").append(options.getLimit());
 			}
-			if (options.hasLimit()) {
-				stringBuilder.append(" OFFSET " + options.getOffset());
+			if (options.hasOffset()) {
+				sb.append(" OFFSET ").append(options.getOffset());
 			}
+		return sb.toString();
+	}
+
+	private StringBuilder applySort(Sort sort, StringBuilder sql) {
+		if (sort == null || sort.isUnsorted()) {
+			return sql;
 		}
-		stringBuilder.append(";");
-		return query(entityClass, Statement.of(stringBuilder.toString()), options);
+		sql.append(" ORDER BY ");
+		StringJoiner sj = new StringJoiner(" , ");
+		sort.iterator().forEachRemaining(
+				o -> sj.add(o.getProperty() + (o.isAscending() ? " ASC" : " DESC")));
+		return sql.append(sj);
 	}
 
-	@Override
-	public <T> Page<T> queryAll(Class<T> entityClass, Pageable pageable,
-			SpannerQueryOptions options) {
-		Assert.notNull(pageable, "Pageable must not be null!");
-
-		Long count = count(entityClass);
-		List<T> list = queryAll(entityClass, pageable.getSort(), options);
-		return new PageImpl(list, pageable, count);
-	}
-
-	@Override
-	public <T> Page<T> queryAll(Class<T> entityClass, Pageable pageable) {
-		return queryAll(entityClass, pageable, new SpannerQueryOptions()
-				.setOffset(pageable.getOffset()).setLimit(pageable.getPageSize()));
+	private StringBuilder wrapAsSubSelect(String sql) {
+		return new StringBuilder("SELECT * FROM (").append(sql).append(")");
 	}
 
 	@Override
@@ -258,7 +259,7 @@ public class SpannerTemplate implements SpannerOperations {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		Statement statement = Statement.of(String.format(
-				"select count(*) from %s", persistentEntity.tableName()));
+				"SELECT COUNT(*) FROM %s", persistentEntity.tableName()));
 		try (ResultSet resultSet = executeQuery(statement, null)) {
 			resultSet.next();
 			return resultSet.getLong(0);
@@ -354,7 +355,8 @@ public class SpannerTemplate implements SpannerOperations {
 		return logSb;
 	}
 
-	private ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
+	@VisibleForTesting
+	public ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
 		ResultSet resultSet;
 		if (options == null) {
 			resultSet = getReadContext().executeQuery(statement);
@@ -371,13 +373,13 @@ public class SpannerTemplate implements SpannerOperations {
 			}
 			else {
 				StringBuilder logSb = new StringBuilder(
-						"Executing query" + (options.hasTimestamp()
+						"Executing query").append(options.hasTimestamp()
 								? " at timestamp" + options.getTimestamp()
-								: ""));
+								: "");
 				for (QueryOption queryOption : options.getQueryOptions()) {
 					logSb.append(" with option: " + queryOption);
 				}
-				logSb.append(" : " + statement);
+				logSb.append(" : ").append(statement);
 				message = logSb.toString();
 			}
 			LOGGER.debug(message);

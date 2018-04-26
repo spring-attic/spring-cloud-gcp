@@ -556,7 +556,7 @@ which means the operation will fail if a row with the POJO's primary key already
 [source, java]
 ----
 Trade t = new Trade();
-this.spannerOperations.insert(t);
+this.spannerTemplate.insert(t);
 ----
 
 ===== Update
@@ -567,7 +567,7 @@ which means the operation will fail if the POJO's primary key does not already e
 [source, java]
 ----
 // t was retrieved from a previous operation
-this.spannerOperations.update(t);
+this.spannerTemplate.update(t);
 ----
 
 ===== Upsert
@@ -578,7 +578,7 @@ using update-or-insert.
 [source, java]
 ----
 // t was retrieved from a previous operation or it's new
-this.spannerOperations.upsert(t);
+this.spannerTemplate.upsert(t);
 ----
 
 ===== Partial Update
@@ -592,7 +592,7 @@ by an empty set, then no columns will be written.
 [source, java]
 ----
 // t was retrieved from a previous operation or it's new
-this.spannerOperations.update(t, "symbol", "action");
+this.spannerTemplate.update(t, "symbol", "action");
 ----
 
 ==== Transactions
@@ -712,7 +712,7 @@ public interface TradeRepository extends CrudRepository<Trade, String[]> {
 public class MyApplication {
 
 	@Autowired
-	SpannerOperations spannerOperations;
+	SpannerOperations spannerTemplate;
 
 	@Autowired
 	StudentRepository studentRepository;
@@ -727,7 +727,7 @@ public class MyApplication {
 		t.traderId = traderId;
 		t.price = 100.0;
 		t.shares = 12345.6;
-		this.spannerOperations.insert(t); //defined on CrudRepository
+		this.spannerTemplate.insert(t); //defined on CrudRepository
 
 		Iterable<Trade> allTrades = this.tradeRepository.findAll(); //defined on CrudRepository
 
@@ -818,6 +818,26 @@ The SQL query for the method can be mapped to repository methods in one of two w
  * using the `@Query` annotation
 
 The names of the tags of the SQL correspond to the `@Param` annotated names of the method parameters.
+
+Custom SQL query methods can accept a single `Sort` or `Pageable` parameter that is applied on top
+of any sorting or paging in the SQL:
+
+[source, properties]
+----
+	@Query("SELECT * FROM trades ORDER BY action DESC")
+	List<Trade> sortedTrades(Pageable pageable);
+----
+
+This can be used:
+
+[source, properties]
+----
+	List<Trade> customSortedTrades = tradeRepository.sortedTrades(PageRequest
+  				.of(2, 2, org.springframework.data.domain.Sort.by(Order.asc("id"))));
+----
+
+The results would be sorted by "id" in ascending order.
+
 
 ===== Query methods with named queries properties
 

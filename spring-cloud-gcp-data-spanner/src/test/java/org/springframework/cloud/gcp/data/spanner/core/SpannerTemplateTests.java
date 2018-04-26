@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -48,7 +47,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
@@ -198,34 +196,6 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
-	public void findAllPageableNoOptionsTest() {
-		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		Pageable page = mock(Pageable.class);
-		Sort sort = Sort.by(Order.asc("id"));
-		when(page.getSort()).thenReturn(sort);
-		when(page.getOffset()).thenReturn(3L);
-		when(page.getPageSize()).thenReturn(5);
-		doReturn(1L).when(spyTemplate).count(eq(TestEntity.class));
-		doAnswer(invocation -> {
-			Statement statement = invocation.getArgument(1);
-			assertEquals(
-					"SELECT * FROM custom_test_table ORDER BY id ASC LIMIT 5 OFFSET 3;",
-					statement.getSql());
-			return Collections.emptyList();
-		}).when(spyTemplate).query(eq(TestEntity.class), any(), any());
-		spyTemplate.queryAll(TestEntity.class, page);
-		verify(spyTemplate, times(1)).query(eq(TestEntity.class), any(), any());
-	}
-
-	@Test
-	public void findAllSortNoOptionsTest() {
-		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		Sort sort = mock(Sort.class);
-		spyTemplate.queryAll(TestEntity.class, sort);
-		verify(spyTemplate, times(1)).queryAll(eq(TestEntity.class), same(sort), eq(null));
-	}
-
-	@Test
 	public void findMultipleKeysTest() {
 		ResultSet results = mock(ResultSet.class);
 		ReadOption readOption = mock(ReadOption.class);
@@ -259,14 +229,13 @@ public class SpannerTemplateTests {
 	public void findByStatementTest() {
 		ResultSet results = mock(ResultSet.class);
 		QueryOption queryOption = mock(QueryOption.class);
-		Statement statement = Statement.of("test");
 		SpannerQueryOptions options = new SpannerQueryOptions()
 				.addQueryOption(queryOption);
 		when(this.readContext.executeQuery(any(), any())).thenReturn(results);
-		this.spannerTemplate.query(TestEntity.class, statement, options);
+		this.spannerTemplate.query(TestEntity.class, "test", null, null, options);
 		verify(this.objectMapper, times(1)).mapToList(same(results),
 				eq(TestEntity.class), eq(Optional.empty()), eq(false));
-		verify(this.readContext, times(1)).executeQuery(same(statement),
+		verify(this.readContext, times(1)).executeQuery(eq(Statement.of("SELECT * FROM (test)")),
 				same(queryOption));
 	}
 
@@ -399,7 +368,7 @@ public class SpannerTemplateTests {
 	public void countTest() {
 		ResultSet results = mock(ResultSet.class);
 		when(this.readContext
-				.executeQuery(eq(Statement.of("select count(*) from custom_test_table"))))
+				.executeQuery(eq(Statement.of("SELECT COUNT(*) FROM custom_test_table"))))
 						.thenReturn(results);
 		this.spannerTemplate.count(TestEntity.class);
 		verify(results, times(1)).next();
@@ -415,16 +384,34 @@ public class SpannerTemplateTests {
 		Sort sort = Sort.by(Order.asc("id"), Order.desc("something"), Order.asc("other"));
 
 		doAnswer(invocation -> {
-			Statement statement = invocation.getArgument(1);
 			assertEquals(
-					"SELECT * FROM custom_test_table ORDER BY id ASC , "
-							+ "custom_col DESC , other ASC LIMIT 3 OFFSET 5;",
-					statement.getSql());
+					"SELECT * FROM (SELECT * FROM custom_test_table) "
+							+ "ORDER BY id ASC , something DESC , other ASC LIMIT 3 OFFSET 5",
+					invocation.getArgument(1));
 			return null;
-		}).when(spyTemplate).query(eq(TestEntity.class), (Statement) any(), any());
+		}).when(spyTemplate).query(eq(TestEntity.class), any(), any(), any(), any());
 
-		spyTemplate.queryAll(TestEntity.class, sort, queryOption);
-		verify(spyTemplate, times(1)).query(eq(TestEntity.class), (Statement) any(),
+		spyTemplate.queryAll(TestEntity.class, queryOption.setSort(sort));
+		verify(spyTemplate, times(1)).query(eq(TestEntity.class), any(), any(), any(),
+				any());
+	}
+
+	@Test
+	public void findAllNoSortWithLimitsOffsetTest() {
+		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
+		SpannerQueryOptions queryOption = new SpannerQueryOptions().setLimit(3L)
+				.setOffset(5L);
+
+		doAnswer(invocation -> {
+			assertEquals(
+					"SELECT * FROM (SELECT * FROM custom_test_table) "
+							+ "LIMIT 3 OFFSET 5",
+					invocation.getArgument(1));
+			return null;
+		}).when(spyTemplate).query(eq(TestEntity.class), any(), any(), any(), any());
+
+		spyTemplate.queryAll(TestEntity.class, queryOption);
+		verify(spyTemplate, times(1)).query(eq(TestEntity.class), any(), any(), any(),
 				any());
 	}
 
@@ -436,7 +423,6 @@ public class SpannerTemplateTests {
 
 		long offset = 5L;
 		int limit = 3;
-		long total = 9999;
 		SpannerQueryOptions queryOption = new SpannerQueryOptions().setOffset(offset)
 				.setLimit(limit);
 
@@ -456,16 +442,14 @@ public class SpannerTemplateTests {
 		items.add(t2);
 		items.add(t3);
 
-		doReturn(items).when(spyTemplate).queryAll(eq(TestEntity.class), same(sort),
+		doReturn(items).when(spyTemplate).queryAll(eq(TestEntity.class),
 				same(queryOption));
-		doReturn(total).when(spyTemplate).count(eq(TestEntity.class));
 
-		Page page = spyTemplate.queryAll(TestEntity.class, pageable, queryOption);
-		assertEquals(limit, page.getPageable().getPageSize());
-		assertEquals(total, page.getTotalElements());
-		assertEquals("a", ((TestEntity) page.getContent().get(0)).id);
-		assertEquals("b", ((TestEntity) page.getContent().get(1)).id);
-		assertEquals("c", ((TestEntity) page.getContent().get(2)).id);
+		List results = spyTemplate.queryAll(TestEntity.class,
+				queryOption.setSort(pageable.getSort()));
+		assertEquals("a", ((TestEntity) results.get(0)).id);
+		assertEquals("b", ((TestEntity) results.get(1)).id);
+		assertEquals("c", ((TestEntity) results.get(2)).id);
 	}
 
 	@Table(name = "custom_test_table")
