@@ -49,6 +49,14 @@ public class KeyConversionTests {
 
 	private Object expectedResult;
 
+	public KeyConversionTests(String testCaseName, Object objectToTest, Object expectedResult) {
+		this.objectToTest = objectToTest;
+		this.expectedResult = expectedResult;
+		this.writeConverter = new SpannerWriteConverter();
+		this.spannerEntityWriter = new ConverterAwareMappingSpannerEntityWriter(new SpannerMappingContext(),
+				this.writeConverter);
+	}
+
 	@Parameterized.Parameters(name = "{index}: {0}")
 	public static Collection<Object[]> types() {
 		return Arrays.asList(new Object[][] {
@@ -66,20 +74,14 @@ public class KeyConversionTests {
 						Key.of(1, true, false, "hello", ByteArray.copyFrom("world")) },
 				{ "mixed list", Arrays.asList(1, true, false, "hello", ByteArray.copyFrom("world")),
 						Key.of(1, true, false, "hello", ByteArray.copyFrom("world")) },
-				{ "converted default type (date)", java.util.Date.from(Instant.ofEpochSecond(123)),
-						Key.of(Date.parseDate("1969-12-31")) },
+				{ "converted default type (date)",
+						java.util.Date.from(Instant.ofEpochSecond(123)),
+						Key.of(SpannerConverters.JAVA_TO_SPANNER_DATE_CONVERTER
+								.convert(java.util.Date.from(Instant.ofEpochSecond(123)))) },
 				{ "unsupported type (TestEntity)", new TestEntities.TestEntity(), SpannerDataException.class },
-				{ "empty key (Object[])", new Object[]{}, SpannerDataException.class },
+				{ "empty key (Object[])", new Object[] {}, SpannerDataException.class },
 				{ "empty key (List{})", Collections.emptyList(), SpannerDataException.class },
 		});
-	}
-
-	public KeyConversionTests(String testCaseName, Object objectToTest, Object expectedResult) {
-		this.objectToTest = objectToTest;
-		this.expectedResult = expectedResult;
-		this.writeConverter = new SpannerWriteConverter();
-		this.spannerEntityWriter = new ConverterAwareMappingSpannerEntityWriter(new SpannerMappingContext(),
-				this.writeConverter);
 	}
 
 	@Test
