@@ -25,11 +25,13 @@ import java.util.List;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ValueBinder;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runners.Parameterized;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity2;
@@ -37,6 +39,8 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.Test
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -52,7 +56,7 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
-public class MappingSpannerWriteConverterTest {
+public class ConverterAwareMappingSpannerEntityWriterTest {
 
 	private SpannerEntityWriter spannerEntityWriter;
 
@@ -61,7 +65,8 @@ public class MappingSpannerWriteConverterTest {
 	@Before
 	public void setup() {
 		this.writeConverter = new SpannerWriteConverter();
-		this.spannerEntityWriter = new MappingSpannerWriteConverter(new SpannerMappingContext(), this.writeConverter);
+		this.spannerEntityWriter = new ConverterAwareMappingSpannerEntityWriter(new SpannerMappingContext(),
+				this.writeConverter);
 	}
 
 	@Test
@@ -248,6 +253,18 @@ public class MappingSpannerWriteConverterTest {
 		ft.fieldWithUnsupportedType = new TestEntity();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
 		this.spannerEntityWriter.write(ft, writeBuilder);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void writingNullToKeyShouldThrowException() {
+		this.spannerEntityWriter.writeToKey(null);
+	}
+
+	@Test
+	@Parameterized.Parameters
+	public void writeValidColumnToKey() {
+		Key key = this.spannerEntityWriter.writeToKey(true);
+		assertThat(key, is(Key.of(true)));
 	}
 
 }

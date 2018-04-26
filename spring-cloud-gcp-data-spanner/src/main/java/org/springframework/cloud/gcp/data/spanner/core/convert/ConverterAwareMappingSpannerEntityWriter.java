@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -24,9 +25,11 @@ import java.util.function.BiFunction;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ValueBinder;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -34,12 +37,25 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.util.Assert;
 
 /**
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-public class MappingSpannerWriteConverter implements SpannerEntityWriter {
+public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWriter {
+	private static Set<Class> SPANNER_KEY_COMPATIBLE_TYPES = ImmutableSet
+			.<Class>builder()
+			.add(Boolean.class)
+			.add(Integer.class)
+			.add(Long.class)
+			.add(Float.class)
+			.add(Double.class)
+			.add(String.class)
+			.add(ByteArray.class)
+			.add(Timestamp.class)
+			.add(com.google.cloud.Date.class)
+			.build();
 
 	public static final Map<Class, BiFunction<ValueBinder, ?, ?>> singleItemType2ToMethodMap;
 
@@ -52,7 +68,7 @@ public class MappingSpannerWriteConverter implements SpannerEntityWriter {
 						new ImmutableMap.Builder<>();
 		// @formatter:on
 
-		builder.put(Date.class, ValueBinder::toDateArray);
+		builder.put(com.google.cloud.Date.class, ValueBinder::toDateArray);
 		builder.put(Boolean.class, ValueBinder::toBoolArray);
 		builder.put(Long.class, ValueBinder::toInt64Array);
 		builder.put(String.class, ValueBinder::toStringArray);
@@ -94,7 +110,8 @@ public class MappingSpannerWriteConverter implements SpannerEntityWriter {
 
 	private final SpannerWriteConverter writeConverter;
 
-	MappingSpannerWriteConverter(SpannerMappingContext spannerMappingContext, SpannerWriteConverter writeConverter) {
+	ConverterAwareMappingSpannerEntityWriter(SpannerMappingContext spannerMappingContext,
+			SpannerWriteConverter writeConverter) {
 		this.spannerMappingContext = spannerMappingContext;
 		this.writeConverter = writeConverter;
 	}
@@ -125,6 +142,59 @@ public class MappingSpannerWriteConverter implements SpannerEntityWriter {
 					}
 					writeProperty(sink, accessor, spannerPersistentProperty);
 				});
+	}
+
+	@Override
+	public Key writeToKey(Object key) {
+		Assert.notNull(key, "Key of an entity to be written cannot be null!");
+
+		Key k;
+		boolean isIterable = Iterable.class.isAssignableFrom(key.getClass());
+		boolean isArray = Object[].class.isAssignableFrom(key.getClass());
+		if ((isIterable || isArray) && !ByteArray.class.isAssignableFrom(key.getClass())) {
+			Key.Builder kb = Key.newBuilder();
+			for (Object keyPart : (isArray ? (Arrays.asList((Object[]) key))
+					: ((Iterable) key))) {
+				kb.appendObject(convertKeyPart(keyPart));
+			}
+			k = kb.build();
+			if (k.size() == 0) {
+				throw new SpannerDataException(
+						"A key must have at least one component, but 0 were given.");
+			}
+		}
+		else {
+			k = Key.class.isAssignableFrom(key.getClass()) ? (Key) key
+					: Key.of(convertKeyPart(key));
+		}
+		return k;
+	}
+
+	private Object convertKeyPart(Object object) {
+
+		if (isValidSpannerKeyType(ConversionUtils.boxIfNeeded(object.getClass()))) {
+			return object;
+		}
+		/*
+		 * Iterate through the supported Key component types in the same order as the write
+		 * converter. For example, if a type can be converted to both String and Double, we want
+		 * both the this key conversion and the write converter to choose the same.
+		 */
+		for (Class validKeyType : singleItemType2ToMethodMap.keySet()) {
+			if (!isValidSpannerKeyType(validKeyType)) {
+				continue;
+			}
+			if (this.writeConverter.canConvert(object.getClass(), validKeyType)) {
+				return this.writeConverter.convert(object, validKeyType);
+			}
+		}
+		throw new SpannerDataException(
+				"The given object type couldn't be built into a Spanner Key: "
+						+ object.getClass());
+	}
+
+	private boolean isValidSpannerKeyType(Class type) {
+		return SPANNER_KEY_COMPATIBLE_TYPES.contains(type);
 	}
 
 	// @formatter:off

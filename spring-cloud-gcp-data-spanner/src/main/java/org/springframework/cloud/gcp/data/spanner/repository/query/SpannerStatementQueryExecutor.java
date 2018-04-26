@@ -24,7 +24,7 @@ import java.util.function.BiFunction;
 import com.google.cloud.spanner.Statement;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerWriteConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityWriter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.data.domain.Sort;
@@ -93,7 +93,7 @@ public class SpannerStatementQueryExecutor {
 		Statement.Builder builder = Statement.newBuilder(sql);
 		for (int i = 0; i < tags.size(); i++) {
 			Object param = params[i];
-			BiFunction toMethod = MappingSpannerWriteConverter.singleItemType2ToMethodMap
+			BiFunction toMethod = ConverterAwareMappingSpannerEntityWriter.singleItemType2ToMethodMap
 					.get(param.getClass());
 			if (toMethod == null) {
 				throw new IllegalArgumentException("Param: " + param.toString()

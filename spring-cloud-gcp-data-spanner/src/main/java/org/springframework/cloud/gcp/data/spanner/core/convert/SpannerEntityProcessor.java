@@ -23,13 +23,14 @@ import java.util.Set;
 import com.google.cloud.spanner.ResultSet;
 
 /**
- * Interface for mappers that can populate fields from Spanner results.
+ * Interface for processors that can populate fields from Spanner Structs and write them
+ * to Spanner Mutations.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
-public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWriter {
+public interface SpannerEntityProcessor extends SpannerEntityReader, SpannerEntityWriter {
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
@@ -70,19 +71,6 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 			String... includeColumns);
 
 	/**
-	 * Return true if the given type is one that can be used as a component to a Spanner Key.
-	 * @param type
-	 * @return
-	 */
-	boolean isValidSpannerKeyType(Class type);
-
-	/**
-	 * Return the set of classes directly writeable to Spanner without conversion.
-	 * @return
-	 */
-	Set<Class> directlyWriteableSpannerTypes();
-
-	/**
 	 * Gets the type that will work for both read and writes with Spanner directly.
 	 * @param originalType the original type that is possibly convertable by this converter.
 	 * @param isIterableInnerType true if the given type refers to an inner type. This is
@@ -92,7 +80,4 @@ public interface SpannerConverter extends SpannerEntityReader, SpannerEntityWrit
 	 */
 	Class getCorrespondingSpannerJavaType(Class originalType, boolean isIterableInnerType);
 
-	SpannerCustomConverter getWriteConverter();
-
-	SpannerCustomConverter getReadConverter();
 }

@@ -24,8 +24,8 @@ import com.google.cloud.spanner.Key;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.spanner.core.convert.MappingSpannerConverter;
-import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnLength;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -46,14 +46,14 @@ public class SpannerSchemaUtilsTests {
 
 	private SpannerSchemaUtils spannerSchemaUtils;
 
-	private SpannerConverter spannerConverter;
+	private SpannerEntityProcessor spannerEntityProcessor;
 
 	@Before
 	public void setUp() {
 		this.spannerMappingContext = new SpannerMappingContext();
 		this.spannerSchemaUtils = new SpannerSchemaUtils(this.spannerMappingContext,
-				new MappingSpannerConverter(this.spannerMappingContext));
-		this.spannerConverter = new MappingSpannerConverter(this.spannerMappingContext);
+				new ConverterAwareMappingSpannerEntityProcessor(this.spannerMappingContext));
+		this.spannerEntityProcessor = new ConverterAwareMappingSpannerEntityProcessor(this.spannerMappingContext);
 	}
 
 	@Test
@@ -134,7 +134,7 @@ public class SpannerSchemaUtilsTests {
 		when(spannerPersistentProperty.getMaxColumnLength()).thenReturn(length);
 		when(spannerPersistentProperty.getColumnInnerType()).thenReturn(innerClazz);
 		assertEquals(expectedDDL,
-				this.spannerSchemaUtils.getColumnDDLString(spannerPersistentProperty, this.spannerConverter));
+				this.spannerSchemaUtils.getColumnDDLString(spannerPersistentProperty, this.spannerEntityProcessor));
 	}
 
 	@Test

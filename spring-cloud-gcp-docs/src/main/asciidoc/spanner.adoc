@@ -362,7 +362,7 @@ That will be configured in our `@Configuration` file:
 public class ConverterConfiguration {
 
 	@Bean
-	public SpannerConverter spannerConverter(SpannerMappingContext spannerMappingContext) {
+	public SpannerConverter spannerEntityProcessor(SpannerMappingContext spannerMappingContext) {
 		return new MappingSpannerConverter(spannerMappingContext,
 				Arrays.asList(new PersonWriteConverter()),
 				Arrays.asList(new PersonReadConverter()));
