@@ -17,12 +17,17 @@
 package org.springframework.cloud.gcp.data.spanner.core.admin;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
+import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.ReadContext;
+import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Value;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,28 +47,40 @@ public class SpannerDatabaseAdminTemplateTests {
 
 	private DatabaseAdminClient databaseAdminClient;
 
+	private DatabaseClient databaseClient;
+
 	private DatabaseId databaseId;
 
 	@Before
 	public void setup() {
 		this.databaseAdminClient = mock(DatabaseAdminClient.class);
+		this.databaseClient = mock(DatabaseClient.class);
 		this.databaseId = DatabaseId.of("fakeproject", "fakeinstance", "fakedb");
 		this.spannerDatabaseAdminTemplate = new SpannerDatabaseAdminTemplate(
-				this.databaseAdminClient, this.databaseId);
+				this.databaseAdminClient, this.databaseClient, this.databaseId);
 	}
 
 	@Test
 	public void getParentChildTablesMapTest() {
-		Database database = mock(Database.class);
-		when(this.databaseAdminClient.getDatabase(any(), any())).thenReturn(database);
-		when(database.getDdl()).thenReturn(Arrays.asList(new String[] {
-				"CREATE TABLE grandpa ( col a, col b ) primary key (a);",
-				"CREATE TABLE parent_a ( col a, col b ) primary key (a), "
-				+ "INTERLEAVE IN PARENT grandpa ON DELETE CASCADE",
-				"CREATE TABLE parent_b ( col a, col b ) primary key (a), "
-						+ "INTERLEAVE IN PARENT grandpa",
-				"CREATE TABLE child ( col a, col b ) primary key (a), "
-						+ "INTERLEAVE IN PARENT parent_a ON DELETE CASCADE" }));
+		ReadContext readContext = mock(ReadContext.class);
+
+		Struct s1 = Struct.newBuilder().add("table_name", Value.string("grandpa"))
+				.add("parent_table_name", Value.string(null)).build();
+		Struct s2 = Struct.newBuilder().add("table_name", Value.string("parent_a"))
+				.add("parent_table_name", Value.string("grandpa")).build();
+		Struct s3 = Struct.newBuilder().add("table_name", Value.string("parent_b"))
+				.add("parent_table_name", Value.string("grandpa")).build();
+		Struct s4 = Struct.newBuilder().add("table_name", Value.string("child"))
+				.add("parent_table_name", Value.string("parent_a")).build();
+
+		MockResults mockResults = new MockResults();
+		mockResults.structs = Arrays.asList(s1, s2, s3, s4);
+		ResultSet results = mock(ResultSet.class);
+		when(results.next()).thenAnswer(invocation -> mockResults.next());
+		when(results.getCurrentRowAsStruct())
+				.thenAnswer(invocation -> mockResults.getCurrent());
+		when(this.databaseClient.singleUse()).thenReturn(readContext);
+		when(readContext.executeQuery(any())).thenReturn(results);
 
 		Map<String, Set<String>> relationships = this.spannerDatabaseAdminTemplate
 				.getParentChildTablesMap();
@@ -72,5 +89,23 @@ public class SpannerDatabaseAdminTemplateTests {
 		assertThat(relationships.get("grandpa"),
 				containsInAnyOrder("parent_a", "parent_b"));
 		assertThat(relationships.get("parent_a"), containsInAnyOrder("child"));
+	}
+
+	private static class MockResults {
+		List<Struct> structs;
+
+		int counter = -1;
+
+		boolean next() {
+			if (this.counter < this.structs.size() - 1) {
+				this.counter++;
+				return true;
+			}
+			return false;
+		}
+
+		Struct getCurrent() {
+			return this.structs.get(this.counter);
+		}
 	}
 }

@@ -49,7 +49,7 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
-public class MappingSpannerConverterTests {
+public class ConverterAwareMappingSpannerEntityProcessorTests {
 
 	private static final Converter<SpannerType, JavaType> SPANNER_TO_JAVA = new Converter<SpannerType, JavaType>() {
 		@Nullable
@@ -69,16 +69,16 @@ public class MappingSpannerConverterTests {
 		}
 	};
 
-	private SpannerConverter spannerConverter;
+	private SpannerEntityProcessor spannerEntityProcessor;
 
 	@Before
 	public void setUp() {
-		this.spannerConverter = new MappingSpannerConverter(new SpannerMappingContext());
+		this.spannerEntityProcessor = new ConverterAwareMappingSpannerEntityProcessor(new SpannerMappingContext());
 	}
 
 	@Test
 	public void canConvertDefaultTypesNoCustomConverters() {
-		MappingSpannerConverter converter = new MappingSpannerConverter(
+		ConverterAwareMappingSpannerEntityProcessor converter = new ConverterAwareMappingSpannerEntityProcessor(
 				new SpannerMappingContext());
 
 		verifyCanConvert(converter, java.util.Date.class, Date.class);
@@ -87,7 +87,7 @@ public class MappingSpannerConverterTests {
 
 	@Test
 	public void canConvertDefaultTypesCustomConverters() {
-		MappingSpannerConverter converter = new MappingSpannerConverter(
+		ConverterAwareMappingSpannerEntityProcessor converter = new ConverterAwareMappingSpannerEntityProcessor(
 				new SpannerMappingContext(), Arrays.asList(JAVA_TO_SPANNER),
 				Arrays.asList(SPANNER_TO_JAVA));
 
@@ -96,13 +96,10 @@ public class MappingSpannerConverterTests {
 		verifyCanConvert(converter, JavaType.class, SpannerType.class);
 	}
 
-	private void verifyCanConvert(MappingSpannerConverter converter, Class javaType,
+	private void verifyCanConvert(ConverterAwareMappingSpannerEntityProcessor converter, Class javaType,
 			Class spannerType) {
-		MappingSpannerWriteConverter writeConverter = converter.getWriteConverter();
-		MappingSpannerReadConverter readConverter = converter.getReadConverter();
-
-		assertTrue(converter.canConvert(javaType, spannerType));
-		assertTrue(converter.canConvert(spannerType, javaType));
+		SpannerWriteConverter writeConverter = converter.getWriteConverter();
+		SpannerReadConverter readConverter = converter.getReadConverter();
 
 		assertTrue(writeConverter.canConvert(javaType, spannerType));
 		assertTrue(readConverter.canConvert(spannerType, javaType));
@@ -177,7 +174,7 @@ public class MappingSpannerConverterTests {
 		when(results.getCurrentRowAsStruct())
 				.thenAnswer(invocation -> mockResults.getCurrent());
 
-		List<TestEntity> entities = this.spannerConverter.mapToList(results,
+		List<TestEntity> entities = this.spannerEntityProcessor.mapToList(results,
 				TestEntity.class);
 
 		verify(results, times(1)).close();
@@ -238,7 +235,7 @@ public class MappingSpannerConverterTests {
 		when(results.getCurrentRowAsStruct())
 				.thenAnswer(invocation -> mockResults.getCurrent());
 
-		List<TestEntity> entities = this.spannerConverter.mapToList(results, TestEntity.class,
+		List<TestEntity> entities = this.spannerEntityProcessor.mapToList(results, TestEntity.class,
 				"id", "custom_col");
 
 		verify(results, times(1)).close();

@@ -45,7 +45,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
@@ -64,24 +64,24 @@ public class SpannerTemplate implements SpannerOperations {
 
 	private final SpannerMappingContext mappingContext;
 
-	private final SpannerConverter spannerConverter;
+	private final SpannerEntityProcessor spannerEntityProcessor;
 
 	private final SpannerMutationFactory mutationFactory;
 
 	public SpannerTemplate(DatabaseClient databaseClient,
-			SpannerMappingContext mappingContext, SpannerConverter spannerConverter,
+			SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMutationFactory spannerMutationFactory) {
 		Assert.notNull(databaseClient,
 				"A valid database client for Spanner is required.");
 		Assert.notNull(mappingContext,
 				"A valid mapping context for Spanner is required.");
-		Assert.notNull(spannerConverter,
-				"A valid results mapper for Spanner is required.");
+		Assert.notNull(spannerEntityProcessor,
+				"A valid entity processor for Spanner is required.");
 		Assert.notNull(spannerMutationFactory,
 				"A valid Spanner mutation factory is required.");
 		this.databaseClient = databaseClient;
 		this.mappingContext = mappingContext;
-		this.spannerConverter = spannerConverter;
+		this.spannerEntityProcessor = spannerEntityProcessor;
 		this.mutationFactory = spannerMutationFactory;
 	}
 
@@ -97,8 +97,8 @@ public class SpannerTemplate implements SpannerOperations {
 		return this.mappingContext;
 	}
 
-	public SpannerConverter getSpannerConverter() {
-		return this.spannerConverter;
+	public SpannerEntityProcessor getSpannerEntityProcessor() {
+		return this.spannerEntityProcessor;
 	}
 
 	@Override
@@ -122,7 +122,7 @@ public class SpannerTemplate implements SpannerOperations {
 			SpannerReadOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		return this.spannerConverter.mapToList(executeRead(persistentEntity.tableName(),
+		return this.spannerEntityProcessor.mapToList(executeRead(persistentEntity.tableName(),
 				keys, persistentEntity.columns(), options), entityClass);
 	}
 
@@ -275,7 +275,7 @@ public class SpannerTemplate implements SpannerOperations {
 										// @formatter:on
 										SpannerTemplate.this.databaseClient,
 										SpannerTemplate.this.mappingContext,
-										SpannerTemplate.this.spannerConverter,
+										SpannerTemplate.this.spannerEntityProcessor,
 										SpannerTemplate.this.mutationFactory, transaction);
 						return operations.apply(transactionSpannerTemplate);
 					}
@@ -294,7 +294,7 @@ public class SpannerTemplate implements SpannerOperations {
 			return operations.apply(new ReadOnlyTransactionSpannerTemplate(
 					SpannerTemplate.this.databaseClient,
 					SpannerTemplate.this.mappingContext,
-					SpannerTemplate.this.spannerConverter,
+					SpannerTemplate.this.spannerEntityProcessor,
 					SpannerTemplate.this.mutationFactory, readOnlyTransaction));
 		}
 	}

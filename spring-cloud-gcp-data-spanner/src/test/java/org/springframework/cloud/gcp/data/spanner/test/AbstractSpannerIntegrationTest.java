@@ -29,12 +29,15 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -83,6 +86,9 @@ public abstract class AbstractSpannerIntegrationTest {
 	@Autowired
 	SpannerSchemaUtils spannerSchemaUtils;
 
+	@Autowired
+	SpannerMappingContext spannerMappingContext;
+
 	private boolean setupFailed;
 
 	@BeforeClass
@@ -110,7 +116,11 @@ public abstract class AbstractSpannerIntegrationTest {
 				((ConfigurableApplicationContext) this.applicationContext).getBeanFactory();
 		beanFactory.registerSingleton("tableNameSuffix", this.tableNameSuffix);
 
+		String tableName = this.spannerMappingContext.getPersistentEntity(Trade.class)
+				.tableName();
+
 		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
+			assertFalse(this.spannerDatabaseAdminTemplate.tableExists(tableName));
 			System.out.println(
 					this.getClass() + " - Integration database created with schema: "
 							+ createSchemaStatements());
@@ -121,6 +131,7 @@ public abstract class AbstractSpannerIntegrationTest {
 		}
 		this.spannerDatabaseAdminTemplate.executeDdlStrings(createSchemaStatements(),
 				true);
+		assertTrue(this.spannerDatabaseAdminTemplate.tableExists(tableName));
 	}
 
 	protected List<String> createSchemaStatements() {

@@ -23,7 +23,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Type;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
-import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -41,18 +41,18 @@ public class SpannerSchemaUtils {
 
 	private final SpannerMappingContext mappingContext;
 
-	private final SpannerConverter spannerConverter;
+	private final SpannerEntityProcessor spannerEntityProcessor;
 
 	private final SpannerTypeMapper spannerTypeMapper;
 
 	public SpannerSchemaUtils(SpannerMappingContext mappingContext,
-			SpannerConverter spannerConverter) {
+			SpannerEntityProcessor spannerEntityProcessor) {
 		Assert.notNull(mappingContext,
 				"A valid mapping context for Spanner is required.");
-		Assert.notNull(spannerConverter,
+		Assert.notNull(spannerEntityProcessor,
 				"A valid results mapper for Spanner is required.");
 		this.mappingContext = mappingContext;
-		this.spannerConverter = spannerConverter;
+		this.spannerEntityProcessor = spannerEntityProcessor;
 		this.spannerTypeMapper = new SpannerTypeMapper();
 	}
 
@@ -68,7 +68,7 @@ public class SpannerSchemaUtils {
 	}
 
 	public String getColumnDDLString(
-			SpannerPersistentProperty spannerPersistentProperty, SpannerConverter spannerConverter) {
+			SpannerPersistentProperty spannerPersistentProperty, SpannerEntityProcessor spannerEntityProcessor) {
 		Class columnType = spannerPersistentProperty.getType();
 		String ddlString;
 		if (ConversionUtils.isIterableNonByteArrayType(columnType)) {
@@ -82,7 +82,7 @@ public class SpannerSchemaUtils {
 								+ "type"
 								+ ".");
 			}
-			Class spannerJavaType = spannerConverter.getCorrespondingSpannerJavaType(innerType, true);
+			Class spannerJavaType = spannerEntityProcessor.getCorrespondingSpannerJavaType(innerType, true);
 			Type.Code spannerSupportedInnerType = this.spannerTypeMapper.getSimpleTypeCodeForJavaType(spannerJavaType);
 
 			if (spannerSupportedInnerType == null) {
@@ -95,7 +95,7 @@ public class SpannerSchemaUtils {
 					spannerPersistentProperty.getMaxColumnLength());
 		}
 		else {
-			Class spannerJavaType = spannerConverter.getCorrespondingSpannerJavaType(columnType, false);
+			Class spannerJavaType = spannerEntityProcessor.getCorrespondingSpannerJavaType(columnType, false);
 			Type.Code spannerColumnType = spannerJavaType.isArray()
 					? this.spannerTypeMapper.getArrayTypeCodeForJavaType(spannerJavaType)
 					: this.spannerTypeMapper.getSimpleTypeCodeForJavaType(spannerJavaType);
@@ -143,7 +143,7 @@ public class SpannerSchemaUtils {
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> columnStrings
 						.add(getColumnDDLString(
 								spannerPersistentProperty,
-								this.spannerConverter)));
+								this.spannerEntityProcessor)));
 
 		stringBuilder.append(columnStrings.toString() + " ) PRIMARY KEY ( ");
 
