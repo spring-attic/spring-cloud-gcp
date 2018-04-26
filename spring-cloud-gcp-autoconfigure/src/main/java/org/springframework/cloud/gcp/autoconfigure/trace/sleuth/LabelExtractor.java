@@ -26,8 +26,6 @@ import java.util.Map;
 import zipkin2.Annotation;
 import zipkin2.Span;
 
-import org.springframework.cloud.sleuth.TraceKeys;
-
 /**
  * Translated from Adrian Cole's
  * <a href= "https://github.com/GoogleCloudPlatform/stackdriver-zipkin/">Stackdriver
@@ -61,10 +59,6 @@ public class LabelExtractor {
 		this(newDefaultLabelRenameMap());
 	}
 
-	public LabelExtractor(TraceKeys traceKeys) {
-		this(newDefaultLabelRenameMap(traceKeys));
-	}
-
 	public LabelExtractor(Map<String, String> labelRenameMap) {
 		this(DEFAULT_AGENT_NAME, DEFAULT_PREFIX, labelRenameMap, new SimpleDateFormat(DEFAULT_TIMESTAMP_FORMAT));
 	}
@@ -95,25 +89,6 @@ public class LabelExtractor {
 		labelRenameMap.put("http.path", "/http/path");
 		labelRenameMap.put("http.route", "/http/route");
 
-		return labelRenameMap;
-	}
-
-	/**
-	 * Default Sleuth to Stackdriver tag/label mapping if using legacy mode.
-	 * @param traceKeys
-	 * @return new instance of a Map with the label mapping
-	 */
-	public static Map<String, String> newDefaultLabelRenameMap(TraceKeys traceKeys) {
-		Map<String, String> labelRenameMap = new HashMap<>();
-		TraceKeys.Http httpKeys = traceKeys.getHttp();
-		labelRenameMap = new HashMap<>();
-		labelRenameMap.put(httpKeys.getHost(), "/http/host");
-		labelRenameMap.put(httpKeys.getMethod(), "/http/method");
-		labelRenameMap.put(httpKeys.getStatusCode(), "/http/status_code");
-		labelRenameMap.put(httpKeys.getRequestSize(), "/http/request/size");
-		labelRenameMap.put(httpKeys.getResponseSize(), "/http/response/size");
-		labelRenameMap.put(httpKeys.getUrl(), "/http/url");
-		labelRenameMap.put(httpKeys.getPath(), "/http/path");
 		return labelRenameMap;
 	}
 

@@ -28,7 +28,6 @@ import org.junit.Test;
 import zipkin2.Span;
 
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.cloud.sleuth.TraceKeys;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.mock.env.MockEnvironment;
@@ -189,7 +188,7 @@ public class StackdriverTraceReporterTests {
 
 		@Bean
 		public SpanTranslator spanTranslator() {
-			return new SpanTranslator(new LabelExtractor(new TraceKeys()));
+			return new SpanTranslator(new LabelExtractor());
 		}
 
 		@Bean
