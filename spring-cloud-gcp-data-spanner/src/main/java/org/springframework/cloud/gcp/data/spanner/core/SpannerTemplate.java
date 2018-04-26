@@ -156,7 +156,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> List<T> readAll(Class<T> entityClass) {
-		return readAll(entityClass, (SpannerReadOptions) null);
+		return readAll(entityClass, null);
 	}
 
 	@Override
@@ -170,26 +170,29 @@ public class SpannerTemplate implements SpannerOperations {
 
 	public String applySortingPagingQueryOptions(SpannerQueryOptions options,
 			String sql) {
-		StringBuilder r = new StringBuilder(applySort(options.getSort(), sql));
+		StringBuilder sb = applySort(options.getSort(), wrapAsSubSelect(sql));
 			if (options.hasLimit()) {
-				r.append(" LIMIT " + options.getLimit());
+				sb.append(" LIMIT ").append(options.getLimit());
 			}
 			if (options.hasOffset()) {
-				r.append(" OFFSET " + options.getOffset());
+				sb.append(" OFFSET ").append(options.getOffset());
 			}
-		return r.toString();
+		return sb.toString();
 	}
 
-	private String applySort(Sort sort, String sql) {
-		String s = "SELECT * FROM (" + sql + ")";
+	private StringBuilder applySort(Sort sort, StringBuilder sql) {
 		if (sort == null || sort.isUnsorted()) {
-			return s;
+			return sql;
 		}
-		s += " ORDER BY ";
+		sql.append(" ORDER BY ");
 		StringJoiner sj = new StringJoiner(" , ");
 		sort.iterator().forEachRemaining(
 				o -> sj.add(o.getProperty() + (o.isAscending() ? " ASC" : " DESC")));
-		return s + sj.toString();
+		return sql.append(sj);
+	}
+
+	private StringBuilder wrapAsSubSelect(String sql) {
+		return new StringBuilder("SELECT * FROM (").append(sql).append(")");
 	}
 
 	@Override
@@ -256,7 +259,7 @@ public class SpannerTemplate implements SpannerOperations {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		Statement statement = Statement.of(String.format(
-				"select count(*) from %s", persistentEntity.tableName()));
+				"SELECT COUNT(*) FROM %s", persistentEntity.tableName()));
 		try (ResultSet resultSet = executeQuery(statement, null)) {
 			resultSet.next();
 			return resultSet.getLong(0);
@@ -370,13 +373,13 @@ public class SpannerTemplate implements SpannerOperations {
 			}
 			else {
 				StringBuilder logSb = new StringBuilder(
-						"Executing query" + (options.hasTimestamp()
+						"Executing query").append(options.hasTimestamp()
 								? " at timestamp" + options.getTimestamp()
-								: ""));
+								: "");
 				for (QueryOption queryOption : options.getQueryOptions()) {
 					logSb.append(" with option: " + queryOption);
 				}
-				logSb.append(" : " + statement);
+				logSb.append(" : ").append(statement);
 				message = logSb.toString();
 			}
 			LOGGER.debug(message);

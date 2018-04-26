@@ -149,6 +149,7 @@ public class SqlSpannerQueryTests {
 			Map<String, Value> paramMap = statement.getParameters();
 
 			assertEquals(params[0], paramMap.get("tag0").getString());
+			//params[1] is this.pageable that is ignored, hence no synthetic tag is created for it
 			assertEquals(params[2], paramMap.get("tag1").getString());
 			assertEquals(params[3], paramMap.get("tag2").getString());
 			assertEquals(params[4], paramMap.get("tag3").getFloat64());
