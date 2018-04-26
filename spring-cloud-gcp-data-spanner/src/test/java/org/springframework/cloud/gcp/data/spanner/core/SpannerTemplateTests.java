@@ -368,7 +368,7 @@ public class SpannerTemplateTests {
 	public void countTest() {
 		ResultSet results = mock(ResultSet.class);
 		when(this.readContext
-				.executeQuery(eq(Statement.of("select count(*) from custom_test_table"))))
+				.executeQuery(eq(Statement.of("SELECT COUNT(*) FROM custom_test_table"))))
 						.thenReturn(results);
 		this.spannerTemplate.count(TestEntity.class);
 		verify(results, times(1)).next();
