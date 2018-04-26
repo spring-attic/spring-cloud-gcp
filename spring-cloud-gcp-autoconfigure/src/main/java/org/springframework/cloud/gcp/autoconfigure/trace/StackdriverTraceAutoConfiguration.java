@@ -57,7 +57,6 @@ import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.sleuth.SpanAdjuster;
-import org.springframework.cloud.sleuth.TraceKeys;
 import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
@@ -176,8 +175,8 @@ public class StackdriverTraceAutoConfiguration {
 		@Bean
 		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "true")
 		@ConditionalOnMissingBean
-		public LabelExtractor traceLabelExtractor(TraceKeys traceKeys) {
-			return new LabelExtractor(traceKeys);
+		public LabelExtractor traceLabelExtractor() {
+			return new LabelExtractor();
 		}
 	}
 

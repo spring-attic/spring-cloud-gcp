@@ -24,8 +24,6 @@ import org.junit.Test;
 import zipkin2.Endpoint;
 import zipkin2.Span;
 
-import org.springframework.cloud.sleuth.TraceKeys;
-
 /**
  * @author Ray Tsang
  */
@@ -59,7 +57,7 @@ public class LabelExtractorTests {
 
 	@Test
 	public void testRpcClientBasicsTraceKeys() {
-		LabelExtractor extractor = new LabelExtractor(new TraceKeys());
+		LabelExtractor extractor = new LabelExtractor();
 		String instanceId = "localhost";
 		long begin = 1238912378081L;
 		long end = 1238912378123L;
