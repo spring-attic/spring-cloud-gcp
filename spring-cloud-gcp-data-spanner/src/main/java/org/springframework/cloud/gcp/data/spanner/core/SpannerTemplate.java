@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -31,6 +32,8 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options.QueryOption;
+import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
@@ -38,6 +41,8 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -54,6 +59,8 @@ import org.springframework.util.Assert;
  * @author Chengyuan Zhao
  */
 public class SpannerTemplate implements SpannerOperations {
+
+	private static final Log LOGGER = LogFactory.getLog(SpannerTemplate.class);
 
 	private final DatabaseClient databaseClient;
 
@@ -264,13 +271,14 @@ public class SpannerTemplate implements SpannerOperations {
 				.run(new TransactionCallable<T>() {
 					@Nullable
 					@Override
-					public T run(TransactionContext transaction) throws Exception {
+					public T run(TransactionContext transaction) { // @formatter:off
 						ReadWriteTransactionSpannerTemplate transactionSpannerTemplate =
-								new ReadWriteTransactionSpannerTemplate(
-								SpannerTemplate.this.databaseClient,
-								SpannerTemplate.this.mappingContext,
-								SpannerTemplate.this.spannerConverter,
-								SpannerTemplate.this.mutationFactory, transaction);
+										new ReadWriteTransactionSpannerTemplate(
+										// @formatter:on
+										SpannerTemplate.this.databaseClient,
+										SpannerTemplate.this.mappingContext,
+										SpannerTemplate.this.spannerConverter,
+										SpannerTemplate.this.mutationFactory, transaction);
 						return operations.apply(transactionSpannerTemplate);
 					}
 				});
@@ -295,37 +303,94 @@ public class SpannerTemplate implements SpannerOperations {
 
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
 			SpannerReadOptions options) {
+
+		if (LOGGER.isDebugEnabled()) {
+			StringBuilder logs = logColumns(tableName, keys, columns);
+			logReadOptions(options, logs);
+			LOGGER.debug(logs.toString());
+		}
+
 		if (options == null) {
 			return getReadContext().read(tableName, keys, columns);
 		}
-		else {
-			ReadContext readContext = (options.hasTimestamp()
-					? getReadContext(options.getTimestamp())
-					: getReadContext());
-			if (options.hasIndex()) {
-				return readContext.readUsingIndex(tableName, options.getIndex(), keys,
-						columns, options.getReadOptions());
-			}
-			return readContext.read(tableName, keys, columns,
-							options.getReadOptions());
+
+		ReadContext readContext = options.hasTimestamp()
+				? getReadContext(options.getTimestamp())
+				: getReadContext();
+
+		if (options.hasIndex()) {
+			return readContext.readUsingIndex(tableName, options.getIndex(), keys,
+					columns, options.getReadOptions());
+		}
+
+		return readContext.read(tableName, keys, columns,
+				options.getReadOptions());
+	}
+
+	private void logReadOptions(SpannerReadOptions options, StringBuilder logs) {
+		if (options == null) {
+			return;
+		}
+		if (options.hasTimestamp()) {
+			logs.append(" at timestamp " + options.getTimestamp());
+		}
+		for (ReadOption readOption : options.getReadOptions()) {
+			logs.append(" with option: " + readOption);
+		}
+		if (options.hasIndex()) {
+			logs.append(" secondary index: " + options.getIndex());
 		}
 	}
 
+	private StringBuilder logColumns(String tableName, KeySet keys, Iterable<String> columns) {
+		StringBuilder logSb = new StringBuilder("Executing read on table "
+				+ tableName
+				+ " with keys: "
+				+ keys
+				+ " and columns: ");
+		StringJoiner sj = new StringJoiner(",");
+		columns.forEach(col -> sj.add(col));
+		logSb.append(sj.toString());
+		return logSb;
+	}
+
 	private ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
+		ResultSet resultSet;
 		if (options == null) {
-			return getReadContext().executeQuery(statement);
+			resultSet = getReadContext().executeQuery(statement);
 		}
 		else {
-			return (options.hasTimestamp() ? getReadContext(options.getTimestamp())
+			resultSet = (options.hasTimestamp() ? getReadContext(options.getTimestamp())
 					: getReadContext()).executeQuery(statement,
 							options.getQueryOptions());
 		}
+		if (LOGGER.isDebugEnabled()) {
+			String message;
+			if (options == null) {
+				message = "Executing query without additional options: " + statement;
+			}
+			else {
+				StringBuilder logSb = new StringBuilder(
+						"Executing query" + (options.hasTimestamp()
+								? " at timestamp" + options.getTimestamp()
+								: ""));
+				for (QueryOption queryOption : options.getQueryOptions()) {
+					logSb.append(" with option: " + queryOption);
+				}
+				logSb.append(" : " + statement);
+				message = logSb.toString();
+			}
+			LOGGER.debug(message);
+		}
+		return resultSet;
 	}
 
 	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,
 			T arg1,
 			U arg2) {
-		this.databaseClient.write(Arrays.asList(function.apply(arg1, arg2)));
+		Mutation mutation = function.apply(arg1, arg2);
+		LOGGER.debug("Applying Mutation: " + mutation);
+		this.databaseClient.write(Arrays.asList(mutation));
 	}
 
 	private <T> void applyMutationUsingEntity(Function<T, Mutation> function, T arg) {
