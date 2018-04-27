@@ -47,6 +47,8 @@ public class SpanTranslator {
 		Map<Span.Kind, SpanKind> map = new HashMap<>();
 		map.put(Span.Kind.CLIENT, SpanKind.RPC_CLIENT);
 		map.put(Span.Kind.SERVER, SpanKind.RPC_SERVER);
+		map.put(Span.Kind.CONSUMER, SpanKind.SPAN_KIND_UNSPECIFIED);
+		map.put(Span.Kind.PRODUCER, SpanKind.SPAN_KIND_UNSPECIFIED);
 		this.SPAN_KIND_MAP = Collections.unmodifiableMap(map);
 	}
 
