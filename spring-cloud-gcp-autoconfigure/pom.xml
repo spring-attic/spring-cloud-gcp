@@ -190,4 +190,42 @@
         </dependency>
 
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>unit</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <testResources>
+                    <testResource>
+                        <directory>src/test/resources/unit</directory>
+                    </testResource>
+                    <testResource>
+                        <directory>src/test/resources</directory>
+                        <includes>
+                            <include>**/VCAP*</include>
+                        </includes>
+                    </testResource>
+                </testResources>
+            </build>
+        </profile>
+        <profile>
+            <id>it</id>
+            <build>
+                <testResources>
+                    <testResource>
+                        <directory>src/test/resources/it</directory>
+                    </testResource>
+                    <testResource>
+                        <directory>src/test/resources</directory>
+                        <includes>
+                            <include>**/VCAP*</include>
+                        </includes>
+                    </testResource>
+                </testResources>
+            </build>
+        </profile>
+    </profiles>
 </project>
