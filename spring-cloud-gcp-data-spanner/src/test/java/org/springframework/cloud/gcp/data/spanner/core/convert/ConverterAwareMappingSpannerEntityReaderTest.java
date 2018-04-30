@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.util.Arrays;
+
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
@@ -28,10 +30,13 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestEntity;
+import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestEntityFlat;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.core.convert.ConversionFailedException;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.Nullable;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -47,14 +52,14 @@ import static org.mockito.Mockito.when;
  */
 public class ConverterAwareMappingSpannerEntityReaderTest {
 
-	private SpannerEntityReader readConverter;
+	private SpannerEntityReader spannerEntityReader;
 
 	private SpannerReadConverter spannerReadConverter;
 
 	@Before
 	public void setup() {
 		this.spannerReadConverter = new SpannerReadConverter();
-		this.readConverter = new ConverterAwareMappingSpannerEntityReader(
+		this.spannerEntityReader = new ConverterAwareMappingSpannerEntityReader(
 				new SpannerMappingContext(),
 				this.spannerReadConverter);
 	}
@@ -70,10 +75,35 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 						ImmutableList.of(innerStruct))
 				.build();
 
-		OuterTestEntity result = this.readConverter.read(OuterTestEntity.class, outerStruct);
+		OuterTestEntity result = this.spannerEntityReader.read(OuterTestEntity.class,
+				outerStruct);
 		assertEquals("key1", result.id);
 		assertEquals(1, result.innerTestEntities.size());
 		assertEquals("value", result.innerTestEntities.get(0).value);
+	}
+
+	@Test
+	public void readConvertedNestedStructTest() {
+		Struct innerStruct = Struct.newBuilder().add("value", Value.string("value"))
+				.build();
+		Struct outerStruct = Struct.newBuilder().add("id", Value.string("key1"))
+				.add("innerLengths",
+						ImmutableList.of(Type.StructField.of("value", Type.string())),
+						ImmutableList.of(innerStruct))
+				.build();
+
+		OuterTestEntityFlat result = new ConverterAwareMappingSpannerEntityReader(
+				new SpannerMappingContext(),
+				new SpannerReadConverter(Arrays.asList(new Converter<Struct, Integer>() {
+					@Nullable
+					@Override
+					public Integer convert(Struct source) {
+						return source.getString("value").length();
+					}
+				}))).read(OuterTestEntityFlat.class, outerStruct);
+		assertEquals("key1", result.id);
+		assertEquals(1, result.innerLengths.size());
+		assertEquals((Integer) 5, result.innerLengths.get(0));
 	}
 
 	@Test(expected = SpannerDataException.class)
@@ -87,7 +117,7 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
 
-		this.readConverter.read(TestEntity.class, struct);
+		this.spannerEntityReader.read(TestEntity.class, struct);
 	}
 
 	@Test(expected = ConversionFailedException.class)
@@ -102,21 +132,21 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
 
-		this.readConverter.read(TestEntity.class, struct);
+		this.spannerEntityReader.read(TestEntity.class, struct);
 	}
 
 	@Test(expected = SpannerDataException.class)
 	public void readUnmatachableTypesTest() {
 		Struct struct = Struct.newBuilder()
 				.add("fieldWithUnsupportedType", Value.string("key1")).build();
-		this.readConverter.read(FaultyTestEntity.class, struct);
+		this.spannerEntityReader.read(FaultyTestEntity.class, struct);
 	}
 
 	@Test
 	public void shouldReadEntityWithNoDefaultConstructor() {
 		Struct row = Struct.newBuilder()
 				.add("id", Value.string("1234")).build();
-		TestEntities.SimpleConstructorTester result = this.readConverter
+		TestEntities.SimpleConstructorTester result = this.spannerEntityReader
 				.read(TestEntities.SimpleConstructorTester.class, row);
 
 		assertThat(result.id, is("1234"));
@@ -131,7 +161,7 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 						ImmutableList.of(innerStruct))
 				.build();
 
-		TestEntities.OuterTestEntityWithConstructor result = this.readConverter
+		TestEntities.OuterTestEntityWithConstructor result = this.spannerEntityReader
 				.read(TestEntities.OuterTestEntityWithConstructor.class, outerStruct);
 		assertEquals("key1", result.id);
 		assertEquals(1, result.innerTestEntities.size());
@@ -147,7 +177,7 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 				.add("longField", Value.int64(3L))
 				.add("doubleField", Value.float64(3.14)).build();
 
-		this.readConverter.read(TestEntities.PartialConstructor.class, struct);
+		this.spannerEntityReader.read(TestEntities.PartialConstructor.class, struct);
 	}
 
 	@Test
@@ -157,7 +187,7 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 		when(row.getType()).thenReturn(Type.struct(ImmutableList.of(Type.StructField.of("id", Type.string()))));
 		when(row.getColumnType("id")).thenReturn(Type.string());
 
-		TestEntities.SimpleConstructorTester result = this.readConverter
+		TestEntities.SimpleConstructorTester result = this.spannerEntityReader
 				.read(TestEntities.SimpleConstructorTester.class, row);
 
 		assertThat(result.id, is("1234"));
@@ -172,14 +202,15 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 				.add("longField", Value.int64(3L))
 				.add("doubleField", Value.float64(3.14)).build();
 
-		this.readConverter.read(TestEntities.PartialConstructor.class, struct);
+		this.spannerEntityReader.read(TestEntities.PartialConstructor.class, struct);
 	}
 
 	@Test(expected = SpannerDataException.class)
 	public void zeroArgsListShouldThrowError() {
 		Struct struct = Struct.newBuilder()
 				.add("zeroArgsListOfObjects", Value.stringArray(ImmutableList.of("hello", "world"))).build();
-		this.readConverter.read(TestEntities.TestEntityWithListWithZeroTypeArgs.class, struct);
+		this.spannerEntityReader
+				.read(TestEntities.TestEntityWithListWithZeroTypeArgs.class, struct);
 	}
 
 }

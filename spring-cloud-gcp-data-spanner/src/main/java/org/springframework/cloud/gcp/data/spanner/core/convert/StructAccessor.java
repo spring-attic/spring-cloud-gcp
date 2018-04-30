@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableMap;
  * knowing their type.
  *
  * @author Balint Pato
+ * @author Chengyuan Zhao
  */
 class StructAccessor {
 
@@ -79,17 +80,20 @@ class StructAccessor {
 		this.columnNamesIndex = indexColumnNames();
 	}
 
-	public Object getSingleValue(String colName) {
+	Object getSingleValue(String colName) {
 		Type colType = this.struct.getColumnType(colName);
 		Type.Code code = colType.getCode();
 		Class sourceType = code.equals(Type.Code.ARRAY)
 				? this.spannerTypeMapper.getArrayJavaClassFor(colType.getArrayElementType().getCode())
 				: this.spannerTypeMapper.getSimpleJavaClassFor(code);
 		BiFunction readFunction = singleItemReadMethodMapping.get(sourceType);
+		if (readFunction == null) {
+			return null;
+		}
 		return readFunction.apply(this.struct, colName);
 	}
 
-	public List getListValue(String colName) {
+	List getListValue(String colName) {
 		Type.Code innerTypeCode = this.struct.getColumnType(colName).getArrayElementType().getCode();
 		Class clazz = this.spannerTypeMapper.getSimpleJavaClassFor(innerTypeCode);
 		BiFunction<Struct, String, List> readMethod = readIterableMapping.get(clazz);
