@@ -19,6 +19,8 @@ package org.springframework.cloud.gcp.data.spanner.test;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -72,6 +74,8 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	private static final String TABLE_NAME_SUFFIX_BEAN_NAME = "tableNameSuffix";
 
+	private static final Log LOGGER = LogFactory.getLog(AbstractSpannerIntegrationTest.class);
+
 	@Autowired
 	protected SpannerOperations spannerOperations;
 
@@ -121,12 +125,12 @@ public abstract class AbstractSpannerIntegrationTest {
 
 		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
 			assertFalse(this.spannerDatabaseAdminTemplate.tableExists(tableName));
-			System.out.println(
+			LOGGER.debug(
 					this.getClass() + " - Integration database created with schema: "
 							+ createSchemaStatements());
 		}
 		else {
-			System.out.println(
+			LOGGER.debug(
 					this.getClass() + " - schema created: " + createSchemaStatements());
 		}
 		this.spannerDatabaseAdminTemplate.executeDdlStrings(createSchemaStatements(),
@@ -153,7 +157,7 @@ public abstract class AbstractSpannerIntegrationTest {
 			}
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(dropSchemaStatements(),
 					false);
-			System.out.println("Integration database cleaned up!");
+			LOGGER.debug("Integration database cleaned up!");
 		}
 		finally {
 			// we need to remove the extra bean created even if there is a failure at
