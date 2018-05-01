@@ -13,8 +13,8 @@ Uses https://projects.spring.io/spring-data-jpa/[Spring Data JPA] to create a ta
 https://cloud.google.com/sql/docs/[Google Cloud SQL] instance, populate it and read back
 the inserted values.
 
-- link:spring-cloud-gcp-data-spanner-sample[Spring Cloud GCP Data Spanner Sample]:
-Uses Spring Data Spanner to create a table in
+- link:spring-cloud-gcp-data-spanner-sample[Spring Cloud GCP Data Cloud Spanner Sample]:
+Uses Spring Data Cloud Spanner to create a table in
 https://cloud.google.com/spanner/[Google Cloud Spanner], add some records to it and read them back.
 
 - link:spring-cloud-gcp-integration-pubsub-sample[Spring Cloud GCP Integration Pub/Sub Sample]:
