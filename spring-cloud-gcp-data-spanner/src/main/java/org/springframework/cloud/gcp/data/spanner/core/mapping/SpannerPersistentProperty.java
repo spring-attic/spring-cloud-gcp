@@ -23,7 +23,7 @@ import org.springframework.data.mapping.PersistentProperty;
 
 /**
  * Interface for a {@link PersistentProperty} of a {@link SpannerPersistentEntity}
- * to be stored in a Google Spanner table.
+ * to be stored in a Google Cloud Spanner table.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
@@ -32,7 +32,7 @@ public interface SpannerPersistentProperty
 		extends PersistentProperty<SpannerPersistentProperty> {
 
 	/**
-	 * Gets the name of the column in the Google Spanner table mapped to this property.
+	 * Gets the name of the column in the Google Cloud Spanner table mapped to this property.
 	 *
 	 * @return the name of the column.
 	 */
@@ -40,7 +40,7 @@ public interface SpannerPersistentProperty
 
 	/**
 	 * Gets the inner type of the column, which is meaningful for columns of type ARRAY in
-	 * Google Spanner.
+	 * Google Cloud Spanner.
 	 * @return the inner type of the column.
 	 */
 	Class getColumnInnerType();
@@ -59,9 +59,10 @@ public interface SpannerPersistentProperty
 	OptionalLong getMaxColumnLength();
 
 	/**
-	 * True if property corresponds to a column a Spanner table or child entities stored in Spanner.
+	 * True if property corresponds to a column a Cloud Spanner
+	 * table or child entities stored in Cloud Spanner.
 	 * False otherwise.
-	 * @return True if this property will be mapped to and from Spanner. False otherwise.
+	 * @return True if this property will be mapped to and from Cloud Spanner. False otherwise.
 	 */
 	boolean isMapped();
 }

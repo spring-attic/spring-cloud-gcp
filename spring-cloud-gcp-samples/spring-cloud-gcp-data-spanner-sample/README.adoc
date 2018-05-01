@@ -1,13 +1,13 @@
-= Spring Cloud GCP Spanner Starter Example
+= Spring Cloud GCP Cloud Spanner Starter Example
 
-This code sample demonstrates how to read and write POJOs from Google Spanner using the Spring
-Data Spanner module
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Cloud GCP Spanner Starter].
+This code sample demonstrates how to read and write POJOs from Google Cloud Spanner using the Spring
+Data Cloud Spanner module
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Cloud GCP Cloud Spanner Starter].
 
 = Running the example
 
 
-. Create a new Spanner instance named "spring-demo". The example application
+. Create a new Cloud Spanner instance named "spring-demo". The example application
 will create the database and tables if they do not already exist.
 [start=2]
 . https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login[If
@@ -20,7 +20,7 @@ Then, uncomment the `spring.cloud.gcp.spanner.credentials.location` property in 
 link:src/main/resources/application.properties[application.properties] file and fill its value with the path to your service account private key on your local file system, prepended with `file:`.
 
 . Run the `SpannerRepositoryExample` or the `SpannerTemplateExample` Spring Boot console apps. This causes the app to generate sample `Trade`
-objects filled with some demo data and persists them to the Spanner table created earlier.
+objects filled with some demo data and persists them to the Cloud Spanner table created earlier.
 These POJOs are then retrieved and their contents are printed in the browser.
 
 
