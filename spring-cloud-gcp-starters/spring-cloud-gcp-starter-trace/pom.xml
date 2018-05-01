@@ -30,8 +30,8 @@
 			<artifactId>sink</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.google.api</groupId>
-			<artifactId>gax</artifactId>
+			<groupId>io.zipkin.gcp</groupId>
+			<artifactId>zipkin-sender-stackdriver</artifactId>
 		</dependency>
 	</dependencies>
 </project>
