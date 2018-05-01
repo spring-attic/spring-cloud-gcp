@@ -54,7 +54,7 @@ do not apply to Spring Cloud GCP Config.
 === Quick start
 
 1. Create a configuration in the Google Runtime Configuration API that is called `${spring.application.name}_${spring.profiles.active}`.
-In other words, if `spring.cloud.gcp.config.name` is `myapp` and `spring.cloud.gcp.config.profile` is prod, the configuration should be called `myapp_prod`.
+In other words, if `spring.application.name` is `myapp` and `spring.profiles.active` is `prod`, the configuration should be called `myapp_prod`.
 +
 In order to do that, you should have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, own a Google Cloud Project and run the following command:
 +
