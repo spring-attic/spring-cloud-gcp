@@ -36,7 +36,7 @@ The following parameters are configurable in Spring Cloud GCP Config:
 |===
 | Name | Description | Required | Default value
 | `spring.cloud.gcp.config.enabled` | Enables the Config client | No | `false`
-| `spring.cloud.gcp.config.name` | Name of your application | No | Value of the `spring.application.name` property
+| `spring.cloud.gcp.config.name` | Name of your application | No | Value of the `spring.application.name` property. If none, `application`
 | `spring.cloud.gcp.config.profile` | Comma-delimited list of active profiles | No | Value of the `spring.profiles.active` property
 | `spring.cloud.gcp.config.timeout-millis` | Timeout in milliseconds for connecting to the Google Runtime Configuration API | No | `60000`
 | `spring.cloud.gcp.config.project-id` | GCP project ID where the Google Runtime Configuration API is hosted | No |
