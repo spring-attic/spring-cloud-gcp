@@ -186,7 +186,7 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
-	public Iterable<String> columns() {
+	public Set<String> columns() {
 		return Collections.unmodifiableSet(this.columnNames);
 	}
 

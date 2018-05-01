@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.support;
 
+import com.google.cloud.spanner.Key;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,13 +33,15 @@ import static org.mockito.Mockito.mock;
  */
 public class SpannerRepositoryFactoryBeanTests {
 
-	private SpannerRepositoryFactoryBean spannerRepositoryFactoryBean;
+	private SpannerRepositoryFactoryBean<SpannerRepository<Object, Key>, Object, Key>
+			spannerRepositoryFactoryBean;
 
 	private SpannerMappingContext spannerMappingContext;
 
 	private SpannerTemplate spannerTemplate;
 
 	@Before
+	@SuppressWarnings("unchecked")
 	public void setUp() {
 		this.spannerMappingContext = new SpannerMappingContext();
 		this.spannerTemplate = mock(SpannerTemplate.class);

@@ -79,28 +79,28 @@ class StructAccessor {
 		this.columnNamesIndex = indexColumnNames();
 	}
 
-	public Object getSingleValue(String colName) {
+	Object getSingleValue(String colName) {
 		Type colType = this.struct.getColumnType(colName);
 		Type.Code code = colType.getCode();
 		Class sourceType = code.equals(Type.Code.ARRAY)
 				? this.spannerTypeMapper.getArrayJavaClassFor(colType.getArrayElementType().getCode())
 				: this.spannerTypeMapper.getSimpleJavaClassFor(code);
-		BiFunction readFunction = singleItemReadMethodMapping.get(sourceType);
+		BiFunction<Struct, String, ?> readFunction = singleItemReadMethodMapping.get(sourceType);
 		return readFunction.apply(this.struct, colName);
 	}
 
-	public List getListValue(String colName) {
+	List<?> getListValue(String colName) {
 		Type.Code innerTypeCode = this.struct.getColumnType(colName).getArrayElementType().getCode();
 		Class clazz = this.spannerTypeMapper.getSimpleJavaClassFor(innerTypeCode);
 		BiFunction<Struct, String, List> readMethod = readIterableMapping.get(clazz);
 		return readMethod.apply(this.struct, colName);
 	}
 
-	public boolean hasColumn(String columnName) {
+	boolean hasColumn(String columnName) {
 		return this.columnNamesIndex.contains(columnName);
 	}
 
-	public boolean isNull(String columnName) {
+	boolean isNull(String columnName) {
 		return this.struct.isNull(columnName);
 	}
 

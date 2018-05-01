@@ -51,11 +51,11 @@ public class SpannerPersistentPropertyImpl
 	 *
 	 * @param property the property to store
 	 * @param owner the entity to which this property belongs
-	 * @param simpleTypeHolder
+	 * @param simpleTypeHolder the type holder
 	 * @param fieldNamingStrategy the naming strategy used to get the column name of this
 	 * property
 	 */
-	public SpannerPersistentPropertyImpl(Property property,
+	SpannerPersistentPropertyImpl(Property property,
 			PersistentEntity<?, SpannerPersistentProperty> owner,
 			SimpleTypeHolder simpleTypeHolder, FieldNamingStrategy fieldNamingStrategy) {
 		super(property, owner, simpleTypeHolder);
@@ -88,7 +88,7 @@ public class SpannerPersistentPropertyImpl
 	 * constructor. This is by default the by default
 	 *
 	 * @return the name of the column.
-	 * @throws {@link MappingException} if the resolution fails
+	 * @throws MappingException if the resolution fails
 	 */
 	@Override
 	public String getColumnName() {
@@ -108,9 +108,9 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	@Override
-	public Class getColumnInnerType() {
-		TypeInformation ti = getTypeInformation();
-		List<TypeInformation> typeParams = ti.getTypeArguments();
+	public Class<?> getColumnInnerType() {
+		TypeInformation<?> ti = getTypeInformation();
+		List<TypeInformation<?>> typeParams = ti.getTypeArguments();
 		if (typeParams.size() != 1) {
 			throw new SpannerDataException("in field '" + getColumnName()
 					+ "': Unsupported number of type parameters found: " + typeParams.size()

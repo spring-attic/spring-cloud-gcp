@@ -62,7 +62,7 @@ public class SpannerMappingContext extends
 
 	/**
 	 * Gets the field naming strategy used by this mapping context.
-	 * @return
+	 * @return the field naming strategy.
 	 */
 	public FieldNamingStrategy getFieldNamingStrategy() {
 		return this.fieldNamingStrategy;

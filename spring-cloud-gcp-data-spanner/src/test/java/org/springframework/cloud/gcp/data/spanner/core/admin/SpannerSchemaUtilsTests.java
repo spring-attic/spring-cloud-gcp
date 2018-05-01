@@ -23,6 +23,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.Key;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
@@ -42,18 +43,17 @@ import static org.mockito.Mockito.when;
  */
 public class SpannerSchemaUtilsTests {
 
-	private SpannerMappingContext spannerMappingContext;
-
 	private SpannerSchemaUtils spannerSchemaUtils;
 
 	private SpannerEntityProcessor spannerEntityProcessor;
 
 	@Before
 	public void setUp() {
-		this.spannerMappingContext = new SpannerMappingContext();
-		this.spannerSchemaUtils = new SpannerSchemaUtils(this.spannerMappingContext,
-				new ConverterAwareMappingSpannerEntityProcessor(this.spannerMappingContext));
-		this.spannerEntityProcessor = new ConverterAwareMappingSpannerEntityProcessor(this.spannerMappingContext);
+		SpannerMappingContext spannerMappingContext = new SpannerMappingContext();
+		this.spannerSchemaUtils = new SpannerSchemaUtils(spannerMappingContext,
+				new ConverterAwareMappingSpannerEntityProcessor(spannerMappingContext));
+		this.spannerEntityProcessor = new ConverterAwareMappingSpannerEntityProcessor(
+				spannerMappingContext);
 	}
 
 	@Test
@@ -127,14 +127,20 @@ public class SpannerSchemaUtilsTests {
 				"doubleList ARRAY<FLOAT64>");
 	}
 
-	private void assertColumnDDL(Class clazz, Class innerClazz, String name, OptionalLong length, String expectedDDL) {
+	private void assertColumnDDL(Class clazz, Class innerClazz, String name,
+			OptionalLong length, String expectedDDL) {
 		SpannerPersistentProperty spannerPersistentProperty = mock(SpannerPersistentProperty.class);
-		when(spannerPersistentProperty.getType()).thenReturn(clazz);
+
+		// @formatter:off
+		Mockito.<Class>when(spannerPersistentProperty.getType()).thenReturn(clazz);
+		Mockito.<Class>when(spannerPersistentProperty.getColumnInnerType()).thenReturn(innerClazz);
+		// @formatter:on
+
 		when(spannerPersistentProperty.getColumnName()).thenReturn(name);
 		when(spannerPersistentProperty.getMaxColumnLength()).thenReturn(length);
-		when(spannerPersistentProperty.getColumnInnerType()).thenReturn(innerClazz);
 		assertEquals(expectedDDL,
-				this.spannerSchemaUtils.getColumnDDLString(spannerPersistentProperty, this.spannerEntityProcessor));
+				this.spannerSchemaUtils.getColumnDDLString(spannerPersistentProperty,
+						this.spannerEntityProcessor));
 	}
 
 	@Test

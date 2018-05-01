@@ -16,13 +16,12 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
+import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
@@ -30,7 +29,7 @@ import org.springframework.data.repository.query.RepositoryQuery;
 /**
  * @author Chengyuan Zhao
  */
-abstract class AbstractSpannerQuery implements RepositoryQuery {
+abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 
 	protected final QueryMethod queryMethod;
 
@@ -38,7 +37,7 @@ abstract class AbstractSpannerQuery implements RepositoryQuery {
 
 	protected final SpannerMappingContext spannerMappingContext;
 
-	protected final Class entityType;
+	protected final Class<T> entityType;
 
 	/**
 	 * Constructor
@@ -47,7 +46,7 @@ abstract class AbstractSpannerQuery implements RepositoryQuery {
 	 * @param spannerOperations used for executing queries.
 	 * @param spannerMappingContext used for getting metadata about entities.
 	 */
-	AbstractSpannerQuery(Class type, QueryMethod queryMethod,
+	AbstractSpannerQuery(Class<T> type, QueryMethod queryMethod,
 			SpannerOperations spannerOperations,
 			SpannerMappingContext spannerMappingContext) {
 		this.queryMethod = queryMethod;
@@ -58,16 +57,16 @@ abstract class AbstractSpannerQuery implements RepositoryQuery {
 
 	@Override
 	public Object execute(Object[] parameters) {
-		Object rawResult = executeRawResult(parameters);
+		List<T> rawResult = executeRawResult(parameters);
+		return applyProjection(rawResult);
+	}
+
+	protected Object applyProjection(List<T> rawResult) {
 		if (rawResult == null) {
 			return null;
 		}
-		if (ConversionUtils.isIterableNonByteArrayType(rawResult.getClass())) {
-			return StreamSupport.stream(((Iterable) rawResult).spliterator(), true)
-					.map(result -> processRawObjectForProjection(result))
-					.collect(Collectors.toList());
-		}
-		return processRawObjectForProjection(rawResult);
+		return rawResult.stream().map(result -> processRawObjectForProjection(result))
+				.collect(Collectors.toList());
 	}
 
 	@VisibleForTesting
@@ -80,5 +79,5 @@ abstract class AbstractSpannerQuery implements RepositoryQuery {
 		return this.queryMethod;
 	}
 
-	protected abstract Object executeRawResult(Object[] parameters);
+	protected abstract List<T> executeRawResult(Object[] parameters);
 }

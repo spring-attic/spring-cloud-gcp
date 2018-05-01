@@ -51,7 +51,7 @@ import org.springframework.util.StringUtils;
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-public class SqlSpannerQuery extends AbstractSpannerQuery {
+public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 	// A character that isn't used in SQL
 	private static String ENTITY_CLASS_NAME_BOOKEND = ":";
@@ -62,7 +62,7 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 
 	private SpelExpressionParser expressionParser;
 
-	public SqlSpannerQuery(Class type, QueryMethod queryMethod,
+	SqlSpannerQuery(Class<T> type, QueryMethod queryMethod,
 			SpannerOperations spannerOperations, String sql,
 			EvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser,
@@ -170,8 +170,8 @@ public class SqlSpannerQuery extends AbstractSpannerQuery {
 	}
 
 	@Override
-	public Object executeRawResult(Object[] parameters) {
-		List params = new ArrayList();
+	public List<T> executeRawResult(Object[] parameters) {
+		List<Object> params = new ArrayList<>();
 
 		Pageable pageable = null;
 		Sort sort = null;

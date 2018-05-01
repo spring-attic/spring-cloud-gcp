@@ -42,7 +42,7 @@ import org.springframework.util.Assert;
  */
 public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 
-	private final SpannerPersistentEntity spannerPersistentEntity;
+	private final SpannerPersistentEntity<?> spannerPersistentEntity;
 
 	private final SpannerPersistentProperty[] primaryKeyColumns;
 
@@ -95,7 +95,6 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 		return this.spannerPersistentEntity;
 	}
 
-	// this property does not correspond to a real POJO property, so has no name.
 	@Override
 	public String getName() {
 		return null;
@@ -112,6 +111,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	@Override
+	@Deprecated
 	public Iterable<? extends TypeInformation<?>> getPersistentEntityType() {
 		return Collections.emptySet();
 	}
@@ -151,7 +151,6 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 		return false;
 	}
 
-	// returns true, because this property type is by definition for IDs.
 	@Override
 	public boolean isIdProperty() {
 		return true;

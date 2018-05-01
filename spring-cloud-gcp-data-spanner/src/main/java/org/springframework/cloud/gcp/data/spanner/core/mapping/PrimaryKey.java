@@ -37,14 +37,14 @@ public @interface PrimaryKey {
 
 	/**
 	 * The order of columns that comprise the primary key. Starts at 1 is consecutive.
-	 * @return
+	 * @return the key order starting with 1 being first.
 	 */
 	@AliasFor(attribute = "value")
 	int keyOrder() default 1;
 
 	/**
 	 * The order of columns that comprise the primary key. Starts at 1 is consecutive.
-	 * @return
+	 * @return the key order starting with 1 being first.
 	 */
 	@AliasFor(attribute = "keyOrder")
 	int value() default 1;

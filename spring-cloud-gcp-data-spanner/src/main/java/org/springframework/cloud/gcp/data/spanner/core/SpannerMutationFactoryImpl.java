@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
@@ -95,8 +95,9 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Mutation delete(Object object) {
-		return delete((Class<Object>) object.getClass(), Arrays.asList(object));
+		return delete((Class) object.getClass(), Collections.singletonList(object));
 	}
 
 	@Override

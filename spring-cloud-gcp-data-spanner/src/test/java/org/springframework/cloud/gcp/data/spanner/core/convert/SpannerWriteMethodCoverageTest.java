@@ -44,9 +44,9 @@ public class SpannerWriteMethodCoverageTest {
 				continue;
 			}
 
-			Class paramType = ConversionUtils.boxIfNeeded(method.getParameterTypes()[0]);
+			Class<?> paramType = ConversionUtils.boxIfNeeded(method.getParameterTypes()[0]);
 			if (ConversionUtils.isIterableNonByteArrayType(paramType)) {
-				Class innerParamType = (Class) ((ParameterizedType) method
+				Class<?> innerParamType = (Class) ((ParameterizedType) method
 						.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
 				assertThat(ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap
 						.keySet(), hasItem(innerParamType));

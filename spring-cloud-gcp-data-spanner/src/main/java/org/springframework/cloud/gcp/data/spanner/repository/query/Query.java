@@ -37,7 +37,7 @@ public @interface Query {
 	 * Takes a Spanner SQL string to define the actual query to be executed. This one will
 	 * take precedence over the method name then.
 	 *
-	 * @return
+	 * @return the SQL Spanner query string.
 	 */
 	String value() default "";
 }

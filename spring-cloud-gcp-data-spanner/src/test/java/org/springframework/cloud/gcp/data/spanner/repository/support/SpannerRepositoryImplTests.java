@@ -57,7 +57,7 @@ public class SpannerRepositoryImplTests {
 
 	private SpannerEntityProcessor entityProcessor;
 
-	public static final Key A_KEY = Key.of("key");
+	private static final Key A_KEY = Key.of("key");
 
 	@Before
 	public void setup() {
@@ -69,65 +69,68 @@ public class SpannerRepositoryImplTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void constructorNullSpannerOperationsTest() {
-		new SimpleSpannerRepository(null, Object.class);
+		new SimpleSpannerRepository<Object, Key>(null, Object.class);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void constructorNullEntityTypeTest() {
-		new SimpleSpannerRepository(this.template, null);
+		new SimpleSpannerRepository<Object, Key>(this.template, null);
 	}
 
 	@Test
 	public void getSpannerOperationsTest() {
 		assertSame(this.template,
-				new SimpleSpannerRepository(this.template, Object.class).getSpannerTemplate());
+				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
+						.getSpannerTemplate());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void saveNullObjectTest() {
-		new SimpleSpannerRepository(this.template, Object.class).save(null);
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class).save(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void findNullIdTest() {
-		new SimpleSpannerRepository(this.template, Object.class)
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.findById(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void existsNullIdTest() {
-		new SimpleSpannerRepository(this.template, Object.class)
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.existsById(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void deleteNullIdTest() {
-		new SimpleSpannerRepository(this.template, Object.class)
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.deleteById(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void deleteNullEntityTest() {
-		new SimpleSpannerRepository(this.template, Object.class)
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.delete(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void deleteAllNullEntityTest() {
-		new SimpleSpannerRepository(this.template, Object.class)
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.deleteAll(null);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void saveAllNullEntityTest() {
-		new SimpleSpannerRepository(this.template, Object.class)
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.saveAll(null);
 	}
 
 	@Test
 	public void saveTest() {
 		Object ob = new Object();
-		assertEquals(ob, new SimpleSpannerRepository(this.template, Object.class).save(ob));
+		assertEquals(ob,
+				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
+						.save(ob));
 		verify(this.template, times(1)).upsert(eq(ob));
 	}
 
@@ -135,7 +138,8 @@ public class SpannerRepositoryImplTests {
 	public void saveAllTest() {
 		Object ob = new Object();
 		Object ob2 = new Object();
-		Iterable<Object> ret = new SimpleSpannerRepository(this.template, Object.class)
+		Iterable<Object> ret = new SimpleSpannerRepository<Object, Key>(this.template,
+				Object.class)
 				.saveAll(Arrays.asList(ob, ob2));
 		assertThat(ret, containsInAnyOrder(ob, ob2));
 		verify(this.template, times(1)).upsert(eq(ob));
@@ -147,14 +151,17 @@ public class SpannerRepositoryImplTests {
 		Object ret = new Object();
 		when(this.entityProcessor.writeToKey(eq(A_KEY))).thenReturn(A_KEY);
 		when(this.template.read(eq(Object.class), eq(A_KEY))).thenReturn(ret);
-		assertEquals(ret, new SimpleSpannerRepository(this.template, Object.class).findById(A_KEY).get());
+		assertEquals(ret,
+				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
+						.findById(A_KEY).get());
 		verify(this.template, times(1)).read(eq(Object.class), eq(A_KEY));
 	}
 
 	@Test(expected = SpannerDataException.class)
 	public void findByIdKeyWritingThrowsAnException() {
 		when(this.entityProcessor.writeToKey(any())).thenThrow(SpannerDataException.class);
-		new SimpleSpannerRepository(this.template, Object.class).findById(new Object[] {});
+		new SimpleSpannerRepository<Object, Object[]>(this.template, Object.class)
+				.findById(new Object[] {});
 	}
 
 	@Test
@@ -162,7 +169,8 @@ public class SpannerRepositoryImplTests {
 		Object ret = new Object();
 		when(this.entityProcessor.writeToKey(eq(A_KEY))).thenReturn(A_KEY);
 		when(this.template.read(eq(Object.class), eq(A_KEY))).thenReturn(ret);
-		assertTrue(new SimpleSpannerRepository(this.template, Object.class).existsById(A_KEY));
+		assertTrue(new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
+				.existsById(A_KEY));
 	}
 
 	@Test
@@ -170,13 +178,13 @@ public class SpannerRepositoryImplTests {
 		when(this.entityProcessor.writeToKey(eq(A_KEY))).thenReturn(A_KEY);
 		when(this.template.read(eq(Object.class), (Key) any())).thenReturn(null);
 		assertFalse(
-				new SimpleSpannerRepository(this.template, Object.class)
+				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 						.existsById(A_KEY));
 	}
 
 	@Test
 	public void findAllTest() {
-		new SimpleSpannerRepository(this.template, Object.class).findAll();
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class).findAll();
 		verify(this.template, times(1)).readAll(eq(Object.class));
 	}
 
@@ -188,7 +196,8 @@ public class SpannerRepositoryImplTests {
 			assertSame(sort, spannerQueryOptions.getSort());
 			return null;
 		});
-		new SimpleSpannerRepository(this.template, Object.class).findAll(sort);
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
+				.findAll(sort);
 		verify(this.template, times(1)).queryAll(eq(Object.class), any());
 	}
 
@@ -206,7 +215,8 @@ public class SpannerRepositoryImplTests {
 			assertEquals(5L, spannerQueryOptions.getLimit());
 			return new ArrayList<>();
 		});
-		new SimpleSpannerRepository(this.template, Object.class).findAll(pageable);
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
+				.findAll(pageable);
 		verify(this.template, times(1)).queryAll(eq(Object.class), any());
 	}
 
@@ -223,20 +233,21 @@ public class SpannerRepositoryImplTests {
 			return null;
 		});
 
-		new SimpleSpannerRepository(this.template, Object.class)
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.findAllById(unconvertedKey);
 	}
 
 	@Test
 	public void countTest() {
-		new SimpleSpannerRepository(this.template, Object.class).count();
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class).count();
 		verify(this.template, times(1)).count(eq(Object.class));
 	}
 
 	@Test
 	public void deleteByIdTest() {
 		when(this.entityProcessor.writeToKey(eq(A_KEY))).thenReturn(A_KEY);
-		new SimpleSpannerRepository(this.template, Object.class).deleteById(A_KEY);
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
+				.deleteById(A_KEY);
 		verify(this.template, times(1)).delete(eq(Object.class), eq(A_KEY));
 		verify(this.template, times(1)).delete(eq(Object.class), eq(A_KEY));
 	}
@@ -244,7 +255,7 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void deleteTest() {
 		Object ob = new Object();
-		new SimpleSpannerRepository(this.template, Object.class).delete(ob);
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class).delete(ob);
 		verify(this.template, times(1)).delete(eq(ob));
 	}
 
@@ -256,12 +267,13 @@ public class SpannerRepositoryImplTests {
 			assertThat(toDelete, containsInAnyOrder("ob1", "ob2"));
 			return null;
 		}).when(this.template).delete(eq(String.class), same(obs));
-		new SimpleSpannerRepository(this.template, Object.class).deleteAll(obs);
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
+				.deleteAll(obs);
 	}
 
 	@Test
 	public void deleteAllTest() {
-		new SimpleSpannerRepository(this.template, Object.class).deleteAll();
+		new SimpleSpannerRepository<Object, Key>(this.template, Object.class).deleteAll();
 		verify(this.template, times(1)).delete(eq(Object.class), eq(KeySet.all()));
 	}
 
@@ -269,20 +281,22 @@ public class SpannerRepositoryImplTests {
 	public void readOnlyTransactionTest() {
 		when(this.template.performReadOnlyTransaction(any(), any()))
 				.thenAnswer(invocation -> {
-					Function f = invocation.getArgument(0);
+					Function<SpannerTemplate, String> f = invocation.getArgument(0);
 					return f.apply(this.template);
 				});
-		assertEquals("test", new SimpleSpannerRepository(this.template, Object.class)
+		assertEquals("test",
+				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.performReadOnlyTransaction(repo -> "test"));
 	}
 
 	@Test
 	public void readWriteTransactionTest() {
 		when(this.template.performReadWriteTransaction(any())).thenAnswer(invocation -> {
-			Function f = invocation.getArgument(0);
+			Function<SpannerTemplate, String> f = invocation.getArgument(0);
 			return f.apply(this.template);
 		});
-		assertEquals("test", new SimpleSpannerRepository(this.template, Object.class)
+		assertEquals("test",
+				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.performReadWriteTransaction(repo -> "test"));
 	}
 }
