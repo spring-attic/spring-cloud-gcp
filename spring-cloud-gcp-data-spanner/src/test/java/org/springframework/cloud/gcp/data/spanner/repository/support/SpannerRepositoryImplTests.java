@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.support;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -25,6 +26,7 @@ import com.google.cloud.spanner.KeySet;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
@@ -181,15 +183,31 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void findAllSortTest() {
 		Sort sort = mock(Sort.class);
+		when(this.template.queryAll(eq(Object.class), any())).thenAnswer(invocation -> {
+			SpannerQueryOptions spannerQueryOptions = invocation.getArgument(1);
+			assertSame(sort, spannerQueryOptions.getSort());
+			return null;
+		});
 		new SimpleSpannerRepository(this.template, Object.class).findAll(sort);
-		verify(this.template, times(1)).queryAll(eq(Object.class), same(sort));
+		verify(this.template, times(1)).queryAll(eq(Object.class), any());
 	}
 
 	@Test
 	public void findAllPageableTest() {
 		Pageable pageable = mock(Pageable.class);
+		Sort sort = mock(Sort.class);
+		when(pageable.getSort()).thenReturn(sort);
+		when(pageable.getOffset()).thenReturn(3L);
+		when(pageable.getPageSize()).thenReturn(5);
+		when(this.template.queryAll(eq(Object.class), any())).thenAnswer(invocation -> {
+			SpannerQueryOptions spannerQueryOptions = invocation.getArgument(1);
+			assertSame(sort, spannerQueryOptions.getSort());
+			assertEquals(3L, spannerQueryOptions.getOffset());
+			assertEquals(5L, spannerQueryOptions.getLimit());
+			return new ArrayList<>();
+		});
 		new SimpleSpannerRepository(this.template, Object.class).findAll(pageable);
-		verify(this.template, times(1)).queryAll(eq(Object.class), same(pageable));
+		verify(this.template, times(1)).queryAll(eq(Object.class), any());
 	}
 
 	@Test

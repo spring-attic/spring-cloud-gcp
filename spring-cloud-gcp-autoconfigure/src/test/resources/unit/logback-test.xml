@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration >
+
+	<property name="projectId" value="test-project"/>
+
+	<include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-json-appender.xml"/>
+
+	<logger name="StackdriverJsonLayoutLoggerTests" level="WARN">
+		<appender-ref ref="CONSOLE_JSON"/>
+	</logger>
+
+	<statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<Pattern>
+				%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+			</Pattern>
+		</layout>
+	</appender>
+
+	<logger name="org.springframework.cloud.gcp" level="warn">
+		<appender-ref ref="STDOUT" />
+	</logger>
+
+</configuration>

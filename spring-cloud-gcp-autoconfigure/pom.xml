@@ -83,6 +83,10 @@
                     <groupId>mysql</groupId>
                     <artifactId>mysql-connector-java</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.google.api-client</groupId>
+                    <artifactId>google-api-client</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -96,6 +100,12 @@
         <dependency>
             <groupId>com.google.cloud.sql</groupId>
             <artifactId>postgres-socket-factory</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.api-client</groupId>
+                    <artifactId>google-api-client</artifactId>
+                </exclusion>
+            </exclusions>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -180,4 +190,42 @@
         </dependency>
 
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>unit</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <testResources>
+                    <testResource>
+                        <directory>src/test/resources/unit</directory>
+                    </testResource>
+                    <testResource>
+                        <directory>src/test/resources</directory>
+                        <includes>
+                            <include>**/VCAP*</include>
+                        </includes>
+                    </testResource>
+                </testResources>
+            </build>
+        </profile>
+        <profile>
+            <id>it</id>
+            <build>
+                <testResources>
+                    <testResource>
+                        <directory>src/test/resources/it</directory>
+                    </testResource>
+                    <testResource>
+                        <directory>src/test/resources</directory>
+                        <includes>
+                            <include>**/VCAP*</include>
+                        </includes>
+                    </testResource>
+                </testResources>
+            </build>
+        </profile>
+    </profiles>
 </project>

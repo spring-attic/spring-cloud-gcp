@@ -23,9 +23,11 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
@@ -149,12 +151,16 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 
 	@Override
 	public Iterable findAll(Sort sort) {
-		return this.spannerTemplate.queryAll(this.entityType, sort);
+		return this.spannerTemplate.queryAll(this.entityType,
+				new SpannerQueryOptions().setSort(sort));
 	}
 
 	@Override
 	public Page findAll(Pageable pageable) {
-		return this.spannerTemplate.queryAll(this.entityType, pageable);
+		return new PageImpl<>(this.spannerTemplate.queryAll(this.entityType,
+				new SpannerQueryOptions().setLimit(pageable.getPageSize())
+						.setOffset(pageable.getOffset()).setSort(pageable.getSort())),
+				pageable, this.spannerTemplate.count(this.entityType));
 	}
 
 	private <T> T doIfKey(Object key, Function<Key, T> operation) {

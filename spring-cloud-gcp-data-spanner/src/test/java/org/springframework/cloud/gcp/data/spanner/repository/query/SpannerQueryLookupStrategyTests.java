@@ -81,6 +81,7 @@ public class SpannerQueryLookupStrategyTests {
 		when(parameters.getParameter(anyInt())).thenAnswer(invocation -> {
 			Parameter param = mock(Parameter.class);
 			when(param.getName()).thenReturn(Optional.of("tag"));
+			when(param.getType()).thenReturn((Class) Object.class);
 			return param;
 		});
 

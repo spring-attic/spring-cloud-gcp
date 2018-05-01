@@ -22,6 +22,9 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.QueryOption;
 import org.junit.Test;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
+
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -80,6 +83,17 @@ public class SpannerQueryOptionsTests {
 		assertEquals(offset, spannerQueryOptions.getOffset());
 		spannerQueryOptions.unsetOffset();
 		assertFalse(spannerQueryOptions.hasOffset());
+	}
+
+	@Test
+	public void sortTest() {
+		SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions();
+		Sort sort = Sort.by(Order.asc("test"));
+		assertFalse(spannerQueryOptions.getSort().isSorted());
+		spannerQueryOptions.setSort(sort);
+		assertTrue(spannerQueryOptions.getSort().getOrderFor("test").isAscending());
+		spannerQueryOptions.unsetSort();
+		assertFalse(spannerQueryOptions.getSort().isSorted());
 	}
 
 	@Test

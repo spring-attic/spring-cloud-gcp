@@ -26,7 +26,7 @@ import com.google.cloud.spanner.Value;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -40,6 +40,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -50,7 +52,7 @@ public class SpannerStatementQueryTests {
 
 	private static final Object[] EMPTY_PARAMETERS = new Object[0];
 
-	private SpannerOperations spannerOperations;
+	private SpannerTemplate spannerTemplate;
 
 	private QueryMethod queryMethod;
 
@@ -61,13 +63,13 @@ public class SpannerStatementQueryTests {
 	@Before
 	public void initMocks() {
 		this.queryMethod = mock(QueryMethod.class);
-		this.spannerOperations = mock(SpannerOperations.class);
+		this.spannerTemplate = mock(SpannerTemplate.class);
 		this.spannerMappingContext = new SpannerMappingContext();
 	}
 
 	private PartTreeSpannerQuery createQuery() {
 		return new PartTreeSpannerQuery(Trade.class, this.queryMethod,
-				this.spannerOperations, this.spannerMappingContext);
+				this.spannerTemplate, this.spannerMappingContext);
 	}
 
 	@Test
@@ -81,7 +83,7 @@ public class SpannerStatementQueryTests {
 		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, "ignored",
 				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
 
-		when(this.spannerOperations.query(any(), (Statement) any(), any()))
+		when(this.spannerTemplate.query(any(), any()))
 				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
 
@@ -111,6 +113,7 @@ public class SpannerStatementQueryTests {
 				});
 
 		this.partTreeSpannerQuery.execute(params);
+		verify(this.spannerTemplate, times(1)).query(any(), any());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -206,7 +209,7 @@ public class SpannerStatementQueryTests {
 	private void queryWithMockResult(String queryName, List results) {
 		when(this.queryMethod.getName()).thenReturn(queryName);
 		this.partTreeSpannerQuery = createQuery();
-		when(this.spannerOperations.query(any(), (Statement) any())).thenReturn(results);
+		when(this.spannerTemplate.query(any(), (Statement) any())).thenReturn(results);
 	}
 
 	@Table(name = "trades")
