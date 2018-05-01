@@ -48,6 +48,8 @@ public class GcpConfigProperties implements CredentialsSupplier {
 
 	/**
 	 *  Comma-delimited string of profiles under which the app is running.
+	 *  Gets its default value from the {@code spring.profiles.active} property, falling back on the
+	 *  {@code spring.profiles.default} property.
 	 */
 	private String profile;
 
