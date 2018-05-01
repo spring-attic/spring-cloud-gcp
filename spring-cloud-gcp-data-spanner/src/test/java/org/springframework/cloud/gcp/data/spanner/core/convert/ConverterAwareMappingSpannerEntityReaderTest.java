@@ -84,12 +84,12 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 
 	@Test
 	public void readConvertedNestedStructTest() {
-		Struct innerStruct = Struct.newBuilder().add("value", Value.string("value"))
+		Struct colStruct = Struct.newBuilder().add("string_col", Value.string("value"))
 				.build();
-		Struct outerStruct = Struct.newBuilder().add("id", Value.string("key1"))
+		Struct rowStruct = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("innerLengths",
-						ImmutableList.of(Type.StructField.of("value", Type.string())),
-						ImmutableList.of(innerStruct))
+						ImmutableList.of(Type.StructField.of("string_col", Type.string())),
+						ImmutableList.of(colStruct))
 				.build();
 
 		OuterTestEntityFlat result = new ConverterAwareMappingSpannerEntityReader(
@@ -98,9 +98,9 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 					@Nullable
 					@Override
 					public Integer convert(Struct source) {
-						return source.getString("value").length();
+						return source.getString("string_col").length();
 					}
-				}))).read(OuterTestEntityFlat.class, outerStruct);
+				}))).read(OuterTestEntityFlat.class, rowStruct);
 		assertEquals("key1", result.id);
 		assertEquals(1, result.innerLengths.size());
 		assertEquals((Integer) 5, result.innerLengths.get(0));
