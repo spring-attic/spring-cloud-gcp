@@ -47,7 +47,7 @@ public class UsageTrackingHeaderProvider implements HeaderProvider {
 
 	private String getImplementationVersion() {
 		try {
-			return loadTrackingProperties().getProperty("metrics.version");
+			return getTrackingProperties().getProperty("metrics.version");
 		}
 		catch (IOException e) {
 			return this.clazz.getPackage().getImplementationVersion();
@@ -55,7 +55,7 @@ public class UsageTrackingHeaderProvider implements HeaderProvider {
 	}
 
 	@VisibleForTesting
-	Properties loadTrackingProperties() throws IOException {
+	Properties getTrackingProperties() throws IOException {
 		if (this.trackingProperties == null) {
 			this.trackingProperties = new Properties();
 			this.trackingProperties.load(this.getClass().getClassLoader()

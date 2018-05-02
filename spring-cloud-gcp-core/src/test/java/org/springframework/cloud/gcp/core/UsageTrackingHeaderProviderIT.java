@@ -42,7 +42,7 @@ public class UsageTrackingHeaderProviderIT {
 				new UsageTrackingHeaderProvider(this.getClass()));
 		// intentionally leaving properties empty
 		Properties properties = new Properties();
-		doReturn(properties).when(subject).loadTrackingProperties();
+		doReturn(properties).when(subject).getTrackingProperties();
 
 		String versionRegex = "\\d+\\.\\d+\\.\\d+\\.[BUILD-SNAPSHOT|M\\d+|RC\\d+|RELEASE]$";
 		assertThat(subject.getHeaders()).containsKey("User-Agent");
@@ -57,7 +57,7 @@ public class UsageTrackingHeaderProviderIT {
 				new UsageTrackingHeaderProvider(this.getClass()));
 		Properties properties = new Properties();
 		properties.setProperty("metrics.version", "ORIGINAL_VERSION");
-		doReturn(properties).when(subject).loadTrackingProperties();
+		doReturn(properties).when(subject).getTrackingProperties();
 
 		String versionRegex = "\\d+\\.\\d+\\.\\d+\\.[BUILD-SNAPSHOT|M\\d+|RC\\d+|RELEASE]$";
 		assertThat(subject.getHeaders()).containsKey("User-Agent");
