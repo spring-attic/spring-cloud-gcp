@@ -105,7 +105,7 @@ public class SpannerPersistentEntityImplTests {
 				.getPersistentEntity(EntityWithWronglyOrderedKeys.class).getIdProperty();
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void testNoIdEntity() {
 		new SpannerMappingContext().getPersistentEntity(EntityWithNoId.class)
 				.getIdProperty();
