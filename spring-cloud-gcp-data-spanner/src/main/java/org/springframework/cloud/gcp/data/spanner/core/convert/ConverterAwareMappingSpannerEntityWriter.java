@@ -26,6 +26,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ValueBinder;
 import com.google.common.collect.ImmutableMap;
@@ -59,15 +60,16 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 
 	public static final Map<Class<?>, BiFunction<ValueBinder, ?, ?>> singleItemType2ToMethodMap;
 
-	static final Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>> iterablePropertyType2ToMethodMap;
+	static final Map<Class<?>, BiConsumer<ValueBinder<Mutation.WriteBuilder>, Iterable>>
+			iterablePropertyType2ToMethodMap = createIterableTypeMapping();
 
-	static {
+	@SuppressWarnings("unchecked")
+	private static Map<Class<?>, BiConsumer<ValueBinder<Mutation.WriteBuilder>, Iterable>> createIterableTypeMapping() {
 		// Java 8 has compile errors when using the builder extension methods
 		// @formatter:off
-		ImmutableMap.Builder<Class<?>, BiConsumer<ValueBinder<?>, Iterable>> builder =
+		ImmutableMap.Builder<Class<?>, BiConsumer<ValueBinder<Mutation.WriteBuilder>, Iterable>> builder =
 						new ImmutableMap.Builder<>();
 		// @formatter:on
-
 
 		builder.put(com.google.cloud.Date.class, ValueBinder::toDateArray);
 		builder.put(Boolean.class, ValueBinder::toBoolArray);
@@ -77,7 +79,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		builder.put(Timestamp.class, ValueBinder::toTimestampArray);
 		builder.put(ByteArray.class, ValueBinder::toBytesArray);
 
-		iterablePropertyType2ToMethodMap = builder.build();
+		return builder.build();
 	}
 
 	static {
@@ -286,8 +288,8 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		if (!valueSet) {
 			for (Class<?> targetType : iterablePropertyType2ToMethodMap.keySet()) {
 				if (this.writeConverter.canConvert(innerType, targetType)) {
-					BiConsumer<ValueBinder<?>, Iterable> toMethod = iterablePropertyType2ToMethodMap
-							.get(targetType);
+					BiConsumer<ValueBinder<Mutation.WriteBuilder>, Iterable> toMethod =
+							iterablePropertyType2ToMethodMap.get(targetType);
 					toMethod.accept(valueBinder,
 							ConversionUtils.convertIterable(value, targetType, this.writeConverter));
 					valueSet = true;
