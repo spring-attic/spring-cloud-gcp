@@ -16,11 +16,15 @@
 
 package org.springframework.cloud.gcp.core;
 
+import java.io.IOException;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 /**
  * This needs to be an integration test because the JAR MANIFEST has to be available for
@@ -28,17 +32,37 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public class UsageTrackingHeaderProviderIT {
 
 	@Test
-	public void testGetHeaders() {
-		UsageTrackingHeaderProvider subject = new UsageTrackingHeaderProvider(this.getClass());
+	public void testGetHeaders() throws IOException {
+		UsageTrackingHeaderProvider subject = spy(
+				new UsageTrackingHeaderProvider(this.getClass()));
+		// intentionally leaving properties empty
+		Properties properties = new Properties();
+		doReturn(properties).when(subject).getTrackingProperties();
 
 		String versionRegex = "\\d+\\.\\d+\\.\\d+\\.[BUILD-SNAPSHOT|M\\d+|RC\\d+|RELEASE]$";
 		assertThat(subject.getHeaders()).containsKey("User-Agent");
 		assertThat(subject.getHeaders().get("User-Agent")).matches(
 				Pattern.compile("Spring/" + versionRegex + " spring-cloud-gcp-core/" + versionRegex));
+		assertThat(subject.getHeaders().size()).isEqualTo(1);
+	}
+
+	@Test
+	public void testGetHeadersRepackagedVersion() throws IOException {
+		UsageTrackingHeaderProvider subject = spy(
+				new UsageTrackingHeaderProvider(this.getClass()));
+		Properties properties = new Properties();
+		properties.setProperty("metrics.version", "ORIGINAL_VERSION");
+		doReturn(properties).when(subject).getTrackingProperties();
+
+		String versionRegex = "\\d+\\.\\d+\\.\\d+\\.[BUILD-SNAPSHOT|M\\d+|RC\\d+|RELEASE]$";
+		assertThat(subject.getHeaders()).containsKey("User-Agent");
+		assertThat(subject.getHeaders().get("User-Agent")).matches(Pattern.compile(
+				"Spring/" + versionRegex + " spring-cloud-gcp-core/ORIGINAL_VERSION"));
 		assertThat(subject.getHeaders().size()).isEqualTo(1);
 	}
 }

@@ -16,24 +16,53 @@
 
 package org.springframework.cloud.gcp.core;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import com.google.api.gax.rpc.HeaderProvider;
+import com.google.common.annotations.VisibleForTesting;
+
+import org.springframework.stereotype.Component;
 
 /**
- * Provides the User-Agent header to signal to the Google Cloud Client Libraries that requests originate from a Spring
- * Integration.
+ * Provides the User-Agent header to signal to the Google Cloud Client Libraries that
+ * requests originate from a Spring Integration.
  *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
+@Component
 public class UsageTrackingHeaderProvider implements HeaderProvider {
 
-	/** Class whose project name and version will be used in the header */
+	/** Class whose project name and version will be used in the header. */
 	private Class clazz;
+
+	private Properties trackingProperties;
 
 	public UsageTrackingHeaderProvider(Class clazz) {
 		this.clazz = clazz;
+	}
+
+	private String getImplementationVersion() {
+		try {
+			return getTrackingProperties().getProperty("metrics.version");
+		}
+		catch (IOException e) {
+			return this.clazz.getPackage().getImplementationVersion();
+		}
+	}
+
+	@VisibleForTesting
+	Properties getTrackingProperties() throws IOException {
+		if (this.trackingProperties == null) {
+			this.trackingProperties = new Properties();
+			this.trackingProperties.load(this.getClass().getClassLoader()
+					.getResourceAsStream("tracking-header.properties"));
+
+		}
+		return this.trackingProperties;
 	}
 
 	/**
@@ -49,7 +78,7 @@ public class UsageTrackingHeaderProvider implements HeaderProvider {
 
 		headers.put("User-Agent",
 				"Spring/" + this.getClass().getPackage().getImplementationVersion()
-				+ " " + springLibrary + "/" + this.clazz.getPackage().getImplementationVersion());
+						+ " " + springLibrary + "/" + getImplementationVersion());
 
 		return headers;
 	}
