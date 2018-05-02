@@ -43,7 +43,6 @@ public class UsageTrackingHeaderProvider implements HeaderProvider {
 
 	public UsageTrackingHeaderProvider(Class clazz) {
 		this.clazz = clazz;
-		String implementationVersion;
 	}
 
 	private String getImplementationVersion() {
