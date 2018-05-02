@@ -31,8 +31,8 @@ public class SinkExample {
 	private static final Log LOGGER = LogFactory.getLog(SinkExample.class);
 
 	@StreamListener(Sink.INPUT)
-	public void handleMessage(Message message) {
-		LOGGER.info("New message received from " + message.getUsername() + " at "
-				+ message.getCreatedAt() + ": " + message.getBody());
+	public void handleMessage(UserMessage userMessage) {
+		LOGGER.info("New message received from " + userMessage.getUsername() + " at "
+				+ userMessage.getCreatedAt() + ": " + userMessage.getBody());
 	}
 }

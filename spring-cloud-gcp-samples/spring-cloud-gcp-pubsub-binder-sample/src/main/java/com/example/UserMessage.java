@@ -21,7 +21,7 @@ import java.time.LocalDateTime;
 /**
  * @author João André Martins
  */
-public class Message {
+public class UserMessage {
 
 	private String body;
 
@@ -29,10 +29,10 @@ public class Message {
 
 	private LocalDateTime createdAt;
 
-	public Message() {
+	public UserMessage() {
 	}
 
-	public Message(String body, String username, LocalDateTime createdAt) {
+	public UserMessage(String body, String username, LocalDateTime createdAt) {
 		this.body = body;
 		this.username = username;
 		this.createdAt = createdAt;
