@@ -370,6 +370,27 @@ public class ConverterConfiguration {
 }
 ----
 
+==== Structs in Columns
+Cloud Spanner queries can https://cloud.google.com/spanner/docs/query-syntax#using-structs-with-select[construct STRUCT values]
+that appear as columns in the result. Cloud Spanner requires STRUCT values appear in ARRAYs at the
+root level: `SELECT ARRAY(SELECT STRUCT(1 as val1, 2 as val2)) as pair FROM Users`.
+
+If no read `Converter` with a target type of `Struct` is provided, Spring Data Cloud Spanner
+will attempt to read the column STRUCT values into a property that is an `Iterable`
+of an entity type compatible with the schema of the column STRUCT value. For example: `List<TwoInts> pair;`
+where the `TwoInts` type is defined:
+[source, java]
+----
+class TwoInts {
+
+  int val1;
+
+  int val2;
+}
+----
+
+If a `Converter<Struct, A>` is provided, then properties of type `List<A>` can be used.
+
 
 === Spanner Template
 
