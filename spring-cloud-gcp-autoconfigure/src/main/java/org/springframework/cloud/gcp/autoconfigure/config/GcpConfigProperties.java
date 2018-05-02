@@ -23,7 +23,6 @@ import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.CredentialsSupplier;
 import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.core.env.Environment;
-import org.springframework.util.StringUtils;
 
 /**
  * Configuration for {@link GoogleConfigPropertySourceLocator}.
@@ -70,11 +69,19 @@ public class GcpConfigProperties implements CredentialsSupplier {
 	private final Credentials credentials = new Credentials(GcpScope.RUNTIME_CONFIG_SCOPE.getUrl());
 
 	public GcpConfigProperties(Environment environment) {
-		String[] profiles = environment.getActiveProfiles();
-		if (profiles.length == 0) {
-			profiles = environment.getDefaultProfiles();
+		if (this.profile == null) {
+			String[] profiles = environment.getActiveProfiles();
+			if (profiles.length == 0) {
+				profiles = environment.getDefaultProfiles();
+			}
+
+			if (profiles.length > 0) {
+				this.profile = profiles[profiles.length - 1];
+			}
+			else {
+				this.profile = "default";
+			}
 		}
-		this.profile = StringUtils.arrayToCommaDelimitedString(profiles);
 	}
 
 	public void setEnabled(boolean enabled) {
