@@ -1,0 +1,29 @@
+= Spring Cloud GCP Stream Binder for Pub/Sub Code Sample
+
+This code sample demonstrates how to use the Spring Cloud Stream binder for Google Cloud Pub/Sub.
+The sample app prompts a user for a message and their user name.
+That data is added to a `UserMessage` object, together with the time of message creation, and is sent through Google Cloud Pub/Sub to a sink which simply logs the message.
+
+If the topic and subscription for the sink and source don't exist, the binder will automatically create them in Google Cloud Pub/Sub based on the values in link:src/main/resources/application.properties[application.properties].
+
+== Running the code sample
+
+1. Configure your credentials by following link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter[these instructions].
++
+Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials], Spring will auto-discover those parameters for you.
+
+2. Set your project ID using the `spring.cloud.gcp.project-id` property in link:src/main/resources/application.properties[application.properties] or use the `gcloud config set project [PROJECT_ID]` Cloud SDK command.
+
+3. Set the topic and subscription name in the link:src/main/resources/application.properties[application.properties] file.
++
+If you're relying on the binder automatically creating the topic and subscription for you, they need to have the same name so that the messages are properly routed.
++
+Alternatively, you can manually create the topic and subscription from the https://console.cloud.google.com/cloudpubsub[Google Cloud Console].
+
+4. Run the `mvn clean spring-boot:run` in the root of the code sample to get the app running.
+
+5. Browse `localhost:8080`, type in a message and a user name and press the `Post it!` button.
+
+6. Verify in your app's logs that a similar message was posted:
++
+`New message received from [USERNAME] at [TIME_MESSAGE_SENT]: [MESSAGE]`

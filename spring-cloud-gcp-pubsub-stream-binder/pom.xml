@@ -11,7 +11,7 @@
 
 	<artifactId>spring-cloud-gcp-pubsub-stream-binder</artifactId>
 	<name>Spring Cloud GCP Stream</name>
-	<description>Google Cloud Pub/Sub binder for Spring Cloud Stream</description>
+	<description>Google Cloud Pub/Sub Binder for Spring Cloud Stream</description>
 
 	<dependencies>
 		<dependency>
