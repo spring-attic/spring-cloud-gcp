@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestEntityFlat;
+import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestEntityFlatFaulty;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -82,13 +83,42 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 		assertEquals("value", result.innerTestEntities.get(0).value);
 	}
 
+	@Test(expected = SpannerDataException.class)
+	public void readArraySingularMismatchTest() {
+		Struct rowStruct = Struct.newBuilder().add("id", Value.string("key1"))
+				.add("innerTestEntities", Value.int64(3)).build();
+		this.spannerEntityReader.read(OuterTestEntity.class, rowStruct);
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void readSingularArrayMismatchTest() {
+		Struct colStruct = Struct.newBuilder().add("string_col", Value.string("value"))
+				.build();
+		Struct rowStruct = Struct.newBuilder().add("id", Value.string("key1"))
+				.add("innerLengths",
+						ImmutableList.of(Type.StructField.of("string_col", Type.string())),
+						ImmutableList.of(colStruct))
+				.build();
+
+		new ConverterAwareMappingSpannerEntityReader(
+				new SpannerMappingContext(),
+				new SpannerReadConverter(Arrays.asList(new Converter<Struct, Integer>() {
+					@Nullable
+					@Override
+					public Integer convert(Struct source) {
+						return source.getString("string_col").length();
+					}
+				}))).read(OuterTestEntityFlatFaulty.class, rowStruct);
+	}
+
 	@Test
 	public void readConvertedNestedStructTest() {
 		Struct colStruct = Struct.newBuilder().add("string_col", Value.string("value"))
 				.build();
 		Struct rowStruct = Struct.newBuilder().add("id", Value.string("key1"))
 				.add("innerLengths",
-						ImmutableList.of(Type.StructField.of("string_col", Type.string())),
+						ImmutableList
+								.of(Type.StructField.of("string_col", Type.string())),
 						ImmutableList.of(colStruct))
 				.build();
 

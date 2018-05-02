@@ -28,7 +28,10 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.AbstractStructReader;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.Type.Code;
 import com.google.common.collect.ImmutableMap;
+
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 
 /**
  * A convenience wrapper class around Struct to make reading columns easier without
@@ -94,6 +97,9 @@ class StructAccessor {
 	}
 
 	List getListValue(String colName) {
+		if (this.struct.getColumnType(colName).getCode() != Code.ARRAY) {
+			throw new SpannerDataException("Column is not an ARRAY type: " + colName);
+		}
 		Type.Code innerTypeCode = this.struct.getColumnType(colName).getArrayElementType().getCode();
 		Class clazz = this.spannerTypeMapper.getSimpleJavaClassFor(innerTypeCode);
 		BiFunction<Struct, String, List> readMethod = readIterableMapping.get(clazz);

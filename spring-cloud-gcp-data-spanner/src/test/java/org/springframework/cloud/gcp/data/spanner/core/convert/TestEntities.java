@@ -108,6 +108,14 @@ public class TestEntities {
 		List<Integer> innerLengths;
 	}
 
+	@Table(name = "outer_test_entity_flat_faulty")
+	static class OuterTestEntityFlatFaulty {
+		@PrimaryKey
+		String id;
+
+		Integer innerLengths;
+	}
+
 	static class InnerTestEntity {
 		@PrimaryKey
 		String value;
