@@ -58,7 +58,7 @@ import static org.mockito.Mockito.when;
  * @author Artem Bilan
  * @author Mike Eltsufin
  */
-@SpringBootTest
+@SpringBootTest(properties = "spring.main.banner-mode=off")
 @RunWith(SpringRunner.class)
 public class GoogleStorageTests {
 

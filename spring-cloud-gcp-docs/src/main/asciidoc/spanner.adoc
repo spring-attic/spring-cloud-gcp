@@ -1,6 +1,6 @@
 :spring-data-commons-ref: https://docs.spring.io/spring-data/data-commons/docs/current/reference/html
 
-== Spring Data Spanner
+== Spring Data Cloud Spanner
 
 http://projects.spring.io/spring-data/[Spring Data]
 is an abstraction for storing and retrieving POJOs in numerous storage technologies.
@@ -9,7 +9,7 @@ Spanner].
 
 A Spring Boot starter is provided to auto-configure the various Storage components.
 
-Maven coordinates for the Spring Boot Starter for Spanner, using Spring Cloud GCP BOM:
+Maven coordinates for the Spring Boot Starter for Cloud Spanner, using Spring Cloud GCP BOM:
 
 [source,xml]
 ----
@@ -28,18 +28,18 @@ dependencies {
 }
 ----
 
-This setup takes care of bringing in the latest compatible version of Cloud Java Spanner libraries
+This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Spanner libraries
 as well.
 
 
 === Configuration
 
-To setup Spring Data Spanner, you have to configure the following:
+To setup Spring Data Cloud Spanner, you have to configure the following:
 
 * Setup the connection details to Google Cloud Spanner.
 * Enable Spring Data Repositories (optional).
 
-==== Spanner settings
+==== Cloud Spanner settings
 
 You can the use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot
 Starter for Spring Data Spanner] to autoconfigure Google Cloud Spanner in your Spring application.
@@ -49,9 +49,9 @@ The following configuration options are available:
 
 |===
 | Name | Description | Required | Default value
-| `spring.cloud.gcp.spanner.instance-id` | Spanner instance to use | Yes |
+| `spring.cloud.gcp.spanner.instance-id` | Cloud Spanner instance to use | Yes |
 | `spring.cloud.gcp.spanner.database` |
-Spanner database to use | Yes |
+Cloud Spanner database to use | Yes |
 | `spring.cloud.gcp.spanner.project-id` | GCP project ID where the Google Cloud Spanner API
 is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
 | No |
@@ -60,21 +60,21 @@ Google Cloud Spanner API, if different from the ones in the
 <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
 | `spring.cloud.gcp.spanner.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
-Spanner credentials | No | https://www.googleapis.com/auth/spanner.data
-| `spring.cloud.gcp.spanner.numRpcChannels` | Number of gRPC channels used to connect to Spanner | No | 4 - Determined by Spanner client library
-| `spring.cloud.gcp.spanner.prefetchChunks` | Number of chunks prefetched by Spanner for read and query | No | 4 - Determined by Spanner client library
-| `spring.cloud.gcp.spanner.minSessions` | Minimum number of sessions maintained in the session pool | No | 0 - Determined by Spanner client library
-| `spring.cloud.gcp.spanner.maxSessions` | Maximum number of sessions session pool can have | No | 400 - Determined by Spanner client library
-| `spring.cloud.gcp.spanner.maxIdleSessions` | Maximum number of idle sessions session pool will maintain | No | 0 - Determined by Spanner client library
-| `spring.cloud.gcp.spanner.writeSessionsFraction` | Fraction of sessions to be kept prepared for write transactions | No | 0.2 - Determined by Spanner client library
-| `spring.cloud.gcp.spanner.keepAliveIntervalMinutes` | How long to keep idle sessions alive | No | 30 - Determined by Spanner client library
+Cloud Spanner credentials | No | https://www.googleapis.com/auth/spanner.data
+| `spring.cloud.gcp.spanner.numRpcChannels` | Number of gRPC channels used to connect to Cloud Spanner | No | 4 - Determined by Cloud Spanner client library
+| `spring.cloud.gcp.spanner.prefetchChunks` | Number of chunks prefetched by Cloud Spanner for read and query | No | 4 - Determined by Cloud Spanner client library
+| `spring.cloud.gcp.spanner.minSessions` | Minimum number of sessions maintained in the session pool | No | 0 - Determined by Cloud Spanner client library
+| `spring.cloud.gcp.spanner.maxSessions` | Maximum number of sessions session pool can have | No | 400 - Determined by Cloud Spanner client library
+| `spring.cloud.gcp.spanner.maxIdleSessions` | Maximum number of idle sessions session pool will maintain | No | 0 - Determined by Cloud Spanner client library
+| `spring.cloud.gcp.spanner.writeSessionsFraction` | Fraction of sessions to be kept prepared for write transactions | No | 0.2 - Determined by Cloud Spanner client library
+| `spring.cloud.gcp.spanner.keepAliveIntervalMinutes` | How long to keep idle sessions alive | No | 30 - Determined by Cloud Spanner client library
 |===
 
 ==== Repository settings
 
 Spring Data Repositories can be configured via the `@EnableSpannerRepositories` annotation on your
 main `@Configuration` class.
-With our Spring Boot Starter for Spring Data Spanner, `@EnableSpannerRepositories` is automatically
+With our Spring Boot Starter for Spring Data Cloud Spanner, `@EnableSpannerRepositories` is automatically
 added.
 It is not required to add it to any other class, unless there is a need to override finer
 grain configuration parameters provided by

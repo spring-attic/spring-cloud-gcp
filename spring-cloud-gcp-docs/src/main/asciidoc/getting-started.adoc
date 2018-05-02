@@ -19,7 +19,7 @@ Most of the autoconfiguration code is only enabled if other dependencies are add
 |Config
 |org.springframework.cloud:spring-cloud-gcp-starter-config
 
-|Spanner
+|Cloud Spanner
 |org.springframework.cloud:spring-cloud-gcp-starter-data-spanner
 
 |Logging

@@ -12,7 +12,7 @@ Currently, this repository provides support for:
 * link:spring-cloud-gcp-pubsub[Spring Cloud GCP Pub/Sub, including Spring Integration Channel Adapters]
 * link:spring-cloud-gcp-pubsub-stream-binder[Spring Cloud GCP Pub/Sub Stream Binder]
 * link:spring-cloud-gcp-storage[Spring Resource Abstraction for Google Cloud Storage, including Spring Integration Channel Adapters]
-* link:spring-cloud-gcp-data-spanner[Spring Data Spanner]
+* link:spring-cloud-gcp-data-spanner[Spring Data Cloud Spanner]
 * Spring Boot starters
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter[GCP Support]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Google Cloud Config]

@@ -1,6 +1,6 @@
 :ext-relative: adoc
 
-= image:spanner-logo.png[50,50] Spring Data Spanner
+= image:spanner-logo.png[50,50] Spring Data Cloud Spanner
 
 Provides a http://projects.spring.io/spring-data/[Spring Data Module] for https://cloud.google.com/spanner/[Google Cloud Spanner].
 
@@ -45,12 +45,12 @@ dependencies {
 
 ==== Features
 
-Spring Spanner Data is considered Alpha stability.
+Spring Data Cloud Spanner is Alpha stability.
 
 Features in 1.0.0.M3:
 
-- Mapping POJO domain objects to Spanner tables using annotations
-   ** built-in support for basic Spanner types
+- Mapping POJO domain objects to Cloud Spanner tables using annotations
+   ** built-in support for basic Cloud Spanner types
    ** built-in support for common Java types
    ** any Java type can be supported with user defined type conversions
    ** SpEL expressions for table name resolution
@@ -68,8 +68,8 @@ Features in 1.0.0.M3:
 
 ====  Where to go from here?
 
-* Try out the link:../spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[Spring Data Spanner Sample application]
-* Detailed documentation: link:../spring-cloud-gcp-docs/src/main/asciidoc/spanner.adoc[Spring Data Spanner documentation]
+* Try out the link:../spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[Spring Data Cloud Spanner Sample application]
+* Detailed documentation: link:../spring-cloud-gcp-docs/src/main/asciidoc/spanner.adoc[Spring Data Cloud Spanner documentation]
 * Overall project documentation: https://cloud.spring.io/spring-cloud-gcp[Spring Cloud GCP reference]
 
 
