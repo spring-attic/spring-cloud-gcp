@@ -31,6 +31,7 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
  * {@link StructAccessor}
  *
  * @author Balint Pato
+ * @author Chengyuan Zhao
  */
 class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersistentProperty> {
 
@@ -66,19 +67,19 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 					colName, propType));
 		}
 		return value;
-
 	}
 
 	private Object readSingleWithConversion(SpannerPersistentProperty spannerPersistentProperty) {
 		String colName = spannerPersistentProperty.getColumnName();
 		Class targetType = spannerPersistentProperty.getType();
 		Object value = this.structAccessor.getSingleValue(colName);
-		return convertOrRead(targetType, value);
+		return value == null ? null : convertOrRead(targetType, value);
 	}
 
 	private <T> T convertOrRead(Class<T> targetType, Object sourceValue) {
 		Class<?> sourceClass = sourceValue.getClass();
 		return Struct.class.isAssignableFrom(sourceClass)
+				&& !this.readConverter.canConvert(sourceClass, targetType)
 				? this.entityReader.read(targetType, (Struct) sourceValue)
 				: this.readConverter.convert(sourceValue, targetType);
 	}

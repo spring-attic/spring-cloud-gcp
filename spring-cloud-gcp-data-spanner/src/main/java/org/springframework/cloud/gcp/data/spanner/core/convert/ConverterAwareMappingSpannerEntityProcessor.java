@@ -37,8 +37,11 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.Assert;
 
 /**
- * @author Balint Pato
+ * The primary class for writing entity objects to Spanner and creating entity objects
+ * from rows stored in Spanner.
+ *
  * @author Chengyuan Zhao
+ * @author Balint Pato
  */
 public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntityProcessor {
 
