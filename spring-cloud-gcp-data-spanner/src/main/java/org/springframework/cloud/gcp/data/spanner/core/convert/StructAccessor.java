@@ -91,6 +91,8 @@ class StructAccessor {
 				: this.spannerTypeMapper.getSimpleJavaClassFor(code);
 		BiFunction readFunction = singleItemReadMethodMapping.get(sourceType);
 		if (readFunction == null) {
+			// This case should only occur if the POJO field is non-Iterable, but the column type
+			// is ARRAY of STRUCT, TIMESTAMP, DATE, BYTES, or STRING. This use-case is not supported.
 			return null;
 		}
 		return readFunction.apply(this.struct, colName);
