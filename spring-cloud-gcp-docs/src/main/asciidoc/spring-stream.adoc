@@ -1,0 +1,35 @@
+== Spring Cloud Stream
+
+Spring Cloud GCP provides a https://cloud.spring.io/spring-cloud-stream/[Spring Cloud Stream] binder to Google Cloud Pub/Sub.
+
+The provided binder relies on the https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-pubsub/src/main/java/org/springframework/cloud/gcp/pubsub/integration[Spring Integration Channel Adapters for Google Cloud Pub/Sub].
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-pubsub-stream-binder</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub-stream-binder'
+}
+----
+
+=== Getting started
+
+There is a link:../spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[code sample] that demonstrates how to build a simple app to send messages over a Spring Cloud Stream Binder for Google Cloud Pub/Sub.
+
+NOTE: Partitioning and consumer groups are not currently supported by this binder.
+
+=== Configuration
+
+You can configure the Spring Cloud Stream Binder for Google Cloud Pub/Sub to automatically generate the underlying resources, like the Google Cloud Pub/Sub subscriptions for the consumers.
+For that, you can use the `spring.cloud.stream.gcp.pubsub.bindings.[CHANNEL-NAME].consumer.auto-create-resources` property, which is turned ON by default.
