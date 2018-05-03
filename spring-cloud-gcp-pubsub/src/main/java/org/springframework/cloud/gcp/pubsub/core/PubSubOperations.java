@@ -100,10 +100,12 @@ public interface PubSubOperations {
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
 	 * @param retrySettings the timeout and retry setting for the pull request
+	 * @param acknowledge if {@code true}, messages are automatically acknowledge. If false, the
+	 *                    returned {@link PubsubMessage}'s will contain the ack ID in the "" header
 	 * @return the list of received messages
 	 */
 	List<PubsubMessage> pull(String subscription, Integer maxMessages,
-			Boolean returnImmediately, RetrySettings retrySettings);
+			Boolean returnImmediately, RetrySettings retrySettings, boolean acknowledge);
 
 	/**
 	 * Pull and auto-acknowledge a message from a Google Cloud Pub/Sub subscription.
