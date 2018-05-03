@@ -60,7 +60,7 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 		this.expressionParser = expressionParser;
 	}
 
-	Class getEntityType(QueryMethod queryMethod) {
+	Class<?> getEntityType(QueryMethod queryMethod) {
 		return queryMethod.getResultProcessor().getReturnedType().getDomainType();
 	}
 

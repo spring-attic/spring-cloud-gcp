@@ -48,7 +48,7 @@ public abstract class SpannerCustomConverter {
 		customConversions.registerConvertersIn(this.conversionService);
 	}
 
-	boolean canConvert(Class sourceType, Class targetType) {
+	boolean canConvert(Class<?> sourceType, Class<?> targetType) {
 		Class boxedTargetType = ConversionUtils.boxIfNeeded(targetType);
 		Class boxedSourceType = ConversionUtils.boxIfNeeded(sourceType);
 		return boxedSourceType.equals(boxedTargetType)
