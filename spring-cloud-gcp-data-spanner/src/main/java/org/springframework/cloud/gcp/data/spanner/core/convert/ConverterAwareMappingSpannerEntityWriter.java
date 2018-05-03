@@ -26,7 +26,6 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
-import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ValueBinder;
 import com.google.common.collect.ImmutableMap;
@@ -60,14 +59,14 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 
 	public static final Map<Class<?>, BiFunction<ValueBinder, ?, ?>> singleItemType2ToMethodMap;
 
-	static final Map<Class<?>, BiConsumer<ValueBinder<Mutation.WriteBuilder>, Iterable>>
+	static final Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>>
 			iterablePropertyType2ToMethodMap = createIterableTypeMapping();
 
 	@SuppressWarnings("unchecked")
-	private static Map<Class<?>, BiConsumer<ValueBinder<Mutation.WriteBuilder>, Iterable>> createIterableTypeMapping() {
+	private static Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>> createIterableTypeMapping() {
 		// Java 8 has compile errors when using the builder extension methods
 		// @formatter:off
-		ImmutableMap.Builder<Class<?>, BiConsumer<ValueBinder<Mutation.WriteBuilder>, Iterable>> builder =
+		ImmutableMap.Builder<Class<?>, BiConsumer<ValueBinder<?>, Iterable>> builder =
 						new ImmutableMap.Builder<>();
 		// @formatter:on
 
@@ -288,7 +287,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		if (!valueSet) {
 			for (Class<?> targetType : iterablePropertyType2ToMethodMap.keySet()) {
 				if (this.writeConverter.canConvert(innerType, targetType)) {
-					BiConsumer<ValueBinder<Mutation.WriteBuilder>, Iterable> toMethod =
+					BiConsumer<ValueBinder<?>, Iterable> toMethod =
 							iterablePropertyType2ToMethodMap.get(targetType);
 					toMethod.accept(valueBinder,
 							ConversionUtils.convertIterable(value, targetType, this.writeConverter));
