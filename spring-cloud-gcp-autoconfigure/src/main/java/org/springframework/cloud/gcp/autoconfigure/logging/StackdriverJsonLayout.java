@@ -29,6 +29,8 @@ import ch.qos.logback.contrib.json.classic.JsonLayout;
 import com.google.cloud.logging.TraceLoggingEnhancer;
 import com.google.gson.Gson;
 
+import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.StringUtils;
 
 /**
@@ -163,6 +165,17 @@ public class StackdriverJsonLayout extends JsonLayout {
 		this.includeExceptionInMessage = includeExceptionInMessage;
 	}
 
+	@Override
+	public void start() {
+		super.start();
+
+		// If no Project ID set, then attempt to resolve it with the default project ID provider
+		if (StringUtils.isEmpty(this.projectId) || this.projectId.endsWith("_IS_UNDEFINED")) {
+			GcpProjectIdProvider projectIdProvider = new DefaultGcpProjectIdProvider();
+			this.projectId = projectIdProvider.getProjectId();
+		}
+	}
+
 	/**
 	 * @param event the logging event
 	 * @return the map which should get rendered as JSON
@@ -211,6 +224,15 @@ public class StackdriverJsonLayout extends JsonLayout {
 		return map;
 	}
 
+	protected String formatTraceId(final String traceId) {
+		// Trace IDs are either 64-bit or 128-bit, which is 16-digit hex, or 32-digit hex.
+		// If traceId is 64-bit (16-digit hex), then we need to prepend 0's to make a 32-digit hex.
+		if (traceId != null && traceId.length() == 16) {
+			return "0000000000000000" + traceId;
+		}
+		return traceId;
+	}
+
 	private void addTraceId(ILoggingEvent event, Map<String, Object> map) {
 		if (!this.includeTraceId) {
 			return;
@@ -223,7 +245,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 		if (!StringUtils.isEmpty(traceId)
 			&& !StringUtils.isEmpty(this.projectId)
 			&& !this.projectId.endsWith("_IS_UNDEFINED")) {
-			traceId = "projects/" + this.projectId + "/traces/" + traceId;
+			traceId = "projects/" + this.projectId + "/traces/" + formatTraceId(traceId);
 		}
 
 		add(TRACE_ID_ATTRIBUTE, this.includeTraceId, traceId, map);

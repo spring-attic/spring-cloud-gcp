@@ -55,7 +55,8 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = { "spring.cloud.gcp.storage.auto-create-files=false",
-				"spring.cloud.gcp.config.enabled=false"
+				"spring.cloud.gcp.config.enabled=false",
+				"spring.main.banner-mode=off"
 		})
 public class GcpStorageAutoConfigurationTests {
 

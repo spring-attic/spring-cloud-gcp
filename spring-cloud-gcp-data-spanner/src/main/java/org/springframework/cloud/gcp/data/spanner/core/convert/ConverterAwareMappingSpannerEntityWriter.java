@@ -40,8 +40,11 @@ import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.Assert;
 
 /**
- * @author Balint Pato
+ * The primary class for adding values from entity objects to {@link WriteBuilder} for
+ * the purpose of creating mutations for Spanner.
+ *
  * @author Chengyuan Zhao
+ * @author Balint Pato
  */
 public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWriter {
 	private static Set<Class> SPANNER_KEY_COMPATIBLE_TYPES = ImmutableSet

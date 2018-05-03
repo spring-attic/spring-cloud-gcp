@@ -46,7 +46,7 @@ public class StackdriverJsonLayoutLoggerTests {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			System.setOut(new java.io.PrintStream(out));
 
-			mdc.put(StackdriverJsonLayout.MDC_FIELD_TRACE_ID, "trace123");
+			mdc.put(StackdriverJsonLayout.MDC_FIELD_TRACE_ID, "12345678901234561234567890123456");
 			mdc.put(StackdriverJsonLayout.MDC_FIELD_SPAN_ID, "span123");
 			mdc.put(StackdriverJsonLayout.MDC_FIELD_SPAN_EXPORT, "true");
 			mdc.put("foo", "bar");
@@ -58,7 +58,8 @@ public class StackdriverJsonLayoutLoggerTests {
 			checkData(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, "test", data);
 			checkData(StackdriverJsonLayout.SEVERITY_ATTRIBUTE, "WARN", data);
 			checkData(StackdriverJsonLayout.LOGGER_ATTR_NAME, "StackdriverJsonLayoutLoggerTests", data);
-			checkData(StackdriverJsonLayout.TRACE_ID_ATTRIBUTE, "projects/test-project/traces/trace123", data);
+			checkData(StackdriverJsonLayout.TRACE_ID_ATTRIBUTE,
+					"projects/test-project/traces/12345678901234561234567890123456", data);
 			checkData(StackdriverJsonLayout.SPAN_ID_ATTRIBUTE, "span123", data);
 			checkData("foo", "bar", data);
 			assertFalse(data.containsKey(StackdriverJsonLayout.MDC_FIELD_TRACE_ID));
@@ -67,6 +68,29 @@ public class StackdriverJsonLayoutLoggerTests {
 			assertFalse(data.containsKey(JsonLayout.TIMESTAMP_ATTR_NAME));
 			assertTrue(data.containsKey(StackdriverJsonLayout.TIMESTAMP_SECONDS_ATTRIBUTE));
 			assertTrue(data.containsKey(StackdriverJsonLayout.TIMESTAMP_NANOS_ATTRIBUTE));
+		}
+		finally {
+			System.setOut(oldOut);
+			mdc.clear();
+		}
+	}
+
+	@Test
+	public void test64BitTraceId() {
+		PrintStream oldOut = System.out;
+		MDCContextMap mdc = new MDCContextMap();
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			System.setOut(new java.io.PrintStream(out));
+
+			mdc.put(StackdriverJsonLayout.MDC_FIELD_TRACE_ID, "1234567890123456");
+
+			LOGGER.warn("test");
+
+			Map data = new Gson().fromJson(new String(out.toByteArray()), Map.class);
+
+			checkData(StackdriverJsonLayout.TRACE_ID_ATTRIBUTE,
+					"projects/test-project/traces/00000000000000001234567890123456", data);
 		}
 		finally {
 			System.setOut(oldOut);

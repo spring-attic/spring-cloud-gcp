@@ -114,7 +114,16 @@ The following properties are available:
 [options="header",]
 |=======================================================================
 | Property | Default Value | Description
-| `projectId` |  | Only required for logging the correct traceId: `projects/[PROJECT-ID]/traces/[TRACE-ID]`. If `projectId` is not set, the logged `traceId` will match the one provided by `spring-cloud-gpc-trace`
+| `projectId`
+a| If not set, default value is determined in the following order:
+
+1. `SPRING_CLOUD_GCP_LOGGING_PROJECT_ID` Environmental Variable.
+1. Value of `DefaultGcpProjectIdProvider.getProjectId()`
+a| This is used to generate fully qualified Stackdriver Trace ID format: `projects/[PROJECT-ID]/traces/[TRACE-ID]`.
+
+This format is required to correlate trace between Stackdriver Trace and Stackdriver Logging.
+
+If `projectId` is not set and cannot be determined, then it'll log `traceId` without the fully qualified format.
 | `includeTraceId` | `true` | Should the `traceId` be included
 | `includeSpanId` | `true` | Should the `spanId` be included
 | `includeLevel` | `true` | Should the severity be included
