@@ -96,8 +96,8 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Mutation delete(Object object) {
-		return delete((Class) object.getClass(), Collections.singletonList(object));
+	public <T> Mutation delete(T object) {
+		return delete((Class<T>) object.getClass(), Collections.singletonList(object));
 	}
 
 	@Override
