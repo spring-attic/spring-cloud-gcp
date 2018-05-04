@@ -73,7 +73,7 @@ public interface SpannerMutationFactory {
 	 * @param object The object to delete.
 	 * @return The delete mutation.
 	 */
-	Mutation delete(Object object);
+	<T> Mutation delete(T object);
 
 	/**
 	 * Deletes a set of keys from Spanner.

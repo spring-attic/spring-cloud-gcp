@@ -70,6 +70,7 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void writeTest() {
 		TestEntity t = new TestEntity();
 		t.id = "key1";
@@ -212,6 +213,7 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void writeSomeColumnsTest() throws ClassNotFoundException {
 		TestEntity t = new TestEntity();
 		t.id = "key1";
@@ -232,7 +234,7 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 		when(writeBuilder.set(eq("booleanField"))).thenReturn(booleanFieldBinder);
 
 		this.spannerEntityWriter.write(t, writeBuilder,
-				new HashSet<>(Arrays.asList(new String[] { "id", "custom_col" })));
+				new HashSet<>(Arrays.asList("id", "custom_col")));
 
 		verify(idBinder, times(1)).to(eq(t.id));
 		verify(stringFieldBinder, times(1)).to(eq(t.stringField));

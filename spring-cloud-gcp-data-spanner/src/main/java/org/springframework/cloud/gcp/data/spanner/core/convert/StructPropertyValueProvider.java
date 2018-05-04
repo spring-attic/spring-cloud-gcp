@@ -49,7 +49,8 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 	}
 
 	@Override
-	public Object getPropertyValue(SpannerPersistentProperty spannerPersistentProperty) {
+	@SuppressWarnings("unchecked")
+	public <T> T getPropertyValue(SpannerPersistentProperty spannerPersistentProperty) {
 		String colName = spannerPersistentProperty.getColumnName();
 		if (!this.structAccessor.hasColumn(colName)) {
 			throw new SpannerDataException("Column not found: " + colName);
@@ -66,14 +67,15 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 							+ " The property's type is %s.",
 					colName, propType));
 		}
-		return value;
+		return (T) value;
 	}
 
-	private Object readSingleWithConversion(SpannerPersistentProperty spannerPersistentProperty) {
+	@SuppressWarnings("unchecked")
+	private <T> T readSingleWithConversion(
+			SpannerPersistentProperty spannerPersistentProperty) {
 		String colName = spannerPersistentProperty.getColumnName();
-		Class targetType = spannerPersistentProperty.getType();
 		Object value = this.structAccessor.getSingleValue(colName);
-		return value == null ? null : convertOrRead(targetType, value);
+		return value == null ? null : convertOrRead((Class<T>) spannerPersistentProperty.getType(), value);
 	}
 
 	private <T> T convertOrRead(Class<T> targetType, Object sourceValue) {
@@ -84,13 +86,17 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 				: this.readConverter.convert(sourceValue, targetType);
 	}
 
-	private Iterable readIterableWithConversion(SpannerPersistentProperty spannerPersistentProperty) {
+	@SuppressWarnings("unchecked")
+	private <T> Iterable<T> readIterableWithConversion(
+			SpannerPersistentProperty spannerPersistentProperty) {
 		String colName = spannerPersistentProperty.getColumnName();
-		List listValue = this.structAccessor.getListValue(colName);
-		return convertOrReadIterable(listValue, spannerPersistentProperty.getColumnInnerType());
+		List<?> listValue = this.structAccessor.getListValue(colName);
+		return convertOrReadIterable(listValue,
+				(Class<T>) spannerPersistentProperty.getColumnInnerType());
 	}
 
-	private <T> Iterable<T> convertOrReadIterable(Iterable source, Class<T> targetType) {
+	private <T> Iterable<T> convertOrReadIterable(Iterable<?> source,
+			Class<T> targetType) {
 		List<T> result = new ArrayList<>();
 		source.forEach(item -> result.add(convertOrRead(targetType, item)));
 		return result;

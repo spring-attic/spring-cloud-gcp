@@ -21,6 +21,7 @@ import java.util.Optional;
 import com.google.cloud.spanner.Key;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
@@ -37,7 +38,6 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Chengyuan Zhao
@@ -47,21 +47,19 @@ public class SpannerRepositoryFactoryTests {
 
 	private SpannerRepositoryFactory spannerRepositoryFactory;
 
-	private SpannerMappingContext spannerMappingContext;
-
 	private SpannerTemplate spannerTemplate;
 
 	@Before
 	public void setUp() {
-		this.spannerMappingContext = new SpannerMappingContext();
+		SpannerMappingContext spannerMappingContext = new SpannerMappingContext();
 		this.spannerTemplate = mock(SpannerTemplate.class);
 		this.spannerRepositoryFactory = new SpannerRepositoryFactory(
-				this.spannerMappingContext, this.spannerTemplate);
+				spannerMappingContext, this.spannerTemplate);
 	}
 
 	@Test
 	public void getEntityInformationTest() {
-		EntityInformation entityInformation = this.spannerRepositoryFactory
+		EntityInformation<TestEntity, Key> entityInformation = this.spannerRepositoryFactory
 				.getEntityInformation(TestEntity.class);
 		assertEquals(TestEntity.class, entityInformation.getJavaType());
 		assertEquals(Key.class, entityInformation.getIdType());
@@ -83,9 +81,11 @@ public class SpannerRepositoryFactoryTests {
 	@Test
 	public void getTargetRepositoryTest() {
 		RepositoryInformation repoInfo = mock(RepositoryInformation.class);
-		when(repoInfo.getRepositoryBaseClass())
-				.thenReturn((Class) SimpleSpannerRepository.class);
-		when(repoInfo.getDomainType()).thenReturn((Class) TestEntity.class);
+		// @formatter:off
+		Mockito.<Class<?>>when(repoInfo.getRepositoryBaseClass())
+				.thenReturn(SimpleSpannerRepository.class);
+		Mockito.<Class<?>>when(repoInfo.getDomainType()).thenReturn(TestEntity.class);
+		// @formatter:on
 		Object repo = this.spannerRepositoryFactory.getTargetRepository(repoInfo);
 		assertEquals(SimpleSpannerRepository.class, repo.getClass());
 	}

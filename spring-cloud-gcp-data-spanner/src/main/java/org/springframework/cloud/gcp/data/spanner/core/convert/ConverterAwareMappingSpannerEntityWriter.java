@@ -60,14 +60,16 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			.add(com.google.cloud.Date.class)
 			.build();
 
-	public static final Map<Class, BiFunction<ValueBinder, ?, ?>> singleItemType2ToMethodMap;
+	public static final Map<Class<?>, BiFunction<ValueBinder, ?, ?>> singleItemType2ToMethodMap;
 
-	static final Map<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>> iterablePropertyType2ToMethodMap;
+	static final Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>>
+			iterablePropertyType2ToMethodMap = createIterableTypeMapping();
 
-	static {
+	@SuppressWarnings("unchecked")
+	private static Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>> createIterableTypeMapping() {
 		// Java 8 has compile errors when using the builder extension methods
 		// @formatter:off
-		ImmutableMap.Builder<Class, BiConsumer<ValueBinder<WriteBuilder>, Iterable>> builder =
+		ImmutableMap.Builder<Class<?>, BiConsumer<ValueBinder<?>, Iterable>> builder =
 						new ImmutableMap.Builder<>();
 		// @formatter:on
 
@@ -79,11 +81,11 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		builder.put(Timestamp.class, ValueBinder::toTimestampArray);
 		builder.put(ByteArray.class, ValueBinder::toBytesArray);
 
-		iterablePropertyType2ToMethodMap = builder.build();
+		return builder.build();
 	}
 
 	static {
-		ImmutableMap.Builder<Class, BiFunction<ValueBinder, ?, ?>> builder = new ImmutableMap.Builder<>();
+		ImmutableMap.Builder<Class<?>, BiFunction<ValueBinder, ?, ?>> builder = new ImmutableMap.Builder<>();
 
 		builder.put(Date.class,
 				((BiFunction<ValueBinder, Date, ?>) ValueBinder::to));
@@ -183,7 +185,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		 * converter. For example, if a type can be converted to both String and Double, we want
 		 * both the this key conversion and the write converter to choose the same.
 		 */
-		for (Class validKeyType : singleItemType2ToMethodMap.keySet()) {
+		for (Class<?> validKeyType : singleItemType2ToMethodMap.keySet()) {
 			if (!isValidSpannerKeyType(validKeyType)) {
 				continue;
 			}
@@ -223,6 +225,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	 * </pre>
 	 */
 	// @formatter:on
+	@SuppressWarnings("unchecked")
 	private void writeProperty(WriteBuilder sink, PersistentPropertyAccessor accessor,
 			SpannerPersistentProperty property) {
 		Object propertyValue = accessor.getProperty(property);
@@ -242,14 +245,14 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		 * supported by spanner.
 		 */
 		if (ConversionUtils.isIterableNonByteArrayType(propertyType)) {
-			valueSet = attemptSetIterableValue((Iterable) propertyValue, valueBinder,
+			valueSet = attemptSetIterableValue((Iterable<Object>) propertyValue, valueBinder,
 					property);
 		}
 		else {
 			valueSet = attemptSetSingleItemValue(propertyValue, valueBinder,
 					propertyType);
 			if (!valueSet) {
-				for (Class targetType : this.singleItemType2ToMethodMap.keySet()) {
+				for (Class<?> targetType : singleItemType2ToMethodMap.keySet()) {
 					valueSet = attemptSetSingleItemValue(propertyValue, valueBinder,
 							targetType);
 					if (valueSet) {
@@ -265,7 +268,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		}
 	}
 
-	private boolean attemptSetIterableValue(Iterable value,
+	private boolean attemptSetIterableValue(Iterable<Object> value,
 			ValueBinder<WriteBuilder> valueBinder,
 			SpannerPersistentProperty spannerPersistentProperty) {
 
@@ -278,17 +281,17 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		// used.
 		boolean valueSet = false;
 
-		if (this.iterablePropertyType2ToMethodMap.containsKey(innerType)) {
-			this.iterablePropertyType2ToMethodMap.get(innerType).accept(valueBinder,
+		if (iterablePropertyType2ToMethodMap.containsKey(innerType)) {
+			iterablePropertyType2ToMethodMap.get(innerType).accept(valueBinder,
 					value);
 			valueSet = true;
 		}
 
 		if (!valueSet) {
-			for (Class targetType : this.iterablePropertyType2ToMethodMap.keySet()) {
+			for (Class<?> targetType : iterablePropertyType2ToMethodMap.keySet()) {
 				if (this.writeConverter.canConvert(innerType, targetType)) {
-					BiConsumer toMethod = iterablePropertyType2ToMethodMap
-							.get(targetType);
+					BiConsumer<ValueBinder<?>, Iterable> toMethod =
+							iterablePropertyType2ToMethodMap.get(targetType);
 					toMethod.accept(valueBinder,
 							ConversionUtils.convertIterable(value, targetType, this.writeConverter));
 					valueSet = true;
@@ -299,13 +302,15 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		return valueSet;
 	}
 
-	private boolean attemptSetSingleItemValue(Object value,
-			ValueBinder<WriteBuilder> valueBinder, Class targetType) {
+	@SuppressWarnings("unchecked")
+	private <T> boolean attemptSetSingleItemValue(Object value,
+			ValueBinder<WriteBuilder> valueBinder, Class<T> targetType) {
 		if (!this.writeConverter.canConvert(value.getClass(), targetType)) {
 			return false;
 		}
 		Class innerType = ConversionUtils.boxIfNeeded(targetType);
-		BiFunction toMethod = singleItemType2ToMethodMap.get(innerType);
+		BiFunction<ValueBinder, T, ?> toMethod = (BiFunction<ValueBinder, T, ?>)
+				singleItemType2ToMethodMap.get(innerType);
 		if (toMethod == null) {
 			return false;
 		}

@@ -180,28 +180,35 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private static Properties retrieveCfProperties(Map<String, Object> vcapMap,
 			String gcpServiceName, String cfServiceName, Map<String, String> fieldsToMap) {
 		Properties properties = new Properties();
-		List<Object> serviceBindings = (List<Object>) vcapMap.get(cfServiceName);
 
-		if (serviceBindings == null) {
-			return properties;
+		try {
+			List<Object> serviceBindings = (List<Object>) vcapMap.get(cfServiceName);
+
+			if (serviceBindings == null) {
+				return properties;
+			}
+
+			if (serviceBindings.size() != 1) {
+				LOGGER.warn("The service " + cfServiceName + " has to be bound to a "
+						+ "Cloud Foundry application once and only once.");
+				return properties;
+			}
+
+			Map<String, Object> serviceBinding = (Map<String, Object>) serviceBindings.get(0);
+			Map<String, String> credentialsMap = (Map<String, String>) serviceBinding.get("credentials");
+			String prefix = SPRING_CLOUD_GCP_PROPERTY_PREFIX + gcpServiceName + ".";
+			fieldsToMap.forEach(
+					(cfPropKey, gcpPropKey) -> properties.put(
+							prefix + gcpPropKey,
+							credentialsMap.get(cfPropKey)));
 		}
-
-		if (serviceBindings.size() != 1) {
-			LOGGER.warn("The service " + cfServiceName + " has to be bound to a "
-					+ "Cloud Foundry application once and only once.");
-			return properties;
+		catch (ClassCastException e) {
+			LOGGER.warn("Unexpected format of CF (VCAP) properties", e);
 		}
-
-		Map<String, Object> serviceBinding = (Map<String, Object>) serviceBindings.get(0);
-		Map<String, String> credentialsMap = (Map<String, String>) serviceBinding.get("credentials");
-		String prefix = SPRING_CLOUD_GCP_PROPERTY_PREFIX + gcpServiceName + ".";
-		fieldsToMap.forEach(
-				(cfPropKey, gcpPropKey) -> properties.put(
-						prefix + gcpPropKey,
-						credentialsMap.get(cfPropKey)));
 
 		return properties;
 	}

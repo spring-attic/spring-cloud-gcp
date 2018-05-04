@@ -108,11 +108,11 @@ class StructAccessor {
 		return readMethod.apply(this.struct, colName);
 	}
 
-	public boolean hasColumn(String columnName) {
+	boolean hasColumn(String columnName) {
 		return this.columnNamesIndex.contains(columnName);
 	}
 
-	public boolean isNull(String columnName) {
+	boolean isNull(String columnName) {
 		return this.struct.isNull(columnName);
 	}
 

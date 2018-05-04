@@ -20,8 +20,9 @@ import io.grpc.Attributes.Key;
 import org.junit.Test;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.expression.spel.SpelEvaluationException;
 
@@ -65,11 +66,8 @@ public class SpannerPersistentEntityImplTests {
 
 	@Test
 	public void testColumns() {
-		SpannerPersistentEntityImpl<TestEntity> entity =
-				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
-				.getPersistentEntity(TestEntity.class));
-
-		assertThat(entity.columns(), containsInAnyOrder("custom_col", "id"));
+		assertThat(new SpannerMappingContext().getPersistentEntity(TestEntity.class)
+				.columns(), containsInAnyOrder("id", "custom_col"));
 	}
 
 	@Test(expected = SpelEvaluationException.class)
@@ -125,11 +123,10 @@ public class SpannerPersistentEntityImplTests {
 
 	@Test(expected = SpannerDataException.class)
 	public void testSetIdProperty() {
-		SpannerPersistentEntityImpl<TestEntity> entity =
-				(SpannerPersistentEntityImpl<TestEntity>) new SpannerMappingContext()
+		SpannerPersistentEntity entity = new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class);
 
-		SpannerPersistentProperty idProperty = entity.getIdProperty();
+		PersistentProperty idProperty = entity.getIdProperty();
 
 		TestEntity t = new TestEntity();
 		entity.getPropertyAccessor(t).setProperty(idProperty, Key.of("blah"));
@@ -144,9 +141,8 @@ public class SpannerPersistentEntityImplTests {
 		SpannerPersistentEntity p = new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class);
 		PersistentPropertyAccessor accessor = p.getPropertyAccessor(t);
-		p.doWithProperties((PropertyHandler) property -> {
-			assertNotEquals("b", accessor.getProperty(property));
-		});
+		p.doWithProperties((SimplePropertyHandler) property -> assertNotEquals("b",
+				accessor.getProperty(property)));
 	}
 
 	@Test(expected = SpannerDataException.class)

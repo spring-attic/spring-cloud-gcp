@@ -24,6 +24,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Value;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
@@ -84,8 +85,9 @@ public class SqlSpannerQueryTests {
 		this.evaluationContextProvider = mock(EvaluationContextProvider.class);
 	}
 
-	private SqlSpannerQuery createQuery(String sql) {
-		return new SqlSpannerQuery(Trade.class, this.queryMethod, this.spannerTemplate,
+	private SqlSpannerQuery<Trade> createQuery(String sql) {
+		return new SqlSpannerQuery<Trade>(Trade.class, this.queryMethod,
+				this.spannerTemplate,
 				sql, this.evaluationContextProvider, this.expressionParser,
 				new SpannerMappingContext());
 	}
@@ -120,13 +122,21 @@ public class SqlSpannerQueryTests {
 
 		Parameters parameters = mock(Parameters.class);
 
-		when(this.queryMethod.getParameters()).thenReturn(parameters);
+		// @formatter:off
+		Mockito.<Parameters>when(this.queryMethod.getParameters())
+				.thenReturn(parameters);
+		// @formatter:on
+
 		when(parameters.getNumberOfParameters()).thenReturn(paramNames.length);
 		when(parameters.getParameter(anyInt())).thenAnswer(invocation -> {
 			int index = invocation.getArgument(0);
 			Parameter param = mock(Parameter.class);
 			when(param.getName()).thenReturn(Optional.of(paramNames[index]));
-			when(param.getType()).thenReturn((Class) params[index].getClass());
+
+			// @formatter:off
+			Mockito.<Class>when(param.getType()).thenReturn(params[index].getClass());
+			// @formatter:on;
+
 			return param;
 		});
 
@@ -173,7 +183,10 @@ public class SqlSpannerQueryTests {
 		String sql = "SELECT * FROM table;";
 
 		Parameters parameters = mock(Parameters.class);
-		when(this.queryMethod.getParameters()).thenReturn(parameters);
+		// @formatter:off
+		Mockito.<Parameters>when(this.queryMethod.getParameters())
+				.thenReturn(parameters);
+		// @formatter:on
 		when(parameters.getNumberOfParameters()).thenReturn(0);
 
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
@@ -186,7 +199,10 @@ public class SqlSpannerQueryTests {
 		String sql = "SELECT * FROM table;";
 
 		Parameters parameters = mock(Parameters.class);
-		when(this.queryMethod.getParameters()).thenReturn(parameters);
+		// @formatter:off
+		Mockito.<Parameters>when(this.queryMethod.getParameters())
+				.thenReturn(parameters);
+		// @formatter:on
 		when(parameters.getNumberOfParameters()).thenReturn(0);
 
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
@@ -199,7 +215,10 @@ public class SqlSpannerQueryTests {
 		String sql = "SELECT * FROM table;";
 
 		Parameters parameters = mock(Parameters.class);
-		when(this.queryMethod.getParameters()).thenReturn(parameters);
+		// @formatter:off
+		Mockito.<Parameters>when(this.queryMethod.getParameters())
+				.thenReturn(parameters);
+		// @formatter:on
 		when(parameters.getNumberOfParameters()).thenReturn(0);
 
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);

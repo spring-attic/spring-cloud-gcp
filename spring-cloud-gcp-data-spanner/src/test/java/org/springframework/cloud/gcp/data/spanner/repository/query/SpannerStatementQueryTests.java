@@ -25,6 +25,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Value;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
@@ -67,8 +68,8 @@ public class SpannerStatementQueryTests {
 		this.spannerMappingContext = new SpannerMappingContext();
 	}
 
-	private PartTreeSpannerQuery createQuery() {
-		return new PartTreeSpannerQuery(Trade.class, this.queryMethod,
+	private PartTreeSpannerQuery<Trade> createQuery() {
+		return new PartTreeSpannerQuery<Trade>(Trade.class, this.queryMethod,
 				this.spannerTemplate, this.spannerMappingContext);
 	}
 
@@ -206,10 +207,13 @@ public class SpannerStatementQueryTests {
 		assertFalse((boolean) spyQuery.execute(params));
 	}
 
-	private void queryWithMockResult(String queryName, List results) {
+	private void queryWithMockResult(String queryName, List<Trade> results) {
 		when(this.queryMethod.getName()).thenReturn(queryName);
 		this.partTreeSpannerQuery = createQuery();
-		when(this.spannerTemplate.query(any(), (Statement) any())).thenReturn(results);
+		// @formatter:off
+		when(this.spannerTemplate.query(Mockito.<Class<Trade>>any(), any()))
+				.thenReturn(results);
+		// @formatter:on
 	}
 
 	@Table(name = "trades")

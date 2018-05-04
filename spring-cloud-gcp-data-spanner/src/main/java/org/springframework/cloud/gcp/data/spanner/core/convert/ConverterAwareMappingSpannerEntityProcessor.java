@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.google.cloud.spanner.Key;
-import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
@@ -99,7 +98,7 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 
 	@Override
 	public Class getCorrespondingSpannerJavaType(Class originalType, boolean isIterableInnerType) {
-		Set<Class> spannerTypes = (isIterableInnerType
+		Set<Class<?>> spannerTypes = (isIterableInnerType
 				? ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap
 				: ConverterAwareMappingSpannerEntityWriter.singleItemType2ToMethodMap).keySet();
 		if (spannerTypes.contains(originalType)) {
@@ -177,10 +176,10 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 	/**
 	 * Writes each of the source properties to the sink.
 	 * @param source entity to be written
-	 * @param sink the stateful {@link Mutation.WriteBuilder} as a target for writing.
+	 * @param sink the stateful {@link WriteBuilder} as a target for writing.
 	 */
 	@Override
-	public void write(Object source, Mutation.WriteBuilder sink) {
+	public void write(Object source, WriteBuilder sink) {
 		this.entityWriter.write(source, sink);
 	}
 

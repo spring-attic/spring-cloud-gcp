@@ -60,11 +60,11 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 		this.expressionParser = expressionParser;
 	}
 
-	protected Class getEntityType(QueryMethod queryMethod) {
+	Class<?> getEntityType(QueryMethod queryMethod) {
 		return queryMethod.getResultProcessor().getReturnedType().getDomainType();
 	}
 
-	protected SpannerQueryMethod createQueryMethod(Method method,
+	SpannerQueryMethod createQueryMethod(Method method,
 			RepositoryMetadata metadata, ProjectionFactory factory) {
 		return new SpannerQueryMethod(method, metadata, factory,
 				this.spannerMappingContext);
@@ -74,7 +74,7 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 	public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata,
 			ProjectionFactory factory, NamedQueries namedQueries) {
 		SpannerQueryMethod queryMethod = createQueryMethod(method, metadata, factory);
-		Class entityType = getEntityType(queryMethod);
+		Class<?> entityType = getEntityType(queryMethod);
 
 		if (queryMethod.hasAnnotatedQuery()) {
 			String sql = queryMethod.getQueryAnnotation().value();
@@ -85,20 +85,19 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 			return createSqlSpannerQuery(entityType, queryMethod, sql);
 		}
 
-
 		return createPartTreeSpannerQuery(entityType, queryMethod);
 	}
 
-	protected SqlSpannerQuery createSqlSpannerQuery(Class entityType,
+	<T> SqlSpannerQuery<T> createSqlSpannerQuery(Class<T> entityType,
 			QueryMethod queryMethod, String sql) {
-		return new SqlSpannerQuery(entityType, queryMethod, this.spannerOperations, sql,
+		return new SqlSpannerQuery<T>(entityType, queryMethod, this.spannerOperations, sql,
 				this.evaluationContextProvider, this.expressionParser,
 				this.spannerMappingContext);
 	}
 
-	protected PartTreeSpannerQuery createPartTreeSpannerQuery(Class entityType,
+	<T> PartTreeSpannerQuery<T> createPartTreeSpannerQuery(Class<T> entityType,
 			QueryMethod queryMethod) {
-		return new PartTreeSpannerQuery(entityType, queryMethod, this.spannerOperations,
+		return new PartTreeSpannerQuery<>(entityType, queryMethod, this.spannerOperations,
 				this.spannerMappingContext);
 	}
 }
