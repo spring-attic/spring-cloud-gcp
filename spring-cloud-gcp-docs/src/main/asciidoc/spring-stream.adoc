@@ -33,3 +33,5 @@ NOTE: Partitioning and consumer groups are not currently supported by this binde
 
 You can configure the Spring Cloud Stream Binder for Google Cloud Pub/Sub to automatically generate the underlying resources, like the Google Cloud Pub/Sub subscriptions for the consumers.
 For that, you can use the `spring.cloud.stream.gcp.pubsub.bindings.[CHANNEL-NAME].consumer.auto-create-resources` property, which is turned ON by default.
+
+If you are using Pub/Sub auto-configuration from the Spring Cloud GCP Pub/Sub Starter, you should refer to the <<pubsub-configuration,configuration>> section for other Pub/Sub parameters.
