@@ -27,11 +27,25 @@ dependencies {
 
 There is a link:../spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[code sample] that demonstrates how to build a simple app to send messages over a Spring Cloud Stream Binder for Google Cloud Pub/Sub.
 
+=== Overview
+
+This binder binds producers to Google Cloud Pub/Sub topics and consumers to subscriptions.
+
 NOTE: Partitioning and consumer groups are not currently supported by this binder.
 
 === Configuration
 
 You can configure the Spring Cloud Stream Binder for Google Cloud Pub/Sub to automatically generate the underlying resources, like the Google Cloud Pub/Sub subscriptions for the consumers.
 For that, you can use the `spring.cloud.stream.gcp.pubsub.bindings.[CHANNEL-NAME].consumer.auto-create-resources` property, which is turned ON by default.
+
+If automatic resource creation is turned ON and the subscription and the topic do not exist for a consumer, a subscription and a topic will be created with the same name.
+For example, for the following configuration, a topic and a subscription called `myConsumer` would be created.
+
+.application.properties
+----
+spring.cloud.stream.bindings.output.destination=myConsumer
+
+spring.cloud.stream.gcp.pubsub.bindings.output.consumer.auto-create-resources=true
+----
 
 If you are using Pub/Sub auto-configuration from the Spring Cloud GCP Pub/Sub Starter, you should refer to the <<pubsub-configuration,configuration>> section for other Pub/Sub parameters.
