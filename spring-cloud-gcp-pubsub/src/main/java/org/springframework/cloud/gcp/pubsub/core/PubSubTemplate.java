@@ -29,7 +29,6 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.retrying.RetrySettings;
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
@@ -39,7 +38,6 @@ import com.google.pubsub.v1.ModifyAckDeadlineRequest;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
-import com.google.pubsub.v1.ReceivedMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
