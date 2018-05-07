@@ -44,8 +44,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
- * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @author Ray Tsang
  */
 public class SpannerRepositoryFactory extends RepositoryFactorySupport
 		implements ApplicationContextAware {
@@ -64,7 +64,7 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport
 	 * entity types.
 	 * @param spannerTemplate the spanner operations object used by Spanner repositories.
 	 */
-	public SpannerRepositoryFactory(SpannerMappingContext spannerMappingContext,
+	SpannerRepositoryFactory(SpannerMappingContext spannerMappingContext,
 			SpannerTemplate spannerTemplate) {
 		Assert.notNull(spannerMappingContext,
 				"A valid Spanner mapping context is required.");
@@ -74,8 +74,9 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T, ID> EntityInformation<T, ID> getEntityInformation(Class<T> domainClass) {
-		SpannerPersistentEntity<?> entity = this.spannerMappingContext
+		SpannerPersistentEntity<T> entity = (SpannerPersistentEntity<T>) this.spannerMappingContext
 				.getPersistentEntity(domainClass);
 
 		if (entity == null) {
@@ -84,7 +85,8 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport
 					domainClass.getName()));
 		}
 
-		return new SpannerPersistentEntityInformation(entity);
+		return (EntityInformation<T, ID>) new SpannerPersistentEntityInformation<>(
+				entity);
 	}
 
 	@Override

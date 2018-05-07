@@ -54,8 +54,8 @@ public class GcpConfigIntegrationTests {
 				.sources(GcpContextAutoConfiguration.class, GcpConfigBootstrapConfiguration.class)
 				.web(WebApplicationType.NONE)
 				.properties("spring.cloud.gcp.config.enabled=true",
-						"spring.cloud.gcp.config.name=myapp",
-						"spring.cloud.gcp.config.profile=prod")
+						"spring.application.name=myapp",
+						"spring.profiles.active=dontexist,prod")
 				.run();
 
 		assertThat(this.context.getEnvironment().getProperty("myapp.queue-size"))

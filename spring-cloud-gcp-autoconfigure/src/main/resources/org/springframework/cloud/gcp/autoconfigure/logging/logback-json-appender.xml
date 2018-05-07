@@ -3,7 +3,7 @@
 Stackdriver json-log format provided for import.
 -->
 <included>
-    <property name="projectId" value="${projectId:-${GOOGLE_CLOUD_PROJECT}}"/>
+    <property name="projectId" value="${projectId:-${SPRING_CLOUD_GCP_LOGGING_PROJECT_ID}}"/>
 
     <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">

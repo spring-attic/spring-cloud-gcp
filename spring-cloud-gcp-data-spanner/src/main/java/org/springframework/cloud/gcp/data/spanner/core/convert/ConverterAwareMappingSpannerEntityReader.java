@@ -63,11 +63,12 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 	 * @param <R> the type of the POJO.
 	 * @return the POJO
 	 */
+	@SuppressWarnings("unchecked")
 	public <R> R read(Class<R> type, Struct source, Set<String> includeColumns,
 			boolean allowMissingColumns) {
 		boolean readAllColumns = includeColumns == null;
-		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
-				.getPersistentEntity(type);
+		SpannerPersistentEntity<R> persistentEntity =
+				(SpannerPersistentEntity<R>) this.spannerMappingContext.getPersistentEntity(type);
 
 		StructAccessor structAccessor = new StructAccessor(source);
 
@@ -85,7 +86,7 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 		// @formatter:on
 
 		EntityInstantiator instantiator = this.instantiators.getInstantiatorFor(persistentEntity);
-		Object instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
+		R instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
 		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
 
 		persistentEntity.doWithProperties(
@@ -103,7 +104,7 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 					}
 				});
 
-		return (R) instance;
+		return instance;
 	}
 
 	private boolean shouldSkipProperty(StructAccessor struct,

@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -76,12 +77,17 @@ public class SpannerQueryLookupStrategyTests {
 
 		Parameters parameters = mock(Parameters.class);
 
-		when(this.queryMethod.getParameters()).thenReturn(parameters);
+		// @formatter:off
+		Mockito.<Parameters>when(this.queryMethod.getParameters()).thenReturn(parameters);
+		// @formatter:off
+
 		when(parameters.getNumberOfParameters()).thenReturn(1);
 		when(parameters.getParameter(anyInt())).thenAnswer(invocation -> {
 			Parameter param = mock(Parameter.class);
 			when(param.getName()).thenReturn(Optional.of("tag"));
-			when(param.getType()).thenReturn((Class) Object.class);
+			// @formatter:off
+			Mockito.<Class>when(param.getType()).thenReturn(Object.class);
+			// @formatter:on
 			return param;
 		});
 

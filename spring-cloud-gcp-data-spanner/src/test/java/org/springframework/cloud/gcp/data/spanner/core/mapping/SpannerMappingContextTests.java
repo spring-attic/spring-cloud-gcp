@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -63,7 +64,7 @@ public class SpannerMappingContextTests {
 		ApplicationContext applicationContext = mock(ApplicationContext.class);
 		context.setApplicationContext(applicationContext);
 
-		context.createPersistentEntity(mock(TypeInformation.class));
+		context.createPersistentEntity(ClassTypeInformation.from(Object.class));
 
 		verify(mockEntity, times(1)).setApplicationContext(eq(applicationContext));
 	}
@@ -74,7 +75,7 @@ public class SpannerMappingContextTests {
 		SpannerPersistentEntityImpl mockEntity = mock(SpannerPersistentEntityImpl.class);
 		SpannerMappingContext context = createSpannerMappingContextWith(mockEntity);
 
-		context.createPersistentEntity(mock(TypeInformation.class));
+		context.createPersistentEntity(ClassTypeInformation.from(Object.class));
 
 		verifyZeroInteractions(mockEntity);
 	}
@@ -84,8 +85,9 @@ public class SpannerMappingContextTests {
 			SpannerPersistentEntityImpl mockEntity) {
 		return new SpannerMappingContext() {
 			@Override
-			protected <T> SpannerPersistentEntityImpl<T> constructPersistentEntity(
-					TypeInformation<T> typeInformation) {
+			@SuppressWarnings("unchecked")
+			protected  SpannerPersistentEntityImpl constructPersistentEntity(
+					TypeInformation typeInformation) {
 				return mockEntity;
 			}
 		};

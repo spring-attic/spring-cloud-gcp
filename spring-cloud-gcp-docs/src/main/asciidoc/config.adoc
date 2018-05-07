@@ -36,20 +36,12 @@ The following parameters are configurable in Spring Cloud GCP Config:
 |===
 | Name | Description | Required | Default value
 | `spring.cloud.gcp.config.enabled` | Enables the Config client | No | `false`
-| `spring.cloud.gcp.config.name` |
-Name of your application | Yes |
-| `spring.cloud.gcp.config.profile` |
-Configuration's Spring profile (e.g., prod) | No | `default`
-| `spring.cloud.gcp.config.timeout-millis` | Timeout in milliseconds for connecting to the Google
-Runtime Configuration API | No | `60000`
-| `spring.cloud.gcp.config.project-id` | GCP project ID where the Google Runtime Configuration API
-is hosted
-| No |
-| `spring.cloud.gcp.config.credentials.location` | OAuth2 credentials for authenticating with the
-Google Runtime Configuration API | No |
-| `spring.cloud.gcp.config.credentials.scopes` |
-https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
-Config credentials | No | https://www.googleapis.com/auth/cloudruntimeconfig
+| `spring.cloud.gcp.config.name` | Name of your application | No | Value of the `spring.application.name` property. If none, `application`
+| `spring.cloud.gcp.config.profile` | Active profile | No | Value of the `spring.profiles.active` property. If more than a single profile, last one is chosen
+| `spring.cloud.gcp.config.timeout-millis` | Timeout in milliseconds for connecting to the Google Runtime Configuration API | No | `60000`
+| `spring.cloud.gcp.config.project-id` | GCP project ID where the Google Runtime Configuration API is hosted | No |
+| `spring.cloud.gcp.config.credentials.location` | OAuth2 credentials for authenticating with the Google Runtime Configuration API | No |
+| `spring.cloud.gcp.config.credentials.scopes` | https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP Config credentials | No | https://www.googleapis.com/auth/cloudruntimeconfig
 |===
 
 NOTE: These properties should be specified in a
@@ -61,14 +53,10 @@ do not apply to Spring Cloud GCP Config.
 
 === Quick start
 
-1. Create a configuration in the Google Runtime Configuration API that is called
-`${spring.cloud.gcp.config.name}_${spring.cloud.gcp.config.profile}`.
-In other words, if `spring.cloud.gcp.config.name` is `myapp` and `spring.cloud.gcp.config.profile`
-is prod, the configuration should be called `myapp_prod`.
+1. Create a configuration in the Google Runtime Configuration API that is called `${spring.application.name}_${spring.profiles.active}`.
+In other words, if `spring.application.name` is `myapp` and `spring.profiles.active` is `prod`, the configuration should be called `myapp_prod`.
 +
-In order to do that, you should have the
-https://cloud.google.com/sdk/[Google Cloud SDK] installed, own a Google Cloud Project and run the
-following command:
+In order to do that, you should have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, own a Google Cloud Project and run the following command:
 +
 ----
 gcloud init # if this is your first Google Cloud SDK run.
@@ -79,8 +67,8 @@ gcloud beta runtime-config configs variables set myapp.queue-size 25 --config-na
 2. Configure your `bootstrap.properties` file with your application's configuration data:
 +
 ----
-spring.cloud.gcp.config.name=myapp
-spring.cloud.gcp.config.profile=prod
+spring.application.name=myapp
+spring.profiles.active=prod
 ----
 3. Add the `@ConfigurationProperties` annotation to a Spring-managed bean:
 +

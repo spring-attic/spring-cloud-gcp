@@ -156,10 +156,6 @@ public class SpannerPersistentEntityImpl<T>
 
 	@Override
 	public SpannerPersistentProperty[] getPrimaryKeyProperties() {
-		if (this.primaryKeyParts.isEmpty()) {
-			throw new SpannerDataException(
-					"At least one primary key property is required!");
-		}
 		SpannerPersistentProperty[] primaryKeyColumns = new SpannerPersistentProperty[this.primaryKeyParts
 				.size()];
 		for (int i = 1; i <= this.primaryKeyParts.size(); i++) {
@@ -186,7 +182,7 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
-	public Iterable<String> columns() {
+	public Set<String> columns() {
 		return Collections.unmodifiableSet(this.columnNames);
 	}
 

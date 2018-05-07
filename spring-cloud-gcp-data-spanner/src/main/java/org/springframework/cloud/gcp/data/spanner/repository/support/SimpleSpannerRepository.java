@@ -39,9 +39,9 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 
 	private final SpannerTemplate spannerTemplate;
 
-	private final Class entityType;
+	private final Class<T> entityType;
 
-	public SimpleSpannerRepository(SpannerTemplate spannerTemplate, Class entityType) {
+	SimpleSpannerRepository(SpannerTemplate spannerTemplate, Class<T> entityType) {
 		Assert.notNull(spannerTemplate, "A valid SpannerTemplate object is required.");
 		Assert.notNull(entityType, "A valid entity type is required.");
 		this.spannerTemplate = spannerTemplate;
@@ -74,46 +74,46 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	}
 
 	@Override
-	public Object save(Object entity) {
+	public <S extends T> S save(S entity) {
 		Assert.notNull(entity, "A non-null entity is required for saving.");
 		this.spannerTemplate.upsert(entity);
 		return entity;
 	}
 
 	@Override
-	public Iterable saveAll(Iterable entities) {
+	public <S extends T> Iterable<S> saveAll(Iterable<S> entities) {
 		Assert.notNull(entities, "A non-null list of entities is required for saving.");
-		for (Object entity : entities) {
+		for (S entity : entities) {
 			save(entity);
 		}
 		return entities;
 	}
 
 	@Override
-	public Optional findById(Object key) {
+	public Optional<T> findById(ID key) {
 		Assert.notNull(key, "A non-null ID is required.");
 		return doIfKey(key, k -> {
-			Object result = this.spannerTemplate.read(this.entityType, k);
-			return Optional.ofNullable(result);
+			T result = this.spannerTemplate.read(this.entityType, k);
+			return Optional.<T>ofNullable(result);
 		});
 	}
 
 	@Override
-	public boolean existsById(Object key) {
+	public boolean existsById(ID key) {
 		Assert.notNull(key, "A non-null ID is required.");
 		return findById(key).isPresent();
 	}
 
 	@Override
-	public Iterable findAll() {
+	public Iterable<T> findAll() {
 		return this.spannerTemplate.readAll(this.entityType);
 	}
 
 	@Override
-	public Iterable findAllById(Iterable iterable) {
+	public Iterable<T> findAllById(Iterable<ID> iterable) {
 		KeySet.Builder builder = KeySet.newBuilder();
 		for (Object id : iterable) {
-			doIfKey(id, k -> builder.addKey(k));
+			doIfKey(id, builder::addKey);
 		}
 		return this.spannerTemplate.read(this.entityType, builder.build());
 	}
@@ -139,7 +139,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	}
 
 	@Override
-	public void deleteAll(Iterable entities) {
+	public void deleteAll(Iterable<? extends T> entities) {
 		Assert.notNull(entities, "A non-null list of entities is required.");
 		this.spannerTemplate.delete(this.entityType, entities);
 	}
@@ -150,20 +150,20 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	}
 
 	@Override
-	public Iterable findAll(Sort sort) {
+	public Iterable<T> findAll(Sort sort) {
 		return this.spannerTemplate.queryAll(this.entityType,
 				new SpannerQueryOptions().setSort(sort));
 	}
 
 	@Override
-	public Page findAll(Pageable pageable) {
+	public Page<T> findAll(Pageable pageable) {
 		return new PageImpl<>(this.spannerTemplate.queryAll(this.entityType,
 				new SpannerQueryOptions().setLimit(pageable.getPageSize())
 						.setOffset(pageable.getOffset()).setSort(pageable.getSort())),
 				pageable, this.spannerTemplate.count(this.entityType));
 	}
 
-	private <T> T doIfKey(Object key, Function<Key, T> operation) {
+	private <A> A doIfKey(Object key, Function<Key, A> operation) {
 		Key k = this.spannerTemplate.getSpannerEntityProcessor().writeToKey(key);
 		return operation.apply(k);
 	}

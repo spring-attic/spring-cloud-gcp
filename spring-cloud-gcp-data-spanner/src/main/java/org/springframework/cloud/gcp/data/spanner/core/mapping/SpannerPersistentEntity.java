@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.util.Set;
+
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
@@ -39,11 +41,11 @@ public interface SpannerPersistentEntity<T>
 	 * Gets the column names stored for this entity.
 	 * @return the column names.
 	 */
-	Iterable<String> columns();
+	Set<String> columns();
 
 	/**
 	 * Gets the primary key properties in order.
-	 * @return
+	 * @return an array of the properties comprising the primary key in order.
 	 */
 	SpannerPersistentProperty[] getPrimaryKeyProperties();
 }

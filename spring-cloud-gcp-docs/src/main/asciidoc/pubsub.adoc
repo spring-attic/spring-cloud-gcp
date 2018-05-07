@@ -246,6 +246,7 @@ public List<String> listSubscriptions() {
 }
 ----
 
+[#pubsub-configuration]
 === Configuration
 
 The Spring Boot starter for Google Cloud Pub/Sub provides the following configuration options:

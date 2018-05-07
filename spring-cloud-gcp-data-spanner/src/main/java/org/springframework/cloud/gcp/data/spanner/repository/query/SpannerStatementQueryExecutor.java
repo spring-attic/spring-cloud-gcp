@@ -22,6 +22,7 @@ import java.util.StringJoiner;
 import java.util.function.BiFunction;
 
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.ValueBinder;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityWriter;
@@ -52,7 +53,7 @@ public class SpannerStatementQueryExecutor {
 	 * entities otherwise.
 	 * @throws UnsupportedOperationException for DELETE queries.
 	 */
-	public static Object executeQuery(Class type, PartTree tree, Object[] params,
+	public static <T> List<T> executeQuery(Class<T> type, PartTree tree, Object[] params,
 			SpannerOperations spannerOperations,
 			SpannerMappingContext spannerMappingContext) {
 		if (tree.isDelete()) {
@@ -61,17 +62,8 @@ public class SpannerStatementQueryExecutor {
 		}
 		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
 				spannerMappingContext, type);
-		List results = spannerOperations.query(type, buildStatementFromSqlWithArgs(
+		return spannerOperations.query(type, buildStatementFromSqlWithArgs(
 				sqlAndTags.getFirst(), sqlAndTags.getSecond(), params));
-		if (tree.isCountProjection()) {
-			return results.size();
-		}
-		else if (tree.isExistsProjection()) {
-			return !results.isEmpty();
-		}
-		else {
-			return results;
-		}
 	}
 
 	/**
@@ -84,6 +76,7 @@ public class SpannerStatementQueryExecutor {
 	 * @throws IllegalArgumentException if the number of tags does not match the number of
 	 * params, or if a param of an unsupported type is given.
 	 */
+	@SuppressWarnings("unchecked")
 	public static Statement buildStatementFromSqlWithArgs(String sql, List<String> tags,
 			Object[] params) {
 		if (tags == null && params == null) {
@@ -96,8 +89,11 @@ public class SpannerStatementQueryExecutor {
 		Statement.Builder builder = Statement.newBuilder(sql);
 		for (int i = 0; i < tags.size(); i++) {
 			Object param = params[i];
-			BiFunction toMethod = ConverterAwareMappingSpannerEntityWriter.singleItemType2ToMethodMap
+			// @formatter:off
+			BiFunction<ValueBinder, Object, ?> toMethod = (BiFunction<ValueBinder, Object, ?>)
+					ConverterAwareMappingSpannerEntityWriter.singleItemType2ToMethodMap
 					.get(param.getClass());
+			// @formatter:on
 			if (toMethod == null) {
 				throw new IllegalArgumentException("Param: " + param.toString()
 						+ " is not a supported type: " + param.getClass());
