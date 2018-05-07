@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.pubsub.core;
 
 import java.util.concurrent.ExecutionException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.api.core.ApiService;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.pubsub.v1.MessageReceiver;
@@ -31,21 +32,27 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.springframework.cloud.gcp.pubsub.core.test.allowed.AllowedPayload;
+import org.springframework.cloud.gcp.pubsub.core.test.disallowed.DisallowedPayload;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubTemplateTests {
@@ -68,10 +75,14 @@ public class PubSubTemplateTests {
 
 	private SettableApiFuture<String> settableApiFuture;
 
+	private PubSubTemplate createTemplate(String[] trustedPackages) {
+		return new PubSubTemplate(this.mockPublisherFactory, this.mockSubscriberFactory,
+				trustedPackages);
+	}
+
 	@Before
 	public void setUp() {
-		this.pubSubTemplate = new PubSubTemplate(this.mockPublisherFactory,
-				this.mockSubscriberFactory);
+		this.pubSubTemplate = createTemplate(null);
 		when(this.mockPublisherFactory.createPublisher("testTopic"))
 				.thenReturn(this.mockPublisher);
 		this.settableApiFuture = SettableApiFuture.create();
@@ -110,6 +121,72 @@ public class PubSubTemplateTests {
 
 		verify(this.mockPublisher, times(1))
 				.publish(isA(PubsubMessage.class));
+	}
+
+	@Test
+	public void testPublish_Object() throws JsonProcessingException {
+		AllowedPayload allowedPayload = new AllowedPayload();
+		allowedPayload.name = "allowed";
+		allowedPayload.value = 12345;
+		PubSubTemplate pubSubTemplate = spy(createTemplate(new String[] {
+				"org.springframework.cloud.gcp.pubsub.core.test.allowed" }));
+
+		doAnswer(invocation -> {
+			PubsubMessage message = invocation.getArgument(1);
+			assertEquals("{\"@class\":"
+					+ "\"org.springframework.cloud.gcp.pubsub.core.test.allowed.AllowedPayload\""
+					+ ",\"name\":\"allowed\",\"value\":12345}",
+					message.getData().toStringUtf8());
+			AllowedPayload deserialized = pubSubTemplate.getPayloadFromMessage(message,
+					AllowedPayload.class);
+			assertEquals(allowedPayload.name, deserialized.name);
+			assertEquals(allowedPayload.value, deserialized.value);
+			return null;
+		}).when(pubSubTemplate).publish(eq("test"), any());
+
+		pubSubTemplate.publish("test", allowedPayload, null);
+		verify(pubSubTemplate, times(1)).publish(eq("test"), any());
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testPublish_DisallowedObject() throws JsonProcessingException {
+		DisallowedPayload disallowedPayload = new DisallowedPayload();
+		disallowedPayload.name = "disallowed";
+		disallowedPayload.value = 12345;
+
+		// Intentionally not including the package for the disallowed payload
+		PubSubTemplate pubSubTemplate = spy(createTemplate(new String[] {
+				"org.springframework.cloud.gcp.pubsub.core.test.allowed" }));
+
+		doAnswer(invocation -> {
+			PubsubMessage message = invocation.getArgument(1);
+			DisallowedPayload deserialized = pubSubTemplate.getPayloadFromMessage(message,
+					DisallowedPayload.class);
+			assertEquals(disallowedPayload.name, deserialized.name);
+			assertEquals(disallowedPayload.value, deserialized.value);
+			return null;
+		}).when(pubSubTemplate).publish(eq("test"), any());
+
+		pubSubTemplate.publish("test", disallowedPayload, null);
+		verify(pubSubTemplate, times(1)).publish(eq("test"), any());
+	}
+
+	@Test
+	public void testPublish_ObjectNoTypeInfo() throws JsonProcessingException {
+		AllowedPayload allowedPayload = new AllowedPayload();
+		allowedPayload.name = "allowed";
+		allowedPayload.value = 12345;
+		PubSubTemplate pubSubTemplate = spy(createTemplate(null));
+
+		doAnswer(invocation -> {
+			PubsubMessage message = invocation.getArgument(1);
+			assertEquals("{\"name\":\"allowed\",\"value\":12345}",
+					message.getData().toStringUtf8());
+			return null;
+		}).when(pubSubTemplate).publish(eq("test"), any());
+
+		pubSubTemplate.publish("test", allowedPayload, null);
+		verify(pubSubTemplate, times(1)).publish(eq("test"), any());
 	}
 
 	@Test(expected = PubSubException.class)

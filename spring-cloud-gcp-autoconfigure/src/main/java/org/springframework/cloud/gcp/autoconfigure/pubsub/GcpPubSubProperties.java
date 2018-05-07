@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
@@ -25,6 +28,7 @@ import org.springframework.cloud.gcp.core.GcpScope;
 /**
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 @ConfigurationProperties("spring.cloud.gcp.pubsub")
 public class GcpPubSubProperties implements CredentialsSupplier {
@@ -42,6 +46,8 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	 * client to connect against a running pub/sub emulator
 	 */
 	private String emulatorHost;
+
+	private List<String> trustedPackages = Collections.emptyList();
 
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	@NestedConfigurationProperty
@@ -81,5 +87,13 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 	public void setEmulatorHost(String emulatorHost) {
 		this.emulatorHost = emulatorHost;
+	}
+
+	public List<String> getTrustedPackages() {
+		return this.trustedPackages;
+	}
+
+	public void setTrustedPackages(List<String> trustedPackages) {
+		this.trustedPackages = trustedPackages;
 	}
 }

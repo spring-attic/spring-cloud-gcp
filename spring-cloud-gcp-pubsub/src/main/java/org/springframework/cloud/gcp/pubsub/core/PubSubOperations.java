@@ -16,10 +16,12 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
@@ -34,6 +36,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public interface PubSubOperations {
 
@@ -78,6 +81,17 @@ public interface PubSubOperations {
 	/**
 	 * Send a message to Pub/Sub.
 	 * @param topic the name of an existing topic
+	 * @param payload an object that will be serialized and sent
+	 * @param headers map of String to String headers
+	 * @return the listenable future of the call
+	 * @throws JsonProcessingException when the payload cannot be serialized into JSON
+	 */
+	<T> ListenableFuture<String> publish(String topic, T payload,
+			Map<String, String> headers) throws JsonProcessingException;
+
+	/**
+	 * Send a message to Pub/Sub.
+	 * @param topic the name of an existing topic
 	 * @param pubsubMessage a Google Cloud Pub/Sub API message
 	 * @return the listenable future of the call
 	 */
@@ -111,4 +125,15 @@ public interface PubSubOperations {
 	 * @return a received message, or {@code null} if none exists in the subscription
 	 */
 	PubsubMessage pullNext(String subscription);
+
+	/**
+	 * Deserializes the payload of the given message into the desired type.
+	 * @param pubsubMessage the message containing the payload data
+	 * @param objectType the class object of the desired type
+	 * @param <T> the desired type of the returned object
+	 * @return an instance of the object from the payload
+	 * @throws IOException if the payload could not be deserialized into the requested
+	 * type
+	 */
+	<T> T getPayloadFromMessage(PubsubMessage pubsubMessage, Class<T> objectType) throws IOException;
 }

@@ -16,11 +16,14 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
@@ -40,6 +43,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
+import org.springframework.integration.support.json.JacksonJsonUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -47,16 +51,20 @@ import org.springframework.util.concurrent.SettableListenableFuture;
 /**
  * Default implementation of {@link PubSubOperations}.
  *
- * <p>The main Google Cloud Pub/Sub integration component for publishing to topics and consuming messages from
- * subscriptions asynchronously or by pulling.
+ * <p>
+ * The main Google Cloud Pub/Sub integration component for publishing to topics and
+ * consuming messages from subscriptions asynchronously or by pulling.
  *
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubTemplate.class);
+
+	private final ObjectMapper objectMapper;
 
 	private final PublisherFactory publisherFactory;
 
@@ -66,13 +74,19 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 * Default {@link PubSubTemplate} constructor.
 	 *
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
-	 *                         publish to topics
-	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory to
-	 *                          subscribe to subscriptions
+	 * publish to topics
+	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory
+	 * to subscribe to subscriptions
+	 * @param trustedPackages the trusted Java packages for deserialization. If null or
+	 * empty, then default type information is not included in serialization.
 	 */
-	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory) {
+	public PubSubTemplate(PublisherFactory publisherFactory,
+			SubscriberFactory subscriberFactory, String[] trustedPackages) {
 		this.publisherFactory = publisherFactory;
 		this.subscriberFactory = subscriberFactory;
+		this.objectMapper = trustedPackages == null || trustedPackages.length == 0
+				? new ObjectMapper()
+				: JacksonJsonUtils.messagingAwareMapper(trustedPackages);
 	}
 
 	@Override
@@ -103,6 +117,12 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		}
 
 		return publish(topic, pubsubMessageBuilder.build());
+	}
+
+	@Override
+	public <T> ListenableFuture<String> publish(String topic, T payload,
+			Map<String, String> headers) throws JsonProcessingException {
+		return publish(topic, this.objectMapper.writeValueAsBytes(payload), headers);
 	}
 
 	@Override
@@ -192,6 +212,13 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		List<PubsubMessage> receivedMessageList = pull(subscription, 1, true, null);
 
 		return receivedMessageList.size() > 0 ?	receivedMessageList.get(0) : null;
+	}
+
+	@Override
+	public <T> T getPayloadFromMessage(PubsubMessage pubsubMessage, Class<T> objectType)
+			throws IOException {
+		return this.objectMapper.readerFor(objectType)
+				.readValue(pubsubMessage.getData().toByteArray());
 	}
 
 	@Override

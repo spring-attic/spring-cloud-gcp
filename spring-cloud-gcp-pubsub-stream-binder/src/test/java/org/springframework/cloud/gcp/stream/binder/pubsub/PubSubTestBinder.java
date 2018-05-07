@@ -93,7 +93,7 @@ public class PubSubTestBinder extends AbstractTestBinder<PubSubMessageChannelBin
 		publisherFactory.setChannelProvider(transportChannelProvider);
 		publisherFactory.setCredentialsProvider(NoCredentialsProvider.create());
 
-		PubSubTemplate pubSubTemplate = new PubSubTemplate(publisherFactory, subscriberFactory);
+		PubSubTemplate pubSubTemplate = new PubSubTemplate(publisherFactory, subscriberFactory, null);
 
 		PubSubMessageChannelBinder binder =
 				new PubSubMessageChannelBinder(null, pubSubChannelProvisioner, pubSubTemplate);
