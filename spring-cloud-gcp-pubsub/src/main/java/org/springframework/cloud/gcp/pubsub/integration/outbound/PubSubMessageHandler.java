@@ -25,6 +25,7 @@ import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
@@ -66,6 +67,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private ListenableFutureCallback<String> publishCallback;
 
+	private PubSubHeaderMapper headerMapper = new PubSubHeaderMapper();
+
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
 		this.topicExpression = new LiteralExpression(topic);
@@ -98,8 +101,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		}
 
 		Map<String, String> headers = new HashMap<>();
-		message.getHeaders().forEach(
-				(key, value) -> headers.put(key, value.toString()));
+		this.headerMapper.fromHeaders(message.getHeaders(), headers);
 
 		ListenableFuture<String> pubsubFuture =
 				this.pubSubTemplate.publish(topic, pubsubPayload, headers);
@@ -216,6 +218,14 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	 */
 	public void setTopicExpressionString(String topicExpressionString) {
 		this.topicExpression = this.EXPRESSION_PARSER.parseExpression(topicExpressionString);
+	}
+
+	public void setFilterHeaders(boolean filterHeaders) {
+		this.headerMapper.setFilterHeaders(filterHeaders);
+	}
+
+	public void setDoNotMapHeaderNames(String... headers) {
+		this.headerMapper.setDoNotMapHeaderNames(headers);
 	}
 
 	@Override
