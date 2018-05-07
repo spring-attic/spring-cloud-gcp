@@ -20,8 +20,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.support.HeaderMapper;
 import org.springframework.util.Assert;
 
 public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
@@ -33,6 +33,9 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 			MessageHeaders.ID, MessageHeaders.TIMESTAMP
 	};
 
+	/**
+	 * Enables/disables header filtering in {@link #fromHeaders(MessageHeaders, Map)}.
+	 */
 	private boolean filterHeaders;
 
 	/**
@@ -42,7 +45,7 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	public void setDoNotMapHeaderNames(String... doNotMapHeaderNames) {
 		Assert.notNull(doNotMapHeaderNames, "Header names can't be null.");
 		Assert.noNullElements(doNotMapHeaderNames, "No header name can be null.");
-		this.doNotMapHeaderNames = doNotMapHeaderNames;
+		this.doNotMapHeaderNames = Arrays.copyOf(doNotMapHeaderNames, doNotMapHeaderNames.length);
 	}
 
 	/**
@@ -60,7 +63,7 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 		messageHeaders.forEach((key, value) -> pubsubMessageHeaders.put(key, value.toString()));
 
 		if (this.filterHeaders) {
-			Arrays.stream(this.doNotMapHeaderNames).forEach(messageHeaders::remove);
+			Arrays.stream(this.doNotMapHeaderNames).forEach(pubsubMessageHeaders::remove);
 		}
 	}
 
@@ -71,7 +74,7 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	 * @return a map with headers in the {@link org.springframework.messaging.Message} format
 	 */
 	@Override
-	public MessageHeaders toHeaders(Map<String, String> pubsubMessageHeaders) {
+	public Map<String, Object> toHeaders(Map<String, String> pubsubMessageHeaders) {
 		Map<String, Object> typifiedHeaders = new HashMap<>();
 		pubsubMessageHeaders.forEach((key, value) -> typifiedHeaders.put(key, value));
 		return new MessageHeaders(typifiedHeaders);
