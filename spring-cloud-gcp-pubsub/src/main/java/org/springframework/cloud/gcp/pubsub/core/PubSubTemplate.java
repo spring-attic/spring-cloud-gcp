@@ -71,7 +71,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	private final SubscriberFactory subscriberFactory;
 
 	/**
-	 * Default {@link PubSubTemplate} constructor.
+	 * {@link PubSubTemplate} constructor.
 	 *
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
 	 * publish to topics
@@ -87,6 +87,21 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		this.objectMapper = trustedPackages == null || trustedPackages.length == 0
 				? new ObjectMapper()
 				: JacksonJsonUtils.messagingAwareMapper(trustedPackages);
+	}
+
+	/**
+	 * {@link PubSubTemplate} constructor that assumes no packages are whitelisted for
+	 * deserialization from messages. No type information is serialized in payloads when
+	 * sending objects.
+	 *
+	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
+	 * publish to topics
+	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory
+	 * to subscribe to subscriptions
+	 */
+	public PubSubTemplate(PublisherFactory publisherFactory,
+			SubscriberFactory subscriberFactory) {
+		this(publisherFactory, subscriberFactory, null);
 	}
 
 	@Override

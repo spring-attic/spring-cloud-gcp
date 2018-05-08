@@ -70,8 +70,6 @@ public class GcpPubSubAutoConfiguration {
 
 	private final HeaderProvider headerProvider = new UsageTrackingHeaderProvider(this.getClass());
 
-	private final String[] trustedPackages;
-
 	public GcpPubSubAutoConfiguration(GcpPubSubProperties gcpPubSubProperties,
 			GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
@@ -82,8 +80,6 @@ public class GcpPubSubAutoConfiguration {
 		this.finalCredentialsProvider = gcpPubSubProperties.getCredentials().hasKey()
 				? new DefaultCredentialsProvider(gcpPubSubProperties)
 				: credentialsProvider;
-		this.trustedPackages = gcpPubSubProperties.getTrustedPackages()
-				.toArray(new String[] {});
 	}
 
 	@Bean
@@ -105,7 +101,7 @@ public class GcpPubSubAutoConfiguration {
 	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory) {
 		return new PubSubTemplate(publisherFactory, subscriberFactory,
-				this.trustedPackages);
+				this.gcpPubSubProperties.getTrustedPackages().toArray(new String[] {}));
 	}
 
 	@Bean
