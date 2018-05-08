@@ -47,6 +47,10 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	 */
 	private String emulatorHost;
 
+	/**
+	 * List of packages containing types that are whitelisted for deserialization from message
+	 * payloads.
+	 */
 	private List<String> deserializationTrustedPackages = Collections.emptyList();
 
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
