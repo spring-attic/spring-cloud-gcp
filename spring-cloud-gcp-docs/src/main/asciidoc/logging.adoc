@@ -56,20 +56,22 @@ There are 2 possibilities to log to Stackdriver via this library with Logback:
 
 ==== Log via API
 
-For Logback, a `org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml` file is
-made available for import to make it easier to configure the Logback appender.
+For Logback, a `org/springframework/cloud/gcp/autoconfigure/logging/logback-json-appender.xml` file is
+made available for import to make it easier to configure the JSON Logback appender.
 
 Your configuration may then look something like this:
 [source, xml]
 ----
 <configuration>
-  <include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml" />
+  <include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-json-appender.xml" />
 
   <root level="INFO">
     <appender-ref ref="STACKDRIVER" />
   </root>
 </configuration>
 ----
+
+A Stackdriver appender is also available using `org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml`.
 
 `STACKDRIVER_LOG_NAME` and `STACKDRIVER_LOG_FLUSH_LEVEL` environment variables can be used to customize the
 `STACKDRIVER` appender.
@@ -80,7 +82,7 @@ Also see the link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[
 
 If you run your Spring Boot application in a Kubernetes cluster in the Google Cloud (GKE) or on App Engine flexible
 environment, you can log JSON directly from the console by including
-`org/springframework/cloud/gcp/logging/logback-json-appender.xml`. The traceId will be set
+`org/springframework/cloud/gcp/autoconfigure/logging/logback-json-appender.xml`. The traceId will be set
 correctly.
 
 You need the additional dependency:
@@ -99,8 +101,7 @@ Your Logback configuration may then look something like this:
 [source, xml]
 ----
 <configuration>
-  <property name="projectId" value="test-project"/>
-  <include resource="org/springframework/cloud/gcp/logging/logback-json-appender.xml" />
+  <include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml" />
 
   <root level="INFO">
     <appender-ref ref="CONSOLE_JSON"/>
