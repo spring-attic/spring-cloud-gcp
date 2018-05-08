@@ -47,7 +47,7 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	 */
 	private String emulatorHost;
 
-	private List<String> trustedPackages = Collections.emptyList();
+	private List<String> deserializationTrustedPackages = Collections.emptyList();
 
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	@NestedConfigurationProperty
@@ -89,11 +89,12 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		this.emulatorHost = emulatorHost;
 	}
 
-	public List<String> getTrustedPackages() {
-		return this.trustedPackages;
+	public List<String> getDeserializationTrustedPackages() {
+		return this.deserializationTrustedPackages;
 	}
 
-	public void setTrustedPackages(List<String> trustedPackages) {
-		this.trustedPackages = trustedPackages;
+	public void setDeserializationTrustedPackages(
+			List<String> deserializationTrustedPackages) {
+		this.deserializationTrustedPackages = deserializationTrustedPackages;
 	}
 }

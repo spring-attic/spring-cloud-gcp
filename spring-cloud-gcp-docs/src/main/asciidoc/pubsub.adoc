@@ -276,7 +276,7 @@ Google Cloud Pub/Sub API, if different from the ones in the
 | `spring.cloud.gcp.pubsub.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
 Pub/Sub credentials | No | https://www.googleapis.com/auth/pubsub
-| `spring.cloud.gcp.pubsub.trustedPackages[n]` |
+| `spring.cloud.gcp.pubsub.deserializationTrustedPackages[n]` |
 Package names that contain the types that are whitelisted for deserializing message payloads. If none
  are given then type information is not included in the serialized payloads when publishing. | No | No whitelisted packages. Type information is not included in serialized payloads on publish.
 |===

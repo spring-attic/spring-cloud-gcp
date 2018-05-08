@@ -101,7 +101,8 @@ public class GcpPubSubAutoConfiguration {
 	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory) {
 		return new PubSubTemplate(publisherFactory, subscriberFactory,
-				this.gcpPubSubProperties.getTrustedPackages().toArray(new String[] {}));
+				this.gcpPubSubProperties.getDeserializationTrustedPackages()
+						.toArray(new String[] {}));
 	}
 
 	@Bean
