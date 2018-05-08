@@ -33,7 +33,10 @@ public class PubSubHeaderMapperTests {
 	@Test
 	public void testFilterHeaders() {
 		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
-		mapper.setFilterHeaders(true);
+		mapper.setOutboundHeaderPatternsToMap(
+				"!" + MessageHeaders.ID,
+				"!" + MessageHeaders.TIMESTAMP,
+				"my header");
 		Map<String, Object> originalHeaders = new HashMap<>();
 		originalHeaders.put("my header", "pantagruel's nativity");
 		MessageHeaders internalHeaders = new MessageHeaders(originalHeaders);
@@ -42,18 +45,12 @@ public class PubSubHeaderMapperTests {
 		mapper.fromHeaders(internalHeaders, filteredHeaders);
 		assertThat(filteredHeaders.size()).isEqualTo(1);
 		assertThat(filteredHeaders.get("my header")).isEqualTo("pantagruel's nativity");
-
-		filteredHeaders = new HashMap<>();
-		mapper.setDoNotMapHeaderNames(MessageHeaders.ID);
-		mapper.fromHeaders(internalHeaders, filteredHeaders);
-		assertThat(filteredHeaders.size()).isEqualTo(2);
-		assertThat(filteredHeaders.get("my header")).isEqualTo("pantagruel's nativity");
-		assertThat(filteredHeaders.containsKey(MessageHeaders.TIMESTAMP)).isTrue();
 	}
 
 	@Test
 	public void testDontFilterHeaders() {
 		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
+		mapper.setOutboundHeaderPatternsToMap("*");
 		Map<String, Object> originalHeaders = new HashMap<>();
 		originalHeaders.put("my header", "pantagruel's nativity");
 		MessageHeaders internalHeaders = new MessageHeaders(originalHeaders);

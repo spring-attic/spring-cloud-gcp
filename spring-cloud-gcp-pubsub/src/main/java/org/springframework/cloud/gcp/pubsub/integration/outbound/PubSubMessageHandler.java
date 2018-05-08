@@ -220,12 +220,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		this.topicExpression = this.EXPRESSION_PARSER.parseExpression(topicExpressionString);
 	}
 
-	public void setFilterHeaders(boolean filterHeaders) {
-		this.headerMapper.setFilterHeaders(filterHeaders);
-	}
-
-	public void setDoNotMapHeaderNames(String... headers) {
-		this.headerMapper.setDoNotMapHeaderNames(headers);
+	public void setHeaderPatternsToMap(String... headerPatterns) {
+		this.headerMapper.setOutboundHeaderPatternsToMap(headerPatterns);
 	}
 
 	@Override

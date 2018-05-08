@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.integration.inbound;
 
-import java.util.Map;
-
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
@@ -27,7 +25,6 @@ import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
-import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -53,7 +50,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private MessageConverter messageConverter;
 
-	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
+	private PubSubHeaderMapper headerMapper = new PubSubHeaderMapper();
 
 	public PubSubInboundChannelAdapter(PubSubOperations pubSubTemplate, String subscriptionName) {
 		this.pubSubTemplate = pubSubTemplate;
@@ -136,5 +133,9 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	 */
 	public void setMessageConverter(MessageConverter messageConverter) {
 		this.messageConverter = messageConverter;
+	}
+
+	public void setHeaderPatternsToMap(String... patterns) {
+		this.headerMapper.setInboundHeaderPatternsToMap(patterns);
 	}
 }

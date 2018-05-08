@@ -17,70 +17,82 @@
 package org.springframework.cloud.gcp.pubsub.integration;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.util.Assert;
+import org.springframework.util.PatternMatchUtils;
 
 public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 
 	/**
-	 * Headers to exclude in the {@link #fromHeaders(MessageHeaders, Map)}.
+	 * Header patterns to map in {@link #fromHeaders(MessageHeaders, Map)}.
 	 */
-	private String[] doNotMapHeaderNames = {
-			MessageHeaders.ID, MessageHeaders.TIMESTAMP
-	};
+	private String[] outboundHeaderPatternsToMap = {"*"};
 
 	/**
-	 * Enables/disables header filtering in {@link #fromHeaders(MessageHeaders, Map)}.
+	 * Header patterns to map in {@link #toHeaders(Map)}.
 	 */
-	private boolean filterHeaders;
+	private String[] inboundHeaderPatternsToMap = {"*"};
 
 	/**
-	 * Set the names of the headers to filtered out in {@link #fromHeaders(MessageHeaders, Map)}.
-	 * @param doNotMapHeaderNames
+	 * Set the patterns of the headers to be mapped in {@link #fromHeaders(MessageHeaders, Map)}.
+	 * @param outboundHeaderPatternsToMap
 	 */
-	public void setDoNotMapHeaderNames(String... doNotMapHeaderNames) {
-		Assert.notNull(doNotMapHeaderNames, "Header names can't be null.");
-		Assert.noNullElements(doNotMapHeaderNames, "No header name can be null.");
-		this.doNotMapHeaderNames = Arrays.copyOf(doNotMapHeaderNames, doNotMapHeaderNames.length);
+	public void setOutboundHeaderPatternsToMap(String... outboundHeaderPatternsToMap) {
+		Assert.notNull(outboundHeaderPatternsToMap, "Header patterns can't be null.");
+		Assert.noNullElements(outboundHeaderPatternsToMap, "No header pattern can be null.");
+		this.outboundHeaderPatternsToMap =
+				Arrays.copyOf(outboundHeaderPatternsToMap, outboundHeaderPatternsToMap.length);
+	}
+
+	/**
+	 * Set the patterns of the headers to be mapped in {@link #toHeaders(Map)}.
+	 * @param inboundHeaderPatternsToMap
+	 */
+	public void setInboundHeaderPatternsToMap(String[] inboundHeaderPatternsToMap) {
+		Assert.notNull(inboundHeaderPatternsToMap, "Header patterns can't be null.");
+		Assert.noNullElements(inboundHeaderPatternsToMap, "No header pattern can be null.");
+		this.inboundHeaderPatternsToMap = inboundHeaderPatternsToMap;
 	}
 
 	/**
 	 * Generate headers in {@link com.google.pubsub.v1.PubsubMessage} format from
 	 * {@link MessageHeaders}. All headers are converted into strings.
 	 *
-	 * <p>May filter out designated headers, depending on whether {@code filterHeaders} is
-	 * {@code true}.
+	 * <p>Will map only the headers that match the patterns in {@code outboundHeaderPatternsMap}.
 	 * @param messageHeaders headers to map from
 	 * @param pubsubMessageHeaders headers in their final format
 	 */
 	@Override
 	public void fromHeaders(MessageHeaders messageHeaders,
 			final Map<String, String> pubsubMessageHeaders) {
-		messageHeaders.forEach((key, value) -> pubsubMessageHeaders.put(key, value.toString()));
-
-		if (this.filterHeaders) {
-			Arrays.stream(this.doNotMapHeaderNames).forEach(pubsubMessageHeaders::remove);
-		}
+		messageHeaders.entrySet().stream()
+				.filter(entry -> this.outboundHeaderPatternsToMap != null
+						? PatternMatchUtils.simpleMatch(
+								this.outboundHeaderPatternsToMap, entry.getKey())
+						: false)
+				.forEach(entry -> pubsubMessageHeaders.put(
+						entry.getKey(), entry.getValue().toString()));
 	}
 
 	/**
 	 * Generate headers in {@link org.springframework.messaging.Message} format from
 	 * {@code Map<String, String>}.
+	 *
+	 * <p>Will map only the headers that match the patterns in {@code inboundHeaderPatternsMap}.
 	 * @param pubsubMessageHeaders headers in {@link com.google.pubsub.v1.PubsubMessage} format
 	 * @return a map with headers in the {@link org.springframework.messaging.Message} format
 	 */
 	@Override
 	public Map<String, Object> toHeaders(Map<String, String> pubsubMessageHeaders) {
-		Map<String, Object> typifiedHeaders = new HashMap<>();
-		pubsubMessageHeaders.forEach((key, value) -> typifiedHeaders.put(key, value));
-		return new MessageHeaders(typifiedHeaders);
-	}
-
-	public void setFilterHeaders(boolean filterHeaders) {
-		this.filterHeaders = filterHeaders;
+		return pubsubMessageHeaders.entrySet().stream()
+				.filter(entry -> this.inboundHeaderPatternsToMap != null
+						? PatternMatchUtils.simpleMatch(
+								this.inboundHeaderPatternsToMap, entry.getKey())
+						: false)
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 }
