@@ -101,8 +101,7 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public PubSubMessageConverter pubSubMessageConverter() {
-		return new JacksonMessageConverter(this.gcpPubSubProperties
-				.getTrustedPackages().toArray(new String[] {}));
+		return new JacksonMessageConverter(this.gcpPubSubProperties.getTrustedPackages());
 	}
 
 	@Bean

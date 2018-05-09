@@ -47,8 +47,7 @@ utilization.
 
 `PubSubTemplate` provides asynchronous methods to publish messages to a Google Cloud Pub/Sub topic.
 It supports different types of payloads, including `Strings` with different encodings, `byte[]`,
-`ByteString`, POJOs, and `PubsubMessage`. The default serialization and deserialization of POJOs
-uses Jackson JSON via the `JacksonMessageConverter` class.
+`ByteString`, POJOs, and `PubsubMessage`.
 
 [source,java]
 ----
@@ -73,6 +72,18 @@ Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 public void publishMessage() {
     this.pubSubTemplate.publish("topic", "your message payload", ImmutableMap.of("key1", "val1"));
 }
+----
+
+
+The default serialization and deserialization of POJOs uses Jackson JSON via the `JacksonMessageConverter` class.
+However, the Jackson dependency is required to utilize that implementation:
+
+[source,xml]
+----
+<dependency>
+  <groupId>com.fasterxml.jackson.core</groupId>
+  <artifactId>jackson-databind</artifactId>
+</dependency>
 ----
 
 ==== Subscribing to a subscription

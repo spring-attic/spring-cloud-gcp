@@ -16,9 +16,6 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
@@ -48,10 +45,10 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	private String emulatorHost;
 
 	/**
-	 * List of packages containing types that are whitelisted for deserialization from message
-	 * payloads.
+	 * Array of packages containing types that are whitelisted for deserialization from
+	 * message payloads.
 	 */
-	private List<String> trustedPackages = Collections.emptyList();
+	private String[] trustedPackages;
 
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	@NestedConfigurationProperty
@@ -93,12 +90,11 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		this.emulatorHost = emulatorHost;
 	}
 
-	public List<String> getTrustedPackages() {
+	public String[] getTrustedPackages() {
 		return this.trustedPackages;
 	}
 
-	public void setTrustedPackages(
-			List<String> trustedPackages) {
+	public void setTrustedPackages(String[] trustedPackages) {
 		this.trustedPackages = trustedPackages;
 	}
 }
