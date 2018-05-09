@@ -63,7 +63,7 @@ public ListenableFuture<String> publish(String topic, ByteString payload, Map<St
 
 public ListenableFuture<String> publish(String topic, PubsubMessage pubsubMessage)
 
-public <T> ListenableFuture<String> publish(String topic, T payload, Map<String, String> headers) throws JsonProcessingException;
+public <T> ListenableFuture<String> publish(String topic, T payload, Map<String, String> headers)
 ----
 
 Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
