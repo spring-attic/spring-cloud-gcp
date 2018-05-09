@@ -21,9 +21,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.integration.mapping.HeaderMapper;
+import org.springframework.integration.util.PatternMatchUtils;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.util.Assert;
-import org.springframework.util.PatternMatchUtils;
 
 public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 
@@ -71,8 +71,8 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 			final Map<String, String> pubsubMessageHeaders) {
 		messageHeaders.entrySet().stream()
 				.filter(entry -> this.outboundHeaderPatternsToMap != null
-						? PatternMatchUtils.simpleMatch(
-								this.outboundHeaderPatternsToMap, entry.getKey())
+						? PatternMatchUtils.smartMatch(entry.getKey(),
+								this.outboundHeaderPatternsToMap)
 						: false)
 				.forEach(entry -> pubsubMessageHeaders.put(
 						entry.getKey(), entry.getValue().toString()));
@@ -90,8 +90,8 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	public Map<String, Object> toHeaders(Map<String, String> pubsubMessageHeaders) {
 		return pubsubMessageHeaders.entrySet().stream()
 				.filter(entry -> this.inboundHeaderPatternsToMap != null
-						? PatternMatchUtils.simpleMatch(
-								this.inboundHeaderPatternsToMap, entry.getKey())
+						? PatternMatchUtils.smartMatch(entry.getKey(),
+								this.inboundHeaderPatternsToMap)
 						: false)
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
