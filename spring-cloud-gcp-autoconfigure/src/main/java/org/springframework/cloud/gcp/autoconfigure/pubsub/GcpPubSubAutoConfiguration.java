@@ -47,6 +47,8 @@ import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
+import org.springframework.cloud.gcp.pubsub.support.converter.JacksonMessageConverter;
+import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -98,11 +100,18 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
+	public PubSubMessageConverter pubSubMessageConverter() {
+		return new JacksonMessageConverter(this.gcpPubSubProperties
+				.getTrustedPackages().toArray(new String[] {}));
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
 	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory,
-			SubscriberFactory subscriberFactory) {
+			SubscriberFactory subscriberFactory,
+			PubSubMessageConverter pubSubMessageConverter) {
 		return new PubSubTemplate(publisherFactory, subscriberFactory,
-				this.gcpPubSubProperties.getDeserializationTrustedPackages()
-						.toArray(new String[] {}));
+				pubSubMessageConverter);
 	}
 
 	@Bean

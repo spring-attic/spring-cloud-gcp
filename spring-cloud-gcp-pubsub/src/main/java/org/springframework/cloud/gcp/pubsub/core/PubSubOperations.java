@@ -16,11 +16,11 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
@@ -85,7 +85,7 @@ public interface PubSubOperations {
 	 * @return the listenable future of the call
 	 */
 	<T> ListenableFuture<String> publish(String topic, T payload,
-			Map<String, String> headers) throws JsonProcessingException;
+			Map<String, String> headers) throws IOException;
 
 	/**
 	 * Send a message to Pub/Sub.

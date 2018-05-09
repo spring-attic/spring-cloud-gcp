@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
@@ -43,7 +41,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
-import org.springframework.integration.support.json.JacksonJsonUtils;
+import org.springframework.cloud.gcp.pubsub.support.converter.JacksonMessageConverter;
+import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -64,7 +63,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubTemplate.class);
 
-	private final ObjectMapper objectMapper;
+	private final PubSubMessageConverter messageConverter;
 
 	private final PublisherFactory publisherFactory;
 
@@ -77,22 +76,24 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 * publish to topics
 	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory
 	 * to subscribe to subscriptions
-	 * @param trustedPackages the trusted Java packages for deserialization. If null or
-	 * empty, then default type information is not included in serialization.
+	 * @param messageConverter a converter for converting Java objects to and from message
+	 * payloads.
 	 */
 	public PubSubTemplate(PublisherFactory publisherFactory,
-			SubscriberFactory subscriberFactory, String[] trustedPackages) {
+			SubscriberFactory subscriberFactory,
+			PubSubMessageConverter messageConverter) {
 		this.publisherFactory = publisherFactory;
 		this.subscriberFactory = subscriberFactory;
-		this.objectMapper = trustedPackages == null || trustedPackages.length == 0
-				? new ObjectMapper()
-				: JacksonJsonUtils.messagingAwareMapper(trustedPackages);
+		this.messageConverter = messageConverter;
+	}
+
+	public PubSubMessageConverter getMessageConverter() {
+		return this.messageConverter;
 	}
 
 	/**
-	 * {@link PubSubTemplate} constructor that assumes no packages are whitelisted for
-	 * deserialization from messages. No type information is serialized in payloads when
-	 * sending objects.
+	 * {@link PubSubTemplate} constructor that uses a {@link JacksonMessageConverter} to
+	 * serialize and deserialize payloads.
 	 *
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
 	 * publish to topics
@@ -101,7 +102,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 */
 	public PubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory) {
-		this(publisherFactory, subscriberFactory, null);
+		this(publisherFactory, subscriberFactory, new JacksonMessageConverter());
 	}
 
 	@Override
@@ -136,8 +137,8 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	@Override
 	public <T> ListenableFuture<String> publish(String topic, T payload,
-			Map<String, String> headers) throws JsonProcessingException {
-		return publish(topic, this.objectMapper.writeValueAsBytes(payload), headers);
+			Map<String, String> headers) throws IOException {
+		return publish(topic, this.messageConverter.toPayload(payload), headers);
 	}
 
 	@Override
@@ -227,21 +228,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		List<PubsubMessage> receivedMessageList = pull(subscription, 1, true, null);
 
 		return receivedMessageList.size() > 0 ?	receivedMessageList.get(0) : null;
-	}
-
-	/**
-	 * Deserializes the payload of the given message into the desired type.
-	 * @param pubsubMessage the message containing the payload data
-	 * @param objectType the class object of the desired type
-	 * @param <T> the desired type of the returned object
-	 * @return an instance of the object from the payload
-	 * @throws IOException if the payload could not be deserialized into the requested
-	 * type
-	 */
-	public <T> T getPayloadFromMessage(PubsubMessage pubsubMessage, Class<T> objectType)
-			throws IOException {
-		return this.objectMapper.readerFor(objectType)
-				.readValue(pubsubMessage.getData().toByteArray());
 	}
 
 	@Override
