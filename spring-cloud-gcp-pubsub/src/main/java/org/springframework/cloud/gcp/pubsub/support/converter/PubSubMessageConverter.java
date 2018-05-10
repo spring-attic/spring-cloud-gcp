@@ -17,7 +17,9 @@
 package org.springframework.cloud.gcp.pubsub.support.converter;
 
 import java.io.IOException;
+import java.util.Map;
 
+import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
 /**
@@ -33,6 +35,22 @@ public interface PubSubMessageConverter {
 	 * @return a byte array ready to be sent with PubSub
 	 */
 	byte[] toPayload(Object object) throws IOException;
+
+	/**
+	 * Create a PubsubMessage given an object for the payload and a map of headers
+	 * @param object the object to place into the message payload
+	 * @param headers the headers of the message
+	 * @return the PubsubMessage ready to be sent
+	 */
+	default PubsubMessage toMessage(Object object, Map<String, String> headers)
+			throws IOException {
+		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder()
+				.setData(ByteString.copyFrom(toPayload(object)));
+		if (headers != null) {
+			pubsubMessageBuilder.putAllAttributes(headers);
+		}
+		return pubsubMessageBuilder.build();
+	}
 
 	/**
 	 * Convert the payload of a given PubSub message to a desired Java type.

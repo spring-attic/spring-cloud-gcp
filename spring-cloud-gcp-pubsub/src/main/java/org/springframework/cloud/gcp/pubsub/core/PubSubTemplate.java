@@ -41,7 +41,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
-import org.springframework.cloud.gcp.pubsub.support.converter.JacksonMessageConverter;
+import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -63,38 +63,15 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubTemplate.class);
 
-	private final PubSubMessageConverter messageConverter;
+	private PubSubMessageConverter messageConverter = new JacksonPubSubMessageConverter();
 
 	private final PublisherFactory publisherFactory;
 
 	private final SubscriberFactory subscriberFactory;
 
 	/**
-	 * {@link PubSubTemplate} constructor.
-	 *
-	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
-	 * publish to topics
-	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory
-	 * to subscribe to subscriptions
-	 * @param messageConverter a converter for converting Java objects to and from message
-	 * payloads.
-	 */
-	public PubSubTemplate(PublisherFactory publisherFactory,
-			SubscriberFactory subscriberFactory,
-			PubSubMessageConverter messageConverter) {
-		this.publisherFactory = publisherFactory;
-		this.subscriberFactory = subscriberFactory;
-		this.messageConverter = messageConverter;
-	}
-
-	public PubSubMessageConverter getMessageConverter() {
-		return this.messageConverter;
-	}
-
-	/**
-	 * {@link PubSubTemplate} constructor that uses a {@link JacksonMessageConverter} to
+	 * {@link PubSubTemplate} constructor that uses a {@link JacksonPubSubMessageConverter} to
 	 * serialize and deserialize payloads.
-	 *
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
 	 * publish to topics
 	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory
@@ -102,7 +79,18 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 */
 	public PubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory) {
-		this(publisherFactory, subscriberFactory, new JacksonMessageConverter());
+		this.publisherFactory = publisherFactory;
+		this.subscriberFactory = subscriberFactory;
+	}
+
+	public PubSubMessageConverter getMessageConverter() {
+		return this.messageConverter;
+	}
+
+	public PubSubTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
+		Assert.notNull(messageConverter, "A valid PubSub message converter is required.");
+		this.messageConverter = messageConverter;
+		return this;
 	}
 
 	@Override

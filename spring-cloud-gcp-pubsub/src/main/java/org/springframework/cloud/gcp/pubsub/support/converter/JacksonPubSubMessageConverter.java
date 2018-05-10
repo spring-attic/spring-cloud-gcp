@@ -23,13 +23,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.integration.support.json.JacksonJsonUtils;
+import org.springframework.util.Assert;
 
 /**
  * A message converter using Jackson JSON.
  *
  * @author Chengyuan Zhao
  */
-public class JacksonMessageConverter implements PubSubMessageConverter {
+public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 
 	private final ObjectMapper objectMapper;
 
@@ -38,8 +39,17 @@ public class JacksonMessageConverter implements PubSubMessageConverter {
 	 * @param trustedPackages the packages trusted for deserialization in addition to the
 	 * default trusted packages listed in {@link JacksonJsonUtils}.
 	 */
-	public JacksonMessageConverter(String... trustedPackages) {
+	public JacksonPubSubMessageConverter(String... trustedPackages) {
 		this.objectMapper = JacksonJsonUtils.messagingAwareMapper(trustedPackages);
+	}
+
+	/**
+	 * Constructor
+	 * @param objectMapper the object mapper used to create and read JSON.
+	 */
+	public JacksonPubSubMessageConverter(ObjectMapper objectMapper) {
+		Assert.notNull(objectMapper, "A valid ObjectMapper is required.");
+		this.objectMapper = objectMapper;
 	}
 
 	@Override

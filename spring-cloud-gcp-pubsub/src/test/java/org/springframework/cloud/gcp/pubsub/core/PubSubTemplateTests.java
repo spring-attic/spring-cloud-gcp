@@ -36,7 +36,7 @@ import org.springframework.cloud.gcp.pubsub.core.test.allowed.AllowedPayload;
 import org.springframework.cloud.gcp.pubsub.core.test.disallowed.DisallowedPayload;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
-import org.springframework.cloud.gcp.pubsub.support.converter.JacksonMessageConverter;
+import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessageConverter;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import static org.junit.Assert.assertEquals;
@@ -77,8 +77,8 @@ public class PubSubTemplateTests {
 	private SettableApiFuture<String> settableApiFuture;
 
 	private PubSubTemplate createTemplate(String[] trustedPackages) {
-		return new PubSubTemplate(this.mockPublisherFactory, this.mockSubscriberFactory,
-				new JacksonMessageConverter(trustedPackages));
+		return new PubSubTemplate(this.mockPublisherFactory, this.mockSubscriberFactory)
+				.setMessageConverter(new JacksonPubSubMessageConverter(trustedPackages));
 	}
 
 	@Before
@@ -146,7 +146,8 @@ public class PubSubTemplateTests {
 			return null;
 		}).when(pubSubTemplate).publish(eq("test"), any());
 
-		pubSubTemplate.publish("test", allowedPayload, null);
+		pubSubTemplate.publish("test",
+				pubSubTemplate.getMessageConverter().toMessage(allowedPayload, null));
 		verify(pubSubTemplate, times(1)).publish(eq("test"), any());
 	}
 
@@ -170,7 +171,8 @@ public class PubSubTemplateTests {
 			return null;
 		}).when(pubSubTemplate).publish(eq("test"), any());
 
-		pubSubTemplate.publish("test", disallowedPayload, null);
+		pubSubTemplate.publish("test",
+				pubSubTemplate.getMessageConverter().toMessage(disallowedPayload, null));
 		verify(pubSubTemplate, times(1)).publish(eq("test"), any());
 	}
 
