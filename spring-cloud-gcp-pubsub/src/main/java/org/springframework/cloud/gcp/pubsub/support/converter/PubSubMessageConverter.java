@@ -37,6 +37,14 @@ public interface PubSubMessageConverter {
 	byte[] toPayload(Object object) throws IOException;
 
 	/**
+	 * Convert a payload from a PubSub message into an object of the desired type
+	 * @param payload the {@link ByteString} payload from the message
+	 * @param payloadType the desired type of the object
+	 * @return the object converted from the payload of the message
+	 */
+	<T> T fromPayload(ByteString payload, Class<T> payloadType) throws IOException;
+
+	/**
 	 * Create a PubsubMessage given an object for the payload and a map of headers
 	 * @param object the object to place into the message payload
 	 * @param headers the headers of the message
@@ -58,5 +66,8 @@ public interface PubSubMessageConverter {
 	 * @param payloadType the desired type of the object
 	 * @return the object converted from the message's payload
 	 */
-	<T> T fromMessage(PubsubMessage message, Class<T> payloadType) throws IOException;
+	default <T> T fromMessage(PubsubMessage message, Class<T> payloadType)
+			throws IOException {
+		return fromPayload(message.getData(), payloadType);
+	}
 }

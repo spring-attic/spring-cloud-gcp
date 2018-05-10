@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.pubsub.v1.PubsubMessage;
+import com.google.protobuf.ByteString;
 
 import org.springframework.integration.support.json.JacksonJsonUtils;
 import org.springframework.util.Assert;
@@ -63,9 +63,8 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 	}
 
 	@Override
-	public <T> T fromMessage(PubsubMessage message, Class<T> payloadType)
+	public <T> T fromPayload(ByteString payload, Class<T> payloadType)
 			throws IOException {
-		return this.objectMapper.readerFor(payloadType)
-				.readValue(message.getData().toByteArray());
+		return this.objectMapper.readerFor(payloadType).readValue(payload.toByteArray());
 	}
 }
