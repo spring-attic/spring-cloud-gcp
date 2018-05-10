@@ -33,6 +33,7 @@ import org.springframework.expression.common.LiteralExpression;
 import org.springframework.integration.expression.ExpressionUtils;
 import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.handler.AbstractMessageHandler;
+import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
@@ -67,7 +68,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private ListenableFutureCallback<String> publishCallback;
 
-	private PubSubHeaderMapper headerMapper = new PubSubHeaderMapper();
+	private HeaderMapper headerMapper = new PubSubHeaderMapper();
 
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
@@ -220,8 +221,13 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		this.topicExpression = this.EXPRESSION_PARSER.parseExpression(topicExpressionString);
 	}
 
-	public void setHeaderPatternsToMap(String... headerPatterns) {
-		this.headerMapper.setOutboundHeaderPatternsToMap(headerPatterns);
+	/**
+	 * Set the header mapper to map headers from {@link Message} into outbound
+	 * {@link PubsubMessage}.
+	 * @param headerMapper the header mapper
+	 */
+	public void setHeaderMapper(HeaderMapper headerMapper) {
+		this.headerMapper = headerMapper;
 	}
 
 	@Override

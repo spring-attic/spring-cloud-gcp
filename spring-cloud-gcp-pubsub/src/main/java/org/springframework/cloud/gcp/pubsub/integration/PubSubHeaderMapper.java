@@ -25,14 +25,24 @@ import org.springframework.integration.util.PatternMatchUtils;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.util.Assert;
 
+/**
+ * Maps headers from {@link com.google.pubsub.v1.PubsubMessage}s to
+ * {@link org.springframework.messaging.Message}s and vice-versa.
+ *
+ * <p>Filters out headers called "id" or "timestamp" on the
+ * {@link org.springframework.messaging.Message} to {@link com.google.pubsub.v1.PubsubMessage}
+ * header conversion.
+ *
+ * @author João André Martins
+ */
 public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 
 	/**
 	 * Header patterns to map in {@link #fromHeaders(MessageHeaders, Map)}.
 	 */
-	private String[] outboundHeaderPatternsToMap = {"*",
-			"!" + MessageHeaders.ID,
-			"!" + MessageHeaders.TIMESTAMP};
+	private String[] outboundHeaderPatternsToMap = {"!" + MessageHeaders.ID,
+			"!" + MessageHeaders.TIMESTAMP,
+			"*"};
 
 	/**
 	 * Header patterns to map in {@link #toHeaders(Map)}.
@@ -72,8 +82,9 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	public void fromHeaders(MessageHeaders messageHeaders,
 			final Map<String, String> pubsubMessageHeaders) {
 		messageHeaders.entrySet().stream()
-				.filter(entry -> PatternMatchUtils.smartMatch(entry.getKey(),
-						this.outboundHeaderPatternsToMap))
+				.filter(entry -> Boolean.TRUE.equals(
+						PatternMatchUtils.smartMatch(entry.getKey(),
+								this.outboundHeaderPatternsToMap)))
 				.forEach(entry -> pubsubMessageHeaders.put(
 						entry.getKey(), entry.getValue().toString()));
 	}
@@ -89,8 +100,9 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	@Override
 	public Map<String, Object> toHeaders(Map<String, String> pubsubMessageHeaders) {
 		return pubsubMessageHeaders.entrySet().stream()
-				.filter(entry -> PatternMatchUtils.smartMatch(entry.getKey(),
-						this.inboundHeaderPatternsToMap))
+				.filter(entry -> Boolean.TRUE.equals(
+						PatternMatchUtils.smartMatch(entry.getKey(),
+								this.inboundHeaderPatternsToMap)))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 }

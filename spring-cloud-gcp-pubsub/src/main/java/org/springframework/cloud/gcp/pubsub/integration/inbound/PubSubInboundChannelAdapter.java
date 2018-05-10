@@ -27,6 +27,7 @@ import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
+import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -52,7 +53,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private MessageConverter messageConverter;
 
-	private PubSubHeaderMapper headerMapper = new PubSubHeaderMapper();
+	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
 	public PubSubInboundChannelAdapter(PubSubOperations pubSubTemplate, String subscriptionName) {
 		this.pubSubTemplate = pubSubTemplate;
@@ -127,7 +128,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	}
 
 	/**
-	 * Sets the {@link MessageConverter} to convert the payload of the incoming message from
+	 * Set the {@link MessageConverter} to convert the payload of the incoming message from
 	 * Pub/Sub.
 	 * If {@code messageConverter} is null, the payload of the Pub/Sub message is converted to
 	 * {@code byte[]} and returned in that form.
@@ -137,7 +138,12 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		this.messageConverter = messageConverter;
 	}
 
-	public void setHeaderPatternsToMap(String... patterns) {
-		this.headerMapper.setInboundHeaderPatternsToMap(patterns);
+	/**
+	 * Set the header mapper to map headers from incoming {@link PubsubMessage} into
+	 * {@link Message}.
+	 * @param headerMapper the header mapper
+	 */
+	public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {
+		this.headerMapper = headerMapper;
 	}
 }

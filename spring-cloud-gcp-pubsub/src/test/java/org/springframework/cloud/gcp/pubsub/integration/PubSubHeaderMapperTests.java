@@ -33,10 +33,6 @@ public class PubSubHeaderMapperTests {
 	@Test
 	public void testFilterHeaders() {
 		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
-		mapper.setOutboundHeaderPatternsToMap(
-				"!" + MessageHeaders.ID,
-				"!" + MessageHeaders.TIMESTAMP,
-				"my header");
 		Map<String, Object> originalHeaders = new HashMap<>();
 		originalHeaders.put("my header", "pantagruel's nativity");
 		MessageHeaders internalHeaders = new MessageHeaders(originalHeaders);
