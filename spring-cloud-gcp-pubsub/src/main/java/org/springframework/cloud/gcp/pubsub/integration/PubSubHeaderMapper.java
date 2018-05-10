@@ -30,7 +30,9 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	/**
 	 * Header patterns to map in {@link #fromHeaders(MessageHeaders, Map)}.
 	 */
-	private String[] outboundHeaderPatternsToMap = {"*"};
+	private String[] outboundHeaderPatternsToMap = {"*",
+			"!" + MessageHeaders.ID,
+			"!" + MessageHeaders.TIMESTAMP};
 
 	/**
 	 * Header patterns to map in {@link #toHeaders(Map)}.
@@ -70,10 +72,8 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	public void fromHeaders(MessageHeaders messageHeaders,
 			final Map<String, String> pubsubMessageHeaders) {
 		messageHeaders.entrySet().stream()
-				.filter(entry -> this.outboundHeaderPatternsToMap != null
-						? PatternMatchUtils.smartMatch(entry.getKey(),
-								this.outboundHeaderPatternsToMap)
-						: false)
+				.filter(entry -> PatternMatchUtils.smartMatch(entry.getKey(),
+						this.outboundHeaderPatternsToMap))
 				.forEach(entry -> pubsubMessageHeaders.put(
 						entry.getKey(), entry.getValue().toString()));
 	}
@@ -89,10 +89,8 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	@Override
 	public Map<String, Object> toHeaders(Map<String, String> pubsubMessageHeaders) {
 		return pubsubMessageHeaders.entrySet().stream()
-				.filter(entry -> this.inboundHeaderPatternsToMap != null
-						? PatternMatchUtils.smartMatch(entry.getKey(),
-								this.inboundHeaderPatternsToMap)
-						: false)
+				.filter(entry -> PatternMatchUtils.smartMatch(entry.getKey(),
+						this.inboundHeaderPatternsToMap))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 }

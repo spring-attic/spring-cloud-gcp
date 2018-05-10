@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.pubsub.integration.inbound;
 
+import java.util.Map;
+
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
@@ -70,8 +72,8 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	}
 
 	private void receiveMessage(PubsubMessage pubsubMessage, AckReplyConsumer consumer) {
-		MessageHeaders messageHeaders =
-				new MessageHeaders(this.headerMapper.toHeaders(pubsubMessage.getAttributesMap()));
+		Map<String, Object> messageHeaders =
+				this.headerMapper.toHeaders(pubsubMessage.getAttributesMap());
 
 		if (this.ackMode == AckMode.MANUAL) {
 			// Send the consumer downstream so user decides on when to ack/nack.
