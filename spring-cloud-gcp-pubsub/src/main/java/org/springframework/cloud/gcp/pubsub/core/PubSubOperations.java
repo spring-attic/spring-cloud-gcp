@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public interface PubSubOperations {
 
@@ -74,6 +76,16 @@ public interface PubSubOperations {
 	 * @return the listenable future of the call
 	 */
 	ListenableFuture<String> publish(String topic, ByteString payload, Map<String, String> headers);
+
+	/**
+	 * Send a message to Pub/Sub.
+	 * @param topic the name of an existing topic
+	 * @param payload an object that will be serialized and sent
+	 * @param headers map of String to String headers
+	 * @return the listenable future of the call
+	 */
+	<T> ListenableFuture<String> publish(String topic, T payload,
+			Map<String, String> headers) throws IOException;
 
 	/**
 	 * Send a message to Pub/Sub.

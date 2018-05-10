@@ -36,7 +36,9 @@ public class GcpPubSubEmulatorConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withPropertyValues("spring.cloud.gcp.pubsub.emulatorHost=localhost:8085",
-					"spring.cloud.gcp.projectId=test-project")
+					"spring.cloud.gcp.projectId=test-project",
+					"spring.cloud.gcp.pubsub.trustedPackages[0]=a",
+					"spring.cloud.gcp.pubsub.trustedPackages[1]=b")
 			.withConfiguration(AutoConfigurations.of(GcpPubSubEmulatorConfiguration.class,
 					GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class))
@@ -52,6 +54,17 @@ public class GcpPubSubEmulatorConfigurationTests {
 			TransportChannelProvider transportChannelProvider = context.getBean(TransportChannelProvider.class);
 			Assert.assertTrue("TransportChannelProvider is not correct",
 					transportChannelProvider instanceof FixedTransportChannelProvider);
+		});
+	}
+
+	@Test
+	public void testTrustedPackagesConfig() {
+		this.contextRunner.run(context -> {
+			String[] trustedPackages = context.getBean(GcpPubSubProperties.class)
+					.getTrustedPackages();
+			Assert.assertEquals(2, trustedPackages.length);
+			Assert.assertEquals("a", trustedPackages[0]);
+			Assert.assertEquals("b", trustedPackages[1]);
 		});
 	}
 
