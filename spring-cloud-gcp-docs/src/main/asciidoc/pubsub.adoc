@@ -76,15 +76,7 @@ public void publishMessage() {
 
 
 The default serialization and deserialization of POJOs uses Jackson JSON via the `JacksonMessageConverter` class.
-However, the Jackson dependency is required to utilize that implementation:
 
-[source,xml]
-----
-<dependency>
-  <groupId>com.fasterxml.jackson.core</groupId>
-  <artifactId>jackson-databind</artifactId>
-</dependency>
-----
 
 ==== Subscribing to a subscription
 
