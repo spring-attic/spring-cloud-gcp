@@ -144,6 +144,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	 * @param headerMapper the header mapper
 	 */
 	public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {
+		Assert.notNull(headerMapper, "The header mapper can't be null.");
 		this.headerMapper = headerMapper;
 	}
 }

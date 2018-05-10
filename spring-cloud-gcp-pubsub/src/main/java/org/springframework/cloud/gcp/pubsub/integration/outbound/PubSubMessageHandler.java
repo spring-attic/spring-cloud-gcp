@@ -68,7 +68,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private ListenableFutureCallback<String> publishCallback;
 
-	private HeaderMapper headerMapper = new PubSubHeaderMapper();
+	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
@@ -226,7 +226,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	 * {@link PubsubMessage}.
 	 * @param headerMapper the header mapper
 	 */
-	public void setHeaderMapper(HeaderMapper headerMapper) {
+	public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {
+		Assert.notNull(headerMapper, "The header mapper can't be null.");
 		this.headerMapper = headerMapper;
 	}
 
