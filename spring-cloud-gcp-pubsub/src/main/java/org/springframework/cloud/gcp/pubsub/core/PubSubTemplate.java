@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
+import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessageConverter;
+import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -50,10 +53,13 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubTemplate.class);
+
+	private PubSubMessageConverter messageConverter = new JacksonPubSubMessageConverter();
 
 	private final PublisherFactory publisherFactory;
 
@@ -64,17 +70,29 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	private Acknowledger acknowledger;
 
 	/**
-	 * Default {@link PubSubTemplate} constructor.
+	 * Default {@link PubSubTemplate} constructor that uses a {@link JacksonPubSubMessageConverter} to
+	 * serialize and deserialize payloads.
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
-	 *                         publish to topics
-	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory to
-	 *                          subscribe to subscriptions
+	 * publish to topics
+	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory
+	 * to subscribe to subscriptions
 	 */
-	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory) {
+	public PubSubTemplate(PublisherFactory publisherFactory,
+			SubscriberFactory subscriberFactory) {
 		this.publisherFactory = publisherFactory;
 		this.subscriberFactory = subscriberFactory;
 		this.subscriberStub = this.subscriberFactory.createSubscriberStub();
 		this.acknowledger = new DefaultPubSubAcknowledger(this.subscriberStub);
+	}
+
+	public PubSubMessageConverter getMessageConverter() {
+		return this.messageConverter;
+	}
+
+	public PubSubTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
+		Assert.notNull(messageConverter, "A valid PubSub message converter is required.");
+		this.messageConverter = messageConverter;
+		return this;
 	}
 
 	@Override
@@ -105,6 +123,12 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		}
 
 		return publish(topic, pubsubMessageBuilder.build());
+	}
+
+	@Override
+	public <T> ListenableFuture<String> publish(String topic, T payload,
+			Map<String, String> headers) throws IOException {
+		return publish(topic, this.messageConverter.toPayload(payload), headers);
 	}
 
 	@Override
