@@ -26,8 +26,6 @@ import com.google.auth.Credentials;
 import com.google.devtools.cloudtrace.v1.Traces;
 import org.junit.Test;
 import zipkin2.codec.BytesEncoder;
-import zipkin2.reporter.AsyncReporter;
-import zipkin2.reporter.Reporter;
 import zipkin2.reporter.Sender;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -69,7 +67,6 @@ public class StackdriverTraceAutoConfigurationTests {
 			assertThat(context.getBean(HttpServerParser.class)).isNotNull();
 			assertThat(context.getBean(BytesEncoder.class)).isNotNull();
 			assertThat(context.getBean(Sender.class)).isNotNull();
-			assertThat(context.getBean(Reporter.class)).isInstanceOf(AsyncReporter.class);
 		});
 	}
 

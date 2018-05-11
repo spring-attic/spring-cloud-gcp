@@ -176,6 +176,12 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-sleuth-zipkin</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Config -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

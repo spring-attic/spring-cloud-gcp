@@ -28,8 +28,6 @@ import io.grpc.CallOptions;
 import io.grpc.auth.MoreCallCredentials;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
-import zipkin2.reporter.AsyncReporter;
-import zipkin2.reporter.Reporter;
 import zipkin2.reporter.Sender;
 import zipkin2.reporter.stackdriver.StackdriverEncoder;
 import zipkin2.reporter.stackdriver.StackdriverSender;
@@ -47,10 +45,10 @@ import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
-import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
 import org.springframework.cloud.sleuth.sampler.ProbabilityBasedSampler;
 import org.springframework.cloud.sleuth.sampler.SamplerProperties;
+import org.springframework.cloud.sleuth.zipkin2.ZipkinAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -65,7 +63,7 @@ import org.springframework.context.annotation.Primary;
 		{ SamplerProperties.class, GcpTraceProperties.class, SleuthProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.trace.enabled", matchIfMissing = true)
 @ConditionalOnClass(TraceConsumer.class)
-@AutoConfigureBefore({ TraceAutoConfiguration.class })
+@AutoConfigureBefore({ ZipkinAutoConfiguration.class })
 public class StackdriverTraceAutoConfiguration {
 
 	private GcpProjectIdProvider finalProjectIdProvider;
@@ -92,12 +90,6 @@ public class StackdriverTraceAutoConfiguration {
 		sleuthProperties.setSupportsJoin(false);
 		sleuthProperties.setTraceId128(true);
 		return sleuthProperties;
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public Reporter<Span> reporter(Sender sender, BytesEncoder<Span> encoder) {
-		return AsyncReporter.builder(sender).build(encoder);
 	}
 
 	@Bean
