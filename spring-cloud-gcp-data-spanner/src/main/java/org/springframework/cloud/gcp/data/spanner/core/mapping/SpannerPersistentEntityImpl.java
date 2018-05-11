@@ -128,7 +128,14 @@ public class SpannerPersistentEntityImpl<T>
 			return;
 		}
 		addPersistentPropertyToPersistentEntity(property);
-		this.columnNames.add(property.getColumnName());
+
+		if ((property.isEmbedded())) {
+			this.columnNames.addAll(this.spannerMappingContext
+					.getPersistentEntity(property.getType()).columns());
+		}
+		else {
+			this.columnNames.add(property.getColumnName());
+		}
 
 		if (property.getPrimaryKeyOrder() != null
 				&& property.getPrimaryKeyOrder().isPresent()) {

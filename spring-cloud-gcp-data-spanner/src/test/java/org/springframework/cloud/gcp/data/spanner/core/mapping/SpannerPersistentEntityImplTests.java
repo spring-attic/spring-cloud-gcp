@@ -192,8 +192,15 @@ public class SpannerPersistentEntityImplTests {
 		Key key = (Key) this.spannerMappingContext
 				.getPersistentEntity(ChildEmbedded.class)
 				.getIdentifierAccessor(childEmbedded).getIdentifier();
-		assertEquals(Key.newBuilder().appendObject("1").appendObject("2")
-				.appendObject("3").appendObject("4").build(), key.getParts());
+		assertEquals(
+				Key.newBuilder().append("1").append("2").append("3").append("4").build(),
+				key);
+	}
+
+	@Test
+	public void testExcludeEmbeddedColumnNames() {
+		assertThat(this.spannerMappingContext.getPersistentEntity(ChildEmbedded.class)
+				.columns(), containsInAnyOrder("id", "id2", "id3", "id4"));
 	}
 
 	private static class GrandParentEmbedded {
