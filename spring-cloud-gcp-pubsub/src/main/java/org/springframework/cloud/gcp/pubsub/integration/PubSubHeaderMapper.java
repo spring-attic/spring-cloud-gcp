@@ -29,7 +29,7 @@ import org.springframework.util.Assert;
  * Maps headers from {@link com.google.pubsub.v1.PubsubMessage}s to
  * {@link org.springframework.messaging.Message}s and vice-versa.
  *
- * <p>Filters out headers called "id" or "timestamp" on the
+ * <p>By default, filters out headers called "id" or "timestamp" on the
  * {@link org.springframework.messaging.Message} to {@link com.google.pubsub.v1.PubsubMessage}
  * header conversion.
  *
@@ -38,20 +38,21 @@ import org.springframework.util.Assert;
 public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 
 	/**
-	 * Header patterns to map in {@link #fromHeaders(MessageHeaders, Map)}.
+	 * Patterns of headers to map in {@link #fromHeaders(MessageHeaders, Map)}.
 	 */
-	private String[] outboundHeaderPatternsToMap = {"!" + MessageHeaders.ID,
+	private String[] outboundHeaderPatternsToMap = {
+			"!" + MessageHeaders.ID,
 			"!" + MessageHeaders.TIMESTAMP,
 			"*"};
 
 	/**
-	 * Header patterns to map in {@link #toHeaders(Map)}.
+	 * Patterns of headers to map in {@link #toHeaders(Map)}.
 	 */
 	private String[] inboundHeaderPatternsToMap = {"*"};
 
 	/**
 	 * Set the patterns of the headers to be mapped in {@link #fromHeaders(MessageHeaders, Map)}.
-	 * @param outboundHeaderPatternsToMap
+	 * @param outboundHeaderPatternsToMap header patterns to be mapped
 	 */
 	public void setOutboundHeaderPatternsToMap(String... outboundHeaderPatternsToMap) {
 		Assert.notNull(outboundHeaderPatternsToMap, "Header patterns can't be null.");
@@ -62,12 +63,13 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 
 	/**
 	 * Set the patterns of the headers to be mapped in {@link #toHeaders(Map)}.
-	 * @param inboundHeaderPatternsToMap
+	 * @param inboundHeaderPatternsToMap header patterns to be mapped
 	 */
-	public void setInboundHeaderPatternsToMap(String[] inboundHeaderPatternsToMap) {
+	public void setInboundHeaderPatternsToMap(String... inboundHeaderPatternsToMap) {
 		Assert.notNull(inboundHeaderPatternsToMap, "Header patterns can't be null.");
 		Assert.noNullElements(inboundHeaderPatternsToMap, "No header pattern can be null.");
-		this.inboundHeaderPatternsToMap = inboundHeaderPatternsToMap;
+		this.inboundHeaderPatternsToMap =
+				Arrays.copyOf(inboundHeaderPatternsToMap, inboundHeaderPatternsToMap.length);
 	}
 
 	/**
