@@ -154,6 +154,10 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 	public void readUnconvertableValueTest() {
 		Struct struct = Struct.newBuilder()
 				.add("id", Value.string("key1"))
+				.add("id2", Value.string("key2"))
+				.add("id3", Value.string("key3"))
+				.add("id4", Value.string("key4"))
+				.add("intField2", Value.int64(333L))
 				.add("custom_col", Value.string("string1"))
 				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
 				.add("doubleField", Value.string("UNCONVERTABLE VALUE"))

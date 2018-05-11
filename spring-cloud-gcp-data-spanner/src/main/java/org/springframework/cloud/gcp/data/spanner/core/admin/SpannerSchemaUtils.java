@@ -141,23 +141,50 @@ public class SpannerSchemaUtils {
 				"CREATE TABLE " + spannerPersistentEntity.tableName() + " ( ");
 
 		StringJoiner columnStrings = new StringJoiner(" , ");
-		spannerPersistentEntity.doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> columnStrings
-						.add(getColumnDDLString(
-								spannerPersistentProperty,
-								this.spannerEntityProcessor)));
+
+		addColumnDDLStrings(spannerPersistentEntity, columnStrings);
 
 		stringBuilder.append(columnStrings.toString()).append(" ) PRIMARY KEY ( ");
 
 		StringJoiner keyStrings = new StringJoiner(" , ");
 
-		for (SpannerPersistentProperty keyProp : spannerPersistentEntity
-				.getPrimaryKeyProperties()) {
-			keyStrings.add(keyProp.getColumnName());
-		}
+		addPrimaryKeyColumnNames(spannerPersistentEntity, keyStrings);
 
 		stringBuilder.append(keyStrings.toString()).append(" )");
 		return stringBuilder.toString();
+	}
+
+	private <T> void addPrimaryKeyColumnNames(
+			SpannerPersistentEntity<T> spannerPersistentEntity, StringJoiner keyStrings) {
+		for (SpannerPersistentProperty keyProp : spannerPersistentEntity
+				.getPrimaryKeyProperties()) {
+			if (keyProp.isEmbedded()) {
+				addPrimaryKeyColumnNames(
+						this.mappingContext.getPersistentEntity(keyProp.getType()),
+						keyStrings);
+			}
+			else {
+				keyStrings.add(keyProp.getColumnName());
+			}
+		}
+	}
+
+	private <T> void addColumnDDLStrings(
+			SpannerPersistentEntity<T> spannerPersistentEntity,
+			StringJoiner stringJoiner) {
+		spannerPersistentEntity.doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					if (spannerPersistentProperty.isEmbedded()) {
+						addColumnDDLStrings(
+								this.mappingContext.getPersistentEntity(
+										spannerPersistentProperty.getType()),
+								stringJoiner);
+					}
+					else {
+						stringJoiner.add(getColumnDDLString(spannerPersistentProperty,
+								this.spannerEntityProcessor));
+					}
+				});
 	}
 
 	/**

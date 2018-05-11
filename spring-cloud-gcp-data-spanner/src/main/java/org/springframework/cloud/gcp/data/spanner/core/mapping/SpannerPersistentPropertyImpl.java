@@ -135,6 +135,11 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	@Override
+	public boolean isEmbedded() {
+		return findAnnotation(Embedded.class) != null;
+	}
+
+	@Override
 	public OptionalLong getMaxColumnLength() {
 		ColumnLength annotation = findAnnotation(ColumnLength.class);
 		if (annotation == null) {

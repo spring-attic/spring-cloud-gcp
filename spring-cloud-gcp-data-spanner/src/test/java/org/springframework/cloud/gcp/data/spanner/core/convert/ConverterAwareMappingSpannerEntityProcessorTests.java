@@ -129,9 +129,13 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		timestamps.add(ts3);
 
 		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
+				.add("id2", Value.string("key2"))
+				.add("id3", Value.string("key3"))
+				.add("id4", Value.string("key4"))
 				.add("custom_col", Value.string("string1"))
 				.add("booleanField", Value.bool(true))
 				.add("intField", Value.int64(123L))
+				.add("intField2", Value.int64(333L))
 				.add("longField", Value.int64(3L))
 				.add("doubleField", Value.float64(3.33))
 				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
@@ -147,10 +151,14 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 				.add("bytes", Value.bytes(ByteArray.copyFrom("string1")))
 				.add("momentsInTime", Value.timestampArray(timestamps)).build();
 
-		Struct struct2 = Struct.newBuilder().add("id", Value.string("key2"))
+		Struct struct2 = Struct.newBuilder().add("id", Value.string("key12"))
+				.add("id2", Value.string("key22"))
+				.add("id3", Value.string("key32"))
+				.add("id4", Value.string("key42"))
 				.add("custom_col", Value.string("string2"))
 				.add("booleanField", Value.bool(true))
 				.add("intField", Value.int64(222L))
+				.add("intField2", Value.int64(555L))
 				.add("longField", Value.int64(5L))
 				.add("doubleField", Value.float64(5.55))
 				.add("doubleArray", Value.float64Array(new double[] { 5.55, 5.55 }))
@@ -185,9 +193,13 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		TestEntity t2 = entities.get(1);
 
 		assertEquals("key1", t1.id);
+		assertEquals("key2", t1.testEmbeddedColumns.id2);
+		assertEquals("key3", t1.testEmbeddedColumns.id3);
+		assertEquals("key4", t1.id4);
 		assertEquals("string1", t1.stringField);
 		assertEquals(true, t1.booleanField);
 		assertEquals(123, t1.intField);
+		assertEquals(333, t1.testEmbeddedColumns.intField2);
 		assertEquals(3L, t1.longField);
 		assertEquals(3.33, t1.doubleField, 0.00001);
 		assertEquals(3, t1.doubleArray.length);
@@ -195,10 +207,14 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		assertEquals(instants, t1.momentsInTime);
 		assertEquals(ByteArray.copyFrom("string1"), t1.bytes);
 
-		assertEquals("key2", t2.id);
+		assertEquals("key12", t2.id);
+		assertEquals("key22", t2.testEmbeddedColumns.id2);
+		assertEquals("key32", t2.testEmbeddedColumns.id3);
+		assertEquals("key42", t2.id4);
 		assertEquals("string2", t2.stringField);
 		assertEquals(true, t2.booleanField);
 		assertEquals(222, t2.intField);
+		assertEquals(555, t2.testEmbeddedColumns.intField2);
 		assertEquals(5L, t2.longField);
 		assertEquals(5.55, t2.doubleField, 0.00001);
 		assertEquals(2, t2.doubleArray.length);
