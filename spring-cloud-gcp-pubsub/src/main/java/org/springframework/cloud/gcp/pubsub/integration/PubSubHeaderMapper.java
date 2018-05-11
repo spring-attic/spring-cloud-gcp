@@ -40,7 +40,7 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	/**
 	 * Patterns of headers to map in {@link #fromHeaders(MessageHeaders, Map)}.
 	 */
-	private String[] outboundHeaderPatternsToMap = {
+	private String[] outboundHeaderPatterns = {
 			"!" + MessageHeaders.ID,
 			"!" + MessageHeaders.TIMESTAMP,
 			"*"};
@@ -48,28 +48,28 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	/**
 	 * Patterns of headers to map in {@link #toHeaders(Map)}.
 	 */
-	private String[] inboundHeaderPatternsToMap = {"*"};
+	private String[] inboundHeaderPatterns = {"*"};
 
 	/**
 	 * Set the patterns of the headers to be mapped in {@link #fromHeaders(MessageHeaders, Map)}.
-	 * @param outboundHeaderPatternsToMap header patterns to be mapped
+	 * @param outboundHeaderPatterns header patterns to be mapped
 	 */
-	public void setOutboundHeaderPatternsToMap(String... outboundHeaderPatternsToMap) {
-		Assert.notNull(outboundHeaderPatternsToMap, "Header patterns can't be null.");
-		Assert.noNullElements(outboundHeaderPatternsToMap, "No header pattern can be null.");
-		this.outboundHeaderPatternsToMap =
-				Arrays.copyOf(outboundHeaderPatternsToMap, outboundHeaderPatternsToMap.length);
+	public void setOutboundHeaderPatterns(String... outboundHeaderPatterns) {
+		Assert.notNull(outboundHeaderPatterns, "Header patterns can't be null.");
+		Assert.noNullElements(outboundHeaderPatterns, "No header pattern can be null.");
+		this.outboundHeaderPatterns =
+				Arrays.copyOf(outboundHeaderPatterns, outboundHeaderPatterns.length);
 	}
 
 	/**
 	 * Set the patterns of the headers to be mapped in {@link #toHeaders(Map)}.
-	 * @param inboundHeaderPatternsToMap header patterns to be mapped
+	 * @param inboundHeaderPatterns header patterns to be mapped
 	 */
-	public void setInboundHeaderPatternsToMap(String... inboundHeaderPatternsToMap) {
-		Assert.notNull(inboundHeaderPatternsToMap, "Header patterns can't be null.");
-		Assert.noNullElements(inboundHeaderPatternsToMap, "No header pattern can be null.");
-		this.inboundHeaderPatternsToMap =
-				Arrays.copyOf(inboundHeaderPatternsToMap, inboundHeaderPatternsToMap.length);
+	public void setInboundHeaderPatterns(String... inboundHeaderPatterns) {
+		Assert.notNull(inboundHeaderPatterns, "Header patterns can't be null.");
+		Assert.noNullElements(inboundHeaderPatterns, "No header pattern can be null.");
+		this.inboundHeaderPatterns =
+				Arrays.copyOf(inboundHeaderPatterns, inboundHeaderPatterns.length);
 	}
 
 	/**
@@ -86,7 +86,7 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 		messageHeaders.entrySet().stream()
 				.filter(entry -> Boolean.TRUE.equals(
 						PatternMatchUtils.smartMatch(entry.getKey(),
-								this.outboundHeaderPatternsToMap)))
+								this.outboundHeaderPatterns)))
 				.forEach(entry -> pubsubMessageHeaders.put(
 						entry.getKey(), entry.getValue().toString()));
 	}
@@ -104,7 +104,7 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 		return pubsubMessageHeaders.entrySet().stream()
 				.filter(entry -> Boolean.TRUE.equals(
 						PatternMatchUtils.smartMatch(entry.getKey(),
-								this.inboundHeaderPatternsToMap)))
+								this.inboundHeaderPatterns)))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 	}
 }

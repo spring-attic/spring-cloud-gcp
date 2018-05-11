@@ -46,7 +46,7 @@ public class PubSubHeaderMapperTests {
 	@Test
 	public void testDontFilterHeaders() {
 		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
-		mapper.setOutboundHeaderPatternsToMap("*");
+		mapper.setOutboundHeaderPatterns("*");
 		Map<String, Object> originalHeaders = new HashMap<>();
 		originalHeaders.put("my header", "pantagruel's nativity");
 		MessageHeaders internalHeaders = new MessageHeaders(originalHeaders);
