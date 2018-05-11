@@ -47,6 +47,10 @@ public class GoogleStorageProtocolResolver
 
 	private ConfigurableListableBeanFactory beanFactory;
 
+	private Storage storage;
+
+	private GoogleStorageProtocolResolverSettings googleStorageProtocolResolverSettings;
+
 	GoogleStorageProtocolResolver() {
 	}
 
@@ -54,6 +58,21 @@ public class GoogleStorageProtocolResolver
 	public void postProcessBeanFactory(
 			ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		this.beanFactory = beanFactory;
+	}
+
+	private Storage getStorage() {
+		if (this.storage == null) {
+			this.storage = this.beanFactory.getBean(Storage.class);
+		}
+		return this.storage;
+	}
+
+	private GoogleStorageProtocolResolverSettings getGoogleStorageProtocolResolverSettings() {
+		if (this.googleStorageProtocolResolverSettings == null) {
+			this.googleStorageProtocolResolverSettings = this.beanFactory
+					.getBean(GoogleStorageProtocolResolverSettings.class);
+		}
+		return this.googleStorageProtocolResolverSettings;
 	}
 
 	@Override
@@ -69,7 +88,7 @@ public class GoogleStorageProtocolResolver
 
 	private GoogleStorageProtocolResolverSettings getSettings() {
 		try {
-			return this.beanFactory.getBean(GoogleStorageProtocolResolverSettings.class);
+			return getGoogleStorageProtocolResolverSettings();
 		}
 		catch (NoSuchBeanDefinitionException e) {
 			return GoogleStorageProtocolResolverSettings
@@ -82,7 +101,7 @@ public class GoogleStorageProtocolResolver
 		if (!location.startsWith(PROTOCOL)) {
 			return null;
 		}
-		return new GoogleStorageResource(this.beanFactory.getBean(Storage.class),
-				location, getSettings().isAutoCreateFiles());
+		return new GoogleStorageResource(getStorage(), location,
+				getSettings().isAutoCreateFiles());
 	}
 }

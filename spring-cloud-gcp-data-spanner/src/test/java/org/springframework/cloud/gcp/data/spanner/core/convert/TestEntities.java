@@ -100,6 +100,22 @@ public class TestEntities {
 		List<InnerTestEntity> innerTestEntities;
 	}
 
+	@Table(name = "outer_test_entity_flat")
+	static class OuterTestEntityFlat {
+		@PrimaryKey
+		String id;
+
+		List<Integer> innerLengths;
+	}
+
+	@Table(name = "outer_test_entity_flat_faulty")
+	static class OuterTestEntityFlatFaulty {
+		@PrimaryKey
+		String id;
+
+		Integer innerLengths;
+	}
+
 	static class InnerTestEntity {
 		@PrimaryKey
 		String value;

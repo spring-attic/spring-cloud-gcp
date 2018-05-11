@@ -31,8 +31,6 @@ import org.springframework.util.Assert;
  */
 public abstract class SpannerCustomConverter {
 
-	private final CustomConversions customConversions;
-
 	private final ConfigurableConversionService conversionService;
 
 	/**
@@ -40,24 +38,24 @@ public abstract class SpannerCustomConverter {
 	 * @param customConversions must not be null.
 	 * @param conversionService if null, then {@link DefaultConversionService} is used.
 	 */
-	public SpannerCustomConverter(CustomConversions customConversions,
+	SpannerCustomConverter(CustomConversions customConversions,
 																GenericConversionService conversionService) {
 		Assert.notNull(customConversions, "Valid custom conversions are required!");
-		this.customConversions = customConversions;
 		this.conversionService = conversionService == null
 				? new DefaultConversionService()
 				: conversionService;
 
-		this.customConversions.registerConvertersIn(this.conversionService);
+		customConversions.registerConvertersIn(this.conversionService);
 	}
 
-	public boolean canConvert(Class sourceType, Class targetType) {
+	boolean canConvert(Class<?> sourceType, Class<?> targetType) {
 		Class boxedTargetType = ConversionUtils.boxIfNeeded(targetType);
 		Class boxedSourceType = ConversionUtils.boxIfNeeded(sourceType);
 		return boxedSourceType.equals(boxedTargetType)
 				|| this.conversionService.canConvert(boxedSourceType, boxedTargetType);
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> T convert(Object sourceValue, Class<T> targetType) {
 		Class<?> boxedSourceType = ConversionUtils.boxIfNeeded(sourceValue.getClass());
 		Class<T> boxedTargetType = ConversionUtils.boxIfNeeded(targetType);
@@ -66,7 +64,7 @@ public abstract class SpannerCustomConverter {
 						: this.conversionService.convert(sourceValue, boxedTargetType);
 	}
 
-	protected static CustomConversions getCustomConversions(
+	static CustomConversions getCustomConversions(
 					Collection<Converter> converters) {
 		return new CustomConversions(CustomConversions.StoreConversions.NONE, converters);
 	}

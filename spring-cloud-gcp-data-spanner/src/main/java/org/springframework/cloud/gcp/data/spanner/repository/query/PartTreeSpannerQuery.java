@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
+import java.util.List;
+
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.repository.query.QueryMethod;
@@ -25,7 +27,7 @@ import org.springframework.data.repository.query.parser.PartTree;
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
-public class PartTreeSpannerQuery extends AbstractSpannerQuery {
+public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 	private final PartTree tree;
 
@@ -36,7 +38,7 @@ public class PartTreeSpannerQuery extends AbstractSpannerQuery {
 	 * @param spannerOperations used for executing queries.
 	 * @param spannerMappingContext used for getting metadata about entities.
 	 */
-	public PartTreeSpannerQuery(Class type, QueryMethod queryMethod,
+	public PartTreeSpannerQuery(Class<T> type, QueryMethod queryMethod,
 			SpannerOperations spannerOperations,
 			SpannerMappingContext spannerMappingContext) {
 		super(type, queryMethod, spannerOperations, spannerMappingContext);
@@ -44,7 +46,21 @@ public class PartTreeSpannerQuery extends AbstractSpannerQuery {
 	}
 
 	@Override
-	protected Object executeRawResult(Object[] parameters) {
+	public Object execute(Object[] parameters) {
+		List<T> results = executeRawResult(parameters);
+		if (this.tree.isCountProjection()) {
+			return results.size();
+		}
+		else if (this.tree.isExistsProjection()) {
+			return !results.isEmpty();
+		}
+		else {
+			return applyProjection(results);
+		}
+	}
+
+	@Override
+	protected List<T> executeRawResult(Object[] parameters) {
 		return SpannerStatementQueryExecutor.executeQuery(this.entityType, this.tree,
 				parameters, this.spannerOperations, this.spannerMappingContext);
 	}

@@ -282,6 +282,27 @@ Spring Data Spanner supports the following inner types:
 * `java.util.Instant`
 * `java.sql.Date`
 
+==== Lists of Structs
+
+Cloud Spanner queries can https://cloud.google.com/spanner/docs/query-syntax#using-structs-with-select[construct STRUCT values]
+that appear as columns in the result. Cloud Spanner requires STRUCT values appear in ARRAYs at the
+root level: `SELECT ARRAY(SELECT STRUCT(1 as val1, 2 as val2)) as pair FROM Users`.
+
+Spring Data Cloud Spanner
+will attempt to read the column STRUCT values into a property that is an `Iterable`
+of an entity type compatible with the schema of the column STRUCT value. For example, the following
+property can be mapped with the constructed `ARRAY<STRUCT>` column: `List<TwoInts> pair;`
+where the `TwoInts` type is defined:
+[source, java]
+----
+class TwoInts {
+
+  int val1;
+
+  int val2;
+}
+----
+
 ==== Custom types
 
 Custom converters can be used extending the type support for user defined types.
@@ -369,6 +390,9 @@ public class ConverterConfiguration {
 	}
 }
 ----
+
+==== Custom Converter for Struct Array Columns
+If a `Converter<Struct, A>` is provided, then properties of type `List<A>` can be used in your entity types.
 
 
 === Spanner Template

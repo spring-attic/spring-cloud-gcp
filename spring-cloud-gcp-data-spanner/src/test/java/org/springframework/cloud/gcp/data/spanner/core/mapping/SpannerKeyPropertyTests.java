@@ -92,6 +92,7 @@ public class SpannerKeyPropertyTests {
 	}
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void getPersistentEntityTypeTest() {
 		assertFalse(
 				this.spannerKeyProperty.getPersistentEntityType().iterator().hasNext());

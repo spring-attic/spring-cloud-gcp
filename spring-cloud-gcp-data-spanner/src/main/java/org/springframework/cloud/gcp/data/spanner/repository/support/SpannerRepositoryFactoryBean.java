@@ -21,6 +21,7 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
@@ -28,7 +29,8 @@ import org.springframework.data.repository.core.support.RepositoryFactorySupport
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-public class SpannerRepositoryFactoryBean extends RepositoryFactoryBeanSupport implements
+public class SpannerRepositoryFactoryBean<T extends Repository<S, ID>, S, ID> extends
+		RepositoryFactoryBeanSupport<T, S, ID> implements
 		ApplicationContextAware {
 
 	private SpannerMappingContext spannerMappingContext;
@@ -42,7 +44,7 @@ public class SpannerRepositoryFactoryBean extends RepositoryFactoryBeanSupport i
 	 *
 	 * @param repositoryInterface must not be {@literal null}.
 	 */
-	public SpannerRepositoryFactoryBean(Class repositoryInterface) {
+	SpannerRepositoryFactoryBean(Class<T> repositoryInterface) {
 		super(repositoryInterface);
 	}
 

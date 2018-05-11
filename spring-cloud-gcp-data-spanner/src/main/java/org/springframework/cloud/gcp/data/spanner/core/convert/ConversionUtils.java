@@ -28,7 +28,7 @@ import com.google.cloud.ByteArray;
  */
 public class ConversionUtils {
 
-	public static Class boxIfNeeded(Class propertyType) {
+	static Class boxIfNeeded(Class propertyType) {
 		if (propertyType == null) {
 			return null;
 		}
@@ -42,7 +42,7 @@ public class ConversionUtils {
 	}
 
 	static <T> Iterable<T> convertIterable(
-			Iterable source, Class<T> targetType, SpannerCustomConverter converter) {
+			Iterable<Object> source, Class<T> targetType, SpannerCustomConverter converter) {
 		List<T> result = new ArrayList<>();
 		source.forEach(item -> result.add(converter.convert(item, targetType)));
 		return result;

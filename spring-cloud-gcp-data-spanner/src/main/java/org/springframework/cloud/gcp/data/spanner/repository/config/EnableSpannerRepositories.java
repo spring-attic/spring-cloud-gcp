@@ -77,7 +77,7 @@ public @interface EnableSpannerRepositories {
 	 * Configure the repository base class to be used to create repository proxies for
 	 * this particular configuration.
 	 *
-	 * @return
+	 * @return the base repository class
 	 */
 	Class repositoryBaseClass() default DefaultRepositoryBaseClass.class;
 
@@ -91,7 +91,7 @@ public @interface EnableSpannerRepositories {
 	 * Returns the {@link org.springframework.beans.factory.FactoryBean} class to be used
 	 * for each repository instance. Defaults to {@link SpannerRepositoryFactoryBean}.
 	 *
-	 * @return
+	 * @return the factory bean class used to create factories
 	 */
 	Class repositoryFactoryBeanClass() default SpannerRepositoryFactoryBean.class;
 
@@ -99,7 +99,7 @@ public @interface EnableSpannerRepositories {
 	 * Configures the location of where to read the Spring Data named queries properties
 	 * file. Will default to {@code META-INF/spanner-named-queries.properties}
 	 *
-	 * @return
+	 * @return the location of the file holding named queries' strings.
 	 */
 	String namedQueriesLocation() default "";
 
@@ -109,7 +109,7 @@ public @interface EnableSpannerRepositories {
 	 * corresponding implementation class will be looked up scanning for
 	 * {@code PersonRepositoryImpl}.
 	 *
-	 * @return
+	 * @return the default suffix that will cause classes to be assumed to be implementations
 	 */
 	String repositoryImplementationPostfix() default "";
 
@@ -118,7 +118,7 @@ public @interface EnableSpannerRepositories {
 	 * {@link org.springframework.cloud.gcp.data.spanner.core.SpannerOperations} bean to be used by
 	 * default with the repositories detected.
 	 *
-	 * @return
+	 * @return the name of the Spanner template class
 	 */
 	String spannerTemplateRef() default "spannerTemplate";
 
@@ -127,7 +127,7 @@ public @interface EnableSpannerRepositories {
 	 * {@link org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext}
 	 * bean to be used by default with the repositories detected.
 	 *
-	 * @return
+	 * @return the name of the Spanner mapping context class
 	 */
 	String spannerMappingContextRef() default "spannerMappingContext";
 }

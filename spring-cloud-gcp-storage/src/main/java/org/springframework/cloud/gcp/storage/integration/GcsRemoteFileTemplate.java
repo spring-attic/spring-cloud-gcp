@@ -37,6 +37,7 @@ public class GcsRemoteFileTemplate extends RemoteFileTemplate<BlobInfo> {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T, C> T executeWithClient(ClientCallback<C, T> callback) {
 		return callback.doWithClient((C) this.sessionFactory.getSession().getClientInstance());
 	}

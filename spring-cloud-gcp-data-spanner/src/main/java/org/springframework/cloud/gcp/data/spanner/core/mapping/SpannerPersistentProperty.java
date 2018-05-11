@@ -43,18 +43,18 @@ public interface SpannerPersistentProperty
 	 * Google Cloud Spanner.
 	 * @return the inner type of the column.
 	 */
-	Class getColumnInnerType();
+	Class<?> getColumnInnerType();
 
 	/**
 	 * Gets the order of this column if it is part of the table's primary key. Will be
 	 * empty or null if this column is not part of the primary key.
-	 * @return
+	 * @return An optional that is empty if no primary key order exists for the property.
 	 */
 	OptionalInt getPrimaryKeyOrder();
 
 	/**
 	 * Gets the maximum data length of the column if provided.
-	 * @return
+	 * @return An optional that is empty if no maximum length was provided.
 	 */
 	OptionalLong getMaxColumnLength();
 

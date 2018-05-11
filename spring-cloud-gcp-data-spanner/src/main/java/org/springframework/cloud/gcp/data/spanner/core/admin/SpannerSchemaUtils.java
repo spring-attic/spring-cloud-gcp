@@ -67,7 +67,7 @@ public class SpannerSchemaUtils {
 						: "");
 	}
 
-	public String getColumnDDLString(
+	String getColumnDDLString(
 			SpannerPersistentProperty spannerPersistentProperty, SpannerEntityProcessor spannerEntityProcessor) {
 		Class columnType = spannerPersistentProperty.getType();
 		String ddlString;
@@ -113,8 +113,8 @@ public class SpannerSchemaUtils {
 
 	/**
 	 * Gets the key for the given object.
-	 * @param object
-	 * @return
+	 * @param object the object to get the key for
+	 * @return the Spanner Key for the given object.
 	 */
 	public Key getKey(Object object) {
 		SpannerPersistentEntity persistentEntity = this.mappingContext
@@ -131,8 +131,10 @@ public class SpannerSchemaUtils {
 	 * @param entityClass the entity type.
 	 * @return the DDL string.
 	 */
-	public String getCreateTableDDLString(Class entityClass) {
-		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
+	@SuppressWarnings("unchecked")
+	public <T> String getCreateTableDDLString(Class<T> entityClass) {
+		SpannerPersistentEntity<T> spannerPersistentEntity =
+				(SpannerPersistentEntity<T>) this.mappingContext
 				.getPersistentEntity(entityClass);
 
 		StringBuilder stringBuilder = new StringBuilder(
@@ -145,7 +147,7 @@ public class SpannerSchemaUtils {
 								spannerPersistentProperty,
 								this.spannerEntityProcessor)));
 
-		stringBuilder.append(columnStrings.toString() + " ) PRIMARY KEY ( ");
+		stringBuilder.append(columnStrings.toString()).append(" ) PRIMARY KEY ( ");
 
 		StringJoiner keyStrings = new StringJoiner(" , ");
 
@@ -154,7 +156,7 @@ public class SpannerSchemaUtils {
 			keyStrings.add(keyProp.getColumnName());
 		}
 
-		stringBuilder.append(keyStrings.toString() + " )");
+		stringBuilder.append(keyStrings.toString()).append(" )");
 		return stringBuilder.toString();
 	}
 

@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.autoconfigure.pubsub.it;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
@@ -36,6 +37,7 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class PubSubTemplateIntegrationTests {
 
@@ -45,7 +47,7 @@ public class PubSubTemplateIntegrationTests {
 
 	@BeforeClass
 	public static void enableTests() {
-		assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
+			assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
 	}
 
 	@Test
@@ -54,33 +56,44 @@ public class PubSubTemplateIntegrationTests {
 			PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
 			PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
 
-			assertThat(pubSubAdmin.getTopic("tarkus")).isNull();
-			assertThat(pubSubAdmin.getSubscription("zatoichi"))
+			String topicName = "tarkus_" + UUID.randomUUID();
+			String subscriptionName = "zatoichi_" + UUID.randomUUID();
+
+			assertThat(pubSubAdmin.getTopic(topicName)).isNull();
+			assertThat(pubSubAdmin.getSubscription(subscriptionName))
 					.isNull();
-			pubSubAdmin.createTopic("tarkus");
-			pubSubAdmin.createSubscription("zatoichi", "tarkus");
+			pubSubAdmin.createTopic(topicName);
+			pubSubAdmin.createSubscription(subscriptionName, topicName);
 
 			Map<String, String> headers = new HashMap<>();
 			headers.put("cactuar", "tonberry");
 			headers.put("fujin", "raijin");
-			pubSubTemplate.publish("tarkus", "tatatatata", headers);
-			PubsubMessage pubsubMessage = pubSubTemplate.pullNext("zatoichi");
+			pubSubTemplate.publish(topicName, "tatatatata", headers);
+			PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
 
 			assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8("tatatatata"));
 			assertThat(pubsubMessage.getAttributesCount()).isEqualTo(2);
 			assertThat(pubsubMessage.getAttributesOrThrow("cactuar")).isEqualTo("tonberry");
 			assertThat(pubsubMessage.getAttributesOrThrow("fujin")).isEqualTo("raijin");
 
-			assertThat(pubSubAdmin.getTopic("tarkus")).isNotNull();
-			assertThat(pubSubAdmin.getSubscription("zatoichi")).isNotNull();
-			assertThat(pubSubAdmin.listTopics().size()).isEqualTo(1);
-			assertThat(pubSubAdmin.listSubscriptions().size()).isEqualTo(1);
-			pubSubAdmin.deleteSubscription("zatoichi");
-			pubSubAdmin.deleteTopic("tarkus");
-			assertThat(pubSubAdmin.getTopic("tarkus")).isNull();
-			assertThat(pubSubAdmin.getSubscription("zatoichi")).isNull();
-			assertThat(pubSubAdmin.listTopics().size()).isEqualTo(0);
-			assertThat(pubSubAdmin.listSubscriptions().size()).isEqualTo(0);
+			assertThat(pubSubAdmin.getTopic(topicName)).isNotNull();
+			assertThat(pubSubAdmin.getSubscription(subscriptionName)).isNotNull();
+			assertThat(pubSubAdmin.listTopics().stream()
+					.filter(topic -> topic.getName().endsWith(topicName)).toArray().length)
+							.isEqualTo(1);
+			assertThat(pubSubAdmin.listSubscriptions().stream().filter(
+					subscription -> subscription.getName().endsWith(subscriptionName))
+					.toArray().length).isEqualTo(1);
+			pubSubAdmin.deleteSubscription(subscriptionName);
+			pubSubAdmin.deleteTopic(topicName);
+			assertThat(pubSubAdmin.getTopic(topicName)).isNull();
+			assertThat(pubSubAdmin.getSubscription(subscriptionName)).isNull();
+			assertThat(pubSubAdmin.listTopics().stream()
+					.filter(topic -> topic.getName().endsWith(topicName)).toArray().length)
+					.isEqualTo(0);
+			assertThat(pubSubAdmin.listSubscriptions().stream().filter(
+					subscription -> subscription.getName().endsWith(subscriptionName))
+					.toArray().length).isEqualTo(0);
 		});
 	}
 }

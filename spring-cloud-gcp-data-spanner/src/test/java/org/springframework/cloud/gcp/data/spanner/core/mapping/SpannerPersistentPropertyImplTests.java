@@ -45,11 +45,10 @@ public class SpannerPersistentPropertyImplTests {
 
 	@Test
 	public void testGetColumn() {
-		SpannerPersistentEntityImpl<TestEntity> entity =
-				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
-				.getPersistentEntity(TestEntity.class));
-
-		assertThat(entity.columns(), containsInAnyOrder("id", "custom_col", "other", "doubleList"));
+		assertThat(
+				new SpannerMappingContext().getPersistentEntity(TestEntity.class)
+						.columns(),
+				containsInAnyOrder("id", "custom_col", "other", "doubleList"));
 	}
 
 	@Test(expected = MappingException.class)
@@ -58,27 +57,22 @@ public class SpannerPersistentPropertyImplTests {
 		FieldNamingStrategy namingStrat = mock(FieldNamingStrategy.class);
 		when(namingStrat.getFieldName(any())).thenReturn(null);
 		context.setFieldNamingStrategy(namingStrat);
-		SpannerPersistentEntityImpl<TestEntity> entity =
-				(SpannerPersistentEntityImpl<TestEntity>) (context
-				.getPersistentEntity(TestEntity.class));
+		SpannerPersistentEntity entity = context.getPersistentEntity(TestEntity.class);
 
-		entity.columns().forEach(col -> {
+		for (Object col : entity.columns()) {
 			SpannerPersistentPropertyImpl prop = (SpannerPersistentPropertyImpl) entity
-					.getPersistentProperty(col);
+					.getPersistentProperty((String) col);
 
 			// Getting the column name will throw an exception because of the mock naming
 			// strategy.
 			prop.getColumnName();
-		});
+		}
 	}
 
 	@Test
 	public void testAssociations() {
-		SpannerPersistentEntityImpl<TestEntity> entity =
-				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
-				.getPersistentEntity(TestEntity.class));
-
-		entity.doWithProperties((PropertyHandler<SpannerPersistentProperty>) prop -> {
+		new SpannerMappingContext().getPersistentEntity(TestEntity.class)
+				.doWithProperties((PropertyHandler<SpannerPersistentProperty>) prop -> {
 			assertSame(prop, ((SpannerPersistentPropertyImpl) prop).createAssociation()
 					.getInverse());
 			assertNull(((SpannerPersistentPropertyImpl) prop).createAssociation()
@@ -88,35 +82,26 @@ public class SpannerPersistentPropertyImplTests {
 
 	@Test
 	public void testColumnInnerType() {
-		SpannerPersistentEntityImpl<TestEntity> entity =
-				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
-				.getPersistentEntity(TestEntity.class));
-
 		assertEquals(Double.class,
-				entity.getPersistentProperty("doubleList")
+				new SpannerMappingContext().getPersistentEntity(TestEntity.class)
+						.getPersistentProperty("doubleList")
 				.getColumnInnerType());
 	}
 
 	@Test
 	public void testNoPojoIdProperties() {
-		SpannerPersistentEntityImpl<TestEntity> entity =
-				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
-				.getPersistentEntity(TestEntity.class));
-
-		entity.doWithProperties((PropertyHandler<SpannerPersistentProperty>) prop -> {
-			assertFalse(prop.isIdProperty());
-		});
+		new SpannerMappingContext().getPersistentEntity(TestEntity.class)
+				.doWithProperties(
+						(PropertyHandler<SpannerPersistentProperty>) prop -> assertFalse(
+								prop.isIdProperty()));
 	}
 
 	@Test
 	public void testIgnoredProperty() {
-		SpannerPersistentEntityImpl<TestEntity> entity =
-				(SpannerPersistentEntityImpl<TestEntity>) (new SpannerMappingContext()
-				.getPersistentEntity(TestEntity.class));
-
-		entity.doWithProperties((PropertyHandler<SpannerPersistentProperty>) prop -> {
-			assertNotEquals("not_mapped", prop.getColumnName());
-		});
+		new SpannerMappingContext().getPersistentEntity(TestEntity.class)
+				.doWithProperties(
+						(PropertyHandler<SpannerPersistentProperty>) prop -> assertNotEquals(
+								"not_mapped", prop.getColumnName()));
 	}
 
 	@Table(name = "custom_test_table")
