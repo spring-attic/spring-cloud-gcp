@@ -41,6 +41,8 @@ import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
+import org.springframework.cloud.gcp.pubsub.core.Acknowledger;
+import org.springframework.cloud.gcp.pubsub.core.DefaultPubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
@@ -175,5 +177,11 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public TransportChannelProvider transportChannelProvider() {
 		return InstantiatingGrpcChannelProvider.newBuilder().build();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public Acknowledger pubSubAcknowledger(SubscriberFactory subscriberFactory) {
+		return new DefaultPubSubAcknowledger(subscriberFactory.createSubscriberStub());
 	}
 }

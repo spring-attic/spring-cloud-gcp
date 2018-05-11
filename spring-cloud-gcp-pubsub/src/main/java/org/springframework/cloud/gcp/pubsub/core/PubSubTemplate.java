@@ -17,10 +17,6 @@
 package org.springframework.cloud.gcp.pubsub.core;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -28,13 +24,10 @@ import java.util.stream.Collectors;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
-import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.protobuf.ByteString;
-import com.google.pubsub.v1.AcknowledgeRequest;
-import com.google.pubsub.v1.ModifyAckDeadlineRequest;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
@@ -42,7 +35,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.util.Assert;
@@ -52,8 +44,8 @@ import org.springframework.util.concurrent.SettableListenableFuture;
 /**
  * Default implementation of {@link PubSubOperations}.
  *
- * <p>The main Google Cloud Pub/Sub integration component for publishing to topics and consuming messages from
- * subscriptions asynchronously or by pulling.
+ * <p>The main Google Cloud Pub/Sub integration component for publishing to topics and consuming
+ * messages from subscriptions asynchronously or by pulling.
  *
  * @author Vinicius Carvalho
  * @author João André Martins
@@ -67,9 +59,12 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private final SubscriberFactory subscriberFactory;
 
+	private final SubscriberStub subscriberStub;
+
+	private Acknowledger acknowledger;
+
 	/**
 	 * Default {@link PubSubTemplate} constructor.
-	 *
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
 	 *                         publish to topics
 	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory to
@@ -78,6 +73,8 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory) {
 		this.publisherFactory = publisherFactory;
 		this.subscriberFactory = subscriberFactory;
+		this.subscriberStub = this.subscriberFactory.createSubscriberStub();
+		this.acknowledger = new DefaultPubSubAcknowledger(this.subscriberStub);
 	}
 
 	@Override
@@ -140,115 +137,62 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	@Override
 	public Subscriber subscribe(String subscription, MessageReceiver messageHandler) {
-		Subscriber subscriber = this.subscriberFactory.createSubscriber(subscription, messageHandler);
+		Subscriber subscriber =
+				this.subscriberFactory.createSubscriber(subscription, messageHandler);
 		subscriber.startAsync();
 		return subscriber;
 	}
 
 	/**
 	 * Pulls messages synchronously, on demand, using the pull request in argument.
-	 *
 	 * @param pullRequest pull request containing the subscription name
-	 * @return the list of {@link PubsubMessage} containing the headers and payload
+	 * @return the list of {@link AcknowledgeablePubsubMessage} containing the ack ID, subscription
+	 * and acknowledger
 	 */
-	private List<PubsubMessage> pull(PullRequest pullRequest, RetrySettings retrySettings,
-			boolean acknowledge) {
+	private List<AcknowledgeablePubsubMessage> pull(PullRequest pullRequest) {
 		Assert.notNull(pullRequest, "The pull request cannot be null.");
-		List<PubsubMessage> pulledMessages = new ArrayList<>();
 
-		try {
-			SubscriberStub subscriber = this.subscriberFactory.createSubscriberStub(retrySettings);
-			Assert.notNull(subscriber, "A SubscriberStub is needed to execute the pull request.");
+		PullResponse pullResponse =	this.subscriberStub.pullCallable().call(pullRequest);
+		List<AcknowledgeablePubsubMessage> receivedMessages =
+				pullResponse.getReceivedMessagesList().stream()
+						.map(message -> {
+							return new AcknowledgeablePubsubMessage(message.getMessage(),
+									message.getAckId(),
+									pullRequest.getSubscription(),
+									this.acknowledger);
+						})
+						.collect(Collectors.toList());
 
-			PullResponse pullResponse =	subscriber.pullCallable().call(pullRequest);
-
-			if (pullResponse.getReceivedMessagesCount() > 0) {
-
-				pullResponse.getReceivedMessagesList().stream().forEach(
-						receivedMessage -> {
-							Map<String, String> attributesMap = new HashMap<>();
-							attributesMap.putAll(receivedMessage.getMessage().getAttributesMap());
-							attributesMap.put(GcpPubSubHeaders.ACK_ID, receivedMessage.getAckId());
-							attributesMap.put(GcpPubSubHeaders.SUBSCRIPTION,
-									pullRequest.getSubscription());
-							// TODO(joaomartins): Replace with toBuilder()?
-							pulledMessages.add(PubsubMessage.newBuilder()
-									.setData(receivedMessage.getMessage().getData())
-									.setMessageId(receivedMessage.getMessage().getMessageId())
-									.setPublishTime(receivedMessage.getMessage().getPublishTime())
-									.putAllAttributes(attributesMap)
-									.build());
-						}
-				);
-
-				if (acknowledge) {
-					ackMessages(pulledMessages, retrySettings);
-				}
-			}
-
-			return pulledMessages;
-		}
-		catch (Exception ioe) {
-			throw new PubSubException("Error pulling messages from subscription "
-					+ pullRequest.getSubscription() + ".", ioe);
-		}
+		return receivedMessages;
 	}
 
 	@Override
-	public List<PubsubMessage> pull(String subscription, Integer maxMessages,
-			Boolean returnImmediately, RetrySettings retrySettings, boolean acknowledge) {
-		return pull(this.subscriberFactory.createPullRequest(
-				subscription, maxMessages, returnImmediately),
-				retrySettings, acknowledge);
+	public List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
+			Boolean returnImmediately) {
+		return pull(this.subscriberFactory.createPullRequest(subscription, maxMessages,
+				returnImmediately));
+	}
+
+	@Override
+	public List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages,
+			Boolean returnImmediately) {
+		List<AcknowledgeablePubsubMessage> ackableMessages =
+				pull(this.subscriberFactory.createPullRequest(
+						subscription, maxMessages, returnImmediately));
+
+		this.acknowledger.ack(ackableMessages.stream()
+				.map(AcknowledgeablePubsubMessage::getAckId)
+				.collect(Collectors.toList()), subscription);
+
+		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getMessage)
+				.collect(Collectors.toList());
 	}
 
 	@Override
 	public PubsubMessage pullNext(String subscription) {
-		List<PubsubMessage> receivedMessageList = pull(subscription, 1, true, null, true);
+		List<PubsubMessage> receivedMessageList = pullAndAck(subscription, 1, true);
 
 		return receivedMessageList.size() > 0 ?	receivedMessageList.get(0) : null;
-	}
-
-	public void ackMessage(PubsubMessage message) {
-		ackMessages(Collections.singleton(message), null);
-	}
-
-	public void ackMessages(Collection<PubsubMessage> messages, RetrySettings retrySettings) {
-		SubscriberStub subscriber = this.subscriberFactory.createSubscriberStub(retrySettings);
-		// TODO(joaomartins): Filter ones without ack ID or subscription
-		List<String> ackIds = messages.stream()
-				.map(message -> message.getAttributesOrThrow(GcpPubSubHeaders.ACK_ID))
-				.collect(Collectors.toList());
-
-		List<String> subscriptionIds = messages.stream()
-				.map(message -> message.getAttributesOrThrow(GcpPubSubHeaders.SUBSCRIPTION))
-				.collect(Collectors.toList());
-
-		// TODO(joaomartins): Send several requests per distinct subscription
-		AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
-				.setSubscription(subscriptionIds.get(0))
-				.addAllAckIds(ackIds)
-				.build();
-
-		subscriber.acknowledgeCallable().call(acknowledgeRequest);
-	}
-
-	public void nackMessage(PubsubMessage message) {
-		nackMessages(Collections.singleton(message), null);
-	}
-
-	public void nackMessages(Collection<PubsubMessage> messages, RetrySettings retrySettings) {
-		SubscriberStub subscriber = this.subscriberFactory.createSubscriberStub(retrySettings);
-		List<String> ackIds = messages.stream()
-				.map(message -> message.getAttributesOrThrow(GcpPubSubHeaders.ACK_ID))
-				.collect(Collectors.toList());
-
-		ModifyAckDeadlineRequest modifyAckDeadlineRequest = ModifyAckDeadlineRequest.newBuilder()
-				.setAckDeadlineSeconds(0)
-				.addAllAckIds(ackIds)
-				.build();
-
-		subscriber.modifyAckDeadlineCallable().call(modifyAckDeadlineRequest);
 	}
 
 	@Override

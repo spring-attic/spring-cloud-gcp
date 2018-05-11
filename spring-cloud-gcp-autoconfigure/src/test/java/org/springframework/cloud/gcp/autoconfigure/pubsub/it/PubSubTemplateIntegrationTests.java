@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.autoconfigure.pubsub.it;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -30,6 +31,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfiguration;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
+import org.springframework.cloud.gcp.pubsub.core.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,8 +58,8 @@ public class PubSubTemplateIntegrationTests {
 			PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
 			PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
 
-			String topicName = "tarkus_" + UUID.randomUUID();
-			String subscriptionName = "zatoichi_" + UUID.randomUUID();
+			String topicName = "tarkus-" + UUID.randomUUID();
+			String subscriptionName = "zatoichi-" + UUID.randomUUID();
 
 			assertThat(pubSubAdmin.getTopic(topicName)).isNull();
 			assertThat(pubSubAdmin.getSubscription(subscriptionName))
@@ -94,6 +96,48 @@ public class PubSubTemplateIntegrationTests {
 			assertThat(pubSubAdmin.listSubscriptions().stream().filter(
 					subscription -> subscription.getName().endsWith(subscriptionName))
 					.toArray().length).isEqualTo(0);
+		});
+	}
+
+	@Test
+	public void testPullAndAck() {
+		this.contextRunner.run(context -> {
+			PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
+			String topicName = "peel-the-paint" + UUID.randomUUID();
+			String subscriptionName = "i-lost-my-head" + UUID.randomUUID();
+			pubSubAdmin.createTopic(topicName);
+			pubSubAdmin.createSubscription(subscriptionName, topicName);
+
+			PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
+
+			pubSubTemplate.publish(topicName, "free-hand", null);
+			pubSubTemplate.publish(topicName, "valedictory", null);
+			pubSubTemplate.publish(topicName, "the-runaway", null);
+
+			List<AcknowledgeablePubsubMessage> ackableMessages =
+					pubSubTemplate.pull(subscriptionName, 4, true);
+
+			assertThat(ackableMessages.size()).isEqualTo(3);
+
+			ackableMessages.forEach(message -> {
+				if (message.getMessage().getData().toStringUtf8().equals("free-hand")) {
+					message.ack();
+				}
+				else {
+					message.nack();
+				}
+			});
+
+			ackableMessages = pubSubTemplate.pull(subscriptionName, 4, true);
+
+			assertThat(ackableMessages.size()).isEqualTo(2);
+			ackableMessages.forEach(AcknowledgeablePubsubMessage::ack);
+
+			ackableMessages = pubSubTemplate.pull(subscriptionName, 4, true);
+			assertThat(ackableMessages.size()).isEqualTo(0);
+
+			pubSubAdmin.deleteSubscription(subscriptionName);
+			pubSubAdmin.deleteTopic(topicName);
 		});
 	}
 }

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,22 +14,16 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.pubsub.support;
+package org.springframework.cloud.gcp.pubsub.core;
+
+import java.util.Collection;
 
 /**
- * Google Cloud Platform internal headers for Spring Messaging messages.
- *
  * @author João André Martins
  */
-public abstract class GcpPubSubHeaders {
+public interface Acknowledger {
 
-	private static final String PREFIX = "gcp_pubsub_";
+	void ack(Collection<String> ackId, String subscriptionName);
 
-	public static final String ACKNOWLEDGEMENT = PREFIX + "acknowledgement";
-
-	public static final String TOPIC = PREFIX + "topic";
-
-	public static final String ACK_ID = PREFIX + "ack_id";
-
-	public static final String SUBSCRIPTION = PREFIX + "subscription_name";
+	void nack(Collection<String> ackId, String subscriptionName);
 }
