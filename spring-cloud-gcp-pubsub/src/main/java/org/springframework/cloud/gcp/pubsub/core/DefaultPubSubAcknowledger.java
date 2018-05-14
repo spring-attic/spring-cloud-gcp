@@ -23,6 +23,9 @@ import com.google.pubsub.v1.AcknowledgeRequest;
 import com.google.pubsub.v1.ModifyAckDeadlineRequest;
 
 /**
+ * Uses the Google Cloud Pub/Sub client library to (n)acknowledge messages based on their ack IDs
+ * and subscription name.
+ *
  * @author João André Martins
  */
 public class DefaultPubSubAcknowledger implements PubSubAcknowledger {

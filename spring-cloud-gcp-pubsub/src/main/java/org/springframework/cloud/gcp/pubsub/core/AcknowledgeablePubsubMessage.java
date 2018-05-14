@@ -21,6 +21,12 @@ import java.util.Collections;
 import com.google.pubsub.v1.PubsubMessage;
 
 /**
+ * A {@link PubsubMessage} wrapper that allows it to be acknowledged.
+ *
+ * <p>To acknowledge {@link AcknowledgeablePubsubMessage} in bulk, using a
+ * {@link PubSubAcknowledger} is recommended. To do that, a user must first extract the ack IDs and
+ * group them by subscription name.
+ *
  * @author João André Martins
  */
 public class AcknowledgeablePubsubMessage {
