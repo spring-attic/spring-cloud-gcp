@@ -207,13 +207,14 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	@Override
 	public List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages,
 			Boolean returnImmediately) {
-		List<AcknowledgeablePubsubMessage> ackableMessages =
-				pull(this.subscriberFactory.createPullRequest(
-						subscription, maxMessages, returnImmediately));
+		PullRequest pullRequest = this.subscriberFactory.createPullRequest(
+				subscription, maxMessages, returnImmediately);
+
+		List<AcknowledgeablePubsubMessage> ackableMessages = pull(pullRequest);
 
 		this.acknowledger.ack(ackableMessages.stream()
 				.map(AcknowledgeablePubsubMessage::getAckId)
-				.collect(Collectors.toList()), subscription);
+				.collect(Collectors.toList()), pullRequest.getSubscription());
 
 		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getMessage)
 				.collect(Collectors.toList());
