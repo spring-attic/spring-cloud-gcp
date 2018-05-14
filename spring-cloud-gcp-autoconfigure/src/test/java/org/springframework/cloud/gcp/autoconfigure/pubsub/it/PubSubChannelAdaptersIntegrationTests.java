@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.autoconfigure.pubsub.it;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
@@ -137,7 +138,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 					(AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
 			assertThat(acker).isNotNull();
 			acker.nack();
-			message = channel.receive(1000);
+			message = channel.receive(2000);
 			assertThat(message).isNotNull();
 			acker = (AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
 			assertThat(acker).isNotNull();
@@ -179,11 +180,15 @@ public class PubSubChannelAdaptersIntegrationTests {
 		@Autowired
 		private PubSubTemplate pubSubTemplate;
 
+		private String topicName = "desafinado-" + UUID.randomUUID();
+
+		private String subscriptionName = "doralice-" + UUID.randomUUID();
+
 		@Bean
 		public PubSubInboundChannelAdapter inboundChannelAdapter(
 				@Qualifier("outputChannel") MessageChannel outputChannel) {
 			PubSubInboundChannelAdapter inboundChannelAdapter =
-					new PubSubInboundChannelAdapter(this.pubSubTemplate, "doralice");
+					new PubSubInboundChannelAdapter(this.pubSubTemplate, this.subscriptionName);
 			inboundChannelAdapter.setOutputChannel(outputChannel);
 
 			return inboundChannelAdapter;
@@ -192,7 +197,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 		@Bean
 		@ServiceActivator(inputChannel = "inputChannel")
 		public PubSubMessageHandler outboundChannelAdapter() {
-			return new PubSubMessageHandler(this.pubSubTemplate, "desafinado");
+			return new PubSubMessageHandler(this.pubSubTemplate, this.topicName);
 		}
 
 		@Bean
@@ -207,8 +212,8 @@ public class PubSubChannelAdaptersIntegrationTests {
 				PubSubAdmin pubSubAdmin,
 				GcpProjectIdProvider projectIdProvider,
 				CredentialsProvider credentialsProvider) {
-			if (pubSubAdmin.getSubscription("doralice") == null) {
-				pubSubAdmin.createSubscription("doralice", "desafinado");
+			if (pubSubAdmin.getSubscription(this.subscriptionName) == null) {
+				pubSubAdmin.createSubscription(this.subscriptionName, this.topicName);
 			}
 
 			DefaultSubscriberFactory factory = new DefaultSubscriberFactory(projectIdProvider);
@@ -228,8 +233,8 @@ public class PubSubChannelAdaptersIntegrationTests {
 				PubSubAdmin pubSubAdmin,
 				GcpProjectIdProvider projectIdProvider,
 				CredentialsProvider credentialsProvider) {
-			if (pubSubAdmin.getTopic("desafinado") == null) {
-				pubSubAdmin.createTopic("desafinado");
+			if (pubSubAdmin.getTopic(this.topicName) == null) {
+				pubSubAdmin.createTopic(this.topicName);
 			}
 
 			DefaultPublisherFactory factory = new DefaultPublisherFactory(projectIdProvider);
