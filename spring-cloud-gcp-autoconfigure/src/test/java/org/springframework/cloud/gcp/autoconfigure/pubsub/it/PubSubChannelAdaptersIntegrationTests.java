@@ -76,7 +76,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 					PubSubChannelAdaptersIntegrationTests.IntegrationConfiguration.class);
 
 	@BeforeClass
-	public static void checkEmulatorIsRunning() {
+	public static void enableTests() {
 		assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
 	}
 
