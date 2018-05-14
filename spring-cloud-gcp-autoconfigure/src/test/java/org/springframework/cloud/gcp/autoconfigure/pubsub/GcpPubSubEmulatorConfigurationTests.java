@@ -35,7 +35,7 @@ import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfigurat
 public class GcpPubSubEmulatorConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withPropertyValues("spring.cloud.gcp.pubsub.emulator-host=",
+			.withPropertyValues("spring.cloud.gcp.pubsub.emulator-host=localhost:8085",
 					"spring.cloud.gcp.projectId=test-project",
 					"spring.cloud.gcp.pubsub.trusted-packages[0]=a",
 					"spring.cloud.gcp.pubsub.trusted-packages[1]=b")
