@@ -21,7 +21,6 @@ import java.util.Map;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import org.junit.BeforeClass;
@@ -32,8 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubEmulatorConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
@@ -69,19 +68,16 @@ import static org.mockito.Mockito.verify;
  */
 public class PubSubChannelAdaptersIntegrationTests {
 
-	private static final String EMULATOR_HOST_ENVVAR_NAME = "PUBSUB_EMULATOR_HOST";
-
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(
-					GcpPubSubEmulatorConfiguration.class,
+					GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class))
 			.withUserConfiguration(
-					PubSubChannelAdaptersIntegrationTests.IntegrationConfiguration.class)
-			.withPropertyValues("spring.cloud.gcp.pubsub.emulatorHost=${PUBSUB_EMULATOR_HOST}");
+					PubSubChannelAdaptersIntegrationTests.IntegrationConfiguration.class);
 
 	@BeforeClass
 	public static void checkEmulatorIsRunning() {
-		assumeThat(System.getenv(EMULATOR_HOST_ENVVAR_NAME)).isNotNull();
+		assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
 	}
 
 	@Test
@@ -205,27 +201,19 @@ public class PubSubChannelAdaptersIntegrationTests {
 		}
 
 		@Bean
-		public GcpProjectIdProvider gcpProjectIdProvider() {
-			return () -> "bliss";
-		}
-
-		@Bean
-		public CredentialsProvider credentialsProvider() {
-			return new NoCredentialsProvider();
-		}
-
-		@Bean
 		public SubscriberFactory defaultSubscriberFactory(
 				@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
 				TransportChannelProvider transportChannelProvider,
-				PubSubAdmin pubSubAdmin) {
+				PubSubAdmin pubSubAdmin,
+				GcpProjectIdProvider projectIdProvider,
+				CredentialsProvider credentialsProvider) {
 			if (pubSubAdmin.getSubscription("doralice") == null) {
 				pubSubAdmin.createSubscription("doralice", "desafinado");
 			}
 
-			DefaultSubscriberFactory factory = new DefaultSubscriberFactory(gcpProjectIdProvider());
+			DefaultSubscriberFactory factory = new DefaultSubscriberFactory(projectIdProvider);
 			factory.setExecutorProvider(executorProvider);
-			factory.setCredentialsProvider(credentialsProvider());
+			factory.setCredentialsProvider(credentialsProvider);
 			factory.setHeaderProvider(
 					new UsageTrackingHeaderProvider(GcpPubSubAutoConfiguration.class));
 			factory.setChannelProvider(transportChannelProvider);
@@ -237,14 +225,16 @@ public class PubSubChannelAdaptersIntegrationTests {
 		public PublisherFactory defaultPublisherFactory(
 				@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
 				TransportChannelProvider transportChannelProvider,
-				PubSubAdmin pubSubAdmin) {
+				PubSubAdmin pubSubAdmin,
+				GcpProjectIdProvider projectIdProvider,
+				CredentialsProvider credentialsProvider) {
 			if (pubSubAdmin.getTopic("desafinado") == null) {
 				pubSubAdmin.createTopic("desafinado");
 			}
 
-			DefaultPublisherFactory factory = new DefaultPublisherFactory(gcpProjectIdProvider());
+			DefaultPublisherFactory factory = new DefaultPublisherFactory(projectIdProvider);
 			factory.setExecutorProvider(executorProvider);
-			factory.setCredentialsProvider(credentialsProvider());
+			factory.setCredentialsProvider(credentialsProvider);
 			factory.setHeaderProvider(
 					new UsageTrackingHeaderProvider(GcpPubSubAutoConfiguration.class));
 			factory.setChannelProvider(transportChannelProvider);
