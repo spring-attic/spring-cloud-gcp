@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.integration.util.PatternMatchUtils;
 import org.springframework.messaging.MessageHeaders;
@@ -43,6 +44,7 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	private String[] outboundHeaderPatterns = {
 			"!" + MessageHeaders.ID,
 			"!" + MessageHeaders.TIMESTAMP,
+			"!" + GcpPubSubHeaders.ACKNOWLEDGEMENT,
 			"*"};
 
 	/**
@@ -75,7 +77,6 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	/**
 	 * Generate headers in {@link com.google.pubsub.v1.PubsubMessage} format from
 	 * {@link MessageHeaders}. All headers are converted into strings.
-	 *
 	 * <p>Will map only the headers that match the patterns in {@code outboundHeaderPatternsMap}.
 	 * @param messageHeaders headers to map from
 	 * @param pubsubMessageHeaders headers in their final format
@@ -94,7 +95,6 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	/**
 	 * Generate headers in {@link org.springframework.messaging.Message} format from
 	 * {@code Map<String, String>}.
-	 *
 	 * <p>Will map only the headers that match the patterns in {@code inboundHeaderPatternsMap}.
 	 * @param pubsubMessageHeaders headers in {@link com.google.pubsub.v1.PubsubMessage} format
 	 * @return a map with headers in the {@link org.springframework.messaging.Message} format
