@@ -19,11 +19,24 @@ package org.springframework.cloud.gcp.pubsub.core;
 import java.util.Collection;
 
 /**
+ * Acknowledges Pub/Sub messages based on their subscription name and ack ID.
+ *
  * @author João André Martins
  */
-public interface Acknowledger {
+public interface PubSubAcknowledger {
 
-	void ack(Collection<String> ackId, String subscriptionName);
+	/**
+	 * Acknowledges a bulk of messages based on their ack IDs which pertain to a subscription name.
+	 * @param ackIds ack IDs to be acknowledged
+	 * @param subscriptionName subscription names to which the ack IDs belong
+	 */
+	void ack(Collection<String> ackIds, String subscriptionName);
 
-	void nack(Collection<String> ackId, String subscriptionName);
+	/**
+	 * Negatively acknowledges a bulk of messages based on their ack IDs which pertain to a
+	 * subscription name.
+	 * @param ackIds ack IDs to be acknowledged
+	 * @param subscriptionName subscription names to which the ack IDs belong
+	 */
+	void nack(Collection<String> ackIds, String subscriptionName);
 }

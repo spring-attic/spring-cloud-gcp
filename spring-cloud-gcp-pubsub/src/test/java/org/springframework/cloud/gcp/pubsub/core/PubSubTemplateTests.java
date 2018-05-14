@@ -71,7 +71,7 @@ public class PubSubTemplateTests {
 	private Subscriber mockSubscriber;
 
 	@Mock
-	private Acknowledger mockAcknowledger;
+	private PubSubAcknowledger mockAcknowledger;
 
 	private PubSubTemplate pubSubTemplate;
 

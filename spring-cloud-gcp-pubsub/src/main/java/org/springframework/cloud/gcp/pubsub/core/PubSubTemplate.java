@@ -67,7 +67,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private final SubscriberStub subscriberStub;
 
-	private Acknowledger acknowledger;
+	private PubSubAcknowledger acknowledger;
 
 	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory) {
 		this(publisherFactory, subscriberFactory,
@@ -85,7 +85,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 */
 	public PubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory,
-			Acknowledger acknowledger) {
+			PubSubAcknowledger acknowledger) {
 		this.publisherFactory = publisherFactory;
 		this.subscriberFactory = subscriberFactory;
 		this.subscriberStub = this.subscriberFactory.createSubscriberStub();

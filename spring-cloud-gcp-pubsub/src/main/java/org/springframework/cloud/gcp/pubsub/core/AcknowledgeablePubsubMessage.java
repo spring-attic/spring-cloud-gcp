@@ -31,10 +31,10 @@ public class AcknowledgeablePubsubMessage {
 
 	private String subscriptionName;
 
-	private Acknowledger acknowledger;
+	private PubSubAcknowledger acknowledger;
 
 	public AcknowledgeablePubsubMessage(PubsubMessage message, String ackId,
-			String subscriptionName, Acknowledger acknowledger) {
+			String subscriptionName, PubSubAcknowledger acknowledger) {
 		this.message = message;
 		this.ackId = ackId;
 		this.subscriptionName = subscriptionName;
