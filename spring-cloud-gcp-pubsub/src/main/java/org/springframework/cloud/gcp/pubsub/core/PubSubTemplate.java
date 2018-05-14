@@ -69,20 +69,27 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private Acknowledger acknowledger;
 
+	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory) {
+		this(publisherFactory, subscriberFactory,
+				new DefaultPubSubAcknowledger(subscriberFactory.createSubscriberStub()));
+	}
+
 	/**
-	 * Default {@link PubSubTemplate} constructor that uses a {@link JacksonPubSubMessageConverter} to
-	 * serialize and deserialize payloads.
+	 * Default {@link PubSubTemplate} constructor that uses a {@link JacksonPubSubMessageConverter}
+	 * to serialize and deserialize payloads.
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
 	 * publish to topics
 	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory
 	 * to subscribe to subscriptions
+	 * @param acknowledger auto-acknowledges pulled messages
 	 */
 	public PubSubTemplate(PublisherFactory publisherFactory,
-			SubscriberFactory subscriberFactory) {
+			SubscriberFactory subscriberFactory,
+			Acknowledger acknowledger) {
 		this.publisherFactory = publisherFactory;
 		this.subscriberFactory = subscriberFactory;
 		this.subscriberStub = this.subscriberFactory.createSubscriberStub();
-		this.acknowledger = new DefaultPubSubAcknowledger(this.subscriberStub);
+		this.acknowledger = acknowledger;
 	}
 
 	public PubSubMessageConverter getMessageConverter() {

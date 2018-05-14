@@ -111,8 +111,9 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory,
-			PubSubMessageConverter pubSubMessageConverter) {
-		return new PubSubTemplate(publisherFactory, subscriberFactory)
+			PubSubMessageConverter pubSubMessageConverter,
+			Acknowledger acknowledger) {
+		return new PubSubTemplate(publisherFactory, subscriberFactory, acknowledger)
 				.setMessageConverter(pubSubMessageConverter);
 	}
 

@@ -110,8 +110,6 @@ public interface PubSubOperations {
 	 * @param maxMessages the maximum number of pulled messages
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
-	 * @param acknowledge if {@code true}, messages are automatically acknowledge. If false, the
-	 *                    returned {@link PubsubMessage}'s will contain the ack ID in the "" header
 	 * @return the list of received messages
 	 */
 	List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages,

@@ -58,8 +58,8 @@ public class PubSubTemplateIntegrationTests {
 			PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
 			PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
 
-			String topicName = "tarkus-" + UUID.randomUUID();
-			String subscriptionName = "zatoichi-" + UUID.randomUUID();
+			String topicName = "tarkus_" + UUID.randomUUID();
+			String subscriptionName = "zatoichi_" + UUID.randomUUID();
 
 			assertThat(pubSubAdmin.getTopic(topicName)).isNull();
 			assertThat(pubSubAdmin.getSubscription(subscriptionName))
