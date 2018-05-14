@@ -20,7 +20,6 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
-import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,7 +35,7 @@ import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfigurat
 public class GcpPubSubEmulatorConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withPropertyValues("spring.cloud.gcp.pubsub.emulator-host=localhost:8085",
+			.withPropertyValues("spring.cloud.gcp.pubsub.emulator-host=",
 					"spring.cloud.gcp.projectId=test-project",
 					"spring.cloud.gcp.pubsub.trusted-packages[0]=a",
 					"spring.cloud.gcp.pubsub.trusted-packages[1]=b")

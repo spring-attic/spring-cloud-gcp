@@ -27,4 +27,4 @@ dependencies {
 === Setup for Pub/Sub Emulator
 
 To use this binder with a https://cloud.google.com/pubsub/docs/emulator[running emulator], configure its host and port via
-`spring.cloud.gcp.pubsub.emulatorHost`.
+`spring.cloud.gcp.pubsub.emulator-host`.
