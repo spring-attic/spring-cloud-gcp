@@ -125,7 +125,7 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 			}
 		}
 		catch (IOException ioe) {
-			LOGGER.error("No credentials were found.", ioe);
+			LOGGER.error("No core credentials are set.");
 		}
 	}
 
