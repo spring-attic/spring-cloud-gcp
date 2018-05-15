@@ -144,3 +144,29 @@ public void handleMessage(Message<?> msg) throws MessagingException {
 ----
 
 It is also possible to set an SpEL expression for the topic with the `setTopicExpression()` or `setTopicExpressionString()` methods.
+
+==== Header mapping
+
+These channel adapters contain header mappers that allow you to map, or filter out, headers from Spring to Google Cloud Pub/Sub messages, and vice-versa.
+By default, the inbound channel adapter maps every header on the Google Cloud Pub/Sub messages to the Spring messages produced by the adapter.
+The outbound channel adapter maps every header from Spring messages into Google Cloud Pub/Sub ones, except the ones added by Spring, like headers with key `"id"`, `"timestamp"` and `"gcp_pubsub_acknowledgement"`.
+In the process, the outbound mapper also converts the value of the headers into string.
+
+Each adapter declares a `setHeaderMapper()` method to let you further customize which headers you want to map from Spring to Google Cloud Pub/Sub, and vice-versa.
+
+For example, to filter out headers `"foo"`, `"bar"` and all headers starting with the prefix "prefix_", you can use `setHeaderMapper()` along with the `PubSubHeaderMapper` implementation provided by this module.
+
+[source,java]
+----
+PubSubMessageHandler adapter = ...
+...
+PubSubHeaderMapper headerMapper = new PubSubHeaderMapper();
+headerMapper.setOutboundHeaderPatterns("!foo", "!bar", "!prefix_*", "*");
+adapter.setHeaderMapper(headerMapper);
+----
+
+NOTE: The order in which the patterns are declared in `PubSubHeaderMapper.setOutboundHeaderPatterns()` and `PubSubHeaderMapper.setInboundHeaderPatterns()` matters.
+The first patterns have precedence over the following ones.
+
+In the previous example, the `"*"` pattern means every header is mapped.
+However, because it comes last in the list, https://docs.spring.io/spring-integration/api/org/springframework/integration/util/PatternMatchUtils.html#smartMatch-java.lang.String-java.lang.String...-[the previous patterns take precedence].
