@@ -121,7 +121,7 @@ public interface PubSubOperations {
 	 * @param maxMessages the maximum number of pulled messages
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
-	 * @return the list of received (n)acknowledgeable messages
+	 * @return the list of received acknowledgeable messages
 	 */
 	List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
 			Boolean returnImmediately);

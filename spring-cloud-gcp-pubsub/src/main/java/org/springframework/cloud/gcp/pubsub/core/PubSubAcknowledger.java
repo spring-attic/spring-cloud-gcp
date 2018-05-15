@@ -26,7 +26,7 @@ import java.util.Collection;
 public interface PubSubAcknowledger {
 
 	/**
-	 * Acknowledges a bulk of messages based on their ack IDs which pertain to a subscription name.
+	 * Acknowledge a bulk of messages based on their ack IDs which pertain to a subscription name.
 	 * @param ackIds ack IDs to be acknowledged
 	 * @param subscriptionName subscription names to which the ack IDs belong. Must be in the form
 	 * "projects/[GCP_PROJECT_ID]/subscriptions/[PUBSUB_SUBSCRIPTION_ID]"
@@ -34,7 +34,7 @@ public interface PubSubAcknowledger {
 	void ack(Collection<String> ackIds, String subscriptionName);
 
 	/**
-	 * Negatively acknowledges a bulk of messages based on their ack IDs which pertain to a
+	 * Negatively acknowledge a bulk of messages based on their ack IDs which pertain to a
 	 * subscription name.
 	 * @param ackIds ack IDs to be acknowledged
 	 * @param subscriptionName subscription names to which the ack IDs belong. Must be in the form

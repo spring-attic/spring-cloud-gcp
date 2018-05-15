@@ -67,7 +67,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private final SubscriberStub subscriberStub;
 
-	private PubSubAcknowledger acknowledger;
+	private final PubSubAcknowledger acknowledger;
 
 	public PubSubTemplate(PublisherFactory publisherFactory, SubscriberFactory subscriberFactory) {
 		this(publisherFactory, subscriberFactory,
