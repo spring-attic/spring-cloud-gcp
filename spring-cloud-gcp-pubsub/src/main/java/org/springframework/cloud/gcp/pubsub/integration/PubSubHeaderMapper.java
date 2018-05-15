@@ -30,8 +30,8 @@ import org.springframework.util.Assert;
  * Maps headers from {@link com.google.pubsub.v1.PubsubMessage}s to
  * {@link org.springframework.messaging.Message}s and vice-versa.
  *
- * <p>By default, filters out headers called "id" or "timestamp" on the
- * {@link org.springframework.messaging.Message} to {@link com.google.pubsub.v1.PubsubMessage}
+ * <p>By default, filters out headers called "id", "timestamp" or "gcp_pubsub_acknowledgement" on
+ * the {@link org.springframework.messaging.Message} to {@link com.google.pubsub.v1.PubsubMessage}
  * header conversion.
  *
  * @author João André Martins
@@ -40,6 +40,7 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 
 	/**
 	 * Patterns of headers to map in {@link #fromHeaders(MessageHeaders, Map)}.
+	 * First patterns take precedence.
 	 */
 	private String[] outboundHeaderPatterns = {
 			"!" + MessageHeaders.ID,
@@ -49,11 +50,13 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 
 	/**
 	 * Patterns of headers to map in {@link #toHeaders(Map)}.
+	 * First patterns take precedence.
 	 */
 	private String[] inboundHeaderPatterns = {"*"};
 
 	/**
 	 * Set the patterns of the headers to be mapped in {@link #fromHeaders(MessageHeaders, Map)}.
+	 * First patterns take precedence.
 	 * @param outboundHeaderPatterns header patterns to be mapped
 	 */
 	public void setOutboundHeaderPatterns(String... outboundHeaderPatterns) {
@@ -65,6 +68,7 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 
 	/**
 	 * Set the patterns of the headers to be mapped in {@link #toHeaders(Map)}.
+	 * First patterns take precedence.
 	 * @param inboundHeaderPatterns header patterns to be mapped
 	 */
 	public void setInboundHeaderPatterns(String... inboundHeaderPatterns) {
