@@ -18,10 +18,10 @@ package org.springframework.cloud.gcp.autoconfigure.pubsub.it;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import org.junit.BeforeClass;
@@ -32,8 +32,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubEmulatorConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
@@ -69,19 +69,16 @@ import static org.mockito.Mockito.verify;
  */
 public class PubSubChannelAdaptersIntegrationTests {
 
-	private static final String EMULATOR_HOST_ENVVAR_NAME = "PUBSUB_EMULATOR_HOST";
-
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(
-					GcpPubSubEmulatorConfiguration.class,
+					GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class))
 			.withUserConfiguration(
-					PubSubChannelAdaptersIntegrationTests.IntegrationConfiguration.class)
-			.withPropertyValues("spring.cloud.gcp.pubsub.emulatorHost=${PUBSUB_EMULATOR_HOST}");
+					PubSubChannelAdaptersIntegrationTests.IntegrationConfiguration.class);
 
 	@BeforeClass
-	public static void checkEmulatorIsRunning() {
-		assumeThat(System.getenv(EMULATOR_HOST_ENVVAR_NAME)).isNotNull();
+	public static void enableTests() {
+		assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
 	}
 
 	@Test
@@ -135,18 +132,18 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 			PollableChannel channel = context.getBean("outputChannel", PollableChannel.class);
 
-			Message<?> message = channel.receive(5000);
+			Message<?> message = channel.receive(10000);
 			assertThat(message).isNotNull();
 			AckReplyConsumer acker =
 					(AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
 			assertThat(acker).isNotNull();
 			acker.nack();
-			message = channel.receive(1000);
+			message = channel.receive(10000);
 			assertThat(message).isNotNull();
 			acker = (AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
 			assertThat(acker).isNotNull();
 			acker.ack();
-			message = channel.receive(1000);
+			message = channel.receive(10000);
 			assertThat(message).isNull();
 		});
 	}
@@ -183,11 +180,15 @@ public class PubSubChannelAdaptersIntegrationTests {
 		@Autowired
 		private PubSubTemplate pubSubTemplate;
 
+		private String topicName = "desafinado-" + UUID.randomUUID();
+
+		private String subscriptionName = "doralice-" + UUID.randomUUID();
+
 		@Bean
 		public PubSubInboundChannelAdapter inboundChannelAdapter(
 				@Qualifier("outputChannel") MessageChannel outputChannel) {
 			PubSubInboundChannelAdapter inboundChannelAdapter =
-					new PubSubInboundChannelAdapter(this.pubSubTemplate, "doralice");
+					new PubSubInboundChannelAdapter(this.pubSubTemplate, this.subscriptionName);
 			inboundChannelAdapter.setOutputChannel(outputChannel);
 
 			return inboundChannelAdapter;
@@ -196,7 +197,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 		@Bean
 		@ServiceActivator(inputChannel = "inputChannel")
 		public PubSubMessageHandler outboundChannelAdapter() {
-			return new PubSubMessageHandler(this.pubSubTemplate, "desafinado");
+			return new PubSubMessageHandler(this.pubSubTemplate, this.topicName);
 		}
 
 		@Bean
@@ -205,27 +206,19 @@ public class PubSubChannelAdaptersIntegrationTests {
 		}
 
 		@Bean
-		public GcpProjectIdProvider gcpProjectIdProvider() {
-			return () -> "bliss";
-		}
-
-		@Bean
-		public CredentialsProvider credentialsProvider() {
-			return new NoCredentialsProvider();
-		}
-
-		@Bean
 		public SubscriberFactory defaultSubscriberFactory(
 				@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
 				TransportChannelProvider transportChannelProvider,
-				PubSubAdmin pubSubAdmin) {
-			if (pubSubAdmin.getSubscription("doralice") == null) {
-				pubSubAdmin.createSubscription("doralice", "desafinado");
+				PubSubAdmin pubSubAdmin,
+				GcpProjectIdProvider projectIdProvider,
+				CredentialsProvider credentialsProvider) {
+			if (pubSubAdmin.getSubscription(this.subscriptionName) == null) {
+				pubSubAdmin.createSubscription(this.subscriptionName, this.topicName);
 			}
 
-			DefaultSubscriberFactory factory = new DefaultSubscriberFactory(gcpProjectIdProvider());
+			DefaultSubscriberFactory factory = new DefaultSubscriberFactory(projectIdProvider);
 			factory.setExecutorProvider(executorProvider);
-			factory.setCredentialsProvider(credentialsProvider());
+			factory.setCredentialsProvider(credentialsProvider);
 			factory.setHeaderProvider(
 					new UsageTrackingHeaderProvider(GcpPubSubAutoConfiguration.class));
 			factory.setChannelProvider(transportChannelProvider);
@@ -237,14 +230,16 @@ public class PubSubChannelAdaptersIntegrationTests {
 		public PublisherFactory defaultPublisherFactory(
 				@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
 				TransportChannelProvider transportChannelProvider,
-				PubSubAdmin pubSubAdmin) {
-			if (pubSubAdmin.getTopic("desafinado") == null) {
-				pubSubAdmin.createTopic("desafinado");
+				PubSubAdmin pubSubAdmin,
+				GcpProjectIdProvider projectIdProvider,
+				CredentialsProvider credentialsProvider) {
+			if (pubSubAdmin.getTopic(this.topicName) == null) {
+				pubSubAdmin.createTopic(this.topicName);
 			}
 
-			DefaultPublisherFactory factory = new DefaultPublisherFactory(gcpProjectIdProvider());
+			DefaultPublisherFactory factory = new DefaultPublisherFactory(projectIdProvider);
 			factory.setExecutorProvider(executorProvider);
-			factory.setCredentialsProvider(credentialsProvider());
+			factory.setCredentialsProvider(credentialsProvider);
 			factory.setHeaderProvider(
 					new UsageTrackingHeaderProvider(GcpPubSubAutoConfiguration.class));
 			factory.setChannelProvider(transportChannelProvider);
