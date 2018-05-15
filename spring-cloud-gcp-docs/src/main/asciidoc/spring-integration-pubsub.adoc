@@ -169,4 +169,4 @@ NOTE: The order in which the patterns are declared in `PubSubHeaderMapper.setOut
 The first patterns have precedence over the following ones.
 
 In the previous example, the `"*"` pattern means every header is mapped.
-However, because it comes last in the list, the previous patterns take precedence.
+However, because it comes last in the list, https://docs.spring.io/spring-integration/api/org/springframework/integration/util/PatternMatchUtils.html#smartMatch-java.lang.String-java.lang.String...-[the previous patterns take precedence].
