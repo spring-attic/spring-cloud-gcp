@@ -52,7 +52,6 @@ import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessa
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.StringUtils;
 
 /**
  * @author João André Martins
@@ -82,8 +81,7 @@ public class GcpPubSubAutoConfiguration {
 				? gcpPubSubProperties::getProjectId
 				: gcpProjectIdProvider;
 
-		if (StringUtils.isEmpty(gcpPubSubProperties.getEmulatorHost())
-				|| "false".equals(gcpPubSubProperties.getEmulatorHost())) {
+		if (gcpPubSubProperties.getEmulatorHost() == null || "false".equals(gcpPubSubProperties.getEmulatorHost())) {
 			this.finalCredentialsProvider = gcpPubSubProperties.getCredentials().hasKey()
 					? new DefaultCredentialsProvider(gcpPubSubProperties)
 					: credentialsProvider;
