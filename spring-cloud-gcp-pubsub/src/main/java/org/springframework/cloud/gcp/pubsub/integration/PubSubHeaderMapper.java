@@ -39,8 +39,8 @@ import org.springframework.util.Assert;
 public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 
 	/**
-	 * Patterns of headers to map in {@link #fromHeaders(MessageHeaders, Map)}. First headers take
-	 * precedence.
+	 * Patterns of headers to map in {@link #fromHeaders(MessageHeaders, Map)}.
+	 * First patterns take precedence.
 	 */
 	private String[] outboundHeaderPatterns = {
 			"!" + MessageHeaders.ID,
@@ -49,13 +49,14 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 			"*"};
 
 	/**
-	 * Patterns of headers to map in {@link #toHeaders(Map)}. First headers take precedence.
+	 * Patterns of headers to map in {@link #toHeaders(Map)}.
+	 * First patterns take precedence.
 	 */
 	private String[] inboundHeaderPatterns = {"*"};
 
 	/**
 	 * Set the patterns of the headers to be mapped in {@link #fromHeaders(MessageHeaders, Map)}.
-	 * First headers take precedence.
+	 * First patterns take precedence.
 	 * @param outboundHeaderPatterns header patterns to be mapped
 	 */
 	public void setOutboundHeaderPatterns(String... outboundHeaderPatterns) {
@@ -67,7 +68,7 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 
 	/**
 	 * Set the patterns of the headers to be mapped in {@link #toHeaders(Map)}.
-	 * First headers take precedence.
+	 * First patterns take precedence.
 	 * @param inboundHeaderPatterns header patterns to be mapped
 	 */
 	public void setInboundHeaderPatterns(String... inboundHeaderPatterns) {
