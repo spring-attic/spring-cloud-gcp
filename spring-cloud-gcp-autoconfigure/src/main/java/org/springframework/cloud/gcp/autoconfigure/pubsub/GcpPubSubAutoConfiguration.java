@@ -41,8 +41,6 @@ import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
-import org.springframework.cloud.gcp.pubsub.core.DefaultPubSubAcknowledger;
-import org.springframework.cloud.gcp.pubsub.core.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
@@ -111,9 +109,8 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory,
-			PubSubMessageConverter pubSubMessageConverter,
-			PubSubAcknowledger acknowledger) {
-		return new PubSubTemplate(publisherFactory, subscriberFactory, acknowledger)
+			PubSubMessageConverter pubSubMessageConverter) {
+		return new PubSubTemplate(publisherFactory, subscriberFactory)
 				.setMessageConverter(pubSubMessageConverter);
 	}
 
@@ -190,11 +187,5 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public TransportChannelProvider transportChannelProvider() {
 		return InstantiatingGrpcChannelProvider.newBuilder().build();
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public PubSubAcknowledger pubSubAcknowledger(SubscriberFactory subscriberFactory) {
-		return new DefaultPubSubAcknowledger(subscriberFactory.createSubscriberStub());
 	}
 }

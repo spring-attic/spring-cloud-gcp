@@ -70,9 +70,6 @@ public class PubSubTemplateTests {
 	@Mock
 	private Subscriber mockSubscriber;
 
-	@Mock
-	private PubSubAcknowledger mockAcknowledger;
-
 	private PubSubTemplate pubSubTemplate;
 
 	private PubsubMessage pubsubMessage;
@@ -80,8 +77,7 @@ public class PubSubTemplateTests {
 	private SettableApiFuture<String> settableApiFuture;
 
 	private PubSubTemplate createTemplate(String[] trustedPackages) {
-		return new PubSubTemplate(this.mockPublisherFactory, this.mockSubscriberFactory,
-				this.mockAcknowledger)
+		return new PubSubTemplate(this.mockPublisherFactory, this.mockSubscriberFactory)
 				.setMessageConverter(new JacksonPubSubMessageConverter(trustedPackages));
 	}
 

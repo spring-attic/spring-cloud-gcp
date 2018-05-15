@@ -21,6 +21,8 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.PullRequest;
 
+import org.springframework.cloud.gcp.pubsub.core.PubSubAcknowledger;
+
 /**
  * Interface used by the {@link org.springframework.cloud.gcp.pubsub.core.PubSubTemplate} to create
  * supporting objects for consuming messages from Pub/Sub subscriptions.
@@ -56,4 +58,9 @@ public interface SubscriberFactory {
 	 * @return the {@link SubscriberStub} used for executing {@link PullRequest}s
 	 */
 	SubscriberStub createSubscriberStub();
+
+	/**
+	 * Create a {@link PubSubAcknowledger} to (negatively) acknowledge messages in bulk.
+	 */
+	PubSubAcknowledger createAcknowledger();
 }
