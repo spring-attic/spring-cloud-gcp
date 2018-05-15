@@ -19,22 +19,19 @@ package org.springframework.cloud.gcp.autoconfigure.trace;
 import java.util.ArrayList;
 import java.util.List;
 
-import brave.Span;
-import brave.Tracer;
+import brave.http.HttpClientParser;
+import brave.http.HttpServerParser;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
-import com.google.cloud.trace.v1.consumer.FlushableTraceConsumer;
-import com.google.devtools.cloudtrace.v1.Trace;
-import com.google.devtools.cloudtrace.v1.TraceSpan;
 import com.google.devtools.cloudtrace.v1.Traces;
 import org.junit.Test;
-import zipkin2.reporter.Reporter;
+import zipkin2.codec.BytesEncoder;
+import zipkin2.reporter.Sender;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.autoconfigure.RefreshAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.trace.sleuth.StackdriverTraceReporter;
 import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
@@ -66,50 +63,19 @@ public class StackdriverTraceAutoConfigurationTests {
 			SleuthProperties sleuthProperties = context.getBean(SleuthProperties.class);
 			assertThat(sleuthProperties.isTraceId128()).isTrue();
 			assertThat(sleuthProperties.isSupportsJoin()).isFalse();
-
-			Reporter<zipkin2.Span> reporter = context.getBean(Reporter.class);
-			assertThat(reporter).isInstanceOf(StackdriverTraceReporter.class);
-
-			Tracer tracer = context.getBean(Tracer.class);
-			Span span = tracer.newTrace()
-					.start()
-					.kind(Span.Kind.CLIENT)
-					.name("test")
-					.start();
-			span.finish();
-
-			// There should be one trace received
-			MockConfiguration configuration = context.getBean(MockConfiguration.class);
-			assertThat(configuration.tracesList.size()).isEqualTo(1);
-
-			Traces traces = configuration.tracesList.get(0);
-			assertThat(traces.getTracesCount()).isEqualTo(1);
-			Trace trace = traces.getTraces(0);
-			assertThat(trace.getSpansCount()).isEqualTo(1);
-			TraceSpan traceSpan = trace.getSpans(0);
+			assertThat(context.getBean(HttpClientParser.class)).isNotNull();
+			assertThat(context.getBean(HttpServerParser.class)).isNotNull();
+			assertThat(context.getBean(BytesEncoder.class)).isNotNull();
+			assertThat(context.getBean(Sender.class)).isNotNull();
 		});
 	}
 
-	public static class MockConfiguration {
+	static class MockConfiguration {
 		private List<Traces> tracesList = new ArrayList<>();
 
 		@Bean
 		public static CredentialsProvider googleCredentials() {
 			return () -> mock(Credentials.class);
-		}
-
-		@Bean
-		public FlushableTraceConsumer traceConsumer() {
-			return new FlushableTraceConsumer() {
-				@Override
-				public void flush() {
-				}
-
-				@Override
-				public void receive(Traces traces) {
-					MockConfiguration.this.tracesList.add(traces);
-				}
-			};
 		}
 	}
 }

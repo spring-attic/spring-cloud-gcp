@@ -159,14 +159,14 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.cloud.trace.v1</groupId>
-            <artifactId>sink</artifactId>
+            <groupId>io.zipkin.gcp</groupId>
+            <artifactId>zipkin-sender-stackdriver</artifactId>
             <optional>true</optional>
         </dependency>
 
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-aop</artifactId>
+            <groupId>com.google.cloud.trace.v1</groupId>
+            <artifactId>sink</artifactId>
             <optional>true</optional>
         </dependency>
 
@@ -177,8 +177,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.api</groupId>
-            <artifactId>gax</artifactId>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-sleuth-zipkin</artifactId>
             <optional>true</optional>
         </dependency>
 
