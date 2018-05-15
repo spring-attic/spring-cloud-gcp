@@ -132,18 +132,18 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 			PollableChannel channel = context.getBean("outputChannel", PollableChannel.class);
 
-			Message<?> message = channel.receive(5000);
+			Message<?> message = channel.receive(10000);
 			assertThat(message).isNotNull();
 			AckReplyConsumer acker =
 					(AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
 			assertThat(acker).isNotNull();
 			acker.nack();
-			message = channel.receive(2000);
+			message = channel.receive(10000);
 			assertThat(message).isNotNull();
 			acker = (AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
 			assertThat(acker).isNotNull();
 			acker.ack();
-			message = channel.receive(1000);
+			message = channel.receive(10000);
 			assertThat(message).isNull();
 		});
 	}
