@@ -22,6 +22,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.NativeMessageHeaderAccessor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,6 +36,7 @@ public class PubSubHeaderMapperTests {
 		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
 		Map<String, Object> originalHeaders = new HashMap<>();
 		originalHeaders.put("my header", "pantagruel's nativity");
+		originalHeaders.put(NativeMessageHeaderAccessor.NATIVE_HEADERS, "deerhunter");
 		MessageHeaders internalHeaders = new MessageHeaders(originalHeaders);
 
 		Map<String, String> filteredHeaders = new HashMap<>();
