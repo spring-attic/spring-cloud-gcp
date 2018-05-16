@@ -44,44 +44,22 @@ without modifying existing applications.
 ====
 
 === Spring Boot Starter for Stackdriver Trace
-Spring Boot Starter for Stackdriver Trace uses Spring Cloud Sleuth and auto-configures a
-https://github.com/openzipkin/zipkin-reporter-java/blob/master/core/src/main/java/zipkin2/reporter/Reporter.java[Reporter]
-that sends the Sleuth’s trace information to Stackdriver Trace.
+Spring Boot Starter for Stackdriver Trace uses Spring Cloud Sleuth and auto-configures a https://github.com/openzipkin/zipkin-gcp/blob/master/sender-stackdriver/src/main/java/zipkin2/reporter/stackdriver/StackdriverSender.java[StackdriverSender] that sends the Sleuth’s trace information to Stackdriver Trace.
 
-This starter will send traces asynchronously using a buffered trace consumer that auto-flushes when its buffered trace
-messages exceed its buffer size or have been buffered for longer than its scheduled delay.
-
-There are several parameters you can use to tune the Stackdriver Trace adapter. All configurations are optional:
+All configurations are optional:
 
 |===
 | Name | Description | Required | Default value
-| `spring.cloud.gcp.trace.enabled` |
-Auto-configure Spring Cloud Sleuth to send traces to Stackdriver Trace. | No | `true`
-| `spring.cloud.gcp.trace.executor-threads` |
-Number of threads to use by the underlying gRPC channel to send the trace request to Stackdriver. |
-No | `4`
-| `spring.cloud.gcp.trace.buffer-size-bytes` |
-Buffer size in bytes. Traces will be flushed to Stackdriver when buffered trace messages exceed this
-size. | No | 1% of Runtime.totalMemory()
-| `spring.cloud.gcp.trace.scheduled-delay-seconds` |
-Buffered trace messages will be flushed to Stackdriver when buffered longer than scheduled delays
-(in seconds) even if the buffered message size didn't exceed the buffer size. | No | `10`
-| `spring.cloud.gcp.trace.project-id` |
-Overrides the project ID from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
-| `spring.cloud.gcp.trace.credentials.location` |
-Overrides the credentials location from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> |
-No |
-| `spring.cloud.gcp.trace.credentials.scopes` |
-Overrides the credentials scopes from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> |
-No |
+| `spring.cloud.gcp.trace.enabled` | Auto-configure Spring Cloud Sleuth to send traces to Stackdriver Trace. | No | `true`
+| `spring.cloud.gcp.trace.project-id` | Overrides the project ID from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
+| `spring.cloud.gcp.trace.credentials.location` | Overrides the credentials location from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
+| `spring.cloud.gcp.trace.credentials.scopes` | Overrides the credentials scopes from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
 |===
 
 You can use core Spring Cloud Sleuth properties to control Sleuth’s sampling rate, etc.
-Read https://cloud.spring.io/spring-cloud-sleuth/[Sleuth documentation] for more information on
-Sleuth configurations.
+Read https://cloud.spring.io/spring-cloud-sleuth/[Sleuth documentation] for more information on Sleuth configurations.
 
-For example, when you are testing to see the traces are going through, you can set the sampling rate
-to 100%.
+For example, when you are testing to see the traces are going through, you can set the sampling rate to 100%.
 
 [source]
 ----
@@ -92,12 +70,9 @@ spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.
 Spring Cloud GCP Trace does override some Sleuth configurations:
 
 - Always uses 128-bit Trace IDs. This is required by Stackdriver Trace.
-- Does not use Span joins. Span joins will share the span ID between the client and server Spans.
-  Stackdriver requires that every Span ID within a Trace to be unique, so Span joins are not supported.
-- Uses `StackdriverHttpClientParser` and `StackdriverHttpServerParser` by default to populate Stackdriver
-  related fields.
+- Does not use Span joins. Span joins will share the span ID between the client and server Spans. Stackdriver requires that every Span ID within a Trace to be unique, so Span joins are not supported.
+- Uses `StackdriverHttpClientParser` and `StackdriverHttpServerParser` by default to populate Stackdriver related fields.
 
 === Integration with Logging
 
-Logs can also be associated with traces. See link:logging.adoc[Stackdriver Logging Support] for how to configure
-logging such that it carries Trace ID metadata.
+Logs can also be associated with traces. See link:logging.adoc[Stackdriver Logging Support] for how to configure logging such that it carries Trace ID metadata.

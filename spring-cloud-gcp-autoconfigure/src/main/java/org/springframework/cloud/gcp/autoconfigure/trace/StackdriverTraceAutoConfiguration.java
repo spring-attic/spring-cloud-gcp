@@ -17,30 +17,21 @@
 package org.springframework.cloud.gcp.autoconfigure.trace;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
 import brave.sampler.Sampler;
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.api.gax.core.ExecutorProvider;
-import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.rpc.HeaderProvider;
-import com.google.cloud.trace.v1.TraceServiceClient;
-import com.google.cloud.trace.v1.TraceServiceSettings;
-import com.google.cloud.trace.v1.consumer.FlushableTraceConsumer;
-import com.google.cloud.trace.v1.consumer.ScheduledBufferingTraceConsumer;
 import com.google.cloud.trace.v1.consumer.TraceConsumer;
-import com.google.cloud.trace.v1.util.RoughTraceSizer;
-import com.google.cloud.trace.v1.util.Sizer;
-import com.google.devtools.cloudtrace.v1.Trace;
-import zipkin2.reporter.Reporter;
+import io.grpc.CallOptions;
+import io.grpc.auth.MoreCallCredentials;
+import zipkin2.Span;
+import zipkin2.codec.BytesEncoder;
+import zipkin2.reporter.Sender;
+import zipkin2.reporter.stackdriver.StackdriverEncoder;
+import zipkin2.reporter.stackdriver.StackdriverSender;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -48,23 +39,18 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClas
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.gcp.autoconfigure.trace.sleuth.LabelExtractor;
-import org.springframework.cloud.gcp.autoconfigure.trace.sleuth.SpanTranslator;
 import org.springframework.cloud.gcp.autoconfigure.trace.sleuth.StackdriverHttpClientParser;
 import org.springframework.cloud.gcp.autoconfigure.trace.sleuth.StackdriverHttpServerParser;
-import org.springframework.cloud.gcp.autoconfigure.trace.sleuth.StackdriverTraceReporter;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
-import org.springframework.cloud.sleuth.SpanAdjuster;
 import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
-import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
 import org.springframework.cloud.sleuth.sampler.ProbabilityBasedSampler;
 import org.springframework.cloud.sleuth.sampler.SamplerProperties;
+import org.springframework.cloud.sleuth.zipkin2.ZipkinAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
 /**
@@ -73,16 +59,12 @@ import org.springframework.context.annotation.Primary;
  * @author Mike Eltsufin
  */
 @Configuration
-@EnableConfigurationProperties({ SamplerProperties.class, GcpTraceProperties.class, SleuthProperties.class })
+@EnableConfigurationProperties(
+		{ SamplerProperties.class, GcpTraceProperties.class, SleuthProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.trace.enabled", matchIfMissing = true)
 @ConditionalOnClass(TraceConsumer.class)
-@Import({ StackdriverTraceAutoConfiguration.TraceConsumerConfiguration.class,
-		StackdriverTraceAutoConfiguration.StackdriverTraceHttpAutoconfiguration.class })
-@AutoConfigureBefore({ TraceAutoConfiguration.class })
+@AutoConfigureBefore({ ZipkinAutoConfiguration.class })
 public class StackdriverTraceAutoConfiguration {
-
-	@Autowired(required = false)
-	List<SpanAdjuster> spanAdjusters = new ArrayList<>();
 
 	private GcpProjectIdProvider finalProjectIdProvider;
 
@@ -112,25 +94,18 @@ public class StackdriverTraceAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public Reporter<zipkin2.Span> reporter(
-			FlushableTraceConsumer traceConsumer,
-			SpanTranslator spanTranslator) {
-		return new StackdriverTraceReporter(
-				this.finalProjectIdProvider.getProjectId(),
-				traceConsumer,
-				spanTranslator);
+	public Sender stackdriverSender() throws IOException {
+		return StackdriverSender.newBuilder()
+				.projectId(this.finalProjectIdProvider.getProjectId())
+				.callOptions(CallOptions.DEFAULT.withCallCredentials(
+						MoreCallCredentials.from(this.finalCredentialsProvider.getCredentials())))
+				.build();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SpanTranslator spanTranslator(LabelExtractor labelExtractor) {
-		return new SpanTranslator(labelExtractor);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public LabelExtractor traceLabelExtractor() {
-		return new LabelExtractor();
+	public BytesEncoder<Span> spanBytesEncoder() {
+		return StackdriverEncoder.V1;
 	}
 
 	@Configuration
@@ -155,88 +130,24 @@ public class StackdriverTraceAutoConfiguration {
 	}
 
 	@Configuration
-	@ConditionalOnProperty(name = "spring.sleuth.http.enabled", havingValue = "true", matchIfMissing = true)
+	@ConditionalOnProperty(name = "spring.sleuth.http.enabled",
+			havingValue = "true", matchIfMissing = true)
 	@AutoConfigureBefore(TraceHttpAutoConfiguration.class)
 	public static class StackdriverTraceHttpAutoconfiguration {
 		@Bean
-		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "false", matchIfMissing = true)
+		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled",
+				havingValue = "false", matchIfMissing = true)
 		@ConditionalOnMissingBean
 		HttpClientParser stackdriverHttpClientParser() {
 			return new StackdriverHttpClientParser();
 		}
 
 		@Bean
-		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled", havingValue = "false", matchIfMissing = true)
+		@ConditionalOnProperty(name = "spring.sleuth.http.legacy.enabled",
+				havingValue = "false", matchIfMissing = true)
 		@ConditionalOnMissingBean
 		HttpServerParser stackdriverHttpServerParser() {
 			return new StackdriverHttpServerParser();
-		}
-	}
-
-	@Configuration
-	@ConditionalOnMissingBean(FlushableTraceConsumer.class)
-	public class TraceConsumerConfiguration {
-		@Bean
-		@ConditionalOnMissingBean(name = "traceExecutorProvider")
-		public ExecutorProvider traceExecutorProvider(GcpTraceProperties gcpTraceProperties) {
-			return FixedExecutorProvider.create(
-					Executors.newScheduledThreadPool(gcpTraceProperties.getExecutorThreads()));
-		}
-
-		@Bean
-		@ConditionalOnMissingBean
-		public TraceServiceClient traceServiceClient(
-				@Qualifier("traceExecutorProvider") ExecutorProvider executorProvider)
-				throws IOException {
-			return TraceServiceClient.create(
-					TraceServiceSettings.newBuilder()
-							.setCredentialsProvider(StackdriverTraceAutoConfiguration.this.finalCredentialsProvider)
-							.setExecutorProvider(executorProvider)
-							.setHeaderProvider(StackdriverTraceAutoConfiguration.this.headerProvider)
-							.build());
-		}
-
-		@Bean
-		@ConditionalOnMissingBean(name = "scheduledBufferingExecutorService")
-		public ScheduledExecutorService scheduledBufferingExecutorService() {
-			return Executors.newSingleThreadScheduledExecutor();
-		}
-
-		@Bean
-		@ConditionalOnMissingBean(name = "traceServiceClientTraceConsumer")
-		public TraceServiceClientTraceConsumer traceServiceClientTraceConsumer(
-				TraceServiceClient traceServiceClient) {
-			return new TraceServiceClientTraceConsumer(
-					StackdriverTraceAutoConfiguration.this.finalProjectIdProvider.getProjectId(),
-					traceServiceClient);
-
-		}
-
-		@Bean
-		@ConditionalOnMissingBean
-		public Sizer<Trace> traceSizer() {
-			return new RoughTraceSizer();
-		}
-
-		@Bean
-		@ConditionalOnMissingBean(name = "traceConsumerExecutorService")
-		public ScheduledExecutorService traceConsumerExecutorService(
-				GcpTraceProperties gcpTraceProperties) {
-			return Executors.newScheduledThreadPool(gcpTraceProperties.getExecutorThreads());
-		}
-
-		@Primary
-		@Bean
-		@ConditionalOnMissingBean(name = "traceConsumer")
-		public FlushableTraceConsumer traceConsumer(
-				TraceServiceClientTraceConsumer traceServiceClientTraceConsumer,
-				Sizer<Trace> traceSizer,
-				@Qualifier("scheduledBufferingExecutorService") ScheduledExecutorService executorService,
-				GcpTraceProperties gcpTraceProperties) {
-			return new ScheduledBufferingTraceConsumer(
-					traceServiceClientTraceConsumer,
-					traceSizer, gcpTraceProperties.getBufferSizeBytes(),
-					gcpTraceProperties.getScheduledDelaySeconds(), executorService);
 		}
 	}
 }
