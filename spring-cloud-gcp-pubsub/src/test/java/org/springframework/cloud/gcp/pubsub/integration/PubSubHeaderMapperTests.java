@@ -36,7 +36,7 @@ public class PubSubHeaderMapperTests {
 		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
 		Map<String, Object> originalHeaders = new HashMap<>();
 		originalHeaders.put("my header", "pantagruel's nativity");
-		 originalHeaders.put(NativeMessageHeaderAccessor.NATIVE_HEADERS, "deerhunter");
+		originalHeaders.put(NativeMessageHeaderAccessor.NATIVE_HEADERS, "deerhunter");
 		MessageHeaders internalHeaders = new MessageHeaders(originalHeaders);
 
 		Map<String, String> filteredHeaders = new HashMap<>();
