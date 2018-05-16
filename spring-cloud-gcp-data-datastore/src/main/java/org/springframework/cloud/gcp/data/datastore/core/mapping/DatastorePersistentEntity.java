@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
 /**
@@ -24,7 +25,8 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
  * @author Chengyuan Zhao
  */
 public interface DatastorePersistentEntity <T>
-    extends MutablePersistentEntity<T, DatastorePersistentProperty> {
+		extends MutablePersistentEntity<T, DatastorePersistentProperty>,
+		ApplicationContextAware {
 
   /**
    * Gets the name of the Datastore Kind.

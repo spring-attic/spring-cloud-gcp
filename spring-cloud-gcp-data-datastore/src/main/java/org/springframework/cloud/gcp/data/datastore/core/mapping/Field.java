@@ -23,19 +23,20 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for a class that indicates it is an entity stored in a Datastore Kind.
+ * Annotation for a property that allows specifying the field name instead of deriving it
+ * from the property's name.
  *
  * @author Chengyuan Zhao
  */
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Kind {
+public @interface Field {
 
-  /**
-   * The name of the Kind in Datastore, which can differ from the name of the class which it
-   * annotates
-   * @return The name of the Kind
-   */
-  String name() default "";
+	/**
+	 * The custom name of the field in the Datastore Kind, which can differ from the name
+	 * of the property it annotates.
+	 * @return the name of the field in the Datastore Kind.
+	 */
+	String name();
 }

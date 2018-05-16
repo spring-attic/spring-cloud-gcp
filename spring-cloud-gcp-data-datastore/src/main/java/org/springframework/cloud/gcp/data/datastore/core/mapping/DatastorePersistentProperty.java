@@ -58,4 +58,18 @@ public interface DatastorePersistentProperty extends
    * @return true if the property is stored in Datastore as an embedded entity.
    */
   boolean isEmbedded();
+
+	/**
+	 * True if property corresponds to a field of a Datastore Kind. False otherwise.
+	 * @return True if this property will be mapped to and from Datastore. False
+	 * otherwise.
+	 */
+	boolean isMapped();
+
+	/**
+	 * Gets the inner type of the property, which is meaningful for fields of type ARRAY
+	 * in Datastore.
+	 * @return the inner type of the iterable property.
+	 */
+	Class<?> getIterableInnerType();
 }
