@@ -23,7 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for Datastore property that indicates it holds a POJO stored as an embedded entity.
+ * Annotation for Datastore property that indicates it holds a POJO stored as an embedded
+ * entity.
  *
  * @author Chengyuan Zhao
  */

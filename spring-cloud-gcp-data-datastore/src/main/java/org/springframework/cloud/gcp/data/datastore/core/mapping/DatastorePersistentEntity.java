@@ -24,13 +24,12 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
  *
  * @author Chengyuan Zhao
  */
-public interface DatastorePersistentEntity <T>
-		extends MutablePersistentEntity<T, DatastorePersistentProperty>,
-		ApplicationContextAware {
+public interface DatastorePersistentEntity<T> extends
+		MutablePersistentEntity<T, DatastorePersistentProperty>, ApplicationContextAware {
 
-  /**
-   * Gets the name of the Datastore Kind.
-   * @return the name of the Kind.
-   */
-  String kindName();
+	/**
+	 * Gets the name of the Datastore Kind.
+	 * @return the name of the Kind.
+	 */
+	String kindName();
 }

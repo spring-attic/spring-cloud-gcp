@@ -19,13 +19,13 @@ package org.springframework.cloud.gcp.data.datastore.core.mapping;
 import java.util.List;
 
 import org.springframework.data.mapping.Association;
-import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.util.Pair;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
 
@@ -56,6 +56,27 @@ public class DatastorePersistentPropertyImpl
 		this.fieldNamingStrategy = fieldNamingStrategy == null
 				? PropertyNameFieldNamingStrategy.INSTANCE
 				: fieldNamingStrategy;
+		verify();
+	}
+
+	private void verify() {
+		if (isAncestors()) {
+			if (!isIterable()) {
+				throw new DatastoreDataException(
+						"Ancestors properties must be an iterable of Kind and Key pairs: "
+								+ getFieldName());
+			}
+			if (!Pair.class.isAssignableFrom(getIterableInnerType())) {
+				throw new DatastoreDataException(
+						"Ancestor Kind and Keys must be given as Pairs: "
+								+ getFieldName());
+			}
+		}
+		if (isEmbedded() && isReference()) {
+			throw new DatastoreDataException(
+					"Property cannot be annotated both Embedded and Reference: "
+							+ getFieldName());
+		}
 	}
 
 	@Override

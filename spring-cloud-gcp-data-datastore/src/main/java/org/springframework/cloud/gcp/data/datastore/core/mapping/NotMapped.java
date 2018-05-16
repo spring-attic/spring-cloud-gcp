@@ -23,7 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for an entity's field that causes the field to be ignored by Spring Data Datastore.
+ * Annotation for an entity's field that causes the field to be ignored by Spring Data
+ * Datastore.
  *
  * @author Chengyuan Zhao
  */

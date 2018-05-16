@@ -17,12 +17,12 @@
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
 import java.util.List;
-import java.util.Map;
 
 import org.junit.Test;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.util.Pair;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -85,13 +85,29 @@ public class DatastorePersistentPropertyImplTests {
 
 	@Test(expected = DatastoreDataException.class)
 	public void untypedListPropertyTest() {
-		this.datastoreMappingContext.getPersistentEntity(FaultyEntity.class)
+		this.datastoreMappingContext.getPersistentEntity(UntypedListEntity.class)
 				.doWithProperties(
 						(PropertyHandler<DatastorePersistentProperty>) property -> {
 							if (property.getFieldName().equals("untypedList")) {
 								property.getIterableInnerType();
 							}
 						});
+	}
+
+	@Test(expected = DatastoreDataException.class)
+	public void nonListAncestorsTest() {
+		this.datastoreMappingContext.getPersistentEntity(NonListAncestorsEntity.class);
+	}
+
+	@Test(expected = DatastoreDataException.class)
+	public void nonPairAncestorsTest() {
+		this.datastoreMappingContext.getPersistentEntity(NonPairAncestorEntity.class);
+	}
+
+	@Test(expected = DatastoreDataException.class)
+	public void embeddedReferenceAnnotatedTest() {
+		this.datastoreMappingContext
+				.getPersistentEntity(EmbeddedReferenceAnnotatedEntity.class);
 	}
 
 	@Kind(name = "custom_test_kind")
@@ -112,7 +128,7 @@ public class DatastorePersistentPropertyImplTests {
 		String notMappedString;
 
 		@Ancestors
-		List<Map<String, Object>> ancestors;
+		List<Pair<String, Object>> ancestors;
 
 		@Embedded
 		TestSubEntity embeddedEntity;
@@ -125,7 +141,23 @@ public class DatastorePersistentPropertyImplTests {
 
 	}
 
-	private static class FaultyEntity {
+	private static class UntypedListEntity {
 		List untypedList;
+	}
+
+	private static class NonListAncestorsEntity {
+		@Ancestors
+		Object ancestors;
+	}
+
+	private static class NonPairAncestorEntity {
+		@Ancestors
+		List<String> ancestors;
+	}
+
+	private static class EmbeddedReferenceAnnotatedEntity {
+		@Embedded
+		@Reference
+		TestSubEntity subEntity;
 	}
 }
