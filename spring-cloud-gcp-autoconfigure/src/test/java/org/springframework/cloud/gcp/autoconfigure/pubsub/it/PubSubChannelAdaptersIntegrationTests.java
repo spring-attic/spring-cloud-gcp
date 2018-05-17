@@ -74,8 +74,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 					GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class))
 			.withUserConfiguration(
-					PubSubChannelAdaptersIntegrationTests.IntegrationConfiguration.class)
-			.withPropertyValues("spring.cloud.gcp.pubsub.emulator-host=${PUBSUB_EMULATOR_HOST}");
+					PubSubChannelAdaptersIntegrationTests.IntegrationConfiguration.class);
 
 	@BeforeClass
 	public static void enableTests() {
@@ -92,7 +91,8 @@ public class PubSubChannelAdaptersIntegrationTests {
 			headers.put("sleep", "lift your skinny fists");
 
 			context.getBean("inputChannel", MessageChannel.class).send(
-					MessageBuilder.createMessage("I am a message.",  new MessageHeaders(headers)));
+					MessageBuilder.createMessage("I am a message.",
+							new MessageHeaders(headers)));
 
 			Message<?> message =
 					context.getBean("outputChannel", PollableChannel.class).receive(5000);
@@ -152,16 +152,17 @@ public class PubSubChannelAdaptersIntegrationTests {
 	@Test
 	public void sendAndReceiveMessagePublishCallback() {
 		this.contextRunner.run(context -> {
-			ListenableFutureCallback<String> callbackSpy = Mockito.spy(new ListenableFutureCallback<String>() {
-				@Override
-				public void onFailure(Throwable ex) {
+			ListenableFutureCallback<String> callbackSpy = Mockito.spy(
+					new ListenableFutureCallback<String>() {
+						@Override
+						public void onFailure(Throwable ex) {
 
-				}
+						}
 
-				@Override
-				public void onSuccess(String result) {
+						@Override
+						public void onSuccess(String result) {
 
-				}
+						}
 			});
 			context.getBean(PubSubMessageHandler.class).setPublishCallback(callbackSpy);
 			context.getBean("inputChannel", MessageChannel.class).send(
