@@ -21,6 +21,7 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.PullRequest;
 
+import org.springframework.cloud.gcp.pubsub.core.DefaultPubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.core.PubSubAcknowledger;
 
 /**
@@ -62,5 +63,7 @@ public interface SubscriberFactory {
 	/**
 	 * Create a {@link PubSubAcknowledger} to (negatively) acknowledge messages in bulk.
 	 */
-	PubSubAcknowledger createAcknowledger();
+	default PubSubAcknowledger createAcknowledger() {
+		return new DefaultPubSubAcknowledger(createSubscriberStub());
+	}
 }

@@ -35,8 +35,6 @@ import com.google.pubsub.v1.PullRequest;
 import org.threeten.bp.Duration;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.pubsub.core.DefaultPubSubAcknowledger;
-import org.springframework.cloud.gcp.pubsub.core.PubSubAcknowledger;
 import org.springframework.util.Assert;
 
 /**
@@ -263,10 +261,5 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 		catch (IOException e) {
 			throw new RuntimeException("Error creating the SubscriberStub", e);
 		}
-	}
-
-	@Override
-	public PubSubAcknowledger createAcknowledger() {
-		return new DefaultPubSubAcknowledger(createSubscriberStub());
 	}
 }
