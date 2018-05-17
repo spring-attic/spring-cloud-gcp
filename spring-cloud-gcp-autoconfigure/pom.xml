@@ -153,20 +153,8 @@
         </dependency>
 
         <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-trace</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
             <groupId>io.zipkin.gcp</groupId>
             <artifactId>zipkin-sender-stackdriver</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.cloud.trace.v1</groupId>
-            <artifactId>sink</artifactId>
             <optional>true</optional>
         </dependency>
 
