@@ -74,7 +74,8 @@ public class PubSubChannelAdaptersIntegrationTests {
 					GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class))
 			.withUserConfiguration(
-					PubSubChannelAdaptersIntegrationTests.IntegrationConfiguration.class);
+					PubSubChannelAdaptersIntegrationTests.IntegrationConfiguration.class)
+			.withPropertyValues("spring.cloud.gcp.pubsub.emulator-host=${PUBSUB_EMULATOR_HOST}");
 
 	@BeforeClass
 	public static void enableTests() {

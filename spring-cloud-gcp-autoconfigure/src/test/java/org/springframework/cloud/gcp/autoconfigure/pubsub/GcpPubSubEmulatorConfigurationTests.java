@@ -20,13 +20,13 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import org.junit.Assert;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.context.annotation.Bean;
 
 /**
  * @author Andreas Berger
@@ -35,20 +35,24 @@ import org.springframework.context.annotation.Bean;
 public class GcpPubSubEmulatorConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withPropertyValues("spring.cloud.gcp.pubsub.emulatorHost=localhost:8085",
+			.withPropertyValues("spring.cloud.gcp.pubsub.emulator-host=localhost:8085",
 					"spring.cloud.gcp.projectId=test-project",
-					"spring.cloud.gcp.pubsub.trustedPackages[0]=a",
-					"spring.cloud.gcp.pubsub.trustedPackages[1]=b")
+					"spring.cloud.gcp.pubsub.trusted-packages[0]=a",
+					"spring.cloud.gcp.pubsub.trusted-packages[1]=b")
 			.withConfiguration(AutoConfigurations.of(GcpPubSubEmulatorConfiguration.class,
 					GcpContextAutoConfiguration.class,
-					GcpPubSubAutoConfiguration.class))
-			.withUserConfiguration(NoCredentialsTestConfiguration.class);
+					GcpPubSubAutoConfiguration.class));
 
 	@Test
 	public void testEmulatorConfig() {
 		this.contextRunner.run(context -> {
-			CredentialsProvider credentialsProvider = context.getBean(CredentialsProvider.class);
-			Assert.assertTrue("CredentialsProvider is not correct",
+			CredentialsProvider defaultCredentialsProvider = context.getBean(CredentialsProvider.class);
+			Assert.assertFalse("CredentialsProvider is not correct",
+					defaultCredentialsProvider instanceof NoCredentialsProvider);
+
+			TopicAdminSettings topicAdminSettings = context.getBean(TopicAdminSettings.class);
+			CredentialsProvider credentialsProvider = topicAdminSettings.getCredentialsProvider();
+			Assert.assertTrue("CredentialsProvider for emulator is not correct",
 					credentialsProvider instanceof NoCredentialsProvider);
 
 			TransportChannelProvider transportChannelProvider = context.getBean(TransportChannelProvider.class);
@@ -66,13 +70,5 @@ public class GcpPubSubEmulatorConfigurationTests {
 			Assert.assertEquals("a", trustedPackages[0]);
 			Assert.assertEquals("b", trustedPackages[1]);
 		});
-	}
-
-	static class NoCredentialsTestConfiguration {
-
-		@Bean
-		public CredentialsProvider noCredentialsProvider() {
-			return new NoCredentialsProvider();
-		}
 	}
 }
