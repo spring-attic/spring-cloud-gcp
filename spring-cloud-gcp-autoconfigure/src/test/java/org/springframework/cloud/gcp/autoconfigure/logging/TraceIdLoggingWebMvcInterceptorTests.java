@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.autoconfigure.logging;
 
-import com.google.cloud.logging.TraceLoggingEnhancer;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
@@ -39,26 +38,27 @@ public class TraceIdLoggingWebMvcInterceptorTests {
 	private static final String TRACE_ID_HEADER = "X-CLOUD-TRACE-CONTEXT";
 
 	private TraceIdLoggingWebMvcInterceptor interceptor =
-			new TraceIdLoggingWebMvcInterceptor(new XCloudTraceIdExtractor());
+			new TraceIdLoggingWebMvcInterceptor(new XCloudTraceIdExtractor(), () -> "remission");
 
 	@Test
 	public void testPreHandle() throws Exception {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addHeader(TRACE_ID_HEADER, TEST_TRACE_ID_WITH_SPAN);
 
-		TraceLoggingEnhancer.setCurrentTraceId(null);
+		TraceIdLoggingEnhancer.setCurrentTraceId("remission", null);
 
 		this.interceptor.preHandle(request, null, null);
 
-		assertThat(TraceLoggingEnhancer.getCurrentTraceId(), is(TEST_TRACE_ID));
+		assertThat(TraceIdLoggingEnhancer.getCurrentTraceId(),
+				is("projects/remission/traces/" + TEST_TRACE_ID));
 	}
 
 	@Test
 	public void testAfterCompletion() throws Exception {
-		TraceLoggingEnhancer.setCurrentTraceId(TEST_TRACE_ID);
+		TraceIdLoggingEnhancer.setCurrentTraceId("remission", TEST_TRACE_ID);
 
 		this.interceptor.afterCompletion(null, null, null, null);
 
-		assertThat(TraceLoggingEnhancer.getCurrentTraceId(), nullValue());
+		assertThat(TraceIdLoggingEnhancer.getCurrentTraceId(), nullValue());
 	}
 }
