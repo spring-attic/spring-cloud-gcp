@@ -262,4 +262,9 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 			throw new RuntimeException("Error creating the SubscriberStub", e);
 		}
 	}
+
+	@Override
+	public PubSubAcknowledger createAcknowledger() {
+		return new DefaultPubSubAcknowledger(createSubscriberStub());
+	}
 }
