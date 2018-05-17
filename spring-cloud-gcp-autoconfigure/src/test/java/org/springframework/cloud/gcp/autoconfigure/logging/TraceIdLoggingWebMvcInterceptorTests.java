@@ -38,26 +38,27 @@ public class TraceIdLoggingWebMvcInterceptorTests {
 	private static final String TRACE_ID_HEADER = "X-CLOUD-TRACE-CONTEXT";
 
 	private TraceIdLoggingWebMvcInterceptor interceptor =
-			new TraceIdLoggingWebMvcInterceptor(new XCloudTraceIdExtractor());
+			new TraceIdLoggingWebMvcInterceptor(new XCloudTraceIdExtractor(), () -> "remission");
 
 	@Test
 	public void testPreHandle() throws Exception {
 		MockHttpServletRequest request = new MockHttpServletRequest();
 		request.addHeader(TRACE_ID_HEADER, TEST_TRACE_ID_WITH_SPAN);
 
-		TraceIdLoggingEnhancer.setCurrentTraceId(null);
+		TraceIdLoggingEnhancer.setCurrentTraceId("remission", null);
 
 		this.interceptor.preHandle(request, null, null);
 
-		assertThat(TraceIdLoggingEnhancer.getTraceId(), is(TEST_TRACE_ID));
+		assertThat(TraceIdLoggingEnhancer.getCurrentTraceId(),
+				is("projects/remission/traces/" + TEST_TRACE_ID));
 	}
 
 	@Test
 	public void testAfterCompletion() throws Exception {
-		TraceIdLoggingEnhancer.setCurrentTraceId(TEST_TRACE_ID);
+		TraceIdLoggingEnhancer.setCurrentTraceId("remission", TEST_TRACE_ID);
 
 		this.interceptor.afterCompletion(null, null, null, null);
 
-		assertThat(TraceIdLoggingEnhancer.getTraceId(), nullValue());
+		assertThat(TraceIdLoggingEnhancer.getCurrentTraceId(), nullValue());
 	}
 }

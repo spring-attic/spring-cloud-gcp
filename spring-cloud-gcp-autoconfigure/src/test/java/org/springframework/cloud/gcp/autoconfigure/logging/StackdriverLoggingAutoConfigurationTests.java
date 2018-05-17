@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
+import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.CompositeTraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractorType;
@@ -39,7 +40,9 @@ public class StackdriverLoggingAutoConfigurationTests {
 	private WebApplicationContextRunner contextRunner =
 			new WebApplicationContextRunner()
 					.withConfiguration(
-							AutoConfigurations.of(StackdriverLoggingAutoConfiguration.class));
+							AutoConfigurations.of(
+									StackdriverLoggingAutoConfiguration.class,
+									GcpContextAutoConfiguration.class));
 
 	@Test
 	public void testDisabledConfiguration() {

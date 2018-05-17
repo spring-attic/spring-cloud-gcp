@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.CompositeTraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.ZipkinTraceIdExtractor;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -44,14 +45,16 @@ public class LoggingWebMvcConfigurer implements WebMvcConfigurer {
 	 * a {@link TraceIdLoggingWebMvcInterceptor} is used with the trace ID extractor described above.
 	 */
 	public LoggingWebMvcConfigurer(
-			@Autowired(required = false) TraceIdLoggingWebMvcInterceptor interceptor) {
+			@Autowired(required = false) TraceIdLoggingWebMvcInterceptor interceptor,
+			GcpProjectIdProvider projectIdProvider) {
 		if (interceptor != null) {
 			this.interceptor = interceptor;
 		}
 		else {
 			this.interceptor = new TraceIdLoggingWebMvcInterceptor(
 					new CompositeTraceIdExtractor(
-							new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor()));
+							new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor()),
+					projectIdProvider);
 		}
 	}
 

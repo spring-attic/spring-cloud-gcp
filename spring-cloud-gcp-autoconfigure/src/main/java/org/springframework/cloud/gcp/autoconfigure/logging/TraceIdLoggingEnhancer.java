@@ -19,8 +19,6 @@ package org.springframework.cloud.gcp.autoconfigure.logging;
 import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.LoggingEnhancer;
 
-import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
-
 /**
  * Adds the trace ID to the logging entry, in its correct format to be displayed in the Logs viewer.
  *
@@ -30,25 +28,28 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 
 	private static final ThreadLocal<String> traceId = new ThreadLocal<>();
 
-	public static void setCurrentTraceId(String id) {
+	public static void setCurrentTraceId(String projectId, String id) {
 		if (id == null) {
 			traceId.remove();
 		}
 		else {
-			traceId.set(id);
+			traceId.set("projects/" + projectId + "/traces/" + id);
 		}
 	}
 
-	public static String getTraceId() {
+	/**
+	 * Returns the trace ID in the "projects/[MY_PROJECT_ID]/traces/[MY_TRACE_ID]".
+	 * @return
+	 */
+	public static String getCurrentTraceId() {
 		return traceId.get();
 	}
 
 	@Override
 	public void enhanceLogEntry(LogEntry.Builder builder) {
-		String projectId = new DefaultGcpProjectIdProvider().getProjectId();
-		String traceId = getTraceId();
+		String traceId = getCurrentTraceId();
 		if (traceId != null) {
-			builder.setTrace("projects/" + projectId + "/traces/" + traceId);
+			builder.setTrace(traceId);
 		}
 	}
 }
