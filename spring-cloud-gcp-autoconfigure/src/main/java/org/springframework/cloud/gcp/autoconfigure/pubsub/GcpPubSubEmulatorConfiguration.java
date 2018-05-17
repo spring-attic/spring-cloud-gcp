@@ -30,13 +30,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * If <code>spring.cloud.gcp.pubsub.emulatorHost</code> is set, spring stream will connect
+ * If <code>spring.cloud.gcp.pubsub.emulator-host</code> is set, spring stream will connect
  * to a running pub/sub emulator.
  *
  * @author Andreas Berger
  */
 @Configuration
-@ConditionalOnProperty(prefix = "spring.cloud.gcp.pubsub", name = "emulatorHost")
+@ConditionalOnProperty(prefix = "spring.cloud.gcp.pubsub", name = "emulator-host")
 @AutoConfigureBefore(GcpPubSubAutoConfiguration.class)
 @EnableConfigurationProperties(GcpPubSubProperties.class)
 public class GcpPubSubEmulatorConfiguration {
