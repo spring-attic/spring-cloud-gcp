@@ -21,9 +21,6 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.PullRequest;
 
-import org.springframework.cloud.gcp.pubsub.core.DefaultPubSubAcknowledger;
-import org.springframework.cloud.gcp.pubsub.core.PubSubAcknowledger;
-
 /**
  * Interface used by the {@link org.springframework.cloud.gcp.pubsub.core.PubSubTemplate} to create
  * supporting objects for consuming messages from Pub/Sub subscriptions.
