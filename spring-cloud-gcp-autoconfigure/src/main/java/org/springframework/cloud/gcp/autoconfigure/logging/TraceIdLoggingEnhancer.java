@@ -39,7 +39,7 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 
 	/**
 	 * Returns the trace ID in the "projects/[MY_PROJECT_ID]/traces/[MY_TRACE_ID]".
-	 * @return
+	 * @return the trace ID in the "projects/[MY_PROJECT_ID]/traces/[MY_TRACE_ID]"
 	 */
 	public static String getCurrentTraceId() {
 		return traceId.get();
