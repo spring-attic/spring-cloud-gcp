@@ -27,6 +27,7 @@ import com.google.pubsub.v1.PullRequest;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Artem Bilan
  */
 public interface SubscriberFactory {
 
@@ -60,5 +61,8 @@ public interface SubscriberFactory {
 	/**
 	 * Create a {@link PubSubAcknowledger} to (negatively) acknowledge messages in bulk.
 	 */
-	PubSubAcknowledger createAcknowledger();
+	default PubSubAcknowledger createAcknowledger() {
+		return new DefaultPubSubAcknowledger(createSubscriberStub());
+	}
+
 }

@@ -263,8 +263,4 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 		}
 	}
 
-	@Override
-	public PubSubAcknowledger createAcknowledger() {
-		return new DefaultPubSubAcknowledger(createSubscriberStub());
-	}
 }
