@@ -54,6 +54,13 @@ All configurations are optional:
 | `spring.cloud.gcp.trace.project-id` | Overrides the project ID from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
 | `spring.cloud.gcp.trace.credentials.location` | Overrides the credentials location from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
 | `spring.cloud.gcp.trace.credentials.scopes` | Overrides the credentials scopes from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
+| `spring.cloud.gcp.trace.num-executor-threads` | Number of threads used by the Trace executor | No | 4
+| `spring.cloud.gcp.trace.authority` | HTTP/2 authority the channel claims to be connecting to. | No |
+| `spring.cloud.gcp.trace.compression` | Name of the compression to use in Trace calls | No |
+| `spring.cloud.gcp.trace.deadline-ms` | Call deadline in milliseconds | No |
+| `spring.cloud.gcp.trace.max-inbound-size` | Maximum size for inbound messages | No |
+| `spring.cloud.gcp.trace.max-outbound-size` | Maximum size for outbound messages | No |
+| `spring.cloud.gcp.trace.wait-for-ready` | https://github.com/grpc/grpc/blob/master/doc/wait-for-ready.md[Waits for the channel to be ready] in case of a transient failure | No | `false`
 |===
 
 You can use core Spring Cloud Sleuth properties to control Sleuth’s sampling rate, etc.
