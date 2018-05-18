@@ -134,6 +134,31 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
+	public ListenableFuture<String> publish(String topic, String payload) {
+		return publish(topic, payload, (Map<String, String>) null);
+	}
+
+	@Override
+	public ListenableFuture<String> publish(String topic, String payload, Charset charset) {
+		return publish(topic, payload, charset);
+	}
+
+	@Override
+	public ListenableFuture<String> publish(String topic, byte[] payload) {
+		return publish(topic, payload, null);
+	}
+
+	@Override
+	public ListenableFuture<String> publish(String topic, ByteString payload) {
+		return publish(topic, payload, null);
+	}
+
+	@Override
+	public <T> ListenableFuture<String> publish(String topic, T payload) throws IOException {
+		return publish(topic, payload, null);
+	}
+
+	@Override
 	public ListenableFuture<String> publish(final String topic, PubsubMessage pubsubMessage) {
 		ApiFuture<String> publishFuture =
 				this.publisherFactory.createPublisher(topic).publish(pubsubMessage);

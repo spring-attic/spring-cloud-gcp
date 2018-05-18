@@ -46,8 +46,8 @@ utilization.
 ==== Publishing to a topic
 
 `PubSubTemplate` provides asynchronous methods to publish messages to a Google Cloud Pub/Sub topic.
-It supports different types of payloads, including `Strings` with different encodings, `byte[]`,
-`ByteString`, POJOs, and `PubsubMessage`.
+It supports different types of payloads, including `Strings` with different encodings, `byte[]`, `ByteString`, POJOs, and `PubsubMessage`.
+For each type of payload, there are equivalent `publish()` methods without headers.
 
 [source,java]
 ----
