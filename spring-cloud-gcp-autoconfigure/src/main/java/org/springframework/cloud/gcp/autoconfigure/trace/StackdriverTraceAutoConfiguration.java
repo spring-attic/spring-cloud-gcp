@@ -23,7 +23,6 @@ import brave.http.HttpServerParser;
 import brave.sampler.Sampler;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.rpc.HeaderProvider;
-import com.google.cloud.trace.v1.consumer.TraceConsumer;
 import io.grpc.CallOptions;
 import io.grpc.auth.MoreCallCredentials;
 import zipkin2.Span;
@@ -62,7 +61,7 @@ import org.springframework.context.annotation.Primary;
 @EnableConfigurationProperties(
 		{ SamplerProperties.class, GcpTraceProperties.class, SleuthProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.trace.enabled", matchIfMissing = true)
-@ConditionalOnClass(TraceConsumer.class)
+@ConditionalOnClass(StackdriverSender.class)
 @AutoConfigureBefore({ ZipkinAutoConfiguration.class })
 public class StackdriverTraceAutoConfiguration {
 
