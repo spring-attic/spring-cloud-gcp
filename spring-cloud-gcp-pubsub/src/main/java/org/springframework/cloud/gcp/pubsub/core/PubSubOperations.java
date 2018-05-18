@@ -21,12 +21,12 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
-import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
+import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.util.concurrent.ListenableFuture;
 
 /**
@@ -111,11 +111,21 @@ public interface PubSubOperations {
 	 * @param maxMessages the maximum number of pulled messages
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
-	 * @param retrySettings the timeout and retry setting for the pull request
 	 * @return the list of received messages
 	 */
-	List<PubsubMessage> pull(String subscription, Integer maxMessages,
-			Boolean returnImmediately, RetrySettings retrySettings);
+	List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages,
+			Boolean returnImmediately);
+
+	/**
+	 * Pull a number of messages from a Google Cloud Pub/Sub subscription.
+	 * @param subscription the subscription name
+	 * @param maxMessages the maximum number of pulled messages
+	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
+	 * messages to satisfy {@code maxMessages}
+	 * @return the list of received acknowledgeable messages
+	 */
+	List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
+			Boolean returnImmediately);
 
 	/**
 	 * Pull and auto-acknowledge a message from a Google Cloud Pub/Sub subscription.

@@ -16,24 +16,24 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
-import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.PullRequest;
 
 /**
- * Interface used by the {@link org.springframework.cloud.gcp.pubsub.core.PubSubTemplate} to create supporting
- * objects for consuming messages from Pub/Sub subscriptions.
+ * Interface used by the {@link org.springframework.cloud.gcp.pubsub.core.PubSubTemplate} to create
+ * supporting objects for consuming messages from Pub/Sub subscriptions.
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Artem Bilan
  */
 public interface SubscriberFactory {
 
 	/**
-	 * Create a {@link Subscriber} for the specified subscription name and wired it up to asynchronously
-	 * deliver messages to the provided {@link MessageReceiver}.
+	 * Create a {@link Subscriber} for the specified subscription name and wired it up to
+	 * asynchronously deliver messages to the provided {@link MessageReceiver}.
 	 * @param subscriptionName the name of the subscription
 	 * @param receiver the callback for receiving messages asynchronously
 	 * @return the {@link Subscriber} that was created to bind the receiver to the subscription
@@ -49,13 +49,20 @@ public interface SubscriberFactory {
 	 * if subscription doesn't contain enough messages to satisfy {@code maxMessages}
 	 * @return the pull request that can be executed using a {@link SubscriberStub}
 	 */
-	PullRequest createPullRequest(String subscriptionName, Integer maxMessages, Boolean returnImmediately);
+	PullRequest createPullRequest(String subscriptionName, Integer maxMessages,
+			Boolean returnImmediately);
 
 	/**
 	 * Create a {@link SubscriberStub} that is needed to execute {@link PullRequest}s.
-	 * @param retrySettings parameters for retrying pull requests when they fail, including
-	 * jitter logic, timeout, and exponential backoff
 	 * @return the {@link SubscriberStub} used for executing {@link PullRequest}s
 	 */
-	SubscriberStub createSubscriberStub(RetrySettings retrySettings);
+	SubscriberStub createSubscriberStub();
+
+	/**
+	 * Create a {@link PubSubAcknowledger} to (negatively) acknowledge messages in bulk.
+	 */
+	default PubSubAcknowledger createAcknowledger() {
+		return new DefaultPubSubAcknowledger(createSubscriberStub());
+	}
+
 }
