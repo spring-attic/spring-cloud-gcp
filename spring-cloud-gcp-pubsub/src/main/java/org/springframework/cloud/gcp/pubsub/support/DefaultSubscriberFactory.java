@@ -67,6 +67,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	private ApiClock apiClock;
 
+	private RetrySettings subscriberStubRetrySettings;
+
 	/**
 	 * Default {@link DefaultSubscriberFactory} constructor.
 	 *
@@ -80,8 +82,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	/**
-	 * Set the provider for the subscribers' executor. Useful to specify the number of threads to be used by each
-	 * executor.
+	 * Set the provider for the subscribers' executor. Useful to specify the number of threads to be
+	 * used by each executor.
 	 */
 	public void setExecutorProvider(ExecutorProvider executorProvider) {
 		this.executorProvider = executorProvider;
@@ -116,7 +118,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	/**
-	 * Set the flow control for the subscribers, including the behaviour for when the flow limits are hit.
+	 * Set the flow control for the subscribers, including the behaviour for when the flow limits
+	 * are hit.
 	 */
 	public void setFlowControlSettings(FlowControlSettings flowControlSettings) {
 		this.flowControlSettings = flowControlSettings;
@@ -137,17 +140,26 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	/**
-	 * Sets the endpoint for synchronous pulling messages.
+	 * Set the endpoint for synchronous pulling messages.
 	 */
 	public void setPullEndpoint(String pullEndpoint) {
 		this.pullEndpoint = pullEndpoint;
 	}
 
 	/**
-	 * Sets the clock to use for the retry logic in synchronous pulling.
+	 * Set the clock to use for the retry logic in synchronous pulling.
 	 */
 	public void setApiClock(ApiClock apiClock) {
 		this.apiClock = apiClock;
+	}
+
+	/**
+	 * Set the retry settings for the generated subscriber stubs.
+	 * @param subscriberStubRetrySettings parameters for retrying pull requests when they fail,
+	 * including jitter logic, timeout, and exponential backoff
+	 */
+	public void setSubscriberStubRetrySettings(RetrySettings subscriberStubRetrySettings) {
+		this.subscriberStubRetrySettings = subscriberStubRetrySettings;
 	}
 
 	@Override
@@ -211,7 +223,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	}
 
 	@Override
-	public SubscriberStub createSubscriberStub(RetrySettings retrySettings) {
+	public SubscriberStub createSubscriberStub() {
 		SubscriberStubSettings.Builder subscriberStubSettings = SubscriberStubSettings.newBuilder();
 
 		if (this.credentialsProvider != null) {
@@ -238,8 +250,9 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 			subscriberStubSettings.setClock(this.apiClock);
 		}
 
-		if (retrySettings != null) {
-			subscriberStubSettings.pullSettings().setRetrySettings(retrySettings);
+		if (this.subscriberStubRetrySettings != null) {
+			subscriberStubSettings.pullSettings().setRetrySettings(
+					this.subscriberStubRetrySettings);
 		}
 
 		try {
@@ -249,4 +262,5 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 			throw new RuntimeException("Error creating the SubscriberStub", e);
 		}
 	}
+
 }
