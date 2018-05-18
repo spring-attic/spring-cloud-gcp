@@ -92,7 +92,7 @@ public class GcpTraceProperties implements CredentialsSupplier {
 	}
 
 	public int getNumExecutorThreads() {
-		return numExecutorThreads;
+		return this.numExecutorThreads;
 	}
 
 	public void setNumExecutorThreads(int numExecutorThreads) {
@@ -100,7 +100,7 @@ public class GcpTraceProperties implements CredentialsSupplier {
 	}
 
 	public String getAuthority() {
-		return authority;
+		return this.authority;
 	}
 
 	public void setAuthority(String authority) {
@@ -108,7 +108,7 @@ public class GcpTraceProperties implements CredentialsSupplier {
 	}
 
 	public String getCompression() {
-		return compression;
+		return this.compression;
 	}
 
 	public void setCompression(String compression) {
@@ -116,7 +116,7 @@ public class GcpTraceProperties implements CredentialsSupplier {
 	}
 
 	public Long getDeadlineMs() {
-		return deadlineMs;
+		return this.deadlineMs;
 	}
 
 	public void setDeadlineMs(long deadlineMs) {
@@ -124,7 +124,7 @@ public class GcpTraceProperties implements CredentialsSupplier {
 	}
 
 	public Integer getMaxInboundSize() {
-		return maxInboundSize;
+		return this.maxInboundSize;
 	}
 
 	public void setMaxInboundSize(int maxInboundSize) {
@@ -132,7 +132,7 @@ public class GcpTraceProperties implements CredentialsSupplier {
 	}
 
 	public Integer getMaxOutboundSize() {
-		return maxOutboundSize;
+		return this.maxOutboundSize;
 	}
 
 	public void setMaxOutboundSize(int maxOutboundSize) {
@@ -140,7 +140,7 @@ public class GcpTraceProperties implements CredentialsSupplier {
 	}
 
 	public Boolean isWaitForReady() {
-		return waitForReady;
+		return this.waitForReady;
 	}
 
 	public void setWaitForReady(boolean waitForReady) {
