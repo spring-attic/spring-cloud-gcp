@@ -22,16 +22,14 @@
 			<artifactId>spring-cloud-starter-sleuth</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-trace</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.cloud.trace.v1</groupId>
-			<artifactId>sink</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>io.zipkin.gcp</groupId>
 			<artifactId>zipkin-sender-stackdriver</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.protobuf</groupId>
+					<artifactId>protobuf-java</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- Reporter auto-configuration -->
 		<dependency>
