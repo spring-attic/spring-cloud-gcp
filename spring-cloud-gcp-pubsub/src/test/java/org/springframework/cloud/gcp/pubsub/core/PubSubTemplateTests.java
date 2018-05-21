@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.pubsub.core;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import com.google.api.core.ApiService;
@@ -42,6 +44,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doAnswer;
@@ -110,7 +113,7 @@ public class PubSubTemplateTests {
 
 	@Test
 	public void testPublish_String() {
-		this.pubSubTemplate.publish("testTopic", "testPayload", null);
+		this.pubSubTemplate.publish("testTopic", "testPayload");
 
 		verify(this.mockPublisher, times(1))
 				.publish(isA(PubsubMessage.class));
@@ -118,7 +121,7 @@ public class PubSubTemplateTests {
 
 	@Test
 	public void testPublish_Bytes() {
-		this.pubSubTemplate.publish("testTopic", "testPayload".getBytes(), null);
+		this.pubSubTemplate.publish("testTopic", "testPayload".getBytes());
 
 		verify(this.mockPublisher, times(1))
 				.publish(isA(PubsubMessage.class));
@@ -174,6 +177,19 @@ public class PubSubTemplateTests {
 		pubSubTemplate.publish("test",
 				pubSubTemplate.getMessageConverter().toMessage(disallowedPayload, null));
 		verify(pubSubTemplate, times(1)).publish(eq("test"), any());
+	}
+
+	@Test
+	public void testPublish_withHeaders() {
+		Map<String, String> headers = new HashMap<>();
+		headers.put("emperor of sand", "sultan's curse");
+		headers.put("remission", "elephant man");
+
+		this.pubSubTemplate.publish("testTopic", "jaguar god", headers);
+
+		verify(this.mockPublisher).publish(argThat(message ->
+				message.getAttributesMap().get("emperor of sand").equals("sultan's curse") &&
+				message.getAttributesMap().get("remission").equals("elephant man")));
 	}
 
 	@Test(expected = PubSubException.class)

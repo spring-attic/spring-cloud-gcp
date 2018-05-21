@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.pubsub.core;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +72,8 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private final PubSubAcknowledger acknowledger;
 
+	private Charset charset = Charset.defaultCharset();
+
 	/**
 	 * Default {@link PubSubTemplate} constructor that uses a {@link JacksonPubSubMessageConverter}
 	 * to serialize and deserialize payloads.
@@ -97,40 +100,54 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		return this;
 	}
 
-	@Override
-	public ListenableFuture<String> publish(final String topic, String payload,
-			Map<String, String> headers) {
-		return publish(topic, payload, headers, Charset.defaultCharset());
+	public Charset getCharset() {
+		return this.charset;
+	}
+
+	/**
+	 * Set the charset to decode the string in {@link #publish(String, Object, Map)}.
+	 * {@code Charset.defaultCharset()} is used by default.
+	 * @param charset character set to decode the string in a byte array
+	 */
+	public void setCharset(Charset charset) {
+		this.charset = charset;
 	}
 
 	@Override
-	public ListenableFuture<String> publish(final String topic, String payload,
-			Map<String, String> headers, Charset charset) {
-		return publish(topic, payload.getBytes(charset), headers);
-	}
-
-	@Override
-	public ListenableFuture<String> publish(final String topic, byte[] payload,
+	public <T> ListenableFuture<String> publish(String topic, T payload,
 			Map<String, String> headers) {
-		return publish(topic, ByteString.copyFrom(payload), headers);
-	}
-
-	@Override
-	public ListenableFuture<String> publish(final String topic, ByteString payload,
-			Map<String, String> headers) {
-		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder().setData(payload);
+		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder();
 
 		if (headers != null) {
 			pubsubMessageBuilder.putAllAttributes(headers);
+		}
+
+		if (payload instanceof String) {
+			pubsubMessageBuilder.setData(
+					ByteString.copyFrom(((String) payload).getBytes(this.charset)));
+		}
+		else if (payload instanceof ByteString) {
+			pubsubMessageBuilder.setData((ByteString) payload);
+		}
+		else if (payload instanceof byte[]) {
+			pubsubMessageBuilder.setData(ByteString.copyFrom((byte[]) payload));
+		}
+		else {
+			try {
+				pubsubMessageBuilder.setData(
+						ByteString.copyFrom(this.messageConverter.toPayload(payload)));
+			}
+			catch (IOException ioe) {
+				throw new UncheckedIOException("Error serializing payload. ", ioe);
+			}
 		}
 
 		return publish(topic, pubsubMessageBuilder.build());
 	}
 
 	@Override
-	public <T> ListenableFuture<String> publish(String topic, T payload,
-			Map<String, String> headers) throws IOException {
-		return publish(topic, this.messageConverter.toPayload(payload), headers);
+	public <T> ListenableFuture<String> publish(String topic, T payload) {
+		return publish(topic, payload, null);
 	}
 
 	@Override

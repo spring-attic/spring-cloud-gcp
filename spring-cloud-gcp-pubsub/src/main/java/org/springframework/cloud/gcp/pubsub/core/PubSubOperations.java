@@ -16,14 +16,11 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
-import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
@@ -42,50 +39,19 @@ public interface PubSubOperations {
 	/**
 	 * Send a message to Pub/Sub.
 	 * @param topic the name of an existing topic
-	 * @param payload the message String payload
-	 * @param headers map of String to String headers
+	 * @param payload an object that will be serialized and sent
 	 * @return the listenable future of the call
 	 */
-	ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers);
-
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
-	 * @param payload the message String payload
-	 * @param headers map of String to String headers
-	 * @param charset charset to decode the payload
-	 * @return the listenable future of the call
-	 */
-	ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers,
-			Charset charset);
-
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
-	 * @param payload the message payload in bytes
-	 * @param headers map of String to String headers
-	 * @return the listenable future of the call
-	 */
-	ListenableFuture<String> publish(String topic, byte[] payload, Map<String, String> headers);
-
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
-	 * @param payload the message payload on the {@link PubsubMessage} payload format
-	 * @param headers map of String to String headers
-	 * @return the listenable future of the call
-	 */
-	ListenableFuture<String> publish(String topic, ByteString payload, Map<String, String> headers);
+	<T> ListenableFuture<String> publish(String topic, T payload,
+			Map<String, String> headers);
 
 	/**
 	 * Send a message to Pub/Sub.
 	 * @param topic the name of an existing topic
 	 * @param payload an object that will be serialized and sent
-	 * @param headers map of String to String headers
 	 * @return the listenable future of the call
 	 */
-	<T> ListenableFuture<String> publish(String topic, T payload,
-			Map<String, String> headers) throws IOException;
+	<T> ListenableFuture<String> publish(String topic, T payload);
 
 	/**
 	 * Send a message to Pub/Sub.
