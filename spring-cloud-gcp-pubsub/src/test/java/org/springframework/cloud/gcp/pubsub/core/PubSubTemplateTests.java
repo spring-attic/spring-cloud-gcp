@@ -180,7 +180,7 @@ public class PubSubTemplateTests {
 	}
 
 	@Test
-	public void testPublish_withHeaders() {
+	public void testPublish_withHeaders() throws IOException {
 		Map<String, String> headers = new HashMap<>();
 		headers.put("emperor of sand", "sultan's curse");
 		headers.put("remission", "elephant man");

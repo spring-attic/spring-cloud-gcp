@@ -100,7 +100,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	public Charset getCharset() {
-		return charset;
+		return this.charset;
 	}
 
 	/**

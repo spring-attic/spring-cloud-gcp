@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.integration.outbound;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Map;
 
@@ -56,7 +57,7 @@ public class PubSubMessageHandlerTests {
 	private Message<?> message;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws IOException {
 		this.message = new GenericMessage<>("testPayload",
 				ImmutableMap.of("key1", "value1", "key2", "value2"));
 		SettableListenableFuture<String> future = new SettableListenableFuture<>();
@@ -70,7 +71,7 @@ public class PubSubMessageHandlerTests {
 	}
 
 	@Test
-	public void testPublish() {
+	public void testPublish() throws IOException {
 		this.adapter.handleMessage(this.message);
 		verify(this.pubSubTemplate, times(1))
 				.publish(eq("testTopic"),
@@ -79,7 +80,7 @@ public class PubSubMessageHandlerTests {
 	}
 
 	@Test
-	public void testPublishDynamicTopic() {
+	public void testPublishDynamicTopic() throws IOException {
 		Message<?> dynamicMessage = new GenericMessage<>("testPayload",
 						ImmutableMap.of("key1", "value1", "key2", "value2", GcpPubSubHeaders.TOPIC, "dynamicTopic"));
 		this.adapter.handleMessage(dynamicMessage);
