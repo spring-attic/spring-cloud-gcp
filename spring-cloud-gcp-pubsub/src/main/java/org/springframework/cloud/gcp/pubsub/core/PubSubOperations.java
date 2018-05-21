@@ -42,58 +42,11 @@ public interface PubSubOperations {
 	/**
 	 * Send a message to Pub/Sub.
 	 * @param topic the name of an existing topic
-	 * @param payload the message String payload
-	 * @param headers map of String to String headers
-	 * @return the listenable future of the call
-	 */
-	ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers);
-
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
-	 * @param payload the message String payload
-	 * @param headers map of String to String headers
-	 * @param charset charset to decode the payload
-	 * @return the listenable future of the call
-	 */
-	ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers,
-			Charset charset);
-
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
-	 * @param payload the message payload in bytes
-	 * @param headers map of String to String headers
-	 * @return the listenable future of the call
-	 */
-	ListenableFuture<String> publish(String topic, byte[] payload, Map<String, String> headers);
-
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
-	 * @param payload the message payload on the {@link PubsubMessage} payload format
-	 * @param headers map of String to String headers
-	 * @return the listenable future of the call
-	 */
-	ListenableFuture<String> publish(String topic, ByteString payload, Map<String, String> headers);
-
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
 	 * @param payload an object that will be serialized and sent
 	 * @return the listenable future of the call
 	 */
 	<T> ListenableFuture<String> publish(String topic, T payload,
 			Map<String, String> headers) throws IOException;
-
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
-	 * @param payload the message String payload
-	 * @param charset charset to decode the payload
-	 * @return the listenable future of the call
-	 */
-	ListenableFuture<String> publish(String topic, String payload, Charset charset);
 
 	/**
 	 * Send a message to Pub/Sub.
