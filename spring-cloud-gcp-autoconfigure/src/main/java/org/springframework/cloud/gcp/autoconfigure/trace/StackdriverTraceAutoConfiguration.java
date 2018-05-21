@@ -17,11 +17,15 @@
 package org.springframework.cloud.gcp.autoconfigure.trace;
 
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
 import brave.sampler.Sampler;
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.rpc.HeaderProvider;
 import io.grpc.CallOptions;
 import io.grpc.auth.MoreCallCredentials;
@@ -31,6 +35,7 @@ import zipkin2.reporter.Sender;
 import zipkin2.reporter.stackdriver.StackdriverEncoder;
 import zipkin2.reporter.stackdriver.StackdriverSender;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -92,12 +97,55 @@ public class StackdriverTraceAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(name = "traceExecutorProvider")
+	public ExecutorProvider traceExecutorProvider(GcpTraceProperties traceProperties) {
+		return FixedExecutorProvider.create(
+				Executors.newScheduledThreadPool(traceProperties.getNumExecutorThreads()));
+	}
+
+	@Bean
 	@ConditionalOnMissingBean
-	public Sender stackdriverSender() throws IOException {
+	public Sender stackdriverSender(GcpTraceProperties traceProperties,
+			@Qualifier("traceExecutorProvider") ExecutorProvider executorProvider)
+			throws IOException {
+		CallOptions callOptions = CallOptions.DEFAULT
+				.withCallCredentials(
+						MoreCallCredentials.from(
+								this.finalCredentialsProvider.getCredentials()))
+				.withExecutor(executorProvider.getExecutor());
+
+		if (traceProperties.getAuthority() != null) {
+			callOptions.withAuthority(traceProperties.getAuthority());
+		}
+
+		if (traceProperties.getCompression() != null) {
+			callOptions.withCompression(traceProperties.getCompression());
+		}
+
+		if (traceProperties.getDeadlineMs() != null) {
+			callOptions.withDeadlineAfter(traceProperties.getDeadlineMs(), TimeUnit.MILLISECONDS);
+		}
+
+		if (traceProperties.getMaxInboundSize() != null) {
+			callOptions.withMaxInboundMessageSize(traceProperties.getMaxInboundSize());
+		}
+
+		if (traceProperties.getMaxOutboundSize() != null) {
+			callOptions.withMaxOutboundMessageSize(traceProperties.getMaxOutboundSize());
+		}
+
+		if (traceProperties.isWaitForReady() != null) {
+			if (Boolean.TRUE.equals(traceProperties.isWaitForReady())) {
+				callOptions.withWaitForReady();
+			}
+			else {
+				callOptions.withoutWaitForReady();
+			}
+		}
+
 		return StackdriverSender.newBuilder()
 				.projectId(this.finalProjectIdProvider.getProjectId())
-				.callOptions(CallOptions.DEFAULT.withCallCredentials(
-						MoreCallCredentials.from(this.finalCredentialsProvider.getCredentials())))
+				.callOptions(callOptions)
 				.build();
 	}
 
