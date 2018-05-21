@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
