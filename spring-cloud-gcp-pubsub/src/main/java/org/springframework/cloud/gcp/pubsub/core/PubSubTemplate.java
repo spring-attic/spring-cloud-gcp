@@ -138,7 +138,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 						ByteString.copyFrom(this.messageConverter.toPayload(payload)));
 			}
 			catch (IOException ioe) {
-				throw new UncheckedIOException("Error serializing payload into JSON. ", ioe);
+				throw new UncheckedIOException("Error serializing payload. ", ioe);
 			}
 		}
 
