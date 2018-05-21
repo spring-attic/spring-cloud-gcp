@@ -52,7 +52,7 @@ The `publish()` method takes in a topic name to post the message to, a payload o
 ** A character set can be set using the `setCharset()` method in `PubSubTemplate`.
 * If the payload is a `ByteString`, it is sent as-is.
 * If the payload is a `byte[]`, then a `ByteString` is created from it.
-* Otherwise, the payload is serialized into JSON and sent.
+* Otherwise, the payload is serialized and sent.
 
 Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 
@@ -64,6 +64,7 @@ public void publishMessage() {
 ----
 
 The default serialization and deserialization of POJOs uses Jackson JSON via the `JacksonMessageConverter` class.
+To set a new message converter in `PubSubTemplate`, use the `setMessageConverter()` method.
 
 
 ==== Subscribing to a subscription
