@@ -110,9 +110,9 @@ public class PubSubTemplateIntegrationTests {
 
 			PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
 
-			pubSubTemplate.publish(topicName, "free-hand", null);
-			pubSubTemplate.publish(topicName, "valedictory", null);
-			pubSubTemplate.publish(topicName, "the-runaway", null);
+			pubSubTemplate.publish(topicName, "free-hand");
+			pubSubTemplate.publish(topicName, "valedictory");
+			pubSubTemplate.publish(topicName, "the-runaway");
 
 			List<AcknowledgeablePubsubMessage> ackableMessages =
 					pubSubTemplate.pull(subscriptionName, 4, true);

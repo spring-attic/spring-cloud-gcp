@@ -90,34 +90,10 @@ public interface PubSubOperations {
 	 * Send a message to Pub/Sub.
 	 * @param topic the name of an existing topic
 	 * @param payload the message String payload
-	 * @return the listenable future of the call
-	 */
-	ListenableFuture<String> publish(String topic, String payload);
-
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
-	 * @param payload the message String payload
 	 * @param charset charset to decode the payload
 	 * @return the listenable future of the call
 	 */
 	ListenableFuture<String> publish(String topic, String payload, Charset charset);
-
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
-	 * @param payload the message payload in bytes
-	 * @return the listenable future of the call
-	 */
-	ListenableFuture<String> publish(String topic, byte[] payload);
-
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
-	 * @param payload the message payload on the {@link PubsubMessage} payload format
-	 * @return the listenable future of the call
-	 */
-	ListenableFuture<String> publish(String topic, ByteString payload);
 
 	/**
 	 * Send a message to Pub/Sub.

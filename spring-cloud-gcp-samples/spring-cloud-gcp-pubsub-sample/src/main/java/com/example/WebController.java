@@ -16,6 +16,8 @@
 
 package com.example;
 
+import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -58,8 +60,8 @@ public class WebController {
 
 	@GetMapping("/postMessage")
 	public RedirectView publish(@RequestParam("message") String message,
-			@RequestParam("topicName") String topicName) {
-		this.pubSubTemplate.publish(topicName, message, null);
+			@RequestParam("topicName") String topicName) throws IOException {
+		this.pubSubTemplate.publish(topicName, message);
 
 		return new RedirectView("/");
 	}
