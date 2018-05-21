@@ -112,7 +112,7 @@ public class PubSubTemplateTests {
 	}
 
 	@Test
-	public void testPublish_String() throws IOException {
+	public void testPublish_String() {
 		this.pubSubTemplate.publish("testTopic", "testPayload");
 
 		verify(this.mockPublisher, times(1))
@@ -120,7 +120,7 @@ public class PubSubTemplateTests {
 	}
 
 	@Test
-	public void testPublish_Bytes() throws IOException {
+	public void testPublish_Bytes() {
 		this.pubSubTemplate.publish("testTopic", "testPayload".getBytes());
 
 		verify(this.mockPublisher, times(1))
@@ -180,7 +180,7 @@ public class PubSubTemplateTests {
 	}
 
 	@Test
-	public void testPublish_withHeaders() throws IOException {
+	public void testPublish_withHeaders() {
 		Map<String, String> headers = new HashMap<>();
 		headers.put("emperor of sand", "sultan's curse");
 		headers.put("remission", "elephant man");

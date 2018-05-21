@@ -44,7 +44,7 @@ public interface PubSubOperations {
 	 * @return the listenable future of the call
 	 */
 	<T> ListenableFuture<String> publish(String topic, T payload,
-			Map<String, String> headers) throws IOException;
+			Map<String, String> headers);
 
 	/**
 	 * Send a message to Pub/Sub.
@@ -52,7 +52,7 @@ public interface PubSubOperations {
 	 * @param payload an object that will be serialized and sent
 	 * @return the listenable future of the call
 	 */
-	<T> ListenableFuture<String> publish(String topic, T payload) throws IOException;
+	<T> ListenableFuture<String> publish(String topic, T payload);
 
 	/**
 	 * Send a message to Pub/Sub.

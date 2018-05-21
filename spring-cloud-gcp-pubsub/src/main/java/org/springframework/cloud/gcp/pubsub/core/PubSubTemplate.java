@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.pubsub.core;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +115,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	@Override
 	public <T> ListenableFuture<String> publish(String topic, T payload,
-			Map<String, String> headers) throws IOException {
+			Map<String, String> headers) {
 		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder();
 
 		if (headers != null) {
@@ -132,15 +133,20 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 			pubsubMessageBuilder.setData(ByteString.copyFrom((byte[]) payload));
 		}
 		else {
-			pubsubMessageBuilder.setData(
-					ByteString.copyFrom(this.messageConverter.toPayload(payload)));
+			try {
+				pubsubMessageBuilder.setData(
+						ByteString.copyFrom(this.messageConverter.toPayload(payload)));
+			}
+			catch (IOException ioe) {
+				throw new UncheckedIOException("Error serializing payload into JSON. ", ioe);
+			}
 		}
 
 		return publish(topic, pubsubMessageBuilder.build());
 	}
 
 	@Override
-	public <T> ListenableFuture<String> publish(String topic, T payload) throws IOException {
+	public <T> ListenableFuture<String> publish(String topic, T payload) {
 		return publish(topic, payload, null);
 	}
 
