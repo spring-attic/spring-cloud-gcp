@@ -42,8 +42,7 @@ public class GcpSpannerAutoConfigurationTests {
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpSpannerAutoConfiguration.class,
 					GcpContextAutoConfiguration.class,
-					SpannerRepositoriesAutoConfiguration.class,
-					SpannerKeyRestSupportAutoConfiguration.class))
+					SpannerRepositoriesAutoConfiguration.class))
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.spanner.project-id=test-project",
 					"spring.cloud.gcp.spanner.instance-id=testInstance",
