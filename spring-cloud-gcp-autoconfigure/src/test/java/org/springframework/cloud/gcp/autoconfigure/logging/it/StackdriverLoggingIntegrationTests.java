@@ -50,7 +50,10 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 /**
  * @author João André Martins
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+		properties = {"spring.main.banner-mode=off"}
+)
 @RunWith(SpringRunner.class)
 public class StackdriverLoggingIntegrationTests {
 
@@ -76,7 +79,6 @@ public class StackdriverLoggingIntegrationTests {
 	public void test() throws InterruptedException, IOException {
 		URL url = new URL("http://localhost:" + this.port);
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-		connection.setRequestProperty("x-cloud-trace-context", "everything-zen");
 		connection.getResponseMessage();
 		connection.disconnect();
 
@@ -99,8 +101,8 @@ public class StackdriverLoggingIntegrationTests {
 		} while (pageSize == 0 && counter++ < 20);
 		assertThat(pageSize).isEqualTo(1);
 		assertThat(page.getValues().iterator().next().getTrace())
-				.isEqualTo("projects/" + this.projectIdProvider.getProjectId()
-						+ "/traces/everything-zen");
+				.matches("projects/" + this.projectIdProvider.getProjectId()
+						+ "/traces/([a-z0-9]){32}");
 	}
 
 	@RestController
