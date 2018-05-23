@@ -40,6 +40,6 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 	// The sort is defined in the query string here, but can be overriden by the Pageable
 	// param.
 	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
-			+ " ORDER BY action DESC")
+			+ " ORDER BY LOWER(action) DESC")
 	List<Trade> sortedTrades(Pageable pageable);
 }

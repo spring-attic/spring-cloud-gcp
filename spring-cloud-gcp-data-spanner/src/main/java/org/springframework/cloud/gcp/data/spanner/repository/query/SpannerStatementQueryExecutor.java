@@ -173,12 +173,12 @@ public class SpannerStatementQueryExecutor {
 					tags.add(tag);
 					String andString = persistentEntity.getPersistentProperty(segment)
 							.getColumnName();
-					String sortedTag = "@" + tag;
+					String insertedTag = "@" + tag;
 					if (part.shouldIgnoreCase() == IgnoreCaseType.ALWAYS) {
 						andString = "LOWER(" + andString + ")";
-						sortedTag = "LOWER(" + sortedTag + ")";
+						insertedTag = "LOWER(" + insertedTag + ")";
 					}
-					else if (part.shouldIgnoreCase() == IgnoreCaseType.WHEN_POSSIBLE) {
+					else if (part.shouldIgnoreCase() != IgnoreCaseType.NEVER) {
 						throw new SpannerDataException(
 								"Only ignore-case types ALWAYS and NEVER are supported, "
 										+ "because the underlying table schema is not retrieved at query time to"
@@ -188,10 +188,10 @@ public class SpannerStatementQueryExecutor {
 
 					switch (part.getType()) {
 					case LIKE:
-						andString += " LIKE %" + sortedTag;
+						andString += " LIKE %" + insertedTag;
 						break;
 					case SIMPLE_PROPERTY:
-						andString += "=" + sortedTag;
+						andString += "=" + insertedTag;
 						break;
 					case TRUE:
 						andString += "=TRUE";
@@ -203,19 +203,19 @@ public class SpannerStatementQueryExecutor {
 						andString += "=NULL";
 						break;
 					case LESS_THAN:
-						andString += "<" + sortedTag;
+						andString += "<" + insertedTag;
 						break;
 					case IS_NOT_NULL:
 						andString += "<>NULL";
 						break;
 					case LESS_THAN_EQUAL:
-						andString += "<=" + sortedTag;
+						andString += "<=" + insertedTag;
 						break;
 					case GREATER_THAN:
-						andString += ">" + sortedTag;
+						andString += ">" + insertedTag;
 						break;
 					case GREATER_THAN_EQUAL:
-						andString += ">=" + sortedTag;
+						andString += ">=" + insertedTag;
 						break;
 					default:
 						throw new UnsupportedOperationException("The statement type: "
