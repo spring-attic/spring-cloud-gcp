@@ -19,37 +19,28 @@ package org.springframework.cloud.gcp.autoconfigure.logging;
 import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.LoggingEnhancer;
 
+import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+
 /**
- * Adds the trace ID to the logging entry, in its correct format to be displayed in the Logs viewer.
+ * Adds the trace ID from the Mapped Diagnostic Context (MDC) to the logging entry, in its correct
+ * format to be displayed in the Google Cloud Console Logs viewer.
  *
  * @author João André Martins
  */
 public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 
-	private static final ThreadLocal<String> traceId = new ThreadLocal<>();
-
-	public static void setCurrentTraceId(String projectId, String id) {
-		if (id == null) {
-			traceId.remove();
-		}
-		else {
-			traceId.set("projects/" + projectId + "/traces/" + id);
-		}
-	}
-
-	/**
-	 * Returns the trace ID in the "projects/[MY_PROJECT_ID]/traces/[MY_TRACE_ID]".
-	 * @return the trace ID in the "projects/[MY_PROJECT_ID]/traces/[MY_TRACE_ID]"
-	 */
-	public static String getCurrentTraceId() {
-		return traceId.get();
-	}
+	private GcpProjectIdProvider projectIdProvider = new DefaultGcpProjectIdProvider();
 
 	@Override
 	public void enhanceLogEntry(LogEntry.Builder builder) {
-		String traceId = getCurrentTraceId();
+		// In order not to duplicate the whole google-cloud-logging-logback LoggingAppender to
+		// add the trace ID there, we're getting it here from the MDC. This requires a call to the
+		// org.slf4j package.
+		String traceId = org.slf4j.MDC.get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
 		if (traceId != null) {
-			builder.setTrace(traceId);
+			builder.setTrace(
+					"projects/" + this.projectIdProvider.getProjectId() + "/traces/" + traceId);
 		}
 	}
 }
