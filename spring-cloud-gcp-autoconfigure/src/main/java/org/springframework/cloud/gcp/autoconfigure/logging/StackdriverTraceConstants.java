@@ -19,7 +19,9 @@ package org.springframework.cloud.gcp.autoconfigure.logging;
 /**
  * @author João André Martins
  */
-public class StackdriverTraceConstants {
+public final class StackdriverTraceConstants {
+
+	private StackdriverTraceConstants() { }
 
 	/**
 	 * The JSON field name for the log level (severity)

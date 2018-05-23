@@ -157,7 +157,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 			map.put(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE,
 					TimeUnit.MILLISECONDS.toSeconds(event.getTimeStamp()));
 			map.put(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE,
-					TimeUnit.MILLISECONDS.toNanos(event.getTimeStamp() % 1_000));
+					TimeUnit.MILLISECONDS.toNanos(event.getTimeStamp() / 1_000));
 		}
 
 		add(StackdriverTraceConstants.SEVERITY_ATTRIBUTE, this.includeLevel,
