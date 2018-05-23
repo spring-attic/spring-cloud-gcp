@@ -78,7 +78,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(trader2TradesRetrieved, containsInAnyOrder(trader2Trades.toArray()));
 
 		List<TradeProjection> tradeProjectionsRetrieved = this.tradeRepository
-				.findByAction("BUY");
+				.findByActionIgnoreCase("bUy");
 		assertEquals(3, tradeProjectionsRetrieved.size());
 		for (TradeProjection tradeProjection : tradeProjectionsRetrieved) {
 			assertEquals("BUY", tradeProjection.getAction());
