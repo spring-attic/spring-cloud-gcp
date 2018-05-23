@@ -35,7 +35,7 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 			+ " WHERE action=@action AND action=#{#action} ORDER BY action desc")
 	List<Trade> annotatedTradesByAction(@Param("action") String action);
 
-	List<TradeProjection> findByAction(String action);
+	List<TradeProjection> findByActionIgnoreCase(String action);
 
 	// The sort is defined in the query string here, but can be overriden by the Pageable
 	// param.

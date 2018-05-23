@@ -49,7 +49,6 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
-import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
 /**
@@ -170,7 +169,8 @@ public class SpannerTemplate implements SpannerOperations {
 
 	public String applySortingPagingQueryOptions(SpannerQueryOptions options,
 			String sql) {
-		StringBuilder sb = applySort(options.getSort(), wrapAsSubSelect(sql));
+		StringBuilder sb = SpannerStatementQueryExecutor.applySort(options.getSort(),
+				wrapAsSubSelect(sql), o -> o.getProperty());
 			if (options.hasLimit()) {
 				sb.append(" LIMIT ").append(options.getLimit());
 			}
@@ -178,17 +178,6 @@ public class SpannerTemplate implements SpannerOperations {
 				sb.append(" OFFSET ").append(options.getOffset());
 			}
 		return sb.toString();
-	}
-
-	private StringBuilder applySort(Sort sort, StringBuilder sql) {
-		if (sort == null || sort.isUnsorted()) {
-			return sql;
-		}
-		sql.append(" ORDER BY ");
-		StringJoiner sj = new StringJoiner(" , ");
-		sort.iterator().forEachRemaining(
-				o -> sj.add(o.getProperty() + (o.isAscending() ? " ASC" : " DESC")));
-		return sql.append(sj);
 	}
 
 	private StringBuilder wrapAsSubSelect(String sql) {
