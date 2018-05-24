@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeProjection;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeRepository;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -84,6 +85,35 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 			assertEquals("BUY", tradeProjection.getAction());
 			assertEquals("ABCD BUY", tradeProjection.getSymbolAndAction());
 		}
+
+		List<Trade> tradeProjectionsRetrievedPage0 = this.tradeRepository
+				.findAll(PageRequest.of(0, 3, Sort.by(Order.asc("id"))))
+				.getContent();
+		assertEquals(3, tradeProjectionsRetrievedPage0.size());
+		assertTrue(tradeProjectionsRetrievedPage0.get(0).getId()
+				.compareTo(tradeProjectionsRetrievedPage0.get(1).getId()) < 0);
+		assertTrue(tradeProjectionsRetrievedPage0.get(1).getId()
+				.compareTo(tradeProjectionsRetrievedPage0.get(2).getId()) < 0);
+
+		List<Trade> tradeProjectionsRetrievedPage1 = this.tradeRepository
+				.findAll(PageRequest.of(1, 3, Sort.by(Order.asc("id"))))
+				.getContent();
+		assertEquals(3, tradeProjectionsRetrievedPage1.size());
+		assertTrue(tradeProjectionsRetrievedPage0.get(2).getId()
+				.compareTo(tradeProjectionsRetrievedPage1.get(0).getId()) < 0);
+		assertTrue(tradeProjectionsRetrievedPage1.get(0).getId()
+				.compareTo(tradeProjectionsRetrievedPage1.get(1).getId()) < 0);
+		assertTrue(tradeProjectionsRetrievedPage1.get(1).getId()
+				.compareTo(tradeProjectionsRetrievedPage1.get(2).getId()) < 0);
+
+		List<Trade> tradeProjectionsRetrievedPage2 = this.tradeRepository
+				.findAll(PageRequest.of(2, 3, Sort.by(Order.asc("id"))))
+				.getContent();
+		assertEquals(2, tradeProjectionsRetrievedPage2.size());
+		assertTrue(tradeProjectionsRetrievedPage1.get(2).getId()
+				.compareTo(tradeProjectionsRetrievedPage2.get(0).getId()) < 0);
+		assertTrue(tradeProjectionsRetrievedPage2.get(0).getId()
+				.compareTo(tradeProjectionsRetrievedPage2.get(1).getId()) < 0);
 
 		List<Trade> buyTradesRetrieved = this.tradeRepository
 				.annotatedTradesByAction("BUY");

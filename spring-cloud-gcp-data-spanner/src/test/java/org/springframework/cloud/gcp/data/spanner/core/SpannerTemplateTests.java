@@ -387,9 +387,9 @@ public class SpannerTemplateTests {
 			assertEquals(
 					"SELECT * FROM (SELECT * FROM custom_test_table) "
 							+ "ORDER BY id ASC , LOWER(something) DESC , other ASC LIMIT 3 OFFSET 5",
-					invocation.getArgument(1));
+					((Statement) invocation.getArgument(0)).getSql());
 			return null;
-		}).when(spyTemplate).query(eq(TestEntity.class), any(), any(), any(), any());
+		}).when(spyTemplate).executeQuery(any(), any());
 
 		spyTemplate.queryAll(TestEntity.class, queryOption.setSort(sort));
 		verify(spyTemplate, times(1)).query(eq(TestEntity.class), any(), any(), any(),
@@ -406,9 +406,9 @@ public class SpannerTemplateTests {
 			assertEquals(
 					"SELECT * FROM (SELECT * FROM custom_test_table) "
 							+ "LIMIT 3 OFFSET 5",
-					invocation.getArgument(1));
+					((Statement) invocation.getArgument(0)).getSql());
 			return null;
-		}).when(spyTemplate).query(eq(TestEntity.class), any(), any(), any(), any());
+		}).when(spyTemplate).executeQuery(any(), any());
 
 		spyTemplate.queryAll(TestEntity.class, queryOption);
 		verify(spyTemplate, times(1)).query(eq(TestEntity.class), any(), any(), any(),
