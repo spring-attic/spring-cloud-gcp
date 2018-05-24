@@ -163,7 +163,7 @@ public class SpannerTemplate implements SpannerOperations {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		String sql = "SELECT * FROM " + persistentEntity.tableName();
-		return query(entityClass, applySortingPagingQueryOptions(options, sql), null,
+		return query(entityClass, sql, null,
 				null, options);
 	}
 

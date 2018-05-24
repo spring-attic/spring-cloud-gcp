@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeProjection;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeRepository;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -84,6 +85,35 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 			assertEquals("BUY", tradeProjection.getAction());
 			assertEquals("ABCD BUY", tradeProjection.getSymbolAndAction());
 		}
+
+		List<Trade> tradesReceivedPage0 = this.tradeRepository
+				.findAll(PageRequest.of(0, 3, Sort.by(Order.asc("id"))))
+				.getContent();
+		assertEquals(3, tradesReceivedPage0.size());
+		assertTrue(tradesReceivedPage0.get(0).getId()
+				.compareTo(tradesReceivedPage0.get(1).getId()) < 0);
+		assertTrue(tradesReceivedPage0.get(1).getId()
+				.compareTo(tradesReceivedPage0.get(2).getId()) < 0);
+
+		List<Trade> tradesReceivedPage1 = this.tradeRepository
+				.findAll(PageRequest.of(1, 3, Sort.by(Order.asc("id"))))
+				.getContent();
+		assertEquals(3, tradesReceivedPage1.size());
+		assertTrue(tradesReceivedPage0.get(2).getId()
+				.compareTo(tradesReceivedPage1.get(0).getId()) < 0);
+		assertTrue(tradesReceivedPage1.get(0).getId()
+				.compareTo(tradesReceivedPage1.get(1).getId()) < 0);
+		assertTrue(tradesReceivedPage1.get(1).getId()
+				.compareTo(tradesReceivedPage1.get(2).getId()) < 0);
+
+		List<Trade> tradesReceivedPage2 = this.tradeRepository
+				.findAll(PageRequest.of(2, 3, Sort.by(Order.asc("id"))))
+				.getContent();
+		assertEquals(2, tradesReceivedPage2.size());
+		assertTrue(tradesReceivedPage1.get(2).getId()
+				.compareTo(tradesReceivedPage2.get(0).getId()) < 0);
+		assertTrue(tradesReceivedPage2.get(0).getId()
+				.compareTo(tradesReceivedPage2.get(1).getId()) < 0);
 
 		List<Trade> buyTradesRetrieved = this.tradeRepository
 				.annotatedTradesByAction("BUY");
