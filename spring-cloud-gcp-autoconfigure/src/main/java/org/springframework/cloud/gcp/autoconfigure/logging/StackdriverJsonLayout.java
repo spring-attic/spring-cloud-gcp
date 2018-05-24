@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.contrib.json.classic.JsonLayout;
-import com.google.cloud.logging.TraceLoggingEnhancer;
 import com.google.gson.Gson;
 
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
@@ -203,10 +202,9 @@ public class StackdriverJsonLayout extends JsonLayout {
 			return;
 		}
 
-		String traceId = TraceLoggingEnhancer.getCurrentTraceId();
-		if (traceId == null) {
-			traceId = event.getMDCPropertyMap().get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
-		}
+		String traceId =
+				event.getMDCPropertyMap().get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
+
 		if (!StringUtils.isEmpty(traceId)
 			&& !StringUtils.isEmpty(this.projectId)
 			&& !this.projectId.endsWith("_IS_UNDEFINED")) {
