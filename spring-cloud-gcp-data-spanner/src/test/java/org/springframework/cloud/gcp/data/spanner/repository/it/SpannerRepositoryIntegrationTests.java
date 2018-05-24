@@ -86,34 +86,34 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 			assertEquals("ABCD BUY", tradeProjection.getSymbolAndAction());
 		}
 
-		List<Trade> tradeProjectionsRetrievedPage0 = this.tradeRepository
+		List<Trade> tradesReceivedPage0 = this.tradeRepository
 				.findAll(PageRequest.of(0, 3, Sort.by(Order.asc("id"))))
 				.getContent();
-		assertEquals(3, tradeProjectionsRetrievedPage0.size());
-		assertTrue(tradeProjectionsRetrievedPage0.get(0).getId()
-				.compareTo(tradeProjectionsRetrievedPage0.get(1).getId()) < 0);
-		assertTrue(tradeProjectionsRetrievedPage0.get(1).getId()
-				.compareTo(tradeProjectionsRetrievedPage0.get(2).getId()) < 0);
+		assertEquals(3, tradesReceivedPage0.size());
+		assertTrue(tradesReceivedPage0.get(0).getId()
+				.compareTo(tradesReceivedPage0.get(1).getId()) < 0);
+		assertTrue(tradesReceivedPage0.get(1).getId()
+				.compareTo(tradesReceivedPage0.get(2).getId()) < 0);
 
-		List<Trade> tradeProjectionsRetrievedPage1 = this.tradeRepository
+		List<Trade> tradesReceivedPage1 = this.tradeRepository
 				.findAll(PageRequest.of(1, 3, Sort.by(Order.asc("id"))))
 				.getContent();
-		assertEquals(3, tradeProjectionsRetrievedPage1.size());
-		assertTrue(tradeProjectionsRetrievedPage0.get(2).getId()
-				.compareTo(tradeProjectionsRetrievedPage1.get(0).getId()) < 0);
-		assertTrue(tradeProjectionsRetrievedPage1.get(0).getId()
-				.compareTo(tradeProjectionsRetrievedPage1.get(1).getId()) < 0);
-		assertTrue(tradeProjectionsRetrievedPage1.get(1).getId()
-				.compareTo(tradeProjectionsRetrievedPage1.get(2).getId()) < 0);
+		assertEquals(3, tradesReceivedPage1.size());
+		assertTrue(tradesReceivedPage0.get(2).getId()
+				.compareTo(tradesReceivedPage1.get(0).getId()) < 0);
+		assertTrue(tradesReceivedPage1.get(0).getId()
+				.compareTo(tradesReceivedPage1.get(1).getId()) < 0);
+		assertTrue(tradesReceivedPage1.get(1).getId()
+				.compareTo(tradesReceivedPage1.get(2).getId()) < 0);
 
-		List<Trade> tradeProjectionsRetrievedPage2 = this.tradeRepository
+		List<Trade> tradesReceivedPage2 = this.tradeRepository
 				.findAll(PageRequest.of(2, 3, Sort.by(Order.asc("id"))))
 				.getContent();
-		assertEquals(2, tradeProjectionsRetrievedPage2.size());
-		assertTrue(tradeProjectionsRetrievedPage1.get(2).getId()
-				.compareTo(tradeProjectionsRetrievedPage2.get(0).getId()) < 0);
-		assertTrue(tradeProjectionsRetrievedPage2.get(0).getId()
-				.compareTo(tradeProjectionsRetrievedPage2.get(1).getId()) < 0);
+		assertEquals(2, tradesReceivedPage2.size());
+		assertTrue(tradesReceivedPage1.get(2).getId()
+				.compareTo(tradesReceivedPage2.get(0).getId()) < 0);
+		assertTrue(tradesReceivedPage2.get(0).getId()
+				.compareTo(tradesReceivedPage2.get(1).getId()) < 0);
 
 		List<Trade> buyTradesRetrieved = this.tradeRepository
 				.annotatedTradesByAction("BUY");
