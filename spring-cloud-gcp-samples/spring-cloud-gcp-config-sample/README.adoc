@@ -37,7 +37,7 @@ spring.cloud.gcp.config.profile=prod #default profile = default
 uses `@ConfigurationProperties` to bind the `myapp` namespace from the environment.
 
 6. Note that in order to expose /actuator/refresh endpoint,
-link:src/resources/application.properti[application.properties] file
+link:src/resources/application.properties[application.properties] file
 includes the following property:
 +
 ....
