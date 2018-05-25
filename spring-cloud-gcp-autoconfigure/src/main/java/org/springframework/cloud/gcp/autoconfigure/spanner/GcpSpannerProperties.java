@@ -31,7 +31,8 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	@NestedConfigurationProperty
-	private final Credentials credentials = new Credentials(GcpScope.SPANNER.getUrl());
+	private final Credentials credentials = new Credentials(
+			GcpScope.SPANNER_DATA.getUrl(), GcpScope.SPANNER_ADMIN.getUrl());
 
 	private String projectId;
 
