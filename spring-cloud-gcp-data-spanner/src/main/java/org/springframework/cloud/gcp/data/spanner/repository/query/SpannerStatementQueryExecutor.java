@@ -172,8 +172,17 @@ public class SpannerStatementQueryExecutor {
 					String segment = part.getProperty().getSegment();
 					String tag = "tag" + tags.size();
 					tags.add(tag);
-					String andString = persistentEntity.getPersistentProperty(segment)
-							.getColumnName();
+
+					SpannerPersistentProperty spannerPersistentProperty = persistentEntity
+							.getPersistentProperty(segment);
+
+					if (spannerPersistentProperty.isEmbedded()) {
+						throw new SpannerDataException(
+								"Embedded class properties are not currently supported in query method names: "
+										+ segment);
+					}
+
+					String andString = spannerPersistentProperty.getColumnName();
 					String insertedTag = "@" + tag;
 					if (part.shouldIgnoreCase() == IgnoreCaseType.ALWAYS) {
 						andString = "LOWER(" + andString + ")";
@@ -186,17 +195,6 @@ public class SpannerStatementQueryExecutor {
 										+ " check that the column is the STRING or BYTES Cloud Spanner "
 										+ " type supported for ignoring case.");
 					}
-
-					SpannerPersistentProperty spannerPersistentProperty = persistentEntity
-							.getPersistentProperty(segment);
-
-					if (spannerPersistentProperty.isEmbedded()) {
-						throw new SpannerDataException(
-								"Embedded class properties are not currently supported in query method names: "
-										+ segment);
-					}
-
-					String andString = spannerPersistentProperty.getColumnName();
 
 					switch (part.getType()) {
 					case LIKE:
