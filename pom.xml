@@ -74,6 +74,12 @@
 				<artifactId>logback-json-classic</artifactId>
 				<version>0.1.5</version>
 			</dependency>
+
+			<dependency>
+				<groupId>io.zipkin.gcp</groupId>
+				<artifactId>zipkin-sender-stackdriver</artifactId>
+				<version>0.4.1</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

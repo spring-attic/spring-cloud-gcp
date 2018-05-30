@@ -25,7 +25,11 @@ public abstract class GcpPubSubHeaders {
 
 	private static final String PREFIX = "gcp_pubsub_";
 
-	public static final String ACKNOWLEDGEMENT = PREFIX + "pub_sub_acknowledgement";
+	public static final String ACKNOWLEDGEMENT = PREFIX + "acknowledgement";
 
 	public static final String TOPIC = PREFIX + "topic";
+
+	public static final String ACK_ID = PREFIX + "ackId";
+
+	public static final String SUBSCRIPTION = PREFIX + "subscriptionName";
 }

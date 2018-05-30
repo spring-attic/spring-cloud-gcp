@@ -22,6 +22,7 @@ import java.util.concurrent.Executors;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
@@ -79,9 +80,18 @@ public class GcpPubSubAutoConfiguration {
 		this.finalProjectIdProvider = gcpPubSubProperties.getProjectId() != null
 				? gcpPubSubProperties::getProjectId
 				: gcpProjectIdProvider;
-		this.finalCredentialsProvider = gcpPubSubProperties.getCredentials().hasKey()
-				? new DefaultCredentialsProvider(gcpPubSubProperties)
-				: credentialsProvider;
+
+		if (gcpPubSubProperties.getEmulatorHost() == null || "false".equals(gcpPubSubProperties.getEmulatorHost())) {
+			this.finalCredentialsProvider = gcpPubSubProperties.getCredentials().hasKey()
+					? new DefaultCredentialsProvider(gcpPubSubProperties)
+					: credentialsProvider;
+		}
+		else {
+			// Since we cannot create a general NoCredentialsProvider if the emulator host is enabled
+			// (because it would also be used for the other components), we have to create one here
+			// for this particular case.
+			this.finalCredentialsProvider = NoCredentialsProvider.create();
+		}
 	}
 
 	@Bean
@@ -152,17 +162,28 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public TopicAdminClient topicAdminClient(
-			TransportChannelProvider transportChannelProvider) {
+			TopicAdminSettings topicAdminSettings) {
 		try {
-			return TopicAdminClient.create(
-					TopicAdminSettings.newBuilder()
-							.setCredentialsProvider(this.finalCredentialsProvider)
-							.setHeaderProvider(this.headerProvider)
-							.setTransportChannelProvider(transportChannelProvider)
-							.build());
+			return TopicAdminClient.create(topicAdminSettings);
 		}
 		catch (IOException ioe) {
 			throw new PubSubException("An error occurred while creating TopicAdminClient.", ioe);
+		}
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public TopicAdminSettings topicAdminSettings(
+			TransportChannelProvider transportChannelProvider) {
+		try {
+			return TopicAdminSettings.newBuilder()
+					.setCredentialsProvider(this.finalCredentialsProvider)
+					.setHeaderProvider(this.headerProvider)
+					.setTransportChannelProvider(transportChannelProvider)
+					.build();
+		}
+		catch (IOException ioe) {
+			throw new PubSubException("An error occurred while creating TopicAdminSettings.", ioe);
 		}
 	}
 

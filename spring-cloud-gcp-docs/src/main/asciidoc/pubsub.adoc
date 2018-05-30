@@ -46,24 +46,13 @@ utilization.
 ==== Publishing to a topic
 
 `PubSubTemplate` provides asynchronous methods to publish messages to a Google Cloud Pub/Sub topic.
-It supports different types of payloads, including `Strings` with different encodings, `byte[]`,
-`ByteString`, POJOs, and `PubsubMessage`.
+The `publish()` method takes in a topic name to post the message to, a payload of a generic type and, optionally, a map with the message headers.
 
-[source,java]
-----
-public ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers)
-
-public ListenableFuture<String> publish(String topic, String payload, Map<String, String> headers,
-Charset charset)
-
-public ListenableFuture<String> publish(String topic, byte[] payload, Map<String, String> headers)
-
-public ListenableFuture<String> publish(String topic, ByteString payload, Map<String, String> headers)
-
-public ListenableFuture<String> publish(String topic, PubsubMessage pubsubMessage)
-
-public <T> ListenableFuture<String> publish(String topic, T payload, Map<String, String> headers)
-----
+* If the payload is a string, it is decoded using the active character set.
+** A character set can be set using the `setCharset()` method in `PubSubTemplate`.
+* If the payload is a `ByteString`, it is sent as-is.
+* If the payload is a `byte[]`, then a `ByteString` is created from it.
+* Otherwise, the payload is serialized and sent.
 
 Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 
@@ -74,8 +63,8 @@ public void publishMessage() {
 }
 ----
 
-
 The default serialization and deserialization of POJOs uses Jackson JSON via the `JacksonMessageConverter` class.
+To set a new message converter in `PubSubTemplate`, use the `setMessageConverter()` method.
 
 
 ==== Subscribing to a subscription

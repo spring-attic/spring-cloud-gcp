@@ -47,6 +47,7 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 
 /**
  * Provides Spring Data classes to use with Google Spanner.
@@ -61,152 +62,164 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(GcpSpannerProperties.class)
 public class GcpSpannerAutoConfiguration {
 
-	private final String projectId;
+	static class CoreSpannerAutoConfiguration {
 
-	private final String instanceId;
+		private final String projectId;
 
-	private final String databaseName;
+		private final String instanceId;
 
-	private final Credentials credentials;
+		private final String databaseName;
 
-	private final int numRpcChannels;
+		private final Credentials credentials;
 
-	private final int prefetchChunks;
+		private final int numRpcChannels;
 
-	private final int minSessions;
+		private final int prefetchChunks;
 
-	private final int maxSessions;
+		private final int minSessions;
 
-	private final int maxIdleSessions;
+		private final int maxSessions;
 
-	private final float writeSessionsFraction;
+		private final int maxIdleSessions;
 
-	private final int keepAliveIntervalMinutes;
+		private final float writeSessionsFraction;
 
-	public GcpSpannerAutoConfiguration(GcpSpannerProperties gcpSpannerProperties,
-			GcpProjectIdProvider projectIdProvider,
-			CredentialsProvider credentialsProvider) throws IOException {
-		this.credentials = (gcpSpannerProperties.getCredentials().hasKey()
-				? new DefaultCredentialsProvider(gcpSpannerProperties)
-				: credentialsProvider).getCredentials();
-		this.projectId = gcpSpannerProperties.getProjectId() != null
-				? gcpSpannerProperties.getProjectId()
-				: projectIdProvider.getProjectId();
-		this.instanceId = gcpSpannerProperties.getInstanceId();
-		this.databaseName = gcpSpannerProperties.getDatabase();
-		this.numRpcChannels = gcpSpannerProperties.getNumRpcChannels();
-		this.prefetchChunks = gcpSpannerProperties.getPrefetchChunks();
-		this.minSessions = gcpSpannerProperties.getMinSessions();
-		this.maxSessions = gcpSpannerProperties.getMaxSessions();
-		this.maxIdleSessions = gcpSpannerProperties.getMaxIdleSessions();
-		this.writeSessionsFraction = gcpSpannerProperties.getWriteSessionsFraction();
-		this.keepAliveIntervalMinutes = gcpSpannerProperties
-				.getKeepAliveIntervalMinutes();
-	}
+		private final int keepAliveIntervalMinutes;
 
-	@Bean
-	@ConditionalOnMissingBean
-	public SpannerOptions spannerOptions(SessionPoolOptions sessionPoolOptions) {
-		Builder builder = SpannerOptions.newBuilder()
-				.setProjectId(this.projectId)
-				.setHeaderProvider(new UsageTrackingHeaderProvider(this.getClass()))
-				.setCredentials(this.credentials);
-		if (this.numRpcChannels >= 0) {
-			builder.setNumChannels(this.numRpcChannels);
-		}
-		if (this.prefetchChunks >= 0) {
-			builder.setPrefetchChunks(this.prefetchChunks);
-		}
-		builder.setSessionPoolOption(sessionPoolOptions);
-		return builder.build();
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public SessionPoolOptions sessionPoolOptions() {
-		SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
-		if (this.minSessions >= 0) {
-			builder.setMinSessions(this.minSessions);
+		CoreSpannerAutoConfiguration(GcpSpannerProperties gcpSpannerProperties,
+				GcpProjectIdProvider projectIdProvider,
+				CredentialsProvider credentialsProvider) throws IOException {
+			this.credentials = (gcpSpannerProperties.getCredentials().hasKey()
+					? new DefaultCredentialsProvider(gcpSpannerProperties)
+					: credentialsProvider).getCredentials();
+			this.projectId = gcpSpannerProperties.getProjectId() != null
+					? gcpSpannerProperties.getProjectId()
+					: projectIdProvider.getProjectId();
+			this.instanceId = gcpSpannerProperties.getInstanceId();
+			this.databaseName = gcpSpannerProperties.getDatabase();
+			this.numRpcChannels = gcpSpannerProperties.getNumRpcChannels();
+			this.prefetchChunks = gcpSpannerProperties.getPrefetchChunks();
+			this.minSessions = gcpSpannerProperties.getMinSessions();
+			this.maxSessions = gcpSpannerProperties.getMaxSessions();
+			this.maxIdleSessions = gcpSpannerProperties.getMaxIdleSessions();
+			this.writeSessionsFraction = gcpSpannerProperties.getWriteSessionsFraction();
+			this.keepAliveIntervalMinutes = gcpSpannerProperties
+					.getKeepAliveIntervalMinutes();
 		}
 
-		if (this.maxSessions >= 0) {
-			builder.setMaxSessions(this.maxSessions);
+		@Bean
+		@ConditionalOnMissingBean
+		public SpannerOptions spannerOptions(SessionPoolOptions sessionPoolOptions) {
+			Builder builder = SpannerOptions.newBuilder()
+					.setProjectId(this.projectId)
+					.setHeaderProvider(new UsageTrackingHeaderProvider(this.getClass()))
+					.setCredentials(this.credentials);
+			if (this.numRpcChannels >= 0) {
+				builder.setNumChannels(this.numRpcChannels);
+			}
+			if (this.prefetchChunks >= 0) {
+				builder.setPrefetchChunks(this.prefetchChunks);
+			}
+			builder.setSessionPoolOption(sessionPoolOptions);
+			return builder.build();
 		}
 
-		if (this.maxIdleSessions >= 0) {
-			builder.setMaxIdleSessions(this.maxIdleSessions);
+		@Bean
+		@ConditionalOnMissingBean
+		public SessionPoolOptions sessionPoolOptions() {
+			SessionPoolOptions.Builder builder = SessionPoolOptions.newBuilder();
+			if (this.minSessions >= 0) {
+				builder.setMinSessions(this.minSessions);
+			}
+
+			if (this.maxSessions >= 0) {
+				builder.setMaxSessions(this.maxSessions);
+			}
+
+			if (this.maxIdleSessions >= 0) {
+				builder.setMaxIdleSessions(this.maxIdleSessions);
+			}
+
+			if (this.writeSessionsFraction >= 0) {
+				builder.setWriteSessionsFraction(this.writeSessionsFraction);
+			}
+
+			if (this.keepAliveIntervalMinutes >= 0) {
+				builder.setKeepAliveIntervalMinutes(this.keepAliveIntervalMinutes);
+			}
+			return builder.build();
 		}
 
-		if (this.writeSessionsFraction >= 0) {
-			builder.setWriteSessionsFraction(this.writeSessionsFraction);
+		@Bean
+		@ConditionalOnMissingBean
+		public DatabaseId databaseId() {
+			return DatabaseId.of(this.projectId, this.instanceId, this.databaseName);
 		}
 
-		if (this.keepAliveIntervalMinutes >= 0) {
-			builder.setKeepAliveIntervalMinutes(this.keepAliveIntervalMinutes);
+		@Bean
+		@ConditionalOnMissingBean
+		public Spanner spanner(SpannerOptions spannerOptions) {
+			return spannerOptions.getService();
 		}
-		return builder.build();
+
+		@Bean
+		@ConditionalOnMissingBean
+		public DatabaseClient spannerDatabaseClient(Spanner spanner, DatabaseId databaseId) {
+			return spanner.getDatabaseClient(databaseId);
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public SpannerMappingContext spannerMappingContext() {
+			return new SpannerMappingContext();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public SpannerTemplate spannerTemplate(DatabaseClient databaseClient,
+				SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
+				SpannerMutationFactory spannerMutationFactory) {
+			return new SpannerTemplate(databaseClient, mappingContext, spannerEntityProcessor,
+					spannerMutationFactory);
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public SpannerEntityProcessor spannerConverter(SpannerMappingContext mappingContext) {
+			return new ConverterAwareMappingSpannerEntityProcessor(mappingContext);
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public SpannerMutationFactory spannerMutationFactory(
+				SpannerEntityProcessor spannerEntityProcessor,
+				SpannerMappingContext spannerMappingContext) {
+			return new SpannerMutationFactoryImpl(spannerEntityProcessor, spannerMappingContext);
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public SpannerSchemaUtils spannerSchemaUtils(
+				SpannerMappingContext spannerMappingContext,
+				SpannerEntityProcessor spannerEntityProcessor) {
+			return new SpannerSchemaUtils(spannerMappingContext, spannerEntityProcessor);
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
+				Spanner spanner, DatabaseId databaseId) {
+			return new SpannerDatabaseAdminTemplate(spanner.getDatabaseAdminClient(),
+					spanner.getDatabaseClient(databaseId), databaseId);
+		}
 	}
 
-	@Bean
-	@ConditionalOnMissingBean
-	public DatabaseId databaseId() {
-		return DatabaseId.of(this.projectId, this.instanceId, this.databaseName);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public Spanner spanner(SpannerOptions spannerOptions) {
-		return spannerOptions.getService();
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public DatabaseClient spannerDatabaseClient(Spanner spanner, DatabaseId databaseId) {
-		return spanner.getDatabaseClient(databaseId);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public SpannerMappingContext spannerMappingContext() {
-		return new SpannerMappingContext();
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public SpannerTemplate spannerTemplate(DatabaseClient databaseClient,
-			SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
-			SpannerMutationFactory spannerMutationFactory) {
-		return new SpannerTemplate(databaseClient, mappingContext, spannerEntityProcessor,
-				spannerMutationFactory);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public SpannerEntityProcessor spannerConverter(SpannerMappingContext mappingContext) {
-		return new ConverterAwareMappingSpannerEntityProcessor(mappingContext);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public SpannerMutationFactory spannerMutationFactory(
-			SpannerEntityProcessor spannerEntityProcessor,
-			SpannerMappingContext spannerMappingContext) {
-		return new SpannerMutationFactoryImpl(spannerEntityProcessor, spannerMappingContext);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public SpannerSchemaUtils spannerSchemaUtils(
-			SpannerMappingContext spannerMappingContext,
-			SpannerEntityProcessor spannerEntityProcessor) {
-		return new SpannerSchemaUtils(spannerMappingContext, spannerEntityProcessor);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate(
-			Spanner spanner, DatabaseId databaseId) {
-		return new SpannerDatabaseAdminTemplate(spanner.getDatabaseAdminClient(),
-				spanner.getDatabaseClient(databaseId), databaseId);
+	@ConditionalOnClass({BackendIdConverter.class, SpannerMappingContext.class})
+	static class SpannerKeyRestSupportAutoConfiguration {
+		@Bean
+		@ConditionalOnMissingBean
+		public BackendIdConverter spannerKeyIdConverter(SpannerMappingContext mappingContext) {
+			return new SpannerKeyIdConverter(mappingContext);
+		}
 	}
 }

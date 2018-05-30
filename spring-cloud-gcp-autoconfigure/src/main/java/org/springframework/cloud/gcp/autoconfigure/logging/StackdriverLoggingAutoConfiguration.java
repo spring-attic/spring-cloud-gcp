@@ -27,6 +27,7 @@ import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExt
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractorType;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.ZipkinTraceIdExtractor;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -45,8 +46,9 @@ public class StackdriverLoggingAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public TraceIdLoggingWebMvcInterceptor loggingWebMvcInterceptor(
-			TraceIdExtractor extractor) {
-		return new TraceIdLoggingWebMvcInterceptor(extractor);
+			TraceIdExtractor extractor,
+			GcpProjectIdProvider projectIdProvider) {
+		return new TraceIdLoggingWebMvcInterceptor(extractor, projectIdProvider);
 	}
 
 	@Bean

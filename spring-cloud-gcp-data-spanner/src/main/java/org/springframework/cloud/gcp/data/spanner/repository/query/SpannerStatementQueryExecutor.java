@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.ValueBinder;
@@ -32,6 +33,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.util.Pair;
 
@@ -116,7 +118,8 @@ public class SpannerStatementQueryExecutor {
 		buildSelect(tree, stringBuilder);
 		buildFrom(persistentEntity, stringBuilder);
 		buildWhere(tree, persistentEntity, tags, stringBuilder);
-		buildOrderBy(persistentEntity, stringBuilder, tree.getSort());
+		applySort(tree.getSort(), stringBuilder, o -> persistentEntity
+				.getPersistentProperty(o.getProperty()).getColumnName());
 		buildLimit(tree, stringBuilder);
 
 		stringBuilder.append(";");
@@ -137,23 +140,20 @@ public class SpannerStatementQueryExecutor {
 		stringBuilder.append("FROM " + persistentEntity.tableName() + " ");
 	}
 
-	public static void buildOrderBy(SpannerPersistentEntity<?> persistentEntity,
-			StringBuilder stringBuilder, Sort sort) {
-		if (sort.isSorted()) {
-			stringBuilder.append("ORDER BY ");
-			StringJoiner orderStrings = new StringJoiner(" , ");
-			sort.iterator().forEachRemaining(o -> orderStrings.add(ordering(persistentEntity, o)));
-			stringBuilder.append(orderStrings.toString());
+	public static StringBuilder applySort(Sort sort, StringBuilder sql,
+			Function<Order, String> sortedPropertyNameFunction) {
+		if (sort == null || sort.isUnsorted()) {
+			return sql;
 		}
-	}
-
-	private static String ordering(SpannerPersistentEntity<?> persistentEntity, Order order) {
-		return persistentEntity.getPersistentProperty(
-				order.getProperty()).getColumnName() + " " + toString(order);
-	}
-
-	private static String toString(Order order) {
-		return order.isAscending() ? "ASC" : "DESC";
+		sql.append(" ORDER BY ");
+		StringJoiner sj = new StringJoiner(" , ");
+		sort.iterator().forEachRemaining(o -> {
+			String sortedPropertyName = sortedPropertyNameFunction.apply(o);
+			String sortedProperty = o.isIgnoreCase() ? "LOWER(" + sortedPropertyName + ")"
+					: sortedPropertyName;
+			sj.add(sortedProperty + (o.isAscending() ? " ASC" : " DESC"));
+		});
+		return sql.append(sj);
 	}
 
 	private static void buildWhere(PartTree tree, SpannerPersistentEntity<?> persistentEntity,
@@ -169,10 +169,23 @@ public class SpannerStatementQueryExecutor {
 				StringJoiner andStrings = new StringJoiner(" AND ");
 
 				orPart.forEach(part -> {
-
 					String segment = part.getProperty().getSegment();
 					String tag = "tag" + tags.size();
 					tags.add(tag);
+					String andString = persistentEntity.getPersistentProperty(segment)
+							.getColumnName();
+					String insertedTag = "@" + tag;
+					if (part.shouldIgnoreCase() == IgnoreCaseType.ALWAYS) {
+						andString = "LOWER(" + andString + ")";
+						insertedTag = "LOWER(" + insertedTag + ")";
+					}
+					else if (part.shouldIgnoreCase() != IgnoreCaseType.NEVER) {
+						throw new SpannerDataException(
+								"Only ignore-case types ALWAYS and NEVER are supported, "
+										+ "because the underlying table schema is not retrieved at query time to"
+										+ " check that the column is the STRING or BYTES Cloud Spanner "
+										+ " type supported for ignoring case.");
+					}
 
 					SpannerPersistentProperty spannerPersistentProperty = persistentEntity
 							.getPersistentProperty(segment);
@@ -187,10 +200,10 @@ public class SpannerStatementQueryExecutor {
 
 					switch (part.getType()) {
 					case LIKE:
-						andString += " LIKE %@" + tag;
+						andString += " LIKE %" + insertedTag;
 						break;
 					case SIMPLE_PROPERTY:
-						andString += "=@" + tag;
+						andString += "=" + insertedTag;
 						break;
 					case TRUE:
 						andString += "=TRUE";
@@ -202,19 +215,19 @@ public class SpannerStatementQueryExecutor {
 						andString += "=NULL";
 						break;
 					case LESS_THAN:
-						andString += "<@" + tag;
+						andString += "<" + insertedTag;
 						break;
 					case IS_NOT_NULL:
 						andString += "<>NULL";
 						break;
 					case LESS_THAN_EQUAL:
-						andString += "<=@" + tag;
+						andString += "<=" + insertedTag;
 						break;
 					case GREATER_THAN:
-						andString += ">@" + tag;
+						andString += ">" + insertedTag;
 						break;
 					case GREATER_THAN_EQUAL:
-						andString += ">=@" + tag;
+						andString += ">=" + insertedTag;
 						break;
 					default:
 						throw new UnsupportedOperationException("The statement type: "

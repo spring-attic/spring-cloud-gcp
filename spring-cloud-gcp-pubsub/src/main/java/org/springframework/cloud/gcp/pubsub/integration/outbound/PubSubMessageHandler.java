@@ -25,6 +25,7 @@ import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
@@ -32,6 +33,7 @@ import org.springframework.expression.common.LiteralExpression;
 import org.springframework.integration.expression.ExpressionUtils;
 import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.handler.AbstractMessageHandler;
+import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
@@ -66,6 +68,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private ListenableFutureCallback<String> publishCallback;
 
+	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
+
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		this.pubSubTemplate = pubSubTemplate;
 		this.topicExpression = new LiteralExpression(topic);
@@ -98,8 +102,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		}
 
 		Map<String, String> headers = new HashMap<>();
-		message.getHeaders().forEach(
-				(key, value) -> headers.put(key, value.toString()));
+		this.headerMapper.fromHeaders(message.getHeaders(), headers);
 
 		ListenableFuture<String> pubsubFuture =
 				this.pubSubTemplate.publish(topic, pubsubPayload, headers);
@@ -216,6 +219,16 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	 */
 	public void setTopicExpressionString(String topicExpressionString) {
 		this.topicExpression = this.EXPRESSION_PARSER.parseExpression(topicExpressionString);
+	}
+
+	/**
+	 * Set the header mapper to map headers from {@link Message} into outbound
+	 * {@link PubsubMessage}.
+	 * @param headerMapper the header mapper
+	 */
+	public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {
+		Assert.notNull(headerMapper, "The header mapper can't be null.");
+		this.headerMapper = headerMapper;
 	}
 
 	@Override

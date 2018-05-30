@@ -16,7 +16,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<google-cloud-bom.version>0.43.0-alpha</google-cloud-bom.version>
+		<google-cloud-bom.version>0.47.0-alpha</google-cloud-bom.version>
 		<cloud-trace-java.version>0.5.0</cloud-trace-java.version>
 	</properties>
 

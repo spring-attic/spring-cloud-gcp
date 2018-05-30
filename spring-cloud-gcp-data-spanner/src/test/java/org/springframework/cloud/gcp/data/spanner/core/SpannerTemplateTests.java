@@ -381,15 +381,17 @@ public class SpannerTemplateTests {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
 		SpannerQueryOptions queryOption = new SpannerQueryOptions().setLimit(3L)
 				.setOffset(5L);
-		Sort sort = Sort.by(Order.asc("id"), Order.desc("something"), Order.asc("other"));
+		Sort sort = Sort.by(Order.asc("id"), Order.desc("something").ignoreCase(),
+				Order.asc("other"), Order.desc("non_existant_prop"));
 
 		doAnswer(invocation -> {
 			assertEquals(
 					"SELECT * FROM (SELECT * FROM custom_test_table) "
-							+ "ORDER BY id ASC , something DESC , other ASC LIMIT 3 OFFSET 5",
-					invocation.getArgument(1));
+							+ "ORDER BY id ASC , LOWER(custom_col) DESC , other ASC , non_existant_prop DESC "
+							+ "LIMIT 3 OFFSET 5",
+					((Statement) invocation.getArgument(0)).getSql());
 			return null;
-		}).when(spyTemplate).query(eq(TestEntity.class), any(), any(), any(), any());
+		}).when(spyTemplate).executeQuery(any(), any());
 
 		spyTemplate.queryAll(TestEntity.class, queryOption.setSort(sort));
 		verify(spyTemplate, times(1)).query(eq(TestEntity.class), any(), any(), any(),
@@ -406,9 +408,9 @@ public class SpannerTemplateTests {
 			assertEquals(
 					"SELECT * FROM (SELECT * FROM custom_test_table) "
 							+ "LIMIT 3 OFFSET 5",
-					invocation.getArgument(1));
+					((Statement) invocation.getArgument(0)).getSql());
 			return null;
-		}).when(spyTemplate).query(eq(TestEntity.class), any(), any(), any(), any());
+		}).when(spyTemplate).executeQuery(any(), any());
 
 		spyTemplate.queryAll(TestEntity.class, queryOption);
 		verify(spyTemplate, times(1)).query(eq(TestEntity.class), any(), any(), any(),

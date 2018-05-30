@@ -27,75 +27,57 @@ import org.springframework.cloud.gcp.core.GcpScope;
  *
  * @author Ray Tsang
  * @author Mike Eltsufin
+ * @author João André Martins
  */
 @ConfigurationProperties("spring.cloud.gcp.trace")
 public class GcpTraceProperties implements CredentialsSupplier {
-	/**
-	 * Number of threads to use by the underlying gRPC channel to send the trace request to
-	 * Stackdriver.
-	 */
-	private int executorThreads = 4;
 
 	/**
-	 * Buffer size in bytes. Traces will be flushed to Stackdriver when buffered trace
-	 * messages exceed this size.
-	 *
-	 * <p>This value is defaulted to 1% of the {@link Runtime#totalMemory()} in bytes.
-	 * However, be careful when running inside of a containerized environment. You should either set JVM's max heap
-	 * or set this value explicitly.
+	 * Overrides the GCP project ID specified in the Core module.
 	 */
-	private int bufferSizeBytes = percentOfRuntimeTotalMemory(0.01f);
-
-	/**
-	 * Scheduled delay in seconds. Buffered trace messages will be flushed to Stackdriver when
-	 * buffered longer than scheduled delays.
-	 */
-	private int scheduledDelaySeconds = 10;
-
-	/** Overrides the GCP project ID specified in the Core module. */
 	private String projectId;
 
-	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
+	/**
+	 * Overrides the GCP OAuth2 credentials specified in the Core module.
+	 */
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.TRACE_APPEND.getUrl());
 
 	/**
-	 * A utility method to determine x% of total memory based on Zipkin's AsyncReporter.
-	 * However, need to be careful about running this inside of a container environment since only certain versions
-	 * of the JDK with additional flags can accurately detect container memory limit.
-	 *
-	 * @param percentage 1.0 means 100%, 0.01 means 1%
-	 * @return Percentage of @{link Runtime{@link Runtime#totalMemory()}}
+	 * Number of threads to be used by the Trace executor.
 	 */
-	static int percentOfRuntimeTotalMemory(float percentage) {
-		long result = (long) (Runtime.getRuntime().totalMemory() * percentage);
-		// don't overflow in the rare case 1% of memory is larger than 2 GiB!
-		return (int) Math.max(Math.min(Integer.MAX_VALUE, result), Integer.MIN_VALUE);
-	}
+	private int numExecutorThreads = 4;
 
-	public int getExecutorThreads() {
-		return this.executorThreads;
-	}
+	/**
+	 * HTTP/2 authority the channel claims to be connecting to.
+	 */
+	private String authority;
 
-	public void setExecutorThreads(int executorThreads) {
-		this.executorThreads = executorThreads;
-	}
+	/**
+	 * Compression to use for the call.
+	 */
+	private String compression;
 
-	public int getBufferSizeBytes() {
-		return this.bufferSizeBytes;
-	}
+	/**
+	 * Call deadline.
+	 */
+	private Long deadlineMs;
 
-	public void setBufferSizeBytes(int bufferSizeBytes) {
-		this.bufferSizeBytes = bufferSizeBytes;
-	}
+	/**
+	 * Maximum size for an inbound message.
+	 */
+	private Integer maxInboundSize;
 
-	public int getScheduledDelaySeconds() {
-		return this.scheduledDelaySeconds;
-	}
+	/**
+	 * Maximum size for an outbound message.
+	 */
+	private Integer maxOutboundSize;
 
-	public void setScheduledDelaySeconds(int scheduledDelaySeconds) {
-		this.scheduledDelaySeconds = scheduledDelaySeconds;
-	}
+	/**
+	 * Waits for the channel to be ready in case of a transient failure. Defaults to failing fast
+	 * in that case.
+	 */
+	private Boolean waitForReady;
 
 	public String getProjectId() {
 		return this.projectId;
@@ -109,4 +91,59 @@ public class GcpTraceProperties implements CredentialsSupplier {
 		return this.credentials;
 	}
 
+	public int getNumExecutorThreads() {
+		return this.numExecutorThreads;
+	}
+
+	public void setNumExecutorThreads(int numExecutorThreads) {
+		this.numExecutorThreads = numExecutorThreads;
+	}
+
+	public String getAuthority() {
+		return this.authority;
+	}
+
+	public void setAuthority(String authority) {
+		this.authority = authority;
+	}
+
+	public String getCompression() {
+		return this.compression;
+	}
+
+	public void setCompression(String compression) {
+		this.compression = compression;
+	}
+
+	public Long getDeadlineMs() {
+		return this.deadlineMs;
+	}
+
+	public void setDeadlineMs(long deadlineMs) {
+		this.deadlineMs = deadlineMs;
+	}
+
+	public Integer getMaxInboundSize() {
+		return this.maxInboundSize;
+	}
+
+	public void setMaxInboundSize(int maxInboundSize) {
+		this.maxInboundSize = maxInboundSize;
+	}
+
+	public Integer getMaxOutboundSize() {
+		return this.maxOutboundSize;
+	}
+
+	public void setMaxOutboundSize(int maxOutboundSize) {
+		this.maxOutboundSize = maxOutboundSize;
+	}
+
+	public Boolean isWaitForReady() {
+		return this.waitForReady;
+	}
+
+	public void setWaitForReady(boolean waitForReady) {
+		this.waitForReady = waitForReady;
+	}
 }
