@@ -17,11 +17,10 @@
 package org.springframework.cloud.gcp.autoconfigure.config;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.bind.DatatypeConverter;
 
 /**
  * Expected response format for Google Runtime Configurator API response.
@@ -106,7 +105,7 @@ class GoogleConfigEnvironment {
 		}
 
 		private String decode(String value) {
-			byte[] decodedValue = DatatypeConverter.parseBase64Binary(value);
+			byte[] decodedValue = Base64.getDecoder().decode(value);
 			return new String(decodedValue, StandardCharsets.UTF_8);
 		}
 	}
