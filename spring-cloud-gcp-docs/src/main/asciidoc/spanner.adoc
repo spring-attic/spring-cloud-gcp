@@ -538,6 +538,9 @@ Queries on the Template API support sorting through standard SQL and also via Sp
 List<Trade> trades = this.spannerTemplate.queryAll(Trade.class, Sort.by("action"));
 ----
 
+If the provided sorted field name is that of a property of the domain type, then the column name corresponding to that
+property will be used in the query. Otherwise, the given field name is assumed to be the name of the column in the
+Cloud Spanner table.
 Sorting on columns of Cloud Spanner types STRING and BYTES can be done while ignoring case:
 
 [source,java]

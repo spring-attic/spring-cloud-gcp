@@ -381,12 +381,14 @@ public class SpannerTemplateTests {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
 		SpannerQueryOptions queryOption = new SpannerQueryOptions().setLimit(3L)
 				.setOffset(5L);
-		Sort sort = Sort.by(Order.asc("id"), Order.desc("something").ignoreCase(), Order.asc("other"));
+		Sort sort = Sort.by(Order.asc("id"), Order.desc("something").ignoreCase(),
+				Order.asc("other"), Order.desc("non_existant_prop"));
 
 		doAnswer(invocation -> {
 			assertEquals(
 					"SELECT * FROM (SELECT * FROM custom_test_table) "
-							+ "ORDER BY id ASC , LOWER(something) DESC , other ASC LIMIT 3 OFFSET 5",
+							+ "ORDER BY id ASC , LOWER(custom_col) DESC , other ASC , non_existant_prop DESC "
+							+ "LIMIT 3 OFFSET 5",
 					((Statement) invocation.getArgument(0)).getSql());
 			return null;
 		}).when(spyTemplate).executeQuery(any(), any());
