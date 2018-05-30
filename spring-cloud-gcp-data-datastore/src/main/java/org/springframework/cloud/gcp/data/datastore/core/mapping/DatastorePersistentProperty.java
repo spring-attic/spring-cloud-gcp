@@ -61,7 +61,7 @@ public interface DatastorePersistentProperty
 	boolean isEmbedded();
 
 	/**
-	 * True if property corresponds to a field of a Datastore Kind. False otherwise.
+	 * True if property corresponds to a field of a Datastore Entity. False otherwise.
 	 * @return True if this property will be mapped to and from Datastore. False
 	 * otherwise.
 	 */

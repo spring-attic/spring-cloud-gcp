@@ -108,7 +108,7 @@ public class DatastorePersistentEntityImplTests {
 				accessor.getProperty(property)));
 	}
 
-	@Kind(name = "custom_test_kind")
+	@Entity(name = "custom_test_kind")
 	private static class TestEntity {
 		@Id
 		String id;
@@ -127,7 +127,7 @@ public class DatastorePersistentEntityImplTests {
 		String something;
 	}
 
-	@Kind
+	@Entity
 	private static class EntityEmptyCustomName {
 		@Id
 		String id;
@@ -135,7 +135,7 @@ public class DatastorePersistentEntityImplTests {
 		String something;
 	}
 
-	@Kind(name = "#{'kind_'.concat(kindPostfix)}")
+	@Entity(name = "#{'kind_'.concat(kindPostfix)}")
 	private static class EntityWithExpression {
 		@Id
 		String id;

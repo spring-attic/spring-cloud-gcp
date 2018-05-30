@@ -110,7 +110,7 @@ public class DatastorePersistentPropertyImplTests {
 				.getPersistentEntity(EmbeddedReferenceAnnotatedEntity.class);
 	}
 
-	@Kind(name = "custom_test_kind")
+	@Entity(name = "custom_test_kind")
 	private static class TestEntity {
 		@Id
 		String id;

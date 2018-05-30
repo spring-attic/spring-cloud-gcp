@@ -63,12 +63,12 @@ public class DatastorePersistentPropertyImpl
 		if (isAncestors()) {
 			if (!isIterable()) {
 				throw new DatastoreDataException(
-						"Ancestors properties must be an iterable of Kind and Key pairs: "
+						"Ancestors properties must be an iterable of Entity and Key pairs: "
 								+ getFieldName());
 			}
 			if (!Pair.class.isAssignableFrom(getIterableInnerType())) {
 				throw new DatastoreDataException(
-						"Ancestor Kind and Keys must be given as Pairs: "
+						"Ancestor Entity and Keys must be given as Pairs: "
 								+ getFieldName());
 			}
 		}

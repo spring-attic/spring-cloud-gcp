@@ -46,7 +46,7 @@ public class DatastorePersistentEntityImpl<T>
 
 	private final String kindName;
 
-	private final Kind kind;
+	private final Entity kind;
 
 	private StandardEvaluationContext context;
 
@@ -62,7 +62,7 @@ public class DatastorePersistentEntityImpl<T>
 
 		this.context = new StandardEvaluationContext();
 
-		this.kind = this.findAnnotation(Kind.class);
+		this.kind = this.findAnnotation(Entity.class);
 		this.kindName = this.hasTableName() ? this.kind.name() : fallback;
 		this.kindNameExpression = detectExpression();
 	}

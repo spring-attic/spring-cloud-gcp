@@ -34,9 +34,9 @@ import java.lang.annotation.Target;
 public @interface Field {
 
 	/**
-	 * The custom name of the field in the Datastore Kind, which can differ from the name
+	 * The custom name of the field in the Datastore Entity, which can differ from the name
 	 * of the property it annotates.
-	 * @return the name of the field in the Datastore Kind.
+	 * @return the name of the field in the Datastore Entity.
 	 */
 	String name();
 }

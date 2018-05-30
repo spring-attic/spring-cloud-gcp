@@ -28,8 +28,8 @@ public interface DatastorePersistentEntity<T> extends
 		MutablePersistentEntity<T, DatastorePersistentProperty>, ApplicationContextAware {
 
 	/**
-	 * Gets the name of the Datastore Kind.
-	 * @return the name of the Kind.
+	 * Gets the name of the Datastore Entity.
+	 * @return the name of the Entity.
 	 */
 	String kindName();
 }
