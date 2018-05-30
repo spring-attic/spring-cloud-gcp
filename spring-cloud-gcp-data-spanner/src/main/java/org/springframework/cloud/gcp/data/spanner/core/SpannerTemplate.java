@@ -48,6 +48,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
 import org.springframework.util.Assert;
 
@@ -134,7 +135,7 @@ public class SpannerTemplate implements SpannerOperations {
 		boolean allowPartialRead = false;
 		if (options != null) {
 			allowPartialRead = options.isAllowPartialRead();
-			finalSql = applySortingPagingQueryOptions(options, sql);
+			finalSql = applySortingPagingQueryOptions(entityClass, options, sql);
 		}
 		return this.spannerEntityProcessor.mapToList(
 				executeQuery(SpannerStatementQueryExecutor
@@ -167,10 +168,17 @@ public class SpannerTemplate implements SpannerOperations {
 				null, options);
 	}
 
-	public String applySortingPagingQueryOptions(SpannerQueryOptions options,
+	public <T> String applySortingPagingQueryOptions(Class<T> entityClass,
+			SpannerQueryOptions options,
 			String sql) {
+		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
+				.getPersistentEntity(entityClass);
 		StringBuilder sb = SpannerStatementQueryExecutor.applySort(options.getSort(),
-				wrapAsSubSelect(sql), o -> o.getProperty());
+				wrapAsSubSelect(sql), o -> {
+					SpannerPersistentProperty property = persistentEntity
+							.getPersistentProperty(o.getProperty());
+					return property == null ? o.getProperty() : property.getColumnName();
+				});
 		if (options.hasLimit()) {
 			sb.append(" LIMIT ").append(options.getLimit());
 		}

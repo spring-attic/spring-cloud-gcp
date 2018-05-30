@@ -386,7 +386,7 @@ public class SpannerTemplateTests {
 		doAnswer(invocation -> {
 			assertEquals(
 					"SELECT * FROM (SELECT * FROM custom_test_table) "
-							+ "ORDER BY id ASC , LOWER(something) DESC , other ASC LIMIT 3 OFFSET 5",
+							+ "ORDER BY id ASC , LOWER(custom_col) DESC , other ASC LIMIT 3 OFFSET 5",
 					((Statement) invocation.getArgument(0)).getSql());
 			return null;
 		}).when(spyTemplate).executeQuery(any(), any());
