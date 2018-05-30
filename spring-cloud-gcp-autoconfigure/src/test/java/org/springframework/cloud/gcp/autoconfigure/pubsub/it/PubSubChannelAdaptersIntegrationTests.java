@@ -84,94 +84,122 @@ public class PubSubChannelAdaptersIntegrationTests {
 	@Test
 	public void sendAndReceiveMessage() {
 		this.contextRunner.run(context -> {
-			Map<String, Object> headers = new HashMap<>();
-			// Only String values for now..
-			headers.put("storm", "lift your skinny fists");
-			headers.put("static", "lift your skinny fists");
-			headers.put("sleep", "lift your skinny fists");
+			try {
+				Map<String, Object> headers = new HashMap<>();
+				// Only String values for now..
+				headers.put("storm", "lift your skinny fists");
+				headers.put("static", "lift your skinny fists");
+				headers.put("sleep", "lift your skinny fists");
 
-			context.getBean("inputChannel", MessageChannel.class).send(
-					MessageBuilder.createMessage("I am a message.",
-							new MessageHeaders(headers)));
+				context.getBean("inputChannel", MessageChannel.class).send(
+						MessageBuilder.createMessage("I am a message.",
+								new MessageHeaders(headers)));
 
-			Message<?> message =
-					context.getBean("outputChannel", PollableChannel.class).receive(5000);
-			assertThat(message).isNotNull();
-			assertThat(message.getPayload()).isInstanceOf(String.class);
-			String payload = (String) message.getPayload();
-			assertThat(payload).isEqualTo("I am a message.");
+				Message<?> message =
+						context.getBean("outputChannel", PollableChannel.class).receive(5000);
+				assertThat(message).isNotNull();
+				assertThat(message.getPayload()).isInstanceOf(String.class);
+				String payload = (String) message.getPayload();
+				assertThat(payload).isEqualTo("I am a message.");
 
-			assertThat(message.getHeaders().size()).isEqualTo(6);
-			assertThat(message.getHeaders().get("storm")).isEqualTo("lift your skinny fists");
-			assertThat(message.getHeaders().get("static")).isEqualTo("lift your skinny fists");
-			assertThat(message.getHeaders().get("sleep")).isEqualTo("lift your skinny fists");
+				assertThat(message.getHeaders().size()).isEqualTo(6);
+				assertThat(message.getHeaders().get("storm")).isEqualTo("lift your skinny fists");
+				assertThat(message.getHeaders().get("static")).isEqualTo("lift your skinny fists");
+				assertThat(message.getHeaders().get("sleep")).isEqualTo("lift your skinny fists");
+			}
+			finally {
+				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
+				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
+				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
+			}
 		});
 	}
 
 	@Test
 	public void sendAndReceiveMessageInBytes() {
 		this.contextRunner.run(context -> {
-			context.getBean(PubSubInboundChannelAdapter.class).setMessageConverter(null);
-			context.getBean("inputChannel", MessageChannel.class).send(
-					MessageBuilder.withPayload("I am a message.").build());
+			try {
+				context.getBean(PubSubInboundChannelAdapter.class).setMessageConverter(null);
+				context.getBean("inputChannel", MessageChannel.class).send(
+						MessageBuilder.withPayload("I am a message.").build());
 
-			Message<?> message =
-					context.getBean("outputChannel", PollableChannel.class).receive(5000);
-			assertThat(message).isNotNull();
-			assertThat(message.getPayload()).isInstanceOf(byte[].class);
-			String stringPayload = new String((byte[]) message.getPayload());
-			assertThat(stringPayload).isEqualTo("I am a message.");
+				Message<?> message =
+						context.getBean("outputChannel", PollableChannel.class).receive(5000);
+				assertThat(message).isNotNull();
+				assertThat(message.getPayload()).isInstanceOf(byte[].class);
+				String stringPayload = new String((byte[]) message.getPayload());
+				assertThat(stringPayload).isEqualTo("I am a message.");
+			}
+			finally {
+				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
+				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
+				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
+			}
 		});
 	}
 
 	@Test
 	public void sendAndReceiveMessageManualAck() {
 		this.contextRunner.run(context -> {
-			context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.MANUAL);
-			context.getBean("inputChannel", MessageChannel.class).send(
-					MessageBuilder.withPayload("I am a message.").build());
+			try {
+				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.MANUAL);
+				context.getBean("inputChannel", MessageChannel.class).send(
+						MessageBuilder.withPayload("I am a message.").build());
 
-			PollableChannel channel = context.getBean("outputChannel", PollableChannel.class);
+				PollableChannel channel = context.getBean("outputChannel", PollableChannel.class);
 
-			Message<?> message = channel.receive(10000);
-			assertThat(message).isNotNull();
-			AckReplyConsumer acker =
-					(AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
-			assertThat(acker).isNotNull();
-			acker.nack();
-			message = channel.receive(10000);
-			assertThat(message).isNotNull();
-			acker = (AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
-			assertThat(acker).isNotNull();
-			acker.ack();
-			message = channel.receive(10000);
-			assertThat(message).isNull();
+				Message<?> message = channel.receive(10000);
+				assertThat(message).isNotNull();
+				AckReplyConsumer acker =
+						(AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
+				assertThat(acker).isNotNull();
+				acker.nack();
+				message = channel.receive(10000);
+				assertThat(message).isNotNull();
+				acker = (AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
+				assertThat(acker).isNotNull();
+				acker.ack();
+				message = channel.receive(10000);
+				assertThat(message).isNull();
+			}
+			finally {
+				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
+				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
+				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
+			}
 		});
 	}
 
 	@Test
 	public void sendAndReceiveMessagePublishCallback() {
 		this.contextRunner.run(context -> {
-			ListenableFutureCallback<String> callbackSpy = Mockito.spy(
-					new ListenableFutureCallback<String>() {
-						@Override
-						public void onFailure(Throwable ex) {
+			try {
+				ListenableFutureCallback<String> callbackSpy = Mockito.spy(
+						new ListenableFutureCallback<String>() {
+							@Override
+							public void onFailure(Throwable ex) {
 
-						}
+							}
 
-						@Override
-						public void onSuccess(String result) {
+							@Override
+							public void onSuccess(String result) {
 
-						}
-			});
-			context.getBean(PubSubMessageHandler.class).setPublishCallback(callbackSpy);
-			context.getBean("inputChannel", MessageChannel.class).send(
-					MessageBuilder.withPayload("I am a message.").build());
+							}
+						});
+				context.getBean(PubSubMessageHandler.class).setPublishCallback(callbackSpy);
+				context.getBean("inputChannel", MessageChannel.class).send(
+						MessageBuilder.withPayload("I am a message.").build());
 
-			Message<?> message =
-					context.getBean("outputChannel", PollableChannel.class).receive(5000);
-			assertThat(message).isNotNull();
-			verify(callbackSpy, times(1)).onSuccess(any());
+				Message<?> message =
+						context.getBean("outputChannel", PollableChannel.class).receive(5000);
+				assertThat(message).isNotNull();
+				verify(callbackSpy, times(1)).onSuccess(any());
+			}
+			finally {
+				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
+				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
+				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
+			}
 		});
 	}
 
@@ -179,12 +207,12 @@ public class PubSubChannelAdaptersIntegrationTests {
 	@EnableIntegration
 	static class IntegrationConfiguration {
 
+		public String topicName = "desafinado-" + UUID.randomUUID();
+
+		public String subscriptionName = "doralice-" + UUID.randomUUID();
+
 		@Autowired
 		private PubSubTemplate pubSubTemplate;
-
-		private String topicName = "desafinado-" + UUID.randomUUID();
-
-		private String subscriptionName = "doralice-" + UUID.randomUUID();
 
 		@Bean
 		public PubSubInboundChannelAdapter inboundChannelAdapter(
@@ -246,6 +274,16 @@ public class PubSubChannelAdaptersIntegrationTests {
 					new UsageTrackingHeaderProvider(GcpPubSubAutoConfiguration.class));
 			factory.setChannelProvider(transportChannelProvider);
 			return factory;
+		}
+
+		@Bean
+		public String topicName() {
+			return this.topicName;
+		}
+
+		@Bean
+		public String subscriptionName() {
+			return this.subscriptionName;
 		}
 	}
 }
