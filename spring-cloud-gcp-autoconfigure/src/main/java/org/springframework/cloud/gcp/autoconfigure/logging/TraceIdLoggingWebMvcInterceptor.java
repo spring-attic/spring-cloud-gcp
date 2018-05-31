@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractor;
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -40,14 +39,9 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 
 	private final TraceIdExtractor traceIdExtractor;
 
-	private final GcpProjectIdProvider projectIdProvider;
-
-	public TraceIdLoggingWebMvcInterceptor(TraceIdExtractor extractor,
-			GcpProjectIdProvider projectIdProvider) {
+	public TraceIdLoggingWebMvcInterceptor(TraceIdExtractor extractor) {
 		Assert.notNull(extractor, "A valid trace id extractor is required.");
-		Assert.notNull(projectIdProvider, "A valid project ID provider is required.");
 		this.traceIdExtractor = extractor;
-		this.projectIdProvider = projectIdProvider;
 	}
 
 	public TraceIdExtractor getTraceIdExtractor() {
@@ -59,8 +53,7 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 			HttpServletResponse resp, Object handler) throws Exception {
 		String traceId = this.traceIdExtractor.extractTraceIdFromRequest(req);
 		if (traceId != null) {
-			TraceIdLoggingEnhancer.setCurrentTraceId(
-					this.projectIdProvider.getProjectId(), traceId);
+			TraceIdLoggingEnhancer.setCurrentTraceId(traceId);
 		}
 		return true;
 	}
@@ -70,6 +63,6 @@ public class TraceIdLoggingWebMvcInterceptor extends HandlerInterceptorAdapter {
 			HttpServletResponse httpServletResponse, Object handler, Exception e) throws Exception {
 		// Note: the thread-local is currently not fully cleared, but just set to null
 		// See: https://github.com/GoogleCloudPlatform/google-cloud-java/issues/2746
-		TraceIdLoggingEnhancer.setCurrentTraceId(this.projectIdProvider.getProjectId(), null);
+		TraceIdLoggingEnhancer.setCurrentTraceId(null);
 	}
 }

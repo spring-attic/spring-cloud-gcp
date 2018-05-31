@@ -53,8 +53,7 @@ public class LoggingWebMvcConfigurer implements WebMvcConfigurer {
 		else {
 			this.interceptor = new TraceIdLoggingWebMvcInterceptor(
 					new CompositeTraceIdExtractor(
-							new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor()),
-					projectIdProvider);
+							new XCloudTraceIdExtractor(), new ZipkinTraceIdExtractor()));
 		}
 	}
 
