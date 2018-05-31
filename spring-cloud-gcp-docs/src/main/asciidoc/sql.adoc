@@ -8,7 +8,7 @@ libraries that depend on it like Spring Data JPA.
 The Cloud SQL support is provided by Spring Cloud GCP in the form of two Spring Boot starters, one
 for MySQL and another one for PostgreSQL.
 The role of the starters is to read configuration from properties and assume default settings so
-that user experience connecting to MySQL is as simple as possible.
+that user experience connecting to MySQL and PostgreSQL is as simple as possible.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -105,3 +105,49 @@ their dependency to the classpath].
 Using the created `DataSource` in conjunction with Spring JDBC provides you with a fully configured
 and operational `JdbcTemplate` object that you can use to interact with your SQL database.
 You can connect to your database with as little as a database and instance names.
+
+==== Troubleshooting tips
+
+[#connection-issues]
+===== Connection issues
+If you're not able to connect to a database and see an endless loop of
+`Connecting to Cloud SQL instance [...] on IP [...]`, it's likely that exceptions are being thrown
+and logged at a level lower than your logger's level. This may be the case with HikariCP, if your
+logger is set to INFO or higher level.
+
+To see what's going on in the background, you should add a `logback.xml` file to your application
+resources folder, that looks like this:
+
+[source, xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <include resource="org/springframework/boot/logging/logback/base.xml"/>
+  <logger name="com.zaxxer.hikari.pool" level="DEBUG"/>
+</configuration>
+----
+
+=====  Errors like `c.g.cloud.sql.core.SslSocketFactory : Re-throwing cached exception due to attempt to refresh instance information too soon after error`
+
+If you see a lot of errors like this in a loop and can't connect to your database,
+this is usually a symptom that something isn't right with the permissions of your credentials or the Google Cloud SQL API is not enabled. Verify that the Google Cloud SQL API is enabled in the Cloud Console and that your service account has the
+https://cloud.google.com/sql/docs/mysql/project-access-control#roles[necessary IAM roles].
+
+To find out what's causing the issue, you can enable DEBUG logging level as mentioned link:#connection-issues[above].
+
+===== PostgreSQL: `java.net.SocketException: already connected` issue
+
+We found this exception to be common if your Maven project's parent is `spring-boot` version
+`1.5.x`, or in any other circumstance that would cause the version of the
+`org.postgresql:postgresql` dependency to be an older one (e.g., `9.4.1212.jre7`).
+
+To fix this, re-declare the dependency in its correct version. For example, in Maven:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.postgresql</groupId>
+  <artifactId>postgresql</artifactId>
+  <version>42.1.1</version>
+</dependency>
+----

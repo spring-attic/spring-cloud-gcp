@@ -23,10 +23,6 @@ dependencies {
 }
 ----
 
-=== Getting started
-
-There is a link:../spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[code sample] that demonstrates how to build a simple app to send messages over a Spring Cloud Stream Binder for Google Cloud Pub/Sub.
-
 === Overview
 
 This binder binds producers to Google Cloud Pub/Sub topics and consumers to subscriptions.
