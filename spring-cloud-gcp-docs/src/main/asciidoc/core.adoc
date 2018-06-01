@@ -83,6 +83,17 @@ If that property isn't specified, the starter tries to discover credentials from
 4. Google Cloud Shell built-in credentials
 5. Google Compute Engine built-in credentials
 
+If your app is running on Google App Engine or Google Compute Engine, in most cases, you should omit
+the `spring.cloud.gcp.credentials.location` property and, instead, let the Spring Cloud GCP
+Starter get the correct credentials for those environments.
+On App Engine Standard, the
+https://cloud.google.com/appengine/docs/standard/java/appidentity/[App Identity service account credentials]
+are used, on App Engine Flexible, the
+https://cloud.google.com/appengine/docs/flexible/java/service-account[Flexible service account credential]
+are used and on Google Compute Engine, the
+https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#using_the_compute_engine_default_service_account[Compute Engine Default Service Account]
+is used.
+
 ==== Scopes
 
 By default, the credentials provided by the Spring Cloud GCP Starter contain scopes for every
@@ -103,6 +114,10 @@ credentials.
 To do that, specify a comma-delimited list of scopes in the `spring.cloud.gcp.credentials.scopes`
 property.
 
+`spring.cloud.gcp.credentials.scopes` is a comma-delimited list of
+https://developers.google.com/identity/protocols/googlescopes[Google OAuth2 scopes] for Google
+Cloud Platform services that the credentials returned by the provided `CredentialsProvider` support.
+
 [source,yaml]
 ----
 spring.cloud.gcp.credentials.scopes=https://www.googleapis.com/auth/pubsub,https://www.googleapis.com/auth/sqlservice.admin
@@ -116,3 +131,6 @@ and append the additional scopes you need to add.
 spring.cloud.gcp.credentials.scopes=DEFAULT_SCOPES,https://www.googleapis.com/auth/cloud-vision
 ----
 
+==== Spring Initializr
+
+This starter is available from http://start.spring.io/[Spring Initializr] through the `GCP Support` entry.
