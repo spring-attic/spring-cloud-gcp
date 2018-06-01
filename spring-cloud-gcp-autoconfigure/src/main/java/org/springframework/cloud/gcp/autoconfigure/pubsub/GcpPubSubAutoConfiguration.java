@@ -87,7 +87,8 @@ public class GcpPubSubAutoConfiguration {
 				? gcpPubSubProperties::getProjectId
 				: gcpProjectIdProvider;
 
-		if (gcpPubSubProperties.getEmulatorHost() == null || "false".equals(gcpPubSubProperties.getEmulatorHost())) {
+		if (gcpPubSubProperties.getEmulatorHost() == null
+				|| "false".equals(gcpPubSubProperties.getEmulatorHost())) {
 			this.finalCredentialsProvider = gcpPubSubProperties.getCredentials().hasKey()
 					? new DefaultCredentialsProvider(gcpPubSubProperties)
 					: credentialsProvider;
@@ -104,14 +105,14 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean(name = "publisherExecutorProvider")
 	public ExecutorProvider publisherExecutorProvider() {
 		return FixedExecutorProvider.create(Executors.newScheduledThreadPool(
-				this.gcpPubSubProperties.getPublisherExecutorThreads()));
+				this.gcpPubSubProperties.getPublisher().getExecutorThreads()));
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(name = "subscriberExecutorProvider")
 	public ExecutorProvider subscriberExecutorProvider() {
 		return FixedExecutorProvider.create(Executors.newScheduledThreadPool(
-				this.gcpPubSubProperties.getSubscriberExecutorThreads()));
+				this.gcpPubSubProperties.getSubscriber().getExecutorThreads()));
 	}
 
 	@Bean
@@ -158,7 +159,8 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(
 			@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
-			@Qualifier("subscriberSystemExecutorProvider") @Nullable ExecutorProvider systemExecutorProvider,
+			@Qualifier("subscriberSystemExecutorProvider")
+			@Nullable ExecutorProvider systemExecutorProvider,
 			@Qualifier("subscriberFlowControlSettings") @Nullable FlowControlSettings flowControlSettings,
 			@Qualifier("subscriberApiClock") @Nullable ApiClock apiClock,
 			@Qualifier("subscriberRetrySettings") @Nullable RetrySettings retrySettings,
@@ -180,16 +182,22 @@ public class GcpPubSubAutoConfiguration {
 		if (retrySettings != null) {
 			factory.setSubscriberStubRetrySettings(retrySettings);
 		}
-		if (this.gcpPubSubProperties.getSubscriberMaxAckDurationSeconds().isPresent()) {
+		if (this.gcpPubSubProperties.getSubscriber().getMaxAckDurationSeconds()
+				.isPresent()) {
 			factory.setMaxAckDurationPeriod(Duration.ofSeconds(
-					this.gcpPubSubProperties.getSubscriberMaxAckDurationSeconds().get()));
+					this.gcpPubSubProperties.getSubscriber()
+							.getMaxAckDurationSeconds().get()));
 		}
-		if (this.gcpPubSubProperties.getSubscriberParallelPullCount().isPresent()) {
+		if (this.gcpPubSubProperties.getSubscriber().getParallelPullCount()
+				.isPresent()) {
 			factory.setParallelPullCount(
-					this.gcpPubSubProperties.getSubscriberParallelPullCount().get());
+					this.gcpPubSubProperties.getSubscriber()
+							.getParallelPullCount().get());
 		}
-		if (this.gcpPubSubProperties.getSubscriberPullEndpoint() != null) {
-			factory.setPullEndpoint(this.gcpPubSubProperties.getSubscriberPullEndpoint());
+		if (this.gcpPubSubProperties.getSubscriber()
+				.getPullEndpoint() != null) {
+			factory.setPullEndpoint(
+					this.gcpPubSubProperties.getSubscriber().getPullEndpoint());
 		}
 		return factory;
 	}
