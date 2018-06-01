@@ -8,3 +8,7 @@ For example, to retrieve the provisioned Pub/Sub topic, you can use the `vcap.se
 
 NOTE: If the same service is bound to the same application more than once, the auto configuration will not be able to choose among bindings and will not be activated for that service.
 This includes both MySQL and PostgreSQL bindings to the same app.
+
+WARNING: In order for the Cloud SQL integration to work in Cloud Foundry, auto-reconfiguration must be disabled.
+You can do so using the `cf set-env <APP> JBP_CONFIG_SPRING_AUTO_RECONFIGURATION '{enabled: false}'` command.
+Otherwise, Cloud Foundry will produce a `DataSource` with an invalid JDBC URL (i.e., `jdbc:mysql://null/null`).
