@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
+import java.util.Optional;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
@@ -49,6 +51,47 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	 * message payloads.
 	 */
 	private String[] trustedPackages;
+
+	/**
+	 * The optional pull endpoint setting for the subscriber factory.
+	 */
+	private String subscriberPullEndpoint;
+
+	/**
+	 * The optional max ack duration in seconds for the subscriber factory.
+	 */
+	private Optional<Long> subscriberMaxAckDurationSeconds = Optional.empty();
+
+	/**
+	 * The optional parallel pull count setting for the subscriber factory.
+	 */
+	private Optional<Integer> subscriberParallelPullCount = Optional.empty();
+
+	public String getSubscriberPullEndpoint() {
+		return this.subscriberPullEndpoint;
+	}
+
+	public void setSubscriberPullEndpoint(String subscriberPullEndpoint) {
+		this.subscriberPullEndpoint = subscriberPullEndpoint;
+	}
+
+	public Optional<Long> getSubscriberMaxAckDurationSeconds() {
+		return this.subscriberMaxAckDurationSeconds;
+	}
+
+	public void setSubscriberMaxAckDurationSeconds(
+			Optional<Long> subscriberMaxAckDurationSeconds) {
+		this.subscriberMaxAckDurationSeconds = subscriberMaxAckDurationSeconds;
+	}
+
+	public Optional<Integer> getSubscriberParallelPullCount() {
+		return this.subscriberParallelPullCount;
+	}
+
+	public void setSubscriberParallelPullCount(
+			Optional<Integer> subscriberParallelPullCount) {
+		this.subscriberParallelPullCount = subscriberParallelPullCount;
+	}
 
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	@NestedConfigurationProperty

@@ -19,17 +19,22 @@ package org.springframework.cloud.gcp.autoconfigure.pubsub;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 
+import com.google.api.core.ApiClock;
+import com.google.api.gax.batching.BatchingSettings;
+import com.google.api.gax.batching.FlowControlSettings;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
+import org.threeten.bp.Duration;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -52,6 +57,7 @@ import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessa
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.Nullable;
 
 /**
  * @author João André Martins
@@ -125,29 +131,99 @@ public class GcpPubSubAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(name = "subscriberSystemExecutorProvider")
+	public ExecutorProvider subscriberSystemExecutorProvider() {
+		return null;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(name = "subscriberFlowControlSettings")
+	public FlowControlSettings subscriberFlowControlSettings() {
+		return null;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(name = "subscriberApiClock")
+	public ApiClock subscriberApiClock() {
+		return null;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(name = "subscriberRetrySettings")
+	public RetrySettings subscriberRetrySettings() {
+		return null;
+	}
+
+	@Bean
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(
 			@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
+			@Qualifier("subscriberSystemExecutorProvider") @Nullable ExecutorProvider systemExecutorProvider,
+			@Qualifier("subscriberFlowControlSettings") @Nullable FlowControlSettings flowControlSettings,
+			@Qualifier("subscriberApiClock") @Nullable ApiClock apiClock,
+			@Qualifier("subscriberRetrySettings") @Nullable RetrySettings retrySettings,
 			TransportChannelProvider transportChannelProvider) {
 		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
 		factory.setHeaderProvider(this.headerProvider);
 		factory.setChannelProvider(transportChannelProvider);
-
+		if (systemExecutorProvider != null) {
+			factory.setSystemExecutorProvider(systemExecutorProvider);
+		}
+		if (flowControlSettings != null) {
+			factory.setFlowControlSettings(flowControlSettings);
+		}
+		if (apiClock != null) {
+			factory.setApiClock(apiClock);
+		}
+		if (retrySettings != null) {
+			factory.setSubscriberStubRetrySettings(retrySettings);
+		}
+		if (this.gcpPubSubProperties.getSubscriberMaxAckDurationSeconds().isPresent()) {
+			factory.setMaxAckDurationPeriod(Duration.ofSeconds(
+					this.gcpPubSubProperties.getSubscriberMaxAckDurationSeconds().get()));
+		}
+		if (this.gcpPubSubProperties.getSubscriberParallelPullCount().isPresent()) {
+			factory.setParallelPullCount(
+					this.gcpPubSubProperties.getSubscriberParallelPullCount().get());
+		}
+		if (this.gcpPubSubProperties.getSubscriberPullEndpoint() != null) {
+			factory.setPullEndpoint(this.gcpPubSubProperties.getSubscriberPullEndpoint());
+		}
 		return factory;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(name = "publisherRetrySettings")
+	public RetrySettings publisherRetrySettings() {
+		return null;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(name = "publisherBatchSettings")
+	public BatchingSettings publisherBatchSettings() {
+		return null;
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(
 			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
+			@Qualifier("publisherBatchSettings") @Nullable BatchingSettings batchingSettings,
+			@Qualifier("publisherRetrySettings") @Nullable RetrySettings retrySettings,
 			TransportChannelProvider transportChannelProvider) {
 		DefaultPublisherFactory factory = new DefaultPublisherFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
 		factory.setHeaderProvider(this.headerProvider);
 		factory.setChannelProvider(transportChannelProvider);
+		if (retrySettings != null) {
+			factory.setRetrySettings(retrySettings);
+		}
+		if (batchingSettings != null) {
+			factory.setBatchingSettings(batchingSettings);
+		}
 		return factory;
 	}
 
