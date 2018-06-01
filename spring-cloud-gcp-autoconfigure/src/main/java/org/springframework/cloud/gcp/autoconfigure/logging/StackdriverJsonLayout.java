@@ -202,9 +202,10 @@ public class StackdriverJsonLayout extends JsonLayout {
 			return;
 		}
 
-		String traceId = TraceLoggingEnhancer.getCurrentTraceId();
+		String traceId =
+				event.getMDCPropertyMap().get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
 		if (traceId == null) {
-			traceId = event.getMDCPropertyMap().get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
+			traceId = TraceLoggingEnhancer.getCurrentTraceId();
 		}
 		if (!StringUtils.isEmpty(traceId)
 			&& !StringUtils.isEmpty(this.projectId)
