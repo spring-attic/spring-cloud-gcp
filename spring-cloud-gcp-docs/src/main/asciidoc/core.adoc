@@ -111,8 +111,8 @@ service supported by Spring Cloud GCP.
 
 The Spring Cloud GCP starter allows you to configure a custom scope list for the provided
 credentials.
-To do that, specify a comma-delimited list of scopes in the `spring.cloud.gcp.credentials.scopes`
-property.
+To do that, specify a comma-delimited list of https://developers.google.com/identity/protocols/googlescopes[Google OAuth2 scopes]
+in the `spring.cloud.gcp.credentials.scopes` property.
 
 `spring.cloud.gcp.credentials.scopes` is a comma-delimited list of
 https://developers.google.com/identity/protocols/googlescopes[Google OAuth2 scopes] for Google
