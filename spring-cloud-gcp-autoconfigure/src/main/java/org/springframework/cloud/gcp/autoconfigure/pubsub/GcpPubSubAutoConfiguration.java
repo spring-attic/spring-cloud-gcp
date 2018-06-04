@@ -36,6 +36,7 @@ import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import org.threeten.bp.Duration;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -57,7 +58,6 @@ import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessa
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.Nullable;
 
 /**
  * @author João André Martins
@@ -136,10 +136,11 @@ public class GcpPubSubAutoConfiguration {
 	public SubscriberFactory defaultSubscriberFactory(
 			@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
 			@Qualifier("subscriberSystemExecutorProvider")
-			@Nullable ExecutorProvider systemExecutorProvider,
-			@Qualifier("subscriberFlowControlSettings") @Nullable FlowControlSettings flowControlSettings,
-			@Qualifier("subscriberApiClock") @Nullable ApiClock apiClock,
-			@Qualifier("subscriberRetrySettings") @Nullable RetrySettings retrySettings,
+			@Autowired(required = false) ExecutorProvider systemExecutorProvider,
+			@Qualifier("subscriberFlowControlSettings") @Autowired(required = false)
+					FlowControlSettings flowControlSettings,
+			@Qualifier("subscriberApiClock") @Autowired(required = false) ApiClock apiClock,
+			@Qualifier("subscriberRetrySettings") @Autowired(required = false) RetrySettings retrySettings,
 			TransportChannelProvider transportChannelProvider) {
 		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
@@ -182,8 +183,9 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(
 			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
-			@Qualifier("publisherBatchSettings") @Nullable BatchingSettings batchingSettings,
-			@Qualifier("publisherRetrySettings") @Nullable RetrySettings retrySettings,
+			@Qualifier("publisherBatchSettings") @Autowired(required = false)
+					BatchingSettings batchingSettings,
+			@Qualifier("publisherRetrySettings") @Autowired(required = false) RetrySettings retrySettings,
 			TransportChannelProvider transportChannelProvider) {
 		DefaultPublisherFactory factory = new DefaultPublisherFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
