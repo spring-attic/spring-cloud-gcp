@@ -16,7 +16,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<google-cloud-bom.version>0.47.0-alpha</google-cloud-bom.version>
+		<google-cloud-bom.version>0.50.0-alpha</google-cloud-bom.version>
 		<cloud-trace-java.version>0.5.0</cloud-trace-java.version>
 	</properties>
 
@@ -113,26 +113,6 @@
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-logging</artifactId>
 				<version>${project.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>com.google.cloud.trace.v1</groupId>
-				<artifactId>sink</artifactId>
-				<version>${cloud-trace-java.version}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>io.grpc</groupId>
-						<artifactId>grpc-all</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>com.google.protobuf</groupId>
-						<artifactId>protobuf-java</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>com.google.guava</groupId>
-						<artifactId>guava</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 
 			<!-- spring-cloud-gcp-starter-sql -->
