@@ -26,6 +26,7 @@ dependencies {
 }
 ----
 
+This starter is also available from https://start.spring.io/[Spring Initializr] through the `GCP Storage` entry.
 
 === Google Cloud Storage
 
