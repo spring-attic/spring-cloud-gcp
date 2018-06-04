@@ -327,7 +327,7 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 		private Optional<Long> delayThresholdSeconds = Optional.empty();
 
-		private Optional<Boolean> isEnabled = Optional.empty();
+		private Optional<Boolean> enabled = Optional.empty();
 
 		public Optional<Long> getElementCountThreshold() {
 			return this.elementCountThreshold;
@@ -353,12 +353,12 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 			this.delayThresholdSeconds = delayThresholdSeconds;
 		}
 
-		public Optional<Boolean> getIsEnabled() {
-			return this.isEnabled;
+		public Optional<Boolean> getEnabled() {
+			return this.enabled;
 		}
 
-		public void setIsEnabled(Optional<Boolean> isEnabled) {
-			this.isEnabled = isEnabled;
+		public void setEnabled(Optional<Boolean> enabled) {
+			this.enabled = enabled;
 		}
 
 		public FlowControl getFlowControl() {

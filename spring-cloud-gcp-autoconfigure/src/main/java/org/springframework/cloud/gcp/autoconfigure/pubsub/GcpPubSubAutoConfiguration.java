@@ -198,7 +198,7 @@ public class GcpPubSubAutoConfiguration {
 		batching.getDelayThresholdSeconds()
 				.ifPresent(x -> builder.setDelayThreshold(Duration.ofSeconds(x)));
 		batching.getElementCountThreshold().ifPresent(builder::setElementCountThreshold);
-		batching.getIsEnabled().ifPresent(builder::setIsEnabled);
+		batching.getEnabled().ifPresent(builder::setIsEnabled);
 		batching.getRequestByteThreshold().ifPresent(builder::setRequestByteThreshold);
 		builder.setFlowControlSettings(
 				buildFlowControlSettings(batching.getFlowControl()));
