@@ -277,4 +277,32 @@ Package names that contain the types that are whitelisted for deserializing mess
 | `spring.cloud.gcp.pubsub.subscriber.parallel-pull-count` | The number of pull workers | No | The available number of processors
 | `spring.cloud.gcp.pubsub.subscriber.max-ack-duration-seconds` | The maximum period a message ack deadline will be extended in seconds | No | 3600
 | `spring.cloud.gcp.pubsub.subscriber.pull-endpoint` | The endpoint for synchronous pulling messages | No | pubsub.googleapis.com:443
+| `spring.cloud.gcp.pubsub.subscriber.retry.total-timeout-seconds`| pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for subscriber |No |
+| `spring.cloud.gcp.pubsub.subscriber.retry.initial-retry-delay-second`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for subscriber|No |
+| `spring.cloud.gcp.pubsub.subscriber.retry.retry-delay-multiplier`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for subscriber|No |
+| `spring.cloud.gcp.pubsub.subscriber.retry.max-retry-delay-seconds`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for subscriber|No |
+| `spring.cloud.gcp.pubsub.subscriber.retry.max-attempts`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for subscriber|No |
+| `spring.cloud.gcp.pubsub.subscriber.retry.jittered`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for subscriber|No |
+| `spring.cloud.gcp.pubsub.subscriber.retry.initial-rpc-timeout-seconds`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for subscriber|No |
+| `spring.cloud.gcp.pubsub.subscriber.retry.rpc-timeout-multiplier`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for subscriber|No |
+| `spring.cloud.gcp.pubsub.subscriber.retry.max-rpc-timeout-seconds`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for subscriber|No |
+| `spring.cloud.gcp.pubsub.publisher.retry.total-timeout-seconds`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for publisher|No |
+| `spring.cloud.gcp.pubsub.publisher.retry.initial-retry-delay-seconds`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for publisher|No |
+| `spring.cloud.gcp.pubsub.publisher.retry.retry-delay-multiplier`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for publisher|No |
+| `spring.cloud.gcp.pubsub.publisher.retry.max-retry-delay-seconds`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for publisher|No |
+| `spring.cloud.gcp.pubsub.publisher.retry.max-attempts`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for publisher|No |
+| `spring.cloud.gcp.pubsub.publisher.retry.jittered`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for publisher|No |
+| `spring.cloud.gcp.pubsub.publisher.retry.initial-rpc-timeout-seconds`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for publisher|No |
+| `spring.cloud.gcp.pubsub.publisher.retry.rpc-timeout-multiplier`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for publisher|No |
+| `spring.cloud.gcp.pubsub.publisher.retry.max-rpc-timeout-seconds`|pass-through setting of same name from `com.google.api.gax.retrying.RetrySetting` for publisher|No |
+| `spring.cloud.gcp.pubsub.subscriber.flow-control.max-outstanding-element-count`|pass-through setting of same name from `com.google.api.gax.batching.FlowControlSettings` for subscriber|No |
+| `spring.cloud.gcp.pubsub.subscriber.flow-control.max-outstanding-request-bytes`|pass-through setting of same name from `com.google.api.gax.batching.FlowControlSettings` for subscriber|No |
+| `spring.cloud.gcp.pubsub.subscriber.flow-control.limit-exceeded-behavior`|pass-through setting of same name from `com.google.api.gax.batching.FlowControlSettings` for subscriber|No |
+| `spring.cloud.gcp.pubsub.publisher.batching.flow-control.max-outstanding-element-count`|pass-through setting of same name from `com.google.api.gax.batching.FlowControlSettings` for publisher batching|No |
+| `spring.cloud.gcp.pubsub.publisher.batching.flow-control.max-outstanding-request-bytes`|pass-through setting of same name from `com.google.api.gax.batching.FlowControlSettings` for publisher batching|No |
+| `spring.cloud.gcp.pubsub.publisher.batching.flow-control.limit-exceeded-behavior`|pass-through setting of same name from `com.google.api.gax.batching.FlowControlSettings` for publisher batching|No |
+| `spring.cloud.gcp.pubsub.publisher.batching.element-count-threshold`|pass-through setting of same name from `com.google.api.gax.batching.BatchingSettings` for publisher|No |
+| `spring.cloud.gcp.pubsub.publisher.batching.request-byte-threshold`|pass-through setting of same name from `com.google.api.gax.batching.BatchingSettings` for publisher|No |
+| `spring.cloud.gcp.pubsub.publisher.batching.delay-threshold-seconds`|pass-through setting of same name from `com.google.api.gax.batching.BatchingSettings` for publisher|No |
+| `spring.cloud.gcp.pubsub.publisher.batching.enabled`|pass-through setting of same name from `com.google.api.gax.batching.BatchingSettings` for publisher|No |
 |===
