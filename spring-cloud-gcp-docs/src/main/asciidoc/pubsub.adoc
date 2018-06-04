@@ -259,7 +259,7 @@ The Spring Boot starter for Google Cloud Pub/Sub provides the following configur
 |===
 | Name | Description | Required | Default value
 | `spring.cloud.gcp.pubsub.enabled` | Enables or disables Pub/Sub auto-configuration | No | `true`
-| `spring.cloud.gcp.pubsub.subscriber-executor-threads` | Number of threads used by `Subscriber`
+| `spring.cloud.gcp.pubsub.subscriber.executor-threads` | Number of threads used by `Subscriber`
 instances created by `SubscriberFactory` | No | 4
 | `spring.cloud.gcp.pubsub.publisher.executor-threads` | Number of threads used by `Publisher`
 instances created by `PublisherFactory` | No | 4

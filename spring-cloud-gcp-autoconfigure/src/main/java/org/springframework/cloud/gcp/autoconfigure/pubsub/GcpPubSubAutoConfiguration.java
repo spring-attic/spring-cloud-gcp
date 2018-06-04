@@ -132,30 +132,6 @@ public class GcpPubSubAutoConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(name = "subscriberSystemExecutorProvider")
-	public ExecutorProvider subscriberSystemExecutorProvider() {
-		return null;
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(name = "subscriberFlowControlSettings")
-	public FlowControlSettings subscriberFlowControlSettings() {
-		return null;
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(name = "subscriberApiClock")
-	public ApiClock subscriberApiClock() {
-		return null;
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(name = "subscriberRetrySettings")
-	public RetrySettings subscriberRetrySettings() {
-		return null;
-	}
-
-	@Bean
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(
 			@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
@@ -200,18 +176,6 @@ public class GcpPubSubAutoConfiguration {
 					this.gcpPubSubProperties.getSubscriber().getPullEndpoint());
 		}
 		return factory;
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(name = "publisherRetrySettings")
-	public RetrySettings publisherRetrySettings() {
-		return null;
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(name = "publisherBatchSettings")
-	public BatchingSettings publisherBatchSettings() {
-		return null;
 	}
 
 	@Bean
