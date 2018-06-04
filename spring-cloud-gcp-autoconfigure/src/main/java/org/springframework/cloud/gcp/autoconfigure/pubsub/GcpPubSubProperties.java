@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
+import java.util.Optional;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
@@ -29,11 +31,18 @@ import org.springframework.cloud.gcp.core.GcpScope;
  */
 @ConfigurationProperties("spring.cloud.gcp.pubsub")
 public class GcpPubSubProperties implements CredentialsSupplier {
-	/** Number of threads used by every {@link com.google.cloud.pubsub.v1.Subscriber}. */
-	private int subscriberExecutorThreads = 4;
 
-	/** Number of threads used by every {@link com.google.cloud.pubsub.v1.Publisher}. */
-	private int publisherExecutorThreads = 4;
+	private final Subscriber subscriber = new Subscriber();
+
+	private final Publisher publisher = new Publisher();
+
+	public Subscriber getSubscriber() {
+		return this.subscriber;
+	}
+
+	public Publisher getPublisher() {
+		return this.publisher;
+	}
 
 	/** Overrides the GCP project ID specified in the Core module. */
 	private String projectId;
@@ -53,22 +62,6 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.PUBSUB.getUrl());
-
-	public int getSubscriberExecutorThreads() {
-		return this.subscriberExecutorThreads;
-	}
-
-	public void setSubscriberExecutorThreads(int subscriberExecutorThreads) {
-		this.subscriberExecutorThreads = subscriberExecutorThreads;
-	}
-
-	public int getPublisherExecutorThreads() {
-		return this.publisherExecutorThreads;
-	}
-
-	public void setPublisherExecutorThreads(int publisherExecutorThreads) {
-		this.publisherExecutorThreads = publisherExecutorThreads;
-	}
 
 	public String getProjectId() {
 		return this.projectId;
@@ -96,5 +89,76 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 	public void setTrustedPackages(String[] trustedPackages) {
 		this.trustedPackages = trustedPackages;
+	}
+
+	public static class Publisher {
+
+		/**
+		 * Number of threads used by every {@link com.google.cloud.pubsub.v1.Publisher}.
+		 */
+		private int executorThreads = 4;
+
+		public int getExecutorThreads() {
+			return this.executorThreads;
+		}
+
+		public void setExecutorThreads(int executorThreads) {
+			this.executorThreads = executorThreads;
+		}
+	}
+
+	public static class Subscriber {
+
+		/**
+		 * Number of threads used by every {@link com.google.cloud.pubsub.v1.Subscriber}.
+		 */
+		private int executorThreads = 4;
+
+		/**
+		 * The optional pull endpoint setting for the subscriber factory.
+		 */
+		private String pullEndpoint;
+
+		/**
+		 * The optional max ack duration in seconds for the subscriber factory.
+		 */
+		private Optional<Long> maxAckDurationSeconds = Optional.empty();
+
+		/**
+		 * The optional parallel pull count setting for the subscriber factory.
+		 */
+		private Optional<Integer> parallelPullCount = Optional.empty();
+
+		public String getPullEndpoint() {
+			return this.pullEndpoint;
+		}
+
+		public void setPullEndpoint(String pullEndpoint) {
+			this.pullEndpoint = pullEndpoint;
+		}
+
+		public Optional<Long> getMaxAckDurationSeconds() {
+			return this.maxAckDurationSeconds;
+		}
+
+		public void setMaxAckDurationSeconds(Optional<Long> maxAckDurationSeconds) {
+			this.maxAckDurationSeconds = maxAckDurationSeconds;
+		}
+
+		public Optional<Integer> getParallelPullCount() {
+			return this.parallelPullCount;
+		}
+
+		public void setParallelPullCount(Optional<Integer> parallelPullCount) {
+			this.parallelPullCount = parallelPullCount;
+		}
+
+		public int getExecutorThreads() {
+			return this.executorThreads;
+		}
+
+		public void setExecutorThreads(int executorThreads) {
+			this.executorThreads = executorThreads;
+		}
 	}
 }

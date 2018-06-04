@@ -31,6 +31,7 @@ import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfigurat
 /**
  * @author Andreas Berger
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class GcpPubSubEmulatorConfigurationTests {
 
@@ -38,7 +39,9 @@ public class GcpPubSubEmulatorConfigurationTests {
 			.withPropertyValues("spring.cloud.gcp.pubsub.emulator-host=localhost:8085",
 					"spring.cloud.gcp.projectId=test-project",
 					"spring.cloud.gcp.pubsub.trusted-packages[0]=a",
-					"spring.cloud.gcp.pubsub.trusted-packages[1]=b")
+					"spring.cloud.gcp.pubsub.trusted-packages[1]=b",
+					"spring.cloud.gcp.pubsub.subscriber.pull-endpoint=fake-endpoint",
+					"spring.cloud.gcp.pubsub.subscriber.parallel-pull-count=333")
 			.withConfiguration(AutoConfigurations.of(GcpPubSubEmulatorConfiguration.class,
 					GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class));
@@ -69,6 +72,20 @@ public class GcpPubSubEmulatorConfigurationTests {
 			Assert.assertEquals(2, trustedPackages.length);
 			Assert.assertEquals("a", trustedPackages[0]);
 			Assert.assertEquals("b", trustedPackages[1]);
+		});
+	}
+
+	@Test
+	public void testSubscriberPullConfig() {
+		this.contextRunner.run(context -> {
+			GcpPubSubProperties gcpPubSubProperties = context
+					.getBean(GcpPubSubProperties.class);
+			Assert.assertEquals("fake-endpoint",
+					gcpPubSubProperties.getSubscriber().getPullEndpoint());
+			Assert.assertEquals(333,
+					(int) gcpPubSubProperties.getSubscriber().getParallelPullCount().get());
+			Assert.assertFalse(
+					gcpPubSubProperties.getSubscriber().getMaxAckDurationSeconds().isPresent());
 		});
 	}
 }

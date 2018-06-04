@@ -259,9 +259,9 @@ The Spring Boot starter for Google Cloud Pub/Sub provides the following configur
 |===
 | Name | Description | Required | Default value
 | `spring.cloud.gcp.pubsub.enabled` | Enables or disables Pub/Sub auto-configuration | No | `true`
-| `spring.cloud.gcp.pubsub.subscriber-executor-threads` | Number of threads used by `Subscriber`
+| `spring.cloud.gcp.pubsub.subscriber.executor-threads` | Number of threads used by `Subscriber`
 instances created by `SubscriberFactory` | No | 4
-| `spring.cloud.gcp.pubsub.publisher-executor-threads` | Number of threads used by `Publisher`
+| `spring.cloud.gcp.pubsub.publisher.executor-threads` | Number of threads used by `Publisher`
 instances created by `PublisherFactory` | No | 4
 | `spring.cloud.gcp.pubsub.project-id` | GCP project ID where the Google Cloud Pub/Sub API
 is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
@@ -274,4 +274,7 @@ https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for 
 Pub/Sub credentials | No | https://www.googleapis.com/auth/pubsub
 | `spring.cloud.gcp.pubsub.trustedPackages[n]` |
 Package names that contain the types that are whitelisted for deserializing message payloads | No | When using `JacksonMessageConverter` the default trusted packages listed in `org.springframework.integration.support.json.JacksonJsonUtils` are always trusted.
+| `spring.cloud.gcp.pubsub.subscriber.parallel-pull-count` | The number of pull workers | No | The available number of processors
+| `spring.cloud.gcp.pubsub.subscriber.max-ack-duration-seconds` | The maximum period a message ack deadline will be extended in seconds | No | 3600
+| `spring.cloud.gcp.pubsub.subscriber.pull-endpoint` | The endpoint for synchronous pulling messages | No | pubsub.googleapis.com:443
 |===
