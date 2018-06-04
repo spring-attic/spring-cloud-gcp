@@ -38,14 +38,6 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 	private final Publisher publisher = new Publisher();
 
-	public Subscriber getSubscriber() {
-		return this.subscriber;
-	}
-
-	public Publisher getPublisher() {
-		return this.publisher;
-	}
-
 	/** Overrides the GCP project ID specified in the Core module. */
 	private String projectId;
 
@@ -64,6 +56,14 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.PUBSUB.getUrl());
+
+	public Subscriber getSubscriber() {
+		return this.subscriber;
+	}
+
+	public Publisher getPublisher() {
+		return this.publisher;
+	}
 
 	public String getProjectId() {
 		return this.projectId;
@@ -100,8 +100,14 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		 */
 		private int executorThreads = 4;
 
+		/**
+		 * Properties for {@link com.google.api.gax.retrying.RetrySettings}
+		 */
 		private final Retry retry = new Retry();
 
+		/**
+		 * Properties for {@link com.google.api.gax.batching.BatchingSettings}
+		 */
 		private final Batching batching = new Batching();
 
 		public Batching getBatching() {
@@ -143,8 +149,14 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		 */
 		private Optional<Integer> parallelPullCount = Optional.empty();
 
+		/**
+		 * Properties for {@link com.google.api.gax.retrying.RetrySettings}
+		 */
 		private final Retry retry = new Retry();
 
+		/**
+		 * Properties for {@link com.google.api.gax.batching.FlowControlSettings}
+		 */
 		private final FlowControl flowControl = new FlowControl();
 
 		public Retry getRetry() {
@@ -190,22 +202,49 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 	public static class Retry {
 
+		/**
+		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 */
 		private Optional<Long> totalTimeoutSeconds = Optional.empty();
 
+		/**
+		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 */
 		private Optional<Long> initialRetryDelaySeconds = Optional.empty();
 
+		/**
+		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 */
 		private Optional<Double> retryDelayMultiplier = Optional.empty();
 
+		/**
+		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 */
 		private Optional<Long> maxRetryDelaySeconds = Optional.empty();
 
+		/**
+		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 */
 		private Optional<Integer> maxAttempts = Optional.empty();
 
+		/**
+		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 */
 		private Optional<Boolean> jittered = Optional.empty();
 
+		/**
+		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 */
 		private Optional<Long> initialRpcTimeoutSeconds = Optional.empty();
 
+		/**
+		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 */
 		private Optional<Double> rpcTimeoutMultiplier = Optional.empty();
 
+		/**
+		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 */
 		private Optional<Long> maxRpcTimeoutSeconds = Optional.empty();
 
 		public Optional<Long> getTotalTimeoutSeconds() {
@@ -283,10 +322,22 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 	public static class FlowControl {
 
+		/**
+		 * Property for setting of the same name in
+		 * {@link com.google.api.gax.batching.FlowControlSettings}
+		 */
 		private Optional<Long> maxOutstandingElementCount = Optional.empty();
 
+		/**
+		 * Property for setting of the same name in
+		 * {@link com.google.api.gax.batching.FlowControlSettings}
+		 */
 		private Optional<Long> maxOutstandingRequestBytes = Optional.empty();
 
+		/**
+		 * Property for setting of the same name in
+		 * {@link com.google.api.gax.batching.FlowControlSettings}
+		 */
 		private Optional<LimitExceededBehavior> limitExceededBehavior = Optional.empty();
 
 		public Optional<Long> getMaxOutstandingElementCount() {
@@ -319,14 +370,34 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 	public static class Batching {
 
+		/**
+		 * Property for setting of the same name in
+		 * {@link com.google.api.gax.batching.BatchingSettings}
+		 */
 		private final FlowControl flowControl = new FlowControl();
 
+		/**
+		 * Property for setting of the same name in
+		 * {@link com.google.api.gax.batching.BatchingSettings}
+		 */
 		private Optional<Long> elementCountThreshold = Optional.empty();
 
+		/**
+		 * Property for setting of the same name in
+		 * {@link com.google.api.gax.batching.BatchingSettings}
+		 */
 		private Optional<Long> requestByteThreshold = Optional.empty();
 
+		/**
+		 * Property for setting of the same name in
+		 * {@link com.google.api.gax.batching.BatchingSettings}
+		 */
 		private Optional<Long> delayThresholdSeconds = Optional.empty();
 
+		/**
+		 * Property for setting of the same name in
+		 * {@link com.google.api.gax.batching.BatchingSettings}
+		 */
 		private Optional<Boolean> enabled = Optional.empty();
 
 		public Optional<Long> getElementCountThreshold() {
