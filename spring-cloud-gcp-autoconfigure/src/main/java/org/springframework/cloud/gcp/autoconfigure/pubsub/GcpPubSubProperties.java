@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
 import java.util.Optional;
 
+import com.google.api.gax.batching.FlowController.LimitExceededBehavior;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.cloud.gcp.core.Credentials;
@@ -98,6 +100,18 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		 */
 		private int executorThreads = 4;
 
+		private final Retry retry = new Retry();
+
+		private final Batching batching = new Batching();
+
+		public Batching getBatching() {
+			return this.batching;
+		}
+
+		public Retry getRetry() {
+			return this.retry;
+		}
+
 		public int getExecutorThreads() {
 			return this.executorThreads;
 		}
@@ -129,6 +143,18 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		 */
 		private Optional<Integer> parallelPullCount = Optional.empty();
 
+		private final Retry retry = new Retry();
+
+		private final FlowControl flowControl = new FlowControl();
+
+		public Retry getRetry() {
+			return this.retry;
+		}
+
+		public FlowControl getFlowControl() {
+			return this.flowControl;
+		}
+
 		public String getPullEndpoint() {
 			return this.pullEndpoint;
 		}
@@ -159,6 +185,184 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 		public void setExecutorThreads(int executorThreads) {
 			this.executorThreads = executorThreads;
+		}
+	}
+
+	public static class Retry {
+
+		private Optional<Long> totalTimeoutSeconds = Optional.empty();
+
+		private Optional<Long> initialRetryDelaySeconds = Optional.empty();
+
+		private Optional<Double> retryDelayMultiplier = Optional.empty();
+
+		private Optional<Long> maxRetryDelaySeconds = Optional.empty();
+
+		private Optional<Integer> maxAttempts = Optional.empty();
+
+		private Optional<Boolean> jittered = Optional.empty();
+
+		private Optional<Long> initialRpcTimeoutSeconds = Optional.empty();
+
+		private Optional<Double> rpcTimeoutMultiplier = Optional.empty();
+
+		private Optional<Long> maxRpcTimeoutSeconds = Optional.empty();
+
+		public Optional<Long> getTotalTimeoutSeconds() {
+			return this.totalTimeoutSeconds;
+		}
+
+		public void setTotalTimeoutSeconds(Optional<Long> totalTimeoutSeconds) {
+			this.totalTimeoutSeconds = totalTimeoutSeconds;
+		}
+
+		public Optional<Long> getInitialRetryDelaySeconds() {
+			return this.initialRetryDelaySeconds;
+		}
+
+		public void setInitialRetryDelaySeconds(Optional<Long> initialRetryDelaySeconds) {
+			this.initialRetryDelaySeconds = initialRetryDelaySeconds;
+		}
+
+		public Optional<Double> getRetryDelayMultiplier() {
+			return this.retryDelayMultiplier;
+		}
+
+		public void setRetryDelayMultiplier(Optional<Double> retryDelayMultiplier) {
+			this.retryDelayMultiplier = retryDelayMultiplier;
+		}
+
+		public Optional<Long> getMaxRetryDelaySeconds() {
+			return this.maxRetryDelaySeconds;
+		}
+
+		public void setMaxRetryDelaySeconds(Optional<Long> maxRetryDelaySeconds) {
+			this.maxRetryDelaySeconds = maxRetryDelaySeconds;
+		}
+
+		public Optional<Integer> getMaxAttempts() {
+			return this.maxAttempts;
+		}
+
+		public void setMaxAttempts(Optional<Integer> maxAttempts) {
+			this.maxAttempts = maxAttempts;
+		}
+
+		public Optional<Boolean> getJittered() {
+			return this.jittered;
+		}
+
+		public void setJittered(Optional<Boolean> jittered) {
+			this.jittered = jittered;
+		}
+
+		public Optional<Long> getInitialRpcTimeoutSeconds() {
+			return this.initialRpcTimeoutSeconds;
+		}
+
+		public void setInitialRpcTimeoutSeconds(Optional<Long> initialRpcTimeoutSeconds) {
+			this.initialRpcTimeoutSeconds = initialRpcTimeoutSeconds;
+		}
+
+		public Optional<Double> getRpcTimeoutMultiplier() {
+			return this.rpcTimeoutMultiplier;
+		}
+
+		public void setRpcTimeoutMultiplier(Optional<Double> rpcTimeoutMultiplier) {
+			this.rpcTimeoutMultiplier = rpcTimeoutMultiplier;
+		}
+
+		public Optional<Long> getMaxRpcTimeoutSeconds() {
+			return this.maxRpcTimeoutSeconds;
+		}
+
+		public void setMaxRpcTimeoutSeconds(Optional<Long> maxRpcTimeoutSeconds) {
+			this.maxRpcTimeoutSeconds = maxRpcTimeoutSeconds;
+		}
+	}
+
+	public static class FlowControl {
+
+		private Optional<Long> maxOutstandingElementCount = Optional.empty();
+
+		private Optional<Long> maxOutstandingRequestBytes = Optional.empty();
+
+		private Optional<LimitExceededBehavior> limitExceededBehavior = Optional.empty();
+
+		public Optional<Long> getMaxOutstandingElementCount() {
+			return this.maxOutstandingElementCount;
+		}
+
+		public void setMaxOutstandingElementCount(
+				Optional<Long> maxOutstandingElementCount) {
+			this.maxOutstandingElementCount = maxOutstandingElementCount;
+		}
+
+		public Optional<Long> getMaxOutstandingRequestBytes() {
+			return this.maxOutstandingRequestBytes;
+		}
+
+		public void setMaxOutstandingRequestBytes(
+				Optional<Long> maxOutstandingRequestBytes) {
+			this.maxOutstandingRequestBytes = maxOutstandingRequestBytes;
+		}
+
+		public Optional<LimitExceededBehavior> getLimitExceededBehavior() {
+			return this.limitExceededBehavior;
+		}
+
+		public void setLimitExceededBehavior(
+				Optional<LimitExceededBehavior> limitExceededBehavior) {
+			this.limitExceededBehavior = limitExceededBehavior;
+		}
+	}
+
+	public static class Batching {
+
+		private final FlowControl flowControl = new FlowControl();
+
+		private Optional<Long> elementCountThreshold = Optional.empty();
+
+		private Optional<Long> requestByteThreshold = Optional.empty();
+
+		private Optional<Long> delayThresholdSeconds = Optional.empty();
+
+		private Optional<Boolean> isEnabled = Optional.empty();
+
+		public Optional<Long> getElementCountThreshold() {
+			return this.elementCountThreshold;
+		}
+
+		public void setElementCountThreshold(Optional<Long> elementCountThreshold) {
+			this.elementCountThreshold = elementCountThreshold;
+		}
+
+		public Optional<Long> getRequestByteThreshold() {
+			return this.requestByteThreshold;
+		}
+
+		public void setRequestByteThreshold(Optional<Long> requestByteThreshold) {
+			this.requestByteThreshold = requestByteThreshold;
+		}
+
+		public Optional<Long> getDelayThresholdSeconds() {
+			return this.delayThresholdSeconds;
+		}
+
+		public void setDelayThresholdSeconds(Optional<Long> delayThresholdSeconds) {
+			this.delayThresholdSeconds = delayThresholdSeconds;
+		}
+
+		public Optional<Boolean> getIsEnabled() {
+			return this.isEnabled;
+		}
+
+		public void setIsEnabled(Optional<Boolean> isEnabled) {
+			this.isEnabled = isEnabled;
+		}
+
+		public FlowControl getFlowControl() {
+			return this.flowControl;
 		}
 	}
 }
