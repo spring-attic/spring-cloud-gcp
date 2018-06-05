@@ -24,6 +24,8 @@ dependencies {
 }
 ----
 
+This starter is also available from https://start.spring.io[Spring Initializr] through the `GCP Messaging` entry.
+
 === Pub/Sub operations abstraction
 
 `PubSubOperations` is an abstraction that allows Spring users to use Google Cloud Pub/Sub without
