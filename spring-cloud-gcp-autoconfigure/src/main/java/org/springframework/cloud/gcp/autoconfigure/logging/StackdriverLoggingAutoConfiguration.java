@@ -33,7 +33,6 @@ import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import zipkin2.reporter.stackdriver.StackdriverSender;
 
 /**
  * @author Mike Eltsufin
