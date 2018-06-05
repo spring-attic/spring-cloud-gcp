@@ -33,12 +33,12 @@ import org.springframework.cloud.gcp.core.GcpScope;
 public class GcpPubSubProperties implements CredentialsSupplier {
 
 	/**
-	 * Contains settings specific to the subscriber factory
+	 * Contains settings specific to the subscriber factory.
 	 */
 	private final Subscriber subscriber = new Subscriber();
 
 	/**
-	 * Contains settings specific to the publisher factory
+	 * Contains settings specific to the publisher factory.
 	 */
 	private final Publisher publisher = new Publisher();
 
@@ -49,7 +49,7 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 	/**
 	 * The host and port of the local running emulator. If provided, this will setup the
-	 * client to connect against a running pub/sub emulator
+	 * client to connect against a running pub/sub emulator.
 	 */
 	private String emulatorHost;
 
@@ -104,17 +104,17 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	public static class Publisher {
 
 		/**
-		 * Number of threads used by every publisher
+		 * Number of threads used by every publisher.
 		 */
 		private int executorThreads = 4;
 
 		/**
-		 * Retry properties
+		 * Retry properties.
 		 */
 		private final Retry retry = new Retry();
 
 		/**
-		 * Batching properties
+		 * Batching properties.
 		 */
 		private final Batching batching = new Batching();
 
@@ -138,7 +138,7 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	public static class Subscriber {
 
 		/**
-		 * Number of threads used by every subscriber
+		 * Number of threads used by every subscriber.
 		 */
 		private int executorThreads = 4;
 
@@ -211,47 +211,58 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	public static class Retry {
 
 		/**
-		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 * TotalTimeout has ultimate control over how long the logic should keep trying the remote call
+		 * until it gives up completely. The higher the total timeout, the more retries can be
+		 * attempted.
 		 */
 		private Long totalTimeoutSeconds;
 
 		/**
-		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 * InitialRetryDelay controls the delay before the first retry. Subsequent retries will use this
+		 * value adjusted according to the RetryDelayMultiplier.
 		 */
 		private Long initialRetryDelaySeconds;
 
 		/**
-		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 * RetryDelayMultiplier controls the change in retry delay. The retry delay of the previous call
+		 * is multiplied by the RetryDelayMultiplier to calculate the retry delay for the next call.
 		 */
 		private Double retryDelayMultiplier;
 
 		/**
-		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 * MaxRetryDelay puts a limit on the value of the retry delay, so that the RetryDelayMultiplier
+		 * can't increase the retry delay higher than this amount.
 		 */
 		private Long maxRetryDelaySeconds;
 
 		/**
-		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 * MaxAttempts defines the maximum number of attempts to perform.
+		 * If this value is greater than 0, and the number of attempts reaches this limit,
+		 * the logic will give up retrying even if the total retry time is still lower
+		 * than TotalTimeout.
 		 */
 		private Integer maxAttempts;
 
 		/**
-		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 * Jitter determines if the delay time should be randomized.
 		 */
 		private Boolean jittered;
 
 		/**
-		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 * InitialRpcTimeout controls the timeout for the initial RPC. Subsequent calls will use this
+		 * value adjusted according to the RpcTimeoutMultiplier.
 		 */
 		private Long initialRpcTimeoutSeconds;
 
 		/**
-		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 * RpcTimeoutMultiplier controls the change in RPC timeout. The timeout of the previous call is
+		 * multiplied by the RpcTimeoutMultiplier to calculate the timeout for the next call.
 		 */
 		private Double rpcTimeoutMultiplier;
 
 		/**
-		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
+		 * MaxRpcTimeout puts a limit on the value of the RPC timeout, so that the RpcTimeoutMultiplier
+		 * can't increase the RPC timeout higher than this amount.
 		 */
 		private Long maxRpcTimeoutSeconds;
 
@@ -331,20 +342,17 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	public static class FlowControl {
 
 		/**
-		 * Property for setting of the same name in
-		 * {@link com.google.api.gax.batching.FlowControlSettings}
+		 * Maximum number of outstanding elements to keep in memory before enforcing flow control.
 		 */
 		private Long maxOutstandingElementCount;
 
 		/**
-		 * Property for setting of the same name in
-		 * {@link com.google.api.gax.batching.FlowControlSettings}
+		 * Maximum number of outstanding bytes to keep in memory before enforcing flow control.
 		 */
 		private Long maxOutstandingRequestBytes;
 
 		/**
-		 * Property for setting of the same name in
-		 * {@link com.google.api.gax.batching.FlowControlSettings}
+		 * The behavior when the specified limits are exceeded.
 		 */
 		private LimitExceededBehavior limitExceededBehavior;
 
@@ -385,26 +393,23 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		private final FlowControl flowControl = new FlowControl();
 
 		/**
-		 * Property for setting of the same name in
-		 * {@link com.google.api.gax.batching.BatchingSettings}
+		 * The element count threshold to use for batching.
 		 */
 		private Long elementCountThreshold;
 
 		/**
-		 * Property for setting of the same name in
-		 * {@link com.google.api.gax.batching.BatchingSettings}
+		 * The request byte threshold to use for batching.
 		 */
 		private Long requestByteThreshold;
 
 		/**
-		 * Property for setting of the same name in
-		 * {@link com.google.api.gax.batching.BatchingSettings}
+		 * The delay threshold to use for batching. After this amount of time has elapsed (counting
+		 * from the first element added), the elements will be wrapped up in a batch and sent.
 		 */
 		private Long delayThresholdSeconds;
 
 		/**
-		 * Property for setting of the same name in
-		 * {@link com.google.api.gax.batching.BatchingSettings}
+		 * Enables batching if true.
 		 */
 		private Boolean enabled;
 
