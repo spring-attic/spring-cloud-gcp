@@ -32,11 +32,15 @@ import org.springframework.cloud.gcp.core.GcpScope;
 @ConfigurationProperties("spring.cloud.gcp.pubsub")
 public class GcpPubSubProperties implements CredentialsSupplier {
 
+	// Contains settings specific to the subscriber factory
 	private final Subscriber subscriber = new Subscriber();
 
+	// Contains settings specific to the publisher factory
 	private final Publisher publisher = new Publisher();
 
-	/** Overrides the GCP project ID specified in the Core module. */
+	/**
+	 * Overrides the GCP project ID specified in the Core module.
+	 */
 	private String projectId;
 
 	/**
@@ -94,17 +98,17 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	public static class Publisher {
 
 		/**
-		 * Number of threads used by every {@link com.google.cloud.pubsub.v1.Publisher}.
+		 * Number of threads used by every publisher
 		 */
 		private int executorThreads = 4;
 
 		/**
-		 * Properties for {@link com.google.api.gax.retrying.RetrySettings}
+		 * Retry properties
 		 */
 		private final Retry retry = new Retry();
 
 		/**
-		 * Properties for {@link com.google.api.gax.batching.BatchingSettings}
+		 * Batching properties
 		 */
 		private final Batching batching = new Batching();
 
@@ -128,7 +132,7 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	public static class Subscriber {
 
 		/**
-		 * Number of threads used by every {@link com.google.cloud.pubsub.v1.Subscriber}.
+		 * Number of threads used by every subscriber
 		 */
 		private int executorThreads = 4;
 
