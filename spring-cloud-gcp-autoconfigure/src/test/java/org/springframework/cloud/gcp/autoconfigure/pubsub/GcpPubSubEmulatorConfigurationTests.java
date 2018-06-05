@@ -116,9 +116,8 @@ public class GcpPubSubEmulatorConfigurationTests {
 			Assert.assertEquals("fake-endpoint",
 					gcpPubSubProperties.getSubscriber().getPullEndpoint());
 			Assert.assertEquals(333,
-					(int) gcpPubSubProperties.getSubscriber().getParallelPullCount().get());
-			Assert.assertFalse(
-					gcpPubSubProperties.getSubscriber().getMaxAckDurationSeconds().isPresent());
+					(int) gcpPubSubProperties.getSubscriber().getParallelPullCount());
+			Assert.assertNull(gcpPubSubProperties.getSubscriber().getMaxAckDurationSeconds());
 		});
 	}
 

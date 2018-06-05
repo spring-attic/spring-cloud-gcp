@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -152,10 +151,10 @@ public class GcpPubSubAutoConfiguration {
 			GcpPubSubProperties.FlowControl flowControl) {
 		FlowControlSettings.Builder builder = FlowControlSettings.newBuilder();
 
-		return wasSet(flowControl.getLimitExceededBehavior(), builder::setLimitExceededBehavior)
-				.apply(wasSet(flowControl.getMaxOutstandingElementCount(),
+		return ifNotNull(flowControl.getLimitExceededBehavior(), builder::setLimitExceededBehavior)
+				.apply(ifNotNull(flowControl.getMaxOutstandingElementCount(),
 						builder::setMaxOutstandingElementCount)
-				.apply(wasSet(flowControl.getMaxOutstandingRequestBytes(),
+				.apply(ifNotNull(flowControl.getMaxOutstandingRequestBytes(),
 						builder::setMaxOutstandingRequestBytes)
 				.apply(false))) ? builder.build() : null;
 	}
@@ -180,10 +179,10 @@ public class GcpPubSubAutoConfiguration {
 		flowControlSettings.ifAvailable(factory::setFlowControlSettings);
 		apiClock.ifAvailable(factory::setApiClock);
 		retrySettings.ifAvailable(factory::setSubscriberStubRetrySettings);
-		this.gcpPubSubProperties.getSubscriber().getMaxAckDurationSeconds()
-				.ifPresent(x -> factory.setMaxAckDurationPeriod(Duration.ofSeconds(x)));
-		this.gcpPubSubProperties.getSubscriber().getParallelPullCount()
-				.ifPresent(factory::setParallelPullCount);
+		ifNotNull(this.gcpPubSubProperties.getSubscriber().getMaxAckDurationSeconds(),
+				x -> factory.setMaxAckDurationPeriod(Duration.ofSeconds(x)));
+		ifNotNull(this.gcpPubSubProperties.getSubscriber().getParallelPullCount(),
+				factory::setParallelPullCount);
 		if (this.gcpPubSubProperties.getSubscriber()
 				.getPullEndpoint() != null) {
 			factory.setPullEndpoint(
@@ -205,11 +204,11 @@ public class GcpPubSubAutoConfiguration {
 			builder.setFlowControlSettings(flowControlSettings);
 		}
 
-		return wasSet(batching.getDelayThresholdSeconds(),
+		return ifNotNull(batching.getDelayThresholdSeconds(),
 					x -> builder.setDelayThreshold(Duration.ofSeconds(x)))
-				.apply(wasSet(batching.getElementCountThreshold(), builder::setElementCountThreshold)
-				.apply(wasSet(batching.getEnabled(), builder::setIsEnabled)
-				.apply(wasSet(batching.getRequestByteThreshold(), builder::setRequestByteThreshold)
+				.apply(ifNotNull(batching.getElementCountThreshold(), builder::setElementCountThreshold)
+				.apply(ifNotNull(batching.getEnabled(), builder::setIsEnabled)
+				.apply(ifNotNull(batching.getRequestByteThreshold(), builder::setRequestByteThreshold)
 				.apply(false)))) ? builder.build() : null;
 	}
 
@@ -222,28 +221,36 @@ public class GcpPubSubAutoConfiguration {
 	private RetrySettings buildRetrySettings(GcpPubSubProperties.Retry retryProperties) {
 		Builder builder = RetrySettings.newBuilder();
 
-		return wasSet(retryProperties.getInitialRetryDelaySeconds(),
+		return ifNotNull(retryProperties.getInitialRetryDelaySeconds(),
 				x -> builder.setInitialRetryDelay(Duration.ofSeconds(x)))
-				.apply(wasSet(retryProperties.getInitialRpcTimeoutSeconds(),
+				.apply(ifNotNull(retryProperties.getInitialRpcTimeoutSeconds(),
 						x -> builder.setInitialRpcTimeout(Duration.ofSeconds(x)))
-				.apply(wasSet(retryProperties.getJittered(), builder::setJittered)
-				.apply(wasSet(retryProperties.getMaxAttempts(), builder::setMaxAttempts)
-				.apply(wasSet(retryProperties.getMaxRetryDelaySeconds(),
+				.apply(ifNotNull(retryProperties.getJittered(), builder::setJittered)
+				.apply(ifNotNull(retryProperties.getMaxAttempts(), builder::setMaxAttempts)
+				.apply(ifNotNull(retryProperties.getMaxRetryDelaySeconds(),
 						x -> builder.setMaxRetryDelay(Duration.ofSeconds(x)))
-				.apply(wasSet(retryProperties.getMaxRpcTimeoutSeconds(),
+				.apply(ifNotNull(retryProperties.getMaxRpcTimeoutSeconds(),
 						x -> builder.setMaxRpcTimeout(Duration.ofSeconds(x)))
-				.apply(wasSet(retryProperties.getRetryDelayMultiplier(), builder::setRetryDelayMultiplier)
-				.apply(wasSet(retryProperties.getTotalTimeoutSeconds(),
+				.apply(ifNotNull(retryProperties.getRetryDelayMultiplier(), builder::setRetryDelayMultiplier)
+				.apply(ifNotNull(retryProperties.getTotalTimeoutSeconds(),
 						x -> builder.setTotalTimeout(Duration.ofSeconds(x)))
-				.apply(wasSet(retryProperties.getRpcTimeoutMultiplier(), builder::setRpcTimeoutMultiplier)
+				.apply(ifNotNull(retryProperties.getRpcTimeoutMultiplier(), builder::setRpcTimeoutMultiplier)
 				.apply(false))))))))) ? builder.build() : null;
 	}
 
-	private <T> Function<Boolean, Boolean> wasSet(Optional<T> optional, Consumer<T> consumer) {
+	/**
+	 * A helper method for applying properties to settings builders for purpose of seeing if at least
+	 * one setting was set.
+	 * @param prop
+	 * @param consumer
+	 * @param <T>
+	 * @return
+	 */
+	private <T> Function<Boolean, Boolean> ifNotNull(T prop, Consumer<T> consumer) {
 		return next -> {
 			boolean wasSet = next;
-			if (optional.isPresent()) {
-				consumer.accept(optional.get());
+			if (prop != null) {
+				consumer.accept(prop);
 				wasSet = true;
 			}
 			return wasSet;

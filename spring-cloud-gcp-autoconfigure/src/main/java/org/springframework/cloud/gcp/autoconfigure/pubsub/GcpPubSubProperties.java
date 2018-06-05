@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
-import java.util.Optional;
-
 import com.google.api.gax.batching.FlowController.LimitExceededBehavior;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -142,12 +140,12 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		/**
 		 * The optional max ack duration in seconds for the subscriber factory.
 		 */
-		private Optional<Long> maxAckDurationSeconds = Optional.empty();
+		private Long maxAckDurationSeconds;
 
 		/**
 		 * The optional parallel pull count setting for the subscriber factory.
 		 */
-		private Optional<Integer> parallelPullCount = Optional.empty();
+		private Integer parallelPullCount;
 
 		/**
 		 * Properties for {@link com.google.api.gax.retrying.RetrySettings}
@@ -175,19 +173,19 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 			this.pullEndpoint = pullEndpoint;
 		}
 
-		public Optional<Long> getMaxAckDurationSeconds() {
+		public Long getMaxAckDurationSeconds() {
 			return this.maxAckDurationSeconds;
 		}
 
-		public void setMaxAckDurationSeconds(Optional<Long> maxAckDurationSeconds) {
+		public void setMaxAckDurationSeconds(Long maxAckDurationSeconds) {
 			this.maxAckDurationSeconds = maxAckDurationSeconds;
 		}
 
-		public Optional<Integer> getParallelPullCount() {
+		public Integer getParallelPullCount() {
 			return this.parallelPullCount;
 		}
 
-		public void setParallelPullCount(Optional<Integer> parallelPullCount) {
+		public void setParallelPullCount(Integer parallelPullCount) {
 			this.parallelPullCount = parallelPullCount;
 		}
 
@@ -205,117 +203,117 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		/**
 		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
 		 */
-		private Optional<Long> totalTimeoutSeconds = Optional.empty();
+		private Long totalTimeoutSeconds;
 
 		/**
 		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
 		 */
-		private Optional<Long> initialRetryDelaySeconds = Optional.empty();
+		private Long initialRetryDelaySeconds;
 
 		/**
 		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
 		 */
-		private Optional<Double> retryDelayMultiplier = Optional.empty();
+		private Double retryDelayMultiplier;
 
 		/**
 		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
 		 */
-		private Optional<Long> maxRetryDelaySeconds = Optional.empty();
+		private Long maxRetryDelaySeconds;
 
 		/**
 		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
 		 */
-		private Optional<Integer> maxAttempts = Optional.empty();
+		private Integer maxAttempts;
 
 		/**
 		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
 		 */
-		private Optional<Boolean> jittered = Optional.empty();
+		private Boolean jittered;
 
 		/**
 		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
 		 */
-		private Optional<Long> initialRpcTimeoutSeconds = Optional.empty();
+		private Long initialRpcTimeoutSeconds;
 
 		/**
 		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
 		 */
-		private Optional<Double> rpcTimeoutMultiplier = Optional.empty();
+		private Double rpcTimeoutMultiplier;
 
 		/**
 		 * Property for setting of the same name in {@link com.google.api.gax.retrying.RetrySettings}
 		 */
-		private Optional<Long> maxRpcTimeoutSeconds = Optional.empty();
+		private Long maxRpcTimeoutSeconds;
 
-		public Optional<Long> getTotalTimeoutSeconds() {
+		public Long getTotalTimeoutSeconds() {
 			return this.totalTimeoutSeconds;
 		}
 
-		public void setTotalTimeoutSeconds(Optional<Long> totalTimeoutSeconds) {
+		public void setTotalTimeoutSeconds(Long totalTimeoutSeconds) {
 			this.totalTimeoutSeconds = totalTimeoutSeconds;
 		}
 
-		public Optional<Long> getInitialRetryDelaySeconds() {
+		public Long getInitialRetryDelaySeconds() {
 			return this.initialRetryDelaySeconds;
 		}
 
-		public void setInitialRetryDelaySeconds(Optional<Long> initialRetryDelaySeconds) {
+		public void setInitialRetryDelaySeconds(Long initialRetryDelaySeconds) {
 			this.initialRetryDelaySeconds = initialRetryDelaySeconds;
 		}
 
-		public Optional<Double> getRetryDelayMultiplier() {
+		public Double getRetryDelayMultiplier() {
 			return this.retryDelayMultiplier;
 		}
 
-		public void setRetryDelayMultiplier(Optional<Double> retryDelayMultiplier) {
+		public void setRetryDelayMultiplier(Double retryDelayMultiplier) {
 			this.retryDelayMultiplier = retryDelayMultiplier;
 		}
 
-		public Optional<Long> getMaxRetryDelaySeconds() {
+		public Long getMaxRetryDelaySeconds() {
 			return this.maxRetryDelaySeconds;
 		}
 
-		public void setMaxRetryDelaySeconds(Optional<Long> maxRetryDelaySeconds) {
+		public void setMaxRetryDelaySeconds(Long maxRetryDelaySeconds) {
 			this.maxRetryDelaySeconds = maxRetryDelaySeconds;
 		}
 
-		public Optional<Integer> getMaxAttempts() {
+		public Integer getMaxAttempts() {
 			return this.maxAttempts;
 		}
 
-		public void setMaxAttempts(Optional<Integer> maxAttempts) {
+		public void setMaxAttempts(Integer maxAttempts) {
 			this.maxAttempts = maxAttempts;
 		}
 
-		public Optional<Boolean> getJittered() {
+		public Boolean getJittered() {
 			return this.jittered;
 		}
 
-		public void setJittered(Optional<Boolean> jittered) {
+		public void setJittered(Boolean jittered) {
 			this.jittered = jittered;
 		}
 
-		public Optional<Long> getInitialRpcTimeoutSeconds() {
+		public Long getInitialRpcTimeoutSeconds() {
 			return this.initialRpcTimeoutSeconds;
 		}
 
-		public void setInitialRpcTimeoutSeconds(Optional<Long> initialRpcTimeoutSeconds) {
+		public void setInitialRpcTimeoutSeconds(Long initialRpcTimeoutSeconds) {
 			this.initialRpcTimeoutSeconds = initialRpcTimeoutSeconds;
 		}
 
-		public Optional<Double> getRpcTimeoutMultiplier() {
+		public Double getRpcTimeoutMultiplier() {
 			return this.rpcTimeoutMultiplier;
 		}
 
-		public void setRpcTimeoutMultiplier(Optional<Double> rpcTimeoutMultiplier) {
+		public void setRpcTimeoutMultiplier(Double rpcTimeoutMultiplier) {
 			this.rpcTimeoutMultiplier = rpcTimeoutMultiplier;
 		}
 
-		public Optional<Long> getMaxRpcTimeoutSeconds() {
+		public Long getMaxRpcTimeoutSeconds() {
 			return this.maxRpcTimeoutSeconds;
 		}
 
-		public void setMaxRpcTimeoutSeconds(Optional<Long> maxRpcTimeoutSeconds) {
+		public void setMaxRpcTimeoutSeconds(Long maxRpcTimeoutSeconds) {
 			this.maxRpcTimeoutSeconds = maxRpcTimeoutSeconds;
 		}
 	}
@@ -326,44 +324,44 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		 * Property for setting of the same name in
 		 * {@link com.google.api.gax.batching.FlowControlSettings}
 		 */
-		private Optional<Long> maxOutstandingElementCount = Optional.empty();
+		private Long maxOutstandingElementCount;
 
 		/**
 		 * Property for setting of the same name in
 		 * {@link com.google.api.gax.batching.FlowControlSettings}
 		 */
-		private Optional<Long> maxOutstandingRequestBytes = Optional.empty();
+		private Long maxOutstandingRequestBytes;
 
 		/**
 		 * Property for setting of the same name in
 		 * {@link com.google.api.gax.batching.FlowControlSettings}
 		 */
-		private Optional<LimitExceededBehavior> limitExceededBehavior = Optional.empty();
+		private LimitExceededBehavior limitExceededBehavior;
 
-		public Optional<Long> getMaxOutstandingElementCount() {
+		public Long getMaxOutstandingElementCount() {
 			return this.maxOutstandingElementCount;
 		}
 
 		public void setMaxOutstandingElementCount(
-				Optional<Long> maxOutstandingElementCount) {
+				Long maxOutstandingElementCount) {
 			this.maxOutstandingElementCount = maxOutstandingElementCount;
 		}
 
-		public Optional<Long> getMaxOutstandingRequestBytes() {
+		public Long getMaxOutstandingRequestBytes() {
 			return this.maxOutstandingRequestBytes;
 		}
 
 		public void setMaxOutstandingRequestBytes(
-				Optional<Long> maxOutstandingRequestBytes) {
+				Long maxOutstandingRequestBytes) {
 			this.maxOutstandingRequestBytes = maxOutstandingRequestBytes;
 		}
 
-		public Optional<LimitExceededBehavior> getLimitExceededBehavior() {
+		public LimitExceededBehavior getLimitExceededBehavior() {
 			return this.limitExceededBehavior;
 		}
 
 		public void setLimitExceededBehavior(
-				Optional<LimitExceededBehavior> limitExceededBehavior) {
+				LimitExceededBehavior limitExceededBehavior) {
 			this.limitExceededBehavior = limitExceededBehavior;
 		}
 	}
@@ -380,55 +378,55 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		 * Property for setting of the same name in
 		 * {@link com.google.api.gax.batching.BatchingSettings}
 		 */
-		private Optional<Long> elementCountThreshold = Optional.empty();
+		private Long elementCountThreshold;
 
 		/**
 		 * Property for setting of the same name in
 		 * {@link com.google.api.gax.batching.BatchingSettings}
 		 */
-		private Optional<Long> requestByteThreshold = Optional.empty();
+		private Long requestByteThreshold;
 
 		/**
 		 * Property for setting of the same name in
 		 * {@link com.google.api.gax.batching.BatchingSettings}
 		 */
-		private Optional<Long> delayThresholdSeconds = Optional.empty();
+		private Long delayThresholdSeconds;
 
 		/**
 		 * Property for setting of the same name in
 		 * {@link com.google.api.gax.batching.BatchingSettings}
 		 */
-		private Optional<Boolean> enabled = Optional.empty();
+		private Boolean enabled;
 
-		public Optional<Long> getElementCountThreshold() {
+		public Long getElementCountThreshold() {
 			return this.elementCountThreshold;
 		}
 
-		public void setElementCountThreshold(Optional<Long> elementCountThreshold) {
+		public void setElementCountThreshold(Long elementCountThreshold) {
 			this.elementCountThreshold = elementCountThreshold;
 		}
 
-		public Optional<Long> getRequestByteThreshold() {
+		public Long getRequestByteThreshold() {
 			return this.requestByteThreshold;
 		}
 
-		public void setRequestByteThreshold(Optional<Long> requestByteThreshold) {
+		public void setRequestByteThreshold(Long requestByteThreshold) {
 			this.requestByteThreshold = requestByteThreshold;
 		}
 
-		public Optional<Long> getDelayThresholdSeconds() {
+		public Long getDelayThresholdSeconds() {
 			return this.delayThresholdSeconds;
 		}
 
-		public void setDelayThresholdSeconds(Optional<Long> delayThresholdSeconds) {
+		public void setDelayThresholdSeconds(Long delayThresholdSeconds) {
 			this.delayThresholdSeconds = delayThresholdSeconds;
 		}
 
-		public Optional<Boolean> getEnabled() {
+		public Boolean getEnabled() {
 			return this.enabled;
 		}
 
-		public void setEnabled(Optional<Boolean> enabled) {
+		public void setEnabled(Boolean enabled) {
 			this.enabled = enabled;
 		}
 
