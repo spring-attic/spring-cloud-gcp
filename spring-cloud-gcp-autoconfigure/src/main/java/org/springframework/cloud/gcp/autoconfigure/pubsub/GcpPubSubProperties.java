@@ -32,10 +32,14 @@ import org.springframework.cloud.gcp.core.GcpScope;
 @ConfigurationProperties("spring.cloud.gcp.pubsub")
 public class GcpPubSubProperties implements CredentialsSupplier {
 
-	// Contains settings specific to the subscriber factory
+	/**
+	 * Contains settings specific to the subscriber factory
+	 */
 	private final Subscriber subscriber = new Subscriber();
 
-	// Contains settings specific to the publisher factory
+	/**
+	 * Contains settings specific to the publisher factory
+	 */
 	private final Publisher publisher = new Publisher();
 
 	/**
