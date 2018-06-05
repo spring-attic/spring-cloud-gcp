@@ -39,8 +39,8 @@
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<spring-cloud-release.version>Finchley.RC1</spring-cloud-release.version>
-		<spring-boot-release.version>2.0.1.RELEASE</spring-boot-release.version>
+		<spring-cloud-release.version>Finchley.RC2</spring-cloud-release.version>
+		<spring-boot-release.version>2.0.2.RELEASE</spring-boot-release.version>
 	</properties>
 
 	<dependencyManagement>
