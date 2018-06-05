@@ -241,10 +241,6 @@ public class GcpPubSubAutoConfiguration {
 	/**
 	 * A helper method for applying properties to settings builders for purpose of seeing if at least
 	 * one setting was set.
-	 * @param prop
-	 * @param consumer
-	 * @param <T>
-	 * @return
 	 */
 	private <T> Function<Boolean, Boolean> ifNotNull(T prop, Consumer<T> consumer) {
 		return next -> {
