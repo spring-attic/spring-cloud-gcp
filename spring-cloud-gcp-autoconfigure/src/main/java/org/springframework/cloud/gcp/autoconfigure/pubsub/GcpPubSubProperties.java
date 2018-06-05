@@ -158,12 +158,12 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		private Integer parallelPullCount;
 
 		/**
-		 * Properties for {@link com.google.api.gax.retrying.RetrySettings}
+		 * Retry settings for subscriber factory.
 		 */
 		private final Retry retry = new Retry();
 
 		/**
-		 * Properties for {@link com.google.api.gax.batching.FlowControlSettings}
+		 * Flow control settings for subscriber factory.
 		 */
 		private final FlowControl flowControl = new FlowControl();
 
