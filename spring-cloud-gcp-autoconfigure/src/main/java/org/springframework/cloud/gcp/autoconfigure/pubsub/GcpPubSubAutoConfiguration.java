@@ -179,10 +179,14 @@ public class GcpPubSubAutoConfiguration {
 		flowControlSettings.ifAvailable(factory::setFlowControlSettings);
 		apiClock.ifAvailable(factory::setApiClock);
 		retrySettings.ifAvailable(factory::setSubscriberStubRetrySettings);
-		ifNotNull(this.gcpPubSubProperties.getSubscriber().getMaxAckDurationSeconds(),
-				x -> factory.setMaxAckDurationPeriod(Duration.ofSeconds(x)));
-		ifNotNull(this.gcpPubSubProperties.getSubscriber().getParallelPullCount(),
-				factory::setParallelPullCount);
+		if (this.gcpPubSubProperties.getSubscriber().getMaxAckDurationSeconds() != null) {
+			factory.setMaxAckDurationPeriod(Duration.ofSeconds(
+					this.gcpPubSubProperties.getSubscriber().getMaxAckDurationSeconds()));
+		}
+		if (this.gcpPubSubProperties.getSubscriber().getParallelPullCount() != null) {
+			factory.setParallelPullCount(
+					this.gcpPubSubProperties.getSubscriber().getParallelPullCount());
+		}
 		if (this.gcpPubSubProperties.getSubscriber()
 				.getPullEndpoint() != null) {
 			factory.setPullEndpoint(
