@@ -387,8 +387,7 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	public static class Batching {
 
 		/**
-		 * Property for setting of the same name in
-		 * {@link com.google.api.gax.batching.BatchingSettings}
+		 * Flow control settings for batching.
 		 */
 		private final FlowControl flowControl = new FlowControl();
 
