@@ -31,7 +31,6 @@ dependencies {
 This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Spanner libraries
 as well.
 
-
 === Configuration
 
 To setup Spring Data Cloud Spanner, you have to configure the following:
