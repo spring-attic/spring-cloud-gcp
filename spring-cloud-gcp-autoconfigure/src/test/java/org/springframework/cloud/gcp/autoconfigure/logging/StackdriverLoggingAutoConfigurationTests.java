@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExt
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractorType;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.ZipkinTraceIdExtractor;
+import org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -116,5 +117,15 @@ public class StackdriverLoggingAutoConfigurationTests {
 
 		assertThat(new StackdriverLoggingAutoConfiguration().traceIdExtractor(properties))
 				.isInstanceOf(ZipkinTraceIdExtractor.class);
+	}
+
+	@Test
+	public void testWithSleuth() {
+		this.contextRunner
+				.withConfiguration(AutoConfigurations.of(StackdriverTraceAutoConfiguration.class))
+				.run(context -> {
+					assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
+							.isEqualTo(0);
+				});
 	}
 }

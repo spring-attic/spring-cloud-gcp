@@ -56,7 +56,7 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 	 * {@link #setCurrentTraceId(String)}.
 	 * <p>The trace ID is set in the log entry in the "projects/[GCP_PROJECT_ID]/traces/[TRACE_ID]"
 	 * format, in order to be associated to traces by the Google Cloud Console.
-	 * @param builder
+	 * @param builder log entry builder
 	 */
 	@Override
 	public void enhanceLogEntry(LogEntry.Builder builder) {
@@ -69,8 +69,8 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 		}
 
 		if (traceId != null) {
-			builder.setTrace("projects/" + this.projectIdProvider.getProjectId() + "/traces/"
-					+ traceId);
+			builder.setTrace(StackdriverTraceConstants.composeFullTraceName(
+					this.projectIdProvider.getProjectId(), traceId));
 		}
 	}
 }

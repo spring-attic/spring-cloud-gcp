@@ -33,6 +33,8 @@ You can do this easily if you're using the http://cloud.google.com/sdk[Google Cl
 
 `TraceIdLoggingWebMvcInterceptor` extracts the request trace ID from an HTTP request using a `TraceIdExtractor` and stores it in a thread-local, which can then be used in a logging appender to add the trace ID metadata to log messages.
 
+WARNING: If Spring Cloud GCP Trace is enabled, the logging module disables itself and delegates log correlation to Spring Cloud Sleuth.
+
 There are implementations provided for `TraceIdExtractor`:
 
 [options="header",]

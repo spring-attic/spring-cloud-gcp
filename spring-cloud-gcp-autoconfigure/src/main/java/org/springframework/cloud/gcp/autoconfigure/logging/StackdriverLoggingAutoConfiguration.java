@@ -27,6 +27,7 @@ import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExt
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractorType;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.ZipkinTraceIdExtractor;
+import org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -37,6 +38,7 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @ConditionalOnClass(TraceLoggingEnhancer.class)
+@ConditionalOnMissingBean(StackdriverTraceAutoConfiguration.class)
 @EnableConfigurationProperties({ StackdriverLoggingProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.logging.enabled", matchIfMissing = true)
 @Import(LoggingWebMvcConfigurer.class)

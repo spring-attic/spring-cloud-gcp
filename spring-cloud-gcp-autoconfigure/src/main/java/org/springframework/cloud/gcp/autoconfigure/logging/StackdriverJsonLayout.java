@@ -210,7 +210,8 @@ public class StackdriverJsonLayout extends JsonLayout {
 		if (!StringUtils.isEmpty(traceId)
 			&& !StringUtils.isEmpty(this.projectId)
 			&& !this.projectId.endsWith("_IS_UNDEFINED")) {
-			traceId = "projects/" + this.projectId + "/traces/" + formatTraceId(traceId);
+			traceId = StackdriverTraceConstants.composeFullTraceName(
+					this.projectId, formatTraceId(traceId));
 		}
 
 		add(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE, this.includeTraceId, traceId, map);

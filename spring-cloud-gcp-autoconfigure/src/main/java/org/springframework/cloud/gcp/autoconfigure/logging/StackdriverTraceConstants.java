@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.logging;
 
+import org.springframework.util.Assert;
+
 /**
  * @author João André Martins
  */
@@ -62,4 +64,17 @@ public final class StackdriverTraceConstants {
 	 * The name of the MDC parameter, Spring Sleuth is storing the span export information at
 	 */
 	public static final String MDC_FIELD_SPAN_EXPORT = "X-Span-Export";
+
+	/**
+	 * Composes the full trace name as expected by the Google Developers Console log viewer, to
+	 * enable trace correlation with log entries.
+	 * @param projectId The GCP project ID
+	 * @param traceId The trace ID
+	 * @return the trace name in the "projects/[GCP_PROJECT_ID]/trace/[TRACE_ID]" format
+	 */
+	public static String composeFullTraceName(String projectId, String traceId) {
+		Assert.notNull(projectId, "The project ID can't be null.");
+		Assert.notNull(traceId, "The trace ID can't be null.");
+		return "projects/" + projectId + "/traces/" + traceId;
+	}
 }
