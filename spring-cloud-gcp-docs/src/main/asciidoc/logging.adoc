@@ -34,21 +34,20 @@ variables to the project ID and credentials private key location, respectively.
 `TraceIdExtractor` and stores it in a thread-local of the https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-logging/src/main/java/com/google/cloud/logging/TraceLoggingEnhancer.java[`TraceLoggingEnhancer`]
 which can then be used in a logging appender to add the trace ID metadata to log messages.
 
-There are implementations provided for `TraceIdExtractor`:
+The behavior of the trace ID extraction can be configured with the `spring.cloud.gcp.logging.traceIdExtractor`
+setting:
 
 [options="header",]
 |=======================================================================
-| Extractor | Description
-| `XCloudTraceIdExtractor` | Checks the `X-Cloud-Trace-Context` HTTP header that is automatically added to HTTP requests sent to applications hosted on GCP services such as App Engine and GKE
-| `ZipkinTraceIdExtractor` | Checks the `X-B3-TraceId` header
-| `CompositeTraceIdExtractor` | Instantiated with a list of other `TraceIdExtractor`, and provides the first trace ID found using these extractors in the given order
+| Setting | Behavior
+| `XCLOUD` | Checks the `x-cloud-trace-context` HTTP header
+| `ZIPKIN` | Checks the `X-B3-traceId` HTTP header
+| `XCLOUD_ZIPKIN` | Checks the `x-cloud-trace-context` header, and if no trace ID is found checks the `X-B3-traceId` header
+| `ZIPKIN_XCLOUD` | Checks the `X-B3-traceId` header, and if no trace ID is found checks the `x-cloud-trace-context` header
 |=======================================================================
 
-`LoggingWebMvcConfigurer` configuration class is also provided to help register the `TraceIdLoggingWebMvcInterceptor`
-in Spring MVC applications.
-
-Currently, https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-logging#add-a-stackdriver-logging-handler-to-a-logger[Java Util Logging (JUL)]
-and https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-contrib/google-cloud-logging-logback[Logback] are supported.
+Currently, https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-clients/google-cloud-logging#add-a-stackdriver-logging-handler-to-a-logger[Java Util Logging (JUL)]
+and https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-clients/google-cloud-contrib/google-cloud-logging-logback[Logback] are supported.
 
 === Logback Support
 
@@ -75,8 +74,6 @@ A Stackdriver appender is also available using `org/springframework/cloud/gcp/au
 
 `STACKDRIVER_LOG_NAME` and `STACKDRIVER_LOG_FLUSH_LEVEL` environment variables can be used to customize the
 `STACKDRIVER` appender.
-
-Also see the link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[spring-cloud-gcp-starter-logging] module.
 
 ==== Log via Console
 
