@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
 import java.io.IOException;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import com.google.api.core.ApiClock;
 import com.google.api.gax.batching.BatchingSettings;
@@ -28,6 +30,7 @@ import com.google.api.gax.core.FixedExecutorProvider;
 import com.google.api.gax.core.NoCredentialsProvider;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.retrying.RetrySettings.Builder;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
@@ -36,7 +39,7 @@ import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import org.threeten.bp.Duration;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -132,44 +135,57 @@ public class GcpPubSubAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(name = "subscriberRetrySettings")
+	public RetrySettings subscriberRetrySettings() {
+		return buildRetrySettings(this.gcpPubSubProperties.getSubscriber().getRetry());
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(name = "subscriberFlowControlSettings")
+	public FlowControlSettings subscriberFlowControlSettings() {
+		return buildFlowControlSettings(
+				this.gcpPubSubProperties.getSubscriber().getFlowControl());
+	}
+
+	private FlowControlSettings buildFlowControlSettings(
+			GcpPubSubProperties.FlowControl flowControl) {
+		FlowControlSettings.Builder builder = FlowControlSettings.newBuilder();
+
+		return ifNotNull(flowControl.getLimitExceededBehavior(), builder::setLimitExceededBehavior)
+				.apply(ifNotNull(flowControl.getMaxOutstandingElementCount(),
+						builder::setMaxOutstandingElementCount)
+				.apply(ifNotNull(flowControl.getMaxOutstandingRequestBytes(),
+						builder::setMaxOutstandingRequestBytes)
+				.apply(false))) ? builder.build() : null;
+	}
+
+	@Bean
 	@ConditionalOnMissingBean
 	public SubscriberFactory defaultSubscriberFactory(
 			@Qualifier("subscriberExecutorProvider") ExecutorProvider executorProvider,
 			@Qualifier("subscriberSystemExecutorProvider")
-			@Autowired(required = false) ExecutorProvider systemExecutorProvider,
-			@Qualifier("subscriberFlowControlSettings") @Autowired(required = false)
-					FlowControlSettings flowControlSettings,
-			@Qualifier("subscriberApiClock") @Autowired(required = false) ApiClock apiClock,
-			@Qualifier("subscriberRetrySettings") @Autowired(required = false) RetrySettings retrySettings,
+			ObjectProvider<ExecutorProvider> systemExecutorProvider,
+			@Qualifier("subscriberFlowControlSettings")
+					ObjectProvider<FlowControlSettings> flowControlSettings,
+			@Qualifier("subscriberApiClock") ObjectProvider<ApiClock> apiClock,
+			@Qualifier("subscriberRetrySettings") ObjectProvider<RetrySettings> retrySettings,
 			TransportChannelProvider transportChannelProvider) {
 		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
 		factory.setHeaderProvider(this.headerProvider);
 		factory.setChannelProvider(transportChannelProvider);
-		if (systemExecutorProvider != null) {
-			factory.setSystemExecutorProvider(systemExecutorProvider);
-		}
-		if (flowControlSettings != null) {
-			factory.setFlowControlSettings(flowControlSettings);
-		}
-		if (apiClock != null) {
-			factory.setApiClock(apiClock);
-		}
-		if (retrySettings != null) {
-			factory.setSubscriberStubRetrySettings(retrySettings);
-		}
-		if (this.gcpPubSubProperties.getSubscriber().getMaxAckDurationSeconds()
-				.isPresent()) {
+		systemExecutorProvider.ifAvailable(factory::setSystemExecutorProvider);
+		flowControlSettings.ifAvailable(factory::setFlowControlSettings);
+		apiClock.ifAvailable(factory::setApiClock);
+		retrySettings.ifAvailable(factory::setSubscriberStubRetrySettings);
+		if (this.gcpPubSubProperties.getSubscriber().getMaxAckDurationSeconds() != null) {
 			factory.setMaxAckDurationPeriod(Duration.ofSeconds(
-					this.gcpPubSubProperties.getSubscriber()
-							.getMaxAckDurationSeconds().get()));
+					this.gcpPubSubProperties.getSubscriber().getMaxAckDurationSeconds()));
 		}
-		if (this.gcpPubSubProperties.getSubscriber().getParallelPullCount()
-				.isPresent()) {
+		if (this.gcpPubSubProperties.getSubscriber().getParallelPullCount() != null) {
 			factory.setParallelPullCount(
-					this.gcpPubSubProperties.getSubscriber()
-							.getParallelPullCount().get());
+					this.gcpPubSubProperties.getSubscriber().getParallelPullCount());
 		}
 		if (this.gcpPubSubProperties.getSubscriber()
 				.getPullEndpoint() != null) {
@@ -180,24 +196,81 @@ public class GcpPubSubAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(name = "publisherBatchSettings")
+	public BatchingSettings publisherBatchSettings() {
+		BatchingSettings.Builder builder = BatchingSettings.newBuilder();
+
+		GcpPubSubProperties.Batching batching = this.gcpPubSubProperties.getPublisher()
+				.getBatching();
+
+		FlowControlSettings flowControlSettings = buildFlowControlSettings(batching.getFlowControl());
+		if (flowControlSettings != null) {
+			builder.setFlowControlSettings(flowControlSettings);
+		}
+
+		return ifNotNull(batching.getDelayThresholdSeconds(),
+					x -> builder.setDelayThreshold(Duration.ofSeconds(x)))
+				.apply(ifNotNull(batching.getElementCountThreshold(), builder::setElementCountThreshold)
+				.apply(ifNotNull(batching.getEnabled(), builder::setIsEnabled)
+				.apply(ifNotNull(batching.getRequestByteThreshold(), builder::setRequestByteThreshold)
+				.apply(false)))) ? builder.build() : null;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(name = "publisherRetrySettings")
+	public RetrySettings publisherRetrySettings() {
+		return buildRetrySettings(this.gcpPubSubProperties.getPublisher().getRetry());
+	}
+
+	private RetrySettings buildRetrySettings(GcpPubSubProperties.Retry retryProperties) {
+		Builder builder = RetrySettings.newBuilder();
+
+		return ifNotNull(retryProperties.getInitialRetryDelaySeconds(),
+				x -> builder.setInitialRetryDelay(Duration.ofSeconds(x)))
+				.apply(ifNotNull(retryProperties.getInitialRpcTimeoutSeconds(),
+						x -> builder.setInitialRpcTimeout(Duration.ofSeconds(x)))
+				.apply(ifNotNull(retryProperties.getJittered(), builder::setJittered)
+				.apply(ifNotNull(retryProperties.getMaxAttempts(), builder::setMaxAttempts)
+				.apply(ifNotNull(retryProperties.getMaxRetryDelaySeconds(),
+						x -> builder.setMaxRetryDelay(Duration.ofSeconds(x)))
+				.apply(ifNotNull(retryProperties.getMaxRpcTimeoutSeconds(),
+						x -> builder.setMaxRpcTimeout(Duration.ofSeconds(x)))
+				.apply(ifNotNull(retryProperties.getRetryDelayMultiplier(), builder::setRetryDelayMultiplier)
+				.apply(ifNotNull(retryProperties.getTotalTimeoutSeconds(),
+						x -> builder.setTotalTimeout(Duration.ofSeconds(x)))
+				.apply(ifNotNull(retryProperties.getRpcTimeoutMultiplier(), builder::setRpcTimeoutMultiplier)
+				.apply(false))))))))) ? builder.build() : null;
+	}
+
+	/**
+	 * A helper method for applying properties to settings builders for purpose of seeing if at least
+	 * one setting was set.
+	 */
+	private <T> Function<Boolean, Boolean> ifNotNull(T prop, Consumer<T> consumer) {
+		return next -> {
+			boolean wasSet = next;
+			if (prop != null) {
+				consumer.accept(prop);
+				wasSet = true;
+			}
+			return wasSet;
+		};
+	}
+
+	@Bean
 	@ConditionalOnMissingBean
 	public PublisherFactory defaultPublisherFactory(
 			@Qualifier("publisherExecutorProvider") ExecutorProvider executorProvider,
-			@Qualifier("publisherBatchSettings") @Autowired(required = false)
-					BatchingSettings batchingSettings,
-			@Qualifier("publisherRetrySettings") @Autowired(required = false) RetrySettings retrySettings,
+			@Qualifier("publisherBatchSettings") ObjectProvider<BatchingSettings> batchingSettings,
+			@Qualifier("publisherRetrySettings") ObjectProvider<RetrySettings> retrySettings,
 			TransportChannelProvider transportChannelProvider) {
 		DefaultPublisherFactory factory = new DefaultPublisherFactory(this.finalProjectIdProvider);
 		factory.setExecutorProvider(executorProvider);
 		factory.setCredentialsProvider(this.finalCredentialsProvider);
 		factory.setHeaderProvider(this.headerProvider);
 		factory.setChannelProvider(transportChannelProvider);
-		if (retrySettings != null) {
-			factory.setRetrySettings(retrySettings);
-		}
-		if (batchingSettings != null) {
-			factory.setBatchingSettings(batchingSettings);
-		}
+		retrySettings.ifAvailable(factory::setRetrySettings);
+		batchingSettings.ifAvailable(factory::setBatchingSettings);
 		return factory;
 	}
 

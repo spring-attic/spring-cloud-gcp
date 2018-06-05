@@ -279,4 +279,45 @@ Package names that contain the types that are whitelisted for deserializing mess
 | `spring.cloud.gcp.pubsub.subscriber.parallel-pull-count` | The number of pull workers | No | The available number of processors
 | `spring.cloud.gcp.pubsub.subscriber.max-ack-duration-seconds` | The maximum period a message ack deadline will be extended in seconds | No | 3600
 | `spring.cloud.gcp.pubsub.subscriber.pull-endpoint` | The endpoint for synchronous pulling messages | No | pubsub.googleapis.com:443
+| `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.total-timeout-seconds`|
+TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely. The higher the total timeout, the more retries can be
+attempted. |No | 0
+| `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.initial-retry-delay-second`|
+InitialRetryDelay controls the delay before the first retry. Subsequent retries will use this
+value adjusted according to the RetryDelayMultiplier.|No | 0
+| `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.retry-delay-multiplier`|
+RetryDelayMultiplier controls the change in retry delay. The retry delay of the previous call
+is multiplied by the RetryDelayMultiplier to calculate the retry delay for the next call.|No | 1
+| `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-retry-delay-seconds`|
+MaxRetryDelay puts a limit on the value of the retry delay, so that the RetryDelayMultiplier
+can't increase the retry delay higher than this amount.|No | 0
+| `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-attempts`|
+MaxAttempts defines the maximum number of attempts to perform.
+If this value is greater than 0, and the number of attempts reaches this limit, the logic will
+give up retrying even if the total retry time is still lower than TotalTimeout.|No | 0
+| `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.jittered`|Jitter determines if the delay time should be randomized.|No | true
+| `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.initial-rpc-timeout-seconds`|
+InitialRpcTimeout controls the timeout for the initial RPC. Subsequent calls will use this
+value adjusted according to the RpcTimeoutMultiplier.|No |0
+| `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.rpc-timeout-multiplier`|
+RpcTimeoutMultiplier controls the change in RPC timeout. The timeout of the previous call is
+multiplied by the RpcTimeoutMultiplier to calculate the timeout for the next call. |No | 1
+| `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-rpc-timeout-seconds`|
+MaxRpcTimeout puts a limit on the value of the RPC timeout, so that the RpcTimeoutMultiplier
+can't increase the RPC timeout higher than this amount.|No | 0
+| `spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.max-outstanding-element-count`|
+Maximum number of outstanding elements to keep in memory before enforcing flow control.|No | unlimited
+| `spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.max-outstanding-request-bytes`|
+Maximum number of outstanding bytes to keep in memory before enforcing flow control.|No | unlimited
+| `spring.cloud.gcp.pubsub.[subscriber,publisher.batching].flow-control.limit-exceeded-behavior`|
+The behavior when the specified limits are exceeded.|No | Block
+| `spring.cloud.gcp.pubsub.publisher.batching.element-count-threshold`|
+The element count threshold to use for batching.|No | unset (threshold does not apply)
+| `spring.cloud.gcp.pubsub.publisher.batching.request-byte-threshold`|
+The request byte threshold to use for batching.|No | unset (threshold does not apply)
+| `spring.cloud.gcp.pubsub.publisher.batching.delay-threshold-seconds`|
+The delay threshold to use for batching. After this amount of time has elapsed (counting
+from the first element added), the elements will be wrapped up in a batch and sent.|No | unset (threshold does not apply)
+| `spring.cloud.gcp.pubsub.publisher.batching.enabled`|
+Enables batching.|No | false
 |===
