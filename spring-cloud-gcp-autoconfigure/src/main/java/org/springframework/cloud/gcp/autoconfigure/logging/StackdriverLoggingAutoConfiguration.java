@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.autoconfigure.logging;
 
 import com.google.cloud.logging.TraceLoggingEnhancer;
 
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -27,7 +28,8 @@ import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExt
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractorType;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.ZipkinTraceIdExtractor;
-import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration;
+import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -38,6 +40,8 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @ConditionalOnClass(TraceLoggingEnhancer.class)
+@ConditionalOnMissingBean(SleuthProperties.class)
+@AutoConfigureAfter(StackdriverTraceAutoConfiguration.class)
 @EnableConfigurationProperties({ StackdriverLoggingProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.logging.enabled", matchIfMissing = true)
 @Import(LoggingWebMvcConfigurer.class)
@@ -46,9 +50,8 @@ public class StackdriverLoggingAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public TraceIdLoggingWebMvcInterceptor loggingWebMvcInterceptor(
-			TraceIdExtractor extractor,
-			GcpProjectIdProvider projectIdProvider) {
-		return new TraceIdLoggingWebMvcInterceptor(extractor, projectIdProvider);
+			TraceIdExtractor extractor) {
+		return new TraceIdLoggingWebMvcInterceptor(extractor);
 	}
 
 	@Bean

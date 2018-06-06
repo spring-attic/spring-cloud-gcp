@@ -19,6 +19,9 @@ package org.springframework.cloud.gcp.autoconfigure.logging;
 import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.LoggingEnhancer;
 
+import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+
 /**
  * Adds the trace ID to the logging entry, in its correct format to be displayed in the Logs viewer.
  *
@@ -28,28 +31,46 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 
 	private static final ThreadLocal<String> traceId = new ThreadLocal<>();
 
-	public static void setCurrentTraceId(String projectId, String id) {
+	private GcpProjectIdProvider projectIdProvider = new DefaultGcpProjectIdProvider();
+
+	public static void setCurrentTraceId(String id) {
 		if (id == null) {
 			traceId.remove();
 		}
 		else {
-			traceId.set("projects/" + projectId + "/traces/" + id);
+			traceId.set(id);
 		}
 	}
 
 	/**
-	 * Returns the trace ID in the "projects/[MY_PROJECT_ID]/traces/[MY_TRACE_ID]".
-	 * @return the trace ID in the "projects/[MY_PROJECT_ID]/traces/[MY_TRACE_ID]"
+	 * @return the trace ID stored through {@link #setCurrentTraceId(String)}
 	 */
 	public static String getCurrentTraceId() {
 		return traceId.get();
 	}
 
+	/**
+	 * Set the trace field of the log entry to the current trace ID.
+	 * <p>The current trace ID is either the trace ID stored in the Mapped Diagnostic Context (MDC)
+	 * under the "X-B3-TraceId" key or, if none set, the current trace ID set by
+	 * {@link #setCurrentTraceId(String)}.
+	 * <p>The trace ID is set in the log entry in the "projects/[GCP_PROJECT_ID]/traces/[TRACE_ID]"
+	 * format, in order to be associated to traces by the Google Cloud Console.
+	 * @param builder log entry builder
+	 */
 	@Override
 	public void enhanceLogEntry(LogEntry.Builder builder) {
-		String traceId = getCurrentTraceId();
+		// In order not to duplicate the whole google-cloud-logging-logback LoggingAppender to add
+		// the trace ID from the MDC there, we're doing it here.
+		// This requires a call to the org.slf4j package.
+		String traceId = org.slf4j.MDC.get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
+		if (traceId == null) {
+			traceId = getCurrentTraceId();
+		}
+
 		if (traceId != null) {
-			builder.setTrace(traceId);
+			builder.setTrace(StackdriverTraceConstants.composeFullTraceName(
+					this.projectIdProvider.getProjectId(), traceId));
 		}
 	}
 }
