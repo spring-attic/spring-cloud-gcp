@@ -46,9 +46,9 @@ public class StackdriverJsonLayoutLoggerTests {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			System.setOut(new java.io.PrintStream(out));
 
-			mdc.put(StackdriverJsonLayout.MDC_FIELD_TRACE_ID, "12345678901234561234567890123456");
-			mdc.put(StackdriverJsonLayout.MDC_FIELD_SPAN_ID, "span123");
-			mdc.put(StackdriverJsonLayout.MDC_FIELD_SPAN_EXPORT, "true");
+			mdc.put(StackdriverTraceConstants.MDC_FIELD_TRACE_ID, "12345678901234561234567890123456");
+			mdc.put(StackdriverTraceConstants.MDC_FIELD_SPAN_ID, "span123");
+			mdc.put(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT, "true");
 			mdc.put("foo", "bar");
 
 			LOGGER.warn("test");
@@ -56,18 +56,18 @@ public class StackdriverJsonLayoutLoggerTests {
 			Map data = new Gson().fromJson(new String(out.toByteArray()), Map.class);
 
 			checkData(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, "test", data);
-			checkData(StackdriverJsonLayout.SEVERITY_ATTRIBUTE, "WARN", data);
+			checkData(StackdriverTraceConstants.SEVERITY_ATTRIBUTE, "WARN", data);
 			checkData(StackdriverJsonLayout.LOGGER_ATTR_NAME, "StackdriverJsonLayoutLoggerTests", data);
-			checkData(StackdriverJsonLayout.TRACE_ID_ATTRIBUTE,
+			checkData(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE,
 					"projects/test-project/traces/12345678901234561234567890123456", data);
-			checkData(StackdriverJsonLayout.SPAN_ID_ATTRIBUTE, "span123", data);
+			checkData(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, "span123", data);
 			checkData("foo", "bar", data);
-			assertFalse(data.containsKey(StackdriverJsonLayout.MDC_FIELD_TRACE_ID));
-			assertFalse(data.containsKey(StackdriverJsonLayout.MDC_FIELD_SPAN_ID));
-			assertFalse(data.containsKey(StackdriverJsonLayout.MDC_FIELD_SPAN_EXPORT));
+			assertFalse(data.containsKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID));
+			assertFalse(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID));
+			assertFalse(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT));
 			assertFalse(data.containsKey(JsonLayout.TIMESTAMP_ATTR_NAME));
-			assertTrue(data.containsKey(StackdriverJsonLayout.TIMESTAMP_SECONDS_ATTRIBUTE));
-			assertTrue(data.containsKey(StackdriverJsonLayout.TIMESTAMP_NANOS_ATTRIBUTE));
+			assertTrue(data.containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE));
+			assertTrue(data.containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE));
 		}
 		finally {
 			System.setOut(oldOut);
@@ -83,13 +83,13 @@ public class StackdriverJsonLayoutLoggerTests {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			System.setOut(new java.io.PrintStream(out));
 
-			mdc.put(StackdriverJsonLayout.MDC_FIELD_TRACE_ID, "1234567890123456");
+			mdc.put(StackdriverTraceConstants.MDC_FIELD_TRACE_ID, "1234567890123456");
 
 			LOGGER.warn("test");
 
 			Map data = new Gson().fromJson(new String(out.toByteArray()), Map.class);
 
-			checkData(StackdriverJsonLayout.TRACE_ID_ATTRIBUTE,
+			checkData(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE,
 					"projects/test-project/traces/00000000000000001234567890123456", data);
 		}
 		finally {

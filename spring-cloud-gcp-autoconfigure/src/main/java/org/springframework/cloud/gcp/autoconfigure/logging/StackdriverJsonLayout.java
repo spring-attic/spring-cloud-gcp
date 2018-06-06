@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.contrib.json.classic.JsonLayout;
-import com.google.cloud.logging.TraceLoggingEnhancer;
 import com.google.gson.Gson;
 
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
@@ -41,50 +40,10 @@ import org.springframework.util.StringUtils;
  */
 public class StackdriverJsonLayout extends JsonLayout {
 
-	/**
-	 * The JSON field name for the log level (severity)
-	 */
-	public static final String SEVERITY_ATTRIBUTE = "severity";
-
-	/**
-	 * The JSON field name for the seconds of the timestamp
-	 */
-	public static final String TIMESTAMP_SECONDS_ATTRIBUTE = "timestampSeconds";
-
-	/**
-	 * The JSON field name for the nanos of the timestamp
-	 */
-	public static final String TIMESTAMP_NANOS_ATTRIBUTE = "timestampNanos";
-
-	/**
-	 * The JSON field name for the span-id
-	 */
-	public static final String SPAN_ID_ATTRIBUTE = "logging.googleapis.com/spanId";
-
-	/**
-	 * The JSON field name for the trace-id
-	 */
-	public static final String TRACE_ID_ATTRIBUTE = "logging.googleapis.com/trace";
-
-	/**
-	 * The name of the MDC parameter, Spring Sleuth is storing the trace id at
-	 */
-	public static final String MDC_FIELD_TRACE_ID = "X-B3-TraceId";
-
-	/**
-	 * The name of the MDC parameter, Spring Sleuth is storing the span id at
-	 */
-	public static final String MDC_FIELD_SPAN_ID = "X-B3-SpanId";
-
-	/**
-	 * The name of the MDC parameter, Spring Sleuth is storing the span export information at
-	 */
-	public static final String MDC_FIELD_SPAN_EXPORT = "X-Span-Export";
-
 	private static final Set<String> FILTERED_MDC_FIELDS = new HashSet<>(Arrays.asList(
-			MDC_FIELD_TRACE_ID,
-			MDC_FIELD_SPAN_ID,
-			MDC_FIELD_SPAN_EXPORT));
+			StackdriverTraceConstants.MDC_FIELD_TRACE_ID,
+			StackdriverTraceConstants.MDC_FIELD_SPAN_ID,
+			StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT));
 
 	private String projectId;
 
@@ -194,11 +153,14 @@ public class StackdriverJsonLayout extends JsonLayout {
 			});
 		}
 		if (this.includeTimestamp) {
-			map.put(TIMESTAMP_SECONDS_ATTRIBUTE, TimeUnit.MILLISECONDS.toSeconds(event.getTimeStamp()));
-			map.put(TIMESTAMP_NANOS_ATTRIBUTE, TimeUnit.MILLISECONDS.toNanos(event.getTimeStamp() % 1_000));
+			map.put(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE,
+					TimeUnit.MILLISECONDS.toSeconds(event.getTimeStamp()));
+			map.put(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE,
+					TimeUnit.MILLISECONDS.toNanos(event.getTimeStamp() / 1_000));
 		}
 
-		add(SEVERITY_ATTRIBUTE, this.includeLevel, String.valueOf(event.getLevel()), map);
+		add(StackdriverTraceConstants.SEVERITY_ATTRIBUTE, this.includeLevel,
+				String.valueOf(event.getLevel()), map);
 		add(JsonLayout.THREAD_ATTR_NAME, this.includeThreadName, event.getThreadName(), map);
 		add(JsonLayout.LOGGER_ATTR_NAME, this.includeLoggerName, event.getLoggerName(), map);
 
@@ -216,10 +178,12 @@ public class StackdriverJsonLayout extends JsonLayout {
 			map.put(JsonLayout.FORMATTED_MESSAGE_ATTR_NAME, message);
 		}
 		add(JsonLayout.MESSAGE_ATTR_NAME, this.includeMessage, event.getMessage(), map);
-		add(JsonLayout.CONTEXT_ATTR_NAME, this.includeContextName, event.getLoggerContextVO().getName(), map);
+		add(JsonLayout.CONTEXT_ATTR_NAME, this.includeContextName,
+				event.getLoggerContextVO().getName(), map);
 		addThrowableInfo(JsonLayout.EXCEPTION_ATTR_NAME, this.includeException, event, map);
 		addTraceId(event, map);
-		add(SPAN_ID_ATTRIBUTE, this.includeSpanId, event.getMDCPropertyMap().get(MDC_FIELD_SPAN_ID), map);
+		add(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, this.includeSpanId,
+				event.getMDCPropertyMap().get(StackdriverTraceConstants.MDC_FIELD_SPAN_ID), map);
 		addCustomDataToJsonMap(map, event);
 		return map;
 	}
@@ -238,16 +202,15 @@ public class StackdriverJsonLayout extends JsonLayout {
 			return;
 		}
 
-		String traceId = TraceLoggingEnhancer.getCurrentTraceId();
-		if (traceId == null) {
-			traceId = event.getMDCPropertyMap().get(MDC_FIELD_TRACE_ID);
-		}
+		String traceId =
+				event.getMDCPropertyMap().get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
+
 		if (!StringUtils.isEmpty(traceId)
 			&& !StringUtils.isEmpty(this.projectId)
 			&& !this.projectId.endsWith("_IS_UNDEFINED")) {
 			traceId = "projects/" + this.projectId + "/traces/" + formatTraceId(traceId);
 		}
 
-		add(TRACE_ID_ATTRIBUTE, this.includeTraceId, traceId, map);
+		add(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE, this.includeTraceId, traceId, map);
 	}
 }
