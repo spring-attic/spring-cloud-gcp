@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.autoconfigure.logging;
 
 import java.util.List;
 
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.auth.Credentials;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -28,8 +30,11 @@ import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExt
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractorType;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.ZipkinTraceIdExtractor;
+import org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Mike Eltsufin
@@ -116,5 +121,25 @@ public class StackdriverLoggingAutoConfigurationTests {
 
 		assertThat(new StackdriverLoggingAutoConfiguration().traceIdExtractor(properties))
 				.isInstanceOf(ZipkinTraceIdExtractor.class);
+	}
+
+	@Test
+	public void testWithSleuth() {
+		this.contextRunner
+				.withConfiguration(AutoConfigurations.of(Configuration.class,
+						StackdriverTraceAutoConfiguration.class))
+				.withPropertyValues("spring.cloud.gcp.project-id=pop-1")
+				.run(context -> {
+					assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
+							.isEqualTo(0);
+				});
+	}
+
+	private static class Configuration {
+
+		@Bean
+		public CredentialsProvider googleCredentials() {
+			return () -> mock(Credentials.class);
+		}
 	}
 }
