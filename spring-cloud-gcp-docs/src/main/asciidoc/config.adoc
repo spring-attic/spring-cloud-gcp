@@ -98,7 +98,7 @@ http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoin
 Cloud] provides support to have configuration parameters be
 reloadable with the POST request to `/actuator/refresh` endpoint.
 
-1.  Add the following dependency to your `pom.xml`:
+1.  Add the Spring Boot Actuator dependency:
 +
 ....
   <dependency>
@@ -107,8 +107,8 @@ reloadable with the POST request to `/actuator/refresh` endpoint.
   </dependency>
 ....
 2.  Add `@RefreshScope` to your Spring configuration class to have parameters be reloadable at runtime.
-3.  If your application doesn't require authentication, add `management.endpoints.web.expose=*`
-to your `application.properties` at allow unrestricted access to `/actuator/refresh`.
+3.  Add `management.endpoints.web.exposure.include=refresh` to your `application.properties` to allow
+unrestricted access to `/actuator/refresh`.
 4.  Update a property with `gcloud`:
 +
 ....

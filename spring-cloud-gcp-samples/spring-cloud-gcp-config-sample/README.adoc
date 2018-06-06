@@ -41,7 +41,7 @@ link:src/resources/application.properties[application.properties] file
 includes the following property:
 +
 ....
-management.endpoints.web.exposure.include=*
+management.endpoints.web.exposure.include=refresh
 ....
 7.  Run the application using the `$ mvn spring-boot:run` command.
 8.  Update a property with `gcloud`:
