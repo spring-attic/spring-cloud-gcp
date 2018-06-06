@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.autoconfigure.logging;
 
-import com.google.cloud.logging.TraceLoggingEnhancer;
-
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -33,13 +31,18 @@ import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 /**
+ * This class configures a Web MVC interceptor to capture trace IDs for log correlation.
+ * This configuration is turned on only if Sleuth is not used and Web MVC is used.
+ * Otherwise, the MDC context will be used by the Logback appenders.
+ *
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
 @Configuration
-@ConditionalOnClass(TraceLoggingEnhancer.class)
+@ConditionalOnClass(HandlerInterceptorAdapter.class)
 @ConditionalOnMissingBean(SleuthProperties.class)
 @AutoConfigureAfter(StackdriverTraceAutoConfiguration.class)
 @EnableConfigurationProperties({ StackdriverLoggingProperties.class })
