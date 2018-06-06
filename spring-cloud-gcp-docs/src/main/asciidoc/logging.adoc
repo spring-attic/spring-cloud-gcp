@@ -37,8 +37,7 @@ For use in Web MVC-based applications, `TraceIdLoggingWebMvcInterceptor` is prov
 
 WARNING: If Spring Cloud GCP Trace is enabled, the logging module disables itself and delegates log correlation to Spring Cloud Sleuth.
 
-The behavior of the trace ID extraction can be configured with the `spring.cloud.gcp.logging.traceIdExtractor`
-setting:
+The behavior of the trace ID extraction can be configured with the `spring.cloud.gcp.logging.traceIdExtractor` property:
 
 [options="header",]
 |=======================================================================

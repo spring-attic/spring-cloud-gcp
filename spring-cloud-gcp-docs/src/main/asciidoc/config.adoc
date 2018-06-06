@@ -99,13 +99,23 @@ Cloud] provides support to have configuration parameters be
 reloadable with the POST request to `/actuator/refresh` endpoint.
 
 1.  Add the Spring Boot Actuator dependency:
-+
-....
-  <dependency>
+
+Maven coordinates:
+----
+<dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-actuator</artifactId>
-  </dependency>
-....
+</dependency>
+----
+
+Gradle coordinates:
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
+}
+----
+
 2.  Add `@RefreshScope` to your Spring configuration class to have parameters be reloadable at runtime.
 3.  Add `management.endpoints.web.exposure.include=refresh` to your `application.properties` to allow
 unrestricted access to `/actuator/refresh`.
