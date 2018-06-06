@@ -33,6 +33,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * @author Andreas Berger
+ * @author Mike Eltsufin
  */
 public class StackdriverJsonLayoutLoggerTests {
 
@@ -97,6 +98,31 @@ public class StackdriverJsonLayoutLoggerTests {
 			mdc.clear();
 		}
 	}
+
+	@Test
+	public void testEnhancerNoMdc() {
+		PrintStream oldOut = System.out;
+
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			System.setOut(new java.io.PrintStream(out));
+
+			String traceId = "1234567890123456";
+			TraceIdLoggingEnhancer.setCurrentTraceId(traceId);
+
+			LOGGER.warn("test");
+
+			Map data = new Gson().fromJson(new String(out.toByteArray()), Map.class);
+
+			checkData(StackdriverTraceConstants.TRACE_ID_ATTRIBUTE,
+					"projects/test-project/traces/0000000000000000" + traceId, data);
+		}
+		finally {
+			System.setOut(oldOut);
+			TraceIdLoggingEnhancer.setCurrentTraceId(null);
+		}
+	}
+
 
 	private void checkData(String attribute, Object value, Map data) {
 		Object actual = data.get(attribute);
