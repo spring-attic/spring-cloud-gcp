@@ -31,7 +31,9 @@ NOTE: Due to the way logging is set up, the GCP project ID and credentials defin
 Instead, you should set the `GOOGLE_CLOUD_PROJECT` and `GOOGLE_APPLICATION_CREDENTIALS` environment variables to the project ID and credentials private key location, respectively.
 You can do this easily if you're using the http://cloud.google.com/sdk[Google Cloud SDK], using the `gcloud config set project [YOUR_PROJECT_ID]` and `gcloud auth application-default login` commands, respectively.
 
-`TraceIdLoggingWebMvcInterceptor` extracts the request trace ID from an HTTP request using a `TraceIdExtractor` and stores it in a thread-local, which can then be used in a logging appender to add the trace ID metadata to log messages.
+=== Web MVC Interceptor
+
+For use in Web MVC-based applications, `TraceIdLoggingWebMvcInterceptor` is provided that extracts the request trace ID from an HTTP request using a `TraceIdExtractor` and stores it in a thread-local, which can then be used in a logging appender to add the trace ID metadata to log messages.
 
 WARNING: If Spring Cloud GCP Trace is enabled, the logging module disables itself and delegates log correlation to Spring Cloud Sleuth.
 
@@ -48,12 +50,10 @@ There are implementations provided for `TraceIdExtractor`:
 `LoggingWebMvcConfigurer` configuration class is also provided to help register the `TraceIdLoggingWebMvcInterceptor`
 in Spring MVC applications.
 
-Currently, https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-logging#add-a-stackdriver-logging-handler-to-a-logger[Java Util Logging (JUL)]
-and https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-contrib/google-cloud-logging-logback[Logback] are supported.
-
 === Logback Support
 
-There are 2 possibilities to log to Stackdriver via this library with Logback:
+Currently, only Logback is supported and there are 2 possibilities to log to Stackdriver via this library with Logback:
+via direct API calls and through JSON-formatted console logs.
 
 ==== Log via API
 A Stackdriver appender is available using `org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml`.
