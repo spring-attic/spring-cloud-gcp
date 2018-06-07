@@ -32,7 +32,6 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.MessageConverter;
-import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.util.Assert;
 
 /**
@@ -40,6 +39,7 @@ import org.springframework.util.Assert;
  * attached channels.
  *
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
@@ -58,10 +58,6 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	public PubSubInboundChannelAdapter(PubSubOperations pubSubTemplate, String subscriptionName) {
 		this.pubSubTemplate = pubSubTemplate;
 		this.subscriptionName = subscriptionName;
-
-		StringMessageConverter stringMessageConverter = new StringMessageConverter();
-		stringMessageConverter.setSerializedPayloadClass(String.class);
-		this.messageConverter = stringMessageConverter;
 	}
 
 	@Override
@@ -82,14 +78,18 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 
 		try {
-			Message<?> internalMessage =
-					this.messageConverter == null
-							? MessageBuilder.withPayload(pubsubMessage.getData().toByteArray())
-							.copyHeaders(messageHeaders)
-							.build()
-							: this.messageConverter.toMessage(
-									pubsubMessage.getData().toStringUtf8(),
-							new MessageHeaders(messageHeaders));
+			Message<?> internalMessage = null;
+
+			if (this.messageConverter != null) {
+				this.messageConverter.toMessage(
+						pubsubMessage.getData().toByteArray(),
+						new MessageHeaders(messageHeaders));
+			}
+			else {
+				internalMessage = MessageBuilder.withPayload(pubsubMessage.getData().toByteArray())
+						.copyHeaders(messageHeaders)
+						.build();
+			}
 
 			sendMessage(internalMessage);
 		}
@@ -129,9 +129,9 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	/**
 	 * Set the {@link MessageConverter} to convert the payload of the incoming message from
-	 * Pub/Sub.
-	 * If {@code messageConverter} is null, the payload of the Pub/Sub message is converted to
-	 * {@code byte[]} and returned in that form.
+	 * Pub/Sub. The converter should expect a payload of type {@code byte[]}. If
+	 * {@code messageConverter} is null, the payload of the Pub/Sub message is returned in the
+	 * {@code byte[]} form.
 	 * @param messageConverter converts the payload of the incoming message from Pub/Sub
 	 */
 	public void setMessageConverter(MessageConverter messageConverter) {
