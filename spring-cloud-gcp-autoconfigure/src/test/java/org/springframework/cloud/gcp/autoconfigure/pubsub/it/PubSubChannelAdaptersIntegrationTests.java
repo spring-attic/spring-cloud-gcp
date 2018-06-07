@@ -55,6 +55,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.PollableChannel;
+import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
@@ -66,6 +67,7 @@ import static org.mockito.Mockito.verify;
 
 /**
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public class PubSubChannelAdaptersIntegrationTests {
 
@@ -82,7 +84,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 	}
 
 	@Test
-	public void sendAndReceiveMessage() {
+	public void sendAndReceiveMessageAsString() {
 		this.contextRunner.run(context -> {
 			try {
 				Map<String, Object> headers = new HashMap<>();
@@ -91,6 +93,9 @@ public class PubSubChannelAdaptersIntegrationTests {
 				headers.put("static", "lift your skinny fists");
 				headers.put("sleep", "lift your skinny fists");
 
+				context.getBean(PubSubInboundChannelAdapter.class).setMessageConverter(
+						new StringMessageConverter());
+
 				context.getBean("inputChannel", MessageChannel.class).send(
 						MessageBuilder.createMessage("I am a message.",
 								new MessageHeaders(headers)));
@@ -98,8 +103,8 @@ public class PubSubChannelAdaptersIntegrationTests {
 				Message<?> message =
 						context.getBean("outputChannel", PollableChannel.class).receive(5000);
 				assertThat(message).isNotNull();
-				assertThat(message.getPayload()).isInstanceOf(String.class);
-				String payload = (String) message.getPayload();
+				assertThat(message.getPayload()).isInstanceOf(byte[].class);
+				String payload = (String) message.getPayload().toString();
 				assertThat(payload).isEqualTo("I am a message.");
 
 				assertThat(message.getHeaders().size()).isEqualTo(6);
@@ -116,10 +121,9 @@ public class PubSubChannelAdaptersIntegrationTests {
 	}
 
 	@Test
-	public void sendAndReceiveMessageInBytes() {
+	public void sendAndReceiveMessage() {
 		this.contextRunner.run(context -> {
 			try {
-				context.getBean(PubSubInboundChannelAdapter.class).setMessageConverter(null);
 				context.getBean("inputChannel", MessageChannel.class).send(
 						MessageBuilder.withPayload("I am a message.").build());
 
