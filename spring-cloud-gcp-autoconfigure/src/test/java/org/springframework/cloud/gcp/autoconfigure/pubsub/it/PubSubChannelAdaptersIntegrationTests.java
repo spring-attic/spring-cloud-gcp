@@ -55,7 +55,6 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.PollableChannel;
-import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
@@ -93,9 +92,6 @@ public class PubSubChannelAdaptersIntegrationTests {
 				headers.put("static", "lift your skinny fists");
 				headers.put("sleep", "lift your skinny fists");
 
-				context.getBean(PubSubInboundChannelAdapter.class).setMessageConverter(
-						new StringMessageConverter());
-
 				context.getBean("inputChannel", MessageChannel.class).send(
 						MessageBuilder.createMessage("I am a message.",
 								new MessageHeaders(headers)));
@@ -104,10 +100,10 @@ public class PubSubChannelAdaptersIntegrationTests {
 						context.getBean("outputChannel", PollableChannel.class).receive(5000);
 				assertThat(message).isNotNull();
 				assertThat(message.getPayload()).isInstanceOf(byte[].class);
-				String payload = (String) message.getPayload().toString();
+				String payload = new String((byte[]) message.getPayload());
 				assertThat(payload).isEqualTo("I am a message.");
 
-				assertThat(message.getHeaders().size()).isEqualTo(6);
+				assertThat(message.getHeaders().size()).isEqualTo(5);
 				assertThat(message.getHeaders().get("storm")).isEqualTo("lift your skinny fists");
 				assertThat(message.getHeaders().get("static")).isEqualTo("lift your skinny fists");
 				assertThat(message.getHeaders().get("sleep")).isEqualTo("lift your skinny fists");
