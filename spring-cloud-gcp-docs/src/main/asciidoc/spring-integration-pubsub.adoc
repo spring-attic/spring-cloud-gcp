@@ -89,7 +89,7 @@ users can extract using the `GcpPubSubHeaders.ACKNOWLEDGEMENT` key and use to (n
 @ServiceActivator(inputChannel = "pubsubInputChannel")
 public MessageHandler messageReceiver() {
     return message -> {
-        LOGGER.info("Message arrived! Payload: " + message.getPayload());
+        LOGGER.info("Message arrived! Payload: " + new String((byte[]) message.getPayload()));
         AckReplyConsumer consumer =
               message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT, AckReplyConsumer.class);
         consumer.ack();
