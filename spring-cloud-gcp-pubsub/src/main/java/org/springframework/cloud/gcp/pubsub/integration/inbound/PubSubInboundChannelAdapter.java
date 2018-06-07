@@ -81,7 +81,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 			Message<?> internalMessage = null;
 
 			if (this.messageConverter != null) {
-				this.messageConverter.toMessage(
+				internalMessage = this.messageConverter.toMessage(
 						pubsubMessage.getData().toByteArray(),
 						new MessageHeaders(messageHeaders));
 			}

@@ -99,7 +99,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 			pubsubPayload = (ByteString) payload;
 		}
 		else {
-			pubsubPayload = ByteString.copyFrom(message.toString().getBytes());
+			pubsubPayload = ByteString.copyFrom(message.getPayload().toString().getBytes());
 		}
 
 		Map<String, String> headers = new HashMap<>();
@@ -131,7 +131,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	/**
 	 * Set the {@link MessageConverter} to convert an outgoing message to a {@code byte[]}
 	 * payload for sending to Pub/Sub. If {@code messageConverter} is null and payload is not
-	 * already of type {@code byte[]} or {@code {@link ByteString}}, the
+	 * already of type {@code byte[]} or {@link ByteString}, the
 	 * {@code toString().getBytes()} will be called on the payload to convert it to a
 	 * {@code byte[]} form.
 	 * @param messageConverter converts {@link Message} to a payload of the outgoing message
