@@ -26,12 +26,10 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.integration.support.MessageBuilder;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.util.Assert;
 
 /**
@@ -51,7 +49,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private AckMode ackMode = AckMode.AUTO;
 
-	private MessageConverter messageConverter;
+	private Converter<byte[], Object> payloadConverter;
 
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
@@ -78,20 +76,16 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 
 		try {
-			Message<?> internalMessage = null;
+			Object payload;
 
-			if (this.messageConverter != null) {
-				internalMessage = this.messageConverter.toMessage(
-						pubsubMessage.getData().toByteArray(),
-						new MessageHeaders(messageHeaders));
+			if (this.payloadConverter != null) {
+				payload = this.payloadConverter.convert(pubsubMessage.getData().toByteArray());
 			}
 			else {
-				internalMessage = MessageBuilder.withPayload(pubsubMessage.getData().toByteArray())
-						.copyHeaders(messageHeaders)
-						.build();
+				payload = pubsubMessage.getData().toByteArray();
 			}
 
-			sendMessage(internalMessage);
+			sendMessage(MessageBuilder.withPayload(payload).copyHeaders(messageHeaders).build());
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
@@ -123,24 +117,23 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		this.ackMode = ackMode;
 	}
 
-	public MessageConverter getMessageConverter() {
-		return this.messageConverter;
+	public Converter<byte[], Object> getPayloadConverter() {
+		return this.payloadConverter;
 	}
 
 	/**
-	 * Set the {@link MessageConverter} to convert the payload of the incoming message from
-	 * Pub/Sub. The converter should expect a payload of type {@code byte[]}. If
-	 * {@code messageConverter} is null, the payload of the Pub/Sub message is returned in the
-	 * {@code byte[]} form.
-	 * @param messageConverter converts the payload of the incoming message from Pub/Sub
+	 * Set the {@link Converter} to convert an incoming Pub/Sub message payload to an
+	 * {@code Object}. If the converter is null, the payload is unchanged.
+	 * @param payloadConverter converts a {@link PubsubMessage} payload to a
+	 * {@link org.springframework.messaging.Message} payload. Can be set to null.
 	 */
-	public void setMessageConverter(MessageConverter messageConverter) {
-		this.messageConverter = messageConverter;
+	public void setPayloadConverter(Converter<byte[], Object> payloadConverter) {
+		this.payloadConverter = payloadConverter;
 	}
 
 	/**
 	 * Set the header mapper to map headers from incoming {@link PubsubMessage} into
-	 * {@link Message}.
+	 * {@link org.springframework.messaging.Message}.
 	 * @param headerMapper the header mapper
 	 */
 	public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {

@@ -26,6 +26,8 @@ import com.google.pubsub.v1.PubsubMessage;
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.serializer.support.SerializingConverter;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.common.LiteralExpression;
@@ -34,7 +36,6 @@ import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
@@ -44,7 +45,9 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
  *
  * <p>It delegates Google Cloud Pub/Sub interaction to {@link PubSubOperations}. It also converts
  * the {@link Message} payload into a {@link PubsubMessage} accepted by the Google Cloud Pub/Sub
- * Client Library. It supports synchronous and asynchronous sending.
+ * Client Library. It supports synchronous and asynchronous sending. If a payload {@link Converter}
+ * is not specified, an instance of {@link SerializingConverter} will be used when provided
+ * payloads are not of type {@link PubsubMessage}, {@code byte[]} or {@link com.google.cloud.ByteArray}.
  *
  * @author João André Martins
  * @author Mike Eltsufin
@@ -55,7 +58,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private final PubSubOperations pubSubTemplate;
 
-	private MessageConverter messageConverter;
+	private Converter<Object, byte[]> payloadConverter;
 
 	private Expression topicExpression;
 
@@ -70,8 +73,14 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
+		this(pubSubTemplate, topic, new SerializingConverter());
+	}
+
+	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic,
+			Converter<Object, byte[]> payloadConverter) {
 		this.pubSubTemplate = pubSubTemplate;
 		this.topicExpression = new LiteralExpression(topic);
+		this.payloadConverter = payloadConverter;
 	}
 
 	@Override
@@ -81,32 +90,30 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 				? message.getHeaders().get(GcpPubSubHeaders.TOPIC, String.class)
 				: this.topicExpression.getValue(this.evaluationContext, message, String.class);
 
+		ListenableFuture<String> pubsubFuture;
+
+
 		if (payload instanceof PubsubMessage) {
-			this.pubSubTemplate.publish(topic, (PubsubMessage) payload);
-			return;
-		}
-
-		ByteString pubsubPayload;
-
-		if (this.messageConverter != null) {
-			pubsubPayload = ByteString.copyFrom((byte[]) this.messageConverter.fromMessage(message,
-					byte[].class));
-		}
-		else if (payload instanceof byte[]) {
-			pubsubPayload = ByteString.copyFrom((byte[]) payload);
-		}
-		else if (payload instanceof ByteString) {
-			pubsubPayload = (ByteString) payload;
+			pubsubFuture = this.pubSubTemplate.publish(topic, (PubsubMessage) payload);
 		}
 		else {
-			pubsubPayload = ByteString.copyFrom(message.getPayload().toString().getBytes());
+			ByteString pubsubPayload;
+
+			if (payload instanceof byte[]) {
+				pubsubPayload = ByteString.copyFrom((byte[]) payload);
+			}
+			else if (payload instanceof ByteString) {
+				pubsubPayload = (ByteString) payload;
+			}
+			else {
+				pubsubPayload = ByteString.copyFrom(this.payloadConverter.convert(payload));
+			}
+
+			Map<String, String> headers = new HashMap<>();
+			this.headerMapper.fromHeaders(message.getHeaders(), headers);
+
+			pubsubFuture = this.pubSubTemplate.publish(topic, pubsubPayload, headers);
 		}
-
-		Map<String, String> headers = new HashMap<>();
-		this.headerMapper.fromHeaders(message.getHeaders(), headers);
-
-		ListenableFuture<String> pubsubFuture =
-				this.pubSubTemplate.publish(topic, pubsubPayload, headers);
 
 		if (this.publishCallback != null) {
 			pubsubFuture.addCallback(this.publishCallback);
@@ -124,23 +131,21 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		}
 	}
 
-	public MessageConverter getMessageConverter() {
-		return this.messageConverter;
+	public Converter<Object, byte[]> getPayloadConverter() {
+		return this.payloadConverter;
 	}
 
 	/**
-	 * Set the {@link MessageConverter} to convert an outgoing message to a {@code byte[]}
-	 * payload for sending to Pub/Sub. If {@code messageConverter} is null and payload is not
-	 * already of type {@code byte[]} or {@link ByteString}, the
-	 * {@code toString().getBytes()} will be called on the payload to convert it to a
-	 * {@code byte[]} form.
-	 * @param messageConverter converts {@link Message} to a payload of the outgoing message
-	 * to Pub/Sub
+	 * Set the {@link Converter} to convert an outgoing message payload to a {@code byte[]}
+	 * payload for sending to Pub/Sub. If the payload is already of type {@link PubsubMessage},
+	 * {@code byte[]} or {@link ByteString}, the converter is ignored.
+	 * @param payloadConverter converts {@link Message} to a payload of the outgoing message
+	 * to Pub/Sub. Cannot be set to null.
 	 */
-	public void setMessageConverter(MessageConverter messageConverter) {
-		Assert.notNull(messageConverter,
-				"The specified message converter can't be null.");
-		this.messageConverter = messageConverter;
+	public void setPayloadConverter(Converter<Object, byte[]> payloadConverter) {
+		Assert.notNull(payloadConverter,
+				"The specified message payload converter can't be null.");
+		this.payloadConverter = payloadConverter;
 	}
 
 	public boolean isSync() {
