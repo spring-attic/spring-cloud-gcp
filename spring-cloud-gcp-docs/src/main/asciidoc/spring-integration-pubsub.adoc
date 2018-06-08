@@ -33,6 +33,8 @@ dependencies {
 }
 ----
 
+Sample application is https://github.com/spring-cloud/spring-cloud-gcp/tree/{git_version}/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-sample[available].
+
 ==== Inbound channel adapter
 
 `PubSubInboundChannelAdapter` is the inbound channel adapter for GCP Pub/Sub that listens to a GCP

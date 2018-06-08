@@ -104,7 +104,7 @@
 					<plugin>
 						<groupId>org.asciidoctor</groupId>
 						<artifactId>asciidoctor-maven-plugin</artifactId>
-						<version>1.5.3</version>
+						<version>1.5.6</version>
 						<configuration>
 							<sourceDocumentName>index.adoc</sourceDocumentName>
 							<backend>docbook5</backend>

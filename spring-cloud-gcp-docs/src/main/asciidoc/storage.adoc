@@ -28,6 +28,8 @@ dependencies {
 
 This starter is also available from https://start.spring.io/[Spring Initializr] through the `GCP Storage` entry.
 
+Sample application is https://github.com/spring-cloud/spring-cloud-gcp/tree/{git_version}/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample[available].
+
 === Google Cloud Storage
 
 The Spring Resource Abstraction for Google Cloud Storage allows GCS objects to be accessed by their
