@@ -42,7 +42,8 @@ The GCP Storage entry adds the GCP Support entry and all the required dependenci
 
 === Code Samples
 
-There are https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples[code samples] available that demonstrate the usage of all our integrations.
+There are https://github.com/spring-cloud/spring-cloud-gcp/tree/{git_version}/spring-cloud-gcp-samples[code samples] available that demonstrate the usage of all our integrations.
+https://github.com/spring-cloud/spring-cloud-gcp/tree/{git_version}/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[The Vision API sample] shows how to use `spring-cloud-gcp-starter` for authentication.
 
 === Code Challenges
 

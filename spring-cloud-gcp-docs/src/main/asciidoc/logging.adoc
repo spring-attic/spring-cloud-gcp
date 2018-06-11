@@ -31,6 +31,8 @@ NOTE: Due to the way logging is set up, the GCP project ID and credentials defin
 Instead, you should set the `GOOGLE_CLOUD_PROJECT` and `GOOGLE_APPLICATION_CREDENTIALS` environment variables to the project ID and credentials private key location, respectively.
 You can do this easily if you're using the http://cloud.google.com/sdk[Google Cloud SDK], using the `gcloud config set project [YOUR_PROJECT_ID]` and `gcloud auth application-default login` commands, respectively.
 
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/{git_version}/spring-cloud-gcp-samples/spring-cloud-gcp-logging-sample[sample application] is available.
+
 === Web MVC Interceptor
 
 For use in Web MVC-based applications, `TraceIdLoggingWebMvcInterceptor` is provided that extracts the request trace ID from an HTTP request using a `TraceIdExtractor` and stores it in a thread-local, which can then be used in a logging appender to add the trace ID metadata to log messages.

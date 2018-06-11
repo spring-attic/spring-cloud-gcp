@@ -7,9 +7,30 @@ is an abstraction for storing and retrieving POJOs in numerous storage technolog
 Spring Cloud GCP adds Spring Data support for http://cloud.google.com/spanner/[Google Cloud
 Spanner].
 
-A Spring Boot starter is provided to auto-configure the various Storage components.
+Maven coordinates for this module only, using Spring Cloud GCP BOM:
 
-Maven coordinates for the Spring Boot Starter for Cloud Spanner, using Spring Cloud GCP BOM:
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-data-spanner</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-spanner'
+}
+----
+
+We provide a link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner], with which you can leverage our recommended auto-configuration setup.
+To use the starter, see the coordinates see below.
+
+
+Maven:
 
 [source,xml]
 ----
@@ -19,7 +40,7 @@ Maven coordinates for the Spring Boot Starter for Cloud Spanner, using Spring Cl
 </dependency>
 ----
 
-Gradle coordinates:
+Gradle:
 
 [source,subs="normal"]
 ----
@@ -30,6 +51,8 @@ dependencies {
 
 This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Spanner libraries
 as well.
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/{git_version}/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[sample application] is available.
 
 === Configuration
 
