@@ -72,7 +72,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
-	private PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
+	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
 		Assert.notNull(pubSubTemplate, "Pub/Sub template cannot be null.");
 		Assert.notNull(topic, "Pub/Sub topic cannot be null.");
 		this.pubSubTemplate = pubSubTemplate;

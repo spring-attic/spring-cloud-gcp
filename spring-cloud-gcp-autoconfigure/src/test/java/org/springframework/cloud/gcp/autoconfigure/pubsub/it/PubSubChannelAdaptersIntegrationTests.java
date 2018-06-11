@@ -48,7 +48,6 @@ import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.serializer.support.DeserializingConverter;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
@@ -94,9 +93,8 @@ public class PubSubChannelAdaptersIntegrationTests {
 				headers.put("sleep", "lift your skinny fists");
 
 				context.getBean("inputChannel", MessageChannel.class).send(
-						MessageBuilder.createMessage("I am a message.",
+						MessageBuilder.createMessage("I am a message.".getBytes(),
 								new MessageHeaders(headers)));
-				context.getBean(PubSubInboundChannelAdapter.class).setPayloadConverter(new DeserializingConverter());
 
 				Message<?> message =
 						context.getBean("outputChannel", PollableChannel.class).receive(5000);
@@ -123,7 +121,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 		this.contextRunner.run(context -> {
 			try {
 				context.getBean("inputChannel", MessageChannel.class).send(
-						MessageBuilder.withPayload("I am a message.").build());
+						MessageBuilder.withPayload("I am a message.".getBytes()).build());
 
 				Message<?> message =
 						context.getBean("outputChannel", PollableChannel.class).receive(5000);
