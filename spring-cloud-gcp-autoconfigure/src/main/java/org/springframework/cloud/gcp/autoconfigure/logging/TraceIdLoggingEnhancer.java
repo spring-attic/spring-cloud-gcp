@@ -78,7 +78,7 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 		if (traceId != null) {
 			builder.setTrace(StackdriverTraceConstants.composeFullTraceName(
 					this.projectIdProvider.getProjectId(), traceId));
-			if (runningOnAppEngine) {
+			if (this.runningOnAppEngine) {
 				builder.addLabel(APP_ENGINE_LABEL_NAME, traceId);
 			}
 		}
