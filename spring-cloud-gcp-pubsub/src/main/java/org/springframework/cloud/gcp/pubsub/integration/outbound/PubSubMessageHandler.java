@@ -72,15 +72,12 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
-	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
-		this(pubSubTemplate, topic, new SerializingConverter());
-	}
-
-	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic,
-			Converter<Object, byte[]> payloadConverter) {
+	private PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
+		Assert.notNull(pubSubTemplate, "Pub/Sub template cannot be null.");
+		Assert.notNull(topic, "Pub/Sub topic cannot be null.");
 		this.pubSubTemplate = pubSubTemplate;
 		this.topicExpression = new LiteralExpression(topic);
-		this.payloadConverter = payloadConverter;
+		this.payloadConverter = new SerializingConverter();
 	}
 
 	@Override
