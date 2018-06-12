@@ -144,7 +144,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 			try {
 				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.MANUAL);
 				context.getBean("inputChannel", MessageChannel.class).send(
-						MessageBuilder.withPayload("I am a message.").build());
+						MessageBuilder.withPayload("I am a message.".getBytes()).build());
 
 				PollableChannel channel = context.getBean("outputChannel", PollableChannel.class);
 
@@ -188,7 +188,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 						});
 				context.getBean(PubSubMessageHandler.class).setPublishCallback(callbackSpy);
 				context.getBean("inputChannel", MessageChannel.class).send(
-						MessageBuilder.withPayload("I am a message.").build());
+						MessageBuilder.withPayload("I am a message.".getBytes()).build());
 
 				Message<?> message =
 						context.getBean("outputChannel", PollableChannel.class).receive(5000);
