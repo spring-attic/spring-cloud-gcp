@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.logging;
 
+import com.google.cloud.logging.logback.LoggingAppender;
+
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -42,7 +44,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * @author Chengyuan Zhao
  */
 @Configuration
-@ConditionalOnClass(HandlerInterceptorAdapter.class)
+@ConditionalOnClass({HandlerInterceptorAdapter.class, LoggingAppender.class})
 @ConditionalOnMissingBean(SleuthProperties.class)
 @AutoConfigureAfter(StackdriverTraceAutoConfiguration.class)
 @EnableConfigurationProperties({ StackdriverLoggingProperties.class })
