@@ -16,10 +16,9 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub.it;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
@@ -70,7 +69,7 @@ public class PubSubTemplateIntegrationTests {
 			Map<String, String> headers = new HashMap<>();
 			headers.put("cactuar", "tonberry");
 			headers.put("fujin", "raijin");
-			pubSubTemplate.publish(topicName, "tatatatata", headers);
+			pubSubTemplate.publish(topicName, "tatatatata", headers).get();
 			PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
 
 			assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8("tatatatata"));
@@ -110,9 +109,18 @@ public class PubSubTemplateIntegrationTests {
 
 			PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
 
-			pubSubTemplate.publish(topicName, "free-hand");
-			pubSubTemplate.publish(topicName, "valedictory");
-			pubSubTemplate.publish(topicName, "the-runaway");
+			List<Future<String>> futures = new ArrayList<>();
+			futures.add(pubSubTemplate.publish(topicName, "free-hand"));
+			futures.add(pubSubTemplate.publish(topicName, "valedictory"));
+			futures.add(pubSubTemplate.publish(topicName, "the-runaway"));
+
+			futures.parallelStream().forEach( f -> {
+				try {
+					f.get();
+				} catch (InterruptedException | ExecutionException e) {
+					e.printStackTrace();
+				}
+			});
 
 			List<AcknowledgeablePubsubMessage> ackableMessages =
 					pubSubTemplate.pull(subscriptionName, 4, true);
@@ -121,10 +129,10 @@ public class PubSubTemplateIntegrationTests {
 
 			ackableMessages.forEach(message -> {
 				if (message.getMessage().getData().toStringUtf8().equals("free-hand")) {
-					message.ack();
+					message.ack(); //sync call
 				}
 				else {
-					message.nack();
+					message.nack(); //sync call
 				}
 			});
 
