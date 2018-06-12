@@ -31,7 +31,11 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 
 	private static final ThreadLocal<String> traceId = new ThreadLocal<>();
 
+	private static final String APP_ENGINE_LABEL_NAME = "appengine.googleapis.com/trace_id";
+
 	private GcpProjectIdProvider projectIdProvider = new DefaultGcpProjectIdProvider();
+
+	private boolean runningOnAppEngine = System.getenv("GAE_INSTANCE") != null;
 
 	public static void setCurrentTraceId(String id) {
 		if (id == null) {
@@ -56,6 +60,9 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 	 * {@link #setCurrentTraceId(String)}.
 	 * <p>The trace ID is set in the log entry in the "projects/[GCP_PROJECT_ID]/traces/[TRACE_ID]"
 	 * format, in order to be associated to traces by the Google Cloud Console.
+	 * <p>If an application is running on Google App Engine, the trace ID is also stored in the
+	 * "appengine.googleapis.com/trace_id" field, in order to enable log correlation on the logs
+	 * viewer.
 	 * @param builder log entry builder
 	 */
 	@Override
@@ -71,6 +78,9 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 		if (traceId != null) {
 			builder.setTrace(StackdriverTraceConstants.composeFullTraceName(
 					this.projectIdProvider.getProjectId(), traceId));
+			if (this.runningOnAppEngine) {
+				builder.addLabel(APP_ENGINE_LABEL_NAME, traceId);
+			}
 		}
 	}
 }

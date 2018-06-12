@@ -23,6 +23,8 @@ dependencies {
 }
 ----
 
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/{git_version}/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[sample application] is available.
+
 === Overview
 
 This binder binds producers to Google Cloud Pub/Sub topics and consumers to subscriptions.
@@ -45,3 +47,6 @@ spring.cloud.stream.gcp.pubsub.bindings.output.consumer.auto-create-resources=tr
 ----
 
 If you are using Pub/Sub auto-configuration from the Spring Cloud GCP Pub/Sub Starter, you should refer to the <<pubsub-configuration,configuration>> section for other Pub/Sub parameters.
+
+NOTE: To use this binder with a https://cloud.google.com/pubsub/docs/emulator[running emulator], configure its host and port via
+`spring.cloud.gcp.pubsub.emulator-host`.
