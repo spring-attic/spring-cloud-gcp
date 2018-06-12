@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
-import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
@@ -35,6 +34,7 @@ import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -105,7 +105,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 				pubsubPayload = (ByteString) payload;
 			}
 			else {
-				throw new PubSubException("Unable to convert payload of type "
+				throw new MessageConversionException("Unable to convert payload of type "
 						+ payload.getClass().getName() + " to byte[] for sending to Pub/Sub."
 						+ " Try specifying a message converter.");
 			}
