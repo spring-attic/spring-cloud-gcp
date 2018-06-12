@@ -44,7 +44,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  */
 @Configuration
 @ConditionalOnClass({HandlerInterceptorAdapter.class, LoggingAppender.class})
-@ConditionalOnMissingBean(StackdriverTraceAutoConfiguration.class)
+@ConditionalOnMissingBean(type = "org.springframework.cloud.sleuth.autoconfig.SleuthProperties")
 @AutoConfigureAfter(StackdriverTraceAutoConfiguration.class)
 @EnableConfigurationProperties({ StackdriverLoggingProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.logging.enabled", matchIfMissing = true)
