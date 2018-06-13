@@ -78,7 +78,13 @@
 			<dependency>
 				<groupId>io.zipkin.gcp</groupId>
 				<artifactId>zipkin-sender-stackdriver</artifactId>
-				<version>0.4.1</version>
+				<version>0.6.1-SNAPSHOT</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.zipkin.gcp</groupId>
+				<artifactId>brave-propagation-stackdriver</artifactId>
+				<version>0.6.1-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
