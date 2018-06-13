@@ -16,8 +16,9 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<google-cloud-bom.version>0.50.0-alpha</google-cloud-bom.version>
-		<cloud-trace-java.version>0.5.0</cloud-trace-java.version>
+		<google-cloud-bom.version>0.51.0-alpha</google-cloud-bom.version>
+		<google-auth-library-oauth2-http.version>0.9.1</google-auth-library-oauth2-http.version>
+		<mysql-socket-factory.version>1.0.9</mysql-socket-factory.version>
 	</properties>
 
 	<dependencyManagement>
@@ -119,25 +120,13 @@
 			<dependency>
 				<groupId>com.google.cloud.sql</groupId>
 				<artifactId>mysql-socket-factory</artifactId>
-				<version>1.0.8</version>
-				<exclusions>
-					<exclusion>
-						<groupId>com.google.guava</groupId>
-						<artifactId>guava-jdk5</artifactId>
-					</exclusion>
-				</exclusions>
+				<version>${mysql-socket-factory.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>com.google.cloud.sql</groupId>
 				<artifactId>postgres-socket-factory</artifactId>
-				<version>1.0.8</version>
-				<exclusions>
-					<exclusion>
-						<groupId>com.google.guava</groupId>
-						<artifactId>guava-jdk5</artifactId>
-					</exclusion>
-				</exclusions>
+				<version>${mysql-socket-factory.version}</version>
 			</dependency>
 
 			<!--google-cloud-java BOM-->
@@ -153,7 +142,7 @@
 			<dependency>
 				<groupId>com.google.auth</groupId>
 				<artifactId>google-auth-library-oauth2-http</artifactId>
-				<version>0.7.1</version>
+				<version>${google-auth-library-oauth2-http.version}</version>
 				<exclusions>
 					<exclusion>
 						<groupId>com.google.guava</groupId>
