@@ -17,7 +17,7 @@
 
 	<properties>
 		<google-cloud-bom.version>0.51.0-alpha</google-cloud-bom.version>
-		<google-auth.version>0.9.1</google-auth.version>
+		<google-auth-library-oauth2-http.version>0.9.1</google-auth-library-oauth2-http.version>
 		<mysql-socket-factory.version>1.0.9</mysql-socket-factory.version>
 	</properties>
 
@@ -142,7 +142,7 @@
 			<dependency>
 				<groupId>com.google.auth</groupId>
 				<artifactId>google-auth-library-oauth2-http</artifactId>
-				<version>${google-auth.version}</version>
+				<version>${google-auth-library-oauth2-http.version}</version>
 				<exclusions>
 					<exclusion>
 						<groupId>com.google.guava</groupId>
