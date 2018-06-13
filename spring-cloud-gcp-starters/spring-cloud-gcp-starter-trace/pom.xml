@@ -36,5 +36,9 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-sleuth-zipkin</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-core-grpc</artifactId>
+		</dependency>
 	</dependencies>
 </project>
