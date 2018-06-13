@@ -32,7 +32,6 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.converter.MessageConverter;
-import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.util.Assert;
 
 /**
@@ -40,6 +39,7 @@ import org.springframework.util.Assert;
  * attached channels.
  *
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
@@ -58,10 +58,6 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	public PubSubInboundChannelAdapter(PubSubOperations pubSubTemplate, String subscriptionName) {
 		this.pubSubTemplate = pubSubTemplate;
 		this.subscriptionName = subscriptionName;
-
-		StringMessageConverter stringMessageConverter = new StringMessageConverter();
-		stringMessageConverter.setSerializedPayloadClass(String.class);
-		this.messageConverter = stringMessageConverter;
 	}
 
 	@Override
@@ -82,16 +78,16 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 
 		try {
-			Message<?> internalMessage =
-					this.messageConverter == null
-							? MessageBuilder.withPayload(pubsubMessage.getData().toByteArray())
-							.copyHeaders(messageHeaders)
-							.build()
-							: this.messageConverter.toMessage(
-									pubsubMessage.getData().toStringUtf8(),
-							new MessageHeaders(messageHeaders));
-
-			sendMessage(internalMessage);
+			Message message;
+			if (this.messageConverter != null) {
+				message = this.messageConverter.toMessage(pubsubMessage.getData().toByteArray(),
+						new MessageHeaders(messageHeaders));
+			}
+			else {
+				message = MessageBuilder.withPayload(pubsubMessage.getData().toByteArray())
+						.copyHeaders(messageHeaders).build();
+			}
+			sendMessage(message);
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
@@ -128,11 +124,10 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	}
 
 	/**
-	 * Set the {@link MessageConverter} to convert the payload of the incoming message from
-	 * Pub/Sub.
-	 * If {@code messageConverter} is null, the payload of the Pub/Sub message is converted to
-	 * {@code byte[]} and returned in that form.
-	 * @param messageConverter converts the payload of the incoming message from Pub/Sub
+	 * Set the {@link MessageConverter} to convert an incoming Pub/Sub message payload to an
+	 * {@code Object}. If the converter is null, the payload is unchanged.
+	 * @param messageConverter converts a {@link PubsubMessage} payload to a
+	 * {@link org.springframework.messaging.Message} payload. Can be set to null.
 	 */
 	public void setMessageConverter(MessageConverter messageConverter) {
 		this.messageConverter = messageConverter;
@@ -140,7 +135,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	/**
 	 * Set the header mapper to map headers from incoming {@link PubsubMessage} into
-	 * {@link Message}.
+	 * {@link org.springframework.messaging.Message}.
 	 * @param headerMapper the header mapper
 	 */
 	public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {

@@ -66,6 +66,7 @@ import static org.mockito.Mockito.verify;
 
 /**
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public class PubSubChannelAdaptersIntegrationTests {
 
@@ -82,7 +83,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 	}
 
 	@Test
-	public void sendAndReceiveMessage() {
+	public void sendAndReceiveMessageAsString() {
 		this.contextRunner.run(context -> {
 			try {
 				Map<String, Object> headers = new HashMap<>();
@@ -92,17 +93,17 @@ public class PubSubChannelAdaptersIntegrationTests {
 				headers.put("sleep", "lift your skinny fists");
 
 				context.getBean("inputChannel", MessageChannel.class).send(
-						MessageBuilder.createMessage("I am a message.",
+						MessageBuilder.createMessage("I am a message.".getBytes(),
 								new MessageHeaders(headers)));
 
 				Message<?> message =
 						context.getBean("outputChannel", PollableChannel.class).receive(5000);
 				assertThat(message).isNotNull();
-				assertThat(message.getPayload()).isInstanceOf(String.class);
-				String payload = (String) message.getPayload();
+				assertThat(message.getPayload()).isInstanceOf(byte[].class);
+				String payload = new String((byte[]) message.getPayload());
 				assertThat(payload).isEqualTo("I am a message.");
 
-				assertThat(message.getHeaders().size()).isEqualTo(6);
+				assertThat(message.getHeaders().size()).isEqualTo(5);
 				assertThat(message.getHeaders().get("storm")).isEqualTo("lift your skinny fists");
 				assertThat(message.getHeaders().get("static")).isEqualTo("lift your skinny fists");
 				assertThat(message.getHeaders().get("sleep")).isEqualTo("lift your skinny fists");
@@ -116,12 +117,11 @@ public class PubSubChannelAdaptersIntegrationTests {
 	}
 
 	@Test
-	public void sendAndReceiveMessageInBytes() {
+	public void sendAndReceiveMessage() {
 		this.contextRunner.run(context -> {
 			try {
-				context.getBean(PubSubInboundChannelAdapter.class).setMessageConverter(null);
 				context.getBean("inputChannel", MessageChannel.class).send(
-						MessageBuilder.withPayload("I am a message.").build());
+						MessageBuilder.withPayload("I am a message.".getBytes()).build());
 
 				Message<?> message =
 						context.getBean("outputChannel", PollableChannel.class).receive(5000);
@@ -144,7 +144,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 			try {
 				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.MANUAL);
 				context.getBean("inputChannel", MessageChannel.class).send(
-						MessageBuilder.withPayload("I am a message.").build());
+						MessageBuilder.withPayload("I am a message.".getBytes()).build());
 
 				PollableChannel channel = context.getBean("outputChannel", PollableChannel.class);
 
@@ -188,7 +188,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 						});
 				context.getBean(PubSubMessageHandler.class).setPublishCallback(callbackSpy);
 				context.getBean("inputChannel", MessageChannel.class).send(
-						MessageBuilder.withPayload("I am a message.").build());
+						MessageBuilder.withPayload("I am a message.".getBytes()).build());
 
 				Message<?> message =
 						context.getBean("outputChannel", PollableChannel.class).receive(5000);

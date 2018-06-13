@@ -43,6 +43,10 @@ It converts new messages to an internal Spring
 https://docs.spring.io/spring-integration/reference/html/messaging-construction-chapter.html#message[`Message`]
 and then sends it to the bound output channel.
 
+Google Pub/Sub treats message payloads as byte arrays.
+So, by default, the inbound channel adapter will construct the Spring `Message` with `byte[]` as the payload.
+However, you can also specify a `MessageConverter` that would then be used to convert the `byte[]` payload coming from Pub/Sub to a Spring `Message`.
+
 To use the inbound channel adapter, a `PubSubInboundChannelAdapter` must be provided and configured
 on the user application side.
 
@@ -91,7 +95,7 @@ users can extract using the `GcpPubSubHeaders.ACKNOWLEDGEMENT` key and use to (n
 @ServiceActivator(inputChannel = "pubsubInputChannel")
 public MessageHandler messageReceiver() {
     return message -> {
-        LOGGER.info("Message arrived! Payload: " + message.getPayload());
+        LOGGER.info("Message arrived! Payload: " + new String((byte[]) message.getPayload()));
         AckReplyConsumer consumer =
               message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT, AckReplyConsumer.class);
         consumer.ack();
@@ -103,8 +107,11 @@ public MessageHandler messageReceiver() {
 
 `PubSubMessageHandler` is the outbound channel adapter for GCP Pub/Sub that listens for new messages
 on a Spring `MessageChannel`.
-It uses `PubSubTemplate` to convert new `Message` instances to the GCP Pub/Sub format and post them
-to a GCP Pub/Sub topic.
+It uses `PubSubTemplate` to post them to a GCP Pub/Sub topic.
+
+To construct a Pub/Sub representation of the message, the outbound channel adapter needs to convert the Spring `Message` payload to a `byte[]` representation expected by Pub/Sub.
+If the `Message` payload is already of type `PubsubMessage`, `byte[]`, or `ByteString`, then a message converter doesn't need to be specified.
+Otherwise, you can specify a `MessageConverter` that should convert the `Object` payload of the Spring `Message` to a `byte[]` representation.
 
 To use the outbound channel adapter, a `PubSubMessageHandler` bean must be provided and configured
 on the user application side.
