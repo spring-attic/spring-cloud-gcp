@@ -57,7 +57,7 @@ public class PubSubMessageHandlerTests {
 
 	@Before
 	public void setUp() {
-		this.message = new GenericMessage<>("testPayload",
+		this.message = new GenericMessage<byte[]>("testPayload".getBytes(),
 				ImmutableMap.of("key1", "value1", "key2", "value2"));
 		SettableListenableFuture<String> future = new SettableListenableFuture<>();
 		future.set("benfica");
@@ -80,7 +80,7 @@ public class PubSubMessageHandlerTests {
 
 	@Test
 	public void testPublishDynamicTopic() {
-		Message<?> dynamicMessage = new GenericMessage<>("testPayload",
+		Message<?> dynamicMessage = new GenericMessage<byte[]>("testPayload".getBytes(),
 						ImmutableMap.of("key1", "value1", "key2", "value2", GcpPubSubHeaders.TOPIC, "dynamicTopic"));
 		this.adapter.handleMessage(dynamicMessage);
 		verify(this.pubSubTemplate, times(1))
