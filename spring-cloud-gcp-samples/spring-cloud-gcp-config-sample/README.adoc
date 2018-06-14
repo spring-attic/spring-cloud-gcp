@@ -31,7 +31,9 @@ $ gcloud beta runtime-config configs variables set \
 ....
 spring.cloud.gcp.config.enabled=true
 spring.cloud.gcp.config.name=myapp
-spring.cloud.gcp.config.profile=prod #default profile = default
+
+#default profile = default
+spring.cloud.gcp.config.profile=prod
 ....
 5.  Notice that link:src/main/java/com/example/MyAppProperties.java[MyAppProperties.java]
 uses `@ConfigurationProperties` to bind the `myapp` namespace from the environment.
@@ -43,12 +45,17 @@ includes the following property:
 ....
 management.endpoints.web.exposure.include=refresh
 ....
-7.  Run the application using the `$ mvn spring-boot:run` command.
+7.  Run the application using the `$ mvn spring-boot:run` command and
+verify the values are set appropriately at http://localhost:8080/
 8.  Update a property with `gcloud`:
 +
 ....
 $ gcloud beta runtime-config configs variables set \
   myapp.queue-size 200 \
+  --config-name myapp_prod
+
+$ gcloud beta runtime-config configs variables set \
+  myapp.feature-x-enabled false \
   --config-name myapp_prod
 ....
 9.  Send a POST request to the refresh endpoint:
@@ -56,3 +63,4 @@ $ gcloud beta runtime-config configs variables set \
 ....
 $ curl -XPOST http://localhost:8080/actuator/refresh
 ....
+10. Verify the values are updated at http://localhost:8080/
