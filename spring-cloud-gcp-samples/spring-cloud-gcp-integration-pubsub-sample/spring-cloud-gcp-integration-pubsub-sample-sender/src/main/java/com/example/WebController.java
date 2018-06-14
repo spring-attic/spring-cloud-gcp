@@ -41,7 +41,7 @@ public class WebController {
 	 */
 	@PostMapping("/postMessage")
 	public RedirectView postMessage(@RequestParam("message") String message) {
-		this.messagingGateway.sendToPubSub(message);
+		this.messagingGateway.sendToPubSub(message.getBytes());
 		return new RedirectView("/");
 	}
 }
