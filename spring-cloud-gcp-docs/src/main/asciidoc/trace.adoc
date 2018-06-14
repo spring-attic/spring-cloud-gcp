@@ -44,7 +44,7 @@ This integration enables Brave to use the https://github.com/openzipkin/zipkin-g
 
 A propagation is responsible for extracting trace context from an entity (e.g., a HTTP servlet request) and for injecting trace context into an entity.
 A canonical example of the propagation usage is a web server that receives a HTTP request, which triggers other HTTP requests from the server before returning a HTTP response to the original caller.
-In the case of `StackdriverTracePropagation`, first it looks for trace context from the `x-cloud-trace-context` key (e.g., a HTTP request header).
+In the case of `StackdriverTracePropagation`, first it looks for trace context in the `x-cloud-trace-context` key (e.g., a HTTP request header).
 The value of the `x-cloud-trace-context` key can be formatted in three different ways:
 
 * `x-cloud-trace-context: TRACE_ID`
@@ -56,7 +56,7 @@ The value of the `x-cloud-trace-context` key can be formatted in three different
 `SPAN_ID` is an unsigned long.
 Since Stackdriver Trace doesn't support span joins, a new span ID is always generated, regardless of the one specified in `x-cloud-trace-context`.
 
-`TRACE_TRUE` can either be `0` is the entity should be untraced, or `1` if it should be traced.
+`TRACE_TRUE` can either be `0` if the entity should be untraced, or `1` if it should be traced.
 However, at the moment, if `TRACE_TRUE` is set to `1`, the entity isn't necessarily traced.
 Currently, to make sure a request is traced, the Sleuth property `spring.sleuth.sampler.probability=1` should be used, to trace every entity.
 
@@ -103,5 +103,5 @@ Spring Cloud GCP Trace does override some Sleuth configurations:
 === Integration with Logging
 
 Integration with Stackdriver Logging is available through the link:logging.adoc[Stackdriver Logging Support].
-If the Trace integration is used together with the Logging one, the request logs will be associated to the trace.
+If the Trace integration is used together with the Logging one, the request logs will be associated to the corresponding traces.
 The trace logs can be viewed by going to the https://console.cloud.google.com/traces/traces[Google Cloud Console Trace List], selecting a trace and pressing the `Logs -> View` link in the `Details` section.
