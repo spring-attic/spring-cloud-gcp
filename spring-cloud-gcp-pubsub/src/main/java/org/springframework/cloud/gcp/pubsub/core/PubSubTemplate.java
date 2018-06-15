@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +39,7 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
-import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessageConverter;
-import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -62,7 +59,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubTemplate.class);
 
-	private PubSubMessageConverter messageConverter = new JacksonPubSubMessageConverter();
+	private Converter<Object, ByteString> publishPayloadConverter;
 
 	private final PublisherFactory publisherFactory;
 
@@ -75,12 +72,11 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	private Charset charset = Charset.defaultCharset();
 
 	/**
-	 * Default {@link PubSubTemplate} constructor that uses a {@link JacksonPubSubMessageConverter}
-	 * to serialize and deserialize payloads.
+	 * Default {@link PubSubTemplate} constructor.
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
 	 * publish to topics
-	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory
-	 * to subscribe to subscriptions
+	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory to
+	 * subscribe to subscriptions
 	 */
 	public PubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory) {
@@ -90,14 +86,13 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		this.acknowledger = this.subscriberFactory.createAcknowledger();
 	}
 
-	public PubSubMessageConverter getMessageConverter() {
-		return this.messageConverter;
+	public Converter<Object, ByteString> getPublishPayloadConverter() {
+		return publishPayloadConverter;
 	}
 
-	public PubSubTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
-		Assert.notNull(messageConverter, "A valid PubSub message converter is required.");
-		this.messageConverter = messageConverter;
-		return this;
+	public void setPublishPayloadConverter(
+			Converter<Object, ByteString> publishPayloadConverter) {
+		this.publishPayloadConverter = publishPayloadConverter;
 	}
 
 	public Charset getCharset() {
@@ -116,30 +111,32 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	@Override
 	public <T> ListenableFuture<String> publish(String topic, T payload,
 			Map<String, String> headers) {
-		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder();
+
+		ByteString convertedPayload = null;
+
+		if (publishPayloadConverter != null) {
+			convertedPayload = publishPayloadConverter.convert(payload);
+		}
+		else if (payload instanceof String) {
+			convertedPayload = ByteString.copyFrom(((String) payload).getBytes(this.charset));
+		}
+		else if (payload instanceof ByteString) {
+			convertedPayload = (ByteString) payload;
+		}
+		else if (payload instanceof byte[]) {
+			convertedPayload = ByteString.copyFrom((byte[]) payload);
+		}
+		else {
+			throw new IllegalArgumentException("Unable to convert payload of type "
+					+ payload.getClass().getName() + " to byte[] for sending to Pub/Sub."
+					+ " Try providing a publish payload converter.");
+		}
+
+		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder()
+				.setData(convertedPayload);
 
 		if (headers != null) {
 			pubsubMessageBuilder.putAllAttributes(headers);
-		}
-
-		if (payload instanceof String) {
-			pubsubMessageBuilder.setData(
-					ByteString.copyFrom(((String) payload).getBytes(this.charset)));
-		}
-		else if (payload instanceof ByteString) {
-			pubsubMessageBuilder.setData((ByteString) payload);
-		}
-		else if (payload instanceof byte[]) {
-			pubsubMessageBuilder.setData(ByteString.copyFrom((byte[]) payload));
-		}
-		else {
-			try {
-				pubsubMessageBuilder.setData(
-						ByteString.copyFrom(this.messageConverter.toPayload(payload)));
-			}
-			catch (IOException ioe) {
-				throw new UncheckedIOException("Error serializing payload. ", ioe);
-			}
 		}
 
 		return publish(topic, pubsubMessageBuilder.build());
