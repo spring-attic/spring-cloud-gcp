@@ -28,7 +28,9 @@ import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.mapping.HeaderMapper;
+import org.springframework.integration.mapping.InboundMessageMapper;
 import org.springframework.integration.support.MessageBuilder;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 /**
@@ -49,6 +51,8 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	private AckMode ackMode = AckMode.AUTO;
 
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
+
+	private InboundMessageMapper<byte[]> messageConverter;
 
 	public PubSubInboundChannelAdapter(PubSubOperations pubSubTemplate, String subscriptionName) {
 		this.pubSubTemplate = pubSubTemplate;
@@ -73,15 +77,22 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 
 		try {
-			sendMessage(
-					MessageBuilder.withPayload(pubsubMessage.getData().toByteArray())
-							.copyHeaders(messageHeaders).build());
+			Message<?> message;
+			if (this.messageConverter != null) {
+				message = this.messageConverter.toMessage(
+						pubsubMessage.getData().toByteArray(), messageHeaders);
+			}
+			else {
+				message = MessageBuilder.withPayload(pubsubMessage.getData().toByteArray())
+						.copyHeaders(messageHeaders).build();
+			}
+			sendMessage(message);
 		}
-		catch (RuntimeException re) {
+		catch (Exception re) {
 			if (this.ackMode == AckMode.AUTO) {
 				consumer.nack();
 			}
-			throw re;
+			throw new RuntimeException(re);
 		}
 
 		if (this.ackMode == AckMode.AUTO) {
@@ -105,6 +116,21 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	public void setAckMode(AckMode ackMode) {
 		Assert.notNull(ackMode, "The acknowledgement mode can't be null.");
 		this.ackMode = ackMode;
+	}
+
+	public InboundMessageMapper<byte[]> getMessageConverter() {
+		return this.messageConverter;
+	}
+
+	/**
+	 * Set the {@link InboundMessageMapper} to convert an incoming Pub/Sub message to a
+	 * {@link org.springframework.messaging.Message}.
+	 * If the converter is null, the payload is sent as a byte array.
+	 * @param messageConverter converts the payload and headers of a {@link PubsubMessage} into a
+	 * {@link org.springframework.messaging.Message}. Can be set to null.
+	 */
+	public void setMessageConverter(InboundMessageMapper<byte[]> messageConverter) {
+		this.messageConverter = messageConverter;
 	}
 
 	/**
