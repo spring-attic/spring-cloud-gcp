@@ -41,6 +41,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<spring-cloud-release.version>Finchley.RC2</spring-cloud-release.version>
 		<spring-boot-release.version>2.0.2.RELEASE</spring-boot-release.version>
+		<zipkin-gcp.version>0.6.2</zipkin-gcp.version>
 	</properties>
 
 	<dependencyManagement>
@@ -78,7 +79,13 @@
 			<dependency>
 				<groupId>io.zipkin.gcp</groupId>
 				<artifactId>zipkin-sender-stackdriver</artifactId>
-				<version>0.4.1</version>
+				<version>${zipkin-gcp.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>io.zipkin.gcp</groupId>
+				<artifactId>brave-propagation-stackdriver</artifactId>
+				<version>${zipkin-gcp.version}</version>
 			</dependency>
 
 		</dependencies>

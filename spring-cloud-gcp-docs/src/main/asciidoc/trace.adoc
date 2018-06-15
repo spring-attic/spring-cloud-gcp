@@ -1,16 +1,11 @@
 == Spring Cloud Sleuth
 
-https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] is an instrumentation framework for Spring Boot
-applications. It captures trace informations and can forward traces to services like Zipkin for storage and
-analysis.
+https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] is an instrumentation framework for Spring Boot applications. It captures trace informations and can forward traces to services like Zipkin for storage and analysis.
 
-Google Cloud Platform provides its own managed distributed tracing service called
-https://cloud.google.com/trace/[Stackdriver Trace]. Instead of running and maintaining your own Zipkin instance and
-storage, you can use Stackdriver Trace to store traces, view trace details, generate latency distributions graphs,
-and generate performance regression reports.
+Google Cloud Platform provides its own managed distributed tracing service called https://cloud.google.com/trace/[Stackdriver Trace].
+Instead of running and maintaining your own Zipkin instance and storage, you can use Stackdriver Trace to store traces, view trace details, generate latency distributions graphs, and generate performance regression reports.
 
-This Spring Cloud GCP starter can forward Spring Cloud Sleuth traces to Stackdriver Trace without an intermediary
-Zipkin server.
+This Spring Cloud GCP starter can forward Spring Cloud Sleuth traces to Stackdriver Trace without an intermediary Zipkin server.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -32,20 +27,43 @@ dependencies {
 }
 ----
 
-You must enable Stackdriver Trace API from the Google Cloud Console in order to capture traces. Navigate to the
-https://console.cloud.google.com/apis/api/cloudtrace.googleapis.com/overview[Stackdriver Trace API] for your project
-and make sure it’s enabled.
+You must enable Stackdriver Trace API from the Google Cloud Console in order to capture traces.
+Navigate to the https://console.cloud.google.com/apis/api/cloudtrace.googleapis.com/overview[Stackdriver Trace API] for your project and make sure it’s enabled.
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/{git_version}/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[sample application] is available.
 
 [NOTE]
 ====
-If you are already using a Zipkin server capturing trace information from multiple platform/frameworks, you also use a
-https://cloud.google.com/trace/docs/zipkin[Stackdriver Zipkin proxy] to forward those traces to Stackdriver Trace
-without modifying existing applications.
+If you are already using a Zipkin server capturing trace information from multiple platform/frameworks, you also use a https://cloud.google.com/trace/docs/zipkin[Stackdriver Zipkin proxy] to forward those traces to Stackdriver Trace without modifying existing applications.
 ====
 
+=== Tracing
+
+Spring Cloud Sleuth uses the https://github.com/openzipkin/brave[Brave tracer] to generate traces.
+This integration enables Brave to use the https://github.com/openzipkin/zipkin-gcp/tree/master/propagation-stackdriver[`StackdriverTracePropagation`] propagation.
+
+A propagation is responsible for extracting trace context from an entity (e.g., an HTTP servlet request) and for injecting trace context into an entity.
+A canonical example of the propagation usage is a web server that receives an HTTP request, which triggers other HTTP requests from the server before returning an HTTP response to the original caller.
+In the case of `StackdriverTracePropagation`, first it looks for trace context in the `x-cloud-trace-context` key (e.g., an HTTP request header).
+The value of the `x-cloud-trace-context` key can be formatted in three different ways:
+
+* `x-cloud-trace-context: TRACE_ID`
+* `x-cloud-trace-context: TRACE_ID/SPAN_ID`
+* `x-cloud-trace-context: TRACE_ID/SPAN_ID;o=TRACE_TRUE`
+
+`TRACE_ID` is a 32-character hexadecimal value that encodes a 128-bit number.
+
+`SPAN_ID` is an unsigned long.
+Since Stackdriver Trace doesn't support span joins, a new span ID is always generated, regardless of the one specified in `x-cloud-trace-context`.
+
+`TRACE_TRUE` can either be `0` if the entity should be untraced, or `1` if it should be traced.
+However, at the moment, if `TRACE_TRUE` is set to `1`, the entity isn't necessarily traced.
+Currently, to make sure a request is traced, the Sleuth property `spring.sleuth.sampler.probability=1` should be used, to trace every entity.
+
+If a `x-cloud-trace-context` key isn't found, `StackdriverTracePropagation` falls back to tracing with the https://github.com/openzipkin/b3-propagation[X-B3 headers].
+
 === Spring Boot Starter for Stackdriver Trace
+
 Spring Boot Starter for Stackdriver Trace uses Spring Cloud Sleuth and auto-configures a https://github.com/openzipkin/zipkin-gcp/blob/master/sender-stackdriver/src/main/java/zipkin2/reporter/stackdriver/StackdriverSender.java[StackdriverSender] that sends the Sleuth’s trace information to Stackdriver Trace.
 
 All configurations are optional:
@@ -84,4 +102,6 @@ Spring Cloud GCP Trace does override some Sleuth configurations:
 
 === Integration with Logging
 
-Logs can also be associated with traces. See link:logging.adoc[Stackdriver Logging Support] for how to configure logging such that it carries Trace ID metadata.
+Integration with Stackdriver Logging is available through the link:logging.adoc[Stackdriver Logging Support].
+If the Trace integration is used together with the Logging one, the request logs will be associated to the corresponding traces.
+The trace logs can be viewed by going to the https://console.cloud.google.com/traces/traces[Google Cloud Console Trace List], selecting a trace and pressing the `Logs -> View` link in the `Details` section.
