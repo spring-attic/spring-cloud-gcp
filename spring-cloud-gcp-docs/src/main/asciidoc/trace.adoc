@@ -42,9 +42,9 @@ If you are already using a Zipkin server capturing trace information from multip
 Spring Cloud Sleuth uses the https://github.com/openzipkin/brave[Brave tracer] to generate traces.
 This integration enables Brave to use the https://github.com/openzipkin/zipkin-gcp/tree/master/propagation-stackdriver[`StackdriverTracePropagation`] propagation.
 
-A propagation is responsible for extracting trace context from an entity (e.g., a HTTP servlet request) and for injecting trace context into an entity.
-A canonical example of the propagation usage is a web server that receives a HTTP request, which triggers other HTTP requests from the server before returning a HTTP response to the original caller.
-In the case of `StackdriverTracePropagation`, first it looks for trace context in the `x-cloud-trace-context` key (e.g., a HTTP request header).
+A propagation is responsible for extracting trace context from an entity (e.g., an HTTP servlet request) and for injecting trace context into an entity.
+A canonical example of the propagation usage is a web server that receives an HTTP request, which triggers other HTTP requests from the server before returning an HTTP response to the original caller.
+In the case of `StackdriverTracePropagation`, first it looks for trace context in the `x-cloud-trace-context` key (e.g., an HTTP request header).
 The value of the `x-cloud-trace-context` key can be formatted in three different ways:
 
 * `x-cloud-trace-context: TRACE_ID`
