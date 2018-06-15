@@ -16,11 +16,9 @@
 
 package org.springframework.cloud.gcp.pubsub.integration.outbound;
 
-import java.nio.charset.Charset;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.protobuf.ByteString;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,8 +60,7 @@ public class PubSubMessageHandlerTests {
 		SettableListenableFuture<String> future = new SettableListenableFuture<>();
 		future.set("benfica");
 		when(this.pubSubTemplate.publish(eq("testTopic"),
-				eq(ByteString.copyFrom("testPayload", Charset.defaultCharset())),
-				isA(Map.class)))
+				eq("testPayload".getBytes()), isA(Map.class)))
 				.thenReturn(future);
 		this.adapter = new PubSubMessageHandler(this.pubSubTemplate, "testTopic");
 
@@ -73,20 +70,17 @@ public class PubSubMessageHandlerTests {
 	public void testPublish() {
 		this.adapter.handleMessage(this.message);
 		verify(this.pubSubTemplate, times(1))
-				.publish(eq("testTopic"),
-						eq(ByteString.copyFrom("testPayload", Charset.defaultCharset())),
-						isA(Map.class));
+				.publish(eq("testTopic"), eq("testPayload".getBytes()), isA(Map.class));
 	}
 
 	@Test
 	public void testPublishDynamicTopic() {
 		Message<?> dynamicMessage = new GenericMessage<byte[]>("testPayload".getBytes(),
-						ImmutableMap.of("key1", "value1", "key2", "value2", GcpPubSubHeaders.TOPIC, "dynamicTopic"));
+						ImmutableMap.of("key1", "value1", "key2", "value2",
+								GcpPubSubHeaders.TOPIC, "dynamicTopic"));
 		this.adapter.handleMessage(dynamicMessage);
 		verify(this.pubSubTemplate, times(1))
-			.publish(eq("dynamicTopic"),
-						eq(ByteString.copyFrom("testPayload", Charset.defaultCharset())),
-						isA(Map.class));
+			.publish(eq("dynamicTopic"),	eq("testPayload".getBytes()), isA(Map.class));
 	}
 
 	@Test

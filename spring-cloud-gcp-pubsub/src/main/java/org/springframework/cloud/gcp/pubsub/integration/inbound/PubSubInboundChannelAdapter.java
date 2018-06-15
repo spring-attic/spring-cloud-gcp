@@ -29,9 +29,6 @@ import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.integration.support.MessageBuilder;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.util.Assert;
 
 /**
@@ -50,8 +47,6 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	private Subscriber subscriber;
 
 	private AckMode ackMode = AckMode.AUTO;
-
-	private MessageConverter messageConverter;
 
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
@@ -78,16 +73,9 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 
 		try {
-			Message message;
-			if (this.messageConverter != null) {
-				message = this.messageConverter.toMessage(pubsubMessage.getData().toByteArray(),
-						new MessageHeaders(messageHeaders));
-			}
-			else {
-				message = MessageBuilder.withPayload(pubsubMessage.getData().toByteArray())
-						.copyHeaders(messageHeaders).build();
-			}
-			sendMessage(message);
+			sendMessage(
+					MessageBuilder.withPayload(pubsubMessage.getData().toByteArray())
+							.copyHeaders(messageHeaders).build());
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
@@ -117,20 +105,6 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	public void setAckMode(AckMode ackMode) {
 		Assert.notNull(ackMode, "The acknowledgement mode can't be null.");
 		this.ackMode = ackMode;
-	}
-
-	public MessageConverter getMessageConverter() {
-		return this.messageConverter;
-	}
-
-	/**
-	 * Set the {@link MessageConverter} to convert an incoming Pub/Sub message payload to an
-	 * {@code Object}. If the converter is null, the payload is unchanged.
-	 * @param messageConverter converts a {@link PubsubMessage} payload to a
-	 * {@link org.springframework.messaging.Message} payload. Can be set to null.
-	 */
-	public void setMessageConverter(MessageConverter messageConverter) {
-		this.messageConverter = messageConverter;
 	}
 
 	/**
