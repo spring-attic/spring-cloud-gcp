@@ -1,0 +1,12 @@
+= Spring Cloud GCP release process
+
+The actual release process is triggered by Pivotal.
+In order to simplify that process, here is a list of prerequisites to be performed before asking Pivotal to run the release scripts.
+
+1. Comment out the `spring-cloud-gcp-samples` module from the root `pom.xml` file, so that the samples aren't released.
+
+2. For any non-GA modules (e.g., Spanner), also comment them out from the `pom.xml` file.
+
+3. Manually change the value of `TRACKING_HEADER_PROJECT_VERSION` in link:spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/UsageTrackingHeaderProvider.java[`UsageTrackingHeaderProvider`] to the version being released.
+
+After the release scripts have been run by Pivotal, revert all these changes.
