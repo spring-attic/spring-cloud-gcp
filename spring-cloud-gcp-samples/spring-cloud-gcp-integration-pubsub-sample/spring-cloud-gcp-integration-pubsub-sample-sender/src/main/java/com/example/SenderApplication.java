@@ -66,6 +66,6 @@ public class SenderApplication {
 	@MessagingGateway(defaultRequestChannel = "pubSubOutputChannel")
 	public interface PubSubOutboundGateway {
 
-		void sendToPubSub(String text);
+		void sendToPubSub(byte[] text);
 	}
 }
