@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.core.ApiClock;
 import com.google.api.gax.batching.BatchingSettings;
 import com.google.api.gax.batching.FlowControlSettings;
@@ -120,9 +121,14 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PubSubMessageConverter pubSubMessageConverter() {
-		return new JacksonPubSubMessageConverter(
-				this.gcpPubSubProperties.getTrustedPackages());
+	public ObjectMapper objectMapper() {
+		return new ObjectMapper();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public JacksonPubSubMessageConverter pubSubMessageConverter(ObjectMapper objectMapper) {
+		return new JacksonPubSubMessageConverter(objectMapper);
 	}
 
 	@Bean

@@ -64,7 +64,7 @@ public void publishMessage() {
 }
 ----
 
-The default serialization and deserialization of POJOs uses Jackson JSON via the `JacksonMessageConverter` class.
+The default serialization and deserialization of POJOs uses Jackson JSON via the `JacksonPubSubMessageConverter` class.
 To set a new message converter in `PubSubTemplate`, use the `setMessageConverter()` method.
 
 
@@ -276,8 +276,6 @@ Google Cloud Pub/Sub API, if different from the ones in the
 | `spring.cloud.gcp.pubsub.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
 Pub/Sub credentials | No | https://www.googleapis.com/auth/pubsub
-| `spring.cloud.gcp.pubsub.trustedPackages[n]` |
-Package names that contain the types that are whitelisted for deserializing message payloads | No | When using `JacksonMessageConverter` the default trusted packages listed in `org.springframework.integration.support.json.JacksonJsonUtils` are always trusted.
 | `spring.cloud.gcp.pubsub.subscriber.parallel-pull-count` | The number of pull workers | No | The available number of processors
 | `spring.cloud.gcp.pubsub.subscriber.max-ack-duration-seconds` | The maximum period a message ack deadline will be extended in seconds | No | 3600
 | `spring.cloud.gcp.pubsub.subscriber.pull-endpoint` | The endpoint for synchronous pulling messages | No | pubsub.googleapis.com:443

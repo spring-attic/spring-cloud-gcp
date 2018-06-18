@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,7 +26,6 @@ import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
-import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
@@ -39,7 +37,8 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
-import org.springframework.core.convert.converter.Converter;
+import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
+import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -59,7 +58,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubTemplate.class);
 
-	private Converter<Object, ByteString> publishPayloadConverter;
+	private PubSubMessageConverter messageConverter = new SimplePubSubMessageConverter();
 
 	private final PublisherFactory publisherFactory;
 
@@ -68,8 +67,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	private final SubscriberStub subscriberStub;
 
 	private final PubSubAcknowledger acknowledger;
-
-	private Charset charset = Charset.defaultCharset();
 
 	/**
 	 * Default {@link PubSubTemplate} constructor.
@@ -86,60 +83,23 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		this.acknowledger = this.subscriberFactory.createAcknowledger();
 	}
 
-	public Converter<Object, ByteString> getPublishPayloadConverter() {
-		return publishPayloadConverter;
+	public PubSubMessageConverter getMessageConverter() {
+		return this.messageConverter;
 	}
 
-	public void setPublishPayloadConverter(
-			Converter<Object, ByteString> publishPayloadConverter) {
-		this.publishPayloadConverter = publishPayloadConverter;
-	}
-
-	public Charset getCharset() {
-		return this.charset;
+	public PubSubTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
+		this.messageConverter = messageConverter;
+		return this;
 	}
 
 	/**
-	 * Set the charset to decode the string in {@link #publish(String, Object, Map)}.
-	 * {@code Charset.defaultCharset()} is used by default.
-	 * @param charset character set to decode the string in a byte array
+	 * Uses the configured message converter to first convert the payload and headers to a
+	 * {@code PubsubMessage} and then publish it.
 	 */
-	public void setCharset(Charset charset) {
-		this.charset = charset;
-	}
-
 	@Override
 	public <T> ListenableFuture<String> publish(String topic, T payload,
 			Map<String, String> headers) {
-
-		ByteString convertedPayload = null;
-
-		if (publishPayloadConverter != null) {
-			convertedPayload = publishPayloadConverter.convert(payload);
-		}
-		else if (payload instanceof String) {
-			convertedPayload = ByteString.copyFrom(((String) payload).getBytes(this.charset));
-		}
-		else if (payload instanceof ByteString) {
-			convertedPayload = (ByteString) payload;
-		}
-		else if (payload instanceof byte[]) {
-			convertedPayload = ByteString.copyFrom((byte[]) payload);
-		}
-		else {
-			throw new IllegalArgumentException("Unable to convert payload of type "
-					+ payload.getClass().getName() + " to byte[] for sending to Pub/Sub."
-					+ " Try providing a publish payload converter.");
-		}
-
-		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder()
-				.setData(convertedPayload);
-
-		if (headers != null) {
-			pubsubMessageBuilder.putAllAttributes(headers);
-		}
-
-		return publish(topic, pubsubMessageBuilder.build());
+		return publish(topic, this.messageConverter.toMessage(payload, headers));
 	}
 
 	@Override
