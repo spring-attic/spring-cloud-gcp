@@ -82,13 +82,13 @@ public class SimplePubSubMessageConverterTests {
 	}
 
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = PubSubMessageConversionException.class)
 	public void testToUnknown() {
 		doToTestForType(Integer.class, a -> toString());
 
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = PubSubMessageConversionException.class)
 	public void testFromUnknown() {
 		doFromTest(Integer.class);
 	}

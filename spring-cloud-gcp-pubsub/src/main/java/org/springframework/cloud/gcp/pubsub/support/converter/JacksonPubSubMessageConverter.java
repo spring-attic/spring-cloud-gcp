@@ -58,7 +58,7 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 			return pubsubMessageBuilder.build();
 		}
 		catch (JsonProcessingException e) {
-			throw new RuntimeException("JSON serialization of an object of type " +
+			throw new PubSubMessageConversionException("JSON serialization of an object of type " +
 					payload.getClass().getName() + " failed.", e);
 		}
 
@@ -70,7 +70,7 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 			return this.objectMapper.readerFor(payloadType).readValue(message.getData().toByteArray());
 		}
 		catch (IOException e) {
-			throw new RuntimeException("JSON deserialization of an object of type " +
+			throw new PubSubMessageConversionException("JSON deserialization of an object of type " +
 					payloadType.getName() + " failed.", e);
 		}
 	}
