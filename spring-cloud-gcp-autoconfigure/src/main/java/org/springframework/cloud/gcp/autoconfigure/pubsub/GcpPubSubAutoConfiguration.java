@@ -61,7 +61,6 @@ import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
-import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
