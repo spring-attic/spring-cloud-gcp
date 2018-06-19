@@ -43,6 +43,7 @@ import org.threeten.bp.Duration;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -60,6 +61,7 @@ import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
+import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -120,15 +122,16 @@ public class GcpPubSubAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnBean(type = "com.fasterxml.jackson.databind.ObjectMapper")
 	@ConditionalOnMissingBean
-	public ObjectMapper objectMapper() {
-		return new ObjectMapper();
+	public JacksonPubSubMessageConverter pubSubMessageConverter(ObjectMapper objectMapper) {
+		return new JacksonPubSubMessageConverter(objectMapper);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public JacksonPubSubMessageConverter pubSubMessageConverter(ObjectMapper objectMapper) {
-		return new JacksonPubSubMessageConverter(objectMapper);
+	public SimplePubSubMessageConverter pubSubMessageConverter() {
+		return new SimplePubSubMessageConverter();
 	}
 
 	@Bean
