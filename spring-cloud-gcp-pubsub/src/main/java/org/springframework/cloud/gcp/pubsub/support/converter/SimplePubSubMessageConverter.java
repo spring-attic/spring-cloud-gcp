@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.support.converter;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Map;
 
@@ -23,19 +24,20 @@ import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 
 /**
- * A simple {@link SimplePubSubMessageConverter} that that directly maps payloads of type
- * {@code byte[]}, {@code ByteString}, and {@code String} to Pub/Sub messages.
+ * A simple {@link PubSubMessageConverter} that directly maps payloads of type
+ * {@code byte[]}, {@code ByteString}, {@code ByteBuffer}, and {@code String} to Pub/Sub messages.
  *
  * @author Mike Eltsufin
  */
 public class SimplePubSubMessageConverter implements PubSubMessageConverter {
 
-	private Charset charset = Charset.defaultCharset();
+	private final Charset charset;
 
-	/**
-	 * Set charset for converting strings.
-	 */
-	public void setCharset(Charset charset) {
+	public SimplePubSubMessageConverter() {
+		this(Charset.defaultCharset());
+	}
+
+	public SimplePubSubMessageConverter(Charset charset) {
 		this.charset = charset;
 	}
 
@@ -44,11 +46,14 @@ public class SimplePubSubMessageConverter implements PubSubMessageConverter {
 
 		ByteString convertedPayload;
 
-		if (payload instanceof String) {
+		if (payload instanceof ByteString) {
+			convertedPayload = (ByteString) payload;
+		}
+		else if (payload instanceof String) {
 			convertedPayload = ByteString.copyFrom(((String) payload).getBytes(this.charset));
 		}
-		else if (payload instanceof ByteString) {
-			convertedPayload = (ByteString) payload;
+		else if (payload instanceof ByteBuffer) {
+			convertedPayload = ByteString.copyFrom((ByteBuffer) payload);
 		}
 		else if (payload instanceof byte[]) {
 			convertedPayload = ByteString.copyFrom((byte[]) payload);

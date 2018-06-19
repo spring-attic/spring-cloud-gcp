@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.support.converter;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,6 +70,17 @@ public class SimplePubSubMessageConverterTests {
 	public void testFromByteArray() {
 		doFromTest(TEST_STRING.getBytes());
 	}
+
+	@Test
+	public void testToByteBuffer() {
+		doToTestForType(ByteBuffer.class, a -> new String(a.array()));
+	}
+
+	@Test
+	public void testFromByteBuffer() {
+		doFromTest(ByteBuffer.wrap(TEST_STRING.getBytes()));
+	}
+
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testToUnknown() {
