@@ -124,13 +124,13 @@ public class GcpPubSubAutoConfiguration {
 	@Bean
 	@ConditionalOnBean(type = "com.fasterxml.jackson.databind.ObjectMapper")
 	@ConditionalOnMissingBean
-	public JacksonPubSubMessageConverter pubSubMessageConverter(ObjectMapper objectMapper) {
+	public PubSubMessageConverter pubSubMessageConverter(ObjectMapper objectMapper) {
 		return new JacksonPubSubMessageConverter(objectMapper);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public SimplePubSubMessageConverter pubSubMessageConverter() {
+	public PubSubMessageConverter pubSubMessageConverter() {
 		return new SimplePubSubMessageConverter();
 	}
 
