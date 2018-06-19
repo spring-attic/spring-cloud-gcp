@@ -69,11 +69,12 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	private final PubSubAcknowledger acknowledger;
 
 	/**
-	 * Default {@link PubSubTemplate} constructor.
+	 * Default {@link PubSubTemplate} constructor that uses {@link SimplePubSubMessageConverter}
+	 * to serialize and deserialize payloads.
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
 	 * publish to topics
-	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory to
-	 * subscribe to subscriptions
+	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory
+	 * to subscribe to subscriptions
 	 */
 	public PubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory) {
@@ -88,6 +89,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	public PubSubTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
+		Assert.notNull(messageConverter, "A valid Pub/Sub message converter is required.");
 		this.messageConverter = messageConverter;
 		return this;
 	}
