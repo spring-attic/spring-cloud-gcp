@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.core.ApiClock;
 import com.google.api.gax.batching.BatchingSettings;
 import com.google.api.gax.batching.FlowControlSettings;
@@ -42,6 +43,7 @@ import org.threeten.bp.Duration;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -119,19 +121,20 @@ public class GcpPubSubAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnBean(ObjectMapper.class)
 	@ConditionalOnMissingBean
-	public PubSubMessageConverter pubSubMessageConverter() {
-		return new JacksonPubSubMessageConverter(
-				this.gcpPubSubProperties.getTrustedPackages());
+	public PubSubMessageConverter pubSubMessageConverter(ObjectMapper objectMapper) {
+		return new JacksonPubSubMessageConverter(objectMapper);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory,
-			PubSubMessageConverter pubSubMessageConverter) {
-		return new PubSubTemplate(publisherFactory, subscriberFactory)
-				.setMessageConverter(pubSubMessageConverter);
+			ObjectProvider<PubSubMessageConverter> pubSubMessageConverter) {
+		PubSubTemplate pubSubTemplate = new PubSubTemplate(publisherFactory, subscriberFactory);
+		pubSubMessageConverter.ifUnique(pubSubTemplate::setMessageConverter);
+		return pubSubTemplate;
 	}
 
 	@Bean

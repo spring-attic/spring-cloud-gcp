@@ -17,31 +17,24 @@
 package org.springframework.cloud.gcp.pubsub.support.converter;
 
 import java.io.IOException;
+import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.ByteString;
+import com.google.pubsub.v1.PubsubMessage;
 
-import org.springframework.integration.support.json.JacksonJsonUtils;
 import org.springframework.util.Assert;
 
 /**
- * A message converter using Jackson JSON.
+ * A converter using Jackson JSON.
  *
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  */
 public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 
 	private final ObjectMapper objectMapper;
-
-	/**
-	 * Constructor
-	 * @param trustedPackages the packages trusted for deserialization in addition to the
-	 * default trusted packages listed in {@link JacksonJsonUtils}.
-	 */
-	public JacksonPubSubMessageConverter(String... trustedPackages) {
-		this.objectMapper = JacksonJsonUtils.messagingAwareMapper(trustedPackages);
-	}
 
 	/**
 	 * Constructor
@@ -53,18 +46,32 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 	}
 
 	@Override
-	public byte[] toPayload(Object object) throws IOException {
+	public PubsubMessage toMessage(Object payload, Map<String, String> headers) {
 		try {
-			return this.objectMapper.writeValueAsBytes(object);
+			PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder()
+					.setData(ByteString.copyFrom(this.objectMapper.writeValueAsBytes(payload)));
+
+			if (headers != null) {
+				pubsubMessageBuilder.putAllAttributes(headers);
+			}
+
+			return pubsubMessageBuilder.build();
 		}
 		catch (JsonProcessingException e) {
-			throw new IOException("Jackson serialization of object failed: " + object, e);
+			throw new PubSubMessageConversionException("JSON serialization of an object of type " +
+					payload.getClass().getName() + " failed.", e);
 		}
+
 	}
 
 	@Override
-	public <T> T fromPayload(ByteString payload, Class<T> payloadType)
-			throws IOException {
-		return this.objectMapper.readerFor(payloadType).readValue(payload.toByteArray());
+	public <T> T fromMessage(PubsubMessage message, Class<T> payloadType) {
+		try {
+			return this.objectMapper.readerFor(payloadType).readValue(message.getData().toByteArray());
+		}
+		catch (IOException e) {
+			throw new PubSubMessageConversionException("JSON deserialization of an object of type " +
+					payloadType.getName() + " failed.", e);
+		}
 	}
 }

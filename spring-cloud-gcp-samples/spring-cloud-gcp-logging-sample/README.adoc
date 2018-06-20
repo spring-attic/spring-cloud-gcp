@@ -10,7 +10,7 @@ Starter] to store and group logs by trace ID, with the Google Stackdriver Loggin
 https://developers.google.com/identity/protocols/application-default-credentials[application
 default credentials].
 
-1. Check that the https://cloud.google.com/logging/docs/access-control[Stackdriver Logging API is enabled].
+1. Check that the https://console.cloud.google.com/apis/library/logging.googleapis.com/?q=logging[Stackdriver Logging API is enabled].
 
 == Running the Example
 Run the sample application from Maven:

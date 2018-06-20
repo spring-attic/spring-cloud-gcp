@@ -5,8 +5,7 @@ link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Spring Clou
 
 == Setup & Configuration
 1. Checkout the code of this sample.
-2. Setup the Google Runtime Configuration API with
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config#setup[these instructions].
+2. Enable the Google https://console.cloud.google.com/apis/api/runtimeconfig.googleapis.com/overview[Runtime Configuration API].
 3. Create a configuration using the
 https://cloud.google.com/sdk/[Google Cloud SDK].
 +
