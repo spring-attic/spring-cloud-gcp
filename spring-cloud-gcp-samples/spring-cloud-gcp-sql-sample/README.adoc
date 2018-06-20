@@ -1,8 +1,8 @@
 = Spring Cloud GCP SQL Sample
 
-This code sample demonstrates how to connect to a Google Cloud SQL instance using the
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql/README.adoc[Spring Cloud GCP SQL
-Starter].
+This code sample demonstrates how to connect to a Google Cloud SQL instance using either the
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-mysql[Spring Cloud GCP MySQL Starter]
+or link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-postgresql[Spring Cloud GCP PostgreSQL Starter].
 
 We will create an instance, a database within the instance, populate the database and then query it.
 
