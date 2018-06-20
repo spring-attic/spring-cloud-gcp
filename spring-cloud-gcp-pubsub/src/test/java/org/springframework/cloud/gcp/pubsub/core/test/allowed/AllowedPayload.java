@@ -16,9 +16,13 @@
 
 package org.springframework.cloud.gcp.pubsub.core.test.allowed;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 /**
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@class")
 public class AllowedPayload {
 
 	public String name;

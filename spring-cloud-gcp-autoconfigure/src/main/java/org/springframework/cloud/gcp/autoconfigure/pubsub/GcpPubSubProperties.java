@@ -54,12 +54,6 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 	private String emulatorHost;
 
 	/**
-	 * Array of packages containing types that are whitelisted for deserialization from
-	 * message payloads.
-	 */
-	private String[] trustedPackages;
-
-	/**
 	 * Overrides the GCP OAuth2 credentials specified in the Core module.
 	 */
 	@NestedConfigurationProperty
@@ -91,14 +85,6 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 	public void setEmulatorHost(String emulatorHost) {
 		this.emulatorHost = emulatorHost;
-	}
-
-	public String[] getTrustedPackages() {
-		return this.trustedPackages;
-	}
-
-	public void setTrustedPackages(String[] trustedPackages) {
-		this.trustedPackages = trustedPackages;
 	}
 
 	public static class Publisher {

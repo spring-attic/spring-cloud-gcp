@@ -16,9 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,7 +26,6 @@ import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
-import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
@@ -41,8 +37,8 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
-import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
+import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
@@ -62,7 +58,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubTemplate.class);
 
-	private PubSubMessageConverter messageConverter = new JacksonPubSubMessageConverter();
+	private PubSubMessageConverter messageConverter = new SimplePubSubMessageConverter();
 
 	private final PublisherFactory publisherFactory;
 
@@ -72,10 +68,8 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private final PubSubAcknowledger acknowledger;
 
-	private Charset charset = Charset.defaultCharset();
-
 	/**
-	 * Default {@link PubSubTemplate} constructor that uses a {@link JacksonPubSubMessageConverter}
+	 * Default {@link PubSubTemplate} constructor that uses {@link SimplePubSubMessageConverter}
 	 * to serialize and deserialize payloads.
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
 	 * publish to topics
@@ -95,54 +89,19 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	public PubSubTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
-		Assert.notNull(messageConverter, "A valid PubSub message converter is required.");
+		Assert.notNull(messageConverter, "A valid Pub/Sub message converter is required.");
 		this.messageConverter = messageConverter;
 		return this;
 	}
 
-	public Charset getCharset() {
-		return this.charset;
-	}
-
 	/**
-	 * Set the charset to decode the string in {@link #publish(String, Object, Map)}.
-	 * {@code Charset.defaultCharset()} is used by default.
-	 * @param charset character set to decode the string in a byte array
+	 * Uses the configured message converter to first convert the payload and headers to a
+	 * {@code PubsubMessage} and then publish it.
 	 */
-	public void setCharset(Charset charset) {
-		this.charset = charset;
-	}
-
 	@Override
 	public <T> ListenableFuture<String> publish(String topic, T payload,
 			Map<String, String> headers) {
-		PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder();
-
-		if (headers != null) {
-			pubsubMessageBuilder.putAllAttributes(headers);
-		}
-
-		if (payload instanceof String) {
-			pubsubMessageBuilder.setData(
-					ByteString.copyFrom(((String) payload).getBytes(this.charset)));
-		}
-		else if (payload instanceof ByteString) {
-			pubsubMessageBuilder.setData((ByteString) payload);
-		}
-		else if (payload instanceof byte[]) {
-			pubsubMessageBuilder.setData(ByteString.copyFrom((byte[]) payload));
-		}
-		else {
-			try {
-				pubsubMessageBuilder.setData(
-						ByteString.copyFrom(this.messageConverter.toPayload(payload)));
-			}
-			catch (IOException ioe) {
-				throw new UncheckedIOException("Error serializing payload. ", ioe);
-			}
-		}
-
-		return publish(topic, pubsubMessageBuilder.build());
+		return publish(topic, this.messageConverter.toMessage(payload, headers));
 	}
 
 	@Override

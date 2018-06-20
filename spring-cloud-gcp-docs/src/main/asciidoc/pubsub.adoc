@@ -49,12 +49,6 @@ The `PublisherFactory` implementation provided by Spring Cloud GCP Pub/Sub, `Def
 `PubSubTemplate` provides asynchronous methods to publish messages to a Google Cloud Pub/Sub topic.
 The `publish()` method takes in a topic name to post the message to, a payload of a generic type and, optionally, a map with the message headers.
 
-* If the payload is a string, it is decoded using the active character set.
-** A character set can be set using the `setCharset()` method in `PubSubTemplate`.
-* If the payload is a `ByteString`, it is sent as-is.
-* If the payload is a `byte[]`, then a `ByteString` is created from it.
-* Otherwise, the payload is serialized and sent.
-
 Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 
 [source,java]
@@ -64,8 +58,10 @@ public void publishMessage() {
 }
 ----
 
-The default serialization and deserialization of POJOs uses Jackson JSON via the `JacksonMessageConverter` class.
-To set a new message converter in `PubSubTemplate`, use the `setMessageConverter()` method.
+By default, the `SimplePubSubMessageConverter` is used to convert payloads of type `byte[]`, `ByteString`, `ByteBuffer`, and `String` to Pub/Sub messages.
+
+For serialization and deserialization of POJOs using Jackson JSON, configure the `PubSubTemplate` to use the `JacksonPubSubMessageConverter` by calling the `setMessageConverter()` method.
+Alternatively, if you're using the starter and have an instance of the Jackson `ObjectMapper` in the application context, the `JacksonPubSubMessageConverter` will be automatically configured for you.
 
 
 ==== Subscribing to a subscription
@@ -276,8 +272,6 @@ Google Cloud Pub/Sub API, if different from the ones in the
 | `spring.cloud.gcp.pubsub.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
 Pub/Sub credentials | No | https://www.googleapis.com/auth/pubsub
-| `spring.cloud.gcp.pubsub.trustedPackages[n]` |
-Package names that contain the types that are whitelisted for deserializing message payloads | No | When using `JacksonMessageConverter` the default trusted packages listed in `org.springframework.integration.support.json.JacksonJsonUtils` are always trusted.
 | `spring.cloud.gcp.pubsub.subscriber.parallel-pull-count` | The number of pull workers | No | The available number of processors
 | `spring.cloud.gcp.pubsub.subscriber.max-ack-duration-seconds` | The maximum period a message ack deadline will be extended in seconds | No | 3600
 | `spring.cloud.gcp.pubsub.subscriber.pull-endpoint` | The endpoint for synchronous pulling messages | No | pubsub.googleapis.com:443
