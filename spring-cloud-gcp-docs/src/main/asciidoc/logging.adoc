@@ -42,6 +42,9 @@ WARNING: If Spring Cloud GCP Trace is enabled, the logging module disables itsel
 `LoggingWebMvcConfigurer` configuration class is also provided to help register the `TraceIdLoggingWebMvcInterceptor`
 in Spring MVC applications.
 
+Applications hosted on the Google Cloud Platform include trace IDs under the `x-cloud-trace-context` header, which will be included in log entries.
+However, if Sleuth is used the trace ID will be picked up from the MDC.
+
 === Logback Support
 
 Currently, only Logback is supported and there are 2 possibilities to log to Stackdriver via this library with Logback:
