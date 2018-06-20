@@ -5,7 +5,7 @@ In order to simplify that process, here is a list of prerequisites to be perform
 
 1. Comment out the `spring-cloud-gcp-samples` module from the root `pom.xml` file, so that the samples aren't released.
 
-2. For any non-GA modules (e.g., Spanner), also comment them out from the `pom.xml` file.
+2. Comment out any non-GA modules from the `pom.xml` file.
 
 3. Manually change the value of `TRACKING_HEADER_PROJECT_VERSION` in link:spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/UsageTrackingHeaderProvider.java[`UsageTrackingHeaderProvider`] to the version being released from the interim `BUILD-SNAPSHOT` value.
 
