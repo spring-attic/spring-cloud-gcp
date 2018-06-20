@@ -189,7 +189,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	/**
 	 * Set the header mapper to map headers from {@link Message} into outbound
-	 * {@link PubsubMessage}.
+	 * {@link com.google.pubsub.v1.PubsubMessage}.
 	 * @param headerMapper the header mapper
 	 */
 	public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {

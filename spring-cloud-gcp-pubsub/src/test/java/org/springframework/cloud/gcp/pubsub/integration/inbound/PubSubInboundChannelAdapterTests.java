@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 
 /**
  * {@link PubSubInboundChannelAdapter} unit tests.
@@ -32,7 +32,7 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 public class PubSubInboundChannelAdapterTests {
 
 	@Mock
-	private PubSubOperations pubSubTemplate;
+	private PubSubTemplate pubSubTemplate;
 
 	@Test(expected = IllegalArgumentException.class)
 	public void testNonNullAckMode() {

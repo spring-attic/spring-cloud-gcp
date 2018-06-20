@@ -42,7 +42,7 @@ public class SimplePubSubMessageConverter implements PubSubMessageConverter {
 	}
 
 	@Override
-	public PubsubMessage toMessage(Object payload, Map<String, String> headers) {
+	public PubsubMessage toPubSubMessage(Object payload, Map<String, String> headers) {
 
 		ByteString convertedPayload;
 
@@ -75,7 +75,7 @@ public class SimplePubSubMessageConverter implements PubSubMessageConverter {
 	}
 
 	@Override
-	public <T> T fromMessage(PubsubMessage message, Class<T> payloadType) {
+	public <T> T fromPubSubMessage(PubsubMessage message, Class<T> payloadType) {
 		T result;
 		byte[] payload = message.getData().toByteArray();
 

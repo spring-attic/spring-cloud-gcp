@@ -101,7 +101,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	@Override
 	public <T> ListenableFuture<String> publish(String topic, T payload,
 			Map<String, String> headers) {
-		return publish(topic, this.messageConverter.toMessage(payload, headers));
+		return publish(topic, this.messageConverter.toPubSubMessage(payload, headers));
 	}
 
 	@Override
