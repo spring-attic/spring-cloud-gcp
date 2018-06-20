@@ -39,19 +39,11 @@ For use in Web MVC-based applications, `TraceIdLoggingWebMvcInterceptor` is prov
 
 WARNING: If Spring Cloud GCP Trace is enabled, the logging module disables itself and delegates log correlation to Spring Cloud Sleuth.
 
-The behavior of the trace ID extraction can be configured with the `spring.cloud.gcp.logging.traceIdExtractor` property:
-
-[options="header",]
-|=======================================================================
-| Setting | Behavior
-| `XCLOUD` | Checks the `x-cloud-trace-context` HTTP header
-| `ZIPKIN` | Checks the `X-B3-traceId` HTTP header
-| `XCLOUD_ZIPKIN` | Checks the `x-cloud-trace-context` header, and if no trace ID is found checks the `X-B3-traceId` header
-| `ZIPKIN_XCLOUD` | Checks the `X-B3-traceId` header, and if no trace ID is found checks the `x-cloud-trace-context` header
-|=======================================================================
-
 `LoggingWebMvcConfigurer` configuration class is also provided to help register the `TraceIdLoggingWebMvcInterceptor`
 in Spring MVC applications.
+
+Applications hosted on the Google Cloud Platform include trace IDs under the `x-cloud-trace-context` header, which will be included in log entries.
+However, if Sleuth is used the trace ID will be picked up from the MDC.
 
 === Logback Support
 
