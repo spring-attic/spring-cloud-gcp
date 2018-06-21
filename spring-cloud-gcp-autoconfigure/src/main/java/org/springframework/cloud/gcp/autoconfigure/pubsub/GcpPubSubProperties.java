@@ -134,7 +134,7 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		private String pullEndpoint;
 
 		/**
-		 * The optional max ack duration in seconds for the subscriber factory.
+		 * The optional max ack extension period in seconds for the subscriber factory.
 		 */
 		private Long maxAckExtensionPeriod = 0L;
 
