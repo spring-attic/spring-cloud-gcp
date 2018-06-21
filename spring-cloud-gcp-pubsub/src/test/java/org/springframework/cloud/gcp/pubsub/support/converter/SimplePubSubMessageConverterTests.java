@@ -106,7 +106,7 @@ public class SimplePubSubMessageConverterTests {
 		SimplePubSubMessageConverter converter = new SimplePubSubMessageConverter();
 
 		// test extraction from PubsubMessage to T
-		assertEquals(TEST_STRING, toString.convert(converter.fromPubSubMessage(PubsubMessage.newBuilder()
+		assertEquals(TEST_STRING, toString.convert((T) converter.fromPubSubMessage(PubsubMessage.newBuilder()
 				.setData(ByteString.copyFrom(TEST_STRING.getBytes())).putAllAttributes(TEST_HEADERS).build(), type)));
 	}
 

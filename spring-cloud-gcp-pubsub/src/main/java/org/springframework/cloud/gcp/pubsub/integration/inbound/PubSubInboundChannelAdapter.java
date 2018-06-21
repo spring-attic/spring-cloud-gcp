@@ -22,6 +22,7 @@ import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
 
+import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
@@ -80,11 +81,11 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 					.copyHeaders(messageHeaders)
 					.build());
 		}
-		catch (Exception re) {
+		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
 				consumer.nack();
 			}
-			throw new RuntimeException(re);
+			throw new PubSubException("Spring Message construction from Pub/Sub message failed.", re);
 		}
 
 		if (this.ackMode == AckMode.AUTO) {

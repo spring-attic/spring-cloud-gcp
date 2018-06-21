@@ -65,7 +65,7 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 	}
 
 	@Override
-	public <T> T fromPubSubMessage(PubsubMessage message, Class<T> payloadType) {
+	public Object fromPubSubMessage(PubsubMessage message, Class<?> payloadType) {
 		try {
 			return this.objectMapper.readerFor(payloadType).readValue(message.getData().toByteArray());
 		}
