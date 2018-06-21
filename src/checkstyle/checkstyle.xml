@@ -95,7 +95,9 @@
                              org.hamcrest.collection.IsCollectionWithSize.*,
                              org.assertj.core.api.Assertions.*,
                              org.assertj.core.api.Assumptions.*,
-                             org.mockito.BDDMockito.*"
+                             org.mockito.BDDMockito.*,
+                             org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*,
+                             org.springframework.test.web.servlet.result.MockMvcResultMatchers.*"
                       />
         </module>
         <module name="FallThrough"/>
