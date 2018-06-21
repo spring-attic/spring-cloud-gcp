@@ -46,7 +46,7 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 	}
 
 	@Override
-	public PubsubMessage toMessage(Object payload, Map<String, String> headers) {
+	public PubsubMessage toPubSubMessage(Object payload, Map<String, String> headers) {
 		try {
 			PubsubMessage.Builder pubsubMessageBuilder = PubsubMessage.newBuilder()
 					.setData(ByteString.copyFrom(this.objectMapper.writeValueAsBytes(payload)));
@@ -65,7 +65,7 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 	}
 
 	@Override
-	public <T> T fromMessage(PubsubMessage message, Class<T> payloadType) {
+	public Object fromPubSubMessage(PubsubMessage message, Class<?> payloadType) {
 		try {
 			return this.objectMapper.readerFor(payloadType).readValue(message.getData().toByteArray());
 		}

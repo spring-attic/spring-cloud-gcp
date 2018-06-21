@@ -34,7 +34,7 @@ public interface PubSubMessageConverter {
 	 * @param headers the headers of the message
 	 * @return the PubsubMessage ready to be sent
 	 */
-	PubsubMessage toMessage(Object payload, Map<String, String> headers);
+	PubsubMessage toPubSubMessage(Object payload, Map<String, String> headers);
 
 	/**
 	 * Convert the payload of a given {@code PubsubMessage} to a desired Java type.
@@ -42,5 +42,5 @@ public interface PubSubMessageConverter {
 	 * @param payloadType the desired type of the object
 	 * @return the object converted from the message's payload
 	 */
-	<T> T fromMessage(PubsubMessage message, Class<T> payloadType);
+	Object fromPubSubMessage(PubsubMessage message, Class<?> payloadType);
 }

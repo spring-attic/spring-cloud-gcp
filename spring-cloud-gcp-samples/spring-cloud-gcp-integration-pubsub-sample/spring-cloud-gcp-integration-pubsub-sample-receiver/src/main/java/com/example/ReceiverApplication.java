@@ -25,7 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
@@ -52,7 +52,7 @@ public class ReceiverApplication {
 	@Bean
 	public PubSubInboundChannelAdapter messageChannelAdapter(
 			@Qualifier("pubsubInputChannel") MessageChannel inputChannel,
-			PubSubOperations pubSubTemplate) {
+			PubSubTemplate pubSubTemplate) {
 		PubSubInboundChannelAdapter adapter =
 				new PubSubInboundChannelAdapter(pubSubTemplate, "exampleSubscription");
 		adapter.setOutputChannel(inputChannel);

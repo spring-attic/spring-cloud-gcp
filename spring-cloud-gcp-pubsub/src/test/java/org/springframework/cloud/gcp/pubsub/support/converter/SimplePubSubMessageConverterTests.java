@@ -96,7 +96,7 @@ public class SimplePubSubMessageConverterTests {
 	@Test
 	public void testNullHeaders() {
 		SimplePubSubMessageConverter converter = new SimplePubSubMessageConverter();
-		PubsubMessage pubsubMessage = converter.toMessage(TEST_STRING, null);
+		PubsubMessage pubsubMessage = converter.toPubSubMessage(TEST_STRING, null);
 
 		assertEquals(TEST_STRING, pubsubMessage.getData().toString(Charset.defaultCharset()));
 		assertEquals(new HashMap<>(), pubsubMessage.getAttributesMap());
@@ -106,7 +106,7 @@ public class SimplePubSubMessageConverterTests {
 		SimplePubSubMessageConverter converter = new SimplePubSubMessageConverter();
 
 		// test extraction from PubsubMessage to T
-		assertEquals(TEST_STRING, toString.convert(converter.fromMessage(PubsubMessage.newBuilder()
+		assertEquals(TEST_STRING, toString.convert((T) converter.fromPubSubMessage(PubsubMessage.newBuilder()
 				.setData(ByteString.copyFrom(TEST_STRING.getBytes())).putAllAttributes(TEST_HEADERS).build(), type)));
 	}
 
@@ -114,7 +114,7 @@ public class SimplePubSubMessageConverterTests {
 		SimplePubSubMessageConverter converter = new SimplePubSubMessageConverter();
 
 		// test conversion of T to PubsubMessage
-		PubsubMessage convertedPubSubMessage = converter.toMessage(value, TEST_HEADERS);
+		PubsubMessage convertedPubSubMessage = converter.toPubSubMessage(value, TEST_HEADERS);
 		assertEquals(TEST_STRING, new String(convertedPubSubMessage.getData().toByteArray()));
 		assertEquals(TEST_HEADERS, convertedPubSubMessage.getAttributesMap());
 	}

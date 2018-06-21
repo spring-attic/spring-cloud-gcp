@@ -42,7 +42,7 @@ public class SimplePubSubMessageConverter implements PubSubMessageConverter {
 	}
 
 	@Override
-	public PubsubMessage toMessage(Object payload, Map<String, String> headers) {
+	public PubsubMessage toPubSubMessage(Object payload, Map<String, String> headers) {
 
 		ByteString convertedPayload;
 
@@ -75,21 +75,21 @@ public class SimplePubSubMessageConverter implements PubSubMessageConverter {
 	}
 
 	@Override
-	public <T> T fromMessage(PubsubMessage message, Class<T> payloadType) {
-		T result;
+	public Object fromPubSubMessage(PubsubMessage message, Class<?> payloadType) {
+		Object result;
 		byte[] payload = message.getData().toByteArray();
 
 		if (payloadType == ByteString.class) {
-			result = (T) message.getData();
+			result = message.getData();
 		}
 		else if (payloadType == String.class) {
-			result = (T) new String(payload, this.charset);
+			result = new String(payload, this.charset);
 		}
 		else if (payloadType == ByteBuffer.class) {
-			result = (T) ByteBuffer.wrap(payload);
+			result = ByteBuffer.wrap(payload);
 		}
 		else if (payloadType == byte[].class) {
-			result = (T) payload;
+			result = payload;
 		}
 		else {
 			throw new PubSubMessageConversionException("Unable to convert Pub/Sub message to payload of type " +
