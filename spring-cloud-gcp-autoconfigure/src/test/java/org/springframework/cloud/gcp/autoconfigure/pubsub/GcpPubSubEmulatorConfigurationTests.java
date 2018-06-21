@@ -66,6 +66,7 @@ public class GcpPubSubEmulatorConfigurationTests {
 					"spring.cloud.gcp.pubsub.subscriber.flow-control.max-outstanding-element-Count=17",
 					"spring.cloud.gcp.pubsub.subscriber.flow-control.max-outstanding-request-Bytes=18",
 					"spring.cloud.gcp.pubsub.subscriber.flow-control.limit-exceeded-behavior=Ignore",
+					"spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period=1",
 					"spring.cloud.gcp.pubsub.publisher.batching.flow-control.max-outstanding-element-Count=19",
 					"spring.cloud.gcp.pubsub.publisher.batching.flow-control.max-outstanding-request-Bytes=20",
 					"spring.cloud.gcp.pubsub.publisher.batching.flow-control.limit-exceeded-behavior=Ignore",
@@ -104,7 +105,8 @@ public class GcpPubSubEmulatorConfigurationTests {
 					gcpPubSubProperties.getSubscriber().getPullEndpoint());
 			Assert.assertEquals(333,
 					(int) gcpPubSubProperties.getSubscriber().getParallelPullCount());
-			Assert.assertNull(gcpPubSubProperties.getSubscriber().getMaxAckDurationSeconds());
+			Assert.assertEquals("max-ack-extension-period should be set to 1", new Long(1),
+					gcpPubSubProperties.getSubscriber().getMaxAckExtensionPeriod());
 		});
 	}
 
