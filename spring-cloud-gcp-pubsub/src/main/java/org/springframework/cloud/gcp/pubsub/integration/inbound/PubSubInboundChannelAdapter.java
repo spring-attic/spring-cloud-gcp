@@ -85,7 +85,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 			if (this.ackMode == AckMode.AUTO) {
 				consumer.nack();
 			}
-			throw new PubSubException("Spring Message construction from Pub/Sub message failed.", re);
+			throw new PubSubException("Sending Spring message failed.", re);
 		}
 
 		if (this.ackMode == AckMode.AUTO) {
