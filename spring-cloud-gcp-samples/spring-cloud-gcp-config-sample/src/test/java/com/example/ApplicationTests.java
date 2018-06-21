@@ -14,7 +14,8 @@
  *  limitations under the License.
  */
 
-import com.example.Application;
+package com.example;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
