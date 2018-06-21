@@ -19,18 +19,12 @@ Run the sample application from Maven:
 $ mvn spring-boot:run
 ----
 
-Then, issue a request containing either of the `x-cloud-trace-context` or `X-B3-TraceId` headers to
+Then, issue a request containing the `x-cloud-trace-context` header to
 the `localhost:8080/log` endpoint and verify that a label appears in Stackdriver:
 
 ----
 $ curl --header "x-cloud-trace-context: [Some-Trace-ID]" localhost:8080/log
 ----
-
-The `spring.cloud.gcp.logging.traceIdExtractor=xcloud_zipkin` setting in `application.properties`
-means that a trace ID in the Zipkin header `X-B3-TraceId` will only be used if no trace ID was found
-in the `x-cloud-trace-context` header.
-See the link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[Spring Cloud GCP Logging Starter]
-for other options for this setting.
 
 To see the logged lines, navigate to the https://console.cloud.google.com/logs/viewer[Logging section of the Cloud Console].
 Select the `Global` resource and look under the `spring.log` channel to see the logged text.
