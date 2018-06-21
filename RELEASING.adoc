@@ -1,7 +1,7 @@
 = Spring Cloud GCP release process
 
-The actual release process is triggered by Pivotal.
-In order to simplify that process, here is a list of prerequisites to be performed before asking Pivotal to run the release scripts.
+The actual release process is triggered by the release admin.
+In order to simplify that process, here is a list of prerequisites to be performed before asking the release admin to run the release scripts.
 
 1. Comment out the `spring-cloud-gcp-samples` module from the root `pom.xml` file, so that the samples aren't released.
 
@@ -11,4 +11,4 @@ In order to simplify that process, here is a list of prerequisites to be perform
 
 4. Change the value of the `<version>` elements of the `pom.xml` of each module in the project being released to the name of the version being released from the interim `BUILD-SNAPSHOT` values. This can be done manually or using the https://www.mojohaus.org/versions-maven-plugin/set-mojo.html[mvn versions:set] command.
 
-After the release scripts have been run by Pivotal, revert the version names from steps 3 and 4 to the interim `BUILD-SNAPSHOT` name.
+After the release scripts have been run by the release admin, revert the version names from steps 3 and 4 to the interim `BUILD-SNAPSHOT` name.
