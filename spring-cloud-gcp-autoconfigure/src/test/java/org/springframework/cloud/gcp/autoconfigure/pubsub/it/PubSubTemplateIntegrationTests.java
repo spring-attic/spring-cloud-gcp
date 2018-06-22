@@ -16,10 +16,19 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub.it;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+
 
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
@@ -40,10 +49,12 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 /**
  * @author João André Martins
  * @author Chengyuan Zhao
+ * @author Dmitry Solomakha
  */
 public class PubSubTemplateIntegrationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+			.withPropertyValues("spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period=0")
 			.withConfiguration(AutoConfigurations.of(GcpContextAutoConfiguration.class,
 					GcpPubSubAutoConfiguration.class));
 
@@ -70,7 +81,7 @@ public class PubSubTemplateIntegrationTests {
 			Map<String, String> headers = new HashMap<>();
 			headers.put("cactuar", "tonberry");
 			headers.put("fujin", "raijin");
-			pubSubTemplate.publish(topicName, "tatatatata", headers);
+			pubSubTemplate.publish(topicName, "tatatatata", headers).get();
 			PubsubMessage pubsubMessage = pubSubTemplate.pullNext(subscriptionName);
 
 			assertThat(pubsubMessage.getData()).isEqualTo(ByteString.copyFromUtf8("tatatatata"));
@@ -106,35 +117,53 @@ public class PubSubTemplateIntegrationTests {
 			String topicName = "peel-the-paint" + UUID.randomUUID();
 			String subscriptionName = "i-lost-my-head" + UUID.randomUUID();
 			pubSubAdmin.createTopic(topicName);
-			pubSubAdmin.createSubscription(subscriptionName, topicName);
+			pubSubAdmin.createSubscription(subscriptionName, topicName, 10);
 
 			PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
 
-			pubSubTemplate.publish(topicName, "free-hand");
-			pubSubTemplate.publish(topicName, "valedictory");
-			pubSubTemplate.publish(topicName, "the-runaway");
+			List<Future<String>> futures = new ArrayList<>();
+			futures.add(pubSubTemplate.publish(topicName, "message1"));
+			futures.add(pubSubTemplate.publish(topicName, "message2"));
+			futures.add(pubSubTemplate.publish(topicName, "message3"));
 
-			List<AcknowledgeablePubsubMessage> ackableMessages =
-					pubSubTemplate.pull(subscriptionName, 4, true);
-
-			assertThat(ackableMessages.size()).isEqualTo(3);
-
-			ackableMessages.forEach(message -> {
-				if (message.getMessage().getData().toStringUtf8().equals("free-hand")) {
-					message.ack();
+			futures.parallelStream().forEach(f -> {
+				try {
+					f.get(5, TimeUnit.SECONDS);
 				}
-				else {
-					message.nack();
+				catch (InterruptedException | ExecutionException | TimeoutException e) {
+					e.printStackTrace();
 				}
 			});
 
-			ackableMessages = pubSubTemplate.pull(subscriptionName, 4, true);
+			List<AcknowledgeablePubsubMessage> ackableMessages = new ArrayList<>();
+			Set<String> messagesSet = new HashSet<>();
+			for (int i = 0; i < 5 && messagesSet.size() < 3; i++) {
+				List<AcknowledgeablePubsubMessage> newMessages = pubSubTemplate.pull(subscriptionName, 4, false);
+				ackableMessages.addAll(newMessages);
+				messagesSet.addAll(newMessages.stream()
+						.map(message -> message.getMessage().getData().toStringUtf8())
+						.collect(Collectors.toList()));
+			}
 
-			assertThat(ackableMessages.size()).isEqualTo(2);
+			assertThat(messagesSet.size()).as("check that we received all the messages").isEqualTo(3);
+
+			ackableMessages.forEach(message -> {
+				if (message.getMessage().getData().toStringUtf8().equals("message1")) {
+					message.ack(); //sync call
+				}
+				else {
+					message.nack(); //sync call
+				}
+			});
+
+			Thread.sleep(1_000);
+			ackableMessages = pubSubTemplate.pull(subscriptionName, 4, true);
+			assertThat(ackableMessages.size()).as("check that we get both nacked messages back").isEqualTo(2);
 			ackableMessages.forEach(AcknowledgeablePubsubMessage::ack);
 
-			ackableMessages = pubSubTemplate.pull(subscriptionName, 4, true);
-			assertThat(ackableMessages.size()).isEqualTo(0);
+			Thread.sleep(10_000); //ackDeadline is 10 seconds, messages will reappear if they weren't acked or nacked
+			ackableMessages = pubSubTemplate.pull(subscriptionName, 4, false);
+			assertThat(ackableMessages.size()).as("check that no more messages left").isEqualTo(0);
 
 			pubSubAdmin.deleteSubscription(subscriptionName);
 			pubSubAdmin.deleteTopic(topicName);

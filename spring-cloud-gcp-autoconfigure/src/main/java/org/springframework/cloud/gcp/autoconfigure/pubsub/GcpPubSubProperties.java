@@ -134,9 +134,9 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		private String pullEndpoint;
 
 		/**
-		 * The optional max ack duration in seconds for the subscriber factory.
+		 * The optional max ack extension period in seconds for the subscriber factory.
 		 */
-		private Long maxAckDurationSeconds;
+		private Long maxAckExtensionPeriod = 0L;
 
 		/**
 		 * The optional parallel pull count setting for the subscriber factory.
@@ -169,12 +169,12 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 			this.pullEndpoint = pullEndpoint;
 		}
 
-		public Long getMaxAckDurationSeconds() {
-			return this.maxAckDurationSeconds;
+		public Long getMaxAckExtensionPeriod() {
+			return this.maxAckExtensionPeriod;
 		}
 
-		public void setMaxAckDurationSeconds(Long maxAckDurationSeconds) {
-			this.maxAckDurationSeconds = maxAckDurationSeconds;
+		public void setMaxAckExtensionPeriod(Long maxAckExtensionPeriod) {
+			this.maxAckExtensionPeriod = maxAckExtensionPeriod;
 		}
 
 		public Integer getParallelPullCount() {

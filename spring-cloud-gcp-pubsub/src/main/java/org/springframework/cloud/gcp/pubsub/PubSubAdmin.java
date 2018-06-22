@@ -155,8 +155,8 @@ public class PubSubAdmin {
 	 *
 	 * @param subscriptionName the name of the new subscription
 	 * @param topicName the name of the topic being subscribed to
-	 * @param ackDeadline deadline in seconds before a message is resent. If not provided, set to
-	 *                    default of 10 seconds
+	 * @param ackDeadline deadline in seconds before a message is resent, must be between 10 and 600 seconds.
+	 *                    If not provided, set to default of 10 seconds
 	 * @return the created subscription
 	 */
 	public Subscription createSubscription(String subscriptionName, String topicName,
@@ -183,8 +183,8 @@ public class PubSubAdmin {
 	 *
 	 * @param subscriptionName the name of the new subscription
 	 * @param topicName the name of the topic being subscribed to
-	 * @param ackDeadline deadline in seconds before a message is resent. If not provided, set to
-	 *                    default of 10 seconds
+	 * @param ackDeadline deadline in seconds before a message is resent, must be between 10 and 600 seconds.
+	 *                    If not provided, set to default of 10 seconds
 	 * @param pushEndpoint URL of the service receiving the push messages. If not provided, uses
 	 *                     message pulling by default
 	 * @return the created subscription
@@ -238,7 +238,7 @@ public class PubSubAdmin {
 	/**
 	 * Delete a subscription from Google Cloud Pub/Sub.
 	 *
-	 * @param subscriptionName
+	 * @param subscriptionName, canonical subscription name, e.g., "subscriptionName"
 	 */
 	public void deleteSubscription(String subscriptionName) {
 		Assert.hasText(subscriptionName, "No subscription name was specified");
@@ -269,11 +269,11 @@ public class PubSubAdmin {
 	/**
 	 * Set the default acknowledgement deadline value.
 	 *
-	 * @param defaultAckDeadline default acknowledgement deadline value in seconds
+	 * @param defaultAckDeadline default acknowledgement deadline value in seconds, must be between 10 and 600 seconds.
 	 */
 	public void setDefaultAckDeadline(int defaultAckDeadline) {
-		Assert.isTrue(defaultAckDeadline >= 0,
-				"The acknowledgement deadline value can't be negative.");
+		Assert.isTrue(defaultAckDeadline >= 10 && defaultAckDeadline <= 600,
+				"The acknowledgement deadline must be between 10 and 600 seconds.");
 
 		this.defaultAckDeadline = defaultAckDeadline;
 	}
