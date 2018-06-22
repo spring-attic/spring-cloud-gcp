@@ -120,11 +120,16 @@ public class GcpPubSubAutoConfiguration {
 				this.gcpPubSubProperties.getSubscriber().getExecutorThreads()));
 	}
 
-	@Bean
+
+	@Configuration
 	@ConditionalOnBean(ObjectMapper.class)
-	@ConditionalOnMissingBean
-	public PubSubMessageConverter pubSubMessageConverter(ObjectMapper objectMapper) {
-		return new JacksonPubSubMessageConverter(objectMapper);
+	static class JacksonPubSubMessageConverterAutoConfiguration {
+
+		@Bean
+		@ConditionalOnMissingBean
+		public PubSubMessageConverter pubSubMessageConverter(ObjectMapper objectMapper) {
+			return new JacksonPubSubMessageConverter(objectMapper);
+		}
 	}
 
 	@Bean
