@@ -40,7 +40,6 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<spring-cloud-release.version>Finchley.RELEASE</spring-cloud-release.version>
-		<spring-boot-release.version>2.0.3.RELEASE</spring-boot-release.version>
 		<zipkin-gcp.version>0.6.2</zipkin-gcp.version>
 	</properties>
 
@@ -58,14 +57,6 @@
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-dependencies</artifactId>
 				<version>${spring-cloud-release.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring-boot-release.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
