@@ -120,18 +120,6 @@ public class GcpPubSubAutoConfiguration {
 				this.gcpPubSubProperties.getSubscriber().getExecutorThreads()));
 	}
 
-
-	@Configuration
-	@ConditionalOnBean(ObjectMapper.class)
-	static class JacksonPubSubMessageConverterAutoConfiguration {
-
-		@Bean
-		@ConditionalOnMissingBean
-		public PubSubMessageConverter pubSubMessageConverter(ObjectMapper objectMapper) {
-			return new JacksonPubSubMessageConverter(objectMapper);
-		}
-	}
-
 	@Bean
 	@ConditionalOnMissingBean
 	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory,
@@ -339,5 +327,16 @@ public class GcpPubSubAutoConfiguration {
 	@ConditionalOnMissingBean
 	public TransportChannelProvider transportChannelProvider() {
 		return InstantiatingGrpcChannelProvider.newBuilder().build();
+	}
+
+	@Configuration
+	@ConditionalOnBean(ObjectMapper.class)
+	static class JacksonPubSubMessageConverterAutoConfiguration {
+
+		@Bean
+		@ConditionalOnMissingBean
+		public PubSubMessageConverter pubSubMessageConverter(ObjectMapper objectMapper) {
+			return new JacksonPubSubMessageConverter(objectMapper);
+		}
 	}
 }
