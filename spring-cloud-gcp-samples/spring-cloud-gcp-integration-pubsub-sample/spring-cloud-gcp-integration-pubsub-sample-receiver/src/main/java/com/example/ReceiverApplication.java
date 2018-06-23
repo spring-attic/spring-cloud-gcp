@@ -62,9 +62,9 @@ public class ReceiverApplication {
 	}
 
 	@ServiceActivator(inputChannel = "pubsubInputChannel")
-	public void messageReceiver(byte[] payload,
+	public void messageReceiver(String payload,
 			@Header(GcpPubSubHeaders.ACKNOWLEDGEMENT) AckReplyConsumer ackReplyConsumer) {
-		LOGGER.info("Message arrived! Payload: " + new String(payload));
+		LOGGER.info("Message arrived! Payload: " + payload);
 		ackReplyConsumer.ack();
 	}
 }
