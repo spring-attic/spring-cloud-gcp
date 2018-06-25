@@ -26,7 +26,7 @@ import org.springframework.integration.metadata.SimpleMetadataStore;
 
 /**
  * @author João André Martins
- * @author Mike Eltsufin 
+ * @author Mike Eltsufin
  */
 public class GcsInboundFileSynchronizer extends AbstractInboundFileSynchronizer<BlobInfo> {
 
@@ -49,5 +49,5 @@ public class GcsInboundFileSynchronizer extends AbstractInboundFileSynchronizer<
 	protected long getModified(BlobInfo file) {
 		return file.getUpdateTime();
 	}
-	
+
 }
