@@ -29,7 +29,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.storage.integration.GcsRemoteFileTemplate;
 import org.springframework.cloud.gcp.storage.integration.GcsSessionFactory;
-import org.springframework.cloud.gcp.storage.integration.filters.GcsPersistentAcceptOnceFileListFilter;
 import org.springframework.cloud.gcp.storage.integration.inbound.GcsInboundFileSynchronizer;
 import org.springframework.cloud.gcp.storage.integration.inbound.GcsInboundFileSynchronizingMessageSource;
 import org.springframework.cloud.gcp.storage.integration.inbound.GcsStreamingMessageSource;
@@ -40,7 +39,7 @@ import org.springframework.integration.annotation.Poller;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.expression.ValueExpression;
-import org.springframework.integration.metadata.SimpleMetadataStore;
+import org.springframework.integration.file.FileHeaders;
 import org.springframework.messaging.MessageHandler;
 
 /**
@@ -129,6 +128,9 @@ public class GcsSpringIntegrationApplication {
 		GcsMessageHandler outboundChannelAdapter = new GcsMessageHandler(new GcsSessionFactory(gcs));
 		outboundChannelAdapter.setRemoteDirectoryExpression(
 				new ValueExpression<>(this.gcsWriteBucket));
+		outboundChannelAdapter
+				.setFileNameGenerator(message -> message.getHeaders().get(FileHeaders.REMOTE_FILE, String.class) + "."
+						+ System.currentTimeMillis());
 
 		return outboundChannelAdapter;
 	}
