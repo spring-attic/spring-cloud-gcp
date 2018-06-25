@@ -84,7 +84,7 @@ public class GcsSession implements Session<BlobInfo> {
 	@Override
 	public void read(String source, OutputStream outputStream) throws IOException {
 		String[] tokens = getBucketAndObjectFromPath(source);
-		Assert.state(tokens.length == 2, "Can only read files. not buckets.");
+		Assert.state(tokens.length == 2, "Can only read files, not buckets.");
 
 		try (OutputStream os = outputStream) {
 			os.write(this.gcs.readAllBytes(tokens[0], tokens[1]));
