@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ public class StackdriverLoggingAutoConfiguration {
 	@ConditionalOnMissingBean
 	public TraceIdLoggingWebMvcInterceptor loggingWebMvcInterceptor(
 			TraceIdExtractor extractor) {
+		
 		return new TraceIdLoggingWebMvcInterceptor(extractor);
 	}
 
@@ -61,4 +62,5 @@ public class StackdriverLoggingAutoConfiguration {
 	public TraceIdExtractor traceIdExtractor() {
 		return new XCloudTraceIdExtractor();
 	}
+	
 }
