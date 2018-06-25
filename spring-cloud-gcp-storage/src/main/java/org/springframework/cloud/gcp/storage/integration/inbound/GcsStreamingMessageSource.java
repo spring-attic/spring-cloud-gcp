@@ -23,9 +23,11 @@ import java.util.stream.Collectors;
 import com.google.cloud.storage.BlobInfo;
 
 import org.springframework.cloud.gcp.storage.integration.GcsFileInfo;
+import org.springframework.cloud.gcp.storage.integration.filters.GcsPersistentAcceptOnceFileListFilter;
 import org.springframework.integration.file.remote.AbstractFileInfo;
 import org.springframework.integration.file.remote.AbstractRemoteFileStreamingMessageSource;
 import org.springframework.integration.file.remote.RemoteFileTemplate;
+import org.springframework.integration.metadata.SimpleMetadataStore;
 
 /**
  * @author João André Martins
@@ -34,6 +36,7 @@ public class GcsStreamingMessageSource extends AbstractRemoteFileStreamingMessag
 
 	public GcsStreamingMessageSource(RemoteFileTemplate<BlobInfo> template) {
 		super(template, null);
+		doSetFilter(new GcsPersistentAcceptOnceFileListFilter(new SimpleMetadataStore(), "gcsStreamingMessageSource"));
 	}
 
 	@Override

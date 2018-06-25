@@ -20,7 +20,9 @@ import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 
 import org.springframework.cloud.gcp.storage.integration.GcsSessionFactory;
+import org.springframework.cloud.gcp.storage.integration.filters.GcsPersistentAcceptOnceFileListFilter;
 import org.springframework.integration.file.remote.synchronizer.AbstractInboundFileSynchronizer;
+import org.springframework.integration.metadata.SimpleMetadataStore;
 
 /**
  * @author João André Martins
@@ -29,6 +31,7 @@ public class GcsInboundFileSynchronizer extends AbstractInboundFileSynchronizer<
 
 	public GcsInboundFileSynchronizer(Storage gcs) {
 		super(new GcsSessionFactory(gcs));
+		doSetFilter(new GcsPersistentAcceptOnceFileListFilter(new SimpleMetadataStore(), "gcsMessageSource"));
 	}
 
 	@Override

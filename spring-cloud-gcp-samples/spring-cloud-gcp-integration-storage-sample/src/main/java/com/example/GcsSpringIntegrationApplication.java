@@ -73,7 +73,6 @@ public class GcsSpringIntegrationApplication {
 	public GcsInboundFileSynchronizer gcsInboundFileSynchronizer(Storage gcs) {
 		GcsInboundFileSynchronizer synchronizer = new GcsInboundFileSynchronizer(gcs);
 		synchronizer.setRemoteDirectory(this.gcsReadBucket);
-		synchronizer.setFilter(new GcsPersistentAcceptOnceFileListFilter(new SimpleMetadataStore(), ""));
 
 		return synchronizer;
 	}
@@ -117,7 +116,6 @@ public class GcsSpringIntegrationApplication {
 		GcsStreamingMessageSource adapter = new GcsStreamingMessageSource(
 				new GcsRemoteFileTemplate(new GcsSessionFactory(gcs)));
 		adapter.setRemoteDirectory(this.gcsReadBucket);
-		adapter.setFilter(new GcsPersistentAcceptOnceFileListFilter(new SimpleMetadataStore(), ""));
 		return adapter;
 	}
 
