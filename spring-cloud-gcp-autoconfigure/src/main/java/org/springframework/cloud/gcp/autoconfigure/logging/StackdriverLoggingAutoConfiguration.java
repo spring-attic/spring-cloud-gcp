@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration;
@@ -42,6 +43,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 @ConditionalOnClass({HandlerInterceptorAdapter.class, LoggingAppender.class})
 @ConditionalOnMissingBean(type = "org.springframework.cloud.sleuth.autoconfig.SleuthProperties")
 @AutoConfigureAfter(StackdriverTraceAutoConfiguration.class)
+@ConditionalOnWebApplication
 @ConditionalOnProperty(value = "spring.cloud.gcp.logging.enabled", matchIfMissing = true)
 @Import(LoggingWebMvcConfigurer.class)
 public class StackdriverLoggingAutoConfiguration {
