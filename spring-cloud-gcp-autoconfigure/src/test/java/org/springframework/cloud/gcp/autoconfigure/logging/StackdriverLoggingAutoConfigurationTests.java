@@ -55,7 +55,10 @@ public class StackdriverLoggingAutoConfigurationTests {
 
 	@Test
 	public void testNonWebAppConfiguration() {
-		new ApplicationContextRunner()
+		new ApplicationContextRunner().withConfiguration(
+				AutoConfigurations.of(
+						StackdriverLoggingAutoConfiguration.class,
+						GcpContextAutoConfiguration.class))
 				.run(context -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
 								.isEqualTo(0));
@@ -63,7 +66,10 @@ public class StackdriverLoggingAutoConfigurationTests {
 
 	@Test
 	public void testNonServletConfiguration() {
-		new ReactiveWebApplicationContextRunner()
+		new ReactiveWebApplicationContextRunner().withConfiguration(
+				AutoConfigurations.of(
+						StackdriverLoggingAutoConfiguration.class,
+						GcpContextAutoConfiguration.class))
 				.run(context -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
 						.isEqualTo(0));
