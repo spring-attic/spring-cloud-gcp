@@ -23,12 +23,9 @@ package org.springframework.cloud.gcp.core;
  */
 public enum GcpScope {
 	PUBSUB("https://www.googleapis.com/auth/pubsub"),
-	SPANNER_ADMIN("https://www.googleapis.com/auth/spanner.admin"),
-	SPANNER_DATA("https://www.googleapis.com/auth/spanner.data"),
 	SQLADMIN("https://www.googleapis.com/auth/sqlservice.admin"),
 	STORAGE_READ_ONLY("https://www.googleapis.com/auth/devstorage.read_only"),
 	STORAGE_READ_WRITE("https://www.googleapis.com/auth/devstorage.read_write"),
-	RUNTIME_CONFIG_SCOPE("https://www.googleapis.com/auth/cloudruntimeconfig"),
 	TRACE_APPEND("https://www.googleapis.com/auth/trace.append"),
 	CLOUD_PLATFORM("https://www.googleapis.com/auth/cloud-platform");
 

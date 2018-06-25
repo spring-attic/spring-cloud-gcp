@@ -2,20 +2,10 @@
 
 Each code sample in this folder exemplifies how to use one Spring Cloud GCP integration.
 
-- link:spring-cloud-gcp-config-sample[Spring Cloud GCP Config Sample]:
-Uses Spring Cloud Config to set the value of the app's parameters.
-Values are stored by the
-https://cloud.google.com/deployment-manager/runtime-configurator/reference/rest/[Google
-Runtime Configuration API].
-
 - link:spring-cloud-gcp-data-jpa-sample[Spring Cloud GCP Data JPA Sample]:
 Uses https://projects.spring.io/spring-data-jpa/[Spring Data JPA] to create a table in a
 https://cloud.google.com/sql/docs/[Google Cloud SQL] instance, populate it and read back
 the inserted values.
-
-- link:spring-cloud-gcp-data-spanner-sample[Spring Cloud GCP Data Cloud Spanner Sample]:
-Uses Spring Data Cloud Spanner to create a table in
-https://cloud.google.com/spanner/[Google Cloud Spanner], add some records to it and read them back.
 
 - link:spring-cloud-gcp-integration-pubsub-sample[Spring Cloud GCP Integration Pub/Sub Sample]:
 Uses Spring Integration channel adapters to exchange messages through
