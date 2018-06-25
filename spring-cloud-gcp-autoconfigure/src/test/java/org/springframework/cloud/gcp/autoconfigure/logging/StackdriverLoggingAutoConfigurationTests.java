@@ -38,12 +38,10 @@ import static org.mockito.Mockito.mock;
  */
 public class StackdriverLoggingAutoConfigurationTests {
 
-	private WebApplicationContextRunner contextRunner =
-			new WebApplicationContextRunner()
-					.withConfiguration(
-							AutoConfigurations.of(
-									StackdriverLoggingAutoConfiguration.class,
-									GcpContextAutoConfiguration.class));
+	private WebApplicationContextRunner contextRunner = new WebApplicationContextRunner()
+			.withConfiguration(
+					AutoConfigurations.of(StackdriverLoggingAutoConfiguration.class,
+							GcpContextAutoConfiguration.class));
 
 	@Test
 	public void testDisabledConfiguration() {
@@ -55,10 +53,10 @@ public class StackdriverLoggingAutoConfigurationTests {
 
 	@Test
 	public void testNonWebAppConfiguration() {
-		new ApplicationContextRunner().withConfiguration(
-				AutoConfigurations.of(
-						StackdriverLoggingAutoConfiguration.class,
-						GcpContextAutoConfiguration.class))
+		new ApplicationContextRunner()
+				.withConfiguration(
+						AutoConfigurations.of(StackdriverLoggingAutoConfiguration.class,
+								GcpContextAutoConfiguration.class))
 				.run(context -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
 								.isEqualTo(0));
@@ -66,13 +64,13 @@ public class StackdriverLoggingAutoConfigurationTests {
 
 	@Test
 	public void testNonServletConfiguration() {
-		new ReactiveWebApplicationContextRunner().withConfiguration(
-				AutoConfigurations.of(
-						StackdriverLoggingAutoConfiguration.class,
-						GcpContextAutoConfiguration.class))
+		new ReactiveWebApplicationContextRunner()
+				.withConfiguration(
+						AutoConfigurations.of(StackdriverLoggingAutoConfiguration.class,
+								GcpContextAutoConfiguration.class))
 				.run(context -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
-						.isEqualTo(0));
+								.isEqualTo(0));
 	}
 
 	@Test
@@ -99,7 +97,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 		public CredentialsProvider googleCredentials() {
 			return () -> mock(Credentials.class);
 		}
-		
+
 	}
-	
+
 }
