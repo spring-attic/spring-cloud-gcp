@@ -38,7 +38,7 @@ public class SpannerKeyIdConverter implements BackendIdConverter {
 
 	@Override
 	public Serializable fromRequestId(String id, Class<?> entityType) {
-                if (id == null) {
+		if (id == null) {
 			return null;
 		}
 		Object[] parts = id.split(getUrlIdSeparator());
