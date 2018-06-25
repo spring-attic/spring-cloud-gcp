@@ -53,7 +53,6 @@ public class StackdriverLoggingAutoConfiguration {
 	@ConditionalOnMissingBean
 	public TraceIdLoggingWebMvcInterceptor loggingWebMvcInterceptor(
 			TraceIdExtractor extractor) {
-		
 		return new TraceIdLoggingWebMvcInterceptor(extractor);
 	}
 
@@ -62,5 +61,5 @@ public class StackdriverLoggingAutoConfiguration {
 	public TraceIdExtractor traceIdExtractor() {
 		return new XCloudTraceIdExtractor();
 	}
-	
+
 }

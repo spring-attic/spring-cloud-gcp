@@ -99,7 +99,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 		public CredentialsProvider googleCredentials() {
 			return () -> mock(Credentials.class);
 		}
-		
+
 	}
-	
+
 }
