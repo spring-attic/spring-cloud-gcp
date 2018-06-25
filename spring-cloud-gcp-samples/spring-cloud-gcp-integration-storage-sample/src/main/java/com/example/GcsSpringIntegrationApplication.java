@@ -129,8 +129,7 @@ public class GcsSpringIntegrationApplication {
 		outboundChannelAdapter.setRemoteDirectoryExpression(
 				new ValueExpression<>(this.gcsWriteBucket));
 		outboundChannelAdapter
-				.setFileNameGenerator(message -> message.getHeaders().get(FileHeaders.REMOTE_FILE, String.class) + "."
-						+ System.currentTimeMillis());
+				.setFileNameGenerator(message -> message.getHeaders().get(FileHeaders.REMOTE_FILE, String.class));
 
 		return outboundChannelAdapter;
 	}
