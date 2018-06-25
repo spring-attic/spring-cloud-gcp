@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import com.google.auth.Credentials;
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.test.context.runner.ReactiveWebApplicationContextRunner;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration;
@@ -46,18 +48,38 @@ public class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testDisabledConfiguration() {
 		this.contextRunner.withPropertyValues("spring.cloud.gcp.logging.enabled=false")
-				.run(context -> {
-					assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
-							.isEqualTo(0);
-				});
+				.run(context -> assertThat(context
+						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
+								.isEqualTo(0));
+	}
+
+	@Test
+	public void testNonWebAppConfiguration() {
+		new ApplicationContextRunner().withConfiguration(
+				AutoConfigurations.of(
+						StackdriverLoggingAutoConfiguration.class,
+						GcpContextAutoConfiguration.class))
+				.run(context -> assertThat(context
+						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
+								.isEqualTo(0));
+	}
+
+	@Test
+	public void testNonServletConfiguration() {
+		new ReactiveWebApplicationContextRunner().withConfiguration(
+				AutoConfigurations.of(
+						StackdriverLoggingAutoConfiguration.class,
+						GcpContextAutoConfiguration.class))
+				.run(context -> assertThat(context
+						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
+						.isEqualTo(0));
 	}
 
 	@Test
 	public void testRegularConfiguration() {
-		this.contextRunner.run(context -> {
-			assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
-					.isEqualTo(1);
-		});
+		this.contextRunner.run(context -> assertThat(
+				context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
+						.isEqualTo(1));
 	}
 
 	@Test
@@ -66,10 +88,9 @@ public class StackdriverLoggingAutoConfigurationTests {
 				.withConfiguration(AutoConfigurations.of(Configuration.class,
 						StackdriverTraceAutoConfiguration.class))
 				.withPropertyValues("spring.cloud.gcp.project-id=pop-1")
-				.run(context -> {
-					assertThat(context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
-							.isEqualTo(0);
-				});
+				.run(context -> assertThat(context
+						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
+								.isEqualTo(0));
 	}
 
 	private static class Configuration {
@@ -78,5 +99,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 		public CredentialsProvider googleCredentials() {
 			return () -> mock(Credentials.class);
 		}
+		
 	}
+	
 }

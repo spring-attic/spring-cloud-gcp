@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication.Type;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.TraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration;
@@ -42,6 +44,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 @ConditionalOnClass({HandlerInterceptorAdapter.class, LoggingAppender.class})
 @ConditionalOnMissingBean(type = "org.springframework.cloud.sleuth.autoconfig.SleuthProperties")
 @AutoConfigureAfter(StackdriverTraceAutoConfiguration.class)
+@ConditionalOnWebApplication(type = Type.SERVLET)
 @ConditionalOnProperty(value = "spring.cloud.gcp.logging.enabled", matchIfMissing = true)
 @Import(LoggingWebMvcConfigurer.class)
 public class StackdriverLoggingAutoConfiguration {
@@ -50,6 +53,7 @@ public class StackdriverLoggingAutoConfiguration {
 	@ConditionalOnMissingBean
 	public TraceIdLoggingWebMvcInterceptor loggingWebMvcInterceptor(
 			TraceIdExtractor extractor) {
+		
 		return new TraceIdLoggingWebMvcInterceptor(extractor);
 	}
 
@@ -58,4 +62,5 @@ public class StackdriverLoggingAutoConfiguration {
 	public TraceIdExtractor traceIdExtractor() {
 		return new XCloudTraceIdExtractor();
 	}
+	
 }
