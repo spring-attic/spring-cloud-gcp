@@ -156,14 +156,10 @@ public class PubSubTemplateIntegrationTests {
 				}
 			});
 
-			Thread.sleep(1_000);
+			Thread.sleep(11_000);
 			ackableMessages = pubSubTemplate.pull(subscriptionName, 4, true);
 			assertThat(ackableMessages.size()).as("check that we get both nacked messages back").isEqualTo(2);
 			ackableMessages.forEach(AcknowledgeablePubsubMessage::ack);
-
-			Thread.sleep(10_000); //ackDeadline is 10 seconds, messages will reappear if they weren't acked or nacked
-			ackableMessages = pubSubTemplate.pull(subscriptionName, 4, false);
-			assertThat(ackableMessages.size()).as("check that no more messages left").isEqualTo(0);
 
 			pubSubAdmin.deleteSubscription(subscriptionName);
 			pubSubAdmin.deleteTopic(topicName);
