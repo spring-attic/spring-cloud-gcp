@@ -27,7 +27,6 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
-import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.ValueBinder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -103,7 +102,6 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 				(BiFunction<ValueBinder, boolean[], ?>) ValueBinder::toBoolArray);
 		builder.put(long[].class,
 				(BiFunction<ValueBinder, long[], ?>) ValueBinder::toInt64Array);
-		builder.put(Value.class, (BiFunction<ValueBinder, Value, ?>) ValueBinder::to);
 
 		singleItemType2ToMethodMap = builder.build();
 	}

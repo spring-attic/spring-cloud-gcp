@@ -28,7 +28,6 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
-import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.ValueBinder;
 import org.junit.Before;
 import org.junit.Test;
@@ -98,7 +97,6 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 		t.timestampList.add(t.timestampField);
 		t.bytesList = new ArrayList<>();
 		t.bytesList.add(t.bytes);
-		t.valueField = Value.string("testValue");
 
 		Instant i1 = Instant.ofEpochSecond(111);
 		Instant i2 = Instant.ofEpochSecond(222);
@@ -217,7 +215,6 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 		verify(timestampFieldBinder, times(1)).to(eq(t.timestampField));
 		verify(bytesFieldBinder, times(1)).to(eq(t.bytes));
 		verify(instantListFieldBinder, times(1)).toTimestampArray(eq(timestamps));
-		verify(valueFieldBinder, times(1)).to(eq(t.valueField));
 	}
 
 	@Test
