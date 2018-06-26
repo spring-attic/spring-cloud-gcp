@@ -1,6 +1,6 @@
 :spring-data-commons-ref: https://docs.spring.io/spring-data/data-commons/docs/current/reference/html
 
-== Spring Data Cloud Spanner
+== Spring Data Cloud Spanner BETA
 
 http://projects.spring.io/spring-data/[Spring Data]
 is an abstraction for storing and retrieving POJOs in numerous storage technologies.
@@ -53,6 +53,8 @@ This setup takes care of bringing in the latest compatible version of Cloud Java
 as well.
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/{git_version}/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[sample application] is available.
+
+Spring Data Cloud Spanner and the underlying Cloud Spanner Java Client Library are beta status.
 
 === Configuration
 
