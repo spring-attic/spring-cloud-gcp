@@ -70,6 +70,9 @@ class StructAccessor {
 					.put(double[].class, AbstractStructReader::getDoubleArray)
 					.put(long[].class, AbstractStructReader::getLongArray)
 					.put(boolean[].class, AbstractStructReader::getBooleanArray)
+					// Note that Struct.class appears in this map. While we support
+					// converting structs into POJO fields of POJOs, the value in this map is for
+					// the case where the field within the POJO is Struct.
 					.put(Struct.class, Struct::getStruct).build();
 
 	private final SpannerTypeMapper spannerTypeMapper;

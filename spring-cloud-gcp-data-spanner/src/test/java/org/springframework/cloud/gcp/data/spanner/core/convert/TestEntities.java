@@ -22,6 +22,7 @@ import java.util.List;
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
+import com.google.cloud.spanner.Struct;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -98,6 +99,14 @@ public class TestEntities {
 		String id;
 
 		List<InnerTestEntity> innerTestEntities;
+	}
+
+	@Table(name = "outer_test_entity")
+	static class OuterTestHoldingStructEntity {
+		@PrimaryKey
+		String id;
+
+		List<Struct> innerStructs;
 	}
 
 	@Table(name = "outer_test_entity_flat")

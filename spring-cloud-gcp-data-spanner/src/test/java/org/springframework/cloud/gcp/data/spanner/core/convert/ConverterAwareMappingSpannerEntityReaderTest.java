@@ -33,6 +33,7 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.Faul
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestEntityFlat;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestEntityFlatFaulty;
+import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestHoldingStructEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -81,6 +82,23 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 		assertEquals("key1", result.id);
 		assertEquals(1, result.innerTestEntities.size());
 		assertEquals("value", result.innerTestEntities.get(0).value);
+	}
+
+	@Test
+	public void readNestedStructAsStructTest() {
+		Struct innerStruct = Struct.newBuilder().set("value").to(Value.string("value"))
+				.build();
+		Struct outerStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
+				.set("innerStructs")
+				.toStructArray(Type.struct(StructField.of("value", Type.string())),
+						ImmutableList.of(innerStruct))
+				.build();
+
+		OuterTestHoldingStructEntity result = this.spannerEntityReader
+				.read(OuterTestHoldingStructEntity.class, outerStruct);
+		assertEquals("key1", result.id);
+		assertEquals(1, result.innerStructs.size());
+		assertEquals("value", result.innerStructs.get(0).getString("value"));
 	}
 
 	@Test(expected = SpannerDataException.class)
