@@ -190,11 +190,6 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 		when(bytesFieldBinder.to((ByteArray) any())).thenReturn(null);
 		when(writeBuilder.set(eq("bytes"))).thenReturn(bytesFieldBinder);
 
-		ValueBinder<WriteBuilder> valueFieldBinder = mock(ValueBinder.class);
-		when(valueFieldBinder.to((com.google.cloud.spanner.Value) any()))
-				.thenReturn(null);
-		when(writeBuilder.set(eq("valueField"))).thenReturn(valueFieldBinder);
-
 		this.spannerEntityWriter.write(t, writeBuilder);
 
 		verify(idBinder, times(1)).to(eq(t.id));
