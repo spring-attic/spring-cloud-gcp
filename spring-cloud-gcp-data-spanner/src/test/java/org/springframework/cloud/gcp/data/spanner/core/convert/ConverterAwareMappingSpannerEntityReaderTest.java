@@ -34,6 +34,7 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.Oute
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestEntityFlat;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestEntityFlatFaulty;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestHoldingStructEntity;
+import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestHoldingStructsEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -85,7 +86,7 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 	}
 
 	@Test
-	public void readNestedStructAsStructTest() {
+	public void readNestedStructsAsStructsTest() {
 		Struct innerStruct = Struct.newBuilder().set("value").to(Value.string("value"))
 				.build();
 		Struct outerStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
@@ -94,11 +95,24 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 						ImmutableList.of(innerStruct))
 				.build();
 
-		OuterTestHoldingStructEntity result = this.spannerEntityReader
-				.read(OuterTestHoldingStructEntity.class, outerStruct);
+		OuterTestHoldingStructsEntity result = this.spannerEntityReader
+				.read(OuterTestHoldingStructsEntity.class, outerStruct);
 		assertEquals("key1", result.id);
 		assertEquals(1, result.innerStructs.size());
 		assertEquals("value", result.innerStructs.get(0).getString("value"));
+	}
+
+	@Test
+	public void readNestedStructAsStructTest() {
+		Struct innerStruct = Struct.newBuilder().set("value").to(Value.string("value"))
+				.build();
+		Struct outerStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
+				.set("innerStruct").to(innerStruct).build();
+
+		OuterTestHoldingStructEntity result = this.spannerEntityReader
+				.read(OuterTestHoldingStructEntity.class, outerStruct);
+		assertEquals("key1", result.id);
+		assertEquals("value", result.innerStruct.getString("value"));
 	}
 
 	@Test(expected = SpannerDataException.class)
