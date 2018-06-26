@@ -39,7 +39,9 @@
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<spring-cloud-release.version>Finchley.RELEASE</spring-cloud-release.version>
+		<spring-cloud-commons.version>2.0.0.RELEASE</spring-cloud-commons.version>
+		<spring-cloud-sleuth.version>2.0.0.RELEASE</spring-cloud-sleuth.version>
+		<spring-cloud-stream.version>Elmhurst.RELEASE</spring-cloud-stream.version>
 		<zipkin-gcp.version>0.6.2</zipkin-gcp.version>
 	</properties>
 
@@ -55,8 +57,24 @@
 
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>${spring-cloud-release.version}</version>
+				<artifactId>spring-cloud-commons-dependencies</artifactId>
+				<version>${spring-cloud-commons.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-sleuth-dependencies</artifactId>
+				<version>${spring-cloud-sleuth.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-stream-dependencies</artifactId>
+				<version>${spring-cloud-stream.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
