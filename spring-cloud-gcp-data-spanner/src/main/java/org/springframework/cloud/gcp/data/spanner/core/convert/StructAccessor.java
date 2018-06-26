@@ -69,7 +69,8 @@ class StructAccessor {
 					.put(ByteArray.class, AbstractStructReader::getBytes)
 					.put(double[].class, AbstractStructReader::getDoubleArray)
 					.put(long[].class, AbstractStructReader::getLongArray)
-					.put(boolean[].class, AbstractStructReader::getBooleanArray).build();
+					.put(boolean[].class, AbstractStructReader::getBooleanArray)
+					.put(Struct.class, Struct::getStruct).build();
 
 	private final SpannerTypeMapper spannerTypeMapper;
 

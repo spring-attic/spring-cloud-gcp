@@ -27,6 +27,7 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
+import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.ValueBinder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -87,26 +88,22 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	static {
 		ImmutableMap.Builder<Class<?>, BiFunction<ValueBinder, ?, ?>> builder = new ImmutableMap.Builder<>();
 
-		builder.put(Date.class,
-				((BiFunction<ValueBinder, Date, ?>) ValueBinder::to));
-		builder.put(Boolean.class,
-				((BiFunction<ValueBinder, Boolean, ?>) ValueBinder::to));
-		builder.put(Long.class,
-				((BiFunction<ValueBinder, Long, ?>) ValueBinder::to));
-		builder.put(String.class,
-				((BiFunction<ValueBinder, String, ?>) ValueBinder::to));
-		builder.put(Double.class,
-				((BiFunction<ValueBinder, Double, ?>) ValueBinder::to));
+		builder.put(Date.class, (BiFunction<ValueBinder, Date, ?>) ValueBinder::to);
+		builder.put(Boolean.class, (BiFunction<ValueBinder, Boolean, ?>) ValueBinder::to);
+		builder.put(Long.class, (BiFunction<ValueBinder, Long, ?>) ValueBinder::to);
+		builder.put(String.class, (BiFunction<ValueBinder, String, ?>) ValueBinder::to);
+		builder.put(Double.class, (BiFunction<ValueBinder, Double, ?>) ValueBinder::to);
 		builder.put(Timestamp.class,
-				((BiFunction<ValueBinder, Timestamp, ?>) ValueBinder::to));
+				(BiFunction<ValueBinder, Timestamp, ?>) ValueBinder::to);
 		builder.put(ByteArray.class,
-				((BiFunction<ValueBinder, ByteArray, ?>) ValueBinder::to));
+				(BiFunction<ValueBinder, ByteArray, ?>) ValueBinder::to);
 		builder.put(double[].class,
-				((BiFunction<ValueBinder, double[], ?>) ValueBinder::toFloat64Array));
+				(BiFunction<ValueBinder, double[], ?>) ValueBinder::toFloat64Array);
 		builder.put(boolean[].class,
-				((BiFunction<ValueBinder, boolean[], ?>) ValueBinder::toBoolArray));
+				(BiFunction<ValueBinder, boolean[], ?>) ValueBinder::toBoolArray);
 		builder.put(long[].class,
-				((BiFunction<ValueBinder, long[], ?>) ValueBinder::toInt64Array));
+				(BiFunction<ValueBinder, long[], ?>) ValueBinder::toInt64Array);
+		builder.put(Value.class, (BiFunction<ValueBinder, Value, ?>) ValueBinder::to);
 
 		singleItemType2ToMethodMap = builder.build();
 	}

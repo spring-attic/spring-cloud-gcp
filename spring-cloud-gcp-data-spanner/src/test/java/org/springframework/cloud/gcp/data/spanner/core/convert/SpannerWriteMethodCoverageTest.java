@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 
+import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.ValueBinder;
 import org.junit.Test;
 
@@ -45,7 +46,12 @@ public class SpannerWriteMethodCoverageTest {
 			}
 
 			Class<?> paramType = ConversionUtils.boxIfNeeded(method.getParameterTypes()[0]);
-			if (ConversionUtils.isIterableNonByteArrayType(paramType)) {
+			if (paramType.equals(Struct.class)) {
+				// there is a method for binding a Struct value, but because Struct values
+				// cannot be written to table columns we will ignore it.
+				continue;
+			}
+			else if (ConversionUtils.isIterableNonByteArrayType(paramType)) {
 				Class<?> innerParamType = (Class) ((ParameterizedType) method
 						.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
 				assertThat(ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap
