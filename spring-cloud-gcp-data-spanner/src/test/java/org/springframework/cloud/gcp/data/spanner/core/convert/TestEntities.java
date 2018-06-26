@@ -23,6 +23,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Value;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -75,6 +76,8 @@ public class TestEntities {
 		Timestamp timestampField;
 
 		ByteArray bytes;
+
+		Value valueField;
 	}
 
 	@Table(name = "faulty_test_table")
