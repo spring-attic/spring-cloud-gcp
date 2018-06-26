@@ -16,6 +16,7 @@
 
 package com.example;
 
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,18 +27,33 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.rule.OutputCapture;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeThat;
 
 /**
  * @author Mike Eltsufin
  */
+
+
+/*
+	This tests verifies that the jpa-sample works.
+	In order to run it, use the following parameters:
+
+	-Dit.jpa-sample=true -Dspring.cloud.gcp.sql.database-name=[...]
+	-Dspring.cloud.gcp.sql.instance-connection-name=[...] -Dspring.datasource.password=[...]
+ */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		DemoApplication.class }, properties = {
-				"spring.cloud.gcp.sql.database-name=houses",
-				"spring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testmysql",
-				"spring.datasource.password=test"})
+@SpringBootTest(classes = {DemoApplication.class})
 public class ApplicationTests {
+	@BeforeClass
+	public static void checkToRun() {
+		assumeThat(
+				"JPA-sample integration tests are disabled. Please use '-Dit.jpa-sample=true' "
+						+ "to enable them. ",
+				System.getProperty("it.jpa-sample"), is("true"));
+	}
+
 	@Autowired
 	private CommandLineRunner commandLineRunner;
 
