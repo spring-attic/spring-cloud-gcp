@@ -11,4 +11,6 @@ In order to simplify that process, here is a list of prerequisites to be perform
 
 4. Change the value of the `<version>` elements of the `pom.xml` of each module in the project being released to the name of the version being released from the interim `BUILD-SNAPSHOT` values. This can be done manually or using the https://www.mojohaus.org/versions-maven-plugin/set-mojo.html[mvn versions:set] command.
 
-After the release scripts have been run by the release admin, revert the version names from steps 3 and 4 to the interim `BUILD-SNAPSHOT` name.
+5. Wait for the release admin to run the release scripts.
+
+6. Revert the PR from steps 3 and 4 so that the version changes back to `BUILD-SNAPSHOT`.

@@ -29,7 +29,6 @@ import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties;
-import org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties;
 import org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlProperties;
 import org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageProperties;
 import org.springframework.cloud.gcp.autoconfigure.trace.GcpTraceProperties;
@@ -65,15 +64,6 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 							context.getBean(GcpStorageProperties.class);
 					assertThat(storageProperties.getCredentials().getEncodedKey())
 					.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-storage"));
-
-					GcpSpannerProperties spannerProperties =
-							context.getBean(GcpSpannerProperties.class);
-					assertThat(spannerProperties.getProjectId())
-							.isEqualTo("graphite-test-spring-cloud-gcp");
-					assertThat(spannerProperties.getCredentials().getEncodedKey())
-							.isEqualTo(getPrivateKeyDataFromJson(vcapFileContents, "google-spanner"));
-					assertThat(spannerProperties.getInstanceId())
-							.isEqualTo("pcf-sb-7-1521579042901037743");
 
 					GcpTraceProperties traceProperties = context.getBean(GcpTraceProperties.class);
 					assertThat(traceProperties.getProjectId())
@@ -118,7 +108,7 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 	}
 
 	@EnableConfigurationProperties({GcpPubSubProperties.class, GcpStorageProperties.class,
-			GcpSpannerProperties.class, GcpTraceProperties.class, GcpCloudSqlProperties.class,
+			GcpTraceProperties.class, GcpCloudSqlProperties.class,
 			DataSourceProperties.class})
 	static class GcpCfEnvPPTestConfiguration {
 
