@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.rule.OutputCapture;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.is;
@@ -33,6 +34,7 @@ import static org.junit.Assume.assumeThat;
 
 /**
  * @author Mike Eltsufin
+ * @author Dmitry Solomakha
  */
 
 
@@ -40,18 +42,19 @@ import static org.junit.Assume.assumeThat;
 	This tests verifies that the jpa-sample works.
 	In order to run it, use the following parameters:
 
-	-Dit.jpa-sample=true -Dspring.cloud.gcp.sql.database-name=[...]
+	-Dit.cloudsql=true -Dspring.cloud.gcp.sql.database-name=[...]
 	-Dspring.cloud.gcp.sql.instance-connection-name=[...] -Dspring.datasource.password=[...]
  */
 @RunWith(SpringRunner.class)
+@TestPropertySource("classpath:application-test.properties")
 @SpringBootTest(classes = {DemoApplication.class})
 public class ApplicationTests {
 	@BeforeClass
 	public static void checkToRun() {
 		assumeThat(
-				"JPA-sample integration tests are disabled. Please use '-Dit.jpa-sample=true' "
+				"JPA-sample integration tests are disabled. Please use '-Dit.cloudsql=true' "
 						+ "to enable them. ",
-				System.getProperty("it.jpa-sample"), is("true"));
+				System.getProperty("it.cloudsql"), is("true"));
 	}
 
 	@Autowired
