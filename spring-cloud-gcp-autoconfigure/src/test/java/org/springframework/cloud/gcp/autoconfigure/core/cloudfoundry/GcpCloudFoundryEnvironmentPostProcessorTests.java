@@ -46,6 +46,7 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 			.withInitializer(context ->
 					new GcpCloudFoundryEnvironmentPostProcessor()
 							.postProcessEnvironment(context.getEnvironment(), null))
+			.withSystemProperties(new String[] {"spring.cloud.gcp.sql.instance-connection-name="})
 			.withUserConfiguration(GcpCfEnvPPTestConfiguration.class);
 
 	@Test
