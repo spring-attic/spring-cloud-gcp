@@ -49,8 +49,8 @@ and enable the API from there.
 
 Available sample applications:
 
-- https://github.com/spring-cloud/spring-cloud-gcp/tree/{git_version}/spring-cloud-gcp-samples/spring-cloud-gcp-sql-sample[Spring Cloud GCP SQL]
-- https://github.com/spring-cloud/spring-cloud-gcp/tree/{git_version}/spring-cloud-gcp-samples/spring-cloud-gcp-data-jpa-sample[Spring Data JPA with Spring Cloud GCP SQL]
+- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-sql-sample[Spring Cloud GCP SQL]
+- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-jpa-sample[Spring Data JPA with Spring Cloud GCP SQL]
 
 
 === Spring Boot Starter for Google Cloud SQL
