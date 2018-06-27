@@ -48,7 +48,8 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 							.postProcessEnvironment(context.getEnvironment(), null))
 			.withSystemProperties(new String[] {
 					"spring.cloud.gcp.sql.instance-connection-name=test-connection",
-					"spring.cloud.gcp.sql.database-name=test-dbname"
+					"spring.cloud.gcp.sql.database-name=test-dbname",
+					"spring.cloud.gcp.sql.credentials.encoded-key=test-key"
 			})
 			.withUserConfiguration(GcpCfEnvPPTestConfiguration.class);
 
@@ -113,7 +114,7 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 					//so db name and connection name should not change
 					assertThat(sqlProperties.getDatabaseName()).isEqualTo("test-dbname");
 					assertThat(sqlProperties.getInstanceConnectionName()).isEqualTo("test-connection");
-					assertThat(sqlProperties.getCredentials().getEncodedKey()).isNull();
+					assertThat(sqlProperties.getCredentials().getEncodedKey()).isEqualTo("test-key");
 				});
 	}
 
