@@ -45,6 +45,7 @@ The following parameters are configurable in Spring Cloud GCP Config:
 | `spring.cloud.gcp.config.timeout-millis` | Timeout in milliseconds for connecting to the Google Runtime Configuration API | No | `60000`
 | `spring.cloud.gcp.config.project-id` | GCP project ID where the Google Runtime Configuration API is hosted | No |
 | `spring.cloud.gcp.config.credentials.location` | OAuth2 credentials for authenticating with the Google Runtime Configuration API | No |
+| `spring.cloud.gcp.config.credentials.encoded-key` | Base64-encoded OAuth2 credentials for authenticating with the Google Runtime Configuration API | No |
 | `spring.cloud.gcp.config.credentials.scopes` | https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP Config credentials | No | https://www.googleapis.com/auth/cloudruntimeconfig
 |===
 

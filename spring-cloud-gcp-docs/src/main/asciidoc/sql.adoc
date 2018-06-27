@@ -86,6 +86,9 @@ instance's project ID, region and name, each separated by a colon. For example,
 | `spring.cloud.gcp.sql.credentials.location` | File system path to the Google OAuth2 credentials
 private key file. Used to authenticate and authorize new connections to a Google Cloud SQL instance.
 | Default credentials provided by the Spring GCP Boot starter |
+| `spring.cloud.gcp.sql.credentials.encoded-key` | Base64-encoded contents of OAuth2 account private key in JSON format.
+Used to authenticate and authorize new connections to a Google Cloud SQL instance.
+| Default credentials provided by the Spring GCP Boot starter |
 |===
 
 ==== `DataSource` creation flow

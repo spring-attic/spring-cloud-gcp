@@ -82,6 +82,9 @@ is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud
 | `spring.cloud.gcp.spanner.credentials.location` | OAuth2 credentials for authenticating with the
 Google Cloud Spanner API, if different from the ones in the
 <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.spanner.credentials.encoded-key` | Base64-encoded OAuth2 credentials for authenticating with the
+Google Cloud Spanner API, if different from the ones in the
+<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
 | `spring.cloud.gcp.spanner.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
 Cloud Spanner credentials | No | https://www.googleapis.com/auth/spanner.data
