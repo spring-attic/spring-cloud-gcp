@@ -1,4 +1,4 @@
-== Spring Cloud Config BETA
+== Spring Cloud Config
 
 Spring Cloud GCP makes it possible to use the
 https://cloud.google.com/deployment-manager/runtime-configurator/reference/rest/[Google

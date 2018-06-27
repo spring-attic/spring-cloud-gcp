@@ -4,7 +4,7 @@ This project makes it easy for Spring users to run their applications on Google 
 You can check our project website http://cloud.spring.io/spring-cloud-gcp[here].
 
 For a deep dive into the project, refer to the
-https://docs.spring.io/spring-cloud-gcp/docs/1.0.0.M3/reference/htmlsingle/[Spring
+https://docs.spring.io/spring-cloud-gcp/docs/1.0.0.RC1/reference/htmlsingle/[Spring
 Cloud GCP Reference Document].
 
 Currently, this repository provides support for:
@@ -68,7 +68,7 @@ dependencies and instead delegate versioning to the BOM.
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-gcp-dependencies</artifactId>
-            <version>1.0.0.M3</version>
+            <version>1.0.0.RC1</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
