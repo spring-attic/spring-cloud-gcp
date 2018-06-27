@@ -28,7 +28,7 @@ dependencies {
 
 This starter is also available from https://start.spring.io/[Spring Initializr] through the `GCP Storage` entry.
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/{git_version}/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample[sample application] is available.
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample[sample application] is available.
 
 === Google Cloud Storage
 

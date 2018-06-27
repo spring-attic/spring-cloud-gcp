@@ -52,7 +52,7 @@ dependencies {
 This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Spanner libraries
 as well.
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/{git_version}/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[sample application] is available.
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[sample application] is available.
 
 Spring Data Cloud Spanner and the underlying Cloud Spanner Java Client Library are beta status.
 
