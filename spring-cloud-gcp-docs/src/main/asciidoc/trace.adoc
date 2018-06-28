@@ -73,6 +73,7 @@ All configurations are optional:
 | `spring.cloud.gcp.trace.enabled` | Auto-configure Spring Cloud Sleuth to send traces to Stackdriver Trace. | No | `true`
 | `spring.cloud.gcp.trace.project-id` | Overrides the project ID from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
 | `spring.cloud.gcp.trace.credentials.location` | Overrides the credentials location from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
+| `spring.cloud.gcp.trace.credentials.encoded-key` | Overrides the credentials encoded key from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
 | `spring.cloud.gcp.trace.credentials.scopes` | Overrides the credentials scopes from the <<spring-cloud-gcp-core,Spring Cloud GCP Module>> | No |
 | `spring.cloud.gcp.trace.num-executor-threads` | Number of threads used by the Trace executor | No | 4
 | `spring.cloud.gcp.trace.authority` | HTTP/2 authority the channel claims to be connecting to. | No |
