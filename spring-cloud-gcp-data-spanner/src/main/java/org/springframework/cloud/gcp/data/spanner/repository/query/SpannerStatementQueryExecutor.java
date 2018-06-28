@@ -188,7 +188,18 @@ public class SpannerStatementQueryExecutor {
 
 					switch (part.getType()) {
 					case LIKE:
-						andString += " LIKE %" + insertedTag;
+						andString += " LIKE " + insertedTag;
+						break;
+					case NOT_LIKE:
+						andString += " NOT LIKE " + insertedTag;
+						break;
+					case CONTAINING:
+						andString = " REGEXP_CONTAINS(" + andString + "," + insertedTag
+								+ ") =TRUE";
+						break;
+					case NOT_CONTAINING:
+						andString = " REGEXP_CONTAINS(" + andString + "," + insertedTag
+								+ ") =FALSE";
 						break;
 					case SIMPLE_PROPERTY:
 						andString += "=" + insertedTag;

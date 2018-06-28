@@ -130,6 +130,14 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertEquals(2, customSortedTrades.size());
 		assertTrue(customSortedTrades.get(0).getId()
 				.compareTo(customSortedTrades.get(1).getId()) < 0);
+
+		this.tradeRepository.findBySymbolLike("%BCD")
+				.forEach(x -> assertEquals("ABCD", x.getSymbol()));
+		assertTrue(this.tradeRepository.findBySymbolNotLike("%BCD").isEmpty());
+
+		this.tradeRepository.findBySymbolContains("BCD")
+				.forEach(x -> assertEquals("ABCD", x.getSymbol()));
+		assertTrue(this.tradeRepository.findBySymbolNotContains("BCD").isEmpty());
 	}
 
 	protected List<Trade> insertTrades(String traderId1, String action, int numTrades) {
