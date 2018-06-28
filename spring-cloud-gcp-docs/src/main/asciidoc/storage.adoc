@@ -86,6 +86,9 @@ when writes are made to non-existent files | No | `true`
 | `spring.cloud.gcp.storage.credentials.location` | OAuth2 credentials for authenticating with the
 Google Cloud Storage API, if different from the ones in the
 <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.storage.credentials.encoded-key` | Base64-encoded contents of OAuth2 account private key for authenticating with the
+Google Cloud Storage API, if different from the ones in the
+<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
 | `spring.cloud.gcp.storage.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
 Storage credentials | No | https://www.googleapis.com/auth/devstorage.read_write

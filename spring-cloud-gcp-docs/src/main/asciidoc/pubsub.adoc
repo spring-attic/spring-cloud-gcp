@@ -269,6 +269,9 @@ is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud
 | `spring.cloud.gcp.pubsub.credentials.location` | OAuth2 credentials for authenticating with the
 Google Cloud Pub/Sub API, if different from the ones in the
 <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.pubsub.credentials.encoded-key` | Base64-encoded contents of OAuth2 account private key for authenticating with the
+Google Cloud Pub/Sub API, if different from the ones in the
+<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
 | `spring.cloud.gcp.pubsub.credentials.scopes` |
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
 Pub/Sub credentials | No | https://www.googleapis.com/auth/pubsub
