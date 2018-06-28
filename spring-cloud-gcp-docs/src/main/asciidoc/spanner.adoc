@@ -872,6 +872,20 @@ a non-case-sensitive matching. The `IgnoreCase` phrase may only be appended to f
 to columns of type STRING or BYTES.
 The Spring Data "AllIgnoreCase" phrase appended at the end of the method name is not supported.
 
+The `Like` or `NotLike` naming conventions:
+[source, java]
+----
+List<Trade> findBySymbolLike(String symbolFragment);
+----
+The param `symbolFragment` can contain https://cloud.google.com/spanner/docs/functions-and-operators#comparison-operators[wildcard characters]
+for string matching such as `_` and `%`.
+
+The `Contains` and `NotContains` naming conventions:
+[source, java]
+----
+List<Trade> findBySymbolContains(String symbolFragment);
+----
+The param `symbolFragment` is a https://cloud.google.com/spanner/docs/functions-and-operators#regexp_contains[regular expression] that is checked for occurrences.
 
 ==== Custom SQL query methods
 

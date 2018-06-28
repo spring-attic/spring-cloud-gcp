@@ -42,4 +42,12 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
 			+ " ORDER BY LOWER(action) DESC")
 	List<Trade> sortedTrades(Pageable pageable);
+
+	List<Trade> findBySymbolLike(String symbolFragment);
+
+	List<Trade> findBySymbolContains(String symbolFragment);
+
+	List<Trade> findBySymbolNotLike(String symbolFragment);
+
+	List<Trade> findBySymbolNotContains(String symbolFragment);
 }
