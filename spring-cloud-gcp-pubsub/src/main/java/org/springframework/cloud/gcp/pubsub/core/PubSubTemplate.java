@@ -96,7 +96,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 * {@link PubSubTemplate} constructor that uses {@link SimplePubSubMessageConverter}
 	 * to serialize and deserialize payloads.
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
-	 * publish to topic. Subscriber or pull methods are not supported
+	 * publish to topics. Subscribe and pull methods are not supported
 	 */
 	public PubSubTemplate(PublisherFactory publisherFactory) {
 		this(publisherFactory, null);
