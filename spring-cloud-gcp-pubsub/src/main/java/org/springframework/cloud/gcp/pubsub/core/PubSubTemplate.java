@@ -54,9 +54,9 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private PubSubMessageConverter messageConverter = new SimplePubSubMessageConverter();
 
-	private final PubSubPublisherTemplate pubSubPublishTemplate;
+	private final PubSubPublisherTemplate pubSubPublisherTemplate;
 
-	private final PubSubSubscriberTemplate pubSubSubscriptionTemplate;
+	private final PubSubSubscriberTemplate pubSubSubscriberTemplate;
 
 	/**
 	 * Default {@link PubSubTemplate} constructor that uses {@link SimplePubSubMessageConverter}
@@ -71,16 +71,16 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		Assert.notNull(publisherFactory, "A valid PublisherFactory is required.");
 		Assert.notNull(subscriberFactory, "A valid SubscriberFactory is required.");
 
-		this.pubSubPublishTemplate = new PubSubPublisherTemplate(publisherFactory);
-		this.pubSubSubscriptionTemplate = new PubSubSubscriberTemplate(subscriberFactory);
+		this.pubSubPublisherTemplate = new PubSubPublisherTemplate(publisherFactory);
+		this.pubSubSubscriberTemplate = new PubSubSubscriberTemplate(subscriberFactory);
 	}
 
-	public PubSubPublisherTemplate getPubSubPublishTemplate() {
-		return this.pubSubPublishTemplate;
+	public PubSubPublisherTemplate getPubSubPublisherTemplate() {
+		return this.pubSubPublisherTemplate;
 	}
 
-	public PubSubSubscriberTemplate getPubSubSubscriptionTemplate() {
-		return this.pubSubSubscriptionTemplate;
+	public PubSubSubscriberTemplate getPubSubSubscriberTemplate() {
+		return this.pubSubSubscriberTemplate;
 	}
 
 	public PubSubMessageConverter getMessageConverter() {
@@ -91,8 +91,8 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		Assert.notNull(messageConverter, "A valid Pub/Sub message converter is required.");
 
 		this.messageConverter = messageConverter;
-		this.pubSubPublishTemplate.setMessageConverter(messageConverter);
-		this.pubSubSubscriptionTemplate.setMessageConverter(messageConverter);
+		this.pubSubPublisherTemplate.setMessageConverter(messageConverter);
+		this.pubSubSubscriberTemplate.setMessageConverter(messageConverter);
 
 		return this;
 	}
@@ -104,39 +104,39 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	@Override
 	public <T> ListenableFuture<String> publish(String topic, T payload,
 			Map<String, String> headers) {
-		return this.pubSubPublishTemplate.publish(topic, payload, headers);
+		return this.pubSubPublisherTemplate.publish(topic, payload, headers);
 	}
 
 	@Override
 	public <T> ListenableFuture<String> publish(String topic, T payload) {
-		return this.pubSubPublishTemplate.publish(topic, payload, null);
+		return this.pubSubPublisherTemplate.publish(topic, payload, null);
 	}
 
 	@Override
 	public ListenableFuture<String> publish(final String topic, PubsubMessage pubsubMessage) {
-		return this.pubSubPublishTemplate.publish(topic, pubsubMessage);
+		return this.pubSubPublisherTemplate.publish(topic, pubsubMessage);
 	}
 
 	@Override
 	public Subscriber subscribe(String subscription, MessageReceiver messageHandler) {
-		return this.pubSubSubscriptionTemplate.subscribe(subscription, messageHandler);
+		return this.pubSubSubscriberTemplate.subscribe(subscription, messageHandler);
 	}
 
 	@Override
 	public List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
 			Boolean returnImmediately) {
-		return this.pubSubSubscriptionTemplate.pull(subscription, maxMessages, returnImmediately);
+		return this.pubSubSubscriberTemplate.pull(subscription, maxMessages, returnImmediately);
 	}
 
 	@Override
 	public List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages,
 			Boolean returnImmediately) {
-		return this.pubSubSubscriptionTemplate.pullAndAck(subscription, maxMessages, returnImmediately);
+		return this.pubSubSubscriberTemplate.pullAndAck(subscription, maxMessages, returnImmediately);
 	}
 
 	@Override
 	public PubsubMessage pullNext(String subscription) {
-		return this.pubSubSubscriptionTemplate.pullNext(subscription);
+		return this.pubSubSubscriberTemplate.pullNext(subscription);
 	}
 
 	@Override
@@ -144,14 +144,14 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	public PublisherFactory getPublisherFactory() {
-		return this.pubSubPublishTemplate.getPublisherFactory();
+		return this.pubSubPublisherTemplate.getPublisherFactory();
 	}
 
 	public SubscriberFactory getSubscriberFactory() {
-		return this.pubSubSubscriptionTemplate.getSubscriberFactory();
+		return this.pubSubSubscriberTemplate.getSubscriberFactory();
 	}
 
 	public PubSubAcknowledger getAcknowledger() {
-		return this.pubSubSubscriptionTemplate.getAcknowledger();
+		return this.pubSubSubscriberTemplate.getAcknowledger();
 	}
 }
