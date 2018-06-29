@@ -36,7 +36,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 
 /**
- * Default implementation of {@link PubSubPublishOperations} and {@link PubSubSubscriptionOperations}.
+ * Default implementation of {@link PubSubPublisherOperations} and {@link PubSubSubscriberOperations}.
  *
  * <p>The main Google Cloud Pub/Sub integration component for publishing to topics and consuming
  * messages from subscriptions asynchronously or by pulling.
@@ -46,7 +46,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
- * @since 1.0
+ * @since 1.1.0
  */
 public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
@@ -54,9 +54,9 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private PubSubMessageConverter messageConverter = new SimplePubSubMessageConverter();
 
-	private final PubSubPublishTemplate pubSubPublishTemplate;
+	private final PubSubPublisherTemplate pubSubPublishTemplate;
 
-	private final PubSubSubscriptionTemplate pubSubSubscriptionTemplate;
+	private final PubSubSubscriberTemplate pubSubSubscriptionTemplate;
 
 	/**
 	 * Default {@link PubSubTemplate} constructor that uses {@link SimplePubSubMessageConverter}
@@ -71,15 +71,15 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		Assert.notNull(publisherFactory, "A valid PublisherFactory is required.");
 		Assert.notNull(subscriberFactory, "A valid SubscriberFactory is required.");
 
-		this.pubSubPublishTemplate = new PubSubPublishTemplate(publisherFactory);
-		this.pubSubSubscriptionTemplate = new PubSubSubscriptionTemplate(subscriberFactory);
+		this.pubSubPublishTemplate = new PubSubPublisherTemplate(publisherFactory);
+		this.pubSubSubscriptionTemplate = new PubSubSubscriberTemplate(subscriberFactory);
 	}
 
-	public PubSubPublishTemplate getPubSubPublishTemplate() {
+	public PubSubPublisherTemplate getPubSubPublishTemplate() {
 		return this.pubSubPublishTemplate;
 	}
 
-	public PubSubSubscriptionTemplate getPubSubSubscriptionTemplate() {
+	public PubSubSubscriberTemplate getPubSubSubscriptionTemplate() {
 		return this.pubSubSubscriptionTemplate;
 	}
 

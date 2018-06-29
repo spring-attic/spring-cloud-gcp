@@ -35,7 +35,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.SettableListenableFuture;
 
 /**
- * Default implementation of {@link PubSubPublishOperations}.
+ * Default implementation of {@link PubSubPublisherOperations}.
  *
  * <p>The main Google Cloud Pub/Sub integration component for publishing to topics.
  *
@@ -46,22 +46,22 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @author Doug Hoard
  * @since 1.1
  */
-public class PubSubPublishTemplate implements PubSubPublishOperations, InitializingBean {
+public class PubSubPublisherTemplate implements PubSubPublisherOperations, InitializingBean {
 
-	private static final Log LOGGER = LogFactory.getLog(PubSubPublishTemplate.class);
+	private static final Log LOGGER = LogFactory.getLog(PubSubPublisherTemplate.class);
 
 	private PubSubMessageConverter messageConverter = new SimplePubSubMessageConverter();
 
 	private final PublisherFactory publisherFactory;
 
 	/**
-	 * Default {@link PubSubPublishTemplate} constructor that uses {@link SimplePubSubMessageConverter}
+	 * Default {@link PubSubPublisherTemplate} constructor that uses {@link SimplePubSubMessageConverter}
 	 * to serialize and deserialize payloads.
 	 *
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
 	 *                         publish to topics.
 	 */
-	public PubSubPublishTemplate(PublisherFactory publisherFactory) {
+	public PubSubPublisherTemplate(PublisherFactory publisherFactory) {
 		Assert.notNull(publisherFactory, "A valid PublisherFactory is required.");
 
 		this.publisherFactory = publisherFactory;
@@ -71,7 +71,7 @@ public class PubSubPublishTemplate implements PubSubPublishOperations, Initializ
 		return this.messageConverter;
 	}
 
-	public PubSubPublishTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
+	public PubSubPublisherTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
 		Assert.notNull(messageConverter, "A valid Pub/Sub message converter is required.");
 		this.messageConverter = messageConverter;
 

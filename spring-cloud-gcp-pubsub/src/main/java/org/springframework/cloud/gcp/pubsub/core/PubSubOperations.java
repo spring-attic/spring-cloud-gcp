@@ -22,6 +22,6 @@ package org.springframework.cloud.gcp.pubsub.core;
  * @author Doug Hoard
  * @since 1.0
  */
-public interface PubSubOperations extends PubSubPublishOperations, PubSubSubscriptionOperations {
+public interface PubSubOperations extends PubSubPublisherOperations, PubSubSubscriberOperations {
 	// INTENTIONALLY EMPTY
 }

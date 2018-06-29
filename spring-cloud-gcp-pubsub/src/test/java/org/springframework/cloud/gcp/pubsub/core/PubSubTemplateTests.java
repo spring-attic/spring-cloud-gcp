@@ -85,8 +85,8 @@ public class PubSubTemplateTests {
 		return pubSubTemplate;
 	}
 
-	private PubSubPublishTemplate createPublishTemplate() {
-		PubSubPublishTemplate pubSubPublishTemplate = new PubSubPublishTemplate(this.mockPublisherFactory);
+	private PubSubPublisherTemplate createPublishTemplate() {
+		PubSubPublisherTemplate pubSubPublishTemplate = new PubSubPublisherTemplate(this.mockPublisherFactory);
 		pubSubPublishTemplate.setMessageConverter(new JacksonPubSubMessageConverter(new ObjectMapper()));
 		return pubSubPublishTemplate;
 	}
@@ -139,7 +139,7 @@ public class PubSubTemplateTests {
 		AllowedPayload allowedPayload = new AllowedPayload();
 		allowedPayload.name = "allowed";
 		allowedPayload.value = 12345;
-		PubSubPublishTemplate pubSubPublishTemplate = spy(createPublishTemplate());
+		PubSubPublisherTemplate pubSubPublisherTemplate = spy(createPublishTemplate());
 
 		doAnswer(invocation -> {
 			PubsubMessage message = invocation.getArgument(1);
@@ -148,10 +148,10 @@ public class PubSubTemplateTests {
 					+ ",\"name\":\"allowed\",\"value\":12345}",
 					message.getData().toStringUtf8());
 			return null;
-		}).when(pubSubPublishTemplate).publish(eq("test"), any());
+		}).when(pubSubPublisherTemplate).publish(eq("test"), any());
 
-		pubSubPublishTemplate.publish("test", allowedPayload);
-		verify(pubSubPublishTemplate, times(1)).publish(eq("test"), isA(PubsubMessage.class));
+		pubSubPublisherTemplate.publish("test", allowedPayload);
+		verify(pubSubPublisherTemplate, times(1)).publish(eq("test"), isA(PubsubMessage.class));
 	}
 
 	@Test

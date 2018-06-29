@@ -23,7 +23,7 @@ import com.google.pubsub.v1.PubsubMessage;
 import org.springframework.util.concurrent.ListenableFuture;
 
 /**
- * An abstraction for Google Cloud Pub/Sub publish operations.
+ * An abstraction for Google Cloud Pub/Sub publisher operations.
  *
  * @author Vinicius Carvalho
  * @author João André Martins
@@ -32,7 +32,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Doug Hoard
  * @since 1.1
  */
-public interface PubSubPublishOperations {
+public interface PubSubPublisherOperations {
 
 	/**
 	 * Send a message to Pub/Sub.

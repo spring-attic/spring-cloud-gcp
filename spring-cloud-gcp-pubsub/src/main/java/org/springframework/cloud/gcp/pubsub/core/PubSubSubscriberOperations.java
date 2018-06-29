@@ -34,7 +34,7 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
  * @author Doug Hoard
  * @since 1.1
  */
-public interface PubSubSubscriptionOperations {
+public interface PubSubSubscriberOperations {
 
 	/**
 	 * Add a callback method to an existing subscription.
