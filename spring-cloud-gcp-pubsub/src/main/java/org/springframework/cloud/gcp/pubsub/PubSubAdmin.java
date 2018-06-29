@@ -238,7 +238,7 @@ public class PubSubAdmin {
 	/**
 	 * Delete a subscription from Google Cloud Pub/Sub.
 	 *
-	 * @param subscriptionName, canonical subscription name, e.g., "subscriptionName"
+	 * @param subscriptionName canonical subscription name, e.g., "subscriptionName"
 	 */
 	public void deleteSubscription(String subscriptionName) {
 		Assert.hasText(subscriptionName, "No subscription name was specified");
