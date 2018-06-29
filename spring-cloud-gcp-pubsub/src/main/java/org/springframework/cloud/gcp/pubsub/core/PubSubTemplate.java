@@ -53,6 +53,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
+ * @author Doug Hoard
  */
 public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
@@ -72,16 +73,43 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 * Default {@link PubSubTemplate} constructor that uses {@link SimplePubSubMessageConverter}
 	 * to serialize and deserialize payloads.
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
-	 * publish to topics
+	 * publish to topic. Only required if using publish methods
 	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory
-	 * to subscribe to subscriptions
+	 * to subscribe to subscriptions. Only required if using subscriber or pull methods
 	 */
 	public PubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory) {
 		this.publisherFactory = publisherFactory;
 		this.subscriberFactory = subscriberFactory;
-		this.subscriberStub = this.subscriberFactory.createSubscriberStub();
-		this.acknowledger = this.subscriberFactory.createAcknowledger();
+
+		if (this.subscriberFactory != null) {
+			this.subscriberStub = this.subscriberFactory.createSubscriberStub();
+			this.acknowledger = this.subscriberFactory.createAcknowledger();
+		}
+		else {
+			this.subscriberStub = null;
+			this.acknowledger = null;
+		}
+	}
+
+	/**
+	 * {@link PubSubTemplate} constructor that uses {@link SimplePubSubMessageConverter}
+	 * to serialize and deserialize payloads.
+	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
+	 * publish to topic. Subscriber or pull methods are not supported
+	 */
+	public PubSubTemplate(PublisherFactory publisherFactory) {
+		this(publisherFactory, null);
+	}
+
+	/**
+	 * {@link PubSubTemplate} constructor that uses {@link SimplePubSubMessageConverter}
+	 * to serialize and deserialize payloads.
+	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory
+	 * to subscribe to subscriptions. Publish methods are not supported
+	 */
+	public PubSubTemplate(SubscriberFactory subscriberFactory) {
+		this(null, subscriberFactory);
 	}
 
 	public PubSubMessageConverter getMessageConverter() {
