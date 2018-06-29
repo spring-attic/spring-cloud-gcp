@@ -33,6 +33,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherOperations;
+import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
@@ -54,19 +56,10 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
-public class PubSubTemplate implements PubSubOperations, InitializingBean {
+public class PubSubTemplate implements PubSubOperations {
 
-	private static final Log LOGGER = LogFactory.getLog(PubSubTemplate.class);
-
-	private PubSubMessageConverter messageConverter = new SimplePubSubMessageConverter();
-
-	private final PublisherFactory publisherFactory;
-
-	private final SubscriberFactory subscriberFactory;
-
-	private final SubscriberStub subscriberStub;
-
-	private final PubSubAcknowledger acknowledger;
+	private PubSubPublisherOperations pubSubPublisherOperations;
+	private PubSubSubscriberOperations pubSubSubscriberOperations;
 
 	/**
 	 * Default {@link PubSubTemplate} constructor that uses {@link SimplePubSubMessageConverter}
@@ -84,133 +77,6 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		this.acknowledger = this.subscriberFactory.createAcknowledger();
 	}
 
-	public PubSubMessageConverter getMessageConverter() {
-		return this.messageConverter;
-	}
 
-	public PubSubTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
-		Assert.notNull(messageConverter, "A valid Pub/Sub message converter is required.");
-		this.messageConverter = messageConverter;
-		return this;
-	}
 
-	/**
-	 * Uses the configured message converter to first convert the payload and headers to a
-	 * {@code PubsubMessage} and then publish it.
-	 */
-	@Override
-	public <T> ListenableFuture<String> publish(String topic, T payload,
-			Map<String, String> headers) {
-		return publish(topic, this.messageConverter.toPubSubMessage(payload, headers));
-	}
-
-	@Override
-	public <T> ListenableFuture<String> publish(String topic, T payload) {
-		return publish(topic, payload, null);
-	}
-
-	@Override
-	public ListenableFuture<String> publish(final String topic, PubsubMessage pubsubMessage) {
-		ApiFuture<String> publishFuture =
-				this.publisherFactory.createPublisher(topic).publish(pubsubMessage);
-
-		final SettableListenableFuture<String> settableFuture = new SettableListenableFuture<>();
-		ApiFutures.addCallback(publishFuture, new ApiFutureCallback<String>() {
-
-			@Override
-			public void onFailure(Throwable throwable) {
-				LOGGER.warn("Publishing to " + topic + " topic failed.", throwable);
-				settableFuture.setException(throwable);
-			}
-
-			@Override
-			public void onSuccess(String result) {
-				if (LOGGER.isDebugEnabled()) {
-					LOGGER.debug(
-							"Publishing to " + topic + " was successful. Message ID: " + result);
-				}
-				settableFuture.set(result);
-			}
-
-		});
-
-		return settableFuture;
-	}
-
-	@Override
-	public Subscriber subscribe(String subscription, MessageReceiver messageHandler) {
-		Subscriber subscriber =
-				this.subscriberFactory.createSubscriber(subscription, messageHandler);
-		subscriber.startAsync();
-		return subscriber;
-	}
-
-	/**
-	 * Pulls messages synchronously, on demand, using the pull request in argument.
-	 * @param pullRequest pull request containing the subscription name
-	 * @return the list of {@link AcknowledgeablePubsubMessage} containing the ack ID, subscription
-	 * and acknowledger
-	 */
-	private List<AcknowledgeablePubsubMessage> pull(PullRequest pullRequest) {
-		Assert.notNull(pullRequest, "The pull request cannot be null.");
-
-		PullResponse pullResponse =	this.subscriberStub.pullCallable().call(pullRequest);
-		List<AcknowledgeablePubsubMessage> receivedMessages =
-				pullResponse.getReceivedMessagesList().stream()
-						.map(message -> {
-							return new AcknowledgeablePubsubMessage(message.getMessage(),
-									message.getAckId(),
-									pullRequest.getSubscription(),
-									this.acknowledger);
-						})
-						.collect(Collectors.toList());
-
-		return receivedMessages;
-	}
-
-	@Override
-	public List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
-			Boolean returnImmediately) {
-		return pull(this.subscriberFactory.createPullRequest(subscription, maxMessages,
-				returnImmediately));
-	}
-
-	@Override
-	public List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages,
-			Boolean returnImmediately) {
-		PullRequest pullRequest = this.subscriberFactory.createPullRequest(
-				subscription, maxMessages, returnImmediately);
-
-		List<AcknowledgeablePubsubMessage> ackableMessages = pull(pullRequest);
-
-		this.acknowledger.ack(ackableMessages.stream()
-				.map(AcknowledgeablePubsubMessage::getAckId)
-				.collect(Collectors.toList()), pullRequest.getSubscription());
-
-		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getMessage)
-				.collect(Collectors.toList());
-	}
-
-	@Override
-	public PubsubMessage pullNext(String subscription) {
-		List<PubsubMessage> receivedMessageList = pullAndAck(subscription, 1, true);
-
-		return receivedMessageList.size() > 0 ?	receivedMessageList.get(0) : null;
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-	}
-
-	public PublisherFactory getPublisherFactory() {
-		return this.publisherFactory;
-	}
-
-	public SubscriberFactory getSubscriberFactory() {
-		return this.subscriberFactory;
-	}
-
-	public PubSubAcknowledger getAcknowledger() {
-		return this.acknowledger;
-	}
 }
