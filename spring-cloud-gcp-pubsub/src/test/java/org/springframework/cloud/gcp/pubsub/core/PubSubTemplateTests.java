@@ -85,10 +85,10 @@ public class PubSubTemplateTests {
 		return pubSubTemplate;
 	}
 
-	private PubSubPublisherTemplate createPublishTemplate() {
-		PubSubPublisherTemplate pubSubPublishTemplate = new PubSubPublisherTemplate(this.mockPublisherFactory);
-		pubSubPublishTemplate.setMessageConverter(new JacksonPubSubMessageConverter(new ObjectMapper()));
-		return pubSubPublishTemplate;
+	private PubSubPublisherTemplate createPublisherTemplate() {
+		PubSubPublisherTemplate pubSubPublisherTemplate = new PubSubPublisherTemplate(this.mockPublisherFactory);
+		pubSubPublisherTemplate.setMessageConverter(new JacksonPubSubMessageConverter(new ObjectMapper()));
+		return pubSubPublisherTemplate;
 	}
 
 	@Before
@@ -139,7 +139,7 @@ public class PubSubTemplateTests {
 		AllowedPayload allowedPayload = new AllowedPayload();
 		allowedPayload.name = "allowed";
 		allowedPayload.value = 12345;
-		PubSubPublisherTemplate pubSubPublisherTemplate = spy(createPublishTemplate());
+		PubSubPublisherTemplate pubSubPublisherTemplate = spy(createPublisherTemplate());
 
 		doAnswer(invocation -> {
 			PubsubMessage message = invocation.getArgument(1);
