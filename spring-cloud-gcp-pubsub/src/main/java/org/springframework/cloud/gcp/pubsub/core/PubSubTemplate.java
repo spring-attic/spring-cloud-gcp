@@ -18,38 +18,25 @@ package org.springframework.cloud.gcp.pubsub.core;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import com.google.api.core.ApiFuture;
-import com.google.api.core.ApiFutureCallback;
-import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
-import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.PubsubMessage;
-import com.google.pubsub.v1.PullRequest;
-import com.google.pubsub.v1.PullResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherOperations;
-import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
+import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
+import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
-import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
-import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.SettableListenableFuture;
 
 /**
- * Default implementation of {@link PubSubOperations}.
+ * Default implementation of {@link PubSubTemplate}.
  *
- * <p>The main Google Cloud Pub/Sub integration component for publishing to topics and consuming
- * messages from subscriptions asynchronously or by pulling.
+ * <p>The main Google Cloud Pub/Sub integration component for publishing to topics and
+ * consuming messages from subscriptions asynchronously or by pulling.
  *
  * @author Vinicius Carvalho
  * @author João André Martins
@@ -58,25 +45,108 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  */
 public class PubSubTemplate implements PubSubOperations {
 
-	private PubSubPublisherOperations pubSubPublisherOperations;
-	private PubSubSubscriberOperations pubSubSubscriberOperations;
+	private final PubSubPublisherTemplate pubSubPublisherTemplate;
+
+	private final PubSubSubscriberTemplate pubSubSubscriberTemplate;
 
 	/**
-	 * Default {@link PubSubTemplate} constructor that uses {@link SimplePubSubMessageConverter}
-	 * to serialize and deserialize payloads.
+	 * Constructs the instance from a {@link PubSubPublisherTemplate} and a
+	 * {@link PubSubSubscriberTemplate}, to which all operations will be delegated.
+	 * @param pubSubPublisherTemplate the object to which all publishing operations will be
+	 * delegated
+	 * @param pubSubSubscriberTemplate the object to which all subscriber operations will be
+	 * delegated
+	 *
+	 * @since 1.1.0
+	 */
+	public PubSubTemplate(
+			PubSubPublisherTemplate pubSubPublisherTemplate,
+			PubSubSubscriberTemplate pubSubSubscriberTemplate) {
+		this.pubSubPublisherTemplate = pubSubPublisherTemplate;
+		this.pubSubSubscriberTemplate = pubSubSubscriberTemplate;
+	}
+
+	/**
+	 * A convenience constructor that creates the {@link PubSubPublisherTemplate} using
+	 * provided {@link com.google.cloud.pubsub.v1.Publisher} and the
+	 * {@link PubSubSubscriberTemplate} using the provided
+	 * {@link com.google.cloud.pubsub.v1.Subscriber} and then calls the
+	 * {@link PubSubTemplate#PubSubTemplate(PubSubPublisherTemplate, PubSubSubscriberTemplate)}
+	 * constructor.
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
 	 * publish to topics
-	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory
-	 * to subscribe to subscriptions
+	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory to
+	 * subscribe to subscriptions
 	 */
 	public PubSubTemplate(PublisherFactory publisherFactory,
 			SubscriberFactory subscriberFactory) {
-		this.publisherFactory = publisherFactory;
-		this.subscriberFactory = subscriberFactory;
-		this.subscriberStub = this.subscriberFactory.createSubscriberStub();
-		this.acknowledger = this.subscriberFactory.createAcknowledger();
+		this(new PubSubPublisherTemplate(publisherFactory), new PubSubSubscriberTemplate(subscriberFactory));
 	}
 
+	@Override
+	public <T> ListenableFuture<String> publish(String topic, T payload,
+			Map<String, String> headers) {
+		return this.pubSubPublisherTemplate.publish(topic, payload, headers);
+	}
 
+	@Override
+	public <T> ListenableFuture<String> publish(String topic, T payload) {
+		return this.pubSubPublisherTemplate.publish(topic, payload);
+	}
 
+	@Override
+	public ListenableFuture<String> publish(String topic, PubsubMessage pubsubMessage) {
+		return this.pubSubPublisherTemplate.publish(topic, pubsubMessage);
+	}
+
+	@Override
+	public Subscriber subscribe(String subscription, MessageReceiver messageHandler) {
+		return this.pubSubSubscriberTemplate.subscribe(subscription, messageHandler);
+	}
+
+	@Override
+	public List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages,
+			Boolean returnImmediately) {
+		return this.pubSubSubscriberTemplate.pullAndAck(subscription, maxMessages, returnImmediately);
+	}
+
+	@Override
+	public List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
+			Boolean returnImmediately) {
+		return this.pubSubSubscriberTemplate.pull(subscription, maxMessages, returnImmediately);
+	}
+
+	@Override
+	public PubsubMessage pullNext(String subscription) {
+		return this.pubSubSubscriberTemplate.pullNext(subscription);
+	}
+
+	public PubSubPublisherTemplate getPubSubPublisherTemplate() {
+		return pubSubPublisherTemplate;
+	}
+
+	public PubSubSubscriberTemplate getPubSubSubscriberTemplate() {
+		return pubSubSubscriberTemplate;
+	}
+
+	public PubSubMessageConverter getMessageConverter() {
+		return this.pubSubPublisherTemplate.getMessageConverter();
+	}
+
+	public PubSubPublisherTemplate setMessageConverter(
+			PubSubMessageConverter messageConverter) {
+		return this.pubSubPublisherTemplate.setMessageConverter(messageConverter);
+	}
+
+	public PublisherFactory getPublisherFactory() {
+		return this.pubSubPublisherTemplate.getPublisherFactory();
+	}
+
+	public SubscriberFactory getSubscriberFactory() {
+		return this.pubSubSubscriberTemplate.getSubscriberFactory();
+	}
+
+	public PubSubAcknowledger getAcknowledger() {
+		return this.pubSubSubscriberTemplate.getAcknowledger();
+	}
 }

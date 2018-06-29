@@ -14,14 +14,15 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.pubsub.core;
+package org.springframework.cloud.gcp.pubsub.core.subscriber;
+
+import java.util.List;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 
-import java.util.List;
+import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 
 /**
  * An abstraction for Google Cloud Pub/Sub that specifies subscriber-only operations.
