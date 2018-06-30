@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherOperations;
+import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
+
 /**
  * An abstraction for Google Cloud Pub/Sub for publish and subscribe / pull methods
  *

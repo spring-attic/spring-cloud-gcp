@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
 import org.springframework.cloud.gcp.pubsub.core.test.allowed.AllowedPayload;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;

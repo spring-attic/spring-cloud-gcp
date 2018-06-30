@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.pubsub.core;
+package org.springframework.cloud.gcp.pubsub.core.publisher;
 
 import java.util.Map;
 

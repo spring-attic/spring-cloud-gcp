@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.pubsub.core;
+package org.springframework.cloud.gcp.pubsub.core.subscriber;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,8 +33,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
-import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
-import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
 import org.springframework.util.Assert;
 
 /**
@@ -54,8 +52,6 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, Ini
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubSubscriberTemplate.class);
 
-	private PubSubMessageConverter messageConverter = new SimplePubSubMessageConverter();
-
 	private final SubscriberFactory subscriberFactory;
 
 	private final SubscriberStub subscriberStub;
@@ -74,16 +70,6 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, Ini
 		this.subscriberFactory = subscriberFactory;
 		this.subscriberStub = this.subscriberFactory.createSubscriberStub();
 		this.acknowledger = this.subscriberFactory.createAcknowledger();
-	}
-
-	public PubSubMessageConverter getMessageConverter() {
-		return this.messageConverter;
-	}
-
-	public PubSubSubscriberTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
-		Assert.notNull(messageConverter, "A valid Pub/Sub message converter is required.");
-		this.messageConverter = messageConverter;
-		return this;
 	}
 
 	@Override

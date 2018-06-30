@@ -22,21 +22,23 @@ import java.util.Map;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
+import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
-import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 
 /**
- * Default implementation of {@link PubSubPublisherOperations} and {@link PubSubSubscriberOperations}.
+ * Default implementation of {@link PubSubOperations}.
  *
  * <p>The main Google Cloud Pub/Sub integration component for publishing to topics and consuming
  * messages from subscriptions asynchronously or by pulling.
@@ -52,27 +54,41 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubTemplate.class);
 
-	private PubSubMessageConverter messageConverter = new SimplePubSubMessageConverter();
+	private PubSubPublisherTemplate pubSubPublisherTemplate;
 
-	private final PubSubPublisherTemplate pubSubPublisherTemplate;
-
-	private final PubSubSubscriberTemplate pubSubSubscriberTemplate;
+	private PubSubSubscriberTemplate pubSubSubscriberTemplate;
 
 	/**
-	 * Default {@link PubSubTemplate} constructor that uses {@link SimplePubSubMessageConverter}
-	 * to serialize and deserialize payloads.
+	 * Default {@link PubSubTemplate} constructor.
 	 * @param publisherFactory the {@link com.google.cloud.pubsub.v1.Publisher} factory to
 	 * publish to topics.
 	 * @param subscriberFactory the {@link com.google.cloud.pubsub.v1.Subscriber} factory
 	 * to subscribe to subscriptions.
 	 */
 	public PubSubTemplate(PublisherFactory publisherFactory,
-			SubscriberFactory subscriberFactory) {
+						SubscriberFactory subscriberFactory) {
 		Assert.notNull(publisherFactory, "A valid PublisherFactory is required.");
 		Assert.notNull(subscriberFactory, "A valid SubscriberFactory is required.");
 
 		this.pubSubPublisherTemplate = new PubSubPublisherTemplate(publisherFactory);
 		this.pubSubSubscriberTemplate = new PubSubSubscriberTemplate(subscriberFactory);
+	}
+
+	/**
+	 * Default {@link PubSubTemplate} constructor that uses a {@link PubSubPublisherTemplate}
+	 * and a {@link PubSubSubscriberTemplate}
+	 * @param pubSubPublisherTemplate the {@link PubSubPublisherTemplate} to
+	 * publish to topics.
+	 * @param pubSubSubscriberTemplate the {@link PubSubSubscriberTemplate} to
+	 * subscribe to subscriptions or pull messages
+	 */
+	public PubSubTemplate(PubSubPublisherTemplate pubSubPublisherTemplate,
+						PubSubSubscriberTemplate pubSubSubscriberTemplate) {
+		Assert.notNull(pubSubPublisherTemplate, "A valid PubSubPublisherTemplate is required.");
+		Assert.notNull(pubSubSubscriberTemplate, "A valid PubSubSubscriberTemplate is required.");
+
+		this.pubSubPublisherTemplate = pubSubPublisherTemplate;
+		this.pubSubSubscriberTemplate = pubSubSubscriberTemplate;
 	}
 
 	public PubSubPublisherTemplate getPubSubPublisherTemplate() {
@@ -84,15 +100,13 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	public PubSubMessageConverter getMessageConverter() {
-		return this.messageConverter;
+		return this.pubSubPublisherTemplate.getMessageConverter();
 	}
 
 	public PubSubTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
 		Assert.notNull(messageConverter, "A valid Pub/Sub message converter is required.");
 
-		this.messageConverter = messageConverter;
 		this.pubSubPublisherTemplate.setMessageConverter(messageConverter);
-		this.pubSubSubscriberTemplate.setMessageConverter(messageConverter);
 
 		return this;
 	}
