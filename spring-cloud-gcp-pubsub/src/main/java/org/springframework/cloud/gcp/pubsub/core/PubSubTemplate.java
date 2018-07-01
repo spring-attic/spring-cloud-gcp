@@ -54,9 +54,9 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubTemplate.class);
 
-	private PubSubPublisherTemplate pubSubPublisherTemplate;
+	private final PubSubPublisherTemplate pubSubPublisherTemplate;
 
-	private PubSubSubscriberTemplate pubSubSubscriberTemplate;
+	private final PubSubSubscriberTemplate pubSubSubscriberTemplate;
 
 	/**
 	 * Default {@link PubSubTemplate} constructor.
