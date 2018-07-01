@@ -48,7 +48,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
- * @since 1.1.0
+ * @since 1.0.0
  */
 public class PubSubTemplate implements PubSubOperations, InitializingBean {
 

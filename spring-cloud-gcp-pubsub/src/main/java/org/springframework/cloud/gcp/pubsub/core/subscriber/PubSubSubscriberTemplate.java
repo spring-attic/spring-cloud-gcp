@@ -46,7 +46,7 @@ import org.springframework.util.Assert;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
- * @since 1.1
+ * @since 1.1.0
  */
 public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, InitializingBean {
 
@@ -59,10 +59,9 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, Ini
 	private final PubSubAcknowledger acknowledger;
 
 	/**
-	 * Default {@link PubSubSubscriberTemplate} constructor that uses {@link SimplePubSubMessageConverter}
-	 * to serialize and deserialize payloads.
+	 * Default {@link PubSubSubscriberTemplate} constructor
 	 * @param subscriberFactory the {@link Subscriber} factory
-	 * to subscribe to subscriptions.
+	 * to subscribe to subscriptions or pull messages
 	 */
 	public PubSubSubscriberTemplate(SubscriberFactory subscriberFactory) {
 		Assert.notNull(subscriberFactory, "A valid SubscriberFactory is required.");
