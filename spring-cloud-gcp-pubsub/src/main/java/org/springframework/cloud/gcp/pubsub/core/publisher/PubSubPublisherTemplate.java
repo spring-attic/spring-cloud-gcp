@@ -26,7 +26,6 @@ import com.google.pubsub.v1.PubsubMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
@@ -46,9 +45,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @author Doug Hoard
  * @since 1.1.0
  */
-public class PubSubPublisherTemplate implements PubSubPublisherOperations, InitializingBean {
-
-	private static final Log LOGGER = LogFactory.getLog(PubSubPublisherTemplate.class);
+public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 
 	private PubSubMessageConverter messageConverter = new SimplePubSubMessageConverter();
 
@@ -120,11 +117,8 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations, Initi
 		return settableFuture;
 	}
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-	}
-
 	public PublisherFactory getPublisherFactory() {
 		return this.publisherFactory;
 	}
+
 }

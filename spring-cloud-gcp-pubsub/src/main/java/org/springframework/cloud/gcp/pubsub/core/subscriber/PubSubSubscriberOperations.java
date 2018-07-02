@@ -72,4 +72,5 @@ public interface PubSubSubscriberOperations {
 	 * @return a received message, or {@code null} if none exists in the subscription
 	 */
 	PubsubMessage pullNext(String subscription);
+
 }

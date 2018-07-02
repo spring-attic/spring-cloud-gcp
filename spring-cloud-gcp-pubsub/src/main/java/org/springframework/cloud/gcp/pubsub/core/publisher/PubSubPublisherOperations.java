@@ -60,4 +60,5 @@ public interface PubSubPublisherOperations {
 	 * @return the listenable future of the call
 	 */
 	ListenableFuture<String> publish(String topic, PubsubMessage pubsubMessage);
+
 }

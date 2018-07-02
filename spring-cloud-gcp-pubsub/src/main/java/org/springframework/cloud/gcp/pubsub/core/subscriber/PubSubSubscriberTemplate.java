@@ -29,7 +29,6 @@ import com.google.pubsub.v1.PullResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
@@ -48,9 +47,7 @@ import org.springframework.util.Assert;
  * @author Doug Hoard
  * @since 1.1.0
  */
-public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, InitializingBean {
-
-	private static final Log LOGGER = LogFactory.getLog(PubSubSubscriberTemplate.class);
+public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	private final SubscriberFactory subscriberFactory;
 
@@ -61,7 +58,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, Ini
 	/**
 	 * Default {@link PubSubSubscriberTemplate} constructor
 	 * @param subscriberFactory the {@link Subscriber} factory
-	 * to subscribe to subscriptions or pull messages
+	 * to subscribe to subscriptions or pull messages.
 	 */
 	public PubSubSubscriberTemplate(SubscriberFactory subscriberFactory) {
 		Assert.notNull(subscriberFactory, "A valid SubscriberFactory is required.");
@@ -132,10 +129,6 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, Ini
 		return receivedMessageList.size() > 0 ?	receivedMessageList.get(0) : null;
 	}
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-	}
-
 	public SubscriberFactory getSubscriberFactory() {
 		return this.subscriberFactory;
 	}
@@ -143,4 +136,5 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, Ini
 	public PubSubAcknowledger getAcknowledger() {
 		return this.acknowledger;
 	}
+
 }

@@ -27,8 +27,7 @@ import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOper
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
- * @since 1.0.0
  */
 public interface PubSubOperations extends PubSubPublisherOperations, PubSubSubscriberOperations {
-	// INTENTIONALLY EMPTY
+
 }
