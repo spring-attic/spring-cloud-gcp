@@ -975,6 +975,9 @@ SpEL can also be used to provide SQL parameters:
 List<Trade> fetchByActionNamedQuery(String action, Double priceRadius);
 ----
 
+Parameters can also be of type `Struct` or POJO type. If a POJO is given as a parameter, it
+will be converted to a Struct with the same type-conversion logic as used to create write mutations.
+Comparisons using Struct parameters are limited to https://cloud.google.com/spanner/docs/data-types#limited-comparisons-for-struct[what is available with Cloud Spanner].
 
 ==== Projections
 Spring Data Spanner supports {spring-data-commons-ref}/#projections[projections]. You can define projection interfaces based
