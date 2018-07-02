@@ -71,7 +71,7 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 	@Test
 	public void readNestedStructTest() {
 		Struct innerStruct = Struct.newBuilder()
-				.set("value").to(Value.string("value")).build();
+				.set("value").to(Value.string("inner-value")).build();
 		Struct outerStruct = Struct.newBuilder()
 				.set("id").to(Value.string("key1")).set("innerTestEntities")
 				.toStructArray(Type.struct(StructField.of("value", Type.string())),
@@ -82,12 +82,12 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 				outerStruct);
 		assertEquals("key1", result.id);
 		assertEquals(1, result.innerTestEntities.size());
-		assertEquals("value", result.innerTestEntities.get(0).value);
+		assertEquals("inner-value", result.innerTestEntities.get(0).value);
 	}
 
 	@Test
 	public void readNestedStructsAsStructsTest() {
-		Struct innerStruct = Struct.newBuilder().set("value").to(Value.string("value"))
+		Struct innerStruct = Struct.newBuilder().set("value").to(Value.string("inner-value"))
 				.build();
 		Struct outerStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
 				.set("innerStructs")
@@ -99,12 +99,12 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 				.read(OuterTestHoldingStructsEntity.class, outerStruct);
 		assertEquals("key1", result.id);
 		assertEquals(1, result.innerStructs.size());
-		assertEquals("value", result.innerStructs.get(0).getString("value"));
+		assertEquals("inner-value", result.innerStructs.get(0).getString("value"));
 	}
 
 	@Test
 	public void readNestedStructAsStructTest() {
-		Struct innerStruct = Struct.newBuilder().set("value").to(Value.string("value"))
+		Struct innerStruct = Struct.newBuilder().set("value").to(Value.string("inner-value"))
 				.build();
 		Struct outerStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
 				.set("innerStruct").to(innerStruct).build();
@@ -112,7 +112,7 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 		OuterTestHoldingStructEntity result = this.spannerEntityReader
 				.read(OuterTestHoldingStructEntity.class, outerStruct);
 		assertEquals("key1", result.id);
-		assertEquals("value", result.innerStruct.getString("value"));
+		assertEquals("inner-value", result.innerStruct.getString("value"));
 	}
 
 	@Test(expected = SpannerDataException.class)
