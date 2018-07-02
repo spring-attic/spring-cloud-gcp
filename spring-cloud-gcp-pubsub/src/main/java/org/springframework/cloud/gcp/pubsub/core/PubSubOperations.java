@@ -16,87 +16,18 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
-import java.util.List;
-import java.util.Map;
-
-import com.google.cloud.pubsub.v1.MessageReceiver;
-import com.google.cloud.pubsub.v1.Subscriber;
-import com.google.pubsub.v1.PubsubMessage;
-
-import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
-import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherOperations;
+import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 
 /**
- * An abstraction for Google Cloud Pub/Sub.
+ * An abstraction for Google Cloud Pub/Sub for publish and subscribe / pull methods.
  *
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
+ * @author Doug Hoard
  */
-public interface PubSubOperations {
+public interface PubSubOperations extends PubSubPublisherOperations, PubSubSubscriberOperations {
 
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
-	 * @param payload an object that will be serialized and sent
-	 * @return the listenable future of the call
-	 */
-	<T> ListenableFuture<String> publish(String topic, T payload,
-			Map<String, String> headers);
-
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
-	 * @param payload an object that will be serialized and sent
-	 * @return the listenable future of the call
-	 */
-	<T> ListenableFuture<String> publish(String topic, T payload);
-
-	/**
-	 * Send a message to Pub/Sub.
-	 * @param topic the name of an existing topic
-	 * @param pubsubMessage a Google Cloud Pub/Sub API message
-	 * @return the listenable future of the call
-	 */
-	ListenableFuture<String> publish(String topic, PubsubMessage pubsubMessage);
-
-	/**
-	 * Add a callback method to an existing subscription.
-	 *
-	 * <p>The created {@link Subscriber} is returned so it can be stopped.
-	 * @param subscription the name of an existing subscription
-	 * @param messageHandler the callback method triggered when new messages arrive
-	 * @return subscriber listening to new messages
-	 */
-	Subscriber subscribe(String subscription, MessageReceiver messageHandler);
-
-	/**
-	 * Pull and auto-acknowledge a number of messages from a Google Cloud Pub/Sub subscription.
-	 * @param subscription the subscription name
-	 * @param maxMessages the maximum number of pulled messages
-	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 * messages to satisfy {@code maxMessages}
-	 * @return the list of received messages
-	 */
-	List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages,
-			Boolean returnImmediately);
-
-	/**
-	 * Pull a number of messages from a Google Cloud Pub/Sub subscription.
-	 * @param subscription the subscription name
-	 * @param maxMessages the maximum number of pulled messages
-	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
-	 * messages to satisfy {@code maxMessages}
-	 * @return the list of received acknowledgeable messages
-	 */
-	List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
-			Boolean returnImmediately);
-
-	/**
-	 * Pull and auto-acknowledge a message from a Google Cloud Pub/Sub subscription.
-	 * @param subscription the subscription name
-	 * @return a received message, or {@code null} if none exists in the subscription
-	 */
-	PubsubMessage pullNext(String subscription);
 }

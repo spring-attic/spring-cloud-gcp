@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
 import org.springframework.cloud.gcp.pubsub.core.test.allowed.AllowedPayload;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
@@ -57,6 +58,7 @@ import static org.mockito.Mockito.when;
 /**
  * @author João André Martins
  * @author Chengyuan Zhao
+ * @author Doug Hoard
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubTemplateTests {
@@ -83,6 +85,12 @@ public class PubSubTemplateTests {
 		PubSubTemplate pubSubTemplate = new PubSubTemplate(this.mockPublisherFactory, this.mockSubscriberFactory);
 		pubSubTemplate.setMessageConverter(new JacksonPubSubMessageConverter(new ObjectMapper()));
 		return pubSubTemplate;
+	}
+
+	private PubSubPublisherTemplate createPublisherTemplate() {
+		PubSubPublisherTemplate pubSubPublisherTemplate = new PubSubPublisherTemplate(this.mockPublisherFactory);
+		pubSubPublisherTemplate.setMessageConverter(new JacksonPubSubMessageConverter(new ObjectMapper()));
+		return pubSubPublisherTemplate;
 	}
 
 	@Before
@@ -133,7 +141,7 @@ public class PubSubTemplateTests {
 		AllowedPayload allowedPayload = new AllowedPayload();
 		allowedPayload.name = "allowed";
 		allowedPayload.value = 12345;
-		PubSubTemplate pubSubTemplate = spy(createTemplate());
+		PubSubPublisherTemplate pubSubPublisherTemplate = spy(createPublisherTemplate());
 
 		doAnswer(invocation -> {
 			PubsubMessage message = invocation.getArgument(1);
@@ -142,10 +150,10 @@ public class PubSubTemplateTests {
 					+ ",\"name\":\"allowed\",\"value\":12345}",
 					message.getData().toStringUtf8());
 			return null;
-		}).when(pubSubTemplate).publish(eq("test"), any());
+		}).when(pubSubPublisherTemplate).publish(eq("test"), any());
 
-		pubSubTemplate.publish("test", allowedPayload);
-		verify(pubSubTemplate, times(1)).publish(eq("test"), isA(PubsubMessage.class));
+		pubSubPublisherTemplate.publish("test", allowedPayload);
+		verify(pubSubPublisherTemplate, times(1)).publish(eq("test"), isA(PubsubMessage.class));
 	}
 
 	@Test
