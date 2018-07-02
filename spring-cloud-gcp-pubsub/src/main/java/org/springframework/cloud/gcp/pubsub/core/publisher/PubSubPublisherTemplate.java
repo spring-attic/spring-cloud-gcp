@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017-2018 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -35,9 +35,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
 
 /**
  * Default implementation of {@link PubSubPublisherOperations}.
- *
  * <p>The main Google Cloud Pub/Sub integration component for publishing to topics.
- *
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin
@@ -46,6 +44,8 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @since 1.1.0
  */
 public class PubSubPublisherTemplate implements PubSubPublisherOperations {
+
+	private static final Log LOGGER = LogFactory.getLog(PubSubPublisherTemplate.class);
 
 	private PubSubMessageConverter messageConverter = new SimplePubSubMessageConverter();
 

@@ -21,7 +21,6 @@ import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOper
 
 /**
  * An abstraction for Google Cloud Pub/Sub for publish and subscribe / pull methods
- *
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin

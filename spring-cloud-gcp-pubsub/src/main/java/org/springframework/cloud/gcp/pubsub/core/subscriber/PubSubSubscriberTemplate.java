@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017-2018 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -26,9 +26,6 @@ import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
@@ -36,10 +33,8 @@ import org.springframework.util.Assert;
 
 /**
  * Default implementation of {@link PubSubSubscriberOperations}.
- *
  * <p>The main Google Cloud Pub/Sub integration component for consuming
  * messages from subscriptions asynchronously or by pulling.
- *
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin

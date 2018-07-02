@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017-2018 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ public interface PubSubPublisherOperations {
 
 	/**
 	 * Send a message to Pub/Sub.
-	 *
 	 * @param topic   the name of an existing topic
 	 * @param payload an object that will be serialized and sent
 	 * @return the listenable future of the call
@@ -45,7 +44,6 @@ public interface PubSubPublisherOperations {
 
 	/**
 	 * Send a message to Pub/Sub.
-	 *
 	 * @param topic   the name of an existing topic
 	 * @param payload an object that will be serialized and sent
 	 * @return the listenable future of the call
@@ -54,7 +52,6 @@ public interface PubSubPublisherOperations {
 
 	/**
 	 * Send a message to Pub/Sub.
-	 *
 	 * @param topic         the name of an existing topic
 	 * @param pubsubMessage a Google Cloud Pub/Sub API message
 	 * @return the listenable future of the call

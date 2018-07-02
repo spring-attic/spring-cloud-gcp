@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017-2018 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
 
 /**
  * An abstraction for Google Cloud Pub/Sub subscription / pulling operations.
- *
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin
@@ -38,7 +37,6 @@ public interface PubSubSubscriberOperations {
 
 	/**
 	 * Add a callback method to an existing subscription.
-	 *
 	 * <p>The created {@link Subscriber} is returned so it can be stopped.
 	 * @param subscription the name of an existing subscription
 	 * @param messageHandler the callback method triggered when new messages arrive
