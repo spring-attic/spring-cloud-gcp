@@ -80,6 +80,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 		try {
 			sendMessage(MessageBuilder.withPayload(
+					// TODO: need to get the message converter from somewhere.
 					this.pubSubSubscriberOperations.getMessageConverter().fromPubSubMessage(pubsubMessage, this.payloadType))
 					.copyHeaders(messageHeaders)
 					.build());
