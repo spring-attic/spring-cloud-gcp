@@ -46,6 +46,11 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 			.withInitializer(context ->
 					new GcpCloudFoundryEnvironmentPostProcessor()
 							.postProcessEnvironment(context.getEnvironment(), null))
+			.withSystemProperties(new String[] {
+					"spring.cloud.gcp.sql.instance-connection-name=test-connection",
+					"spring.cloud.gcp.sql.database-name=test-dbname",
+					"spring.cloud.gcp.sql.credentials.encoded-key=test-key"
+			})
 			.withUserConfiguration(GcpCfEnvPPTestConfiguration.class);
 
 	@Test
@@ -104,9 +109,12 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 				.run(context -> {
 					GcpCloudSqlProperties sqlProperties =
 							context.getBean(GcpCloudSqlProperties.class);
-					assertThat(sqlProperties.getDatabaseName()).isNull();
-					assertThat(sqlProperties.getInstanceConnectionName()).isNull();
-					assertThat(sqlProperties.getCredentials().getEncodedKey()).isNull();
+
+					//Both mysql and postgres settings present in VCAP_SERVICES_2_SQL file,
+					//so db name and connection name should not change
+					assertThat(sqlProperties.getDatabaseName()).isEqualTo("test-dbname");
+					assertThat(sqlProperties.getInstanceConnectionName()).isEqualTo("test-connection");
+					assertThat(sqlProperties.getCredentials().getEncodedKey()).isEqualTo("test-key");
 				});
 	}
 
