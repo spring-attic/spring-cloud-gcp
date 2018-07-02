@@ -31,7 +31,7 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
- * @since 1.1.0
+ * @since 1.1
  */
 public interface PubSubSubscriberOperations {
 
