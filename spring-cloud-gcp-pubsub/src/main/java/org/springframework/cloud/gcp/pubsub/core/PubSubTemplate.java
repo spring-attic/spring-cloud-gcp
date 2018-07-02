@@ -39,7 +39,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * Default implementation of {@link PubSubOperations}.
- * 
+ *
  * <p>The main Google Cloud Pub/Sub integration component for publishing to topics and consuming
  * messages from subscriptions asynchronously or by pulling.
  *
