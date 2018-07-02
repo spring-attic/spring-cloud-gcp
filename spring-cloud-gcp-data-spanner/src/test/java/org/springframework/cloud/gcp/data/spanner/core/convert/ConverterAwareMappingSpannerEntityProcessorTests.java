@@ -128,43 +128,41 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		timestamps.add(ts2);
 		timestamps.add(ts3);
 
-		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
-				.add("custom_col", Value.string("string1"))
-				.add("booleanField", Value.bool(true))
-				.add("intField", Value.int64(123L))
-				.add("longField", Value.int64(3L))
-				.add("doubleField", Value.float64(3.33))
-				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
-				.add("doubleList", Value.float64Array(doubleList))
-				.add("stringList", Value.stringArray(stringList))
-				.add("booleanList", Value.boolArray(new boolean[] {}))
-				.add("longList", Value.int64Array(new long[] {}))
-				.add("timestampList", Value.timestampArray(new ArrayList<>()))
-				.add("dateList", Value.dateArray(new ArrayList<>()))
-				.add("bytesList", Value.bytesArray(new ArrayList<>()))
-				.add("dateField", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
-				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
-				.add("bytes", Value.bytes(ByteArray.copyFrom("string1")))
-				.add("momentsInTime", Value.timestampArray(timestamps)).build();
+		Struct struct1 = Struct.newBuilder().set("id").to(Value.string("key1"))
+				.set("custom_col").to(Value.string("string1")).set("booleanField")
+				.to(Value.bool(true)).set("intField").to(Value.int64(123L))
+				.set("longField").to(Value.int64(3L)).set("doubleField")
+				.to(Value.float64(3.33)).set("doubleArray")
+				.to(Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
+				.set("doubleList").to(Value.float64Array(doubleList)).set("stringList")
+				.to(Value.stringArray(stringList)).set("booleanList")
+				.to(Value.boolArray(new boolean[] {})).set("longList")
+				.to(Value.int64Array(new long[] {})).set("timestampList")
+				.to(Value.timestampArray(new ArrayList<>())).set("dateList")
+				.to(Value.dateArray(new ArrayList<>())).set("bytesList")
+				.to(Value.bytesArray(new ArrayList<>())).set("dateField")
+				.to(Value.date(Date.fromYearMonthDay(2018, 11, 22))).set("timestampField")
+				.to(Value.timestamp(Timestamp.ofTimeMicroseconds(333))).set("bytes")
+				.to(Value.bytes(ByteArray.copyFrom("string1"))).set("momentsInTime")
+				.to(Value.timestampArray(timestamps)).build();
 
-		Struct struct2 = Struct.newBuilder().add("id", Value.string("key2"))
-				.add("custom_col", Value.string("string2"))
-				.add("booleanField", Value.bool(true))
-				.add("intField", Value.int64(222L))
-				.add("longField", Value.int64(5L))
-				.add("doubleField", Value.float64(5.55))
-				.add("doubleArray", Value.float64Array(new double[] { 5.55, 5.55 }))
-				.add("doubleList", Value.float64Array(doubleList))
-				.add("stringList", Value.stringArray(stringList))
-				.add("booleanList", Value.boolArray(new boolean[] {}))
-				.add("longList", Value.int64Array(new long[] {}))
-				.add("timestampList", Value.timestampArray(new ArrayList<>()))
-				.add("dateList", Value.dateArray(new ArrayList<>()))
-				.add("bytesList", Value.bytesArray(new ArrayList<>()))
-				.add("dateField", Value.date(Date.fromYearMonthDay(2019, 11, 22)))
-				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
-				.add("momentsInTime", Value.timestampArray(timestamps))
-				.add("bytes", Value.bytes(ByteArray.copyFrom("string2"))).build();
+		Struct struct2 = Struct.newBuilder().set("id").to(Value.string("key2"))
+				.set("custom_col").to(Value.string("string2")).set("booleanField")
+				.to(Value.bool(true)).set("intField").to(Value.int64(222L))
+				.set("longField").to(Value.int64(5L)).set("doubleField")
+				.to(Value.float64(5.55)).set("doubleArray")
+				.to(Value.float64Array(new double[] { 5.55, 5.55 })).set("doubleList")
+				.to(Value.float64Array(doubleList)).set("stringList")
+				.to(Value.stringArray(stringList)).set("booleanList")
+				.to(Value.boolArray(new boolean[] {})).set("longList")
+				.to(Value.int64Array(new long[] {})).set("timestampList")
+				.to(Value.timestampArray(new ArrayList<>())).set("dateList")
+				.to(Value.dateArray(new ArrayList<>())).set("bytesList")
+				.to(Value.bytesArray(new ArrayList<>())).set("dateField")
+				.to(Value.date(Date.fromYearMonthDay(2019, 11, 22))).set("timestampField")
+				.to(Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
+				.set("momentsInTime").to(Value.timestampArray(timestamps)).set("bytes")
+				.to(Value.bytes(ByteArray.copyFrom("string2"))).build();
 
 		MockResults mockResults = new MockResults();
 		mockResults.structs = Arrays.asList(struct1, struct2);
@@ -217,15 +215,15 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		List<String> stringList = new ArrayList<>();
 		stringList.add("string");
 
-		Struct struct1 = Struct.newBuilder().add("id", Value.string("key1"))
-				.add("custom_col", Value.string("string1"))
-				.add("doubleList", Value.float64Array(doubleList))
-				.add("stringList", Value.stringArray(stringList)).build();
+		Struct struct1 = Struct.newBuilder().set("id").to(Value.string("key1"))
+				.set("custom_col").to(Value.string("string1")).set("doubleList")
+				.to(Value.float64Array(doubleList)).set("stringList")
+				.to(Value.stringArray(stringList)).build();
 
-		Struct struct2 = Struct.newBuilder().add("id", Value.string("key2"))
-				.add("custom_col", Value.string("string2"))
-				.add("doubleList", Value.float64Array(doubleList))
-				.add("stringList", Value.stringArray(stringList)).build();
+		Struct struct2 = Struct.newBuilder().set("id").to(Value.string("key2"))
+				.set("custom_col").to(Value.string("string2")).set("doubleList")
+				.to(Value.float64Array(doubleList)).set("stringList")
+				.to(Value.stringArray(stringList)).build();
 
 		MockResults mockResults = new MockResults();
 		mockResults.structs = Arrays.asList(struct1, struct2);
