@@ -36,6 +36,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
 /**
  * Default implementation of {@link PubSubPublisherOperations}.
  * <p>The main Google Cloud Pub/Sub integration component for publishing to topics.
+ *
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin

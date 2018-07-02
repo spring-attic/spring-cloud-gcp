@@ -33,8 +33,10 @@ import org.springframework.util.Assert;
 
 /**
  * Default implementation of {@link PubSubSubscriberOperations}.
+ *
  * <p>The main Google Cloud Pub/Sub integration component for consuming
  * messages from subscriptions asynchronously or by pulling.
+ *
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin

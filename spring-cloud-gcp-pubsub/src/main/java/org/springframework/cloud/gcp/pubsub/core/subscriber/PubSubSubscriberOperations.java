@@ -26,6 +26,7 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
 
 /**
  * An abstraction for Google Cloud Pub/Sub subscription / pulling operations.
+ *
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin
