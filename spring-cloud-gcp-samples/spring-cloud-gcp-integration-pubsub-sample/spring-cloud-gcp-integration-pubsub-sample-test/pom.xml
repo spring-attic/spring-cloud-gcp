@@ -9,8 +9,8 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-cloud-gcp-integration-pubsub-sample-integration-test</artifactId>
-	<name>Spring Cloud GCP Integration Pub/Sub Receiver Integration Test</name>
+	<artifactId>spring-cloud-gcp-integration-pubsub-sample-test</artifactId>
+	<name>Spring Cloud GCP Integration Pub/Sub Integration Test</name>
 
 	<dependencies>
 		<dependency>
@@ -25,7 +25,16 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.5</version>
-			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.example</groupId>
+			<artifactId>spring-cloud-gcp-integration-pubsub-sample-sender</artifactId>
+			<version>1.1.0.BUILD-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.example</groupId>
+			<artifactId>spring-cloud-gcp-integration-pubsub-sample-integration-test</artifactId>
+			<version>1.1.0.BUILD-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 </project>
