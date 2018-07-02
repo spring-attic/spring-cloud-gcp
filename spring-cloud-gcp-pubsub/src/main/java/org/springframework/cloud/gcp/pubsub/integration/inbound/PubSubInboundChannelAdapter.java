@@ -24,6 +24,7 @@ import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
@@ -43,7 +44,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private final String subscriptionName;
 
-	private final PubSubTemplate pubSubTemplate;
+	private final PubSubSubscriberOperations pubSubSubscriberOperations;
 
 	private Subscriber subscriber;
 
@@ -53,8 +54,10 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private Class payloadType = byte[].class;
 
-	public PubSubInboundChannelAdapter(PubSubTemplate pubSubTemplate, String subscriptionName) {
-		this.pubSubTemplate = pubSubTemplate;
+	public PubSubInboundChannelAdapter(PubSubSubscriberOperations pubSubSubscriberOperations, String subscriptionName) {
+		Assert.notNull(pubSubSubscriberOperations, "Pub/Sub subscriber template cannot be null.");
+		Assert.notNull(subscriptionName, "Pub/Sub subscription name cannot be null.");
+		this.pubSubSubscriberOperations = pubSubSubscriberOperations;
 		this.subscriptionName = subscriptionName;
 	}
 
@@ -63,7 +66,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		super.doStart();
 
 		this.subscriber =
-				this.pubSubTemplate.subscribe(this.subscriptionName, this::receiveMessage);
+				this.pubSubSubscriberOperations.subscribe(this.subscriptionName, this::receiveMessage);
 	}
 
 	private void receiveMessage(PubsubMessage pubsubMessage, AckReplyConsumer consumer) {
@@ -77,7 +80,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 		try {
 			sendMessage(MessageBuilder.withPayload(
-					this.pubSubTemplate.getMessageConverter().fromPubSubMessage(pubsubMessage, this.payloadType))
+					this.pubSubSubscriberOperations.getMessageConverter().fromPubSubMessage(pubsubMessage, this.payloadType))
 					.copyHeaders(messageHeaders)
 					.build());
 		}

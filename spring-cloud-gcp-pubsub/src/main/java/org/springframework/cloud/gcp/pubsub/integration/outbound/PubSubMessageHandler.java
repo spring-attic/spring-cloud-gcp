@@ -48,7 +48,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private static final long DEFAULT_PUBLISH_TIMEOUT = 10000;
 
-	private final PubSubOperations pubSubTemplate;
+	private final PubSubOperations pubSubPublisherOperations;
 
 	private Expression topicExpression;
 
@@ -62,10 +62,10 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
-	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
-		Assert.notNull(pubSubTemplate, "Pub/Sub template cannot be null.");
+	public PubSubMessageHandler(PubSubOperations pubSubPublisherOperations, String topic) {
+		Assert.notNull(pubSubPublisherOperations, "Pub/Sub publisher template cannot be null.");
 		Assert.notNull(topic, "Pub/Sub topic cannot be null.");
-		this.pubSubTemplate = pubSubTemplate;
+		this.pubSubPublisherOperations = pubSubPublisherOperations;
 		this.topicExpression = new LiteralExpression(topic);
 	}
 
@@ -81,7 +81,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 		Map<String, String> headers = new HashMap<>();
 		this.headerMapper.fromHeaders(message.getHeaders(), headers);
 
-		pubsubFuture = this.pubSubTemplate.publish(topic, payload, headers);
+		pubsubFuture = this.pubSubPublisherOperations.publish(topic, payload, headers);
 
 		if (this.publishCallback != null) {
 			pubsubFuture.addCallback(this.publishCallback);
