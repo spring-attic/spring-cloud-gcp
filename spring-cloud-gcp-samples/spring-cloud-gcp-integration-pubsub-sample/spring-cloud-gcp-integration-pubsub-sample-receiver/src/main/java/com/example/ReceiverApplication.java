@@ -16,8 +16,6 @@
 
 package com.example;
 
-import java.io.IOException;
-
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
