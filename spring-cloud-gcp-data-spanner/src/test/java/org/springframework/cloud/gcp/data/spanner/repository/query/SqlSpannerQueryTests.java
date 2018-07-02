@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Value;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,6 +52,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -75,11 +77,14 @@ public class SqlSpannerQueryTests {
 
 	private final Pageable pageable = PageRequest.of(3, 10, this.sort);
 
+	private final SpannerEntityProcessor spannerEntityProcessor = mock(
+			SpannerEntityProcessor.class);
+
 	@Before
 	public void initMocks() {
 		this.queryMethod = mock(QueryMethod.class);
 		this.spannerTemplate = spy(new SpannerTemplate(mock(DatabaseClient.class),
-				new SpannerMappingContext(), mock(SpannerEntityProcessor.class),
+				new SpannerMappingContext(), this.spannerEntityProcessor,
 				mock(SpannerMutationFactory.class)));
 		this.expressionParser = new SpelExpressionParser();
 		this.evaluationContextProvider = mock(EvaluationContextProvider.class);
@@ -102,6 +107,7 @@ public class SqlSpannerQueryTests {
 				+ "price<>#{#tag4 * -1} AND " + "( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
+				+ "struct_val = @tag8 AND struct_val = @tag9 "
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3;";
 
 		String entityResolvedSql = "SELECT * FROM (SELECT DISTINCT * FROM " + "trades@{index=fakeindex}"
@@ -109,16 +115,19 @@ public class SqlSpannerQueryTests {
 				+ "( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
+				+ "struct_val = @tag8 AND struct_val = @tag9 "
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3) "
 				+ "ORDER BY COLA ASC , COLB DESC LIMIT 10 OFFSET 30";
 
 		Object[] params = new Object[] { "BUY", this.pageable, "abcd", "abc123", 8.88,
 				3.33, "blahblah",
-				1.11, 2.22, };
+				1.11, 2.22, Struct.newBuilder().set("symbol").to("ABCD").set("action")
+						.to("BUY").build(),
+				new SymbolAction("ABCD", "BUY") };
 
 		String[] paramNames = new String[] { "tag0", "ignoredPageable", "tag1", "tag2",
 				"tag3", "tag4",
-				"tag5", "tag6", "tag7" };
+				"tag5", "tag6", "tag7", "tag8", "tag9" };
 
 		Parameters parameters = mock(Parameters.class);
 
@@ -167,6 +176,8 @@ public class SqlSpannerQueryTests {
 			assertEquals(params[6], paramMap.get("tag5").getString());
 			assertEquals(params[7], paramMap.get("tag6").getFloat64());
 			assertEquals(params[8], paramMap.get("tag7").getFloat64());
+			assertEquals(params[9], paramMap.get("tag8").getStruct());
+			verify(this.spannerEntityProcessor, times(1)).write(same(params[10]), any());
 			assertEquals(-8.88, paramMap.get("SpELtag1").getFloat64(), 0.00001);
 			assertEquals(-3.33, paramMap.get("SpELtag2").getFloat64(), 0.00001);
 
@@ -224,6 +235,17 @@ public class SqlSpannerQueryTests {
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
 
 		sqlSpannerQuery.execute(new Object[] { this.sort, this.sort });
+	}
+
+	private static class SymbolAction {
+		String symbol;
+
+		String action;
+
+		SymbolAction(String s, String a) {
+			this.symbol = s;
+			this.action = a;
+		}
 	}
 
 	@Table(name = "trades")

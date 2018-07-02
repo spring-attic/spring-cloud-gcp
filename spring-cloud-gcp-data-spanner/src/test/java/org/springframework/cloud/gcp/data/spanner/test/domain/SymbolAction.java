@@ -14,28 +14,37 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.spanner.core.convert;
-
-import java.util.Set;
-
-import com.google.cloud.spanner.Key;
-
-import org.springframework.data.convert.EntityWriter;
+package org.springframework.cloud.gcp.data.spanner.test.domain;
 
 /**
+ * A small object containing just a stock symbol and action.
+ *
  * @author Chengyuan Zhao
- * @author Balint Pato
  */
-public interface SpannerEntityWriter extends EntityWriter<Object, MultipleValueBinder> {
+public class SymbolAction {
 
-	/**
-	 * Writes an object's properties to the sink.
-	 * @param source the object to write
-	 * @param sink the sink to which to write
-	 * @param includeColumns the properties/columns to write. If null, then all columns are
-	 * written.
-	 */
-	void write(Object source, MultipleValueBinder sink, Set<String> includeColumns);
+	private String symbol;
 
-	Key writeToKey(Object key);
+	private String action;
+
+	public SymbolAction(String symbol, String action) {
+		this.symbol = symbol;
+		this.action = action;
+	}
+
+	public String getSymbol() {
+		return this.symbol;
+	}
+
+	public void setSymbol(String symbol) {
+		this.symbol = symbol;
+	}
+
+	public String getAction() {
+		return this.action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
+	}
 }
