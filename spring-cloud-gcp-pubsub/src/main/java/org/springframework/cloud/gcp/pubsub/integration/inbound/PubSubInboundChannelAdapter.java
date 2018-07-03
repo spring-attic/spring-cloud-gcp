@@ -144,10 +144,20 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		this.headerMapper = headerMapper;
 	}
 
+	/**
+	 * Returns the {@link PubSubMessageConverter} used to convert the {@code byte[]} Pub/Sub
+	 * payload to an object of the configured payload type.
+	 * @since 1.1
+	 */
 	public PubSubMessageConverter getMessageConverter() {
 		return this.pubSubMessageConverter;
 	}
 
+	/**
+	 * Sets the {@link PubSubMessageConverter} used to convert the {@code byte[]} Pub/Sub
+	 * payload to an object of the configured payload type.
+	 * @since 1.1
+	 */
 	public void setMessageConverter(
 			PubSubMessageConverter pubSubMessageConverter) {
 		Assert.notNull(pubSubMessageConverter, "The pubSubMessageConverter can't be null.");
