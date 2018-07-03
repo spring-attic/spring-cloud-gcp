@@ -126,6 +126,12 @@
         </module>
         <module name="UnusedImports"/>
 
+        <!-- Javadoc -->
+        <module name="AtclauseOrder">
+            <property name="target" value="METHOD_DEF, CTOR_DEF, VARIABLE_DEF"/>
+            <property name="tagOrder" value="@param, @return, @throws, @since, @deprecated, @see"/>
+        </module>
+
         <!-- Miscellaneous -->
         <module name="CommentsIndentation"/>
         <module name="UpperEll"/>

@@ -80,6 +80,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 * publish to topics.
 	 * @param pubSubSubscriberTemplate the {@link PubSubSubscriberTemplate} to
 	 * subscribe to subscriptions or pull messages
+	 * @since 1.1
 	 */
 	public PubSubTemplate(PubSubPublisherTemplate pubSubPublisherTemplate,
 						PubSubSubscriberTemplate pubSubSubscriberTemplate) {
