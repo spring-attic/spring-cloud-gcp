@@ -66,8 +66,8 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 */
 	public PubSubTemplate(PublisherFactory publisherFactory,
 						SubscriberFactory subscriberFactory) {
-		Assert.notNull(publisherFactory, "A valid PublisherFactory is required.");
-		Assert.notNull(subscriberFactory, "A valid SubscriberFactory is required.");
+		Assert.notNull(publisherFactory, "The publisherFactory can't be null.");
+		Assert.notNull(subscriberFactory, "The subscriberFactory can't be null.");
 
 		this.pubSubPublisherTemplate = new PubSubPublisherTemplate(publisherFactory);
 		this.pubSubSubscriberTemplate = new PubSubSubscriberTemplate(subscriberFactory);
@@ -84,8 +84,8 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	 */
 	public PubSubTemplate(PubSubPublisherTemplate pubSubPublisherTemplate,
 						PubSubSubscriberTemplate pubSubSubscriberTemplate) {
-		Assert.notNull(pubSubPublisherTemplate, "A valid PubSubPublisherTemplate is required.");
-		Assert.notNull(pubSubSubscriberTemplate, "A valid PubSubSubscriberTemplate is required.");
+		Assert.notNull(pubSubPublisherTemplate, "The pubSubPublisherTemplate can't be null.");
+		Assert.notNull(pubSubSubscriberTemplate, "The pubSubSubscriberTemplate can't be null.");
 
 		this.pubSubPublisherTemplate = pubSubPublisherTemplate;
 		this.pubSubSubscriberTemplate = pubSubSubscriberTemplate;

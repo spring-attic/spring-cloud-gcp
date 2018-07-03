@@ -48,7 +48,7 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubPublisherTemplate.class);
 
-	private PubSubMessageConverter messageConverter = new SimplePubSubMessageConverter();
+	private PubSubMessageConverter pubSubMessageConverter = new SimplePubSubMessageConverter();
 
 	private final PublisherFactory publisherFactory;
 
@@ -60,18 +60,19 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 	 *                         publish to topics.
 	 */
 	public PubSubPublisherTemplate(PublisherFactory publisherFactory) {
-		Assert.notNull(publisherFactory, "A valid PublisherFactory is required.");
+		Assert.notNull(publisherFactory, "The publisherFactory can't be null.");
 
 		this.publisherFactory = publisherFactory;
 	}
 
 	public PubSubMessageConverter getMessageConverter() {
-		return this.messageConverter;
+		return this.pubSubMessageConverter;
 	}
 
-	public PubSubPublisherTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
-		Assert.notNull(messageConverter, "A valid Pub/Sub message converter is required.");
-		this.messageConverter = messageConverter;
+	public PubSubPublisherTemplate setMessageConverter(PubSubMessageConverter pubSubMessageConverter) {
+		Assert.notNull(pubSubMessageConverter, "The pubSubMessageConverter can't be null.");
+
+		this.pubSubMessageConverter = pubSubMessageConverter;
 
 		return this;
 	}
@@ -82,7 +83,7 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 	 */
 	@Override
 	public <T> ListenableFuture<String> publish(String topic, T payload, Map<String, String> headers) {
-		return publish(topic, this.messageConverter.toPubSubMessage(payload, headers));
+		return publish(topic, this.pubSubMessageConverter.toPubSubMessage(payload, headers));
 	}
 
 	@Override

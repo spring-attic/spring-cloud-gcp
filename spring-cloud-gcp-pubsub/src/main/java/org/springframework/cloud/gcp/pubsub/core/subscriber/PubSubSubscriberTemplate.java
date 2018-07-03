@@ -58,7 +58,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	 * to subscribe to subscriptions or pull messages.
 	 */
 	public PubSubSubscriberTemplate(SubscriberFactory subscriberFactory) {
-		Assert.notNull(subscriberFactory, "A valid SubscriberFactory is required.");
+		Assert.notNull(subscriberFactory, "The subscriberFactory can't be null.");
 
 		this.subscriberFactory = subscriberFactory;
 		this.subscriberStub = this.subscriberFactory.createSubscriberStub();
