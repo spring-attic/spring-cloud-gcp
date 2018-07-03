@@ -24,15 +24,16 @@ import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.integration.util.PatternMatchUtils;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.NativeMessageHeaderAccessor;
 import org.springframework.util.Assert;
 
 /**
  * Maps headers from {@link com.google.pubsub.v1.PubsubMessage}s to
  * {@link org.springframework.messaging.Message}s and vice-versa.
  *
- * <p>By default, filters out headers called "id", "timestamp" or "gcp_pubsub_acknowledgement" on
- * the {@link org.springframework.messaging.Message} to {@link com.google.pubsub.v1.PubsubMessage}
- * header conversion.
+ * <p>By default, filters out headers called "id", "timestamp", "gcp_pubsub_acknowledgement" or
+ * "nativeHeaders" on the {@link org.springframework.messaging.Message} to
+ * {@link com.google.pubsub.v1.PubsubMessage} header conversion.
  *
  * @author João André Martins
  */
@@ -46,6 +47,7 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 			"!" + MessageHeaders.ID,
 			"!" + MessageHeaders.TIMESTAMP,
 			"!" + GcpPubSubHeaders.ACKNOWLEDGEMENT,
+			"!" + NativeMessageHeaderAccessor.NATIVE_HEADERS,
 			"*"};
 
 	/**

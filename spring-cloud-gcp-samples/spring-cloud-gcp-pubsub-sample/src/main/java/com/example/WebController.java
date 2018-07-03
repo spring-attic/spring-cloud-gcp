@@ -57,9 +57,9 @@ public class WebController {
 	}
 
 	@GetMapping("/postMessage")
-	public RedirectView publish(@RequestParam("message") String message,
-			@RequestParam("topicName") String topicName) {
-		this.pubSubTemplate.publish(topicName, message, null);
+	public RedirectView publish(@RequestParam("topicName") String topicName,
+			@RequestParam("message") String message) {
+		this.pubSubTemplate.publish(topicName, message);
 
 		return new RedirectView("/");
 	}

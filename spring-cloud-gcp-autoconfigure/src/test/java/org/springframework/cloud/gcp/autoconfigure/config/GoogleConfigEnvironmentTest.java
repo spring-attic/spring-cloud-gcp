@@ -14,21 +14,26 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.logging.extractors;
+package org.springframework.cloud.gcp.autoconfigure.config;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Base64;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import org.springframework.cloud.gcp.autoconfigure.config.GoogleConfigEnvironment.Variable;
 
 /**
- * Extracts trace IDs from HTTP requests using the X-B3-TraceId header.
- *
- * @author Chengyuan Zhao
+ * @author Dmitry Solomakha
  */
-public class ZipkinTraceIdExtractor implements TraceIdExtractor {
+public class GoogleConfigEnvironmentTest {
 
-	public static final String X_B3_TRACE_HEADER = "X-B3-TraceId";
-
-	@Override
-	public String extractTraceIdFromRequest(HttpServletRequest req) {
-		return req.getHeader(X_B3_TRACE_HEADER);
+	@Test
+	public void testSetVariabeValue() {
+		GoogleConfigEnvironment.Variable var = new Variable();
+		String value = "v a l u e";
+		String encodedString = Base64.getEncoder().encodeToString(value.getBytes());
+		var.setValue(encodedString);
+		Assert.assertEquals(value, var.getValue());
 	}
 }

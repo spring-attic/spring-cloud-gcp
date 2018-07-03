@@ -7,8 +7,7 @@ org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerAutoConfiguration,
 org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageAutoConfiguration,\
 org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration,\
-org.springframework.cloud.gcp.autoconfigure.spanner.SpannerRepositoriesAutoConfiguration,\
-org.springframework.cloud.gcp.autoconfigure.spanner.SpannerKeyRestSupportAutoConfiguration
+org.springframework.cloud.gcp.autoconfigure.spanner.SpannerRepositoriesAutoConfiguration
 
 org.springframework.cloud.bootstrap.BootstrapConfiguration=\
 org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration

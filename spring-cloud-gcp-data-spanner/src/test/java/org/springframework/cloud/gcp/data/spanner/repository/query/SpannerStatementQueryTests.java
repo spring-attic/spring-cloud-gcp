@@ -69,14 +69,14 @@ public class SpannerStatementQueryTests {
 	}
 
 	private PartTreeSpannerQuery<Trade> createQuery() {
-		return new PartTreeSpannerQuery<Trade>(Trade.class, this.queryMethod,
+		return new PartTreeSpannerQuery<>(Trade.class, this.queryMethod,
 				this.spannerTemplate, this.spannerMappingContext);
 	}
 
 	@Test
 	public void compoundNameConventionTest() {
 		when(this.queryMethod.getName()).thenReturn(
-				"findTop3DistinctByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
+				"findTop3DistinctByActionIgnoreCaseAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullAndTraderIdLikeAndPriceTrueAndPriceFalse"
 						+ "AndPriceGreaterThanAndPriceLessThanEqualOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
@@ -89,10 +89,11 @@ public class SpannerStatementQueryTests {
 					Statement statement = invocation.getArgument(1);
 
 					assertEquals(
-							"SELECT DISTINCT * FROM trades WHERE ( action=@tag0 AND ticker=@tag1 ) OR "
+							"SELECT DISTINCT * FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
+									+ "AND ticker=@tag1 ) OR "
 									+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
-									+ "trader_id=NULL AND trader_id LIKE %@tag7 AND price=TRUE AND price=FALSE AND "
-									+ "price>@tag10 AND price<=@tag11 )ORDER BY id DESC LIMIT 3;",
+									+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "
+									+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 3;",
 							statement.getSql());
 
 					Map<String, Value> paramMap = statement.getParameters();

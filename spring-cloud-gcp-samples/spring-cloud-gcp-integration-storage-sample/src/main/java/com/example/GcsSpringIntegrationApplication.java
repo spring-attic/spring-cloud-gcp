@@ -39,16 +39,18 @@ import org.springframework.integration.annotation.Poller;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.expression.ValueExpression;
+import org.springframework.integration.file.FileHeaders;
 import org.springframework.messaging.MessageHandler;
 
 /**
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 @SpringBootApplication
 public class GcsSpringIntegrationApplication {
 
-	@Value("${gcs-bucket-name}")
-	private String gcsBucketName;
+	@Value("${gcs-read-bucket}")
+	private String gcsReadBucket;
 
 	@Value("${gcs-write-bucket}")
 	private String gcsWriteBucket;
@@ -62,19 +64,37 @@ public class GcsSpringIntegrationApplication {
 		SpringApplication.run(GcsSpringIntegrationApplication.class, args);
 	}
 
+	/**
+	 * A file synchronizer that knows how to connect to the remote file system (GCS) and scan
+	 * it for new files and then download the files.
+	 */
 	@Bean
-	@InboundChannelAdapter(channel = "new-file-channel", poller = @Poller(fixedDelay = "5000"))
-	public MessageSource<File> synchronizerAdapter(Storage gcs) {
+	public GcsInboundFileSynchronizer gcsInboundFileSynchronizer(Storage gcs) {
 		GcsInboundFileSynchronizer synchronizer = new GcsInboundFileSynchronizer(gcs);
-		synchronizer.setRemoteDirectory(this.gcsBucketName);
+		synchronizer.setRemoteDirectory(this.gcsReadBucket);
 
-		GcsInboundFileSynchronizingMessageSource synchAdapter =
-				new GcsInboundFileSynchronizingMessageSource(synchronizer);
-		synchAdapter.setLocalDirectory(Paths.get(this.localDirectory).toFile());
-
-		return synchAdapter;
+		return synchronizer;
 	}
 
+	/**
+	 * An inbound channel adapter that polls the GCS bucket for new files and copies them to
+	 * the local filesystem. The resulting message source produces messages containing handles
+	 * to local files.
+	 */
+	@Bean
+	@InboundChannelAdapter(channel = "new-file-channel", poller = @Poller(fixedDelay = "5000"))
+	public MessageSource<File> synchronizerAdapter(GcsInboundFileSynchronizer synchronizer) {
+		GcsInboundFileSynchronizingMessageSource syncAdapter = new GcsInboundFileSynchronizingMessageSource(
+				synchronizer);
+		syncAdapter.setLocalDirectory(Paths.get(this.localDirectory).toFile());
+
+		return syncAdapter;
+	}
+
+	/**
+	 * A service activator that receives messages produced by the {@code synchronizerAdapter}
+	 * and simply outputs the file name of each to the console.
+	 */
 	@Bean
 	@ServiceActivator(inputChannel = "new-file-channel")
 	public MessageHandler handleNewFileFromSynchronizer() {
@@ -85,22 +105,31 @@ public class GcsSpringIntegrationApplication {
 		};
 	}
 
+	/**
+	 * An inbound channel adapter that polls the remote directory and produces messages with
+	 * {@code InputStream} payload that can be used to read the data from remote files.
+	 */
 	@Bean
 	@InboundChannelAdapter(channel = "copy-channel", poller = @Poller(fixedDelay = "5000"))
 	public MessageSource<InputStream> streamingAdapter(Storage gcs) {
 		GcsStreamingMessageSource adapter = new GcsStreamingMessageSource(
 				new GcsRemoteFileTemplate(new GcsSessionFactory(gcs)));
-		adapter.setRemoteDirectory(this.gcsBucketName);
+		adapter.setRemoteDirectory(this.gcsReadBucket);
 		return adapter;
 	}
 
+	/**
+	 * A service activator that connects to a channel with messages containing
+	 * {@code InputStream} payloads and copies the file data to a remote directory on GCS.
+	 */
 	@Bean
 	@ServiceActivator(inputChannel = "copy-channel")
 	public MessageHandler outboundChannelAdapter(Storage gcs) {
-		GcsMessageHandler outboundChannelAdapter =
-				new GcsMessageHandler(new GcsSessionFactory(gcs));
+		GcsMessageHandler outboundChannelAdapter = new GcsMessageHandler(new GcsSessionFactory(gcs));
 		outboundChannelAdapter.setRemoteDirectoryExpression(
 				new ValueExpression<>(this.gcsWriteBucket));
+		outboundChannelAdapter
+				.setFileNameGenerator(message -> message.getHeaders().get(FileHeaders.REMOTE_FILE, String.class));
 
 		return outboundChannelAdapter;
 	}

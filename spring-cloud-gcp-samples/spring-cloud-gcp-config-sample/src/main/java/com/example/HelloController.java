@@ -20,10 +20,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
-* Sample REST Controller to demonstrate Google Cloud Configuration Integration.
-*
-* @author Jisha Abubaker
-*/
+ * Sample REST Controller to demonstrate Google Cloud Configuration Integration.
+ *
+ * @author Jisha Abubaker
+ * @author Mike Eltsufin
+ */
 @RestController
 public class HelloController {
 
@@ -34,8 +35,7 @@ public class HelloController {
 	}
 
 	@RequestMapping("/")
-	public String index() {
-		return String.valueOf("Queue size : " + this.sampleConfig.getQueueSize() +
-				"/" + "X Enabled : " + this.sampleConfig.isFeatureXEnabled());
+	public MyAppProperties json() {
+		return this.sampleConfig;
 	}
 }

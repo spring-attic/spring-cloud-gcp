@@ -38,12 +38,15 @@ public class DemoApplication {
 	@Bean
 	public CommandLineRunner houses(HouseRepository houseRepository) {
 		return args -> {
+			houseRepository.deleteAll();
+
 			Stream.of(new House("111 8th Av., NYC"),
 					new House("636 Avenue of the Americas, NYC"),
 					new House("White House"),
 					new House("Pentagon"))
 					.forEach(houseRepository::save);
 
+			LOGGER.info("Number of houses is " + houseRepository.count());
 			houseRepository.findAll().forEach(house -> LOGGER.info(house.getAddress()));
 		};
 	}

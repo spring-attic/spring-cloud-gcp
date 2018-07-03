@@ -77,7 +77,7 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		if (gcpConfigProperties.isEnabled()) {
 			Assert.notNull(credentialsProvider, "Credentials provider cannot be null");
 			Assert.notNull(projectIdProvider, "Project ID provider cannot be null");
-			this.credentials = gcpConfigProperties.getCredentials().getLocation() != null
+			this.credentials = gcpConfigProperties.getCredentials().hasKey()
 					? new DefaultCredentialsProvider(gcpConfigProperties).getCredentials()
 					: credentialsProvider.getCredentials();
 			this.projectId = gcpConfigProperties.getProjectId() != null

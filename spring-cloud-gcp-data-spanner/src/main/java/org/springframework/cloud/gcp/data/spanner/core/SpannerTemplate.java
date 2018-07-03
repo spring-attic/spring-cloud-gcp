@@ -48,8 +48,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
-import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
 /**
@@ -69,7 +69,8 @@ public class SpannerTemplate implements SpannerOperations {
 	private final SpannerMutationFactory mutationFactory;
 
 	public SpannerTemplate(DatabaseClient databaseClient,
-			SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
+			SpannerMappingContext mappingContext,
+			SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMutationFactory spannerMutationFactory) {
 		Assert.notNull(databaseClient,
 				"A valid database client for Spanner is required.");
@@ -122,31 +123,30 @@ public class SpannerTemplate implements SpannerOperations {
 			SpannerReadOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		return this.spannerEntityProcessor.mapToList(executeRead(persistentEntity.tableName(),
-				keys, persistentEntity.columns(), options), entityClass);
+		return this.spannerEntityProcessor
+				.mapToList(executeRead(persistentEntity.tableName(), keys,
+						persistentEntity.columns(), options), entityClass);
 	}
 
 	@Override
 	public <T> List<T> query(Class<T> entityClass, String sql, List<String> tags,
-			Object[] params,
-			SpannerQueryOptions options) {
+			Object[] params, SpannerQueryOptions options) {
 		String finalSql = sql;
 		boolean allowPartialRead = false;
 		if (options != null) {
 			allowPartialRead = options.isAllowPartialRead();
-			finalSql = applySortingPagingQueryOptions(options, sql);
+			finalSql = applySortingPagingQueryOptions(entityClass, options, sql);
 		}
 		return this.spannerEntityProcessor.mapToList(
 				executeQuery(SpannerStatementQueryExecutor
 						.buildStatementFromSqlWithArgs(finalSql, tags, params), options),
-				entityClass, Optional.empty(),
-				allowPartialRead);
+				entityClass, Optional.empty(), allowPartialRead);
 	}
 
 	@Override
 	public <T> List<T> query(Class<T> entityClass, Statement statement) {
-		return this.spannerEntityProcessor.mapToList(executeQuery(statement, null), entityClass,
-				Optional.empty(), true);
+		return this.spannerEntityProcessor.mapToList(executeQuery(statement, null),
+				entityClass, Optional.empty(), true);
 	}
 
 	@Override
@@ -164,31 +164,28 @@ public class SpannerTemplate implements SpannerOperations {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		String sql = "SELECT * FROM " + persistentEntity.tableName();
-		return query(entityClass, applySortingPagingQueryOptions(options, sql), null,
+		return query(entityClass, sql, null,
 				null, options);
 	}
 
-	public String applySortingPagingQueryOptions(SpannerQueryOptions options,
+	public <T> String applySortingPagingQueryOptions(Class<T> entityClass,
+			SpannerQueryOptions options,
 			String sql) {
-		StringBuilder sb = applySort(options.getSort(), wrapAsSubSelect(sql));
-			if (options.hasLimit()) {
-				sb.append(" LIMIT ").append(options.getLimit());
-			}
-			if (options.hasOffset()) {
-				sb.append(" OFFSET ").append(options.getOffset());
-			}
-		return sb.toString();
-	}
-
-	private StringBuilder applySort(Sort sort, StringBuilder sql) {
-		if (sort == null || sort.isUnsorted()) {
-			return sql;
+		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
+				.getPersistentEntity(entityClass);
+		StringBuilder sb = SpannerStatementQueryExecutor.applySort(options.getSort(),
+				wrapAsSubSelect(sql), o -> {
+					SpannerPersistentProperty property = persistentEntity
+							.getPersistentProperty(o.getProperty());
+					return property == null ? o.getProperty() : property.getColumnName();
+				});
+		if (options.hasLimit()) {
+			sb.append(" LIMIT ").append(options.getLimit());
 		}
-		sql.append(" ORDER BY ");
-		StringJoiner sj = new StringJoiner(" , ");
-		sort.iterator().forEachRemaining(
-				o -> sj.add(o.getProperty() + (o.isAscending() ? " ASC" : " DESC")));
-		return sql.append(sj);
+		if (options.hasOffset()) {
+			sb.append(" OFFSET ").append(options.getOffset());
+		}
+		return sb.toString();
 	}
 
 	private StringBuilder wrapAsSubSelect(String sql) {
@@ -258,8 +255,8 @@ public class SpannerTemplate implements SpannerOperations {
 	public long count(Class entityClass) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		Statement statement = Statement.of(String.format(
-				"SELECT COUNT(*) FROM %s", persistentEntity.tableName()));
+		Statement statement = Statement.of(
+				String.format("SELECT COUNT(*) FROM %s", persistentEntity.tableName()));
 		try (ResultSet resultSet = executeQuery(statement, null)) {
 			resultSet.next();
 			return resultSet.getLong(0);
@@ -279,7 +276,8 @@ public class SpannerTemplate implements SpannerOperations {
 										SpannerTemplate.this.databaseClient,
 										SpannerTemplate.this.mappingContext,
 										SpannerTemplate.this.spannerEntityProcessor,
-										SpannerTemplate.this.mutationFactory, transaction);
+										SpannerTemplate.this.mutationFactory,
+										transaction);
 						return operations.apply(transactionSpannerTemplate);
 					}
 				});
@@ -324,8 +322,7 @@ public class SpannerTemplate implements SpannerOperations {
 					columns, options.getReadOptions());
 		}
 
-		return readContext.read(tableName, keys, columns,
-				options.getReadOptions());
+		return readContext.read(tableName, keys, columns, options.getReadOptions());
 	}
 
 	private void logReadOptions(SpannerReadOptions options, StringBuilder logs) {
@@ -343,12 +340,10 @@ public class SpannerTemplate implements SpannerOperations {
 		}
 	}
 
-	private StringBuilder logColumns(String tableName, KeySet keys, Iterable<String> columns) {
-		StringBuilder logSb = new StringBuilder("Executing read on table "
-				+ tableName
-				+ " with keys: "
-				+ keys
-				+ " and columns: ");
+	private StringBuilder logColumns(String tableName, KeySet keys,
+			Iterable<String> columns) {
+		StringBuilder logSb = new StringBuilder("Executing read on table " + tableName
+				+ " with keys: " + keys + " and columns: ");
 		StringJoiner sj = new StringJoiner(",");
 		columns.forEach(col -> sj.add(col));
 		logSb.append(sj.toString());
@@ -372,9 +367,8 @@ public class SpannerTemplate implements SpannerOperations {
 				message = "Executing query without additional options: " + statement;
 			}
 			else {
-				StringBuilder logSb = new StringBuilder(
-						"Executing query").append(options.hasTimestamp()
-								? " at timestamp" + options.getTimestamp()
+				StringBuilder logSb = new StringBuilder("Executing query").append(
+						options.hasTimestamp() ? " at timestamp" + options.getTimestamp()
 								: "");
 				for (QueryOption queryOption : options.getQueryOptions()) {
 					logSb.append(" with option: " + queryOption);
@@ -388,8 +382,7 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,
-			T arg1,
-			U arg2) {
+			T arg1, U arg2) {
 		Mutation mutation = function.apply(arg1, arg2);
 		LOGGER.debug("Applying Mutation: " + mutation);
 		this.databaseClient.write(Arrays.asList(mutation));

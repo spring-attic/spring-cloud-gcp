@@ -23,6 +23,7 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
+import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.Value;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
@@ -32,6 +33,8 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.Faul
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestEntityFlat;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestEntityFlatFaulty;
+import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestHoldingStructEntity;
+import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.OuterTestHoldingStructsEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -68,11 +71,10 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 	@Test
 	public void readNestedStructTest() {
 		Struct innerStruct = Struct.newBuilder()
-				.add("value", Value.string("value")).build();
+				.set("value").to(Value.string("inner-value")).build();
 		Struct outerStruct = Struct.newBuilder()
-				.add("id", Value.string("key1"))
-				.add("innerTestEntities",
-						ImmutableList.of(Type.StructField.of("value", Type.string())),
+				.set("id").to(Value.string("key1")).set("innerTestEntities")
+				.toStructArray(Type.struct(StructField.of("value", Type.string())),
 						ImmutableList.of(innerStruct))
 				.build();
 
@@ -80,23 +82,53 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 				outerStruct);
 		assertEquals("key1", result.id);
 		assertEquals(1, result.innerTestEntities.size());
-		assertEquals("value", result.innerTestEntities.get(0).value);
+		assertEquals("inner-value", result.innerTestEntities.get(0).value);
+	}
+
+	@Test
+	public void readNestedStructsAsStructsTest() {
+		Struct innerStruct = Struct.newBuilder().set("value").to(Value.string("inner-value"))
+				.build();
+		Struct outerStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
+				.set("innerStructs")
+				.toStructArray(Type.struct(StructField.of("value", Type.string())),
+						ImmutableList.of(innerStruct))
+				.build();
+
+		OuterTestHoldingStructsEntity result = this.spannerEntityReader
+				.read(OuterTestHoldingStructsEntity.class, outerStruct);
+		assertEquals("key1", result.id);
+		assertEquals(1, result.innerStructs.size());
+		assertEquals("inner-value", result.innerStructs.get(0).getString("value"));
+	}
+
+	@Test
+	public void readNestedStructAsStructTest() {
+		Struct innerStruct = Struct.newBuilder().set("value").to(Value.string("inner-value"))
+				.build();
+		Struct outerStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
+				.set("innerStruct").to(innerStruct).build();
+
+		OuterTestHoldingStructEntity result = this.spannerEntityReader
+				.read(OuterTestHoldingStructEntity.class, outerStruct);
+		assertEquals("key1", result.id);
+		assertEquals("inner-value", result.innerStruct.getString("value"));
 	}
 
 	@Test(expected = SpannerDataException.class)
 	public void readArraySingularMismatchTest() {
-		Struct rowStruct = Struct.newBuilder().add("id", Value.string("key1"))
-				.add("innerTestEntities", Value.int64(3)).build();
+		Struct rowStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
+				.set("innerTestEntities").to(Value.int64(3)).build();
 		this.spannerEntityReader.read(OuterTestEntity.class, rowStruct);
 	}
 
 	@Test(expected = SpannerDataException.class)
 	public void readSingularArrayMismatchTest() {
-		Struct colStruct = Struct.newBuilder().add("string_col", Value.string("value"))
+		Struct colStruct = Struct.newBuilder().set("string_col").to(Value.string("value"))
 				.build();
-		Struct rowStruct = Struct.newBuilder().add("id", Value.string("key1"))
-				.add("innerLengths",
-						ImmutableList.of(Type.StructField.of("string_col", Type.string())),
+		Struct rowStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
+				.set("innerLengths")
+				.toStructArray(Type.struct(StructField.of("string_col", Type.string())),
 						ImmutableList.of(colStruct))
 				.build();
 
@@ -113,12 +145,11 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 
 	@Test
 	public void readConvertedNestedStructTest() {
-		Struct colStruct = Struct.newBuilder().add("string_col", Value.string("value"))
+		Struct colStruct = Struct.newBuilder().set("string_col").to(Value.string("value"))
 				.build();
-		Struct rowStruct = Struct.newBuilder().add("id", Value.string("key1"))
-				.add("innerLengths",
-						ImmutableList
-								.of(Type.StructField.of("string_col", Type.string())),
+		Struct rowStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
+				.set("innerLengths")
+				.toStructArray(Type.struct(StructField.of("string_col", Type.string())),
 						ImmutableList.of(colStruct))
 				.build();
 
@@ -139,13 +170,14 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 	@Test(expected = SpannerDataException.class)
 	public void readNotFoundColumnTest() {
 		Struct struct = Struct.newBuilder()
-				.add("id", Value.string("key1"))
-				.add("custom_col", Value.string("string1"))
-				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
-				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
-				.add("dateField", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
-				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
-				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
+				.set("id").to(Value.string("key1")).set("custom_col")
+				.to(Value.string("string1")).set("booleanField").to(Value.bool(true))
+				.set("longField").to(Value.int64(3L)).set("doubleArray")
+				.to(Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
+				.set("dateField").to(Value.date(Date.fromYearMonthDay(2018, 11, 22)))
+				.set("timestampField")
+				.to(Value.timestamp(Timestamp.ofTimeMicroseconds(333))).set("bytes")
+				.to(Value.bytes(ByteArray.copyFrom("string1"))).build();
 
 		this.spannerEntityReader.read(TestEntity.class, struct);
 	}
@@ -153,14 +185,15 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 	@Test(expected = ConversionFailedException.class)
 	public void readUnconvertableValueTest() {
 		Struct struct = Struct.newBuilder()
-				.add("id", Value.string("key1"))
-				.add("custom_col", Value.string("string1"))
-				.add("booleanField", Value.bool(true)).add("longField", Value.int64(3L))
-				.add("doubleField", Value.string("UNCONVERTABLE VALUE"))
-				.add("doubleArray", Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
-				.add("dateField", Value.date(Date.fromYearMonthDay(2018, 11, 22)))
-				.add("timestampField", Value.timestamp(Timestamp.ofTimeMicroseconds(333)))
-				.add("bytes", Value.bytes(ByteArray.copyFrom("string1"))).build();
+				.set("id").to(Value.string("key1")).set("custom_col")
+				.to(Value.string("string1")).set("booleanField").to(Value.bool(true))
+				.set("longField").to(Value.int64(3L)).set("doubleField")
+				.to(Value.string("UNCONVERTABLE VALUE")).set("doubleArray")
+				.to(Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
+				.set("dateField").to(Value.date(Date.fromYearMonthDay(2018, 11, 22)))
+				.set("timestampField")
+				.to(Value.timestamp(Timestamp.ofTimeMicroseconds(333))).set("bytes")
+				.to(Value.bytes(ByteArray.copyFrom("string1"))).build();
 
 		this.spannerEntityReader.read(TestEntity.class, struct);
 	}
@@ -168,14 +201,14 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 	@Test(expected = SpannerDataException.class)
 	public void readUnmatachableTypesTest() {
 		Struct struct = Struct.newBuilder()
-				.add("fieldWithUnsupportedType", Value.string("key1")).build();
+				.set("fieldWithUnsupportedType").to(Value.string("key1")).build();
 		this.spannerEntityReader.read(FaultyTestEntity.class, struct);
 	}
 
 	@Test
 	public void shouldReadEntityWithNoDefaultConstructor() {
 		Struct row = Struct.newBuilder()
-				.add("id", Value.string("1234")).build();
+				.set("id").to(Value.string("1234")).build();
 		TestEntities.SimpleConstructorTester result = this.spannerEntityReader
 				.read(TestEntities.SimpleConstructorTester.class, row);
 
@@ -184,10 +217,11 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 
 	@Test
 	public void readNestedStructWithConstructor() {
-		Struct innerStruct = Struct.newBuilder().add("value", Value.string("value")).build();
-		Struct outerStruct = Struct.newBuilder().add("id", Value.string("key1"))
-				.add("innerTestEntities",
-						ImmutableList.of(Type.StructField.of("value", Type.string())),
+		Struct innerStruct = Struct.newBuilder().set("value").to(Value.string("value"))
+				.build();
+		Struct outerStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
+				.set("innerTestEntities")
+				.toStructArray(Type.struct(StructField.of("value", Type.string())),
 						ImmutableList.of(innerStruct))
 				.build();
 
@@ -201,11 +235,10 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 	@Test
 	public void testPartialConstructor() {
 		Struct struct = Struct.newBuilder()
-				.add("id", Value.string("key1"))
-				.add("custom_col", Value.string("string1"))
-				.add("booleanField", Value.bool(true))
-				.add("longField", Value.int64(3L))
-				.add("doubleField", Value.float64(3.14)).build();
+				.set("id").to(Value.string("key1")).set("custom_col")
+				.to(Value.string("string1")).set("booleanField").to(Value.bool(true))
+				.set("longField").to(Value.int64(3L)).set("doubleField")
+				.to(Value.float64(3.14)).build();
 
 		this.spannerEntityReader.read(TestEntities.PartialConstructor.class, struct);
 	}
@@ -227,10 +260,9 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 	@Test(expected = SpannerDataException.class)
 	public void testPartialConstructorWithNotEnoughArgs() {
 		Struct struct = Struct.newBuilder()
-				.add("id", Value.string("key1"))
-				.add("booleanField", Value.bool(true))
-				.add("longField", Value.int64(3L))
-				.add("doubleField", Value.float64(3.14)).build();
+				.set("id").to(Value.string("key1")).set("booleanField")
+				.to(Value.bool(true)).set("longField").to(Value.int64(3L))
+				.set("doubleField").to(Value.float64(3.14)).build();
 
 		this.spannerEntityReader.read(TestEntities.PartialConstructor.class, struct);
 	}
@@ -238,7 +270,8 @@ public class ConverterAwareMappingSpannerEntityReaderTest {
 	@Test(expected = SpannerDataException.class)
 	public void zeroArgsListShouldThrowError() {
 		Struct struct = Struct.newBuilder()
-				.add("zeroArgsListOfObjects", Value.stringArray(ImmutableList.of("hello", "world"))).build();
+				.set("zeroArgsListOfObjects")
+				.to(Value.stringArray(ImmutableList.of("hello", "world"))).build();
 		this.spannerEntityReader
 				.read(TestEntities.TestEntityWithListWithZeroTypeArgs.class, struct);
 	}

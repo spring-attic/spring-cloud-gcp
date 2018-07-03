@@ -20,6 +20,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 
+import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.ValueBinder;
 import org.junit.Test;
 
@@ -45,7 +47,18 @@ public class SpannerWriteMethodCoverageTest {
 			}
 
 			Class<?> paramType = ConversionUtils.boxIfNeeded(method.getParameterTypes()[0]);
-			if (ConversionUtils.isIterableNonByteArrayType(paramType)) {
+			if (paramType.equals(Struct.class) || paramType.equals(Value.class)) {
+				/*
+				 * 1. there is a method for binding a Struct value, but because Struct
+				 * values cannot be written to table columns we will ignore it. 2. there
+				 * is a method for binding a Value value. However, the purpose of the
+				 * converters is to wrap java types into the Value for the user.
+				 * Furthermore, the Cloud Spanner client lib does not give a way to read a
+				 * Value back from a Struct, so we will ignore this method.
+				 */
+				continue;
+			}
+			else if (ConversionUtils.isIterableNonByteArrayType(paramType)) {
 				Class<?> innerParamType = (Class) ((ParameterizedType) method
 						.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
 				assertThat(ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap

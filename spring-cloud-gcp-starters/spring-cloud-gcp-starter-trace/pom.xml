@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>spring-cloud-gcp-starters</artifactId>
 		<groupId>org.springframework.cloud</groupId>
-		<version>1.0.0.BUILD-SNAPSHOT</version>
+		<version>1.1.0.BUILD-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
@@ -22,16 +22,27 @@
 			<artifactId>spring-cloud-starter-sleuth</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>io.zipkin.gcp</groupId>
+			<artifactId>zipkin-sender-stackdriver</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.protobuf</groupId>
+					<artifactId>protobuf-java</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>io.zipkin.gcp</groupId>
+			<artifactId>brave-propagation-stackdriver</artifactId>
+		</dependency>
+		<!-- Reporter auto-configuration -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-sleuth-zipkin</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-trace</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.cloud.trace.v1</groupId>
-			<artifactId>sink</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.api</groupId>
-			<artifactId>gax</artifactId>
+			<artifactId>google-cloud-core-grpc</artifactId>
 		</dependency>
 	</dependencies>
 </project>
