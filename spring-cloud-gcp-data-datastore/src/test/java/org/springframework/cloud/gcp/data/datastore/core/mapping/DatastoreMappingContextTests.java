@@ -36,7 +36,7 @@ public class DatastoreMappingContextTests {
 	public void testApplicationContextPassing() {
 		DatastorePersistentEntityImpl mockEntity = mock(
 				DatastorePersistentEntityImpl.class);
-		DatastoreMappingContext context = createSpannerMappingContextWith(mockEntity);
+		DatastoreMappingContext context = createDatastoreMappingContextWith(mockEntity);
 		ApplicationContext applicationContext = mock(ApplicationContext.class);
 		context.setApplicationContext(applicationContext);
 
@@ -49,14 +49,14 @@ public class DatastoreMappingContextTests {
 	public void testApplicationContextIsNotSet() {
 		DatastorePersistentEntityImpl mockEntity = mock(
 				DatastorePersistentEntityImpl.class);
-		DatastoreMappingContext context = createSpannerMappingContextWith(mockEntity);
+		DatastoreMappingContext context = createDatastoreMappingContextWith(mockEntity);
 
 		context.createPersistentEntity(ClassTypeInformation.from(Object.class));
 
 		verifyZeroInteractions(mockEntity);
 	}
 
-	private DatastoreMappingContext createSpannerMappingContextWith(
+	private DatastoreMappingContext createDatastoreMappingContextWith(
 			DatastorePersistentEntityImpl mockEntity) {
 		return new DatastoreMappingContext() {
 			@Override
