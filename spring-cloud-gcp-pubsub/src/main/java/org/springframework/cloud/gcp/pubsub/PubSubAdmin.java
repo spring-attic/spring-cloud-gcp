@@ -196,8 +196,9 @@ public class PubSubAdmin {
 
 		int finalAckDeadline = this.defaultAckDeadline;
 		if (ackDeadline != null) {
-			Assert.isTrue(ackDeadline >= 0,
-					"The acknowledgement deadline value can't be negative.");
+			Assert.isTrue(ackDeadline >= 10 && ackDeadline <= 600,
+					"The acknowledgement deadline must be between 10 and 600 seconds.");
+
 			finalAckDeadline = ackDeadline;
 		}
 
