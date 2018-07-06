@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @author Chengyuan Zhao
  * @author Balint Pato
+ * @since 1.1
  */
 public class SpannerTypeMapper {
 

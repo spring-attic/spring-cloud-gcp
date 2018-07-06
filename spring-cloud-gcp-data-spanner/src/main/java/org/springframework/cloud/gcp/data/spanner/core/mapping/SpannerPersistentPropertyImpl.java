@@ -39,6 +39,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @since 1.1
  */
 public class SpannerPersistentPropertyImpl
 		extends AnnotationBasedPersistentProperty<SpannerPersistentProperty>

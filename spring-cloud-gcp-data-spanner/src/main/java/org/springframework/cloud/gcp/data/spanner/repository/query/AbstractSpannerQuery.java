@@ -28,6 +28,7 @@ import org.springframework.data.repository.query.RepositoryQuery;
 
 /**
  * @author Chengyuan Zhao
+ * @since 1.1
  */
 abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 

@@ -46,6 +46,7 @@ import org.springframework.util.Assert;
 /**
  * @author Chengyuan Zhao
  * @author Ray Tsang
+ * @since 1.1
  */
 public class SpannerRepositoryFactory extends RepositoryFactorySupport
 		implements ApplicationContextAware {

@@ -30,6 +30,7 @@ import org.springframework.util.Assert;
 /**
  * Encapsulates Spanner query options.
  * @author Chengyuan Zhao
+ * @since 1.1
  */
 public class SpannerQueryOptions {
 

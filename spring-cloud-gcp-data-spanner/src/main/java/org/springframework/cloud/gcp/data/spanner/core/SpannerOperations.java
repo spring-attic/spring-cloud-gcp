@@ -30,6 +30,7 @@ import com.google.cloud.spanner.Statement;
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ * @since 1.1
  */
 public interface SpannerOperations {
 

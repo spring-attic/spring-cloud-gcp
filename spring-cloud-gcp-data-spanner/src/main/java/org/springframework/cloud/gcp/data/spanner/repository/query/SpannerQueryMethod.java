@@ -34,6 +34,7 @@ import org.springframework.util.StringUtils;
 /**
  * @author Balint Pato
  * @author Chengyuan Zhao
+ * @since 1.1
  */
 public class SpannerQueryMethod extends QueryMethod {
 

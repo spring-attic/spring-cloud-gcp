@@ -43,6 +43,7 @@ import org.springframework.data.util.Pair;
  *
  * @author Chengyuan Zhao
  * @author Balint Pato
+ * @since 1.1
  */
 public class SpannerStatementQueryExecutor {
 	/**
