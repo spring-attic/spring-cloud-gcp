@@ -55,7 +55,7 @@ public class PubSubAdmin {
 	private final SubscriptionAdminClient subscriptionAdminClient;
 
 	/** Default inspired in the subscription creation web UI. */
-	private int defaultAckDeadline = 10;
+	private int defaultAckDeadline = MIN_ACK_DEADLINE_SECONDS;
 
 	/**
 	 * This constructor instantiates TopicAdminClient and SubscriptionAdminClient with all their
