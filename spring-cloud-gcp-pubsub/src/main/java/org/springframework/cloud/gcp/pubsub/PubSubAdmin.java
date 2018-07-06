@@ -44,6 +44,10 @@ import org.springframework.util.Assert;
  */
 public class PubSubAdmin {
 
+	private static final int MINIMUM_ACK_DEADLINE_SECONDS = 10;
+
+	private static final int MAXIMUM_ACK_DEADLINE_SECONDS = 600;
+
 	private final String projectId;
 
 	private final TopicAdminClient topicAdminClient;
@@ -196,8 +200,10 @@ public class PubSubAdmin {
 
 		int finalAckDeadline = this.defaultAckDeadline;
 		if (ackDeadline != null) {
-			Assert.isTrue(ackDeadline >= 10 && ackDeadline <= 600,
-					"The acknowledgement deadline must be between 10 and 600 seconds.");
+			Assert.isTrue(ackDeadline >= MINIMUM_ACK_DEADLINE_SECONDS
+							&& ackDeadline <= MAXIMUM_ACK_DEADLINE_SECONDS,
+					String.format("The acknowledgement deadline must be between %d and %d seconds.",
+							MINIMUM_ACK_DEADLINE_SECONDS, MAXIMUM_ACK_DEADLINE_SECONDS));
 
 			finalAckDeadline = ackDeadline;
 		}
@@ -273,8 +279,10 @@ public class PubSubAdmin {
 	 * @param defaultAckDeadline default acknowledgement deadline value in seconds, must be between 10 and 600 seconds.
 	 */
 	public void setDefaultAckDeadline(int defaultAckDeadline) {
-		Assert.isTrue(defaultAckDeadline >= 10 && defaultAckDeadline <= 600,
-				"The acknowledgement deadline must be between 10 and 600 seconds.");
+		Assert.isTrue(defaultAckDeadline >= MINIMUM_ACK_DEADLINE_SECONDS
+						&& defaultAckDeadline <= MAXIMUM_ACK_DEADLINE_SECONDS,
+				String.format("The acknowledgement deadline must be between %d and %d seconds.",
+						MINIMUM_ACK_DEADLINE_SECONDS, MAXIMUM_ACK_DEADLINE_SECONDS));
 
 		this.defaultAckDeadline = defaultAckDeadline;
 	}
