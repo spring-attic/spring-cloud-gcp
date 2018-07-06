@@ -29,12 +29,12 @@
 		<dependency>
 			<groupId>com.example</groupId>
 			<artifactId>spring-cloud-gcp-integration-pubsub-sample-sender</artifactId>
-			<version>1.1.0.BUILD-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.example</groupId>
 			<artifactId>spring-cloud-gcp-integration-pubsub-sample-integration-test</artifactId>
-			<version>1.1.0.BUILD-SNAPSHOT</version>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -45,6 +45,25 @@
 				<configuration>
 					<skip>true</skip>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>../spring-cloud-gcp-integration-pubsub-sample-sender/src/main/java</source>
+								<source>../spring-cloud-gcp-integration-pubsub-sample-receiver/src/main/java</source>
+							</sources>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

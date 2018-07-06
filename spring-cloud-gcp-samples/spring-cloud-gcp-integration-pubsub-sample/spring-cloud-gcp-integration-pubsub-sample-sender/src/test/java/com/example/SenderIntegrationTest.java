@@ -23,15 +23,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfiguration;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -42,18 +38,20 @@ import static org.junit.Assume.assumeThat;
 
 /**
  * @author Dmitry Solomakha
+ *
+ * @since 1.1
  */
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@DirtiesContext
 public class SenderIntegrationTest {
-
-	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GcpContextAutoConfiguration.class,
-					GcpPubSubAutoConfiguration.class));
 
 	@Autowired
 	private TestRestTemplate restTemplate;
+
+	@Autowired
+	private PubSubTemplate pubSubTemplate;
 
 	@BeforeClass
 	public static void prepare() {
@@ -65,36 +63,26 @@ public class SenderIntegrationTest {
 
 	@Test
 	public void testSample() throws Exception {
-
-		SpringApplicationBuilder sender = new SpringApplicationBuilder(SenderApplication.class)
-				.properties("server.port=8082");
-		sender.run();
-
 		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 		map.add("message", "test message 123");
 
 		this.restTemplate.postForObject("/postMessage", map, String.class);
 
-		Thread.sleep(2000);
+		List<AcknowledgeablePubsubMessage> messages;
 
-		this.contextRunner.run(context -> {
-			PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
-			List<AcknowledgeablePubsubMessage> messages;
+		boolean messageReceived = false;
+		for (int i = 0; i < 20; i++) {
+			messages = this.pubSubTemplate.pull("exampleSubscription", 10, true);
+			messages.forEach(AcknowledgeablePubsubMessage::ack);
 
-			boolean messageReceived = false;
-			for (int i = 0; i < 20; i++) {
-				messages = pubSubTemplate.pull("exampleSubscription", 10, true);
-				messages.forEach(AcknowledgeablePubsubMessage::ack);
-
-				if (messages.stream()
-						.anyMatch(m -> m.getMessage().getData().toStringUtf8().equals("\"test message 123\""))) {
-					messageReceived = true;
-					break;
-				}
-				Thread.sleep(100);
+			if (messages.stream()
+					.anyMatch(m -> m.getMessage().getData().toStringUtf8().equals("\"test message 123\""))) {
+				messageReceived = true;
+				break;
 			}
-			assertThat(messageReceived).isTrue();
-		});
+			Thread.sleep(100);
+		}
+		assertThat(messageReceived).isTrue();
 
 	}
 }

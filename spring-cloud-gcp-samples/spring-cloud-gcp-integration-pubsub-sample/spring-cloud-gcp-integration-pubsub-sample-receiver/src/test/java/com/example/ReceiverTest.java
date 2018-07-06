@@ -25,12 +25,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfiguration;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,19 +37,20 @@ import static org.junit.Assume.assumeThat;
 
 /**
  * @author Dmitry Solomakha
+ *
+ * @since 1.1
  */
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
+@DirtiesContext
 public class ReceiverTest {
-
-	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GcpContextAutoConfiguration.class,
-					GcpPubSubAutoConfiguration.class));
-
 	private static PrintStream systemOut;
 
 	private static ByteArrayOutputStream baos;
+
+	@Autowired
+	private	PubSubTemplate pubSubTemplate;
 
 	@BeforeClass
 	public static void prepare() {
@@ -73,10 +72,7 @@ public class ReceiverTest {
 
 	@Test
 	public void testSample() throws Exception {
-		this.contextRunner.run(context -> {
-			PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
-			pubSubTemplate.publish("exampleTopic", "test message 1");
-		});
+		this.pubSubTemplate.publish("exampleTopic", "test message 1");
 
 		boolean messageReceived = false;
 		for (int i = 0; i < 20; i++) {

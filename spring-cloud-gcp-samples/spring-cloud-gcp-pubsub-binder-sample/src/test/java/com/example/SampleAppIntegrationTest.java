@@ -23,11 +23,15 @@ import org.apache.commons.io.output.TeeOutputStream;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -40,12 +44,18 @@ import static org.junit.Assume.assumeThat;
  */
 
 /*
- * This tests verifies that the pubsub-integration-sample works.
+ * This tests verifies that the pubsub-binder-sample works.
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+		"spring.cloud.stream.bindings.input.destination=sub1",
+		"spring.cloud.stream.bindings.output.destination=sub1" })
+@DirtiesContext
 public class SampleAppIntegrationTest {
 
-	private RestTemplate restTemplate = new RestTemplate();
+	@Autowired
+	private TestRestTemplate restTemplate;
 
 	private static PrintStream systemOut;
 
@@ -71,23 +81,15 @@ public class SampleAppIntegrationTest {
 
 	@Test
 	public void testSample() throws Exception {
-
-		SpringApplicationBuilder sender = new SpringApplicationBuilder(SenderApplication.class)
-				.properties("server.port=8082");
-		sender.run();
-
-		SpringApplicationBuilder receiver = new SpringApplicationBuilder(ReceiverApplication.class)
-				.properties("server.port=8081");
-		receiver.run();
-
 		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-		map.add("message", "test message 1");
+		map.add("messageBody", "test message 1");
+		map.add("username", "testUserName");
 
-		this.restTemplate.postForObject("http://localhost:8082/postMessage", map, String.class);
+		this.restTemplate.postForObject("/newMessage", map, String.class);
 
 		boolean messageReceived = false;
 		for (int i = 0; i < 20; i++) {
-			if (baos.toString().contains("Message arrived! Payload: test message 1")) {
+			if (baos.toString().contains("New message received from testUserName: test message 1 at ")) {
 				messageReceived = true;
 				break;
 			}

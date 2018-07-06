@@ -24,7 +24,13 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class JacksonPubSubMessageConverterTest {
+/**
+ * @author Dmitry Solomakha
+ *
+ * @since  1.1.0
+ */
+
+public class JacksonPubSubMessageConverterTests {
 
 	private JacksonPubSubMessageConverter converter = new JacksonPubSubMessageConverter(new ObjectMapper());
 
