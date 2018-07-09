@@ -88,7 +88,7 @@ public class SampleAppIntegrationTest {
 		this.restTemplate.postForObject("/newMessage", map, String.class);
 
 		boolean messageReceived = false;
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 100; i++) {
 			if (baos.toString().contains("New message received from testUserName: test message 1 at ")) {
 				messageReceived = true;
 				break;

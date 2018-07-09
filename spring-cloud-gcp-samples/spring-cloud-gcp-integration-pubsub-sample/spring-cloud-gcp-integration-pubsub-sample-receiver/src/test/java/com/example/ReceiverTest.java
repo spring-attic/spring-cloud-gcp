@@ -75,7 +75,7 @@ public class ReceiverTest {
 		this.pubSubTemplate.publish("exampleTopic", "test message 1");
 
 		boolean messageReceived = false;
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 100; i++) {
 			if (baos.toString().contains("Message arrived! Payload: test message 1")) {
 				messageReceived = true;
 				break;

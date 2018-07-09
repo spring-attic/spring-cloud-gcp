@@ -71,7 +71,7 @@ public class SenderIntegrationTest {
 		List<AcknowledgeablePubsubMessage> messages;
 
 		boolean messageReceived = false;
-		for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 100; i++) {
 			messages = this.pubSubTemplate.pull("exampleSubscription", 10, true);
 			messages.forEach(AcknowledgeablePubsubMessage::ack);
 
