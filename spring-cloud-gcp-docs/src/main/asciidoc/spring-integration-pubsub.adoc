@@ -33,6 +33,8 @@ dependencies {
 }
 ----
 
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-sample[sample application] is available.
+
 ==== Inbound channel adapter
 
 `PubSubInboundChannelAdapter` is the inbound channel adapter for GCP Pub/Sub that listens to a GCP
@@ -40,6 +42,12 @@ Pub/Sub subscription for new messages.
 It converts new messages to an internal Spring
 https://docs.spring.io/spring-integration/reference/html/messaging-construction-chapter.html#message[`Message`]
 and then sends it to the bound output channel.
+
+Google Pub/Sub treats message payloads as byte arrays.
+So, by default, the inbound channel adapter will construct the Spring `Message` with `byte[]` as the payload.
+However, you can change the desired payload type by setting the `payloadType` property of the `PubSubInboundChannelAdapter`.
+The `PubSubInboundChannelAdapter` delegates to conversion to the desired payload type to the `PubSubMessageConverter` configured in the `PubSubTemplate`.
+
 
 To use the inbound channel adapter, a `PubSubInboundChannelAdapter` must be provided and configured
 on the user application side.
@@ -89,7 +97,7 @@ users can extract using the `GcpPubSubHeaders.ACKNOWLEDGEMENT` key and use to (n
 @ServiceActivator(inputChannel = "pubsubInputChannel")
 public MessageHandler messageReceiver() {
     return message -> {
-        LOGGER.info("Message arrived! Payload: " + message.getPayload());
+        LOGGER.info("Message arrived! Payload: " + new String((byte[]) message.getPayload()));
         AckReplyConsumer consumer =
               message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT, AckReplyConsumer.class);
         consumer.ack();
@@ -101,8 +109,11 @@ public MessageHandler messageReceiver() {
 
 `PubSubMessageHandler` is the outbound channel adapter for GCP Pub/Sub that listens for new messages
 on a Spring `MessageChannel`.
-It uses `PubSubTemplate` to convert new `Message` instances to the GCP Pub/Sub format and post them
-to a GCP Pub/Sub topic.
+It uses `PubSubTemplate` to post them to a GCP Pub/Sub topic.
+
+To construct a Pub/Sub representation of the message, the outbound channel adapter needs to convert the Spring `Message` payload to a byte array representation expected by Pub/Sub.
+It delegates this conversion to the `PubSubTemplate`.
+To customize the conversion, you can specify a `PubSubMessageConverter` in the `PubSubTemplate` that should convert the `Object` payload and headers of the Spring `Message` to a `PubsubMessage`.
 
 To use the outbound channel adapter, a `PubSubMessageHandler` bean must be provided and configured
 on the user application side.

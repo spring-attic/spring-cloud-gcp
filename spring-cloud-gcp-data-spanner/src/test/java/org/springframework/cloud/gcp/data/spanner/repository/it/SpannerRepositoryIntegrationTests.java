@@ -19,11 +19,13 @@ package org.springframework.cloud.gcp.data.spanner.repository.it;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.cloud.spanner.Struct;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
+import org.springframework.cloud.gcp.data.spanner.test.domain.SymbolAction;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeProjection;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeRepository;
@@ -130,6 +132,21 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertEquals(2, customSortedTrades.size());
 		assertTrue(customSortedTrades.get(0).getId()
 				.compareTo(customSortedTrades.get(1).getId()) < 0);
+
+		this.tradeRepository.findBySymbolLike("%BCD")
+				.forEach(x -> assertEquals("ABCD", x.getSymbol()));
+		assertTrue(this.tradeRepository.findBySymbolNotLike("%BCD").isEmpty());
+
+		this.tradeRepository.findBySymbolContains("BCD")
+				.forEach(x -> assertEquals("ABCD", x.getSymbol()));
+		assertTrue(this.tradeRepository.findBySymbolNotContains("BCD").isEmpty());
+
+		assertEquals(3, this.tradeRepository
+				.findBySymbolAndActionPojo(new SymbolAction("ABCD", "BUY")).size());
+		assertEquals(3,
+				this.tradeRepository.findBySymbolAndActionStruct(Struct.newBuilder()
+						.set("symbol").to("ABCD").set("action").to("BUY").build())
+						.size());
 	}
 
 	protected List<Trade> insertTrades(String traderId1, String action, int numTrades) {

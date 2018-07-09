@@ -32,6 +32,8 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
  *
  * @author Balint Pato
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersistentProperty> {
 

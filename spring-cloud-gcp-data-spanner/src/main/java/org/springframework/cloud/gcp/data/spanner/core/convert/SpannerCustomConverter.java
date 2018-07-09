@@ -28,6 +28,8 @@ import org.springframework.util.Assert;
 /**
  * @author Chengyuan Zhao
  * @author Balint Pato
+ *
+ * @since 1.1
  */
 public abstract class SpannerCustomConverter {
 

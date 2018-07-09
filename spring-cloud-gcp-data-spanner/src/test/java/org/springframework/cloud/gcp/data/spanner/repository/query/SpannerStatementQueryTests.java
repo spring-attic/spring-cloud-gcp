@@ -69,7 +69,7 @@ public class SpannerStatementQueryTests {
 	}
 
 	private PartTreeSpannerQuery<Trade> createQuery() {
-		return new PartTreeSpannerQuery<Trade>(Trade.class, this.queryMethod,
+		return new PartTreeSpannerQuery<>(Trade.class, this.queryMethod,
 				this.spannerTemplate, this.spannerMappingContext);
 	}
 
@@ -92,7 +92,7 @@ public class SpannerStatementQueryTests {
 							"SELECT DISTINCT * FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
 									+ "AND ticker=@tag1 ) OR "
 									+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
-									+ "trader_id=NULL AND trader_id LIKE %@tag7 AND price=TRUE AND price=FALSE AND "
+									+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "
 									+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 3;",
 							statement.getSql());
 

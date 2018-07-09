@@ -24,6 +24,8 @@ import org.springframework.data.convert.EntityReader;
 
 /**
  * @author Balint Pato
+ *
+ * @since 1.1
  */
 interface SpannerEntityReader extends EntityReader<Object, Struct> {
 

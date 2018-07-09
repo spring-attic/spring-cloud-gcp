@@ -64,14 +64,14 @@ public class SpannerDatabaseAdminTemplateTests {
 	public void getParentChildTablesMapTest() {
 		ReadContext readContext = mock(ReadContext.class);
 
-		Struct s1 = Struct.newBuilder().add("table_name", Value.string("grandpa"))
-				.add("parent_table_name", Value.string(null)).build();
-		Struct s2 = Struct.newBuilder().add("table_name", Value.string("parent_a"))
-				.add("parent_table_name", Value.string("grandpa")).build();
-		Struct s3 = Struct.newBuilder().add("table_name", Value.string("parent_b"))
-				.add("parent_table_name", Value.string("grandpa")).build();
-		Struct s4 = Struct.newBuilder().add("table_name", Value.string("child"))
-				.add("parent_table_name", Value.string("parent_a")).build();
+		Struct s1 = Struct.newBuilder().set("table_name").to(Value.string("grandpa"))
+				.set("parent_table_name").to(Value.string(null)).build();
+		Struct s2 = Struct.newBuilder().set("table_name").to(Value.string("parent_a"))
+				.set("parent_table_name").to(Value.string("grandpa")).build();
+		Struct s3 = Struct.newBuilder().set("table_name").to(Value.string("parent_b"))
+				.set("parent_table_name").to(Value.string("grandpa")).build();
+		Struct s4 = Struct.newBuilder().set("table_name").to(Value.string("child"))
+				.set("parent_table_name").to(Value.string("parent_a")).build();
 
 		MockResults mockResults = new MockResults();
 		mockResults.structs = Arrays.asList(s1, s2, s3, s4);

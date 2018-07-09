@@ -35,6 +35,7 @@ import org.springframework.messaging.MessageHandler;
 
 /**
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public class PubSubMessageChannelBinder
 		extends AbstractMessageChannelBinder<ExtendedConsumerProperties<PubSubConsumerProperties>,
@@ -58,7 +59,9 @@ public class PubSubMessageChannelBinder
 	protected MessageHandler createProducerMessageHandler(ProducerDestination destination,
 			ExtendedProducerProperties<PubSubProducerProperties> producerProperties,
 			MessageChannel errorChannel) {
-		return new PubSubMessageHandler(this.pubSubTemplate, destination.getName());
+		PubSubMessageHandler messageHandler = new PubSubMessageHandler(this.pubSubTemplate, destination.getName());
+		messageHandler.setBeanFactory(getBeanFactory());
+		return messageHandler;
 	}
 
 	@Override
@@ -66,8 +69,6 @@ public class PubSubMessageChannelBinder
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties) {
 		PubSubInboundChannelAdapter inboundAdapter =
 				new PubSubInboundChannelAdapter(this.pubSubTemplate, destination.getName());
-		// Lets Stream do the message payload conversion.
-		inboundAdapter.setMessageConverter(null);
 
 		return inboundAdapter;
 	}

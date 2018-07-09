@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
+import brave.propagation.Propagation;
 import brave.sampler.Sampler;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
@@ -31,6 +32,7 @@ import io.grpc.CallOptions;
 import io.grpc.auth.MoreCallCredentials;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
+import zipkin2.propagation.stackdriver.StackdriverTracePropagation;
 import zipkin2.reporter.Sender;
 import zipkin2.reporter.stackdriver.StackdriverEncoder;
 import zipkin2.reporter.stackdriver.StackdriverSender;
@@ -49,6 +51,7 @@ import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
+import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
 import org.springframework.cloud.sleuth.sampler.ProbabilityBasedSampler;
 import org.springframework.cloud.sleuth.sampler.SamplerProperties;
@@ -67,7 +70,7 @@ import org.springframework.context.annotation.Primary;
 		{ SamplerProperties.class, GcpTraceProperties.class, SleuthProperties.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.trace.enabled", matchIfMissing = true)
 @ConditionalOnClass(StackdriverSender.class)
-@AutoConfigureBefore({ ZipkinAutoConfiguration.class })
+@AutoConfigureBefore({ ZipkinAutoConfiguration.class, TraceAutoConfiguration.class})
 public class StackdriverTraceAutoConfiguration {
 
 	private GcpProjectIdProvider finalProjectIdProvider;
@@ -153,6 +156,12 @@ public class StackdriverTraceAutoConfiguration {
 	@ConditionalOnMissingBean
 	public BytesEncoder<Span> spanBytesEncoder() {
 		return StackdriverEncoder.V1;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public Propagation.Factory stackdriverPropagation() {
+		return StackdriverTracePropagation.FACTORY;
 	}
 
 	@Configuration

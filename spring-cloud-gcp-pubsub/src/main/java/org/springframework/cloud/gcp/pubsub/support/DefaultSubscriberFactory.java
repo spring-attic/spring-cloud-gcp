@@ -59,7 +59,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	private FlowControlSettings flowControlSettings;
 
-	private Duration maxAckDurationPeriod;
+	private Duration maxAckExtensionPeriod;
 
 	private Integer parallelPullCount;
 
@@ -128,8 +128,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	/**
 	 * Set the maximum period the ack timeout is extended by.
 	 */
-	public void setMaxAckDurationPeriod(Duration maxAckDurationPeriod) {
-		this.maxAckDurationPeriod = maxAckDurationPeriod;
+	public void setMaxAckExtensionPeriod(Duration maxAckExtensionPeriod) {
+		this.maxAckExtensionPeriod = maxAckExtensionPeriod;
 	}
 
 	/**
@@ -191,8 +191,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 			subscriberBuilder.setFlowControlSettings(this.flowControlSettings);
 		}
 
-		if (this.maxAckDurationPeriod != null) {
-			subscriberBuilder.setMaxAckExtensionPeriod(this.maxAckDurationPeriod);
+		if (this.maxAckExtensionPeriod != null) {
+			subscriberBuilder.setMaxAckExtensionPeriod(this.maxAckExtensionPeriod);
 		}
 
 		if (this.parallelPullCount != null) {

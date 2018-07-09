@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.core.ApiService;
 import com.google.api.core.SettableApiFuture;
 import com.google.cloud.pubsub.v1.MessageReceiver;
@@ -34,8 +35,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
 import org.springframework.cloud.gcp.pubsub.core.test.allowed.AllowedPayload;
-import org.springframework.cloud.gcp.pubsub.core.test.disallowed.DisallowedPayload;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessageConverter;
@@ -57,6 +58,7 @@ import static org.mockito.Mockito.when;
 /**
  * @author João André Martins
  * @author Chengyuan Zhao
+ * @author Doug Hoard
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubTemplateTests {
@@ -79,14 +81,21 @@ public class PubSubTemplateTests {
 
 	private SettableApiFuture<String> settableApiFuture;
 
-	private PubSubTemplate createTemplate(String[] trustedPackages) {
-		return new PubSubTemplate(this.mockPublisherFactory, this.mockSubscriberFactory)
-				.setMessageConverter(new JacksonPubSubMessageConverter(trustedPackages));
+	private PubSubTemplate createTemplate() {
+		PubSubTemplate pubSubTemplate = new PubSubTemplate(this.mockPublisherFactory, this.mockSubscriberFactory);
+		pubSubTemplate.setMessageConverter(new JacksonPubSubMessageConverter(new ObjectMapper()));
+		return pubSubTemplate;
+	}
+
+	private PubSubPublisherTemplate createPublisherTemplate() {
+		PubSubPublisherTemplate pubSubPublisherTemplate = new PubSubPublisherTemplate(this.mockPublisherFactory);
+		pubSubPublisherTemplate.setMessageConverter(new JacksonPubSubMessageConverter(new ObjectMapper()));
+		return pubSubPublisherTemplate;
 	}
 
 	@Before
 	public void setUp() {
-		this.pubSubTemplate = createTemplate(null);
+		this.pubSubTemplate = createTemplate();
 		when(this.mockPublisherFactory.createPublisher("testTopic"))
 				.thenReturn(this.mockPublisher);
 		this.settableApiFuture = SettableApiFuture.create();
@@ -132,8 +141,7 @@ public class PubSubTemplateTests {
 		AllowedPayload allowedPayload = new AllowedPayload();
 		allowedPayload.name = "allowed";
 		allowedPayload.value = 12345;
-		PubSubTemplate pubSubTemplate = spy(createTemplate(new String[] {
-				"org.springframework.cloud.gcp.pubsub.core.test.allowed" }));
+		PubSubPublisherTemplate pubSubPublisherTemplate = spy(createPublisherTemplate());
 
 		doAnswer(invocation -> {
 			PubsubMessage message = invocation.getArgument(1);
@@ -141,42 +149,11 @@ public class PubSubTemplateTests {
 					+ "\"org.springframework.cloud.gcp.pubsub.core.test.allowed.AllowedPayload\""
 					+ ",\"name\":\"allowed\",\"value\":12345}",
 					message.getData().toStringUtf8());
-			AllowedPayload deserialized = pubSubTemplate.getMessageConverter()
-					.fromMessage(message,
-					AllowedPayload.class);
-			assertEquals(allowedPayload.name, deserialized.name);
-			assertEquals(allowedPayload.value, deserialized.value);
 			return null;
-		}).when(pubSubTemplate).publish(eq("test"), any());
+		}).when(pubSubPublisherTemplate).publish(eq("test"), any());
 
-		pubSubTemplate.publish("test",
-				pubSubTemplate.getMessageConverter().toMessage(allowedPayload, null));
-		verify(pubSubTemplate, times(1)).publish(eq("test"), any());
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testPublish_DisallowedObject() throws IOException {
-		DisallowedPayload disallowedPayload = new DisallowedPayload();
-		disallowedPayload.name = "disallowed";
-		disallowedPayload.value = 12345;
-
-		// Intentionally not including the package for the disallowed payload
-		PubSubTemplate pubSubTemplate = spy(createTemplate(new String[] {
-				"org.springframework.cloud.gcp.pubsub.core.test.allowed" }));
-
-		doAnswer(invocation -> {
-			PubsubMessage message = invocation.getArgument(1);
-			DisallowedPayload deserialized = pubSubTemplate.getMessageConverter()
-					.fromMessage(message,
-					DisallowedPayload.class);
-			assertEquals(disallowedPayload.name, deserialized.name);
-			assertEquals(disallowedPayload.value, deserialized.value);
-			return null;
-		}).when(pubSubTemplate).publish(eq("test"), any());
-
-		pubSubTemplate.publish("test",
-				pubSubTemplate.getMessageConverter().toMessage(disallowedPayload, null));
-		verify(pubSubTemplate, times(1)).publish(eq("test"), any());
+		pubSubPublisherTemplate.publish("test", allowedPayload);
+		verify(pubSubPublisherTemplate, times(1)).publish(eq("test"), isA(PubsubMessage.class));
 	}
 
 	@Test
