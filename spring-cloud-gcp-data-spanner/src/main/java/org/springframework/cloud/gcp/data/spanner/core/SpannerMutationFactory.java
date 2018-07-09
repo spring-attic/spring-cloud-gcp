@@ -28,6 +28,7 @@ import com.google.cloud.spanner.Mutation;
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ *
  * @since 1.1
  */
 public interface SpannerMutationFactory {

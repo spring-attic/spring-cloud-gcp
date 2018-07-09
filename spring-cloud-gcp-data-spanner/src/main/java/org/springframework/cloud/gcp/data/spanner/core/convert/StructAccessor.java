@@ -39,6 +39,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
  *
  * @author Balint Pato
  * @author Chengyuan Zhao
+ *
  * @since 1.1
  */
 class StructAccessor {

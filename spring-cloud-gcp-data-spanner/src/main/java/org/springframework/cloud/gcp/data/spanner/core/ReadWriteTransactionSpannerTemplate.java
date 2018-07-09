@@ -34,6 +34,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
  * This template is not intended for the user to directly instantiate.
  *
  * @author Chengyuan Zhao
+ *
  * @since 1.1
  */
 class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {

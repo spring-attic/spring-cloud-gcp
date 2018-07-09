@@ -29,6 +29,7 @@ import com.google.cloud.spanner.ResultSet;
  * @author Ray Tsang
  * @author Chengyuan Zhao
  * @author Balint Pato
+ *
  * @since 1.1
  */
 public interface SpannerEntityProcessor extends SpannerEntityReader, SpannerEntityWriter {

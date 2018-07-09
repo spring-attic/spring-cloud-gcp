@@ -30,6 +30,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
+ *
  * @since 1.1
  */
 public interface PubSubPublisherOperations {

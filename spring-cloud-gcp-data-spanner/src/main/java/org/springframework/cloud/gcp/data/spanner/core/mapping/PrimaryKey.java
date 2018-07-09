@@ -29,6 +29,7 @@ import org.springframework.core.annotation.AliasFor;
  * columns and their order.
  *
  * @author Chengyuan Zhao
+ *
  * @since 1.1
  */
 @Documented
