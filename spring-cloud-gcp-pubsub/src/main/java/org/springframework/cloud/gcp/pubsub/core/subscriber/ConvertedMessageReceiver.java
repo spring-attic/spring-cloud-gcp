@@ -22,6 +22,7 @@ import com.google.cloud.pubsub.v1.AckReplyConsumer;
 
 /**
  * @author Mike Eltsufin
+ *
  * @since 1.1
  */
 public interface ConvertedMessageReceiver<T> {

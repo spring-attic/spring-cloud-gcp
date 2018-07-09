@@ -139,9 +139,9 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public <T> Subscriber subscribe(String subscription, ConvertedMessageReceiver<T> messageReceiver,
+	public <T> Subscriber subscribeAndConvert(String subscription, ConvertedMessageReceiver<T> messageReceiver,
 			Class<T> payloadType) {
-		return this.pubSubSubscriberTemplate.subscribe(subscription, messageReceiver, payloadType);
+		return this.pubSubSubscriberTemplate.subscribeAndConvert(subscription, messageReceiver, payloadType);
 	}
 
 	@Override

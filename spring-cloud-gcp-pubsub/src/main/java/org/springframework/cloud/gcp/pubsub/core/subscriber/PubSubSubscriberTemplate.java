@@ -16,7 +16,9 @@
 
 package org.springframework.cloud.gcp.pubsub.core.subscriber;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
@@ -28,6 +30,7 @@ import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
@@ -93,13 +96,18 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	@Override
-	public <T> Subscriber subscribe(String subscription, ConvertedMessageReceiver<T> messageReceiver,
+	public <T> Subscriber subscribeAndConvert(String subscription, ConvertedMessageReceiver<T> messageReceiver,
 			Class<T> payloadType) {
 		return this.subscribe(subscription,
 				(PubsubMessage pubsubMessage, AckReplyConsumer ackReplyConsumer) -> {
+
+					Map<String, String> headers = new HashMap<>(pubsubMessage.getAttributesMap());
+					headers.put(GcpPubSubHeaders.PUBLISH_TIME, pubsubMessage.getPublishTime().toString());
+					headers.put(GcpPubSubHeaders.MESSAGE_ID, pubsubMessage.getMessageId());
+
 					messageReceiver.receiveMessage(
 							(T) this.pubSubMessageConverter.fromPubSubMessage(pubsubMessage, payloadType),
-							pubsubMessage.getAttributesMap(),
+							headers,
 							ackReplyConsumer);
 				});
 	}
