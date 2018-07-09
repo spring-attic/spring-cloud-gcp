@@ -137,9 +137,9 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public Subscriber subscribe(String subscription, MessageReceiver messageHandler) {
+	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
 		Subscriber subscriber =
-				this.subscriberFactory.createSubscriber(subscription, messageHandler);
+				this.subscriberFactory.createSubscriber(subscription, messageReceiver);
 		subscriber.startAsync();
 		return subscriber;
 	}
