@@ -24,6 +24,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public interface SpannerRepository<T, ID> extends PagingAndSortingRepository<T, ID> {
 

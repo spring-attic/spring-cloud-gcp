@@ -27,6 +27,8 @@ import org.springframework.data.convert.EntityWriter;
 /**
  * @author Chengyuan Zhao
  * @author Balint Pato
+ *
+ * @since 1.1
  */
 public interface SpannerEntityWriter extends EntityWriter<Object, Mutation.WriteBuilder> {
 

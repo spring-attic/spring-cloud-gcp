@@ -35,6 +35,8 @@ import org.springframework.util.Assert;
 
 /**
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 

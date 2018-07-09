@@ -35,6 +35,8 @@ import org.springframework.data.repository.config.XmlRepositoryConfigurationSour
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class SpannerRepositoryConfigurationExtension
 		extends RepositoryConfigurationExtensionSupport {

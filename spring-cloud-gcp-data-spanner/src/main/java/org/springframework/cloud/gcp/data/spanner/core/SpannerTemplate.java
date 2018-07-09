@@ -55,6 +55,8 @@ import org.springframework.util.Assert;
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class SpannerTemplate implements SpannerOperations {
 

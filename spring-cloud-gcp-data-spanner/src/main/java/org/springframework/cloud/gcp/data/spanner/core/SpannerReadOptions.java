@@ -27,7 +27,10 @@ import org.springframework.util.Assert;
 
 /**
  * Encapsulates Spanner read options.
+ *
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class SpannerReadOptions {
 

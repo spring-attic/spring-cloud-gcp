@@ -28,6 +28,8 @@ import org.springframework.data.repository.core.support.RepositoryFactorySupport
 /**
  * @author Ray Tsang
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class SpannerRepositoryFactoryBean<T extends Repository<S, ID>, S, ID> extends
 		RepositoryFactoryBeanSupport<T, S, ID> implements

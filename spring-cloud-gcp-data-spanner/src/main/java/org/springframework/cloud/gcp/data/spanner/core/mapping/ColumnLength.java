@@ -27,6 +27,8 @@ import java.lang.annotation.Target;
  * tells the maximum length for columns where it is relevant (STRING, BYTES).
  *
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 @Documented
 @Target(ElementType.FIELD)

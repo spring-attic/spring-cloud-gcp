@@ -42,6 +42,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
+ *
  * @since 1.1
  */
 public class PubSubPublisherTemplate implements PubSubPublisherOperations {

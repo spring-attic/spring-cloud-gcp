@@ -45,6 +45,8 @@ import org.springframework.web.client.RestTemplate;
  *
  * @author Jisha Abubaker
  * @author Mike Eltsufin
+ *
+ * @since 1.1
  */
 public class GoogleConfigPropertySourceLocator implements PropertySourceLocator {
 
