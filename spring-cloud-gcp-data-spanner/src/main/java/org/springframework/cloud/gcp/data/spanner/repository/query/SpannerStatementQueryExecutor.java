@@ -103,10 +103,9 @@ public class SpannerStatementQueryExecutor {
 			// @formatter:on
 			if (toMethod == null) {
 				// try to convert the param object into a Struct
-				String errorMessage = "Param: " + param.toString()
-						+ " is not a supported type: " + param.getClass();
 				if (paramStructConvertFunc == null) {
-					throw new IllegalArgumentException(errorMessage);
+					throw new IllegalArgumentException("Param: " + param.toString()
+							+ " is not a supported type: " + param.getClass());
 				}
 				try {
 					// @formatter:off
@@ -117,7 +116,8 @@ public class SpannerStatementQueryExecutor {
 					param = paramStructConvertFunc.apply(param);
 				}
 				catch (SpannerDataException e) {
-					throw new IllegalArgumentException(errorMessage, e);
+					throw new IllegalArgumentException("Param: " + param.toString()
+							+ " is not a supported type: " + param.getClass(), e);
 				}
 			}
 			builder = (Statement.Builder) toMethod.apply(builder.bind(tags.get(i)),
