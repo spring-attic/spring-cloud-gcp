@@ -27,14 +27,8 @@
 			<version>2.5</version>
 		</dependency>
 		<dependency>
-			<groupId>com.example</groupId>
-			<artifactId>spring-cloud-gcp-integration-pubsub-sample-sender</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.example</groupId>
-			<artifactId>spring-cloud-gcp-integration-pubsub-sample-integration-test</artifactId>
-			<version>${project.version}</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 	</dependencies>
 	<build>
@@ -61,6 +55,25 @@
 								<source>../spring-cloud-gcp-integration-pubsub-sample-sender/src/main/java</source>
 								<source>../spring-cloud-gcp-integration-pubsub-sample-receiver/src/main/java</source>
 							</sources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>add-resource</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>add-resource</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<directory>../spring-cloud-gcp-integration-pubsub-sample-sender/src/main/resources</directory>
+									<targetPath>resources</targetPath>
+								</resource>
+								<resource>
+									<directory>../spring-cloud-gcp-integration-pubsub-sample-receiver/src/main/resources</directory>
+									<targetPath>resources</targetPath>
+								</resource>
+							</resources>
 						</configuration>
 					</execution>
 				</executions>
