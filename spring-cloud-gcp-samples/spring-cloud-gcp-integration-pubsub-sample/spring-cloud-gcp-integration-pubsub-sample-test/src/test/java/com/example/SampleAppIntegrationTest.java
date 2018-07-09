@@ -18,6 +18,7 @@ package com.example;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.UUID;
 
 import org.apache.commons.io.output.TeeOutputStream;
 import org.junit.AfterClass;
@@ -81,13 +82,14 @@ public class SampleAppIntegrationTest {
 		receiver.run();
 
 		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-		map.add("message", "test message 1");
+		String message = "test message " + UUID.randomUUID();
+		map.add("message", message);
 
 		this.restTemplate.postForObject("http://localhost:8082/postMessage", map, String.class);
 
 		boolean messageReceived = false;
 		for (int i = 0; i < 100; i++) {
-			if (baos.toString().contains("Message arrived! Payload: test message 1")) {
+			if (baos.toString().contains("Message arrived! Payload: " + message)) {
 				messageReceived = true;
 				break;
 			}

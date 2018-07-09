@@ -17,6 +17,7 @@
 package com.example;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -64,7 +65,9 @@ public class SenderIntegrationTest {
 	@Test
 	public void testSample() throws Exception {
 		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-		map.add("message", "test message 123");
+		String message = "test message " + UUID.randomUUID();
+
+		map.add("message", message);
 
 		this.restTemplate.postForObject("/postMessage", map, String.class);
 
@@ -76,7 +79,7 @@ public class SenderIntegrationTest {
 			messages.forEach(AcknowledgeablePubsubMessage::ack);
 
 			if (messages.stream()
-					.anyMatch(m -> m.getMessage().getData().toStringUtf8().equals("\"test message 123\""))) {
+					.anyMatch(m -> m.getMessage().getData().toStringUtf8().equals("\"" + message + "\""))) {
 				messageReceived = true;
 				break;
 			}
