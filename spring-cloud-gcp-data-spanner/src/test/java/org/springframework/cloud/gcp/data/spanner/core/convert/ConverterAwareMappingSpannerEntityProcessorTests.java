@@ -73,7 +73,8 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 
 	@Before
 	public void setUp() {
-		this.spannerEntityProcessor = new ConverterAwareMappingSpannerEntityProcessor(new SpannerMappingContext());
+		this.spannerEntityProcessor = new ConverterAwareMappingSpannerEntityProcessor(
+				new SpannerMappingContext());
 	}
 
 	@Test
@@ -96,8 +97,8 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		verifyCanConvert(converter, JavaType.class, SpannerType.class);
 	}
 
-	private void verifyCanConvert(ConverterAwareMappingSpannerEntityProcessor converter, Class javaType,
-			Class spannerType) {
+	private void verifyCanConvert(ConverterAwareMappingSpannerEntityProcessor converter,
+			Class javaType, Class spannerType) {
 		SpannerWriteConverter writeConverter = converter.getWriteConverter();
 		SpannerReadConverter readConverter = converter.getReadConverter();
 
@@ -129,8 +130,11 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		timestamps.add(ts3);
 
 		Struct struct1 = Struct.newBuilder().set("id").to(Value.string("key1"))
+				.set("id2").to(Value.string("key2")).set("id3").to(Value.string("key3"))
+				.set("id4").to(Value.string("key4"))
 				.set("custom_col").to(Value.string("string1")).set("booleanField")
 				.to(Value.bool(true)).set("intField").to(Value.int64(123L))
+				.set("intField2").to(Value.int64(333L))
 				.set("longField").to(Value.int64(3L)).set("doubleField")
 				.to(Value.float64(3.33)).set("doubleArray")
 				.to(Value.float64Array(new double[] { 3.33, 3.33, 3.33 }))
@@ -146,9 +150,12 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 				.to(Value.bytes(ByteArray.copyFrom("string1"))).set("momentsInTime")
 				.to(Value.timestampArray(timestamps)).build();
 
-		Struct struct2 = Struct.newBuilder().set("id").to(Value.string("key2"))
+		Struct struct2 = Struct.newBuilder().set("id").to(Value.string("key12"))
+				.set("id2").to(Value.string("key22")).set("id3").to(Value.string("key32"))
+				.set("id4").to(Value.string("key42"))
 				.set("custom_col").to(Value.string("string2")).set("booleanField")
 				.to(Value.bool(true)).set("intField").to(Value.int64(222L))
+				.set("intField2").to(Value.int64(555L))
 				.set("longField").to(Value.int64(5L)).set("doubleField")
 				.to(Value.float64(5.55)).set("doubleArray")
 				.to(Value.float64Array(new double[] { 5.55, 5.55 })).set("doubleList")
@@ -241,8 +248,8 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		when(results.getCurrentRowAsStruct())
 				.thenAnswer(invocation -> mockResults.getCurrent());
 
-		List<TestEntity> entities = this.spannerEntityProcessor.mapToList(results, TestEntity.class,
-				"id", "custom_col");
+		List<TestEntity> entities = this.spannerEntityProcessor.mapToList(results,
+				TestEntity.class, "id", "custom_col");
 
 		verify(results, times(1)).close();
 
