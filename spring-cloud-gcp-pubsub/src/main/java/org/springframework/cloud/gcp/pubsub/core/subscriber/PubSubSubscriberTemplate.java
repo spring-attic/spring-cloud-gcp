@@ -93,18 +93,15 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	@Override
-	public Subscriber subscribe(String subscription, ConvertedMessageReceiver messageReceiver, Class payloadType) {
-		Subscriber subscriber =
-				this.subscriberFactory.createSubscriber(subscription,
-						(PubsubMessage pubsubMessage, AckReplyConsumer ackReplyConsumer) -> {
-							messageReceiver.receiveMessage(
-									this.pubSubMessageConverter.fromPubSubMessage(pubsubMessage, payloadType),
-									pubsubMessage.getAttributesMap(),
-									ackReplyConsumer);
-						}
-					);
-		subscriber.startAsync();
-		return subscriber;
+	public <T> Subscriber subscribe(String subscription, ConvertedMessageReceiver<T> messageReceiver,
+			Class<T> payloadType) {
+		return this.subscribe(subscription,
+				(PubsubMessage pubsubMessage, AckReplyConsumer ackReplyConsumer) -> {
+					messageReceiver.receiveMessage(
+							(T) this.pubSubMessageConverter.fromPubSubMessage(pubsubMessage, payloadType),
+							pubsubMessage.getAttributesMap(),
+							ackReplyConsumer);
+				});
 	}
 
 	/**
