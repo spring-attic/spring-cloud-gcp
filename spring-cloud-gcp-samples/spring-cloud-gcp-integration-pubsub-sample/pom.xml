@@ -16,5 +16,6 @@
 	<modules>
 		<module>spring-cloud-gcp-integration-pubsub-sample-sender</module>
 		<module>spring-cloud-gcp-integration-pubsub-sample-receiver</module>
+		<module>spring-cloud-gcp-integration-pubsub-sample-test</module>
 	</modules>
 </project>
