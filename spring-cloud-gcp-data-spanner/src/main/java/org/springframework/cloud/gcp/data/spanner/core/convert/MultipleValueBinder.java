@@ -16,28 +16,19 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
-import java.util.Set;
-
-import com.google.cloud.spanner.Key;
-
-import org.springframework.data.convert.EntityWriter;
+import com.google.cloud.spanner.ValueBinder;
 
 /**
- * @author Chengyuan Zhao
- * @author Balint Pato
+ * An interface that allows multiple values to be bound for Cloud Spanner.
  *
- * @since 1.1
+ * @author Chengyuan Zhao
  */
-public interface SpannerEntityWriter extends EntityWriter<Object, MultipleValueBinder> {
+public interface MultipleValueBinder {
 
 	/**
-	 * Writes an object's properties to the sink.
-	 * @param source the object to write
-	 * @param sink the sink to which to write
-	 * @param includeColumns the properties/columns to write. If null, then all columns are
-	 * written.
+	 * Returns a {@link ValueBinder} for a given field name to bind.
+	 * @param fieldName the name of the field to bind.
+	 * @return a value-binder object that then accepts the value to bind.
 	 */
-	void write(Object source, MultipleValueBinder sink, Set<String> includeColumns);
-
-	Key writeToKey(Object key);
+	ValueBinder set(String fieldName);
 }

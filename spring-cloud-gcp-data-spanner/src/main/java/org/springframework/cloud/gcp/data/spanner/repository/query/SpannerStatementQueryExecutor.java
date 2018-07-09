@@ -23,6 +23,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.ValueBinder;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
@@ -68,13 +69,16 @@ public class SpannerStatementQueryExecutor {
 		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
 				spannerMappingContext, type);
 		return spannerOperations.query(type, buildStatementFromSqlWithArgs(
-				sqlAndTags.getFirst(), sqlAndTags.getSecond(), params));
+				sqlAndTags.getFirst(), sqlAndTags.getSecond(), null, params));
 	}
 
 	/**
 	 * Creates a Spanner statement.
 	 * @param sql the SQL string with tags.
 	 * @param tags the tags that appear in the SQL string.
+	 * @param paramStructConvertFunc a function to use to convert params to {@link Struct}
+	 * objects if they cannot be directly mapped to Cloud Spanner supported param types.
+	 * If null then this last-attempt conversion is skipped.
 	 * @param params the parameters to substitute the tags. The ordering must be the same
 	 * as the tags.
 	 * @return an SQL statement ready to use with Spanner.
@@ -83,7 +87,7 @@ public class SpannerStatementQueryExecutor {
 	 */
 	@SuppressWarnings("unchecked")
 	public static Statement buildStatementFromSqlWithArgs(String sql, List<String> tags,
-			Object[] params) {
+			Function<Object, Struct> paramStructConvertFunc, Object[] params) {
 		if (tags == null && params == null) {
 			return Statement.of(sql);
 		}
@@ -97,11 +101,26 @@ public class SpannerStatementQueryExecutor {
 			// @formatter:off
 			BiFunction<ValueBinder, Object, ?> toMethod = (BiFunction<ValueBinder, Object, ?>)
 					ConverterAwareMappingSpannerEntityWriter.singleItemType2ToMethodMap
-					.get(param.getClass());
+					.get(Struct.class.isAssignableFrom(param.getClass()) ? Struct.class : param.getClass());
 			// @formatter:on
 			if (toMethod == null) {
-				throw new IllegalArgumentException("Param: " + param.toString()
-						+ " is not a supported type: " + param.getClass());
+				// try to convert the param object into a Struct
+				if (paramStructConvertFunc == null) {
+					throw new IllegalArgumentException("Param: " + param.toString()
+							+ " is not a supported type: " + param.getClass());
+				}
+				try {
+					// @formatter:off
+					toMethod = (BiFunction<ValueBinder, Object, ?>)
+							ConverterAwareMappingSpannerEntityWriter.singleItemType2ToMethodMap
+							.get(Struct.class);
+					// @formatter:on
+					param = paramStructConvertFunc.apply(param);
+				}
+				catch (SpannerDataException e) {
+					throw new IllegalArgumentException("Param: " + param.toString()
+							+ " is not a supported type: " + param.getClass(), e);
+				}
 			}
 			builder = (Statement.Builder) toMethod.apply(builder.bind(tags.get(i)),
 					param);

@@ -38,6 +38,8 @@ import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Struct.Builder;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
@@ -141,7 +143,11 @@ public class SpannerTemplate implements SpannerOperations {
 		}
 		return this.spannerEntityProcessor.mapToList(
 				executeQuery(SpannerStatementQueryExecutor
-						.buildStatementFromSqlWithArgs(finalSql, tags, params), options),
+						.buildStatementFromSqlWithArgs(finalSql, tags, param -> {
+							Builder builder = Struct.newBuilder();
+							this.spannerEntityProcessor.write(param, builder::set);
+							return builder.build();
+						}, params), options),
 				entityClass, Optional.empty(), allowPartialRead);
 	}
 

@@ -119,7 +119,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 				.getPersistentEntity(object.getClass());
 		Mutation.WriteBuilder writeBuilder = writeBuilder(op,
 				persistentEntity.tableName());
-		this.spannerEntityProcessor.write(object, writeBuilder, includeColumns);
+		this.spannerEntityProcessor.write(object, writeBuilder::set, includeColumns);
 		return writeBuilder.build();
 	}
 
