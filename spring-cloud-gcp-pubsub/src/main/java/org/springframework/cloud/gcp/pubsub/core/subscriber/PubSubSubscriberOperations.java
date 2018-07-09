@@ -47,6 +47,17 @@ public interface PubSubSubscriberOperations {
 	Subscriber subscribe(String subscription, MessageReceiver messageReceiver);
 
 	/**
+	 * Add a callback method to an existing subscription.
+	 * <p>The created {@link Subscriber} is returned so it can be stopped.
+	 * @param subscription the name of an existing subscription
+	 * @param messageReceiver the callback method triggered when new messages arrive
+	 * @param payloadType the type to which the payload of the Pub/Sub message should be converted
+	 * @return subscriber listening to new messages
+	 * @since 1.1
+	 */
+	<T> Subscriber subscribe(String subscription, ConvertedMessageReceiver<T> messageReceiver, Class<T> payloadType);
+
+	/**
 	 * Pull and auto-acknowledge a number of messages from a Google Cloud Pub/Sub subscription.
 	 * @param subscription the subscription name
 	 * @param maxMessages the maximum number of pulled messages

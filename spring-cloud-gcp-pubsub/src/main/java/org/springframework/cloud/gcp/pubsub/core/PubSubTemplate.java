@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
+import org.springframework.cloud.gcp.pubsub.core.subscriber.ConvertedMessageReceiver;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
@@ -107,6 +108,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		Assert.notNull(messageConverter, "A valid Pub/Sub message converter is required.");
 
 		this.pubSubPublisherTemplate.setMessageConverter(messageConverter);
+		this.pubSubSubscriberTemplate.setMessageConverter(messageConverter);
 
 		return this;
 	}
@@ -134,6 +136,12 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	@Override
 	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
 		return this.pubSubSubscriberTemplate.subscribe(subscription, messageReceiver);
+	}
+
+	@Override
+	public <T> Subscriber subscribe(String subscription, ConvertedMessageReceiver<T> messageReceiver,
+			Class<T> payloadType) {
+		return this.pubSubSubscriberTemplate.subscribe(subscription, messageReceiver, payloadType);
 	}
 
 	@Override

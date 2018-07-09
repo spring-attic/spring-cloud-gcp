@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.pubsub.core.subscriber;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
@@ -29,6 +30,8 @@ import com.google.pubsub.v1.PullResponse;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
+import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
+import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
 import org.springframework.util.Assert;
 
 /**
@@ -53,6 +56,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	private final PubSubAcknowledger acknowledger;
 
+	private PubSubMessageConverter pubSubMessageConverter = new SimplePubSubMessageConverter();
+
 	/**
 	 * Default {@link PubSubSubscriberTemplate} constructor
 	 * @param subscriberFactory the {@link Subscriber} factory
@@ -66,10 +71,38 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		this.acknowledger = this.subscriberFactory.createAcknowledger();
 	}
 
+	public PubSubMessageConverter getMessageConverter() {
+		return this.pubSubMessageConverter;
+	}
+
+	public PubSubSubscriberTemplate setMessageConverter(PubSubMessageConverter pubSubMessageConverter) {
+		Assert.notNull(pubSubMessageConverter, "The pubSubMessageConverter can't be null.");
+
+		this.pubSubMessageConverter = pubSubMessageConverter;
+
+		return this;
+	}
+
+
 	@Override
 	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
 		Subscriber subscriber =
 				this.subscriberFactory.createSubscriber(subscription, messageReceiver);
+		subscriber.startAsync();
+		return subscriber;
+	}
+
+	@Override
+	public Subscriber subscribe(String subscription, ConvertedMessageReceiver messageReceiver, Class payloadType) {
+		Subscriber subscriber =
+				this.subscriberFactory.createSubscriber(subscription,
+						(PubsubMessage pubsubMessage, AckReplyConsumer ackReplyConsumer) -> {
+							messageReceiver.receiveMessage(
+									this.pubSubMessageConverter.fromPubSubMessage(pubsubMessage, payloadType),
+									pubsubMessage.getAttributesMap(),
+									ackReplyConsumer);
+						}
+					);
 		subscriber.startAsync();
 		return subscriber;
 	}
