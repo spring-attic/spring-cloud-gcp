@@ -64,50 +64,6 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		this.subscriptionName = subscriptionName;
 	}
 
-	@Override
-	protected void doStart() {
-		super.doStart();
-
-		this.subscriber =
-				this.pubSubSubscriberOperations.subscribe(this.subscriptionName, this::receiveMessage);
-	}
-
-	private void receiveMessage(PubsubMessage pubsubMessage, AckReplyConsumer consumer) {
-		Map<String, Object> messageHeaders =
-				this.headerMapper.toHeaders(pubsubMessage.getAttributesMap());
-
-		if (this.ackMode == AckMode.MANUAL) {
-			// Send the consumer downstream so user decides on when to ack/nack.
-			messageHeaders.put(GcpPubSubHeaders.ACKNOWLEDGEMENT, consumer);
-		}
-
-		try {
-			sendMessage(MessageBuilder.withPayload(
-					this.pubSubMessageConverter.fromPubSubMessage(pubsubMessage, this.payloadType))
-					.copyHeaders(messageHeaders)
-					.build());
-		}
-		catch (RuntimeException re) {
-			if (this.ackMode == AckMode.AUTO) {
-				consumer.nack();
-			}
-			throw new PubSubException("Sending Spring message failed.", re);
-		}
-
-		if (this.ackMode == AckMode.AUTO) {
-			consumer.ack();
-		}
-	}
-
-	@Override
-	protected void doStop() {
-		if (this.subscriber != null) {
-			this.subscriber.stopAsync();
-		}
-
-		super.doStop();
-	}
-
 	public AckMode getAckMode() {
 		return this.ackMode;
 	}
@@ -163,4 +119,49 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		Assert.notNull(pubSubMessageConverter, "The pubSubMessageConverter can't be null.");
 		this.pubSubMessageConverter = pubSubMessageConverter;
 	}
+
+	@Override
+	protected void doStart() {
+		super.doStart();
+
+		this.subscriber =
+				this.pubSubSubscriberOperations.subscribe(this.subscriptionName, this::receiveMessage);
+	}
+
+	@Override
+	protected void doStop() {
+		if (this.subscriber != null) {
+			this.subscriber.stopAsync();
+		}
+
+		super.doStop();
+	}
+
+	private void receiveMessage(PubsubMessage pubsubMessage, AckReplyConsumer consumer) {
+		Map<String, Object> messageHeaders =
+				this.headerMapper.toHeaders(pubsubMessage.getAttributesMap());
+
+		if (this.ackMode == AckMode.MANUAL) {
+			// Send the consumer downstream so user decides on when to ack/nack.
+			messageHeaders.put(GcpPubSubHeaders.ACKNOWLEDGEMENT, consumer);
+		}
+
+		try {
+			sendMessage(MessageBuilder.withPayload(
+					this.pubSubMessageConverter.fromPubSubMessage(pubsubMessage, this.payloadType))
+					.copyHeaders(messageHeaders)
+					.build());
+		}
+		catch (RuntimeException re) {
+			if (this.ackMode == AckMode.AUTO) {
+				consumer.nack();
+			}
+			throw new PubSubException("Sending Spring message failed.", re);
+		}
+
+		if (this.ackMode == AckMode.AUTO) {
+			consumer.ack();
+		}
+	}
+
 }
