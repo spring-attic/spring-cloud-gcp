@@ -80,7 +80,7 @@ public class DatastorePersistentEntityImpl<T>
 		if (!property.isMapped()) {
 			return;
 		}
-		if(property.isAncestors()){
+		if (property.isAncestors()) {
 			this.ancestorProperty = property;
 		}
 		super.addPersistentProperty(property);

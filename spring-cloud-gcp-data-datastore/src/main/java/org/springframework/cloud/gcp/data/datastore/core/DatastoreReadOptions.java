@@ -16,9 +16,11 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
-import com.google.cloud.datastore.ReadOption;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.cloud.datastore.ReadOption;
+
 import org.springframework.util.Assert;
 
 /**
@@ -30,30 +32,30 @@ import org.springframework.util.Assert;
  */
 public class DatastoreReadOptions {
 
-  private final List<ReadOption> readOptions = new ArrayList<>();
+	private final List<ReadOption> readOptions = new ArrayList<>();
 
-  /**
-   * Determine if there are read options.
-   * @return true if there are read options. false otherwise.
-   */
-  public boolean hasReadOptions(){
-    return !this.readOptions.isEmpty();
-  }
+	/**
+	 * Determine if there are read options.
+	 * @return true if there are read options. false otherwise.
+	 */
+	public boolean hasReadOptions() {
+		return !this.readOptions.isEmpty();
+	}
 
-  /**
-   * Get the read options.
-   * @return an array of the read options.
-   */
-  public ReadOption[] getReadOptions(){
-    return this.readOptions.toArray(new ReadOption[0]);
-  }
+	/**
+	 * Get the read options.
+	 * @return an array of the read options.
+	 */
+	public ReadOption[] getReadOptions() {
+		return this.readOptions.toArray(new ReadOption[0]);
+	}
 
-  /**
-   * Add a single read option.
-   * @param readOption the read option to add.
-   */
-  public void addReadOption(ReadOption readOption){
-    Assert.notNull(readOption, "Cannot add a null ReadOption.");
-    this.readOptions.add(readOption);
-  }
+	/**
+	 * Add a single read option.
+	 * @param readOption the read option to add.
+	 */
+	public void addReadOption(ReadOption readOption) {
+		Assert.notNull(readOption, "Cannot add a null ReadOption.");
+		this.readOptions.add(readOption);
+	}
 }

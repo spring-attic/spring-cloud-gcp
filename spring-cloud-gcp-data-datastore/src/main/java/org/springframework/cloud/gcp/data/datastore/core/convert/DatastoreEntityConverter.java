@@ -18,9 +18,8 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import com.google.cloud.datastore.Entity;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
-import org.springframework.data.convert.EntityConverter;
+import org.springframework.data.convert.EntityReader;
+import org.springframework.data.convert.EntityWriter;
 
 /**
  * An interface for converting objects to Datastore Entities and vice versa.
@@ -30,6 +29,6 @@ import org.springframework.data.convert.EntityConverter;
  * @since 1.1
  */
 public interface DatastoreEntityConverter extends
-		EntityConverter<DatastorePersistentEntity<?>, DatastorePersistentProperty, Object, Entity> {
+		EntityReader<Object, Entity>, EntityWriter<Object, Entity.Builder> {
 
 }
