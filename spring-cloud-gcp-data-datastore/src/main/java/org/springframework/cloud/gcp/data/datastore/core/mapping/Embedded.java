@@ -27,6 +27,8 @@ import java.lang.annotation.Target;
  * entity.
  *
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 @Documented
 @Target(ElementType.FIELD)

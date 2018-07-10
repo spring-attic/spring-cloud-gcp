@@ -27,6 +27,8 @@ import java.lang.annotation.Target;
  * reference to a separate entity stored in Datastore.
  *
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 @Documented
 @Target(ElementType.FIELD)

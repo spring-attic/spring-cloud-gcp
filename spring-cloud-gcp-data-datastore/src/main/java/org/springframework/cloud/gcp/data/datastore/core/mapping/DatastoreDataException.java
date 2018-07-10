@@ -20,6 +20,8 @@ import org.springframework.dao.DataAccessException;
 
 /**
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class DatastoreDataException extends DataAccessException {
 

@@ -27,6 +27,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  * @param <ID> The type of the ID property in the domain object
  *
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public interface DatastoreRepository<T, ID> extends PagingAndSortingRepository<T, ID> {
 

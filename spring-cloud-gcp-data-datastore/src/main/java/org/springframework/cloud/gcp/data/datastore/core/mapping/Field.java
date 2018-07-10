@@ -27,6 +27,8 @@ import java.lang.annotation.Target;
  * from the property's name.
  *
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 @Documented
 @Target(ElementType.FIELD)

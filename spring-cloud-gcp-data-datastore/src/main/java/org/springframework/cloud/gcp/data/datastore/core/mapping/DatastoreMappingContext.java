@@ -33,6 +33,8 @@ import org.springframework.data.util.TypeInformation;
  * properties.
  *
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class DatastoreMappingContext extends
 		AbstractMappingContext<DatastorePersistentEntity<?>, DatastorePersistentProperty>

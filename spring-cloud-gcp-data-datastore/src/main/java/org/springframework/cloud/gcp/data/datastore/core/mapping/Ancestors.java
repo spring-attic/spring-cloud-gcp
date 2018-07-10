@@ -26,6 +26,8 @@ import java.lang.annotation.Target;
  * Annotation for Datastore property that holds the ancestor information for an entity.
  *
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 @Documented
 @Target(ElementType.FIELD)

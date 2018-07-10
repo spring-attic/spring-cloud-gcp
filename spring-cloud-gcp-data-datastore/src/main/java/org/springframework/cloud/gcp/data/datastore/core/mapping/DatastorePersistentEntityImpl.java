@@ -35,6 +35,8 @@ import org.springframework.util.StringUtils;
  * Metadata class for entities stored in Datastore.
  *
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class DatastorePersistentEntityImpl<T>
 		extends BasicPersistentEntity<T, DatastorePersistentProperty>

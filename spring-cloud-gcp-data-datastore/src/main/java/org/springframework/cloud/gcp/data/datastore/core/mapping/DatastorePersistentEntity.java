@@ -23,6 +23,8 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
  * Persistent entity for Google Cloud Datastore
  *
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public interface DatastorePersistentEntity<T> extends
 		MutablePersistentEntity<T, DatastorePersistentProperty>, ApplicationContextAware {
