@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>spring-cloud-gcp</artifactId>
+    <groupId>org.springframework.cloud</groupId>
+    <version>1.1.0.BUILD-SNAPSHOT</version>
+  </parent>
+  <groupId>org.springframework.cloud</groupId>
+  <artifactId>spring-cloud-gcp-data-datastore</artifactId>
+  <name>Spring Cloud GCP Datastore Module</name>
+  <description>Spring Cloud GCP Datastore Module</description>
+  <properties>
+    <main.basedir>${basedir}/../..</main.basedir>
+    <it.spanner>false</it.spanner>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-datastore</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-commons</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-gcp-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-tx</artifactId>
+    </dependency>
+  </dependencies>
+</project>
