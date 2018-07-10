@@ -46,6 +46,8 @@ public class Trade {
 
 	private String action;
 
+	private String symbol;
+
 	@Embedded
 	@PrimaryKey
 	TradeDetail tradeDetail;
@@ -65,7 +67,7 @@ public class Trade {
 
 		t.tradeDetail.id = tradeId;
 		t.age = 8;
-		t.tradeDetail.symbol = "ABCD";
+		t.symbol = "ABCD";
 		t.action = "BUY";
 		t.traderId = traderId;
 		t.tradeTime = Instant.ofEpochSecond(333);
@@ -93,7 +95,7 @@ public class Trade {
 				&& Objects.equals(this.action, trade.action)
 				&& Objects.equals(this.tradeDetail.price, trade.tradeDetail.price)
 				&& Objects.equals(this.tradeDetail.shares, trade.tradeDetail.shares)
-				&& Objects.equals(this.tradeDetail.symbol, trade.tradeDetail.symbol)
+				&& Objects.equals(this.symbol, trade.symbol)
 				&& Objects.equals(this.tradeTime, trade.tradeTime)
 				&& Objects.equals(this.traderId, trade.traderId)
 				// java Date contains the time of day, but Spanner Date is only specific
@@ -105,7 +107,7 @@ public class Trade {
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.tradeDetail.id, this.age, this.action,
-				this.tradeDetail.price, this.tradeDetail.shares, this.tradeDetail.symbol,
+				this.tradeDetail.price, this.tradeDetail.shares, this.symbol,
 				this.tradeTime, DateUtil.truncateTime(this.tradeDate),
 				this.traderId, this.executionTimes);
 	}
@@ -159,11 +161,11 @@ public class Trade {
 	}
 
 	public String getSymbol() {
-		return this.tradeDetail.symbol;
+		return this.symbol;
 	}
 
 	public void setSymbol(String symbol) {
-		this.tradeDetail.symbol = symbol;
+		this.symbol = symbol;
 	}
 
 	public String getTraderId() {
@@ -179,7 +181,7 @@ public class Trade {
 		return "Trade{" + "id='" + this.tradeDetail.id + '\'' + ", action='" + this.action
 				+ '\'' + ", age=" + this.age + ", price=" + this.tradeDetail.price
 				+ ", shares=" + this.tradeDetail.shares + ", symbol='"
-				+ this.tradeDetail.symbol + ", tradeTime="
+				+ this.symbol + ", tradeTime="
 				+ this.tradeTime + ", tradeDate='" + DateUtil.truncateTime(this.tradeDate)
 				+ '\'' + ", traderId='" + this.traderId + '\'' + '}';
 	}

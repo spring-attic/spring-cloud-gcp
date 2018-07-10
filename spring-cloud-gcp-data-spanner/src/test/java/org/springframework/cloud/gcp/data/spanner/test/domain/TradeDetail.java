@@ -31,6 +31,4 @@ public class TradeDetail {
 	Double price;
 
 	Double shares;
-
-	String symbol;
 }
