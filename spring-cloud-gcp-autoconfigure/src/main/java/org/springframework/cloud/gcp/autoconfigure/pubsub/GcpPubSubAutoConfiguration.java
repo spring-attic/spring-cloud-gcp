@@ -38,6 +38,7 @@ import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
+
 import org.threeten.bp.Duration;
 
 import org.springframework.beans.factory.ObjectProvider;
@@ -55,6 +56,8 @@ import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
+import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
@@ -122,12 +125,24 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PubSubTemplate pubSubTemplate(PublisherFactory publisherFactory,
-			SubscriberFactory subscriberFactory,
+	public PubSubPublisherTemplate pubSubPublisherTemplate(PublisherFactory publisherFactory,
 			ObjectProvider<PubSubMessageConverter> pubSubMessageConverter) {
-		PubSubTemplate pubSubTemplate = new PubSubTemplate(publisherFactory, subscriberFactory);
-		pubSubMessageConverter.ifUnique(pubSubTemplate::setMessageConverter);
-		return pubSubTemplate;
+		PubSubPublisherTemplate pubSubPublisherTemplate = new PubSubPublisherTemplate(publisherFactory);
+		pubSubMessageConverter.ifUnique(pubSubPublisherTemplate::setMessageConverter);
+		return pubSubPublisherTemplate;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public PubSubSubscriberTemplate pubSubSubscriberTemplate(SubscriberFactory subscriberFactory) {
+		return new PubSubSubscriberTemplate(subscriberFactory);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public PubSubTemplate pubSubTemplate(PubSubPublisherTemplate pubSubPublisherTemplate,
+			PubSubSubscriberTemplate pubSubSubscriberTemplate) {
+		return new PubSubTemplate(pubSubPublisherTemplate, pubSubSubscriberTemplate);
 	}
 
 	@Bean

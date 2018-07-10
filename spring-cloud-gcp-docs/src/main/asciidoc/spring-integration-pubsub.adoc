@@ -46,7 +46,7 @@ and then sends it to the bound output channel.
 Google Pub/Sub treats message payloads as byte arrays.
 So, by default, the inbound channel adapter will construct the Spring `Message` with `byte[]` as the payload.
 However, you can change the desired payload type by setting the `payloadType` property of the `PubSubInboundChannelAdapter`.
-The `PubSubInboundChannelAdapter` delegates to conversion to the desired payload type to the `PubSubMessageConverter` configured in the `PubSubTemplate`.
+The `PubSubInboundChannelAdapter` delegates the conversion to the desired payload type to the configured `PubSubMessageConverter`.
 
 
 To use the inbound channel adapter, a `PubSubInboundChannelAdapter` must be provided and configured

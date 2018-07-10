@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherOperations;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.expression.EvaluationContext;
@@ -48,7 +48,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private static final long DEFAULT_PUBLISH_TIMEOUT = 10000;
 
-	private final PubSubOperations pubSubTemplate;
+	private final PubSubPublisherOperations pubSubPublisherOperations;
 
 	private Expression topicExpression;
 
@@ -62,41 +62,11 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
-	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
-		Assert.notNull(pubSubTemplate, "Pub/Sub template cannot be null.");
+	public PubSubMessageHandler(PubSubPublisherOperations pubSubPublisherOperations, String topic) {
+		Assert.notNull(pubSubPublisherOperations, "Pub/Sub publisher template cannot be null.");
 		Assert.notNull(topic, "Pub/Sub topic cannot be null.");
-		this.pubSubTemplate = pubSubTemplate;
+		this.pubSubPublisherOperations = pubSubPublisherOperations;
 		this.topicExpression = new LiteralExpression(topic);
-	}
-
-	@Override
-	protected void handleMessageInternal(Message<?> message) throws Exception {
-		Object payload = message.getPayload();
-		String topic = message.getHeaders().containsKey(GcpPubSubHeaders.TOPIC)
-				? message.getHeaders().get(GcpPubSubHeaders.TOPIC, String.class)
-				: this.topicExpression.getValue(this.evaluationContext, message, String.class);
-
-		ListenableFuture<String> pubsubFuture;
-
-		Map<String, String> headers = new HashMap<>();
-		this.headerMapper.fromHeaders(message.getHeaders(), headers);
-
-		pubsubFuture = this.pubSubTemplate.publish(topic, payload, headers);
-
-		if (this.publishCallback != null) {
-			pubsubFuture.addCallback(this.publishCallback);
-		}
-
-		if (this.sync) {
-			Long timeout = this.publishTimeoutExpression.getValue(
-					this.evaluationContext, message, Long.class);
-			if (timeout == null || timeout < 0) {
-				pubsubFuture.get();
-			}
-			else {
-				pubsubFuture.get(timeout, TimeUnit.MILLISECONDS);
-			}
-		}
 	}
 
 	public boolean isSync() {
@@ -195,6 +165,36 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {
 		Assert.notNull(headerMapper, "The header mapper can't be null.");
 		this.headerMapper = headerMapper;
+	}
+
+	@Override
+	protected void handleMessageInternal(Message<?> message) throws Exception {
+		Object payload = message.getPayload();
+		String topic = message.getHeaders().containsKey(GcpPubSubHeaders.TOPIC)
+				? message.getHeaders().get(GcpPubSubHeaders.TOPIC, String.class)
+				: this.topicExpression.getValue(this.evaluationContext, message, String.class);
+
+		ListenableFuture<String> pubsubFuture;
+
+		Map<String, String> headers = new HashMap<>();
+		this.headerMapper.fromHeaders(message.getHeaders(), headers);
+
+		pubsubFuture = this.pubSubPublisherOperations.publish(topic, payload, headers);
+
+		if (this.publishCallback != null) {
+			pubsubFuture.addCallback(this.publishCallback);
+		}
+
+		if (this.sync) {
+			Long timeout = this.publishTimeoutExpression.getValue(
+					this.evaluationContext, message, Long.class);
+			if (timeout == null || timeout < 0) {
+				pubsubFuture.get();
+			}
+			else {
+				pubsubFuture.get(timeout, TimeUnit.MILLISECONDS);
+			}
+		}
 	}
 
 	@Override

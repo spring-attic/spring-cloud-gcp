@@ -23,10 +23,12 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
+import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
+import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.integration.support.MessageBuilder;
@@ -43,7 +45,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private final String subscriptionName;
 
-	private final PubSubTemplate pubSubTemplate;
+	private final PubSubSubscriberOperations pubSubSubscriberOperations;
 
 	private Subscriber subscriber;
 
@@ -53,53 +55,13 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private Class payloadType = byte[].class;
 
-	public PubSubInboundChannelAdapter(PubSubTemplate pubSubTemplate, String subscriptionName) {
-		this.pubSubTemplate = pubSubTemplate;
+	private PubSubMessageConverter pubSubMessageConverter = new SimplePubSubMessageConverter();
+
+	public PubSubInboundChannelAdapter(PubSubSubscriberOperations pubSubSubscriberOperations, String subscriptionName) {
+		Assert.notNull(pubSubSubscriberOperations, "Pub/Sub subscriber template cannot be null.");
+		Assert.notNull(subscriptionName, "Pub/Sub subscription name cannot be null.");
+		this.pubSubSubscriberOperations = pubSubSubscriberOperations;
 		this.subscriptionName = subscriptionName;
-	}
-
-	@Override
-	protected void doStart() {
-		super.doStart();
-
-		this.subscriber =
-				this.pubSubTemplate.subscribe(this.subscriptionName, this::receiveMessage);
-	}
-
-	private void receiveMessage(PubsubMessage pubsubMessage, AckReplyConsumer consumer) {
-		Map<String, Object> messageHeaders =
-				this.headerMapper.toHeaders(pubsubMessage.getAttributesMap());
-
-		if (this.ackMode == AckMode.MANUAL) {
-			// Send the consumer downstream so user decides on when to ack/nack.
-			messageHeaders.put(GcpPubSubHeaders.ACKNOWLEDGEMENT, consumer);
-		}
-
-		try {
-			sendMessage(MessageBuilder.withPayload(
-					this.pubSubTemplate.getMessageConverter().fromPubSubMessage(pubsubMessage, this.payloadType))
-					.copyHeaders(messageHeaders)
-					.build());
-		}
-		catch (RuntimeException re) {
-			if (this.ackMode == AckMode.AUTO) {
-				consumer.nack();
-			}
-			throw new PubSubException("Sending Spring message failed.", re);
-		}
-
-		if (this.ackMode == AckMode.AUTO) {
-			consumer.ack();
-		}
-	}
-
-	@Override
-	protected void doStop() {
-		if (this.subscriber != null) {
-			this.subscriber.stopAsync();
-		}
-
-		super.doStop();
 	}
 
 	public AckMode getAckMode() {
@@ -117,8 +79,8 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	/**
 	 * Set the desired type of the payload of the {@link org.springframework.messaging.Message} constructed by
-	 * converting the incoming Pub/Sub message. The channel adapter will use the
-	 * {@link PubSubTemplate#getMessageConverter()} to do the conversion to the desired type.
+	 * converting the incoming Pub/Sub message. The channel adapter will use the configured
+	 * {@link PubSubMessageConverter()} to do the conversion to the desired type.
 	 * The default payload type is {@code byte[].class}
 	 * @param payloadType the type of the payload of the {@link org.springframework.messaging.Message} produce by the
 	 * 				adapter. Cannot be set to null.
@@ -137,4 +99,69 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		Assert.notNull(headerMapper, "The header mapper can't be null.");
 		this.headerMapper = headerMapper;
 	}
+
+	/**
+	 * Returns the {@link PubSubMessageConverter} used to convert the {@code byte[]} Pub/Sub
+	 * payload to an object of the configured payload type.
+	 * @since 1.1
+	 */
+	public PubSubMessageConverter getMessageConverter() {
+		return this.pubSubMessageConverter;
+	}
+
+	/**
+	 * Sets the {@link PubSubMessageConverter} used to convert the {@code byte[]} Pub/Sub
+	 * payload to an object of the configured payload type.
+	 * @since 1.1
+	 */
+	public void setMessageConverter(
+			PubSubMessageConverter pubSubMessageConverter) {
+		Assert.notNull(pubSubMessageConverter, "The pubSubMessageConverter can't be null.");
+		this.pubSubMessageConverter = pubSubMessageConverter;
+	}
+
+	@Override
+	protected void doStart() {
+		super.doStart();
+
+		this.subscriber =
+				this.pubSubSubscriberOperations.subscribe(this.subscriptionName, this::receiveMessage);
+	}
+
+	@Override
+	protected void doStop() {
+		if (this.subscriber != null) {
+			this.subscriber.stopAsync();
+		}
+
+		super.doStop();
+	}
+
+	private void receiveMessage(PubsubMessage pubsubMessage, AckReplyConsumer consumer) {
+		Map<String, Object> messageHeaders =
+				this.headerMapper.toHeaders(pubsubMessage.getAttributesMap());
+
+		if (this.ackMode == AckMode.MANUAL) {
+			// Send the consumer downstream so user decides on when to ack/nack.
+			messageHeaders.put(GcpPubSubHeaders.ACKNOWLEDGEMENT, consumer);
+		}
+
+		try {
+			sendMessage(MessageBuilder.withPayload(
+					this.pubSubMessageConverter.fromPubSubMessage(pubsubMessage, this.payloadType))
+					.copyHeaders(messageHeaders)
+					.build());
+		}
+		catch (RuntimeException re) {
+			if (this.ackMode == AckMode.AUTO) {
+				consumer.nack();
+			}
+			throw new PubSubException("Sending Spring message failed.", re);
+		}
+
+		if (this.ackMode == AckMode.AUTO) {
+			consumer.ack();
+		}
+	}
+
 }
