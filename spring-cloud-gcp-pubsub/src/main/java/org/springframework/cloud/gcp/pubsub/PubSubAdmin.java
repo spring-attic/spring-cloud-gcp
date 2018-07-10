@@ -200,14 +200,7 @@ public class PubSubAdmin {
 
 		int finalAckDeadline = this.defaultAckDeadline;
 		if (ackDeadline != null) {
-			Assert.isTrue(ackDeadline >= MIN_ACK_DEADLINE_SECONDS
-							&& ackDeadline <= MAX_ACK_DEADLINE_SECONDS,
-					"The acknowledgement deadline must be between "
-							+ MIN_ACK_DEADLINE_SECONDS
-							+ " and "
-							+ MAX_ACK_DEADLINE_SECONDS
-							+ " seconds.");
-
+			validateAckDeadline(ackDeadline);
 			finalAckDeadline = ackDeadline;
 		}
 
@@ -282,14 +275,19 @@ public class PubSubAdmin {
 	 * @param defaultAckDeadline default acknowledgement deadline value in seconds, must be between 10 and 600 seconds.
 	 */
 	public void setDefaultAckDeadline(int defaultAckDeadline) {
-		Assert.isTrue(defaultAckDeadline >= MIN_ACK_DEADLINE_SECONDS
-						&& defaultAckDeadline <= MAX_ACK_DEADLINE_SECONDS,
+		validateAckDeadline(defaultAckDeadline);
+
+		this.defaultAckDeadline = defaultAckDeadline;
+	}
+
+	private void validateAckDeadline(int ackDeadline) {
+		Assert.isTrue(ackDeadline >= MIN_ACK_DEADLINE_SECONDS
+						&& ackDeadline <= MAX_ACK_DEADLINE_SECONDS,
 				"The acknowledgement deadline must be between "
 						+ MIN_ACK_DEADLINE_SECONDS
 						+ " and "
 						+ MAX_ACK_DEADLINE_SECONDS
 						+ " seconds.");
-
-		this.defaultAckDeadline = defaultAckDeadline;
 	}
+
 }
