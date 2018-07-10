@@ -40,6 +40,7 @@ import org.springframework.util.Assert;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Doug Hoard
  */
 public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
@@ -58,10 +59,28 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	private PubSubMessageConverter pubSubMessageConverter = new SimplePubSubMessageConverter();
 
 	public PubSubInboundChannelAdapter(PubSubSubscriberOperations pubSubSubscriberOperations, String subscriptionName) {
+		this(pubSubSubscriberOperations, subscriptionName, AckMode.AUTO);
+	}
+
+	/**
+	 * Constructor that accepts a
+	 * {@link org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations},
+	 * a subscription name, and the {@link org.springframework.cloud.gcp.pubsub.integration.AckMode}
+	 * @param pubSubSubscriberOperations
+	 * @param subscriptionName
+	 * @param ackMode
+	 *
+	 * @since 1.1
+	 */
+	public PubSubInboundChannelAdapter(PubSubSubscriberOperations pubSubSubscriberOperations, String subscriptionName,
+									AckMode ackMode) {
 		Assert.notNull(pubSubSubscriberOperations, "Pub/Sub subscriber template cannot be null.");
 		Assert.notNull(subscriptionName, "Pub/Sub subscription name cannot be null.");
+		Assert.notNull(ackMode, "Acknowledgement mode cannot be null.");
+
 		this.pubSubSubscriberOperations = pubSubSubscriberOperations;
 		this.subscriptionName = subscriptionName;
+		this.ackMode = ackMode;
 	}
 
 	public AckMode getAckMode() {
