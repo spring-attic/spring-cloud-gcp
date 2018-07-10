@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.hasItem;
 /**
  * @author Chengyuan Zhao
  */
-public class SpannerStructReadMethodCoverageTest {
+public class SpannerStructReadMethodCoverageTests {
 
 	private static final Set<String> DISREGARDED_METHOD_NAMES = ImmutableSet
 			.<String>builder()

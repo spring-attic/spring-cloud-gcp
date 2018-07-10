@@ -54,7 +54,7 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
-public class ConverterAwareMappingSpannerEntityReaderTest {
+public class ConverterAwareMappingSpannerEntityReaderTests {
 
 	private SpannerEntityReader spannerEntityReader;
 

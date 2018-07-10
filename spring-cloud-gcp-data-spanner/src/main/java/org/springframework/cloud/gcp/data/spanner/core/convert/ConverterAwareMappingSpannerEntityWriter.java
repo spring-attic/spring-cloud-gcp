@@ -147,11 +147,8 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 							write(embeddedObject, sink, includeColumns);
 						}
 					}
-					else {
-						if (!writeAllColumns && !includeColumns
+					else if (writeAllColumns || includeColumns
 								.contains(spannerPersistentProperty.getColumnName())) {
-							return;
-						}
 						writeProperty(sink, accessor, spannerPersistentProperty);
 					}
 				});
