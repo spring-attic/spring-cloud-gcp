@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherOperations;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.expression.EvaluationContext;
@@ -48,7 +49,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private static final long DEFAULT_PUBLISH_TIMEOUT = 10000;
 
-	private final PubSubOperations pubSubPublisherOperations;
+	private final PubSubPublisherOperations pubSubPublisherOperations;
 
 	private Expression topicExpression;
 
