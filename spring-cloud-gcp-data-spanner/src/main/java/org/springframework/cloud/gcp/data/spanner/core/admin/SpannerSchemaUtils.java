@@ -58,10 +58,10 @@ public class SpannerSchemaUtils {
 		this.spannerTypeMapper = new SpannerTypeMapper();
 	}
 
-	private String getTypeDDLString(Type.Code type, boolean isArray, OptionalLong dataLength) {
+	private String getTypeDdlString(Type.Code type, boolean isArray, OptionalLong dataLength) {
 		Assert.notNull(type, "A valid Spanner column type is required.");
 		if (isArray) {
-			return "ARRAY<" + getTypeDDLString(type, false, dataLength) + ">";
+			return "ARRAY<" + getTypeDdlString(type, false, dataLength) + ">";
 		}
 		return type.toString()
 				+ (type == Type.Code.STRING || type == Type.Code.BYTES
@@ -69,7 +69,7 @@ public class SpannerSchemaUtils {
 						: "");
 	}
 
-	String getColumnDDLString(
+	String getColumnDdlString(
 			SpannerPersistentProperty spannerPersistentProperty, SpannerEntityProcessor spannerEntityProcessor) {
 		Class columnType = spannerPersistentProperty.getType();
 		String ddlString;
@@ -93,7 +93,7 @@ public class SpannerSchemaUtils {
 								+ "property type:"
 								+ innerType);
 			}
-			ddlString = getTypeDDLString(spannerSupportedInnerType, true,
+			ddlString = getTypeDdlString(spannerSupportedInnerType, true,
 					spannerPersistentProperty.getMaxColumnLength());
 		}
 		else {
@@ -107,7 +107,7 @@ public class SpannerSchemaUtils {
 						"Could not find suitable Spanner column type for property " + "type:" + columnType);
 			}
 
-			ddlString = getTypeDDLString(spannerColumnType, spannerJavaType.isArray(),
+			ddlString = getTypeDdlString(spannerColumnType, spannerJavaType.isArray(),
 					spannerPersistentProperty.getMaxColumnLength());
 		}
 		return spannerPersistentProperty.getColumnName() + " " + ddlString;
@@ -144,7 +144,7 @@ public class SpannerSchemaUtils {
 
 		StringJoiner columnStrings = new StringJoiner(" , ");
 
-		addColumnDDLStrings(spannerPersistentEntity, columnStrings);
+		addColumnDdlStrings(spannerPersistentEntity, columnStrings);
 
 		stringBuilder.append(columnStrings.toString()).append(" ) PRIMARY KEY ( ");
 
@@ -171,19 +171,19 @@ public class SpannerSchemaUtils {
 		}
 	}
 
-	private <T> void addColumnDDLStrings(
+	private <T> void addColumnDdlStrings(
 			SpannerPersistentEntity<T> spannerPersistentEntity,
 			StringJoiner stringJoiner) {
 		spannerPersistentEntity.doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
 					if (spannerPersistentProperty.isEmbedded()) {
-						addColumnDDLStrings(
+						addColumnDdlStrings(
 								this.mappingContext.getPersistentEntity(
 										spannerPersistentProperty.getType()),
 								stringJoiner);
 					}
 					else {
-						stringJoiner.add(getColumnDDLString(spannerPersistentProperty,
+						stringJoiner.add(getColumnDdlString(spannerPersistentProperty,
 								this.spannerEntityProcessor));
 					}
 				});
@@ -194,7 +194,7 @@ public class SpannerSchemaUtils {
 	 * @param entityClass the entity type.
 	 * @return the DDL string.
 	 */
-	public String getDropTableDDLString(Class entityClass) {
+	public String getDropTableDdlString(Class entityClass) {
 		return "DROP TABLE "
 				+ this.mappingContext.getPersistentEntity(entityClass).tableName();
 	}

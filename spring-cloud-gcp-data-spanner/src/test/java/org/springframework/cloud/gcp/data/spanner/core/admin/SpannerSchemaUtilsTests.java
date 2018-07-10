@@ -60,7 +60,7 @@ public class SpannerSchemaUtilsTests {
 	@Test
 	public void getDropDDLTest() {
 		assertEquals("DROP TABLE custom_test_table",
-				this.spannerSchemaUtils.getDropTableDDLString(TestEntity.class));
+				this.spannerSchemaUtils.getDropTableDdlString(TestEntity.class));
 	}
 
 	@Test
@@ -140,7 +140,7 @@ public class SpannerSchemaUtilsTests {
 		when(spannerPersistentProperty.getColumnName()).thenReturn(name);
 		when(spannerPersistentProperty.getMaxColumnLength()).thenReturn(length);
 		assertEquals(expectedDDL,
-				this.spannerSchemaUtils.getColumnDDLString(spannerPersistentProperty,
+				this.spannerSchemaUtils.getColumnDdlString(spannerPersistentProperty,
 						this.spannerEntityProcessor));
 	}
 
