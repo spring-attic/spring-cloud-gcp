@@ -31,6 +31,8 @@ import org.springframework.data.repository.config.DefaultRepositoryBaseClass;
 /**
  * @author Chengyuan Zhao
  * @author Ray Tsang
+ *
+ * @since 1.1
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

@@ -42,6 +42,7 @@ import org.springframework.util.Assert;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
+ *
  * @since 1.1
  */
 public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
@@ -66,9 +67,9 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	@Override
-	public Subscriber subscribe(String subscription, MessageReceiver messageHandler) {
+	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
 		Subscriber subscriber =
-				this.subscriberFactory.createSubscriber(subscription, messageHandler);
+				this.subscriberFactory.createSubscriber(subscription, messageReceiver);
 		subscriber.startAsync();
 		return subscriber;
 	}

@@ -26,6 +26,8 @@ import org.springframework.data.repository.query.parser.PartTree;
 /**
  * @author Balint Pato
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
 

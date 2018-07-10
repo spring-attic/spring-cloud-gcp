@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.test.domain;
 import java.util.List;
 
 import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.Struct;
 
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.cloud.gcp.data.spanner.repository.query.Query;
@@ -50,4 +51,12 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 	List<Trade> findBySymbolNotLike(String symbolFragment);
 
 	List<Trade> findBySymbolNotContains(String symbolFragment);
+
+	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
+			+ " WHERE STRUCT(symbol,action) = @pairTag ORDER BY LOWER(action) DESC")
+	List<Trade> findBySymbolAndActionStruct(@Param("pairTag") Struct symbolAction);
+
+	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
+			+ " WHERE STRUCT(symbol,action) = @pairTag ORDER BY LOWER(action) DESC")
+	List<Trade> findBySymbolAndActionPojo(@Param("pairTag") SymbolAction symbolAction);
 }

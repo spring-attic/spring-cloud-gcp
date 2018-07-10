@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.google.cloud.spanner.Key;
-import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
 import com.google.common.annotations.VisibleForTesting;
@@ -41,6 +40,8 @@ import org.springframework.util.Assert;
  *
  * @author Chengyuan Zhao
  * @author Balint Pato
+ *
+ * @since 1.1
  */
 public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntityProcessor {
 
@@ -176,15 +177,16 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 	/**
 	 * Writes each of the source properties to the sink.
 	 * @param source entity to be written
-	 * @param sink the stateful {@link WriteBuilder} as a target for writing.
+	 * @param sink the stateful multiple-value-binder as a target for writing.
 	 */
 	@Override
-	public void write(Object source, WriteBuilder sink) {
+	public void write(Object source, MultipleValueBinder sink) {
 		this.entityWriter.write(source, sink);
 	}
 
 	@Override
-	public void write(Object source, WriteBuilder sink, Set<String> includeColumns) {
+	public void write(Object source, MultipleValueBinder sink,
+			Set<String> includeColumns) {
 		this.entityWriter.write(source, sink, includeColumns);
 	}
 

@@ -31,6 +31,8 @@ import org.springframework.lang.Nullable;
 /**
  * @author Chengyuan Zhao
  * @author Balint Pato
+ *
+ * @since 1.1
  */
 public class SpannerConverters {
 
