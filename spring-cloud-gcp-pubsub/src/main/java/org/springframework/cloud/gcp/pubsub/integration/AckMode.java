@@ -24,14 +24,17 @@ package org.springframework.cloud.gcp.pubsub.integration;
 public enum AckMode {
 
 	/**
-	 * The framework does not ack/nack and the
-	 * {@link com.google.cloud.pubsub.v1.AckReplyConsumer} is sent back to the user.
+	 * The framework does not ack / nack the message. The
+	 * {@link com.google.cloud.pubsub.v1.AckReplyConsumer} is sent back to the user
+	 * for acking or nacking the {@link com.google.pubsub.v1.PubsubMessage}.
 	 */
 	MANUAL,
 
 	/**
-	 * The framework acks {@link com.google.pubsub.v1.PubsubMessage} after they are sent to the
-	 * channel.
+	 * The framework acks the {@link com.google.pubsub.v1.PubsubMessage} after it is
+	 * sent to the channel and processed successfully.
+	 * <p>The framework nacks the {@link com.google.pubsub.v1.PubsubMessage} when an exception
+	 * occurs while processing the message.
 	 */
 	AUTO
 }
