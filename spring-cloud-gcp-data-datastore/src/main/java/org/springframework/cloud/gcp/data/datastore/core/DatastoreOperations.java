@@ -110,5 +110,5 @@ public interface DatastoreOperations {
 	 * @param entityClass the class type to count.
 	 * @return the number of entities.
 	 */
-	long count(Class entityClass);
+	<T> long count(Class<T> entityClass);
 }

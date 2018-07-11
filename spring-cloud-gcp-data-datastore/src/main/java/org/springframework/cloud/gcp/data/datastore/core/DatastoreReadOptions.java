@@ -54,8 +54,9 @@ public class DatastoreReadOptions {
 	 * Add a single read option.
 	 * @param readOption the read option to add.
 	 */
-	public void addReadOption(ReadOption readOption) {
+	public DatastoreReadOptions addReadOption(ReadOption readOption) {
 		Assert.notNull(readOption, "Cannot add a null ReadOption.");
 		this.readOptions.add(readOption);
+		return this;
 	}
 }

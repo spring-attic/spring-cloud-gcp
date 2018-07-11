@@ -26,6 +26,7 @@ import com.google.cloud.datastore.Entity.Builder;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreDataUtils;
@@ -128,10 +129,11 @@ public class DatastoreTemplate implements DatastoreOperations {
 		this.datastore.delete(getKey(entity));
 	}
 
-	private Key getKey(Object entity) {
+	@VisibleForTesting
+	Key getKey(Object entity) {
 		return DatastoreDataUtils.getKey(entity, this.datastore.newKeyFactory(),
 				this.datastoreMappingContext.getPersistentEntity(entity.getClass()),
-				x -> this.datastore.allocateId(x));
+				this.datastore::allocateId);
 	}
 
 	@Override
@@ -151,7 +153,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public long count(Class entityClass) {
+	public <T> long count(Class<T> entityClass) {
 		return readAll(entityClass, null).size();
 	}
 }
