@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.pubsub.support;
 
 import java.util.Collections;
 
+import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.pubsub.v1.PubsubMessage;
 
 /**
@@ -29,7 +30,7 @@ import com.google.pubsub.v1.PubsubMessage;
  *
  * @author João André Martins
  */
-public class AcknowledgeablePubsubMessage {
+public class AcknowledgeablePubsubMessage implements AckReplyConsumer {
 
 	private PubsubMessage message;
 

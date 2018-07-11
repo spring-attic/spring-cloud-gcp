@@ -65,9 +65,9 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 	}
 
 	@Override
-	public Object fromPubSubMessage(PubsubMessage message, Class<?> payloadType) {
+	public <T> T fromPubSubMessage(PubsubMessage message, Class<T> payloadType) {
 		try {
-			return this.objectMapper.readerFor(payloadType).readValue(message.getData().toByteArray());
+			return (T) this.objectMapper.readerFor(payloadType).readValue(message.getData().toByteArray());
 		}
 		catch (IOException e) {
 			throw new PubSubMessageConversionException("JSON deserialization of an object of type " +

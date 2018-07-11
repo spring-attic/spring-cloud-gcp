@@ -42,5 +42,5 @@ public interface PubSubMessageConverter {
 	 * @param payloadType the desired type of the object
 	 * @return the object converted from the message's payload
 	 */
-	Object fromPubSubMessage(PubsubMessage message, Class<?> payloadType);
+	<T> T fromPubSubMessage(PubsubMessage message, Class<T> payloadType);
 }

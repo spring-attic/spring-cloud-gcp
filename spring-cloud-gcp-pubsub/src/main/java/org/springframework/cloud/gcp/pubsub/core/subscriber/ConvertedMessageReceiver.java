@@ -26,5 +26,5 @@ import com.google.cloud.pubsub.v1.AckReplyConsumer;
  * @since 1.1
  */
 public interface ConvertedMessageReceiver<T> {
-	void receiveMessage(T payload, Map<String, String> headers, AckReplyConsumer ackReplyConsumer);
+	void receiveMessage(T payload, Map<String, Object> headers, AckReplyConsumer ackReplyConsumer);
 }

@@ -35,6 +35,7 @@ import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -148,6 +149,12 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	public List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
 			Boolean returnImmediately) {
 		return this.pubSubSubscriberTemplate.pull(subscription, maxMessages, returnImmediately);
+	}
+
+	@Override
+	public <T> List<Message<T>> pullAndConvert(String subscription, Integer maxMessages,
+			Boolean returnImmediately, Class<T> payloadType) {
+		return this.pubSubSubscriberTemplate.pullAndConvert(subscription, maxMessages, returnImmediately, payloadType);
 	}
 
 	@Override

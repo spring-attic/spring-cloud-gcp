@@ -75,7 +75,7 @@ public class SimplePubSubMessageConverter implements PubSubMessageConverter {
 	}
 
 	@Override
-	public Object fromPubSubMessage(PubsubMessage message, Class<?> payloadType) {
+	public <T> T fromPubSubMessage(PubsubMessage message, Class<T> payloadType) {
 		Object result;
 		byte[] payload = message.getData().toByteArray();
 
@@ -96,6 +96,6 @@ public class SimplePubSubMessageConverter implements PubSubMessageConverter {
 					payloadType.getName() + ".");
 		}
 
-		return result;
+		return (T) result;
 	}
 }
