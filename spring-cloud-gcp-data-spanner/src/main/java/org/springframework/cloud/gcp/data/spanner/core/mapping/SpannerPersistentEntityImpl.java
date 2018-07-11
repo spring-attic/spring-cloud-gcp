@@ -29,6 +29,7 @@ import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.Expression;
@@ -38,6 +39,7 @@ import org.springframework.expression.common.LiteralExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
@@ -68,16 +70,33 @@ public class SpannerPersistentEntityImpl<T>
 
 	private final Map<Integer, SpannerPersistentProperty> primaryKeyParts = new HashMap<>();
 
+	private final SpannerMappingContext spannerMappingContext;
+
 	private StandardEvaluationContext context;
 
-	private SpannerPersistentProperty idProperty;
+	private SpannerCompositeKeyProperty idProperty;
 
 	/**
 	 * Creates a {@link SpannerPersistentEntityImpl}
 	 * @param information type information about the underlying entity type.
 	 */
 	public SpannerPersistentEntityImpl(TypeInformation<T> information) {
+		this(information, new SpannerMappingContext());
+	}
+
+	/**
+	 * Creates a {@link SpannerPersistentEntityImpl}
+	 * @param information type information about the underlying entity type.
+	 * @param spannerMappingContext a mapping context that can be used to create
+	 * persistent entities from properties of this entity
+	 */
+	public SpannerPersistentEntityImpl(TypeInformation<T> information,
+			SpannerMappingContext spannerMappingContext) {
 		super(information);
+
+		Assert.notNull(spannerMappingContext,
+				"A valid SpannerMappingContext is required.");
+		this.spannerMappingContext = spannerMappingContext;
 
 		Class<?> rawType = information.getType();
 		String fallback = StringUtils.uncapitalize(rawType.getSimpleName());
@@ -111,7 +130,14 @@ public class SpannerPersistentEntityImpl<T>
 			return;
 		}
 		addPersistentPropertyToPersistentEntity(property);
-		this.columnNames.add(property.getColumnName());
+
+		if ((property.isEmbedded())) {
+			this.columnNames.addAll(this.spannerMappingContext
+					.getPersistentEntity(property.getType()).columns());
+		}
+		else {
+			this.columnNames.add(property.getColumnName());
+		}
 
 		if (property.getPrimaryKeyOrder() != null
 				&& property.getPrimaryKeyOrder().isPresent()) {
@@ -132,7 +158,7 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
-	public SpannerPersistentProperty getIdProperty() {
+	public SpannerCompositeKeyProperty getIdProperty() {
 		return this.idProperty;
 	}
 
@@ -144,6 +170,32 @@ public class SpannerPersistentEntityImpl<T>
 	@Override
 	public void verify() {
 		super.verify();
+		verifyPrimaryKeysConsecutive();
+		verifyEmbeddedColumnNameOverlap(new HashSet<>(), this);
+	}
+
+	private void verifyEmbeddedColumnNameOverlap(Set<String> seen,
+			SpannerPersistentEntity spannerPersistentEntity) {
+		spannerPersistentEntity.doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					if (spannerPersistentProperty.isEmbedded()) {
+						verifyEmbeddedColumnNameOverlap(seen,
+								this.spannerMappingContext.getPersistentEntity(
+										spannerPersistentProperty.getType()));
+					}
+					else {
+						String columnName = spannerPersistentProperty.getColumnName();
+						if (seen.contains(columnName)) {
+							throw new SpannerDataException(
+									"Two properties resolve to the same column name: "
+											+ columnName);
+						}
+						seen.add(columnName);
+					}
+				});
+	}
+
+	private void verifyPrimaryKeysConsecutive() {
 		for (int i = 1; i <= this.primaryKeyParts.size(); i++) {
 			SpannerPersistentProperty keyPart = this.primaryKeyParts.get(i);
 			if (keyPart == null) {
@@ -164,6 +216,11 @@ public class SpannerPersistentEntityImpl<T>
 			primaryKeyColumns[i - 1] = this.primaryKeyParts.get(i);
 		}
 		return primaryKeyColumns;
+	}
+
+	@Override
+	public SpannerMappingContext getSpannerMappingContext() {
+		return this.spannerMappingContext;
 	}
 
 	@Override

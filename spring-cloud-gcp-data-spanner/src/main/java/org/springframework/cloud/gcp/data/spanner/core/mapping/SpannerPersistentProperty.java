@@ -67,4 +67,10 @@ public interface SpannerPersistentProperty
 	 * @return True if this property will be mapped to and from Cloud Spanner. False otherwise.
 	 */
 	boolean isMapped();
+
+	/**
+	 * True if the property is an embedded class containing more columns. False otherwise.
+	 * @return true if the property is embedded.
+	 */
+	boolean isEmbedded();
 }

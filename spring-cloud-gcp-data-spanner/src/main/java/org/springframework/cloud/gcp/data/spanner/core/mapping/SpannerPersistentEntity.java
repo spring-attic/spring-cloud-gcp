@@ -50,4 +50,14 @@ public interface SpannerPersistentEntity<T>
 	 * @return an array of the properties comprising the primary key in order.
 	 */
 	SpannerPersistentProperty[] getPrimaryKeyProperties();
+
+	/**
+	 * Gets the SpannerMappingContext that can be used to create persistent entities of
+	 * types that appear as properties of this entity.
+	 * @return
+	 */
+	SpannerMappingContext getSpannerMappingContext();
+
+	@Override
+	SpannerCompositeKeyProperty getIdProperty();
 }

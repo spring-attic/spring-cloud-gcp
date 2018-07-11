@@ -26,6 +26,7 @@ import java.util.UUID;
 import org.assertj.core.util.DateUtil;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
@@ -36,8 +37,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
  */
 @Table(name = "#{'trades_'.concat(tableNameSuffix)}")
 public class Trade {
-	@PrimaryKey(keyOrder = 1)
-	private String id;
 
 	private int age;
 
@@ -47,11 +46,11 @@ public class Trade {
 
 	private String action;
 
-	private Double price;
-
-	private Double shares;
-
 	private String symbol;
+
+	@Embedded
+	@PrimaryKey
+	TradeDetail tradeDetail;
 
 	@PrimaryKey(keyOrder = 2)
 	@Column(name = "trader_id")
@@ -64,15 +63,17 @@ public class Trade {
 		String tradeId = UUID.randomUUID().toString();
 		String traderId = UUID.randomUUID().toString();
 
-		t.id = tradeId;
+		t.tradeDetail = new TradeDetail();
+
+		t.tradeDetail.id = tradeId;
 		t.age = 8;
 		t.symbol = "ABCD";
 		t.action = "BUY";
 		t.traderId = traderId;
 		t.tradeTime = Instant.ofEpochSecond(333);
 		t.tradeDate = Date.from(t.tradeTime);
-		t.price = 100.0;
-		t.shares = 12345.6;
+		t.tradeDetail.price = 100.0;
+		t.tradeDetail.shares = 12345.6;
 		t.executionTimes = new ArrayList<>();
 		for (int i = 1; i <= 5; i++) {
 			t.executionTimes.add(Instant.ofEpochSecond(i));
@@ -89,10 +90,11 @@ public class Trade {
 			return false;
 		}
 		Trade trade = (Trade) o;
-		return Objects.equals(this.id, trade.id) && Objects.equals(this.age, trade.age)
+		return Objects.equals(this.tradeDetail.id, trade.tradeDetail.id)
+				&& Objects.equals(this.age, trade.age)
 				&& Objects.equals(this.action, trade.action)
-				&& Objects.equals(this.price, trade.price)
-				&& Objects.equals(this.shares, trade.shares)
+				&& Objects.equals(this.tradeDetail.price, trade.tradeDetail.price)
+				&& Objects.equals(this.tradeDetail.shares, trade.tradeDetail.shares)
 				&& Objects.equals(this.symbol, trade.symbol)
 				&& Objects.equals(this.tradeTime, trade.tradeTime)
 				&& Objects.equals(this.traderId, trade.traderId)
@@ -104,17 +106,18 @@ public class Trade {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.id, this.age, this.action, this.price, this.shares,
-				this.symbol, this.tradeTime, DateUtil.truncateTime(this.tradeDate),
+		return Objects.hash(this.tradeDetail.id, this.age, this.action,
+				this.tradeDetail.price, this.tradeDetail.shares, this.symbol,
+				this.tradeTime, DateUtil.truncateTime(this.tradeDate),
 				this.traderId, this.executionTimes);
 	}
 
 	public String getId() {
-		return this.id;
+		return this.tradeDetail.id;
 	}
 
 	public void setId(String id) {
-		this.id = id;
+		this.tradeDetail.id = id;
 	}
 
 	public int getAge() {
@@ -142,19 +145,19 @@ public class Trade {
 	}
 
 	public Double getPrice() {
-		return this.price;
+		return this.tradeDetail.price;
 	}
 
 	public void setPrice(Double price) {
-		this.price = price;
+		this.tradeDetail.price = price;
 	}
 
 	public Double getShares() {
-		return this.shares;
+		return this.tradeDetail.shares;
 	}
 
 	public void setShares(Double shares) {
-		this.shares = shares;
+		this.tradeDetail.shares = shares;
 	}
 
 	public String getSymbol() {
@@ -175,9 +178,10 @@ public class Trade {
 
 	@Override
 	public String toString() {
-		return "Trade{" + "id='" + this.id + '\'' + ", action='" + this.action + '\''
-				+ ", age=" + this.age + ", price=" + this.price + ", shares="
-				+ this.shares + ", symbol='" + this.symbol + ", tradeTime="
+		return "Trade{" + "id='" + this.tradeDetail.id + '\'' + ", action='" + this.action
+				+ '\'' + ", age=" + this.age + ", price=" + this.tradeDetail.price
+				+ ", shares=" + this.tradeDetail.shares + ", symbol='"
+				+ this.symbol + ", tradeTime="
 				+ this.tradeTime + ", tradeDate='" + DateUtil.truncateTime(this.tradeDate)
 				+ '\'' + ", traderId='" + this.traderId + '\'' + '}';
 	}
