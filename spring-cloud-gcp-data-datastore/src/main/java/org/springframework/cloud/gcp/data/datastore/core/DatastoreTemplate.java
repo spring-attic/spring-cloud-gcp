@@ -65,20 +65,20 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> T read(Class<T> entityClass, Key key,
-			@Nullable DatastoreReadOptions readOption) {
-		List<T> results = read(entityClass, ImmutableList.of(key), readOption);
+			@Nullable DatastoreReadOptions readOptions) {
+		List<T> results = read(entityClass, ImmutableList.of(key), readOptions);
 		return results == null || results.isEmpty() ? null : results.get(0);
 	}
 
 	@Override
 	public <T> List<T> read(Class<T> entityClass, Iterable<Key> keys,
-			@Nullable DatastoreReadOptions readOption) {
+			@Nullable DatastoreReadOptions readOptions) {
 		Iterator<Entity> entities;
-		if (readOption == null || !readOption.hasReadOptions()) {
+		if (readOptions == null || !readOptions.hasReadOptions()) {
 			entities = this.datastore.get(keys);
 		}
 		else {
-			entities = this.datastore.get(keys, readOption.getReadOptions());
+			entities = this.datastore.get(keys, readOptions.getReadOptions());
 		}
 		return convertEntities(entityClass, entities);
 	}
@@ -92,24 +92,24 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> List<T> readAll(Class<T> entityClass,
-			@Nullable DatastoreReadOptions readOption) {
+			@Nullable DatastoreReadOptions readOptions) {
 		return query(entityClass,
 				Query.newEntityQueryBuilder()
 						.setKind(this.datastoreMappingContext
 								.getPersistentEntity(entityClass).kindName())
 						.build(),
-				readOption);
+				readOptions);
 	}
 
 	@Override
 	public <T> List<T> query(Class<T> entityClass, Query<Entity> query,
-			@Nullable DatastoreReadOptions readOption) {
+			@Nullable DatastoreReadOptions readOptions) {
 		QueryResults<Entity> entities;
-		if (readOption == null || !readOption.hasReadOptions()) {
+		if (readOptions == null || !readOptions.hasReadOptions()) {
 			entities = this.datastore.run(query);
 		}
 		else {
-			entities = this.datastore.run(query, readOption.getReadOptions());
+			entities = this.datastore.run(query, readOptions.getReadOptions());
 		}
 		return convertEntities(entityClass, entities);
 	}

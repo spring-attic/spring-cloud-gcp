@@ -38,41 +38,41 @@ public interface DatastoreOperations {
 	 * @param entityClass the type of the entity to get.
 	 * @param key the key of the entity
 	 * @param <T> the class type of the entity.
-	 * @param readOption optional read options.
+	 * @param readOptions optional read options.
 	 * @return the entity that was found with that key.
 	 */
-	<T> T read(Class<T> entityClass, Key key, @Nullable DatastoreReadOptions readOption);
+	<T> T read(Class<T> entityClass, Key key, @Nullable DatastoreReadOptions readOptions);
 
 	/**
 	 * Get a list of entities based on a list of keys.
 	 * @param entityClass the class type of the entities to get.
 	 * @param keys the keys of the entities to get.
 	 * @param <T> the type of the class
-	 * @param readOption optional read options.
+	 * @param readOptions optional read options.
 	 * @return the list of entities that were found.
 	 */
 	<T> List<T> read(Class<T> entityClass, Iterable<Key> keys,
-			@Nullable DatastoreReadOptions readOption);
+			@Nullable DatastoreReadOptions readOptions);
 
 	/**
 	 * Get a list of all entities of the given class type.
 	 * @param entityClass the class type of entity to retrieve.
 	 * @param <T> the type of the entity.
-	 * @param readOption optional read options.
+	 * @param readOptions optional read options.
 	 * @return a list of entities of the given class type.
 	 */
-	<T> List<T> readAll(Class<T> entityClass, @Nullable DatastoreReadOptions readOption);
+	<T> List<T> readAll(Class<T> entityClass, @Nullable DatastoreReadOptions readOptions);
 
 	/**
 	 * Get a list of entities using a query.
 	 * @param entityClass the type of the entity to retrieve.
 	 * @param query the query to run
-	 * @param readOption optional read options.
+	 * @param readOptions optional read options.
 	 * @param <T> the class type of the entity.
 	 * @return a list of entities found.
 	 */
 	<T> List<T> query(Class<T> entityClass, Query<Entity> query,
-			@Nullable DatastoreReadOptions readOption);
+			@Nullable DatastoreReadOptions readOptions);
 
 	/**
 	 * Delete an entity from Cloud Datastore based on a key.

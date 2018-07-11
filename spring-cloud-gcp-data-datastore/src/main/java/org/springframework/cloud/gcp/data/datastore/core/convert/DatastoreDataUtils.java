@@ -71,8 +71,7 @@ public class DatastoreDataUtils {
 			if (ancestors != null) {
 				ancestors.forEach(pair -> {
 					Object val = pair.getSecond();
-					PathElement pathElement;
-					pathElement = useKeyComponent(val,
+					PathElement pathElement = useKeyComponent(val,
 							() -> PathElement.of(pair.getFirst(), (Long) val),
 							() -> PathElement.of(pair.getFirst(), (String) val));
 					keyFactory.addAncestor(pathElement);
@@ -93,6 +92,8 @@ public class DatastoreDataUtils {
 		return key;
 	}
 
+	// Cloud Datastore keys can be constructed only from String or Long components. This is a
+	// helper function that checks key component objects for these two types.
 	private static <T> T useKeyComponent(Object val, Supplier<T> longFunc,
 			Supplier<T> stringFunc) {
 		if (val instanceof Long || val instanceof Integer
