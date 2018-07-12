@@ -42,8 +42,8 @@ public enum AckMode {
 	/**
 	 * The framework acks the {@link com.google.pubsub.v1.PubsubMessage} after it is
 	 * sent to the channel and processed successfully.
-	 * <p>The framework does nothing (no ack / no nack) of the {@link com.google.pubsub.v1.PubsubMessage}
-	 * when an exception occurs while processing the message.
+	 * <p>The framework does not immediately nack the message when the exception occurs,
+	 * and allows the eventual redelivery to take effect.
 	 *
 	 * @since 1.1
 	 */
