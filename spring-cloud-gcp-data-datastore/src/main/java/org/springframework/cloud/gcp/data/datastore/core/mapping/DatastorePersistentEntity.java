@@ -35,9 +35,4 @@ public interface DatastorePersistentEntity<T> extends
 	 */
 	String kindName();
 
-	/**
-	 * Gets the property that holds the ancestor information.
-	 * @return the property holding the ancestor information.
-	 */
-	DatastorePersistentProperty ancestorProperty();
 }

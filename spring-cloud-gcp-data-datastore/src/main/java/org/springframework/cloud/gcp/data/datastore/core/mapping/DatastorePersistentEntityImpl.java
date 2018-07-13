@@ -50,8 +50,6 @@ public class DatastorePersistentEntityImpl<T>
 
 	private final Entity kind;
 
-	private DatastorePersistentProperty ancestorProperty;
-
 	private StandardEvaluationContext context;
 
 	/**
@@ -80,9 +78,6 @@ public class DatastorePersistentEntityImpl<T>
 		if (!property.isMapped()) {
 			return;
 		}
-		if (property.isAncestors()) {
-			this.ancestorProperty = property;
-		}
 		super.addPersistentProperty(property);
 	}
 
@@ -102,11 +97,6 @@ public class DatastorePersistentEntityImpl<T>
 	public String kindName() {
 		return this.kindNameExpression == null ? this.kindName
 				: this.kindNameExpression.getValue(this.context, String.class);
-	}
-
-	@Override
-	public DatastorePersistentProperty ancestorProperty() {
-		return this.ancestorProperty;
 	}
 
 	@Override
