@@ -28,7 +28,7 @@ public interface DatastoreOperations {
 	/**
 	 * Get an entity based on a id.
 	 * @param id the id of the entity. If this is actually a {@link com.google.cloud.datastore.Key}
-	 * then it will be used for the retrieval. Otherwise it will be attempted to be converted
+	 * then it will be used. Otherwise it will be attempted to be converted
 	 * to an integer or string value and it will be assumed to be a root key value with the
 	 * Kind determined by the entityClass.
 	 * param.
@@ -38,4 +38,75 @@ public interface DatastoreOperations {
 	 */
 	<T> T findById(Object id, Class<T> entityClass);
 
+	/**
+	 * Saves an instance of an object to Cloud Datastore. Behaves as update or insert.
+	 * @param instance the instance to save.
+	 */
+	<T> void save(T instance);
+
+	/**
+	 * Delete an entity from Cloud Datastore.
+	 * @param id the ID of the entity to delete. If this is actually a
+	 * {@link com.google.cloud.datastore.Key}
+	 * then it will be used. Otherwise it will be attempted to be converted
+	 * to an integer or string value and it will be assumed to be a root key value with the
+	 * Kind determined by the entityClass.
+	 * @param entityClass the type of the
+	 * @param <T>
+	 */
+	<T> void deleteById(Object id, Class<T> entityClass);
+
+	/**
+	 * Delete an entity from Cloud Datastore.
+	 * @param entity the entity to delete.
+	 * @param <T>
+	 */
+	<T> void delete(T entity);
+
+	/**
+	 * Delete all entities of a given domain type.
+	 * @param entityClass the domain type to delete from Cloud Datastore.
+	 */
+	void deleteAll(Class<?> entityClass);
+
+	/**
+	 * Count all occurrences of entities of the given domain type.
+	 * @param entityClass the domain type to count.
+	 * @return the number of entities of the given type.
+	 */
+	long count(Class<?> entityClass);
+
+	/**
+	 * Find all the entities of the given IDs. If an ID is actually a
+	 * {@link com.google.cloud.datastore.Key}
+	 * then it will be used. Otherwise it will be attempted to be converted
+	 * to an integer or string value and it will be assumed to be a root key value with the
+	 * Kind determined by the entityClass.
+	 * @param ids the IDs to search.
+	 * @param entityClass the domain type of the objects.
+	 * @param <T> the type parameter of the domain type.
+	 * @return the entities that were found.
+	 */
+	<T> Iterable<T> findAllById(Iterable<?> ids, Class<T> entityClass);
+
+	/**
+	 * Get all the entities of the given domain type.
+	 * @param entityClass the domain type to get.
+	 * @param <T> the type param of the domain type.
+	 * @return the entities that were found.
+ 	 */
+	<T> Iterable<T> findAll(Class<T> entityClass);
+
+	/**
+	 * Check if the given ID belongs to an entity in Cloud Datastore. If this is actually a
+	 * {@link com.google.cloud.datastore.Key}
+	 * then it will be used. Otherwise it will be attempted to be converted
+	 * to an integer or string value and it will be assumed to be a root key value with the
+	 * Kind determined by the entityClass.
+	 * @param id the ID to search for.
+	 * @param entityClass the domain type of the entities to search for.
+	 * @param <T> the type param of the domain type.
+	 * @return true if the given ID refers to an existing entity. False otherwise.
+	 */
+	<T> boolean existsById(Object id, Class<T> entityClass);
 }
