@@ -16,14 +16,6 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
-import java.util.List;
-
-import com.google.cloud.datastore.Entity;
-import com.google.cloud.datastore.Key;
-import com.google.cloud.datastore.Query;
-
-import org.springframework.lang.Nullable;
-
 /**
  * An interface of operations that can be done with Cloud Datastore.
  *
