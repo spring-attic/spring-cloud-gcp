@@ -44,7 +44,6 @@ public enum AckMode {
 	 * sent to the channel and processed successfully.
 	 * <p>The framework does not immediately nack the message when the exception occurs,
 	 * and allows the eventual redelivery to take effect.
-	 *
 	 * @since 1.1
 	 */
 	AUTO_ACK
