@@ -35,11 +35,11 @@ public interface DatastoreOperations {
 
 	/**
 	 * Get an entity based on a id.
-	 * @param entityClass the type of the entity to get.
 	 * @param id the id of the entity
+	 * @param entityClass the type of the entity to get.
 	 * @param <T> the class type of the entity.
 	 * @return the entity that was found with that id.
 	 */
-	<T> T findById(Class<T> entityClass, Object id);
+	<T> T findById(Object id, Class<T> entityClass);
 
 }

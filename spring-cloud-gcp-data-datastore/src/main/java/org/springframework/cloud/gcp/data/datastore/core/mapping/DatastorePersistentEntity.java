@@ -34,5 +34,4 @@ public interface DatastorePersistentEntity<T> extends
 	 * @return the name of the Entity.
 	 */
 	String kindName();
-
 }
