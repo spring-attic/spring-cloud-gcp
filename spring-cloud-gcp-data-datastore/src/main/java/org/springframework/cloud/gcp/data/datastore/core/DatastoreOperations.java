@@ -27,7 +27,11 @@ public interface DatastoreOperations {
 
 	/**
 	 * Get an entity based on a id.
-	 * @param id the id of the entity
+	 * @param id the id of the entity. If this is actually a {@link com.google.cloud.datastore.Key}
+	 * then it will be used for the retrieval. Otherwise it will be attempted to be converted
+	 * to an integer or string value and it will be assumed to be a root key value with the
+	 * Kind determined by the entityClass.
+	 * param.
 	 * @param entityClass the type of the entity to get.
 	 * @param <T> the class type of the entity.
 	 * @return the entity that was found with that id.
