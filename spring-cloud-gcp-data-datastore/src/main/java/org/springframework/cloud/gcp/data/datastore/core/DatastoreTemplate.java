@@ -27,6 +27,7 @@ import com.google.cloud.datastore.Entity.Builder;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.Query;
+import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
@@ -63,7 +64,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 		this.datastoreMappingContext = datastoreMappingContext;
 	}
 
-	private Key getKeyFromId(Object id, Class entityClass) {
+	@VisibleForTesting
+	Key getKeyFromId(Object id, Class entityClass) {
 		Assert.notNull(id, "Cannot get key for null ID value.");
 		if (id instanceof Key) {
 			return (Key) id;
@@ -94,7 +96,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 				this.datastore.get(getKeyFromId(id, entityClass)));
 	}
 
-	private Key getKey(Object entity) {
+	@VisibleForTesting
+	Key getKey(Object entity) {
 		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(entity.getClass());
 		PersistentProperty idProp = datastorePersistentEntity.getIdProperty();
@@ -151,6 +154,9 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	private <T> Collection<T> convertEntities(Iterator<Entity> entities,
 			Class<T> entityClass) {
+		if (entities == null) {
+			return null;
+		}
 		List<T> results = new ArrayList<>();
 		entities.forEachRemaining(entity -> results
 				.add(this.datastoreEntityConverter.read(entityClass, entity)));
