@@ -60,12 +60,12 @@ public class DatastorePersistentEntityImpl<T>
 		super(information);
 
 		Class<?> rawType = information.getType();
-		String fallback = StringUtils.uncapitalize(rawType.getSimpleName());
 
 		this.context = new StandardEvaluationContext();
 
 		this.kind = this.findAnnotation(Entity.class);
-		this.kindName = this.hasTableName() ? this.kind.name() : fallback;
+		this.kindName = this.hasTableName() ? this.kind.name()
+				: StringUtils.uncapitalize(rawType.getSimpleName());
 		this.kindNameExpression = detectExpression();
 	}
 
