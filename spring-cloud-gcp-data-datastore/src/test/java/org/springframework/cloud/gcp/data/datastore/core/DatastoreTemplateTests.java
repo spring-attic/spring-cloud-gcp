@@ -94,8 +94,6 @@ public class DatastoreTemplateTests {
 		Object ob2 = new Object();
 		Entity e1 = Entity.newBuilder(createFakeKey()).build();
 		Entity e2 = Entity.newBuilder(createFakeKey()).build();
-		when(this.datastore.get(ArgumentMatchers.<Key[]>any()))
-				.thenReturn(ImmutableList.of(e1, e2).iterator());
 		when(this.datastoreEntityConverter.read(eq(Object.class), any()))
 				.thenAnswer(invocation -> {
 					Object ret;
@@ -108,6 +106,8 @@ public class DatastoreTemplateTests {
 					return ret;
 				});
 
+		when(this.datastore.get(ArgumentMatchers.<Key[]>any()))
+				.thenReturn(ImmutableList.of(e1, e2).iterator());
 		assertThat(this.datastoreTemplate.findAllById(keys, Object.class),
 				contains(ob1, ob2));
 	}
@@ -130,15 +130,6 @@ public class DatastoreTemplateTests {
 		Object ob2 = new Object();
 		Entity e1 = Entity.newBuilder(createFakeKey()).build();
 		Entity e2 = Entity.newBuilder(createFakeKey()).build();
-		QueryResults queryResults = mock(QueryResults.class);
-		doAnswer(invocation -> {
-			ImmutableList.of(e1, e2).iterator()
-					.forEachRemaining(invocation.getArgument(0));
-			return null;
-		}).when(queryResults).forEachRemaining(any());
-		when(this.datastore.run(
-				eq(Query.newEntityQueryBuilder().setKind("custom_test_kind").build())))
-						.thenReturn(queryResults);
 		this.datastoreTemplate.findAll(TestEntity.class);
 		when(this.datastoreEntityConverter.read(eq(TestEntity.class), any()))
 				.thenAnswer(invocation -> {
@@ -151,6 +142,16 @@ public class DatastoreTemplateTests {
 					}
 					return ret;
 				});
+
+		QueryResults queryResults = mock(QueryResults.class);
+		doAnswer(invocation -> {
+			ImmutableList.of(e1, e2).iterator()
+					.forEachRemaining(invocation.getArgument(0));
+			return null;
+		}).when(queryResults).forEachRemaining(any());
+		when(this.datastore.run(
+				eq(Query.newEntityQueryBuilder().setKind("custom_test_kind").build())))
+						.thenReturn(queryResults);
 
 		assertThat(this.datastoreTemplate.findAll(TestEntity.class), contains(ob1, ob2));
 	}
@@ -223,7 +224,7 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test(expected = IllegalArgumentException.class)
-	public void nullIdKTest() {
+	public void nullIdTest() {
 		this.datastoreTemplate.getKey(new TestEntity());
 	}
 
