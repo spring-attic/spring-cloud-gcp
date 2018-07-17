@@ -16,10 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.integration.inbound;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.protobuf.ByteString;
@@ -49,12 +45,16 @@ import static org.mockito.Mockito.when;
  * @author João André Martins
  * @author Doug Hoard
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class PubSubInboundChannelAdapterTests {
 
 	public static final String ACK = "ACK";
 
 	public static final String NACK = "NACK";
+
+	public static final String EXCEPTION_MESSAGE = "Forced exception sending message";
+
+	public static final String EXPECTED_EXCEPTION = "Expected exception";
 
 	private PubSubOperations pubSubOperations;
 
@@ -62,32 +62,24 @@ public class PubSubInboundChannelAdapterTests {
 
 	private MessageChannel messageChannel;
 
-	private AtomicReference<String> returnValue;
-
-	private CountDownLatch countDownLatch;
+	private String value;
 
 	private AckReplyConsumer ackReplyConsumer;
-
-	private TestAnswer testAnswer;
 
 	@Before
 	public void setUp() {
 		this.pubSubOperations = mock(PubSubOperations.class);
 		this.pubSubSubscriberOperations = mock(PubSubSubscriberOperations.class);
 		this.messageChannel = mock(MessageChannel.class);
-
-		when(this.messageChannel.send(any())).thenThrow(new RuntimeException("Forced exception sending message"));
-
-		this.returnValue = new AtomicReference<>();
-		this.countDownLatch = new CountDownLatch(1);
-
-		NackAnswer nackAnwser = new NackAnswer(this.returnValue);
-
 		this.ackReplyConsumer = mock(AckReplyConsumer.class);
+		this.value = null;
 
-		doAnswer(nackAnwser).when(this.ackReplyConsumer).nack();
+		when(this.messageChannel.send(any())).thenThrow(
+				new RuntimeException(EXCEPTION_MESSAGE));
 
-		this.testAnswer = new TestAnswer(this.countDownLatch, this.ackReplyConsumer);
+		when(this.pubSubSubscriberOperations.subscribe(
+				anyString(), any(MessageReceiver.class))).then(
+						new MessageReceiverAnswer(this.ackReplyConsumer));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -104,20 +96,21 @@ public class PubSubInboundChannelAdapterTests {
 				this.pubSubSubscriberOperations, "testSubscription");
 
 		adapter.setAckMode(AckMode.AUTO);
-
-		when(this.pubSubSubscriberOperations.subscribe(anyString(), any(MessageReceiver.class))).then(this.testAnswer);
-
 		adapter.setOutputChannel(this.messageChannel);
+
+		doAnswer(new CallbackAnswer(this, NACK)).when(
+				this.ackReplyConsumer).nack();
 
 		try {
 			adapter.start();
+
+			Assert.fail(EXPECTED_EXCEPTION);
 		}
 		catch (Throwable t) {
-
+			Assert.assertEquals(EXCEPTION_MESSAGE, t.getCause().getMessage());
 		}
 
-		Assert.assertTrue(this.countDownLatch.await(10, TimeUnit.SECONDS));
-		Assert.assertEquals(NACK, this.returnValue.get());
+		Assert.assertEquals(NACK, this.value);
 	}
 
 	@Test
@@ -126,59 +119,60 @@ public class PubSubInboundChannelAdapterTests {
 				this.pubSubSubscriberOperations, "testSubscription");
 
 		adapter.setAckMode(AckMode.AUTO_ACK);
-
-		when(this.pubSubSubscriberOperations.subscribe(anyString(), any(MessageReceiver.class))).then(this.testAnswer);
-
 		adapter.setOutputChannel(this.messageChannel);
+
+		doAnswer(new CallbackAnswer(this, NACK)).when(
+				this.ackReplyConsumer).nack();
 
 		try {
 			adapter.start();
+
+			Assert.fail(EXPECTED_EXCEPTION);
 		}
 		catch (Throwable t) {
-
+			Assert.assertEquals(EXCEPTION_MESSAGE, t.getCause().getMessage());
 		}
 
-		Assert.assertTrue(this.countDownLatch.await(10, TimeUnit.SECONDS));
-		Assert.assertNull(this.returnValue.get());
+		Assert.assertNull(this.value);
 	}
 
-	private class TestAnswer implements Answer<MessageReceiver> {
+	public void setValue(String value) {
+		this.value = value;
+	}
 
-		private CountDownLatch countDownLatch;
+	private class MessageReceiverAnswer implements Answer<Void> {
 
 		private AckReplyConsumer ackReplyConsumer;
 
-		TestAnswer(CountDownLatch countDownLatch, AckReplyConsumer ackReplyConsumer) {
-			this.countDownLatch = countDownLatch;
+		MessageReceiverAnswer(AckReplyConsumer ackReplyConsumer) {
 			this.ackReplyConsumer = ackReplyConsumer;
 		}
 
-		public MessageReceiver answer(InvocationOnMock invocation) throws Throwable {
-			try {
-				PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(
-						ByteString.copyFrom("Testing 1 2 3".getBytes("UTF-8"))).build();
+		public Void answer(InvocationOnMock invocation) throws Throwable {
+			PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(
+					ByteString.copyFrom(
+							"Testing 1 2 3".getBytes("UTF-8"))).build();
 
-				MessageReceiver messageReceiver = invocation.getArgument(1);
-				messageReceiver.receiveMessage(pubsubMessage, this.ackReplyConsumer);
-			}
-			finally {
-				this.countDownLatch.countDown();
-			}
+			MessageReceiver messageReceiver = invocation.getArgument(1);
+			messageReceiver.receiveMessage(pubsubMessage, this.ackReplyConsumer);
 
 			return null;
 		}
 	}
 
-	private class NackAnswer implements Answer<Boolean> {
+	private class CallbackAnswer implements Answer<Void> {
 
-		private AtomicReference<String> returnValue;
+		private PubSubInboundChannelAdapterTests callback;
 
-		NackAnswer(AtomicReference<String> returnValue) {
-			this.returnValue = returnValue;
+		private String value;
+
+		CallbackAnswer(PubSubInboundChannelAdapterTests callback, String value) {
+			this.callback = callback;
+			this.value = value;
 		}
 
-		public Boolean answer(InvocationOnMock invocationOnMock) throws Throwable {
-			this.returnValue.set(NACK);
+		public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
+			this.callback.setValue(this.value);
 
 			return null;
 		}
