@@ -43,7 +43,7 @@ import static org.mockito.Mockito.when;
  * @author João André Martins
  * @author Doug Hoard
  */
-@RunWith(MockitoJUnitRunner.Silent.class)
+@RunWith(MockitoJUnitRunner.class)
 public class PubSubInboundChannelAdapterTests {
 
 	public static final String ACK = "ACK";
