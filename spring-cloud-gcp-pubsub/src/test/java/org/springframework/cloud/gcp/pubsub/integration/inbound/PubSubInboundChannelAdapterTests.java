@@ -24,9 +24,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
@@ -74,12 +72,27 @@ public class PubSubInboundChannelAdapterTests {
 		this.ackReplyConsumer = mock(AckReplyConsumer.class);
 		this.value = null;
 
+		doAnswer(invocation -> {
+			this.value = NACK;
+			return null;
+		}).when(this.ackReplyConsumer).nack();
+
 		when(this.messageChannel.send(any())).thenThrow(
 				new RuntimeException(EXCEPTION_MESSAGE));
 
 		when(this.pubSubSubscriberOperations.subscribe(
-				anyString(), any(MessageReceiver.class))).then(
-						new MessageReceiverAnswer(this.ackReplyConsumer));
+				anyString(), any(MessageReceiver.class))).then(invocationOnMock -> {
+					PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(
+					ByteString.copyFrom(
+							"Testing 1 2 3".getBytes("UTF-8")))
+								.build();
+
+					MessageReceiver messageReceiver = invocationOnMock.getArgument(1);
+					messageReceiver.receiveMessage(
+						pubsubMessage, this.ackReplyConsumer);
+
+					return null;
+		});
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -97,9 +110,6 @@ public class PubSubInboundChannelAdapterTests {
 
 		adapter.setAckMode(AckMode.AUTO);
 		adapter.setOutputChannel(this.messageChannel);
-
-		doAnswer(new CallbackAnswer(this, NACK)).when(
-				this.ackReplyConsumer).nack();
 
 		try {
 			adapter.start();
@@ -121,9 +131,6 @@ public class PubSubInboundChannelAdapterTests {
 		adapter.setAckMode(AckMode.AUTO_ACK);
 		adapter.setOutputChannel(this.messageChannel);
 
-		doAnswer(new CallbackAnswer(this, NACK)).when(
-				this.ackReplyConsumer).nack();
-
 		try {
 			adapter.start();
 
@@ -136,45 +143,4 @@ public class PubSubInboundChannelAdapterTests {
 		Assert.assertNull(this.value);
 	}
 
-	public void setValue(String value) {
-		this.value = value;
-	}
-
-	private class MessageReceiverAnswer implements Answer<Void> {
-
-		private AckReplyConsumer ackReplyConsumer;
-
-		MessageReceiverAnswer(AckReplyConsumer ackReplyConsumer) {
-			this.ackReplyConsumer = ackReplyConsumer;
-		}
-
-		public Void answer(InvocationOnMock invocation) throws Throwable {
-			PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(
-					ByteString.copyFrom(
-							"Testing 1 2 3".getBytes("UTF-8"))).build();
-
-			MessageReceiver messageReceiver = invocation.getArgument(1);
-			messageReceiver.receiveMessage(pubsubMessage, this.ackReplyConsumer);
-
-			return null;
-		}
-	}
-
-	private class CallbackAnswer implements Answer<Void> {
-
-		private PubSubInboundChannelAdapterTests callback;
-
-		private String value;
-
-		CallbackAnswer(PubSubInboundChannelAdapterTests callback, String value) {
-			this.callback = callback;
-			this.value = value;
-		}
-
-		public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
-			this.callback.setValue(this.value);
-
-			return null;
-		}
-	}
 }
