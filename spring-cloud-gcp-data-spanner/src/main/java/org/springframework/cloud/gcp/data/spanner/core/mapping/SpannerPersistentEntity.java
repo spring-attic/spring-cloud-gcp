@@ -54,7 +54,7 @@ public interface SpannerPersistentEntity<T>
 	/**
 	 * Gets the SpannerMappingContext that can be used to create persistent entities of
 	 * types that appear as properties of this entity.
-	 * @return
+	 * @return the SpannerMappingContext instance
 	 */
 	SpannerMappingContext getSpannerMappingContext();
 

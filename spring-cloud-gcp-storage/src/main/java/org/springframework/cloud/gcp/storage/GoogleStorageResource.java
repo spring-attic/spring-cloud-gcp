@@ -156,7 +156,7 @@ public class GoogleStorageResource implements WritableResource {
 	/**
 	 * Gets the underlying storage object in Google Cloud Storage.
 	 * @return The storage object, will be null if it does not exist in Google Cloud Storage.
-	 * @throws IOException
+	 * @throws IOException if an issue occurs getting the Blob
 	 * @throws IllegalStateException if the resource reference is to a bucket, and not a blob.
 	 */
 	public Blob getBlob() throws IOException {
@@ -252,7 +252,7 @@ public class GoogleStorageResource implements WritableResource {
 	 * <p>Note that this method does not actually create the blob.
 	 * @param relativePath the URL to a Google Cloud Storage file
 	 * @return the {@link GoogleStorageResource} handle for the relative path
-	 * @throws IOException
+	 * @throws IOException if an issue occurs creating the relative GoogleStorageResource
 	 */
 	@Override
 	public GoogleStorageResource createRelative(String relativePath) throws IOException {
@@ -289,7 +289,7 @@ public class GoogleStorageResource implements WritableResource {
 	 * Returns the output stream for a Google Cloud Storage file.
 	 * @return the object's output stream or {@code null} if the object doesn't exist and cannot be
 	 * created
-	 * @throws IOException
+	 * @throws IOException if an issue occurs getting the OutputStream
 	 */
 	@Override
 	public OutputStream getOutputStream() throws IOException {
