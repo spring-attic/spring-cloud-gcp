@@ -81,7 +81,7 @@ public class SpannerDatabaseAdminTemplate {
 	/**
 	 * Execute the given DDL strings in order and creates the database if it does not
 	 * exist.
-	 * @param ddlStrings
+	 * @param ddlStrings the DDL strings
 	 * @param createDatabaseIfNotExists Has no effect if the database already exists.
 	 * Otherwise, if True then the database is created and the DDL strings are executed;
 	 * the DDL is not executed if False.

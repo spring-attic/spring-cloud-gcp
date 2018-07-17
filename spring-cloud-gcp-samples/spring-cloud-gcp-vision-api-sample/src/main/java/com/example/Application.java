@@ -49,7 +49,7 @@ public class Application {
 	 *
 	 * @param credentialsProvider GCP Credential to use to access Cloud Vision API
 	 * @return A Cloud Vision API client
-	 * @throws IOException
+	 * @throws IOException if an exception occurs creating the ImageAnnotatorClient
 	 */
 	@Bean
 	public ImageAnnotatorClient imageAnnotatorClient(CredentialsProvider credentialsProvider) throws IOException {

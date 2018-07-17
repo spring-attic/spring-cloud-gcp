@@ -52,14 +52,14 @@ public interface DatastoreOperations {
 	 * to an integer or string value and it will be assumed to be a root key value with the
 	 * Kind determined by the entityClass.
 	 * @param entityClass the type of the
-	 * @param <T>
+	 * @param <T> ths entity type
 	 */
 	<T> void deleteById(Object id, Class<T> entityClass);
 
 	/**
 	 * Delete an entity from Cloud Datastore.
 	 * @param entity the entity to delete.
-	 * @param <T>
+	 * @param <T> the entity type
 	 */
 	<T> void delete(T entity);
 
