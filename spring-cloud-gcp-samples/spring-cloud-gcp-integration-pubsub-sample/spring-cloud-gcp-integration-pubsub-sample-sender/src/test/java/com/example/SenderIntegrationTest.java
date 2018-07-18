@@ -79,7 +79,7 @@ public class SenderIntegrationTest {
 			messages.forEach(AcknowledgeablePubsubMessage::ack);
 
 			if (messages.stream()
-					.anyMatch(m -> m.getMessage().getData().toStringUtf8().equals("\"" + message + "\""))) {
+					.anyMatch(m -> m.getMessage().getData().toStringUtf8().equals(message))) {
 				messageReceived = true;
 				break;
 			}
