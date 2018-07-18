@@ -29,6 +29,7 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMap
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnLength;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
@@ -59,15 +60,15 @@ public class SpannerSchemaUtilsTests {
 	@Test
 	public void getDropDDLTest() {
 		assertEquals("DROP TABLE custom_test_table",
-				this.spannerSchemaUtils.getDropTableDDLString(TestEntity.class));
+				this.spannerSchemaUtils.getDropTableDdlString(TestEntity.class));
 	}
 
 	@Test
 	public void getCreateDDLTest() {
-		assertEquals("CREATE TABLE custom_test_table ( id STRING(MAX) , id2 INT64 "
-				+ ", custom_col STRING(MAX) , other STRING(333) , bytes BYTES(MAX) "
-				+ ", bytesList ARRAY<BYTES(111)> , integerList ARRAY<INT64> "
-				+ ", doubles ARRAY<FLOAT64> ) PRIMARY KEY ( id , id2 )",
+		assertEquals("CREATE TABLE custom_test_table ( id STRING(MAX) , id3 INT64 , "
+						+ "id2 STRING(MAX) , bytes2 BYTES(MAX) , custom_col STRING(MAX) , other STRING(333) ,"
+						+ " bytes BYTES(MAX) , bytesList ARRAY<BYTES(111)> , integerList ARRAY<INT64> , "
+						+ "doubles ARRAY<FLOAT64> ) PRIMARY KEY ( id , id2 , id3 )",
 				this.spannerSchemaUtils.getCreateTableDDLString(TestEntity.class));
 	}
 
@@ -139,7 +140,7 @@ public class SpannerSchemaUtilsTests {
 		when(spannerPersistentProperty.getColumnName()).thenReturn(name);
 		when(spannerPersistentProperty.getMaxColumnLength()).thenReturn(length);
 		assertEquals(expectedDDL,
-				this.spannerSchemaUtils.getColumnDDLString(spannerPersistentProperty,
+				this.spannerSchemaUtils.getColumnDdlString(spannerPersistentProperty,
 						this.spannerEntityProcessor));
 	}
 
@@ -147,8 +148,10 @@ public class SpannerSchemaUtilsTests {
 	public void getIdTest() {
 		TestEntity t = new TestEntity();
 		t.id = "aaa";
-		t.id2 = 3L;
-		assertEquals(Key.newBuilder().append(t.id).append(t.id2).build(),
+		t.embeddedColumns = new EmbeddedColumns();
+		t.embeddedColumns.id2 = "2";
+		t.id3 = 3L;
+		assertEquals(Key.newBuilder().append(t.id).appendObject(t.embeddedColumns.id2).append(t.id3).build(),
 				this.spannerSchemaUtils.getKey(t));
 	}
 
@@ -157,8 +160,12 @@ public class SpannerSchemaUtilsTests {
 		@PrimaryKey(keyOrder = 1)
 		String id;
 
+		@PrimaryKey(keyOrder = 3)
+		long id3;
+
 		@PrimaryKey(keyOrder = 2)
-		long id2;
+		@Embedded
+		EmbeddedColumns embeddedColumns;
 
 		@Column(name = "custom_col")
 		String something;
@@ -175,5 +182,12 @@ public class SpannerSchemaUtilsTests {
 		List<Integer> integerList;
 
 		double[] doubles;
+	}
+
+	private static class EmbeddedColumns {
+		@PrimaryKey
+		String id2;
+
+		ByteArray bytes2;
 	}
 }

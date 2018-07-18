@@ -62,7 +62,19 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 		PersistentPropertyAccessor accessor = getOwner().getPropertyAccessor(entity);
 		Builder keyBuilder = Key.newBuilder();
 		for (SpannerPersistentProperty spannerPersistentProperty : this.primaryKeyColumns) {
-			keyBuilder.appendObject(accessor.getProperty(spannerPersistentProperty));
+			if (spannerPersistentProperty.isEmbedded()) {
+				Key embeddedKeyParts = this.spannerPersistentEntity
+						.getSpannerMappingContext()
+						.getPersistentEntity(spannerPersistentProperty.getType())
+						.getIdProperty()
+						.getId(accessor.getProperty(spannerPersistentProperty));
+				for (Object keyPart : embeddedKeyParts.getParts()) {
+					keyBuilder.appendObject(keyPart);
+				}
+			}
+			else {
+				keyBuilder.appendObject(accessor.getProperty(spannerPersistentProperty));
+			}
 		}
 		return keyBuilder.build();
 	}
@@ -84,6 +96,11 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 
 	@Override
 	public boolean isMapped() {
+		return false;
+	}
+
+	@Override
+	public boolean isEmbedded() {
 		return false;
 	}
 

@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.hasItem;
 /**
  * @author Chengyuan Zhao
  */
-public class SpannerWriteMethodCoverageTest {
+public class SpannerWriteMethodCoverageTests {
 
 	// Checks that the converter is aware of all Cloud Spanner mutation binder types
 	@Test

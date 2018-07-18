@@ -31,6 +31,7 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMap
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
@@ -192,8 +193,17 @@ public class SpannerStatementQueryExecutor {
 					String segment = part.getProperty().getSegment();
 					String tag = "tag" + tags.size();
 					tags.add(tag);
-					String andString = persistentEntity.getPersistentProperty(segment)
-							.getColumnName();
+
+					SpannerPersistentProperty spannerPersistentProperty = persistentEntity
+							.getPersistentProperty(segment);
+
+					if (spannerPersistentProperty.isEmbedded()) {
+						throw new SpannerDataException(
+								"Embedded class properties are not currently supported in query method names: "
+										+ segment);
+					}
+
+					String andString = spannerPersistentProperty.getColumnName();
 					String insertedTag = "@" + tag;
 					if (part.shouldIgnoreCase() == IgnoreCaseType.ALWAYS) {
 						andString = "LOWER(" + andString + ")";

@@ -145,7 +145,7 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	protected Iterable<String> dropSchemaStatements() {
 		return Arrays
-				.asList(this.spannerSchemaUtils.getDropTableDDLString(Trade.class));
+				.asList(this.spannerSchemaUtils.getDropTableDdlString(Trade.class));
 	}
 
 	@After

@@ -129,8 +129,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	 * Writes an object's properties to the sink.
 	 * @param source the object to write
 	 * @param sink the sink to which to write
-	 * @param includeColumns the properties/columns to write. If null, then all columns are
-	 * written.
+	 * @param includeColumns the columns to write. If null, then all columns are written.
 	 */
 	public void write(Object source, MultipleValueBinder sink,
 			Set<String> includeColumns) {
@@ -141,11 +140,17 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 				.getPropertyAccessor(source);
 		persistentEntity.doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					if (!writeAllColumns && !includeColumns
-							.contains(spannerPersistentProperty.getColumnName())) {
-						return;
+					if (spannerPersistentProperty.isEmbedded()) {
+						Object embeddedObject = accessor
+								.getProperty(spannerPersistentProperty);
+						if (embeddedObject != null) {
+							write(embeddedObject, sink, includeColumns);
+						}
 					}
-					writeProperty(sink, accessor, spannerPersistentProperty);
+					else if (writeAllColumns || includeColumns
+								.contains(spannerPersistentProperty.getColumnName())) {
+						writeProperty(sink, accessor, spannerPersistentProperty);
+					}
 				});
 	}
 

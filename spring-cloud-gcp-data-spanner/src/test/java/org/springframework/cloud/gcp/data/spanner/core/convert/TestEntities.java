@@ -25,6 +25,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Struct;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
@@ -38,6 +39,13 @@ public class TestEntities {
 	static class TestEntity {
 		@PrimaryKey
 		String id;
+
+		@PrimaryKey(keyOrder = 3)
+		String id4;
+
+		@PrimaryKey(keyOrder = 2)
+		@Embedded
+		TestEmbeddedColumns testEmbeddedColumns;
 
 		@Column(name = "custom_col")
 		String stringField;
@@ -75,6 +83,16 @@ public class TestEntities {
 		Timestamp timestampField;
 
 		ByteArray bytes;
+	}
+
+	static class TestEmbeddedColumns {
+		@PrimaryKey
+		String id2;
+
+		@PrimaryKey(keyOrder = 2)
+		String id3;
+
+		int intField2;
 	}
 
 	@Table(name = "faulty_test_table")

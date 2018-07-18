@@ -81,7 +81,7 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 	 * @param credentialsSupplier Provides properties that can override OAuth2
 	 * scopes list used by the credentials, and the location of the OAuth2 credentials private
 	 * key.
-	 * @throws IOException
+	 * @throws IOException if an issue occurs creating the DefaultCredentialsProvider
 	 */
 	public DefaultCredentialsProvider(CredentialsSupplier credentialsSupplier) throws IOException {
 		List<String> scopes = resolveScopes(credentialsSupplier.getCredentials().getScopes());

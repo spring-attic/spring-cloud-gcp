@@ -93,16 +93,20 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 
 		persistentEntity.doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					if (!shouldSkipProperty(
-							structAccessor,
-							spannerPersistentProperty,
-							includeColumns,
-							readAllColumns,
-							allowMissingColumns,
-							persistenceConstructor)) {
+					if (spannerPersistentProperty.isEmbedded()) {
+						accessor.setProperty(spannerPersistentProperty,
+								read(spannerPersistentProperty.getType(), source,
+										includeColumns, allowMissingColumns));
+					}
+					else {
+						if (!shouldSkipProperty(structAccessor, spannerPersistentProperty,
+								includeColumns, readAllColumns, allowMissingColumns,
+								persistenceConstructor)) {
 
-						Object value = propertyValueProvider.getPropertyValue(spannerPersistentProperty);
-						accessor.setProperty(spannerPersistentProperty, value);
+							Object value = propertyValueProvider
+									.getPropertyValue(spannerPersistentProperty);
+							accessor.setProperty(spannerPersistentProperty, value);
+						}
 					}
 				});
 

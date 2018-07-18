@@ -35,6 +35,7 @@ import org.junit.runners.Parameterized;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity2;
+import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEmbeddedColumns;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -56,7 +57,7 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
-public class ConverterAwareMappingSpannerEntityWriterTest {
+public class ConverterAwareMappingSpannerEntityWriterTests {
 
 	private SpannerEntityWriter spannerEntityWriter;
 
@@ -98,6 +99,11 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 		t.bytesList = new ArrayList<>();
 		t.bytesList.add(t.bytes);
 
+		t.testEmbeddedColumns = new TestEmbeddedColumns();
+		t.testEmbeddedColumns.id2 = "key2";
+		t.testEmbeddedColumns.id3 = "key3";
+		t.testEmbeddedColumns.intField2 = 123;
+
 		Instant i1 = Instant.ofEpochSecond(111);
 		Instant i2 = Instant.ofEpochSecond(222);
 		Instant i3 = Instant.ofEpochSecond(333);
@@ -120,6 +126,14 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 		when(idBinder.to(anyString())).thenReturn(null);
 		when(writeBuilder.set(eq("id"))).thenReturn(idBinder);
 
+		ValueBinder<WriteBuilder> id2Binder = mock(ValueBinder.class);
+		when(id2Binder.to(anyString())).thenReturn(null);
+		when(writeBuilder.set(eq("id2"))).thenReturn(id2Binder);
+
+		ValueBinder<WriteBuilder> id3Binder = mock(ValueBinder.class);
+		when(id3Binder.to(anyString())).thenReturn(null);
+		when(writeBuilder.set(eq("id3"))).thenReturn(id3Binder);
+
 		ValueBinder<WriteBuilder> stringFieldBinder = mock(ValueBinder.class);
 		when(stringFieldBinder.to(anyString())).thenReturn(null);
 		when(writeBuilder.set(eq("custom_col"))).thenReturn(stringFieldBinder);
@@ -131,6 +145,10 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 		ValueBinder<WriteBuilder> intFieldBinder = mock(ValueBinder.class);
 		when(intFieldBinder.to(anyLong())).thenReturn(null);
 		when(writeBuilder.set(eq("intField"))).thenReturn(intFieldBinder);
+
+		ValueBinder<WriteBuilder> intField2Binder = mock(ValueBinder.class);
+		when(intField2Binder.to(anyLong())).thenReturn(null);
+		when(writeBuilder.set(eq("intField2"))).thenReturn(intField2Binder);
 
 		ValueBinder<WriteBuilder> longFieldBinder = mock(ValueBinder.class);
 		when(longFieldBinder.to(anyLong())).thenReturn(null);
@@ -193,9 +211,12 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 		this.spannerEntityWriter.write(t, writeBuilder::set);
 
 		verify(idBinder, times(1)).to(eq(t.id));
+		verify(id2Binder, times(1)).to(eq(t.testEmbeddedColumns.id2));
+		verify(id3Binder, times(1)).to(eq(t.testEmbeddedColumns.id3));
 		verify(stringFieldBinder, times(1)).to(eq(t.stringField));
 		verify(booleanFieldBinder, times(1)).to(eq(Boolean.valueOf(t.booleanField)));
 		verify(intFieldBinder, times(1)).to(eq(Long.valueOf(t.intField)));
+		verify(intField2Binder, times(1)).to(eq(Long.valueOf(t.testEmbeddedColumns.intField2)));
 		verify(longFieldBinder, times(1)).to(eq(Long.valueOf(t.longField)));
 		verify(doubleFieldBinder, times(1)).to(eq(Double.valueOf(t.doubleField)));
 		verify(doubleArrayFieldBinder, times(1)).toFloat64Array(eq(t.doubleArray));

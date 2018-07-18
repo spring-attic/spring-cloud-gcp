@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
-import io.grpc.Attributes.Key;
+import com.google.cloud.spanner.Key;
 import org.junit.Test;
 
 import org.springframework.context.ApplicationContext;
@@ -29,6 +29,7 @@ import org.springframework.expression.spel.SpelEvaluationException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -39,6 +40,8 @@ import static org.mockito.Mockito.when;
  * @author Balint Pato
  */
 public class SpannerPersistentEntityImplTests {
+
+	private final SpannerMappingContext spannerMappingContext = new SpannerMappingContext();
 
 	@Test
 	public void testTableName() {
@@ -164,6 +167,81 @@ public class SpannerPersistentEntityImplTests {
 
 		entity.setApplicationContext(applicationContext);
 		entity.tableName();
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void testDuplicateEmbeddedColumnName() {
+		this.spannerMappingContext
+				.getPersistentEntity(EmbeddedParentDuplicateColumn.class);
+	}
+
+	@Test
+	public void testEmbeddedParentKeys() {
+		GrandParentEmbedded grandParentEmbedded = new GrandParentEmbedded();
+		grandParentEmbedded.id = "1";
+
+		ParentEmbedded parentEmbedded = new ParentEmbedded();
+		parentEmbedded.grandParentEmbedded = grandParentEmbedded;
+		parentEmbedded.id2 = "2";
+		parentEmbedded.id3 = "3";
+
+		ChildEmbedded childEmbedded = new ChildEmbedded();
+		childEmbedded.parentEmbedded = parentEmbedded;
+		childEmbedded.id4 = "4";
+
+		Key key = (Key) this.spannerMappingContext
+				.getPersistentEntity(ChildEmbedded.class)
+				.getIdentifierAccessor(childEmbedded).getIdentifier();
+		assertEquals(
+				Key.newBuilder().append("1").append("2").append("3").append("4").build(),
+				key);
+	}
+
+	@Test
+	public void testExcludeEmbeddedColumnNames() {
+		assertThat(this.spannerMappingContext.getPersistentEntity(ChildEmbedded.class)
+				.columns(), containsInAnyOrder("id", "id2", "id3", "id4"));
+	}
+
+	private static class GrandParentEmbedded {
+		@PrimaryKey
+		String id;
+	}
+
+	private static class ParentEmbedded {
+		@PrimaryKey
+		@Embedded
+		GrandParentEmbedded grandParentEmbedded;
+
+		@PrimaryKey(keyOrder = 2)
+		String id2;
+
+		@PrimaryKey(keyOrder = 3)
+		String id3;
+	}
+
+	private static class ChildEmbedded {
+		@PrimaryKey
+		@Embedded
+		ParentEmbedded parentEmbedded;
+
+		@PrimaryKey(keyOrder = 2)
+		String id4;
+	}
+
+	private static class EmbeddedParentDuplicateColumn {
+		@PrimaryKey
+		String id;
+
+		String other;
+
+		@Embedded
+		EmbeddedChildDuplicateColumn embeddedChildDuplicateColumn;
+	}
+
+	private static class EmbeddedChildDuplicateColumn {
+		@Column(name = "other")
+		String stuff;
 	}
 
 	@Table(name = ";DROP TABLE your_table;")
