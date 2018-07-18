@@ -80,16 +80,16 @@ public class SimplePubSubMessageConverter implements PubSubMessageConverter {
 		byte[] payload = message.getData().toByteArray();
 
 		if (payloadType == ByteString.class) {
-			result = message.getData();
+			result = (T) message.getData();
 		}
 		else if (payloadType == String.class) {
-			result = new String(payload, this.charset);
+			result = (T) new String(payload, this.charset);
 		}
 		else if (payloadType == ByteBuffer.class) {
-			result = ByteBuffer.wrap(payload);
+			result = (T) ByteBuffer.wrap(payload);
 		}
 		else if (payloadType == byte[].class) {
-			result = payload;
+			result = (T) payload;
 		}
 		else {
 			throw new PubSubMessageConversionException("Unable to convert Pub/Sub message to payload of type " +

@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.pubsub.core;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
@@ -28,14 +29,13 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
-import org.springframework.cloud.gcp.pubsub.core.subscriber.ConvertedMessageReceiver;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.ConvertedAcknowledgeableMessage;
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
-import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -140,7 +140,8 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public <T> Subscriber subscribeAndConvert(String subscription, ConvertedMessageReceiver<T> messageReceiver,
+	public <T> Subscriber subscribeAndConvert(String subscription,
+			Consumer<ConvertedAcknowledgeableMessage<T>> messageReceiver,
 			Class<T> payloadType) {
 		return this.pubSubSubscriberTemplate.subscribeAndConvert(subscription, messageReceiver, payloadType);
 	}
@@ -152,7 +153,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public <T> List<Message<T>> pullAndConvert(String subscription, Integer maxMessages,
+	public <T> List<ConvertedAcknowledgeableMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
 			Boolean returnImmediately, Class<T> payloadType) {
 		return this.pubSubSubscriberTemplate.pullAndConvert(subscription, maxMessages, returnImmediately, payloadType);
 	}

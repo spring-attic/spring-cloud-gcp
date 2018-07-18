@@ -17,7 +17,7 @@
 package org.springframework.cloud.gcp.pubsub.core.subscriber;
 
 import java.util.List;
-import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
@@ -28,16 +28,12 @@ import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
 
-import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
+import org.springframework.cloud.gcp.pubsub.support.ConvertedAcknowledgeableMessage;
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
-import org.springframework.integration.mapping.HeaderMapper;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.GenericMessage;
 import org.springframework.util.Assert;
 
 /**
@@ -63,8 +59,6 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	private final PubSubAcknowledger acknowledger;
 
 	private PubSubMessageConverter pubSubMessageConverter = new SimplePubSubMessageConverter();
-
-	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
 	/**
 	 * Default {@link PubSubSubscriberTemplate} constructor
@@ -101,20 +95,12 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	@Override
-	public <T> Subscriber subscribeAndConvert(String subscription, ConvertedMessageReceiver<T> messageReceiver,
-			Class<T> payloadType) {
+	public <T> Subscriber subscribeAndConvert(String subscription,
+			Consumer<ConvertedAcknowledgeableMessage<T>> messageReceiver, Class<T> payloadType) {
 		return this.subscribe(subscription,
-				(PubsubMessage pubsubMessage, AckReplyConsumer ackReplyConsumer) -> {
-
-					Map<String, Object> headers = this.headerMapper.toHeaders(pubsubMessage.getAttributesMap());
-					headers.put(GcpPubSubHeaders.PUBLISH_TIME, pubsubMessage.getPublishTime());
-					headers.put(GcpPubSubHeaders.MESSAGE_ID, pubsubMessage.getMessageId());
-
-					messageReceiver.receiveMessage(
-							(T) this.pubSubMessageConverter.fromPubSubMessage(pubsubMessage, payloadType),
-							headers,
-							ackReplyConsumer);
-				});
+				(PubsubMessage pubsubMessage, AckReplyConsumer ackReplyConsumer) -> messageReceiver
+						.accept(new ConvertedAcknowledgeableMessage<>(pubsubMessage, ackReplyConsumer,
+								this.pubSubMessageConverter.fromPubSubMessage(pubsubMessage, payloadType))));
 	}
 
 	/**
@@ -148,20 +134,13 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	@Override
-	public <T> List<Message<T>> pullAndConvert(String subscription, Integer maxMessages, Boolean returnImmediately,
-			Class<T> payloadType) {
-		List<AcknowledgeablePubsubMessage> pubsubMessages = this.pull(subscription, maxMessages, returnImmediately);
+	public <T> List<ConvertedAcknowledgeableMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
+			Boolean returnImmediately, Class<T> payloadType) {
+		List<AcknowledgeablePubsubMessage> ackableMessages = this.pull(subscription, maxMessages, returnImmediately);
 
-		return pubsubMessages.stream().map(
-				m -> {
-					Map<String, Object> headers = this.headerMapper.toHeaders(m.getMessage().getAttributesMap());
-					headers.put(GcpPubSubHeaders.PUBLISH_TIME, m.getMessage().getPublishTime());
-					headers.put(GcpPubSubHeaders.MESSAGE_ID, m.getMessage().getMessageId());
-					headers.put(GcpPubSubHeaders.ACKNOWLEDGEMENT, m);
-					return new GenericMessage<>(
-							this.pubSubMessageConverter.fromPubSubMessage(m.getMessage(), payloadType),
-							headers);
-				}
+		return ackableMessages.stream().map(
+				m -> new ConvertedAcknowledgeableMessage<T>(m,
+						this.pubSubMessageConverter.fromPubSubMessage(m.getMessage(), payloadType))
 		).collect(Collectors.toList());
 	}
 
@@ -196,12 +175,4 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		return this.acknowledger;
 	}
 
-	public HeaderMapper<Map<String, String>> getHeaderMapper() {
-		return this.headerMapper;
-	}
-
-	public void setHeaderMapper(
-			HeaderMapper<Map<String, String>> headerMapper) {
-		this.headerMapper = headerMapper;
-	}
 }
