@@ -20,7 +20,6 @@ package org.springframework.cloud.gcp.pubsub.support;
  * Google Cloud Platform internal headers for Spring Messaging messages.
  *
  * @author João André Martins
- * @author Mike Eltsufin
  */
 public abstract class GcpPubSubHeaders {
 
@@ -33,14 +32,4 @@ public abstract class GcpPubSubHeaders {
 	public static final String ACK_ID = PREFIX + "ackId";
 
 	public static final String SUBSCRIPTION = PREFIX + "subscriptionName";
-
-	/**
-	 * @since 1.1
-	 */
-	public static final String PUBLISH_TIME = PREFIX + "publishTime";
-
-	/**
-	 * @since 1.1
-	 */
-	public static final String MESSAGE_ID = PREFIX + "messageId";
 }
