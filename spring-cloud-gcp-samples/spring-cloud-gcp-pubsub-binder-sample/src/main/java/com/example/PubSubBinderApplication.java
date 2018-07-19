@@ -18,12 +18,19 @@ package com.example;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
+import org.springframework.context.annotation.Bean;
 
 /**
  * @author João André Martins
  */
 @SpringBootApplication
 public class PubSubBinderApplication {
+
+	@Bean
+	public SimplePubSubMessageConverter messageConverter() {
+		return new SimplePubSubMessageConverter();
+	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(PubSubBinderApplication.class, args);
