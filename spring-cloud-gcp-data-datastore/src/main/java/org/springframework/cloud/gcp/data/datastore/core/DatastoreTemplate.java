@@ -64,57 +64,10 @@ public class DatastoreTemplate implements DatastoreOperations {
 		this.datastoreMappingContext = datastoreMappingContext;
 	}
 
-	@VisibleForTesting
-	Key getKeyFromId(Object id, Class entityClass) {
-		Assert.notNull(id, "Cannot get key for null ID value.");
-		if (id instanceof Key) {
-			return (Key) id;
-		}
-		KeyFactory keyFactory = this.datastore.newKeyFactory();
-		keyFactory.setKind(
-				this.datastoreMappingContext.getPersistentEntity(entityClass).kindName());
-		Key key;
-		if (id instanceof String) {
-			key = keyFactory.newKey((String) id);
-		}
-		else if (id instanceof Long) {
-			key = keyFactory.newKey((long) id);
-		}
-		else {
-			// We will use configurable custom converters to try to convert other types to
-			// String or long
-			// in the future.
-			throw new DatastoreDataException(
-					"Keys can only be created using String or long values.");
-		}
-		return key;
-	}
-
 	@Override
 	public <T> T findById(Object id, Class<T> entityClass) {
 		return this.datastoreEntityConverter.read(entityClass,
 				this.datastore.get(getKeyFromId(id, entityClass)));
-	}
-
-	@VisibleForTesting
-	Key getKey(Object entity) {
-		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
-				.getPersistentEntity(entity.getClass());
-		PersistentProperty idProp = datastorePersistentEntity.getIdProperty();
-		if (idProp == null) {
-			throw new DatastoreDataException(
-					"Cannot construct key for entity types without ID properties: "
-							+ entity.getClass());
-		}
-		return getKeyFromId(
-				datastorePersistentEntity.getPropertyAccessor(entity).getProperty(idProp),
-				entity.getClass());
-	}
-
-	private Entity convertToEntity(Object entity) {
-		Builder builder = Entity.newBuilder(getKey(entity));
-		this.datastoreEntityConverter.write(entity, builder);
-		return builder.build();
 	}
 
 	@Override
@@ -152,17 +105,6 @@ public class DatastoreTemplate implements DatastoreOperations {
 				entityClass);
 	}
 
-	private <T> Collection<T> convertEntities(Iterator<Entity> entities,
-			Class<T> entityClass) {
-		if (entities == null) {
-			return null;
-		}
-		List<T> results = new ArrayList<>();
-		entities.forEachRemaining(entity -> results
-				.add(this.datastoreEntityConverter.read(entityClass, entity)));
-		return results;
-	}
-
 	@Override
 	public <T> Collection<T> findAll(Class<T> entityClass) {
 		return convertEntities(
@@ -177,4 +119,63 @@ public class DatastoreTemplate implements DatastoreOperations {
 	public <T> boolean existsById(Object id, Class<T> entityClass) {
 		return findById(id, entityClass) != null;
 	}
+
+	@VisibleForTesting
+	Key getKeyFromId(Object id, Class entityClass) {
+		Assert.notNull(id, "Cannot get key for null ID value.");
+		if (id instanceof Key) {
+			return (Key) id;
+		}
+		KeyFactory keyFactory = this.datastore.newKeyFactory();
+		keyFactory.setKind(
+				this.datastoreMappingContext.getPersistentEntity(entityClass).kindName());
+		Key key;
+		if (id instanceof String) {
+			key = keyFactory.newKey((String) id);
+		}
+		else if (id instanceof Long) {
+			key = keyFactory.newKey((long) id);
+		}
+		else {
+			// We will use configurable custom converters to try to convert other types to
+			// String or long
+			// in the future.
+			throw new DatastoreDataException(
+					"Keys can only be created using String or long values.");
+		}
+		return key;
+	}
+
+	@VisibleForTesting
+	Key getKey(Object entity) {
+		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
+				.getPersistentEntity(entity.getClass());
+		PersistentProperty idProp = datastorePersistentEntity.getIdProperty();
+		if (idProp == null) {
+			throw new DatastoreDataException(
+					"Cannot construct key for entity types without ID properties: "
+							+ entity.getClass());
+		}
+		return getKeyFromId(
+				datastorePersistentEntity.getPropertyAccessor(entity).getProperty(idProp),
+				entity.getClass());
+	}
+
+	private Entity convertToEntity(Object entity) {
+		Builder builder = Entity.newBuilder(getKey(entity));
+		this.datastoreEntityConverter.write(entity, builder);
+		return builder.build();
+	}
+
+	private <T> Collection<T> convertEntities(Iterator<Entity> entities,
+			Class<T> entityClass) {
+		if (entities == null) {
+			return null;
+		}
+		List<T> results = new ArrayList<>();
+		entities.forEachRemaining(entity -> results
+				.add(this.datastoreEntityConverter.read(entityClass, entity)));
+		return results;
+	}
+
 }
