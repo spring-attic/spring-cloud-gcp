@@ -61,8 +61,6 @@ public void publishMessage() {
 By default, the `SimplePubSubMessageConverter` is used to convert payloads of type `byte[]`, `ByteString`, `ByteBuffer`, and `String` to Pub/Sub messages.
 
 For serialization and deserialization of POJOs using Jackson JSON, configure the `PubSubTemplate` to use the `JacksonPubSubMessageConverter` by calling the `setMessageConverter()` method.
-Alternatively, if you're using the starter and have an instance of the Jackson `ObjectMapper` in the application context, the `JacksonPubSubMessageConverter` will be automatically configured for you.
-
 
 ==== Subscribing to a subscription
 
