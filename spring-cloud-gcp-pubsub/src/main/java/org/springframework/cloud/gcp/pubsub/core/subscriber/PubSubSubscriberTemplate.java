@@ -27,6 +27,7 @@ import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.DefaultPubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.util.Assert;
@@ -63,7 +64,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		this.subscriberFactory = subscriberFactory;
 		this.subscriberStub = this.subscriberFactory.createSubscriberStub();
-		this.acknowledger = this.subscriberFactory.createAcknowledger();
+		this.acknowledger = new DefaultPubSubAcknowledger(this.subscriberFactory.createSubscriberStub());
 	}
 
 	@Override

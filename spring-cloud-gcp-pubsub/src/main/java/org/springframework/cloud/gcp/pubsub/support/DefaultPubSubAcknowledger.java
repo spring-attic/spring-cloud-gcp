@@ -28,11 +28,11 @@ import com.google.pubsub.v1.ModifyAckDeadlineRequest;
  *
  * @author João André Martins
  */
-class DefaultPubSubAcknowledger implements PubSubAcknowledger {
+public class DefaultPubSubAcknowledger implements PubSubAcknowledger {
 
 	private SubscriberStub subscriberStub;
 
-	DefaultPubSubAcknowledger(SubscriberStub subscriberStub) {
+	public DefaultPubSubAcknowledger(SubscriberStub subscriberStub) {
 		this.subscriberStub = subscriberStub;
 	}
 
