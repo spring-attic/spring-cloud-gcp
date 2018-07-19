@@ -30,7 +30,7 @@ import com.google.api.gax.rpc.HeaderProvider;
  */
 public class UsageTrackingHeaderProvider implements HeaderProvider {
 
-	public static final String TRACKING_HEADER_PROJECT_VERSION = "1.1.0.BUILD-SNAPSHOT";
+	public static final String TRACKING_HEADER_PROJECT_VERSION = "1.1.0.M1";
 
 	/** Class whose project name and version will be used in the header */
 	private Class clazz;
