@@ -11,7 +11,7 @@
 	</parent>
 
 	<artifactId>spring-cloud-gcp</artifactId>
-	<version>1.1.0.M1</version>
+	<version>1.1.0.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Spring Cloud GCP</name>
 	<description>Spring Cloud GCP</description>
@@ -30,11 +30,11 @@
 		<module>spring-cloud-gcp-core</module>
 		<module>spring-cloud-gcp-storage</module>
 		<module>spring-cloud-gcp-starters</module>
-		<!--<module>spring-cloud-gcp-samples</module>-->
+		<module>spring-cloud-gcp-samples</module>
 		<module>spring-cloud-gcp-autoconfigure</module>
 		<module>spring-cloud-gcp-pubsub-stream-binder</module>
 		<module>spring-cloud-gcp-data-spanner</module>
-		<!--<module>spring-cloud-gcp-data-datastore</module>-->
+		<module>spring-cloud-gcp-data-datastore</module>
 	</modules>
 
 	<properties>
