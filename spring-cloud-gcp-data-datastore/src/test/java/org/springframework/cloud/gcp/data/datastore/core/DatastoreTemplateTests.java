@@ -217,6 +217,13 @@ public class DatastoreTemplateTests {
 				this.datastoreTemplate.getKeyFromId("key", TestEntity.class));
 	}
 
+	@Test
+	public void getKeyFromIdLongTest() {
+		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));
+		assertEquals(new KeyFactory("p").setKind("custom_test_kind").newKey(3L),
+				this.datastoreTemplate.getKeyFromId(3L, TestEntity.class));
+	}
+
 	@Test(expected = DatastoreDataException.class)
 	public void getKeyFromIdExceptionTest() {
 		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));

@@ -77,7 +77,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 		if (id instanceof String) {
 			key = keyFactory.newKey((String) id);
 		}
-		else if (id == long.class) {
+		else if (id instanceof Long) {
 			key = keyFactory.newKey((long) id);
 		}
 		else {
