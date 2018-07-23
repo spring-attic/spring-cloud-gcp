@@ -20,12 +20,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Entity.Builder;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
+import com.google.cloud.datastore.QueryResults;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
@@ -89,14 +93,12 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public void deleteAll(Class<?> entityClass) {
-		this.datastore.delete(
-				findAll(entityClass).stream().map(this::getKey)
-				.toArray(Key[]::new));
+		this.datastore.delete(findAllKeys(entityClass));
 	}
 
 	@Override
 	public long count(Class<?> entityClass) {
-		return findAll(entityClass).size();
+		return findAllKeys(entityClass).length;
 	}
 
 	@Override
@@ -148,5 +150,14 @@ public class DatastoreTemplate implements DatastoreOperations {
 	private Key getKey(Object entity) {
 		return this.objectToKeyFactory.getKeyFromObject(entity,
 				this.datastoreMappingContext.getPersistentEntity(entity.getClass()));
+	}
+
+	private Key[] findAllKeys(Class entityClass) {
+		QueryResults<Key> keysFound = this.datastore
+				.run(Query.newKeyQueryBuilder().setKind(this.datastoreMappingContext
+						.getPersistentEntity(entityClass).kindName()).build());
+		return StreamSupport.stream(
+				Spliterators.spliteratorUnknownSize(keysFound, Spliterator.ORDERED),
+				false).toArray(Key[]::new);
 	}
 }

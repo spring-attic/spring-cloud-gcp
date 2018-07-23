@@ -160,10 +160,17 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void countTest() {
-		DatastoreTemplate spy = spy(this.datastoreTemplate);
-		doReturn(ImmutableList.of(new Object(), new Object(), new Object())).when(spy)
-				.findAll(eq(Object.class));
-		assertEquals(3, spy.count(Object.class));
+		Key key = createFakeKey();
+		QueryResults<Key> queryResults = mock(QueryResults.class);
+		doAnswer(invocation -> {
+			ImmutableList.of(key, key).iterator()
+					.forEachRemaining(invocation.getArgument(0));
+			return null;
+		}).when(queryResults).forEachRemaining(any());
+		when(this.datastore
+				.run(eq(Query.newKeyQueryBuilder().setKind("custom_test_kind").build())))
+						.thenReturn(queryResults);
+		assertEquals(2, this.datastoreTemplate.count(TestEntity.class));
 	}
 
 	@Test
@@ -199,13 +206,19 @@ public class DatastoreTemplateTests {
 	@Test
 	public void deleteAllTest() {
 		TestEntity object = new TestEntity();
-		DatastoreTemplate spy = spy(this.datastoreTemplate);
 		Key key = createFakeKey();
 		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
 				.thenReturn(key);
-
-		doReturn(ImmutableList.of(object, object)).when(spy).findAll(eq(TestEntity.class));
-		spy.deleteAll(TestEntity.class);
+		QueryResults<Key> queryResults = mock(QueryResults.class);
+		doAnswer(invocation -> {
+			ImmutableList.of(key, key).iterator()
+					.forEachRemaining(invocation.getArgument(0));
+			return null;
+		}).when(queryResults).forEachRemaining(any());
+		when(this.datastore
+				.run(eq(Query.newKeyQueryBuilder().setKind("custom_test_kind").build())))
+						.thenReturn(queryResults);
+		this.datastoreTemplate.deleteAll(TestEntity.class);
 		verify(this.datastore, times(1)).delete(same(key), same(key));
 	}
 
