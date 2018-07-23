@@ -25,15 +25,11 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Entity.Builder;
 import com.google.cloud.datastore.Key;
-import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.Query;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
+import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.util.Assert;
 
 /**
@@ -51,17 +47,23 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	private final DatastoreMappingContext datastoreMappingContext;
 
+	private final ObjectToKeyFactory objectToKeyFactory;
+
 	public DatastoreTemplate(Datastore datastore,
 			DatastoreEntityConverter datastoreEntityConverter,
-			DatastoreMappingContext datastoreMappingContext) {
+			DatastoreMappingContext datastoreMappingContext,
+			ObjectToKeyFactory objectToKeyFactory) {
 		Assert.notNull(datastore, "A non-null Datastore service object is required.");
 		Assert.notNull(datastoreEntityConverter,
 				"A non-null DatastoreEntityConverter is required.");
 		Assert.notNull(datastoreMappingContext,
 				"A non-null DatastoreMappingContext is required.");
+		Assert.notNull(objectToKeyFactory,
+				"A non-null Object to Key factory is required.");
 		this.datastore = datastore;
 		this.datastoreEntityConverter = datastoreEntityConverter;
 		this.datastoreMappingContext = datastoreMappingContext;
+		this.objectToKeyFactory = objectToKeyFactory;
 	}
 
 	@Override
@@ -87,7 +89,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public void deleteAll(Class<?> entityClass) {
-		this.datastore.delete(findAll(entityClass).parallelStream().map(this::getKey)
+		this.datastore.delete(
+				findAll(entityClass).stream().map(this::getKey)
 				.toArray(Key[]::new));
 	}
 
@@ -120,47 +123,6 @@ public class DatastoreTemplate implements DatastoreOperations {
 		return findById(id, entityClass) != null;
 	}
 
-	@VisibleForTesting
-	Key getKeyFromId(Object id, Class entityClass) {
-		Assert.notNull(id, "Cannot get key for null ID value.");
-		if (id instanceof Key) {
-			return (Key) id;
-		}
-		KeyFactory keyFactory = this.datastore.newKeyFactory();
-		keyFactory.setKind(
-				this.datastoreMappingContext.getPersistentEntity(entityClass).kindName());
-		Key key;
-		if (id instanceof String) {
-			key = keyFactory.newKey((String) id);
-		}
-		else if (id instanceof Long) {
-			key = keyFactory.newKey((long) id);
-		}
-		else {
-			// We will use configurable custom converters to try to convert other types to
-			// String or long
-			// in the future.
-			throw new DatastoreDataException(
-					"Keys can only be created using String or long values.");
-		}
-		return key;
-	}
-
-	@VisibleForTesting
-	Key getKey(Object entity) {
-		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
-				.getPersistentEntity(entity.getClass());
-		PersistentProperty idProp = datastorePersistentEntity.getIdProperty();
-		if (idProp == null) {
-			throw new DatastoreDataException(
-					"Cannot construct key for entity types without ID properties: "
-							+ entity.getClass());
-		}
-		return getKeyFromId(
-				datastorePersistentEntity.getPropertyAccessor(entity).getProperty(idProp),
-				entity.getClass());
-	}
-
 	private Entity convertToEntity(Object entity) {
 		Builder builder = Entity.newBuilder(getKey(entity));
 		this.datastoreEntityConverter.write(entity, builder);
@@ -169,13 +131,22 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	private <T> Collection<T> convertEntities(Iterator<Entity> entities,
 			Class<T> entityClass) {
-		if (entities == null) {
-			return null;
-		}
 		List<T> results = new ArrayList<>();
+		if (entities == null) {
+			return results;
+		}
 		entities.forEachRemaining(entity -> results
 				.add(this.datastoreEntityConverter.read(entityClass, entity)));
 		return results;
 	}
 
+	private Key getKeyFromId(Object id, Class entityClass) {
+		return this.objectToKeyFactory.getKeyFromId(id,
+				this.datastoreMappingContext.getPersistentEntity(entityClass).kindName());
+	}
+
+	private Key getKey(Object entity) {
+		return this.objectToKeyFactory.getKeyFromObject(entity,
+				this.datastoreMappingContext.getPersistentEntity(entity.getClass()));
+	}
 }

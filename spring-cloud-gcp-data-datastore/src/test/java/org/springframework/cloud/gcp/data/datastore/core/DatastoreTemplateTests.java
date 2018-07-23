@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
+import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.data.annotation.Id;
 
@@ -38,7 +38,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -62,27 +61,30 @@ public class DatastoreTemplateTests {
 	private final DatastoreEntityConverter datastoreEntityConverter = mock(
 			DatastoreEntityConverter.class);
 
+	private final ObjectToKeyFactory objectToKeyFactory = mock(ObjectToKeyFactory.class);
+
 	private DatastoreTemplate datastoreTemplate;
 
 	private Key createFakeKey() {
-		return new KeyFactory("project").setKind("kind").newKey("key");
+		return new KeyFactory("project").setKind("custom_test_kind").newKey("key");
 	}
 
 	@Before
 	public void setup() {
 		this.datastoreTemplate = new DatastoreTemplate(this.datastore,
-				this.datastoreEntityConverter, new DatastoreMappingContext());
+				this.datastoreEntityConverter, new DatastoreMappingContext(),
+				this.objectToKeyFactory);
 	}
 
 	@Test
 	public void findByIdTest() {
 		Key key1 = createFakeKey();
-		Object ob1 = new Object();
+		TestEntity ob1 = new TestEntity();
 		Entity e1 = Entity.newBuilder(createFakeKey()).build();
 		when(this.datastore.get(ArgumentMatchers.<Key>any())).thenReturn(e1);
-		when(this.datastoreEntityConverter.read(eq(Object.class), any())).thenReturn(ob1);
+		when(this.datastoreEntityConverter.read(eq(TestEntity.class), any())).thenReturn(ob1);
 
-		assertEquals(ob1, this.datastoreTemplate.findById(key1, Object.class));
+		assertEquals(ob1, this.datastoreTemplate.findById(key1, TestEntity.class));
 	}
 
 	@Test
@@ -90,11 +92,11 @@ public class DatastoreTemplateTests {
 		Key key1 = createFakeKey();
 		Key key2 = createFakeKey();
 		List<Key> keys = ImmutableList.of(key1, key2);
-		Object ob1 = new Object();
-		Object ob2 = new Object();
+		TestEntity ob1 = new TestEntity();
+		TestEntity ob2 = new TestEntity();
 		Entity e1 = Entity.newBuilder(createFakeKey()).build();
 		Entity e2 = Entity.newBuilder(createFakeKey()).build();
-		when(this.datastoreEntityConverter.read(eq(Object.class), any()))
+		when(this.datastoreEntityConverter.read(eq(TestEntity.class), any()))
 				.thenAnswer(invocation -> {
 					Object ret;
 					if (invocation.getArgument(1) == e1) {
@@ -108,18 +110,18 @@ public class DatastoreTemplateTests {
 
 		when(this.datastore.get(ArgumentMatchers.<Key[]>any()))
 				.thenReturn(ImmutableList.of(e1, e2).iterator());
-		assertThat(this.datastoreTemplate.findAllById(keys, Object.class),
+		assertThat(this.datastoreTemplate.findAllById(keys, TestEntity.class),
 				contains(ob1, ob2));
 	}
 
 	@Test
 	public void saveTest() {
-		DatastoreTemplate spy = spy(this.datastoreTemplate);
 		Object object = new Object();
 		Entity entity = Entity.newBuilder(createFakeKey()).build();
 		Key key = createFakeKey();
-		doReturn(key).when(spy).getKey(same(object));
-		spy.save(object);
+		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
+				.thenReturn(key);
+		this.datastoreTemplate.save(object);
 		verify(this.datastore, times(1)).put(eq(entity));
 		verify(this.datastoreEntityConverter, times(1)).write(same(object), notNull());
 	}
@@ -178,75 +180,33 @@ public class DatastoreTemplateTests {
 	@Test
 	public void deleteByIdTest() {
 		Key key1 = createFakeKey();
-		this.datastoreTemplate.deleteById(key1, Object.class);
+		when(this.objectToKeyFactory.getKeyFromId(same(key1), any())).thenReturn(key1);
+		this.datastoreTemplate.deleteById(key1, TestEntity.class);
 		verify(this.datastore, times(1)).delete(same(key1));
 	}
 
 	@Test
 	public void deleteObjectTest() {
-		DatastoreTemplate spy = spy(this.datastoreTemplate);
 		Object object = new Object();
 		Key key = createFakeKey();
-		doReturn(key).when(spy).getKey(same(object));
-		spy.delete(object);
+		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
+				.thenReturn(key);
+
+		this.datastoreTemplate.delete(object);
 		verify(this.datastore, times(1)).delete(same(key));
 	}
 
 	@Test
 	public void deleteAllTest() {
+		TestEntity object = new TestEntity();
 		DatastoreTemplate spy = spy(this.datastoreTemplate);
-		Object object = new Object();
 		Key key = createFakeKey();
-		doReturn(key).when(spy).getKey(same(object));
-		doReturn(ImmutableList.of(object, object)).when(spy).findAll(eq(Object.class));
-		spy.deleteAll(Object.class);
+		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
+				.thenReturn(key);
+
+		doReturn(ImmutableList.of(object, object)).when(spy).findAll(eq(TestEntity.class));
+		spy.deleteAll(TestEntity.class);
 		verify(this.datastore, times(1)).delete(same(key), same(key));
-	}
-
-	@Test
-	public void getKeyFromIdKeyTest() {
-		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));
-		Key key = createFakeKey();
-		assertSame(key, this.datastoreTemplate.getKeyFromId(key, Object.class));
-	}
-
-	@Test
-	public void getKeyFromIdStringTest() {
-		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));
-		assertEquals(new KeyFactory("p").setKind("custom_test_kind").newKey("key"),
-				this.datastoreTemplate.getKeyFromId("key", TestEntity.class));
-	}
-
-	@Test
-	public void getKeyFromIdLongTest() {
-		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));
-		assertEquals(new KeyFactory("p").setKind("custom_test_kind").newKey(3L),
-				this.datastoreTemplate.getKeyFromId(3L, TestEntity.class));
-	}
-
-	@Test(expected = DatastoreDataException.class)
-	public void getKeyFromIdExceptionTest() {
-		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));
-		this.datastoreTemplate.getKeyFromId(true, TestEntity.class);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void nullIdTest() {
-		this.datastoreTemplate.getKey(new TestEntity());
-	}
-
-	@Test
-	public void getKeyTest() {
-		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));
-		TestEntity testEntity = new TestEntity();
-		testEntity.id = "testkey";
-		assertEquals(new KeyFactory("p").setKind("custom_test_kind").newKey("testkey"),
-				this.datastoreTemplate.getKey(testEntity));
-	}
-
-	@Test(expected = DatastoreDataException.class)
-	public void getKeyNoIdTest() {
-		this.datastoreTemplate.getKey(new TestEntityNoId());
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "custom_test_kind")
@@ -254,9 +214,4 @@ public class DatastoreTemplateTests {
 		@Id
 		String id;
 	}
-
-	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "custom_test_kind")
-	private static class TestEntityNoId {
-	}
-
 }
