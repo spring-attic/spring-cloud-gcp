@@ -17,12 +17,8 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import com.google.cloud.datastore.Key;
-import com.google.cloud.datastore.KeyFactory;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
-import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.util.Assert;
 
 /**
  * An interface for creating Datastore Keys from objects and ID values.
@@ -34,12 +30,6 @@ import org.springframework.util.Assert;
 public interface ObjectToKeyFactory {
 
 	/**
-	 * Gets a key factory for creating new Keys.
-	 * @return a key factory.
-	 */
-	KeyFactory getKeyFactory();
-
-	/**
 	 * Get a Key from a provided ID value and a kind name. If the given ID value is
 	 * already a Key then this is the Key returned. Otherwise a Key is created with the
 	 * given kind name and the given ID value as the only and root value.
@@ -48,29 +38,7 @@ public interface ObjectToKeyFactory {
 	 * Key.
 	 * @return a Key.
 	 */
-	default Key getKeyFromId(Object id, String kindName) {
-		Assert.notNull(id, "Cannot get key for null ID value.");
-		if (id instanceof Key) {
-			return (Key) id;
-		}
-		KeyFactory keyFactory = getKeyFactory();
-		keyFactory.setKind(kindName);
-		Key key;
-		if (id instanceof String) {
-			key = keyFactory.newKey((String) id);
-		}
-		else if (id instanceof Long) {
-			key = keyFactory.newKey((long) id);
-		}
-		else {
-			// We will use configurable custom converters to try to convert other types to
-			// String or long
-			// in the future.
-			throw new DatastoreDataException(
-					"Keys can only be created using String or long values.");
-		}
-		return key;
-	}
+	Key getKeyFromId(Object id, String kindName);
 
 	/**
 	 * Get a Key from an entity.
@@ -78,16 +46,6 @@ public interface ObjectToKeyFactory {
 	 * @param datastorePersistentEntity the metadata of the given entity.
 	 * @return a Key.
 	 */
-	default Key getKeyFromObject(Object entity,
-			DatastorePersistentEntity datastorePersistentEntity) {
-		PersistentProperty idProp = datastorePersistentEntity.getIdProperty();
-		if (idProp == null) {
-			throw new DatastoreDataException(
-					"Cannot construct key for entity types without ID properties: "
-							+ entity.getClass());
-		}
-		return getKeyFromId(
-				datastorePersistentEntity.getPropertyAccessor(entity).getProperty(idProp),
-				datastorePersistentEntity.kindName());
-	}
+	Key getKeyFromObject(Object entity,
+			DatastorePersistentEntity datastorePersistentEntity);
 }

@@ -17,8 +17,12 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
 
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.util.Assert;
 
 /**
@@ -38,8 +42,46 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 		this.datastore = datastore;
 	}
 
-	@Override
 	public KeyFactory getKeyFactory() {
 		return this.datastore.newKeyFactory();
+	}
+
+	@Override
+	public Key getKeyFromId(Object id, String kindName) {
+		Assert.notNull(id, "Cannot get key for null ID value.");
+		if (id instanceof Key) {
+			return (Key) id;
+		}
+		KeyFactory keyFactory = getKeyFactory();
+		keyFactory.setKind(kindName);
+		Key key;
+		if (id instanceof String) {
+			key = keyFactory.newKey((String) id);
+		}
+		else if (id instanceof Long) {
+			key = keyFactory.newKey((long) id);
+		}
+		else {
+			// We will use configurable custom converters to try to convert other types to
+			// String or long
+			// in the future.
+			throw new DatastoreDataException(
+					"Keys can only be created using String or long values.");
+		}
+		return key;
+	}
+
+	@Override
+	public Key getKeyFromObject(Object entity,
+			DatastorePersistentEntity datastorePersistentEntity) {
+		PersistentProperty idProp = datastorePersistentEntity.getIdProperty();
+		if (idProp == null) {
+			throw new DatastoreDataException(
+					"Cannot construct key for entity types without ID properties: "
+							+ entity.getClass());
+		}
+		return getKeyFromId(
+				datastorePersistentEntity.getPropertyAccessor(entity).getProperty(idProp),
+				datastorePersistentEntity.kindName());
 	}
 }
