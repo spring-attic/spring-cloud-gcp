@@ -40,6 +40,7 @@ import org.springframework.util.Assert;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Doug Hoard
  */
 public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
@@ -159,7 +160,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 			throw new PubSubException("Sending Spring message failed.", re);
 		}
 
-		if (this.ackMode == AckMode.AUTO) {
+		if ((this.ackMode == AckMode.AUTO) || (this.ackMode == AckMode.AUTO_ACK)) {
 			consumer.ack();
 		}
 	}
