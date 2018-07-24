@@ -23,6 +23,7 @@ import com.google.cloud.datastore.KeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.util.Assert;
 
 /**
@@ -76,9 +77,18 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 					"Cannot construct key for entity types without ID properties: "
 							+ entity.getClass());
 		}
-		return getKeyFromId(
-				datastorePersistentEntity.getPropertyAccessor(entity).getProperty(idProp),
-				datastorePersistentEntity.kindName());
+		PersistentPropertyAccessor accessor = datastorePersistentEntity
+				.getPropertyAccessor(entity);
+		Object idVal = accessor.getProperty(idProp);
+		if (idVal == null) {
+			Key key = this.datastore.allocateId(getKeyFactory()
+					.setKind(datastorePersistentEntity.kindName()).newKey());
+			accessor.setProperty(idProp, key.getNameOrId());
+			return key;
+		}
+		else {
+			return getKeyFromId(idVal, datastorePersistentEntity.kindName());
+		}
 	}
 
 	private KeyFactory getKeyFactory() {
