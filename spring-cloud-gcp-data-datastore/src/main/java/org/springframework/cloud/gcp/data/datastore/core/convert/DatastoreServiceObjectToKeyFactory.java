@@ -42,7 +42,7 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 		this.datastore = datastore;
 	}
 
-	public KeyFactory getKeyFactory() {
+	private KeyFactory getKeyFactory() {
 		return this.datastore.newKeyFactory();
 	}
 
