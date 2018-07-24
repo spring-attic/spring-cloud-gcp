@@ -42,10 +42,6 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 		this.datastore = datastore;
 	}
 
-	private KeyFactory getKeyFactory() {
-		return this.datastore.newKeyFactory();
-	}
-
 	@Override
 	public Key getKeyFromId(Object id, String kindName) {
 		Assert.notNull(id, "Cannot get key for null ID value.");
@@ -84,4 +80,9 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 				datastorePersistentEntity.getPropertyAccessor(entity).getProperty(idProp),
 				datastorePersistentEntity.kindName());
 	}
+
+	private KeyFactory getKeyFactory() {
+		return this.datastore.newKeyFactory();
+	}
+
 }
