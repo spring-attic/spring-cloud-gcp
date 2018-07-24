@@ -72,24 +72,32 @@ public PubSubInboundChannelAdapter messageChannelAdapter(
 }
 ----
 
-In the example, we first specify the `MessageChannel` where the adapter is going to write incoming
-messages to.
+In the example, we first specify the `MessageChannel` where the adapter is going to write incoming messages to.
 The `MessageChannel` implementation isn't important here.
-Depending on your use case, you might want to use a `MessageChannel` other than
-`PublishSubscribeChannel`.
+Depending on your use case, you might want to use a `MessageChannel` other than `PublishSubscribeChannel`.
 
 Then, we declare a `PubSubInboundChannelAdapter` bean.
-It requires the channel we just created and a `SubscriberFactory`, which creates `Subscriber`
-objects from the Google Cloud Java Client for Pub/Sub.
+It requires the channel we just created and a `SubscriberFactory`, which creates `Subscriber` objects from the Google Cloud Java Client for Pub/Sub.
 The Spring Boot starter for GCP Pub/Sub provides a configured `SubscriberFactory`.
 
-It is also possible to set the message acknowledgement mode on the adapter, which is automatic by
-default.
-On automatic acking, a message is acked with GCP Pub/Sub if the adapter sent it to the channel and
-no exceptions were thrown.
+The `PubSubInboundChannelAdapter` supports three acknowledgement modes, with `AckMode.AUTO` being the default value;
+
+Automatic acking (`AckMode.AUTO`)
+
+A message is acked with GCP Pub/Sub if the adapter sent it to the channel and no exceptions were thrown.
 If a `RuntimeException` is thrown while the message is processed, then the message is nacked.
-On manual acking, the adapter attaches an `AckReplyConsumer` object to the `Message` headers, which
-users can extract using the `GcpPubSubHeaders.ACKNOWLEDGEMENT` key and use to (n)ack a message.
+
+Automatic acking OK (`AckMode.AUTO_ACK`)
+
+A message is acked with GCP Pub/Sub if the adapter sent it to the channel and no exceptions were thrown.
+If a `RuntimeException` is thrown while the message is processed, then the message is neither acked / nor nacked.
+
+This is useful when using the subscription's ack deadline timeout as a retry delivery backoff mechanism.
+
+Manually acking (`AckMode.MANUAL`)
+
+The adapter attaches an `AckReplyConsumer` object to the `Message` headers.
+Users can extract the `AckReplyConsumer` using the `GcpPubSubHeaders.ACKNOWLEDGEMENT` key and use it to (n)ack a message.
 
 [source,java]
 ----
