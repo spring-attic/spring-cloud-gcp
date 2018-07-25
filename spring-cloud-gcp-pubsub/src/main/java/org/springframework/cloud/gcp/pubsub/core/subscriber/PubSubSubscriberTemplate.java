@@ -31,6 +31,7 @@ import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.PulledAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.util.Assert;
 
@@ -86,12 +87,10 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		PullResponse pullResponse =	this.subscriberStub.pullCallable().call(pullRequest);
 		List<AcknowledgeablePubsubMessage> receivedMessages =
 				pullResponse.getReceivedMessagesList().stream()
-						.map(message -> {
-							return new AcknowledgeablePubsubMessage(message.getMessage(),
+						.map(message -> new PulledAcknowledgeablePubsubMessage(message.getMessage(),
 									message.getAckId(),
 									pullRequest.getSubscription(),
-									this.subscriberStub);
-						})
+									this.subscriberStub))
 						.collect(Collectors.toList());
 
 		return receivedMessages;
@@ -114,7 +113,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		ack(ackableMessages);
 
-		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getMessage)
+		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getPubsubMessage)
 				.collect(Collectors.toList());
 	}
 
@@ -133,25 +132,33 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	public void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
 
-		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::ack);
+		groupPulledAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::ack);
+
+		acknowledgeablePubsubMessages.stream().filter(a -> !(a instanceof PulledAcknowledgeablePubsubMessage))
+				.forEach(AcknowledgeablePubsubMessage::ack);
 	}
 
 	@Override
 	public void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
 
-		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::nack);
+		groupPulledAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::nack);
+
+		acknowledgeablePubsubMessages.stream().filter(a -> !(a instanceof PulledAcknowledgeablePubsubMessage))
+				.forEach(AcknowledgeablePubsubMessage::nack);
 	}
 
 	/**
-	 * Groups messages by subscription.
+	 * Groups {@link PulledAcknowledgeablePubsubMessage} messages by subscription.
 	 * @return a map from subscription to list of ack IDs.
 	 */
-	private Map<String, List<String>> groupAcknowledgeableMessages(
+	private Map<String, List<String>> groupPulledAcknowledgeableMessages(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		return acknowledgeablePubsubMessages.stream()
-				.collect(Collectors.groupingBy(AcknowledgeablePubsubMessage::getSubscriptionName,
-						Collectors.mapping(AcknowledgeablePubsubMessage::getAckId, Collectors.toList())));
+				.filter(a -> a instanceof PulledAcknowledgeablePubsubMessage)
+				.map(a -> (PulledAcknowledgeablePubsubMessage)a)
+				.collect(Collectors.groupingBy(PulledAcknowledgeablePubsubMessage::getSubscriptionName,
+						Collectors.mapping(PulledAcknowledgeablePubsubMessage::getAckId, Collectors.toList())));
 	}
 
 	private void ack(String subscriptionName, Collection<String> ackIds) {

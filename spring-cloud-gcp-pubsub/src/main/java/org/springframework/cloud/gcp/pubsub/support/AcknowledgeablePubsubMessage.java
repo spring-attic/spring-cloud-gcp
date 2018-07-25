@@ -16,9 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
-import com.google.cloud.pubsub.v1.stub.SubscriberStub;
-import com.google.pubsub.v1.AcknowledgeRequest;
-import com.google.pubsub.v1.ModifyAckDeadlineRequest;
+import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.pubsub.v1.PubsubMessage;
 
 /**
@@ -26,57 +24,13 @@ import com.google.pubsub.v1.PubsubMessage;
  *
  * <p>To acknowledge {@link AcknowledgeablePubsubMessage} in bulk, using a
  * {@link org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations#ack(java.util.Collection)}
- * is recommended. To do that, a user must first extract the ack IDs and group them by subscription name.
+ * is recommended.
  *
  * @author João André Martins
+ * @author Mike Eltsufin
  */
-public class AcknowledgeablePubsubMessage {
+public interface AcknowledgeablePubsubMessage extends AckReplyConsumer {
 
-	private PubsubMessage message;
-
-	private String ackId;
-
-	private String subscriptionName;
-
-	private SubscriberStub subscriberStub;
-
-	public AcknowledgeablePubsubMessage(PubsubMessage message, String ackId,
-			String subscriptionName, SubscriberStub subscriberStub) {
-		this.message = message;
-		this.ackId = ackId;
-		this.subscriptionName = subscriptionName;
-		this.subscriberStub = subscriberStub;
-	}
-
-	public PubsubMessage getMessage() {
-		return this.message;
-	}
-
-	public String getAckId() {
-		return this.ackId;
-	}
-
-	public String getSubscriptionName() {
-		return this.subscriptionName;
-	}
-
-	public void ack() {
-		AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
-				.addAckIds(this.ackId)
-				.setSubscription(this.subscriptionName)
-				.build();
-
-		this.subscriberStub.acknowledgeCallable().call(acknowledgeRequest);
-	}
-
-	public void nack() {
-		ModifyAckDeadlineRequest modifyAckDeadlineRequest = ModifyAckDeadlineRequest.newBuilder()
-				.setAckDeadlineSeconds(0)
-				.addAckIds(this.ackId)
-				.setSubscription(this.subscriptionName)
-				.build();
-
-		this.subscriberStub.modifyAckDeadlineCallable().call(modifyAckDeadlineRequest);
-	}
+	PubsubMessage getPubsubMessage();
 
 }
