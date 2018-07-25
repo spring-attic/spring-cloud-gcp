@@ -156,7 +156,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		return acknowledgeablePubsubMessages.stream()
 				.filter(a -> a instanceof PulledAcknowledgeablePubsubMessage)
-				.map(a -> (PulledAcknowledgeablePubsubMessage)a)
+				.map(a -> (PulledAcknowledgeablePubsubMessage) a)
 				.collect(Collectors.groupingBy(PulledAcknowledgeablePubsubMessage::getSubscriptionName,
 						Collectors.mapping(PulledAcknowledgeablePubsubMessage::getAckId, Collectors.toList())));
 	}
