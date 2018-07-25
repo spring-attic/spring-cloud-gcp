@@ -62,7 +62,6 @@ public class DatastorePersistentEntityImpl<T>
 		Class<?> rawType = information.getType();
 
 		this.context = new StandardEvaluationContext();
-
 		this.kind = this.findAnnotation(Entity.class);
 		this.kindName = this.hasTableName() ? this.kind.name()
 				: StringUtils.uncapitalize(rawType.getSimpleName());
