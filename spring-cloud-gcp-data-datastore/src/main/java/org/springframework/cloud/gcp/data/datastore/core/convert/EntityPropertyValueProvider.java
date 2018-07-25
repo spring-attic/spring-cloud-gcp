@@ -21,7 +21,6 @@ import com.google.cloud.datastore.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.data.mapping.model.PropertyValueProvider;
-import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 /**
