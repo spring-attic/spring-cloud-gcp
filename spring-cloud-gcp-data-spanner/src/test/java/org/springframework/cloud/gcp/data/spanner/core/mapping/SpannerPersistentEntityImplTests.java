@@ -16,12 +16,12 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
-import com.google.cloud.spanner.Key;
 import java.util.List;
-import org.junit.Test;
 
-import org.mockito.invocation.InvocationOnMock;
+import com.google.cloud.spanner.Key;
+import org.junit.Test;
 import org.mockito.stubbing.Answer;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -36,12 +36,9 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.AdditionalMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -215,8 +212,14 @@ public class SpannerPersistentEntityImplTests {
 	@Test
 	public void doWithChildrenCollectionsTest() {
 		PropertyHandler<SpannerPersistentProperty> mockHandler = mock(PropertyHandler.class);
-		SpannerPersistentEntity spannerPersistentEntity = this.spannerMappingContext.getPersistentEntity(ParentInRelationship.class);
-		when(mockHandler.doWithPersistentProperty(any()))
+		SpannerPersistentEntity spannerPersistentEntity =
+				this.spannerMappingContext.getPersistentEntity(ParentInRelationship.class);
+		doAnswer((Answer) invocation -> {
+			String colName = ((SpannerPersistentProperty) invocation.getArgument(0))
+					.getColumnName();
+			assertTrue(colName.equals("childrenA") || colName.equals("childrenB"));
+			return null;
+		}).when(mockHandler).doWithPersistentProperty(any());
 		spannerPersistentEntity.doWithChildCollectionProperties(mockHandler);
 	}
 
