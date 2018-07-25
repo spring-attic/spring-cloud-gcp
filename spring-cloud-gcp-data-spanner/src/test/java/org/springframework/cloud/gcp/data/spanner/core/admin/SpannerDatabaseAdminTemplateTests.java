@@ -112,7 +112,7 @@ public class SpannerDatabaseAdminTemplateTests {
 				this.counter++;
 				return true;
 			}
-			counter = -1;
+			this.counter = -1;
 			return false;
 		}
 
