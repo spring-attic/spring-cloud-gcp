@@ -33,7 +33,9 @@ import org.junit.Test;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -61,7 +63,7 @@ public class SpannerDatabaseAdminTemplateTests {
 	}
 
 	@Test
-	public void getParentChildTablesMapTest() {
+	public void getTableRelationshipsTest() {
 		ReadContext readContext = mock(ReadContext.class);
 
 		Struct s1 = Struct.newBuilder().set("table_name").to(Value.string("grandpa"))
@@ -89,6 +91,15 @@ public class SpannerDatabaseAdminTemplateTests {
 		assertThat(relationships.get("grandpa"),
 				containsInAnyOrder("parent_a", "parent_b"));
 		assertThat(relationships.get("parent_a"), containsInAnyOrder("child"));
+		assertTrue(this.spannerDatabaseAdminTemplate.isInterleaved("grandpa", "child"));
+		assertTrue(
+				this.spannerDatabaseAdminTemplate.isInterleaved("grandpa", "parent_a"));
+		assertTrue(this.spannerDatabaseAdminTemplate.isInterleaved("parent_a", "child"));
+		assertTrue(
+				this.spannerDatabaseAdminTemplate.isInterleaved("grandpa", "parent_b"));
+		assertFalse(
+				this.spannerDatabaseAdminTemplate.isInterleaved("parent_a", "parent_b"));
+		assertFalse(this.spannerDatabaseAdminTemplate.isInterleaved("parent_b", "child"));
 	}
 
 	private static class MockResults {
@@ -101,6 +112,7 @@ public class SpannerDatabaseAdminTemplateTests {
 				this.counter++;
 				return true;
 			}
+			counter = -1;
 			return false;
 		}
 
