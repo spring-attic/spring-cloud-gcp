@@ -21,7 +21,7 @@ import java.math.BigInteger;
 /**
  * @author Dmitry Solomakha
  */
-class TestDatastoreItem2 {
+class TestDatastoreItemUnsupportedFields {
 	private String stringField;
 
 	private BigInteger unsupportedField;

@@ -93,7 +93,7 @@ public class DatastoreEntityConverterImplTests {
 	}
 
 	@Test(expected = DatastoreDataException.class)
-	public void readTestException() {
+	public void testWrongTypeReadException() {
 				Entity entity = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
 				.set("stringField", "string value")
 				.set("boolField", 123L)
@@ -154,8 +154,8 @@ public class DatastoreEntityConverterImplTests {
 	}
 
 	@Test(expected = DatastoreDataException.class)
-	public void writeTestException() {
-		TestDatastoreItem2 item = new TestDatastoreItem2();
+	public void testUnsupportedTypeWriteException() {
+		TestDatastoreItemUnsupportedFields item = new TestDatastoreItemUnsupportedFields();
 		item.setStringField("string value");
 		item.setUnsupportedField(new BigInteger("123"));
 

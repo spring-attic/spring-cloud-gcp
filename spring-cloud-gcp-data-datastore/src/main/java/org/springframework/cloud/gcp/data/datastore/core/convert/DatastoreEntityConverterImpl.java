@@ -119,22 +119,22 @@ public class DatastoreEntityConverterImpl implements DatastoreEntityConverter {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> void writeProperty(Entity.Builder sink, PersistentPropertyAccessor accessor,
+	private void writeProperty(Entity.Builder sink, PersistentPropertyAccessor accessor,
 			DatastorePersistentProperty persistentProperty) {
 		Object propertyVal = accessor.getProperty(persistentProperty);
 		if (propertyVal == null) {
 			sink.set(persistentProperty.getFieldName(), new NullValue());
 			return;
 		}
+		Function valueFactory = valFactories.get(persistentProperty.getType());
 
-		Function<T, Value<?>> valueFactory = (Function<T, Value<?>>) valFactories.get(persistentProperty.getType());
 		if (valueFactory == null) {
 			throw new DatastoreDataException("The value in column with name " + persistentProperty.getFieldName()
 					+ " is of unsupported data type. " +
 					"The property's type is " + persistentProperty.getType());
 		}
 
-		Value<T> val = (Value<T>) valueFactory.apply((T) propertyVal);
+		Value val = (Value) valueFactory.apply(propertyVal);
 		sink.set(persistentProperty.getFieldName(), val);
 	}
 }
