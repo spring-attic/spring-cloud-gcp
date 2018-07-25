@@ -120,7 +120,7 @@ public class DatastoreTemplateTests {
 		TestEntity object = new TestEntity();
 		Entity entity = Entity.newBuilder(createFakeKey()).build();
 		Key key = createFakeKey();
-		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
+		when(this.objectToKeyFactory.getOrAllocateKeyFromObject(same(object), any()))
 				.thenReturn(key);
 		when(this.datastore.put((FullEntity<?>) any())).thenReturn(entity);
 		when(this.datastoreEntityConverter.read(eq(TestEntity.class), same(entity)))
@@ -211,7 +211,7 @@ public class DatastoreTemplateTests {
 	public void deleteObjectTest() {
 		Object object = new Object();
 		Key key = createFakeKey();
-		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
+		when(this.objectToKeyFactory.getOrAllocateKeyFromObject(same(object), any()))
 				.thenReturn(key);
 
 		this.datastoreTemplate.delete(object);
@@ -222,7 +222,7 @@ public class DatastoreTemplateTests {
 	public void deleteAllTest() {
 		TestEntity object = new TestEntity();
 		Key key = createFakeKey();
-		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
+		when(this.objectToKeyFactory.getOrAllocateKeyFromObject(same(object), any()))
 				.thenReturn(key);
 		QueryResults<Key> queryResults = mock(QueryResults.class);
 		doAnswer(invocation -> {

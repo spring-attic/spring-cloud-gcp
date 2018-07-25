@@ -80,14 +80,14 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 		TestEntityWithId testEntity = new TestEntityWithId();
 		testEntity.id = "testkey";
 		assertEquals(new KeyFactory("p").setKind("custom_test_kind").newKey("testkey"),
-				this.datastoreServiceObjectToKeyFactory.getKeyFromObject(testEntity,
+				this.datastoreServiceObjectToKeyFactory.getOrAllocateKeyFromObject(testEntity,
 						this.datastoreMappingContext
 								.getPersistentEntity(TestEntityWithId.class)));
 	}
 
 	@Test(expected = DatastoreDataException.class)
 	public void getKeyNoIdTest() {
-		this.datastoreServiceObjectToKeyFactory.getKeyFromObject(new TestEntityNoId(),
+		this.datastoreServiceObjectToKeyFactory.getOrAllocateKeyFromObject(new TestEntityNoId(),
 				this.datastoreMappingContext.getPersistentEntity(TestEntityNoId.class));
 	}
 
@@ -98,7 +98,7 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 		when(this.datastore.allocateId((IncompleteKey) any())).thenReturn(key);
 		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("project"));
 		Key allocatedKey = this.datastoreServiceObjectToKeyFactory
-				.getKeyFromObject(testEntityWithId, this.datastoreMappingContext
+				.getOrAllocateKeyFromObject(testEntityWithId, this.datastoreMappingContext
 						.getPersistentEntity(testEntityWithId.getClass()));
 		assertEquals(key, allocatedKey);
 		assertEquals("key", testEntityWithId.id);

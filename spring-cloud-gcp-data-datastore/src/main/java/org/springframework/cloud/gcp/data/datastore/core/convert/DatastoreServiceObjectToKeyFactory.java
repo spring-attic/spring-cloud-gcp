@@ -69,7 +69,7 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 	}
 
 	@Override
-	public Key getKeyFromObject(Object entity,
+	public Key getOrAllocateKeyFromObject(Object entity,
 			DatastorePersistentEntity datastorePersistentEntity) {
 		PersistentProperty idProp = datastorePersistentEntity.getIdProperty();
 		if (idProp == null) {
