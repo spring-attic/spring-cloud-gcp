@@ -77,8 +77,9 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public <T> void save(T instance) {
+	public <T> T save(T instance) {
 		this.datastore.put(convertToEntity(instance));
+		return instance;
 	}
 
 	@Override
@@ -87,13 +88,21 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
+	public <T> void deleteAllById(Iterable<?> ids, Class<T> entityClass) {
+		List<Key> keys = getKeysFromIds(ids, entityClass);
+		this.datastore.delete(keys.toArray(new Key[keys.size()]));
+	}
+
+	@Override
 	public <T> void delete(T entity) {
 		this.datastore.delete(getKey(entity));
 	}
 
 	@Override
-	public void deleteAll(Class<?> entityClass) {
-		this.datastore.delete(findAllKeys(entityClass));
+	public long deleteAll(Class<?> entityClass) {
+		Key[] keysToDelete = findAllKeys(entityClass);
+		this.datastore.delete(keysToDelete);
+		return keysToDelete.length;
 	}
 
 	@Override
@@ -103,8 +112,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> Collection<T> findAllById(Iterable<?> ids, Class<T> entityClass) {
-		List<Key> keysToFind = new ArrayList<>();
-		ids.forEach(x -> keysToFind.add(getKeyFromId(x, entityClass)));
+		List<Key> keysToFind = getKeysFromIds(ids, entityClass);
 		return convertEntities(
 				this.datastore.get(keysToFind.toArray(new Key[keysToFind.size()])),
 				entityClass);
@@ -159,5 +167,11 @@ public class DatastoreTemplate implements DatastoreOperations {
 		return StreamSupport.stream(
 				Spliterators.spliteratorUnknownSize(keysFound, Spliterator.ORDERED),
 				false).toArray(Key[]::new);
+	}
+
+	private <T> List<Key> getKeysFromIds(Iterable<?> ids, Class<T> entityClass) {
+		List<Key> keys = new ArrayList<>();
+		ids.forEach(x -> keys.add(getKeyFromId(x, entityClass)));
+		return keys;
 	}
 }

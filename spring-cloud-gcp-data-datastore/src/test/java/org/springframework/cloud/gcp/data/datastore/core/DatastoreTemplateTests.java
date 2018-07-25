@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.FullEntity;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.Query;
@@ -116,12 +117,15 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void saveTest() {
-		Object object = new Object();
+		TestEntity object = new TestEntity();
 		Entity entity = Entity.newBuilder(createFakeKey()).build();
 		Key key = createFakeKey();
 		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
 				.thenReturn(key);
-		this.datastoreTemplate.save(object);
+		when(this.datastore.put((FullEntity<?>) any())).thenReturn(entity);
+		when(this.datastoreEntityConverter.read(eq(TestEntity.class), same(entity)))
+				.thenReturn(object);
+		assertTrue(this.datastoreTemplate.save(object) instanceof TestEntity);
 		verify(this.datastore, times(1)).put(eq(entity));
 		verify(this.datastoreEntityConverter, times(1)).write(same(object), notNull());
 	}
@@ -193,6 +197,17 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
+	public void deleteAllByIdTest() {
+		Key key1 = createFakeKey();
+		Key key2 = createFakeKey();
+		when(this.objectToKeyFactory.getKeyFromId(same(key1), any())).thenReturn(key1);
+		when(this.objectToKeyFactory.getKeyFromId(same(key2), any())).thenReturn(key2);
+		this.datastoreTemplate.deleteAllById(ImmutableList.of(key1, key2),
+				TestEntity.class);
+		verify(this.datastore, times(1)).delete(same(key1), same(key2));
+	}
+
+	@Test
 	public void deleteObjectTest() {
 		Object object = new Object();
 		Key key = createFakeKey();
@@ -218,7 +233,7 @@ public class DatastoreTemplateTests {
 		when(this.datastore
 				.run(eq(Query.newKeyQueryBuilder().setKind("custom_test_kind").build())))
 						.thenReturn(queryResults);
-		this.datastoreTemplate.deleteAll(TestEntity.class);
+		assertEquals(2, this.datastoreTemplate.deleteAll(TestEntity.class));
 		verify(this.datastore, times(1)).delete(same(key), same(key));
 	}
 

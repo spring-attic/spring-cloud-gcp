@@ -76,9 +76,14 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 					"Cannot construct key for entity types without ID properties: "
 							+ entity.getClass());
 		}
-		return getKeyFromId(
-				datastorePersistentEntity.getPropertyAccessor(entity).getProperty(idProp),
-				datastorePersistentEntity.kindName());
+		Object idVal = datastorePersistentEntity.getPropertyAccessor(entity)
+				.getProperty(idProp);
+		if (idVal == null) {
+			return null;
+		}
+		else {
+			return getKeyFromId(idVal, datastorePersistentEntity.kindName());
+		}
 	}
 
 	private KeyFactory getKeyFactory() {
