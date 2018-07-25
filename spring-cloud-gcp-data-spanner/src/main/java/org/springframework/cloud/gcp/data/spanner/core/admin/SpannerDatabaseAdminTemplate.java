@@ -155,6 +155,28 @@ public class SpannerDatabaseAdminTemplate {
 	}
 
 	/**
+	 * Return true if the given table names are interleaved as ancestor and descendant.
+	 * These may be separated by more than one generation.
+	 * @param ancestor the name of the ancestor table
+	 * @param descendant the name of the descendant table. this may be a direct child or
+	 * further down in the family tree.
+	 * @return true the descendant is indeed a descendant table. false otherwise.
+	 */
+	public boolean isInterleaved(String ancestor, String descendant) {
+		Assert.notNull(ancestor, "A non-null ancestor table name is required.");
+		Set<String> directChildren = getParentChildTablesMap().get(ancestor);
+		if (ancestor.equals(descendant) || directChildren == null) {
+			return false;
+		}
+		for (String child : directChildren) {
+			if (child.equals(descendant) || isInterleaved(child, descendant)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Return a map of parent and child table relationships in the database at the
 	 * moment.
 	 * @return A map where the keys are parent table names, and the value is a set of that
