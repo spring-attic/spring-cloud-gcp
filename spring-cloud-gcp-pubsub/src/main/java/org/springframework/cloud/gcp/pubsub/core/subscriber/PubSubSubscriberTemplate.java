@@ -16,19 +16,20 @@
 
 package org.springframework.cloud.gcp.pubsub.core.subscriber;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
+import com.google.pubsub.v1.AcknowledgeRequest;
+import com.google.pubsub.v1.ModifyAckDeadlineRequest;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.DefaultPubSubAcknowledger;
-import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.util.Assert;
 
@@ -52,8 +53,6 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	private final SubscriberStub subscriberStub;
 
-	private final PubSubAcknowledger acknowledger;
-
 	/**
 	 * Default {@link PubSubSubscriberTemplate} constructor
 	 * @param subscriberFactory the {@link Subscriber} factory
@@ -64,7 +63,6 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		this.subscriberFactory = subscriberFactory;
 		this.subscriberStub = this.subscriberFactory.createSubscriberStub();
-		this.acknowledger = new DefaultPubSubAcknowledger(this.subscriberFactory.createSubscriberStub());
 	}
 
 	@Override
@@ -91,7 +89,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 							return new AcknowledgeablePubsubMessage(message.getMessage(),
 									message.getAckId(),
 									pullRequest.getSubscription(),
-									this.acknowledger);
+									this.subscriberStub);
 						})
 						.collect(Collectors.toList());
 
@@ -113,7 +111,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		List<AcknowledgeablePubsubMessage> ackableMessages = pull(pullRequest);
 
-		this.acknowledger.ack(ackableMessages.stream()
+		this.ack(ackableMessages.stream()
 				.map(AcknowledgeablePubsubMessage::getAckId)
 				.collect(Collectors.toList()), pullRequest.getSubscription());
 
@@ -132,8 +130,24 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		return this.subscriberFactory;
 	}
 
-	public PubSubAcknowledger getAcknowledger() {
-		return this.acknowledger;
+	@Override
+	public void ack(Collection<String> ackIds, String subscriptionName) {
+		AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
+				.addAllAckIds(ackIds)
+				.setSubscription(subscriptionName)
+				.build();
+
+		this.subscriberStub.acknowledgeCallable().call(acknowledgeRequest);
 	}
 
+	@Override
+	public void nack(Collection<String> ackIds, String subscriptionName) {
+		ModifyAckDeadlineRequest modifyAckDeadlineRequest = ModifyAckDeadlineRequest.newBuilder()
+				.setAckDeadlineSeconds(0)
+				.addAllAckIds(ackIds)
+				.setSubscription(subscriptionName)
+				.build();
+
+		this.subscriberStub.modifyAckDeadlineCallable().call(modifyAckDeadlineRequest);
+	}
 }
