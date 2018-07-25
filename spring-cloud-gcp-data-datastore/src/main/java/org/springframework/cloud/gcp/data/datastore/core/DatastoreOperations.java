@@ -48,7 +48,7 @@ public interface DatastoreOperations {
 
 	/**
 	 * Delete an entity from Cloud Datastore. Deleting IDs that do not exist in Cloud Datastore
-	 * is OK.
+	 * will result in no operation.
 	 * @param id the ID of the entity to delete. If this is actually a
 	 * {@link com.google.cloud.datastore.Key}
 	 * then it will be used. Otherwise it will be attempted to be converted
@@ -61,7 +61,7 @@ public interface DatastoreOperations {
 
 	/**
 	 * Delete multiple IDs from Cloud Datastore. Deleting IDs that do not exist in Cloud Datastore
-	 * is OK.
+	 * will result in no operation.
 	 * @param ids the IDs to delete. If any of these is actually a
 	 * {@link com.google.cloud.datastore.Key}
 	 * then it will be used. Otherwise it will be attempted to be converted
@@ -74,7 +74,7 @@ public interface DatastoreOperations {
 
 	/**
 	 * Delete an entity from Cloud Datastore. Deleting entities that don't exist in Cloud
-	 * Datastore is OK.
+	 * Datastore will result in no operation.
 	 * @param entity the entity to delete.
 	 * @param <T> the entity type
 	 */
