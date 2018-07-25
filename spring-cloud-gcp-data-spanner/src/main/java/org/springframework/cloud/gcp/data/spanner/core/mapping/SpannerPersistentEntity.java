@@ -19,6 +19,9 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 import java.util.Set;
 
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
 /**
@@ -60,4 +63,12 @@ public interface SpannerPersistentEntity<T>
 
 	@Override
 	SpannerCompositeKeyProperty getIdProperty();
+
+	/**
+	 * Applies the given {@link PropertyHandler} to all {@link SpannerPersistentProperty}s contained in this
+	 * {@link SpannerPersistentProperty} that are collections of child entities.
+	 *
+	 * @param handler must not be {@literal null}.
+	 */
+	void doWithChildCollectionProperties(PropertyHandler<SpannerPersistentProperty> handler);
 }

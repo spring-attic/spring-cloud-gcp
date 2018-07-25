@@ -163,6 +163,17 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
+	public void doWithChildCollectionProperties(
+			PropertyHandler<SpannerPersistentProperty> handler) {
+		doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					if (spannerPersistentProperty.isChildCollection()) {
+						handler.doWithPersistentProperty(spannerPersistentProperty);
+					}
+				});
+	}
+
+	@Override
 	public boolean hasIdProperty() {
 		return this.idProperty != null;
 	}

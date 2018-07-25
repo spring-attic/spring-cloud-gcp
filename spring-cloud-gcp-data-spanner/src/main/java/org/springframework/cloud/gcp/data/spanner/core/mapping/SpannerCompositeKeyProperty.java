@@ -105,6 +105,11 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	@Override
+	public boolean isChildCollection() {
+		return false;
+	}
+
+	@Override
 	public OptionalLong getMaxColumnLength() {
 		return OptionalLong.empty();
 	}
