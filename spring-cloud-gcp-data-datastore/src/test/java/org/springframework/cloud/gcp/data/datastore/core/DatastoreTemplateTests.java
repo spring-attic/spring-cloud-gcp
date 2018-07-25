@@ -199,10 +199,12 @@ public class DatastoreTemplateTests {
 	@Test
 	public void deleteAllByIdTest() {
 		Key key1 = createFakeKey();
+		Key key2 = createFakeKey();
 		when(this.objectToKeyFactory.getKeyFromId(same(key1), any())).thenReturn(key1);
-		this.datastoreTemplate.deleteAllById(ImmutableList.of(key1, key1),
+		when(this.objectToKeyFactory.getKeyFromId(same(key2), any())).thenReturn(key2);
+		this.datastoreTemplate.deleteAllById(ImmutableList.of(key1, key2),
 				TestEntity.class);
-		verify(this.datastore, times(1)).delete(same(key1), same(key1));
+		verify(this.datastore, times(1)).delete(same(key1), same(key2));
 	}
 
 	@Test

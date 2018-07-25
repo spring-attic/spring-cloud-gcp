@@ -34,6 +34,7 @@ import com.google.cloud.datastore.QueryResults;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.util.Assert;
 
 /**
@@ -79,7 +80,11 @@ public class DatastoreTemplate implements DatastoreOperations {
 	@Override
 	public <T> T save(T instance) {
 		Entity saved = this.datastore.put(convertToEntity(instance));
-		return this.datastoreEntityConverter.read((Class<T>) instance.getClass(), saved);
+		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
+				.getPersistentEntity(instance.getClass());
+		datastorePersistentEntity.getPropertyAccessor(instance).setProperty(
+				datastorePersistentEntity.getIdProperty(), saved.getKey().getNameOrId());
+		return instance;
 	}
 
 	@Override
