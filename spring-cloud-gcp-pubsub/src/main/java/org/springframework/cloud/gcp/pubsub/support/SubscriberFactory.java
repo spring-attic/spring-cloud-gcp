@@ -58,11 +58,4 @@ public interface SubscriberFactory {
 	 */
 	SubscriberStub createSubscriberStub();
 
-	/**
-	 * Create a {@link PubSubAcknowledger} to (negatively) acknowledge messages in bulk.
-	 */
-	default PubSubAcknowledger createAcknowledger() {
-		return new DefaultPubSubAcknowledger(createSubscriberStub());
-	}
-
 }
