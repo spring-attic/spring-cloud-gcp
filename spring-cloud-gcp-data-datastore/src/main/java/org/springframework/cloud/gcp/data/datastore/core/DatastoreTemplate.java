@@ -34,6 +34,8 @@ import com.google.cloud.datastore.QueryResults;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.util.Assert;
 
 /**
@@ -78,7 +80,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> T save(T instance) {
-		this.datastore.put(convertToEntity(instance));
+		this.datastore.put(convertToEntityForSave(instance));
 		return instance;
 	}
 
@@ -95,7 +97,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> void delete(T entity) {
-		this.datastore.delete(getKey(entity));
+		this.datastore.delete(getKey(entity, false));
 	}
 
 	@Override
@@ -133,8 +135,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 		return findById(id, entityClass) != null;
 	}
 
-	private Entity convertToEntity(Object entity) {
-		Builder builder = Entity.newBuilder(getKey(entity));
+	private Entity convertToEntityForSave(Object entity) {
+		Builder builder = Entity.newBuilder(getKey(entity, true));
 		this.datastoreEntityConverter.write(entity, builder);
 		return builder.build();
 	}
@@ -155,9 +157,17 @@ public class DatastoreTemplate implements DatastoreOperations {
 				this.datastoreMappingContext.getPersistentEntity(entityClass).kindName());
 	}
 
-	private Key getKey(Object entity) {
-		return this.objectToKeyFactory.getKeyFromObject(entity,
-				this.datastoreMappingContext.getPersistentEntity(entity.getClass()));
+	private Key getKey(Object entity, boolean allocateKey) {
+		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
+				.getPersistentEntity(entity.getClass());
+		DatastorePersistentProperty idProp = datastorePersistentEntity
+				.getIdPropertyOrFail();
+		return datastorePersistentEntity.getPropertyAccessor(entity)
+				.getProperty(idProp) == null && allocateKey
+						? this.objectToKeyFactory.allocateKeyForObject(entity,
+								datastorePersistentEntity)
+						: this.objectToKeyFactory.getKeyFromObject(entity,
+								datastorePersistentEntity);
 	}
 
 	private Key[] findAllKeys(Class entityClass) {
