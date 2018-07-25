@@ -31,18 +31,19 @@ import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.LatLng;
 import com.google.cloud.datastore.LatLngValue;
 import com.google.cloud.datastore.LongValue;
+import com.google.cloud.datastore.NullValue;
 import com.google.cloud.datastore.StringValue;
 import com.google.cloud.datastore.TimestampValue;
 import com.google.cloud.datastore.Value;
 import com.google.common.collect.ImmutableMap;
 
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PreferredConstructor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
@@ -84,10 +85,8 @@ public class DatastoreEntityConverterImpl implements DatastoreEntityConverter {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <R> R read(Class<R> aClass, Entity entity) {
-		DatastorePersistentEntity<R> persistentEntity = (DatastorePersistentEntity<R>) mappingContext
+		DatastorePersistentEntity<R> persistentEntity = (DatastorePersistentEntity<R>) this.mappingContext
 				.getPersistentEntity(aClass);
-		PreferredConstructor<?, DatastorePersistentProperty> persistenceConstructor = persistentEntity
-				.getPersistenceConstructor();
 
 		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(entity);
 
@@ -114,16 +113,27 @@ public class DatastoreEntityConverterImpl implements DatastoreEntityConverter {
 		PersistentPropertyAccessor accessor = persistentEntity
 				.getPropertyAccessor(source);
 		persistentEntity.doWithProperties(
-				(PropertyHandler<DatastorePersistentProperty>) datastorePersistentProperty -> {
-					writeProperty(sink, accessor, datastorePersistentProperty);
-				});
+				(DatastorePersistentProperty datastorePersistentProperty) ->
+					writeProperty(sink, accessor, datastorePersistentProperty)
+				);
 	}
 
+	@SuppressWarnings("unchecked")
 	private <T> void writeProperty(Entity.Builder sink, PersistentPropertyAccessor accessor,
 			DatastorePersistentProperty persistentProperty) {
-
 		Object propertyVal = accessor.getProperty(persistentProperty);
+		if (propertyVal == null) {
+			sink.set(persistentProperty.getFieldName(), new NullValue());
+			return;
+		}
+
 		Function<T, Value<?>> valueFactory = (Function<T, Value<?>>) valFactories.get(persistentProperty.getType());
+		if (valueFactory == null) {
+			throw new DatastoreDataException("The value in column with name " + persistentProperty.getFieldName()
+					+ " is of unsupported data type. " +
+					"The property's type is " + persistentProperty.getType());
+		}
+
 		Value<T> val = (Value<T>) valueFactory.apply((T) propertyVal);
 		sink.set(persistentProperty.getFieldName(), val);
 	}

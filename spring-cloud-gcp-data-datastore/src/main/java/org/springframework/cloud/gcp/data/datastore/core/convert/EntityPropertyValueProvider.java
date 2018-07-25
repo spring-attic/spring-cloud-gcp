@@ -21,6 +21,7 @@ import com.google.cloud.datastore.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.data.mapping.model.PropertyValueProvider;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -45,26 +46,23 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 			throw new DatastoreDataException("Field not found: " + fieldName);
 		}
 
-		Class propType = datastorePersistentProperty.getType();
-		Object value = readSingleWithConversion(datastorePersistentProperty);
-
-		if (value == null) {
-			throw new DatastoreDataException(String.format(
-					"The value in column with name %s"
-							+ " could not be converted to the corresponding property in the entity."
-							+ " The property's type is %s.",
-					fieldName, propType));
-		}
-		return (T) value;
+		return readSingleWithConversion(datastorePersistentProperty);
 	}
 
-	private Object readSingleWithConversion(DatastorePersistentProperty persistentProperty) {
-		Object val = entity.getValue(persistentProperty.getFieldName()).get();
+	@SuppressWarnings("unchecked")
+	private <T> T readSingleWithConversion(DatastorePersistentProperty persistentProperty) {
+		Object val = this.entity.getValue(persistentProperty.getFieldName()).get();
 		Class<?> targetType = persistentProperty.getType();
-		if (ClassUtils.isAssignable(targetType, val.getClass())) {
-			return val;
+		if (val == null) {
+			return null;
 		}
-		return null;
+		if (ClassUtils.isAssignable(targetType, val.getClass())) {
+			return (T) val;
+		}
+
+		throw new DatastoreDataException("The value in entity's property with name " + persistentProperty.getFieldName()
+				+ " could not be converted to the corresponding property in the class. " +
+				"The property's type is " + targetType + " but the value's type is " + val.getClass());
 	}
 
 }

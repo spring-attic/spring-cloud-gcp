@@ -16,15 +16,19 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.math.BigInteger;
+
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.LatLng;
+import com.google.cloud.datastore.NullValue;
 import com.google.cloud.datastore.testing.LocalDatastoreHelper;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,18 +45,14 @@ public class DatastoreEntityConverterImplTests {
 	private Datastore datastore;
 
 	@Before
-	public void setUp() throws Exception {
-		datastore = HELPER.getOptions().toBuilder().setNamespace("ghijklmnop").build().getService();
-	}
-
-	@After
-	public void tearDown() throws Exception {
+	public void setUp() {
+		this.datastore = HELPER.getOptions().toBuilder().setNamespace("ghijklmnop").build().getService();
 	}
 
 	@Test
 	public void readTest() {
 		byte[] bytes = { 1, 2, 3 };
-		Entity entity = Entity.newBuilder(datastore.newKeyFactory().setKind("aKind").newKey("1"))
+		Entity entity = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
 				.set("stringField", "string value")
 				.set("boolField", true)
 				.set("doubleField", 3.1415D)
@@ -75,6 +75,35 @@ public class DatastoreEntityConverterImplTests {
 	}
 
 	@Test
+	public void readNullTest() {
+		byte[] bytes = { 1, 2, 3 };
+		Entity entity = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
+				.set("stringField", new NullValue())
+				.set("boolField", true)
+				.set("doubleField", 3.1415D)
+				.set("longField", 123L)
+				.set("latLngField", LatLng.of(10, 20))
+				.set("timestampField", Timestamp.ofTimeSecondsAndNanos(30, 40))
+				.set("blobField", Blob.copyFrom(bytes))
+				.build();
+		DatastoreEntityConverter entityConverter = new DatastoreEntityConverterImpl(new DatastoreMappingContext());
+		TestDatastoreItem item = entityConverter.read(TestDatastoreItem.class, entity);
+
+		assertThat(item.getStringField()).as("validate null field").isNull();
+	}
+
+	@Test(expected = DatastoreDataException.class)
+	public void readTestException() {
+				Entity entity = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
+				.set("stringField", "string value")
+				.set("boolField", 123L)
+				.build();
+
+		DatastoreEntityConverter entityConverter = new DatastoreEntityConverterImpl(new DatastoreMappingContext());
+		entityConverter.read(TestDatastoreItem.class, entity);
+	}
+
+	@Test
 	public void writeTest() {
 		byte[] bytes = { 1, 2, 3 };
 		TestDatastoreItem item = new TestDatastoreItem();
@@ -87,7 +116,7 @@ public class DatastoreEntityConverterImplTests {
 		item.setBlobField(Blob.copyFrom(bytes));
 
 		DatastoreEntityConverter entityConverter = new DatastoreEntityConverterImpl(new DatastoreMappingContext());
-		Entity.Builder builder = Entity.newBuilder(datastore.newKeyFactory().setKind("aKind").newKey("1"));
+		Entity.Builder builder = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
 		entityConverter.write(item, builder);
 
 		Entity entity = builder.build();
@@ -101,76 +130,38 @@ public class DatastoreEntityConverterImplTests {
 				.isEqualTo(Timestamp.ofTimeSecondsAndNanos(30, 40));
 		assertThat(entity.getBlob("blobField")).as("validate blob field").isEqualTo(Blob.copyFrom(bytes));
 	}
-}
 
-class TestDatastoreItem {
-	private String stringField;
+	@Test
+	public void writeNullTest() {
+		byte[] bytes = { 1, 2, 3 };
+		TestDatastoreItem item = new TestDatastoreItem();
+		item.setStringField(null);
+		item.setBoolField(true);
+		item.setDoubleField(3.1415D);
+		item.setLongField(123L);
+		item.setLatLngField(LatLng.of(10, 20));
+		item.setTimestampField(Timestamp.ofTimeSecondsAndNanos(30, 40));
+		item.setBlobField(Blob.copyFrom(bytes));
 
-	private Boolean boolField;
+		DatastoreEntityConverter entityConverter = new DatastoreEntityConverterImpl(new DatastoreMappingContext());
+		Entity.Builder builder = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
+		entityConverter.write(item, builder);
 
-	private Double doubleField;
+		Entity entity = builder.build();
 
-	private Long longField;
-
-	private LatLng latLngField;
-
-	private Timestamp timestampField;
-
-	private Blob blobField;
-
-	public String getStringField() {
-		return stringField;
+		assertThat(entity.getValue("stringField").equals(new NullValue()))
+				.as("validate null field").isTrue();
 	}
 
-	public void setStringField(String stringField) {
-		this.stringField = stringField;
-	}
+	@Test(expected = DatastoreDataException.class)
+	public void writeTestException() {
+		TestDatastoreItem2 item = new TestDatastoreItem2();
+		item.setStringField("string value");
+		item.setUnsupportedField(new BigInteger("123"));
 
-	public Boolean getBoolField() {
-		return boolField;
-	}
-
-	public void setBoolField(Boolean boolField) {
-		this.boolField = boolField;
-	}
-
-	public Double getDoubleField() {
-		return doubleField;
-	}
-
-	public void setDoubleField(Double doubleField) {
-		this.doubleField = doubleField;
-	}
-
-	public Long getLongField() {
-		return longField;
-	}
-
-	public void setLongField(Long longField) {
-		this.longField = longField;
-	}
-
-	public LatLng getLatLngField() {
-		return latLngField;
-	}
-
-	public void setLatLngField(LatLng latLngField) {
-		this.latLngField = latLngField;
-	}
-
-	public Timestamp getTimestampField() {
-		return timestampField;
-	}
-
-	public void setTimestampField(Timestamp timestampField) {
-		this.timestampField = timestampField;
-	}
-
-	public Blob getBlobField() {
-		return blobField;
-	}
-
-	public void setBlobField(Blob blobField) {
-		this.blobField = blobField;
+		DatastoreEntityConverter entityConverter = new DatastoreEntityConverterImpl(new DatastoreMappingContext());
+		Entity.Builder builder = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
+		entityConverter.write(item, builder);
 	}
 }
+
