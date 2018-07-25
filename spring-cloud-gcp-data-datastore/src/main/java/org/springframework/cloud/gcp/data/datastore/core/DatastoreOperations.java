@@ -83,6 +83,7 @@ public interface DatastoreOperations {
 	/**
 	 * Delete all entities of a given domain type.
 	 * @param entityClass the domain type to delete from Cloud Datastore.
+	 * @return the number of entities that were deleted.
 	 */
 	long deleteAll(Class<?> entityClass);
 
