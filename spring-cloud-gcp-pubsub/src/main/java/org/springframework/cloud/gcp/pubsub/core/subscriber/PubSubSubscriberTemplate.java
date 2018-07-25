@@ -112,7 +112,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		List<AcknowledgeablePubsubMessage> ackableMessages = pull(pullRequest);
 
-		this.ack(ackableMessages);
+		ack(ackableMessages);
 
 		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getMessage)
 				.collect(Collectors.toList());
@@ -131,11 +131,15 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	@Override
 	public void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
+
 		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::ack);
 	}
 
 	@Override
 	public void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
+
 		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::nack);
 	}
 
