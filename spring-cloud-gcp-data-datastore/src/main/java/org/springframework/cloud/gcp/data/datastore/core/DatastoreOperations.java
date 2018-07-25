@@ -41,8 +41,7 @@ public interface DatastoreOperations {
 	/**
 	 * Saves an instance of an object to Cloud Datastore. Behaves as update or insert.
 	 * @param instance the instance to save.
-	 * @return the instance that was saved. This is will have the ID property populated if the
-	 * original saved object had no ID and one was assigned by Cloud Datastore.
+	 * @return the instance that was saved.
 	 */
 	<T> T save(T instance);
 

@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import com.google.cloud.datastore.Datastore;
-import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
 import org.junit.Test;
@@ -27,8 +26,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.data.annotation.Id;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -80,28 +79,22 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 		TestEntityWithId testEntity = new TestEntityWithId();
 		testEntity.id = "testkey";
 		assertEquals(new KeyFactory("p").setKind("custom_test_kind").newKey("testkey"),
-				this.datastoreServiceObjectToKeyFactory.getOrAllocateKeyFromObject(testEntity,
+				this.datastoreServiceObjectToKeyFactory.getKeyFromObject(testEntity,
 						this.datastoreMappingContext
 								.getPersistentEntity(TestEntityWithId.class)));
 	}
 
 	@Test(expected = DatastoreDataException.class)
 	public void getKeyNoIdTest() {
-		this.datastoreServiceObjectToKeyFactory.getOrAllocateKeyFromObject(new TestEntityNoId(),
+		this.datastoreServiceObjectToKeyFactory.getKeyFromObject(new TestEntityNoId(),
 				this.datastoreMappingContext.getPersistentEntity(TestEntityNoId.class));
 	}
 
 	@Test
-	public void getKeyAllocateIdTest() {
-		TestEntityWithId testEntityWithId = new TestEntityWithId();
-		Key key = new KeyFactory("project").setKind("kind").newKey("key");
-		when(this.datastore.allocateId((IncompleteKey) any())).thenReturn(key);
-		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("project"));
-		Key allocatedKey = this.datastoreServiceObjectToKeyFactory
-				.getOrAllocateKeyFromObject(testEntityWithId, this.datastoreMappingContext
-						.getPersistentEntity(testEntityWithId.getClass()));
-		assertEquals(key, allocatedKey);
-		assertEquals("key", testEntityWithId.id);
+	public void nullIdTest() {
+		assertNull(this.datastoreServiceObjectToKeyFactory
+				.getKeyFromObject(new TestEntityWithId(), this.datastoreMappingContext
+						.getPersistentEntity(TestEntityWithId.class)));
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "custom_test_kind")

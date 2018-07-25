@@ -156,7 +156,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	private Key getKey(Object entity) {
-		return this.objectToKeyFactory.getOrAllocateKeyFromObject(entity,
+		return this.objectToKeyFactory.getKeyFromObject(entity,
 				this.datastoreMappingContext.getPersistentEntity(entity.getClass()));
 	}
 

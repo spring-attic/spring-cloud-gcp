@@ -46,6 +46,6 @@ public interface ObjectToKeyFactory {
 	 * @param datastorePersistentEntity the metadata of the given entity.
 	 * @return a Key.
 	 */
-	Key getOrAllocateKeyFromObject(Object entity,
+	Key getKeyFromObject(Object entity,
 			DatastorePersistentEntity datastorePersistentEntity);
 }
