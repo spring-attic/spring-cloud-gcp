@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +31,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.PubSubAcknowledger;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
@@ -157,16 +157,22 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 	}
 
+	@Override
+	public void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		this.pubSubSubscriberTemplate.ack(acknowledgeablePubsubMessages);
+	}
+
+	@Override
+	public void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		this.pubSubSubscriberTemplate.nack(acknowledgeablePubsubMessages);
+	}
+
 	public PublisherFactory getPublisherFactory() {
 		return this.pubSubPublisherTemplate.getPublisherFactory();
 	}
 
 	public SubscriberFactory getSubscriberFactory() {
 		return this.pubSubSubscriberTemplate.getSubscriberFactory();
-	}
-
-	public PubSubAcknowledger getAcknowledger() {
-		return this.pubSubSubscriberTemplate.getAcknowledger();
 	}
 
 }
