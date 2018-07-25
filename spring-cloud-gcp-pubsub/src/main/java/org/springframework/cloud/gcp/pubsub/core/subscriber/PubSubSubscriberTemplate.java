@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.pubsub.core.subscriber;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
@@ -111,9 +112,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		List<AcknowledgeablePubsubMessage> ackableMessages = pull(pullRequest);
 
-		this.ack(ackableMessages.stream()
-				.map(AcknowledgeablePubsubMessage::getAckId)
-				.collect(Collectors.toList()), pullRequest.getSubscription());
+		this.ack(ackableMessages);
 
 		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getMessage)
 				.collect(Collectors.toList());
@@ -131,7 +130,27 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	@Override
-	public void ack(Collection<String> ackIds, String subscriptionName) {
+	public void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::ack);
+	}
+
+	@Override
+	public void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::nack);
+	}
+
+	/**
+	 * Groups messages by subscription.
+	 * @return a map from subscription to list of ack IDs.
+	 */
+	private Map<String, List<String>> groupAcknowledgeableMessages(
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		return acknowledgeablePubsubMessages.stream()
+				.collect(Collectors.groupingBy(AcknowledgeablePubsubMessage::getSubscriptionName,
+						Collectors.mapping(AcknowledgeablePubsubMessage::getAckId, Collectors.toList())));
+	}
+
+	private void ack(String subscriptionName, Collection<String> ackIds) {
 		AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
 				.addAllAckIds(ackIds)
 				.setSubscription(subscriptionName)
@@ -140,8 +159,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		this.subscriberStub.acknowledgeCallable().call(acknowledgeRequest);
 	}
 
-	@Override
-	public void nack(Collection<String> ackIds, String subscriptionName) {
+	private void nack(String subscriptionName, Collection<String> ackIds) {
 		ModifyAckDeadlineRequest modifyAckDeadlineRequest = ModifyAckDeadlineRequest.newBuilder()
 				.setAckDeadlineSeconds(0)
 				.addAllAckIds(ackIds)

@@ -158,13 +158,13 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public void ack(Collection<String> ackIds, String subscriptionName) {
-		this.pubSubSubscriberTemplate.ack(ackIds, subscriptionName);
+	public void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		this.pubSubSubscriberTemplate.ack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
-	public void nack(Collection<String> ackIds, String subscriptionName) {
-		this.pubSubSubscriberTemplate.nack(ackIds, subscriptionName);
+	public void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		this.pubSubSubscriberTemplate.nack(acknowledgeablePubsubMessages);
 	}
 
 	public PublisherFactory getPublisherFactory() {

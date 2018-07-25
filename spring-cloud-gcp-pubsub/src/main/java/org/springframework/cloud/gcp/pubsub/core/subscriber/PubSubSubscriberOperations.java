@@ -75,20 +75,17 @@ public interface PubSubSubscriberOperations {
 	PubsubMessage pullNext(String subscription);
 
 	/**
-	 * Acknowledge a bulk of messages based on their ack IDs which pertain to a subscription name.
-	 * @param ackIds ack IDs to be acknowledged
-	 * @param subscriptionName subscription names to which the ack IDs belong. Must be in the form
-	 * "projects/[GCP_PROJECT_ID]/subscriptions/[PUBSUB_SUBSCRIPTION_ID]"
+	 * Acknowledge a batch of messages. The method will group the messages by subscription name
+	 * and acknowledge them in batches if possible.
+	 * @param acknowledgeablePubsubMessages messages to be acknowledged
 	 */
-	void ack(Collection<String> ackIds, String subscriptionName);
+	void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
-	 * Negatively acknowledge a bulk of messages based on their ack IDs which pertain to a
-	 * subscription name.
-	 * @param ackIds ack IDs to be acknowledged
-	 * @param subscriptionName subscription names to which the ack IDs belong. Must be in the form
-	 * "projects/[GCP_PROJECT_ID]/subscriptions/[PUBSUB_SUBSCRIPTION_ID]"
+	 * Negatively acknowledge a batch of messages. The method will group the messages by subscription name
+	 * and acknowledge them in batches if possible.
+	 * @param acknowledgeablePubsubMessages messages to be negatively acknowledged
 	 */
-	void nack(Collection<String> ackIds, String subscriptionName);
+	void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 }
