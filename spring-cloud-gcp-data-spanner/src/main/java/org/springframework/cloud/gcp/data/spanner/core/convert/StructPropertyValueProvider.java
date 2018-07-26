@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.google.cloud.spanner.Struct;
 
@@ -43,11 +44,22 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 
 	private StructAccessor structAccessor;
 
+	private Set<String> includeColumns;
+
+	private boolean allowMissingColumns;
+
 	StructPropertyValueProvider(StructAccessor structAccessor, SpannerCustomConverter readConverter,
 			SpannerEntityReader entityReader) {
+		this(structAccessor, readConverter, entityReader, null, false);
+	}
+
+	StructPropertyValueProvider(StructAccessor structAccessor, SpannerCustomConverter readConverter,
+			SpannerEntityReader entityReader, Set<String> includeColumns, boolean allowMissingColumns) {
 		this.structAccessor = structAccessor;
 		this.readConverter = readConverter;
 		this.entityReader = entityReader;
+		this.includeColumns = includeColumns;
+		this.allowMissingColumns = allowMissingColumns;
 	}
 
 	@Override
@@ -84,7 +96,8 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 		Class<?> sourceClass = sourceValue.getClass();
 		return Struct.class.isAssignableFrom(sourceClass)
 				&& !this.readConverter.canConvert(sourceClass, targetType)
-				? this.entityReader.read(targetType, (Struct) sourceValue)
+						? this.entityReader.read(targetType, (Struct) sourceValue, this.includeColumns,
+								this.allowMissingColumns)
 				: this.readConverter.convert(sourceValue, targetType);
 	}
 
