@@ -45,11 +45,28 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 
 	private boolean allowMissingColumns;
 
+	/**
+	 * Constructor. Missing columns in nested struct column values for corresponding nested Java
+	 * object properties is not allowed.
+	 * @param structAccessor an accessor used to obtain column values from the struct.
+	 * @param readConverter a converter used to convert between struct column types and the required
+	 * java types.
+	 * @param entityReader a reader used to access the data from each column of the struct.
+	 */
 	StructPropertyValueProvider(StructAccessor structAccessor, SpannerCustomConverter readConverter,
 			SpannerEntityReader entityReader) {
 		this(structAccessor, readConverter, entityReader, false);
 	}
 
+	/**
+	 * Constructor
+	 * @param structAccessor an accessor used to obtain column values from the struct.
+	 * @param readConverter a converter used to convert between struct column types and the required
+	 * java types.
+	 * @param entityReader a reader used to access the data from each column of the struct.
+	 * @param allowMissingColumns if a nested struct is within this struct's column, then if true
+	 * missing columns in the nested struct are also allowed for the corresponding nested Java object.
+	 */
 	StructPropertyValueProvider(StructAccessor structAccessor, SpannerCustomConverter readConverter,
 			SpannerEntityReader entityReader, boolean allowMissingColumns) {
 		this.structAccessor = structAccessor;

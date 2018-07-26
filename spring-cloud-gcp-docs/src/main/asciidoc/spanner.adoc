@@ -640,6 +640,7 @@ Sort.by(Order.desc("action").ignoreCase())
 ===== Partial read
 
 Partial read is only possible when using Queries. In case the rows returned by query have fewer columns than the entity that it will be mapped to, Spring Data will map the returned columns and leave the rest as they of the columns are.
+This setting also applies to nested structs and their corresponding nested POJO properties.
 
 [source,java]
 ----
