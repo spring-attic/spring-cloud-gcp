@@ -62,7 +62,6 @@ public class DatastorePersistentEntityImpl<T>
 		Class<?> rawType = information.getType();
 
 		this.context = new StandardEvaluationContext();
-
 		this.kind = this.findAnnotation(Entity.class);
 		this.kindName = this.hasTableName() ? this.kind.name()
 				: StringUtils.uncapitalize(rawType.getSimpleName());
@@ -97,6 +96,16 @@ public class DatastorePersistentEntityImpl<T>
 	public String kindName() {
 		return this.kindNameExpression == null ? this.kindName
 				: this.kindNameExpression.getValue(this.context, String.class);
+	}
+
+	@Override
+	public DatastorePersistentProperty getIdPropertyOrFail() {
+		if (!hasIdProperty()) {
+			throw new DatastoreDataException(
+					"An ID property was required but does not exist for the type: "
+							+ getType());
+		}
+		return getIdProperty();
 	}
 
 	@Override

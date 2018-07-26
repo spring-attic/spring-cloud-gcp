@@ -48,4 +48,14 @@ public interface ObjectToKeyFactory {
 	 */
 	Key getKeyFromObject(Object entity,
 			DatastorePersistentEntity datastorePersistentEntity);
+
+	/**
+	 * Allocates a new ID Key for the given entity object and sets the allocated ID value in the
+	 * object.
+	 * @param entity the object for which to get and set the ID value.
+	 * @param datastorePersistentEntity the persistent entity metadata for the entity object.
+	 * @return the newly allocated Key.
+	 */
+	Key allocateKeyForObject(Object entity,
+			DatastorePersistentEntity datastorePersistentEntity);
 }

@@ -43,7 +43,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 
 	private final Class<T> entityType;
 
-	SimpleSpannerRepository(SpannerTemplate spannerTemplate, Class<T> entityType) {
+	public SimpleSpannerRepository(SpannerTemplate spannerTemplate, Class<T> entityType) {
 		Assert.notNull(spannerTemplate, "A valid SpannerTemplate object is required.");
 		Assert.notNull(entityType, "A valid entity type is required.");
 		this.spannerTemplate = spannerTemplate;

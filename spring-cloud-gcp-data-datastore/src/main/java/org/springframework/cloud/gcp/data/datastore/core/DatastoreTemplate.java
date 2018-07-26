@@ -34,6 +34,8 @@ import com.google.cloud.datastore.QueryResults;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.util.Assert;
 
 /**
@@ -77,8 +79,9 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public <T> void save(T instance) {
-		this.datastore.put(convertToEntity(instance));
+	public <T> T save(T instance) {
+		this.datastore.put(convertToEntityForSave(instance));
+		return instance;
 	}
 
 	@Override
@@ -87,13 +90,21 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public <T> void delete(T entity) {
-		this.datastore.delete(getKey(entity));
+	public <T> void deleteAllById(Iterable<?> ids, Class<T> entityClass) {
+		List<Key> keys = getKeysFromIds(ids, entityClass);
+		this.datastore.delete(keys.toArray(new Key[keys.size()]));
 	}
 
 	@Override
-	public void deleteAll(Class<?> entityClass) {
-		this.datastore.delete(findAllKeys(entityClass));
+	public <T> void delete(T entity) {
+		this.datastore.delete(getKey(entity, false));
+	}
+
+	@Override
+	public long deleteAll(Class<?> entityClass) {
+		Key[] keysToDelete = findAllKeys(entityClass);
+		this.datastore.delete(keysToDelete);
+		return keysToDelete.length;
 	}
 
 	@Override
@@ -103,8 +114,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> Collection<T> findAllById(Iterable<?> ids, Class<T> entityClass) {
-		List<Key> keysToFind = new ArrayList<>();
-		ids.forEach(x -> keysToFind.add(getKeyFromId(x, entityClass)));
+		List<Key> keysToFind = getKeysFromIds(ids, entityClass);
 		return convertEntities(
 				this.datastore.get(keysToFind.toArray(new Key[keysToFind.size()])),
 				entityClass);
@@ -125,8 +135,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 		return findById(id, entityClass) != null;
 	}
 
-	private Entity convertToEntity(Object entity) {
-		Builder builder = Entity.newBuilder(getKey(entity));
+	private Entity convertToEntityForSave(Object entity) {
+		Builder builder = Entity.newBuilder(getKey(entity, true));
 		this.datastoreEntityConverter.write(entity, builder);
 		return builder.build();
 	}
@@ -147,9 +157,17 @@ public class DatastoreTemplate implements DatastoreOperations {
 				this.datastoreMappingContext.getPersistentEntity(entityClass).kindName());
 	}
 
-	private Key getKey(Object entity) {
-		return this.objectToKeyFactory.getKeyFromObject(entity,
-				this.datastoreMappingContext.getPersistentEntity(entity.getClass()));
+	private Key getKey(Object entity, boolean allocateKey) {
+		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
+				.getPersistentEntity(entity.getClass());
+		DatastorePersistentProperty idProp = datastorePersistentEntity
+				.getIdPropertyOrFail();
+		return datastorePersistentEntity.getPropertyAccessor(entity)
+				.getProperty(idProp) == null && allocateKey
+						? this.objectToKeyFactory.allocateKeyForObject(entity,
+								datastorePersistentEntity)
+						: this.objectToKeyFactory.getKeyFromObject(entity,
+								datastorePersistentEntity);
 	}
 
 	private Key[] findAllKeys(Class entityClass) {
@@ -159,5 +177,11 @@ public class DatastoreTemplate implements DatastoreOperations {
 		return StreamSupport.stream(
 				Spliterators.spliteratorUnknownSize(keysFound, Spliterator.ORDERED),
 				false).toArray(Key[]::new);
+	}
+
+	private <T> List<Key> getKeysFromIds(Iterable<?> ids, Class<T> entityClass) {
+		List<Key> keys = new ArrayList<>();
+		ids.forEach(x -> keys.add(getKeyFromId(x, entityClass)));
+		return keys;
 	}
 }

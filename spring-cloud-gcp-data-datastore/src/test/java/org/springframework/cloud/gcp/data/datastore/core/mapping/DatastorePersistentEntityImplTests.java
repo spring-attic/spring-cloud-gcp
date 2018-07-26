@@ -95,6 +95,12 @@ public class DatastorePersistentEntityImplTests {
 				.getPersistentEntity(EntityWithNoId.class).hasIdProperty());
 	}
 
+	@Test(expected = DatastoreDataException.class)
+	public void testGetIdPropertyOrFail() {
+		new DatastoreMappingContext().getPersistentEntity(EntityWithNoId.class)
+				.getIdPropertyOrFail();
+	}
+
 	@Test
 	public void testIgnoredProperty() {
 		TestEntity t = new TestEntity();

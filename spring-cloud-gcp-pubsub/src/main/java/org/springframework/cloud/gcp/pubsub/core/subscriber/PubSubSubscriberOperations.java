@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.core.subscriber;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
@@ -72,5 +73,19 @@ public interface PubSubSubscriberOperations {
 	 * @return a received message, or {@code null} if none exists in the subscription
 	 */
 	PubsubMessage pullNext(String subscription);
+
+	/**
+	 * Acknowledge a batch of messages. The method will group the messages by subscription name
+	 * and acknowledge them in batches if possible.
+	 * @param acknowledgeablePubsubMessages messages to be acknowledged
+	 */
+	void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+
+	/**
+	 * Negatively acknowledge a batch of messages. The method will group the messages by subscription name
+	 * and acknowledge them in batches if possible.
+	 * @param acknowledgeablePubsubMessages messages to be negatively acknowledged
+	 */
+	void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 }
