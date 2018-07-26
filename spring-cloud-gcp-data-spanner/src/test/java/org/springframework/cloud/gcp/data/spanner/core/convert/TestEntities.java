@@ -154,6 +154,8 @@ public class TestEntities {
 	static class InnerTestEntity {
 		@PrimaryKey
 		String value;
+
+		String missingColumnValue;
 	}
 
 	static class SimpleConstructorTester {

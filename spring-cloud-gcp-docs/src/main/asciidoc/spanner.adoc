@@ -639,7 +639,8 @@ Sort.by(Order.desc("action").ignoreCase())
 
 ===== Partial read
 
-Partial read is only possible when using Queries. In case the rows returned by query have fewer columns than the entity that it will be mapped to, Spring Data will map the returned columns and leave the rest as they of the columns are.
+Partial read is only possible when using Queries. In case the rows returned by the query have fewer columns than the entity that it will be mapped to, Spring Data will map the returned columns only.
+This setting also applies to nested structs and their corresponding nested POJO properties.
 
 [source,java]
 ----
@@ -647,6 +648,7 @@ List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELEC
     new SpannerQueryOptions().setAllowMissingResultSetColumns(true));
 ----
 
+If the setting is set to `false`, then an exception will be thrown if there are missing columns in the query result.
 
 ===== Summary of options for Query vs Read
 

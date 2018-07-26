@@ -77,7 +77,7 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 		StructPropertyValueProvider propertyValueProvider = new StructPropertyValueProvider(
 				structAccessor,
 				this.converter,
-				this);
+				this, allowMissingColumns);
 
 		PreferredConstructor<?, SpannerPersistentProperty> persistenceConstructor = persistentEntity
 				.getPersistenceConstructor();
