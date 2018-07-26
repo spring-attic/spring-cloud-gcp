@@ -143,7 +143,7 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void saveAllAndAllocateIdTest() {
+	public void saveAllTest() {
 		TestEntity object1 = new TestEntity();
 		TestEntity object2 = new TestEntity();
 		object2.id = "value";
