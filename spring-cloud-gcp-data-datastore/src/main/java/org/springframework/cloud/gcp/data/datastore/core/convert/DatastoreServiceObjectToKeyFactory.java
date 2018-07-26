@@ -70,12 +70,9 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 	@Override
 	public Key getKeyFromObject(Object entity,
 			DatastorePersistentEntity datastorePersistentEntity) {
-		PersistentProperty idProp = datastorePersistentEntity.getIdProperty();
-		if (idProp == null) {
-			throw new DatastoreDataException(
-					"Cannot construct key for entity types without ID properties: "
-							+ entity.getClass());
-		}
+		Assert.notNull(entity, "Cannot get key for null entity object.");
+		Assert.notNull(datastorePersistentEntity, "Persistent entity must not be null.");
+		PersistentProperty idProp = datastorePersistentEntity.getIdPropertyOrFail();
 		Object idVal = datastorePersistentEntity.getPropertyAccessor(entity)
 				.getProperty(idProp);
 		if (idVal == null) {
@@ -86,8 +83,21 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 		}
 	}
 
+	@Override
+	public Key allocateKeyForObject(Object entity,
+			DatastorePersistentEntity datastorePersistentEntity) {
+		Assert.notNull(entity, "Cannot get key for null entity object.");
+		Assert.notNull(datastorePersistentEntity, "Persistent entity must not be null.");
+		PersistentProperty idProp = datastorePersistentEntity.getIdPropertyOrFail();
+		Key allocatedKey = this.datastore.allocateId(
+				getKeyFactory().setKind(datastorePersistentEntity.kindName()).newKey());
+		datastorePersistentEntity.getPropertyAccessor(entity).setProperty(idProp,
+				idProp.getType().equals(Key.class) ? allocatedKey
+						: allocatedKey.getNameOrId());
+		return allocatedKey;
+	}
+
 	private KeyFactory getKeyFactory() {
 		return this.datastore.newKeyFactory();
 	}
-
 }

@@ -99,6 +99,16 @@ public class DatastorePersistentEntityImpl<T>
 	}
 
 	@Override
+	public DatastorePersistentProperty getIdPropertyOrFail() {
+		if (!hasIdProperty()) {
+			throw new DatastoreDataException(
+					"An ID property was required but does not exist for the type: "
+							+ getType());
+		}
+		return getIdProperty();
+	}
+
+	@Override
 	public void setApplicationContext(ApplicationContext applicationContext)
 			throws BeansException {
 		this.context.addPropertyAccessor(new BeanFactoryAccessor());

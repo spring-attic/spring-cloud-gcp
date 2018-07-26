@@ -120,7 +120,23 @@ public class DatastoreTemplateTests {
 		TestEntity object = new TestEntity();
 		Entity entity = Entity.newBuilder(createFakeKey()).build();
 		Key key = createFakeKey();
+		object.id = "value";
 		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
+				.thenReturn(key);
+		when(this.datastore.put((FullEntity<?>) any())).thenReturn(entity);
+		when(this.datastoreEntityConverter.read(eq(TestEntity.class), same(entity)))
+				.thenReturn(object);
+		assertTrue(this.datastoreTemplate.save(object) instanceof TestEntity);
+		verify(this.datastore, times(1)).put(eq(entity));
+		verify(this.datastoreEntityConverter, times(1)).write(same(object), notNull());
+	}
+
+	@Test
+	public void saveAndAllocateIdTest() {
+		TestEntity object = new TestEntity();
+		Entity entity = Entity.newBuilder(createFakeKey()).build();
+		Key key = createFakeKey();
+		when(this.objectToKeyFactory.allocateKeyForObject(same(object), any()))
 				.thenReturn(key);
 		when(this.datastore.put((FullEntity<?>) any())).thenReturn(entity);
 		when(this.datastoreEntityConverter.read(eq(TestEntity.class), same(entity)))
@@ -209,7 +225,7 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void deleteObjectTest() {
-		Object object = new Object();
+		TestEntity object = new TestEntity();
 		Key key = createFakeKey();
 		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
 				.thenReturn(key);

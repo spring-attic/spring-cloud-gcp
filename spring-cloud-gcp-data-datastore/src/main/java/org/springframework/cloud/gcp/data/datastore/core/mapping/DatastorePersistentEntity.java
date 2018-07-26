@@ -34,4 +34,11 @@ public interface DatastorePersistentEntity<T> extends
 	 * @return the name of the Entity.
 	 */
 	String kindName();
+
+	/**
+	 * Gets the ID property, and will throw {@link DatastoreDataException} if the entity
+	 * does not have an ID property.
+	 * @return the ID property.
+	 */
+	DatastorePersistentProperty getIdPropertyOrFail();
 }
