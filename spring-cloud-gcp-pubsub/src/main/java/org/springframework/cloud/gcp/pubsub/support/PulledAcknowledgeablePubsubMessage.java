@@ -74,8 +74,12 @@ public class PulledAcknowledgeablePubsubMessage implements AcknowledgeablePubsub
 
 	@Override
 	public void nack() {
+		modifyAckDeadline(0);
+	}
+
+	public void modifyAckDeadline(int ackDeadlineSeconds) {
 		ModifyAckDeadlineRequest modifyAckDeadlineRequest = ModifyAckDeadlineRequest.newBuilder()
-				.setAckDeadlineSeconds(0)
+				.setAckDeadlineSeconds(ackDeadlineSeconds)
 				.addAckIds(this.ackId)
 				.setSubscription(this.subscriptionName)
 				.build();

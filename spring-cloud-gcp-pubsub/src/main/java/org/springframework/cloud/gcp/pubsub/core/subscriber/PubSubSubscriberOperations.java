@@ -23,7 +23,7 @@ import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
 
-import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.PulledAcknowledgeablePubsubMessage;
 
 /**
  * An abstraction for Google Cloud Pub/Sub subscription / pulling operations.
@@ -65,7 +65,7 @@ public interface PubSubSubscriberOperations {
 	 * messages to satisfy {@code maxMessages}
 	 * @return the list of received acknowledgeable messages
 	 */
-	List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages, Boolean returnImmediately);
+	List<PulledAcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages, Boolean returnImmediately);
 
 	/**
 	 * Pull and auto-acknowledge a message from a Google Cloud Pub/Sub subscription.
@@ -76,16 +76,25 @@ public interface PubSubSubscriberOperations {
 
 	/**
 	 * Acknowledge a batch of messages. The method will group the messages by subscription name
-	 * and acknowledge them in batches if possible.
-	 * @param acknowledgeablePubsubMessages messages to be acknowledged
+	 * and acknowledge them in batches.
+	 * @param pulledAcknowledgeablePubsubMessages messages to be acknowledged
 	 */
-	void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	void ack(Collection<PulledAcknowledgeablePubsubMessage> pulledAcknowledgeablePubsubMessages);
 
 	/**
 	 * Negatively acknowledge a batch of messages. The method will group the messages by subscription name
-	 * and acknowledge them in batches if possible.
-	 * @param acknowledgeablePubsubMessages messages to be negatively acknowledged
+	 * and acknowledge them in batches.
+	 * @param pulledAcknowledgeablePubsubMessages messages to be negatively acknowledged
 	 */
-	void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	void nack(Collection<PulledAcknowledgeablePubsubMessage> pulledAcknowledgeablePubsubMessages);
+
+	/**
+	 * Modify the ack deadline of a batch of messages. The method will group the messages by subscription name
+	 * and modify their ack deadline in batches.
+	 * @param pulledAcknowledgeablePubsubMessages messages to be modified
+	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the messages.
+	 */
+	void modifyAckDeadline(Collection<PulledAcknowledgeablePubsubMessage> pulledAcknowledgeablePubsubMessages,
+			int ackDeadlineSeconds);
 
 }
