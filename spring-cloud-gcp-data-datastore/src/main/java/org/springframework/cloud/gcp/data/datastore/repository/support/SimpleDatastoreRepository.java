@@ -16,9 +16,9 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.support;
 
-import com.google.cloud.datastore.Datastore;
 import java.util.Optional;
 import java.util.function.Function;
+
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
@@ -34,82 +34,88 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class SimpleDatastoreRepository<T,ID> implements DatastoreRepository<T, ID>{
+public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, ID> {
 
-  private final DatastoreTemplate datastoreTemplate;
+	private final DatastoreTemplate datastoreTemplate;
 
-  public SimpleDatastoreRepository(DatastoreTemplate datastoreTemplate){
-    Assert.notNull(datastoreTemplate, "A non-null DatastoreTemplate is required.");
-    this.datastoreTemplate = datastoreTemplate;
-  }
+	private final Class<T> entityType;
 
-  @Override
-  public <A> A performTransaction(Function<DatastoreRepository<T, ID>, A> operations) {
-    return null;
-  }
+	public SimpleDatastoreRepository(DatastoreTemplate datastoreTemplate,
+			Class<T> entityType) {
+		Assert.notNull(datastoreTemplate, "A non-null DatastoreTemplate is required.");
+		Assert.notNull(entityType, "A non-null entity type is required.");
+		this.datastoreTemplate = datastoreTemplate;
+		this.entityType = entityType;
+	}
 
-  @Override
-  public Iterable<T> findAll(Sort sort) {
-    throw new DatastoreDataException("Sorting findAll is not yet supported.");
-  }
+	@Override
+	public <A> A performTransaction(Function<DatastoreRepository<T, ID>, A> operations) {
+		throw new DatastoreDataException(
+				"Running a function as a transaction is not yet supported.");
+	}
 
-  @Override
-  public Page<T> findAll(Pageable pageable) {
-    throw new DatastoreDataException("Pageable findAll is not yet supported.");
-  }
+	@Override
+	public Iterable<T> findAll(Sort sort) {
+		throw new DatastoreDataException("Sorting findAll is not yet supported.");
+	}
 
-  @Override
-  public <S extends T> S save(S entity) {
-    return this.datastoreTemplate.save(entity);
-  }
+	@Override
+	public Page<T> findAll(Pageable pageable) {
+		throw new DatastoreDataException("Pageable findAll is not yet supported.");
+	}
 
-  @Override
-  public <S extends T> Iterable<S> saveAll(Iterable<S> entities) {
-    return null;
-  }
+	@Override
+	public <S extends T> S save(S entity) {
+		return this.datastoreTemplate.save(entity);
+	}
 
-  @Override
-  public Optional<T> findById(ID id) {
-    return null;
-  }
+	@Override
+	public <S extends T> Iterable<S> saveAll(Iterable<S> entities) {
+		return this.datastoreTemplate.saveAll(entities);
+	}
 
-  @Override
-  public boolean existsById(ID id) {
-    return false;
-  }
+	@Override
+	public Optional<T> findById(ID id) {
+		return Optional.ofNullable(this.datastoreTemplate.findById(id, this.entityType));
+	}
 
-  @Override
-  public Iterable<T> findAll() {
-    return null;
-  }
+	@Override
+	public boolean existsById(ID id) {
+		return this.datastoreTemplate.existsById(id, this.entityType);
+	}
 
-  @Override
-  public Iterable<T> findAllById(Iterable<ID> ids) {
-    return null;
-  }
+	@Override
+	public Iterable<T> findAll() {
+		return this.datastoreTemplate.findAll(this.entityType);
+	}
 
-  @Override
-  public long count() {
-    return 0;
-  }
+	@Override
+	public Iterable<T> findAllById(Iterable<ID> ids) {
+		return this.datastoreTemplate.findAllById(ids, this.entityType);
+	}
 
-  @Override
-  public void deleteById(ID id) {
+	@Override
+	public long count() {
+		return this.datastoreTemplate.count(this.entityType);
+	}
 
-  }
+	@Override
+	public void deleteById(ID id) {
+		this.datastoreTemplate.deleteById(id, this.entityType);
+	}
 
-  @Override
-  public void delete(T entity) {
+	@Override
+	public void delete(T entity) {
+		this.datastoreTemplate.delete(entity);
+	}
 
-  }
+	@Override
+	public void deleteAll(Iterable<? extends T> entities) {
+		this.datastoreTemplate.deleteAll(entities);
+	}
 
-  @Override
-  public void deleteAll(Iterable<? extends T> entities) {
-
-  }
-
-  @Override
-  public void deleteAll() {
-
-  }
+	@Override
+	public void deleteAll() {
+		this.datastoreTemplate.deleteAll(this.entityType);
+	}
 }
