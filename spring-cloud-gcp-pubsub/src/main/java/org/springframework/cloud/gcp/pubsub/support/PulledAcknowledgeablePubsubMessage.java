@@ -34,6 +34,8 @@ public interface PulledAcknowledgeablePubsubMessage extends AcknowledgeablePubsu
 	@Override
 	PubsubMessage getPubsubMessage();
 
+	<T> T getConvertedPayload(Class<T> payloadType);
+
 	String getAckId();
 
 	String getSubscriptionName();

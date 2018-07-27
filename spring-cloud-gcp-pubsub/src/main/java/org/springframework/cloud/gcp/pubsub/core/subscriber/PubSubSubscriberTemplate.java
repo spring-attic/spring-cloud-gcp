@@ -32,6 +32,8 @@ import com.google.pubsub.v1.PullResponse;
 
 import org.springframework.cloud.gcp.pubsub.support.PulledAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
+import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
+import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
 import org.springframework.util.Assert;
 
 /**
@@ -54,6 +56,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	private final SubscriberStub subscriberStub;
 
+	private PubSubMessageConverter pubSubMessageConverter = new SimplePubSubMessageConverter();
+
 	/**
 	 * Default {@link PubSubSubscriberTemplate} constructor
 	 * @param subscriberFactory the {@link Subscriber} factory
@@ -74,6 +78,18 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		return subscriber;
 	}
 
+	public PubSubMessageConverter getMessageConverter() {
+		return this.pubSubMessageConverter;
+	}
+
+	public PubSubSubscriberTemplate setMessageConverter(PubSubMessageConverter pubSubMessageConverter) {
+		Assert.notNull(pubSubMessageConverter, "The pubSubMessageConverter can't be null.");
+
+		this.pubSubMessageConverter = pubSubMessageConverter;
+
+		return this;
+	}
+
 	/**
 	 * Pulls messages synchronously, on demand, using the pull request in argument.
 	 * @param pullRequest pull request containing the subscription name
@@ -86,7 +102,9 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		PullResponse pullResponse =	this.subscriberStub.pullCallable().call(pullRequest);
 		List<PulledAcknowledgeablePubsubMessage> receivedMessages =
 				pullResponse.getReceivedMessagesList().stream()
-						.map(message -> new PulledAcknowledgeablePubsubMessageImpl(message.getMessage(),
+						.map(message -> new PulledAcknowledgeablePubsubMessageImpl(
+									this.pubSubMessageConverter,
+									message.getMessage(),
 									message.getAckId(),
 									pullRequest.getSubscription(),
 									this.subscriberStub))
@@ -187,6 +205,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	private class PulledAcknowledgeablePubsubMessageImpl implements PulledAcknowledgeablePubsubMessage {
 
+		private PubSubMessageConverter pubSubMessageConverter;
+
 		private PubsubMessage message;
 
 		private String ackId;
@@ -196,7 +216,12 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		private SubscriberStub subscriberStub;
 
 		PulledAcknowledgeablePubsubMessageImpl(
-				PubsubMessage message, String ackId, String subscriptionName, SubscriberStub subscriberStub) {
+				PubSubMessageConverter pubSubMessageConverter,
+				PubsubMessage message,
+				String ackId,
+				String subscriptionName,
+				SubscriberStub subscriberStub) {
+			this.pubSubMessageConverter = pubSubMessageConverter;
 			this.message = message;
 			this.ackId = ackId;
 			this.subscriptionName = subscriptionName;
@@ -206,6 +231,10 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		@Override
 		public PubsubMessage getPubsubMessage() {
 			return this.message;
+		}
+
+		public <T> T getConvertedPayload(Class<T> payloadType) {
+			return this.pubSubMessageConverter.fromPubSubMessage(this.message, payloadType);
 		}
 
 		public String getAckId() {
