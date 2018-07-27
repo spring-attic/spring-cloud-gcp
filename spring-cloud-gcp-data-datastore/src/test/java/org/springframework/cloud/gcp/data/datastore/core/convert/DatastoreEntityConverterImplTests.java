@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.math.BigInteger;
+import java.time.Duration;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
@@ -53,6 +54,7 @@ public class DatastoreEntityConverterImplTests {
 	public void readTest() {
 		byte[] bytes = { 1, 2, 3 };
 		Entity entity = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
+				.set("durationField", "PT24H")
 				.set("stringField", "string value")
 				.set("boolField", true)
 				.set("doubleField", 3.1415D)
@@ -64,6 +66,7 @@ public class DatastoreEntityConverterImplTests {
 		DatastoreEntityConverter entityConverter = new DatastoreEntityConverterImpl(new DatastoreMappingContext());
 		TestDatastoreItem item = entityConverter.read(TestDatastoreItem.class, entity);
 
+		assertThat(item.getDurationField()).as("validate duration field").isEqualTo(Duration.ofDays(1));
 		assertThat(item.getStringField()).as("validate string field").isEqualTo("string value");
 		assertThat(item.getBoolField()).as("validate boolean field").isTrue();
 		assertThat(item.getDoubleField()).as("validate double field").isEqualTo(3.1415D);
@@ -107,6 +110,7 @@ public class DatastoreEntityConverterImplTests {
 	public void writeTest() {
 		byte[] bytes = { 1, 2, 3 };
 		TestDatastoreItem item = new TestDatastoreItem();
+		item.setDurationField(Duration.ofDays(1));
 		item.setStringField("string value");
 		item.setBoolField(true);
 		item.setDoubleField(3.1415D);
@@ -121,6 +125,7 @@ public class DatastoreEntityConverterImplTests {
 
 		Entity entity = builder.build();
 
+		assertThat(entity.getString("durationField")).as("validate duration field").isEqualTo("PT24H");
 		assertThat(entity.getString("stringField")).as("validate string field").isEqualTo("string value");
 		assertThat(entity.getBoolean("boolField")).as("validate boolean field").isTrue();
 		assertThat(entity.getDouble("doubleField")).as("validate double field").isEqualTo(3.1415D);

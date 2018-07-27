@@ -20,6 +20,7 @@ import com.google.cloud.datastore.Entity;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.util.ClassUtils;
 
@@ -33,8 +34,11 @@ import org.springframework.util.ClassUtils;
 public class EntityPropertyValueProvider implements PropertyValueProvider<DatastorePersistentProperty> {
 	private Entity entity;
 
-	EntityPropertyValueProvider(Entity entity) {
+	private ConversionService conversionService;
+
+	public EntityPropertyValueProvider(Entity entity, ConversionService conversionService) {
 		this.entity = entity;
+		this.conversionService = conversionService;
 	}
 
 	@Override
@@ -57,6 +61,10 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 		}
 		if (ClassUtils.isAssignable(targetType, val.getClass())) {
 			return (T) val;
+		}
+
+		if (conversionService.canConvert(val.getClass(), targetType)) {
+			return conversionService.convert(val, (Class<T>) targetType);
 		}
 
 		throw new DatastoreDataException("The value in entity's property with name " + persistentProperty.getFieldName()

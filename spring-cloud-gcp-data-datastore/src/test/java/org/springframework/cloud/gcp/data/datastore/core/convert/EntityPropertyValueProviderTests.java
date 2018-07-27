@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
+import org.springframework.core.convert.support.DefaultConversionService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -59,7 +60,7 @@ public class EntityPropertyValueProviderTests {
 				.set("blobField", Blob.copyFrom(bytes))
 				.build();
 
-		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(entity);
+		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(entity, new DefaultConversionService());
 
 		assertThat((String) provider.getPropertyValue(this.persistentEntity.getPersistentProperty("stringField")))
 				.as("validate string field").isEqualTo("string value");
@@ -84,7 +85,7 @@ public class EntityPropertyValueProviderTests {
 				.set("boolField", 123L)
 				.build();
 
-		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(entity);
+		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(entity, new DefaultConversionService());
 
 		provider.getPropertyValue(this.persistentEntity.getPersistentProperty("boolField"));
 	}

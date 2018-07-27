@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.google.cloud.Timestamp;
@@ -41,12 +42,16 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
+import org.springframework.data.util.TypeInformation;
+import org.springframework.lang.Nullable;
 
 /**
  * Class for object to entity and entity to object conversions
@@ -58,7 +63,11 @@ import org.springframework.data.mapping.model.PersistentEntityParameterValueProv
 public class DatastoreEntityConverterImpl implements DatastoreEntityConverter {
 	private DatastoreMappingContext mappingContext;
 
-	private EntityInstantiators instantiators = new EntityInstantiators();
+	private final EntityInstantiators instantiators = new EntityInstantiators();
+
+	private final DatastoreCustomConversions conversions = new DatastoreCustomConversions();
+
+	private final GenericConversionService conversionService = new DefaultConversionService();
 
 	private static Map<Class<?>, Function<?, Value<?>>> valFactories;
 
@@ -80,6 +89,7 @@ public class DatastoreEntityConverterImpl implements DatastoreEntityConverter {
 
 	DatastoreEntityConverterImpl(DatastoreMappingContext mappingContext) {
 		this.mappingContext = mappingContext;
+		conversions.registerConvertersIn(conversionService);
 	}
 
 	@Override
@@ -88,10 +98,10 @@ public class DatastoreEntityConverterImpl implements DatastoreEntityConverter {
 		DatastorePersistentEntity<R> persistentEntity = (DatastorePersistentEntity<R>) this.mappingContext
 				.getPersistentEntity(aClass);
 
-		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(entity);
+		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(entity, conversionService);
 
-		ParameterValueProvider<DatastorePersistentProperty> parameterValueProvider =
-				new PersistentEntityParameterValueProvider<>(persistentEntity, propertyValueProvider, null);
+		ParameterValueProvider<DatastorePersistentProperty> parameterValueProvider = new PersistentEntityParameterValueProvider<>(
+				persistentEntity, propertyValueProvider, null);
 
 		EntityInstantiator instantiator = this.instantiators.getInstantiatorFor(persistentEntity);
 		R instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
@@ -113,28 +123,54 @@ public class DatastoreEntityConverterImpl implements DatastoreEntityConverter {
 		PersistentPropertyAccessor accessor = persistentEntity
 				.getPropertyAccessor(source);
 		persistentEntity.doWithProperties(
-				(DatastorePersistentProperty datastorePersistentProperty) ->
-					writeProperty(sink, accessor, datastorePersistentProperty)
-				);
+				(DatastorePersistentProperty datastorePersistentProperty) -> writeProperty(sink, accessor,
+						datastorePersistentProperty));
 	}
 
 	@SuppressWarnings("unchecked")
 	private void writeProperty(Entity.Builder sink, PersistentPropertyAccessor accessor,
 			DatastorePersistentProperty persistentProperty) {
-		Object propertyVal = accessor.getProperty(persistentProperty);
+		Object propertyVal = convertToSimpleType(accessor.getProperty(persistentProperty), persistentProperty);
 		if (propertyVal == null) {
 			sink.set(persistentProperty.getFieldName(), new NullValue());
 			return;
 		}
-		Function valueFactory = valFactories.get(persistentProperty.getType());
+		Function valueFactory = valFactories.get(propertyVal.getClass());
 
 		if (valueFactory == null) {
 			throw new DatastoreDataException("The value in column with name " + persistentProperty.getFieldName()
 					+ " is of unsupported data type. " +
-					"The property's type is " + persistentProperty.getType());
+					"The property's type is " + propertyVal.getClass());
 		}
 
 		Value val = (Value) valueFactory.apply(propertyVal);
 		sink.set(persistentProperty.getFieldName(), val);
+	}
+
+	private Object convertToSimpleType(@Nullable Object obj, DatastorePersistentProperty prop) {
+		if (obj == null || DatastoreSimpleTypes.DATASTORE_SIMPLE_TYPES.contains(obj.getClass())) {
+			return obj;
+		}
+
+		// TypeInformation<?> type = prop.getTypeInformation();
+
+		// Lookup potential custom target type
+		Optional<Class<?>> basicTargetType = conversions.getCustomWriteTarget(obj.getClass());
+
+		if (basicTargetType.isPresent()) {
+
+			return conversionService.convert(obj, basicTargetType.get());
+		}
+
+		// DatastorePersistentEntity<?> entity = isSubtype(prop.getType(), obj.getClass())
+		// ? mappingContext.getRequiredPersistentEntity(obj.getClass())
+		// : mappingContext.getRequiredPersistentEntity(type);
+		//
+		// return convertToSimpleType(obj, (DatastorePersistentProperty) entity);
+		return null;
+	}
+
+	private boolean isSubtype(Class<?> left, Class<?> right) {
+		return left.isAssignableFrom(right) && !left.equals(right);
 	}
 }

@@ -20,10 +20,14 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.LatLng;
 
+import java.time.Duration;
+
 /**
  * @author Dmitry Solomakha
  */
 class TestDatastoreItem {
+	private Duration durationField;
+
 	private String stringField;
 
 	private Boolean boolField;
@@ -92,5 +96,13 @@ class TestDatastoreItem {
 
 	public void setBlobField(Blob blobField) {
 		this.blobField = blobField;
+	}
+
+	public Duration getDurationField() {
+		return durationField;
+	}
+
+	public void setDurationField(Duration durationField) {
+		this.durationField = durationField;
 	}
 }
