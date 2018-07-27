@@ -28,6 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.PulledAcknowledgeablePubsubMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
@@ -71,7 +72,7 @@ public class SenderIntegrationTest {
 
 		this.restTemplate.postForObject("/postMessage", map, String.class);
 
-		List<AcknowledgeablePubsubMessage> messages;
+		List<PulledAcknowledgeablePubsubMessage> messages;
 
 		boolean messageReceived = false;
 		for (int i = 0; i < 100; i++) {
@@ -79,7 +80,7 @@ public class SenderIntegrationTest {
 			messages.forEach(AcknowledgeablePubsubMessage::ack);
 
 			if (messages.stream()
-					.anyMatch(m -> m.getMessage().getData().toStringUtf8().equals(message))) {
+					.anyMatch(m -> m.getPubsubMessage().getData().toStringUtf8().equals(message))) {
 				messageReceived = true;
 				break;
 			}

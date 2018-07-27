@@ -16,20 +16,42 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.pubsub.v1.PubsubMessage;
 
 /**
  * A {@link PubsubMessage} wrapper that allows it to be acknowledged.
  *
- * <p>To acknowledge {@link AcknowledgeablePubsubMessage} in bulk, using a
+ * <p>To acknowledge {@link PulledAcknowledgeablePubsubMessage} in bulk, using a
  * {@link org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations#ack(java.util.Collection)}
  * is recommended.
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Doug Hoard
  */
-public interface AcknowledgeablePubsubMessage extends AckReplyConsumer {
+public interface PulledAcknowledgeablePubsubMessage extends AcknowledgeablePubsubMessage {
 
+	@Override
 	PubsubMessage getPubsubMessage();
+
+	<T> T getConvertedPayload(Class<T> payloadType);
+
+	String getAckId();
+
+	String getSubscriptionName();
+
+	@Override
+	void ack();
+
+	void ack(boolean async);
+
+	@Override
+	void nack();
+
+	void nack(boolean async);
+
+	void modifyAckDeadline(int ackDeadlineSeconds);
+
+	void modifyAckDeadline(int ackDeadlineSeconds, boolean async);
+
 }
