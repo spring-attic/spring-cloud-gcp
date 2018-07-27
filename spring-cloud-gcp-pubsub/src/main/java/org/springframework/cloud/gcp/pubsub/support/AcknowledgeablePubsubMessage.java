@@ -32,5 +32,4 @@ import com.google.pubsub.v1.PubsubMessage;
 public interface AcknowledgeablePubsubMessage extends AckReplyConsumer {
 
 	PubsubMessage getPubsubMessage();
-
 }

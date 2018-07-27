@@ -86,7 +86,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		PullResponse pullResponse =	this.subscriberStub.pullCallable().call(pullRequest);
 		List<PulledAcknowledgeablePubsubMessage> receivedMessages =
 				pullResponse.getReceivedMessagesList().stream()
-						.map(message -> new PulledAcknowledgeablePubsubMessage(message.getMessage(),
+						.map(message -> new PulledAcknowledgeablePubsubMessageImpl(message.getMessage(),
 									message.getAckId(),
 									pullRequest.getSubscription(),
 									this.subscriberStub))
@@ -185,4 +185,82 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		this.subscriberStub.modifyAckDeadlineCallable().call(modifyAckDeadlineRequest);
 	}
 
+	private class PulledAcknowledgeablePubsubMessageImpl implements PulledAcknowledgeablePubsubMessage {
+
+		private PubsubMessage message;
+
+		private String ackId;
+
+		private String subscriptionName;
+
+		private SubscriberStub subscriberStub;
+
+		PulledAcknowledgeablePubsubMessageImpl(
+				PubsubMessage message, String ackId, String subscriptionName, SubscriberStub subscriberStub) {
+			this.message = message;
+			this.ackId = ackId;
+			this.subscriptionName = subscriptionName;
+			this.subscriberStub = subscriberStub;
+		}
+
+		@Override
+		public PubsubMessage getPubsubMessage() {
+			return this.message;
+		}
+
+		public String getAckId() {
+			return this.ackId;
+		}
+
+		public String getSubscriptionName() {
+			return this.subscriptionName;
+		}
+
+		@Override
+		public void ack() {
+			ack(false);
+		}
+
+		public void ack(boolean async) {
+			AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
+					.addAckIds(this.ackId)
+					.setSubscription(this.subscriptionName)
+					.build();
+
+			if (async) {
+				this.subscriberStub.acknowledgeCallable().futureCall(acknowledgeRequest);
+			}
+			else {
+				this.subscriberStub.acknowledgeCallable().call(acknowledgeRequest);
+			}
+		}
+
+		@Override
+		public void nack() {
+			nack(false);
+		}
+
+		public void nack(boolean async) {
+			modifyAckDeadline(0, async);
+		}
+
+		public void modifyAckDeadline(int ackDeadlineSeconds) {
+			modifyAckDeadline(ackDeadlineSeconds, false);
+		}
+
+		public void modifyAckDeadline(int ackDeadlineSeconds, boolean async) {
+			ModifyAckDeadlineRequest modifyAckDeadlineRequest = ModifyAckDeadlineRequest.newBuilder()
+					.setAckDeadlineSeconds(ackDeadlineSeconds)
+					.addAckIds(this.ackId)
+					.setSubscription(this.subscriptionName)
+					.build();
+
+			if (async) {
+				this.subscriberStub.modifyAckDeadlineCallable().futureCall(modifyAckDeadlineRequest);
+			}
+			else {
+				this.subscriberStub.modifyAckDeadlineCallable().call(modifyAckDeadlineRequest);
+			}
+		}
+	}
 }

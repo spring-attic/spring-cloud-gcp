@@ -16,9 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
-import com.google.cloud.pubsub.v1.stub.SubscriberStub;
-import com.google.pubsub.v1.AcknowledgeRequest;
-import com.google.pubsub.v1.ModifyAckDeadlineRequest;
 import com.google.pubsub.v1.PubsubMessage;
 
 /**
@@ -30,61 +27,29 @@ import com.google.pubsub.v1.PubsubMessage;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Doug Hoard
  */
-public class PulledAcknowledgeablePubsubMessage implements AcknowledgeablePubsubMessage {
-
-	private PubsubMessage message;
-
-	private String ackId;
-
-	private String subscriptionName;
-
-	private SubscriberStub subscriberStub;
-
-	public PulledAcknowledgeablePubsubMessage(PubsubMessage message, String ackId,
-			String subscriptionName, SubscriberStub subscriberStub) {
-		this.message = message;
-		this.ackId = ackId;
-		this.subscriptionName = subscriptionName;
-		this.subscriberStub = subscriberStub;
-	}
+public interface PulledAcknowledgeablePubsubMessage extends AcknowledgeablePubsubMessage {
 
 	@Override
-	public PubsubMessage getPubsubMessage() {
-		return this.message;
-	}
+	PubsubMessage getPubsubMessage();
 
-	public String getAckId() {
-		return this.ackId;
-	}
+	String getAckId();
 
-	public String getSubscriptionName() {
-		return this.subscriptionName;
-	}
+	String getSubscriptionName();
 
 	@Override
-	public void ack() {
-		AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
-				.addAckIds(this.ackId)
-				.setSubscription(this.subscriptionName)
-				.build();
+	void ack();
 
-		this.subscriberStub.acknowledgeCallable().call(acknowledgeRequest);
-	}
+	void ack(boolean async);
 
 	@Override
-	public void nack() {
-		modifyAckDeadline(0);
-	}
+	void nack();
 
-	public void modifyAckDeadline(int ackDeadlineSeconds) {
-		ModifyAckDeadlineRequest modifyAckDeadlineRequest = ModifyAckDeadlineRequest.newBuilder()
-				.setAckDeadlineSeconds(ackDeadlineSeconds)
-				.addAckIds(this.ackId)
-				.setSubscription(this.subscriptionName)
-				.build();
+	void nack(boolean async);
 
-		this.subscriberStub.modifyAckDeadlineCallable().call(modifyAckDeadlineRequest);
-	}
+	void modifyAckDeadline(int ackDeadlineSeconds);
+
+	void modifyAckDeadline(int ackDeadlineSeconds, boolean async);
 
 }
