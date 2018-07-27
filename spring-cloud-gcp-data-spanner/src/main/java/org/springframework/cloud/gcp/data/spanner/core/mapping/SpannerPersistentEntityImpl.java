@@ -43,7 +43,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
- * Represents a Google Spanner table and its columns' mapping to fields within an entity
+ * Represents a Cloud Spanner table and its columns' mapping to fields within an entity
  * type.
  *
  * @author Ray Tsang
@@ -160,6 +160,17 @@ public class SpannerPersistentEntityImpl<T>
 	@Override
 	public SpannerCompositeKeyProperty getIdProperty() {
 		return this.idProperty;
+	}
+
+	@Override
+	public void doWithChildCollectionProperties(
+			PropertyHandler<SpannerPersistentProperty> handler) {
+		doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					if (spannerPersistentProperty.isOneToManyCollection()) {
+						handler.doWithPersistentProperty(spannerPersistentProperty);
+					}
+				});
 	}
 
 	@Override

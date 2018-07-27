@@ -50,16 +50,16 @@ public class SpannerSchemaUtils {
 	public SpannerSchemaUtils(SpannerMappingContext mappingContext,
 			SpannerEntityProcessor spannerEntityProcessor) {
 		Assert.notNull(mappingContext,
-				"A valid mapping context for Spanner is required.");
+				"A valid mapping context for Cloud Spanner is required.");
 		Assert.notNull(spannerEntityProcessor,
-				"A valid results mapper for Spanner is required.");
+				"A valid results mapper for Cloud Spanner is required.");
 		this.mappingContext = mappingContext;
 		this.spannerEntityProcessor = spannerEntityProcessor;
 		this.spannerTypeMapper = new SpannerTypeMapper();
 	}
 
 	private String getTypeDdlString(Type.Code type, boolean isArray, OptionalLong dataLength) {
-		Assert.notNull(type, "A valid Spanner column type is required.");
+		Assert.notNull(type, "A valid Cloud Spanner column type is required.");
 		if (isArray) {
 			return "ARRAY<" + getTypeDdlString(type, false, dataLength) + ">";
 		}
@@ -89,7 +89,7 @@ public class SpannerSchemaUtils {
 
 			if (spannerSupportedInnerType == null) {
 				throw new SpannerDataException(
-						"Could not find suitable Spanner column inner type for "
+						"Could not find suitable Cloud Spanner column inner type for "
 								+ "property type:"
 								+ innerType);
 			}
@@ -104,7 +104,7 @@ public class SpannerSchemaUtils {
 
 			if (spannerColumnType == null) {
 				throw new SpannerDataException(
-						"Could not find suitable Spanner column type for property " + "type:" + columnType);
+						"Could not find suitable Cloud Spanner column type for property " + "type:" + columnType);
 			}
 
 			ddlString = getTypeDdlString(spannerColumnType, spannerJavaType.isArray(),
@@ -116,7 +116,7 @@ public class SpannerSchemaUtils {
 	/**
 	 * Gets the key for the given object.
 	 * @param object the object to get the key for
-	 * @return the Spanner Key for the given object.
+	 * @return the Cloud Spanner Key for the given object.
 	 */
 	public Key getKey(Object object) {
 		SpannerPersistentEntity persistentEntity = this.mappingContext

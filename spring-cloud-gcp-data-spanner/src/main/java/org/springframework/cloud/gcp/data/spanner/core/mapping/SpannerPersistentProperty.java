@@ -73,4 +73,11 @@ public interface SpannerPersistentProperty
 	 * @return true if the property is embedded.
 	 */
 	boolean isEmbedded();
+
+	/**
+	 * True if property is a collection of child entities. False otherwise.
+	 * @return True if property is a collection of child entities corresponding to an interleaved
+	 * child table. False otherwise.
+	 */
+	boolean isOneToManyCollection();
 }

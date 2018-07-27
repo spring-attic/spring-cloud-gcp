@@ -98,7 +98,7 @@ public class Trade {
 				&& Objects.equals(this.symbol, trade.symbol)
 				&& Objects.equals(this.tradeTime, trade.tradeTime)
 				&& Objects.equals(this.traderId, trade.traderId)
-				// java Date contains the time of day, but Spanner Date is only specific
+				// java Date contains the time of day, but Cloud Spanner Date is only specific
 				// to the day.
 				&& Objects.equals(DateUtil.truncateTime(this.tradeDate),
 						DateUtil.truncateTime(trade.tradeDate));

@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ColumnLength {
 	/**
-	 * The maximum length of the column in Spanner terms. For example, for STRING columns
+	 * The maximum length of the column in Cloud Spanner terms. For example, for STRING columns
 	 * this refers to the number of characters. For BYTES columns this refers to the
 	 * number of bytes.
 	 */

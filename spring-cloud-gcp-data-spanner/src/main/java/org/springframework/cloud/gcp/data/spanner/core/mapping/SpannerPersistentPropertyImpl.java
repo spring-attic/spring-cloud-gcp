@@ -35,7 +35,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Represents an implementation for {@link SpannerPersistentProperty}, which is a property
- * of a {@link SpannerPersistentEntity} stored in a Google Spanner table.
+ * of a {@link SpannerPersistentEntity} stored in a Cloud Spanner table.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
@@ -83,7 +83,7 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	/**
-	 * Gets the name of the column in the Google Spanner table mapped to this property. The
+	 * Gets the name of the column in the Cloud Spanner table mapped to this property. The
 	 * column name is resolved using the {@link FieldNamingStrategy} passed in to the
 	 * {@link SpannerPersistentPropertyImpl#SpannerPersistentPropertyImpl(Property, PersistentEntity,
 	 * SimpleTypeHolder, FieldNamingStrategy)}
@@ -139,6 +139,11 @@ public class SpannerPersistentPropertyImpl
 	@Override
 	public boolean isEmbedded() {
 		return findAnnotation(Embedded.class) != null;
+	}
+
+	@Override
+	public boolean isOneToManyCollection() {
+		return findAnnotation(OneToMany.class) != null;
 	}
 
 	@Override
