@@ -167,7 +167,7 @@ public class SpannerPersistentEntityImpl<T>
 			PropertyHandler<SpannerPersistentProperty> handler) {
 		doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					if (spannerPersistentProperty.isChildCollection()) {
+					if (spannerPersistentProperty.isOneToManyCollection()) {
 						handler.doWithPersistentProperty(spannerPersistentProperty);
 					}
 				});

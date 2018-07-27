@@ -142,7 +142,7 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	@Override
-	public boolean isChildCollection() {
+	public boolean isOneToManyCollection() {
 		return findAnnotation(OneToMany.class) != null;
 	}
 
