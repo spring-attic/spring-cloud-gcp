@@ -31,11 +31,10 @@ import com.google.cloud.spanner.Value;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -91,15 +90,19 @@ public class SpannerDatabaseAdminTemplateTests {
 		assertThat(relationships.get("grandpa"),
 				containsInAnyOrder("parent_a", "parent_b"));
 		assertThat(relationships.get("parent_a"), containsInAnyOrder("child"));
-		assertTrue(this.spannerDatabaseAdminTemplate.isInterleaved("grandpa", "child"));
-		assertTrue(
-				this.spannerDatabaseAdminTemplate.isInterleaved("grandpa", "parent_a"));
-		assertTrue(this.spannerDatabaseAdminTemplate.isInterleaved("parent_a", "child"));
-		assertTrue(
-				this.spannerDatabaseAdminTemplate.isInterleaved("grandpa", "parent_b"));
-		assertFalse(
-				this.spannerDatabaseAdminTemplate.isInterleaved("parent_a", "parent_b"));
-		assertFalse(this.spannerDatabaseAdminTemplate.isInterleaved("parent_b", "child"));
+
+		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("grandpa", "child"))
+				.as("verify grand-child relationship").isTrue();
+		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("grandpa", "parent_a"))
+				.as("verify parent-child relationship").isTrue();
+		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("parent_a", "child"))
+				.as("verify parent-child relationship").isTrue();
+		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("grandpa", "parent_b"))
+				.as("verify parent-child relationship").isTrue();
+		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("parent_a", "parent_b"))
+				.as("verify not parent-child relationship").isFalse();
+		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("parent_b", "child"))
+				.as("verify not parent-child relationship").isFalse();
 	}
 
 	private static class MockResults {
