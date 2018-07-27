@@ -85,6 +85,13 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
+	public <T> Iterable<T> saveAll(Iterable<T> entities) {
+		this.datastore.put(StreamSupport.stream(entities.spliterator(), false)
+				.map(this::convertToEntityForSave).toArray(Entity[]::new));
+		return entities;
+	}
+
+	@Override
 	public <T> void deleteById(Object id, Class<T> entityClass) {
 		this.datastore.delete(getKeyFromId(id, entityClass));
 	}
@@ -98,6 +105,12 @@ public class DatastoreTemplate implements DatastoreOperations {
 	@Override
 	public <T> void delete(T entity) {
 		this.datastore.delete(getKey(entity, false));
+	}
+
+	@Override
+	public <T> void deleteAll(Iterable<T> entities) {
+		this.datastore.delete(StreamSupport.stream(entities.spliterator(), false)
+				.map(x -> getKey(x, false)).toArray(Key[]::new));
 	}
 
 	@Override
