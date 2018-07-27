@@ -42,13 +42,6 @@ public interface DatastorePersistentProperty
 	boolean isIterable();
 
 	/**
-	 * True if the property contains the information about the ancestors of this entity in
-	 * Datastore. Is not stored as a field in Datastore.
-	 * @return True if the property contains the ancestor information. False otherwise.
-	 */
-	boolean isAncestors();
-
-	/**
 	 * True if the property is a POJO and is to be stored in Datastore as a Key of the
 	 * POJO, which is a separate entity in Datastore.
 	 * @return true if the property is stored in Datastore as a Key.
@@ -61,13 +54,6 @@ public interface DatastorePersistentProperty
 	 * @return true if the property is stored in Datastore as an embedded entity.
 	 */
 	boolean isEmbedded();
-
-	/**
-	 * True if property corresponds to a field of a Datastore Entity. False otherwise.
-	 * @return True if this property will be mapped to and from Datastore. False
-	 * otherwise.
-	 */
-	boolean isMapped();
 
 	/**
 	 * Gets the inner type of the property, which is meaningful for fields of type ARRAY

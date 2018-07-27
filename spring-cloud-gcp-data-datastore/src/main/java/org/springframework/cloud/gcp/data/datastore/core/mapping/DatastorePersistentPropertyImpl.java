@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
 import java.util.List;
 
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
@@ -25,7 +26,6 @@ import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.util.Pair;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
 
@@ -62,18 +62,6 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	private void verify() {
-		if (isAncestors()) {
-			if (!isIterable()) {
-				throw new DatastoreDataException(
-						"Ancestors properties must be an iterable of Entity and Key pairs: "
-								+ getFieldName());
-			}
-			if (!Pair.class.isAssignableFrom(getIterableInnerType())) {
-				throw new DatastoreDataException(
-						"Ancestor Entity and Keys must be given as Pairs: "
-								+ getFieldName());
-			}
-		}
 		if (isEmbedded() && isReference()) {
 			throw new DatastoreDataException(
 					"Property cannot be annotated both Embedded and Reference: "
@@ -108,11 +96,6 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	@Override
-	public boolean isAncestors() {
-		return findAnnotation(Ancestors.class) != null;
-	}
-
-	@Override
 	public boolean isReference() {
 		return findAnnotation(Reference.class) != null;
 	}
@@ -120,11 +103,6 @@ public class DatastorePersistentPropertyImpl
 	@Override
 	public boolean isEmbedded() {
 		return findAnnotation(Embedded.class) != null;
-	}
-
-	@Override
-	public boolean isMapped() {
-		return findAnnotation(NotMapped.class) == null;
 	}
 
 	@Override

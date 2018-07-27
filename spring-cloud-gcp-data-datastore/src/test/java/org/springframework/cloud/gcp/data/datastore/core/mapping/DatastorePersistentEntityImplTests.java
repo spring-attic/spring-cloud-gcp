@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.util.ClassTypeInformation;
@@ -122,7 +123,7 @@ public class DatastorePersistentEntityImplTests {
 		@Field(name = "custom_col")
 		String something;
 
-		@NotMapped
+		@Transient
 		String notMapped;
 	}
 
