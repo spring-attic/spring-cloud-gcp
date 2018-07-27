@@ -199,7 +199,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			}
 		}
 		throw new SpannerDataException(
-				"The given object type couldn't be built into a Spanner Key: "
+				"The given object type couldn't be built into a Cloud Spanner Key: "
 						+ object.getClass());
 	}
 

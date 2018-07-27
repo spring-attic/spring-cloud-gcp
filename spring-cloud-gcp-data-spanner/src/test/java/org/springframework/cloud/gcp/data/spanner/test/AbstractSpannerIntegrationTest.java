@@ -53,7 +53,7 @@ import static org.junit.Assume.assumeThat;
  *
  * <p>Prerequisites for running integration tests:
  *
- * <p>For Spanner integration tests, you will need to have an instance predefined, everything
+ * <p>For Cloud Spanner integration tests, you will need to have an instance predefined, everything
  * else is generated. The instance by default is "integration-instance", which can be
  * overriden in <code>src/test/resources/application-test.properties</code>, the property:
  * <code>test.integration.spanner.instance</code>

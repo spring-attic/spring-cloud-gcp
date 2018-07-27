@@ -23,7 +23,7 @@ import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
 /**
- * Spanner specific interface for a {@link MutablePersistentEntity} stored in a Google
+ * Cloud Spanner specific interface for a {@link MutablePersistentEntity} stored in a Cloud
  * Spanner table.
  *
  * @author Ray Tsang
@@ -35,7 +35,7 @@ public interface SpannerPersistentEntity<T> extends
 		MutablePersistentEntity<T, SpannerPersistentProperty>, ApplicationContextAware {
 
 	/**
-	 * Gets the name of the Spanner table.
+	 * Gets the name of the Cloud Spanner table.
 	 * @return the name of the table.
 	 */
 	String tableName();

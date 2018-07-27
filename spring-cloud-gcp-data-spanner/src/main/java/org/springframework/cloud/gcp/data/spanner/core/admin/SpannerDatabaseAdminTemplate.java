@@ -63,7 +63,7 @@ public class SpannerDatabaseAdminTemplate {
 	 * @param databaseAdminClient the client used to create databases and execute DDL
 	 * statements.
 	 * @param databaseClient the client used to access schema information tables.
-	 * @param databaseId the combination of Spanner Instance Id and Database Id. While
+	 * @param databaseId the combination of Cloud Spanner Instance Id and Database Id. While
 	 * databases can be created automatically by this template, instances determine
 	 * billing and are not created automatically.
 	 */

@@ -24,7 +24,7 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 
 /**
- * Interface for a factory that creates Spanner mutation operation objects.
+ * Interface for a factory that creates Cloud Spanner mutation operation objects.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao

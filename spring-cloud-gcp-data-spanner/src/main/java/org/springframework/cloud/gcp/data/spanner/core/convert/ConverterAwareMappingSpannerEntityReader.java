@@ -56,9 +56,9 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 	}
 
 	/**
-	 * Reads a single POJO from a Spanner row.
+	 * Reads a single POJO from a Cloud Spanner row.
 	 * @param type the type of POJO
-	 * @param source the Spanner row
+	 * @param source the Cloud Spanner row
 	 * @param includeColumns the columns to read. If null then all columns will be read.
 	 * @param allowMissingColumns if true, then properties with no corresponding column are
 	 * not mapped. If false, then an exception is thrown.
@@ -133,7 +133,7 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 		boolean missingColumn = !struct.hasColumn(columnName);
 		if (missingColumn && !allowMissingColumns) {
 			throw new SpannerDataException(
-					"Unable to read column from Spanner results: "
+					"Unable to read column from Cloud Spanner results: "
 							+ columnName);
 		}
 		return missingColumn;
