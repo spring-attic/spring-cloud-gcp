@@ -19,6 +19,8 @@ package org.springframework.cloud.gcp.data.datastore.core.mapping;
 import org.springframework.data.repository.core.support.AbstractEntityInformation;
 
 /**
+ * Holds ID type information about a Datastore persistent entity.
+ *
  * @author Chengyuan Zhao
  *
  * @since 1.1
