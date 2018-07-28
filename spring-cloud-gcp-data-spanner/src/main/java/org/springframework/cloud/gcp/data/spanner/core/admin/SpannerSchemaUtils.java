@@ -63,7 +63,7 @@ public class SpannerSchemaUtils {
 	}
 
 	/**
-	 * Gets the DDL string to drop the table for the given entity in Spanner.
+	 * Gets the DDL string to drop the table for the given entity in Cloud Spanner.
 	 * @param entityClass the entity type.
 	 * @return the DDL string.
 	 */
@@ -71,6 +71,7 @@ public class SpannerSchemaUtils {
 		return "DROP TABLE "
 				+ this.mappingContext.getPersistentEntity(entityClass).tableName();
 	}
+
 	/**
 	 * Gets the key for the given object.
 	 * @param object the object to get the key for
@@ -84,17 +85,17 @@ public class SpannerSchemaUtils {
 	}
 
 	/**
-	 * Gets the DDL string to create the table for the given entity in Spanner. This is just
-	 * one of the possible schemas that can support the given entity type. The specific schema
+	 * Gets the DDL string to create the table for the given entity in Cloud Spanner. This
+	 * is just one of the possible schemas that can support the given entity type. The
+	 * specific schema
 	 * is determined by the configured property type converters used by the read and write
 	 * methods in this SpannerOperations and will be compatible with those methods.
 	 * @param entityClass the entity type.
 	 * @return the DDL string.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> String getCreateTableDDLString(Class<T> entityClass) {
-		SpannerPersistentEntity<T> spannerPersistentEntity =
-				(SpannerPersistentEntity<T>) this.mappingContext
+	public <T> String getCreateTableDdlString(Class<T> entityClass) {
+		SpannerPersistentEntity<T> spannerPersistentEntity = (SpannerPersistentEntity<T>) this.mappingContext
 				.getPersistentEntity(entityClass);
 
 		StringBuilder stringBuilder = new StringBuilder(
@@ -114,87 +115,78 @@ public class SpannerSchemaUtils {
 		return stringBuilder.toString();
 	}
 
-		/**
-	 	 * Gets a list of DDL strings to create the tables rooted at the given entity class.
-	 	 * The DDL-create strings are ordered in the list starting with the given root class
-	 	 * and are topologically sorted.
-	 	 * @param entityClass the root class for which to get create strings.
-	 	 * @return a list of create strings that are toplogically sorted from parents to children.
-	 	 */
-				public List<String> getCreateTableDDLStringsForHierarchy(Class entityClass) {
-				List<String> ddlStrings = new ArrayList<>();
-				getCreateTableDDLStringsForHierarchy(null, entityClass, ddlStrings,
-								new HashSet<>());
-				return ddlStrings;
-		}
+	/**
+	 * Gets a list of DDL strings to create the tables rooted at the given entity class.
+	 * The DDL-create strings are ordered in the list starting with the given root class
+	 * and are topologically sorted.
+	 * @param entityClass the root class for which to get create strings.
+	 * @return a list of create strings that are toplogically sorted from parents to
+	 * children.
+	 */
+	public List<String> getCreateTableDdlStringsForHierarchy(Class entityClass) {
+		List<String> ddlStrings = new ArrayList<>();
+		getCreateTableDdlStringsForHierarchy(null, entityClass, ddlStrings,
+				new HashSet<>());
+		return ddlStrings;
+	}
 
 	/**
-	 	 * Gets the DDL strings to drop the tables of this entity and all of its sub-entities.
-	 	 * The list is given in reverse topological sort, since parent tables cannot be
-	 	 * dropped before their children tables.
-	 	 * @param entityClass the root entity whose table to drop
-	 	 * @return the list of drop DDL strings
-	 	 */
-	public List<String> getDropTableDDLStringsForHierarchy(Class entityClass) {
-				List<String> ddlStrings = new ArrayList<>();
-				getDropTableDDLStringsForHierarchy(entityClass, ddlStrings, new HashSet<>());
-				return ddlStrings;
-			}
+	 * Gets the DDL strings to drop the tables of this entity and all of its sub-entities.
+	 * The list is given in reverse topological sort, since parent tables cannot be
+	 * dropped before their children tables.
+	 * @param entityClass the root entity whose table to drop
+	 * @return the list of drop DDL strings
+	 */
+	public List<String> getDropTableDdlStringsForHierarchy(Class entityClass) {
+		List<String> ddlStrings = new ArrayList<>();
+		getDropTableDdlStringsForHierarchy(entityClass, ddlStrings, new HashSet<>());
+		return ddlStrings;
+	}
 
-			private void getDropTableDDLStringsForHierarchy(Class entityClass,
-			List<String> dropStrings, Set<Class> seenClasses) {
-				if (seenClasses.contains(entityClass)) {
-						return;
-					}
-				seenClasses.add(entityClass);
-				dropStrings.add(0, getDropTableDdlString(entityClass));
-				SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
-						.getPersistentEntity(entityClass);
-				spannerPersistentEntity.doWithProperties(
-						(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> ConversionUtils
-												.applyIfChildEntityType(spannerPersistentProperty, childType -> {
-												getDropTableDDLStringsForHierarchy(childType, dropStrings,
-														seenClasses);
-												return null;
-											}));
-			}
-
-	String getColumnDdlString(
-			SpannerPersistentProperty spannerPersistentProperty, SpannerEntityProcessor spannerEntityProcessor) {
+	String getColumnDdlString(SpannerPersistentProperty spannerPersistentProperty,
+			SpannerEntityProcessor spannerEntityProcessor) {
 		Class columnType = spannerPersistentProperty.getType();
 		String ddlString;
 		if (ConversionUtils.isIterableNonByteArrayType(columnType)) {
 			Class innerType = spannerPersistentProperty.getColumnInnerType();
 			if (innerType == null) {
 				throw new SpannerDataException(
-						"Cannot get column DDL for iterable type without "
-								+ "annotated"
-								+ " "
-								+ "inner "
-								+ "type"
-								+ ".");
+						"Cannot get column DDL for iterable type without " + "annotated"
+								+ " " + "inner " + "type" + ".");
 			}
-			Class spannerJavaType = spannerEntityProcessor.getCorrespondingSpannerJavaType(innerType, true);
-			Type.Code spannerSupportedInnerType = this.spannerTypeMapper.getSimpleTypeCodeForJavaType(spannerJavaType);
+			Class spannerJavaType = spannerEntityProcessor
+					.getCorrespondingSpannerJavaType(innerType, true);
+			Type.Code spannerSupportedInnerType = this.spannerTypeMapper
+					.getSimpleTypeCodeForJavaType(spannerJavaType);
 
 			if (spannerSupportedInnerType == null) {
 				throw new SpannerDataException(
 						"Could not find suitable Cloud Spanner column inner type for "
-								+ "property type:"
-								+ innerType);
+								+ "property type: " + innerType);
 			}
 			ddlString = getTypeDdlString(spannerSupportedInnerType, true,
 					spannerPersistentProperty.getMaxColumnLength());
 		}
 		else {
-			Class spannerJavaType = spannerEntityProcessor.getCorrespondingSpannerJavaType(columnType, false);
+			Class spannerJavaType = spannerEntityProcessor
+					.getCorrespondingSpannerJavaType(columnType, false);
+
+			if (spannerJavaType == null) {
+				throw new SpannerDataException(
+						"The currently configured custom type converters cannot "
+								+ "convert the given type to a Cloud Spanner-compatible column type: "
+								+ columnType);
+			}
+
 			Type.Code spannerColumnType = spannerJavaType.isArray()
 					? this.spannerTypeMapper.getArrayTypeCodeForJavaType(spannerJavaType)
-					: this.spannerTypeMapper.getSimpleTypeCodeForJavaType(spannerJavaType);
+					: this.spannerTypeMapper
+							.getSimpleTypeCodeForJavaType(spannerJavaType);
 
 			if (spannerColumnType == null) {
 				throw new SpannerDataException(
-						"Could not find suitable Cloud Spanner column type for property " + "type:" + columnType);
+						"Could not find suitable Cloud Spanner column type for property "
+								+ "type :" + columnType);
 			}
 
 			ddlString = getTypeDdlString(spannerColumnType, spannerJavaType.isArray(),
@@ -203,25 +195,23 @@ public class SpannerSchemaUtils {
 		return spannerPersistentProperty.getColumnName() + " " + ddlString;
 	}
 
-	private void getCreateTableDDLStringsForHierarchy(String parentTable,
+	private void getCreateTableDdlStringsForHierarchy(String parentTable,
 			Class entityClass, List<String> ddlStrings, Set<Class> seenClasses) {
-				if (seenClasses.contains(entityClass)) {
-						return;
-					}
-				ddlStrings.add(getCreateTableDDLString(entityClass) + (parentTable == null ? ""
-								: ", INTERLEAVE IN PARENT " + parentTable + " ON DELETE CASCADE"));
-				SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
-								.getPersistentEntity(entityClass);
-				spannerPersistentEntity.doWithProperties(
-								(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> ConversionUtils
-												.applyIfChildEntityType(spannerPersistentProperty, childType -> {
-												getCreateTableDDLStringsForHierarchy(
-																spannerPersistentEntity.tableName(), childType,
-																ddlStrings, seenClasses);
-												return null;
-											}));
-				seenClasses.add(entityClass);
-			}
+		if (seenClasses.contains(entityClass)) {
+			return;
+		}
+		ddlStrings.add(getCreateTableDdlString(entityClass) + (parentTable == null ? ""
+				: ", INTERLEAVE IN PARENT " + parentTable + " ON DELETE CASCADE"));
+		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
+				.getPersistentEntity(entityClass);
+		spannerPersistentEntity.doWithChildCollectionProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty ->
+						getCreateTableDdlStringsForHierarchy(
+						spannerPersistentEntity.tableName(),
+						spannerPersistentProperty.getColumnInnerType(), ddlStrings,
+						seenClasses));
+		seenClasses.add(entityClass);
+	}
 
 	private <T> void addPrimaryKeyColumnNames(
 			SpannerPersistentEntity<T> spannerPersistentEntity, StringJoiner keyStrings) {
@@ -241,7 +231,7 @@ public class SpannerSchemaUtils {
 	private <T> void addColumnDdlStrings(
 			SpannerPersistentEntity<T> spannerPersistentEntity,
 			StringJoiner stringJoiner) {
-		spannerPersistentEntity.doWithProperties(
+		spannerPersistentEntity.doWithColumnBackedProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						addColumnDdlStrings(
@@ -256,13 +246,29 @@ public class SpannerSchemaUtils {
 				});
 	}
 
-	private String getTypeDdlString(Type.Code type, boolean isArray, OptionalLong dataLength) {
+	private void getDropTableDdlStringsForHierarchy(Class entityClass,
+			List<String> dropStrings, Set<Class> seenClasses) {
+		if (seenClasses.contains(entityClass)) {
+			return;
+		}
+		seenClasses.add(entityClass);
+		dropStrings.add(0, getDropTableDdlString(entityClass));
+		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
+				.getPersistentEntity(entityClass);
+		spannerPersistentEntity.doWithChildCollectionProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty ->
+						getDropTableDdlStringsForHierarchy(
+						spannerPersistentProperty.getColumnInnerType(), dropStrings,
+						seenClasses));
+	}
+
+	private String getTypeDdlString(Type.Code type, boolean isArray,
+			OptionalLong dataLength) {
 		Assert.notNull(type, "A valid Spanner column type is required.");
 		if (isArray) {
 			return "ARRAY<" + getTypeDdlString(type, false, dataLength) + ">";
 		}
-		return type.toString()
-				+ (type == Type.Code.STRING || type == Type.Code.BYTES
+		return type.toString() + (type == Type.Code.STRING || type == Type.Code.BYTES
 				? "(" + (dataLength.isPresent() ? dataLength.getAsLong() : "MAX") + ")"
 				: "");
 	}
