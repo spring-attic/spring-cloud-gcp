@@ -203,6 +203,11 @@ public class SpannerPersistentEntityImplTests {
 				key);
 	}
 
+	@Test(expected = SpannerDataException.class)
+	public void testEmbeddedCollection() {
+		this.spannerMappingContext.getPersistentEntity(ChildCollectionEmbedded.class);
+	}
+
 	@Test
 	public void testExcludeEmbeddedColumnNames() {
 		assertThat(this.spannerMappingContext.getPersistentEntity(ChildEmbedded.class)
@@ -263,6 +268,15 @@ public class SpannerPersistentEntityImplTests {
 		@PrimaryKey
 		@Embedded
 		ParentEmbedded parentEmbedded;
+
+		@PrimaryKey(keyOrder = 2)
+		String id4;
+	}
+
+	private static class ChildCollectionEmbedded {
+		@PrimaryKey
+		@Embedded
+		List<ParentEmbedded> parentEmbedded;
 
 		@PrimaryKey(keyOrder = 2)
 		String id4;

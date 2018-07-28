@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.BeansException;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
@@ -208,6 +209,12 @@ public class SpannerPersistentEntityImpl<T>
 		spannerPersistentEntity.doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
 					if (spannerPersistentProperty.isEmbedded()) {
+						if (ConversionUtils.isIterableNonByteArrayType(
+								spannerPersistentProperty.getType())) {
+							throw new SpannerDataException(
+									"Embedded properties cannot be collections: "
+											+ spannerPersistentProperty);
+						}
 						verifyEmbeddedColumnNameOverlap(seen,
 								this.spannerMappingContext.getPersistentEntity(
 										spannerPersistentProperty.getType()));
