@@ -149,11 +149,6 @@ public class SpannerSchemaUtils {
 		String ddlString;
 		if (ConversionUtils.isIterableNonByteArrayType(columnType)) {
 			Class innerType = spannerPersistentProperty.getColumnInnerType();
-			if (innerType == null) {
-				throw new SpannerDataException(
-						"Cannot get column DDL for iterable type without " + "annotated"
-								+ " " + "inner " + "type" + ".");
-			}
 			Class spannerJavaType = spannerEntityProcessor
 					.getCorrespondingSpannerJavaType(innerType, true);
 			Type.Code spannerSupportedInnerType = this.spannerTypeMapper
