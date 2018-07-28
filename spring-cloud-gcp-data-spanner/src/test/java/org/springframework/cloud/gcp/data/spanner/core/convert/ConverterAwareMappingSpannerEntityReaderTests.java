@@ -44,6 +44,7 @@ import org.springframework.lang.Nullable;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -78,10 +79,11 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 				.build();
 
 		OuterTestEntity result = this.spannerEntityReader.read(OuterTestEntity.class,
-				outerStruct);
+				outerStruct, null, true);
 		assertEquals("key1", result.id);
 		assertEquals(1, result.innerTestEntities.size());
 		assertEquals("inner-value", result.innerTestEntities.get(0).value);
+		assertNull(result.innerTestEntities.get(0).missingColumnValue);
 	}
 
 	@Test
@@ -225,7 +227,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 				.build();
 
 		TestEntities.OuterTestEntityWithConstructor result = this.spannerEntityReader
-				.read(TestEntities.OuterTestEntityWithConstructor.class, outerStruct);
+				.read(TestEntities.OuterTestEntityWithConstructor.class, outerStruct, null, true);
 		assertEquals("key1", result.id);
 		assertEquals(1, result.innerTestEntities.size());
 		assertEquals("value", result.innerTestEntities.get(0).value);

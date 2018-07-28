@@ -41,11 +41,20 @@ public interface DatastoreOperations {
 	/**
 	 * Saves an instance of an object to Cloud Datastore. Behaves as update or insert.
 	 * @param instance the instance to save.
+	 * @return the instance that was saved.
 	 */
-	<T> void save(T instance);
+	<T> T save(T instance);
 
 	/**
-	 * Delete an entity from Cloud Datastore.
+	 * Saves multiple instances of objects to Cloud Datastore. Behaves as update or insert.
+	 * @param entities the objects to save.
+	 * @return the entities that were saved.
+	 */
+	<T> Iterable<T> saveAll(Iterable<T> entities);
+
+	/**
+	 * Delete an entity from Cloud Datastore. Deleting IDs that do not exist in Cloud Datastore
+	 * will result in no operation.
 	 * @param id the ID of the entity to delete. If this is actually a
 	 * {@link com.google.cloud.datastore.Key}
 	 * then it will be used. Otherwise it will be attempted to be converted
@@ -57,17 +66,40 @@ public interface DatastoreOperations {
 	<T> void deleteById(Object id, Class<T> entityClass);
 
 	/**
-	 * Delete an entity from Cloud Datastore.
+	 * Delete multiple IDs from Cloud Datastore. Deleting IDs that do not exist in Cloud Datastore
+	 * will result in no operation.
+	 * @param ids the IDs to delete. If any of these is actually a
+	 * {@link com.google.cloud.datastore.Key}
+	 * then it will be used. Otherwise it will be attempted to be converted
+	 * to an integer or string value and it will be assumed to be a root key value with the
+	 * Kind determined by the entityClass.
+	 * @param entityClass the type of the
+	 * @param <T> ths entity type
+	 */
+	<T> void deleteAllById(Iterable<?> ids, Class<T> entityClass);
+
+	/**
+	 * Delete an entity from Cloud Datastore. Deleting entities that don't exist in Cloud
+	 * Datastore will result in no operation.
 	 * @param entity the entity to delete.
 	 * @param <T> the entity type
 	 */
 	<T> void delete(T entity);
 
 	/**
+	 * Deletes multiple entities from Cloud Datastore. Deleting entities that don't exist in Cloud
+	 * Datastore will result in no operation.
+	 * @param entities the entities to delete.
+	 * @param <T> the entity type.
+	 */
+	<T> void deleteAll(Iterable<T> entities);
+
+	/**
 	 * Delete all entities of a given domain type.
 	 * @param entityClass the domain type to delete from Cloud Datastore.
+	 * @return the number of entities that were deleted.
 	 */
-	void deleteAll(Class<?> entityClass);
+	long deleteAll(Class<?> entityClass);
 
 	/**
 	 * Count all occurrences of entities of the given domain type.

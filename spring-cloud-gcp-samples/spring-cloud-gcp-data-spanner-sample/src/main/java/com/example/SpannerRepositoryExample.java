@@ -93,7 +93,7 @@ public class SpannerRepositoryExample {
 
 			this.tradeRepository.findByAction("BUY").forEach(System.out::println);
 
-			System.out.println("These are the Spanner primary keys for the trades:");
+			System.out.println("These are the Cloud Spanner primary keys for the trades:");
 
 			allTrades.forEach(t -> {
 				Key key = this.spannerSchemaUtils.getKey(t);

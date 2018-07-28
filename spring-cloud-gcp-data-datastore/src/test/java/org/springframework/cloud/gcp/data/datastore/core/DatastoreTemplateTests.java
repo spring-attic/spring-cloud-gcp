@@ -20,6 +20,7 @@ import java.util.List;
 
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.FullEntity;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.Query;
@@ -65,8 +66,8 @@ public class DatastoreTemplateTests {
 
 	private DatastoreTemplate datastoreTemplate;
 
-	private Key createFakeKey() {
-		return new KeyFactory("project").setKind("custom_test_kind").newKey("key");
+	private Key createFakeKey(String val) {
+		return new KeyFactory("project").setKind("custom_test_kind").newKey(val);
 	}
 
 	@Before
@@ -78,9 +79,9 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void findByIdTest() {
-		Key key1 = createFakeKey();
+		Key key1 = createFakeKey("key1");
 		TestEntity ob1 = new TestEntity();
-		Entity e1 = Entity.newBuilder(createFakeKey()).build();
+		Entity e1 = Entity.newBuilder(key1).build();
 		when(this.datastore.get(ArgumentMatchers.<Key>any())).thenReturn(e1);
 		when(this.datastoreEntityConverter.read(eq(TestEntity.class), any())).thenReturn(ob1);
 
@@ -89,13 +90,13 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void findAllByIdTest() {
-		Key key1 = createFakeKey();
-		Key key2 = createFakeKey();
+		Key key1 = createFakeKey("key1");
+		Key key2 = createFakeKey("key2");
 		List<Key> keys = ImmutableList.of(key1, key2);
 		TestEntity ob1 = new TestEntity();
 		TestEntity ob2 = new TestEntity();
-		Entity e1 = Entity.newBuilder(createFakeKey()).build();
-		Entity e2 = Entity.newBuilder(createFakeKey()).build();
+		Entity e1 = Entity.newBuilder(key1).build();
+		Entity e2 = Entity.newBuilder(key2).build();
 		when(this.datastoreEntityConverter.read(eq(TestEntity.class), any()))
 				.thenAnswer(invocation -> {
 					Object ret;
@@ -116,22 +117,63 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void saveTest() {
-		Object object = new Object();
-		Entity entity = Entity.newBuilder(createFakeKey()).build();
-		Key key = createFakeKey();
+		TestEntity object = new TestEntity();
+		Key key = createFakeKey("key");
+		Entity entity = Entity.newBuilder(key).build();
+		object.id = "value";
 		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
 				.thenReturn(key);
-		this.datastoreTemplate.save(object);
+		when(this.datastore.put((FullEntity<?>) any())).thenReturn(entity);
+		assertTrue(this.datastoreTemplate.save(object) instanceof TestEntity);
 		verify(this.datastore, times(1)).put(eq(entity));
 		verify(this.datastoreEntityConverter, times(1)).write(same(object), notNull());
+	}
+
+	@Test
+	public void saveAndAllocateIdTest() {
+		TestEntity object = new TestEntity();
+		Key key = createFakeKey("key");
+		Entity entity = Entity.newBuilder(key).build();
+		when(this.objectToKeyFactory.allocateKeyForObject(same(object), any()))
+				.thenReturn(key);
+		when(this.datastore.put((FullEntity<?>) any())).thenReturn(entity);
+		assertTrue(this.datastoreTemplate.save(object) instanceof TestEntity);
+		verify(this.datastore, times(1)).put(eq(entity));
+		verify(this.datastoreEntityConverter, times(1)).write(same(object), notNull());
+	}
+
+	@Test
+	public void saveAllTest() {
+		TestEntity object1 = new TestEntity();
+		TestEntity object2 = new TestEntity();
+		object2.id = "value";
+
+		Key key1 = createFakeKey("key1");
+		Entity entity1 = Entity.newBuilder(key1).build();
+
+		Key key2 = createFakeKey("key2");
+		Entity entity2 = Entity.newBuilder(key2).build();
+
+		when(this.objectToKeyFactory.allocateKeyForObject(same(object1), any()))
+				.thenReturn(key1);
+		when(this.objectToKeyFactory.getKeyFromObject(same(object2), any()))
+				.thenReturn(key2);
+
+		when(this.datastore.put(any(), any()))
+				.thenReturn(ImmutableList.of(entity1, entity2));
+
+		this.datastoreTemplate.saveAll(ImmutableList.of(object1, object2));
+		verify(this.datastore, times(1)).put(eq(entity1), eq(entity2));
+		verify(this.datastoreEntityConverter, times(1)).write(same(object1), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(object2), notNull());
 	}
 
 	@Test
 	public void findAllTest() {
 		Object ob1 = new Object();
 		Object ob2 = new Object();
-		Entity e1 = Entity.newBuilder(createFakeKey()).build();
-		Entity e2 = Entity.newBuilder(createFakeKey()).build();
+		Entity e1 = Entity.newBuilder(createFakeKey("key1")).build();
+		Entity e2 = Entity.newBuilder(createFakeKey("key2")).build();
 		this.datastoreTemplate.findAll(TestEntity.class);
 		when(this.datastoreEntityConverter.read(eq(TestEntity.class), any()))
 				.thenAnswer(invocation -> {
@@ -160,7 +202,7 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void countTest() {
-		Key key = createFakeKey();
+		Key key = createFakeKey("key");
 		QueryResults<Key> queryResults = mock(QueryResults.class);
 		doAnswer(invocation -> {
 			ImmutableList.of(key, key).iterator()
@@ -176,8 +218,8 @@ public class DatastoreTemplateTests {
 	@Test
 	public void existsByIdTest() {
 		DatastoreTemplate spy = spy(this.datastoreTemplate);
-		Key key1 = createFakeKey();
-		Key key2 = createFakeKey();
+		Key key1 = createFakeKey("key1");
+		Key key2 = createFakeKey("key2");
 		doReturn(new Object()).when(spy).findById(same(key1), eq(Object.class));
 		doReturn(null).when(spy).findById(same(key2), eq(Object.class));
 		assertTrue(spy.existsById(key1, Object.class));
@@ -186,16 +228,27 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void deleteByIdTest() {
-		Key key1 = createFakeKey();
+		Key key1 = createFakeKey("key1");
 		when(this.objectToKeyFactory.getKeyFromId(same(key1), any())).thenReturn(key1);
 		this.datastoreTemplate.deleteById(key1, TestEntity.class);
 		verify(this.datastore, times(1)).delete(same(key1));
 	}
 
 	@Test
+	public void deleteAllByIdTest() {
+		Key key1 = createFakeKey("key1");
+		Key key2 = createFakeKey("key2");
+		when(this.objectToKeyFactory.getKeyFromId(same(key1), any())).thenReturn(key1);
+		when(this.objectToKeyFactory.getKeyFromId(same(key2), any())).thenReturn(key2);
+		this.datastoreTemplate.deleteAllById(ImmutableList.of(key1, key2),
+				TestEntity.class);
+		verify(this.datastore, times(1)).delete(same(key1), same(key2));
+	}
+
+	@Test
 	public void deleteObjectTest() {
-		Object object = new Object();
-		Key key = createFakeKey();
+		TestEntity object = new TestEntity();
+		Key key = createFakeKey("key");
 		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
 				.thenReturn(key);
 
@@ -204,9 +257,24 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
+	public void deleteMultipleObjectsTest() {
+		TestEntity object1 = new TestEntity();
+		TestEntity object2 = new TestEntity();
+		Key key1 = createFakeKey("key1");
+		Key key2 = createFakeKey("key2");
+		when(this.objectToKeyFactory.getKeyFromObject(same(object1), any()))
+				.thenReturn(key1);
+		when(this.objectToKeyFactory.getKeyFromObject(same(object2), any()))
+				.thenReturn(key2);
+
+		this.datastoreTemplate.deleteAll(ImmutableList.of(object1, object2));
+		verify(this.datastore, times(1)).delete(eq(key1), eq(key2));
+	}
+
+	@Test
 	public void deleteAllTest() {
 		TestEntity object = new TestEntity();
-		Key key = createFakeKey();
+		Key key = createFakeKey("key");
 		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
 				.thenReturn(key);
 		QueryResults<Key> queryResults = mock(QueryResults.class);
@@ -218,7 +286,7 @@ public class DatastoreTemplateTests {
 		when(this.datastore
 				.run(eq(Query.newKeyQueryBuilder().setKind("custom_test_kind").build())))
 						.thenReturn(queryResults);
-		this.datastoreTemplate.deleteAll(TestEntity.class);
+		assertEquals(2, this.datastoreTemplate.deleteAll(TestEntity.class));
 		verify(this.datastore, times(1)).delete(same(key), same(key));
 	}
 

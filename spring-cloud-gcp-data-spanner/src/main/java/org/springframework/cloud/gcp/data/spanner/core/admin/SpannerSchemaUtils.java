@@ -54,9 +54,9 @@ public class SpannerSchemaUtils {
 	public SpannerSchemaUtils(SpannerMappingContext mappingContext,
 			SpannerEntityProcessor spannerEntityProcessor) {
 		Assert.notNull(mappingContext,
-				"A valid mapping context for Spanner is required.");
+				"A valid mapping context for Cloud Spanner is required.");
 		Assert.notNull(spannerEntityProcessor,
-				"A valid results mapper for Spanner is required.");
+				"A valid results mapper for Cloud Spanner is required.");
 		this.mappingContext = mappingContext;
 		this.spannerEntityProcessor = spannerEntityProcessor;
 		this.spannerTypeMapper = new SpannerTypeMapper();
@@ -179,7 +179,7 @@ public class SpannerSchemaUtils {
 
 			if (spannerSupportedInnerType == null) {
 				throw new SpannerDataException(
-						"Could not find suitable Spanner column inner type for "
+						"Could not find suitable Cloud Spanner column inner type for "
 								+ "property type:"
 								+ innerType);
 			}
@@ -194,7 +194,7 @@ public class SpannerSchemaUtils {
 
 			if (spannerColumnType == null) {
 				throw new SpannerDataException(
-						"Could not find suitable Spanner column type for property " + "type:" + columnType);
+						"Could not find suitable Cloud Spanner column type for property " + "type:" + columnType);
 			}
 
 			ddlString = getTypeDdlString(spannerColumnType, spannerJavaType.isArray(),

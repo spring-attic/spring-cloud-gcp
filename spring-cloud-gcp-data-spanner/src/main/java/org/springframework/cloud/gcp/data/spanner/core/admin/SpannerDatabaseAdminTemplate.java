@@ -63,7 +63,7 @@ public class SpannerDatabaseAdminTemplate {
 	 * @param databaseAdminClient the client used to create databases and execute DDL
 	 * statements.
 	 * @param databaseClient the client used to access schema information tables.
-	 * @param databaseId the combination of Spanner Instance Id and Database Id. While
+	 * @param databaseId the combination of Cloud Spanner Instance Id and Database Id. While
 	 * databases can be created automatically by this template, instances determine
 	 * billing and are not created automatically.
 	 */
@@ -152,6 +152,28 @@ public class SpannerDatabaseAdminTemplate {
 		}
 		results.close();
 		return relationships;
+	}
+
+	/**
+	 * Return true if the given table names are interleaved as ancestor and descendant.
+	 * These may be separated by more than one generation.
+	 * @param ancestor the name of the ancestor table
+	 * @param descendant the name of the descendant table. this may be a direct child or
+	 * further down in the family tree.
+	 * @return true the descendant is indeed a descendant table. false otherwise.
+	 */
+	public boolean isInterleaved(String ancestor, String descendant) {
+		Assert.notNull(ancestor, "A non-null ancestor table name is required.");
+		Set<String> directChildren = getParentChildTablesMap().get(ancestor);
+		if (ancestor.equals(descendant) || directChildren == null) {
+			return false;
+		}
+		for (String child : directChildren) {
+			if (child.equals(descendant) || isInterleaved(child, descendant)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

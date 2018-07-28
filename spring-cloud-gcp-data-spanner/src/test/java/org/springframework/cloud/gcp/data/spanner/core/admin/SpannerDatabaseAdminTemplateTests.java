@@ -31,6 +31,7 @@ import com.google.cloud.spanner.Value;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -61,7 +62,7 @@ public class SpannerDatabaseAdminTemplateTests {
 	}
 
 	@Test
-	public void getParentChildTablesMapTest() {
+	public void getTableRelationshipsTest() {
 		ReadContext readContext = mock(ReadContext.class);
 
 		Struct s1 = Struct.newBuilder().set("table_name").to(Value.string("grandpa"))
@@ -89,6 +90,19 @@ public class SpannerDatabaseAdminTemplateTests {
 		assertThat(relationships.get("grandpa"),
 				containsInAnyOrder("parent_a", "parent_b"));
 		assertThat(relationships.get("parent_a"), containsInAnyOrder("child"));
+
+		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("grandpa", "child"))
+				.as("verify grand-child relationship").isTrue();
+		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("grandpa", "parent_a"))
+				.as("verify parent-child relationship").isTrue();
+		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("parent_a", "child"))
+				.as("verify parent-child relationship").isTrue();
+		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("grandpa", "parent_b"))
+				.as("verify parent-child relationship").isTrue();
+		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("parent_a", "parent_b"))
+				.as("verify not parent-child relationship").isFalse();
+		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("parent_b", "child"))
+				.as("verify not parent-child relationship").isFalse();
 	}
 
 	private static class MockResults {
@@ -101,6 +115,7 @@ public class SpannerDatabaseAdminTemplateTests {
 				this.counter++;
 				return true;
 			}
+			this.counter = -1;
 			return false;
 		}
 

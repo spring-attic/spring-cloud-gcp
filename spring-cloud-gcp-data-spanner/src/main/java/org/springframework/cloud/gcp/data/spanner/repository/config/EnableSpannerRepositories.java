@@ -120,7 +120,7 @@ public @interface EnableSpannerRepositories {
 	 * {@link org.springframework.cloud.gcp.data.spanner.core.SpannerOperations} bean to be used by
 	 * default with the repositories detected.
 	 *
-	 * @return the name of the Spanner template class
+	 * @return the name of the Cloud Spanner template class
 	 */
 	String spannerTemplateRef() default "spannerTemplate";
 
@@ -129,7 +129,7 @@ public @interface EnableSpannerRepositories {
 	 * {@link org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext}
 	 * bean to be used by default with the repositories detected.
 	 *
-	 * @return the name of the Spanner mapping context class
+	 * @return the name of the Cloud Spanner mapping context class
 	 */
 	String spannerMappingContextRef() default "spannerMappingContext";
 }
