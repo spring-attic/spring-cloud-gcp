@@ -271,9 +271,6 @@ public class SpannerPersistentEntityImplTests {
 		String id;
 	}
 
-	private static class EmbeddedWithMismatchedParentKeyCols {
-	}
-
 	private static class ParentEmbedded {
 		@PrimaryKey
 		@Embedded
