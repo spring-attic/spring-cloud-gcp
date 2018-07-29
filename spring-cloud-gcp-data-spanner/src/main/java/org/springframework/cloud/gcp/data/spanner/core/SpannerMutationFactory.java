@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -38,7 +39,7 @@ public interface SpannerMutationFactory {
 	 * @param object The object to store.
 	 * @return The mutation operation which will store the object.
 	 */
-	Mutation insert(Object object);
+	List<Mutation> insert(Object object);
 
 	/**
 	 * Updates or inserts a single object in Spanner. The columns' values corresponding to
@@ -48,7 +49,7 @@ public interface SpannerMutationFactory {
 	 * Optional, then all columns are used.
 	 * @return The mutation operation to perform the action.
 	 */
-	Mutation upsert(Object object, Optional<Set<String>> includeColumns);
+	List<Mutation> upsert(Object object, Optional<Set<String>> includeColumns);
 
 	/**
 	 * Updates a single object in Spanner. The columns' values corresponding to the
@@ -58,7 +59,7 @@ public interface SpannerMutationFactory {
 	 * Optional, then all columns are used.
 	 * @return The mutation operation to perform the action.
 	 */
-	Mutation update(Object object, Optional<Set<String>> includeColumns);
+	List<Mutation> update(Object object, Optional<Set<String>> includeColumns);
 
 	/**
 	 * Deletes several objects from Spanner.

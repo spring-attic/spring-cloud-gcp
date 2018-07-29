@@ -174,6 +174,17 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
+	public void doWithColumnBackedProperties(
+			PropertyHandler<SpannerPersistentProperty> handler) {
+		doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					if (!spannerPersistentProperty.isOneToManyCollection()) {
+						handler.doWithPersistentProperty(spannerPersistentProperty);
+					}
+				});
+	}
+
+	@Override
 	public boolean hasIdProperty() {
 		return this.idProperty != null;
 	}
@@ -182,7 +193,14 @@ public class SpannerPersistentEntityImpl<T>
 	public void verify() {
 		super.verify();
 		verifyPrimaryKeysConsecutive();
+		verifyOneToManyPropertiesAreCollections();
 		verifyEmbeddedColumnNameOverlap(new HashSet<>(), this);
+	}
+
+	private void verifyOneToManyPropertiesAreCollections() {
+		// getting the inner type will throw an exception if the property isn't a
+		// collection.
+		doWithChildCollectionProperties(SpannerPersistentProperty::getColumnInnerType);
 	}
 
 	private void verifyEmbeddedColumnNameOverlap(Set<String> seen,

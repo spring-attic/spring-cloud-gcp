@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -241,22 +243,29 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public void delete(Object entity) {
-		applyMutationUsingEntity(this.mutationFactory::delete, entity);
+		applyMutationUsingEntity(
+				x -> Collections.singletonList(this.mutationFactory.delete(x)), entity);
 	}
 
 	@Override
 	public void delete(Class entityClass, Key key) {
-		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, key);
+		applyMutationTwoArgs(
+				(x, y) -> Collections.singletonList(this.mutationFactory.delete(x, y)),
+				entityClass, key);
 	}
 
 	@Override
 	public <T> void delete(Class<T> entityClass, Iterable<? extends T> entities) {
-		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, entities);
+		applyMutationTwoArgs(
+				(x, y) -> Collections.singletonList(this.mutationFactory.delete(x, y)),
+				entityClass, entities);
 	}
 
 	@Override
 	public void delete(Class entityClass, KeySet keys) {
-		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, keys);
+		applyMutationTwoArgs(
+				(x, y) -> Collections.singletonList(this.mutationFactory.delete(x, y)),
+				entityClass, keys);
 	}
 
 	@Override
@@ -389,14 +398,16 @@ public class SpannerTemplate implements SpannerOperations {
 		return resultSet;
 	}
 
-	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,
+	protected <T, U> void applyMutationTwoArgs(
+			BiFunction<T, U, Collection<Mutation>> function,
 			T arg1, U arg2) {
-		Mutation mutation = function.apply(arg1, arg2);
+		Collection<Mutation> mutation = function.apply(arg1, arg2);
 		LOGGER.debug("Applying Mutation: " + mutation);
-		this.databaseClient.write(Arrays.asList(mutation));
+		this.databaseClient.write(mutation);
 	}
 
-	private <T> void applyMutationUsingEntity(Function<T, Mutation> function, T arg) {
+	private <T> void applyMutationUsingEntity(Function<T, Collection<Mutation>> function,
+			T arg) {
 		applyMutationTwoArgs((T t, Object unused) -> function.apply(t), arg, null);
 	}
 }
