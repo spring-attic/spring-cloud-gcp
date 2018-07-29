@@ -32,6 +32,7 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.OneToMany;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
@@ -85,6 +86,19 @@ public class SpannerMutationFactoryImplTests {
 			assertEquals("child_test_table", childMutation.getTable());
 			assertEquals(Op.INSERT, childMutation.getOperation());
 		}
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void insertChildrenMismatchIdTest() {
+		TestEntity t = new TestEntity();
+		t.id = "a";
+		ChildEntity c1 = new ChildEntity();
+		c1.id = "b";
+		c1.id2 = "c1";
+		t.childEntities = Collections.singletonList(c1);
+		// throws exception because child entity's id column does not match that of its
+		// parent.
+		this.spannerMutationFactory.insert(t);
 	}
 
 	@Test

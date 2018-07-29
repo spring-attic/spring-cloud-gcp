@@ -29,8 +29,10 @@ import com.google.cloud.spanner.Mutation.Op;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.util.Assert;
@@ -130,11 +132,35 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 					.getProperty(spannerPersistentProperty);
 			if (kids != null) {
 				for (Object child : kids) {
+					verifyChildHasParentId(persistentEntity, object,
+							this.spannerMappingContext.getPersistentEntity(
+									spannerPersistentProperty.getColumnInnerType()), child);
 					mutations.addAll(saveObject(op, child, includeColumns));
 				}
 			}
 		});
 		return mutations;
+	}
+
+	private void verifyChildHasParentId(SpannerPersistentEntity parentEntity,
+			Object parentObject, SpannerPersistentEntity childEntity,
+			Object childObject) {
+		SpannerPersistentProperty[] parentPK = parentEntity.getPrimaryKeyProperties();
+		SpannerPersistentProperty[] childPK = childEntity.getPrimaryKeyProperties();
+		PersistentPropertyAccessor parentAccessor = parentEntity
+				.getPropertyAccessor(parentObject);
+		PersistentPropertyAccessor childAccessor = childEntity
+				.getPropertyAccessor(childObject);
+		for (int i = 0; i < parentPK.length; i++) {
+			if (!parentAccessor.getProperty(parentPK[i])
+					.equals(childAccessor.getProperty(childPK[i]))) {
+				throw new SpannerDataException(
+						"A child entity's common primary key columns with its parent must "
+								+ "have the same values. Primary key component " + i
+								+ " does not match for entities: "
+								+ parentEntity.getType() + " " + childEntity.getType());
+			}
+		}
 	}
 
 	private WriteBuilder writeBuilder(Op op, String tableName) {
