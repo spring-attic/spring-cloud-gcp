@@ -145,19 +145,19 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	private void verifyChildHasParentId(SpannerPersistentEntity parentEntity,
 			Object parentObject, SpannerPersistentEntity childEntity,
 			Object childObject) {
-		SpannerPersistentProperty[] parentPK = parentEntity.getPrimaryKeyProperties();
-		SpannerPersistentProperty[] childPK = childEntity.getPrimaryKeyProperties();
+		SpannerPersistentProperty[] parentPk = parentEntity.getPrimaryKeyProperties();
+		SpannerPersistentProperty[] childPk = childEntity.getPrimaryKeyProperties();
 		PersistentPropertyAccessor parentAccessor = parentEntity
 				.getPropertyAccessor(parentObject);
 		PersistentPropertyAccessor childAccessor = childEntity
 				.getPropertyAccessor(childObject);
-		for (int i = 0; i < parentPK.length; i++) {
-			if (!parentAccessor.getProperty(parentPK[i])
-					.equals(childAccessor.getProperty(childPK[i]))) {
+		for (int i = 0; i < parentPk.length; i++) {
+			if (!parentAccessor.getProperty(parentPk[i])
+					.equals(childAccessor.getProperty(childPk[i]))) {
 				throw new SpannerDataException(
 						"A child entity's common primary key columns with its parent must "
 								+ "have the same values. Primary key component " + i
-								+ " does not match for entities: "
+								+ " ("+ parentPk[i].getColumnName() +") does not match for entities: "
 								+ parentEntity.getType() + " " + childEntity.getType());
 			}
 		}
