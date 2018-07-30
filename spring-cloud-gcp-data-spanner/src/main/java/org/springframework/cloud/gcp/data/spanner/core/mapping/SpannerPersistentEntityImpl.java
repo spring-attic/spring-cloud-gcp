@@ -219,8 +219,10 @@ public class SpannerPersistentEntityImpl<T>
 				if (!parentKey.getColumnName().equals(childKey.getColumnName())
 						|| !parentKey.getType().equals(childKey.getType())) {
 					throw new SpannerDataException(
-							"The child primary key column at position " + (i + 1)
-									+ " does not match that of its parent");
+							"The child primary key column (" + childKey.getColumnName()
+									+ ") at position " + (i + 1)
+									+ " does not match that of its parent ("
+									+ parentKey.getColumnName() + ")");
 				}
 			}
 		});
