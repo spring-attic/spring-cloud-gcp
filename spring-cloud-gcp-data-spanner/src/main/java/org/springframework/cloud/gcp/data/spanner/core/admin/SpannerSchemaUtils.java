@@ -146,48 +146,47 @@ public class SpannerSchemaUtils {
 	String getColumnDdlString(SpannerPersistentProperty spannerPersistentProperty,
 			SpannerEntityProcessor spannerEntityProcessor) {
 		Class columnType = spannerPersistentProperty.getType();
-		String ddlString;
+		String columnName = spannerPersistentProperty.getColumnName() + " ";
+		Class spannerJavaType;
+		Type.Code spannerColumnType;
 		if (ConversionUtils.isIterableNonByteArrayType(columnType)) {
 			Class innerType = spannerPersistentProperty.getColumnInnerType();
-			Class spannerJavaType = spannerEntityProcessor
+			spannerJavaType = spannerEntityProcessor
 					.getCorrespondingSpannerJavaType(innerType, true);
-			Type.Code spannerSupportedInnerType = this.spannerTypeMapper
+			spannerColumnType = this.spannerTypeMapper
 					.getSimpleTypeCodeForJavaType(spannerJavaType);
 
-			if (spannerSupportedInnerType == null) {
+			if (spannerColumnType == null) {
 				throw new SpannerDataException(
 						"Could not find suitable Cloud Spanner column inner type for "
 								+ "property type: " + innerType);
 			}
-			ddlString = getTypeDdlString(spannerSupportedInnerType, true,
+			return columnName + getTypeDdlString(spannerColumnType, true,
 					spannerPersistentProperty.getMaxColumnLength());
 		}
-		else {
-			Class spannerJavaType = spannerEntityProcessor
+		spannerJavaType = spannerEntityProcessor
 					.getCorrespondingSpannerJavaType(columnType, false);
 
-			if (spannerJavaType == null) {
-				throw new SpannerDataException(
-						"The currently configured custom type converters cannot "
-								+ "convert the given type to a Cloud Spanner-compatible column type: "
-								+ columnType);
-			}
+		if (spannerJavaType == null) {
+			throw new SpannerDataException(
+					"The currently configured custom type converters cannot "
+							+ "convert the given type to a Cloud Spanner-compatible column type: "
+							+ columnType);
+		}
 
-			Type.Code spannerColumnType = spannerJavaType.isArray()
+		spannerColumnType = spannerJavaType.isArray()
 					? this.spannerTypeMapper.getArrayTypeCodeForJavaType(spannerJavaType)
 					: this.spannerTypeMapper
 							.getSimpleTypeCodeForJavaType(spannerJavaType);
 
-			if (spannerColumnType == null) {
-				throw new SpannerDataException(
-						"Could not find suitable Cloud Spanner column type for property "
-								+ "type :" + columnType);
-			}
-
-			ddlString = getTypeDdlString(spannerColumnType, spannerJavaType.isArray(),
-					spannerPersistentProperty.getMaxColumnLength());
+		if (spannerColumnType == null) {
+			throw new SpannerDataException(
+					"Could not find suitable Cloud Spanner column type for property "
+							+ "type :" + columnType);
 		}
-		return spannerPersistentProperty.getColumnName() + " " + ddlString;
+
+		return columnName + getTypeDdlString(spannerColumnType, spannerJavaType.isArray(),
+					spannerPersistentProperty.getMaxColumnLength());
 	}
 
 	private void getCreateTableDdlStringsForHierarchy(String parentTable,
