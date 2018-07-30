@@ -157,7 +157,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 				throw new SpannerDataException(
 						"A child entity's common primary key columns with its parent must "
 								+ "have the same values. Primary key component " + i
-								+ " ("+ parentPk[i].getColumnName() +") does not match for entities: "
+								+ " (" + parentPk[i].getColumnName() + ") does not match for entities: "
 								+ parentEntity.getType() + " " + childEntity.getType());
 			}
 		}
