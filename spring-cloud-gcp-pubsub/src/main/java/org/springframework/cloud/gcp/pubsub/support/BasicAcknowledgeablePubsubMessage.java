@@ -16,19 +16,17 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import com.google.cloud.pubsub.v1.AckReplyConsumer;
+import com.google.pubsub.v1.PubsubMessage;
+
 /**
- * An extension of {@link AcknowledgeablePubsubMessage} that exposes ack ID and subscription name of the message.
- * It also allows modification of the ack deadline and acknowledgement of multiple messages at once using
- * {@link org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations#ack(java.util.Collection)}.
+ * A {@link PubsubMessage} wrapper that allows it to be acknowledged.
  *
  * @author João André Martins
  * @author Mike Eltsufin
  */
-public interface BatchAcknowledgeablePubsubMessage extends AcknowledgeablePubsubMessage {
+public interface BasicAcknowledgeablePubsubMessage extends AckReplyConsumer {
 
-	String getAckId();
+	PubsubMessage getPubsubMessage();
 
-	String getSubscriptionName();
-
-	void modifyAckDeadline(int ackDeadlineSeconds);
 }

@@ -41,7 +41,7 @@ import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfigurat
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfiguration;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
-import org.springframework.cloud.gcp.pubsub.support.BatchAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
@@ -135,10 +135,10 @@ public class PubSubTemplateIntegrationTests {
 				}
 			});
 
-			List<BatchAcknowledgeablePubsubMessage> ackableMessages = new ArrayList<>();
+			List<AcknowledgeablePubsubMessage> ackableMessages = new ArrayList<>();
 			Set<String> messagesSet = new HashSet<>();
 			for (int i = 0; i < 5 && messagesSet.size() < 3; i++) {
-				List<BatchAcknowledgeablePubsubMessage> newMessages = pubSubTemplate.pull(subscriptionName, 4, false);
+				List<AcknowledgeablePubsubMessage> newMessages = pubSubTemplate.pull(subscriptionName, 4, false);
 				ackableMessages.addAll(newMessages);
 				messagesSet.addAll(newMessages.stream()
 						.map(message -> message.getPubsubMessage().getData().toStringUtf8())

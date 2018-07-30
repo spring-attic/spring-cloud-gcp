@@ -30,7 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
-import org.springframework.cloud.gcp.pubsub.support.BatchAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
@@ -137,7 +137,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public List<BatchAcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
+	public List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
 			Boolean returnImmediately) {
 		return this.pubSubSubscriberTemplate.pull(subscription, maxMessages, returnImmediately);
 	}
@@ -158,19 +158,19 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public void ack(Collection<BatchAcknowledgeablePubsubMessage> batchAcknowledgeablePubsubMessages) {
-		this.pubSubSubscriberTemplate.ack(batchAcknowledgeablePubsubMessages);
+	public void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		this.pubSubSubscriberTemplate.ack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
-	public void nack(Collection<BatchAcknowledgeablePubsubMessage> batchAcknowledgeablePubsubMessages) {
-		this.pubSubSubscriberTemplate.nack(batchAcknowledgeablePubsubMessages);
+	public void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		this.pubSubSubscriberTemplate.nack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
-	public void modifyAckDeadline(Collection<BatchAcknowledgeablePubsubMessage> batchAcknowledgeablePubsubMessages,
+	public void modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
 			int ackDeadlineSeconds) {
-		this.pubSubSubscriberTemplate.modifyAckDeadline(batchAcknowledgeablePubsubMessages, ackDeadlineSeconds);
+		this.pubSubSubscriberTemplate.modifyAckDeadline(acknowledgeablePubsubMessages, ackDeadlineSeconds);
 	}
 
 	public PublisherFactory getPublisherFactory() {
