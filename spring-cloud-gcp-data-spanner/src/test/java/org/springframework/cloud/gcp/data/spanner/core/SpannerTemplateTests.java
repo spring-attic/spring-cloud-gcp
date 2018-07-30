@@ -343,7 +343,7 @@ public class SpannerTemplateTests {
 				.thenReturn(mutation);
 		this.spannerTemplate.delete(TestEntity.class, key);
 		verify(this.databaseClient, times(1))
-				.write(eq(Collections.singletonList(mutation)));
+				.write(eq(Collections.singleton(mutation)));
 	}
 
 	@Test
@@ -353,7 +353,7 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.delete(entity)).thenReturn(mutation);
 		this.spannerTemplate.delete(entity);
 		verify(this.databaseClient, times(1))
-				.write(eq(Collections.singletonList(mutation)));
+				.write(eq(Collections.singleton(mutation)));
 	}
 
 	@Test
@@ -364,7 +364,7 @@ public class SpannerTemplateTests {
 				.thenReturn(mutation);
 		this.spannerTemplate.delete(TestEntity.class, entities);
 		verify(this.databaseClient, times(1))
-				.write(eq(Collections.singletonList(mutation)));
+				.write(eq(Collections.singleton(mutation)));
 	}
 
 	@Test
@@ -376,7 +376,7 @@ public class SpannerTemplateTests {
 				.thenReturn(mutation);
 		this.spannerTemplate.delete(TestEntity.class, keys);
 		verify(this.databaseClient, times(1))
-				.write(eq(Collections.singletonList(mutation)));
+				.write(eq(Collections.singleton(mutation)));
 	}
 
 	@Test
