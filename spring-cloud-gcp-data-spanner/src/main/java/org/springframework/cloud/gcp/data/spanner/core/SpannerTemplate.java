@@ -308,6 +308,36 @@ public class SpannerTemplate implements SpannerOperations {
 		}
 	}
 
+	public ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
+		ResultSet resultSet;
+		if (options == null) {
+			resultSet = getReadContext().executeQuery(statement);
+		}
+		else {
+			resultSet = (options.hasTimestamp() ? getReadContext(options.getTimestamp())
+					: getReadContext()).executeQuery(statement,
+					options.getQueryOptions());
+		}
+		if (LOGGER.isDebugEnabled()) {
+			String message;
+			if (options == null) {
+				message = "Executing query without additional options: " + statement;
+			}
+			else {
+				StringBuilder logSb = new StringBuilder("Executing query").append(
+						options.hasTimestamp() ? " at timestamp" + options.getTimestamp()
+								: "");
+				for (QueryOption queryOption : options.getQueryOptions()) {
+					logSb.append(" with option: " + queryOption);
+				}
+				logSb.append(" : ").append(statement);
+				message = logSb.toString();
+			}
+			LOGGER.debug(message);
+		}
+		return resultSet;
+	}
+
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
 			SpannerReadOptions options) {
 
@@ -356,37 +386,6 @@ public class SpannerTemplate implements SpannerOperations {
 		columns.forEach(col -> sj.add(col));
 		logSb.append(sj.toString());
 		return logSb;
-	}
-
-	@VisibleForTesting
-	public ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
-		ResultSet resultSet;
-		if (options == null) {
-			resultSet = getReadContext().executeQuery(statement);
-		}
-		else {
-			resultSet = (options.hasTimestamp() ? getReadContext(options.getTimestamp())
-					: getReadContext()).executeQuery(statement,
-							options.getQueryOptions());
-		}
-		if (LOGGER.isDebugEnabled()) {
-			String message;
-			if (options == null) {
-				message = "Executing query without additional options: " + statement;
-			}
-			else {
-				StringBuilder logSb = new StringBuilder("Executing query").append(
-						options.hasTimestamp() ? " at timestamp" + options.getTimestamp()
-								: "");
-				for (QueryOption queryOption : options.getQueryOptions()) {
-					logSb.append(" with option: " + queryOption);
-				}
-				logSb.append(" : ").append(statement);
-				message = logSb.toString();
-			}
-			LOGGER.debug(message);
-		}
-		return resultSet;
 	}
 
 	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,

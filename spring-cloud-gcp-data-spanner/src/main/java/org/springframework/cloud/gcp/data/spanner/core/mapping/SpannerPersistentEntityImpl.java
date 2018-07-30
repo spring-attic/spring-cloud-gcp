@@ -174,6 +174,17 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
+	public void doWithColumnBackedProperties(
+			PropertyHandler<SpannerPersistentProperty> handler) {
+		doWithProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					if (!spannerPersistentProperty.isOneToManyCollection()) {
+						handler.doWithPersistentProperty(spannerPersistentProperty);
+					}
+				});
+	}
+
+	@Override
 	public boolean hasIdProperty() {
 		return this.idProperty != null;
 	}
