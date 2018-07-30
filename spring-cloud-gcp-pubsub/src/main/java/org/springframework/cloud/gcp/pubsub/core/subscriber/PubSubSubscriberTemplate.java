@@ -131,14 +131,14 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	public void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
 
-		groupBatchAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::ack);
+		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::ack);
 	}
 
 	@Override
 	public void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
 
-		groupBatchAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::nack);
+		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::nack);
 	}
 
 	@Override
@@ -147,7 +147,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
 		Assert.isTrue(ackDeadlineSeconds >= 0, "The ackDeadlineSeconds must not be negative.");
 
-		groupBatchAcknowledgeableMessages(acknowledgeablePubsubMessages)
+		groupAcknowledgeableMessages(acknowledgeablePubsubMessages)
 				.forEach((sub, ackIds) -> modifyAckDeadline(sub, ackIds, ackDeadlineSeconds));
 	}
 
@@ -155,7 +155,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	 * Groups {@link AcknowledgeablePubsubMessage} messages by subscription.
 	 * @return a map from subscription to list of ack IDs.
 	 */
-	private Map<String, List<String>> groupBatchAcknowledgeableMessages(
+	private Map<String, List<String>> groupAcknowledgeableMessages(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		return acknowledgeablePubsubMessages.stream()
 				.collect(Collectors.groupingBy(AcknowledgeablePubsubMessage::getSubscriptionName,
