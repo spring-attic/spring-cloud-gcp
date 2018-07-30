@@ -28,7 +28,6 @@ import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 

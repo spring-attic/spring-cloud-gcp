@@ -131,11 +131,11 @@ public class SpannerPersistentEntityImpl<T>
 		}
 		addPersistentPropertyToPersistentEntity(property);
 
-		if ((property.isEmbedded())) {
+		if (property.isEmbedded()) {
 			this.columnNames.addAll(this.spannerMappingContext
 					.getPersistentEntity(property.getType()).columns());
 		}
-		else {
+		else if (!property.isOneToManyCollection()) {
 			this.columnNames.add(property.getColumnName());
 		}
 
@@ -198,7 +198,7 @@ public class SpannerPersistentEntityImpl<T>
 
 	private void verifyEmbeddedColumnNameOverlap(Set<String> seen,
 			SpannerPersistentEntity spannerPersistentEntity) {
-		spannerPersistentEntity.doWithProperties(
+		spannerPersistentEntity.doWithColumnBackedProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						verifyEmbeddedColumnNameOverlap(seen,
