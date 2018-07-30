@@ -138,8 +138,8 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 				.getPersistentEntity(source.getClass());
 		PersistentPropertyAccessor accessor = persistentEntity
 				.getPropertyAccessor(source);
-		persistentEntity.doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+		persistentEntity.doWithColumnBackedProperties(
+				spannerPersistentProperty -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						Object embeddedObject = accessor
 								.getProperty(spannerPersistentProperty);
