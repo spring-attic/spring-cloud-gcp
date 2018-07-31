@@ -206,10 +206,12 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 			return this.message;
 		}
 
+		@Override
 		public String getAckId() {
 			return this.ackId;
 		}
 
+		@Override
 		public String getSubscriptionName() {
 			return this.subscriptionName;
 		}
