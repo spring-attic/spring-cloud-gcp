@@ -188,11 +188,11 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	private class PulledAcknowledgeablePubsubMessage implements AcknowledgeablePubsubMessage {
 
-		private PubsubMessage message;
+		private final PubsubMessage message;
 
-		private String ackId;
+		private final String ackId;
 
-		private String subscriptionName;
+		private final String subscriptionName;
 
 		PulledAcknowledgeablePubsubMessage(PubsubMessage message, String ackId,
 				String subscriptionName) {
