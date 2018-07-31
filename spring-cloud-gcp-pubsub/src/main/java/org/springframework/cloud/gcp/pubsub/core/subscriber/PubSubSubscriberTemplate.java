@@ -232,9 +232,9 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		@Override
 		public String toString() {
 			return "PulledAcknowledgeablePubsubMessage{" +
-					"message=" + message +
-					", ackId='" + ackId + '\'' +
-					", subscriptionName='" + subscriptionName + '\'' +
+					"message=" + this.message +
+					", ackId='" + this.ackId + '\'' +
+					", subscriptionName='" + this.subscriptionName + '\'' +
 					'}';
 		}
 	}
