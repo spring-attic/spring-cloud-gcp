@@ -229,5 +229,13 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 			PubSubSubscriberTemplate.this.modifyAckDeadline(Collections.singleton(this), ackDeadlineSeconds);
 		}
 
+		@Override
+		public String toString() {
+			return "PulledAcknowledgeablePubsubMessage{" +
+					"message=" + message +
+					", ackId='" + ackId + '\'' +
+					", subscriptionName='" + subscriptionName + '\'' +
+					'}';
+		}
 	}
 }

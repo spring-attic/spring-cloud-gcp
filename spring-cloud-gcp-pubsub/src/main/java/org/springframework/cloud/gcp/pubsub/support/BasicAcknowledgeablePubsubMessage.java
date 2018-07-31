@@ -27,6 +27,10 @@ import com.google.pubsub.v1.PubsubMessage;
  */
 public interface BasicAcknowledgeablePubsubMessage extends AckReplyConsumer {
 
+	/**
+	 * Accessor for the wrapped {@link PubsubMessage}.
+	 * @return the wrapped Pub/Sub message
+	 */
 	PubsubMessage getPubsubMessage();
 
 }

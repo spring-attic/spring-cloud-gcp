@@ -26,9 +26,21 @@ package org.springframework.cloud.gcp.pubsub.support;
  */
 public interface AcknowledgeablePubsubMessage extends BasicAcknowledgeablePubsubMessage {
 
+	/**
+	 * Accessor for the ack ID of the Pub/Sub message.
+	 * @return ack ID
+	 */
 	String getAckId();
 
+	/**
+	 * Accessor for the subscription source of the Pub/Sub message.
+	 * @return the name of the subscription
+	 */
 	String getSubscriptionName();
 
+	/**
+	 * Modify the ack deadline of the message. Once the ack deadline expires, the message is automatically nacked.
+	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the message.
+	 */
 	void modifyAckDeadline(int ackDeadlineSeconds);
 }
