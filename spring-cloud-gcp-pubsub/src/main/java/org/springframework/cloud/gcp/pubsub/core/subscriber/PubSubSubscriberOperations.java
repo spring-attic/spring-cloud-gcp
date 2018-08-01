@@ -76,16 +76,25 @@ public interface PubSubSubscriberOperations {
 
 	/**
 	 * Acknowledge a batch of messages. The method will group the messages by subscription name
-	 * and acknowledge them in batches if possible.
+	 * and acknowledge them in batches.
 	 * @param acknowledgeablePubsubMessages messages to be acknowledged
 	 */
 	void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
 	 * Negatively acknowledge a batch of messages. The method will group the messages by subscription name
-	 * and acknowledge them in batches if possible.
+	 * and acknowledge them in batches.
 	 * @param acknowledgeablePubsubMessages messages to be negatively acknowledged
 	 */
 	void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+
+	/**
+	 * Modify the ack deadline of a batch of messages. The method will group the messages by subscription name
+	 * and modify their ack deadline in batches.
+	 * @param acknowledgeablePubsubMessages messages to be modified
+	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the messages.
+	 */
+	void modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
+			int ackDeadlineSeconds);
 
 }

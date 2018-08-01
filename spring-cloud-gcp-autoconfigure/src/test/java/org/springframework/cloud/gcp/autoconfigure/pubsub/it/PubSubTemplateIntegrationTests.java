@@ -141,14 +141,14 @@ public class PubSubTemplateIntegrationTests {
 				List<AcknowledgeablePubsubMessage> newMessages = pubSubTemplate.pull(subscriptionName, 4, false);
 				ackableMessages.addAll(newMessages);
 				messagesSet.addAll(newMessages.stream()
-						.map(message -> message.getMessage().getData().toStringUtf8())
+						.map(message -> message.getPubsubMessage().getData().toStringUtf8())
 						.collect(Collectors.toList()));
 			}
 
 			assertThat(messagesSet.size()).as("check that we received all the messages").isEqualTo(3);
 
 			ackableMessages.forEach(message -> {
-				if (message.getMessage().getData().toStringUtf8().equals("message1")) {
+				if (message.getPubsubMessage().getData().toStringUtf8().equals("message1")) {
 					message.ack(); //sync call
 				}
 				else {
@@ -163,7 +163,7 @@ public class PubSubTemplateIntegrationTests {
 			while (messagesCount < 2 && tries > 0) {
 				Thread.sleep(100);
 				ackableMessages = pubSubTemplate.pull(subscriptionName, 4, true);
-				ackableMessages.forEach(AcknowledgeablePubsubMessage::ack);
+				ackableMessages.forEach(m -> m.ack());
 				messagesCount += ackableMessages.size();
 				tries--;
 			}
