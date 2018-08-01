@@ -122,6 +122,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Datastore -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gcp-data-datastore</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Spanner -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
