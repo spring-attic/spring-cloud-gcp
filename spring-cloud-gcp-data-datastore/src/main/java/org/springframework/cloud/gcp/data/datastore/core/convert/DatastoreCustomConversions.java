@@ -21,8 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.data.convert.CustomConversions;
-import org.springframework.data.convert.JodaTimeConverters;
 
 /**
  * Value object to capture custom conversion. {@link DatastoreCustomConversions} also act

@@ -63,8 +63,8 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 			return (T) val;
 		}
 
-		if (conversionService.canConvert(val.getClass(), targetType)) {
-			return conversionService.convert(val, (Class<T>) targetType);
+		if (this.conversionService.canConvert(val.getClass(), targetType)) {
+			return this.conversionService.convert(val, (Class<T>) targetType);
 		}
 
 		throw new DatastoreDataException("The value in entity's property with name " + persistentProperty.getFieldName()

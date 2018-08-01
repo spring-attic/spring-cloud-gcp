@@ -16,11 +16,12 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.time.Duration;
+
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.LatLng;
 
-import java.time.Duration;
 
 /**
  * @author Dmitry Solomakha
@@ -99,7 +100,7 @@ class TestDatastoreItem {
 	}
 
 	public Duration getDurationField() {
-		return durationField;
+		return this.durationField;
 	}
 
 	public void setDurationField(Duration durationField) {
