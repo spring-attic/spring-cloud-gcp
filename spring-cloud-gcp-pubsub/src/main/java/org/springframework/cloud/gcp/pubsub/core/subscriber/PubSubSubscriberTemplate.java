@@ -34,10 +34,14 @@ import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.ConvertedAcknowledgeableMessage;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.Assert;
 
 /**
@@ -97,11 +101,12 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	@Override
 	public <T> Subscriber subscribeAndConvert(String subscription,
-			Consumer<ConvertedAcknowledgeableMessage<T>> messageReceiver, Class<T> payloadType) {
+			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer, Class<T> payloadType) {
 		return this.subscribe(subscription,
-				(PubsubMessage pubsubMessage, AckReplyConsumer ackReplyConsumer) -> messageReceiver
-						.accept(new ConvertedAcknowledgeableMessage<>(pubsubMessage, ackReplyConsumer,
-								this.pubSubMessageConverter.fromPubSubMessage(pubsubMessage, payloadType))));
+				(PubsubMessage pubsubMessage, AckReplyConsumer ackReplyConsumer) -> messageConsumer
+						.accept(new ConvertedPushedAcknowledgeablePubsubMessage<T>(pubsubMessage, ackReplyConsumer,
+								this.pubSubMessageConverter.fromPubSubMessage(pubsubMessage, payloadType)) {
+						}));
 	}
 
 	/**
@@ -132,13 +137,13 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	@Override
-	public <T> List<ConvertedAcknowledgeableMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
+	public <T> List<ConvertedAcknowledgeablePubsubMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
 			Boolean returnImmediately, Class<T> payloadType) {
 		List<AcknowledgeablePubsubMessage> ackableMessages = this.pull(subscription, maxMessages, returnImmediately);
 
 		return ackableMessages.stream().map(
-				m -> new ConvertedAcknowledgeableMessage<T>(m,
-						this.pubSubMessageConverter.fromPubSubMessage(m.getMessage(), payloadType))
+				m -> new ConvertedPulledAcknowledgeablePubsubMessage<>(m,
+						this.pubSubMessageConverter.fromPubSubMessage(m.getPubsubMessage(), payloadType))
 		).collect(Collectors.toList());
 	}
 
@@ -278,6 +283,75 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 					", ackId='" + this.ackId + '\'' +
 					", subscriptionName='" + this.subscriptionName + '\'' +
 					'}';
+		}
+	}
+
+	private class ConvertedPulledAcknowledgeablePubsubMessage<T> extends PulledAcknowledgeablePubsubMessage
+			implements ConvertedAcknowledgeablePubsubMessage<T> {
+
+		private final Message<T> message;
+
+		ConvertedPulledAcknowledgeablePubsubMessage(AcknowledgeablePubsubMessage ackableMessage,
+				T payload) {
+			super(ackableMessage.getPubsubMessage(), ackableMessage.getAckId(), ackableMessage.getSubscriptionName());
+			this.message = MessageBuilder.withPayload(payload)
+					.copyHeaders(ackableMessage.getPubsubMessage().getAttributesMap())
+					.build();
+		}
+
+		@Override
+		public T getPayload() {
+			return this.message.getPayload();
+		}
+
+		@Override
+		public MessageHeaders getHeaders() {
+			return this.message.getHeaders();
+		}
+
+	}
+
+	private class ConvertedPushedAcknowledgeablePubsubMessage<T>
+			implements ConvertedBasicAcknowledgeablePubsubMessage<T> {
+
+		private final PubsubMessage pubsubMessage;
+
+		private final AckReplyConsumer ackReplyConsumer;
+
+		private final Message<T> message;
+
+		ConvertedPushedAcknowledgeablePubsubMessage(
+				PubsubMessage pubsubMessage, AckReplyConsumer ackReplyConsumer, T payload) {
+			this.pubsubMessage = pubsubMessage;
+			this.ackReplyConsumer = ackReplyConsumer;
+			this.message = MessageBuilder.withPayload(payload)
+					.copyHeaders(pubsubMessage.getAttributesMap())
+					.build();
+		}
+
+		@Override
+		public PubsubMessage getPubsubMessage() {
+			return this.pubsubMessage;
+		}
+
+		@Override
+		public void ack() {
+			this.ackReplyConsumer.ack();
+		}
+
+		@Override
+		public void nack() {
+			this.ackReplyConsumer.nack();
+		}
+
+		@Override
+		public T getPayload() {
+			return this.message.getPayload();
+		}
+
+		@Override
+		public MessageHeaders getHeaders() {
+			return this.message.getHeaders();
 		}
 	}
 }

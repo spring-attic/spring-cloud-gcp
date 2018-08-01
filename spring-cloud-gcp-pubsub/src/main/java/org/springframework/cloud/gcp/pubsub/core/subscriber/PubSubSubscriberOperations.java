@@ -25,7 +25,8 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.ConvertedAcknowledgeableMessage;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
 
 /**
  * An abstraction for Google Cloud Pub/Sub subscription / pulling operations.
@@ -54,13 +55,13 @@ public interface PubSubSubscriberOperations {
 	 * payload type.
 	 * <p>The created {@link Subscriber} is returned so it can be stopped.
 	 * @param subscription the name of an existing subscription
-	 * @param messageReceiver the callback method triggered when new messages arrive
+	 * @param messageConsumer the callback method triggered when new messages arrive
 	 * @param payloadType the type to which the payload of the Pub/Sub message should be converted
 	 * @return subscriber listening to new messages
 	 * @since 1.1
 	 */
 	<T> Subscriber subscribeAndConvert(String subscription,
-			Consumer<ConvertedAcknowledgeableMessage<T>> messageReceiver, Class<T> payloadType);
+			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer, Class<T> payloadType);
 
 	/**
 	 * Pull and auto-acknowledge a number of messages from a Google Cloud Pub/Sub subscription.
@@ -92,7 +93,7 @@ public interface PubSubSubscriberOperations {
 	 * @param payloadType the type to which the payload of the Pub/Sub messages should be converted
 	 * @return the list of received acknowledgeable messages
 	 */
-	<T> List<ConvertedAcknowledgeableMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
+	<T> List<ConvertedAcknowledgeablePubsubMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
 			Boolean returnImmediately, Class<T> payloadType);
 
 

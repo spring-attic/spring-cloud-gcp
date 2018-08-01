@@ -32,9 +32,10 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.ConvertedAcknowledgeableMessage;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -141,9 +142,9 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	@Override
 	public <T> Subscriber subscribeAndConvert(String subscription,
-			Consumer<ConvertedAcknowledgeableMessage<T>> messageReceiver,
+			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer,
 			Class<T> payloadType) {
-		return this.pubSubSubscriberTemplate.subscribeAndConvert(subscription, messageReceiver, payloadType);
+		return this.pubSubSubscriberTemplate.subscribeAndConvert(subscription, messageConsumer, payloadType);
 	}
 
 	@Override
@@ -153,7 +154,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public <T> List<ConvertedAcknowledgeableMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
+	public <T> List<ConvertedAcknowledgeablePubsubMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
 			Boolean returnImmediately, Class<T> payloadType) {
 		return this.pubSubSubscriberTemplate.pullAndConvert(subscription, maxMessages, returnImmediately, payloadType);
 	}
