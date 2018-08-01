@@ -47,7 +47,7 @@ public class AcknowledgeablePubsubMessage {
 		this.acknowledger = acknowledger;
 	}
 
-	public PubsubMessage getMessage() {
+	public PubsubMessage getPubsubMessage() {
 		return this.message;
 	}
 
