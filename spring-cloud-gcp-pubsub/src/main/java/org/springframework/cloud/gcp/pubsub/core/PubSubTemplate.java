@@ -187,7 +187,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 				.map(AcknowledgeablePubsubMessage::getAckId)
 				.collect(Collectors.toList()), pullRequest.getSubscription());
 
-		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getMessage)
+		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getPubsubMessage)
 				.collect(Collectors.toList());
 	}
 
