@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.autoconfigure.datastore;
 import java.lang.annotation.Annotation;
 
 import org.springframework.boot.autoconfigure.data.AbstractRepositoryConfigurationSourceSupport;
+import org.springframework.cloud.gcp.data.datastore.repository.config.DatastoreRepositoryConfigurationExtension;
 import org.springframework.cloud.gcp.data.datastore.repository.config.EnableDatastoreRepositories;
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 
@@ -44,7 +45,7 @@ public class DatastoreRepositoriesAutoConfigureRegistrar
 
 	@Override
 	protected RepositoryConfigurationExtension getRepositoryConfigurationExtension() {
-		return new DatastoreRepositoriesAutoConfigureRegistrar().getRepositoryConfigurationExtension();
+		return new DatastoreRepositoryConfigurationExtension();
 	}
 
 	@EnableDatastoreRepositories

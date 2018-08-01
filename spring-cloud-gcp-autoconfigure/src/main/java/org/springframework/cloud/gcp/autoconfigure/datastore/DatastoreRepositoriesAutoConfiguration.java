@@ -20,7 +20,6 @@ import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.cloud.gcp.autoconfigure.spanner.SpannerRepositoriesAutoConfigureRegistrar;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.config.DatastoreRepositoryConfigurationExtension;
 import org.springframework.cloud.gcp.data.datastore.repository.support.DatastoreRepositoryFactory;
@@ -40,7 +39,7 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnMissingBean({ DatastoreRepositoryFactory.class,
 		DatastoreRepositoryConfigurationExtension.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.datastore.enabled", matchIfMissing = true)
-@Import({ SpannerRepositoriesAutoConfigureRegistrar.class })
+@Import({ DatastoreRepositoriesAutoConfigureRegistrar.class })
 @AutoConfigureBefore(GcpDatastoreAutoConfiguration.class)
 public class DatastoreRepositoriesAutoConfiguration {
 }
