@@ -14,24 +14,31 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.datastore.core.mapping;
+package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.math.BigInteger;
 
 /**
- * Annotation for an entity's field that causes the field to be ignored by Spring Data
- * Datastore.
- *
- * @author Chengyuan Zhao
- *
- * @since 1.1
+ * @author Dmitry Solomakha
  */
-@Documented
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface NotMapped {
+class TestDatastoreItemUnsupportedFields {
+	private String stringField;
+
+	private BigInteger unsupportedField;
+
+	public String getStringField() {
+		return this.stringField;
+	}
+
+	public void setStringField(String stringField) {
+		this.stringField = stringField;
+	}
+
+	public BigInteger getUnsupportedField() {
+		return this.unsupportedField;
+	}
+
+	public void setUnsupportedField(BigInteger unsupportedField) {
+		this.unsupportedField = unsupportedField;
+	}
 }

@@ -28,7 +28,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
 /**
- * Encapsulates Spanner query options.
+ * Encapsulates Cloud Spanner query options.
  * @author Chengyuan Zhao
  *
  * @since 1.1

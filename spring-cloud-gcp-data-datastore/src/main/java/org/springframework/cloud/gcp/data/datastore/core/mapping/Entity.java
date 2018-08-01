@@ -35,9 +35,9 @@ import java.lang.annotation.Target;
 public @interface Entity {
 
 	/**
-	 * The name of the Entity in Datastore, which can differ from the name of the class
-	 * which it annotates
-	 * @return The name of the Entity
+	 * The Kind name of the Entity in Datastore, which can differ from the name of the
+	 * class which it annotates
+	 * @return The Kind name of the Entity
 	 */
 	String name() default "";
 }

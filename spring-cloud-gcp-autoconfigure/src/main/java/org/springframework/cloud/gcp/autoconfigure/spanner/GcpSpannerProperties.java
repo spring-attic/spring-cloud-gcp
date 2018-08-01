@@ -40,25 +40,25 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 
 	private String database;
 
-	// Default value is negative to indicate to use Spanner default number.
+	// Default value is negative to indicate to use Cloud Spanner default number.
 	private int numRpcChannels = -1;
 
-	// Default value is negative to indicate to use Spanner default number.
+	// Default value is negative to indicate to use Cloud Spanner default number.
 	private int prefetchChunks = -1;
 
-	// Default value is negative to indicate to use Spanner default number.
+	// Default value is negative to indicate to use Cloud Spanner default number.
 	private int minSessions = -1;
 
-	// Default value is negative to indicate to use Spanner default number.
+	// Default value is negative to indicate to use Cloud Spanner default number.
 	private int maxSessions = -1;
 
-	// Default value is negative to indicate to use Spanner default number.
+	// Default value is negative to indicate to use Cloud Spanner default number.
 	private int maxIdleSessions = -1;
 
-	// Default value is negative to indicate to use Spanner default number.
+	// Default value is negative to indicate to use Cloud Spanner default number.
 	private float writeSessionsFraction = -1;
 
-	// Default value is negative to indicate to use Spanner default number.
+	// Default value is negative to indicate to use Cloud Spanner default number.
 	private int keepAliveIntervalMinutes = -1;
 
 	public Credentials getCredentials() {

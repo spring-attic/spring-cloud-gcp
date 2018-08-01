@@ -14,24 +14,23 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.datastore.core.mapping;
+package org.springframework.cloud.gcp.pubsub.support;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.google.cloud.pubsub.v1.AckReplyConsumer;
+import com.google.pubsub.v1.PubsubMessage;
 
 /**
- * Annotation for Datastore property that indicates the property is a POJO stored as a Key
- * reference to a separate entity stored in Datastore.
+ * A {@link PubsubMessage} wrapper that allows it to be acknowledged.
  *
- * @author Chengyuan Zhao
- *
- * @since 1.1
+ * @author João André Martins
+ * @author Mike Eltsufin
  */
-@Documented
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Reference {
+public interface BasicAcknowledgeablePubsubMessage extends AckReplyConsumer {
+
+	/**
+	 * Accessor for the wrapped {@link PubsubMessage}.
+	 * @return the wrapped Pub/Sub message
+	 */
+	PubsubMessage getPubsubMessage();
+
 }

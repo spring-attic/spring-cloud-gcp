@@ -27,7 +27,6 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
-import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
@@ -46,11 +45,6 @@ public class ReceiverApplication {
 	@Bean
 	public MessageChannel pubsubInputChannel() {
 		return new DirectChannel();
-	}
-
-	@Bean
-	public SimplePubSubMessageConverter getConverter() {
-		return new SimplePubSubMessageConverter();
 	}
 
 	@Bean

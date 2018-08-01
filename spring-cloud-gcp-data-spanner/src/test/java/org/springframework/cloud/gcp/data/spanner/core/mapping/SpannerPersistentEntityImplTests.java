@@ -16,12 +16,16 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.util.List;
+
 import com.google.cloud.spanner.Key;
 import org.junit.Test;
+import org.mockito.stubbing.Answer;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.expression.spel.SpelEvaluationException;
@@ -32,6 +36,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -201,6 +207,39 @@ public class SpannerPersistentEntityImplTests {
 	public void testExcludeEmbeddedColumnNames() {
 		assertThat(this.spannerMappingContext.getPersistentEntity(ChildEmbedded.class)
 				.columns(), containsInAnyOrder("id", "id2", "id3", "id4"));
+	}
+
+	@Test
+	public void doWithChildrenCollectionsTest() {
+		PropertyHandler<SpannerPersistentProperty> mockHandler = mock(PropertyHandler.class);
+		SpannerPersistentEntity spannerPersistentEntity =
+				this.spannerMappingContext.getPersistentEntity(ParentInRelationship.class);
+		doAnswer((Answer) invocation -> {
+			String colName = ((SpannerPersistentProperty) invocation.getArgument(0))
+					.getColumnName();
+			assertTrue(colName.equals("childrenA") || colName.equals("childrenB"));
+			return null;
+		}).when(mockHandler).doWithPersistentProperty(any());
+		spannerPersistentEntity.doWithChildCollectionProperties(mockHandler);
+	}
+
+	private static class ParentInRelationship {
+		@PrimaryKey
+		String id;
+
+		List<ChildAInRelationship> childrenA;
+
+		List<ChildBInRelationship> childrenB;
+	}
+
+	private static class ChildAInRelationship {
+		@PrimaryKey
+		String id;
+	}
+
+	private static class ChildBInRelationship {
+		@PrimaryKey
+		String id;
 	}
 
 	private static class GrandParentEmbedded {

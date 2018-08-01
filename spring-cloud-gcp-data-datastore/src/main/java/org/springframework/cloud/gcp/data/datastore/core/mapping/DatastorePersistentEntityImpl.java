@@ -60,25 +60,16 @@ public class DatastorePersistentEntityImpl<T>
 		super(information);
 
 		Class<?> rawType = information.getType();
-		String fallback = StringUtils.uncapitalize(rawType.getSimpleName());
 
 		this.context = new StandardEvaluationContext();
-
 		this.kind = this.findAnnotation(Entity.class);
-		this.kindName = this.hasTableName() ? this.kind.name() : fallback;
+		this.kindName = this.hasTableName() ? this.kind.name()
+				: StringUtils.uncapitalize(rawType.getSimpleName());
 		this.kindNameExpression = detectExpression();
 	}
 
 	protected boolean hasTableName() {
 		return this.kind != null && StringUtils.hasText(this.kind.name());
-	}
-
-	@Override
-	public void addPersistentProperty(DatastorePersistentProperty property) {
-		if (!property.isMapped()) {
-			return;
-		}
-		super.addPersistentProperty(property);
 	}
 
 	@Nullable
@@ -97,6 +88,16 @@ public class DatastorePersistentEntityImpl<T>
 	public String kindName() {
 		return this.kindNameExpression == null ? this.kindName
 				: this.kindNameExpression.getValue(this.context, String.class);
+	}
+
+	@Override
+	public DatastorePersistentProperty getIdPropertyOrFail() {
+		if (!hasIdProperty()) {
+			throw new DatastoreDataException(
+					"An ID property was required but does not exist for the type: "
+							+ getType());
+		}
+		return getIdProperty();
 	}
 
 	@Override

@@ -39,7 +39,7 @@ import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.util.Pair;
 
 /**
- * Executes Google Spanner query statements using
+ * Executes Cloud Spanner query statements using
  * {@link org.springframework.data.repository.query.parser.PartTree} parsed method
  * definitions.
  *
@@ -74,7 +74,7 @@ public class SpannerStatementQueryExecutor {
 	}
 
 	/**
-	 * Creates a Spanner statement.
+	 * Creates a Cloud Spanner statement.
 	 * @param sql the SQL string with tags.
 	 * @param tags the tags that appear in the SQL string.
 	 * @param paramStructConvertFunc a function to use to convert params to {@link Struct}

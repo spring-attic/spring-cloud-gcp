@@ -16,55 +16,31 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
-import java.util.Collections;
-
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
-import com.google.pubsub.v1.PubsubMessage;
-
 /**
- * A {@link PubsubMessage} wrapper that allows it to be acknowledged.
- *
- * <p>To acknowledge {@link AcknowledgeablePubsubMessage} in bulk, using a
- * {@link PubSubAcknowledger} is recommended. To do that, a user must first extract the ack IDs and
- * group them by subscription name.
+ * An extension of {@link BasicAcknowledgeablePubsubMessage} that exposes ack ID and subscription name of the message.
+ * It also allows modification of the ack deadline and acknowledgement of multiple messages at once using
+ * {@link org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations#ack(java.util.Collection)}.
  *
  * @author João André Martins
+ * @author Mike Eltsufin
  */
-public class AcknowledgeablePubsubMessage implements AckReplyConsumer {
+public interface AcknowledgeablePubsubMessage extends BasicAcknowledgeablePubsubMessage {
 
-	private PubsubMessage message;
+	/**
+	 * Accessor for the ack ID of the Pub/Sub message.
+	 * @return ack ID
+	 */
+	String getAckId();
 
-	private String ackId;
+	/**
+	 * Accessor for the subscription source of the Pub/Sub message.
+	 * @return the name of the subscription
+	 */
+	String getSubscriptionName();
 
-	private String subscriptionName;
-
-	private PubSubAcknowledger acknowledger;
-
-	public AcknowledgeablePubsubMessage(PubsubMessage message, String ackId,
-			String subscriptionName, PubSubAcknowledger acknowledger) {
-		this.message = message;
-		this.ackId = ackId;
-		this.subscriptionName = subscriptionName;
-		this.acknowledger = acknowledger;
-	}
-
-	public PubsubMessage getMessage() {
-		return this.message;
-	}
-
-	public String getAckId() {
-		return this.ackId;
-	}
-
-	public String getSubscriptionName() {
-		return this.subscriptionName;
-	}
-
-	public void ack() {
-		this.acknowledger.ack(Collections.singleton(this.ackId), this.subscriptionName);
-	}
-
-	public void nack() {
-		this.acknowledger.nack(Collections.singleton(this.ackId), this.subscriptionName);
-	}
+	/**
+	 * Modify the ack deadline of the message. Once the ack deadline expires, the message is automatically nacked.
+	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the message.
+	 */
+	void modifyAckDeadline(int ackDeadlineSeconds);
 }
