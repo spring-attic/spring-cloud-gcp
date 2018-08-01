@@ -167,6 +167,7 @@ public class DatastoreEntityConverterImplTests {
 		DatastoreEntityConverter entityConverter = new DatastoreEntityConverterImpl(new DatastoreMappingContext());
 		Entity.Builder builder = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
 		entityConverter.write(item, builder);
+		System.out.println(builder.build());
 	}
 }
 
