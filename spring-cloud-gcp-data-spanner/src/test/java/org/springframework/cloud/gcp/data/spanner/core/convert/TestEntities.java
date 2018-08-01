@@ -59,7 +59,7 @@ public class TestEntities {
 
 		double[] doubleArray;
 
-		// int is not a native Spanner type, so this will utilize custom conversions.
+		// int is not a native Cloud Spanner type, so this will utilize custom conversions.
 		int intField;
 
 		List<Double> doubleList;
@@ -154,6 +154,8 @@ public class TestEntities {
 	static class InnerTestEntity {
 		@PrimaryKey
 		String value;
+
+		String missingColumnValue;
 	}
 
 	static class SimpleConstructorTester {

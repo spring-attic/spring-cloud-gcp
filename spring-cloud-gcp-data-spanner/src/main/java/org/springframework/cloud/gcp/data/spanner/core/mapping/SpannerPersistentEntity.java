@@ -19,22 +19,23 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 import java.util.Set;
 
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
 /**
- * Spanner specific interface for a {@link MutablePersistentEntity} stored
- * in a Google Spanner table.
+ * Cloud Spanner specific interface for a {@link MutablePersistentEntity} stored in a Cloud
+ * Spanner table.
  *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  *
  * @since 1.1
  */
-public interface SpannerPersistentEntity<T>
-		extends MutablePersistentEntity<T, SpannerPersistentProperty>, ApplicationContextAware {
+public interface SpannerPersistentEntity<T> extends
+		MutablePersistentEntity<T, SpannerPersistentProperty>, ApplicationContextAware {
 
 	/**
-	 * Gets the name of the Spanner table.
+	 * Gets the name of the Cloud Spanner table.
 	 * @return the name of the table.
 	 */
 	String tableName();
@@ -60,4 +61,14 @@ public interface SpannerPersistentEntity<T>
 
 	@Override
 	SpannerCompositeKeyProperty getIdProperty();
+
+	/**
+	 * Applies the given {@link PropertyHandler} to all {@link SpannerPersistentProperty}s
+	 * contained in this {@link SpannerPersistentProperty} that are collections of child
+	 * entities.
+	 *
+	 * @param handler must not be {@literal null}.
+	 */
+	void doWithChildCollectionProperties(
+			PropertyHandler<SpannerPersistentProperty> handler);
 }

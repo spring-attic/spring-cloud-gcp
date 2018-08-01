@@ -29,7 +29,7 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
 /**
- * A mapping context for Google Spanner that provides ways to create persistent entities
+ * A mapping context for Cloud Spanner that provides ways to create persistent entities
  * and properties.
  *
  * @author Ray Tsang

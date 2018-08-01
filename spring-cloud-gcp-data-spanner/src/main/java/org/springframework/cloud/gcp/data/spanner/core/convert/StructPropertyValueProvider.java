@@ -43,11 +43,36 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 
 	private StructAccessor structAccessor;
 
+	private boolean allowMissingColumns;
+
+	/**
+	 * Constructor. Missing columns in nested struct column values for corresponding nested Java
+	 * object properties is not allowed.
+	 * @param structAccessor an accessor used to obtain column values from the struct.
+	 * @param readConverter a converter used to convert between struct column types and the required
+	 * java types.
+	 * @param entityReader a reader used to access the data from each column of the struct.
+	 */
 	StructPropertyValueProvider(StructAccessor structAccessor, SpannerCustomConverter readConverter,
 			SpannerEntityReader entityReader) {
+		this(structAccessor, readConverter, entityReader, false);
+	}
+
+	/**
+	 * Constructor
+	 * @param structAccessor an accessor used to obtain column values from the struct.
+	 * @param readConverter a converter used to convert between struct column types and the required
+	 * java types.
+	 * @param entityReader a reader used to access the data from each column of the struct.
+	 * @param allowMissingColumns if a nested struct is within this struct's column, then if true
+	 * missing columns in the nested struct are also allowed for the corresponding nested Java object.
+	 */
+	StructPropertyValueProvider(StructAccessor structAccessor, SpannerCustomConverter readConverter,
+			SpannerEntityReader entityReader, boolean allowMissingColumns) {
 		this.structAccessor = structAccessor;
 		this.readConverter = readConverter;
 		this.entityReader = entityReader;
+		this.allowMissingColumns = allowMissingColumns;
 	}
 
 	@Override
@@ -84,7 +109,8 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 		Class<?> sourceClass = sourceValue.getClass();
 		return Struct.class.isAssignableFrom(sourceClass)
 				&& !this.readConverter.canConvert(sourceClass, targetType)
-				? this.entityReader.read(targetType, (Struct) sourceValue)
+						? this.entityReader.read(targetType, (Struct) sourceValue, null,
+								this.allowMissingColumns)
 				: this.readConverter.convert(sourceValue, targetType);
 	}
 

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.datastore.core.mapping;
+package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -23,8 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for an entity's field that causes the field to be ignored by Spring Data
- * Datastore.
+ * Annotates properties that are collections of child entities.
  *
  * @author Chengyuan Zhao
  *
@@ -33,5 +32,6 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface NotMapped {
+public @interface OneToMany {
+
 }

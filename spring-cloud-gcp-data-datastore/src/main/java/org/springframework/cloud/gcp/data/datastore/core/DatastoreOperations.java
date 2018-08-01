@@ -46,6 +46,13 @@ public interface DatastoreOperations {
 	<T> T save(T instance);
 
 	/**
+	 * Saves multiple instances of objects to Cloud Datastore. Behaves as update or insert.
+	 * @param entities the objects to save.
+	 * @return the entities that were saved.
+	 */
+	<T> Iterable<T> saveAll(Iterable<T> entities);
+
+	/**
 	 * Delete an entity from Cloud Datastore. Deleting IDs that do not exist in Cloud Datastore
 	 * will result in no operation.
 	 * @param id the ID of the entity to delete. If this is actually a
@@ -78,6 +85,14 @@ public interface DatastoreOperations {
 	 * @param <T> the entity type
 	 */
 	<T> void delete(T entity);
+
+	/**
+	 * Deletes multiple entities from Cloud Datastore. Deleting entities that don't exist in Cloud
+	 * Datastore will result in no operation.
+	 * @param entities the entities to delete.
+	 * @param <T> the entity type.
+	 */
+	<T> void deleteAll(Iterable<T> entities);
 
 	/**
 	 * Delete all entities of a given domain type.

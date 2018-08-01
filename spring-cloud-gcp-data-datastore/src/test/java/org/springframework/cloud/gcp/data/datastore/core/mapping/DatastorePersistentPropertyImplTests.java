@@ -21,8 +21,9 @@ import java.util.List;
 import org.junit.Test;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Reference;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.PropertyHandler;
-import org.springframework.data.util.Pair;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -56,9 +57,6 @@ public class DatastorePersistentPropertyImplTests {
 										property.getIterableInnerType());
 								assertTrue(property.isIterable());
 							}
-							else if (property.getFieldName().equals("ancestors")) {
-								assertTrue(property.isAncestors());
-							}
 							else if (property.getFieldName().equals("embeddedEntity")) {
 								assertTrue(property.isEmbedded());
 							}
@@ -67,7 +65,7 @@ public class DatastorePersistentPropertyImplTests {
 							}
 							else {
 								fail("All properties of the test entity are expected to match a checked"
-										+ "case above, but this did not: " + property);
+										+ " case above, but this did not: " + property);
 							}
 						});
 	}
@@ -95,16 +93,6 @@ public class DatastorePersistentPropertyImplTests {
 	}
 
 	@Test(expected = DatastoreDataException.class)
-	public void nonListAncestorsTest() {
-		this.datastoreMappingContext.getPersistentEntity(NonListAncestorsEntity.class);
-	}
-
-	@Test(expected = DatastoreDataException.class)
-	public void nonPairAncestorsTest() {
-		this.datastoreMappingContext.getPersistentEntity(NonPairAncestorEntity.class);
-	}
-
-	@Test(expected = DatastoreDataException.class)
 	public void embeddedReferenceAnnotatedTest() {
 		this.datastoreMappingContext
 				.getPersistentEntity(EmbeddedReferenceAnnotatedEntity.class);
@@ -123,12 +111,9 @@ public class DatastorePersistentPropertyImplTests {
 
 		List<Double> doubleList;
 
-		@NotMapped
+		@Transient
 		@Field(name = "not_mapped")
 		String notMappedString;
-
-		@Ancestors
-		List<Pair<String, Object>> ancestors;
 
 		@Embedded
 		TestSubEntity embeddedEntity;
@@ -143,16 +128,6 @@ public class DatastorePersistentPropertyImplTests {
 
 	private static class UntypedListEntity {
 		List untypedList;
-	}
-
-	private static class NonListAncestorsEntity {
-		@Ancestors
-		Object ancestors;
-	}
-
-	private static class NonPairAncestorEntity {
-		@Ancestors
-		List<String> ancestors;
 	}
 
 	private static class EmbeddedReferenceAnnotatedEntity {

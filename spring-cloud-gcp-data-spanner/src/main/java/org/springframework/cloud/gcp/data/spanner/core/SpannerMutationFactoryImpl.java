@@ -54,9 +54,9 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	public SpannerMutationFactoryImpl(SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMappingContext spannerMappingContext) {
 		Assert.notNull(spannerEntityProcessor,
-				"A valid results mapper for Spanner is required.");
+				"A valid results mapper for Cloud Spanner is required.");
 		Assert.notNull(spannerMappingContext,
-				"A valid mapping context for Spanner is required.");
+				"A valid mapping context for Cloud Spanner is required.");
 		this.spannerEntityProcessor = spannerEntityProcessor;
 		this.spannerMappingContext = spannerMappingContext;
 	}

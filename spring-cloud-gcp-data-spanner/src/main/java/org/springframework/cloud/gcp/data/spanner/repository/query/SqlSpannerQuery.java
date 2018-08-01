@@ -118,7 +118,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 						.getPersistentEntity(entityClass);
 				if (spannerPersistentEntity == null) {
 					throw new SpannerDataException(
-							"The class used in the SQL statement is not a Spanner persistent entity: "
+							"The class used in the SQL statement is not a Cloud Spanner persistent entity: "
 									+ className);
 				}
 				result = result.replace(matched, spannerPersistentEntity.tableName());
