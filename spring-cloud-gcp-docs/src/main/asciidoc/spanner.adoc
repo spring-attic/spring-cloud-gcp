@@ -400,7 +400,7 @@ CREATE TABLE Albums (
   INTERLEAVE IN PARENT Singers ON DELETE CASCADE;
 ----
 
-The `ON DELETE CASCADE` phrase indicates that Cloud Spanner will delete all Albums of a singer if the Singer is deleted.
+The `ON DELETE CASCADE` clause indicates that Cloud Spanner will delete all Albums of a singer if the Singer is deleted.
 The alternative is `ON DELETE NO ACTION`, where a Singer cannot be deleted until all of its Albums have already been deleted.
 
 Cloud Spanner restricts these relationships to 7 child layers. A table may have multiple child tables.
