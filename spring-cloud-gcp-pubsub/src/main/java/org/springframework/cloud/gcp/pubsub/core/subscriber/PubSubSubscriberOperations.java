@@ -41,12 +41,9 @@ import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMe
 public interface PubSubSubscriberOperations {
 
 	/**
-	 * Add a callback method to an existing subscription.
-	 * <p>The created {@link Subscriber} is returned so it can be stopped.
-	 * @param subscription the name of an existing subscription
-	 * @param messageReceiver the callback method triggered when new messages arrive
-	 * @return subscriber listening to new messages
+	 * @deprecated As of 1.1, use {@link #subscribe(String, Consumer)} instead.
 	 */
+	@Deprecated
 	Subscriber subscribe(String subscription, MessageReceiver messageReceiver);
 
 	/**

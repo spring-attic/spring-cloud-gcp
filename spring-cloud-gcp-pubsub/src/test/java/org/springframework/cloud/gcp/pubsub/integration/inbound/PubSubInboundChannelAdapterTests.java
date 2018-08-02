@@ -29,7 +29,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
+import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.messaging.MessageChannel;
+
+import java.io.UnsupportedEncodingException;
+import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -42,6 +46,7 @@ import static org.mockito.Mockito.when;
  *
  * @author João André Martins
  * @author Doug Hoard
+ * @author Mike Eltsufin
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubInboundChannelAdapterTests {
@@ -62,36 +67,34 @@ public class PubSubInboundChannelAdapterTests {
 
 	private String value;
 
-	private AckReplyConsumer ackReplyConsumer;
+	private BasicAcknowledgeablePubsubMessage message;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws UnsupportedEncodingException {
 		this.pubSubOperations = mock(PubSubOperations.class);
 		this.pubSubSubscriberOperations = mock(PubSubSubscriberOperations.class);
 		this.messageChannel = mock(MessageChannel.class);
-		this.ackReplyConsumer = mock(AckReplyConsumer.class);
+		this.message = mock(BasicAcknowledgeablePubsubMessage.class);
 		this.value = null;
 
 		doAnswer(invocation -> {
 			this.value = NACK;
 			return null;
-		}).when(this.ackReplyConsumer).nack();
+		}).when(this.message).nack();
+
+		when(this.message.getPubsubMessage()).thenReturn(
+				PubsubMessage.newBuilder()
+						.setData(ByteString.copyFrom("Testing 1 2 3".getBytes("UTF-8"))).build());
 
 		when(this.messageChannel.send(any())).thenThrow(
 				new RuntimeException(EXCEPTION_MESSAGE));
 
 		when(this.pubSubSubscriberOperations.subscribe(
-				anyString(), any(MessageReceiver.class))).then(invocationOnMock -> {
-					PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(
-					ByteString.copyFrom(
-							"Testing 1 2 3".getBytes("UTF-8")))
-								.build();
-
-					MessageReceiver messageReceiver = invocationOnMock.getArgument(1);
-					messageReceiver.receiveMessage(
-						pubsubMessage, this.ackReplyConsumer);
-
-					return null;
+				anyString(), any(Consumer.class))).then(invocationOnMock -> {
+					Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer =
+							invocationOnMock.getArgument(1);
+					messageConsumer.accept(message);
+				return null;
 		});
 	}
 
@@ -104,7 +107,7 @@ public class PubSubInboundChannelAdapterTests {
 	}
 
 	@Test
-	public void testAckModeAuto() throws Exception {
+	public void testAckModeAuto()  {
 		PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(
 				this.pubSubSubscriberOperations, "testSubscription");
 
@@ -124,7 +127,7 @@ public class PubSubInboundChannelAdapterTests {
 	}
 
 	@Test
-	public void testAckModeAutoAck() throws Exception {
+	public void testAckModeAutoAck() {
 		PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(
 				this.pubSubSubscriberOperations, "testSubscription");
 

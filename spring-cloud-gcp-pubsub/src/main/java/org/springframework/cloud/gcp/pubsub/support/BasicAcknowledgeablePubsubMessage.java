@@ -33,4 +33,10 @@ public interface BasicAcknowledgeablePubsubMessage extends AckReplyConsumer {
 	 */
 	PubsubMessage getPubsubMessage();
 
+	/**
+	 * Accessor for the subscription source of the Pub/Sub message.
+	 * @return the name of the subscription
+	 */
+	String getSubscriptionName();
+
 }
