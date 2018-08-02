@@ -193,11 +193,11 @@ public class SpannerPersistentEntityImpl<T>
 	public void verify() {
 		super.verify();
 		verifyPrimaryKeysConsecutive();
-		verifyOneToManyProperties();
+		verifyInterleavedProperties();
 		verifyEmbeddedColumnNameOverlap(new HashSet<>(), this);
 	}
 
-	private void verifyOneToManyProperties() {
+	private void verifyInterleavedProperties() {
 		doWithInterleavedProperties(spannerPersistentProperty -> {
 			// getting the inner type will throw an exception if the property isn't a
 			// collection.
