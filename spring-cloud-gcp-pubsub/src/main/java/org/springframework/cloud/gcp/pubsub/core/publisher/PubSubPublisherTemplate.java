@@ -84,16 +84,25 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 	 */
 	@Override
 	public <T> ListenableFuture<String> publish(String topic, T payload, Map<String, String> headers) {
+		Assert.hasText(topic, "The topic can't be null or empty.");
+		Assert.notNull(payload, "The payload can't be null.");
+
 		return publish(topic, this.pubSubMessageConverter.toPubSubMessage(payload, headers));
 	}
 
 	@Override
 	public <T> ListenableFuture<String> publish(String topic, T payload) {
+		Assert.hasText(topic, "The topic can't be null or empty.");
+		Assert.notNull(payload, "The payload can't be null.");
+
 		return publish(topic, payload, null);
 	}
 
 	@Override
 	public ListenableFuture<String> publish(final String topic, PubsubMessage pubsubMessage) {
+		Assert.hasText(topic, "The topica can't be null or empty.");
+		Assert.notNull(pubsubMessage, "The pubsubMessage can't be null.");
+
 		ApiFuture<String> publishFuture =
 				this.publisherFactory.createPublisher(topic).publish(pubsubMessage);
 

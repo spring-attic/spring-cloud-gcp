@@ -69,6 +69,9 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	@Override
 	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
+		Assert.hasText(subscription, "The subscription can't be null or empty.");
+		Assert.notNull(messageReceiver, "The messageReceiver can't be null.");
+
 		Subscriber subscriber =
 				this.subscriberFactory.createSubscriber(subscription, messageReceiver);
 		subscriber.startAsync();
@@ -82,7 +85,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	 * and acknowledger
 	 */
 	private List<AcknowledgeablePubsubMessage> pull(PullRequest pullRequest) {
-		Assert.notNull(pullRequest, "The pull request cannot be null.");
+		Assert.notNull(pullRequest, "The pull request can't be null.");
 
 		PullResponse pullResponse =	this.subscriberStub.pullCallable().call(pullRequest);
 		List<AcknowledgeablePubsubMessage> receivedMessages =
@@ -98,6 +101,12 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	public List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
 			Boolean returnImmediately) {
+		Assert.hasText(subscription, "The subscription can't be null or empty.");
+
+		if (maxMessages != null) {
+			Assert.isTrue(maxMessages > 0, "The maxMessages must not be greater than 0.");
+		}
+
 		return pull(this.subscriberFactory.createPullRequest(subscription, maxMessages,
 				returnImmediately));
 	}
@@ -105,6 +114,12 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	public List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages,
 			Boolean returnImmediately) {
+		Assert.hasText(subscription, "The subscription can't be null or empty.");
+
+		if (maxMessages != null) {
+			Assert.isTrue(maxMessages > 0, "The maxMessages must not be greater than 0.");
+		}
+
 		PullRequest pullRequest = this.subscriberFactory.createPullRequest(
 				subscription, maxMessages, returnImmediately);
 
@@ -118,6 +133,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	@Override
 	public PubsubMessage pullNext(String subscription) {
+		Assert.hasText(subscription, "The subscription can't be null or empty.");
+
 		List<PubsubMessage> receivedMessageList = pullAndAck(subscription, 1, true);
 
 		return receivedMessageList.size() > 0 ?	receivedMessageList.get(0) : null;
@@ -129,14 +146,14 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	@Override
 	public void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
-		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages can't be null.");
 
 		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::ack);
 	}
 
 	@Override
 	public void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
-		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages can't be null.");
 
 		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::nack);
 	}
@@ -144,8 +161,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	public void modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
 			int ackDeadlineSeconds) {
-		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
-		Assert.isTrue(ackDeadlineSeconds >= 0, "The ackDeadlineSeconds must not be negative.");
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages can't be null.");
+		Assert.isTrue(ackDeadlineSeconds >= 0, "The ackDeadlineSeconds can't be less than 0.");
 
 		groupAcknowledgeableMessages(acknowledgeablePubsubMessages)
 				.forEach((sub, ackIds) -> modifyAckDeadline(sub, ackIds, ackDeadlineSeconds));
@@ -228,6 +245,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		@Override
 		public void modifyAckDeadline(int ackDeadlineSeconds) {
+			Assert.isTrue(ackDeadlineSeconds >= 0, "The ackDeadlineSeconds can't be less than 0.");
+
 			PubSubSubscriberTemplate.this.modifyAckDeadline(Collections.singleton(this), ackDeadlineSeconds);
 		}
 
