@@ -25,6 +25,7 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
 
@@ -42,13 +43,20 @@ import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAckn
 public interface PubSubSubscriberOperations {
 
 	/**
+	 * @deprecated As of 1.1, use {@link #subscribe(String, Consumer)} instead.
+	 */
+	@Deprecated
+	Subscriber subscribe(String subscription, MessageReceiver messageReceiver);
+
+	/**
 	 * Add a callback method to an existing subscription.
 	 * <p>The created {@link Subscriber} is returned so it can be stopped.
 	 * @param subscription the name of an existing subscription
-	 * @param messageReceiver the callback method triggered when new messages arrive
+	 * @param messageConsumer the callback method triggered when new messages arrive
 	 * @return subscriber listening to new messages
+	 * @since 1.1
 	 */
-	Subscriber subscribe(String subscription, MessageReceiver messageReceiver);
+	Subscriber subscribe(String subscription, Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer);
 
 	/**
 	 * Add a callback method to an existing subscription that receives Pub/Sub messages converted to the requested

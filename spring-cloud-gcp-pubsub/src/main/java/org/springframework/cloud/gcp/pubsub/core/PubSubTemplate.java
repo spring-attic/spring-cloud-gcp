@@ -32,6 +32,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
@@ -136,8 +137,14 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
+	@Deprecated
 	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
 		return this.pubSubSubscriberTemplate.subscribe(subscription, messageReceiver);
+	}
+
+	@Override
+	public Subscriber subscribe(String subscription, Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer) {
+		return getPubSubSubscriberTemplate().subscribe(subscription, messageConsumer);
 	}
 
 	@Override
@@ -146,6 +153,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 			Class<T> payloadType) {
 		return this.pubSubSubscriberTemplate.subscribeAndConvert(subscription, messageConsumer, payloadType);
 	}
+
 
 	@Override
 	public List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
