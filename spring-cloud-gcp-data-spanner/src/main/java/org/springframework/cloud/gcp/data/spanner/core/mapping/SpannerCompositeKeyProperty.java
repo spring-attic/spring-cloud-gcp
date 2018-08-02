@@ -105,7 +105,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	@Override
-	public boolean isOneToManyCollection() {
+	public boolean isInterleaved() {
 		return false;
 	}
 

@@ -34,6 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
 
+import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.ChildTestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity2;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEmbeddedColumns;
@@ -100,6 +101,11 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		t.timestampList.add(t.timestampField);
 		t.bytesList = new ArrayList<>();
 		t.bytesList.add(t.bytes);
+
+		// this property will be ignored in write mapping because it is a child relationship. no
+		// exception will result even though it is an unsupported type for writing.
+		t.childTestEntities = new ArrayList<>();
+		t.childTestEntities.add(new ChildTestEntity());
 
 		t.testEmbeddedColumns = new TestEmbeddedColumns();
 		t.testEmbeddedColumns.id2 = "key2";
