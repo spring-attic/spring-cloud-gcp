@@ -143,7 +143,7 @@ public class SpannerPersistentPropertyImpl
 
 	@Override
 	public boolean isOneToManyCollection() {
-		return findAnnotation(OneToMany.class) != null;
+		return findAnnotation(Interleaved.class) != null;
 	}
 
 	@Override

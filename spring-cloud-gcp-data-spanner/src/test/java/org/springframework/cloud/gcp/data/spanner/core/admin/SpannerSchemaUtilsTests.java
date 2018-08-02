@@ -21,6 +21,7 @@ import java.util.OptionalLong;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.Key;
+import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -30,13 +31,14 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnLength;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.OneToMany;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -53,7 +55,8 @@ public class SpannerSchemaUtilsTests {
 	public void setUp() {
 		SpannerMappingContext spannerMappingContext = new SpannerMappingContext();
 		this.spannerSchemaUtils = new SpannerSchemaUtils(spannerMappingContext,
-				new ConverterAwareMappingSpannerEntityProcessor(spannerMappingContext));
+				new ConverterAwareMappingSpannerEntityProcessor(spannerMappingContext),
+				true);
 		this.spannerEntityProcessor = new ConverterAwareMappingSpannerEntityProcessor(
 				spannerMappingContext);
 	}
@@ -160,34 +163,27 @@ public class SpannerSchemaUtilsTests {
 	@Test
 	public void getCreateDdlHierarchyTest() {
 		List<String> createStrings = this.spannerSchemaUtils
-				.getCreateTableDdlStringsForHierarchy(ParentEntity.class);
-		assertEquals(3, createStrings.size());
-		assertEquals(
+				.getCreateTableDdlStringsForInterleavedHierarchy(ParentEntity.class);
+		assertThat(createStrings, IsIterableContainingInOrder.contains(
 				"CREATE TABLE parent_test_table ( id STRING(MAX) "
 						+ ", id_2 STRING(MAX) , bytes2 BYTES(MAX) , "
 						+ "custom_col STRING(MAX) , other STRING(MAX) ) PRIMARY KEY ( id , id_2 )",
-				createStrings.get(0));
-		assertEquals(
 				"CREATE TABLE child_test_table ( id STRING(MAX) "
 						+ ", id_2 STRING(MAX) , bytes2 BYTES(MAX) , "
 						+ "id3 STRING(MAX) ) PRIMARY KEY ( id , id_2 , id3 ), INTERLEAVE IN PARENT "
 						+ "parent_test_table ON DELETE CASCADE",
-				createStrings.get(1));
-		assertEquals(
 				"CREATE TABLE grand_child_test_table ( id STRING(MAX) , id_2 STRING(MAX) , "
 						+ "id3 STRING(MAX) , id4 STRING(MAX) ) PRIMARY KEY ( id , id_2 , id3 , id4 ), "
-						+ "INTERLEAVE IN PARENT child_test_table ON DELETE CASCADE",
-				createStrings.get(2));
+						+ "INTERLEAVE IN PARENT child_test_table ON DELETE CASCADE"));
 	}
 
 	@Test
 	public void getDropDdlHierarchyTest() {
 		List<String> dropStrings = this.spannerSchemaUtils
-				.getDropTableDdlStringsForHierarchy(ParentEntity.class);
-		assertEquals(3, dropStrings.size());
-		assertEquals("DROP TABLE grand_child_test_table", dropStrings.get(0));
-		assertEquals("DROP TABLE child_test_table", dropStrings.get(1));
-		assertEquals("DROP TABLE parent_test_table", dropStrings.get(2));
+				.getDropTableDdlStringsForInterleavedHierarchy(ParentEntity.class);
+		assertThat(dropStrings,
+				IsIterableContainingInOrder.contains("DROP TABLE grand_child_test_table",
+						"DROP TABLE child_test_table", "DROP TABLE parent_test_table"));
 	}
 
 	@Table(name = "custom_test_table")
@@ -243,8 +239,11 @@ public class SpannerSchemaUtilsTests {
 		@Column(name = "")
 		String other;
 
-		@OneToMany
+		@Interleaved
 		List<ChildEntity> childEntities;
+
+		@Interleaved
+		List<ChildEntity> childEntities2;
 	}
 
 	@Table(name = "child_test_table")
@@ -259,8 +258,11 @@ public class SpannerSchemaUtilsTests {
 		@PrimaryKey(keyOrder = 3)
 		String id3;
 
-		@OneToMany
+		@Interleaved
 		List<GrandChildEntity> childEntities;
+
+		@Interleaved
+		List<GrandChildEntity> childEntities2;
 	}
 
 	@Table(name = "grand_child_test_table")

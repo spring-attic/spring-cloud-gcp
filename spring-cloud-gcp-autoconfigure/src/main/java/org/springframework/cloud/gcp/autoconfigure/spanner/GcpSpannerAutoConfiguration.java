@@ -86,6 +86,8 @@ public class GcpSpannerAutoConfiguration {
 
 		private final int keepAliveIntervalMinutes;
 
+		private final boolean createTableDdlCascadeOnDelete;
+
 		CoreSpannerAutoConfiguration(GcpSpannerProperties gcpSpannerProperties,
 				GcpProjectIdProvider projectIdProvider,
 				CredentialsProvider credentialsProvider) throws IOException {
@@ -105,6 +107,8 @@ public class GcpSpannerAutoConfiguration {
 			this.writeSessionsFraction = gcpSpannerProperties.getWriteSessionsFraction();
 			this.keepAliveIntervalMinutes = gcpSpannerProperties
 					.getKeepAliveIntervalMinutes();
+			this.createTableDdlCascadeOnDelete = gcpSpannerProperties
+					.isCreateTableStatementsCascadeOnDelete();
 		}
 
 		@Bean
@@ -202,7 +206,8 @@ public class GcpSpannerAutoConfiguration {
 		public SpannerSchemaUtils spannerSchemaUtils(
 				SpannerMappingContext spannerMappingContext,
 				SpannerEntityProcessor spannerEntityProcessor) {
-			return new SpannerSchemaUtils(spannerMappingContext, spannerEntityProcessor);
+			return new SpannerSchemaUtils(spannerMappingContext, spannerEntityProcessor,
+					this.createTableDdlCascadeOnDelete);
 		}
 
 		@Bean

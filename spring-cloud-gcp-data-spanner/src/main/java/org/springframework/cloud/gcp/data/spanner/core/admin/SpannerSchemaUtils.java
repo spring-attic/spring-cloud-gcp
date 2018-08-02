@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.BiFunction;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Type;
@@ -51,8 +52,36 @@ public class SpannerSchemaUtils {
 
 	private final SpannerTypeMapper spannerTypeMapper;
 
+	private final boolean createTableDdlDeleteOnCascade;
+
+	/**
+	 * Constructor. Generates create-table DDL statements that cascade deletes for
+	 * interleaved tables.
+	 * @param mappingContext a mapping context used to obtain persistent entity metadata
+	 * for generating DDL statements.
+	 * @param spannerEntityProcessor an entity processor that is queried for types that it
+	 * can convert for determining compatible column types when generating DDL statements.
+	 */
 	public SpannerSchemaUtils(SpannerMappingContext mappingContext,
 			SpannerEntityProcessor spannerEntityProcessor) {
+		this(mappingContext, spannerEntityProcessor, true);
+	}
+
+	/**
+	 * Constructor. Generates create-table DDL statements that cascade deletes for
+	 * interleaved tables.
+	 * @param mappingContext a mapping context used to obtain persistent entity metadata
+	 * for generating DDL statements.
+	 * @param spannerEntityProcessor an entity processor that is queried for types that it
+	 * can convert for determining compatible column types when generating DDL statements.
+	 * @param createTableDdlDeleteOnCascade if True will generate create-table statements
+	 * that specify cascade on delete for interleaved tables. if False, then the deletes
+	 * among interleaved tables do not cascade and require manual deletion of all children
+	 * before parents.
+	 */
+	public SpannerSchemaUtils(SpannerMappingContext mappingContext,
+			SpannerEntityProcessor spannerEntityProcessor,
+			boolean createTableDdlDeleteOnCascade) {
 		Assert.notNull(mappingContext,
 				"A valid mapping context for Cloud Spanner is required.");
 		Assert.notNull(spannerEntityProcessor,
@@ -60,6 +89,7 @@ public class SpannerSchemaUtils {
 		this.mappingContext = mappingContext;
 		this.spannerEntityProcessor = spannerEntityProcessor;
 		this.spannerTypeMapper = new SpannerTypeMapper();
+		this.createTableDdlDeleteOnCascade = createTableDdlDeleteOnCascade;
 	}
 
 	/**
@@ -123,9 +153,10 @@ public class SpannerSchemaUtils {
 	 * @return a list of create strings that are toplogically sorted from parents to
 	 * children.
 	 */
-	public List<String> getCreateTableDdlStringsForHierarchy(Class entityClass) {
+	public List<String> getCreateTableDdlStringsForInterleavedHierarchy(
+			Class entityClass) {
 		List<String> ddlStrings = new ArrayList<>();
-		getCreateTableDdlStringsForHierarchy(null, entityClass, ddlStrings,
+		getCreateTableDdlStringsForInterleavedHierarchy(null, entityClass, ddlStrings,
 				new HashSet<>());
 		return ddlStrings;
 	}
@@ -137,9 +168,10 @@ public class SpannerSchemaUtils {
 	 * @param entityClass the root entity whose table to drop
 	 * @return the list of drop DDL strings
 	 */
-	public List<String> getDropTableDdlStringsForHierarchy(Class entityClass) {
+	public List<String> getDropTableDdlStringsForInterleavedHierarchy(Class entityClass) {
 		List<String> ddlStrings = new ArrayList<>();
-		getDropTableDdlStringsForHierarchy(entityClass, ddlStrings, new HashSet<>());
+		getDropTableDdlStringsForInterleavedHierarchy(entityClass, ddlStrings,
+				new HashSet<>());
 		return ddlStrings;
 	}
 
@@ -189,24 +221,6 @@ public class SpannerSchemaUtils {
 					spannerPersistentProperty.getMaxColumnLength());
 	}
 
-	private void getCreateTableDdlStringsForHierarchy(String parentTable,
-			Class entityClass, List<String> ddlStrings, Set<Class> seenClasses) {
-		if (seenClasses.contains(entityClass)) {
-			return;
-		}
-		ddlStrings.add(getCreateTableDdlString(entityClass) + (parentTable == null ? ""
-				: ", INTERLEAVE IN PARENT " + parentTable + " ON DELETE CASCADE"));
-		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
-				.getPersistentEntity(entityClass);
-		spannerPersistentEntity.doWithChildCollectionProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty ->
-						getCreateTableDdlStringsForHierarchy(
-						spannerPersistentEntity.tableName(),
-						spannerPersistentProperty.getColumnInnerType(), ddlStrings,
-						seenClasses));
-		seenClasses.add(entityClass);
-	}
-
 	private <T> void addPrimaryKeyColumnNames(
 			SpannerPersistentEntity<T> spannerPersistentEntity, StringJoiner keyStrings) {
 		for (SpannerPersistentProperty keyProp : spannerPersistentEntity
@@ -240,20 +254,41 @@ public class SpannerSchemaUtils {
 				});
 	}
 
-	private void getDropTableDdlStringsForHierarchy(Class entityClass,
+	private void getCreateTableDdlStringsForInterleavedHierarchy(String parentTable,
+			Class entityClass, List<String> ddlStrings, Set<Class> seenClasses) {
+		getDdlStringForInterleavedHierarchy(parentTable, entityClass, ddlStrings,
+				seenClasses,
+				(type, parent) -> getCreateTableDdlString(type) + (parent == null ? ""
+						: ", INTERLEAVE IN PARENT " + parent + " ON DELETE "
+								+ (this.createTableDdlDeleteOnCascade ? "CASCADE"
+										: "NO ACTION")),
+				false);
+	}
+
+	private void getDropTableDdlStringsForInterleavedHierarchy(Class entityClass,
 			List<String> dropStrings, Set<Class> seenClasses) {
+		getDdlStringForInterleavedHierarchy(null, entityClass, dropStrings, seenClasses,
+				(type, unused) -> getDropTableDdlString(type), true);
+	}
+
+	private void getDdlStringForInterleavedHierarchy(String parentTable,
+			Class entityClass, List<String> ddlStrings, Set<Class> seenClasses,
+			BiFunction<Class, String, String> generateSingleDdlStringFunc,
+			boolean prependDdlString) {
 		if (seenClasses.contains(entityClass)) {
 			return;
 		}
 		seenClasses.add(entityClass);
-		dropStrings.add(0, getDropTableDdlString(entityClass));
+		ddlStrings.add(prependDdlString ? 0 : ddlStrings.size(),
+				generateSingleDdlStringFunc.apply(entityClass, parentTable));
 		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		spannerPersistentEntity.doWithChildCollectionProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty ->
-						getDropTableDdlStringsForHierarchy(
-						spannerPersistentProperty.getColumnInnerType(), dropStrings,
-						seenClasses));
+						getDdlStringForInterleavedHierarchy(
+						spannerPersistentEntity.tableName(),
+						spannerPersistentProperty.getColumnInnerType(), ddlStrings,
+						seenClasses, generateSingleDdlStringFunc, prependDdlString));
 	}
 
 	private String getTypeDdlString(Type.Code type, boolean isArray,
