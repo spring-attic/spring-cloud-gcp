@@ -17,12 +17,13 @@
 package org.springframework.cloud.gcp.pubsub.support.converter;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
-import org.springframework.messaging.Message;
 
 /**
  * @author Mike Eltsufin
  *
  * @since 1.1
  */
-public interface ConvertedAcknowledgeablePubsubMessage<T> extends AcknowledgeablePubsubMessage, Message<T> {
+public interface ConvertedAcknowledgeablePubsubMessage<T> extends AcknowledgeablePubsubMessage,
+		ConvertedBasicAcknowledgeablePubsubMessage<T> {
+
 }

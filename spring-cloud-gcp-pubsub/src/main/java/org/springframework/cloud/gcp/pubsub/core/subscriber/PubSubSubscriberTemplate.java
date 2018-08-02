@@ -39,9 +39,6 @@ import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowled
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.Assert;
 
 /**
@@ -289,24 +286,17 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	private class ConvertedPulledAcknowledgeablePubsubMessage<T> extends PulledAcknowledgeablePubsubMessage
 			implements ConvertedAcknowledgeablePubsubMessage<T> {
 
-		private final Message<T> message;
+		private final T payload;
 
 		ConvertedPulledAcknowledgeablePubsubMessage(AcknowledgeablePubsubMessage ackableMessage,
 				T payload) {
 			super(ackableMessage.getPubsubMessage(), ackableMessage.getAckId(), ackableMessage.getSubscriptionName());
-			this.message = MessageBuilder.withPayload(payload)
-					.copyHeaders(ackableMessage.getPubsubMessage().getAttributesMap())
-					.build();
+			this.payload = payload;
 		}
 
 		@Override
 		public T getPayload() {
-			return this.message.getPayload();
-		}
-
-		@Override
-		public MessageHeaders getHeaders() {
-			return this.message.getHeaders();
+			return this.payload;
 		}
 
 	}
@@ -318,15 +308,13 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		private final AckReplyConsumer ackReplyConsumer;
 
-		private final Message<T> message;
+		private final T payload;
 
 		ConvertedPushedAcknowledgeablePubsubMessage(
 				PubsubMessage pubsubMessage, AckReplyConsumer ackReplyConsumer, T payload) {
 			this.pubsubMessage = pubsubMessage;
 			this.ackReplyConsumer = ackReplyConsumer;
-			this.message = MessageBuilder.withPayload(payload)
-					.copyHeaders(pubsubMessage.getAttributesMap())
-					.build();
+			this.payload = payload;
 		}
 
 		@Override
@@ -346,12 +334,9 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		@Override
 		public T getPayload() {
-			return this.message.getPayload();
+			return this.payload;
 		}
 
-		@Override
-		public MessageHeaders getHeaders() {
-			return this.message.getHeaders();
-		}
 	}
+
 }
