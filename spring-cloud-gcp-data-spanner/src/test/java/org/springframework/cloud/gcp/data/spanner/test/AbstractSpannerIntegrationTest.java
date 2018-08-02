@@ -88,7 +88,7 @@ public abstract class AbstractSpannerIntegrationTest {
 	SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
 
 	@Autowired
-	SpannerSchemaUtils spannerSchemaUtils;
+	protected SpannerSchemaUtils spannerSchemaUtils;
 
 	@Autowired
 	SpannerMappingContext spannerMappingContext;

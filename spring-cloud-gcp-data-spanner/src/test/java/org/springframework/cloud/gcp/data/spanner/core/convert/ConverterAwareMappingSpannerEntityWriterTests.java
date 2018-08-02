@@ -29,6 +29,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ValueBinder;
+import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
@@ -47,6 +48,7 @@ import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -133,6 +135,10 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		ValueBinder<WriteBuilder> id3Binder = mock(ValueBinder.class);
 		when(id3Binder.to(anyString())).thenReturn(null);
 		when(writeBuilder.set(eq("id3"))).thenReturn(id3Binder);
+
+		ValueBinder<WriteBuilder> id4Binder = mock(ValueBinder.class);
+		when(id4Binder.to(anyString())).thenReturn(null);
+		when(writeBuilder.set(eq("id4"))).thenReturn(id4Binder);
 
 		ValueBinder<WriteBuilder> stringFieldBinder = mock(ValueBinder.class);
 		when(stringFieldBinder.to(anyString())).thenReturn(null);
@@ -231,6 +237,31 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		verify(timestampFieldBinder, times(1)).to(eq(t.timestampField));
 		verify(bytesFieldBinder, times(1)).to(eq(t.bytes));
 		verify(instantListFieldBinder, times(1)).toTimestampArray(eq(timestamps));
+	}
+
+	@Test
+	public void writeNullColumnsTest() {
+		TestEntity t = new TestEntity();
+
+		t.dateField = null;
+		t.doubleList = null;
+
+		WriteBuilder writeBuilder = mock(WriteBuilder.class);
+
+		ValueBinder<WriteBuilder> dateFieldBinder = mock(ValueBinder.class);
+		when(dateFieldBinder.to((Date) any())).thenReturn(null);
+		when(writeBuilder.set(eq("dateField"))).thenReturn(dateFieldBinder);
+
+		ValueBinder<WriteBuilder> doubleListFieldBinder = mock(ValueBinder.class);
+		when(doubleListFieldBinder.toFloat64Array((Iterable<Double>) any()))
+				.thenReturn(null);
+		when(writeBuilder.set(eq("doubleList"))).thenReturn(doubleListFieldBinder);
+
+		this.spannerEntityWriter.write(t, writeBuilder::set,
+				ImmutableSet.of("dateField", "doubleList"));
+		verify(dateFieldBinder, times(1)).to((Date) isNull());
+		verify(doubleListFieldBinder, times(1))
+				.toFloat64Array((Iterable<Double>) isNull());
 	}
 
 	@Test

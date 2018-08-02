@@ -37,6 +37,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -147,6 +149,17 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				this.tradeRepository.findBySymbolAndActionStruct(Struct.newBuilder()
 						.set("symbol").to("ABCD").set("action").to("BUY").build())
 						.size());
+
+		// testing setting some columns to null.
+		Trade someTrade = this.tradeRepository.findBySymbolContains("ABCD").get(0);
+		assertNotNull(someTrade.getExecutionTimes());
+		assertNotNull(someTrade.getSymbol());
+		someTrade.setExecutionTimes(null);
+		someTrade.setSymbol(null);
+		this.tradeRepository.save(someTrade);
+		someTrade = this.tradeRepository.findById(this.spannerSchemaUtils.getKey(someTrade)).get();
+		assertNull(someTrade.getExecutionTimes());
+		assertNull(someTrade.getSymbol());
 	}
 
 	protected List<Trade> insertTrades(String traderId1, String action, int numTrades) {
