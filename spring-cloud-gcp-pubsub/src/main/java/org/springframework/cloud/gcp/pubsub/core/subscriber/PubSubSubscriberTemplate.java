@@ -113,10 +113,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	public <T> Subscriber subscribeAndConvert(String subscription,
 			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer, Class<T> payloadType) {
 		return this.subscribe(subscription,
-				(PubsubMessage pubsubMessage, AckReplyConsumer ackReplyConsumer) -> messageConsumer
-						.accept(new ConvertedPushedAcknowledgeablePubsubMessage<T>(pubsubMessage, ackReplyConsumer,
-								this.pubSubMessageConverter.fromPubSubMessage(pubsubMessage, payloadType)) {
-						}));
+				(message) -> messageConsumer.accept(new ConvertedPushedAcknowledgeablePubsubMessage<T>(message,
+						this.pubSubMessageConverter.fromPubSubMessage(message.getPubsubMessage(), payloadType))));
 	}
 
 	/**
@@ -337,9 +335,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		private final T payload;
 
-		ConvertedPulledAcknowledgeablePubsubMessage(AcknowledgeablePubsubMessage ackableMessage,
-				T payload) {
-			super(ackableMessage.getPubsubMessage(), ackableMessage.getAckId(), ackableMessage.getSubscriptionName());
+		ConvertedPulledAcknowledgeablePubsubMessage(AcknowledgeablePubsubMessage message, T payload) {
+			super(message.getPubsubMessage(), message.getAckId(), message.getSubscriptionName());
 			this.payload = payload;
 		}
 
@@ -347,45 +344,22 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		public T getPayload() {
 			return this.payload;
 		}
-
 	}
 
-	private class ConvertedPushedAcknowledgeablePubsubMessage<T>
+	private static class ConvertedPushedAcknowledgeablePubsubMessage<T> extends PushedAcknowledgeablePubsubMessage
 			implements ConvertedBasicAcknowledgeablePubsubMessage<T> {
-
-		private final PubsubMessage pubsubMessage;
-
-		private final AckReplyConsumer ackReplyConsumer;
 
 		private final T payload;
 
-		ConvertedPushedAcknowledgeablePubsubMessage(
-				PubsubMessage pubsubMessage, AckReplyConsumer ackReplyConsumer, T payload) {
-			this.pubsubMessage = pubsubMessage;
-			this.ackReplyConsumer = ackReplyConsumer;
+		ConvertedPushedAcknowledgeablePubsubMessage(BasicAcknowledgeablePubsubMessage message, T payload) {
+			super(message.getPubsubMessage(), message, message.getSubscriptionName());
 			this.payload = payload;
-		}
-
-		@Override
-		public PubsubMessage getPubsubMessage() {
-			return this.pubsubMessage;
-		}
-
-		@Override
-		public void ack() {
-			this.ackReplyConsumer.ack();
-		}
-
-		@Override
-		public void nack() {
-			this.ackReplyConsumer.nack();
 		}
 
 		@Override
 		public T getPayload() {
 			return this.payload;
 		}
-
 	}
 
 }
