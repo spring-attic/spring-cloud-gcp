@@ -163,11 +163,11 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
-	public void doWithChildCollectionProperties(
+	public void doWithInterleavedProperties(
 			PropertyHandler<SpannerPersistentProperty> handler) {
 		doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					if (spannerPersistentProperty.isOneToManyCollection()) {
+					if (spannerPersistentProperty.isInterleaved()) {
 						handler.doWithPersistentProperty(spannerPersistentProperty);
 					}
 				});
@@ -178,7 +178,7 @@ public class SpannerPersistentEntityImpl<T>
 			PropertyHandler<SpannerPersistentProperty> handler) {
 		doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					if (!spannerPersistentProperty.isOneToManyCollection()) {
+					if (!spannerPersistentProperty.isInterleaved()) {
 						handler.doWithPersistentProperty(spannerPersistentProperty);
 					}
 				});
@@ -198,7 +198,7 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	private void verifyOneToManyProperties() {
-		doWithChildCollectionProperties(spannerPersistentProperty -> {
+		doWithInterleavedProperties(spannerPersistentProperty -> {
 			// getting the inner type will throw an exception if the property isn't a
 			// collection.
 			Class childType = spannerPersistentProperty.getColumnInnerType();

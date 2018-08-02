@@ -221,7 +221,7 @@ public class SpannerPersistentEntityImplTests {
 			assertTrue(colName.equals("childrenA") || colName.equals("childrenB"));
 			return null;
 		}).when(mockHandler).doWithPersistentProperty(any());
-		spannerPersistentEntity.doWithChildCollectionProperties(mockHandler);
+		spannerPersistentEntity.doWithInterleavedProperties(mockHandler);
 		verify(mockHandler, times(2)).doWithPersistentProperty(any());
 	}
 
@@ -235,10 +235,10 @@ public class SpannerPersistentEntityImplTests {
 		@PrimaryKey
 		String id;
 
-		@OneToMany
+		@Interleaved
 		List<ChildAInRelationship> childrenA;
 
-		@OneToMany
+		@Interleaved
 		List<ChildBInRelationship> childrenB;
 	}
 
@@ -262,7 +262,7 @@ public class SpannerPersistentEntityImplTests {
 		@PrimaryKey
 		String idNameDifferentThanKids;
 
-		@OneToMany
+		@Interleaved
 		List<ChildAInRelationship> childrenA;
 	}
 
