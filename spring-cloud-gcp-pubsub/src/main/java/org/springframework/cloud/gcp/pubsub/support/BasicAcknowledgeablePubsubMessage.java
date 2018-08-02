@@ -24,6 +24,8 @@ import com.google.pubsub.v1.PubsubMessage;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ *
+ * @since 1.1
  */
 public interface BasicAcknowledgeablePubsubMessage extends AckReplyConsumer {
 

@@ -41,6 +41,7 @@ public interface AcknowledgeablePubsubMessage extends BasicAcknowledgeablePubsub
 	/**
 	 * Modify the ack deadline of the message. Once the ack deadline expires, the message is automatically nacked.
 	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the message.
+	 * @since 1.1
 	 */
 	void modifyAckDeadline(int ackDeadlineSeconds);
 }

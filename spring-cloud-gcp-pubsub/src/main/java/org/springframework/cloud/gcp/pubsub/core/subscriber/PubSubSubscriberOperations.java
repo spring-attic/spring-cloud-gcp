@@ -93,6 +93,7 @@ public interface PubSubSubscriberOperations {
 	 * and modify their ack deadline in batches.
 	 * @param acknowledgeablePubsubMessages messages to be modified
 	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the messages.
+	 * @since 1.1
 	 */
 	void modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
 			int ackDeadlineSeconds);
