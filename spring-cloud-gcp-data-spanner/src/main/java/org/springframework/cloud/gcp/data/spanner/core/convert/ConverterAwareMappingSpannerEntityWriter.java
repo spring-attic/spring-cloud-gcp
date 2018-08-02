@@ -297,8 +297,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 							iterablePropertyType2ToMethodMap.get(targetType);
 					toMethod.accept(valueBinder,
 							value == null ? null
-									:
-							ConversionUtils.convertIterable(value, targetType, this.writeConverter));
+									: ConversionUtils.convertIterable(value, targetType, this.writeConverter));
 					valueSet = true;
 					break;
 				}
