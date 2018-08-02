@@ -79,5 +79,5 @@ public interface SpannerPersistentProperty
 	 * @return True if property is a collection of child entities corresponding to an interleaved
 	 * child table. False otherwise.
 	 */
-	boolean isOneToManyCollection();
+	boolean isInterleaved();
 }

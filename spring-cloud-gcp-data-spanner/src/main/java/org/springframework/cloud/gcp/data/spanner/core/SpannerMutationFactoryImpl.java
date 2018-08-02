@@ -127,7 +127,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 		this.spannerEntityProcessor.write(object, writeBuilder::set, includeColumns);
 		mutations.add(writeBuilder.build());
 
-		persistentEntity.doWithChildCollectionProperties(spannerPersistentProperty -> {
+		persistentEntity.doWithInterleavedProperties(spannerPersistentProperty -> {
 			Iterable kids = (Iterable) persistentEntity.getPropertyAccessor(object)
 					.getProperty(spannerPersistentProperty);
 			if (kids != null) {

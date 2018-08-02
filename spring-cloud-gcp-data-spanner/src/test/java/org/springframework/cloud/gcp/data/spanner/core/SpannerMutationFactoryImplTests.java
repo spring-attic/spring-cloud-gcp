@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
@@ -30,7 +31,7 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.OneToMany;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -60,15 +61,15 @@ public class SpannerMutationFactoryImplTests {
 				this.mappingContext);
 	}
 
-	@Test
-	public void insertTest() {
+	private void executeWriteTest(Function<TestEntity, List<Mutation>> writeFunc,
+			Op writeMethod) {
 		TestEntity t = new TestEntity();
-		List<Mutation> mutations = this.spannerMutationFactory.insert(t);
+		List<Mutation> mutations = writeFunc.apply(t);
 		t.id = "a";
 		Mutation parentMutation = mutations.get(0);
 		assertEquals(1, mutations.size());
 		assertEquals("custom_test_table", parentMutation.getTable());
-		assertEquals(Op.INSERT, parentMutation.getOperation());
+		assertEquals(writeMethod, parentMutation.getOperation());
 		ChildEntity c1 = new ChildEntity();
 		c1.id = t.id;
 		c1.id2 = "c2";
@@ -76,16 +77,21 @@ public class SpannerMutationFactoryImplTests {
 		c2.id = t.id;
 		c2.id2 = "c3";
 		t.childEntities = Arrays.asList(c1, c2);
-		mutations = this.spannerMutationFactory.insert(t);
+		mutations = writeFunc.apply(t);
 		parentMutation = mutations.get(0);
 		assertEquals(3, mutations.size());
 		List<Mutation> childMutations = mutations.subList(1, mutations.size());
 		assertEquals("custom_test_table", parentMutation.getTable());
-		assertEquals(Op.INSERT, parentMutation.getOperation());
+		assertEquals(writeMethod, parentMutation.getOperation());
 		for (Mutation childMutation : childMutations) {
 			assertEquals("child_test_table", childMutation.getTable());
-			assertEquals(Op.INSERT, childMutation.getOperation());
+			assertEquals(writeMethod, childMutation.getOperation());
 		}
+	}
+
+	@Test
+	public void insertTest() {
+		executeWriteTest(t -> this.spannerMutationFactory.insert(t), Op.INSERT);
 	}
 
 	@Test(expected = SpannerDataException.class)
@@ -103,44 +109,13 @@ public class SpannerMutationFactoryImplTests {
 
 	@Test
 	public void updateTest() {
-		TestEntity t = new TestEntity();
-		List<Mutation> mutations = this.spannerMutationFactory.update(t, null);
-		t.id = "a";
-		Mutation parentMutation = mutations.get(0);
-		assertEquals(1, mutations.size());
-		ChildEntity c = new ChildEntity();
-		c.id = t.id;
-		assertEquals("custom_test_table", parentMutation.getTable());
-		assertEquals(Op.UPDATE, parentMutation.getOperation());
-		t.childEntities = Collections.singletonList(c);
-		mutations = this.spannerMutationFactory.update(t, null);
-		parentMutation = mutations.get(0);
-		Mutation childMutation = mutations.get(1);
-		assertEquals("custom_test_table", parentMutation.getTable());
-		assertEquals(Op.UPDATE, parentMutation.getOperation());
-		assertEquals("child_test_table", childMutation.getTable());
-		assertEquals(Op.UPDATE, childMutation.getOperation());
+		executeWriteTest(t -> this.spannerMutationFactory.update(t, null), Op.UPDATE);
 	}
 
 	@Test
 	public void upsertTest() {
-		TestEntity t = new TestEntity();
-		List<Mutation> mutations = this.spannerMutationFactory.upsert(t, null);
-		t.id = "a";
-		Mutation parentMutation = mutations.get(0);
-		assertEquals(1, mutations.size());
-		ChildEntity c = new ChildEntity();
-		c.id = t.id;
-		assertEquals("custom_test_table", parentMutation.getTable());
-		assertEquals(Op.INSERT_OR_UPDATE, parentMutation.getOperation());
-		t.childEntities = Collections.singletonList(c);
-		mutations = this.spannerMutationFactory.upsert(t, null);
-		parentMutation = mutations.get(0);
-		Mutation childMutation = mutations.get(1);
-		assertEquals("custom_test_table", parentMutation.getTable());
-		assertEquals(Op.INSERT_OR_UPDATE, parentMutation.getOperation());
-		assertEquals("child_test_table", childMutation.getTable());
-		assertEquals(Op.INSERT_OR_UPDATE, childMutation.getOperation());
+		executeWriteTest(t -> this.spannerMutationFactory.upsert(t, null),
+				Op.INSERT_OR_UPDATE);
 	}
 
 	@Test
@@ -214,7 +189,7 @@ public class SpannerMutationFactoryImplTests {
 		@Column(name = "")
 		String other;
 
-		@OneToMany
+		@Interleaved
 		List<ChildEntity> childEntities;
 	}
 

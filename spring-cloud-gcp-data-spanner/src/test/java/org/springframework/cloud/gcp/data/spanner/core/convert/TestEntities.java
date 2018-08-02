@@ -26,7 +26,7 @@ import com.google.cloud.spanner.Struct;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.OneToMany;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
@@ -85,7 +85,7 @@ public class TestEntities {
 
 		ByteArray bytes;
 
-		@OneToMany
+		@Interleaved
 		List<ChildTestEntity> childTestEntities;
 	}
 
