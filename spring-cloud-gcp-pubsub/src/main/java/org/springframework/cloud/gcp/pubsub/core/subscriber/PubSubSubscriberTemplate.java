@@ -135,10 +135,24 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	@Override
+	public void ackAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
+
+		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::ackAsync);
+	}
+
+	@Override
 	public void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
 
 		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::nack);
+	}
+
+	@Override
+	public void nackAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
+
+		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::nackAsync);
 	}
 
 	@Override
@@ -149,6 +163,16 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		groupAcknowledgeableMessages(acknowledgeablePubsubMessages)
 				.forEach((sub, ackIds) -> modifyAckDeadline(sub, ackIds, ackDeadlineSeconds));
+	}
+
+	@Override
+	public void modifyAckDeadlineAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
+			int ackDeadlineSeconds) {
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
+		Assert.isTrue(ackDeadlineSeconds >= 0, "The ackDeadlineSeconds must not be negative.");
+
+		groupAcknowledgeableMessages(acknowledgeablePubsubMessages)
+				.forEach((sub, ackIds) -> modifyAckDeadlineAsync(sub, ackIds, ackDeadlineSeconds));
 	}
 
 	/**
@@ -171,8 +195,21 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		this.subscriberStub.acknowledgeCallable().call(acknowledgeRequest);
 	}
 
+	private void ackAsync(String subscriptionName, Collection<String> ackIds) {
+		AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
+				.addAllAckIds(ackIds)
+				.setSubscription(subscriptionName)
+				.build();
+
+		this.subscriberStub.acknowledgeCallable().futureCall(acknowledgeRequest);
+	}
+
 	private void nack(String subscriptionName, Collection<String> ackIds) {
 		modifyAckDeadline(subscriptionName, ackIds, 0);
+	}
+
+	private void nackAsync(String subscriptionName, Collection<String> ackIds) {
+		modifyAckDeadlineAsync(subscriptionName, ackIds, 0);
 	}
 
 	private void modifyAckDeadline(String subscriptionName, Collection<String> ackIds, int ackDeadlineSeconds) {
@@ -183,6 +220,16 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 				.build();
 
 		this.subscriberStub.modifyAckDeadlineCallable().call(modifyAckDeadlineRequest);
+	}
+
+	private void modifyAckDeadlineAsync(String subscriptionName, Collection<String> ackIds, int ackDeadlineSeconds) {
+		ModifyAckDeadlineRequest modifyAckDeadlineRequest = ModifyAckDeadlineRequest.newBuilder()
+				.setAckDeadlineSeconds(ackDeadlineSeconds)
+				.addAllAckIds(ackIds)
+				.setSubscription(subscriptionName)
+				.build();
+
+		this.subscriberStub.modifyAckDeadlineCallable().futureCall(modifyAckDeadlineRequest);
 	}
 
 
@@ -222,13 +269,28 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		}
 
 		@Override
+		public void ackAsync() {
+			PubSubSubscriberTemplate.this.ackAsync(Collections.singleton(this));
+		}
+
+		@Override
 		public void nack() {
 			modifyAckDeadline(0);
 		}
 
 		@Override
+		public void nackAsync() {
+			modifyAckDeadlineAsync(0);
+		}
+
+		@Override
 		public void modifyAckDeadline(int ackDeadlineSeconds) {
 			PubSubSubscriberTemplate.this.modifyAckDeadline(Collections.singleton(this), ackDeadlineSeconds);
+		}
+
+		@Override
+		public void modifyAckDeadlineAsync(int ackDeadlineSeconds) {
+			PubSubSubscriberTemplate.this.modifyAckDeadlineAsync(Collections.singleton(this), ackDeadlineSeconds);
 		}
 
 		@Override

@@ -163,12 +163,28 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
+	public void ackAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		this.pubSubSubscriberTemplate.ack(acknowledgeablePubsubMessages);
+	}
+
+	@Override
 	public void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		this.pubSubSubscriberTemplate.nack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
+	public void nackAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		this.pubSubSubscriberTemplate.nack(acknowledgeablePubsubMessages);
+	}
+
+	@Override
 	public void modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
+			int ackDeadlineSeconds) {
+		this.pubSubSubscriberTemplate.modifyAckDeadline(acknowledgeablePubsubMessages, ackDeadlineSeconds);
+	}
+
+	@Override
+	public void modifyAckDeadlineAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
 			int ackDeadlineSeconds) {
 		this.pubSubSubscriberTemplate.modifyAckDeadline(acknowledgeablePubsubMessages, ackDeadlineSeconds);
 	}

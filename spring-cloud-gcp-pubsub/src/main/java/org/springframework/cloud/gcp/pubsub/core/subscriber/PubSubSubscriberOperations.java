@@ -81,12 +81,16 @@ public interface PubSubSubscriberOperations {
 	 */
 	void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
+	void ackAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+
 	/**
 	 * Negatively acknowledge a batch of messages. The method will group the messages by subscription name
 	 * and acknowledge them in batches.
 	 * @param acknowledgeablePubsubMessages messages to be negatively acknowledged
 	 */
 	void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+
+	void nackAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
 	 * Modify the ack deadline of a batch of messages. The method will group the messages by subscription name
@@ -97,4 +101,6 @@ public interface PubSubSubscriberOperations {
 	void modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
 			int ackDeadlineSeconds);
 
+	void modifyAckDeadlineAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
+			int ackDeadlineSeconds);
 }
