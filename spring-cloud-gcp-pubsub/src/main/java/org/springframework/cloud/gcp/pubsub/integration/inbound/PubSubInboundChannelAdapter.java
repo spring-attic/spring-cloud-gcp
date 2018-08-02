@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.pubsub.integration.inbound;
 import java.util.Map;
 
 import com.google.cloud.pubsub.v1.Subscriber;
-import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
@@ -92,7 +91,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	}
 
 	/**
-	 * Set the header mapper to map headers from incoming {@link PubsubMessage} into
+	 * Set the header mapper to map headers from incoming {@link com.google.pubsub.v1.PubsubMessage} into
 	 * {@link org.springframework.messaging.Message}.
 	 * @param headerMapper the header mapper
 	 */

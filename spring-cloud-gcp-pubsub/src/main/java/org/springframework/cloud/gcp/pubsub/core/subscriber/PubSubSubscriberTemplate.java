@@ -201,7 +201,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 
-	private static abstract class AbstractBasicAcknowledgeablePubsubMessage implements BasicAcknowledgeablePubsubMessage {
+	private static abstract class AbstractBasicAcknowledgeablePubsubMessage
+			implements BasicAcknowledgeablePubsubMessage {
 		private final PubsubMessage message;
 
 		private final String subscriptionName;
@@ -257,7 +258,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 			return "PulledAcknowledgeablePubsubMessage{" +
 					"message=" + getPubsubMessage() +
 					", subscriptionName='" + getSubscriptionName() + '\'' +
-					", ackId='" + ackId + '\'' +
+					", ackId='" + this.ackId + '\'' +
 					'}';
 		}
 	}
@@ -287,7 +288,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 			return "PushedAcknowledgeablePubsubMessage{" +
 					"message=" + getPubsubMessage() +
 					", subscriptionName='" + getSubscriptionName() + '\'' +
-					", ackReplyConsumer=" + ackReplyConsumer +
+					", ackReplyConsumer=" + this.ackReplyConsumer +
 					'}';
 		}
 	}

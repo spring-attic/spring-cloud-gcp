@@ -16,8 +16,9 @@
 
 package org.springframework.cloud.gcp.pubsub.integration.inbound;
 
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
-import com.google.cloud.pubsub.v1.MessageReceiver;
+import java.io.UnsupportedEncodingException;
+import java.util.function.Consumer;
+
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Assert;
@@ -31,9 +32,6 @@ import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOper
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.messaging.MessageChannel;
-
-import java.io.UnsupportedEncodingException;
-import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -93,7 +91,7 @@ public class PubSubInboundChannelAdapterTests {
 				anyString(), any(Consumer.class))).then(invocationOnMock -> {
 					Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer =
 							invocationOnMock.getArgument(1);
-					messageConsumer.accept(message);
+					messageConsumer.accept(this.message);
 				return null;
 		});
 	}
