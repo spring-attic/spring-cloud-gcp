@@ -283,7 +283,7 @@ public class SpannerSchemaUtils {
 				generateSingleDdlStringFunc.apply(entityClass, parentTable));
 		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		spannerPersistentEntity.doWithChildCollectionProperties(
+		spannerPersistentEntity.doWithInterleavedProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty ->
 						getDdlStringForInterleavedHierarchy(
 						spannerPersistentEntity.tableName(),
