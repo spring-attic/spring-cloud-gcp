@@ -41,7 +41,7 @@ import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMe
 public interface PubSubSubscriberOperations {
 
 	/**
-	 * @deprecated As of 1.1, use {@link #subscribe(String, Consumer)} instead.
+	 * @deprecated as of 1.1, use {@link #subscribe(String, Consumer)} instead.
 	 */
 	@Deprecated
 	Subscriber subscribe(String subscription, MessageReceiver messageReceiver);
