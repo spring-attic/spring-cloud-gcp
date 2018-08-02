@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -202,61 +204,68 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public void insert(Object object) {
-		applyMutationUsingEntity(this.mutationFactory::insert, object);
+		applyMutationsUsingEntity(this.mutationFactory::insert, object);
 	}
 
 	@Override
 	public void update(Object object) {
-		applyMutationTwoArgs(this.mutationFactory::update, object, null);
+		applyMutationsTwoArgs(this.mutationFactory::update, object, null);
 	}
 
 	@Override
 	public void update(Object object, String... includeColumns) {
-		applyMutationTwoArgs(this.mutationFactory::update, object,
+		applyMutationsTwoArgs(this.mutationFactory::update, object,
 				includeColumns.length == 0 ? null
 						: Optional.of(new HashSet<>(Arrays.asList(includeColumns))));
 	}
 
 	@Override
 	public void update(Object object, Optional<Set<String>> includeColumns) {
-		applyMutationTwoArgs(this.mutationFactory::update, object, includeColumns);
+		applyMutationsTwoArgs(this.mutationFactory::update, object, includeColumns);
 	}
 
 	@Override
 	public void upsert(Object object) {
-		applyMutationTwoArgs(this.mutationFactory::upsert, object, null);
+		applyMutationsTwoArgs(this.mutationFactory::upsert, object, null);
 	}
 
 	@Override
 	public void upsert(Object object, String... includeColumns) {
-		applyMutationTwoArgs(this.mutationFactory::upsert, object,
+		applyMutationsTwoArgs(this.mutationFactory::upsert, object,
 				includeColumns.length == 0 ? null
 						: Optional.of(new HashSet<>(Arrays.asList(includeColumns))));
 	}
 
 	@Override
 	public void upsert(Object object, Optional<Set<String>> includeColumns) {
-		applyMutationTwoArgs(this.mutationFactory::upsert, object, includeColumns);
+		applyMutationsTwoArgs(this.mutationFactory::upsert, object, includeColumns);
 	}
 
 	@Override
 	public void delete(Object entity) {
-		applyMutationUsingEntity(this.mutationFactory::delete, entity);
+		applyMutationUsingEntity(
+				this.mutationFactory::delete, entity);
 	}
 
 	@Override
 	public void delete(Class entityClass, Key key) {
-		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, key);
+		applyMutationTwoArgs(
+				this.mutationFactory::delete,
+				entityClass, key);
 	}
 
 	@Override
 	public <T> void delete(Class<T> entityClass, Iterable<? extends T> entities) {
-		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, entities);
+		applyMutationTwoArgs(
+				this.mutationFactory::delete,
+				entityClass, entities);
 	}
 
 	@Override
 	public void delete(Class entityClass, KeySet keys) {
-		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, keys);
+		applyMutationTwoArgs(
+				this.mutationFactory::delete,
+				entityClass, keys);
 	}
 
 	@Override
@@ -389,11 +398,23 @@ public class SpannerTemplate implements SpannerOperations {
 		return resultSet;
 	}
 
+	protected <T, U> void applyMutationsTwoArgs(
+			BiFunction<T, U, Collection<Mutation>> function,
+			T arg1, U arg2) {
+		Collection<Mutation> mutation = function.apply(arg1, arg2);
+		LOGGER.debug("Applying Mutation: " + mutation);
+		this.databaseClient.write(mutation);
+	}
+
 	protected <T, U> void applyMutationTwoArgs(BiFunction<T, U, Mutation> function,
 			T arg1, U arg2) {
-		Mutation mutation = function.apply(arg1, arg2);
-		LOGGER.debug("Applying Mutation: " + mutation);
-		this.databaseClient.write(Arrays.asList(mutation));
+		applyMutationsTwoArgs((T t, U u) -> Collections.singleton(function.apply(t, u)),
+				arg1, arg2);
+	}
+
+	private <T> void applyMutationsUsingEntity(Function<T, Collection<Mutation>> function,
+			T arg) {
+		applyMutationsTwoArgs((T t, Object unused) -> function.apply(t), arg, null);
 	}
 
 	private <T> void applyMutationUsingEntity(Function<T, Mutation> function, T arg) {

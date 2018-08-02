@@ -37,7 +37,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.Assert;
 
 /**
@@ -138,8 +137,8 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 				.getPersistentEntity(source.getClass());
 		PersistentPropertyAccessor accessor = persistentEntity
 				.getPropertyAccessor(source);
-		persistentEntity.doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+		persistentEntity.doWithColumnBackedProperties(
+				spannerPersistentProperty -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						Object embeddedObject = accessor
 								.getProperty(spannerPersistentProperty);
@@ -236,10 +235,6 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			SpannerPersistentProperty property) {
 		Object propertyValue = accessor.getProperty(property);
 
-		if (propertyValue == null) {
-			return;
-		}
-
 		Class<?> propertyType = property.getType();
 		ValueBinder<WriteBuilder> valueBinder = sink.set(property.getColumnName());
 
@@ -255,11 +250,12 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 					property);
 		}
 		else {
-			valueSet = attemptSetSingleItemValue(propertyValue, valueBinder,
+			valueSet = attemptSetSingleItemValue(propertyValue, propertyType, valueBinder,
 					propertyType);
 			if (!valueSet) {
 				for (Class<?> targetType : singleItemType2ToMethodMap.keySet()) {
-					valueSet = attemptSetSingleItemValue(propertyValue, valueBinder,
+					valueSet = attemptSetSingleItemValue(propertyValue, propertyType,
+							valueBinder,
 							targetType);
 					if (valueSet) {
 						break;
@@ -299,7 +295,8 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 					BiConsumer<ValueBinder<?>, Iterable> toMethod =
 							iterablePropertyType2ToMethodMap.get(targetType);
 					toMethod.accept(valueBinder,
-							ConversionUtils.convertIterable(value, targetType, this.writeConverter));
+							value == null ? null
+									: ConversionUtils.convertIterable(value, targetType, this.writeConverter));
 					valueSet = true;
 					break;
 				}
@@ -309,9 +306,9 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> boolean attemptSetSingleItemValue(Object value,
+	private <T> boolean attemptSetSingleItemValue(Object value, Class<?> sourceType,
 			ValueBinder<WriteBuilder> valueBinder, Class<T> targetType) {
-		if (!this.writeConverter.canConvert(value.getClass(), targetType)) {
+		if (!this.writeConverter.canConvert(sourceType, targetType)) {
 			return false;
 		}
 		Class innerType = ConversionUtils.boxIfNeeded(targetType);
@@ -321,7 +318,9 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			return false;
 		}
 		// We're just checking for the bind to have succeeded, we don't need to chain the result.
-		Object ignored = toMethod.apply(valueBinder, this.writeConverter.convert(value, targetType));
+		// Spanner allows binding of null values.
+		Object ignored = toMethod.apply(valueBinder,
+				value == null ? null : this.writeConverter.convert(value, targetType));
 		return true;
 	}
 }

@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -34,31 +35,38 @@ import com.google.cloud.spanner.Mutation;
 public interface SpannerMutationFactory {
 
 	/**
-	 * Stores a single object in Spanner.
+	 * Stores an object and its interleaved child properties in Cloud Spanner.
+	 * There will be 1 mutation for each entity corresponding to a row in Cloud Spanner. If there
+	 * are no interleaved children then the returned list will contain the single mutation for the
+	 * given object.
 	 * @param object The object to store.
-	 * @return The mutation operation which will store the object.
+	 * @return The mutation operations which will store the object and its children.
 	 */
-	Mutation insert(Object object);
+	List<Mutation> insert(Object object);
 
 	/**
-	 * Updates or inserts a single object in Spanner. The columns' values corresponding to
-	 * the object's fields are treated according to Mutation.Op.INSERT_OR_UPDATE.
+	 * Updates or inserts an object and its interleaved child properties in Cloud Spanner.
+	 * There will be 1 mutation for each entity corresponding to a row in Cloud Spanner. If there
+	 * are no interleaved children then the returned list will contain the single mutation for the
+	 * given object.
 	 * @param object The object to update or newly insert.
 	 * @param includeColumns The columns to use in the operation. if null or empty
 	 * Optional, then all columns are used.
-	 * @return The mutation operation to perform the action.
+	 * @return The mutation operations which will store the object and its children.
 	 */
-	Mutation upsert(Object object, Optional<Set<String>> includeColumns);
+	List<Mutation> upsert(Object object, Optional<Set<String>> includeColumns);
 
 	/**
-	 * Updates a single object in Spanner. The columns' values corresponding to the
-	 * object's fields are treated according to Mutation.Op.UPDATE.
+	 * Updates an object and its interleaved child properties in Cloud Spanner.
+	 * There will be 1 mutation for each entity corresponding to a row in Cloud Spanner. If there
+	 * are no interleaved children then the returned list will contain the single mutation for the
+	 * given object.
 	 * @param object The object to update.
 	 * @param includeColumns The columns to use in the operation. if null or empty
 	 * Optional, then all columns are used.
-	 * @return The mutation operation to perform the action.
+	 * @return The mutation operations which will store the object and its children.
 	 */
-	Mutation update(Object object, Optional<Set<String>> includeColumns);
+	List<Mutation> update(Object object, Optional<Set<String>> includeColumns);
 
 	/**
 	 * Deletes several objects from Spanner.
