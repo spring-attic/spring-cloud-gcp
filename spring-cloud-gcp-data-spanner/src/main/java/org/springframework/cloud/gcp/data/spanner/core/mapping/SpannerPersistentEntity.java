@@ -69,7 +69,7 @@ public interface SpannerPersistentEntity<T> extends
 	 *
 	 * @param handler must not be {@literal null}.
 	 */
-	void doWithChildCollectionProperties(
+	void doWithInterleavedProperties(
 			PropertyHandler<SpannerPersistentProperty> handler);
 
 	/**

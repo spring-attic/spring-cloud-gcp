@@ -26,7 +26,7 @@ import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.OneToMany;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
@@ -140,8 +140,9 @@ public class SpannerQueryLookupStrategyTests {
 		t.id2 = "key2";
 		Statement statement = SpannerStatementQueryExecutor.getChildrenRowsQuery(
 				this.spannerMappingContext.getPersistentEntity(TestEntity.class), t,
-				"child_test_table");
-		assertEquals("SELECT * FROM child_test_table WHERE id = @tag0 and id_2 = @tag1",
+				this.spannerMappingContext.getPersistentEntity(ChildEntity.class));
+		assertEquals("SELECT id3 , id , id_2 "
+						+ "FROM child_test_table WHERE id = @tag0 and id_2 = @tag1",
 				statement.getSql());
 		assertEquals(2, statement.getParameters().size());
 		assertEquals("key", statement.getParameters().get("tag0").getString());
@@ -163,7 +164,7 @@ public class SpannerQueryLookupStrategyTests {
 		@Column(name = "")
 		String other;
 
-		@OneToMany
+		@Interleaved
 		List<ChildEntity> childEntities;
 	}
 

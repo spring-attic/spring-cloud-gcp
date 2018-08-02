@@ -45,7 +45,7 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.OneToMany;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
@@ -388,7 +388,8 @@ public class SpannerTemplateTests {
 
 		doAnswer(invocation -> {
 			assertEquals(
-					"SELECT * FROM (SELECT * FROM custom_test_table) "
+					"SELECT * FROM (SELECT other , doubles , id2 , bytes , integerList , id , "
+							+ "custom_col , bytesList FROM custom_test_table) "
 							+ "ORDER BY id ASC , LOWER(custom_col) DESC , other ASC , non_existant_prop DESC "
 							+ "LIMIT 3 OFFSET 5",
 					((Statement) invocation.getArgument(0)).getSql());
@@ -408,7 +409,8 @@ public class SpannerTemplateTests {
 
 		doAnswer(invocation -> {
 			assertEquals(
-					"SELECT * FROM (SELECT * FROM custom_test_table) "
+					"SELECT * FROM (SELECT other , doubles , id2 , bytes , integerList , id , "
+							+ "custom_col , bytesList FROM custom_test_table) "
 							+ "LIMIT 3 OFFSET 5",
 					((Statement) invocation.getArgument(0)).getSql());
 			return null;
@@ -521,7 +523,7 @@ public class SpannerTemplateTests {
 		@Column(name = "")
 		String other;
 
-		@OneToMany
+		@Interleaved
 		List<ChildEntity> childEntities;
 	}
 
@@ -536,7 +538,7 @@ public class SpannerTemplateTests {
 		@PrimaryKey(keyOrder = 3)
 		String id3;
 
-		@OneToMany
+		@Interleaved
 		List<GrandChildEntity> childEntities;
 	}
 

@@ -169,7 +169,8 @@ public class SpannerTemplate implements SpannerOperations {
 	public <T> List<T> queryAll(Class<T> entityClass, SpannerQueryOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
-		String sql = "SELECT * FROM " + persistentEntity.tableName();
+		String sql = "SELECT " + SpannerStatementQueryExecutor.getColumnsStringForSelect(
+				persistentEntity) + " FROM " + persistentEntity.tableName();
 		return query(entityClass, sql, null, null, options);
 	}
 
@@ -420,7 +421,7 @@ public class SpannerTemplate implements SpannerOperations {
 				.getPersistentEntity(entity.getClass());
 		PersistentPropertyAccessor accessor = spannerPersistentEntity
 				.getPropertyAccessor(entity);
-		spannerPersistentEntity.doWithChildCollectionProperties(
+		spannerPersistentEntity.doWithInterleavedProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
 					Class childType = spannerPersistentProperty.getColumnInnerType();
 					SpannerPersistentEntity childPersistentEntity = this.mappingContext
@@ -429,7 +430,7 @@ public class SpannerTemplate implements SpannerOperations {
 							query(childType,
 									SpannerStatementQueryExecutor.getChildrenRowsQuery(
 											spannerPersistentEntity, entity,
-											childPersistentEntity.tableName())));
+											childPersistentEntity)));
 				});
 	}
 }

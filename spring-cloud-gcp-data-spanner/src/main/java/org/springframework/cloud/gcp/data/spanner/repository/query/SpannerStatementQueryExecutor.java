@@ -80,13 +80,15 @@ public class SpannerStatementQueryExecutor {
 	 * of all child rows having the parent's key values is efficient.
 	 * @param parentPersistentEntity the persistent entity of the parent table.
 	 * @param parentObject the parent object whose children to get.
-	 * @param childTable the name of the child table.
+	 * @param childPersistentEntity the persistent entity of the child table.
 	 * @return the Spanner statement to perform the retrieval.
 	 */
 	public static Statement getChildrenRowsQuery(
 			SpannerPersistentEntity parentPersistentEntity, Object parentObject,
-			String childTable) {
-		StringBuilder sb = new StringBuilder("SELECT * FROM " + childTable + " WHERE ");
+			SpannerPersistentEntity childPersistentEntity) {
+		StringBuilder sb = new StringBuilder(
+				"SELECT " + getColumnsStringForSelect(childPersistentEntity) + " FROM "
+						+ childPersistentEntity.tableName() + " WHERE ");
 		StringJoiner sj = new StringJoiner(" and ");
 		List<String> tags = new ArrayList<>();
 		List keyParts = new ArrayList();
@@ -161,6 +163,11 @@ public class SpannerStatementQueryExecutor {
 		return builder.build();
 	}
 
+	public static String getColumnsStringForSelect(
+			SpannerPersistentEntity spannerPersistentEntity) {
+		return String.join(" , ", spannerPersistentEntity.columns());
+	}
+
 	private static Pair<String, List<String>> buildPartTreeSqlString(PartTree tree,
 			SpannerMappingContext spannerMappingContext, Class type) {
 		SpannerPersistentEntity<?> persistentEntity = spannerMappingContext
@@ -168,7 +175,7 @@ public class SpannerStatementQueryExecutor {
 		List<String> tags = new ArrayList<>();
 		StringBuilder stringBuilder = new StringBuilder();
 
-		buildSelect(tree, stringBuilder);
+		buildSelect(persistentEntity, tree, stringBuilder);
 		buildFrom(persistentEntity, stringBuilder);
 		buildWhere(tree, persistentEntity, tags, stringBuilder);
 		applySort(tree.getSort(), stringBuilder, o -> persistentEntity
@@ -179,12 +186,14 @@ public class SpannerStatementQueryExecutor {
 		return Pair.of(stringBuilder.toString(), tags);
 	}
 
-	private static StringBuilder buildSelect(PartTree tree, StringBuilder stringBuilder) {
+	private static StringBuilder buildSelect(
+			SpannerPersistentEntity spannerPersistentEntity, PartTree tree,
+			StringBuilder stringBuilder) {
 		stringBuilder.append("SELECT ");
 		if (tree.isDistinct()) {
 			stringBuilder.append("DISTINCT ");
 		}
-		stringBuilder.append("* ");
+		stringBuilder.append(getColumnsStringForSelect(spannerPersistentEntity) + " ");
 		return stringBuilder;
 	}
 

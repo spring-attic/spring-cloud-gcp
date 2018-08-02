@@ -94,7 +94,7 @@ public class SpannerPersistentPropertyImpl
 	 */
 	@Override
 	public String getColumnName() {
-		if (isOneToManyCollection()) {
+		if (isInterleaved()) {
 			throw new SpannerDataException(
 					"This property is a one-to-many child collection and "
 							+ "does not correspond to a column: " + getName());
@@ -147,8 +147,8 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	@Override
-	public boolean isOneToManyCollection() {
-		return findAnnotation(OneToMany.class) != null;
+	public boolean isInterleaved() {
+		return findAnnotation(Interleaved.class) != null;
 	}
 
 	@Override

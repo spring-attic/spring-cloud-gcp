@@ -135,7 +135,7 @@ public class SpannerPersistentEntityImpl<T>
 			this.columnNames.addAll(this.spannerMappingContext
 					.getPersistentEntity(property.getType()).columns());
 		}
-		else if (!property.isOneToManyCollection()) {
+		else if (!property.isInterleaved()) {
 			this.columnNames.add(property.getColumnName());
 		}
 
@@ -163,11 +163,11 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
-	public void doWithChildCollectionProperties(
+	public void doWithInterleavedProperties(
 			PropertyHandler<SpannerPersistentProperty> handler) {
 		doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					if (spannerPersistentProperty.isOneToManyCollection()) {
+					if (spannerPersistentProperty.isInterleaved()) {
 						handler.doWithPersistentProperty(spannerPersistentProperty);
 					}
 				});
@@ -178,7 +178,7 @@ public class SpannerPersistentEntityImpl<T>
 			PropertyHandler<SpannerPersistentProperty> handler) {
 		doWithProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
-					if (!spannerPersistentProperty.isOneToManyCollection()) {
+					if (!spannerPersistentProperty.isInterleaved()) {
 						handler.doWithPersistentProperty(spannerPersistentProperty);
 					}
 				});
