@@ -16,8 +16,9 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.pubsub.v1.PubsubMessage;
+
+import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * A {@link PubsubMessage} wrapper that allows it to be acknowledged.
@@ -25,7 +26,7 @@ import com.google.pubsub.v1.PubsubMessage;
  * @author João André Martins
  * @author Mike Eltsufin
  */
-public interface BasicAcknowledgeablePubsubMessage extends AckReplyConsumer {
+public interface BasicAcknowledgeablePubsubMessage {
 
 	/**
 	 * Accessor for the wrapped {@link PubsubMessage}.
@@ -33,4 +34,15 @@ public interface BasicAcknowledgeablePubsubMessage extends AckReplyConsumer {
 	 */
 	PubsubMessage getPubsubMessage();
 
+	/**
+	 * Acknowledge (ack) the message asynchronously
+	 * @return ListenableFuture&lt;String&gt;
+	 */
+	ListenableFuture<String> ack();
+
+	/**
+	 * Negatatively achnowledge (nack) the message asynchronously
+	 * @return ListenableFuture&lt;String&gt;
+	 */
+	ListenableFuture<String> nack();
 }

@@ -158,35 +158,19 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
-		this.pubSubSubscriberTemplate.ack(acknowledgeablePubsubMessages);
+	public ListenableFuture<String> ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		return this.pubSubSubscriberTemplate.ack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
-	public void ackAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
-		this.pubSubSubscriberTemplate.ack(acknowledgeablePubsubMessages);
+	public ListenableFuture<String> nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		return this.pubSubSubscriberTemplate.nack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
-	public void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
-		this.pubSubSubscriberTemplate.nack(acknowledgeablePubsubMessages);
-	}
-
-	@Override
-	public void nackAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
-		this.pubSubSubscriberTemplate.nack(acknowledgeablePubsubMessages);
-	}
-
-	@Override
-	public void modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
-			int ackDeadlineSeconds) {
-		this.pubSubSubscriberTemplate.modifyAckDeadline(acknowledgeablePubsubMessages, ackDeadlineSeconds);
-	}
-
-	@Override
-	public void modifyAckDeadlineAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
-			int ackDeadlineSeconds) {
-		this.pubSubSubscriberTemplate.modifyAckDeadline(acknowledgeablePubsubMessages, ackDeadlineSeconds);
+	public ListenableFuture<String> modifyAckDeadline(
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages, int ackDeadlineSeconds) {
+		return this.pubSubSubscriberTemplate.modifyAckDeadline(acknowledgeablePubsubMessages, ackDeadlineSeconds);
 	}
 
 	public PublisherFactory getPublisherFactory() {

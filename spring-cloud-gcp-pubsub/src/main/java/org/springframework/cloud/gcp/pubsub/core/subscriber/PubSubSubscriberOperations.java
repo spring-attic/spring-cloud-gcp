@@ -24,6 +24,7 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * An abstraction for Google Cloud Pub/Sub subscription / pulling operations.
@@ -78,29 +79,25 @@ public interface PubSubSubscriberOperations {
 	 * Acknowledge a batch of messages. The method will group the messages by subscription name
 	 * and acknowledge them in batches.
 	 * @param acknowledgeablePubsubMessages messages to be acknowledged
+	 * @return ListenableFuture&lt;String&gt;
 	 */
-	void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
-
-	void ackAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	ListenableFuture<String> ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
 	 * Negatively acknowledge a batch of messages. The method will group the messages by subscription name
 	 * and acknowledge them in batches.
 	 * @param acknowledgeablePubsubMessages messages to be negatively acknowledged
+	 * @return ListenableFuture&lt;String&gt;
 	 */
-	void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
-
-	void nackAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	ListenableFuture<String> nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
 	 * Modify the ack deadline of a batch of messages. The method will group the messages by subscription name
 	 * and modify their ack deadline in batches.
 	 * @param acknowledgeablePubsubMessages messages to be modified
 	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the messages.
+	 * @return ListenableFuture&lt;String&gt;
 	 */
-	void modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
-			int ackDeadlineSeconds);
-
-	void modifyAckDeadlineAsync(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
+	ListenableFuture<String> modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
 			int ackDeadlineSeconds);
 }

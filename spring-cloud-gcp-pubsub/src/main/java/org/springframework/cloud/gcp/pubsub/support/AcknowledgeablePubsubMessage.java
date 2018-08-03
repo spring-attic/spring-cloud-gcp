@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import org.springframework.util.concurrent.ListenableFuture;
+
 /**
  * An extension of {@link BasicAcknowledgeablePubsubMessage} that exposes ack ID and subscription name of the message.
  * It also allows modification of the ack deadline and acknowledgement of multiple messages at once using
@@ -40,25 +42,9 @@ public interface AcknowledgeablePubsubMessage extends BasicAcknowledgeablePubsub
 	String getSubscriptionName();
 
 	/**
-	 * Acknowledge the message asynchronously
-	 */
-	void ackAsync();
-
-	/**
-	 * Negatatively achnowledge (nack) the message asynchronously
-	 */
-	void nackAsync();
-
-	/**
 	 * Modify the ack deadline of the message. Once the ack deadline expires, the message is automatically nacked.
 	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the message.
+	 * @return ListenableFuture&lt;String&gt;
 	 */
-	void modifyAckDeadline(int ackDeadlineSeconds);
-
-	/**
-	 * Modufy the ack deadline of the message asynchronously. Once the ack deadline expires, the message is
-	 * automatically nacked.
-	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the message.
-	 */
-	void modifyAckDeadlineAsync(int ackDeadlineSeconds);
+	ListenableFuture<String> modifyAckDeadline(int ackDeadlineSeconds);
 }
