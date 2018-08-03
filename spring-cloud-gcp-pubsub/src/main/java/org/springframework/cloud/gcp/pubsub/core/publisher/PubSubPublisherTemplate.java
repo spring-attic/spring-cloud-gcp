@@ -70,12 +70,10 @@ public class PubSubPublisherTemplate implements PubSubPublisherOperations {
 		return this.pubSubMessageConverter;
 	}
 
-	public PubSubPublisherTemplate setMessageConverter(PubSubMessageConverter pubSubMessageConverter) {
+	public void setMessageConverter(PubSubMessageConverter pubSubMessageConverter) {
 		Assert.notNull(pubSubMessageConverter, "The pubSubMessageConverter can't be null.");
 
 		this.pubSubMessageConverter = pubSubMessageConverter;
-
-		return this;
 	}
 
 	/**
