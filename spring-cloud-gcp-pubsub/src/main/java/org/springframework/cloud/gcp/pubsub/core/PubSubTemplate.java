@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.pubsub.core;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
@@ -132,8 +134,14 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
+	@Deprecated
 	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
 		return this.pubSubSubscriberTemplate.subscribe(subscription, messageReceiver);
+	}
+
+	@Override
+	public Subscriber subscribe(String subscription, Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer) {
+		return this.pubSubSubscriberTemplate.subscribe(subscription, messageConsumer);
 	}
 
 	@Override
