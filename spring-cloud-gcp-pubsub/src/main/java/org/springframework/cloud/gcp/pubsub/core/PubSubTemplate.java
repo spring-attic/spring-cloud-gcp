@@ -88,10 +88,9 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		return this.messageConverter;
 	}
 
-	public PubSubTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
+	public void setMessageConverter(PubSubMessageConverter messageConverter) {
 		Assert.notNull(messageConverter, "A valid Pub/Sub message converter is required.");
 		this.messageConverter = messageConverter;
-		return this;
 	}
 
 	/**
