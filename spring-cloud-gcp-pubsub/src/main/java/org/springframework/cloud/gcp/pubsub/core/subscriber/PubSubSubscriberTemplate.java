@@ -86,7 +86,6 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		this.pubSubMessageConverter = pubSubMessageConverter;
 	}
 
-
 	@Override
 	@Deprecated
 	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
@@ -241,6 +240,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		this.subscriberStub.modifyAckDeadlineCallable().call(modifyAckDeadlineRequest);
 	}
+
 
 	private static abstract class AbstractBasicAcknowledgeablePubsubMessage
 			implements BasicAcknowledgeablePubsubMessage {
