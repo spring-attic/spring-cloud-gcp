@@ -73,7 +73,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	@Deprecated
 	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
-		Assert.notNull(subscriberFactory, "The messageReceiver can't be null.");
+		Assert.notNull(messageReceiver, "The messageReceiver can't be null.");
 
 		Subscriber subscriber =
 				this.subscriberFactory.createSubscriber(subscription, messageReceiver);
@@ -84,7 +84,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	public Subscriber subscribe(String subscription,
 			Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer) {
-		Assert.notNull(subscriberFactory, "The messageConsumer can't be null.");
+		Assert.notNull(messageConsumer, "The messageConsumer can't be null.");
 
 		Subscriber subscriber =
 				this.subscriberFactory.createSubscriber(subscription,
@@ -289,7 +289,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 			this.ackReplyConsumer.nack();
 		}
 
-		@Override public String toString() {
+		@Override
+		public String toString() {
 			return "PushedAcknowledgeablePubsubMessage{" +
 					"message=" + getPubsubMessage() +
 					", subscriptionName='" + getSubscriptionName() + '\'' +
