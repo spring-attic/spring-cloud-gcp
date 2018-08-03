@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dmitry Solomakha
+ * @author Doug Hoard
  *
  * @since  1.1
  */

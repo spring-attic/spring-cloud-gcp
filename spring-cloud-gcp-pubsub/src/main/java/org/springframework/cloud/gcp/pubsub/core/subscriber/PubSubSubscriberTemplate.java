@@ -104,7 +104,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		Assert.hasText(subscription, "The subscription can't be null or empty.");
 
 		if (maxMessages != null) {
-			Assert.isTrue(maxMessages > 0, "The maxMessages must not be greater than 0.");
+			Assert.isTrue(maxMessages > 0, "The maxMessages must be greater than 0.");
 		}
 
 		return pull(this.subscriberFactory.createPullRequest(subscription, maxMessages,
@@ -117,7 +117,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		Assert.hasText(subscription, "The subscription can't be null or empty.");
 
 		if (maxMessages != null) {
-			Assert.isTrue(maxMessages > 0, "The maxMessages must not be greater than 0.");
+			Assert.isTrue(maxMessages > 0, "The maxMessages must be greater than 0.");
 		}
 
 		PullRequest pullRequest = this.subscriberFactory.createPullRequest(
@@ -133,8 +133,6 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	@Override
 	public PubsubMessage pullNext(String subscription) {
-		Assert.hasText(subscription, "The subscription can't be null or empty.");
-
 		List<PubsubMessage> receivedMessageList = pullAndAck(subscription, 1, true);
 
 		return receivedMessageList.size() > 0 ?	receivedMessageList.get(0) : null;
