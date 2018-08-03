@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.datastore.core.repository.support;
+package org.springframework.cloud.gcp.data.datastore.repository.support;
 
 import java.util.List;
 
@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
-import org.springframework.cloud.gcp.data.datastore.repository.support.SimpleDatastoreRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 

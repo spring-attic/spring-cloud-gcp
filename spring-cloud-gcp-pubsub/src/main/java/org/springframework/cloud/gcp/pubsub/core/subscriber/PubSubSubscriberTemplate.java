@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.pubsub.core.subscriber;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -86,12 +87,9 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		PullResponse pullResponse =	this.subscriberStub.pullCallable().call(pullRequest);
 		List<AcknowledgeablePubsubMessage> receivedMessages =
 				pullResponse.getReceivedMessagesList().stream()
-						.map(message -> {
-							return new AcknowledgeablePubsubMessage(message.getMessage(),
+						.map(message -> new PulledAcknowledgeablePubsubMessage(message.getMessage(),
 									message.getAckId(),
-									pullRequest.getSubscription(),
-									this.subscriberStub);
-						})
+									pullRequest.getSubscription()))
 						.collect(Collectors.toList());
 
 		return receivedMessages;
@@ -114,7 +112,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		ack(ackableMessages);
 
-		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getMessage)
+		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getPubsubMessage)
 				.collect(Collectors.toList());
 	}
 
@@ -143,8 +141,18 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::nack);
 	}
 
+	@Override
+	public void modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
+			int ackDeadlineSeconds) {
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
+		Assert.isTrue(ackDeadlineSeconds >= 0, "The ackDeadlineSeconds must not be negative.");
+
+		groupAcknowledgeableMessages(acknowledgeablePubsubMessages)
+				.forEach((sub, ackIds) -> modifyAckDeadline(sub, ackIds, ackDeadlineSeconds));
+	}
+
 	/**
-	 * Groups messages by subscription.
+	 * Groups {@link AcknowledgeablePubsubMessage} messages by subscription.
 	 * @return a map from subscription to list of ack IDs.
 	 */
 	private Map<String, List<String>> groupAcknowledgeableMessages(
@@ -164,12 +172,72 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	private void nack(String subscriptionName, Collection<String> ackIds) {
+		modifyAckDeadline(subscriptionName, ackIds, 0);
+	}
+
+	private void modifyAckDeadline(String subscriptionName, Collection<String> ackIds, int ackDeadlineSeconds) {
 		ModifyAckDeadlineRequest modifyAckDeadlineRequest = ModifyAckDeadlineRequest.newBuilder()
-				.setAckDeadlineSeconds(0)
+				.setAckDeadlineSeconds(ackDeadlineSeconds)
 				.addAllAckIds(ackIds)
 				.setSubscription(subscriptionName)
 				.build();
 
 		this.subscriberStub.modifyAckDeadlineCallable().call(modifyAckDeadlineRequest);
+	}
+
+
+	private class PulledAcknowledgeablePubsubMessage implements AcknowledgeablePubsubMessage {
+
+		private final PubsubMessage message;
+
+		private final String ackId;
+
+		private final String subscriptionName;
+
+		PulledAcknowledgeablePubsubMessage(PubsubMessage message, String ackId,
+				String subscriptionName) {
+			this.message = message;
+			this.ackId = ackId;
+			this.subscriptionName = subscriptionName;
+		}
+
+		@Override
+		public PubsubMessage getPubsubMessage() {
+			return this.message;
+		}
+
+		@Override
+		public String getAckId() {
+			return this.ackId;
+		}
+
+		@Override
+		public String getSubscriptionName() {
+			return this.subscriptionName;
+		}
+
+		@Override
+		public void ack() {
+			PubSubSubscriberTemplate.this.ack(Collections.singleton(this));
+		}
+
+		@Override
+		public void nack() {
+			modifyAckDeadline(0);
+		}
+
+		@Override
+		public void modifyAckDeadline(int ackDeadlineSeconds) {
+			PubSubSubscriberTemplate.this.modifyAckDeadline(Collections.singleton(this), ackDeadlineSeconds);
+		}
+
+		@Override
+		public String toString() {
+			return "PulledAcknowledgeablePubsubMessage{" +
+					"message=" + this.message +
+					", ackId='" + this.ackId + '\'' +
+					", subscriptionName='" + this.subscriptionName + '\'' +
+					'}';
+		}
 	}
 }

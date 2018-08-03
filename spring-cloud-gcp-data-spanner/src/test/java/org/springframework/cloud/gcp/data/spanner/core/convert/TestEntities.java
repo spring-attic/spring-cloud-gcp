@@ -26,6 +26,7 @@ import com.google.cloud.spanner.Struct;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
@@ -83,6 +84,24 @@ public class TestEntities {
 		Timestamp timestampField;
 
 		ByteArray bytes;
+
+		@Interleaved
+		List<ChildTestEntity> childTestEntities;
+	}
+
+	static class ChildTestEntity {
+		@PrimaryKey
+		String id;
+
+		@PrimaryKey(keyOrder = 3)
+		String id4;
+
+		@PrimaryKey(keyOrder = 2)
+		@Embedded
+		TestEmbeddedColumns testEmbeddedColumns;
+
+		@PrimaryKey(keyOrder = 4)
+		String id5;
 	}
 
 	static class TestEmbeddedColumns {

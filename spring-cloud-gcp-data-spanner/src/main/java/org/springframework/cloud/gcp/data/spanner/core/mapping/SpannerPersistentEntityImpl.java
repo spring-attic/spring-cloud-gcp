@@ -193,7 +193,14 @@ public class SpannerPersistentEntityImpl<T>
 	public void verify() {
 		super.verify();
 		verifyPrimaryKeysConsecutive();
+		verifyOneToManyPropertiesAreCollections();
 		verifyEmbeddedColumnNameOverlap(new HashSet<>(), this);
+	}
+
+	private void verifyOneToManyPropertiesAreCollections() {
+		// getting the inner type will throw an exception if the property isn't a
+		// collection.
+		doWithInterleavedProperties(SpannerPersistentProperty::getColumnInnerType);
 	}
 
 	private void verifyEmbeddedColumnNameOverlap(Set<String> seen,
