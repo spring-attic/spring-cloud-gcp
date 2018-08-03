@@ -320,13 +320,15 @@ Note that embedded properties' column names must all be unique.
 
 ==== Relationships
 
-Spring Data Cloud Spanner supports one-to-many relationships using the Cloud Spanner https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables[parent-child interleaved
+Spring Data Cloud Spanner supports parent-child relationships using the Cloud Spanner https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables[parent-child interleaved
 table mechanism]. Cloud Spanner interleaved tables enforce the one-to-many relationship and provide efficient queries and operations
 on entities of a single domain parent entity. These relationships can be up to 7 levels deep. Cloud Spanner also provides
 automatic cascading delete or enforces the deletion of child entities before parents.
 
 While one-to-one and many-to-many relationships can be implemented in Cloud Spanner and Spring Data Cloud Spanner using constructs of
-interleaved parent-child tables, only the one-to-many relationship is natively supported.
+interleaved parent-child tables, only the parent-child relationship is natively supported. Cloud Spanner does not
+support the foreign key constraint, though the parent-child key constraint enforces a similar requirement when used
+with interleaved tables.
 
 For example, the following Java entities:
 
@@ -343,7 +345,7 @@ class Singer {
 
   byte[] SingerInfo;
 
-  @OneToMany
+  @Interleaved
   List<Album> albums;
 }
 
@@ -359,7 +361,7 @@ class Album {
 }
 ----
 
-These classes can correspond to an existing pair of interleaved tables. The `@OneToMany` annotation may be applied to
+These classes can correspond to an existing pair of interleaved tables. The `@Interleaved` annotation may be applied to
 `Collection` properties and the inner type is resolved as the child entity type. The schema needed to create them can
 also be generated using the `SpannerSchemaUtils` and executed using the `SpannerDatabaseAdminTemplate`:
 
@@ -374,7 +376,7 @@ SpannerDatabaseAdminTemplate databaseAdmin;
 ...
 
 // Get the create statmenets for all tables in the table structure rooted at Singer
-List<String> createStrings = this.schemaUtils.getCreateTableDdlStringsForHierarchy(Singer.class);
+List<String> createStrings = this.schemaUtils.getCreateTableDdlStringsForInterleavedHierarchy(Singer.class);
 
 // Create the tables and also create the database if necessary
 this.databaseAdmin.executeDdlStrings(createStrings, true);
