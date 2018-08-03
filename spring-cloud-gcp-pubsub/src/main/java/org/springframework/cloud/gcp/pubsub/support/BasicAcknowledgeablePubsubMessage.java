@@ -24,6 +24,8 @@ import com.google.pubsub.v1.PubsubMessage;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ *
+ * @since 1.1
  */
 public interface BasicAcknowledgeablePubsubMessage extends AckReplyConsumer {
 
@@ -32,5 +34,11 @@ public interface BasicAcknowledgeablePubsubMessage extends AckReplyConsumer {
 	 * @return the wrapped Pub/Sub message
 	 */
 	PubsubMessage getPubsubMessage();
+
+	/**
+	 * Accessor for the subscription source of the Pub/Sub message.
+	 * @return the name of the subscription
+	 */
+	String getSubscriptionName();
 
 }

@@ -220,7 +220,7 @@ public class SpannerPersistentEntityImplTests {
 			assertTrue(colName.equals("childrenA") || colName.equals("childrenB"));
 			return null;
 		}).when(mockHandler).doWithPersistentProperty(any());
-		spannerPersistentEntity.doWithChildCollectionProperties(mockHandler);
+		spannerPersistentEntity.doWithInterleavedProperties(mockHandler);
 	}
 
 	private static class ParentInRelationship {

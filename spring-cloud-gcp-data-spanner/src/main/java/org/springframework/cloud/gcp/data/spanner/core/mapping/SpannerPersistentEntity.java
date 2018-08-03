@@ -69,6 +69,16 @@ public interface SpannerPersistentEntity<T> extends
 	 *
 	 * @param handler must not be {@literal null}.
 	 */
-	void doWithChildCollectionProperties(
+	void doWithInterleavedProperties(
+			PropertyHandler<SpannerPersistentProperty> handler);
+
+	/**
+	 * Applies the given {@link PropertyHandler} to all {@link SpannerPersistentProperty}s
+	 * contained in this {@link SpannerPersistentProperty} that are stored as columns in the table
+	 * for this entity.
+	 *
+	 * @param handler must not be {@literal null}.
+	 */
+	void doWithColumnBackedProperties(
 			PropertyHandler<SpannerPersistentProperty> handler);
 }

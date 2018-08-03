@@ -66,10 +66,10 @@ public class WebController {
 
 	@GetMapping("/subscribe")
 	public RedirectView subscribe(@RequestParam("subscription") String subscriptionName) {
-		this.pubSubTemplate.subscribe(subscriptionName, (pubsubMessage, ackReplyConsumer) -> {
+		this.pubSubTemplate.subscribe(subscriptionName, (message) -> {
 			LOGGER.info("Message received from " + subscriptionName + " subscription. "
-					+ pubsubMessage.getData().toStringUtf8());
-			ackReplyConsumer.ack();
+					+ message.getPubsubMessage().getData().toStringUtf8());
+			message.ack();
 		});
 
 		return new RedirectView("/");
