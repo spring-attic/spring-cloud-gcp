@@ -92,6 +92,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	@Deprecated
 	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
+		Assert.notNull(messageReceiver, "The messageReceiver can't be null.");
+
 		Subscriber subscriber =
 				this.subscriberFactory.createSubscriber(subscription, messageReceiver);
 		subscriber.startAsync();
@@ -101,6 +103,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	public Subscriber subscribe(String subscription,
 			Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer) {
+		Assert.notNull(messageConsumer, "The messageConsumer can't be null.");
+
 		Subscriber subscriber =
 				this.subscriberFactory.createSubscriber(subscription,
 						(message, ackReplyConsumer) -> messageConsumer.accept(
@@ -240,6 +244,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	private static abstract class AbstractBasicAcknowledgeablePubsubMessage
 			implements BasicAcknowledgeablePubsubMessage {
+
 		private final PubsubMessage message;
 
 		private final String subscriptionName;
@@ -262,6 +267,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	private class PulledAcknowledgeablePubsubMessage extends AbstractBasicAcknowledgeablePubsubMessage
 			implements AcknowledgeablePubsubMessage {
+
 		private final String ackId;
 
 		PulledAcknowledgeablePubsubMessage(PubsubMessage message, String ackId,
@@ -325,7 +331,6 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 			return "PushedAcknowledgeablePubsubMessage{" +
 					"message=" + getPubsubMessage() +
 					", subscriptionName='" + getSubscriptionName() + '\'' +
-					", ackReplyConsumer=" + this.ackReplyConsumer +
 					'}';
 		}
 	}
