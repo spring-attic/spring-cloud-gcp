@@ -28,7 +28,6 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 
 /**
  * An abstraction for Google Cloud Pub/Sub subscription / pulling operations.
