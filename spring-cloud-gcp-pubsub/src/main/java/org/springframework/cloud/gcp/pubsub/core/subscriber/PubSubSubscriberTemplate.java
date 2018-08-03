@@ -116,6 +116,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	public <T> Subscriber subscribeAndConvert(String subscription,
 			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer, Class<T> payloadType) {
+		Assert.notNull(messageConsumer, "The messageConsumer can't be null.");
+
 		return this.subscribe(subscription,
 				(message) -> messageConsumer.accept(new ConvertedPushedAcknowledgeablePubsubMessage<T>(message,
 						this.pubSubMessageConverter.fromPubSubMessage(message.getPubsubMessage(), payloadType))));
