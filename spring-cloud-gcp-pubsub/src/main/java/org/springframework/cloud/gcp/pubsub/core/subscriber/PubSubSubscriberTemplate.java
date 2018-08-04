@@ -17,14 +17,12 @@
 package org.springframework.cloud.gcp.pubsub.core.subscriber;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.api.core.ApiFuture;
-import com.google.api.core.ApiFutureCallback;
-import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
@@ -95,7 +93,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		PullResponse pullResponse = this.subscriberStub.pullCallable().call(pullRequest);
 		List<AcknowledgeablePubsubMessage> receivedMessages =
 				pullResponse.getReceivedMessagesList().stream()
-						.map(message -> new PulledAcknowledgeablePubsubMessage(message.getMessage(),
+						.map(message -> new PulledAcknowledgeablePubsubMessage(
+								message.getMessage(),
 								message.getAckId(),
 								pullRequest.getSubscription()))
 						.collect(Collectors.toList());
@@ -135,36 +134,64 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	@Override
-	public ListenableFuture<String> ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+	public ListenableFuture<Collection<String>> ack(
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
 
-		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::ack);
+		Map<String, List<String>> acknowledgeablePubsubMessagesMap =
+				groupAcknowledgeableMessages(acknowledgeablePubsubMessages);
 
-		// TODO
-		return null;
+		Collection<String> ackIds = new LinkedList<>();
+		for (Map.Entry<String, List<String>> entry : acknowledgeablePubsubMessagesMap.entrySet()) {
+			ack(entry.getKey(), entry.getValue());
+			((LinkedList<String>) ackIds).addAll(entry.getValue());
+		}
+
+		SettableListenableFuture<Collection<String>> settableListenableFuture = new SettableListenableFuture<>();
+		settableListenableFuture.set(ackIds);
+
+		return settableListenableFuture;
 	}
 
 	@Override
-	public ListenableFuture<String> nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+	public ListenableFuture<Collection<String>> nack(
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
 
-		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::nack);
+		Map<String, List<String>> acknowledgeablePubsubMessagesMap =
+				groupAcknowledgeableMessages(acknowledgeablePubsubMessages);
 
-		// TODO
-		return null;
+		Collection<String> ackIds = new LinkedList<>();
+		for (Map.Entry<String, List<String>> entry : acknowledgeablePubsubMessagesMap.entrySet()) {
+			nack(entry.getKey(), entry.getValue());
+			ackIds.addAll(entry.getValue());
+		}
+
+		SettableListenableFuture<Collection<String>> settableListenableFuture = new SettableListenableFuture<>();
+		settableListenableFuture.set(ackIds);
+
+		return settableListenableFuture;
 	}
 
 	@Override
-	public ListenableFuture<String> modifyAckDeadline(
+	public ListenableFuture<Collection<String>> modifyAckDeadline(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages, int ackDeadlineSeconds) {
 		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
 		Assert.isTrue(ackDeadlineSeconds >= 0, "The ackDeadlineSeconds must not be negative.");
 
-		groupAcknowledgeableMessages(acknowledgeablePubsubMessages)
-				.forEach((sub, ackIds) -> modifyAckDeadline(sub, ackIds, ackDeadlineSeconds));
+		Map<String, List<String>> acknowledgeablePubsubMessagesMap =
+				groupAcknowledgeableMessages(acknowledgeablePubsubMessages);
 
-		// TODO
-		return null;
+		Collection<String> ackIds = new LinkedList<>();
+		for (Map.Entry<String, List<String>> entry : acknowledgeablePubsubMessagesMap.entrySet()) {
+			modifyAckDeadline(entry.getKey(), entry.getValue(), ackDeadlineSeconds);
+			ackIds.addAll(entry.getValue());
+		}
+
+		SettableListenableFuture<Collection<String>> settableListenableFuture = new SettableListenableFuture<>();
+		settableListenableFuture.set(ackIds);
+
+		return settableListenableFuture;
 	}
 
 	/**
@@ -179,38 +206,20 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 						Collectors.mapping(AcknowledgeablePubsubMessage::getAckId, Collectors.toList())));
 	}
 
-	private ListenableFuture<String> ack(String subscriptionName, Collection<String> ackIds) {
+	private ApiFuture<Empty> ack(String subscriptionName, Collection<String> ackIds) {
 		AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
 				.addAllAckIds(ackIds)
 				.setSubscription(subscriptionName)
 				.build();
 
-		ApiFuture<Empty> apiFuture = this.subscriberStub.acknowledgeCallable().futureCall(acknowledgeRequest);
-
-		final SettableListenableFuture<String> future = new SettableListenableFuture<>();
-
-		ApiFutures.addCallback(apiFuture,
-				new ApiFutureCallback<Empty>() {
-
-					@Override
-					public void onFailure(Throwable t) {
-						future.setException(t);
-					}
-
-					@Override
-					public void onSuccess(Empty empty) {
-
-					}
-				});
-
-		return future;
+		return this.subscriberStub.acknowledgeCallable().futureCall(acknowledgeRequest);
 	}
 
-	private ListenableFuture<String> nack(String subscriptionName, Collection<String> ackIds) {
+	private ApiFuture<Empty> nack(String subscriptionName, Collection<String> ackIds) {
 		return modifyAckDeadline(subscriptionName, ackIds, 0);
 	}
 
-	private ListenableFuture<String> modifyAckDeadline(
+	private ApiFuture<Empty> modifyAckDeadline(
 			String subscriptionName, Collection<String> ackIds, int ackDeadlineSeconds) {
 		ModifyAckDeadlineRequest modifyAckDeadlineRequest = ModifyAckDeadlineRequest.newBuilder()
 				.setAckDeadlineSeconds(ackDeadlineSeconds)
@@ -218,30 +227,11 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 				.setSubscription(subscriptionName)
 				.build();
 
-		ApiFuture<Empty> apiFuture =
-				this.subscriberStub.modifyAckDeadlineCallable().futureCall(modifyAckDeadlineRequest);
-
-		final SettableListenableFuture<String> future = new SettableListenableFuture<>();
-
-		ApiFutures.addCallback(apiFuture,
-				new ApiFutureCallback<Empty>() {
-
-					@Override
-					public void onFailure(Throwable t) {
-						future.setException(t);
-					}
-
-					@Override
-					public void onSuccess(Empty empty) {
-
-					}
-				});
-
-		return future;
+		return this.subscriberStub.modifyAckDeadlineCallable().futureCall(modifyAckDeadlineRequest);
 	}
 
 
-	private class PulledAcknowledgeablePubsubMessage implements AcknowledgeablePubsubMessage {
+	class PulledAcknowledgeablePubsubMessage implements AcknowledgeablePubsubMessage {
 
 		private final PubsubMessage message;
 
@@ -272,7 +262,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		@Override
 		public ListenableFuture<String> ack() {
-			return PubSubSubscriberTemplate.this.ack(Collections.singleton(this));
+			//return PubSubSubscriberTemplate.this.ack(Collections.singleton(this));
+			return null;
 		}
 
 		@Override
@@ -282,8 +273,9 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		@Override
 		public ListenableFuture<String> modifyAckDeadline(int ackDeadlineSeconds) {
-			return PubSubSubscriberTemplate.this.modifyAckDeadline(
-					Collections.singleton(this), ackDeadlineSeconds);
+			//return PubSubSubscriberTemplate.this.modifyAckDeadline(
+			//		Collections.singleton(this), ackDeadlineSeconds);
+			return null;
 		}
 
 		@Override

@@ -25,7 +25,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  *
  * @author João André Martins
  * @author Mike Eltsufin
- * @authro Doug Hoard
+ * @author Doug Hoard
  */
 public interface AcknowledgeablePubsubMessage extends BasicAcknowledgeablePubsubMessage {
 

@@ -81,7 +81,7 @@ public interface PubSubSubscriberOperations {
 	 * @param acknowledgeablePubsubMessages messages to be acknowledged
 	 * @return ListenableFuture&lt;String&gt;
 	 */
-	ListenableFuture<String> ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	ListenableFuture<Collection<String>> ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
 	 * Negatively acknowledge a batch of messages. The method will group the messages by subscription name
@@ -89,7 +89,7 @@ public interface PubSubSubscriberOperations {
 	 * @param acknowledgeablePubsubMessages messages to be negatively acknowledged
 	 * @return ListenableFuture&lt;String&gt;
 	 */
-	ListenableFuture<String> nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	ListenableFuture<Collection<String>> nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
 	 * Modify the ack deadline of a batch of messages. The method will group the messages by subscription name
@@ -98,6 +98,7 @@ public interface PubSubSubscriberOperations {
 	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the messages.
 	 * @return ListenableFuture&lt;String&gt;
 	 */
-	ListenableFuture<String> modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
+	ListenableFuture<Collection<String>> modifyAckDeadline(
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
 			int ackDeadlineSeconds);
 }

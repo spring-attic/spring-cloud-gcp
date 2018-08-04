@@ -158,17 +158,19 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public ListenableFuture<String> ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+	public ListenableFuture<Collection<String>> ack(
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		return this.pubSubSubscriberTemplate.ack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
-	public ListenableFuture<String> nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+	public ListenableFuture<Collection<String>> nack(
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		return this.pubSubSubscriberTemplate.nack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
-	public ListenableFuture<String> modifyAckDeadline(
+	public ListenableFuture<Collection<String>> modifyAckDeadline(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages, int ackDeadlineSeconds) {
 		return this.pubSubSubscriberTemplate.modifyAckDeadline(acknowledgeablePubsubMessages, ackDeadlineSeconds);
 	}
