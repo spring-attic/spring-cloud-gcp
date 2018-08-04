@@ -20,9 +20,11 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
@@ -34,6 +36,7 @@ import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -73,9 +76,25 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	@Override
+	@Deprecated
 	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
+		Assert.notNull(messageReceiver, "The messageReceiver can't be null.");
+
 		Subscriber subscriber =
 				this.subscriberFactory.createSubscriber(subscription, messageReceiver);
+		subscriber.startAsync();
+		return subscriber;
+	}
+
+	@Override
+	public Subscriber subscribe(String subscription,
+			Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer) {
+		Assert.notNull(messageConsumer, "The messageConsumer can't be null.");
+
+		Subscriber subscriber =
+				this.subscriberFactory.createSubscriber(subscription,
+						(message, ackReplyConsumer) -> messageConsumer.accept(
+								new PushedAcknowledgeablePubsubMessage(message, ackReplyConsumer, subscription)));
 		subscriber.startAsync();
 		return subscriber;
 	}
@@ -231,17 +250,15 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 
-	class PulledAcknowledgeablePubsubMessage implements AcknowledgeablePubsubMessage {
+	private static abstract class AbstractBasicAcknowledgeablePubsubMessage
+			implements BasicAcknowledgeablePubsubMessage {
 
 		private final PubsubMessage message;
 
-		private final String ackId;
-
 		private final String subscriptionName;
 
-		PulledAcknowledgeablePubsubMessage(PubsubMessage message, String ackId, String subscriptionName) {
+		AbstractBasicAcknowledgeablePubsubMessage(PubsubMessage message, String subscriptionName) {
 			this.message = message;
-			this.ackId = ackId;
 			this.subscriptionName = subscriptionName;
 		}
 
@@ -251,13 +268,25 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		}
 
 		@Override
-		public String getAckId() {
-			return this.ackId;
+		public String getSubscriptionName() {
+			return this.subscriptionName;
+		}
+	}
+
+	private class PulledAcknowledgeablePubsubMessage extends AbstractBasicAcknowledgeablePubsubMessage
+			implements AcknowledgeablePubsubMessage {
+
+		private final String ackId;
+
+		PulledAcknowledgeablePubsubMessage(PubsubMessage message, String ackId,
+				String subscriptionName) {
+			super(message, subscriptionName);
+			this.ackId = ackId;
 		}
 
 		@Override
-		public String getSubscriptionName() {
-			return this.subscriptionName;
+		public String getAckId() {
+			return this.ackId;
 		}
 
 		@Override
@@ -281,9 +310,38 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		@Override
 		public String toString() {
 			return "PulledAcknowledgeablePubsubMessage{" +
-					"message=" + this.message +
+					"message=" + getPubsubMessage() +
+					", subscriptionName='" + getSubscriptionName() + '\'' +
 					", ackId='" + this.ackId + '\'' +
-					", subscriptionName='" + this.subscriptionName + '\'' +
+					'}';
+		}
+	}
+
+	private static class PushedAcknowledgeablePubsubMessage extends AbstractBasicAcknowledgeablePubsubMessage {
+
+		private final AckReplyConsumer ackReplyConsumer;
+
+		PushedAcknowledgeablePubsubMessage(PubsubMessage message, AckReplyConsumer ackReplyConsumer,
+				String subscriptionName) {
+			super(message, subscriptionName);
+			this.ackReplyConsumer = ackReplyConsumer;
+		}
+
+		@Override
+		public void ack() {
+			this.ackReplyConsumer.ack();
+		}
+
+		@Override
+		public void nack() {
+			this.ackReplyConsumer.nack();
+		}
+
+		@Override
+		public String toString() {
+			return "PushedAcknowledgeablePubsubMessage{" +
+					"message=" + getPubsubMessage() +
+					", subscriptionName='" + getSubscriptionName() + '\'' +
 					'}';
 		}
 	}

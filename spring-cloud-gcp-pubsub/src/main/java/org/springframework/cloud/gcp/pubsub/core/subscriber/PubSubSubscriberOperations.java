@@ -18,12 +18,14 @@ package org.springframework.cloud.gcp.pubsub.core.subscriber;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.util.concurrent.ListenableFuture;
 
 /**
@@ -40,13 +42,20 @@ import org.springframework.util.concurrent.ListenableFuture;
 public interface PubSubSubscriberOperations {
 
 	/**
+	 * @deprecated as of 1.1, use {@link #subscribe(String, Consumer)} instead.
+	 */
+	@Deprecated
+	Subscriber subscribe(String subscription, MessageReceiver messageReceiver);
+
+	/**
 	 * Add a callback method to an existing subscription.
 	 * <p>The created {@link Subscriber} is returned so it can be stopped.
 	 * @param subscription the name of an existing subscription
-	 * @param messageReceiver the callback method triggered when new messages arrive
+	 * @param messageConsumer the callback method triggered when new messages arrive
 	 * @return subscriber listening to new messages
+	 * @since 1.1
 	 */
-	Subscriber subscribe(String subscription, MessageReceiver messageReceiver);
+	Subscriber subscribe(String subscription, Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer);
 
 	/**
 	 * Pull and auto-acknowledge a number of messages from a Google Cloud Pub/Sub subscription.
@@ -96,7 +105,8 @@ public interface PubSubSubscriberOperations {
 	 * and modify their ack deadline in batches.
 	 * @param acknowledgeablePubsubMessages messages to be modified
 	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the messages.
-	 * @return ListenableFuture&lt;String&gt;
+	 * @return ListenableFuture&lt;Collection&lt;String&gt;&gt;
+	 * @since 1.1
 	 */
 	ListenableFuture<Collection<String>> modifyAckDeadline(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,

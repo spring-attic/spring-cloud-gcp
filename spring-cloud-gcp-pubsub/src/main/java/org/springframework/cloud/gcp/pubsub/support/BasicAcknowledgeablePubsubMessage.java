@@ -25,8 +25,16 @@ import org.springframework.util.concurrent.ListenableFuture;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ *
+ * @since 1.1
  */
 public interface BasicAcknowledgeablePubsubMessage {
+
+	/*
+	 * Accessor for the subscription source of the Pub/Sub message.
+	 * @return the name of the subscription
+	 */
+	String getSubscriptionName();
 
 	/**
 	 * Accessor for the wrapped {@link PubsubMessage}.
@@ -45,4 +53,5 @@ public interface BasicAcknowledgeablePubsubMessage {
 	 * @return ListenableFuture&lt;String&gt;
 	 */
 	ListenableFuture<String> nack();
+
 }
