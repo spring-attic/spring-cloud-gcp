@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.pubsub.core.subscriber;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -175,21 +176,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	public ListenableFuture<Collection<String>> nack(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
-		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
-
-		Map<String, List<String>> acknowledgeablePubsubMessagesMap =
-				groupAcknowledgeableMessages(acknowledgeablePubsubMessages);
-
-		Collection<String> ackIds = new LinkedList<>();
-		for (Map.Entry<String, List<String>> entry : acknowledgeablePubsubMessagesMap.entrySet()) {
-			nack(entry.getKey(), entry.getValue());
-			ackIds.addAll(entry.getValue());
-		}
-
-		SettableListenableFuture<Collection<String>> settableListenableFuture = new SettableListenableFuture<>();
-		settableListenableFuture.set(ackIds);
-
-		return settableListenableFuture;
+		return modifyAckDeadline(acknowledgeablePubsubMessages, 0);
 	}
 
 	@Override
@@ -201,14 +188,14 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		Map<String, List<String>> acknowledgeablePubsubMessagesMap =
 				groupAcknowledgeableMessages(acknowledgeablePubsubMessages);
 
-		Collection<String> ackIds = new LinkedList<>();
+		Collection<String> subscriptionNames = new LinkedList<>();
 		for (Map.Entry<String, List<String>> entry : acknowledgeablePubsubMessagesMap.entrySet()) {
 			modifyAckDeadline(entry.getKey(), entry.getValue(), ackDeadlineSeconds);
-			ackIds.addAll(entry.getValue());
+			subscriptionNames.add(entry.getKey());
 		}
 
 		SettableListenableFuture<Collection<String>> settableListenableFuture = new SettableListenableFuture<>();
-		settableListenableFuture.set(ackIds);
+		settableListenableFuture.set(subscriptionNames);
 
 		return settableListenableFuture;
 	}
@@ -291,8 +278,13 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		@Override
 		public ListenableFuture<String> ack() {
-			//return PubSubSubscriberTemplate.this.ack(Collections.singleton(this));
-			return null;
+			ListenableFuture<Collection<String>> listenableFuture =
+					PubSubSubscriberTemplate.this.ack(Collections.singleton(this));
+
+			SettableListenableFuture<String> settableListenableFuture = new SettableListenableFuture<>();
+			settableListenableFuture.set(getSubscriptionName());
+
+			return settableListenableFuture;
 		}
 
 		@Override
@@ -302,9 +294,13 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		@Override
 		public ListenableFuture<String> modifyAckDeadline(int ackDeadlineSeconds) {
-			//return PubSubSubscriberTemplate.this.modifyAckDeadline(
-			//		Collections.singleton(this), ackDeadlineSeconds);
-			return null;
+			ListenableFuture<Collection<String>> listenableFuture =
+					PubSubSubscriberTemplate.this.modifyAckDeadline(Collections.singleton(this), ackDeadlineSeconds);
+
+			SettableListenableFuture<String> settableListenableFuture = new SettableListenableFuture<>();
+			settableListenableFuture.set(getSubscriptionName());
+
+			return settableListenableFuture;
 		}
 
 		@Override
@@ -328,13 +324,23 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		}
 
 		@Override
-		public void ack() {
+		public ListenableFuture<String> ack() {
 			this.ackReplyConsumer.ack();
+
+			SettableListenableFuture<String> settableListenableFuture = new SettableListenableFuture<>();
+			settableListenableFuture.set(getSubscriptionName());
+
+			return settableListenableFuture;
 		}
 
 		@Override
-		public void nack() {
+		public ListenableFuture<String> nack() {
 			this.ackReplyConsumer.nack();
+
+			SettableListenableFuture<String> settableListenableFuture = new SettableListenableFuture<>();
+			settableListenableFuture.set(getSubscriptionName());
+
+			return settableListenableFuture;
 		}
 
 		@Override
