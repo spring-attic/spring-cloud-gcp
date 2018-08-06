@@ -43,6 +43,8 @@ class TestDatastoreItem {
 
 	private Blob blobField;
 
+	private int intField;
+
 	public String getStringField() {
 		return this.stringField;
 	}
@@ -105,5 +107,13 @@ class TestDatastoreItem {
 
 	public void setDurationField(Duration durationField) {
 		this.durationField = durationField;
+	}
+
+	public int getIntField() {
+		return this.intField;
+	}
+
+	public void setIntField(int intField) {
+		this.intField = intField;
 	}
 }

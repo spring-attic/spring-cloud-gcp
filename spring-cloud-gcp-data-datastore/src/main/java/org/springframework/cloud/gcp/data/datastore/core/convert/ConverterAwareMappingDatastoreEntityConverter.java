@@ -16,8 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 
 import com.google.cloud.Timestamp;
@@ -36,16 +36,21 @@ import com.google.cloud.datastore.NullValue;
 import com.google.cloud.datastore.StringValue;
 import com.google.cloud.datastore.TimestampValue;
 import com.google.cloud.datastore.Value;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
+import org.springframework.data.convert.JodaTimeConverters;
+import org.springframework.data.convert.Jsr310Converters;
+import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.ParameterValueProvider;
@@ -53,49 +58,65 @@ import org.springframework.data.mapping.model.PersistentEntityParameterValueProv
 import org.springframework.lang.Nullable;
 
 /**
- * Class for object to entity and entity to object conversions
+ * A class for object to entity and entity to object conversions
  *
  * @author Dmitry Solomakha
  *
  * @since 1.1
  */
-public class DatastoreEntityConverterImpl implements DatastoreEntityConverter {
+public class ConverterAwareMappingDatastoreEntityConverter implements DatastoreEntityConverter {
 	private DatastoreMappingContext mappingContext;
 
 	private final EntityInstantiators instantiators = new EntityInstantiators();
 
-	private final DatastoreCustomConversions conversions = new DatastoreCustomConversions();
-
 	private final GenericConversionService conversionService = new DefaultConversionService();
 
-	private static Map<Class<?>, Function<?, Value<?>>> valFactories;
+	private final DatastoreSimpleTypes conversions = new DatastoreSimpleTypes(this.conversionService);
+
+	private static final Map<Class<?>, Function<?, Value<?>>> VAL_FACTORIES;
 
 	static {
-		ImmutableMap.Builder<Class<?>, Function<?, Value<?>>> builder = new ImmutableMap.Builder<>();
-
-		builder.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of);
-		builder.put(Boolean.class, (Function<Boolean, Value<?>>) BooleanValue::of);
-		builder.put(Double.class, (Function<Double, Value<?>>) DoubleValue::of);
-		builder.put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of);
-		builder.put(Key.class, (Function<Key, Value<?>>) KeyValue::of);
-		builder.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of);
-		builder.put(Long.class, (Function<Long, Value<?>>) LongValue::of);
-		builder.put(String.class, (Function<String, Value<?>>) StringValue::of);
-		builder.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of);
-
-		valFactories = builder.build();
+		VAL_FACTORIES = ImmutableMap.<Class<?>, Function<?, Value<?>>>builder()
+				.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of)
+				.put(Boolean.class, (Function<Boolean, Value<?>>) BooleanValue::of)
+				.put(Double.class, (Function<Double, Value<?>>) DoubleValue::of)
+				.put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of)
+				.put(Key.class, (Function<Key, Value<?>>) KeyValue::of)
+				.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of)
+				.put(Long.class, (Function<Long, Value<?>>) LongValue::of)
+				.put(String.class, (Function<String, Value<?>>) StringValue::of)
+				.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of)
+				.build();
 	}
 
-	DatastoreEntityConverterImpl(DatastoreMappingContext mappingContext) {
+	private static List<Converter> DEFAULT_CONVERTERS;
+
+	static {
+		DEFAULT_CONVERTERS = ImmutableList.<Converter>builder()
+				.addAll(JodaTimeConverters.getConvertersToRegister())
+				.addAll(Jsr310Converters.getConvertersToRegister())
+				.addAll(ThreeTenBackPortConverters.getConvertersToRegister())
+				.build();
+	}
+
+	public ConverterAwareMappingDatastoreEntityConverter(DatastoreMappingContext mappingContext) {
+		this(mappingContext, null);
+	}
+
+	public ConverterAwareMappingDatastoreEntityConverter(DatastoreMappingContext mappingContext,
+			List<Converter> customConverters) {
 		this.mappingContext = mappingContext;
-		this.conversions.registerConvertersIn(this.conversionService);
+		if (customConverters != null) {
+			customConverters.forEach(this.conversionService::addConverter);
+		}
+		DEFAULT_CONVERTERS.forEach(this.conversionService::addConverter);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public <R> R read(Class<R> aClass, Entity entity) {
-		DatastorePersistentEntity<R> persistentEntity = (DatastorePersistentEntity<R>) this.mappingContext
-				.getPersistentEntity(aClass);
+		DatastorePersistentEntity<R> persistentEntity =
+				(DatastorePersistentEntity<R>) this.mappingContext.getPersistentEntity(aClass);
 
 		EntityPropertyValueProvider propertyValueProvider =
 				new EntityPropertyValueProvider(entity, this.conversionService);
@@ -118,13 +139,11 @@ public class DatastoreEntityConverterImpl implements DatastoreEntityConverter {
 
 	@Override
 	public void write(Object source, Entity.Builder sink) {
-		DatastorePersistentEntity<?> persistentEntity = this.mappingContext
-				.getPersistentEntity(source.getClass());
-		PersistentPropertyAccessor accessor = persistentEntity
-				.getPropertyAccessor(source);
+		DatastorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(source.getClass());
+		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(source);
 		persistentEntity.doWithProperties(
-				(DatastorePersistentProperty datastorePersistentProperty) -> writeProperty(sink, accessor,
-						datastorePersistentProperty));
+				(DatastorePersistentProperty datastorePersistentProperty) ->
+						writeProperty(sink, accessor, datastorePersistentProperty));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -135,12 +154,12 @@ public class DatastoreEntityConverterImpl implements DatastoreEntityConverter {
 			sink.set(persistentProperty.getFieldName(), new NullValue());
 			return;
 		}
-		Function valueFactory = valFactories.get(propertyVal.getClass());
+		Function valueFactory = VAL_FACTORIES.get(propertyVal.getClass());
 
 		if (valueFactory == null) {
 			throw new DatastoreDataException("Simple type value factory is not found for property" +
 					" with name " + persistentProperty.getFieldName()
-					+ " which is of simple type " + propertyVal.getClass());
+					+ ". The property's simple type is " + propertyVal.getClass());
 		}
 
 		Value val = (Value) valueFactory.apply(propertyVal);
@@ -148,21 +167,17 @@ public class DatastoreEntityConverterImpl implements DatastoreEntityConverter {
 	}
 
 	private Object convertToSimpleType(@Nullable Object obj, DatastorePersistentProperty prop) {
-		if (obj == null || DatastoreSimpleTypes.DATASTORE_SIMPLE_TYPES.contains(obj.getClass())) {
+		if (obj == null || DatastoreSimpleTypes.isSimple(obj.getClass())) {
 			return obj;
 		}
 
-		Optional<Class<?>> basicTargetType = this.conversions.getCustomWriteTarget(obj.getClass());
+		Class<?> basicTargetType = this.conversions.getWriteTarget(obj.getClass());
 
-		if (basicTargetType.isPresent()) {
-			Class<?> aClass = basicTargetType.get();
-			if (DatastoreSimpleTypes.DATASTORE_SIMPLE_TYPES.contains(aClass)) {
-				return this.conversionService.convert(obj, aClass);
-			}
+		if (basicTargetType != null) {
+				return this.conversionService.convert(obj, basicTargetType);
 		}
 
 		throw new DatastoreDataException("The value in column with name " + prop.getFieldName()
 				+ " is of unsupported data type. " + "The property's type is " + obj.getClass());
 	}
-
 }

@@ -16,48 +16,79 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.LatLng;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
-import org.springframework.data.mapping.model.SimpleTypeHolder;
-
+import org.springframework.core.convert.ConversionService;
 
 /**
- * Simple constant holder for a {@link SimpleTypeHolder} enriched with Mongo specific simple types.
+ * A class to manage Datastore-specific simple type conversions.
  *
  * @author Dmitry Solomakha
  */
-public abstract class DatastoreSimpleTypes {
+public class DatastoreSimpleTypes implements StorageAwareConversions {
 
-	public static final Set<Class<?>> ID_TYPES;
+	public static final Set<Class> DATASTORE_SIMPLE_TYPES;
+
+	public static final Set<Class> ID_TYPES;
+
+	public static final List<Class> DATASTORE_SIMPLE_TYPES_RESOLUTION;
 
 	static {
-		Set<Class<?>> classes = new HashSet<Class<?>>();
-		classes.add(String.class);
-		classes.add(Long.class);
-		ID_TYPES = Collections.unmodifiableSet(classes);
+		ID_TYPES = ImmutableSet.<Class>builder()
+				.add(String.class)
+				.add(Long.class)
+				.build();
 
-		Set<Class<?>> simpleTypes = new HashSet<Class<?>>();
-		simpleTypes.add(String.class);
-		simpleTypes.add(Boolean.class);
-		simpleTypes.add(Double.class);
-		simpleTypes.add(Long.class);
-		simpleTypes.add(LatLng.class);
-		simpleTypes.add(Timestamp.class);
-		simpleTypes.add(Blob.class);
+		DATASTORE_SIMPLE_TYPES_RESOLUTION = ImmutableList.<Class>builder()
+				.add(Boolean.class)
+				.add(Long.class)
+				.add(Double.class)
+				.add(LatLng.class)
+				.add(Timestamp.class)
+				.add(String.class)
+				.add(Blob.class)
+				.build();
 
-
-		DATASTORE_SIMPLE_TYPES = Collections.unmodifiableSet(simpleTypes);
+		DATASTORE_SIMPLE_TYPES = ImmutableSet.<Class>builder()
+				.addAll(DATASTORE_SIMPLE_TYPES_RESOLUTION)
+				.build();
 	}
 
-	public static final Set<Class<?>> DATASTORE_SIMPLE_TYPES;
+	final private Map<Class, Class> writeConverters = new HashMap<>();
 
-	public static final SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_SIMPLE_TYPES, true);
+	final private ConversionService conversionService;
 
-	private DatastoreSimpleTypes() { }
+	public DatastoreSimpleTypes(ConversionService conversionService) {
+		this.conversionService = conversionService;
+	}
+
+	public static boolean isSimple(Class aClass) {
+		return DATASTORE_SIMPLE_TYPES.contains(aClass);
+	}
+
+	@Override
+	public Class getWriteTarget(Class<?> sourceType) {
+		return this.writeConverters.computeIfAbsent(sourceType, (Class inputType) -> {
+			Optional<Class> targetType = getSimpleTypeWithBidirectionalConversion(inputType);
+			return targetType.orElse(null);
+		});
+	}
+
+	private Optional<Class> getSimpleTypeWithBidirectionalConversion(Class inputType) {
+		return DatastoreSimpleTypes.DATASTORE_SIMPLE_TYPES_RESOLUTION.stream()
+				.filter(simpleType ->
+						this.conversionService.canConvert(inputType, simpleType)
+						&& this.conversionService.canConvert(simpleType, inputType))
+				.findAny();
+	}
 }

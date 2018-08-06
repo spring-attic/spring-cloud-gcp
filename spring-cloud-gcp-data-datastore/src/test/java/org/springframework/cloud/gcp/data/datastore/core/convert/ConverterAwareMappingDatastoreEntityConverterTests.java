@@ -16,8 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import java.math.BigInteger;
 import java.time.Duration;
+import java.util.Arrays;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
@@ -31,6 +31,7 @@ import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
+import org.springframework.core.convert.converter.Converter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since 1.1
  */
 
-public class DatastoreEntityConverterImplTests {
+public class ConverterAwareMappingDatastoreEntityConverterTests {
 	private static final LocalDatastoreHelper HELPER = LocalDatastoreHelper.create(1.0);
 
 	private Datastore datastore;
@@ -53,7 +54,7 @@ public class DatastoreEntityConverterImplTests {
 	@Test
 	public void readTest() {
 		byte[] bytes = { 1, 2, 3 };
-		Entity entity = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
+		Entity entity = getaEntityBuilder()
 				.set("durationField", "PT24H")
 				.set("stringField", "string value")
 				.set("boolField", true)
@@ -62,8 +63,10 @@ public class DatastoreEntityConverterImplTests {
 				.set("latLngField", LatLng.of(10, 20))
 				.set("timestampField", Timestamp.ofTimeSecondsAndNanos(30, 40))
 				.set("blobField", Blob.copyFrom(bytes))
+				.set("intField", 99)
 				.build();
-		DatastoreEntityConverter entityConverter = new DatastoreEntityConverterImpl(new DatastoreMappingContext());
+		DatastoreEntityConverter entityConverter =
+				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
 		TestDatastoreItem item = entityConverter.read(TestDatastoreItem.class, entity);
 
 		assertThat(item.getDurationField()).as("validate duration field").isEqualTo(Duration.ofDays(1));
@@ -71,7 +74,8 @@ public class DatastoreEntityConverterImplTests {
 		assertThat(item.getBoolField()).as("validate boolean field").isTrue();
 		assertThat(item.getDoubleField()).as("validate double field").isEqualTo(3.1415D);
 		assertThat(item.getLongField()).as("validate long field").isEqualTo(123L);
-		assertThat(item.getLatLngField()).as("validate latLng field").isEqualTo(LatLng.of(10, 20));
+		assertThat(item.getLatLngField()).as("validate latLng field")
+				.isEqualTo(LatLng.of(10, 20));
 		assertThat(item.getTimestampField()).as("validate timestamp field")
 				.isEqualTo(Timestamp.ofTimeSecondsAndNanos(30, 40));
 		assertThat(item.getBlobField()).as("validate blob field").isEqualTo(Blob.copyFrom(bytes));
@@ -80,7 +84,8 @@ public class DatastoreEntityConverterImplTests {
 	@Test
 	public void readNullTest() {
 		byte[] bytes = { 1, 2, 3 };
-		Entity entity = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
+		Entity entity = getaEntityBuilder()
+				.set("durationField", "PT24H")
 				.set("stringField", new NullValue())
 				.set("boolField", true)
 				.set("doubleField", 3.1415D)
@@ -88,8 +93,10 @@ public class DatastoreEntityConverterImplTests {
 				.set("latLngField", LatLng.of(10, 20))
 				.set("timestampField", Timestamp.ofTimeSecondsAndNanos(30, 40))
 				.set("blobField", Blob.copyFrom(bytes))
+				.set("intField", 99)
 				.build();
-		DatastoreEntityConverter entityConverter = new DatastoreEntityConverterImpl(new DatastoreMappingContext());
+		DatastoreEntityConverter entityConverter =
+				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
 		TestDatastoreItem item = entityConverter.read(TestDatastoreItem.class, entity);
 
 		assertThat(item.getStringField()).as("validate null field").isNull();
@@ -97,12 +104,13 @@ public class DatastoreEntityConverterImplTests {
 
 	@Test(expected = DatastoreDataException.class)
 	public void testWrongTypeReadException() {
-				Entity entity = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
+		Entity entity = getaEntityBuilder()
 				.set("stringField", "string value")
 				.set("boolField", 123L)
 				.build();
 
-		DatastoreEntityConverter entityConverter = new DatastoreEntityConverterImpl(new DatastoreMappingContext());
+		DatastoreEntityConverter entityConverter =
+				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
 		entityConverter.read(TestDatastoreItem.class, entity);
 	}
 
@@ -118,22 +126,29 @@ public class DatastoreEntityConverterImplTests {
 		item.setLatLngField(LatLng.of(10, 20));
 		item.setTimestampField(Timestamp.ofTimeSecondsAndNanos(30, 40));
 		item.setBlobField(Blob.copyFrom(bytes));
+		item.setIntField(99);
 
-		DatastoreEntityConverter entityConverter = new DatastoreEntityConverterImpl(new DatastoreMappingContext());
-		Entity.Builder builder = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
+		DatastoreEntityConverter entityConverter =
+				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
+		Entity.Builder builder = getaEntityBuilder();
 		entityConverter.write(item, builder);
 
 		Entity entity = builder.build();
 
-		assertThat(entity.getString("durationField")).as("validate duration field").isEqualTo("PT24H");
-		assertThat(entity.getString("stringField")).as("validate string field").isEqualTo("string value");
+		assertThat(entity.getString("durationField")).as("validate duration field")
+				.isEqualTo("PT24H");
+		assertThat(entity.getString("stringField")).as("validate string field")
+				.isEqualTo("string value");
 		assertThat(entity.getBoolean("boolField")).as("validate boolean field").isTrue();
 		assertThat(entity.getDouble("doubleField")).as("validate double field").isEqualTo(3.1415D);
 		assertThat(entity.getLong("longField")).as("validate long field").isEqualTo(123L);
-		assertThat(entity.getLatLng("latLngField")).as("validate latLng field").isEqualTo(LatLng.of(10, 20));
+		assertThat(entity.getLatLng("latLngField")).as("validate latLng field")
+				.isEqualTo(LatLng.of(10, 20));
 		assertThat(entity.getTimestamp("timestampField")).as("validate timestamp field")
 				.isEqualTo(Timestamp.ofTimeSecondsAndNanos(30, 40));
-		assertThat(entity.getBlob("blobField")).as("validate blob field").isEqualTo(Blob.copyFrom(bytes));
+		assertThat(entity.getBlob("blobField")).as("validate blob field")
+				.isEqualTo(Blob.copyFrom(bytes));
+		assertThat(entity.getLong("intField")).as("validate int field").isEqualTo(99L);
 	}
 
 	@Test
@@ -148,8 +163,9 @@ public class DatastoreEntityConverterImplTests {
 		item.setTimestampField(Timestamp.ofTimeSecondsAndNanos(30, 40));
 		item.setBlobField(Blob.copyFrom(bytes));
 
-		DatastoreEntityConverter entityConverter = new DatastoreEntityConverterImpl(new DatastoreMappingContext());
-		Entity.Builder builder = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
+		DatastoreEntityConverter entityConverter =
+				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
+		Entity.Builder builder = getaEntityBuilder();
 		entityConverter.write(item, builder);
 
 		Entity entity = builder.build();
@@ -162,12 +178,54 @@ public class DatastoreEntityConverterImplTests {
 	public void testUnsupportedTypeWriteException() {
 		TestDatastoreItemUnsupportedFields item = new TestDatastoreItemUnsupportedFields();
 		item.setStringField("string value");
-		item.setUnsupportedField(new BigInteger("123"));
+		item.setUnsupportedField(new TestDatastoreItemUnsupportedFields.UnsupportedType(true));
 
-		DatastoreEntityConverter entityConverter = new DatastoreEntityConverterImpl(new DatastoreMappingContext());
-		Entity.Builder builder = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
+		DatastoreEntityConverter entityConverter =
+				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
+		Entity.Builder builder = getaEntityBuilder();
 		entityConverter.write(item, builder);
 		System.out.println(builder.build());
 	}
-}
 
+	@Test
+	public void testUnsupportedTypeWrite() {
+		TestDatastoreItemUnsupportedFields item = new TestDatastoreItemUnsupportedFields();
+		item.setStringField("string value");
+		item.setUnsupportedField(new TestDatastoreItemUnsupportedFields.UnsupportedType(true));
+
+		DatastoreEntityConverter entityConverter = new ConverterAwareMappingDatastoreEntityConverter(
+				new DatastoreMappingContext(),
+				Arrays.asList(
+						new Converter<String, TestDatastoreItemUnsupportedFields.UnsupportedType>() {
+							@Override
+							public TestDatastoreItemUnsupportedFields.UnsupportedType convert(String source) {
+								return new TestDatastoreItemUnsupportedFields.UnsupportedType(Boolean.valueOf(source));
+							}
+						},
+						new Converter<TestDatastoreItemUnsupportedFields.UnsupportedType, String>() {
+							@Override
+							public String convert(TestDatastoreItemUnsupportedFields.UnsupportedType source) {
+								return String.valueOf(source.isVal());
+							}
+
+						}
+				));
+		Entity.Builder builder = getaEntityBuilder();
+		entityConverter.write(item, builder);
+		Entity entity = builder.build();
+
+		assertThat(entity.getString("unsupportedField")).as("validate custom conversion")
+				.isEqualTo("true");
+		assertThat(entity.getString("stringField")).as("validate string field")
+				.isEqualTo("string value");
+
+		TestDatastoreItemUnsupportedFields readItem =
+				entityConverter.read(TestDatastoreItemUnsupportedFields.class, entity);
+
+		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
+	}
+
+	private Entity.Builder getaEntityBuilder() {
+		return Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
+	}
+}
