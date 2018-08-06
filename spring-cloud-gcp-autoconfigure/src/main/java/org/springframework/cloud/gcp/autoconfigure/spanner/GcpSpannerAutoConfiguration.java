@@ -63,7 +63,7 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 public class GcpSpannerAutoConfiguration {
 
 	static class CoreSpannerAutoConfiguration {
-		
+
 		private final String host;
 
 		private final String projectId;
@@ -117,7 +117,7 @@ public class GcpSpannerAutoConfiguration {
 					.setProjectId(this.projectId)
 					.setHeaderProvider(new UsageTrackingHeaderProvider(this.getClass()))
 					.setCredentials(this.credentials);
-			if(this.host != null) {
+			if (this.host != null) {
 				builder.setHost(this.host);
 			}
 			if (this.numRpcChannels >= 0) {
