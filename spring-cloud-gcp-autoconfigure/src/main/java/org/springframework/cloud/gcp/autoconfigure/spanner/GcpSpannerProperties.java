@@ -33,6 +33,8 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(
 			GcpScope.SPANNER_DATA.getUrl(), GcpScope.SPANNER_ADMIN.getUrl());
+	
+	private String host;
 
 	private String projectId;
 
@@ -63,6 +65,14 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 
 	public Credentials getCredentials() {
 		return this.credentials;
+	}
+	
+	public String getHost() {
+		return this.host;
+	}
+	
+	public void setHost(String host) {
+		this.host = host;
 	}
 
 	public String getProjectId() {
