@@ -16,13 +16,19 @@
 
 package org.springframework.cloud.gcp.autoconfigure.spanner;
 
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.auth.Credentials;
 import com.google.cloud.spanner.SpannerOptions;
 import org.junit.Assert;
 import org.junit.Test;
 
+import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
+import org.springframework.context.annotation.Bean;
+
+import static org.mockito.Mockito.mock;
 
 /**
  * @author Olav Loite
@@ -35,6 +41,7 @@ public class GcpSpannerEmulatorConfigurationTests {
 					"spring.cloud.gcp.spanner.project-id=test-project",
 					"spring.cloud.gcp.spanner.instance-id=test-instance",
 					"spring.cloud.gcp.spanner.database=test-database")
+			.withUserConfiguration(TestConfiguration.class)
 			.withConfiguration(AutoConfigurations.of(GcpSpannerEmulatorConfiguration.class,
 					GcpContextAutoConfiguration.class,
 					GcpSpannerAutoConfiguration.class));
@@ -53,6 +60,7 @@ public class GcpSpannerEmulatorConfigurationTests {
 					"spring.cloud.gcp.spanner.project-id=test-project",
 					"spring.cloud.gcp.spanner.instance-id=test-instance",
 					"spring.cloud.gcp.spanner.database=test-database")
+			.withUserConfiguration(TestConfiguration.class)
 			.withConfiguration(AutoConfigurations.of(GcpSpannerEmulatorConfiguration.class,
 					GcpContextAutoConfiguration.class,
 					GcpSpannerAutoConfiguration.class));
@@ -64,6 +72,15 @@ public class GcpSpannerEmulatorConfigurationTests {
 			Assert.assertEquals("SpannerOptions#host is not correct", DEFAULT_CLOUDSPANNER_HOST,
 					spannerOptions.getHost());
 		});
+	}
+
+	@AutoConfigurationPackage
+	static class TestConfiguration {
+
+		@Bean
+		public CredentialsProvider credentialsProvider() {
+			return () -> mock(Credentials.class);
+		}
 	}
 
 }
