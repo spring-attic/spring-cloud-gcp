@@ -64,8 +64,6 @@ public class GcpSpannerAutoConfiguration {
 
 	static class CoreSpannerAutoConfiguration {
 
-		private final String host;
-
 		private final String projectId;
 
 		private final String instanceId;
@@ -91,7 +89,6 @@ public class GcpSpannerAutoConfiguration {
 		CoreSpannerAutoConfiguration(GcpSpannerProperties gcpSpannerProperties,
 				GcpProjectIdProvider projectIdProvider,
 				CredentialsProvider credentialsProvider) throws IOException {
-			this.host = gcpSpannerProperties.getHost();
 			this.credentials = (gcpSpannerProperties.getCredentials().hasKey()
 					? new DefaultCredentialsProvider(gcpSpannerProperties)
 					: credentialsProvider).getCredentials();
@@ -117,9 +114,6 @@ public class GcpSpannerAutoConfiguration {
 					.setProjectId(this.projectId)
 					.setHeaderProvider(new UsageTrackingHeaderProvider(this.getClass()))
 					.setCredentials(this.credentials);
-			if (this.host != null) {
-				builder.setHost(this.host);
-			}
 			if (this.numRpcChannels >= 0) {
 				builder.setNumChannels(this.numRpcChannels);
 			}

@@ -34,7 +34,7 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 	private final Credentials credentials = new Credentials(
 			GcpScope.SPANNER_DATA.getUrl(), GcpScope.SPANNER_ADMIN.getUrl());
 
-	private String host;
+	private String emulatorHost;
 
 	private String projectId;
 
@@ -67,12 +67,12 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 		return this.credentials;
 	}
 
-	public String getHost() {
-		return this.host;
+	public String getEmulatorHost() {
+		return this.emulatorHost;
 	}
 
-	public void setHost(String host) {
-		this.host = host;
+	public void setEmulatorHost(String emulatorHost) {
+		this.emulatorHost = emulatorHost;
 	}
 
 	public String getProjectId() {
