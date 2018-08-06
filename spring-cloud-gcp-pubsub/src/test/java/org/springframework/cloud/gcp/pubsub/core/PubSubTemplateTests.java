@@ -59,6 +59,7 @@ import static org.mockito.Mockito.when;
  * @author João André Martins
  * @author Chengyuan Zhao
  * @author Doug Hoard
+ * @author Mike Eltsufin
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubTemplateTests {
@@ -83,7 +84,7 @@ public class PubSubTemplateTests {
 
 	private PubSubTemplate createTemplate() {
 		PubSubTemplate pubSubTemplate = new PubSubTemplate(this.mockPublisherFactory, this.mockSubscriberFactory);
-		pubSubTemplate.setMessageConverter(new JacksonPubSubMessageConverter(new ObjectMapper()));
+
 		return pubSubTemplate;
 	}
 
