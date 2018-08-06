@@ -19,6 +19,9 @@ package org.springframework.cloud.gcp.pubsub.support.converter;
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 
 /**
+ * A {@link BasicAcknowledgeablePubsubMessage} that also contains the payload of the
+ * Pub/Sub message converted to the desired type {@code T}.
+ *
  * @author Mike Eltsufin
  *
  * @since 1.1
