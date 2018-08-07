@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -111,14 +112,13 @@ public class ConverterAwareMappingDatastoreEntityConverter implements DatastoreE
 
 	public ConverterAwareMappingDatastoreEntityConverter(DatastoreMappingContext mappingContext,
 			List<Converter> customConverters) {
-		this.customConversions = new DatastoreCustomConversions(
-				customConverters == null ? Collections.emptyList() : customConverters
-		);
 		this.mappingContext = mappingContext;
+		List<Converter> converters = new ArrayList<>(DEFAULT_CONVERTERS);
 		if (customConverters != null) {
-			customConverters.forEach(this.conversionService::addConverter);
+			converters.addAll(customConverters);
 		}
-		DEFAULT_CONVERTERS.forEach(this.conversionService::addConverter);
+		this.customConversions = new DatastoreCustomConversions(converters);
+		this.customConversions.registerConvertersIn(this.conversionService);
 	}
 
 	@Override
