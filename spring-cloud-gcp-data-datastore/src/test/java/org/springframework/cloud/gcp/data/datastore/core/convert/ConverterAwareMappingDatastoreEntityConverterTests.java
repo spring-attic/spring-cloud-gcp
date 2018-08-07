@@ -54,7 +54,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 	@Test
 	public void readTest() {
 		byte[] bytes = { 1, 2, 3 };
-		Entity entity = getaEntityBuilder()
+		Entity entity = getEntityBuilder()
 				.set("durationField", "PT24H")
 				.set("stringField", "string value")
 				.set("boolField", true)
@@ -79,12 +79,13 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 		assertThat(item.getTimestampField()).as("validate timestamp field")
 				.isEqualTo(Timestamp.ofTimeSecondsAndNanos(30, 40));
 		assertThat(item.getBlobField()).as("validate blob field").isEqualTo(Blob.copyFrom(bytes));
+		assertThat(item.getIntField()).as("validate int field").isEqualTo(99);
 	}
 
 	@Test
 	public void readNullTest() {
 		byte[] bytes = { 1, 2, 3 };
-		Entity entity = getaEntityBuilder()
+		Entity entity = getEntityBuilder()
 				.set("durationField", "PT24H")
 				.set("stringField", new NullValue())
 				.set("boolField", true)
@@ -104,7 +105,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 
 	@Test(expected = DatastoreDataException.class)
 	public void testWrongTypeReadException() {
-		Entity entity = getaEntityBuilder()
+		Entity entity = getEntityBuilder()
 				.set("stringField", "string value")
 				.set("boolField", 123L)
 				.build();
@@ -130,7 +131,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 
 		DatastoreEntityConverter entityConverter =
 				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
-		Entity.Builder builder = getaEntityBuilder();
+		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 
 		Entity entity = builder.build();
@@ -165,7 +166,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 
 		DatastoreEntityConverter entityConverter =
 				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
-		Entity.Builder builder = getaEntityBuilder();
+		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 
 		Entity entity = builder.build();
@@ -182,7 +183,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 
 		DatastoreEntityConverter entityConverter =
 				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
-		Entity.Builder builder = getaEntityBuilder();
+		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 		System.out.println(builder.build());
 	}
@@ -210,7 +211,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 
 						}
 				));
-		Entity.Builder builder = getaEntityBuilder();
+		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 		Entity entity = builder.build();
 
@@ -225,7 +226,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
 	}
 
-	private Entity.Builder getaEntityBuilder() {
+	private Entity.Builder getEntityBuilder() {
 		return Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
 	}
 }
