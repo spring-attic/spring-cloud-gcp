@@ -55,9 +55,10 @@ import org.springframework.util.StringUtils;
  *
  * @author João André Martins
  * @author Artem Bilan
+ * @author Mike Eltsufin
  */
 @Configuration
-@ConditionalOnClass({ DataSource.class, EmbeddedDatabaseType.class })
+@ConditionalOnClass({ DataSource.class, EmbeddedDatabaseType.class, CredentialFactory.class })
 @ConditionalOnProperty(
 		name = "spring.cloud.gcp.sql.enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties({ GcpCloudSqlProperties.class, DataSourceProperties.class })

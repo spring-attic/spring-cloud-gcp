@@ -157,9 +157,17 @@ public class PubSubTemplateIntegrationTests {
 			});
 
 			Thread.sleep(11_000);
-			ackableMessages = pubSubTemplate.pull(subscriptionName, 4, true);
-			assertThat(ackableMessages.size()).as("check that we get both nacked messages back").isEqualTo(2);
-			ackableMessages.forEach(AcknowledgeablePubsubMessage::ack);
+			// pull the 2 nacked messages with retries for up to 10s
+			int messagesCount = 0;
+			int tries = 100;
+			while (messagesCount < 2 && tries > 0) {
+				Thread.sleep(100);
+				ackableMessages = pubSubTemplate.pull(subscriptionName, 4, true);
+				ackableMessages.forEach(AcknowledgeablePubsubMessage::ack);
+				messagesCount += ackableMessages.size();
+				tries--;
+			}
+			assertThat(messagesCount).as("check that we get both nacked messages back").isEqualTo(2);
 
 			pubSubAdmin.deleteSubscription(subscriptionName);
 			pubSubAdmin.deleteTopic(topicName);

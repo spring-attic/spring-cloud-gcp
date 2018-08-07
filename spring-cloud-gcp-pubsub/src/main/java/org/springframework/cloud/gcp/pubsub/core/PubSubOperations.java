@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.core;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -66,10 +67,10 @@ public interface PubSubOperations {
 	 *
 	 * <p>The created {@link Subscriber} is returned so it can be stopped.
 	 * @param subscription the name of an existing subscription
-	 * @param messageHandler the callback method triggered when new messages arrive
+	 * @param messageReceiver the callback method triggered when new messages arrive
 	 * @return subscriber listening to new messages
 	 */
-	Subscriber subscribe(String subscription, MessageReceiver messageHandler);
+	Subscriber subscribe(String subscription, MessageReceiver messageReceiver);
 
 	/**
 	 * Pull and auto-acknowledge a number of messages from a Google Cloud Pub/Sub subscription.
@@ -99,4 +100,19 @@ public interface PubSubOperations {
 	 * @return a received message, or {@code null} if none exists in the subscription
 	 */
 	PubsubMessage pullNext(String subscription);
+
+	/**
+	 * Acknowledge a batch of messages. The method will group the messages by subscription name
+	 * and acknowledge them in batches if possible.
+	 * @param acknowledgeablePubsubMessages messages to be acknowledged
+	 */
+	void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+
+	/**
+	 * Negatively acknowledge a batch of messages. The method will group the messages by subscription name
+	 * and acknowledge them in batches if possible.
+	 * @param acknowledgeablePubsubMessages messages to be negatively acknowledged
+	 */
+	void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+
 }
