@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.Optional;
+
 import com.google.cloud.datastore.Entity;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
@@ -36,9 +38,13 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 
 	private ConversionService conversionService;
 
-	public EntityPropertyValueProvider(Entity entity, ConversionService conversionService) {
+	private DatastoreCustomConversions customConversions;
+
+	public EntityPropertyValueProvider(Entity entity, ConversionService conversionService,
+			DatastoreCustomConversions customConversions) {
 		this.entity = entity;
 		this.conversionService = conversionService;
+		this.customConversions = customConversions;
 	}
 
 	@Override
@@ -56,15 +62,20 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 	private <T> T readSingleWithConversion(DatastorePersistentProperty persistentProperty) {
 		Object val = this.entity.getValue(persistentProperty.getFieldName()).get();
 		Class<?> targetType = persistentProperty.getType();
-		if (val == null) {
-			return null;
-		}
-		if (ClassUtils.isAssignable(targetType, val.getClass())) {
+
+		if (val == null || ClassUtils.isAssignable(targetType, val.getClass())) {
 			return (T) val;
 		}
 
 		if (this.conversionService.canConvert(val.getClass(), targetType)) {
 			return this.conversionService.convert(val, (Class<T>) targetType);
+		}
+		else {
+			Optional<Class<?>> simpleType = this.customConversions.getCustomWriteTarget(targetType);
+			if (simpleType.isPresent() && this.conversionService.canConvert(simpleType.get(), targetType)) {
+				Object simpleTypeVal = this.conversionService.convert(val, simpleType.get());
+				return this.conversionService.convert(simpleTypeVal, (Class<T>) targetType);
+			}
 		}
 
 		throw new DatastoreDataException("The value in entity's property with name " + persistentProperty.getFieldName()

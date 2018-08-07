@@ -29,27 +29,28 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 /**
  * A class to manage Datastore-specific simple type conversions.
  *
  * @author Dmitry Solomakha
  */
-public class DatastoreSimpleTypes implements StorageAwareConversions {
+public class DatastoreSimpleTypes {
 
-	public static final Set<Class> DATASTORE_SIMPLE_TYPES;
+	public static final Set<Class<?>> DATASTORE_NATIVE_TYPES;
 
-	public static final Set<Class> ID_TYPES;
+	public static final Set<Class<?>> ID_TYPES;
 
-	public static final List<Class> DATASTORE_SIMPLE_TYPES_RESOLUTION;
+	public static final List<Class<?>> DATASTORE_NATIVE_TYPES_RESOLUTION;
 
 	static {
-		ID_TYPES = ImmutableSet.<Class>builder()
+		ID_TYPES = ImmutableSet.<Class<?>>builder()
 				.add(String.class)
 				.add(Long.class)
 				.build();
 
-		DATASTORE_SIMPLE_TYPES_RESOLUTION = ImmutableList.<Class>builder()
+		DATASTORE_NATIVE_TYPES_RESOLUTION = ImmutableList.<Class<?>>builder()
 				.add(Boolean.class)
 				.add(Long.class)
 				.add(Double.class)
@@ -59,12 +60,15 @@ public class DatastoreSimpleTypes implements StorageAwareConversions {
 				.add(Blob.class)
 				.build();
 
-		DATASTORE_SIMPLE_TYPES = ImmutableSet.<Class>builder()
-				.addAll(DATASTORE_SIMPLE_TYPES_RESOLUTION)
+		DATASTORE_NATIVE_TYPES = ImmutableSet.<Class<?>>builder()
+				.addAll(DATASTORE_NATIVE_TYPES_RESOLUTION)
 				.build();
 	}
 
-	final private Map<Class, Class> writeConverters = new HashMap<>();
+	public static final SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_NATIVE_TYPES, true);
+
+
+	final private Map<Class, Optional<Class<?>>> writeConverters = new HashMap<>();
 
 	final private ConversionService conversionService;
 
@@ -73,19 +77,18 @@ public class DatastoreSimpleTypes implements StorageAwareConversions {
 	}
 
 	public static boolean isSimple(Class aClass) {
-		return DATASTORE_SIMPLE_TYPES.contains(aClass);
+		return DATASTORE_NATIVE_TYPES.contains(aClass);
 	}
 
-	@Override
-	public Class getWriteTarget(Class<?> sourceType) {
-		return this.writeConverters.computeIfAbsent(sourceType, (Class inputType) -> {
-			Optional<Class> targetType = getSimpleTypeWithBidirectionalConversion(inputType);
-			return targetType.orElse(null);
-		});
+	public Optional<Class<?>> getCustomWriteTarget(Class<?> sourceType) {
+		if (isSimple(sourceType)) {
+			return Optional.empty();
+		}
+		return this.writeConverters.computeIfAbsent(sourceType, this::getSimpleTypeWithBidirectionalConversion);
 	}
 
-	private Optional<Class> getSimpleTypeWithBidirectionalConversion(Class inputType) {
-		return DatastoreSimpleTypes.DATASTORE_SIMPLE_TYPES_RESOLUTION.stream()
+	private Optional<Class<?>> getSimpleTypeWithBidirectionalConversion(Class inputType) {
+		return DatastoreSimpleTypes.DATASTORE_NATIVE_TYPES_RESOLUTION.stream()
 				.filter(simpleType ->
 						this.conversionService.canConvert(inputType, simpleType)
 						&& this.conversionService.canConvert(simpleType, inputType))

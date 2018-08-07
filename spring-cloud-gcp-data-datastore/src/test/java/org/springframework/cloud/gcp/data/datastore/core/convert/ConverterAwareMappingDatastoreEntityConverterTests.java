@@ -197,16 +197,16 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 		DatastoreEntityConverter entityConverter = new ConverterAwareMappingDatastoreEntityConverter(
 				new DatastoreMappingContext(),
 				Arrays.asList(
-						new Converter<String, TestDatastoreItemUnsupportedFields.UnsupportedType>() {
+						new Converter<Integer, TestDatastoreItemUnsupportedFields.UnsupportedType>() {
 							@Override
-							public TestDatastoreItemUnsupportedFields.UnsupportedType convert(String source) {
-								return new TestDatastoreItemUnsupportedFields.UnsupportedType(Boolean.valueOf(source));
+							public TestDatastoreItemUnsupportedFields.UnsupportedType convert(Integer source) {
+								return new TestDatastoreItemUnsupportedFields.UnsupportedType(source == 1);
 							}
 						},
-						new Converter<TestDatastoreItemUnsupportedFields.UnsupportedType, String>() {
+						new Converter<TestDatastoreItemUnsupportedFields.UnsupportedType, Integer>() {
 							@Override
-							public String convert(TestDatastoreItemUnsupportedFields.UnsupportedType source) {
-								return String.valueOf(source.isVal());
+							public Integer convert(TestDatastoreItemUnsupportedFields.UnsupportedType source) {
+								return source.isVal() ? 1 : 0;
 							}
 
 						}
@@ -215,8 +215,8 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 		entityConverter.write(item, builder);
 		Entity entity = builder.build();
 
-		assertThat(entity.getString("unsupportedField")).as("validate custom conversion")
-				.isEqualTo("true");
+		assertThat(entity.getLong("unsupportedField")).as("validate custom conversion")
+				.isEqualTo(1L);
 		assertThat(entity.getString("stringField")).as("validate string field")
 				.isEqualTo("string value");
 

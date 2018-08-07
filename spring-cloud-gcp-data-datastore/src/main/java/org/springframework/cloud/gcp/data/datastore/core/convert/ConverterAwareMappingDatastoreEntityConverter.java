@@ -16,8 +16,10 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.google.cloud.Timestamp;
@@ -71,7 +73,11 @@ public class ConverterAwareMappingDatastoreEntityConverter implements DatastoreE
 
 	private final GenericConversionService conversionService = new DefaultConversionService();
 
-	private final DatastoreSimpleTypes conversions = new DatastoreSimpleTypes(this.conversionService);
+	private final GenericConversionService toNativeConversionService = new DefaultConversionService();
+
+	private final DatastoreSimpleTypes toNativeConversions = new DatastoreSimpleTypes(this.conversionService);
+
+	private final DatastoreCustomConversions customConversions;
 
 	private static final Map<Class<?>, Function<?, Value<?>>> VAL_FACTORIES;
 
@@ -100,11 +106,14 @@ public class ConverterAwareMappingDatastoreEntityConverter implements DatastoreE
 	}
 
 	public ConverterAwareMappingDatastoreEntityConverter(DatastoreMappingContext mappingContext) {
-		this(mappingContext, null);
+		this(mappingContext, Collections.emptyList());
 	}
 
 	public ConverterAwareMappingDatastoreEntityConverter(DatastoreMappingContext mappingContext,
 			List<Converter> customConverters) {
+		this.customConversions = new DatastoreCustomConversions(
+				customConverters == null ? Collections.emptyList() : customConverters
+		);
 		this.mappingContext = mappingContext;
 		if (customConverters != null) {
 			customConverters.forEach(this.conversionService::addConverter);
@@ -119,7 +128,7 @@ public class ConverterAwareMappingDatastoreEntityConverter implements DatastoreE
 				(DatastorePersistentEntity<R>) this.mappingContext.getPersistentEntity(aClass);
 
 		EntityPropertyValueProvider propertyValueProvider =
-				new EntityPropertyValueProvider(entity, this.conversionService);
+				new EntityPropertyValueProvider(entity, this.conversionService, this.customConversions);
 
 		ParameterValueProvider<DatastorePersistentProperty> parameterValueProvider =
 				new PersistentEntityParameterValueProvider<>(persistentEntity, propertyValueProvider, null);
@@ -154,6 +163,10 @@ public class ConverterAwareMappingDatastoreEntityConverter implements DatastoreE
 			sink.set(persistentProperty.getFieldName(), new NullValue());
 			return;
 		}
+		Optional<Class<?>> basicTargetType = this.toNativeConversions.getCustomWriteTarget(propertyVal.getClass());
+		if (basicTargetType.isPresent()) {
+			propertyVal = this.toNativeConversionService.convert(propertyVal, basicTargetType.get());
+		}
 		Function valueFactory = VAL_FACTORIES.get(propertyVal.getClass());
 
 		if (valueFactory == null) {
@@ -171,13 +184,11 @@ public class ConverterAwareMappingDatastoreEntityConverter implements DatastoreE
 			return obj;
 		}
 
-		Class<?> basicTargetType = this.conversions.getWriteTarget(obj.getClass());
-
-		if (basicTargetType != null) {
-				return this.conversionService.convert(obj, basicTargetType);
+		Optional<Class<?>> basicTargetType = this.customConversions.getCustomWriteTarget(obj.getClass());
+		if (basicTargetType.isPresent()) {
+				return this.conversionService.convert(obj, basicTargetType.get());
 		}
 
-		throw new DatastoreDataException("The value in column with name " + prop.getFieldName()
-				+ " is of unsupported data type. " + "The property's type is " + obj.getClass());
+		return obj;
 	}
 }
