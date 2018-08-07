@@ -59,6 +59,8 @@ public class PubSubSubscriberTemplateTests {
 
 	private PubsubMessage pubsubMessage = PubsubMessage.newBuilder().build();
 
+	private MessageReceiver messageReceiver;
+
 	@Mock
 	private AckReplyConsumer ackReplyConsumer;
 
@@ -67,9 +69,6 @@ public class PubSubSubscriberTemplateTests {
 
 	@Mock
 	private Subscriber subscriber;
-
-	@Mock
-	private MessageReceiver messageReceiver;
 
 	@Mock
 	private PubSubMessageConverter messageConverter;
