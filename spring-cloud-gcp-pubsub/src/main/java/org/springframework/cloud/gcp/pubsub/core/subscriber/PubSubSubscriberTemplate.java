@@ -84,6 +84,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	@Deprecated
 	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
+		Assert.hasText(subscription, "The subscription can't be null or empty.");
 		Assert.notNull(messageReceiver, "The messageReceiver can't be null.");
 
 		Subscriber subscriber =
@@ -117,7 +118,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	 * and acknowledger
 	 */
 	private List<AcknowledgeablePubsubMessage> pull(PullRequest pullRequest) {
-		Assert.notNull(pullRequest, "The pull request cannot be null.");
+		Assert.notNull(pullRequest, "The pull request can't be null.");
 
 		PullResponse pullResponse = this.subscriberStub.pullCallable().call(pullRequest);
 		List<AcknowledgeablePubsubMessage> receivedMessages =
