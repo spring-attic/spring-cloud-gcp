@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.protobuf.Empty;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.apache.commons.logging.Log;
@@ -166,19 +167,19 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public ListenableFuture<Collection<String>> ack(
+	public ListenableFuture<Empty> ack(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		return this.pubSubSubscriberTemplate.ack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
-	public ListenableFuture<Collection<String>> nack(
+	public ListenableFuture<Empty> nack(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		return this.pubSubSubscriberTemplate.nack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
-	public ListenableFuture<Collection<String>> modifyAckDeadline(
+	public ListenableFuture<Empty> modifyAckDeadline(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages, int ackDeadlineSeconds) {
 		return this.pubSubSubscriberTemplate.modifyAckDeadline(acknowledgeablePubsubMessages, ackDeadlineSeconds);
 	}

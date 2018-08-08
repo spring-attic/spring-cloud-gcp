@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.protobuf.Empty;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
@@ -88,27 +89,29 @@ public interface PubSubSubscriberOperations {
 	 * Acknowledge a batch of messages. The method will group the messages by subscription name
 	 * and acknowledge them in batches.
 	 * @param acknowledgeablePubsubMessages messages to be acknowledged
-	 * @return ListenableFuture&lt;String&gt;
+	 * @return {@code ListenableFuture<Empty>}
+	 * @since 1.1
 	 */
-	ListenableFuture<Collection<String>> ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	ListenableFuture<Empty> ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
 	 * Negatively acknowledge a batch of messages. The method will group the messages by subscription name
 	 * and acknowledge them in batches.
 	 * @param acknowledgeablePubsubMessages messages to be negatively acknowledged
-	 * @return ListenableFuture&lt;String&gt;
+	 * @return {@code ListenableFuture<Empty>}
+	 * @since 1.1
 	 */
-	ListenableFuture<Collection<String>> nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	ListenableFuture<Empty> nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
 	 * Modify the ack deadline of a batch of messages. The method will group the messages by subscription name
 	 * and modify their ack deadline in batches.
 	 * @param acknowledgeablePubsubMessages messages to be modified
 	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the messages.
-	 * @return ListenableFuture&lt;Collection&lt;String&gt;&gt;
+	 * @return {@code ListenableFuture<Empty>}
 	 * @since 1.1
 	 */
-	ListenableFuture<Collection<String>> modifyAckDeadline(
+	ListenableFuture<Empty> modifyAckDeadline(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
 			int ackDeadlineSeconds);
 }

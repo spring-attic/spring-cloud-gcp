@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import com.google.protobuf.Empty;
+
 import org.springframework.util.concurrent.ListenableFuture;
 
 /**
@@ -41,5 +43,5 @@ public interface AcknowledgeablePubsubMessage extends BasicAcknowledgeablePubsub
 	 * @return ListenableFuture&lt;String&gt;
 	 * @since 1.1
 	 */
-	ListenableFuture<String> modifyAckDeadline(int ackDeadlineSeconds);
+	ListenableFuture<Empty> modifyAckDeadline(int ackDeadlineSeconds);
 }

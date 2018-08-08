@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import com.google.protobuf.Empty;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.util.concurrent.ListenableFuture;
@@ -25,10 +26,17 @@ import org.springframework.util.concurrent.ListenableFuture;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Doug Hoard
  *
  * @since 1.1
  */
 public interface BasicAcknowledgeablePubsubMessage {
+
+	/**
+	 * Accessor for the project id of the Pub/Sub message;
+	 * @return the project id
+	 */
+	String getProjectId();
 
 	/*
 	 * Accessor for the subscription source of the Pub/Sub message.
@@ -46,12 +54,12 @@ public interface BasicAcknowledgeablePubsubMessage {
 	 * Acknowledge (ack) the message asynchronously
 	 * @return ListenableFuture&lt;String&gt;
 	 */
-	ListenableFuture<String> ack();
+	ListenableFuture<Empty> ack();
 
 	/**
 	 * Negatatively achnowledge (nack) the message asynchronously
 	 * @return ListenableFuture&lt;String&gt;
 	 */
-	ListenableFuture<String> nack();
+	ListenableFuture<Empty> nack();
 
 }

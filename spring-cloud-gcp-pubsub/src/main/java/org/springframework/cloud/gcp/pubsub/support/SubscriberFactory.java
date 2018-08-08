@@ -28,8 +28,16 @@ import com.google.pubsub.v1.PullRequest;
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Artem Bilan
+ * @author Doug Hoard
  */
 public interface SubscriberFactory {
+
+	/**
+	 * Method to get the project id
+	 * @return the project id
+	 * @since 1.1
+	 */
+	String getProjectId();
 
 	/**
 	 * Create a {@link Subscriber} for the specified subscription name and wired it up to
