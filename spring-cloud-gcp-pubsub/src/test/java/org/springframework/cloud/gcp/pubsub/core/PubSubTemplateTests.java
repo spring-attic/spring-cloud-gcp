@@ -198,7 +198,7 @@ public class PubSubTemplateTests {
 	@Test
 	public void testSubscribe() {
 		Subscriber subscriber = this.pubSubTemplate.subscribe("testSubscription",
-				(message, consumer) -> { });
+				(message) -> { });
 		assertEquals(this.mockSubscriber, subscriber);
 		verify(this.mockSubscriber, times(1)).startAsync();
 	}

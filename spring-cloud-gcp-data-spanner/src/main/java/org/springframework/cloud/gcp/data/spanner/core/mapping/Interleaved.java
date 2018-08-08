@@ -32,6 +32,6 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface OneToMany {
+public @interface Interleaved {
 
 }
