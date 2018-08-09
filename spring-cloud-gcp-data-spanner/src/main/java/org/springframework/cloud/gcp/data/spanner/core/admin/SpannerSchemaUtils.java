@@ -52,23 +52,23 @@ public class SpannerSchemaUtils {
 
 	private final SpannerTypeMapper spannerTypeMapper;
 
-	private final boolean createTableDdlDeleteOnCascade;
+	private final boolean createInterleavedTableStatementCascadeOnDelete;
 
 	/**
 	 * Constructor. Generates create-table DDL statements that cascade deletes for
 	 * interleaved tables.
-	 * @param mappingContext a mapping context used to obtain persistent entity metadata
+	 * @param mappingContext A mapping context used to obtain persistent entity metadata
 	 * for generating DDL statements.
-	 * @param spannerEntityProcessor an entity processor that is queried for types that it
+	 * @param spannerEntityProcessor An entity processor that is queried for types that it
 	 * can convert for determining compatible column types when generating DDL statements.
-	 * @param createTableDdlDeleteOnCascade if True will generate create-table statements
-	 * that specify cascade on delete for interleaved tables. if False, then the deletes
-	 * among interleaved tables do not cascade and require manual deletion of all children
-	 * before parents.
+	 * @param createInterleavedTableStatementCascadeOnDelete If {@code true} will generate
+	 * create-table statements that specify cascade on delete for interleaved tables. If
+	 * {@code false}, then the deletes among interleaved tables do not cascade and require
+	 * manual deletion of all children before parents.
 	 */
 	public SpannerSchemaUtils(SpannerMappingContext mappingContext,
 			SpannerEntityProcessor spannerEntityProcessor,
-			boolean createTableDdlDeleteOnCascade) {
+			boolean createInterleavedTableStatementCascadeOnDelete) {
 		Assert.notNull(mappingContext,
 				"A valid mapping context for Cloud Spanner is required.");
 		Assert.notNull(spannerEntityProcessor,
@@ -76,13 +76,14 @@ public class SpannerSchemaUtils {
 		this.mappingContext = mappingContext;
 		this.spannerEntityProcessor = spannerEntityProcessor;
 		this.spannerTypeMapper = new SpannerTypeMapper();
-		this.createTableDdlDeleteOnCascade = createTableDdlDeleteOnCascade;
+		this.createInterleavedTableStatementCascadeOnDelete =
+				createInterleavedTableStatementCascadeOnDelete;
 	}
 
 	/**
 	 * Gets the DDL string to drop the table for the given entity in Cloud Spanner.
-	 * @param entityClass the entity type.
-	 * @return the DDL string.
+	 * @param entityClass The entity type.
+	 * @return The DDL string.
 	 */
 	public String getDropTableDdlString(Class entityClass) {
 		return "DROP TABLE "
@@ -91,8 +92,8 @@ public class SpannerSchemaUtils {
 
 	/**
 	 * Gets the key for the given object.
-	 * @param object the object to get the key for
-	 * @return the Spanner Key for the given object.
+	 * @param object The object to get the key for
+	 * @return The Spanner Key for the given object.
 	 */
 	public Key getKey(Object object) {
 		SpannerPersistentEntity persistentEntity = this.mappingContext
@@ -107,12 +108,13 @@ public class SpannerSchemaUtils {
 	 * specific schema
 	 * is determined by the configured property type converters used by the read and write
 	 * methods in this SpannerOperations and will be compatible with those methods.
-	 * @param entityClass the entity type.
-	 * @return the DDL string.
+	 * @param entityClass The entity type.
+	 * @return The DDL string.
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> String getCreateTableDdlString(Class<T> entityClass) {
-		SpannerPersistentEntity<T> spannerPersistentEntity = (SpannerPersistentEntity<T>) this.mappingContext
+		SpannerPersistentEntity<T> spannerPersistentEntity = (SpannerPersistentEntity<T>)
+				this.mappingContext
 				.getPersistentEntity(entityClass);
 
 		StringBuilder stringBuilder = new StringBuilder(
@@ -136,8 +138,8 @@ public class SpannerSchemaUtils {
 	 * Gets a list of DDL strings to create the tables rooted at the given entity class.
 	 * The DDL-create strings are ordered in the list starting with the given root class
 	 * and are topologically sorted.
-	 * @param entityClass the root class for which to get create strings.
-	 * @return a list of create strings that are toplogically sorted from parents to
+	 * @param entityClass The root class for which to get create strings.
+	 * @return A list of create strings that are toplogically sorted from parents to
 	 * children.
 	 */
 	public List<String> getCreateTableDdlStringsForInterleavedHierarchy(
@@ -152,8 +154,8 @@ public class SpannerSchemaUtils {
 	 * Gets the DDL strings to drop the tables of this entity and all of its sub-entities.
 	 * The list is given in reverse topological sort, since parent tables cannot be
 	 * dropped before their children tables.
-	 * @param entityClass the root entity whose table to drop
-	 * @return the list of drop DDL strings
+	 * @param entityClass The root entity whose table to drop.
+	 * @return The list of drop DDL strings.
 	 */
 	public List<String> getDropTableDdlStringsForInterleavedHierarchy(Class entityClass) {
 		List<String> ddlStrings = new ArrayList<>();
@@ -247,7 +249,8 @@ public class SpannerSchemaUtils {
 				seenClasses,
 				(type, parent) -> getCreateTableDdlString(type) + (parent == null ? ""
 						: ", INTERLEAVE IN PARENT " + parent + " ON DELETE "
-								+ (this.createTableDdlDeleteOnCascade ? "CASCADE"
+								+ (this.createInterleavedTableStatementCascadeOnDelete
+										? "CASCADE"
 										: "NO ACTION")),
 				false);
 	}
