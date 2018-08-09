@@ -217,7 +217,7 @@ public class SpannerPersistentEntityImplTests {
 				this.spannerMappingContext.getPersistentEntity(ParentInRelationship.class);
 		doAnswer(invocation -> {
 			String colName = ((SpannerPersistentProperty) invocation.getArgument(0))
-					.getColumnName();
+					.getName();
 			assertTrue(colName.equals("childrenA") || colName.equals("childrenB"));
 			return null;
 		}).when(mockHandler).doWithPersistentProperty(any());
