@@ -14,24 +14,12 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.datastore.core.mapping;
+package org.springframework.cloud.gcp.autoconfigure.datastore;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 
 /**
- * Annotation for Datastore property that holds the ancestor information for an entity.
- *
  * @author Chengyuan Zhao
- *
- * @since 1.1
  */
-@Documented
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Ancestors {
-
+public interface TestRepository extends DatastoreRepository {
 }

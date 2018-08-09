@@ -17,10 +17,13 @@
 package org.springframework.cloud.gcp.pubsub.core.subscriber;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
@@ -31,6 +34,7 @@ import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.util.Assert;
 
@@ -67,9 +71,26 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	@Override
+	@Deprecated
 	public Subscriber subscribe(String subscription, MessageReceiver messageReceiver) {
+		Assert.hasText(subscription, "The subscription can't be null or empty.");
+		Assert.notNull(messageReceiver, "The messageReceiver can't be null.");
+
 		Subscriber subscriber =
 				this.subscriberFactory.createSubscriber(subscription, messageReceiver);
+		subscriber.startAsync();
+		return subscriber;
+	}
+
+	@Override
+	public Subscriber subscribe(String subscription,
+			Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer) {
+		Assert.notNull(messageConsumer, "The messageConsumer can't be null.");
+
+		Subscriber subscriber =
+				this.subscriberFactory.createSubscriber(subscription,
+						(message, ackReplyConsumer) -> messageConsumer.accept(
+								new PushedAcknowledgeablePubsubMessage(message, ackReplyConsumer, subscription)));
 		subscriber.startAsync();
 		return subscriber;
 	}
@@ -81,17 +102,14 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	 * and acknowledger
 	 */
 	private List<AcknowledgeablePubsubMessage> pull(PullRequest pullRequest) {
-		Assert.notNull(pullRequest, "The pull request cannot be null.");
+		Assert.notNull(pullRequest, "The pull request can't be null.");
 
 		PullResponse pullResponse =	this.subscriberStub.pullCallable().call(pullRequest);
 		List<AcknowledgeablePubsubMessage> receivedMessages =
 				pullResponse.getReceivedMessagesList().stream()
-						.map(message -> {
-							return new AcknowledgeablePubsubMessage(message.getMessage(),
+						.map(message -> new PulledAcknowledgeablePubsubMessage(message.getMessage(),
 									message.getAckId(),
-									pullRequest.getSubscription(),
-									this.subscriberStub);
-						})
+									pullRequest.getSubscription()))
 						.collect(Collectors.toList());
 
 		return receivedMessages;
@@ -100,6 +118,12 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	public List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
 			Boolean returnImmediately) {
+		Assert.hasText(subscription, "The subscription can't be null or empty.");
+
+		if (maxMessages != null) {
+			Assert.isTrue(maxMessages > 0, "The maxMessages must be greater than 0.");
+		}
+
 		return pull(this.subscriberFactory.createPullRequest(subscription, maxMessages,
 				returnImmediately));
 	}
@@ -107,6 +131,12 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	public List<PubsubMessage> pullAndAck(String subscription, Integer maxMessages,
 			Boolean returnImmediately) {
+		Assert.hasText(subscription, "The subscription can't be null or empty.");
+
+		if (maxMessages != null) {
+			Assert.isTrue(maxMessages > 0, "The maxMessages must be greater than 0.");
+		}
+
 		PullRequest pullRequest = this.subscriberFactory.createPullRequest(
 				subscription, maxMessages, returnImmediately);
 
@@ -114,7 +144,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		ack(ackableMessages);
 
-		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getMessage)
+		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getPubsubMessage)
 				.collect(Collectors.toList());
 	}
 
@@ -131,20 +161,30 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	@Override
 	public void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
-		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages can't be null.");
 
 		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::ack);
 	}
 
 	@Override
 	public void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
-		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be null.");
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages can't be null.");
 
 		groupAcknowledgeableMessages(acknowledgeablePubsubMessages).forEach(this::nack);
 	}
 
+	@Override
+	public void modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
+			int ackDeadlineSeconds) {
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages can't be null.");
+		Assert.isTrue(ackDeadlineSeconds >= 0, "The ackDeadlineSeconds can't be less than 0.");
+
+		groupAcknowledgeableMessages(acknowledgeablePubsubMessages)
+				.forEach((sub, ackIds) -> modifyAckDeadline(sub, ackIds, ackDeadlineSeconds));
+	}
+
 	/**
-	 * Groups messages by subscription.
+	 * Groups {@link AcknowledgeablePubsubMessage} messages by subscription.
 	 * @return a map from subscription to list of ack IDs.
 	 */
 	private Map<String, List<String>> groupAcknowledgeableMessages(
@@ -164,12 +204,112 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	private void nack(String subscriptionName, Collection<String> ackIds) {
+		modifyAckDeadline(subscriptionName, ackIds, 0);
+	}
+
+	private void modifyAckDeadline(String subscriptionName, Collection<String> ackIds, int ackDeadlineSeconds) {
 		ModifyAckDeadlineRequest modifyAckDeadlineRequest = ModifyAckDeadlineRequest.newBuilder()
-				.setAckDeadlineSeconds(0)
+				.setAckDeadlineSeconds(ackDeadlineSeconds)
 				.addAllAckIds(ackIds)
 				.setSubscription(subscriptionName)
 				.build();
 
 		this.subscriberStub.modifyAckDeadlineCallable().call(modifyAckDeadlineRequest);
+	}
+
+
+	private static abstract class AbstractBasicAcknowledgeablePubsubMessage
+			implements BasicAcknowledgeablePubsubMessage {
+
+		private final PubsubMessage message;
+
+		private final String subscriptionName;
+
+		AbstractBasicAcknowledgeablePubsubMessage(PubsubMessage message, String subscriptionName) {
+			this.message = message;
+			this.subscriptionName = subscriptionName;
+		}
+
+		@Override
+		public PubsubMessage getPubsubMessage() {
+			return this.message;
+		}
+
+		@Override
+		public String getSubscriptionName() {
+			return this.subscriptionName;
+		}
+	}
+
+	private class PulledAcknowledgeablePubsubMessage extends AbstractBasicAcknowledgeablePubsubMessage
+			implements AcknowledgeablePubsubMessage {
+
+		private final String ackId;
+
+		PulledAcknowledgeablePubsubMessage(PubsubMessage message, String ackId,
+				String subscriptionName) {
+			super(message, subscriptionName);
+			this.ackId = ackId;
+		}
+
+		@Override
+		public String getAckId() {
+			return this.ackId;
+		}
+
+		@Override
+		public void ack() {
+			PubSubSubscriberTemplate.this.ack(Collections.singleton(this));
+		}
+
+		@Override
+		public void nack() {
+			modifyAckDeadline(0);
+		}
+
+		@Override
+		public void modifyAckDeadline(int ackDeadlineSeconds) {
+			Assert.isTrue(ackDeadlineSeconds >= 0, "The ackDeadlineSeconds can't be less than 0.");
+
+			PubSubSubscriberTemplate.this.modifyAckDeadline(Collections.singleton(this), ackDeadlineSeconds);
+		}
+
+		@Override
+		public String toString() {
+			return "PulledAcknowledgeablePubsubMessage{" +
+					"message=" + getPubsubMessage() +
+					", subscriptionName='" + getSubscriptionName() + '\'' +
+					", ackId='" + this.ackId + '\'' +
+					'}';
+		}
+	}
+
+	private static class PushedAcknowledgeablePubsubMessage extends AbstractBasicAcknowledgeablePubsubMessage {
+
+		private final AckReplyConsumer ackReplyConsumer;
+
+		PushedAcknowledgeablePubsubMessage(PubsubMessage message, AckReplyConsumer ackReplyConsumer,
+				String subscriptionName) {
+			super(message, subscriptionName);
+			this.ackReplyConsumer = ackReplyConsumer;
+		}
+
+		@Override
+		public void ack() {
+			this.ackReplyConsumer.ack();
+		}
+
+		@Override
+		public void nack() {
+			this.ackReplyConsumer.nack();
+		}
+
+		@Override
+		public String toString() {
+			return "PushedAcknowledgeablePubsubMessage{" +
+					"message=" + getPubsubMessage() +
+					", subscriptionName='" + getSubscriptionName() + '\'' +
+					'}';
+		}
 	}
 }

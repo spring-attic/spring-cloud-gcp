@@ -78,7 +78,7 @@ public class DatastoreEntityConverterImpl implements DatastoreEntityConverter {
 		valFactories = builder.build();
 	}
 
-	DatastoreEntityConverterImpl(DatastoreMappingContext mappingContext) {
+	public DatastoreEntityConverterImpl(DatastoreMappingContext mappingContext) {
 		this.mappingContext = mappingContext;
 	}
 

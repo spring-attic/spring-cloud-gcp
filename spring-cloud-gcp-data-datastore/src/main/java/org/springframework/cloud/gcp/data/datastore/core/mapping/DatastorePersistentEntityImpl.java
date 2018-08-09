@@ -72,14 +72,6 @@ public class DatastorePersistentEntityImpl<T>
 		return this.kind != null && StringUtils.hasText(this.kind.name());
 	}
 
-	@Override
-	public void addPersistentProperty(DatastorePersistentProperty property) {
-		if (!property.isMapped()) {
-			return;
-		}
-		super.addPersistentProperty(property);
-	}
-
 	@Nullable
 	private Expression detectExpression() {
 		if (!hasTableName()) {

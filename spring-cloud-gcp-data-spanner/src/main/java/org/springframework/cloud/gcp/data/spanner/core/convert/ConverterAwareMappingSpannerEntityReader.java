@@ -28,7 +28,6 @@ import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PreferredConstructor;
-import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 
@@ -91,8 +90,8 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 		R instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
 		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
 
-		persistentEntity.doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+		persistentEntity.doWithColumnBackedProperties(
+				spannerPersistentProperty -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						accessor.setProperty(spannerPersistentProperty,
 								read(spannerPersistentProperty.getType(), source,

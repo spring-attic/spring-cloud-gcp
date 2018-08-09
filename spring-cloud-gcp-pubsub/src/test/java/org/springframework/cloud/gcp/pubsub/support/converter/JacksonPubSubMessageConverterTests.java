@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.pubsub.support.converter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.pubsub.v1.PubsubMessage;
 import org.json.JSONException;
+import org.junit.Assert;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
@@ -26,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dmitry Solomakha
+ * @author Doug Hoard
  *
  * @since  1.1
  */
@@ -64,6 +66,12 @@ public class JacksonPubSubMessageConverterTests {
 		Object o = this.converter.fromPubSubMessage(pubsubMessage, Contact.class);
 
 		assertThat(o).as("verify that deserialized object is equal to the original one").isEqualTo(contact);
+	}
+
+	@Test
+	public void testToPubSubMessageWithNullPayload() throws JSONException {
+		PubsubMessage pubsubMessage = this.converter.toPubSubMessage(null, null);
+		Assert.assertNotNull(pubsubMessage);
 	}
 
 	static class Contact {
