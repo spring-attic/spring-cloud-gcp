@@ -61,19 +61,6 @@ public class SpannerSchemaUtils {
 	 * for generating DDL statements.
 	 * @param spannerEntityProcessor an entity processor that is queried for types that it
 	 * can convert for determining compatible column types when generating DDL statements.
-	 */
-	public SpannerSchemaUtils(SpannerMappingContext mappingContext,
-			SpannerEntityProcessor spannerEntityProcessor) {
-		this(mappingContext, spannerEntityProcessor, true);
-	}
-
-	/**
-	 * Constructor. Generates create-table DDL statements that cascade deletes for
-	 * interleaved tables.
-	 * @param mappingContext a mapping context used to obtain persistent entity metadata
-	 * for generating DDL statements.
-	 * @param spannerEntityProcessor an entity processor that is queried for types that it
-	 * can convert for determining compatible column types when generating DDL statements.
 	 * @param createTableDdlDeleteOnCascade if True will generate create-table statements
 	 * that specify cascade on delete for interleaved tables. if False, then the deletes
 	 * among interleaved tables do not cascade and require manual deletion of all children

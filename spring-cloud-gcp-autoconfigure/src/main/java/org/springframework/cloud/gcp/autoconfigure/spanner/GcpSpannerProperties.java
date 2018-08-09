@@ -40,8 +40,8 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 
 	private String database;
 
-	// if True then create-table statements generated will cascade on delete. no-action on delete
-	// if False.
+	// If {@code true} then create-table statements generated will cascade on delete.
+	// No-action on delete if {@code false}.
 	private boolean createTableStatementsCascadeOnDelete = true;
 
 	// Default value is negative to indicate to use Cloud Spanner default number.

@@ -137,7 +137,7 @@ public class IntegrationTestConfiguration {
 	public SpannerSchemaUtils spannerSchemaUtils(
 			SpannerMappingContext spannerMappingContext,
 			SpannerEntityProcessor spannerEntityProcessor) {
-		return new SpannerSchemaUtils(spannerMappingContext, spannerEntityProcessor);
+		return new SpannerSchemaUtils(spannerMappingContext, spannerEntityProcessor, true);
 	}
 
 	@Bean
