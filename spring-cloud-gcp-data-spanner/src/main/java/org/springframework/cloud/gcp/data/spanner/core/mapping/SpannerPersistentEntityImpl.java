@@ -283,8 +283,7 @@ public class SpannerPersistentEntityImpl<T>
 
 	private List<SpannerPersistentProperty> getFlattenedPrimaryKeyProperties() {
 		List<SpannerPersistentProperty> primaryKeyColumns = new ArrayList<>();
-		for (int i = 1; i <= this.primaryKeyParts.size(); i++) {
-			SpannerPersistentProperty property = this.primaryKeyParts.get(i);
+		for (SpannerPersistentProperty property : getPrimaryKeyProperties()) {
 			if (property.isEmbedded()) {
 				primaryKeyColumns
 						.addAll(((SpannerPersistentEntityImpl) this.spannerMappingContext
