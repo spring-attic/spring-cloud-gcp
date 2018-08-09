@@ -20,7 +20,6 @@ import java.util.List;
 
 import com.google.cloud.spanner.Key;
 import org.junit.Test;
-import org.mockito.stubbing.Answer;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mapping.PersistentProperty;
@@ -39,6 +38,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -214,32 +215,55 @@ public class SpannerPersistentEntityImplTests {
 		PropertyHandler<SpannerPersistentProperty> mockHandler = mock(PropertyHandler.class);
 		SpannerPersistentEntity spannerPersistentEntity =
 				this.spannerMappingContext.getPersistentEntity(ParentInRelationship.class);
-		doAnswer((Answer) invocation -> {
+		doAnswer(invocation -> {
 			String colName = ((SpannerPersistentProperty) invocation.getArgument(0))
 					.getColumnName();
 			assertTrue(colName.equals("childrenA") || colName.equals("childrenB"));
 			return null;
 		}).when(mockHandler).doWithPersistentProperty(any());
 		spannerPersistentEntity.doWithInterleavedProperties(mockHandler);
+		verify(mockHandler, times(2)).doWithPersistentProperty(any());
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void testParentChildPkNamesMismatch() {
+		this.spannerMappingContext
+				.getPersistentEntity(ParentInRelationshipMismatchedKeyName.class);
 	}
 
 	private static class ParentInRelationship {
 		@PrimaryKey
 		String id;
 
+		@Interleaved
 		List<ChildAInRelationship> childrenA;
 
+		@Interleaved
 		List<ChildBInRelationship> childrenB;
 	}
 
 	private static class ChildAInRelationship {
 		@PrimaryKey
 		String id;
+
+		@PrimaryKey(keyOrder = 2)
+		String id2;
 	}
 
 	private static class ChildBInRelationship {
 		@PrimaryKey
 		String id;
+
+		@PrimaryKey(keyOrder = 2)
+		String id2;
+	}
+
+	private static class ParentInRelationshipMismatchedKeyName {
+		@PrimaryKey
+		String idNameDifferentThanChildren;
+
+		@Interleaved
+		List<ChildAInRelationship> childrenA;
 	}
 
 	private static class GrandParentEmbedded {

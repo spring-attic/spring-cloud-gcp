@@ -193,14 +193,39 @@ public class SpannerPersistentEntityImpl<T>
 	public void verify() {
 		super.verify();
 		verifyPrimaryKeysConsecutive();
-		verifyOneToManyPropertiesAreCollections();
+		verifyInterleavedProperties();
 		verifyEmbeddedColumnNameOverlap(new HashSet<>(), this);
 	}
 
-	private void verifyOneToManyPropertiesAreCollections() {
-		// getting the inner type will throw an exception if the property isn't a
-		// collection.
-		doWithInterleavedProperties(SpannerPersistentProperty::getColumnInnerType);
+	private void verifyInterleavedProperties() {
+		doWithInterleavedProperties(spannerPersistentProperty -> {
+			// getting the inner type will throw an exception if the property isn't a
+			// collection.
+			Class childType = spannerPersistentProperty.getColumnInnerType();
+			SpannerPersistentEntityImpl childEntity = (SpannerPersistentEntityImpl)
+					this.spannerMappingContext.getPersistentEntity(childType);
+			SpannerPersistentProperty[] primaryKeyProperties = getPrimaryKeyProperties();
+			SpannerPersistentProperty[] childKeyProperties = childEntity
+					.getPrimaryKeyProperties();
+			if (primaryKeyProperties.length >= childKeyProperties.length) {
+				throw new SpannerDataException(
+						"A child table must contain the primary key columns of its "
+								+ "parent in the same order starting the first "
+								+ "column with additional" + " key columns after.");
+			}
+			for (int i = 0; i < primaryKeyProperties.length; i++) {
+				SpannerPersistentProperty parentKey = primaryKeyProperties[i];
+				SpannerPersistentProperty childKey = childKeyProperties[i];
+				if (!parentKey.getColumnName().equals(childKey.getColumnName())
+						|| !parentKey.getType().equals(childKey.getType())) {
+					throw new SpannerDataException(
+							"The child primary key column (" + childKey.getColumnName()
+									+ ") at position " + (i + 1)
+									+ " does not match that of its parent ("
+									+ parentKey.getColumnName() + ")");
+				}
+			}
+		});
 	}
 
 	private void verifyEmbeddedColumnNameOverlap(Set<String> seen,
