@@ -23,6 +23,7 @@ import com.google.cloud.datastore.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.core.convert.ConversionService;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.util.ClassUtils;
 
@@ -38,10 +39,10 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 
 	private ConversionService conversionService;
 
-	private DatastoreCustomConversions customConversions;
+	private CustomConversions customConversions;
 
-	public EntityPropertyValueProvider(Entity entity, ConversionService conversionService,
-			DatastoreCustomConversions customConversions) {
+	EntityPropertyValueProvider(Entity entity, ConversionService conversionService,
+								CustomConversions customConversions) {
 		this.entity = entity;
 		this.conversionService = conversionService;
 		this.customConversions = customConversions;
@@ -61,23 +62,30 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 	@SuppressWarnings("unchecked")
 	private <T> T readSingleWithConversion(DatastorePersistentProperty persistentProperty) {
 		Object val = this.entity.getValue(persistentProperty.getFieldName()).get();
+		if (val == null) {
+			return null;
+		}
+
 		Class<?> targetType = persistentProperty.getType();
+		T result = null;
 
-		if (val == null || ClassUtils.isAssignable(targetType, val.getClass())) {
-			return (T) val;
-		}
-
+		//To mirror write conversion, try 1-step conversion first, then try 2-step conversion,
+		//then fallback to no conversion
+		Optional<Class<?>> simpleType = this.customConversions.getCustomWriteTarget(targetType);
 		if (this.conversionService.canConvert(val.getClass(), targetType)) {
-			return this.conversionService.convert(val, (Class<T>) targetType);
+			result = this.conversionService.convert(val, (Class<T>) targetType);
 		}
-		else {
-			Optional<Class<?>> simpleType = this.customConversions.getCustomWriteTarget(targetType);
-			if (simpleType.isPresent() && this.conversionService.canConvert(simpleType.get(), targetType)) {
-				Object simpleTypeVal = this.conversionService.convert(val, simpleType.get());
-				return this.conversionService.convert(simpleTypeVal, (Class<T>) targetType);
-			}
+		else if (simpleType.isPresent() && this.conversionService.canConvert(simpleType.get(), targetType)) {
+			Object simpleTypeVal = this.conversionService.convert(val, simpleType.get());
+			result = this.conversionService.convert(simpleTypeVal, (Class<T>) targetType);
+		}
+		else if (ClassUtils.isAssignable(targetType, val.getClass())) {
+			result = (T) val;
 		}
 
+		if (result != null) {
+			return result;
+		}
 		throw new DatastoreDataException("The value in entity's property with name " + persistentProperty.getFieldName()
 				+ " could not be converted to the corresponding property in the class. " +
 				"The property's type is " + targetType + " but the value's type is " + val.getClass());

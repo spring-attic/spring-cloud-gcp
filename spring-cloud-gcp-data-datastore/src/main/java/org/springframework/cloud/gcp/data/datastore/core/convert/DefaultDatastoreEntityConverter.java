@@ -16,11 +16,11 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 
 import com.google.cloud.Timestamp;
@@ -41,23 +41,23 @@ import com.google.cloud.datastore.TimestampValue;
 import com.google.cloud.datastore.Value;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
-import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
-import org.springframework.data.convert.JodaTimeConverters;
-import org.springframework.data.convert.Jsr310Converters;
-import org.springframework.data.convert.ThreeTenBackPortConverters;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
+import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.lang.Nullable;
 
 /**
@@ -67,23 +67,21 @@ import org.springframework.lang.Nullable;
  *
  * @since 1.1
  */
-public class ConverterAwareMappingDatastoreEntityConverter implements DatastoreEntityConverter {
+public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter {
 	private DatastoreMappingContext mappingContext;
 
 	private final EntityInstantiators instantiators = new EntityInstantiators();
 
 	private final GenericConversionService conversionService = new DefaultConversionService();
 
-	private final GenericConversionService toNativeConversionService = new DefaultConversionService();
-
 	private final DatastoreSimpleTypes toNativeConversions = new DatastoreSimpleTypes(this.conversionService);
 
-	private final DatastoreCustomConversions customConversions;
+	private final CustomConversions customConversions;
 
-	private static final Map<Class<?>, Function<?, Value<?>>> VAL_FACTORIES;
+	private static final Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
 
 	static {
-		VAL_FACTORIES = ImmutableMap.<Class<?>, Function<?, Value<?>>>builder()
+		DATASTORE_TYPE_WRAPPERS = ImmutableMap.<Class<?>, Function<?, Value<?>>>builder()
 				.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of)
 				.put(Boolean.class, (Function<Boolean, Value<?>>) BooleanValue::of)
 				.put(Double.class, (Function<Double, Value<?>>) DoubleValue::of)
@@ -96,28 +94,14 @@ public class ConverterAwareMappingDatastoreEntityConverter implements DatastoreE
 				.build();
 	}
 
-	private static List<Converter> DEFAULT_CONVERTERS;
-
-	static {
-		DEFAULT_CONVERTERS = ImmutableList.<Converter>builder()
-				.addAll(JodaTimeConverters.getConvertersToRegister())
-				.addAll(Jsr310Converters.getConvertersToRegister())
-				.addAll(ThreeTenBackPortConverters.getConvertersToRegister())
-				.build();
+	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext) {
+		this(mappingContext, new DatastoreCustomConversions());
 	}
 
-	public ConverterAwareMappingDatastoreEntityConverter(DatastoreMappingContext mappingContext) {
-		this(mappingContext, Collections.emptyList());
-	}
-
-	public ConverterAwareMappingDatastoreEntityConverter(DatastoreMappingContext mappingContext,
-			List<Converter> customConverters) {
+	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext,
+			CustomConversions customConversions) {
 		this.mappingContext = mappingContext;
-		List<Converter> converters = new ArrayList<>(DEFAULT_CONVERTERS);
-		if (customConverters != null) {
-			converters.addAll(customConverters);
-		}
-		this.customConversions = new DatastoreCustomConversions(converters);
+		this.customConversions = customConversions;
 		this.customConversions.registerConvertersIn(this.conversionService);
 	}
 
@@ -155,33 +139,35 @@ public class ConverterAwareMappingDatastoreEntityConverter implements DatastoreE
 						writeProperty(sink, accessor, datastorePersistentProperty));
 	}
 
-	@SuppressWarnings("unchecked")
 	private void writeProperty(Entity.Builder sink, PersistentPropertyAccessor accessor,
 			DatastorePersistentProperty persistentProperty) {
-		Object propertyVal = convertToSimpleType(accessor.getProperty(persistentProperty), persistentProperty);
-		if (propertyVal == null) {
-			sink.set(persistentProperty.getFieldName(), new NullValue());
-			return;
-		}
-		Optional<Class<?>> basicTargetType = this.toNativeConversions.getCustomWriteTarget(propertyVal.getClass());
+		Object propertyVal = convertToSimpleType(accessor.getProperty(persistentProperty));
+		Class<?> sourceType = propertyVal == null ? null : propertyVal.getClass();
+		Optional<Class<?>> basicTargetType = this.toNativeConversions.getCustomWriteTarget(sourceType);
 		if (basicTargetType.isPresent()) {
-			propertyVal = this.toNativeConversionService.convert(propertyVal, basicTargetType.get());
+			propertyVal = this.conversionService.convert(propertyVal, basicTargetType.get());
 		}
-		Function valueFactory = VAL_FACTORIES.get(propertyVal.getClass());
-
-		if (valueFactory == null) {
-			throw new DatastoreDataException("Simple type value factory is not found for property" +
-					" with name " + persistentProperty.getFieldName()
-					+ ". The property's simple type is " + propertyVal.getClass());
-		}
-
-		Value val = (Value) valueFactory.apply(propertyVal);
+		Value val = getDatastoreWrappedValue(propertyVal, persistentProperty);
 		sink.set(persistentProperty.getFieldName(), val);
 	}
 
-	private Object convertToSimpleType(@Nullable Object obj, DatastorePersistentProperty prop) {
-		if (obj == null || DatastoreSimpleTypes.isSimple(obj.getClass())) {
-			return obj;
+	@SuppressWarnings("unchecked")
+	private Value getDatastoreWrappedValue(Object propertyVal, DatastorePersistentProperty persistentProperty) {
+		if (propertyVal == null) {
+			return new NullValue();
+		}
+		Function wrapper = DATASTORE_TYPE_WRAPPERS.get(propertyVal.getClass());
+		if (wrapper != null) {
+			return (Value) wrapper.apply(propertyVal);
+		}
+		throw new DatastoreDataException("Simple type value wrapper is not found for property" +
+				" with name " + persistentProperty.getFieldName()
+				+ ". The property's simple type is " + propertyVal.getClass());
+	}
+
+	private Object convertToSimpleType(@Nullable Object obj) {
+		if (obj == null) {
+			return null;
 		}
 
 		Optional<Class<?>> basicTargetType = this.customConversions.getCustomWriteTarget(obj.getClass());
@@ -190,5 +176,70 @@ public class ConverterAwareMappingDatastoreEntityConverter implements DatastoreE
 		}
 
 		return obj;
+	}
+
+	/**
+	 * A class to manage Datastore-specific simple type conversions.
+	 *
+	 * @author Dmitry Solomakha
+	 */
+	static class DatastoreSimpleTypes {
+
+		static final Set<Class<?>> DATASTORE_NATIVE_TYPES;
+
+		static final Set<Class<?>> ID_TYPES;
+
+		static final List<Class<?>> DATASTORE_NATIVE_TYPES_RESOLUTION;
+
+		static {
+			ID_TYPES = ImmutableSet.<Class<?>>builder()
+					.add(String.class)
+					.add(Long.class)
+					.build();
+
+			DATASTORE_NATIVE_TYPES_RESOLUTION = ImmutableList.<Class<?>>builder()
+					.add(Boolean.class)
+					.add(Long.class)
+					.add(Double.class)
+					.add(LatLng.class)
+					.add(Timestamp.class)
+					.add(String.class)
+					.add(Blob.class)
+					.build();
+
+			DATASTORE_NATIVE_TYPES = ImmutableSet.<Class<?>>builder()
+					.addAll(DATASTORE_NATIVE_TYPES_RESOLUTION)
+					.build();
+		}
+
+		static final SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_NATIVE_TYPES, true);
+
+
+		final private Map<Class, Optional<Class<?>>> writeConverters = new HashMap<>();
+
+		final private ConversionService conversionService;
+
+		DatastoreSimpleTypes(ConversionService conversionService) {
+			this.conversionService = conversionService;
+		}
+
+		static boolean isSimple(Class aClass) {
+			return aClass == null || DATASTORE_NATIVE_TYPES.contains(aClass);
+		}
+
+		Optional<Class<?>> getCustomWriteTarget(Class<?> sourceType) {
+			if (isSimple(sourceType)) {
+				return Optional.empty();
+			}
+			return this.writeConverters.computeIfAbsent(sourceType, this::getSimpleTypeWithBidirectionalConversion);
+		}
+
+		private Optional<Class<?>> getSimpleTypeWithBidirectionalConversion(Class inputType) {
+			return DatastoreSimpleTypes.DATASTORE_NATIVE_TYPES_RESOLUTION.stream()
+					.filter(simpleType ->
+							this.conversionService.canConvert(inputType, simpleType)
+							&& this.conversionService.canConvert(simpleType, inputType))
+					.findAny();
+		}
 	}
 }

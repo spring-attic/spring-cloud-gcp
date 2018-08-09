@@ -64,7 +64,9 @@ public class EntityPropertyValueProviderTests {
 				.build();
 
 		EntityPropertyValueProvider provider =
-				new EntityPropertyValueProvider(entity, new DefaultConversionService(), null);
+				new EntityPropertyValueProvider(
+						entity, new DefaultConversionService(), new DatastoreCustomConversions()
+				);
 
 		assertThat((String) provider.getPropertyValue(this.persistentEntity.getPersistentProperty("stringField")))
 				.as("validate string field").isEqualTo("string value");

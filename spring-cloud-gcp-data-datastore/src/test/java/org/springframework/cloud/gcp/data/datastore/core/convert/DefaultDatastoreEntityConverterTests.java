@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
@@ -41,7 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @since 1.1
  */
 
-public class ConverterAwareMappingDatastoreEntityConverterTests {
+public class DefaultDatastoreEntityConverterTests {
 	private static final LocalDatastoreHelper HELPER = LocalDatastoreHelper.create(1.0);
 
 	private Datastore datastore;
@@ -66,7 +67,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 				.set("intField", 99)
 				.build();
 		DatastoreEntityConverter entityConverter =
-				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
 		TestDatastoreItem item = entityConverter.read(TestDatastoreItem.class, entity);
 
 		assertThat(item.getDurationField()).as("validate duration field").isEqualTo(Duration.ofDays(1));
@@ -97,7 +98,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 				.set("intField", 99)
 				.build();
 		DatastoreEntityConverter entityConverter =
-				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
 		TestDatastoreItem item = entityConverter.read(TestDatastoreItem.class, entity);
 
 		assertThat(item.getStringField()).as("validate null field").isNull();
@@ -111,7 +112,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 				.build();
 
 		DatastoreEntityConverter entityConverter =
-				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
 		entityConverter.read(TestDatastoreItem.class, entity);
 	}
 
@@ -130,7 +131,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 		item.setIntField(99);
 
 		DatastoreEntityConverter entityConverter =
-				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 
@@ -165,7 +166,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 		item.setBlobField(Blob.copyFrom(bytes));
 
 		DatastoreEntityConverter entityConverter =
-				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 
@@ -182,7 +183,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 		item.setUnsupportedField(new TestDatastoreItemUnsupportedFields.UnsupportedType(true));
 
 		DatastoreEntityConverter entityConverter =
-				new ConverterAwareMappingDatastoreEntityConverter(new DatastoreMappingContext());
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 		System.out.println(builder.build());
@@ -194,8 +195,8 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 		item.setStringField("string value");
 		item.setUnsupportedField(new TestDatastoreItemUnsupportedFields.UnsupportedType(true));
 
-		DatastoreEntityConverter entityConverter = new ConverterAwareMappingDatastoreEntityConverter(
-				new DatastoreMappingContext(),
+		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(
+				new DatastoreMappingContext(), new DatastoreCustomConversions(
 				Arrays.asList(
 						new Converter<Integer, TestDatastoreItemUnsupportedFields.UnsupportedType>() {
 							@Override
@@ -210,7 +211,7 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 							}
 
 						}
-				));
+				)));
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 		Entity entity = builder.build();
@@ -222,6 +223,35 @@ public class ConverterAwareMappingDatastoreEntityConverterTests {
 
 		TestDatastoreItemUnsupportedFields readItem =
 				entityConverter.read(TestDatastoreItemUnsupportedFields.class, entity);
+
+		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
+	}
+
+	@Test
+	public void testObjFieldWrite() {
+		TestDatastoreItemStringField item = new TestDatastoreItemStringField();
+		item.setStringField("abc");
+
+		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(
+				new DatastoreMappingContext(), new DatastoreCustomConversions(
+				Collections.singletonList(
+						new Converter<String, String>() {
+							@Override
+							public String convert(String source) {
+								return new StringBuilder().append(source.toString()).reverse().toString();
+							}
+						}
+				)));
+		Entity.Builder builder = getEntityBuilder();
+		entityConverter.write(item, builder);
+		Entity entity = builder.build();
+
+
+		assertThat(entity.getString("stringField")).as("validate string field")
+				.isEqualTo("cba");
+
+		TestDatastoreItemStringField readItem =
+				entityConverter.read(TestDatastoreItemStringField.class, entity);
 
 		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
 	}
