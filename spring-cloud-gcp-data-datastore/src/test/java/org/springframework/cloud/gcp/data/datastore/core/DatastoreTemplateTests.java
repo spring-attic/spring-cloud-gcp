@@ -39,6 +39,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -86,6 +87,14 @@ public class DatastoreTemplateTests {
 		when(this.datastoreEntityConverter.read(eq(TestEntity.class), any())).thenReturn(ob1);
 
 		assertEquals(ob1, this.datastoreTemplate.findById(key1, TestEntity.class));
+	}
+
+	@Test
+	public void findByIdNotFoundTest() {
+		Key key1 = createFakeKey("key1");
+		when(this.datastore.get(ArgumentMatchers.<Key>any())).thenReturn(null);
+
+		assertNull(this.datastoreTemplate.findById(key1, TestEntity.class));
 	}
 
 	@Test

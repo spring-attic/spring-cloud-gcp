@@ -74,8 +74,9 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> T findById(Object id, Class<T> entityClass) {
-		return this.datastoreEntityConverter.read(entityClass,
-				this.datastore.get(getKeyFromId(id, entityClass)));
+		Entity entity = this.datastore.get(getKeyFromId(id, entityClass));
+		return entity == null ? null
+				: this.datastoreEntityConverter.read(entityClass, entity);
 	}
 
 	@Override
