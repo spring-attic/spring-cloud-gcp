@@ -16,51 +16,42 @@
 
 package org.springframework.cloud.gcp.autoconfigure.config.it;
 
-import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.config.GcpConfigBootstrapConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
-import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class GcpConfigIntegrationTests {
-
-	private ConfigurableApplicationContext context;
 
 	@BeforeClass
 	public static void enableTests() {
 		assumeThat(System.getProperty("it.config")).isEqualTo("true");
 	}
 
-	@After
-	public void close() {
-		if (this.context != null) {
-			this.context.close();
-		}
-	}
-
 	@Test
 	public void testConfiguration() {
-		this.context = new SpringApplicationBuilder()
-				.sources(GcpContextAutoConfiguration.class, GcpConfigBootstrapConfiguration.class)
-				.web(WebApplicationType.NONE)
-				.properties("spring.cloud.gcp.config.enabled=true",
+		new ApplicationContextRunner()
+				.withConfiguration(
+						AutoConfigurations.of(GcpConfigBootstrapConfiguration.class,
+								GcpContextAutoConfiguration.class))
+				.withPropertyValues("spring.cloud.gcp.config.enabled=true",
 						"spring.application.name=myapp",
 						"spring.profiles.active=dontexist,prod")
-				.run();
-
-		assertThat(this.context.getEnvironment().getProperty("myapp.queue-size"))
-				.isEqualTo("200");
-		assertThat(this.context.getEnvironment().getProperty("myapp.feature-x-enabled"))
-				.isEqualTo("true");
+				.run(context -> {
+					assertThat(context.getEnvironment().getProperty("myapp.queue-size"))
+							.isEqualTo("200");
+					assertThat(context.getEnvironment()
+							.getProperty("myapp.feature-x-enabled")).isEqualTo("true");
+				});
 	}
 }
