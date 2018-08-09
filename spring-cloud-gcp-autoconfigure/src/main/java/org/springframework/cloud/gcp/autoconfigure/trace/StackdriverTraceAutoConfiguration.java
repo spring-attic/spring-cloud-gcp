@@ -118,31 +118,31 @@ public class StackdriverTraceAutoConfiguration {
 				.withExecutor(executorProvider.getExecutor());
 
 		if (traceProperties.getAuthority() != null) {
-			callOptions.withAuthority(traceProperties.getAuthority());
+			callOptions = callOptions.withAuthority(traceProperties.getAuthority());
 		}
 
 		if (traceProperties.getCompression() != null) {
-			callOptions.withCompression(traceProperties.getCompression());
+			callOptions = callOptions.withCompression(traceProperties.getCompression());
 		}
 
 		if (traceProperties.getDeadlineMs() != null) {
-			callOptions.withDeadlineAfter(traceProperties.getDeadlineMs(), TimeUnit.MILLISECONDS);
+			callOptions = callOptions.withDeadlineAfter(traceProperties.getDeadlineMs(), TimeUnit.MILLISECONDS);
 		}
 
 		if (traceProperties.getMaxInboundSize() != null) {
-			callOptions.withMaxInboundMessageSize(traceProperties.getMaxInboundSize());
+			callOptions = callOptions.withMaxInboundMessageSize(traceProperties.getMaxInboundSize());
 		}
 
 		if (traceProperties.getMaxOutboundSize() != null) {
-			callOptions.withMaxOutboundMessageSize(traceProperties.getMaxOutboundSize());
+			callOptions = callOptions.withMaxOutboundMessageSize(traceProperties.getMaxOutboundSize());
 		}
 
 		if (traceProperties.isWaitForReady() != null) {
 			if (Boolean.TRUE.equals(traceProperties.isWaitForReady())) {
-				callOptions.withWaitForReady();
+				callOptions = callOptions.withWaitForReady();
 			}
 			else {
-				callOptions.withoutWaitForReady();
+				callOptions = callOptions.withoutWaitForReady();
 			}
 		}
 

@@ -54,8 +54,8 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	private Class payloadType = byte[].class;
 
 	public PubSubInboundChannelAdapter(PubSubSubscriberOperations pubSubSubscriberOperations, String subscriptionName) {
-		Assert.notNull(pubSubSubscriberOperations, "Pub/Sub subscriber template cannot be null.");
-		Assert.notNull(subscriptionName, "Pub/Sub subscription name cannot be null.");
+		Assert.notNull(pubSubSubscriberOperations, "Pub/Sub subscriber template can't be null.");
+		Assert.notNull(subscriptionName, "Pub/Sub subscription name can't be null.");
 		this.pubSubSubscriberOperations = pubSubSubscriberOperations;
 		this.subscriptionName = subscriptionName;
 	}

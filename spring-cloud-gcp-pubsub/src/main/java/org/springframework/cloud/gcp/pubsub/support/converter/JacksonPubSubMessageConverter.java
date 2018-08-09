@@ -61,7 +61,6 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 			throw new PubSubMessageConversionException("JSON serialization of an object of type " +
 					payload.getClass().getName() + " failed.", e);
 		}
-
 	}
 
 	@Override
@@ -74,4 +73,5 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 					payloadType.getName() + " failed.", e);
 		}
 	}
+
 }
