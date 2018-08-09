@@ -52,7 +52,7 @@ public class SpannerSchemaUtils {
 
 	private final SpannerTypeMapper spannerTypeMapper;
 
-	private final boolean createInterleavedTableStatementCascadeOnDelete;
+	private final boolean createInterleavedTableDdlOnDeleteCascade;
 
 	/**
 	 * Constructor. Generates create-table DDL statements that cascade deletes for
@@ -61,14 +61,14 @@ public class SpannerSchemaUtils {
 	 * for generating DDL statements.
 	 * @param spannerEntityProcessor An entity processor that is queried for types that it
 	 * can convert for determining compatible column types when generating DDL statements.
-	 * @param createInterleavedTableStatementCascadeOnDelete If {@code true} will generate
+	 * @param createInterleavedTableDdlOnDeleteCascade If {@code true} will generate
 	 * create-table statements that specify cascade on delete for interleaved tables. If
 	 * {@code false}, then the deletes among interleaved tables do not cascade and require
 	 * manual deletion of all children before parents.
 	 */
 	public SpannerSchemaUtils(SpannerMappingContext mappingContext,
 			SpannerEntityProcessor spannerEntityProcessor,
-			boolean createInterleavedTableStatementCascadeOnDelete) {
+			boolean createInterleavedTableDdlOnDeleteCascade) {
 		Assert.notNull(mappingContext,
 				"A valid mapping context for Cloud Spanner is required.");
 		Assert.notNull(spannerEntityProcessor,
@@ -76,8 +76,7 @@ public class SpannerSchemaUtils {
 		this.mappingContext = mappingContext;
 		this.spannerEntityProcessor = spannerEntityProcessor;
 		this.spannerTypeMapper = new SpannerTypeMapper();
-		this.createInterleavedTableStatementCascadeOnDelete =
-				createInterleavedTableStatementCascadeOnDelete;
+		this.createInterleavedTableDdlOnDeleteCascade = createInterleavedTableDdlOnDeleteCascade;
 	}
 
 	/**
@@ -249,7 +248,7 @@ public class SpannerSchemaUtils {
 				seenClasses,
 				(type, parent) -> getCreateTableDdlString(type) + (parent == null ? ""
 						: ", INTERLEAVE IN PARENT " + parent + " ON DELETE "
-								+ (this.createInterleavedTableStatementCascadeOnDelete
+								+ (this.createInterleavedTableDdlOnDeleteCascade
 										? "CASCADE"
 										: "NO ACTION")),
 				false);

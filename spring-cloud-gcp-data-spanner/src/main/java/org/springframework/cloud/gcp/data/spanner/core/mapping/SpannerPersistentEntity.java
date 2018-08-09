@@ -47,8 +47,9 @@ public interface SpannerPersistentEntity<T> extends
 	Set<String> columns();
 
 	/**
-	 * Gets the primary key properties in order.
-	 * @return an array of the properties comprising the primary key in order.
+	 * Gets the primary key properties in order. Embedded object properties containing key
+	 * parts are represented as a single property.
+	 * @return An array of the properties comprising the primary key in order.
 	 */
 	SpannerPersistentProperty[] getPrimaryKeyProperties();
 

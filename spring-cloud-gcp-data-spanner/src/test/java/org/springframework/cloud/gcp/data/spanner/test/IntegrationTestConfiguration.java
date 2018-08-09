@@ -124,8 +124,10 @@ public class IntegrationTestConfiguration {
 	@Bean
 	public SpannerMutationFactory spannerMutationFactory(
 			SpannerEntityProcessor spannerEntityProcessor,
-			SpannerMappingContext spannerMappingContext) {
-		return new SpannerMutationFactoryImpl(spannerEntityProcessor, spannerMappingContext);
+			SpannerMappingContext spannerMappingContext,
+			SpannerSchemaUtils spannerSchemaUtils) {
+		return new SpannerMutationFactoryImpl(spannerEntityProcessor,
+				spannerMappingContext, spannerSchemaUtils);
 	}
 
 	@Bean

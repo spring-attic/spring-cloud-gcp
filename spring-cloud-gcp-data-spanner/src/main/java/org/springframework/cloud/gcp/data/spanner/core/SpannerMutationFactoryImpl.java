@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -28,11 +29,11 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.Op;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.util.Assert;
@@ -48,6 +49,8 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
 	private final SpannerMappingContext spannerMappingContext;
 
+	private final SpannerSchemaUtils spannerSchemaUtils;
+
 	/**
 	 * Constructor
 	 * @param spannerEntityProcessor The object mapper used to convert between objects and Spanner
@@ -56,13 +59,17 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	 * types.
 	 */
 	public SpannerMutationFactoryImpl(SpannerEntityProcessor spannerEntityProcessor,
-			SpannerMappingContext spannerMappingContext) {
+			SpannerMappingContext spannerMappingContext,
+			SpannerSchemaUtils spannerSchemaUtils) {
 		Assert.notNull(spannerEntityProcessor,
 				"A valid results mapper for Cloud Spanner is required.");
 		Assert.notNull(spannerMappingContext,
 				"A valid mapping context for Cloud Spanner is required.");
+		Assert.notNull(spannerSchemaUtils,
+				"A valid schema utils for Cloud Spanner is required.");
 		this.spannerEntityProcessor = spannerEntityProcessor;
 		this.spannerMappingContext = spannerMappingContext;
+		this.spannerSchemaUtils = spannerSchemaUtils;
 	}
 
 	@Override
@@ -145,21 +152,21 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	private void verifyChildHasParentId(SpannerPersistentEntity parentEntity,
 			Object parentObject, SpannerPersistentEntity childEntity,
 			Object childObject) {
-		SpannerPersistentProperty[] parentPk = parentEntity.getPrimaryKeyProperties();
-		SpannerPersistentProperty[] childPk = childEntity.getPrimaryKeyProperties();
-		PersistentPropertyAccessor parentAccessor = parentEntity
-				.getPropertyAccessor(parentObject);
-		PersistentPropertyAccessor childAccessor = childEntity
-				.getPropertyAccessor(childObject);
-		for (int i = 0; i < parentPk.length; i++) {
-			if (!parentAccessor.getProperty(parentPk[i])
-					.equals(childAccessor.getProperty(childPk[i]))) {
+		Iterator parentKeyParts = this.spannerSchemaUtils.getKey(parentObject).getParts()
+				.iterator();
+		Iterator childKeyParts = this.spannerSchemaUtils.getKey(childObject).getParts()
+				.iterator();
+		int partNum = 1;
+		while (parentKeyParts.hasNext()) {
+			if (!childKeyParts.hasNext()
+					|| !parentKeyParts.next().equals(childKeyParts.next())) {
 				throw new SpannerDataException(
-						"A child entity's common primary key columns with its parent must "
-								+ "have the same values. Primary key component " + i
-								+ " (" + parentPk[i].getColumnName() + ") does not match for entities: "
+						"A child entity's common primary key parts with its parent must "
+								+ "have the same values. Primary key component " + partNum
+								+ " does not match for entities: "
 								+ parentEntity.getType() + " " + childEntity.getType());
 			}
+			partNum++;
 		}
 	}
 

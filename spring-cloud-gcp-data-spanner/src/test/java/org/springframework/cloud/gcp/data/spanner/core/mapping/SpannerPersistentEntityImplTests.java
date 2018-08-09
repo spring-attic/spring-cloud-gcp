@@ -222,7 +222,7 @@ public class SpannerPersistentEntityImplTests {
 				this.spannerMappingContext.getPersistentEntity(ParentInRelationship.class);
 		doAnswer(invocation -> {
 			String colName = ((SpannerPersistentProperty) invocation.getArgument(0))
-					.getColumnName();
+					.getName();
 			assertTrue(colName.equals("childrenA") || colName.equals("childrenB"));
 			return null;
 		}).when(mockHandler).doWithPersistentProperty(any());
@@ -255,7 +255,7 @@ public class SpannerPersistentEntityImplTests {
 		String id2;
 	}
 
-	private static class ChildBInRelationship {
+	private static class EmbeddedKeyComponents {
 		@PrimaryKey
 		String id;
 
@@ -263,12 +263,18 @@ public class SpannerPersistentEntityImplTests {
 		String id2;
 	}
 
+	private static class ChildBInRelationship {
+		@Embedded
+		@PrimaryKey
+		EmbeddedKeyComponents embeddedKeyComponents;
+	}
+
 	private static class ParentInRelationshipMismatchedKeyName {
 		@PrimaryKey
 		String idNameDifferentThanChildren;
 
 		@Interleaved
-		List<ChildAInRelationship> childrenA;
+		List<ChildBInRelationship> childrenA;
 	}
 
 	private static class GrandParentEmbedded {
