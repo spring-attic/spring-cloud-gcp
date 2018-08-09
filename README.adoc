@@ -41,7 +41,7 @@ Similarly to `GCP Messaging`, `GCP Storage` contains the Google Cloud Storage su
 
 == Spring Cloud GCP Bill of Materials (BOM)
 
-If you're a Maven user, it's probably a good idea to add our BOM to your maven.xml
+If you're a Maven user, add our BOM to your pom.xml
 `<dependencyManagement>` section. This will allow you to not specify versions for any of the Maven
 dependencies and instead delegate versioning to the BOM.
 
