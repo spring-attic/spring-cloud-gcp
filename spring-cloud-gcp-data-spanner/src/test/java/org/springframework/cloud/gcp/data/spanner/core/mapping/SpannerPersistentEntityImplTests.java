@@ -260,7 +260,7 @@ public class SpannerPersistentEntityImplTests {
 
 	private static class ParentInRelationshipMismatchedKeyName {
 		@PrimaryKey
-		String idNameDifferentThanKids;
+		String idNameDifferentThanChildren;
 
 		@Interleaved
 		List<ChildAInRelationship> childrenA;
