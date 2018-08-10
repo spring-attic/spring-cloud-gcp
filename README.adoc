@@ -4,8 +4,8 @@ This project makes it easy for Spring users to run their applications on Google 
 You can check our project website http://cloud.spring.io/spring-cloud-gcp[here].
 
 For a deep dive into the project, refer to the
-https://docs.spring.io/spring-cloud-gcp/docs/1.0.0.RC1/reference/htmlsingle/[Spring
-Cloud GCP Reference Document].
+https://docs.spring.io/spring-cloud-gcp/docs/1.0.0.RELEASE/reference/htmlsingle/[Spring
+Cloud GCP 1.0 Reference Document].
 
 Currently, this repository provides support for:
 
@@ -15,8 +15,8 @@ Currently, this repository provides support for:
 * link:spring-cloud-gcp-data-spanner[Spring Data Cloud Spanner]
 * Spring Boot starters
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter[GCP Support]
-** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Google Cloud Config]
-** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Google Cloud Spanner]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Google Cloud Config] (v1.1)
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Google Cloud Spanner] (v1.1)
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[Google Cloud Logging]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-pubsub[Google Cloud Pub/Sub]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-mysql[Google Cloud SQL MySQL]
@@ -39,9 +39,30 @@ Spring Initializr contains Spring Cloud GCP auto-configuration support through t
 
 Similarly to `GCP Messaging`, `GCP Storage` contains the Google Cloud Storage support with no other dependencies needed.
 
+== Spring Cloud GCP Bill of Materials (BOM)
+
+If you're a Maven user, add our BOM to your pom.xml
+`<dependencyManagement>` section. This will allow you to not specify versions for any of the Maven
+dependencies and instead delegate versioning to the BOM.
+
+[source,xml]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gcp-dependencies</artifactId>
+            <version>1.0.0.RELEASE</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+
 == Spring Milestones Maven Repository
 
-Currently, the Maven artifacts for the project are only available in the Spring Milestones repository.
+The latest non-GA Maven artifacts for the project are only available in the Spring Milestones repository.
 You will want to make sure that the repository is added to your `pom.xml` file or globally in your https://maven.apache.org/settings.html[`settings.xml`] file.
 
 [source,xml]
@@ -53,27 +74,6 @@ You will want to make sure that the repository is added to your `pom.xml` file o
         <url>https://repo.spring.io/milestone</url>
     </repository>
 </repositories>
-----
-
-== Spring Cloud GCP Bill of Materials (BOM)
-
-If you're a Maven user, it's probably a good idea to add our BOM to your maven.xml
-`<dependencyManagement>` section. This will allow you to not specify versions for any of the Maven
-dependencies and instead delegate versioning to the BOM.
-
-[source,xml]
-----
-<dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-gcp-dependencies</artifactId>
-            <version>1.0.0.RC1</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-    </dependencies>
-</dependencyManagement>
 ----
 
 == Spring Boot Starters

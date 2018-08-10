@@ -16,8 +16,13 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.admin;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.OptionalLong;
+import java.util.Set;
 import java.util.StringJoiner;
+import java.util.function.BiFunction;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Type;
@@ -47,8 +52,23 @@ public class SpannerSchemaUtils {
 
 	private final SpannerTypeMapper spannerTypeMapper;
 
+	private final boolean createInterleavedTableDdlOnDeleteCascade;
+
+	/**
+	 * Constructor. Generates create-table DDL statements that cascade deletes for
+	 * interleaved tables.
+	 * @param mappingContext A mapping context used to obtain persistent entity metadata
+	 * for generating DDL statements.
+	 * @param spannerEntityProcessor An entity processor that is queried for types that it
+	 * can convert for determining compatible column types when generating DDL statements.
+	 * @param createInterleavedTableDdlOnDeleteCascade If {@code true} will generate
+	 * create-table statements that specify cascade on delete for interleaved tables. If
+	 * {@code false}, then the deletes among interleaved tables do not cascade and require
+	 * manual deletion of all children before parents.
+	 */
 	public SpannerSchemaUtils(SpannerMappingContext mappingContext,
-			SpannerEntityProcessor spannerEntityProcessor) {
+			SpannerEntityProcessor spannerEntityProcessor,
+			boolean createInterleavedTableDdlOnDeleteCascade) {
 		Assert.notNull(mappingContext,
 				"A valid mapping context for Cloud Spanner is required.");
 		Assert.notNull(spannerEntityProcessor,
@@ -56,67 +76,23 @@ public class SpannerSchemaUtils {
 		this.mappingContext = mappingContext;
 		this.spannerEntityProcessor = spannerEntityProcessor;
 		this.spannerTypeMapper = new SpannerTypeMapper();
+		this.createInterleavedTableDdlOnDeleteCascade = createInterleavedTableDdlOnDeleteCascade;
 	}
 
-	private String getTypeDdlString(Type.Code type, boolean isArray, OptionalLong dataLength) {
-		Assert.notNull(type, "A valid Cloud Spanner column type is required.");
-		if (isArray) {
-			return "ARRAY<" + getTypeDdlString(type, false, dataLength) + ">";
-		}
-		return type.toString()
-				+ (type == Type.Code.STRING || type == Type.Code.BYTES
-						? "(" + (dataLength.isPresent() ? dataLength.getAsLong() : "MAX") + ")"
-						: "");
-	}
-
-	String getColumnDdlString(
-			SpannerPersistentProperty spannerPersistentProperty, SpannerEntityProcessor spannerEntityProcessor) {
-		Class columnType = spannerPersistentProperty.getType();
-		String ddlString;
-		if (ConversionUtils.isIterableNonByteArrayType(columnType)) {
-			Class innerType = spannerPersistentProperty.getColumnInnerType();
-			if (innerType == null) {
-				throw new SpannerDataException(
-						"Cannot get column DDL for iterable type without "
-								+ "annotated"
-								+ " "
-								+ "inner "
-								+ "type"
-								+ ".");
-			}
-			Class spannerJavaType = spannerEntityProcessor.getCorrespondingSpannerJavaType(innerType, true);
-			Type.Code spannerSupportedInnerType = this.spannerTypeMapper.getSimpleTypeCodeForJavaType(spannerJavaType);
-
-			if (spannerSupportedInnerType == null) {
-				throw new SpannerDataException(
-						"Could not find suitable Cloud Spanner column inner type for "
-								+ "property type:"
-								+ innerType);
-			}
-			ddlString = getTypeDdlString(spannerSupportedInnerType, true,
-					spannerPersistentProperty.getMaxColumnLength());
-		}
-		else {
-			Class spannerJavaType = spannerEntityProcessor.getCorrespondingSpannerJavaType(columnType, false);
-			Type.Code spannerColumnType = spannerJavaType.isArray()
-					? this.spannerTypeMapper.getArrayTypeCodeForJavaType(spannerJavaType)
-					: this.spannerTypeMapper.getSimpleTypeCodeForJavaType(spannerJavaType);
-
-			if (spannerColumnType == null) {
-				throw new SpannerDataException(
-						"Could not find suitable Cloud Spanner column type for property " + "type:" + columnType);
-			}
-
-			ddlString = getTypeDdlString(spannerColumnType, spannerJavaType.isArray(),
-					spannerPersistentProperty.getMaxColumnLength());
-		}
-		return spannerPersistentProperty.getColumnName() + " " + ddlString;
+	/**
+	 * Gets the DDL string to drop the table for the given entity in Cloud Spanner.
+	 * @param entityClass The entity type.
+	 * @return The DDL string.
+	 */
+	public String getDropTableDdlString(Class entityClass) {
+		return "DROP TABLE "
+				+ this.mappingContext.getPersistentEntity(entityClass).tableName();
 	}
 
 	/**
 	 * Gets the key for the given object.
-	 * @param object the object to get the key for
-	 * @return the Cloud Spanner Key for the given object.
+	 * @param object The object to get the key for
+	 * @return The Spanner Key for the given object.
 	 */
 	public Key getKey(Object object) {
 		SpannerPersistentEntity persistentEntity = this.mappingContext
@@ -126,17 +102,18 @@ public class SpannerSchemaUtils {
 	}
 
 	/**
-	 * Gets the DDL string to create the table for the given entity in Spanner. This is just
-	 * one of the possible schemas that can support the given entity type. The specific schema
+	 * Gets the DDL string to create the table for the given entity in Cloud Spanner. This
+	 * is just one of the possible schemas that can support the given entity type. The
+	 * specific schema
 	 * is determined by the configured property type converters used by the read and write
 	 * methods in this SpannerOperations and will be compatible with those methods.
-	 * @param entityClass the entity type.
-	 * @return the DDL string.
+	 * @param entityClass The entity type.
+	 * @return The DDL string.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> String getCreateTableDDLString(Class<T> entityClass) {
-		SpannerPersistentEntity<T> spannerPersistentEntity =
-				(SpannerPersistentEntity<T>) this.mappingContext
+	public <T> String getCreateTableDdlString(Class<T> entityClass) {
+		SpannerPersistentEntity<T> spannerPersistentEntity = (SpannerPersistentEntity<T>)
+				this.mappingContext
 				.getPersistentEntity(entityClass);
 
 		StringBuilder stringBuilder = new StringBuilder(
@@ -154,6 +131,82 @@ public class SpannerSchemaUtils {
 
 		stringBuilder.append(keyStrings.toString()).append(" )");
 		return stringBuilder.toString();
+	}
+
+	/**
+	 * Gets a list of DDL strings to create the tables rooted at the given entity class.
+	 * The DDL-create strings are ordered in the list starting with the given root class
+	 * and are topologically sorted.
+	 * @param entityClass The root class for which to get create strings.
+	 * @return A list of create strings that are toplogically sorted from parents to
+	 * children.
+	 */
+	public List<String> getCreateTableDdlStringsForInterleavedHierarchy(
+			Class entityClass) {
+		List<String> ddlStrings = new ArrayList<>();
+		getCreateTableDdlStringsForInterleavedHierarchy(null, entityClass, ddlStrings,
+				new HashSet<>());
+		return ddlStrings;
+	}
+
+	/**
+	 * Gets the DDL strings to drop the tables of this entity and all of its sub-entities.
+	 * The list is given in reverse topological sort, since parent tables cannot be
+	 * dropped before their children tables.
+	 * @param entityClass The root entity whose table to drop.
+	 * @return The list of drop DDL strings.
+	 */
+	public List<String> getDropTableDdlStringsForInterleavedHierarchy(Class entityClass) {
+		List<String> ddlStrings = new ArrayList<>();
+		getDropTableDdlStringsForInterleavedHierarchy(entityClass, ddlStrings,
+				new HashSet<>());
+		return ddlStrings;
+	}
+
+	String getColumnDdlString(SpannerPersistentProperty spannerPersistentProperty,
+			SpannerEntityProcessor spannerEntityProcessor) {
+		Class columnType = spannerPersistentProperty.getType();
+		String columnName = spannerPersistentProperty.getColumnName() + " ";
+		Class spannerJavaType;
+		Type.Code spannerColumnType;
+		if (ConversionUtils.isIterableNonByteArrayType(columnType)) {
+			Class innerType = spannerPersistentProperty.getColumnInnerType();
+			spannerJavaType = spannerEntityProcessor
+					.getCorrespondingSpannerJavaType(innerType, true);
+			spannerColumnType = this.spannerTypeMapper
+					.getSimpleTypeCodeForJavaType(spannerJavaType);
+
+			if (spannerColumnType == null) {
+				throw new SpannerDataException(
+						"Could not find suitable Cloud Spanner column inner type for "
+								+ "property type: " + innerType);
+			}
+			return columnName + getTypeDdlString(spannerColumnType, true,
+					spannerPersistentProperty.getMaxColumnLength());
+		}
+		spannerJavaType = spannerEntityProcessor
+					.getCorrespondingSpannerJavaType(columnType, false);
+
+		if (spannerJavaType == null) {
+			throw new SpannerDataException(
+					"The currently configured custom type converters cannot "
+							+ "convert the given type to a Cloud Spanner-compatible column type: "
+							+ columnType);
+		}
+
+		spannerColumnType = spannerJavaType.isArray()
+					? this.spannerTypeMapper.getArrayTypeCodeForJavaType(spannerJavaType)
+					: this.spannerTypeMapper
+							.getSimpleTypeCodeForJavaType(spannerJavaType);
+
+		if (spannerColumnType == null) {
+			throw new SpannerDataException(
+					"Could not find suitable Cloud Spanner column type for property "
+							+ "type :" + columnType);
+		}
+
+		return columnName + getTypeDdlString(spannerColumnType, spannerJavaType.isArray(),
+					spannerPersistentProperty.getMaxColumnLength());
 	}
 
 	private <T> void addPrimaryKeyColumnNames(
@@ -174,7 +227,7 @@ public class SpannerSchemaUtils {
 	private <T> void addColumnDdlStrings(
 			SpannerPersistentEntity<T> spannerPersistentEntity,
 			StringJoiner stringJoiner) {
-		spannerPersistentEntity.doWithProperties(
+		spannerPersistentEntity.doWithColumnBackedProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						addColumnDdlStrings(
@@ -189,13 +242,53 @@ public class SpannerSchemaUtils {
 				});
 	}
 
-	/**
-	 * Gets the DDL string to drop the table for the given entity in Spanner.
-	 * @param entityClass the entity type.
-	 * @return the DDL string.
-	 */
-	public String getDropTableDdlString(Class entityClass) {
-		return "DROP TABLE "
-				+ this.mappingContext.getPersistentEntity(entityClass).tableName();
+	private void getCreateTableDdlStringsForInterleavedHierarchy(String parentTable,
+			Class entityClass, List<String> ddlStrings, Set<Class> seenClasses) {
+		getDdlStringForInterleavedHierarchy(parentTable, entityClass, ddlStrings,
+				seenClasses,
+				(type, parent) -> getCreateTableDdlString(type) + (parent == null ? ""
+						: ", INTERLEAVE IN PARENT " + parent + " ON DELETE "
+								+ (this.createInterleavedTableDdlOnDeleteCascade
+										? "CASCADE"
+										: "NO ACTION")),
+				false);
 	}
+
+	private void getDropTableDdlStringsForInterleavedHierarchy(Class entityClass,
+			List<String> dropStrings, Set<Class> seenClasses) {
+		getDdlStringForInterleavedHierarchy(null, entityClass, dropStrings, seenClasses,
+				(type, unused) -> getDropTableDdlString(type), true);
+	}
+
+	private void getDdlStringForInterleavedHierarchy(String parentTable,
+			Class entityClass, List<String> ddlStrings, Set<Class> seenClasses,
+			BiFunction<Class, String, String> generateSingleDdlStringFunc,
+			boolean prependDdlString) {
+		if (seenClasses.contains(entityClass)) {
+			return;
+		}
+		seenClasses.add(entityClass);
+		ddlStrings.add(prependDdlString ? 0 : ddlStrings.size(),
+				generateSingleDdlStringFunc.apply(entityClass, parentTable));
+		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
+				.getPersistentEntity(entityClass);
+		spannerPersistentEntity.doWithInterleavedProperties(
+				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty ->
+						getDdlStringForInterleavedHierarchy(
+						spannerPersistentEntity.tableName(),
+						spannerPersistentProperty.getColumnInnerType(), ddlStrings,
+						seenClasses, generateSingleDdlStringFunc, prependDdlString));
+	}
+
+	private String getTypeDdlString(Type.Code type, boolean isArray,
+			OptionalLong dataLength) {
+		Assert.notNull(type, "A valid Spanner column type is required.");
+		if (isArray) {
+			return "ARRAY<" + getTypeDdlString(type, false, dataLength) + ">";
+		}
+		return type.toString() + (type == Type.Code.STRING || type == Type.Code.BYTES
+				? "(" + (dataLength.isPresent() ? dataLength.getAsLong() : "MAX") + ")"
+				: "");
+	}
+
 }

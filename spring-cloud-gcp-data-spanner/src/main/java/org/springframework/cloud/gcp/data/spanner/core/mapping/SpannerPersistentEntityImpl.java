@@ -16,14 +16,17 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.BeansException;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
@@ -131,11 +134,11 @@ public class SpannerPersistentEntityImpl<T>
 		}
 		addPersistentPropertyToPersistentEntity(property);
 
-		if ((property.isEmbedded())) {
+		if (property.isEmbedded()) {
 			this.columnNames.addAll(this.spannerMappingContext
 					.getPersistentEntity(property.getType()).columns());
 		}
-		else {
+		else if (!property.isInterleaved()) {
 			this.columnNames.add(property.getColumnName());
 		}
 
@@ -193,21 +196,52 @@ public class SpannerPersistentEntityImpl<T>
 	public void verify() {
 		super.verify();
 		verifyPrimaryKeysConsecutive();
-		verifyOneToManyPropertiesAreCollections();
+		verifyInterleavedProperties();
 		verifyEmbeddedColumnNameOverlap(new HashSet<>(), this);
 	}
 
-	private void verifyOneToManyPropertiesAreCollections() {
-		// getting the inner type will throw an exception if the property isn't a
-		// collection.
-		doWithInterleavedProperties(SpannerPersistentProperty::getColumnInnerType);
+	private void verifyInterleavedProperties() {
+		doWithInterleavedProperties(spannerPersistentProperty -> {
+			// getting the inner type will throw an exception if the property isn't a
+			// collection.
+			Class childType = spannerPersistentProperty.getColumnInnerType();
+			SpannerPersistentEntityImpl childEntity = (SpannerPersistentEntityImpl)
+					this.spannerMappingContext.getPersistentEntity(childType);
+			List<SpannerPersistentProperty> primaryKeyProperties = getFlattenedPrimaryKeyProperties();
+			List<SpannerPersistentProperty> childKeyProperties = childEntity
+					.getFlattenedPrimaryKeyProperties();
+			if (primaryKeyProperties.size() >= childKeyProperties.size()) {
+				throw new SpannerDataException(
+						"A child table must contain the primary key columns of its "
+								+ "parent in the same order starting the first "
+								+ "column with additional" + " key columns after.");
+			}
+			for (int i = 0; i < primaryKeyProperties.size(); i++) {
+				SpannerPersistentProperty parentKey = primaryKeyProperties.get(i);
+				SpannerPersistentProperty childKey = childKeyProperties.get(i);
+				if (!parentKey.getColumnName().equals(childKey.getColumnName())
+						|| !parentKey.getType().equals(childKey.getType())) {
+					throw new SpannerDataException(
+							"The child primary key column (" + childKey.getColumnName()
+									+ ") at position " + (i + 1)
+									+ " does not match that of its parent ("
+									+ parentKey.getColumnName() + ")");
+				}
+			}
+		});
 	}
 
 	private void verifyEmbeddedColumnNameOverlap(Set<String> seen,
 			SpannerPersistentEntity spannerPersistentEntity) {
-		spannerPersistentEntity.doWithProperties(
+		spannerPersistentEntity.doWithColumnBackedProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
 					if (spannerPersistentProperty.isEmbedded()) {
+						if (ConversionUtils.isIterableNonByteArrayType(
+								spannerPersistentProperty.getType())) {
+							throw new SpannerDataException(
+									"Embedded properties cannot be collections: "
+											+ spannerPersistentProperty);
+						}
 						verifyEmbeddedColumnNameOverlap(seen,
 								this.spannerMappingContext.getPersistentEntity(
 										spannerPersistentProperty.getType()));
@@ -243,6 +277,22 @@ public class SpannerPersistentEntityImpl<T>
 				.size()];
 		for (int i = 1; i <= this.primaryKeyParts.size(); i++) {
 			primaryKeyColumns[i - 1] = this.primaryKeyParts.get(i);
+		}
+		return primaryKeyColumns;
+	}
+
+	private List<SpannerPersistentProperty> getFlattenedPrimaryKeyProperties() {
+		List<SpannerPersistentProperty> primaryKeyColumns = new ArrayList<>();
+		for (SpannerPersistentProperty property : getPrimaryKeyProperties()) {
+			if (property.isEmbedded()) {
+				primaryKeyColumns
+						.addAll(((SpannerPersistentEntityImpl) this.spannerMappingContext
+								.getPersistentEntity(property.getType()))
+										.getFlattenedPrimaryKeyProperties());
+			}
+			else {
+				primaryKeyColumns.add(property);
+			}
 		}
 		return primaryKeyColumns;
 	}

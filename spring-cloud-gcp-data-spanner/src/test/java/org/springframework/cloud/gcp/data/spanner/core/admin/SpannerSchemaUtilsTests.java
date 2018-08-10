@@ -21,6 +21,7 @@ import java.util.OptionalLong;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.Key;
+import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -30,12 +31,14 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnLength;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -52,83 +55,85 @@ public class SpannerSchemaUtilsTests {
 	public void setUp() {
 		SpannerMappingContext spannerMappingContext = new SpannerMappingContext();
 		this.spannerSchemaUtils = new SpannerSchemaUtils(spannerMappingContext,
-				new ConverterAwareMappingSpannerEntityProcessor(spannerMappingContext));
+				new ConverterAwareMappingSpannerEntityProcessor(spannerMappingContext),
+				true);
 		this.spannerEntityProcessor = new ConverterAwareMappingSpannerEntityProcessor(
 				spannerMappingContext);
 	}
 
 	@Test
-	public void getDropDDLTest() {
+	public void getDropDdlTest() {
 		assertEquals("DROP TABLE custom_test_table",
 				this.spannerSchemaUtils.getDropTableDdlString(TestEntity.class));
 	}
 
 	@Test
-	public void getCreateDDLTest() {
+
+	public void getCreateDdlTest() {
 		assertEquals("CREATE TABLE custom_test_table ( id STRING(MAX) , id3 INT64 , "
-						+ "id2 STRING(MAX) , bytes2 BYTES(MAX) , custom_col STRING(MAX) , other STRING(333) ,"
+						+ "id_2 STRING(MAX) , bytes2 BYTES(MAX) , custom_col STRING(MAX) , other STRING(333) ,"
 						+ " bytes BYTES(MAX) , bytesList ARRAY<BYTES(111)> , integerList ARRAY<INT64> , "
-						+ "doubles ARRAY<FLOAT64> ) PRIMARY KEY ( id , id2 , id3 )",
-				this.spannerSchemaUtils.getCreateTableDDLString(TestEntity.class));
+						+ "doubles ARRAY<FLOAT64> ) PRIMARY KEY ( id , id_2 , id3 )",
+				this.spannerSchemaUtils.getCreateTableDdlString(TestEntity.class));
 	}
 
 	@Test
-	public void createDDLString() {
-		assertColumnDDL(String.class, null,
+	public void createDdlString() {
+		assertColumnDdl(String.class, null,
 				"id", OptionalLong.empty(),
 				"id STRING(MAX)");
 	}
 
 	@Test
-	public void createDDLStringCustomLength() {
-		assertColumnDDL(String.class, null,
+	public void createDdlStringCustomLength() {
+		assertColumnDdl(String.class, null,
 				"id", OptionalLong.of(333L),
 				"id STRING(333)");
 	}
 
 	@Test
-	public void createDDLBytesMax() {
-		assertColumnDDL(ByteArray.class, null,
+	public void createDdlBytesMax() {
+		assertColumnDdl(ByteArray.class, null,
 				"bytes", OptionalLong.empty(),
 				"bytes BYTES(MAX)");
 	}
 
 	@Test
-	public void createDDLBytesCustomLength() {
-		assertColumnDDL(ByteArray.class, null,
+	public void createDdlBytesCustomLength() {
+		assertColumnDdl(ByteArray.class, null,
 				"bytes", OptionalLong.of(333L),
 				"bytes BYTES(333)");
 	}
 
 	@Test
 	public void ddlForListOfByteArray() {
-		assertColumnDDL(List.class, ByteArray.class,
+		assertColumnDdl(List.class, ByteArray.class,
 				"bytesList", OptionalLong.of(111L),
 				"bytesList ARRAY<BYTES(111)>");
 	}
 
 	@Test
 	public void ddlForDoubleArray() {
-		assertColumnDDL(double[].class, null,
+		assertColumnDdl(double[].class, null,
 				"doubles", OptionalLong.of(111L),
 				"doubles ARRAY<FLOAT64>");
 	}
 
 	@Test
 	public void ddlForListOfListOfIntegers() {
-		assertColumnDDL(List.class, Integer.class,
+		assertColumnDdl(List.class, Integer.class,
 				"integerList", OptionalLong.empty(),
 				"integerList ARRAY<INT64>");
 	}
 
 	@Test
 	public void ddlForListOfListOfDoubles() {
-		assertColumnDDL(List.class, Double.class,
+		assertColumnDdl(List.class, Double.class,
 				"doubleList", OptionalLong.empty(),
 				"doubleList ARRAY<FLOAT64>");
 	}
 
-	private void assertColumnDDL(Class clazz, Class innerClazz, String name,
+	private void assertColumnDdl(Class clazz, Class innerClazz, String name,
 			OptionalLong length, String expectedDDL) {
 		SpannerPersistentProperty spannerPersistentProperty = mock(SpannerPersistentProperty.class);
 
@@ -153,6 +158,32 @@ public class SpannerSchemaUtilsTests {
 		t.id3 = 3L;
 		assertEquals(Key.newBuilder().append(t.id).appendObject(t.embeddedColumns.id2).append(t.id3).build(),
 				this.spannerSchemaUtils.getKey(t));
+	}
+
+	@Test
+	public void getCreateDdlHierarchyTest() {
+		List<String> createStrings = this.spannerSchemaUtils
+				.getCreateTableDdlStringsForInterleavedHierarchy(ParentEntity.class);
+		assertThat(createStrings, IsIterableContainingInOrder.contains(
+				"CREATE TABLE parent_test_table ( id STRING(MAX) "
+						+ ", id_2 STRING(MAX) , bytes2 BYTES(MAX) , "
+						+ "custom_col STRING(MAX) , other STRING(MAX) ) PRIMARY KEY ( id , id_2 )",
+				"CREATE TABLE child_test_table ( id STRING(MAX) "
+						+ ", id_2 STRING(MAX) , bytes2 BYTES(MAX) , "
+						+ "id3 STRING(MAX) ) PRIMARY KEY ( id , id_2 , id3 ), INTERLEAVE IN PARENT "
+						+ "parent_test_table ON DELETE CASCADE",
+				"CREATE TABLE grand_child_test_table ( id STRING(MAX) , id_2 STRING(MAX) , "
+						+ "id3 STRING(MAX) , id4 STRING(MAX) ) PRIMARY KEY ( id , id_2 , id3 , id4 ), "
+						+ "INTERLEAVE IN PARENT child_test_table ON DELETE CASCADE"));
+	}
+
+	@Test
+	public void getDropDdlHierarchyTest() {
+		List<String> dropStrings = this.spannerSchemaUtils
+				.getDropTableDdlStringsForInterleavedHierarchy(ParentEntity.class);
+		assertThat(dropStrings,
+				IsIterableContainingInOrder.contains("DROP TABLE grand_child_test_table",
+						"DROP TABLE child_test_table", "DROP TABLE parent_test_table"));
 	}
 
 	@Table(name = "custom_test_table")
@@ -186,8 +217,66 @@ public class SpannerSchemaUtilsTests {
 
 	private static class EmbeddedColumns {
 		@PrimaryKey
+		@Column(name = "id_2")
 		String id2;
 
 		ByteArray bytes2;
+	}
+
+	@Table(name = "parent_test_table")
+	private static class ParentEntity {
+
+		@PrimaryKey(keyOrder = 1)
+		String id;
+
+		@PrimaryKey(keyOrder = 2)
+		@Embedded
+		EmbeddedColumns embeddedColumns;
+
+		@Column(name = "custom_col")
+		String something;
+
+		@Column(name = "")
+		String other;
+
+		@Interleaved
+		List<ChildEntity> childEntities;
+
+		@Interleaved
+		List<ChildEntity> childEntities2;
+	}
+
+	@Table(name = "child_test_table")
+	private static class ChildEntity {
+		@PrimaryKey(keyOrder = 1)
+		String id;
+
+		@PrimaryKey(keyOrder = 2)
+		@Embedded
+		EmbeddedColumns embeddedColumns;
+
+		@PrimaryKey(keyOrder = 3)
+		String id3;
+
+		@Interleaved
+		List<GrandChildEntity> childEntities;
+
+		@Interleaved
+		List<GrandChildEntity> childEntities2;
+	}
+
+	@Table(name = "grand_child_test_table")
+	private static class GrandChildEntity {
+		@PrimaryKey(keyOrder = 1)
+		String id;
+
+		@PrimaryKey(keyOrder = 2)
+		String id_2;
+
+		@PrimaryKey(keyOrder = 3)
+		String id3;
+
+		@PrimaryKey(keyOrder = 4)
+		String id4;
 	}
 }

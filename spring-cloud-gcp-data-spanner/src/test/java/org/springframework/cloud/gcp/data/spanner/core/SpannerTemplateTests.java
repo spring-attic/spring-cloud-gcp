@@ -40,11 +40,13 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
@@ -401,7 +403,8 @@ public class SpannerTemplateTests {
 
 		doAnswer(invocation -> {
 			assertEquals(
-					"SELECT * FROM (SELECT * FROM custom_test_table) "
+					"SELECT * FROM (SELECT other , doubles , id2 , bytes , integerList , id , "
+							+ "custom_col , bytesList FROM custom_test_table) "
 							+ "ORDER BY id ASC , LOWER(custom_col) DESC , other ASC , non_existant_prop DESC "
 							+ "LIMIT 3 OFFSET 5",
 					((Statement) invocation.getArgument(0)).getSql());
@@ -421,7 +424,8 @@ public class SpannerTemplateTests {
 
 		doAnswer(invocation -> {
 			assertEquals(
-					"SELECT * FROM (SELECT * FROM custom_test_table) "
+					"SELECT * FROM (SELECT other , doubles , id2 , bytes , integerList , id , "
+							+ "custom_col , bytesList FROM custom_test_table) "
 							+ "LIMIT 3 OFFSET 5",
 					((Statement) invocation.getArgument(0)).getSql());
 			return null;
@@ -469,6 +473,33 @@ public class SpannerTemplateTests {
 		assertEquals("c", ((TestEntity) results.get(2)).id);
 	}
 
+	@Test
+	public void resolveChildEntityTest() {
+		ParentEntity p = new ParentEntity();
+		p.id = "key";
+		p.id2 = "key2";
+		ChildEntity c = new ChildEntity();
+		c.id = "key";
+		c.id_2 = "key2";
+		c.id3 = "key3";
+		GrandChildEntity gc = new GrandChildEntity();
+		gc.id = "key";
+		gc.id_2 = "key2";
+		gc.id3 = "key3";
+		gc.id4 = "key4";
+		when(this.objectMapper.mapToList(any(), eq(ParentEntity.class)))
+				.thenReturn(ImmutableList.of(p));
+		when(this.objectMapper.mapToList(any(), eq(ChildEntity.class), any(), eq(true)))
+				.thenReturn(ImmutableList.of(c));
+		when(this.objectMapper.mapToList(any(), eq(GrandChildEntity.class), any(),
+				eq(true))).thenReturn(ImmutableList.of(gc));
+		ParentEntity result = this.spannerTemplate.readAll(ParentEntity.class).get(0);
+		assertEquals(1, result.childEntities.size());
+		assertSame(c, result.childEntities.get(0));
+		assertEquals(1, result.childEntities.get(0).childEntities.size());
+		assertSame(gc, result.childEntities.get(0).childEntities.get(0));
+	}
+
 	@Table(name = "custom_test_table")
 	private static class TestEntity {
 		@PrimaryKey(keyOrder = 1)
@@ -490,5 +521,54 @@ public class SpannerTemplateTests {
 		List<Integer> integerList;
 
 		double[] doubles;
+	}
+
+	@Table(name = "parent_test_table")
+	private static class ParentEntity {
+		@PrimaryKey(keyOrder = 1)
+		String id;
+
+		@PrimaryKey(keyOrder = 2)
+		@Column(name = "id_2")
+		String id2;
+
+		@Column(name = "custom_col")
+		String something;
+
+		@Column(name = "")
+		String other;
+
+		@Interleaved
+		List<ChildEntity> childEntities;
+	}
+
+	@Table(name = "child_test_table")
+	private static class ChildEntity {
+		@PrimaryKey(keyOrder = 1)
+		String id;
+
+		@PrimaryKey(keyOrder = 2)
+		String id_2;
+
+		@PrimaryKey(keyOrder = 3)
+		String id3;
+
+		@Interleaved
+		List<GrandChildEntity> childEntities;
+	}
+
+	@Table(name = "grand_child_test_table")
+	private static class GrandChildEntity {
+		@PrimaryKey(keyOrder = 1)
+		String id;
+
+		@PrimaryKey(keyOrder = 2)
+		String id_2;
+
+		@PrimaryKey(keyOrder = 3)
+		String id3;
+
+		@PrimaryKey(keyOrder = 4)
+		String id4;
 	}
 }

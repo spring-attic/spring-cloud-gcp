@@ -91,13 +91,13 @@ public class SpannerTemplateExample {
 		if (!this.spannerDatabaseAdminTemplate.tableExists("trades")) {
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(
 					Arrays.asList(
-							this.spannerSchemaUtils.getCreateTableDDLString(Trade.class)),
+							this.spannerSchemaUtils.getCreateTableDdlString(Trade.class)),
 					true);
 		}
 
 		if (!this.spannerDatabaseAdminTemplate.tableExists("traders")) {
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(Arrays.asList(
-					this.spannerSchemaUtils.getCreateTableDDLString(Trader.class)), true);
+					this.spannerSchemaUtils.getCreateTableDdlString(Trader.class)), true);
 		}
 	}
 }

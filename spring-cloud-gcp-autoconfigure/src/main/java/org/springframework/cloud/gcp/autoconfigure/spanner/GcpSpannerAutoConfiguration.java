@@ -86,6 +86,8 @@ public class GcpSpannerAutoConfiguration {
 
 		private final int keepAliveIntervalMinutes;
 
+		private final boolean createInterleavedTableDdlOnDeleteCascade;
+
 		CoreSpannerAutoConfiguration(GcpSpannerProperties gcpSpannerProperties,
 				GcpProjectIdProvider projectIdProvider,
 				CredentialsProvider credentialsProvider) throws IOException {
@@ -105,6 +107,8 @@ public class GcpSpannerAutoConfiguration {
 			this.writeSessionsFraction = gcpSpannerProperties.getWriteSessionsFraction();
 			this.keepAliveIntervalMinutes = gcpSpannerProperties
 					.getKeepAliveIntervalMinutes();
+			this.createInterleavedTableDdlOnDeleteCascade = gcpSpannerProperties
+					.isCreateInterleavedTableDdlOnDeleteCascade();
 		}
 
 		@Bean
@@ -193,8 +197,10 @@ public class GcpSpannerAutoConfiguration {
 		@ConditionalOnMissingBean
 		public SpannerMutationFactory spannerMutationFactory(
 				SpannerEntityProcessor spannerEntityProcessor,
-				SpannerMappingContext spannerMappingContext) {
-			return new SpannerMutationFactoryImpl(spannerEntityProcessor, spannerMappingContext);
+				SpannerMappingContext spannerMappingContext,
+				SpannerSchemaUtils spannerSchemaUtils) {
+			return new SpannerMutationFactoryImpl(spannerEntityProcessor, spannerMappingContext,
+					spannerSchemaUtils);
 		}
 
 		@Bean
@@ -202,7 +208,8 @@ public class GcpSpannerAutoConfiguration {
 		public SpannerSchemaUtils spannerSchemaUtils(
 				SpannerMappingContext spannerMappingContext,
 				SpannerEntityProcessor spannerEntityProcessor) {
-			return new SpannerSchemaUtils(spannerMappingContext, spannerEntityProcessor);
+			return new SpannerSchemaUtils(spannerMappingContext, spannerEntityProcessor,
+					this.createInterleavedTableDdlOnDeleteCascade);
 		}
 
 		@Bean
