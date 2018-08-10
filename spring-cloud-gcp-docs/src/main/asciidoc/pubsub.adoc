@@ -92,7 +92,7 @@ The `pullAndAck()` method does the same as the `pull()` method and, additionally
 
 The `pullAndConvert()` method does the same as the `pull()` method and, additionally, converts the Pub/Sub binary payload to an object of the desired type, using the converter configured in the template.
 
-To acknowledge multiple messages received from `pull()` or `pullAndConvert` at once, you can use the `PubSubTemplate.ack()` method.
+To acknowledge multiple messages received from `pull()` or `pullAndConvert()` at once, you can use the `PubSubTemplate.ack()` method.
 You can also use the `PubSubTemplate.nack()` for negatively acknowledging messages.
 Using these methods for acknowledging messages in batches is more efficient than acknowledging messages individually.
 

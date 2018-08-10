@@ -48,8 +48,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubInboundChannelAdapterTests {
 
-	public static final String ACK = "ACK";
-
 	public static final String NACK = "NACK";
 
 	public static final String EXCEPTION_MESSAGE = "Forced exception sending message";
@@ -64,23 +62,21 @@ public class PubSubInboundChannelAdapterTests {
 
 	private String value;
 
-	private ConvertedBasicAcknowledgeablePubsubMessage message;
-
 	@Before
 	public void setUp() throws UnsupportedEncodingException {
 		this.pubSubOperations = mock(PubSubOperations.class);
 		this.pubSubSubscriberOperations = mock(PubSubSubscriberOperations.class);
 		this.messageChannel = mock(MessageChannel.class);
-		this.message = mock(ConvertedBasicAcknowledgeablePubsubMessage.class);
 		this.value = null;
+		ConvertedBasicAcknowledgeablePubsubMessage message = mock(ConvertedBasicAcknowledgeablePubsubMessage.class);
 
 		doAnswer(invocation -> {
 			this.value = NACK;
 			return null;
-		}).when(this.message).nack();
+		}).when(message).nack();
 
-		when(this.message.getPubsubMessage()).thenReturn(PubsubMessage.newBuilder().build());
-		when(this.message.getPayload()).thenReturn("Test message payload.");
+		when(message.getPubsubMessage()).thenReturn(PubsubMessage.newBuilder().build());
+		when(message.getPayload()).thenReturn("Test message payload.");
 
 		when(this.messageChannel.send(any())).thenThrow(
 				new RuntimeException(EXCEPTION_MESSAGE));
@@ -89,7 +85,7 @@ public class PubSubInboundChannelAdapterTests {
 				anyString(), any(Consumer.class), any(Class.class))).then(invocationOnMock -> {
 					Consumer<ConvertedBasicAcknowledgeablePubsubMessage> messageConsumer =
 							invocationOnMock.getArgument(1);
-					messageConsumer.accept(this.message);
+					messageConsumer.accept(message);
 				return null;
 		});
 	}
