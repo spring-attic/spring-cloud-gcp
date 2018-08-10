@@ -16,14 +16,17 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.BeansException;
+import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
@@ -204,18 +207,18 @@ public class SpannerPersistentEntityImpl<T>
 			Class childType = spannerPersistentProperty.getColumnInnerType();
 			SpannerPersistentEntityImpl childEntity = (SpannerPersistentEntityImpl)
 					this.spannerMappingContext.getPersistentEntity(childType);
-			SpannerPersistentProperty[] primaryKeyProperties = getPrimaryKeyProperties();
-			SpannerPersistentProperty[] childKeyProperties = childEntity
-					.getPrimaryKeyProperties();
-			if (primaryKeyProperties.length >= childKeyProperties.length) {
+			List<SpannerPersistentProperty> primaryKeyProperties = getFlattenedPrimaryKeyProperties();
+			List<SpannerPersistentProperty> childKeyProperties = childEntity
+					.getFlattenedPrimaryKeyProperties();
+			if (primaryKeyProperties.size() >= childKeyProperties.size()) {
 				throw new SpannerDataException(
 						"A child table must contain the primary key columns of its "
 								+ "parent in the same order starting the first "
 								+ "column with additional" + " key columns after.");
 			}
-			for (int i = 0; i < primaryKeyProperties.length; i++) {
-				SpannerPersistentProperty parentKey = primaryKeyProperties[i];
-				SpannerPersistentProperty childKey = childKeyProperties[i];
+			for (int i = 0; i < primaryKeyProperties.size(); i++) {
+				SpannerPersistentProperty parentKey = primaryKeyProperties.get(i);
+				SpannerPersistentProperty childKey = childKeyProperties.get(i);
 				if (!parentKey.getColumnName().equals(childKey.getColumnName())
 						|| !parentKey.getType().equals(childKey.getType())) {
 					throw new SpannerDataException(
@@ -233,6 +236,12 @@ public class SpannerPersistentEntityImpl<T>
 		spannerPersistentEntity.doWithColumnBackedProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
 					if (spannerPersistentProperty.isEmbedded()) {
+						if (ConversionUtils.isIterableNonByteArrayType(
+								spannerPersistentProperty.getType())) {
+							throw new SpannerDataException(
+									"Embedded properties cannot be collections: "
+											+ spannerPersistentProperty);
+						}
 						verifyEmbeddedColumnNameOverlap(seen,
 								this.spannerMappingContext.getPersistentEntity(
 										spannerPersistentProperty.getType()));
@@ -268,6 +277,22 @@ public class SpannerPersistentEntityImpl<T>
 				.size()];
 		for (int i = 1; i <= this.primaryKeyParts.size(); i++) {
 			primaryKeyColumns[i - 1] = this.primaryKeyParts.get(i);
+		}
+		return primaryKeyColumns;
+	}
+
+	private List<SpannerPersistentProperty> getFlattenedPrimaryKeyProperties() {
+		List<SpannerPersistentProperty> primaryKeyColumns = new ArrayList<>();
+		for (SpannerPersistentProperty property : getPrimaryKeyProperties()) {
+			if (property.isEmbedded()) {
+				primaryKeyColumns
+						.addAll(((SpannerPersistentEntityImpl) this.spannerMappingContext
+								.getPersistentEntity(property.getType()))
+										.getFlattenedPrimaryKeyProperties());
+			}
+			else {
+				primaryKeyColumns.add(property);
+			}
 		}
 		return primaryKeyColumns;
 	}

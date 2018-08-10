@@ -204,6 +204,11 @@ public class SpannerPersistentEntityImplTests {
 				key);
 	}
 
+	@Test(expected = SpannerDataException.class)
+	public void testEmbeddedCollection() {
+		this.spannerMappingContext.getPersistentEntity(ChildCollectionEmbedded.class);
+	}
+
 	@Test
 	public void testExcludeEmbeddedColumnNames() {
 		assertThat(this.spannerMappingContext.getPersistentEntity(ChildEmbedded.class)
@@ -250,7 +255,7 @@ public class SpannerPersistentEntityImplTests {
 		String id2;
 	}
 
-	private static class ChildBInRelationship {
+	private static class EmbeddedKeyComponents {
 		@PrimaryKey
 		String id;
 
@@ -258,12 +263,18 @@ public class SpannerPersistentEntityImplTests {
 		String id2;
 	}
 
+	private static class ChildBInRelationship {
+		@Embedded
+		@PrimaryKey
+		EmbeddedKeyComponents embeddedKeyComponents;
+	}
+
 	private static class ParentInRelationshipMismatchedKeyName {
 		@PrimaryKey
 		String idNameDifferentThanChildren;
 
 		@Interleaved
-		List<ChildAInRelationship> childrenA;
+		List<ChildBInRelationship> childrenA;
 	}
 
 	private static class GrandParentEmbedded {
@@ -287,6 +298,15 @@ public class SpannerPersistentEntityImplTests {
 		@PrimaryKey
 		@Embedded
 		ParentEmbedded parentEmbedded;
+
+		@PrimaryKey(keyOrder = 2)
+		String id4;
+	}
+
+	private static class ChildCollectionEmbedded {
+		@PrimaryKey
+		@Embedded
+		List<ParentEmbedded> parentEmbedded;
 
 		@PrimaryKey(keyOrder = 2)
 		String id4;

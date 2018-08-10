@@ -140,7 +140,7 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	protected List<String> createSchemaStatements() {
 		return Arrays
-				.asList(this.spannerSchemaUtils.getCreateTableDDLString(Trade.class));
+				.asList(this.spannerSchemaUtils.getCreateTableDdlString(Trade.class));
 	}
 
 	protected Iterable<String> dropSchemaStatements() {

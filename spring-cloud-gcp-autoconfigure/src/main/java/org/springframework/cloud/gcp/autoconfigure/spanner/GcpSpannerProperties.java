@@ -40,6 +40,10 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 
 	private String database;
 
+	// If {@code true} then create-table statements generated will cascade on delete.
+	// No-action on delete if {@code false}.
+	private boolean createInterleavedTableDdlOnDeleteCascade = true;
+
 	// Default value is negative to indicate to use Cloud Spanner default number.
 	private int numRpcChannels = -1;
 
@@ -143,5 +147,15 @@ public class GcpSpannerProperties implements CredentialsSupplier {
 
 	public void setKeepAliveIntervalMinutes(int keepAliveIntervalMinutes) {
 		this.keepAliveIntervalMinutes = keepAliveIntervalMinutes;
+	}
+
+	public boolean isCreateInterleavedTableDdlOnDeleteCascade() {
+		return this.createInterleavedTableDdlOnDeleteCascade;
+	}
+
+	public void setCreateInterleavedTableDdlOnDeleteCascade(
+			boolean createInterleavedTableDdlOnDeleteCascade) {
+		this.createInterleavedTableDdlOnDeleteCascade =
+				createInterleavedTableDdlOnDeleteCascade;
 	}
 }
