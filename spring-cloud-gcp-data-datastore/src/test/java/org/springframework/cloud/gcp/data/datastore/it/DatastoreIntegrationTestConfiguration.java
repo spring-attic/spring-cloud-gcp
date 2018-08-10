@@ -29,8 +29,8 @@ import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
-import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverterImpl;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreServiceObjectToKeyFactory;
+import org.springframework.cloud.gcp.data.datastore.core.convert.DefaultDatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.repository.config.EnableDatastoreRepositories;
@@ -80,7 +80,7 @@ public class DatastoreIntegrationTestConfiguration {
 	@ConditionalOnMissingBean
 	public DatastoreEntityConverter datastoreEntityConverter(
 			DatastoreMappingContext datastoreMappingContext) {
-		return new DatastoreEntityConverterImpl(datastoreMappingContext);
+		return new DefaultDatastoreEntityConverter(datastoreMappingContext);
 	}
 
 	@Bean
