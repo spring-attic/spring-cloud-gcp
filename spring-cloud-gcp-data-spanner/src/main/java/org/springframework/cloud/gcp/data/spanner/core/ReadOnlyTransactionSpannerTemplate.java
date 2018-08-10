@@ -46,8 +46,8 @@ class ReadOnlyTransactionSpannerTemplate extends SpannerTemplate {
 	ReadOnlyTransactionSpannerTemplate(DatabaseClient databaseClient,
 			SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMutationFactory spannerMutationFactory,
-			ReadOnlyTransaction readOnlyTransaction,
-			SpannerSchemaUtils spannerSchemaUtils) {
+			SpannerSchemaUtils spannerSchemaUtils,
+			ReadOnlyTransaction readOnlyTransaction) {
 		super(databaseClient, mappingContext, spannerEntityProcessor,
 				spannerMutationFactory, spannerSchemaUtils);
 		this.readOnlyTransaction = readOnlyTransaction;

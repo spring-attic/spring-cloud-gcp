@@ -297,8 +297,8 @@ public class SpannerTemplate implements SpannerOperations {
 										SpannerTemplate.this.mappingContext,
 										SpannerTemplate.this.spannerEntityProcessor,
 										SpannerTemplate.this.mutationFactory,
-										transaction,
-										SpannerTemplate.this.spannerSchemaUtils);
+										SpannerTemplate.this.spannerSchemaUtils,
+										transaction);
 						return operations.apply(transactionSpannerTemplate);
 					}
 				});
@@ -317,8 +317,9 @@ public class SpannerTemplate implements SpannerOperations {
 					SpannerTemplate.this.databaseClient,
 					SpannerTemplate.this.mappingContext,
 					SpannerTemplate.this.spannerEntityProcessor,
-					SpannerTemplate.this.mutationFactory, readOnlyTransaction,
-					SpannerTemplate.this.spannerSchemaUtils));
+					SpannerTemplate.this.mutationFactory,
+					SpannerTemplate.this.spannerSchemaUtils,
+					readOnlyTransaction));
 		}
 	}
 
