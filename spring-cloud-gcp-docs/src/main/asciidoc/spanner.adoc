@@ -127,7 +127,7 @@ public class Trader {
 
 	@PrimaryKey
 	@Column(name = "trader_id")
-	String traderId;
+	String singerId;
 
 	String firstName;
 
@@ -154,7 +154,7 @@ Arguments that are not directly set to properties are not supported.
 public class Trader {
 	@PrimaryKey
 	@Column(name = "trader_id")
-	String traderId;
+	String singerId;
 
 	String firstName;
 
@@ -163,8 +163,8 @@ public class Trader {
 	@NotMapped
 	Double temporaryNumber;
 
-	public Trader(String traderId, String firstName) {
-	    this.traderId = traderId;
+	public Trader(String singerId, String firstName) {
+	    this.singerId = singerId;
 	    this.firstName = firstName;
 	}
 }
@@ -217,7 +217,7 @@ public class Trade {
 
 	@PrimaryKey(keyOrder = 1)
 	@Column(name = "trader_id")
-	private String traderId;
+	private String singerId;
 
 	private String action;
 
@@ -844,11 +844,11 @@ public class MyApplication {
 	public void demo() {
 
 		this.tradeRepository.deleteAll(); //defined on CrudRepository
-		String traderId = "demo_trader";
+		String singerId = "demo_trader";
 		Trade t = new Trade();
 		t.symbol = stock;
 		t.action = action;
-		t.traderId = traderId;
+		t.singerId = singerId;
 		t.price = 100.0;
 		t.shares = 12345.6;
 		this.spannerTemplate.insert(t); //defined on CrudRepository
@@ -909,7 +909,7 @@ public interface TradeRepository extends CrudRepository<Trade, String[]> {
 
 	// Named methods are powerful, but can get unwieldy
 	List<Trade> findTop3DistinctByActionAndSymbolIgnoreCaseOrTraderIdOrderBySymbolDesc(
-  			String action, String symbol, String traderId);
+  			String action, String symbol, String singerId);
 }
 ----
 
@@ -920,7 +920,7 @@ naming convention].
 
 `List<Trade> findByAction(String action)` would translate to a `SELECT * FROM trades WHERE action = ?`.
 
-The function `List<Trade> findTop3DistinctByActionAndSymbolIgnoreCaseOrTraderIdOrderBySymbolDesc(String action, String symbol, String traderId);` will be translated as the equivalent of this SQL query:
+The function `List<Trade> findTop3DistinctByActionAndSymbolIgnoreCaseOrTraderIdOrderBySymbolDesc(String action, String symbol, String singerId);` will be translated as the equivalent of this SQL query:
 
 [source, sql]
 ----
@@ -1058,7 +1058,7 @@ public interface TradeProjection {
 
 public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
-	List<Trade> findByTraderId(String traderId);
+	List<Trade> findByTraderId(String singerId);
 
 	List<TradeProjection> findByAction(String action);
 

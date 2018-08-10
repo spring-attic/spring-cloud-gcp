@@ -22,7 +22,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.config.DatastoreRepositoryConfigurationExtension;
-import org.springframework.cloud.gcp.data.datastore.repository.support.DatastoreRepositoryFactory;
+import org.springframework.cloud.gcp.data.datastore.repository.support.DatastoreRepositoryFactoryBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @ConditionalOnClass(DatastoreRepository.class)
-@ConditionalOnMissingBean({ DatastoreRepositoryFactory.class,
+@ConditionalOnMissingBean({ DatastoreRepositoryFactoryBean.class,
 		DatastoreRepositoryConfigurationExtension.class })
 @ConditionalOnProperty(value = "spring.cloud.gcp.datastore.enabled", matchIfMissing = true)
 @Import({ DatastoreRepositoriesAutoConfigureRegistrar.class })

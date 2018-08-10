@@ -16,40 +16,41 @@
 
 package com.example;
 
-import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
+import org.springframework.data.annotation.Id;
 
 /**
- * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
-@Table(name = "traders")
-public class Trader {
-	@PrimaryKey
-	@Column(name = "trader_id")
-	private String traderId;
+@Entity(name = "singers")
+public class Singer {
 
-	@Column(name = "first_name")
+	@Id
+	@Field(name = "singer_id")
+	private String singerId;
+
+	@Field(name = "first_name")
 	private String firstName;
 
-	@Column(name = "last_name")
+	@Field(name = "last_name")
 	private String lastName;
 
-	public Trader() {
+	public Singer() {
 	}
 
-	public Trader(String id, String firstName, String lastName) {
-		this.traderId = id;
+	public Singer(String id, String firstName, String lastName) {
+		this.singerId = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
 	}
 
-	public String getTraderId() {
-		return this.traderId;
+	public String getSingerId() {
+		return this.singerId;
 	}
 
-	public void setTraderId(String traderId) {
-		this.traderId = traderId;
+	public void setSingerId(String singerId) {
+		this.singerId = singerId;
 	}
 
 	public String getFirstName() {
@@ -70,8 +71,8 @@ public class Trader {
 
 	@Override
 	public String toString() {
-		return "Trader{" +
-				"traderId='" + this.traderId + '\'' +
+		return "Singer{" +
+				"singerId='" + this.singerId + '\'' +
 				", firstName='" + this.firstName + '\'' +
 				", lastName='" + this.lastName + '\'' +
 				'}';

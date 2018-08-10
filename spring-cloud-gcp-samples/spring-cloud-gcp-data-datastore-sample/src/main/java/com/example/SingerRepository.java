@@ -16,14 +16,11 @@
 
 package com.example;
 
-import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 
 /**
- * @author Ray Tsang
  * @author Chengyuan Zhao
  */
-@RepositoryRestResource(collectionResourceRel = "traders", path = "traders")
-public interface TraderRepository extends SpannerRepository<Trader, String> {
+public interface SingerRepository extends DatastoreRepository<Singer, String> {
 
 }
