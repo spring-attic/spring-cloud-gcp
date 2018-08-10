@@ -17,11 +17,13 @@
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.ValueBinder;
@@ -34,7 +36,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
-import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.repository.query.parser.Part.IgnoreCaseType;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.util.Pair;
@@ -78,29 +79,28 @@ public class SpannerStatementQueryExecutor {
 	 * Gets a query that returns the rows associated with a parent entity. This function
 	 * is intended to be used with parent-child interleaved tables, so that the retrieval
 	 * of all child rows having the parent's key values is efficient.
-	 * @param parentPersistentEntity the persistent entity of the parent table.
-	 * @param parentObject the parent object whose children to get.
+	 * @param parentKey the parent key whose children to get.
 	 * @param childPersistentEntity the persistent entity of the child table.
 	 * @return the Spanner statement to perform the retrieval.
 	 */
-	public static Statement getChildrenRowsQuery(
-			SpannerPersistentEntity parentPersistentEntity, Object parentObject,
-			SpannerPersistentEntity childPersistentEntity) {
+	public static <T> Statement getChildrenRowsQuery(Key parentKey,
+			SpannerPersistentEntity<T> childPersistentEntity) {
 		StringBuilder sb = new StringBuilder(
 				"SELECT " + getColumnsStringForSelect(childPersistentEntity) + " FROM "
 						+ childPersistentEntity.tableName() + " WHERE ");
 		StringJoiner sj = new StringJoiner(" and ");
 		List<String> tags = new ArrayList<>();
 		List keyParts = new ArrayList();
-		PersistentPropertyAccessor accessor = parentPersistentEntity
-				.getPropertyAccessor(parentObject);
 		int tagNum = 0;
-		for (SpannerPersistentProperty keyProp : parentPersistentEntity
-				.getPrimaryKeyProperties()) {
+		List<SpannerPersistentProperty> childKeyProperties = childPersistentEntity
+				.getFlattenedPrimaryKeyProperties();
+		Iterator parentKeyParts = parentKey.getParts().iterator();
+		while (parentKeyParts.hasNext()) {
+			SpannerPersistentProperty keyProp = childKeyProperties.get(tagNum);
 			String tagName = "tag" + tagNum;
 			sj.add(keyProp.getColumnName() + " = @" + tagName);
 			tags.add(tagName);
-			keyParts.add(accessor.getProperty(keyProp));
+			keyParts.add(parentKeyParts.next());
 			tagNum++;
 		}
 		return buildStatementFromSqlWithArgs(sb.toString() + sj.toString(), tags, null,

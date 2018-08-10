@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.spanner.test;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -139,13 +138,13 @@ public abstract class AbstractSpannerIntegrationTest {
 	}
 
 	protected List<String> createSchemaStatements() {
-		return Arrays
-				.asList(this.spannerSchemaUtils.getCreateTableDdlString(Trade.class));
+		return this.spannerSchemaUtils
+				.getCreateTableDdlStringsForInterleavedHierarchy(Trade.class);
 	}
 
 	protected Iterable<String> dropSchemaStatements() {
-		return Arrays
-				.asList(this.spannerSchemaUtils.getDropTableDdlString(Trade.class));
+		return this.spannerSchemaUtils
+				.getDropTableDdlStringsForInterleavedHierarchy(Trade.class);
 	}
 
 	@After

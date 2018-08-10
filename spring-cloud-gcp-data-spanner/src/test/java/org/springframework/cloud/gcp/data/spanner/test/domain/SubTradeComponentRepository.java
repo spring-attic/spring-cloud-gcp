@@ -16,44 +16,12 @@
 
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
-import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
+import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 
 /**
- * An embedded grouping of columns.
- *
  * @author Chengyuan Zhao
  */
-public class TradeDetail {
-
-	@PrimaryKey
-	String id;
-
-	Double price;
-
-	Double shares;
-
-	public String getId() {
-		return this.id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public Double getPrice() {
-		return this.price;
-	}
-
-	public void setPrice(Double price) {
-		this.price = price;
-	}
-
-	public Double getShares() {
-		return this.shares;
-	}
-
-	public void setShares(Double shares) {
-		this.shares = shares;
-	}
+public interface SubTradeComponentRepository
+		extends SpannerRepository<SubTradeComponent, Object[]> {
 
 }
