@@ -20,17 +20,20 @@ import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Jisha Abubaker
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class GcpConfigBootstrapConfigurationTest {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(GcpConfigBootstrapConfiguration.class));
+			.withConfiguration(AutoConfigurations.of(GcpConfigBootstrapConfiguration.class,
+					GcpContextAutoConfiguration.class));
 
 	@Test
 	public void testConfigurationValueDefaultsAreAsExpected() {

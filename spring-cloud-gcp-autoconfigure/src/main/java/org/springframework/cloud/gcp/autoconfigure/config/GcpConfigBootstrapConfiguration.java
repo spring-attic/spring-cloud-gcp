@@ -18,10 +18,13 @@ package org.springframework.cloud.gcp.autoconfigure.config;
 
 import java.io.IOException;
 
+import com.google.api.gax.core.CredentialsProvider;
+
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
-import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
+import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -31,19 +34,22 @@ import org.springframework.context.annotation.Configuration;
  * @author Jisha Abubaker
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  *
  * @since 1.1
  */
 @Configuration
+@AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @EnableConfigurationProperties(GcpConfigProperties.class)
 public class GcpConfigBootstrapConfiguration {
 
 	@Bean
 	@ConditionalOnProperty(prefix = "spring.cloud.gcp.config", name = "enabled", havingValue = "true")
 	public GoogleConfigPropertySourceLocator googleConfigPropertySourceLocator(
-			GcpConfigProperties configProperties) throws IOException {
-		return new GoogleConfigPropertySourceLocator(new DefaultGcpProjectIdProvider(),
-				new DefaultCredentialsProvider(configProperties), configProperties);
+			GcpConfigProperties configProperties, GcpProjectIdProvider projectIdProvider,
+			CredentialsProvider credentialsProvider) throws IOException {
+		return new GoogleConfigPropertySourceLocator(projectIdProvider,
+				credentialsProvider, configProperties);
 	}
 }
 
