@@ -29,8 +29,10 @@ import com.google.cloud.spanner.Mutation.Op;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
@@ -51,14 +53,18 @@ public class SpannerMutationFactoryImplTests {
 
 	private SpannerEntityProcessor objectMapper;
 
+	private SpannerSchemaUtils spannerSchemaUtils;
+
 	private SpannerMutationFactoryImpl spannerMutationFactory;
 
 	@Before
 	public void setUp() {
 		this.mappingContext = new SpannerMappingContext();
 		this.objectMapper = mock(SpannerEntityProcessor.class);
+		this.spannerSchemaUtils = new SpannerSchemaUtils(this.mappingContext,
+				this.objectMapper, true);
 		this.spannerMutationFactory = new SpannerMutationFactoryImpl(this.objectMapper,
-				this.mappingContext);
+				this.mappingContext, this.spannerSchemaUtils);
 	}
 
 	private void executeWriteTest(Function<TestEntity, List<Mutation>> writeFunc,
@@ -71,11 +77,13 @@ public class SpannerMutationFactoryImplTests {
 		assertEquals("custom_test_table", parentMutation.getTable());
 		assertEquals(writeMethod, parentMutation.getOperation());
 		ChildEntity c1 = new ChildEntity();
-		c1.id = t.id;
-		c1.id2 = "c2";
+		c1.keyComponents = new EmbeddedKeyComponents();
+		c1.keyComponents.id = t.id;
+		c1.keyComponents.id2 = "c2";
 		ChildEntity c2 = new ChildEntity();
-		c2.id = t.id;
-		c2.id2 = "c3";
+		c2.keyComponents = new EmbeddedKeyComponents();
+		c2.keyComponents.id = t.id;
+		c2.keyComponents.id2 = "c3";
 		t.childEntities = Arrays.asList(c1, c2);
 		mutations = writeFunc.apply(t);
 		parentMutation = mutations.get(0);
@@ -99,8 +107,9 @@ public class SpannerMutationFactoryImplTests {
 		TestEntity t = new TestEntity();
 		t.id = "a";
 		ChildEntity c1 = new ChildEntity();
-		c1.id = "b";
-		c1.id2 = "c1";
+		c1.keyComponents = new EmbeddedKeyComponents();
+		c1.keyComponents.id = "b";
+		c1.keyComponents.id2 = "c1";
 		t.childEntities = Collections.singletonList(c1);
 		// throws exception because child entity's id column does not match that of its
 		// parent.
@@ -195,6 +204,12 @@ public class SpannerMutationFactoryImplTests {
 
 	@Table(name = "child_test_table")
 	private static class ChildEntity {
+		@Embedded
+		@PrimaryKey(keyOrder = 1)
+		EmbeddedKeyComponents keyComponents;
+	}
+
+	private static class EmbeddedKeyComponents {
 		@PrimaryKey(keyOrder = 1)
 		String id;
 
