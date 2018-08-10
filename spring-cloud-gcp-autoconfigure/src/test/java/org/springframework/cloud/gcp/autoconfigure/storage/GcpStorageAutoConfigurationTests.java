@@ -113,7 +113,7 @@ public class GcpStorageAutoConfigurationTests {
 
 		@Bean
 		public static GcpProjectIdProvider gcpProjectIdProvider() {
-			return () -> "hollow light of the sealed land";
+			return () -> "hollow-light-of-the-sealed-land";
 		}
 	}
 
