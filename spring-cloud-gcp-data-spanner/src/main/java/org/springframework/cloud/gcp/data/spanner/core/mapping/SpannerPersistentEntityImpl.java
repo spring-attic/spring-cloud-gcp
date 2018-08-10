@@ -281,6 +281,22 @@ public class SpannerPersistentEntityImpl<T>
 		return primaryKeyColumns;
 	}
 
+	private List<SpannerPersistentProperty> getFlattenedPrimaryKeyProperties() {
+		List<SpannerPersistentProperty> primaryKeyColumns = new ArrayList<>();
+		for (SpannerPersistentProperty property : getPrimaryKeyProperties()) {
+			if (property.isEmbedded()) {
+				primaryKeyColumns
+						.addAll(((SpannerPersistentEntityImpl) this.spannerMappingContext
+								.getPersistentEntity(property.getType()))
+										.getFlattenedPrimaryKeyProperties());
+			}
+			else {
+				primaryKeyColumns.add(property);
+			}
+		}
+		return primaryKeyColumns;
+	}
+
 	@Override
 	public List<SpannerPersistentProperty> getFlattenedPrimaryKeyProperties() {
 		List<SpannerPersistentProperty> primaryKeyColumns = new ArrayList<>();
