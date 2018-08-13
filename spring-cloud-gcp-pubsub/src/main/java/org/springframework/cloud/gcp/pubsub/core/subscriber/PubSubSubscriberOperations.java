@@ -26,6 +26,8 @@ import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
 
 /**
  * An abstraction for Google Cloud Pub/Sub subscription / pulling operations.
@@ -57,6 +59,19 @@ public interface PubSubSubscriberOperations {
 	Subscriber subscribe(String subscription, Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer);
 
 	/**
+	 * Add a callback method to an existing subscription that receives Pub/Sub messages converted to the requested
+	 * payload type.
+	 * <p>The created {@link Subscriber} is returned so it can be stopped.
+	 * @param subscription the name of an existing subscription
+	 * @param messageConsumer the callback method triggered when new messages arrive
+	 * @param payloadType the type to which the payload of the Pub/Sub message should be converted
+	 * @return subscriber listening to new messages
+	 * @since 1.1
+	 */
+	<T> Subscriber subscribeAndConvert(String subscription,
+			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer, Class<T> payloadType);
+
+	/**
 	 * Pull and auto-acknowledge a number of messages from a Google Cloud Pub/Sub subscription.
 	 * @param subscription the subscription name
 	 * @param maxMessages the maximum number of pulled messages
@@ -75,6 +90,21 @@ public interface PubSubSubscriberOperations {
 	 * @return the list of received acknowledgeable messages
 	 */
 	List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages, Boolean returnImmediately);
+
+	/**
+	 * Pull a number of messages from a Google Cloud Pub/Sub subscription and convert them to Spring messages with
+	 * the desired payload type.
+	 * @param subscription the subscription name
+	 * @param maxMessages the maximum number of pulled messages
+	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
+	 * messages to satisfy {@code maxMessages}
+	 * @param payloadType the type to which the payload of the Pub/Sub messages should be converted
+	 * @return the list of received acknowledgeable messages
+	 * @since 1.1
+	 */
+	<T> List<ConvertedAcknowledgeablePubsubMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
+			Boolean returnImmediately, Class<T> payloadType);
+
 
 	/**
 	 * Pull and auto-acknowledge a message from a Google Cloud Pub/Sub subscription.

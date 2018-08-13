@@ -36,6 +36,10 @@ import com.google.pubsub.v1.PullResponse;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
+import org.springframework.cloud.gcp.pubsub.support.converter.SimplePubSubMessageConverter;
 import org.springframework.util.Assert;
 
 /**
@@ -58,6 +62,8 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 	private final SubscriberStub subscriberStub;
 
+	private PubSubMessageConverter pubSubMessageConverter = new SimplePubSubMessageConverter();
+
 	/**
 	 * Default {@link PubSubSubscriberTemplate} constructor
 	 * @param subscriberFactory the {@link Subscriber} factory
@@ -68,6 +74,16 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		this.subscriberFactory = subscriberFactory;
 		this.subscriberStub = this.subscriberFactory.createSubscriberStub();
+	}
+
+	public PubSubMessageConverter getMessageConverter() {
+		return this.pubSubMessageConverter;
+	}
+
+	public void setMessageConverter(PubSubMessageConverter pubSubMessageConverter) {
+		Assert.notNull(pubSubMessageConverter, "The pubSubMessageConverter can't be null.");
+
+		this.pubSubMessageConverter = pubSubMessageConverter;
 	}
 
 	@Override
@@ -93,6 +109,16 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 								new PushedAcknowledgeablePubsubMessage(message, ackReplyConsumer, subscription)));
 		subscriber.startAsync();
 		return subscriber;
+	}
+
+	@Override
+	public <T> Subscriber subscribeAndConvert(String subscription,
+			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer, Class<T> payloadType) {
+		Assert.notNull(messageConsumer, "The messageConsumer can't be null.");
+
+		return this.subscribe(subscription,
+				(message) -> messageConsumer.accept(new ConvertedPushedAcknowledgeablePubsubMessage<T>(message,
+						this.pubSubMessageConverter.fromPubSubMessage(message.getPubsubMessage(), payloadType))));
 	}
 
 	/**
@@ -126,6 +152,17 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		return pull(this.subscriberFactory.createPullRequest(subscription, maxMessages,
 				returnImmediately));
+	}
+
+	@Override
+	public <T> List<ConvertedAcknowledgeablePubsubMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
+			Boolean returnImmediately, Class<T> payloadType) {
+		List<AcknowledgeablePubsubMessage> ackableMessages = this.pull(subscription, maxMessages, returnImmediately);
+
+		return ackableMessages.stream().map(
+				m -> new ConvertedPulledAcknowledgeablePubsubMessage<>(m,
+						this.pubSubMessageConverter.fromPubSubMessage(m.getPubsubMessage(), payloadType))
+		).collect(Collectors.toList());
 	}
 
 	@Override
@@ -312,4 +349,37 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 					'}';
 		}
 	}
+
+	private class ConvertedPulledAcknowledgeablePubsubMessage<T> extends PulledAcknowledgeablePubsubMessage
+			implements ConvertedAcknowledgeablePubsubMessage<T> {
+
+		private final T payload;
+
+		ConvertedPulledAcknowledgeablePubsubMessage(AcknowledgeablePubsubMessage message, T payload) {
+			super(message.getPubsubMessage(), message.getAckId(), message.getSubscriptionName());
+			this.payload = payload;
+		}
+
+		@Override
+		public T getPayload() {
+			return this.payload;
+		}
+	}
+
+	private static class ConvertedPushedAcknowledgeablePubsubMessage<T> extends PushedAcknowledgeablePubsubMessage
+			implements ConvertedBasicAcknowledgeablePubsubMessage<T> {
+
+		private final T payload;
+
+		ConvertedPushedAcknowledgeablePubsubMessage(BasicAcknowledgeablePubsubMessage message, T payload) {
+			super(message.getPubsubMessage(), message, message.getSubscriptionName());
+			this.payload = payload;
+		}
+
+		@Override
+		public T getPayload() {
+			return this.payload;
+		}
+	}
+
 }
