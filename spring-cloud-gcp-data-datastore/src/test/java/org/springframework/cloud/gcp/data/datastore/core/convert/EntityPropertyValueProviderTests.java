@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import java.util.Collections;
-
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.Datastore;
@@ -30,7 +28,6 @@ import org.junit.Test;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,7 +40,7 @@ public class EntityPropertyValueProviderTests {
 
 	private DatastorePersistentEntity<TestDatastoreItem> persistentEntity =
 			(DatastorePersistentEntity<TestDatastoreItem>) new DatastoreMappingContext()
-					.getPersistentEntity(TestDatastoreItem.class);
+			.getPersistentEntity(TestDatastoreItem.class);
 
 	@Before
 	public void setUp() {
@@ -63,10 +60,10 @@ public class EntityPropertyValueProviderTests {
 				.set("blobField", Blob.copyFrom(bytes))
 				.build();
 
-		EntityPropertyValueProvider provider =
-				new EntityPropertyValueProvider(
-						entity, new DefaultConversionService(), new DatastoreCustomConversions()
-				);
+		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(
+				entity, new DefaultConversionService(), new DefaultConversionService(),
+				new DatastoreCustomConversions(),
+				new DefaultDatastoreEntityConverter.DatastoreSimpleTypes(new DefaultConversionService()));
 
 		assertThat((String) provider.getPropertyValue(this.persistentEntity.getPersistentProperty("stringField")))
 				.as("validate string field").isEqualTo("string value");
@@ -91,33 +88,11 @@ public class EntityPropertyValueProviderTests {
 				.set("boolField", 123L)
 				.build();
 
-		EntityPropertyValueProvider provider =
-				new EntityPropertyValueProvider(
-						entity, new DefaultConversionService(), new DatastoreCustomConversions());
+		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(
+				entity, new DefaultConversionService(), new DefaultConversionService(),
+				new DatastoreCustomConversions(),
+				new DefaultDatastoreEntityConverter.DatastoreSimpleTypes(new DefaultConversionService()));
 
 		provider.getPropertyValue(this.persistentEntity.getPersistentProperty("boolField"));
-	}
-
-	@Test
-	public void testCustomConversion() {
-		Entity entity = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
-				.set("boolField", 123L)
-				.build();
-
-		Converter<Long, Boolean> longToBoolConverter = new Converter<Long, Boolean>() {
-			@Override
-			public Boolean convert(Long source) {
-				return source > 0L;
-			}
-		};
-		DatastoreCustomConversions customConversions =
-				new DatastoreCustomConversions(Collections.singletonList(longToBoolConverter));
-		DefaultConversionService conversionService = new DefaultConversionService();
-		conversionService.addConverter(longToBoolConverter);
-		EntityPropertyValueProvider provider =
-				new EntityPropertyValueProvider(entity, conversionService, customConversions);
-
-		assertThat((Boolean) provider.getPropertyValue(this.persistentEntity.getPersistentProperty("boolField")))
-				.as("verify custom converter").isTrue();
 	}
 }

@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import java.util.Optional;
-
 import com.google.cloud.datastore.Entity;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
@@ -39,13 +37,20 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 
 	private ConversionService conversionService;
 
+	private ConversionService internalConversionService;
+
 	private CustomConversions customConversions;
 
+	private DefaultDatastoreEntityConverter.DatastoreSimpleTypes datastoreSimpleTypes;
+
 	EntityPropertyValueProvider(Entity entity, ConversionService conversionService,
-								CustomConversions customConversions) {
+			ConversionService internalConversionService, CustomConversions customConversions,
+			DefaultDatastoreEntityConverter.DatastoreSimpleTypes datastoreSimpleTypes) {
 		this.entity = entity;
 		this.conversionService = conversionService;
+		this.internalConversionService = internalConversionService;
 		this.customConversions = customConversions;
+		this.datastoreSimpleTypes = datastoreSimpleTypes;
 	}
 
 	@Override
@@ -69,18 +74,29 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 		Class<?> targetType = persistentProperty.getType();
 		T result = null;
 
-		//To mirror write conversion, try 1-step conversion first, then try 2-step conversion,
-		//then fallback to no conversion
-		Optional<Class<?>> simpleType = this.customConversions.getCustomWriteTarget(targetType);
-		if (this.conversionService.canConvert(val.getClass(), targetType)) {
-			result = this.conversionService.convert(val, (Class<T>) targetType);
-		}
-		else if (simpleType.isPresent() && this.conversionService.canConvert(simpleType.get(), targetType)) {
-			Object simpleTypeVal = this.conversionService.convert(val, simpleType.get());
-			result = this.conversionService.convert(simpleTypeVal, (Class<T>) targetType);
-		}
-		else if (ClassUtils.isAssignable(targetType, val.getClass())) {
+		DefaultDatastoreEntityConverter.TwoStepConversion twoStepConversion =
+				new DefaultDatastoreEntityConverter.TwoStepConversion(
+						targetType,
+						this.customConversions,
+						this.datastoreSimpleTypes);
+
+		if (twoStepConversion.getFirstStepTarget() == null && twoStepConversion.getSecondStepTarget() == null
+				&& ClassUtils.isAssignable(targetType, val.getClass())) {
+			//neither first or second steps were applied, no conversion is necessary
 			result = (T) val;
+		}
+		else if (twoStepConversion.getFirstStepTarget() == null && twoStepConversion.getSecondStepTarget() != null) {
+			//only second step was applied on write
+			result = (T) this.internalConversionService.convert(val, targetType);
+		}
+		else if (twoStepConversion.getFirstStepTarget() != null && twoStepConversion.getSecondStepTarget() == null) {
+			//only first step was applied on write
+			result = (T) this.conversionService.convert(val, targetType);
+		}
+		else if (twoStepConversion.getFirstStepTarget() != null && twoStepConversion.getSecondStepTarget() != null) {
+			//both steps were applied
+			val = this.internalConversionService.convert(val, twoStepConversion.getFirstStepTarget());
+			result = (T) this.conversionService.convert(val, targetType);
 		}
 
 		if (result != null) {

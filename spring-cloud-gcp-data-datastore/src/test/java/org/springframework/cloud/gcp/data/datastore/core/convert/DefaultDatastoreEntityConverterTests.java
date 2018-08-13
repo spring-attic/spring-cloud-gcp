@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Collections;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
@@ -223,35 +222,6 @@ public class DefaultDatastoreEntityConverterTests {
 
 		TestDatastoreItemUnsupportedFields readItem =
 				entityConverter.read(TestDatastoreItemUnsupportedFields.class, entity);
-
-		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
-	}
-
-	@Test
-	public void testObjFieldWrite() {
-		TestDatastoreItemStringField item = new TestDatastoreItemStringField();
-		item.setStringField("abc");
-
-		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(
-				new DatastoreMappingContext(), new DatastoreCustomConversions(
-				Collections.singletonList(
-						new Converter<String, String>() {
-							@Override
-							public String convert(String source) {
-								return new StringBuilder().append(source.toString()).reverse().toString();
-							}
-						}
-				)));
-		Entity.Builder builder = getEntityBuilder();
-		entityConverter.write(item, builder);
-		Entity entity = builder.build();
-
-
-		assertThat(entity.getString("stringField")).as("validate string field")
-				.isEqualTo("cba");
-
-		TestDatastoreItemStringField readItem =
-				entityConverter.read(TestDatastoreItemStringField.class, entity);
 
 		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
 	}
