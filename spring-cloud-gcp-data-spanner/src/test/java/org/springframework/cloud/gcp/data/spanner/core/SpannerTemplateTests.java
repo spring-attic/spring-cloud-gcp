@@ -44,6 +44,7 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
@@ -86,16 +87,21 @@ public class SpannerTemplateTests {
 
 	private SpannerTemplate spannerTemplate;
 
+	private SpannerSchemaUtils schemaUtils;
+
 	@Before
 	public void setUp() {
 		this.databaseClient = mock(DatabaseClient.class);
 		this.mappingContext = new SpannerMappingContext();
 		this.objectMapper = mock(SpannerEntityProcessor.class);
 		this.mutationFactory = mock(SpannerMutationFactory.class);
+		this.schemaUtils = new SpannerSchemaUtils(this.mappingContext, this.objectMapper,
+				true);
 		this.readContext = mock(ReadContext.class);
 		when(this.databaseClient.singleUse()).thenReturn(this.readContext);
 		this.spannerTemplate = new SpannerTemplate(this.databaseClient,
-				this.mappingContext, this.objectMapper, this.mutationFactory);
+				this.mappingContext, this.objectMapper, this.mutationFactory,
+				this.schemaUtils);
 	}
 
 	@Test
@@ -149,25 +155,25 @@ public class SpannerTemplateTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void nullDatabaseClientTest() {
 		new SpannerTemplate(null, this.mappingContext, this.objectMapper,
-				this.mutationFactory);
+				this.mutationFactory, this.schemaUtils);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void nullMappingContextTest() {
 		new SpannerTemplate(this.databaseClient, null, this.objectMapper,
-				this.mutationFactory);
+				this.mutationFactory, this.schemaUtils);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void nullObjectMapperTest() {
 		new SpannerTemplate(this.databaseClient, this.mappingContext, null,
-				this.mutationFactory);
+				this.mutationFactory, this.schemaUtils);
 	}
 
 	@Test(expected = IllegalArgumentException.class)
 	public void nullMutationFactoryTest() {
 		new SpannerTemplate(this.databaseClient, this.mappingContext, this.objectMapper,
-				null);
+				null, this.schemaUtils);
 	}
 
 	@Test

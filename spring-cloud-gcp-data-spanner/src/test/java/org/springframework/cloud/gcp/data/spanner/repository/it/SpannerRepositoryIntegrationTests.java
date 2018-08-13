@@ -20,11 +20,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.cloud.spanner.Struct;
+import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.spanner.test.AbstractSpannerIntegrationTest;
+import org.springframework.cloud.gcp.data.spanner.test.domain.SubTrade;
+import org.springframework.cloud.gcp.data.spanner.test.domain.SubTradeComponent;
+import org.springframework.cloud.gcp.data.spanner.test.domain.SubTradeComponentRepository;
+import org.springframework.cloud.gcp.data.spanner.test.domain.SubTradeRepository;
 import org.springframework.cloud.gcp.data.spanner.test.domain.SymbolAction;
 import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.cloud.gcp.data.spanner.test.domain.TradeProjection;
@@ -51,6 +56,12 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 	@Autowired
 	TradeRepository tradeRepository;
+
+	@Autowired
+	SubTradeRepository subTradeRepository;
+
+	@Autowired
+	SubTradeComponentRepository subTradeComponentRepository;
 
 	@Test
 	public void queryMethodsTest() {
@@ -160,6 +171,47 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		someTrade = this.tradeRepository.findById(this.spannerSchemaUtils.getKey(someTrade)).get();
 		assertNull(someTrade.getExecutionTimes());
 		assertNull(someTrade.getSymbol());
+
+		// testing parent-child relationships
+		assertEquals(0, someTrade.getSubTrades().size());
+		SubTrade subTrade1 = new SubTrade(someTrade.getTradeDetail().getId(),
+				someTrade.getTraderId(), "subTrade1");
+		SubTrade subTrade2 = new SubTrade(someTrade.getTradeDetail().getId(),
+				someTrade.getTraderId(), "subTrade2");
+		SubTradeComponent subTradeComponent11 = new SubTradeComponent(
+				someTrade.getTradeDetail().getId(), someTrade.getTraderId(), "subTrade1",
+				"11a", "11b");
+		SubTradeComponent subTradeComponent21 = new SubTradeComponent(
+				someTrade.getTradeDetail().getId(), someTrade.getTraderId(), "subTrade2",
+				"21a", "21b");
+		SubTradeComponent subTradeComponent22 = new SubTradeComponent(
+				someTrade.getTradeDetail().getId(), someTrade.getTraderId(), "subTrade2",
+				"22a", "22b");
+
+		subTrade1.setSubTradeComponentList(ImmutableList.of(subTradeComponent11));
+		subTrade2.setSubTradeComponentList(
+				ImmutableList.of(subTradeComponent21, subTradeComponent22));
+		someTrade.setSubTrades(ImmutableList.of(subTrade1, subTrade2));
+
+		this.tradeRepository.save(someTrade);
+
+		assertEquals(2, this.subTradeRepository.count());
+		assertEquals(3, this.subTradeComponentRepository.count());
+
+		this.subTradeRepository.deleteById(this.spannerSchemaUtils.getKey(subTrade1));
+		assertEquals(2, this.subTradeComponentRepository.count());
+
+		someTrade = this.tradeRepository
+				.findById(this.spannerSchemaUtils.getKey(someTrade)).get();
+		assertEquals(1, someTrade.getSubTrades().size());
+		assertEquals("subTrade2", someTrade.getSubTrades().get(0).getSubTradeId());
+		assertEquals(2,
+				someTrade.getSubTrades().get(0).getSubTradeComponentList().size());
+
+		this.tradeRepository.delete(someTrade);
+
+		assertEquals(0, this.subTradeComponentRepository.count());
+		assertEquals(0, this.subTradeRepository.count());
 	}
 
 	protected List<Trade> insertTrades(String traderId1, String action, int numTrades) {

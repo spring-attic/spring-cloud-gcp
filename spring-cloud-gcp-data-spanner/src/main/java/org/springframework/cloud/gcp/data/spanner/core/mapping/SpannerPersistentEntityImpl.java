@@ -281,7 +281,8 @@ public class SpannerPersistentEntityImpl<T>
 		return primaryKeyColumns;
 	}
 
-	private List<SpannerPersistentProperty> getFlattenedPrimaryKeyProperties() {
+	@Override
+	public List<SpannerPersistentProperty> getFlattenedPrimaryKeyProperties() {
 		List<SpannerPersistentProperty> primaryKeyColumns = new ArrayList<>();
 		for (SpannerPersistentProperty property : getPrimaryKeyProperties()) {
 			if (property.isEmbedded()) {

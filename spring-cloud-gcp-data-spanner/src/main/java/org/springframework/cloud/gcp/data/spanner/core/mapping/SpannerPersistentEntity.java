@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.context.ApplicationContextAware;
@@ -52,6 +53,13 @@ public interface SpannerPersistentEntity<T> extends
 	 * @return An array of the properties comprising the primary key in order.
 	 */
 	SpannerPersistentProperty[] getPrimaryKeyProperties();
+
+	/**
+	 * Gets the primary key properties in order. Embedded object properties containing key
+	 * parts are flattened into their multiple primary key properties.
+	 * @return An array of the properties comprising the primary key in order.
+	 */
+	List<SpannerPersistentProperty> getFlattenedPrimaryKeyProperties();
 
 	/**
 	 * Gets the SpannerMappingContext that can be used to create persistent entities of

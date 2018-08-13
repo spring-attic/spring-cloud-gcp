@@ -16,44 +16,22 @@
 
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 
 /**
- * An embedded grouping of columns.
+ * A class containing the key components needed to identify a {@link Trade}. This is
+ * intentionally not used in {@link Trade} but is used by its children to test that
+ * embedded objects containing keys are resolved properly.
  *
  * @author Chengyuan Zhao
  */
-public class TradeDetail {
+public class TradeIdentifier {
 
+	@Column(name = "id")
 	@PrimaryKey
-	String id;
+	String identifier;
 
-	Double price;
-
-	Double shares;
-
-	public String getId() {
-		return this.id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public Double getPrice() {
-		return this.price;
-	}
-
-	public void setPrice(Double price) {
-		this.price = price;
-	}
-
-	public Double getShares() {
-		return this.shares;
-	}
-
-	public void setShares(Double shares) {
-		this.shares = shares;
-	}
-
+	@PrimaryKey(keyOrder = 2)
+	String trader_id;
 }

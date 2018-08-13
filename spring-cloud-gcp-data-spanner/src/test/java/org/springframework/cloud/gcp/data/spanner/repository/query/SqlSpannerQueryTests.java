@@ -30,6 +30,7 @@ import org.mockito.Mockito;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -73,6 +74,8 @@ public class SqlSpannerQueryTests {
 
 	private SpelExpressionParser expressionParser;
 
+	private SpannerMappingContext spannerMappingContext = new SpannerMappingContext();
+
 	private final Sort sort = Sort.by(Order.asc("COLA"), Order.desc("COLB"));
 
 	private final Pageable pageable = PageRequest.of(3, 10, this.sort);
@@ -84,8 +87,9 @@ public class SqlSpannerQueryTests {
 	public void initMocks() {
 		this.queryMethod = mock(QueryMethod.class);
 		this.spannerTemplate = spy(new SpannerTemplate(mock(DatabaseClient.class),
-				new SpannerMappingContext(), this.spannerEntityProcessor,
-				mock(SpannerMutationFactory.class)));
+				this.spannerMappingContext, this.spannerEntityProcessor,
+				mock(SpannerMutationFactory.class), new SpannerSchemaUtils(
+						this.spannerMappingContext, this.spannerEntityProcessor, true)));
 		this.expressionParser = new SpelExpressionParser();
 		this.evaluationContextProvider = mock(EvaluationContextProvider.class);
 	}

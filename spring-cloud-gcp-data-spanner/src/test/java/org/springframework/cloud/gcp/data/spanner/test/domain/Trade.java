@@ -27,6 +27,7 @@ import org.assertj.core.util.DateUtil;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
@@ -50,13 +51,16 @@ public class Trade {
 
 	@Embedded
 	@PrimaryKey
-	TradeDetail tradeDetail;
+	private TradeDetail tradeDetail;
 
 	@PrimaryKey(keyOrder = 2)
 	@Column(name = "trader_id")
 	private String traderId;
 
 	private List<Instant> executionTimes;
+
+	@Interleaved
+	private List<SubTrade> subTrades;
 
 	public static Trade aTrade() {
 		Trade t = new Trade();
@@ -174,6 +178,22 @@ public class Trade {
 
 	public void setTraderId(String traderId) {
 		this.traderId = traderId;
+	}
+
+	public List<SubTrade> getSubTrades() {
+		return this.subTrades;
+	}
+
+	public void setSubTrades(List<SubTrade> subTrades) {
+		this.subTrades = subTrades;
+	}
+
+	public TradeDetail getTradeDetail() {
+		return this.tradeDetail;
+	}
+
+	public void setTradeDetail(TradeDetail tradeDetail) {
+		this.tradeDetail = tradeDetail;
 	}
 
 	@Override

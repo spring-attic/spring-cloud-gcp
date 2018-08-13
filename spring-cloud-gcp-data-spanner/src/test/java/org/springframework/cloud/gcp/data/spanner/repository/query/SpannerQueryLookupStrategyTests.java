@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.repository.query;
 import java.util.List;
 import java.util.Optional;
 
+import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Statement;
 import org.junit.Before;
 import org.junit.Test;
@@ -139,7 +140,7 @@ public class SpannerQueryLookupStrategyTests {
 		t.id = "key";
 		t.id2 = "key2";
 		Statement statement = SpannerStatementQueryExecutor.getChildrenRowsQuery(
-				this.spannerMappingContext.getPersistentEntity(TestEntity.class), t,
+				Key.newBuilder().append(t.id).append(t.id2).build(),
 				this.spannerMappingContext.getPersistentEntity(ChildEntity.class));
 		assertEquals("SELECT id3 , id , id_2 "
 						+ "FROM child_test_table WHERE id = @tag0 and id_2 = @tag1",

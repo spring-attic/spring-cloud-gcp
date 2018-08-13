@@ -111,9 +111,10 @@ public class IntegrationTestConfiguration {
 	@Bean
 	public SpannerTemplate spannerTemplate(DatabaseClient databaseClient,
 			SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
-			SpannerMutationFactory spannerMutationFactory) {
+			SpannerMutationFactory spannerMutationFactory,
+			SpannerSchemaUtils spannerSchemaUtils) {
 		return new SpannerTemplate(databaseClient, mappingContext, spannerEntityProcessor,
-				spannerMutationFactory);
+				spannerMutationFactory, spannerSchemaUtils);
 	}
 
 	@Bean

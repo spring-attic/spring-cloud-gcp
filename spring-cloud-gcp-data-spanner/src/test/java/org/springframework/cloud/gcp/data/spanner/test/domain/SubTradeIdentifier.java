@@ -16,44 +16,24 @@
 
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 
 /**
- * An embedded grouping of columns.
+ * An object that holds the components that identify a {@link SubTrade}. This is
+ * intentionally not used in {@link SubTrade} but is used in {@link SubTradeComponent} to
+ * test that nested embedded key properties are resolved properly.
  *
  * @author Chengyuan Zhao
  */
-public class TradeDetail {
+public class SubTradeIdentifier {
 
 	@PrimaryKey
-	String id;
+	@Embedded
+	TradeIdentifier tradeIdentifier;
 
-	Double price;
-
-	Double shares;
-
-	public String getId() {
-		return this.id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	public Double getPrice() {
-		return this.price;
-	}
-
-	public void setPrice(Double price) {
-		this.price = price;
-	}
-
-	public Double getShares() {
-		return this.shares;
-	}
-
-	public void setShares(Double shares) {
-		this.shares = shares;
-	}
-
+	@PrimaryKey(keyOrder = 2)
+	@Column(name = "subTradeId")
+	String sub_trade_id;
 }
