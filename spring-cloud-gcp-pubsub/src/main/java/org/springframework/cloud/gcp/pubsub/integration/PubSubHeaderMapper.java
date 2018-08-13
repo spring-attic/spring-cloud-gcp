@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.integration.mapping.HeaderMapper;
-import org.springframework.integration.util.PatternMatchUtils;
+import org.springframework.integration.support.utils.PatternMatchUtils;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.NativeMessageHeaderAccessor;
 import org.springframework.util.Assert;

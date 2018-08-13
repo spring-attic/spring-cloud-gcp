@@ -32,9 +32,9 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.repository.core.NamedQueries;
-import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import static org.junit.Assert.assertEquals;
@@ -62,7 +62,7 @@ public class SpannerQueryLookupStrategyTests {
 
 	private SpannerQueryLookupStrategy spannerQueryLookupStrategy;
 
-	private EvaluationContextProvider evaluationContextProvider;
+	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
 	private SpelExpressionParser spelExpressionParser;
 
@@ -71,7 +71,7 @@ public class SpannerQueryLookupStrategyTests {
 		this.spannerOperations = mock(SpannerOperations.class);
 		this.spannerMappingContext = new SpannerMappingContext();
 		this.queryMethod = mock(SpannerQueryMethod.class);
-		this.evaluationContextProvider = mock(EvaluationContextProvider.class);
+		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
 		this.spelExpressionParser = new SpelExpressionParser();
 		this.spannerQueryLookupStrategy = getSpannerQueryLookupStrategy();
 	}

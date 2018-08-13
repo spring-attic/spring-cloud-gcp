@@ -338,7 +338,7 @@ public class SpannerPersistentEntityImpl<T>
 		return new PersistentPropertyAccessor() {
 
 			@Override
-			public void setProperty(PersistentProperty<?> property,
+			public void setProperty(PersistentProperty property,
 					@Nullable Object value) {
 				if (property.isIdProperty()) {
 					throw new SpannerDataException(
@@ -352,7 +352,7 @@ public class SpannerPersistentEntityImpl<T>
 
 			@Nullable
 			@Override
-			public Object getProperty(PersistentProperty<?> property) {
+			public Object getProperty(PersistentProperty property) {
 				if (property.isIdProperty()) {
 					return ((SpannerCompositeKeyProperty) property).getId(getBean());
 				}

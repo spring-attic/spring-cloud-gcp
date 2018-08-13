@@ -23,9 +23,9 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.core.RepositoryMetadata;
-import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
@@ -42,13 +42,13 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 
 	private final SpannerMappingContext spannerMappingContext;
 
-	private EvaluationContextProvider evaluationContextProvider;
+	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
 	private SpelExpressionParser expressionParser;
 
 	public SpannerQueryLookupStrategy(SpannerMappingContext spannerMappingContext,
 			SpannerOperations spannerOperations,
-			EvaluationContextProvider evaluationContextProvider,
+			QueryMethodEvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser) {
 		Assert.notNull(spannerMappingContext,
 				"A valid SpannerMappingContext is required.");
