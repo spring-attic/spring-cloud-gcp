@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -39,7 +38,6 @@ import com.google.cloud.datastore.NullValue;
 import com.google.cloud.datastore.StringValue;
 import com.google.cloud.datastore.TimestampValue;
 import com.google.cloud.datastore.Value;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -82,16 +80,17 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	private static final Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
 
 	static {
+		//keys are used for type resolution, in order of insertion
 		DATASTORE_TYPE_WRAPPERS = ImmutableMap.<Class<?>, Function<?, Value<?>>>builder()
-				.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of)
 				.put(Boolean.class, (Function<Boolean, Value<?>>) BooleanValue::of)
+				.put(Long.class, (Function<Long, Value<?>>) LongValue::of)
 				.put(Double.class, (Function<Double, Value<?>>) DoubleValue::of)
+				.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of)
+				.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of)
+				.put(String.class, (Function<String, Value<?>>) StringValue::of)
+				.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of)
 				.put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of)
 				.put(Key.class, (Function<Key, Value<?>>) KeyValue::of)
-				.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of)
-				.put(Long.class, (Function<Long, Value<?>>) LongValue::of)
-				.put(String.class, (Function<String, Value<?>>) StringValue::of)
-				.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of)
 				.build();
 	}
 
@@ -234,26 +233,15 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 
 		static final Set<Class<?>> ID_TYPES;
 
-		static final List<Class<?>> DATASTORE_NATIVE_TYPES_RESOLUTION;
-
 		static {
 			ID_TYPES = ImmutableSet.<Class<?>>builder()
 					.add(String.class)
 					.add(Long.class)
 					.build();
 
-			DATASTORE_NATIVE_TYPES_RESOLUTION = ImmutableList.<Class<?>>builder()
-					.add(Boolean.class)
-					.add(Long.class)
-					.add(Double.class)
-					.add(LatLng.class)
-					.add(Timestamp.class)
-					.add(String.class)
-					.add(Blob.class)
-					.build();
-
+			//entries are used for type resolution, in order of insertion
 			DATASTORE_NATIVE_TYPES = ImmutableSet.<Class<?>>builder()
-					.addAll(DATASTORE_NATIVE_TYPES_RESOLUTION)
+					.addAll(DATASTORE_TYPE_WRAPPERS.keySet())
 					.build();
 		}
 
@@ -280,7 +268,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		}
 
 		private Optional<Class<?>> getSimpleTypeWithBidirectionalConversion(Class inputType) {
-			return DatastoreSimpleTypes.DATASTORE_NATIVE_TYPES_RESOLUTION.stream()
+			return DATASTORE_NATIVE_TYPES.stream()
 					.filter(simpleType ->
 							this.conversionService.canConvert(inputType, simpleType)
 							&& this.conversionService.canConvert(simpleType, inputType))
