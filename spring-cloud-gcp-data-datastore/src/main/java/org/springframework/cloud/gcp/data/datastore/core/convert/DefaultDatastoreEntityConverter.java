@@ -109,12 +109,11 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	@Override
 	@SuppressWarnings("unchecked")
 	public <R> R read(Class<R> aClass, Entity entity) {
-		DatastorePersistentEntity<R> persistentEntity =
-				(DatastorePersistentEntity<R>) this.mappingContext.getPersistentEntity(aClass);
+		DatastorePersistentEntity<R> persistentEntity = (DatastorePersistentEntity<R>) this.mappingContext
+				.getPersistentEntity(aClass);
 
-		EntityPropertyValueProvider propertyValueProvider =
-				new EntityPropertyValueProvider(entity, this.conversionService, this.internalConversionService,
-						this.customConversions, this.toNativeConversions);
+		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(
+				entity, this.conversionService, this.internalConversionService, this::getTwoStepsConversion);
 
 		ParameterValueProvider<DatastorePersistentProperty> parameterValueProvider =
 				new PersistentEntityParameterValueProvider<>(persistentEntity, propertyValueProvider, null);
@@ -155,10 +154,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 			DatastorePersistentProperty persistentProperty) {
 		Object propertyVal = accessor.getProperty(persistentProperty);
 		if (propertyVal != null) {
-			TwoStepConversion twoStepConversion = new TwoStepConversion(
-					propertyVal.getClass(),
-					this.customConversions,
-					this.toNativeConversions);
+			TwoStepConversion twoStepConversion = getTwoStepsConversion(propertyVal.getClass());
 			if (twoStepConversion.getFirstStepTarget() != null) {
 				propertyVal = this.conversionService.convert(propertyVal, twoStepConversion.getFirstStepTarget());
 			}
@@ -185,24 +181,37 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 				+ " to Datastore supported type. The property's type is " + propertyVal.getClass());
 	}
 
+	TwoStepConversion getTwoStepsConversion(Class<?> firstStepSource) {
+		Class<?> firstStepTarget = null;
+		Class<?> secondStepTarget = null;
+
+		if (!DatastoreSimpleTypes.isSimple(firstStepSource)) {
+			Optional<Class<?>> simpleType = this.customConversions.getCustomWriteTarget(firstStepSource);
+			if (simpleType.isPresent()) {
+				firstStepTarget = simpleType.get();
+			}
+
+			Class<?> effectiveFirstStepTarget =
+					firstStepTarget == null ? firstStepSource : firstStepTarget;
+
+			Optional<Class<?>> datastoreBasicType =
+					this.toNativeConversions.getCustomWriteTarget(effectiveFirstStepTarget);
+
+			if (datastoreBasicType.isPresent()) {
+				secondStepTarget = datastoreBasicType.get();
+			}
+		}
+		return new TwoStepConversion(firstStepTarget, secondStepTarget);
+	}
+
 	static class TwoStepConversion {
 		private Class<?> firstStepTarget;
 
 		private Class<?> secondStepTarget;
 
-		TwoStepConversion(Class<?> firstStepSource, CustomConversions customConversions,
-				DatastoreSimpleTypes datastoreCustomConversions) {
-			if (!DatastoreSimpleTypes.isSimple(firstStepSource)) {
-				Optional<Class<?>> simpleType = customConversions.getCustomWriteTarget(firstStepSource);
-				simpleType.ifPresent(aClass -> this.firstStepTarget = aClass);
-
-				Class<?> effectiveFirstStepTarget =
-						this.firstStepTarget == null ? firstStepSource : this.firstStepTarget;
-
-				Optional<Class<?>> datastoreBasicType =
-						datastoreCustomConversions.getCustomWriteTarget(effectiveFirstStepTarget);
-				datastoreBasicType.ifPresent(aClass -> this.secondStepTarget = aClass);
-			}
+		TwoStepConversion(Class<?> firstStepTarget, Class<?> secondStepTarget) {
+			this.firstStepTarget = firstStepTarget;
+			this.secondStepTarget = secondStepTarget;
 		}
 
 		Class<?> getFirstStepTarget() {

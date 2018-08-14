@@ -38,6 +38,10 @@ public class EntityPropertyValueProviderTests {
 
 	private Datastore datastore;
 
+	private DefaultDatastoreEntityConverter datastoreEntityConverter =
+			new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
+
+
 	private DatastorePersistentEntity<TestDatastoreItem> persistentEntity =
 			(DatastorePersistentEntity<TestDatastoreItem>) new DatastoreMappingContext()
 			.getPersistentEntity(TestDatastoreItem.class);
@@ -62,8 +66,7 @@ public class EntityPropertyValueProviderTests {
 
 		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(
 				entity, new DefaultConversionService(), new DefaultConversionService(),
-				new DatastoreCustomConversions(),
-				new DefaultDatastoreEntityConverter.DatastoreSimpleTypes(new DefaultConversionService()));
+				this.datastoreEntityConverter::getTwoStepsConversion);
 
 		assertThat((String) provider.getPropertyValue(this.persistentEntity.getPersistentProperty("stringField")))
 				.as("validate string field").isEqualTo("string value");
@@ -90,8 +93,7 @@ public class EntityPropertyValueProviderTests {
 
 		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(
 				entity, new DefaultConversionService(), new DefaultConversionService(),
-				new DatastoreCustomConversions(),
-				new DefaultDatastoreEntityConverter.DatastoreSimpleTypes(new DefaultConversionService()));
+				this.datastoreEntityConverter::getTwoStepsConversion);
 
 		provider.getPropertyValue(this.persistentEntity.getPersistentProperty("boolField"));
 	}

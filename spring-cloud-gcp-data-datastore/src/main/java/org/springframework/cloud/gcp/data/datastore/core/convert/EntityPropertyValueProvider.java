@@ -16,12 +16,13 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.function.Function;
+
 import com.google.cloud.datastore.Entity;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.util.ClassUtils;
 
@@ -39,18 +40,15 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 
 	private ConversionService internalConversionService;
 
-	private CustomConversions customConversions;
-
-	private DefaultDatastoreEntityConverter.DatastoreSimpleTypes datastoreSimpleTypes;
+	private Function<Class<?>, DefaultDatastoreEntityConverter.TwoStepConversion> conversionGetter;
 
 	EntityPropertyValueProvider(Entity entity, ConversionService conversionService,
-			ConversionService internalConversionService, CustomConversions customConversions,
-			DefaultDatastoreEntityConverter.DatastoreSimpleTypes datastoreSimpleTypes) {
+			ConversionService internalConversionService,
+			Function<Class<?>, DefaultDatastoreEntityConverter.TwoStepConversion> conversionGetter) {
 		this.entity = entity;
 		this.conversionService = conversionService;
 		this.internalConversionService = internalConversionService;
-		this.customConversions = customConversions;
-		this.datastoreSimpleTypes = datastoreSimpleTypes;
+		this.conversionGetter = conversionGetter;
 	}
 
 	@Override
@@ -74,11 +72,7 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 		Class<?> targetType = persistentProperty.getType();
 		T result = null;
 
-		DefaultDatastoreEntityConverter.TwoStepConversion twoStepConversion =
-				new DefaultDatastoreEntityConverter.TwoStepConversion(
-						targetType,
-						this.customConversions,
-						this.datastoreSimpleTypes);
+		DefaultDatastoreEntityConverter.TwoStepConversion twoStepConversion = this.conversionGetter.apply(targetType);
 
 		if (twoStepConversion.getFirstStepTarget() == null && twoStepConversion.getSecondStepTarget() == null
 				&& ClassUtils.isAssignable(targetType, val.getClass())) {
