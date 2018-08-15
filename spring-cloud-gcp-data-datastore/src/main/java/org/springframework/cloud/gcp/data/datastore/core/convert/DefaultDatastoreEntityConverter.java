@@ -16,46 +16,18 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-
-import com.google.cloud.Timestamp;
-import com.google.cloud.datastore.Blob;
-import com.google.cloud.datastore.BlobValue;
-import com.google.cloud.datastore.BooleanValue;
-import com.google.cloud.datastore.DoubleValue;
 import com.google.cloud.datastore.Entity;
-import com.google.cloud.datastore.EntityValue;
-import com.google.cloud.datastore.Key;
-import com.google.cloud.datastore.KeyValue;
-import com.google.cloud.datastore.LatLng;
-import com.google.cloud.datastore.LatLngValue;
-import com.google.cloud.datastore.LongValue;
-import com.google.cloud.datastore.NullValue;
-import com.google.cloud.datastore.StringValue;
-import com.google.cloud.datastore.TimestampValue;
 import com.google.cloud.datastore.Value;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.core.convert.support.GenericConversionService;
-import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
-import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 /**
  * A class for object to entity and entity to object conversions
@@ -69,40 +41,17 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 
 	private final EntityInstantiators instantiators = new EntityInstantiators();
 
-	private final GenericConversionService conversionService = new DefaultConversionService();
+	private final ReadWriteConversions conversions;
 
-	private final GenericConversionService internalConversionService = new DefaultConversionService();
-
-	private final DatastoreSimpleTypes toNativeConversions = new DatastoreSimpleTypes(this.conversionService);
-
-	private final CustomConversions customConversions;
-
-	private static final Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
-
-	static {
-		//keys are used for type resolution, in order of insertion
-		DATASTORE_TYPE_WRAPPERS = ImmutableMap.<Class<?>, Function<?, Value<?>>>builder()
-				.put(Boolean.class, (Function<Boolean, Value<?>>) BooleanValue::of)
-				.put(Long.class, (Function<Long, Value<?>>) LongValue::of)
-				.put(Double.class, (Function<Double, Value<?>>) DoubleValue::of)
-				.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of)
-				.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of)
-				.put(String.class, (Function<String, Value<?>>) StringValue::of)
-				.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of)
-				.put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of)
-				.put(Key.class, (Function<Key, Value<?>>) KeyValue::of)
-				.build();
-	}
 
 	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext) {
-		this(mappingContext, new DatastoreCustomConversions());
+		this(mappingContext, new TwoStepsConversions(new DatastoreCustomConversions()));
 	}
 
 	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext,
-			CustomConversions customConversions) {
+			ReadWriteConversions conversions) {
 		this.mappingContext = mappingContext;
-		this.customConversions = customConversions;
-		this.customConversions.registerConvertersIn(this.conversionService);
+		this.conversions = conversions;
 	}
 
 	@Override
@@ -111,8 +60,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		DatastorePersistentEntity<R> persistentEntity = (DatastorePersistentEntity<R>) this.mappingContext
 				.getPersistentEntity(aClass);
 
-		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(
-				entity, this.conversionService, this.internalConversionService, this::getTwoStepsConversion);
+		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(entity, this.conversions);
 
 		ParameterValueProvider<DatastorePersistentProperty> parameterValueProvider =
 				new PersistentEntityParameterValueProvider<>(persistentEntity, propertyValueProvider, null);
@@ -139,140 +87,13 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 						writeProperty(sink, accessor, datastorePersistentProperty));
 	}
 
-	/**
-	 * In order to support {@link CustomConversions}, this method applies 2-step conversion.
-	 * The first step produces one of {@link SimpleTypeHolder}'s simple types.
-	 * The second step converts simple types to Datastore-native types.
-	 * The second step is skipped if the first one produces a Datastore-native type.
-	 *
-	 * @param sink entity builder where the value should be written to
-	 * @param accessor property accessor
-	 * @param persistentProperty persistent property
-	 */
 	private void writeProperty(Entity.Builder sink, PersistentPropertyAccessor accessor,
 			DatastorePersistentProperty persistentProperty) {
 		Object propertyVal = accessor.getProperty(persistentProperty);
-		if (propertyVal != null) {
-			TwoStepConversion twoStepConversion = getTwoStepsConversion(propertyVal.getClass());
-			if (twoStepConversion.getFirstStepTarget() != null) {
-				propertyVal = this.conversionService.convert(propertyVal, twoStepConversion.getFirstStepTarget());
-			}
 
-			if (twoStepConversion.getSecondStepTarget() != null) {
-				propertyVal = this.conversionService.convert(propertyVal, twoStepConversion.getSecondStepTarget());
-			}
-		}
-		Value val = getDatastoreWrappedValue(propertyVal, persistentProperty);
+		propertyVal = this.conversions.convertOnWrite(propertyVal);
+
+		Value val = DatastoreSimpleTypes.getDatastoreWrappedValue(propertyVal, persistentProperty);
 		sink.set(persistentProperty.getFieldName(), val);
-	}
-
-	@SuppressWarnings("unchecked")
-	private Value getDatastoreWrappedValue(Object propertyVal, DatastorePersistentProperty persistentProperty) {
-		if (propertyVal == null) {
-			return new NullValue();
-		}
-		Function wrapper = DATASTORE_TYPE_WRAPPERS.get(propertyVal.getClass());
-		if (wrapper != null) {
-			return (Value) wrapper.apply(propertyVal);
-		}
-		throw new DatastoreDataException("Unable to convert a property" +
-				" with name " + persistentProperty.getFieldName()
-				+ " to Datastore supported type. The property's type is " + propertyVal.getClass());
-	}
-
-	TwoStepConversion getTwoStepsConversion(Class<?> firstStepSource) {
-		Class<?> firstStepTarget = null;
-		Class<?> secondStepTarget = null;
-
-		if (!DatastoreSimpleTypes.isSimple(firstStepSource)) {
-			Optional<Class<?>> simpleType = this.customConversions.getCustomWriteTarget(firstStepSource);
-			if (simpleType.isPresent()) {
-				firstStepTarget = simpleType.get();
-			}
-
-			Class<?> effectiveFirstStepTarget =
-					firstStepTarget == null ? firstStepSource : firstStepTarget;
-
-			Optional<Class<?>> datastoreBasicType =
-					this.toNativeConversions.getCustomWriteTarget(effectiveFirstStepTarget);
-
-			if (datastoreBasicType.isPresent()) {
-				secondStepTarget = datastoreBasicType.get();
-			}
-		}
-		return new TwoStepConversion(firstStepTarget, secondStepTarget);
-	}
-
-	static class TwoStepConversion {
-		private Class<?> firstStepTarget;
-
-		private Class<?> secondStepTarget;
-
-		TwoStepConversion(Class<?> firstStepTarget, Class<?> secondStepTarget) {
-			this.firstStepTarget = firstStepTarget;
-			this.secondStepTarget = secondStepTarget;
-		}
-
-		Class<?> getFirstStepTarget() {
-			return this.firstStepTarget;
-		}
-
-		Class<?> getSecondStepTarget() {
-			return this.secondStepTarget;
-		}
-	}
-
-	/**
-	 * A class to manage Datastore-specific simple type conversions.
-	 *
-	 * @author Dmitry Solomakha
-	 */
-	static class DatastoreSimpleTypes {
-
-		static final Set<Class<?>> DATASTORE_NATIVE_TYPES;
-
-		static final Set<Class<?>> ID_TYPES;
-
-		static {
-			ID_TYPES = ImmutableSet.<Class<?>>builder()
-					.add(String.class)
-					.add(Long.class)
-					.build();
-
-			//entries are used for type resolution, in order of insertion
-			DATASTORE_NATIVE_TYPES = ImmutableSet.<Class<?>>builder()
-					.addAll(DATASTORE_TYPE_WRAPPERS.keySet())
-					.build();
-		}
-
-		static final SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_NATIVE_TYPES, true);
-
-
-		final private Map<Class, Optional<Class<?>>> writeConverters = new HashMap<>();
-
-		final private ConversionService conversionService;
-
-		DatastoreSimpleTypes(ConversionService conversionService) {
-			this.conversionService = conversionService;
-		}
-
-		static boolean isSimple(Class aClass) {
-			return aClass == null || DATASTORE_NATIVE_TYPES.contains(aClass);
-		}
-
-		Optional<Class<?>> getCustomWriteTarget(Class<?> sourceType) {
-			if (isSimple(sourceType)) {
-				return Optional.empty();
-			}
-			return this.writeConverters.computeIfAbsent(sourceType, this::getSimpleTypeWithBidirectionalConversion);
-		}
-
-		private Optional<Class<?>> getSimpleTypeWithBidirectionalConversion(Class inputType) {
-			return DATASTORE_NATIVE_TYPES.stream()
-					.filter(simpleType ->
-							this.conversionService.canConvert(inputType, simpleType)
-							&& this.conversionService.canConvert(simpleType, inputType))
-					.findAny();
-		}
 	}
 }

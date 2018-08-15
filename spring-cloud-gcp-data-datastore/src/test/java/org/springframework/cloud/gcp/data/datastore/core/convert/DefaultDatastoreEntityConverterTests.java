@@ -195,7 +195,7 @@ public class DefaultDatastoreEntityConverterTests {
 		item.setUnsupportedField(new TestDatastoreItemUnsupportedFields.UnsupportedType(true));
 
 		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(
-				new DatastoreMappingContext(), new DatastoreCustomConversions(
+				new DatastoreMappingContext(), new TwoStepsConversions(new DatastoreCustomConversions(
 				Arrays.asList(
 						new Converter<Integer, TestDatastoreItemUnsupportedFields.UnsupportedType>() {
 							@Override
@@ -210,7 +210,7 @@ public class DefaultDatastoreEntityConverterTests {
 							}
 
 						}
-				)));
+				))));
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 		Entity entity = builder.build();

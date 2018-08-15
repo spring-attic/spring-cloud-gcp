@@ -16,15 +16,11 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import java.util.function.Function;
-
 import com.google.cloud.datastore.Entity;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.model.PropertyValueProvider;
-import org.springframework.util.ClassUtils;
 
 /**
  * A {@link PropertyValueProvider} for Datastore entities
@@ -34,21 +30,14 @@ import org.springframework.util.ClassUtils;
  * @since 1.1
  */
 public class EntityPropertyValueProvider implements PropertyValueProvider<DatastorePersistentProperty> {
-	private Entity entity;
+	private final Entity entity;
 
-	private ConversionService conversionService;
+	private final ReadWriteConversions conversion;
 
-	private ConversionService internalConversionService;
-
-	private Function<Class<?>, DefaultDatastoreEntityConverter.TwoStepConversion> conversionGetter;
-
-	EntityPropertyValueProvider(Entity entity, ConversionService conversionService,
-			ConversionService internalConversionService,
-			Function<Class<?>, DefaultDatastoreEntityConverter.TwoStepConversion> conversionGetter) {
+	EntityPropertyValueProvider(Entity entity, ReadWriteConversions conversionGetter) {
 		this.entity = entity;
-		this.conversionService = conversionService;
-		this.internalConversionService = internalConversionService;
-		this.conversionGetter = conversionGetter;
+
+		this.conversion = conversionGetter;
 	}
 
 	@Override
@@ -70,28 +59,7 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 		}
 
 		Class<?> targetType = persistentProperty.getType();
-		T result = null;
-
-		DefaultDatastoreEntityConverter.TwoStepConversion twoStepConversion = this.conversionGetter.apply(targetType);
-
-		if (twoStepConversion.getFirstStepTarget() == null && twoStepConversion.getSecondStepTarget() == null
-				&& ClassUtils.isAssignable(targetType, val.getClass())) {
-			//neither first or second steps were applied, no conversion is necessary
-			result = (T) val;
-		}
-		else if (twoStepConversion.getFirstStepTarget() == null && twoStepConversion.getSecondStepTarget() != null) {
-			//only second step was applied on write
-			result = (T) this.internalConversionService.convert(val, targetType);
-		}
-		else if (twoStepConversion.getFirstStepTarget() != null && twoStepConversion.getSecondStepTarget() == null) {
-			//only first step was applied on write
-			result = (T) this.conversionService.convert(val, targetType);
-		}
-		else if (twoStepConversion.getFirstStepTarget() != null && twoStepConversion.getSecondStepTarget() != null) {
-			//both steps were applied
-			val = this.internalConversionService.convert(val, twoStepConversion.getFirstStepTarget());
-			result = (T) this.conversionService.convert(val, targetType);
-		}
+		T result = this.conversion.convertOnRead(val, targetType);
 
 		if (result != null) {
 			return result;

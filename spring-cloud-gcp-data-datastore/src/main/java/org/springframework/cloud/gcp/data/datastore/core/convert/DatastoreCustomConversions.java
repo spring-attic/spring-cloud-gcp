@@ -46,7 +46,7 @@ public class DatastoreCustomConversions extends org.springframework.data.convert
 				.build();
 
 		STORE_CONVERSIONS =
-				StoreConversions.of(DefaultDatastoreEntityConverter.DatastoreSimpleTypes.HOLDER, STORE_CONVERTERS);
+				StoreConversions.of(DatastoreSimpleTypes.HOLDER, STORE_CONVERTERS);
 	}
 
 	DatastoreCustomConversions() {
