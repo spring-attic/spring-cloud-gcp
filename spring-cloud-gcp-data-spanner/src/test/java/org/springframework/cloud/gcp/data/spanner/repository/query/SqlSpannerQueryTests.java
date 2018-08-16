@@ -41,10 +41,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
-import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -70,7 +70,7 @@ public class SqlSpannerQueryTests {
 
 	private QueryMethod queryMethod;
 
-	private EvaluationContextProvider evaluationContextProvider;
+	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
 	private SpelExpressionParser expressionParser;
 
@@ -91,7 +91,7 @@ public class SqlSpannerQueryTests {
 				mock(SpannerMutationFactory.class), new SpannerSchemaUtils(
 						this.spannerMappingContext, this.spannerEntityProcessor, true)));
 		this.expressionParser = new SpelExpressionParser();
-		this.evaluationContextProvider = mock(EvaluationContextProvider.class);
+		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
 	}
 
 	private SqlSpannerQuery<Trade> createQuery(String sql) {
