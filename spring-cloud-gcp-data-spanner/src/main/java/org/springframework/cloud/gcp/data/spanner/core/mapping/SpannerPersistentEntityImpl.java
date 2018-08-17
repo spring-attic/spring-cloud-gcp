@@ -149,7 +149,8 @@ public class SpannerPersistentEntityImpl<T>
 				throw new SpannerDataException(
 						"Two properties were annotated with the same primary key order: "
 								+ property.getColumnName() + " and "
-								+ this.primaryKeyParts.get(order).getColumnName());
+								+ this.primaryKeyParts.get(order).getColumnName()
+								+ " in " + getType().getSimpleName() + ".");
 			}
 			this.primaryKeyParts.put(order, property);
 		}
@@ -212,9 +213,12 @@ public class SpannerPersistentEntityImpl<T>
 					.getFlattenedPrimaryKeyProperties();
 			if (primaryKeyProperties.size() >= childKeyProperties.size()) {
 				throw new SpannerDataException(
-						"A child table must contain the primary key columns of its "
-								+ "parent in the same order starting the first "
-								+ "column with additional" + " key columns after.");
+						"A child table (" + childEntity.getType().getSimpleName() + ")"
+								+ " must contain the primary key columns of its "
+								+ "parent (" + childEntity.getType().getSimpleName() + ")"
+								+ " in the same order starting the first "
+								+ "column with additional key columns after.");
+
 			}
 			for (int i = 0; i < primaryKeyProperties.size(); i++) {
 				SpannerPersistentProperty parentKey = primaryKeyProperties.get(i);
@@ -222,10 +226,11 @@ public class SpannerPersistentEntityImpl<T>
 				if (!parentKey.getColumnName().equals(childKey.getColumnName())
 						|| !parentKey.getType().equals(childKey.getType())) {
 					throw new SpannerDataException(
-							"The child primary key column (" + childKey.getColumnName()
+							"The child primary key column ("
+									+ childEntity.getType().getSimpleName() + "." + childKey.getColumnName()
 									+ ") at position " + (i + 1)
 									+ " does not match that of its parent ("
-									+ parentKey.getColumnName() + ")");
+									+ getType().getSimpleName() + "." + parentKey.getColumnName() + ").");
 				}
 			}
 		});
@@ -251,7 +256,7 @@ public class SpannerPersistentEntityImpl<T>
 						if (seen.contains(columnName)) {
 							throw new SpannerDataException(
 									"Two properties resolve to the same column name: "
-											+ columnName);
+											+ columnName + " in " + getType().getSimpleName());
 						}
 						seen.add(columnName);
 					}
@@ -265,7 +270,7 @@ public class SpannerPersistentEntityImpl<T>
 				throw new SpannerDataException(
 						"The primary key columns were not given a consecutive order. "
 								+ "There is no property annotated with order "
-								+ String.valueOf(i));
+								+ i + " in " + this.getType().getSimpleName() + ".");
 			}
 		}
 		this.idProperty = new SpannerCompositeKeyProperty(this, getPrimaryKeyProperties());
@@ -305,9 +310,14 @@ public class SpannerPersistentEntityImpl<T>
 
 	@Override
 	public String tableName() {
-		return validateTableName(this.tableNameExpression == null
-				? this.tableName
-						: this.tableNameExpression.getValue(this.context, String.class));
+		try {
+			return validateTableName(this.tableNameExpression == null
+					? this.tableName
+					: this.tableNameExpression.getValue(this.context, String.class));
+		}
+		catch (RuntimeException e) {
+			throw new SpannerDataException("Error getting table name for " + getType().getSimpleName(), e);
+		}
 	}
 
 	// Because SpEL expressions in table name definitions are allowed, validation is
