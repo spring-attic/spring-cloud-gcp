@@ -34,10 +34,10 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 
 	private final ReadWriteConversions conversion;
 
-	EntityPropertyValueProvider(Entity entity, ReadWriteConversions conversionGetter) {
+	EntityPropertyValueProvider(Entity entity, ReadWriteConversions readWriteConversions) {
 		this.entity = entity;
 
-		this.conversion = conversionGetter;
+		this.conversion = readWriteConversions;
 	}
 
 	@Override

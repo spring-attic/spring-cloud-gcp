@@ -93,7 +93,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 
 		propertyVal = this.conversions.convertOnWrite(propertyVal);
 
-		Value val = DatastoreSimpleTypes.getDatastoreWrappedValue(propertyVal, persistentProperty);
+		Value val = DatastoreNativeTypes.wrapValue(propertyVal, persistentProperty);
 		sink.set(persistentProperty.getFieldName(), val);
 	}
 }

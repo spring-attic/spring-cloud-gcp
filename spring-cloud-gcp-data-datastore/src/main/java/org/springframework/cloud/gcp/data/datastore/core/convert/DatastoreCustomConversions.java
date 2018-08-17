@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.JodaTimeConverters;
 import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.convert.ThreeTenBackPortConverters;
@@ -32,7 +33,7 @@ import org.springframework.data.convert.ThreeTenBackPortConverters;
  *
  * @since 1.1
  */
-public class DatastoreCustomConversions extends org.springframework.data.convert.CustomConversions {
+public class DatastoreCustomConversions extends CustomConversions {
 
 	private static final StoreConversions STORE_CONVERSIONS;
 
@@ -46,7 +47,7 @@ public class DatastoreCustomConversions extends org.springframework.data.convert
 				.build();
 
 		STORE_CONVERSIONS =
-				StoreConversions.of(DatastoreSimpleTypes.HOLDER, STORE_CONVERTERS);
+				StoreConversions.of(DatastoreNativeTypes.HOLDER, STORE_CONVERTERS);
 	}
 
 	DatastoreCustomConversions() {

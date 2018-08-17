@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -25,7 +27,7 @@ import org.springframework.util.ClassUtils;
 
 /**
  * In order to support {@link CustomConversions}, this class applies 2-step conversions.
- * The first step produces one of {@link SimpleTypeHolder}'s simple types.
+ * The first step produces one of {@link org.springframework.data.mapping.model.SimpleTypeHolder}'s simple types.
  * The second step converts simple types to Datastore-native types.
  * The second step is skipped if the first one produces a Datastore-native type.
  *
@@ -33,30 +35,20 @@ import org.springframework.util.ClassUtils;
  *
  * @since 1.1
  */
-class TwoStepsConversions implements ReadWriteConversions {
+public class TwoStepsConversions implements ReadWriteConversions {
 	private final GenericConversionService conversionService;
 
 	private final GenericConversionService internalConversionService;
 
-	private final DatastoreSimpleTypes toNativeConversions;
-
 	private final CustomConversions customConversions;
 
-	TwoStepsConversions(CustomConversions customConversions) {
+	private final Map<Class, Optional<Class<?>>> writeConverters = new HashMap<>();
+
+	public TwoStepsConversions(CustomConversions customConversions) {
 		this.conversionService = new DefaultConversionService();
 		this.internalConversionService = new DefaultConversionService();
 		this.customConversions = customConversions;
-		this.toNativeConversions = new DatastoreSimpleTypes(this.internalConversionService);
 		this.customConversions.registerConvertersIn(this.conversionService);
-	}
-
-	TwoStepsConversions(GenericConversionService conversionService,
-						GenericConversionService internalConversionService, DatastoreSimpleTypes toNativeConversions,
-						CustomConversions customConversions) {
-		this.conversionService = conversionService;
-		this.internalConversionService = internalConversionService;
-		this.toNativeConversions = toNativeConversions;
-		this.customConversions = customConversions;
 	}
 
 	@Override
@@ -66,24 +58,24 @@ class TwoStepsConversions implements ReadWriteConversions {
 			return null;
 		}
 		Object result = null;
-		TwoStepConversion twoStepConversion = getTwoStepsConversion(targetType);
+		TypeTargets typeTargets = computeTypeTargets(targetType);
 
-		if (twoStepConversion.getFirstStepTarget() == null && twoStepConversion.getSecondStepTarget() == null
+		if (typeTargets.getFirstStepTarget() == null && typeTargets.getSecondStepTarget() == null
 				&& ClassUtils.isAssignable(targetType, val.getClass())) {
 			//neither first or second steps were applied, no conversion is necessary
 			result = val;
 		}
-		else if (twoStepConversion.getFirstStepTarget() == null && twoStepConversion.getSecondStepTarget() != null) {
+		else if (typeTargets.getFirstStepTarget() == null && typeTargets.getSecondStepTarget() != null) {
 			//only second step was applied on write
 			result = this.internalConversionService.convert(val, targetType);
 		}
-		else if (twoStepConversion.getFirstStepTarget() != null && twoStepConversion.getSecondStepTarget() == null) {
+		else if (typeTargets.getFirstStepTarget() != null && typeTargets.getSecondStepTarget() == null) {
 			//only first step was applied on write
 			result = this.conversionService.convert(val, targetType);
 		}
-		else if (twoStepConversion.getFirstStepTarget() != null && twoStepConversion.getSecondStepTarget() != null) {
+		else if (typeTargets.getFirstStepTarget() != null && typeTargets.getSecondStepTarget() != null) {
 			//both steps were applied
-			Object secondStepVal = this.internalConversionService.convert(val, twoStepConversion.getFirstStepTarget());
+			Object secondStepVal = this.internalConversionService.convert(val, typeTargets.getFirstStepTarget());
 			result = this.conversionService.convert(secondStepVal, targetType);
 		}
 		return (T) result;
@@ -94,23 +86,23 @@ class TwoStepsConversions implements ReadWriteConversions {
 	public <T> T convertOnWrite(Object propertyVal) {
 		Object result = propertyVal;
 		if (result != null) {
-			TwoStepConversion twoStepConversion = getTwoStepsConversion(result.getClass());
-			if (twoStepConversion.getFirstStepTarget() != null) {
-				result = this.conversionService.convert(propertyVal, twoStepConversion.getFirstStepTarget());
+			TypeTargets typeTargets = computeTypeTargets(result.getClass());
+			if (typeTargets.getFirstStepTarget() != null) {
+				result = this.conversionService.convert(propertyVal, typeTargets.getFirstStepTarget());
 			}
 
-			if (twoStepConversion.getSecondStepTarget() != null) {
-				result = this.internalConversionService.convert(result, twoStepConversion.getSecondStepTarget());
+			if (typeTargets.getSecondStepTarget() != null) {
+				result = this.internalConversionService.convert(result, typeTargets.getSecondStepTarget());
 			}
 		}
 		return (T) result;
 	}
 
-	private TwoStepConversion getTwoStepsConversion(Class<?> firstStepSource) {
+	private TypeTargets computeTypeTargets(Class<?> firstStepSource) {
 		Class<?> firstStepTarget = null;
 		Class<?> secondStepTarget = null;
 
-		if (!DatastoreSimpleTypes.isSimple(firstStepSource)) {
+		if (!DatastoreNativeTypes.isNativeType(firstStepSource)) {
 			Optional<Class<?>> simpleType = this.customConversions.getCustomWriteTarget(firstStepSource);
 			if (simpleType.isPresent()) {
 				firstStepTarget = simpleType.get();
@@ -119,22 +111,36 @@ class TwoStepsConversions implements ReadWriteConversions {
 			Class<?> effectiveFirstStepTarget =
 					firstStepTarget == null ? firstStepSource : firstStepTarget;
 
-			Optional<Class<?>> datastoreBasicType =
-					this.toNativeConversions.getCustomWriteTarget(effectiveFirstStepTarget);
+			Optional<Class<?>> datastoreBasicType = getCustomWriteTarget(effectiveFirstStepTarget);
 
 			if (datastoreBasicType.isPresent()) {
 				secondStepTarget = datastoreBasicType.get();
 			}
 		}
-		return new TwoStepConversion(firstStepTarget, secondStepTarget);
+		return new TypeTargets(firstStepTarget, secondStepTarget);
 	}
 
-	private static class TwoStepConversion {
+	private Optional<Class<?>> getCustomWriteTarget(Class<?> sourceType) {
+		if (DatastoreNativeTypes.isNativeType(sourceType)) {
+			return Optional.empty();
+		}
+		return this.writeConverters.computeIfAbsent(sourceType, this::getSimpleTypeWithBidirectionalConversion);
+	}
+
+	private Optional<Class<?>> getSimpleTypeWithBidirectionalConversion(Class inputType) {
+		return DatastoreNativeTypes.DATASTORE_NATIVE_TYPES.stream()
+				.filter(simpleType ->
+						this.internalConversionService.canConvert(inputType, simpleType)
+								&& this.internalConversionService.canConvert(simpleType, inputType))
+				.findAny();
+	}
+
+	private static class TypeTargets {
 		private Class<?> firstStepTarget;
 
 		private Class<?> secondStepTarget;
 
-		TwoStepConversion(Class<?> firstStepTarget, Class<?> secondStepTarget) {
+		TypeTargets(Class<?> firstStepTarget, Class<?> secondStepTarget) {
 			this.firstStepTarget = firstStepTarget;
 			this.secondStepTarget = secondStepTarget;
 		}

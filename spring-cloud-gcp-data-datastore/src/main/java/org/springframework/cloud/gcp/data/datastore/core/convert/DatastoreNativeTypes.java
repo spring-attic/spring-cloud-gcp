@@ -16,9 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -43,7 +41,6 @@ import com.google.common.collect.ImmutableSet;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 /**
@@ -53,12 +50,13 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  *
  * @since 1.1
  */
-class DatastoreSimpleTypes {
-	static final Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
+public abstract class DatastoreNativeTypes {
 
-	static final Set<Class<?>> DATASTORE_NATIVE_TYPES;
+	public final static Set<Class<?>> DATASTORE_NATIVE_TYPES;
 
-	static final Set<Class<?>> ID_TYPES;
+	public final static Set<Class<?>> ID_TYPES;
+
+	private final static Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
 
 	static {
 		//keys are used for type resolution, in order of insertion
@@ -86,47 +84,27 @@ class DatastoreSimpleTypes {
 				.build();
 	}
 
-	static final SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_NATIVE_TYPES, true);
+	public final static SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_NATIVE_TYPES, true);
 
-	final private Map<Class, Optional<Class<?>>> writeConverters = new HashMap<>();
 
-	final private ConversionService conversionService;
-
-	DatastoreSimpleTypes(ConversionService conversionService) {
-		this.conversionService = conversionService;
-	}
-
-	static boolean isSimple(Class aClass) {
+	public static boolean isNativeType(Class aClass) {
 		return aClass == null || DATASTORE_NATIVE_TYPES.contains(aClass);
 	}
 
+	/*
+	* Wraps datastore native type to datastore value type
+	*/
 	@SuppressWarnings("unchecked")
-	static public Value getDatastoreWrappedValue(Object propertyVal, DatastorePersistentProperty persistentProperty) {
+	public static Value wrapValue(Object propertyVal, DatastorePersistentProperty persistentProperty) {
 		if (propertyVal == null) {
 			return new NullValue();
 		}
-		Function wrapper = DatastoreSimpleTypes.DATASTORE_TYPE_WRAPPERS.get(propertyVal.getClass());
+		Function wrapper = DatastoreNativeTypes.DATASTORE_TYPE_WRAPPERS.get(propertyVal.getClass());
 		if (wrapper != null) {
 			return (Value) wrapper.apply(propertyVal);
 		}
 		throw new DatastoreDataException("Unable to convert a property" +
 				" with name " + persistentProperty.getFieldName()
 				+ " to Datastore supported type. The property's type is " + propertyVal.getClass());
-	}
-
-
-	public Optional<Class<?>> getCustomWriteTarget(Class<?> sourceType) {
-		if (isSimple(sourceType)) {
-			return Optional.empty();
-		}
-		return this.writeConverters.computeIfAbsent(sourceType, this::getSimpleTypeWithBidirectionalConversion);
-	}
-
-	private Optional<Class<?>> getSimpleTypeWithBidirectionalConversion(Class inputType) {
-		return DATASTORE_NATIVE_TYPES.stream()
-				.filter(simpleType ->
-						this.conversionService.canConvert(inputType, simpleType)
-								&& this.conversionService.canConvert(simpleType, inputType))
-				.findAny();
 	}
 }
