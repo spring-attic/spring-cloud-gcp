@@ -27,7 +27,6 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.expression.spel.SpelEvaluationException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -80,7 +79,7 @@ public class SpannerPersistentEntityImplTests {
 				.columns(), containsInAnyOrder("id", "custom_col"));
 	}
 
-	@Test(expected = SpelEvaluationException.class)
+	@Test(expected = SpannerDataException.class)
 	public void testExpressionResolutionWithoutApplicationContext() {
 		SpannerPersistentEntityImpl<EntityWithExpression> entity = new SpannerPersistentEntityImpl<>(
 				ClassTypeInformation.from(EntityWithExpression.class));

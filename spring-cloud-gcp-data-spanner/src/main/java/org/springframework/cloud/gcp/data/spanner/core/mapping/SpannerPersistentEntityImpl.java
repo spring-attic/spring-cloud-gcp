@@ -214,7 +214,9 @@ public class SpannerPersistentEntityImpl<T>
 				throw new SpannerDataException(
 						"A child table must contain the primary key columns of its "
 								+ "parent in the same order starting the first "
-								+ "column with additional" + " key columns after.");
+								+ "column with additional key columns after."
+								+ "The parent is " + getType().getSimpleName()
+								+ " and the child is " + childEntity.getType().getSimpleName() + ".");
 			}
 			for (int i = 0; i < primaryKeyProperties.size(); i++) {
 				SpannerPersistentProperty parentKey = primaryKeyProperties.get(i);
@@ -225,7 +227,9 @@ public class SpannerPersistentEntityImpl<T>
 							"The child primary key column (" + childKey.getColumnName()
 									+ ") at position " + (i + 1)
 									+ " does not match that of its parent ("
-									+ parentKey.getColumnName() + ")");
+									+ parentKey.getColumnName() + ")."
+									+ "The parent is " + getType().getSimpleName()
+									+ " and the child is " + childEntity.getType().getSimpleName() + ".");
 				}
 			}
 		});
@@ -251,7 +255,7 @@ public class SpannerPersistentEntityImpl<T>
 						if (seen.contains(columnName)) {
 							throw new SpannerDataException(
 									"Two properties resolve to the same column name: "
-											+ columnName);
+											+ columnName + " in " + getType().getSimpleName());
 						}
 						seen.add(columnName);
 					}
@@ -265,7 +269,7 @@ public class SpannerPersistentEntityImpl<T>
 				throw new SpannerDataException(
 						"The primary key columns were not given a consecutive order. "
 								+ "There is no property annotated with order "
-								+ String.valueOf(i));
+								+ String.valueOf(i) + " in " + this.getType().getSimpleName() + ".");
 			}
 		}
 		this.idProperty = new SpannerCompositeKeyProperty(this, getPrimaryKeyProperties());
@@ -305,9 +309,14 @@ public class SpannerPersistentEntityImpl<T>
 
 	@Override
 	public String tableName() {
-		return validateTableName(this.tableNameExpression == null
-				? this.tableName
-						: this.tableNameExpression.getValue(this.context, String.class));
+		try {
+			return validateTableName(this.tableNameExpression == null
+					? this.tableName
+					: this.tableNameExpression.getValue(this.context, String.class));
+		}
+		catch (RuntimeException e) {
+			throw new SpannerDataException("Error getting table name for " + getType().getSimpleName(), e);
+		}
 	}
 
 	// Because SpEL expressions in table name definitions are allowed, validation is
