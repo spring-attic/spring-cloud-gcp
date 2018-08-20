@@ -56,6 +56,12 @@ public interface DatastorePersistentProperty
 	boolean isEmbedded();
 
 	/**
+	 * True if the property should be excluded from indexes
+	 * @return true if if the property should be indexed
+	 */
+	boolean isUnindexed();
+
+	/**
 	 * Gets the inner type of the property, which is meaningful for fields of type ARRAY
 	 * in Datastore.
 	 * @return the inner type of the iterable property.
