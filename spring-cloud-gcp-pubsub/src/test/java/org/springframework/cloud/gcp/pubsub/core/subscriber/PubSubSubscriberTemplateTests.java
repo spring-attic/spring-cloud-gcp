@@ -61,6 +61,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.reset;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -95,7 +96,7 @@ public class PubSubSubscriberTemplateTests {
 	private PubSubMessageConverter messageConverter;
 
 	@Mock
-	private Consumer<BasicAcknowledgeablePubsubMessage> consumer;
+  private Consumer<BasicAcknowledgeablePubsubMessage> consumer;
 
 	@Captor
 	private ArgumentCaptor<BasicAcknowledgeablePubsubMessage> message;
@@ -176,6 +177,12 @@ public class PubSubSubscriberTemplateTests {
 		doNothing().when(this.ackReplyConsumer).nack();
 
 		// create objects under test
+		when(this.subscriberFactory.createSubscriberStub()).thenReturn(this.subscriberStub);
+		when(this.subscriberStub.pullCallable()).thenReturn(this.pullCallable);
+		when(this.pullCallable.call(any(PullRequest.class))).thenReturn(PullResponse.newBuilder()
+				.addReceivedMessages(ReceivedMessage.newBuilder().setMessage(this.pubsubMessage).build()).build());
+
+		// create object under test
 		this.pubSubSubscriberTemplate = new PubSubSubscriberTemplate(this.subscriberFactory);
 		this.pubSubSubscriberTemplate.setMessageConverter(this.messageConverter);
 	}

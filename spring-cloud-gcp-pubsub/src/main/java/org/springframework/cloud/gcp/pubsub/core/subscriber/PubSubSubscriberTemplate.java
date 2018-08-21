@@ -139,6 +139,16 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		return subscriber;
 	}
 
+	@Override
+	public <T> Subscriber subscribeAndConvert(String subscription,
+			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer, Class<T> payloadType) {
+		Assert.notNull(messageConsumer, "The messageConsumer can't be null.");
+
+		return this.subscribe(subscription,
+				(message) -> messageConsumer.accept(new ConvertedPushedAcknowledgeablePubsubMessage<T>(message,
+						this.pubSubMessageConverter.fromPubSubMessage(message.getPubsubMessage(), payloadType))));
+	}
+
 	/**
 	 * Pulls messages synchronously, on demand, using the pull request in argument.
 	 *
@@ -432,10 +442,11 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	private class ConvertedPulledAcknowledgeablePubsubMessage<T> extends PulledAcknowledgeablePubsubMessage
 			implements ConvertedAcknowledgeablePubsubMessage<T> {
 
-		private final T payload;
+		  private final T payload;
 
-		ConvertedPulledAcknowledgeablePubsubMessage(AcknowledgeablePubsubMessage message, T payload) {
-			super(message.getProjectSubscriptionName(), message.getPubsubMessage(), message.getAckId());
+		  ConvertedPulledAcknowledgeablePubsubMessage(AcknowledgeablePubsubMessage message, T payload) {
+		  super(message.getProjectSubscriptionName(), message.getPubsubMessage(), message.getAckId());
+
 			this.payload = payload;
 		}
 
@@ -445,15 +456,16 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		}
 	}
 
-	private class ConvertedPushedAcknowledgeablePubsubMessage<T> extends PushedAcknowledgeablePubsubMessage
+	private static class ConvertedPushedAcknowledgeablePubsubMessage<T> extends PushedAcknowledgeablePubsubMessage
 			implements ConvertedBasicAcknowledgeablePubsubMessage<T> {
 
 		private final T payload;
 
-		ConvertedPushedAcknowledgeablePubsubMessage(ProjectSubscriptionName projectSubscriptionName,
+    ConvertedPushedAcknowledgeablePubsubMessage(ProjectSubscriptionName projectSubscriptionName,
 				PubsubMessage message, T payload, AckReplyConsumer ackReplyConsumer) {
 			super(projectSubscriptionName, message, ackReplyConsumer);
-			this.payload = payload;
+
+      this.payload = payload;
 		}
 
 		@Override
