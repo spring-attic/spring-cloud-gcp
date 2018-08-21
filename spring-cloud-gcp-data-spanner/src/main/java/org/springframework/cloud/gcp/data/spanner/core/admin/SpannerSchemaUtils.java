@@ -36,6 +36,8 @@ import org.springframework.util.Assert;
  * Contains functions related to the table schema of entities.
  *
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class SpannerSchemaUtils {
 

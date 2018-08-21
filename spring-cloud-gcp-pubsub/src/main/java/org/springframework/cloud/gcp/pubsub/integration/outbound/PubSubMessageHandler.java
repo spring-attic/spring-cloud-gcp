@@ -16,13 +16,9 @@
 
 package org.springframework.cloud.gcp.pubsub.integration.outbound;
 
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import com.google.protobuf.ByteString;
-import com.google.pubsub.v1.PubsubMessage;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
@@ -35,8 +31,6 @@ import org.springframework.integration.expression.ValueExpression;
 import org.springframework.integration.handler.AbstractMessageHandler;
 import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.converter.MessageConverter;
-import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
@@ -44,19 +38,17 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 /**
  * Outbound channel adapter to publish messages to Google Cloud Pub/Sub.
  *
- * <p>It delegates Google Cloud Pub/Sub interaction to {@link PubSubOperations}. It also converts
- * the {@link Message} payload into a {@link PubsubMessage} accepted by the Google Cloud Pub/Sub
- * Client Library. It supports synchronous and asynchronous sending.
+ * <p>It delegates Google Cloud Pub/Sub interaction to
+ * {@link org.springframework.cloud.gcp.pubsub.core.PubSubTemplate}.
  *
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	private static final long DEFAULT_PUBLISH_TIMEOUT = 10000;
 
 	private final PubSubOperations pubSubTemplate;
-
-	private MessageConverter messageConverter = new StringMessageConverter();
 
 	private Expression topicExpression;
 
@@ -71,6 +63,8 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
 	public PubSubMessageHandler(PubSubOperations pubSubTemplate, String topic) {
+		Assert.notNull(pubSubTemplate, "Pub/Sub template cannot be null.");
+		Assert.notNull(topic, "Pub/Sub topic cannot be null.");
 		this.pubSubTemplate = pubSubTemplate;
 		this.topicExpression = new LiteralExpression(topic);
 	}
@@ -82,30 +76,12 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 				? message.getHeaders().get(GcpPubSubHeaders.TOPIC, String.class)
 				: this.topicExpression.getValue(this.evaluationContext, message, String.class);
 
-		if (payload instanceof PubsubMessage) {
-			this.pubSubTemplate.publish(topic, (PubsubMessage) payload);
-			return;
-		}
-
-		ByteString pubsubPayload;
-
-		if (payload instanceof byte[]) {
-			pubsubPayload = ByteString.copyFrom((byte[]) payload);
-		}
-		else if (payload instanceof ByteString) {
-			pubsubPayload = (ByteString) payload;
-		}
-		else {
-			pubsubPayload =	ByteString.copyFrom(
-					(String) this.messageConverter.fromMessage(message, String.class),
-					Charset.defaultCharset());
-		}
+		ListenableFuture<String> pubsubFuture;
 
 		Map<String, String> headers = new HashMap<>();
 		this.headerMapper.fromHeaders(message.getHeaders(), headers);
 
-		ListenableFuture<String> pubsubFuture =
-				this.pubSubTemplate.publish(topic, pubsubPayload, headers);
+		pubsubFuture = this.pubSubTemplate.publish(topic, payload, headers);
 
 		if (this.publishCallback != null) {
 			pubsubFuture.addCallback(this.publishCallback);
@@ -121,16 +97,6 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 				pubsubFuture.get(timeout, TimeUnit.MILLISECONDS);
 			}
 		}
-	}
-
-	public MessageConverter getMessageConverter() {
-		return this.messageConverter;
-	}
-
-	public void setMessageConverter(MessageConverter messageConverter) {
-		Assert.notNull(messageConverter,
-				"The specified message converter can't be null.");
-		this.messageConverter = messageConverter;
 	}
 
 	public boolean isSync() {
@@ -223,7 +189,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 
 	/**
 	 * Set the header mapper to map headers from {@link Message} into outbound
-	 * {@link PubsubMessage}.
+	 * {@link com.google.pubsub.v1.PubsubMessage}.
 	 * @param headerMapper the header mapper
 	 */
 	public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {

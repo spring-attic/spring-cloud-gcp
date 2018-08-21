@@ -22,6 +22,8 @@ import org.springframework.data.repository.core.support.AbstractEntityInformatio
 
 /**
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class SpannerPersistentEntityInformation<T>
 		extends AbstractEntityInformation<T, Key> {

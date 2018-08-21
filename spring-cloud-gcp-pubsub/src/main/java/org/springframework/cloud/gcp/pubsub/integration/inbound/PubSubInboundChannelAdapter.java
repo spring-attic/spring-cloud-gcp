@@ -22,17 +22,14 @@ import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.pubsub.v1.PubsubMessage;
 
-import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
+import org.springframework.cloud.gcp.pubsub.core.PubSubException;
+import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.mapping.HeaderMapper;
 import org.springframework.integration.support.MessageBuilder;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.converter.MessageConverter;
-import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.util.Assert;
 
 /**
@@ -40,28 +37,25 @@ import org.springframework.util.Assert;
  * attached channels.
  *
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private final String subscriptionName;
 
-	private final PubSubOperations pubSubTemplate;
+	private final PubSubTemplate pubSubTemplate;
 
 	private Subscriber subscriber;
 
 	private AckMode ackMode = AckMode.AUTO;
 
-	private MessageConverter messageConverter;
-
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
-	public PubSubInboundChannelAdapter(PubSubOperations pubSubTemplate, String subscriptionName) {
+	private Class payloadType = byte[].class;
+
+	public PubSubInboundChannelAdapter(PubSubTemplate pubSubTemplate, String subscriptionName) {
 		this.pubSubTemplate = pubSubTemplate;
 		this.subscriptionName = subscriptionName;
-
-		StringMessageConverter stringMessageConverter = new StringMessageConverter();
-		stringMessageConverter.setSerializedPayloadClass(String.class);
-		this.messageConverter = stringMessageConverter;
 	}
 
 	@Override
@@ -82,22 +76,16 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 
 		try {
-			Message<?> internalMessage =
-					this.messageConverter == null
-							? MessageBuilder.withPayload(pubsubMessage.getData().toByteArray())
-							.copyHeaders(messageHeaders)
-							.build()
-							: this.messageConverter.toMessage(
-									pubsubMessage.getData().toStringUtf8(),
-							new MessageHeaders(messageHeaders));
-
-			sendMessage(internalMessage);
+			sendMessage(MessageBuilder.withPayload(
+					this.pubSubTemplate.getMessageConverter().fromPubSubMessage(pubsubMessage, this.payloadType))
+					.copyHeaders(messageHeaders)
+					.build());
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
 				consumer.nack();
 			}
-			throw re;
+			throw new PubSubException("Sending Spring message failed.", re);
 		}
 
 		if (this.ackMode == AckMode.AUTO) {
@@ -123,24 +111,26 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		this.ackMode = ackMode;
 	}
 
-	public MessageConverter getMessageConverter() {
-		return this.messageConverter;
+	public Class getPayloadType() {
+		return this.payloadType;
 	}
 
 	/**
-	 * Set the {@link MessageConverter} to convert the payload of the incoming message from
-	 * Pub/Sub.
-	 * If {@code messageConverter} is null, the payload of the Pub/Sub message is converted to
-	 * {@code byte[]} and returned in that form.
-	 * @param messageConverter converts the payload of the incoming message from Pub/Sub
+	 * Set the desired type of the payload of the {@link org.springframework.messaging.Message} constructed by
+	 * converting the incoming Pub/Sub message. The channel adapter will use the
+	 * {@link PubSubTemplate#getMessageConverter()} to do the conversion to the desired type.
+	 * The default payload type is {@code byte[].class}
+	 * @param payloadType the type of the payload of the {@link org.springframework.messaging.Message} produce by the
+	 * 				adapter. Cannot be set to null.
 	 */
-	public void setMessageConverter(MessageConverter messageConverter) {
-		this.messageConverter = messageConverter;
+	public void setPayloadType(Class payloadType) {
+		Assert.notNull(payloadType, "The payload type cannot be null.");
+		this.payloadType = payloadType;
 	}
 
 	/**
 	 * Set the header mapper to map headers from incoming {@link PubsubMessage} into
-	 * {@link Message}.
+	 * {@link org.springframework.messaging.Message}.
 	 * @param headerMapper the header mapper
 	 */
 	public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {

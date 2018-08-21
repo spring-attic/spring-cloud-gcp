@@ -6,12 +6,12 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-build</artifactId>
-		<version>2.0.0.RELEASE</version>
+		<version>2.0.2.RELEASE</version>
 		<relativePath/><!-- lookup parent from repository -->
 	</parent>
 
 	<artifactId>spring-cloud-gcp</artifactId>
-	<version>1.0.0.BUILD-SNAPSHOT</version>
+	<version>1.1.0.BUILD-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Spring Cloud GCP</name>
 	<description>Spring Cloud GCP</description>
@@ -39,8 +39,10 @@
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<spring-cloud-release.version>Finchley.RC1</spring-cloud-release.version>
-		<spring-boot-release.version>2.0.1.RELEASE</spring-boot-release.version>
+		<spring-cloud-commons.version>2.0.0.RELEASE</spring-cloud-commons.version>
+		<spring-cloud-sleuth.version>2.0.0.RELEASE</spring-cloud-sleuth.version>
+		<spring-cloud-stream.version>Elmhurst.RELEASE</spring-cloud-stream.version>
+		<zipkin-gcp.version>0.6.2</zipkin-gcp.version>
 	</properties>
 
 	<dependencyManagement>
@@ -55,16 +57,24 @@
 
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>${spring-cloud-release.version}</version>
+				<artifactId>spring-cloud-commons-dependencies</artifactId>
+				<version>${spring-cloud-commons.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 
 			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring-boot-release.version}</version>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-sleuth-dependencies</artifactId>
+				<version>${spring-cloud-sleuth.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-stream-dependencies</artifactId>
+				<version>${spring-cloud-stream.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -78,8 +88,15 @@
 			<dependency>
 				<groupId>io.zipkin.gcp</groupId>
 				<artifactId>zipkin-sender-stackdriver</artifactId>
-				<version>0.4.1</version>
+				<version>${zipkin-gcp.version}</version>
 			</dependency>
+
+			<dependency>
+				<groupId>io.zipkin.gcp</groupId>
+				<artifactId>brave-propagation-stackdriver</artifactId>
+				<version>${zipkin-gcp.version}</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 

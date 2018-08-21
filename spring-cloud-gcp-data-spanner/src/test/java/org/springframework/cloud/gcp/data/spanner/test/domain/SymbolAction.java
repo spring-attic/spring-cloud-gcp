@@ -14,21 +14,37 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.logging.extractors;
-
-import javax.servlet.http.HttpServletRequest;
+package org.springframework.cloud.gcp.data.spanner.test.domain;
 
 /**
- * Extracts trace IDs from HTTP requests using the X-B3-TraceId header.
+ * A small object containing just a stock symbol and action.
  *
  * @author Chengyuan Zhao
  */
-public class ZipkinTraceIdExtractor implements TraceIdExtractor {
+public class SymbolAction {
 
-	public static final String X_B3_TRACE_HEADER = "X-B3-TraceId";
+	private String symbol;
 
-	@Override
-	public String extractTraceIdFromRequest(HttpServletRequest req) {
-		return req.getHeader(X_B3_TRACE_HEADER);
+	private String action;
+
+	public SymbolAction(String symbol, String action) {
+		this.symbol = symbol;
+		this.action = action;
+	}
+
+	public String getSymbol() {
+		return this.symbol;
+	}
+
+	public void setSymbol(String symbol) {
+		this.symbol = symbol;
+	}
+
+	public String getAction() {
+		return this.action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
 	}
 }

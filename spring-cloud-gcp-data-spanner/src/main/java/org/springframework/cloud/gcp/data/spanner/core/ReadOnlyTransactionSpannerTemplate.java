@@ -32,7 +32,10 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 /**
  * A {@link SpannerTemplate} that performs all operations in a single transaction.
  * This template is not intended for the user to directly instantiate.
+ *
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 class ReadOnlyTransactionSpannerTemplate extends SpannerTemplate {
 

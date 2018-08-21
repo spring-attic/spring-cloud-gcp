@@ -23,9 +23,7 @@ dependencies {
 }
 ----
 
-=== Getting started
-
-There is a link:../spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[code sample] that demonstrates how to build a simple app to send messages over a Spring Cloud Stream Binder for Google Cloud Pub/Sub.
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[sample application] is available.
 
 === Overview
 
@@ -49,3 +47,6 @@ spring.cloud.stream.gcp.pubsub.bindings.output.consumer.auto-create-resources=tr
 ----
 
 If you are using Pub/Sub auto-configuration from the Spring Cloud GCP Pub/Sub Starter, you should refer to the <<pubsub-configuration,configuration>> section for other Pub/Sub parameters.
+
+NOTE: To use this binder with a https://cloud.google.com/pubsub/docs/emulator[running emulator], configure its host and port via
+`spring.cloud.gcp.pubsub.emulator-host`.

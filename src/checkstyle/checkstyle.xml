@@ -95,7 +95,9 @@
                              org.hamcrest.collection.IsCollectionWithSize.*,
                              org.assertj.core.api.Assertions.*,
                              org.assertj.core.api.Assumptions.*,
-                             org.mockito.BDDMockito.*"
+                             org.mockito.BDDMockito.*,
+                             org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*,
+                             org.springframework.test.web.servlet.result.MockMvcResultMatchers.*"
                       />
         </module>
         <module name="FallThrough"/>
@@ -123,6 +125,12 @@
             <property name="tokens" value="METHOD_DEF"/>
         </module>
         <module name="UnusedImports"/>
+
+        <!-- Javadoc -->
+        <module name="AtclauseOrder">
+            <property name="target" value="METHOD_DEF, CTOR_DEF, VARIABLE_DEF"/>
+            <property name="tagOrder" value="@param, @return, @throws, @since, @deprecated, @see"/>
+        </module>
 
         <!-- Miscellaneous -->
         <module name="CommentsIndentation"/>

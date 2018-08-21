@@ -7,9 +7,30 @@ is an abstraction for storing and retrieving POJOs in numerous storage technolog
 Spring Cloud GCP adds Spring Data support for http://cloud.google.com/spanner/[Google Cloud
 Spanner].
 
-A Spring Boot starter is provided to auto-configure the various Storage components.
+Maven coordinates for this module only, using Spring Cloud GCP BOM:
 
-Maven coordinates for the Spring Boot Starter for Cloud Spanner, using Spring Cloud GCP BOM:
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-data-spanner</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-spanner'
+}
+----
+
+We provide a link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner], with which you can leverage our recommended auto-configuration setup.
+To use the starter, see the coordinates see below.
+
+
+Maven:
 
 [source,xml]
 ----
@@ -19,7 +40,7 @@ Maven coordinates for the Spring Boot Starter for Cloud Spanner, using Spring Cl
 </dependency>
 ----
 
-Gradle coordinates:
+Gradle:
 
 [source,subs="normal"]
 ----
@@ -31,6 +52,9 @@ dependencies {
 This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Spanner libraries
 as well.
 
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[sample application] is available.
+
+Spring Data Cloud Spanner and the underlying Cloud Spanner Java Client Library are beta status.
 
 === Configuration
 
@@ -56,6 +80,9 @@ Cloud Spanner database to use | Yes |
 is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
 | No |
 | `spring.cloud.gcp.spanner.credentials.location` | OAuth2 credentials for authenticating with the
+Google Cloud Spanner API, if different from the ones in the
+<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.spanner.credentials.encoded-key` | Base64-encoded OAuth2 credentials for authenticating with the
 Google Cloud Spanner API, if different from the ones in the
 <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
 | `spring.cloud.gcp.spanner.credentials.scopes` |
@@ -538,6 +565,9 @@ Queries on the Template API support sorting through standard SQL and also via Sp
 List<Trade> trades = this.spannerTemplate.queryAll(Trade.class, Sort.by("action"));
 ----
 
+If the provided sorted field name is that of a property of the domain type, then the column name corresponding to that
+property will be used in the query. Otherwise, the given field name is assumed to be the name of the column in the
+Cloud Spanner table.
 Sorting on columns of Cloud Spanner types STRING and BYTES can be done while ignoring case:
 
 [source,java]
@@ -842,6 +872,20 @@ a non-case-sensitive matching. The `IgnoreCase` phrase may only be appended to f
 to columns of type STRING or BYTES.
 The Spring Data "AllIgnoreCase" phrase appended at the end of the method name is not supported.
 
+The `Like` or `NotLike` naming conventions:
+[source, java]
+----
+List<Trade> findBySymbolLike(String symbolFragment);
+----
+The param `symbolFragment` can contain https://cloud.google.com/spanner/docs/functions-and-operators#comparison-operators[wildcard characters]
+for string matching such as `_` and `%`.
+
+The `Contains` and `NotContains` naming conventions:
+[source, java]
+----
+List<Trade> findBySymbolContains(String symbolFragment);
+----
+The param `symbolFragment` is a https://cloud.google.com/spanner/docs/functions-and-operators#regexp_contains[regular expression] that is checked for occurrences.
 
 ==== Custom SQL query methods
 
@@ -931,6 +975,9 @@ SpEL can also be used to provide SQL parameters:
 List<Trade> fetchByActionNamedQuery(String action, Double priceRadius);
 ----
 
+Parameters can also be of type `Struct` or POJO type. If a POJO is given as a parameter, it
+will be converted to a Struct with the same type-conversion logic as used to create write mutations.
+Comparisons using Struct parameters are limited to https://cloud.google.com/spanner/docs/data-types#limited-comparisons-for-struct[what is available with Cloud Spanner].
 
 ==== Projections
 Spring Data Spanner supports {spring-data-commons-ref}/#projections[projections]. You can define projection interfaces based

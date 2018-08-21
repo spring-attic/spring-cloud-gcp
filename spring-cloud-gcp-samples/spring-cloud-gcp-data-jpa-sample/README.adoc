@@ -1,8 +1,9 @@
 = Spring Data JPA with Spring Cloud GCP SQL Sample
 
 This sample application demonstrates how to use
-https://projects.spring.io/spring-data-jpa/[Spring Data JPA] with the
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql[Spring Cloud GCP SQL Starter].
+https://projects.spring.io/spring-data-jpa/[Spring Data JPA] with either the
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-mysql[Spring Cloud GCP MySQL Starter]
+or link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-postgresql[Spring Cloud GCP PostgreSQL Starter].
 
 We will create an instance, a database within the instance, populate the database and then query it.
 

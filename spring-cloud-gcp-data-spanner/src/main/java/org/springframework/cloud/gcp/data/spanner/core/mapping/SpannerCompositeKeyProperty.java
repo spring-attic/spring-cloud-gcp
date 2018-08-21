@@ -39,6 +39,8 @@ import org.springframework.util.Assert;
  * correspond to actual properties of POJOs, as it might even be a composite, multi-column key.
  *
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 

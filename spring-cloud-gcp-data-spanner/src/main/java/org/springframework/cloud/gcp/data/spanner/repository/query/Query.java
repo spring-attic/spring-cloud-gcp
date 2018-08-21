@@ -27,6 +27,8 @@ import org.springframework.data.annotation.QueryAnnotation;
 /**
  * @author Balint Pato
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.ANNOTATION_TYPE })

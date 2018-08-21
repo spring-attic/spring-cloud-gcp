@@ -190,7 +190,7 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 		when(bytesFieldBinder.to((ByteArray) any())).thenReturn(null);
 		when(writeBuilder.set(eq("bytes"))).thenReturn(bytesFieldBinder);
 
-		this.spannerEntityWriter.write(t, writeBuilder);
+		this.spannerEntityWriter.write(t, writeBuilder::set);
 
 		verify(idBinder, times(1)).to(eq(t.id));
 		verify(stringFieldBinder, times(1)).to(eq(t.stringField));
@@ -233,7 +233,7 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 		when(booleanFieldBinder.to((Boolean) any())).thenReturn(null);
 		when(writeBuilder.set(eq("booleanField"))).thenReturn(booleanFieldBinder);
 
-		this.spannerEntityWriter.write(t, writeBuilder,
+		this.spannerEntityWriter.write(t, writeBuilder::set,
 				new HashSet<>(Arrays.asList("id", "custom_col")));
 
 		verify(idBinder, times(1)).to(eq(t.id));
@@ -246,7 +246,7 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 		FaultyTestEntity2 ft = new FaultyTestEntity2();
 		ft.listWithUnsupportedInnerType = new ArrayList<TestEntity>();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table_2");
-		this.spannerEntityWriter.write(ft, writeBuilder);
+		this.spannerEntityWriter.write(ft, writeBuilder::set);
 	}
 
 	@Test(expected = SpannerDataException.class)
@@ -254,7 +254,7 @@ public class ConverterAwareMappingSpannerEntityWriterTest {
 		FaultyTestEntity ft = new FaultyTestEntity();
 		ft.fieldWithUnsupportedType = new TestEntity();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
-		this.spannerEntityWriter.write(ft, writeBuilder);
+		this.spannerEntityWriter.write(ft, writeBuilder::set);
 	}
 
 	@Test(expected = IllegalArgumentException.class)

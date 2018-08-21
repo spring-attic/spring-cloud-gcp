@@ -19,16 +19,16 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 import java.util.Set;
 
 import com.google.cloud.spanner.Key;
-import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.Mutation.WriteBuilder;
 
 import org.springframework.data.convert.EntityWriter;
 
 /**
  * @author Chengyuan Zhao
  * @author Balint Pato
+ *
+ * @since 1.1
  */
-public interface SpannerEntityWriter extends EntityWriter<Object, Mutation.WriteBuilder> {
+public interface SpannerEntityWriter extends EntityWriter<Object, MultipleValueBinder> {
 
 	/**
 	 * Writes an object's properties to the sink.
@@ -37,7 +37,7 @@ public interface SpannerEntityWriter extends EntityWriter<Object, Mutation.Write
 	 * @param includeColumns the properties/columns to write. If null, then all columns are
 	 * written.
 	 */
-	void write(Object source, WriteBuilder sink, Set<String> includeColumns);
+	void write(Object source, MultipleValueBinder sink, Set<String> includeColumns);
 
 	Key writeToKey(Object key);
 }

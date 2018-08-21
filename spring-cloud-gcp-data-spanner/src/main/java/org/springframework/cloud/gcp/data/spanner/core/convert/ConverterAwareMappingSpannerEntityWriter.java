@@ -27,6 +27,7 @@ import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
+import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.ValueBinder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -45,6 +46,8 @@ import org.springframework.util.Assert;
  *
  * @author Chengyuan Zhao
  * @author Balint Pato
+ *
+ * @since 1.1
  */
 public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWriter {
 	private static Set<Class> SPANNER_KEY_COMPATIBLE_TYPES = ImmutableSet
@@ -87,26 +90,22 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	static {
 		ImmutableMap.Builder<Class<?>, BiFunction<ValueBinder, ?, ?>> builder = new ImmutableMap.Builder<>();
 
-		builder.put(Date.class,
-				((BiFunction<ValueBinder, Date, ?>) ValueBinder::to));
-		builder.put(Boolean.class,
-				((BiFunction<ValueBinder, Boolean, ?>) ValueBinder::to));
-		builder.put(Long.class,
-				((BiFunction<ValueBinder, Long, ?>) ValueBinder::to));
-		builder.put(String.class,
-				((BiFunction<ValueBinder, String, ?>) ValueBinder::to));
-		builder.put(Double.class,
-				((BiFunction<ValueBinder, Double, ?>) ValueBinder::to));
+		builder.put(Date.class, (BiFunction<ValueBinder, Date, ?>) ValueBinder::to);
+		builder.put(Boolean.class, (BiFunction<ValueBinder, Boolean, ?>) ValueBinder::to);
+		builder.put(Long.class, (BiFunction<ValueBinder, Long, ?>) ValueBinder::to);
+		builder.put(String.class, (BiFunction<ValueBinder, String, ?>) ValueBinder::to);
+		builder.put(Double.class, (BiFunction<ValueBinder, Double, ?>) ValueBinder::to);
 		builder.put(Timestamp.class,
-				((BiFunction<ValueBinder, Timestamp, ?>) ValueBinder::to));
+				(BiFunction<ValueBinder, Timestamp, ?>) ValueBinder::to);
 		builder.put(ByteArray.class,
-				((BiFunction<ValueBinder, ByteArray, ?>) ValueBinder::to));
+				(BiFunction<ValueBinder, ByteArray, ?>) ValueBinder::to);
 		builder.put(double[].class,
-				((BiFunction<ValueBinder, double[], ?>) ValueBinder::toFloat64Array));
+				(BiFunction<ValueBinder, double[], ?>) ValueBinder::toFloat64Array);
 		builder.put(boolean[].class,
-				((BiFunction<ValueBinder, boolean[], ?>) ValueBinder::toBoolArray));
+				(BiFunction<ValueBinder, boolean[], ?>) ValueBinder::toBoolArray);
 		builder.put(long[].class,
-				((BiFunction<ValueBinder, long[], ?>) ValueBinder::toInt64Array));
+				(BiFunction<ValueBinder, long[], ?>) ValueBinder::toInt64Array);
+		builder.put(Struct.class, (BiFunction<ValueBinder, Struct, ?>) ValueBinder::to);
 
 		singleItemType2ToMethodMap = builder.build();
 	}
@@ -122,7 +121,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	}
 
 	@Override
-	public void write(Object source, WriteBuilder sink) {
+	public void write(Object source, MultipleValueBinder sink) {
 		write(source, sink, null);
 	}
 
@@ -133,7 +132,8 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	 * @param includeColumns the properties/columns to write. If null, then all columns are
 	 * written.
 	 */
-	public void write(Object source, WriteBuilder sink, Set<String> includeColumns) {
+	public void write(Object source, MultipleValueBinder sink,
+			Set<String> includeColumns) {
 		boolean writeAllColumns = includeColumns == null;
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
 				.getPersistentEntity(source.getClass());
@@ -226,7 +226,8 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	 */
 	// @formatter:on
 	@SuppressWarnings("unchecked")
-	private void writeProperty(WriteBuilder sink, PersistentPropertyAccessor accessor,
+	private void writeProperty(MultipleValueBinder sink,
+			PersistentPropertyAccessor accessor,
 			SpannerPersistentProperty property) {
 		Object propertyValue = accessor.getProperty(property);
 
