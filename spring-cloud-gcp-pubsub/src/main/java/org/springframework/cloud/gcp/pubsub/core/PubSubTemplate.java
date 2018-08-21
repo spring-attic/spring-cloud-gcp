@@ -23,7 +23,6 @@ import java.util.function.Consumer;
 
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
-import com.google.protobuf.Empty;
 import com.google.pubsub.v1.PubsubMessage;
 
 import org.apache.commons.logging.Log;
@@ -36,6 +35,8 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -106,17 +107,16 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 		return this.pubSubPublisherTemplate.getMessageConverter();
 	}
 
-	public PubSubTemplate setMessageConverter(PubSubMessageConverter messageConverter) {
+	public void setMessageConverter(PubSubMessageConverter messageConverter) {
 		Assert.notNull(messageConverter, "A valid Pub/Sub message converter is required.");
 
 		this.pubSubPublisherTemplate.setMessageConverter(messageConverter);
-
-		return this;
+		this.pubSubSubscriberTemplate.setMessageConverter(messageConverter);
 	}
 
 	/**
 	 * Uses the configured message converter to first convert the payload and headers to a
-	 * {@code PubsubMessage} and then publish it.
+	 * {@link PubsubMessage} and then publish it.
 	 */
 	@Override
 	public <T> ListenableFuture<String> publish(String topic, T payload,
@@ -146,9 +146,23 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
+	public <T> Subscriber subscribeAndConvert(String subscription,
+			Consumer<ConvertedBasicAcknowledgeablePubsubMessage<T>> messageConsumer,
+			Class<T> payloadType) {
+		return this.pubSubSubscriberTemplate.subscribeAndConvert(subscription, messageConsumer, payloadType);
+	}
+
+
+	@Override
 	public List<AcknowledgeablePubsubMessage> pull(String subscription, Integer maxMessages,
 			Boolean returnImmediately) {
 		return this.pubSubSubscriberTemplate.pull(subscription, maxMessages, returnImmediately);
+	}
+
+	@Override
+	public <T> List<ConvertedAcknowledgeablePubsubMessage<T>> pullAndConvert(String subscription, Integer maxMessages,
+			Boolean returnImmediately, Class<T> payloadType) {
+		return this.pubSubSubscriberTemplate.pullAndConvert(subscription, maxMessages, returnImmediately, payloadType);
 	}
 
 	@Override
@@ -167,19 +181,19 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public ListenableFuture<Empty> ack(
+	public ListenableFuture<Void> ack(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		return this.pubSubSubscriberTemplate.ack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
-	public ListenableFuture<Empty> nack(
+	public ListenableFuture<Void> nack(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		return this.pubSubSubscriberTemplate.nack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
-	public ListenableFuture<Empty> modifyAckDeadline(
+	public ListenableFuture<Void> modifyAckDeadline(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages, int ackDeadlineSeconds) {
 		return this.pubSubSubscriberTemplate.modifyAckDeadline(acknowledgeablePubsubMessages, ackDeadlineSeconds);
 	}

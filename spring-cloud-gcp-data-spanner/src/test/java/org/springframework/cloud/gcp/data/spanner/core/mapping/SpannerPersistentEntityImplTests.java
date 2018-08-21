@@ -19,8 +19,9 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 import java.util.List;
 
 import com.google.cloud.spanner.Key;
+import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.stubbing.Answer;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mapping.PersistentProperty;
@@ -28,7 +29,6 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.util.ClassTypeInformation;
-import org.springframework.expression.spel.SpelEvaluationException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -39,6 +39,8 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -46,6 +48,9 @@ import static org.mockito.Mockito.when;
  * @author Balint Pato
  */
 public class SpannerPersistentEntityImplTests {
+
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	private final SpannerMappingContext spannerMappingContext = new SpannerMappingContext();
 
@@ -79,7 +84,7 @@ public class SpannerPersistentEntityImplTests {
 				.columns(), containsInAnyOrder("id", "custom_col"));
 	}
 
-	@Test(expected = SpelEvaluationException.class)
+	@Test(expected = SpannerDataException.class)
 	public void testExpressionResolutionWithoutApplicationContext() {
 		SpannerPersistentEntityImpl<EntityWithExpression> entity = new SpannerPersistentEntityImpl<>(
 				ClassTypeInformation.from(EntityWithExpression.class));
@@ -100,14 +105,24 @@ public class SpannerPersistentEntityImplTests {
 		assertThat(entity.tableName(), is("table_something"));
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void testDuplicatePrimaryKeyOrder() {
+		this.thrown.expect(SpannerDataException.class);
+		this.thrown.expectMessage(
+				"Two properties were annotated with the same primary key order: " +
+				"id2 and id in EntityWithDuplicatePrimaryKeyOrder.");
+
 		new SpannerMappingContext()
 				.getPersistentEntity(EntityWithDuplicatePrimaryKeyOrder.class);
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void testInvalidPrimaryKeyOrder() {
+		this.thrown.expect(SpannerDataException.class);
+		this.thrown.expectMessage(
+				"The primary key columns were not given a consecutive order. " +
+						"There is no property annotated with order 2 in EntityWithWronglyOrderedKeys.");
+
 		new SpannerMappingContext()
 				.getPersistentEntity(EntityWithWronglyOrderedKeys.class).getIdProperty();
 	}
@@ -130,8 +145,13 @@ public class SpannerPersistentEntityImplTests {
 				.hasIdProperty());
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void testSetIdProperty() {
+		this.thrown.expect(SpannerDataException.class);
+		this.thrown.expectMessage(
+				"Setting the primary key directly via the Key ID property is not supported. " +
+						"Please set the underlying column properties.");
+
 		SpannerPersistentEntity entity = new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class);
 
@@ -154,15 +174,28 @@ public class SpannerPersistentEntityImplTests {
 				accessor.getProperty(property)));
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void testInvalidTableName() {
+		this.thrown.expect(SpannerDataException.class);
+		this.thrown.expectMessage(
+				"Error getting table name for EntityBadName; nested exception is " +
+						"org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException: Only " +
+						"letters, numbers, and underscores are allowed in table names: ;DROP TABLE your_table;");
+
 		SpannerPersistentEntityImpl<EntityBadName> entity = new SpannerPersistentEntityImpl<>(
 				ClassTypeInformation.from(EntityBadName.class));
 		entity.tableName();
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void testSpELInvalidName() {
+		this.thrown.expect(SpannerDataException.class);
+		this.thrown.expectMessage(
+				"Error getting table name for EntityWithExpression; nested exception is " +
+						"org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException: " +
+						"Only letters, numbers, and underscores are allowed in table names: " +
+						"table_; DROP TABLE your_table;");
+
 		SpannerPersistentEntityImpl<EntityWithExpression> entity = new SpannerPersistentEntityImpl<>(
 				ClassTypeInformation.from(EntityWithExpression.class));
 
@@ -175,8 +208,13 @@ public class SpannerPersistentEntityImplTests {
 		entity.tableName();
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void testDuplicateEmbeddedColumnName() {
+		this.thrown.expect(SpannerDataException.class);
+		this.thrown.expectMessage(
+				"Two properties resolve to the same column name: " +
+						"other in EmbeddedParentDuplicateColumn");
+
 		this.spannerMappingContext
 				.getPersistentEntity(EmbeddedParentDuplicateColumn.class);
 	}
@@ -204,6 +242,19 @@ public class SpannerPersistentEntityImplTests {
 	}
 
 	@Test
+	public void testEmbeddedCollection() {
+		this.thrown.expect(SpannerDataException.class);
+		this.thrown.expectMessage(
+				"Embedded properties cannot be collections:");
+
+		this.thrown.expectMessage(
+				"org.springframework.cloud.gcp.data.spanner.core.mapping." +
+						"SpannerPersistentEntityImplTests$ChildCollectionEmbedded.parentEmbedded");
+
+		this.spannerMappingContext.getPersistentEntity(ChildCollectionEmbedded.class);
+	}
+
+	@Test
 	public void testExcludeEmbeddedColumnNames() {
 		assertThat(this.spannerMappingContext.getPersistentEntity(ChildEmbedded.class)
 				.columns(), containsInAnyOrder("id", "id2", "id3", "id4"));
@@ -214,32 +265,66 @@ public class SpannerPersistentEntityImplTests {
 		PropertyHandler<SpannerPersistentProperty> mockHandler = mock(PropertyHandler.class);
 		SpannerPersistentEntity spannerPersistentEntity =
 				this.spannerMappingContext.getPersistentEntity(ParentInRelationship.class);
-		doAnswer((Answer) invocation -> {
+		doAnswer(invocation -> {
 			String colName = ((SpannerPersistentProperty) invocation.getArgument(0))
-					.getColumnName();
+					.getName();
 			assertTrue(colName.equals("childrenA") || colName.equals("childrenB"));
 			return null;
 		}).when(mockHandler).doWithPersistentProperty(any());
 		spannerPersistentEntity.doWithInterleavedProperties(mockHandler);
+		verify(mockHandler, times(2)).doWithPersistentProperty(any());
+	}
+
+	@Test
+	public void testParentChildPkNamesMismatch() {
+		this.thrown.expect(SpannerDataException.class);
+		this.thrown.expectMessage(
+				"The child primary key column (ChildBInRelationship.id) at position 1 does not match that " +
+						"of its parent (ParentInRelationshipMismatchedKeyName.idNameDifferentThanChildren).");
+
+		this.spannerMappingContext
+				.getPersistentEntity(ParentInRelationshipMismatchedKeyName.class);
 	}
 
 	private static class ParentInRelationship {
 		@PrimaryKey
 		String id;
 
+		@Interleaved
 		List<ChildAInRelationship> childrenA;
 
+		@Interleaved
 		List<ChildBInRelationship> childrenB;
 	}
 
 	private static class ChildAInRelationship {
 		@PrimaryKey
 		String id;
+
+		@PrimaryKey(keyOrder = 2)
+		String id2;
+	}
+
+	private static class EmbeddedKeyComponents {
+		@PrimaryKey
+		String id;
+
+		@PrimaryKey(keyOrder = 2)
+		String id2;
 	}
 
 	private static class ChildBInRelationship {
+		@Embedded
 		@PrimaryKey
-		String id;
+		EmbeddedKeyComponents embeddedKeyComponents;
+	}
+
+	private static class ParentInRelationshipMismatchedKeyName {
+		@PrimaryKey
+		String idNameDifferentThanChildren;
+
+		@Interleaved
+		List<ChildBInRelationship> childrenA;
 	}
 
 	private static class GrandParentEmbedded {
@@ -263,6 +348,15 @@ public class SpannerPersistentEntityImplTests {
 		@PrimaryKey
 		@Embedded
 		ParentEmbedded parentEmbedded;
+
+		@PrimaryKey(keyOrder = 2)
+		String id4;
+	}
+
+	private static class ChildCollectionEmbedded {
+		@PrimaryKey
+		@Embedded
+		List<ParentEmbedded> parentEmbedded;
 
 		@PrimaryKey(keyOrder = 2)
 		String id4;

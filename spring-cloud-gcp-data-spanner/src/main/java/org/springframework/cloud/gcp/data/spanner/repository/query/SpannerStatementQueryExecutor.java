@@ -17,11 +17,13 @@
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.ValueBinder;
@@ -71,6 +73,38 @@ public class SpannerStatementQueryExecutor {
 				spannerMappingContext, type);
 		return spannerOperations.query(type, buildStatementFromSqlWithArgs(
 				sqlAndTags.getFirst(), sqlAndTags.getSecond(), null, params));
+	}
+
+	/**
+	 * Gets a query that returns the rows associated with a parent entity. This function
+	 * is intended to be used with parent-child interleaved tables, so that the retrieval
+	 * of all child rows having the parent's key values is efficient.
+	 * @param parentKey the parent key whose children to get.
+	 * @param childPersistentEntity the persistent entity of the child table.
+	 * @return the Spanner statement to perform the retrieval.
+	 */
+	public static <T> Statement getChildrenRowsQuery(Key parentKey,
+			SpannerPersistentEntity<T> childPersistentEntity) {
+		StringBuilder sb = new StringBuilder(
+				"SELECT " + getColumnsStringForSelect(childPersistentEntity) + " FROM "
+						+ childPersistentEntity.tableName() + " WHERE ");
+		StringJoiner sj = new StringJoiner(" and ");
+		List<String> tags = new ArrayList<>();
+		List keyParts = new ArrayList();
+		int tagNum = 0;
+		List<SpannerPersistentProperty> childKeyProperties = childPersistentEntity
+				.getFlattenedPrimaryKeyProperties();
+		Iterator parentKeyParts = parentKey.getParts().iterator();
+		while (parentKeyParts.hasNext()) {
+			SpannerPersistentProperty keyProp = childKeyProperties.get(tagNum);
+			String tagName = "tag" + tagNum;
+			sj.add(keyProp.getColumnName() + " = @" + tagName);
+			tags.add(tagName);
+			keyParts.add(parentKeyParts.next());
+			tagNum++;
+		}
+		return buildStatementFromSqlWithArgs(sb.toString() + sj.toString(), tags, null,
+				keyParts.toArray());
 	}
 
 	/**
@@ -129,6 +163,11 @@ public class SpannerStatementQueryExecutor {
 		return builder.build();
 	}
 
+	public static String getColumnsStringForSelect(
+			SpannerPersistentEntity spannerPersistentEntity) {
+		return String.join(" , ", spannerPersistentEntity.columns());
+	}
+
 	private static Pair<String, List<String>> buildPartTreeSqlString(PartTree tree,
 			SpannerMappingContext spannerMappingContext, Class type) {
 		SpannerPersistentEntity<?> persistentEntity = spannerMappingContext
@@ -136,7 +175,7 @@ public class SpannerStatementQueryExecutor {
 		List<String> tags = new ArrayList<>();
 		StringBuilder stringBuilder = new StringBuilder();
 
-		buildSelect(tree, stringBuilder);
+		buildSelect(persistentEntity, tree, stringBuilder);
 		buildFrom(persistentEntity, stringBuilder);
 		buildWhere(tree, persistentEntity, tags, stringBuilder);
 		applySort(tree.getSort(), stringBuilder, o -> persistentEntity
@@ -147,12 +186,14 @@ public class SpannerStatementQueryExecutor {
 		return Pair.of(stringBuilder.toString(), tags);
 	}
 
-	private static StringBuilder buildSelect(PartTree tree, StringBuilder stringBuilder) {
+	private static StringBuilder buildSelect(
+			SpannerPersistentEntity spannerPersistentEntity, PartTree tree,
+			StringBuilder stringBuilder) {
 		stringBuilder.append("SELECT ");
 		if (tree.isDistinct()) {
 			stringBuilder.append("DISTINCT ");
 		}
-		stringBuilder.append("* ");
+		stringBuilder.append(getColumnsStringForSelect(spannerPersistentEntity) + " ");
 		return stringBuilder;
 	}
 
@@ -177,8 +218,9 @@ public class SpannerStatementQueryExecutor {
 		return sql.append(sj);
 	}
 
-	private static void buildWhere(PartTree tree, SpannerPersistentEntity<?> persistentEntity,
-			List<String> tags, StringBuilder stringBuilder) {
+	private static void buildWhere(PartTree tree,
+			SpannerPersistentEntity<?> persistentEntity, List<String> tags,
+			StringBuilder stringBuilder) {
 		if (tree.hasPredicate()) {
 			stringBuilder.append("WHERE ");
 

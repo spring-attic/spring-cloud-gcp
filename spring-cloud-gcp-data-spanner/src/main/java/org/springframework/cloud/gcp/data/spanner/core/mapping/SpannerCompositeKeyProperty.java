@@ -135,8 +135,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	@Override
-	@Deprecated
-	public Iterable<? extends TypeInformation<?>> getPersistentEntityType() {
+	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
 		return Collections.emptySet();
 	}
 
@@ -258,5 +257,29 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	@Override
 	public boolean usePropertyAccess() {
 		return false;
+	}
+
+	/**
+	 * @since 1.1
+	 */
+	@Override
+	public Class<?> getAssociationTargetType() {
+		return null;
+	}
+
+	/**
+	 * @since 1.1
+	 */
+	@Override
+	public boolean isImmutable() {
+		return false;
+	}
+
+	/**
+	 * @since 1.1
+	 */
+	@Override
+	public Method getWither() {
+		return null;
 	}
 }

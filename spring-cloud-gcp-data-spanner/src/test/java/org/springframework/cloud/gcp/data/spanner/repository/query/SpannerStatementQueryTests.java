@@ -89,7 +89,8 @@ public class SpannerStatementQueryTests {
 					Statement statement = invocation.getArgument(1);
 
 					assertEquals(
-							"SELECT DISTINCT * FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
+							"SELECT DISTINCT shares , trader_id , ticker , price , action , id "
+									+ "FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
 									+ "AND ticker=@tag1 ) OR "
 									+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 									+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "

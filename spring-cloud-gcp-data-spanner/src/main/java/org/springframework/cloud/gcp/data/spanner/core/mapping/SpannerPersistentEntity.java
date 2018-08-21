@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.context.ApplicationContextAware;
@@ -47,10 +48,18 @@ public interface SpannerPersistentEntity<T> extends
 	Set<String> columns();
 
 	/**
-	 * Gets the primary key properties in order.
-	 * @return an array of the properties comprising the primary key in order.
+	 * Gets the primary key properties in order. Embedded object properties containing key
+	 * parts are represented as a single property.
+	 * @return An array of the properties comprising the primary key in order.
 	 */
 	SpannerPersistentProperty[] getPrimaryKeyProperties();
+
+	/**
+	 * Gets the primary key properties in order. Embedded object properties containing key
+	 * parts are flattened into their multiple primary key properties.
+	 * @return An array of the properties comprising the primary key in order.
+	 */
+	List<SpannerPersistentProperty> getFlattenedPrimaryKeyProperties();
 
 	/**
 	 * Gets the SpannerMappingContext that can be used to create persistent entities of
@@ -74,11 +83,10 @@ public interface SpannerPersistentEntity<T> extends
 
 	/**
 	 * Applies the given {@link PropertyHandler} to all {@link SpannerPersistentProperty}s
-	 * contained in this {@link SpannerPersistentProperty} that are stored as columns in the table
-	 * for this entity.
+	 * contained in this {@link SpannerPersistentProperty} that are stored as columns in
+	 * the table for this entity.
 	 *
 	 * @param handler must not be {@literal null}.
 	 */
-	void doWithColumnBackedProperties(
-			PropertyHandler<SpannerPersistentProperty> handler);
+	void doWithColumnBackedProperties(PropertyHandler<SpannerPersistentProperty> handler);
 }

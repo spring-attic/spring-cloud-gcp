@@ -89,6 +89,14 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <optional>true</optional>
+            <!-- protobuf-java:2.6.0 included by MySQL Connector J is not compatible with
+                 Google Cloud Java libraries. -->
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- PostgreSQL -->
@@ -120,6 +128,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <!-- Datastore -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gcp-data-datastore</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <!-- Spanner -->

@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
-import com.google.protobuf.Empty;
-
 import org.springframework.util.concurrent.ListenableFuture;
 
 /**
@@ -40,8 +38,9 @@ public interface AcknowledgeablePubsubMessage extends BasicAcknowledgeablePubsub
 	/**
 	 * Modify the ack deadline of the message. Once the ack deadline expires, the message is automatically nacked.
 	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the message.
-	 * @return ListenableFuture&lt;String&gt;
+	 * @return {@code ListenableFuture<Void>}
 	 * @since 1.1
 	 */
-	ListenableFuture<Empty> modifyAckDeadline(int ackDeadlineSeconds);
+	ListenableFuture<Void> modifyAckDeadline(int ackDeadlineSeconds);
+
 }

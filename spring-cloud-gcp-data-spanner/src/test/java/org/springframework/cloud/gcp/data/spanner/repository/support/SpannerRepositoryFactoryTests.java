@@ -32,8 +32,8 @@ import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerQueryL
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
-import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.QueryLookupStrategy;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -99,7 +99,7 @@ public class SpannerRepositoryFactoryTests {
 	@Test
 	public void getQueryLookupStrategyTest() {
 		Optional<QueryLookupStrategy> qls = this.spannerRepositoryFactory
-				.getQueryLookupStrategy(null, mock(EvaluationContextProvider.class));
+				.getQueryLookupStrategy(null, mock(QueryMethodEvaluationContextProvider.class));
 		assertTrue(qls.get() instanceof SpannerQueryLookupStrategy);
 	}
 
