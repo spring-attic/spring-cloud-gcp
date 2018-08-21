@@ -96,7 +96,7 @@ public class PubSubSubscriberTemplateTests {
 	private PubSubMessageConverter messageConverter;
 
 	@Mock
-  private Consumer<BasicAcknowledgeablePubsubMessage> consumer;
+	private Consumer<BasicAcknowledgeablePubsubMessage> consumer;
 
 	@Captor
 	private ArgumentCaptor<BasicAcknowledgeablePubsubMessage> message;
@@ -154,9 +154,6 @@ public class PubSubSubscriberTemplateTests {
 		when(this.subscriberStub.pullCallable()).thenReturn(this.pullCallable);
 		when(this.subscriberStub.acknowledgeCallable()).thenReturn(this.ackCallable);
 		when(this.subscriberStub.modifyAckDeadlineCallable()).thenReturn(this.modifyAckDeadlineCallable);
-
-		when(this.pullCallable.call(any(PullRequest.class))).thenReturn(PullResponse.newBuilder()
-				.addReceivedMessages(ReceivedMessage.newBuilder().setMessage(this.pubsubMessage).build()).build());
 
 		when(this.ackCallable.futureCall(any(AcknowledgeRequest.class))).thenReturn(this.apiFuture);
 
