@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -73,10 +75,6 @@ class TestDatastoreItemUnsupportedFields {
 			return this.val;
 		}
 
-		public void setVal(boolean val) {
-			this.val = val;
-		}
-
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) {
@@ -93,6 +91,31 @@ class TestDatastoreItemUnsupportedFields {
 		public int hashCode() {
 
 			return Objects.hash(isVal());
+		}
+	}
+
+	static class CollectionOfUnsupportedTypes {
+		List<UnsupportedType> unsupportedElts = new ArrayList<>();
+
+		public List<UnsupportedType> getUnsupportedElts() {
+			return this.unsupportedElts;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+			CollectionOfUnsupportedTypes that = (CollectionOfUnsupportedTypes) o;
+			return Objects.equals(getUnsupportedElts(), that.getUnsupportedElts());
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(getUnsupportedElts());
 		}
 	}
 }

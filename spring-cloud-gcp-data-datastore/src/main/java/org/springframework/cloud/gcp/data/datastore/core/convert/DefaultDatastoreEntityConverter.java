@@ -16,6 +16,12 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Value;
 
@@ -79,21 +85,35 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void write(Object source, Entity.Builder sink) {
 		DatastorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(source.getClass());
 		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(source);
 		persistentEntity.doWithProperties(
 				(DatastorePersistentProperty datastorePersistentProperty) ->
-						writeProperty(sink, accessor, datastorePersistentProperty));
+						writeProperty(
+								sink, accessor.getProperty(datastorePersistentProperty), datastorePersistentProperty));
 	}
 
-	private void writeProperty(Entity.Builder sink, PersistentPropertyAccessor accessor,
+	private void writeProperty(Entity.Builder sink, Object propertyVal,
 			DatastorePersistentProperty persistentProperty) {
-		Object propertyVal = accessor.getProperty(persistentProperty);
+		boolean isArray = propertyVal != null && Object[].class.isAssignableFrom(propertyVal.getClass());
+		Object val = isArray ? Arrays.stream((Object[]) propertyVal).collect(Collectors.toList()) : propertyVal;
+		if (val instanceof Collection) {
+			List<Value<?>> values = new ArrayList<>();
+			for (Object propEltValue : (Collection) val) {
+				values.add(prepareSingle(propEltValue, persistentProperty));
+			}
+			sink.set(persistentProperty.getFieldName(), values);
+		}
+		else {
+			sink.set(persistentProperty.getFieldName(), prepareSingle(val, persistentProperty));
+		}
+	}
 
-		propertyVal = this.conversions.convertOnWrite(propertyVal);
+	private Value prepareSingle(Object propertyVal, DatastorePersistentProperty persistentProperty) {
+		Object convertedPropertyVal = this.conversions.convertOnWrite(propertyVal);
 
-		Value val = DatastoreNativeTypes.wrapValue(propertyVal, persistentProperty);
-		sink.set(persistentProperty.getFieldName(), val);
+		return DatastoreNativeTypes.wrapValue(convertedPropertyVal, persistentProperty);
 	}
 }

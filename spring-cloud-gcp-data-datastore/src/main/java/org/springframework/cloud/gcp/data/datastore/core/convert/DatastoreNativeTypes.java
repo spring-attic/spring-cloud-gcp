@@ -103,8 +103,10 @@ public abstract class DatastoreNativeTypes {
 		if (wrapper != null) {
 			return (Value) wrapper.apply(propertyVal);
 		}
-		throw new DatastoreDataException("Unable to convert a property" +
-				" with name " + persistentProperty.getFieldName()
-				+ " to Datastore supported type. The property's type is " + propertyVal.getClass());
+		throw new DatastoreDataException("Unable to convert"
+				+ (persistentProperty.isCollectionLike() ? " elements of" : "")
+				+ " property "
+				+ persistentProperty.getFieldName()
+				+ " (" + propertyVal.getClass() + ") to Datastore supported type.");
 	}
 }

@@ -120,6 +120,12 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		return new TypeTargets(firstStepTarget, secondStepTarget);
 	}
 
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> T convertCollection(Object collection, Class<?> aClass) {
+		return (T) this.conversionService.convert(collection, aClass);
+	}
+
 	private Optional<Class<?>> getCustomWriteTarget(Class<?> sourceType) {
 		if (DatastoreNativeTypes.isNativeType(sourceType)) {
 			return Optional.empty();

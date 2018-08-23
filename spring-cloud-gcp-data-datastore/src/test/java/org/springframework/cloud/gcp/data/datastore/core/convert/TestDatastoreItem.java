@@ -45,6 +45,8 @@ class TestDatastoreItem {
 
 	private int intField;
 
+	private Color enumField;
+
 	public String getStringField() {
 		return this.stringField;
 	}
@@ -115,5 +117,17 @@ class TestDatastoreItem {
 
 	public void setIntField(int intField) {
 		this.intField = intField;
+	}
+
+	public Color getEnumField() {
+		return this.enumField;
+	}
+
+	public void setEnumField(Color enumField) {
+		this.enumField = enumField;
+	}
+
+	enum Color {
+		WHITE, BLACK
 	}
 }

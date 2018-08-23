@@ -27,4 +27,6 @@ public interface ReadWriteConversions {
 	<T> T convertOnRead(Object val, Class<?> targetType);
 
 	<T> T convertOnWrite(Object obj);
+
+	<T> T convertCollection(Object collection, Class<?> aClass);
 }
