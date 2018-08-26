@@ -19,25 +19,4 @@
 			<artifactId>spring-cloud-gcp-starter-data-datastore</artifactId>
 		</dependency>
   </dependencies>
-
-	<!-- We have more than 1 main classes,
-	this setup prevents Spring Boot failing at the package phase-->
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>repackage</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<mainClass>com.example.DatastoreRepositoryExample</mainClass>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>

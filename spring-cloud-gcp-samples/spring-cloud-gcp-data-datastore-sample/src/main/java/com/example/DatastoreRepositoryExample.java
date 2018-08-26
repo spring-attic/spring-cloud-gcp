@@ -66,6 +66,8 @@ public class DatastoreRepositoryExample {
 					.findAllById(ImmutableList.of("singer1", "singer2", "singer3"))
 					.forEach(System.out::println);
 
+			System.out.println("This concludes the sample.");
+
 		};
 	}
 }
