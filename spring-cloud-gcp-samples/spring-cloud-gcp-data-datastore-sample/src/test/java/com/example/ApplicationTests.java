@@ -20,6 +20,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,39 +36,38 @@ import static org.junit.Assume.assumeThat;
  * @author Chengyuan Zhao
  */
 
-
 /*
-	This tests verifies that the datastore-sample works.
-	In order to run it, use the following parameters:
-
-	-Dit.datastore=true -Dspring.cloud.gcp.sql.database-name=[...]
-	-Dspring.cloud.gcp.datastore.namespace=[...]
-
+ * This tests verifies that the datastore-sample works. In order to run it, use the
+ * following parameters:
+ * 
+ * -Dit.datastore=true -Dspring.cloud.gcp.sql.database-name=[...]
+ * -Dspring.cloud.gcp.datastore.namespace=[...]
+ * 
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource("classpath:application-test.properties")
-@SpringBootTest(classes = {DatastoreRepositoryExample.class})
+@SpringBootTest(classes = { DatastoreRepositoryExample.class })
 public class ApplicationTests {
 
-    @Rule
-    public OutputCapture outputCapture = new OutputCapture();
+	@Rule
+	public OutputCapture outputCapture = new OutputCapture();
 
-    @Autowired
-    private CommandLineRunner commandLineRunner;
+	@Autowired
+	private CommandLineRunner commandLineRunner;
 
-    @BeforeClass
-    public static void checkToRun() {
-        assumeThat(
-                "Datastore-sample integration tests are disabled. Please use '-Dit.datastore=true' "
-                        + "to enable them. ",
-                System.getProperty("it.datastore"), is("true"));
-    }
+	@BeforeClass
+	public static void checkToRun() {
+		assumeThat(
+				"Datastore-sample integration tests are disabled. Please use '-Dit.datastore=true' "
+						+ "to enable them. ",
+				System.getProperty("it.datastore"), is("true"));
+	}
 
-    @Test
-    public void basicTest() throws Exception {
-        // we need to run the command line runner again to capture output
-        this.commandLineRunner.run();
+	@Test
+	public void basicTest() throws Exception {
+		// we need to run the command line runner again to capture output
+		this.commandLineRunner.run();
 
-        assertTrue(this.outputCapture.toString().contains("This concludes the sample."));
-    }
+		assertTrue(this.outputCapture.toString().contains("This concludes the sample."));
+	}
 }
