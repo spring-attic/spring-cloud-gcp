@@ -6,7 +6,6 @@ link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spr
 
 = Running the example
 
-
 . Create a new Cloud Datastore database in your GCP project if this has not already been done to allow
 Cloud Datastore to create and store entities.
 [start=2]
