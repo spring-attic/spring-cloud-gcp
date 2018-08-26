@@ -38,11 +38,9 @@ import static org.junit.Assume.assumeThat;
 
 /*
  * This tests verifies that the datastore-sample works. In order to run it, use the
- * following parameters:
- * 
+ *
  * -Dit.datastore=true -Dspring.cloud.gcp.sql.database-name=[...]
  * -Dspring.cloud.gcp.datastore.namespace=[...]
- * 
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource("classpath:application-test.properties")
