@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Value;
+import com.google.cloud.datastore.ValueBuilder;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
@@ -94,6 +95,11 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		propertyVal = this.conversions.convertOnWrite(propertyVal);
 
 		Value val = DatastoreNativeTypes.wrapValue(propertyVal, persistentProperty);
+		if (persistentProperty.isUnindexed()) {
+			ValueBuilder valueBuilder = val.toBuilder();
+			valueBuilder.setExcludeFromIndexes(true);
+			val = valueBuilder.build();
+		}
 		sink.set(persistentProperty.getFieldName(), val);
 	}
 }
