@@ -7,7 +7,7 @@ is an abstraction for storing and retrieving POJOs in numerous storage technolog
 Spring Cloud GCP adds Spring Data support for http://cloud.google.com/datastore/[Google Cloud
 Datastore].
 
-Maven coordinates for this module only, using Spring Cloud GCP BOM:
+Maven coordinates for this module only, using https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-dependencies/pom.xml[Spring Cloud GCP BOM]:
 
 [source,xml]
 ----
