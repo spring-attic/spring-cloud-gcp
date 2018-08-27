@@ -28,7 +28,7 @@ dependencies {
 
 We provide a link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore],
 with which you can use our recommended auto-configuration setup.
-To use the starter, see the coordinates see below.
+To use the starter, see the coordinates below.
 
 
 Maven:
@@ -72,6 +72,7 @@ The following configuration options are available:
 
 |===
 | Name | Description | Required | Default value
+| `spring.cloud.gcp.datastore.enabled` | Enables the Cloud Datastore client | No | `true`
 | `spring.cloud.gcp.datastore.project-id` | GCP project ID where the Google Cloud Datastore API
 is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
 | No |
@@ -129,7 +130,7 @@ public class Trader {
 ----
 
 Spring Data Cloud Datastore will ignore any property annotated with `@Transient`. These properties will
-not be written to or read from Datastore.
+not be written to or read from Cloud Datastore.
 
 ==== Constructors
 
