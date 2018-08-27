@@ -52,7 +52,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.datastore.enabled", matchIfMissing = true)
-@ConditionalOnClass({ DatastoreMappingContext.class, DatastoreOperations.class })
+@ConditionalOnClass({ DatastoreOperations.class, Datastore.class })
 @EnableConfigurationProperties(GcpDatastoreProperties.class)
 public class GcpDatastoreAutoConfiguration {
 
