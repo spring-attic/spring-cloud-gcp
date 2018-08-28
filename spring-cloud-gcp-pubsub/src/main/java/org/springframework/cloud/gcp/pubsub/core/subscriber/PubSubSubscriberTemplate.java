@@ -16,9 +16,9 @@
 
 package org.springframework.cloud.gcp.pubsub.core.subscriber;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -277,7 +277,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	private List<String> collectAckIds(ProjectSubscriptionName projectSubscriptionName,
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 
-		List<String> ackIds = new LinkedList<>(acknowledgeablePubsubMessages.size());
+		List<String> ackIds = new ArrayList<String>(acknowledgeablePubsubMessages.size());
 		for (AcknowledgeablePubsubMessage acknowledgeablePubsubMessage : acknowledgeablePubsubMessages) {
 			Assert.isTrue(
 					projectSubscriptionName.equals(acknowledgeablePubsubMessage.getProjectSubscriptionName()),
