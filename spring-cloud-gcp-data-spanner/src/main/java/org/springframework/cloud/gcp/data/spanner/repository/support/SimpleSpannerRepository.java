@@ -21,6 +21,7 @@ import java.util.function.Function;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
+import com.google.common.collect.Lists;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
@@ -85,9 +86,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	@Override
 	public <S extends T> Iterable<S> saveAll(Iterable<S> entities) {
 		Assert.notNull(entities, "A non-null list of entities is required for saving.");
-		for (S entity : entities) {
-			save(entity);
-		}
+		this.spannerTemplate.upsertAll(Lists.newArrayList(entities));
 		return entities;
 	}
 

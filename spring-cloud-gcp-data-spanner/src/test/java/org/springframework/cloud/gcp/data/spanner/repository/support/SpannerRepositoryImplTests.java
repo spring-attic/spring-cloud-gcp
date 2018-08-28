@@ -23,6 +23,7 @@ import java.util.function.Function;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
+import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -142,8 +143,7 @@ public class SpannerRepositoryImplTests {
 				Object.class)
 				.saveAll(Arrays.asList(ob, ob2));
 		assertThat(ret, containsInAnyOrder(ob, ob2));
-		verify(this.template, times(1)).upsert(eq(ob));
-		verify(this.template, times(1)).upsert(eq(ob2));
+		verify(this.template, times(1)).upsertAll(eq(ImmutableList.of(ob, ob2)));
 	}
 
 	@Test
