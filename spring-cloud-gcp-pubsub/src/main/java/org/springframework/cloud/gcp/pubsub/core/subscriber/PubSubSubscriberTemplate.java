@@ -277,7 +277,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	private List<String> collectAckIds(ProjectSubscriptionName projectSubscriptionName,
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 
-		List<String> ackIds = new LinkedList<>();
+		List<String> ackIds = new LinkedList<>(acknowledgeablePubsubMessages.size());
 		for (AcknowledgeablePubsubMessage acknowledgeablePubsubMessage : acknowledgeablePubsubMessages) {
 			Assert.isTrue(
 					projectSubscriptionName.equals(acknowledgeablePubsubMessage.getProjectSubscriptionName()),
