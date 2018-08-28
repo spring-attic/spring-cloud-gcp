@@ -41,13 +41,6 @@ public class GcsStreamingMessageSource extends AbstractRemoteFileStreamingMessag
 	}
 
 	@Override
-	protected List<AbstractFileInfo<BlobInfo>> asFileInfoList(Collection<BlobInfo> collection) {
-		return collection.stream()
-				.map(GcsFileInfo::new)
-				.collect(Collectors.toList());
-	}
-
-	@Override
 	public String getComponentType() {
 		return "gcp:gcs-inbound-streaming-channel-adapter";
 	}
@@ -55,5 +48,17 @@ public class GcsStreamingMessageSource extends AbstractRemoteFileStreamingMessag
 	@Override
 	public void setRemoteFileSeparator(String remoteFileSeparator) {
 		throw new UnsupportedOperationException("Google Cloud Storage doesn't support separators other than '/'.");
+	}
+
+	@Override
+	protected List<AbstractFileInfo<BlobInfo>> asFileInfoList(Collection<BlobInfo> collection) {
+		return collection.stream()
+				.map(GcsFileInfo::new)
+				.collect(Collectors.toList());
+	}
+
+	@Override
+	protected boolean isDirectory(BlobInfo blobInfo) {
+		return blobInfo.isDirectory();
 	}
 }

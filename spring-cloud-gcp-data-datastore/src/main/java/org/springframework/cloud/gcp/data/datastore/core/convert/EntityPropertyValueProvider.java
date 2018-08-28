@@ -21,7 +21,6 @@ import com.google.cloud.datastore.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.data.mapping.model.PropertyValueProvider;
-import org.springframework.util.ClassUtils;
 
 /**
  * A {@link PropertyValueProvider} for Datastore entities
@@ -31,10 +30,14 @@ import org.springframework.util.ClassUtils;
  * @since 1.1
  */
 public class EntityPropertyValueProvider implements PropertyValueProvider<DatastorePersistentProperty> {
-	private Entity entity;
+	private final Entity entity;
 
-	EntityPropertyValueProvider(Entity entity) {
+	private final ReadWriteConversions conversion;
+
+	EntityPropertyValueProvider(Entity entity, ReadWriteConversions readWriteConversions) {
 		this.entity = entity;
+
+		this.conversion = readWriteConversions;
 	}
 
 	@Override
@@ -51,14 +54,16 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 	@SuppressWarnings("unchecked")
 	private <T> T readSingleWithConversion(DatastorePersistentProperty persistentProperty) {
 		Object val = this.entity.getValue(persistentProperty.getFieldName()).get();
-		Class<?> targetType = persistentProperty.getType();
 		if (val == null) {
 			return null;
 		}
-		if (ClassUtils.isAssignable(targetType, val.getClass())) {
-			return (T) val;
-		}
 
+		Class<?> targetType = persistentProperty.getType();
+		T result = this.conversion.convertOnRead(val, targetType);
+
+		if (result != null) {
+			return result;
+		}
 		throw new DatastoreDataException("The value in entity's property with name " + persistentProperty.getFieldName()
 				+ " could not be converted to the corresponding property in the class. " +
 				"The property's type is " + targetType + " but the value's type is " + val.getClass());

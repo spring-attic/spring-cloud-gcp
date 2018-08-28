@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.repository.query;
 import java.util.List;
 import java.util.Optional;
 
+import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Statement;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,9 +32,9 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.repository.core.NamedQueries;
-import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import static org.junit.Assert.assertEquals;
@@ -61,7 +62,7 @@ public class SpannerQueryLookupStrategyTests {
 
 	private SpannerQueryLookupStrategy spannerQueryLookupStrategy;
 
-	private EvaluationContextProvider evaluationContextProvider;
+	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
 	private SpelExpressionParser spelExpressionParser;
 
@@ -70,7 +71,7 @@ public class SpannerQueryLookupStrategyTests {
 		this.spannerOperations = mock(SpannerOperations.class);
 		this.spannerMappingContext = new SpannerMappingContext();
 		this.queryMethod = mock(SpannerQueryMethod.class);
-		this.evaluationContextProvider = mock(EvaluationContextProvider.class);
+		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
 		this.spelExpressionParser = new SpelExpressionParser();
 		this.spannerQueryLookupStrategy = getSpannerQueryLookupStrategy();
 	}
@@ -139,7 +140,7 @@ public class SpannerQueryLookupStrategyTests {
 		t.id = "key";
 		t.id2 = "key2";
 		Statement statement = SpannerStatementQueryExecutor.getChildrenRowsQuery(
-				this.spannerMappingContext.getPersistentEntity(TestEntity.class), t,
+				Key.newBuilder().append(t.id).append(t.id2).build(),
 				this.spannerMappingContext.getPersistentEntity(ChildEntity.class));
 		assertEquals("SELECT id3 , id , id_2 "
 						+ "FROM child_test_table WHERE id = @tag0 and id_2 = @tag1",

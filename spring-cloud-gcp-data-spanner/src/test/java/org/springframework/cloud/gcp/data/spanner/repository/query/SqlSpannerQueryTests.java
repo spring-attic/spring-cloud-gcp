@@ -30,6 +30,7 @@ import org.mockito.Mockito;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -40,10 +41,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
-import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -69,9 +70,11 @@ public class SqlSpannerQueryTests {
 
 	private QueryMethod queryMethod;
 
-	private EvaluationContextProvider evaluationContextProvider;
+	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
 	private SpelExpressionParser expressionParser;
+
+	private SpannerMappingContext spannerMappingContext = new SpannerMappingContext();
 
 	private final Sort sort = Sort.by(Order.asc("COLA"), Order.desc("COLB"));
 
@@ -84,10 +87,11 @@ public class SqlSpannerQueryTests {
 	public void initMocks() {
 		this.queryMethod = mock(QueryMethod.class);
 		this.spannerTemplate = spy(new SpannerTemplate(mock(DatabaseClient.class),
-				new SpannerMappingContext(), this.spannerEntityProcessor,
-				mock(SpannerMutationFactory.class)));
+				this.spannerMappingContext, this.spannerEntityProcessor,
+				mock(SpannerMutationFactory.class), new SpannerSchemaUtils(
+						this.spannerMappingContext, this.spannerEntityProcessor, true)));
 		this.expressionParser = new SpelExpressionParser();
-		this.evaluationContextProvider = mock(EvaluationContextProvider.class);
+		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
 	}
 
 	private SqlSpannerQuery<Trade> createQuery(String sql) {

@@ -26,6 +26,9 @@ import org.springframework.cloud.gcp.data.spanner.repository.query.Query;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 
+/**
+ * @author Chengyuan Zhao
+ */
 public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
 	List<Trade> findByTraderId(String traderId);

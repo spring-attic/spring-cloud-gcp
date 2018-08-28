@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.pubsub.integration.inbound;
 import java.io.UnsupportedEncodingException;
 import java.util.function.Consumer;
 
-import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,7 +29,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
-import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
 import org.springframework.messaging.MessageChannel;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -49,8 +48,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubInboundChannelAdapterTests {
 
-	public static final String ACK = "ACK";
-
 	public static final String NACK = "NACK";
 
 	public static final String EXCEPTION_MESSAGE = "Forced exception sending message";
@@ -65,33 +62,30 @@ public class PubSubInboundChannelAdapterTests {
 
 	private String value;
 
-	private BasicAcknowledgeablePubsubMessage message;
-
 	@Before
 	public void setUp() throws UnsupportedEncodingException {
 		this.pubSubOperations = mock(PubSubOperations.class);
 		this.pubSubSubscriberOperations = mock(PubSubSubscriberOperations.class);
 		this.messageChannel = mock(MessageChannel.class);
-		this.message = mock(BasicAcknowledgeablePubsubMessage.class);
 		this.value = null;
+		ConvertedBasicAcknowledgeablePubsubMessage message = mock(ConvertedBasicAcknowledgeablePubsubMessage.class);
 
 		doAnswer(invocation -> {
 			this.value = NACK;
 			return null;
-		}).when(this.message).nack();
+		}).when(message).nack();
 
-		when(this.message.getPubsubMessage()).thenReturn(
-				PubsubMessage.newBuilder()
-						.setData(ByteString.copyFrom("Testing 1 2 3".getBytes("UTF-8"))).build());
+		when(message.getPubsubMessage()).thenReturn(PubsubMessage.newBuilder().build());
+		when(message.getPayload()).thenReturn("Test message payload.");
 
 		when(this.messageChannel.send(any())).thenThrow(
 				new RuntimeException(EXCEPTION_MESSAGE));
 
-		when(this.pubSubSubscriberOperations.subscribe(
-				anyString(), any(Consumer.class))).then(invocationOnMock -> {
-					Consumer<BasicAcknowledgeablePubsubMessage> messageConsumer =
+		when(this.pubSubSubscriberOperations.subscribeAndConvert(
+				anyString(), any(Consumer.class), any(Class.class))).then(invocationOnMock -> {
+					Consumer<ConvertedBasicAcknowledgeablePubsubMessage> messageConsumer =
 							invocationOnMock.getArgument(1);
-					messageConsumer.accept(this.message);
+					messageConsumer.accept(message);
 				return null;
 		});
 	}

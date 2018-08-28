@@ -33,10 +33,10 @@ import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
-import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
@@ -104,16 +104,16 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport
 
 	@Override
 	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
-			EvaluationContextProvider evaluationContextProvider) {
+			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 
 		return Optional.of(new SpannerQueryLookupStrategy(this.spannerMappingContext,
 				this.spannerTemplate,
 				delegateContextProvider(evaluationContextProvider), EXPRESSION_PARSER));
 	}
 
-	private EvaluationContextProvider delegateContextProvider(
-			EvaluationContextProvider evaluationContextProvider) {
-		return new EvaluationContextProvider() {
+	private QueryMethodEvaluationContextProvider delegateContextProvider(
+			QueryMethodEvaluationContextProvider evaluationContextProvider) {
+		return new QueryMethodEvaluationContextProvider() {
 			@Override
 			public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(
 					T parameters, Object[] parameterValues) {

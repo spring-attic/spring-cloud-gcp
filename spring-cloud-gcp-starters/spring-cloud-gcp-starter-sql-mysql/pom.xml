@@ -28,6 +28,14 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
+			<!-- protobuf-java:2.6.0 included by MySQL Connector J is not compatible with
+						Google Cloud Java libraries. -->
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.protobuf</groupId>
+					<artifactId>protobuf-java</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 	</dependencies>

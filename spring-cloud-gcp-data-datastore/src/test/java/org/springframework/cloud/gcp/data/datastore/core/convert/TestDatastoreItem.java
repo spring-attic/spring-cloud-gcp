@@ -16,14 +16,19 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.time.Duration;
+
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.LatLng;
+
 
 /**
  * @author Dmitry Solomakha
  */
 class TestDatastoreItem {
+	private Duration durationField;
+
 	private String stringField;
 
 	private Boolean boolField;
@@ -37,6 +42,8 @@ class TestDatastoreItem {
 	private Timestamp timestampField;
 
 	private Blob blobField;
+
+	private int intField;
 
 	public String getStringField() {
 		return this.stringField;
@@ -92,5 +99,21 @@ class TestDatastoreItem {
 
 	public void setBlobField(Blob blobField) {
 		this.blobField = blobField;
+	}
+
+	public Duration getDurationField() {
+		return this.durationField;
+	}
+
+	public void setDurationField(Duration durationField) {
+		this.durationField = durationField;
+	}
+
+	public int getIntField() {
+		return this.intField;
+	}
+
+	public void setIntField(int intField) {
+		this.intField = intField;
 	}
 }

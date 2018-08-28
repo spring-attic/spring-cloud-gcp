@@ -34,10 +34,10 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ParserContext;
@@ -60,13 +60,13 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 	private final String sql;
 
-	private EvaluationContextProvider evaluationContextProvider;
+	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
 	private SpelExpressionParser expressionParser;
 
 	SqlSpannerQuery(Class<T> type, QueryMethod queryMethod,
 			SpannerOperations spannerOperations, String sql,
-			EvaluationContextProvider evaluationContextProvider,
+			QueryMethodEvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser,
 			SpannerMappingContext spannerMappingContext) {
 		super(type, queryMethod, spannerOperations, spannerMappingContext);

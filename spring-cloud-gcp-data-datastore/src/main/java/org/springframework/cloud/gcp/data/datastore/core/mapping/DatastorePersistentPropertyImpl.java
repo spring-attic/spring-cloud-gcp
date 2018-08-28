@@ -106,6 +106,11 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	@Override
+	public boolean isUnindexed() {
+		return findAnnotation(Unindexed.class) != null;
+	}
+
+	@Override
 	protected Association<DatastorePersistentProperty> createAssociation() {
 		return new Association<>(this, null);
 	}

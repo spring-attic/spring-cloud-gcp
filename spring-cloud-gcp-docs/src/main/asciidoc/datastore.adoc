@@ -1,0 +1,405 @@
+:spring-data-commons-ref: https://docs.spring.io/spring-data/data-commons/docs/current/reference/html
+
+== Spring Data Cloud Datastore
+
+http://projects.spring.io/spring-data/[Spring Data]
+is an abstraction for storing and retrieving POJOs in numerous storage technologies.
+Spring Cloud GCP adds Spring Data support for http://cloud.google.com/datastore/[Google Cloud
+Datastore].
+
+Maven coordinates for this module only, using https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-dependencies/pom.xml[Spring Cloud GCP BOM]:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-data-datastore</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-datastore'
+}
+----
+
+We provide a link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore],
+with which you can use our recommended auto-configuration setup.
+To use the starter, see the coordinates below.
+
+
+Maven:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-data-datastore</artifactId>
+</dependency>
+----
+
+Gradle:
+
+[source,subs="normal"]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-datastore'
+}
+----
+
+This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Datastore libraries
+as well.
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[sample application]
+is available.
+
+=== Configuration
+
+To setup Spring Data Cloud Datastore, you have to configure the following:
+
+* Setup the connection details to Google Cloud Datastore.
+
+==== Cloud Datastore settings
+
+You can the use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot
+Starter for Spring Data Datastore] to autoconfigure Google Cloud Datastore in your Spring application.
+It contains all the necessary setup that makes it easy to authenticate with your Google Cloud
+project.
+The following configuration options are available:
+
+|===
+| Name | Description | Required | Default value
+| `spring.cloud.gcp.datastore.enabled` | Enables the Cloud Datastore client | No | `true`
+| `spring.cloud.gcp.datastore.project-id` | GCP project ID where the Google Cloud Datastore API
+is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
+| No |
+| `spring.cloud.gcp.datastore.credentials.location` | OAuth2 credentials for authenticating with the
+Google Cloud Datastore API, if different from the ones in the
+<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.datastore.credentials.encoded-key` | Base64-encoded OAuth2 credentials for authenticating with the
+Google Cloud Datastore API, if different from the ones in the
+<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.datastore.credentials.scopes` |
+https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
+Cloud Datastore credentials | No | https://www.googleapis.com/auth/datastore
+| `spring.cloud.gcp.datastore.namespace` | The Cloud Datastore namespace to use | No | the Default namespace of Cloud Datastore in your GCP project
+|===
+
+==== Repository settings
+
+Spring Data Repositories can be configured via the `@EnableDatastoreRepositories` annotation on your
+main `@Configuration` class.
+With our Spring Boot Starter for Spring Data Cloud Datastore, `@EnableDatastoreRepositories` is automatically
+added.
+It is not required to add it to any other class, unless there is a need to override finer
+grain configuration parameters provided by
+https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-datastore/src/main/java/org/springframework/cloud/gcp/data/datastore/repository/config/EnableDatastoreRepositories.java[`@EnableDatastoreRepositories`].
+
+==== Autoconfiguration
+
+Our Spring Boot autoconfiguration creates the following beans available in the Spring application context:
+
+- an instance of `DatastoreTemplate`
+- an instance of all user defined repositories extending `CrudRepository` or `PagingAndSortingRepository`, when repositories are enabled
+- an instance of `Datastore` from the Google Cloud Java Client for Datastore, for convenience and lower level API access
+
+
+=== Object Mapping
+
+Spring Data Cloud Datastore allows you to map domain POJOs to Cloud Datastore kinds and entities via annotations:
+
+[source,java]
+----
+@Entity(name = "traders")
+public class Trader {
+
+	@Id
+	@Field(name = "trader_id")
+	String traderId;
+
+	String firstName;
+
+	String lastName;
+
+	@Transient
+	Double temporaryNumber;
+}
+----
+
+Spring Data Cloud Datastore will ignore any property annotated with `@Transient`. These properties will
+not be written to or read from Cloud Datastore.
+
+==== Constructors
+
+Simple constructors are supported on POJOs.
+The constructor arguments can be a subset of the persistent properties.
+Every constructor argument needs to have the same name and type as a persistent property on the entity and the constructor should set the property from the given argument.
+Arguments that are not directly set to properties are not supported.
+
+[source,java]
+----
+@Entity(name = "traders")
+public class Trader {
+
+	@Id
+	@Field(name = "trader_id")
+	String traderId;
+
+	String firstName;
+
+	String lastName;
+
+	@Transient
+	Double temporaryNumber;
+
+	public Trader(String traderId, String firstName) {
+	    this.traderId = traderId;
+	    this.firstName = firstName;
+	}
+}
+----
+
+
+==== Kind
+
+The `@Entity` annotation can provide the name of the Cloud Datastore kind that stores instances of the annotated class, one per row.
+
+==== Keys
+
+`@Id` identifies the property corresponding to the ID value.
+
+You must annotate one of your POJO's fields as the ID value, because every entity in Cloud Datastore
+requires a single ID value:
+
+[source,java]
+----
+@Entity(name = "trades")
+public class Trade {
+	@Id
+	@Field(name = "trade_id")
+	private String tradeId;
+
+	@Field(name = "trader_id")
+	private String traderId;
+
+	private String action;
+
+	private Double price;
+
+	private Double shares;
+
+	private String symbol;
+}
+----
+
+
+Datastore has automatic ID allocation. If a POJO instance is written to Cloud Datastore with `null` as the ID value,
+then Spring Data Cloud Datastore will obtain a newly allocated ID value from Cloud Datastore and set that in the POJO
+for saving.
+
+
+==== Fields
+
+All accessible properties on POJOs are automatically recognized as a Cloud Datastore field.
+Field naming is generated by the `PropertyNameFieldNamingStrategy` by default defined on the `DatastoreMappingContext` bean.
+The `@Field` annotation optionally provides a different field name than that of the property.
+
+
+==== Embedded Objects
+
+This feature is not supported yet.
+
+==== Relationships
+
+This feature is not supported yet.
+
+==== Supported Types
+
+Spring Data Cloud Datastore supports the following types for regular fields:
+
+* `com.google.cloud.Timestamp`
+* `com.google.cloud.datastore.Blob`
+* `com.google.cloud.datastore.LatLng`
+* `java.lang.Boolean`
+* `java.lang.Double`
+* `java.lang.Long`
+* `java.lang.Integer`
+* `java.lang.String`
+
+
+==== Lists
+
+This feature is not supported yet.
+
+==== Custom types
+
+This feature is not supported yet.
+
+=== Datastore Template
+
+`DatastoreOperations` and its implementation, `DatastoreTemplate`, provides the Template pattern
+familiar to Spring developers.
+
+Using the auto-configuration provided by Spring Boot Starter for Datastore, your Spring application
+context will contain a fully configured `DatastoreTemplate` object that you can autowire in
+your application:
+
+[source,java]
+----
+@SpringBootApplication
+public class DatastoreTemplateExample {
+
+	@Autowired
+	DatastoreTemplate datastoreTemplate;
+
+	public void doSomething() {
+		this.datastoreTemplate.deleteAll(Trader.class);
+		//...
+		Trader t = new Trader();
+		//...
+		this.datastoreTemplate.save(t);
+		//...
+		List<Trader> traders = datastoreTemplate.findAll(Trader.class);
+		//...
+	}
+}
+----
+
+The Template API provides convenience methods for:
+
+- Write operations (saving and deleting)
+- Locking read-write transactions
+
+==== GQL Query
+
+This feature is not supported yet.
+
+==== Find by ID(s)
+
+Datstore reading a single entity or multiple entities in a kind.
+
+Using `DatastoreTemplate` you can execute reads, for example:
+
+[source,java]
+----
+Trader trader = this.datastoreTemplate.findById("trader1", Trader.class);
+
+List<Trader> traders = this.datastoreTemplate.findAllById(ImmutableList.of("trader1", "trader2"), Trader.class);
+
+List<Trader> allTraders = this.datastoreTemplate.findAll(Trader.class);
+----
+
+Cloud Datastore executes key-based reads with strong consistency, but queries with eventual consistency. In the example above
+the first two reads utilize keys, while the third is executed using a query based on the corresponding Kind of `Trader`.
+
+
+===== Indexes
+
+This feature is not supported yet.
+
+===== Read with offsets and limits
+
+This feature is not supported yet.
+
+===== Sorting
+
+This feature is not supported yet.
+
+===== Partial read
+
+This feature is not supported yet.
+
+==== Write / Update
+
+The write methods of `DatastoreOperations` accept a POJO and writes all of its properties to Datastore.
+The required Datastore kind and entity metadata is obtained from the given object's actual type.
+
+If a POJO was retrieved from Datastore and its ID value was changed and then
+written or updated, the operation will occur as if against a row with the new ID value. The entity with the
+original ID value will not be affected.
+
+[source, java]
+----
+Trader t = new Trader();
+this.datastoreTemplate.save(t);
+----
+
+The `save` method behaves as update-or-insert.
+
+===== Partial Update
+
+This feature is not supported yet.
+
+==== Transactions
+
+This feature is not supported yet.
+
+=== Repositories
+
+{spring-data-commons-ref}/#repositories[Spring Data Repositories] are an abstraction that
+can reduce boilerplate code.
+
+For example:
+
+[source,java]
+----
+public interface TraderRepository extends CrudRepository<Trader, String> {
+}
+----
+
+Spring Data generates a working implementation of the specified interface, which can be
+autowired into an application.
+
+The `Trader` type parameter to `CrudRepository` refers to the underlying domain type.
+The second type parameter, `String` in this case, refers to the type of the key of the domain
+type.
+
+[source,java]
+----
+public class MyApplication {
+
+	@Autowired
+	TraderRepository traderRepository;
+
+	public void demo() {
+
+		this.traderRepository.deleteAll(); //defined on CrudRepository
+		String traderId = "demo_trader";
+		Trader t = new Trader();
+		t.traderId = traderId;
+		this.tradeRepository.save(t); //defined on CrudRepository
+
+		Iterable<Trader> allTraders = this.traderRepository.findAll(); //defined on CrudRepository
+
+		int count = this.traderRepository.count();
+	}
+}
+
+----
+
+==== Query methods by convention
+
+This feature is not supported yet.
+
+==== Custom GQL query methods
+
+This feature is not supported yet.
+
+===== Query methods with named queries properties
+
+This feature is not supported yet.
+
+===== Query methods with annotation
+
+This feature is not supported yet.
+
+==== Projections
+
+This feature is not supported yet.
+
+==== REST Repositories
+
+This feature is not supported yet.

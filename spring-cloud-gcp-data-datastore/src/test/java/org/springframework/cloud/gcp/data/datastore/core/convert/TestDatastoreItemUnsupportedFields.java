@@ -16,7 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import java.math.BigInteger;
+
+import java.util.Objects;
 
 /**
  * @author Dmitry Solomakha
@@ -24,7 +25,7 @@ import java.math.BigInteger;
 class TestDatastoreItemUnsupportedFields {
 	private String stringField;
 
-	private BigInteger unsupportedField;
+	private UnsupportedType unsupportedField;
 
 	public String getStringField() {
 		return this.stringField;
@@ -34,11 +35,64 @@ class TestDatastoreItemUnsupportedFields {
 		this.stringField = stringField;
 	}
 
-	public BigInteger getUnsupportedField() {
+	public UnsupportedType getUnsupportedField() {
 		return this.unsupportedField;
 	}
 
-	public void setUnsupportedField(BigInteger unsupportedField) {
+	public void setUnsupportedField(UnsupportedType unsupportedField) {
 		this.unsupportedField = unsupportedField;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		TestDatastoreItemUnsupportedFields that = (TestDatastoreItemUnsupportedFields) o;
+		return Objects.equals(getStringField(), that.getStringField()) &&
+				Objects.equals(getUnsupportedField(), that.getUnsupportedField());
+	}
+
+	@Override
+	public int hashCode() {
+
+		return Objects.hash(getStringField(), getUnsupportedField());
+	}
+
+	static class UnsupportedType {
+		boolean val;
+
+		UnsupportedType(boolean val) {
+			this.val = val;
+		}
+
+		public boolean isVal() {
+			return this.val;
+		}
+
+		public void setVal(boolean val) {
+			this.val = val;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+			UnsupportedType that = (UnsupportedType) o;
+			return isVal() == that.isVal();
+		}
+
+		@Override
+		public int hashCode() {
+
+			return Objects.hash(isVal());
+		}
 	}
 }
