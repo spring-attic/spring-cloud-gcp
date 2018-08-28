@@ -116,7 +116,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	/**
 	 * Uses the configured message converter to first convert the payload and headers to a
-	 * {@code PubsubMessage} and then publish it.
+	 * {@link PubsubMessage} and then publish it.
 	 */
 	@Override
 	public <T> ListenableFuture<String> publish(String topic, T payload,
@@ -181,19 +181,21 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 	}
 
 	@Override
-	public void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
-		this.pubSubSubscriberTemplate.ack(acknowledgeablePubsubMessages);
+	public ListenableFuture<Void> ack(
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		return this.pubSubSubscriberTemplate.ack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
-	public void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
-		this.pubSubSubscriberTemplate.nack(acknowledgeablePubsubMessages);
+	public ListenableFuture<Void> nack(
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
+		return this.pubSubSubscriberTemplate.nack(acknowledgeablePubsubMessages);
 	}
 
 	@Override
-	public void modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
-			int ackDeadlineSeconds) {
-		this.pubSubSubscriberTemplate.modifyAckDeadline(acknowledgeablePubsubMessages, ackDeadlineSeconds);
+	public ListenableFuture<Void> modifyAckDeadline(
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages, int ackDeadlineSeconds) {
+		return this.pubSubSubscriberTemplate.modifyAckDeadline(acknowledgeablePubsubMessages, ackDeadlineSeconds);
 	}
 
 	public PublisherFactory getPublisherFactory() {

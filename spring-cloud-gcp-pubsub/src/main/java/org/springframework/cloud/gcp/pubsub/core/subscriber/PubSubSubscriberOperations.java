@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
+import org.springframework.util.concurrent.ListenableFuture;
 
 /**
  * An abstraction for Google Cloud Pub/Sub subscription / pulling operations.
@@ -114,27 +115,30 @@ public interface PubSubSubscriberOperations {
 	PubsubMessage pullNext(String subscription);
 
 	/**
-	 * Acknowledge a batch of messages. The method will group the messages by subscription name
-	 * and acknowledge them in batches.
+	 * Acknowledge a batch of messages. The messages must have the same project id and be from the same subscription.
 	 * @param acknowledgeablePubsubMessages messages to be acknowledged
+	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous execution
 	 */
-	void ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	ListenableFuture<Void> ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
-	 * Negatively acknowledge a batch of messages. The method will group the messages by subscription name
-	 * and acknowledge them in batches.
+	 * Negatively acknowledge a batch of messages. The messages must have the same project id and be from the same
+	 * subscription.
 	 * @param acknowledgeablePubsubMessages messages to be negatively acknowledged
+	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous execution
 	 */
-	void nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
+	ListenableFuture<Void> nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
 	/**
-	 * Modify the ack deadline of a batch of messages. The method will group the messages by subscription name
-	 * and modify their ack deadline in batches.
+	 * Modify the ack deadline of a batch of messages. The messages must have the same project id and be from the
+	 * same subscription.
 	 * @param acknowledgeablePubsubMessages messages to be modified
 	 * @param ackDeadlineSeconds the new ack deadline in seconds. A deadline of 0 effectively nacks the messages.
+	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous execution
 	 * @since 1.1
 	 */
-	void modifyAckDeadline(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
+	ListenableFuture<Void> modifyAckDeadline(
+			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
 			int ackDeadlineSeconds);
 
 }
