@@ -28,7 +28,7 @@
 		<module>spring-cloud-gcp-starter-data-datastore</module>
 		<module>spring-cloud-gcp-starter-trace</module>
 		<module>spring-cloud-gcp-starter-logging</module>
-		<module>spring-cloud-gcp-starter-gql-mysql</module>
-		<module>spring-cloud-gcp-starter-gql-postgresql</module>
+		<module>spring-cloud-gcp-starter-sql-mysql</module>
+		<module>spring-cloud-gcp-starter-sql-postgresql</module>
     </modules>
 </project>

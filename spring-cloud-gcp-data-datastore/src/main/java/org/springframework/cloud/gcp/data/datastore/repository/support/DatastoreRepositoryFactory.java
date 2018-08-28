@@ -16,15 +16,31 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.support;
 
+import java.util.Optional;
+
+import org.springframework.beans.BeansException;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntityInformation;
+import org.springframework.cloud.gcp.data.datastore.repository.query.DatastoreQueryLookupStrategy;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.expression.BeanFactoryAccessor;
+import org.springframework.context.expression.BeanFactoryResolver;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
+import org.springframework.data.repository.query.Parameters;
+import org.springframework.data.repository.query.QueryLookupStrategy;
+import org.springframework.data.repository.query.QueryLookupStrategy.Key;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
@@ -34,11 +50,16 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class DatastoreRepositoryFactory extends RepositoryFactorySupport {
+public class DatastoreRepositoryFactory extends RepositoryFactorySupport
+		implements ApplicationContextAware {
+
+	private static final SpelExpressionParser EXPRESSION_PARSER = new SpelExpressionParser();
 
 	private final DatastoreMappingContext datastoreMappingContext;
 
 	private final DatastoreTemplate datastoreTemplate;
+
+	private ApplicationContext applicationContext;
 
 	/**
 	 * Constructor
@@ -82,4 +103,39 @@ public class DatastoreRepositoryFactory extends RepositoryFactorySupport {
 	protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
 		return SimpleDatastoreRepository.class;
 	}
+
+	@Override
+	protected Optional<QueryLookupStrategy> getQueryLookupStrategy(@Nullable Key key,
+			QueryMethodEvaluationContextProvider evaluationContextProvider) {
+
+		return Optional.of(new DatastoreQueryLookupStrategy(this.datastoreMappingContext,
+				this.datastoreTemplate,
+				delegateContextProvider(evaluationContextProvider), EXPRESSION_PARSER));
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext)
+			throws BeansException {
+		this.applicationContext = applicationContext;
+	}
+
+	private QueryMethodEvaluationContextProvider delegateContextProvider(
+			QueryMethodEvaluationContextProvider evaluationContextProvider) {
+		return new QueryMethodEvaluationContextProvider() {
+			@Override
+			public <T extends Parameters<?, ?>> EvaluationContext getEvaluationContext(
+					T parameters, Object[] parameterValues) {
+				StandardEvaluationContext evaluationContext = (StandardEvaluationContext)
+						evaluationContextProvider
+						.getEvaluationContext(parameters, parameterValues);
+				evaluationContext.setRootObject(
+						DatastoreRepositoryFactory.this.applicationContext);
+				evaluationContext.addPropertyAccessor(new BeanFactoryAccessor());
+				evaluationContext.setBeanResolver(new BeanFactoryResolver(
+						DatastoreRepositoryFactory.this.applicationContext));
+				return evaluationContext;
+			}
+		};
+	}
+
 }

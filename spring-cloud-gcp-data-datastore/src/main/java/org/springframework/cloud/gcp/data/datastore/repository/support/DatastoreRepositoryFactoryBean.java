@@ -16,9 +16,12 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.support;
 
+import org.springframework.beans.BeansException;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.repository.core.support.RepositoryFactoryBeanSupport;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
@@ -30,11 +33,14 @@ import org.springframework.data.repository.core.support.RepositoryFactorySupport
  * @since 1.1
  */
 public class DatastoreRepositoryFactoryBean<S, ID>
-		extends RepositoryFactoryBeanSupport<DatastoreRepository<S, ID>, S, ID> {
+		extends RepositoryFactoryBeanSupport<DatastoreRepository<S, ID>, S, ID>
+		implements ApplicationContextAware {
 
 	private DatastoreMappingContext datastoreMappingContext;
 
 	private DatastoreTemplate datastoreTemplate;
+
+	private ApplicationContext applicationContext;
 
 	/**
 	 * Creates a new {@link DatastoreRepositoryFactoryBean} for the given repository
@@ -60,6 +66,13 @@ public class DatastoreRepositoryFactoryBean<S, ID>
 	protected RepositoryFactorySupport createRepositoryFactory() {
 		DatastoreRepositoryFactory datastoreRepositoryFactory = new DatastoreRepositoryFactory(
 				this.datastoreMappingContext, this.datastoreTemplate);
+		datastoreRepositoryFactory.setApplicationContext(this.applicationContext);
 		return datastoreRepositoryFactory;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext)
+			throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 }

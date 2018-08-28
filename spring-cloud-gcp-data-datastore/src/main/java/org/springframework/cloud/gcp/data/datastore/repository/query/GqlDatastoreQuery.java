@@ -169,7 +169,7 @@ public class GqlDatastoreQuery<T> implements RepositoryQuery {
 								queryTagValue.tags, queryTagValue.params),
 								this.entityType);
 		if (found != null) {
-			results.forEach(results::add);
+      found.forEach(results::add);
 		}
 		return results;
 	}

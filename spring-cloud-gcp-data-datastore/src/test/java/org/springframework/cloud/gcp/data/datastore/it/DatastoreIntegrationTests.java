@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.data.datastore.it;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.google.cloud.datastore.Blob;
 import com.google.common.collect.ImmutableList;
 import org.junit.BeforeClass;
@@ -41,6 +44,11 @@ import static org.junit.Assume.assumeThat;
 @ContextConfiguration(classes = { DatastoreIntegrationTestConfiguration.class })
 public class DatastoreIntegrationTests {
 
+	// queries are eventually consistent, so we may need to retry a few times.
+	private static final int QUERY_WAIT_ATTEMPTS = 100;
+
+	private static final int QUERY_WAIT_INTERVAL_MILLIS = 1000;
+
 	@Autowired
 	private TestEntityRepository testEntityRepository;
 
@@ -53,7 +61,7 @@ public class DatastoreIntegrationTests {
 	}
 
 	@Test
-	public void testRepository() {
+	public void testRepository() throws InterruptedException {
 
 		TestEntity testEntityA = new TestEntity();
 		testEntityA.setId("a");
@@ -71,6 +79,19 @@ public class DatastoreIntegrationTests {
 
 		assertEquals(Blob.copyFrom("testValueA".getBytes()),
 				this.testEntityRepository.findById("a").get().getBlobField());
+
+		List<TestEntity> foundByCustomQuery = Collections.emptyList();
+		for (int i = 0; i < QUERY_WAIT_ATTEMPTS; i++) {
+			if (!foundByCustomQuery.isEmpty()) {
+				break;
+			}
+			Thread.sleep(QUERY_WAIT_INTERVAL_MILLIS);
+			foundByCustomQuery = this.testEntityRepository
+					.findEntitiesWithCustomQuery("a");
+		}
+		assertEquals(1, foundByCustomQuery.size());
+		assertEquals(Blob.copyFrom("testValueA".getBytes()),
+				foundByCustomQuery.get(0).getBlobField());
 
 		testEntityA.setBlobField(null);
 
