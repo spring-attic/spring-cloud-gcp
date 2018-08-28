@@ -214,7 +214,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	public ListenableFuture<Void> ack(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
-		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be empty.");
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages can't be empty.");
 
 		AcknowledgeablePubsubMessage acknowledgeablePubsubMessage = acknowledgeablePubsubMessages.iterator().next();
 		ProjectSubscriptionName projectSubscriptionName = acknowledgeablePubsubMessage.getProjectSubscriptionName();
@@ -247,7 +247,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	@Override
 	public ListenableFuture<Void> modifyAckDeadline(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages, int ackDeadlineSeconds) {
-		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages cannot be empty.");
+		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages can't be empty.");
 		Assert.isTrue(ackDeadlineSeconds >= 0, "The ackDeadlineSeconds must not be negative.");
 
 		AcknowledgeablePubsubMessage acknowledgeablePubsubMessage = acknowledgeablePubsubMessages.iterator().next();

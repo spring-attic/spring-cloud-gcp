@@ -118,7 +118,6 @@ public interface PubSubSubscriberOperations {
 	 * Acknowledge a batch of messages. The messages must have the same project id and be from the same subscription.
 	 * @param acknowledgeablePubsubMessages messages to be acknowledged
 	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous execution
-	 * @since 1.1
 	 */
 	ListenableFuture<Void> ack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
@@ -127,7 +126,6 @@ public interface PubSubSubscriberOperations {
 	 * subscription.
 	 * @param acknowledgeablePubsubMessages messages to be negatively acknowledged
 	 * @return {@code ListenableFuture<Void>} the ListenableFuture for the asynchronous execution
-	 * @since 1.1
 	 */
 	ListenableFuture<Void> nack(Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages);
 
