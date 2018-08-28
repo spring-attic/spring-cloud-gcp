@@ -235,7 +235,7 @@ The `keyOrder` parameter of `@PrimaryKey` identifies the properties correspondin
 Order is important and must reflect the order defined in the Cloud Spanner schema.
 In our example the DDL to create the table and its primary key is as follows:
 
-[source,gql]
+[source,sql]
 ----
 CREATE TABLE trades (
     trader_id STRING(MAX),
@@ -305,7 +305,7 @@ class B {
 
 Entities of `B` can be stored in a table defined as:
 
-[source,gql]
+[source,sql]
 ----
 CREATE TABLE items (
     grandParentId STRING(MAX),
@@ -431,7 +431,7 @@ Spring Data Cloud Spanner supports the following types for regular fields:
 * `boolean[]`
 * `java.util.Date`
 * `java.util.Instant`
-* `java.gql.Date`
+* `java.sql.Date`
 
 
 ==== Lists
@@ -458,7 +458,7 @@ Spring Data Spanner supports the following inner types:
 * `java.lang.String`
 * `java.util.Date`
 * `java.util.Instant`
-* `java.gql.Date`
+* `java.sql.Date`
 
 ==== Lists of Structs
 
@@ -1012,7 +1012,7 @@ naming convention].
 
 The function `List<Trade> findTop3DistinctByActionAndSymbolIgnoreCaseOrTraderIdOrderBySymbolDesc(String action, String symbol, String traderId);` will be translated as the equivalent of this SQL query:
 
-[source, gql]
+[source, sql]
 ----
 SELECT DISTINCT * FROM trades
 WHERE ACTION = ? AND LOWER(SYMBOL) = LOWER(?) AND TRADER_ID = ?

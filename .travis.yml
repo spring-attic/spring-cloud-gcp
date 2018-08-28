@@ -25,7 +25,7 @@ before_install:
         tar -xzf travis.tar.gz;
         export INTEGRATION_TEST_FLAGS="-Dit.spanner=true -Dit.storage=true -Dit.config=true -Dit.pubsub=true -Dit.logging=true
             -Dit.cloudsql=true -Dit.datastore=true
-            -Dspring.cloud.gcp.gql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testmysql";
+            -Dspring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testmysql";
       fi
   - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
   - source $HOME/google-cloud-sdk/path.bash.inc

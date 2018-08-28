@@ -32,7 +32,7 @@ include::pubsub.adoc[]
 
 include::storage.adoc[]
 
-include::gql.adoc[]
+include::sql.adoc[]
 
 include::spring-integration.adoc[]
 
