@@ -21,9 +21,11 @@ import java.util.List;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.FullEntity;
+import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.Query;
+import com.google.cloud.datastore.Query.ResultType;
 import com.google.cloud.datastore.QueryResults;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
@@ -207,6 +209,37 @@ public class DatastoreTemplateTests {
 						.thenReturn(queryResults);
 
 		assertThat(this.datastoreTemplate.findAll(TestEntity.class), contains(ob1, ob2));
+	}
+
+	@Test
+	public void queryTest() {
+		Object ob1 = new Object();
+		Object ob2 = new Object();
+		Entity e1 = Entity.newBuilder(createFakeKey("key1")).build();
+		Entity e2 = Entity.newBuilder(createFakeKey("key2")).build();
+		when(this.datastoreEntityConverter.read(eq(TestEntity.class), any()))
+				.thenAnswer(invocation -> {
+					Object ret;
+					if (invocation.getArgument(1) == e1) {
+						ret = ob1;
+					}
+					else {
+						ret = ob2;
+					}
+					return ret;
+				});
+
+		QueryResults queryResults = mock(QueryResults.class);
+		doAnswer(invocation -> {
+			ImmutableList.of(e1, e2).iterator()
+					.forEachRemaining(invocation.getArgument(0));
+			return null;
+		}).when(queryResults).forEachRemaining(any());
+		when(this.datastore.run(any())).thenReturn(queryResults);
+
+		assertThat(this.datastoreTemplate.query(
+				GqlQuery.newGqlQueryBuilder(ResultType.ENTITY, "fake query").build(),
+				TestEntity.class), contains(ob1, ob2));
 	}
 
 	@Test
