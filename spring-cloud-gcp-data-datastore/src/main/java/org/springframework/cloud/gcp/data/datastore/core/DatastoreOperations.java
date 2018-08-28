@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
+import java.util.List;
+
 /**
  * An interface of operations that can be done with Cloud Datastore.
  *
@@ -120,6 +122,20 @@ public interface DatastoreOperations {
 	 * @return the entities that were found.
 	 */
 	<T> Iterable<T> findAllById(Iterable<?> ids, Class<T> entityClass);
+
+	/**
+	 * Finds objects by using a GQL statement.
+	 * @param gql the GQL string to execute. this string can have Cloud Datastore param
+	 * tags.
+	 * @param tags the names of the tags to use
+	 * @param params the values to attach those tags, in the same order.
+	 * @param entityClass the type of object to retrieve.
+	 * @param <T> the type of object to retrieve.
+	 * @return a list of the objects found. If no keys could be found the list will be
+	 * empty.
+	 */
+	<T> Iterable<T> query(String gql, List<String> tags, Object[] params,
+			Class<T> entityClass);
 
 	/**
 	 * Get all the entities of the given domain type.

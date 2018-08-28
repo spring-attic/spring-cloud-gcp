@@ -10,7 +10,7 @@ Runtime Configuration API].
 
 - link:spring-cloud-gcp-data-jpa-sample[Spring Cloud GCP Data JPA Sample]:
 Uses https://projects.spring.io/spring-data-jpa/[Spring Data JPA] to create a table in a
-https://cloud.google.com/sql/docs/[Google Cloud SQL] instance, populate it and read back
+https://cloud.google.com/gql/docs/[Google Cloud SQL] instance, populate it and read back
 the inserted values.
 
 - link:spring-cloud-gcp-data-spanner-sample[Spring Cloud GCP Data Cloud Spanner Sample]:
@@ -33,8 +33,8 @@ Uses the Spring Cloud GCP Pub/Sub abstraction to exchange messages.
 - link:spring-cloud-gcp-pubsub-binder-sample[Spring Cloud GCP Pub/Sub Stream binder]:
 Uses the Spring Cloud Stream Binder for Google Cloud Pub/Sub to exchange messages.
 
-- link:spring-cloud-gcp-sql-sample[Spring Cloud GCP SQL Sample]:
-Connects to a https://cloud.google.com/sql/docs/[Google Cloud SQL] instance using best practices.
+- link:spring-cloud-gcp-gql-sample[Spring Cloud GCP SQL Sample]:
+Connects to a https://cloud.google.com/gql/docs/[Google Cloud SQL] instance using best practices.
 Populates database with values and reads them.
 
 - link:spring-cloud-gcp-storage-resource-sample[Spring Cloud GCP Storage Sample]:

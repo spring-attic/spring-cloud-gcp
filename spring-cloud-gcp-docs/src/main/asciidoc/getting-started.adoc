@@ -26,10 +26,10 @@ Most of the autoconfiguration code is only enabled if other dependencies are add
 |org.springframework.cloud:spring-cloud-gcp-starter-logging
 
 |SQL - MySql
-|org.springframework.cloud:spring-cloud-gcp-starter-sql-mysql
+|org.springframework.cloud:spring-cloud-gcp-starter-gql-mysql
 
 |SQL - PostgreSQL
-|org.springframework.cloud:spring-cloud-gcp-starter-sql-postgres
+|org.springframework.cloud:spring-cloud-gcp-starter-gql-postgres
 
 |Trace
 |org.springframework.cloud:spring-cloud-gcp-starter-trace

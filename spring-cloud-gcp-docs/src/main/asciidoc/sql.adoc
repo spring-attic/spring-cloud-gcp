@@ -16,11 +16,11 @@ Maven coordinates, using Spring Cloud GCP BOM:
 ----
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-starter-sql-mysql</artifactId>
+    <artifactId>spring-cloud-gcp-starter-gql-mysql</artifactId>
 </dependency>
 <dependency>
     <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-gcp-starter-sql-postgresql</artifactId>
+    <artifactId>spring-cloud-gcp-starter-gql-postgresql</artifactId>
 </dependency>
 ----
 
@@ -29,8 +29,8 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql-mysql'
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql-postgresql'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-gql-mysql'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-gql-postgresql'
 }
 ----
 
@@ -49,14 +49,14 @@ and enable the API from there.
 
 Available sample applications:
 
-- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-sql-sample[Spring Cloud GCP SQL]
+- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-gql-sample[Spring Cloud GCP SQL]
 - https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-jpa-sample[Spring Data JPA with Spring Cloud GCP SQL]
 
 
 === Spring Boot Starter for Google Cloud SQL
 
 The Spring Boot Starters for Google Cloud SQL provide an auto-configured
-https://docs.oracle.com/javase/7/docs/api/javax/sql/DataSource.html[`DataSource`] object.
+https://docs.oracle.com/javase/7/docs/api/javax/gql/DataSource.html[`DataSource`] object.
 Coupled with Spring JDBC, it provides a
 https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html#jdbc-JdbcTemplate[`JdbcTemplate`]
 object bean that allows for operations such as querying and modifying a database.
@@ -69,7 +69,7 @@ public List<Map<String, Object>> listUsers() {
 ----
 
 You can rely on
-https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html#boot-features-connect-to-production-database[Spring
+https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-gql.html#boot-features-connect-to-production-database[Spring
 Boot data source auto-configuration] to configure a `DataSource` bean.
 In other words, properties like the SQL username, `spring.datasource.username`, and password,
 `spring.datasource.password` can be used.
@@ -77,16 +77,16 @@ There is also some configuration specific to Google Cloud SQL:
 
 |===
 | Property name | Description | Default value | Unused if specified property(ies)
-| `spring.cloud.gcp.sql.enabled` | Enables or disables Cloud SQL auto configuration | `true` |
-| `spring.cloud.gcp.sql.database-name` | Name of the database to connect to. | |
+| `spring.cloud.gcp.gql.enabled` | Enables or disables Cloud SQL auto configuration | `true` |
+| `spring.cloud.gcp.gql.database-name` | Name of the database to connect to. | |
 `spring.datasource.url`
-| `spring.cloud.gcp.sql.instance-connection-name` | A string containing a Google Cloud SQL
+| `spring.cloud.gcp.gql.instance-connection-name` | A string containing a Google Cloud SQL
 instance's project ID, region and name, each separated by a colon. For example,
 `my-project-id:my-region:my-instance-name`. | | `spring.datasource.url`
-| `spring.cloud.gcp.sql.credentials.location` | File system path to the Google OAuth2 credentials
+| `spring.cloud.gcp.gql.credentials.location` | File system path to the Google OAuth2 credentials
 private key file. Used to authenticate and authorize new connections to a Google Cloud SQL instance.
 | Default credentials provided by the Spring GCP Boot starter |
-| `spring.cloud.gcp.sql.credentials.encoded-key` | Base64-encoded contents of OAuth2 account private key in JSON format.
+| `spring.cloud.gcp.gql.credentials.encoded-key` | Base64-encoded contents of OAuth2 account private key in JSON format.
 Used to authenticate and authorize new connections to a Google Cloud SQL instance.
 | Default credentials provided by the Spring GCP Boot starter |
 |===
@@ -106,9 +106,9 @@ It is in the `DataSourceProperties` mutation step that the credentials factory i
 in a system property to be `SqlCredentialFactory`.
 
 `DataSource` creation is delegated to
-https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html[Spring Boot].
+https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-gql.html[Spring Boot].
 You can select the type of connection pool (e.g., Tomcat, HikariCP, etc.) by
-https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html#boot-features-connect-to-production-database[adding
+https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-gql.html#boot-features-connect-to-production-database[adding
 their dependency to the classpath].
 
 Using the created `DataSource` in conjunction with Spring JDBC provides you with a fully configured
@@ -136,11 +136,11 @@ resources folder, that looks like this:
 </configuration>
 ----
 
-=====  Errors like `c.g.cloud.sql.core.SslSocketFactory : Re-throwing cached exception due to attempt to refresh instance information too soon after error`
+=====  Errors like `c.g.cloud.gql.core.SslSocketFactory : Re-throwing cached exception due to attempt to refresh instance information too soon after error`
 
 If you see a lot of errors like this in a loop and can't connect to your database,
 this is usually a symptom that something isn't right with the permissions of your credentials or the Google Cloud SQL API is not enabled. Verify that the Google Cloud SQL API is enabled in the Cloud Console and that your service account has the
-https://cloud.google.com/sql/docs/mysql/project-access-control#roles[necessary IAM roles].
+https://cloud.google.com/gql/docs/mysql/project-access-control#roles[necessary IAM roles].
 
 To find out what's causing the issue, you can enable DEBUG logging level as mentioned link:#connection-issues[above].
 

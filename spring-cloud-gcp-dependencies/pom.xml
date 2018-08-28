@@ -102,12 +102,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-sql-mysql</artifactId>
+				<artifactId>spring-cloud-gcp-starter-gql-mysql</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-starter-sql-postgresql</artifactId>
+				<artifactId>spring-cloud-gcp-starter-gql-postgresql</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -126,15 +126,15 @@
 				<version>${project.version}</version>
 			</dependency>
 
-			<!-- spring-cloud-gcp-starter-sql -->
+			<!-- spring-cloud-gcp-starter-gql -->
 			<dependency>
-				<groupId>com.google.cloud.sql</groupId>
+				<groupId>com.google.cloud.gql</groupId>
 				<artifactId>mysql-socket-factory</artifactId>
 				<version>${mysql-socket-factory.version}</version>
 			</dependency>
 
 			<dependency>
-				<groupId>com.google.cloud.sql</groupId>
+				<groupId>com.google.cloud.gql</groupId>
 				<artifactId>postgres-socket-factory</artifactId>
 				<version>${mysql-socket-factory.version}</version>
 			</dependency>

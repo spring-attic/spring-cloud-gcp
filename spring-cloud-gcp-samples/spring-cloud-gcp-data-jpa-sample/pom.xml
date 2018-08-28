@@ -20,7 +20,7 @@
 
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-gcp-starter-sql-mysql</artifactId>
+			<artifactId>spring-cloud-gcp-starter-gql-mysql</artifactId>
 		</dependency>
 	</dependencies>
 </project>

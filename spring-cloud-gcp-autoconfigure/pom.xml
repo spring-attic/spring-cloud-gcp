@@ -80,7 +80,7 @@
 
         <!-- Adds SocketFactory and MySQL driver to classpath -->
         <dependency>
-            <groupId>com.google.cloud.sql</groupId>
+            <groupId>com.google.cloud.gql</groupId>
             <artifactId>mysql-socket-factory</artifactId>
             <optional>true</optional>
         </dependency>
@@ -93,7 +93,7 @@
 
         <!-- PostgreSQL -->
         <dependency>
-            <groupId>com.google.cloud.sql</groupId>
+            <groupId>com.google.cloud.gql</groupId>
             <artifactId>postgres-socket-factory</artifactId>
             <optional>true</optional>
         </dependency>

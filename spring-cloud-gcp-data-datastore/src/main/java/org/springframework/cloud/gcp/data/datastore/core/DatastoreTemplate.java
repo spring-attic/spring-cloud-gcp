@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
+import com.google.cloud.datastore.GqlQuery;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -132,6 +133,15 @@ public class DatastoreTemplate implements DatastoreOperations {
 		return convertEntities(
 				this.datastore.get(keysToFind.toArray(new Key[keysToFind.size()])),
 				entityClass);
+	}
+
+	@Override
+	public <T> Iterable<T> query(String gql, List<String> tags, Object[] params,
+			Class<T> entityClass) {
+		GqlQuery.Builder builder = GqlQuery.newGqlQueryBuilder(gql);
+		for(int i = 0; i < tags.size(); i++){
+			builder.setbi
+		}
 	}
 
 	@Override

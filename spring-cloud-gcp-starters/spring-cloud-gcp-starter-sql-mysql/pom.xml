@@ -9,7 +9,7 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-cloud-gcp-starter-sql-mysql</artifactId>
+	<artifactId>spring-cloud-gcp-starter-gql-mysql</artifactId>
 	<name>Spring Cloud GCP Cloud SQL MySQL Starter</name>
 
 	<dependencies>
@@ -22,7 +22,7 @@
 			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.google.cloud.sql</groupId>
+			<groupId>com.google.cloud.gql</groupId>
 			<artifactId>mysql-socket-factory</artifactId>
 		</dependency>
 		<dependency>
