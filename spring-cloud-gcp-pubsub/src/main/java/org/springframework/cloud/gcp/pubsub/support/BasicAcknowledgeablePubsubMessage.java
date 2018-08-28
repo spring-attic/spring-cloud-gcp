@@ -34,7 +34,7 @@ public interface BasicAcknowledgeablePubsubMessage {
 
 	/**
 	 * Accessor for the project subscription name of the Pub/Sub message.
-	 * @return the project id
+	 * @return the project subscription name
 	 */
 	ProjectSubscriptionName getProjectSubscriptionName();
 
