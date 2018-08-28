@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,17 +24,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import com.google.cloud.Timestamp;
+import com.google.cloud.datastore.Blob;
+import com.google.cloud.datastore.Cursor;
+import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.GqlQuery;
+import com.google.cloud.datastore.GqlQuery.Builder;
+import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.Query.ResultType;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
-import org.springframework.data.repository.query.EvaluationContextProvider;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
+import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
@@ -55,8 +68,26 @@ import org.springframework.util.StringUtils;
  */
 public class GqlDatastoreQuery<T> implements RepositoryQuery {
 
-  // A small string that isn't used in GQL syntax
+	private static final Map<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>> GQL_PARAM_BINDING_FUNC_MAP;
+
+	// A small string that isn't used in GQL syntax
   private static String ENTITY_CLASS_NAME_BOOKEND = "|";
+
+	static {
+		GQL_PARAM_BINDING_FUNC_MAP = ImmutableMap
+				.<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>> builder()
+				.put(Cursor.class, builder -> (s, o) -> builder.setBinding(s, (Cursor) o))
+				.put(String.class, builder -> (s, o) -> builder.setBinding(s, (String) o))
+				.put(long.class, builder -> (s, o) -> builder.setBinding(s, (long) o))
+				.put(double.class, builder -> (s, o) -> builder.setBinding(s, (double) o))
+				.put(boolean.class,
+						builder -> (s, o) -> builder.setBinding(s, (boolean) o))
+				.put(Timestamp.class,
+						builder -> (s, o) -> builder.setBinding(s, (Timestamp) o))
+				.put(Key.class, builder -> (s, o) -> builder.setBinding(s, (Key) o))
+				.put(Blob.class, builder -> (s, o) -> builder.setBinding(s, (Blob) o))
+				.build();
+	}
 
   protected final QueryMethod queryMethod;
 
@@ -68,10 +99,9 @@ public class GqlDatastoreQuery<T> implements RepositoryQuery {
 
   private final String gql;
 
-  private EvaluationContextProvider evaluationContextProvider;
+	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
   private SpelExpressionParser expressionParser;
-
 
   /**
    * Constructor
@@ -82,7 +112,7 @@ public class GqlDatastoreQuery<T> implements RepositoryQuery {
    */
   GqlDatastoreQuery(Class<T> type, QueryMethod queryMethod,
       DatastoreOperations datastoreOperations,String gql,
-      EvaluationContextProvider evaluationContextProvider,
+			QueryMethodEvaluationContextProvider evaluationContextProvider,
       SpelExpressionParser expressionParser,
       DatastoreMappingContext datastoreMappingContext) {
     this.queryMethod = queryMethod;
@@ -131,8 +161,33 @@ public class GqlDatastoreQuery<T> implements RepositoryQuery {
 
     resolveSpELTags(queryTagValue);
 
-    return this.datastoreOperations.query(resolveEntityClassNames(queryTagValue.gql), queryTagValue.tags,
-        queryTagValue.params.toArray(),this.entityType );
+		List<T> results = new ArrayList<>();
+		this.datastoreOperations
+				.query(bindArgsToGqlQuery(resolveEntityClassNames(queryTagValue.gql),
+						queryTagValue.tags, queryTagValue.params), this.entityType)
+				.forEach(results::add);
+		return results;
+	}
+
+	private GqlQuery<Entity> bindArgsToGqlQuery(String gql, List<String> tags,
+			List<Object> vals) {
+		Builder<Entity> builder = GqlQuery.newGqlQueryBuilder(ResultType.ENTITY, gql);
+		if (tags.size() != vals.size()) {
+			throw new DatastoreDataException("Annotated GQL Query Method "
+					+ this.queryMethod.getName() + " has " + tags.size()
+					+ " tags but a different number of parameter values: " + vals.size());
+		}
+		for (int i = 0; i < tags.size(); i++) {
+			Object val = vals.get(i);
+			if (!GQL_PARAM_BINDING_FUNC_MAP.containsKey(val.getClass())) {
+				throw new DatastoreDataException(
+						"Param value for GQL annotated query is not a supported Cloud Datastore GQL param type: "
+								+ val.getClass());
+			}
+			GQL_PARAM_BINDING_FUNC_MAP.get(val.getClass()).apply(builder)
+					.apply(tags.get(i), val);
+		}
+		return builder.build();
   }
 
   private List<String> getParamTags() {
@@ -157,7 +212,6 @@ public class GqlDatastoreQuery<T> implements RepositoryQuery {
     }
     return tags;
   }
-
 
   private void resolveSpELTags(QueryTagValue queryTagValue) {
     Expression[] expressions = detectExpressions(queryTagValue.gql);
@@ -209,7 +263,8 @@ public class GqlDatastoreQuery<T> implements RepositoryQuery {
     }
     else {
       throw new DatastoreDataException("Unexpected expression type. "
-          + "Query can either contain no SpEL expressions or have only literal SpEL expressions in the GQL.");
+					+ "Query can either contain no SpEL expressions or have only "
+					+ "literal SpEL expressions in the GQL.");
     }
   }
 

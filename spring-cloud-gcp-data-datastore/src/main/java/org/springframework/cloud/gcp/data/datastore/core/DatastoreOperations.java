@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
+import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.GqlQuery;
 import java.util.List;
 
 /**
@@ -125,17 +127,13 @@ public interface DatastoreOperations {
 
 	/**
 	 * Finds objects by using a GQL statement.
-	 * @param gql the GQL string to execute. this string can have Cloud Datastore param
-	 * tags.
-	 * @param tags the names of the tags to use
-	 * @param params the values to attach those tags, in the same order.
+	 * @param gqlQuery the GQL query to execute.
 	 * @param entityClass the type of object to retrieve.
 	 * @param <T> the type of object to retrieve.
 	 * @return a list of the objects found. If no keys could be found the list will be
 	 * empty.
 	 */
-	<T> Iterable<T> query(String gql, List<String> tags, Object[] params,
-			Class<T> entityClass);
+	<T> Iterable<T> query(GqlQuery<Entity> gqlQuery, Class<T> entityClass);
 
 	/**
 	 * Get all the entities of the given domain type.

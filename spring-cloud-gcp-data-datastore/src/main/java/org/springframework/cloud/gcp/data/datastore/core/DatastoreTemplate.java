@@ -136,12 +136,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public <T> Iterable<T> query(String gql, List<String> tags, Object[] params,
-			Class<T> entityClass) {
-		GqlQuery.Builder builder = GqlQuery.newGqlQueryBuilder(gql);
-		for(int i = 0; i < tags.size(); i++){
-			builder.setbi
-		}
+	public <T> Iterable<T> query(GqlQuery<Entity> gqlQuery, Class<T> entityClass) {
+		return convertEntities(this.datastore.run(gqlQuery), entityClass);
 	}
 
 	@Override
