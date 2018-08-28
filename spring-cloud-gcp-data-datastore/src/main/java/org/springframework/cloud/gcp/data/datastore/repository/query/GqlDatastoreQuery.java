@@ -68,7 +68,8 @@ import org.springframework.util.StringUtils;
  */
 public class GqlDatastoreQuery<T> implements RepositoryQuery {
 
-	private static final Map<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>> GQL_PARAM_BINDING_FUNC_MAP;
+	private static final Map<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>
+      GQL_PARAM_BINDING_FUNC_MAP;
 
 	// A small string that isn't used in GQL syntax
   private static String ENTITY_CLASS_NAME_BOOKEND = "|";
@@ -181,7 +182,8 @@ public class GqlDatastoreQuery<T> implements RepositoryQuery {
 			Object val = vals.get(i);
 			if (!GQL_PARAM_BINDING_FUNC_MAP.containsKey(val.getClass())) {
 				throw new DatastoreDataException(
-						"Param value for GQL annotated query is not a supported Cloud Datastore GQL param type: "
+						"Param value for GQL annotated query is not a supported Cloud "
+                + "Datastore GQL param type: "
 								+ val.getClass());
 			}
 			GQL_PARAM_BINDING_FUNC_MAP.get(val.getClass()).apply(builder)
