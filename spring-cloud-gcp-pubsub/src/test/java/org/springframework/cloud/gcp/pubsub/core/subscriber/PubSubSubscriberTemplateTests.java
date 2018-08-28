@@ -56,7 +56,6 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -69,6 +68,7 @@ import static org.mockito.Mockito.when;
  * Unit tests for {@link PubSubSubscriberTemplate}.
  *
  * @author Mike Eltsufin
+ * @author Doug Hoard
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubSubscriberTemplateTests {
@@ -185,7 +185,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testSubscribeAndAck() {
+	public void testSubscribeAndAck() throws InterruptedException, ExecutionException, TimeoutException {
 		this.pubSubSubscriberTemplate.subscribe("sub1", this.consumer);
 
 		verify(this.subscriber).startAsync();
@@ -198,14 +198,9 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(listenableFuture).isNotNull();
 
 		listenableFuture.addCallback(testListenableFutureCallback);
+		listenableFuture.get(10L, TimeUnit.SECONDS);
 
-		try {
-			listenableFuture.get(10L, TimeUnit.SECONDS);
-			assertThat(listenableFuture.isDone()).isTrue();
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e.getClass().getName() + " " + e.getMessage());
-		}
+		assertThat(listenableFuture.isDone()).isTrue();
 
 		verify(this.ackReplyConsumer).ack();
 
@@ -213,7 +208,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testSubscribeAndNack() {
+	public void testSubscribeAndNack() throws InterruptedException, ExecutionException, TimeoutException {
 		this.pubSubSubscriberTemplate.subscribe("sub1", this.consumer);
 
 		verify(this.subscriber).startAsync();
@@ -226,14 +221,9 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(listenableFuture).isNotNull();
 
 		listenableFuture.addCallback(testListenableFutureCallback);
+		listenableFuture.get(10L, TimeUnit.SECONDS);
 
-		try {
-			listenableFuture.get(10L, TimeUnit.SECONDS);
-			assertThat(listenableFuture.isDone()).isTrue();
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e.getClass().getName() + " " + e.getMessage());
-		}
+		assertThat(listenableFuture.isDone()).isTrue();
 
 		verify(this.ackReplyConsumer).nack();
 
@@ -241,7 +231,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testSubscribeConvertAndAck() {
+	public void testSubscribeConvertAndAck() throws InterruptedException, ExecutionException, TimeoutException {
 		this.pubSubSubscriberTemplate.subscribeAndConvert("sub1", this.convertedConsumer, Boolean.class);
 
 		verify(this.subscriber).startAsync();
@@ -259,14 +249,9 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(listenableFuture).isNotNull();
 
 		listenableFuture.addCallback(testListenableFutureCallback);
+		listenableFuture.get(10L, TimeUnit.SECONDS);
 
-		try {
-			listenableFuture.get(10L, TimeUnit.SECONDS);
-			assertThat(listenableFuture.isDone()).isTrue();
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e.getClass().getName() + " " + e.getMessage());
-		}
+		assertThat(listenableFuture.isDone()).isTrue();
 
 		verify(this.ackReplyConsumer).ack();
 
@@ -274,7 +259,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testSubscribeConvertAndNack() {
+	public void testSubscribeConvertAndNack() throws InterruptedException, ExecutionException, TimeoutException {
 		this.pubSubSubscriberTemplate.subscribeAndConvert("sub1", this.convertedConsumer, Boolean.class);
 
 		verify(this.subscriber).startAsync();
@@ -292,14 +277,9 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(listenableFuture).isNotNull();
 
 		listenableFuture.addCallback(testListenableFutureCallback);
+		listenableFuture.get(10L, TimeUnit.SECONDS);
 
-		try {
-			listenableFuture.get(10L, TimeUnit.SECONDS);
-			assertThat(listenableFuture.isDone()).isTrue();
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e.getClass().getName() + " " + e.getMessage());
-		}
+		assertThat(listenableFuture.isDone()).isTrue();
 
 		verify(this.ackReplyConsumer).nack();
 
@@ -307,7 +287,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testPullAndAck() {
+	public void testPullAndAck() throws InterruptedException, ExecutionException, TimeoutException {
 		List<AcknowledgeablePubsubMessage> result =
 				this.pubSubSubscriberTemplate.pull(
 						"sub2", 1, true);
@@ -327,20 +307,15 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(listenableFuture).isNotNull();
 
 		listenableFuture.addCallback(testListenableFutureCallback);
+		listenableFuture.get(10L, TimeUnit.SECONDS);
 
-		try {
-			listenableFuture.get(10L, TimeUnit.SECONDS);
-			assertThat(listenableFuture.isDone()).isTrue();
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e.getClass().getName() + " " + e.getMessage());
-		}
+		assertThat(listenableFuture.isDone()).isTrue();
 
 		assertThat(testListenableFutureCallback.getThrowable()).isNull();
 	}
 
 	@Test
-	public void testPullAndNack() {
+	public void testPullAndNack() throws InterruptedException, ExecutionException, TimeoutException {
 		List<AcknowledgeablePubsubMessage> result =
 				this.pubSubSubscriberTemplate.pull(
 						"sub2", 1, true);
@@ -360,14 +335,9 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(listenableFuture).isNotNull();
 
 		listenableFuture.addCallback(testListenableFutureCallback);
+		listenableFuture.get(10L, TimeUnit.SECONDS);
 
-		try {
-			listenableFuture.get(10L, TimeUnit.SECONDS);
-			assertThat(listenableFuture.isDone()).isTrue();
-		}
-		catch (Exception e) {
-			fail("Unexpected exception : " + e.getClass().getName() + " " + e.getMessage());
-		}
+		assertThat(listenableFuture.isDone()).isTrue();
 
 		assertThat(testListenableFutureCallback.getThrowable()).isNull();
 	}
