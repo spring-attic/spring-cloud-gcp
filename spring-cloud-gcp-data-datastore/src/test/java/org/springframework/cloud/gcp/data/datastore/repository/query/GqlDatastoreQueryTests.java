@@ -16,12 +16,11 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
-import com.google.cloud.datastore.StringValue;
-import com.google.cloud.datastore.Value;
 import java.util.Map;
 import java.util.Optional;
 
 import com.google.cloud.datastore.GqlQuery;
+import com.google.cloud.datastore.Value;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -81,7 +80,7 @@ public class GqlDatastoreQueryTests {
 
 		String gql = "SELECT * FROM "
 				+ "|org.springframework.cloud.gcp.data.datastore.repository.query"
-        + ".GqlDatastoreQueryTests$Trade|"
+				+ ".GqlDatastoreQueryTests$Trade|"
 				+ " WHERE price=#{#tag3 * -1} AND price<>#{#tag3 * -1} OR "
 				+ "price<>#{#tag4 * -1} AND " + "( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
@@ -103,10 +102,8 @@ public class GqlDatastoreQueryTests {
 
 		Parameters parameters = mock(Parameters.class);
 
-	// @formatter:off
-    Mockito.<Parameters>when(this.queryMethod.getParameters())
-        .thenReturn(parameters);
-    // @formatter:on
+		Mockito.<Parameters>when(this.queryMethod.getParameters())
+				.thenReturn(parameters);
 
 		when(parameters.getNumberOfParameters()).thenReturn(paramNames.length);
 		when(parameters.getParameter(anyInt())).thenAnswer(invocation -> {
@@ -114,9 +111,7 @@ public class GqlDatastoreQueryTests {
 			Parameter param = mock(Parameter.class);
 			when(param.getName()).thenReturn(Optional.of(paramNames[index]));
 
-		// @formatter:off
-      Mockito.<Class>when(param.getType()).thenReturn(params[index].getClass());
-      // @formatter:on;
+			Mockito.<Class>when(param.getType()).thenReturn(params[index].getClass());
 
 			return param;
 		});

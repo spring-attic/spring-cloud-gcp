@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.datastore.core;
 
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.GqlQuery;
-import java.util.List;
 
 /**
  * An interface of operations that can be done with Cloud Datastore.
@@ -31,11 +30,10 @@ public interface DatastoreOperations {
 
 	/**
 	 * Get an entity based on a id.
-	 * @param id the id of the entity. If this is actually a {@link com.google.cloud.datastore.Key}
-	 * then it will be used. Otherwise it will be attempted to be converted
-	 * to an integer or string value and it will be assumed to be a root key value with the
-	 * Kind determined by the entityClass.
-	 * param.
+	 * @param id the id of the entity. If this is actually a
+	 * {@link com.google.cloud.datastore.Key} then it will be used. Otherwise it will be
+	 * attempted to be converted to an integer or string value and it will be assumed to
+	 * be a root key value with the Kind determined by the entityClass. param.
 	 * @param entityClass the type of the entity to get.
 	 * @param <T> the class type of the entity.
 	 * @return the entity that was found with that id.
@@ -50,33 +48,32 @@ public interface DatastoreOperations {
 	<T> T save(T instance);
 
 	/**
-	 * Saves multiple instances of objects to Cloud Datastore. Behaves as update or insert.
+	 * Saves multiple instances of objects to Cloud Datastore. Behaves as update or
+	 * insert.
 	 * @param entities the objects to save.
 	 * @return the entities that were saved.
 	 */
 	<T> Iterable<T> saveAll(Iterable<T> entities);
 
 	/**
-	 * Delete an entity from Cloud Datastore. Deleting IDs that do not exist in Cloud Datastore
-	 * will result in no operation.
+	 * Delete an entity from Cloud Datastore. Deleting IDs that do not exist in Cloud
+	 * Datastore will result in no operation.
 	 * @param id the ID of the entity to delete. If this is actually a
-	 * {@link com.google.cloud.datastore.Key}
-	 * then it will be used. Otherwise it will be attempted to be converted
-	 * to an integer or string value and it will be assumed to be a root key value with the
-	 * Kind determined by the entityClass.
+	 * {@link com.google.cloud.datastore.Key} then it will be used. Otherwise it will be
+	 * attempted to be converted to an integer or string value and it will be assumed to
+	 * be a root key value with the Kind determined by the entityClass.
 	 * @param entityClass the type of the
 	 * @param <T> ths entity type
 	 */
 	<T> void deleteById(Object id, Class<T> entityClass);
 
 	/**
-	 * Delete multiple IDs from Cloud Datastore. Deleting IDs that do not exist in Cloud Datastore
-	 * will result in no operation.
+	 * Delete multiple IDs from Cloud Datastore. Deleting IDs that do not exist in Cloud
+	 * Datastore will result in no operation.
 	 * @param ids the IDs to delete. If any of these is actually a
-	 * {@link com.google.cloud.datastore.Key}
-	 * then it will be used. Otherwise it will be attempted to be converted
-	 * to an integer or string value and it will be assumed to be a root key value with the
-	 * Kind determined by the entityClass.
+	 * {@link com.google.cloud.datastore.Key} then it will be used. Otherwise it will be
+	 * attempted to be converted to an integer or string value and it will be assumed to
+	 * be a root key value with the Kind determined by the entityClass.
 	 * @param entityClass the type of the
 	 * @param <T> ths entity type
 	 */
@@ -91,8 +88,8 @@ public interface DatastoreOperations {
 	<T> void delete(T entity);
 
 	/**
-	 * Deletes multiple entities from Cloud Datastore. Deleting entities that don't exist in Cloud
-	 * Datastore will result in no operation.
+	 * Deletes multiple entities from Cloud Datastore. Deleting entities that don't exist
+	 * in Cloud Datastore will result in no operation.
 	 * @param entities the entities to delete.
 	 * @param <T> the entity type.
 	 */
@@ -114,10 +111,9 @@ public interface DatastoreOperations {
 
 	/**
 	 * Find all the entities of the given IDs. If an ID is actually a
-	 * {@link com.google.cloud.datastore.Key}
-	 * then it will be used. Otherwise it will be attempted to be converted
-	 * to an integer or string value and it will be assumed to be a root key value with the
-	 * Kind determined by the entityClass.
+	 * {@link com.google.cloud.datastore.Key} then it will be used. Otherwise it will be
+	 * attempted to be converted to an integer or string value and it will be assumed to
+	 * be a root key value with the Kind determined by the entityClass.
 	 * @param ids the IDs to search.
 	 * @param entityClass the domain type of the objects.
 	 * @param <T> the type parameter of the domain type.
@@ -140,15 +136,14 @@ public interface DatastoreOperations {
 	 * @param entityClass the domain type to get.
 	 * @param <T> the type param of the domain type.
 	 * @return the entities that were found.
- 	 */
+	 */
 	<T> Iterable<T> findAll(Class<T> entityClass);
 
 	/**
-	 * Check if the given ID belongs to an entity in Cloud Datastore. If this is actually a
-	 * {@link com.google.cloud.datastore.Key}
-	 * then it will be used. Otherwise it will be attempted to be converted
-	 * to an integer or string value and it will be assumed to be a root key value with the
-	 * Kind determined by the entityClass.
+	 * Check if the given ID belongs to an entity in Cloud Datastore. If this is actually
+	 * a {@link com.google.cloud.datastore.Key} then it will be used. Otherwise it will be
+	 * attempted to be converted to an integer or string value and it will be assumed to
+	 * be a root key value with the Kind determined by the entityClass.
 	 * @param id the ID to search for.
 	 * @param entityClass the domain type of the entities to search for.
 	 * @param <T> the type param of the domain type.

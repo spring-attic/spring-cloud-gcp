@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
-import com.google.cloud.datastore.GqlQuery;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -28,6 +27,7 @@ import java.util.stream.StreamSupport;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Entity.Builder;
+import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;

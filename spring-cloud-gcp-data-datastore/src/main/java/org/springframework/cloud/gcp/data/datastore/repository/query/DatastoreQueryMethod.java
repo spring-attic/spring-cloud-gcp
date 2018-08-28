@@ -58,20 +58,18 @@ public class DatastoreQueryMethod extends QueryMethod {
 	 * @return True if this query method has annotation that holds the query string.
 	 */
 	public boolean hasAnnotatedQuery() {
-		return Optional
-				.ofNullable(getQueryAnnotation())
-				.map(AnnotationUtils::getValue).map(it -> (String) it)
-				.filter(StringUtils::hasText).isPresent();
+		return Optional.ofNullable(getQueryAnnotation()).map(AnnotationUtils::getValue)
+				.map(it -> (String) it).filter(StringUtils::hasText).isPresent();
 	}
 
-  /**
-   * Returns the {@link Query} annotation that is applied to the method or {@code null}
-   * if none available.
-   *
-   * @return the query annotation that is applied.
-   */
-  @Nullable
-  Query getQueryAnnotation() {
-    return AnnotatedElementUtils.findMergedAnnotation(this.method, Query.class);
-  }
+	/**
+	 * Returns the {@link Query} annotation that is applied to the method or {@code null}
+	 * if none available.
+	 *
+	 * @return the query annotation that is applied.
+	 */
+	@Nullable
+	Query getQueryAnnotation() {
+		return AnnotatedElementUtils.findMergedAnnotation(this.method, Query.class);
+	}
 }

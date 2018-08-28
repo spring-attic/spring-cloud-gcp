@@ -77,17 +77,14 @@ public class DatastoreQueryLookupStrategyTests {
 
 		Parameters parameters = mock(Parameters.class);
 
-	// @formatter:off
-    Mockito.<Parameters>when(this.queryMethod.getParameters()).thenReturn(parameters);
-    // @formatter:off
+		Mockito.<Parameters>when(this.queryMethod.getParameters())
+				.thenReturn(parameters);
 
-    when(parameters.getNumberOfParameters()).thenReturn(1);
-    when(parameters.getParameter(anyInt())).thenAnswer(invocation -> {
-      Parameter param = mock(Parameter.class);
-      when(param.getName()).thenReturn(Optional.of("tag"));
-      // @formatter:off
-      Mockito.<Class>when(param.getType()).thenReturn(Object.class);
-      // @formatter:on
+		when(parameters.getNumberOfParameters()).thenReturn(1);
+		when(parameters.getParameter(anyInt())).thenAnswer(invocation -> {
+			Parameter param = mock(Parameter.class);
+			when(param.getName()).thenReturn(Optional.of("tag"));
+			Mockito.<Class>when(param.getType()).thenReturn(Object.class);
 			return param;
 		});
 
