@@ -178,7 +178,7 @@ public interface SpannerOperations {
 	void update(Object object);
 
 	/**
-	 * Update objectsin batch.
+	 * Update objects in batch.
 	 * @param objects the objects to update.
 	 */
 	void updateAll(List objects);
@@ -207,7 +207,7 @@ public interface SpannerOperations {
 	void upsert(Object object);
 
 	/**
-	 * Update or insert an objects into storage in batch.
+	 * Update or insert objects into storage in batch.
 	 * @param objects the objects to update or insert.
 	 */
 	void upsertAll(List objects);
