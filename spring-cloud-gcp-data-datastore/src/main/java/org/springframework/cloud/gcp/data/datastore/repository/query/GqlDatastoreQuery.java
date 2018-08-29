@@ -64,14 +64,23 @@ public class GqlDatastoreQuery<T> implements RepositoryQuery {
 				.<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>builder()
 				.put(Cursor.class, builder -> (s, o) -> builder.setBinding(s, (Cursor) o))
 				.put(String.class, builder -> (s, o) -> builder.setBinding(s, (String) o))
-				.put(Long.class, builder -> (s, o) -> builder.setBinding(s, (long) o))
-				.put(Double.class, builder -> (s, o) -> builder.setBinding(s, (double) o))
+				.put(String[].class, builder -> (s, o) -> builder.setBinding(s, (String[]) o))
+				.put(Long.class, builder -> (s, o) -> builder.setBinding(s, (Long) o))
+				.put(long[].class, builder -> (s, o) -> builder.setBinding(s, (long[]) o))
+				.put(Double.class, builder -> (s, o) -> builder.setBinding(s, (Double) o))
+				.put(double[].class, builder -> (s, o) -> builder.setBinding(s, (double[]) o))
 				.put(Boolean.class,
-						builder -> (s, o) -> builder.setBinding(s, (boolean) o))
+						builder -> (s, o) -> builder.setBinding(s, (Boolean) o))
+				.put(boolean[].class,
+						builder -> (s, o) -> builder.setBinding(s, (boolean[]) o))
 				.put(Timestamp.class,
 						builder -> (s, o) -> builder.setBinding(s, (Timestamp) o))
+				.put(Timestamp[].class,
+						builder -> (s, o) -> builder.setBinding(s, (Timestamp[]) o))
 				.put(Key.class, builder -> (s, o) -> builder.setBinding(s, (Key) o))
+				.put(Key[].class, builder -> (s, o) -> builder.setBinding(s, (Key[]) o))
 				.put(Blob.class, builder -> (s, o) -> builder.setBinding(s, (Blob) o))
+				.put(Blob[].class, builder -> (s, o) -> builder.setBinding(s, (Blob[]) o))
 				.build();
 	}
 

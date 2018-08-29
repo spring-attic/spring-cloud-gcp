@@ -16,8 +16,9 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
-import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;

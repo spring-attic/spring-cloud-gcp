@@ -16,10 +16,13 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.google.cloud.datastore.DoubleValue;
 import com.google.cloud.datastore.GqlQuery;
+import com.google.cloud.datastore.StringValue;
 import com.google.cloud.datastore.Value;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,8 +93,9 @@ public class GqlDatastoreQueryTests {
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3";
 
-		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, "blahblah",
-				1.11, 2.22 };
+		Object[] params = new Object[] { "BUY", "abcd",
+				new String[] { "abc123", "abc321" }, new double[] { 8.88, 9.99 }, 3.33,
+				"blahblah", 1.11, 2.22 };
 
 		String[] paramNames = new String[] { "tag0", "tag1", "tag2", "tag3", "tag4",
 				"tag5", "tag6", "tag7" };
@@ -130,8 +134,16 @@ public class GqlDatastoreQueryTests {
 
 			assertEquals(params[0], paramMap.get("tag0").get());
 			assertEquals(params[1], paramMap.get("tag1").get());
-			assertEquals(params[2], paramMap.get("tag2").get());
-			assertEquals(params[3], paramMap.get("tag3").get());
+			assertEquals(((String[]) params[2])[0],
+					((StringValue) (((List) paramMap.get("tag2").get()).get(0))).get());
+			assertEquals(((String[]) params[2])[1],
+					((StringValue) (((List) paramMap.get("tag2").get()).get(1))).get());
+			assertEquals(((double[]) params[3])[0],
+					((DoubleValue) (((List) paramMap.get("tag3").get()).get(0))).get(),
+					0.00001);
+			assertEquals(((double[]) params[3])[1],
+					((DoubleValue) (((List) paramMap.get("tag3").get()).get(1))).get(),
+					0.00001);
 			assertEquals(params[4], paramMap.get("tag4").get());
 			assertEquals(params[5], paramMap.get("tag5").get());
 			assertEquals(params[6], paramMap.get("tag6").get());
