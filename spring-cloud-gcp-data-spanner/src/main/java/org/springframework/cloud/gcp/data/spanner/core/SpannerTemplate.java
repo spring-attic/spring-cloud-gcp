@@ -214,7 +214,7 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public void insertAll(Iterable objects) {
 		applyMutations(
-				getListCollectionFunction(this.mutationFactory::insert).apply(objects));
+				getListCollectionFunction(objects, this.mutationFactory::insert));
 	}
 
 	@Override
@@ -225,8 +225,8 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public void updateAll(Iterable objects) {
 		applyMutations(
-				getListCollectionFunction(x -> this.mutationFactory.update(x, null))
-						.apply(objects));
+				getListCollectionFunction(objects,
+						x -> this.mutationFactory.update(x, null)));
 	}
 
 	@Override
@@ -250,8 +250,8 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public void upsertAll(Iterable objects) {
 		applyMutations(
-				getListCollectionFunction(x -> this.mutationFactory.upsert(x, null))
-						.apply(objects));
+				getListCollectionFunction(objects,
+						x -> this.mutationFactory.upsert(x, null)));
 	}
 
 	@Override
@@ -465,9 +465,9 @@ public class SpannerTemplate implements SpannerOperations {
 				});
 	}
 
-	private Function<Iterable, Collection<Mutation>> getListCollectionFunction(
+	private Collection<Mutation> getListCollectionFunction(Iterable it,
 			Function<Object, Collection<Mutation>> individualEntityMutationFunc) {
-		return it -> (Collection<Mutation>) StreamSupport.stream(it.spliterator(), false)
+		return (Collection<Mutation>) StreamSupport.stream(it.spliterator(), false)
 				.flatMap(x -> individualEntityMutationFunc.apply(x).stream())
 				.collect(Collectors.toList());
 	}
