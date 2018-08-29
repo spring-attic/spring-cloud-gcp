@@ -401,6 +401,16 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
+	public void deleteAllObjectTest() {
+		Mutation mutation = Mutation.delete("custom_test_table", Key.of("key"));
+		TestEntity entity = new TestEntity();
+		when(this.mutationFactory.delete(entity)).thenReturn(mutation);
+		this.spannerTemplate.deleteAll(ImmutableList.of(entity, entity, entity));
+		verify(this.databaseClient, times(1))
+				.write(eq(ImmutableList.of(mutation, mutation, mutation)));
+	}
+
+	@Test
 	public void deleteEntitiesTest() {
 		Mutation mutation = Mutation.delete("custom_test_table", Key.of("key"));
 		Iterable<TestEntity> entities = new ArrayList<TestEntity>();

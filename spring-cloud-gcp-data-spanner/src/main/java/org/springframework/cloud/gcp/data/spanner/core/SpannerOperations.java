@@ -145,6 +145,12 @@ public interface SpannerOperations {
 	void delete(Object object);
 
 	/**
+	 * Deletes objects from storage in a batch.
+	 * @param objects the objects to delete from storage.
+	 */
+	void deleteAll(Iterable objects);
+
+	/**
 	 * Deletes multiple objects from storage.
 	 * @param entityClass the type of the object to delete.
 	 * @param objects the objects to delete.
@@ -169,7 +175,7 @@ public interface SpannerOperations {
 	 * Insert objects into storage in batch.
 	 * @param objects the objects to insert.
 	 */
-	void insertAll(List objects);
+	void insertAll(Iterable objects);
 
 	/**
 	 * Update an object already in storage.
@@ -181,7 +187,7 @@ public interface SpannerOperations {
 	 * Update objects in batch.
 	 * @param objects the objects to update.
 	 */
-	void updateAll(List objects);
+	void updateAll(Iterable objects);
 
 	/**
 	 * Update an object in storage.
@@ -210,7 +216,7 @@ public interface SpannerOperations {
 	 * Update or insert objects into storage in batch.
 	 * @param objects the objects to update or insert.
 	 */
-	void upsertAll(List objects);
+	void upsertAll(Iterable objects);
 
 	/**
 	 * Update or insert an object into storage.

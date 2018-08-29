@@ -27,6 +27,7 @@ import java.util.StringJoiner;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 
@@ -212,7 +213,7 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public void insertAll(List objects) {
+	public void insertAll(Iterable objects) {
 		applyMutationsUsingEntity(getListCollectionFunction(this.mutationFactory::insert),
 				objects);
 	}
@@ -223,7 +224,7 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public void updateAll(List objects) {
+	public void updateAll(Iterable objects) {
 		applyMutationsUsingEntity(
 				getListCollectionFunction(x -> this.mutationFactory.update(x, null)),
 				objects);
@@ -247,7 +248,7 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public void upsertAll(List objects) {
+	public void upsertAll(Iterable objects) {
 		applyMutationsUsingEntity(
 				getListCollectionFunction(x -> this.mutationFactory.upsert(x, null)),
 				objects);
@@ -268,6 +269,13 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public void delete(Object entity) {
 		applyMutationUsingEntity(this.mutationFactory::delete, entity);
+	}
+
+	@Override
+	public void deleteAll(Iterable objects) {
+		this.databaseClient.write(
+				(Iterable<Mutation>) StreamSupport.stream(objects.spliterator(), false)
+						.map(this.mutationFactory::delete).collect(Collectors.toList()));
 	}
 
 	@Override
@@ -476,9 +484,9 @@ public class SpannerTemplate implements SpannerOperations {
 				});
 	}
 
-	private Function<List, Collection<Mutation>> getListCollectionFunction(
+	private Function<Iterable, Collection<Mutation>> getListCollectionFunction(
 			Function<Object, Collection<Mutation>> individualEntityMutationFunc) {
-		return list -> (Collection<Mutation>) list.stream()
+		return it -> (Collection<Mutation>) StreamSupport.stream(it.spliterator(), false)
 				.flatMap(x -> individualEntityMutationFunc.apply(x).stream())
 				.collect(Collectors.toList());
 	}
