@@ -407,13 +407,6 @@ public interface TraderRepository extends CrudRepository<Trader, String> {
 }
 ----
 
-An implementation of this method is generated based on the annotated GQL query. Spring SpEL
-expressions can also be used, such as `WHERE price=#{#tag3 * -1 + 999}` where a parameter `tag3` is provided
-in the method signature as `@Param("tag3") double p`.
-
-If SpEL expressions are used in the `@Entity` annotation of the domain type, the Kind name can be resolved
-using `|<fully-qualified-class-name>|` in the query, such as `SELECT * FROM |com.example.Trader|`.
-
 ===== Query methods with named queries properties
 
 You can also specify queries with Cloud Datastore parameter tags and SpEL expressions in properties files.
