@@ -54,9 +54,8 @@ class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
 	}
 
 	@Override
-	protected <T, U> void applyMutationsTwoArgs(BiFunction<T, U, Collection<Mutation>> function,
-			T arg1, U arg2) {
-		this.transactionContext.buffer(function.apply(arg1, arg2));
+	protected void applyMutations(Collection<Mutation> mutations) {
+		this.transactionContext.buffer(mutations);
 	}
 
 	@Override
