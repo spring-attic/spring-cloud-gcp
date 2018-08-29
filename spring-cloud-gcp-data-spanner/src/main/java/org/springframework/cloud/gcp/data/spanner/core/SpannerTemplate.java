@@ -214,7 +214,7 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public void insertAll(Iterable objects) {
 		applyMutations(
-				getListCollectionFunction(objects, this.mutationFactory::insert));
+				getMutationsForMultipleObjects(objects, this.mutationFactory::insert));
 	}
 
 	@Override
@@ -225,7 +225,7 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public void updateAll(Iterable objects) {
 		applyMutations(
-				getListCollectionFunction(objects,
+				getMutationsForMultipleObjects(objects,
 						x -> this.mutationFactory.update(x, null)));
 	}
 
@@ -250,7 +250,7 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public void upsertAll(Iterable objects) {
 		applyMutations(
-				getListCollectionFunction(objects,
+				getMutationsForMultipleObjects(objects,
 						x -> this.mutationFactory.upsert(x, null)));
 	}
 
@@ -465,7 +465,7 @@ public class SpannerTemplate implements SpannerOperations {
 				});
 	}
 
-	private Collection<Mutation> getListCollectionFunction(Iterable it,
+	private Collection<Mutation> getMutationsForMultipleObjects(Iterable it,
 			Function<Object, Collection<Mutation>> individualEntityMutationFunc) {
 		return (Collection<Mutation>) StreamSupport.stream(it.spliterator(), false)
 				.flatMap(x -> individualEntityMutationFunc.apply(x).stream())
