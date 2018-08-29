@@ -27,8 +27,7 @@ import org.springframework.data.repository.query.Param;
  */
 public interface TestEntityRepository extends DatastoreRepository<TestEntity, String> {
 
-	@Query("select * from |org.springframework.cloud.gcp.data.datastore.it.TestEntity| "
-			+ "where id = @id_val")
+	@Query("select * from  test_entities_ci where id = @id_val")
 	List<TestEntity> findEntitiesWithCustomQuery(@Param("id_val") String id);
 
 }

@@ -79,17 +79,13 @@ public class GqlDatastoreQueryTests {
 	public void compoundNameConventionTest() {
 
 		String gql = "SELECT * FROM "
-				+ "|org.springframework.cloud.gcp.data.datastore.repository.query"
-				+ ".GqlDatastoreQueryTests$Trade|"
-				+ " WHERE price=#{#tag3 * -1} AND price<>#{#tag3 * -1} OR "
-				+ "price<>#{#tag4 * -1} AND " + "( action=@tag0 AND ticker=@tag1 ) OR "
+				+ "trades" + " WHERE ( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3;";
 
-		String entityResolvedGql = "SELECT * FROM " + "trades"
-				+ " WHERE price=@SpELtag1 AND price<>@SpELtag1 OR price<>@SpELtag2 AND "
-				+ "( action=@tag0 AND ticker=@tag1 ) OR "
+		String entityResolvedGql = "SELECT * FROM trades"
+				+ " WHERE ( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3";
@@ -140,8 +136,6 @@ public class GqlDatastoreQueryTests {
 			assertEquals(params[5], paramMap.get("tag5").get());
 			assertEquals(params[6], paramMap.get("tag6").get());
 			assertEquals(params[7], paramMap.get("tag7").get());
-			assertEquals(-8.88, (double) paramMap.get("SpELtag1").get(), 0.00001);
-			assertEquals(-3.33, (double) paramMap.get("SpELtag2").get(), 0.00001);
 
 			return null;
 		}).when(this.datastoreTemplate).query(any(), eq(Trade.class));

@@ -17,15 +17,12 @@
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
 import java.lang.reflect.Method;
-import java.util.Optional;
 
 import org.springframework.core.annotation.AnnotatedElementUtils;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.lang.Nullable;
-import org.springframework.util.StringUtils;
 
 /**
  * A metadata class for Query Methods for Spring Data Cloud Datastore.
@@ -46,7 +43,7 @@ public class DatastoreQueryMethod extends QueryMethod {
 	 * @param metadata must not be {@literal null}.
 	 * @param factory must not be {@literal null}.
 	 */
-	public DatastoreQueryMethod(Method method, RepositoryMetadata metadata,
+	DatastoreQueryMethod(Method method, RepositoryMetadata metadata,
 			ProjectionFactory factory) {
 		super(method, metadata, factory);
 		this.method = method;
@@ -57,9 +54,8 @@ public class DatastoreQueryMethod extends QueryMethod {
 	 *
 	 * @return True if this query method has annotation that holds the query string.
 	 */
-	public boolean hasAnnotatedQuery() {
-		return Optional.ofNullable(getQueryAnnotation()).map(AnnotationUtils::getValue)
-				.map(it -> (String) it).filter(StringUtils::hasText).isPresent();
+	boolean hasAnnotatedQuery() {
+		return getQueryAnnotation() != null;
 	}
 
 	/**

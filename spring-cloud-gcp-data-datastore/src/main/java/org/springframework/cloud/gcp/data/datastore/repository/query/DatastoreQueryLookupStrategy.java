@@ -90,7 +90,7 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 		}
 
 		throw new DatastoreDataException(
-				"Only GQL-annotated and properties-file GQL Query Methods are currently supported.");
+				"Name-based query methods are not supported yet.");
 	}
 
 	<T> GqlDatastoreQuery<T> createGqlDatastoreQuery(Class<T> entityType,
