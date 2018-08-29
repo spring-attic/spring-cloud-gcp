@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.lang.reflect.Method;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
@@ -93,6 +94,7 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 				"Name-based query methods are not supported yet.");
 	}
 
+	@VisibleForTesting
 	<T> GqlDatastoreQuery<T> createGqlDatastoreQuery(Class<T> entityType,
 			QueryMethod queryMethod, String gql) {
 		return new GqlDatastoreQuery<>(entityType, queryMethod, this.datastoreOperations,
