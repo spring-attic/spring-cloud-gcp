@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.Collection;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.google.cloud.Timestamp;
@@ -32,8 +31,8 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 
 /**
- * A {@link SpannerTemplate} that performs all operations in a single transaction.
- * This template is not intended for the user to directly instantiate.
+ * A {@link SpannerTemplate} that performs all operations in a single transaction. This
+ * template is not intended for the user to directly instantiate.
  *
  * @author Chengyuan Zhao
  *
@@ -44,7 +43,8 @@ class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
 	private TransactionContext transactionContext;
 
 	ReadWriteTransactionSpannerTemplate(DatabaseClient databaseClient,
-			SpannerMappingContext mappingContext, SpannerEntityProcessor spannerEntityProcessor,
+			SpannerMappingContext mappingContext,
+			SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMutationFactory spannerMutationFactory,
 			SpannerSchemaUtils spannerSchemaUtils,
 			TransactionContext transactionContext) {
@@ -54,9 +54,8 @@ class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
 	}
 
 	@Override
-	protected <T, U> void applyMutationsTwoArgs(BiFunction<T, U, Collection<Mutation>> function,
-			T arg1, U arg2) {
-		this.transactionContext.buffer(function.apply(arg1, arg2));
+	protected void applyMutations(Collection<Mutation> mutations) {
+		this.transactionContext.buffer(mutations);
 	}
 
 	@Override
@@ -73,14 +72,16 @@ class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
 
 	@Override
 	public <T> T performReadWriteTransaction(Function<SpannerTemplate, T> operations) {
-		throw new SpannerDataException("A read-write transaction is already under execution. "
-				+ "Opening sub-transactions is not supported!");
+		throw new SpannerDataException(
+				"A read-write transaction is already under execution. "
+						+ "Opening sub-transactions is not supported!");
 	}
 
 	@Override
 	public <T> T performReadOnlyTransaction(Function<SpannerTemplate, T> operations,
 			SpannerReadOptions readOptions) {
-		throw new SpannerDataException("A read-write transaction is already under execution. "
-				+ "Opening sub-transactions is not supported!");
+		throw new SpannerDataException(
+				"A read-write transaction is already under execution. "
+						+ "Opening sub-transactions is not supported!");
 	}
 }

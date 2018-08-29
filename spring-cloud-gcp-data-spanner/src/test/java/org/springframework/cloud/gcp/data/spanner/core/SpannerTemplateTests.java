@@ -269,6 +269,18 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
+	public void insertAllTest() {
+		Mutation mutation = Mutation.newInsertOrUpdateBuilder("custom_test_table")
+				.build();
+		TestEntity entity = new TestEntity();
+		when(this.mutationFactory.insert(same(entity)))
+				.thenReturn(Collections.singletonList(mutation));
+		this.spannerTemplate.insertAll(ImmutableList.of(entity, entity, entity));
+		verify(this.databaseClient, times(1))
+				.write(eq(ImmutableList.of(mutation, mutation, mutation)));
+	}
+
+	@Test
 	public void updateTest() {
 		Mutation mutation = Mutation.newUpdateBuilder("custom_test_table").build();
 		TestEntity entity = new TestEntity();
@@ -277,6 +289,18 @@ public class SpannerTemplateTests {
 		this.spannerTemplate.update(entity);
 		verify(this.databaseClient, times(1))
 				.write(eq(Collections.singletonList(mutation)));
+	}
+
+	@Test
+	public void updateAllTest() {
+		Mutation mutation = Mutation.newInsertOrUpdateBuilder("custom_test_table")
+				.build();
+		TestEntity entity = new TestEntity();
+		when(this.mutationFactory.update(same(entity), isNull()))
+				.thenReturn(Collections.singletonList(mutation));
+		this.spannerTemplate.updateAll(ImmutableList.of(entity, entity, entity));
+		verify(this.databaseClient, times(1))
+				.write(eq(ImmutableList.of(mutation, mutation, mutation)));
 	}
 
 	@Test
@@ -318,6 +342,18 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
+	public void upsertAllTest() {
+		Mutation mutation = Mutation.newInsertOrUpdateBuilder("custom_test_table")
+				.build();
+		TestEntity entity = new TestEntity();
+		when(this.mutationFactory.upsert(same(entity), isNull()))
+				.thenReturn(Collections.singletonList(mutation));
+		this.spannerTemplate.upsertAll(ImmutableList.of(entity, entity, entity));
+		verify(this.databaseClient, times(1))
+				.write(eq(ImmutableList.of(mutation, mutation, mutation)));
+	}
+
+	@Test
 	public void upsertColumnsArrayTest() {
 		Mutation mutation = Mutation.newInsertOrUpdateBuilder("custom_test_table")
 				.build();
@@ -351,7 +387,7 @@ public class SpannerTemplateTests {
 				.thenReturn(mutation);
 		this.spannerTemplate.delete(TestEntity.class, key);
 		verify(this.databaseClient, times(1))
-				.write(eq(Collections.singleton(mutation)));
+				.write(eq(Collections.singletonList(mutation)));
 	}
 
 	@Test
@@ -361,18 +397,17 @@ public class SpannerTemplateTests {
 		when(this.mutationFactory.delete(entity)).thenReturn(mutation);
 		this.spannerTemplate.delete(entity);
 		verify(this.databaseClient, times(1))
-				.write(eq(Collections.singleton(mutation)));
+				.write(eq(Collections.singletonList(mutation)));
 	}
 
 	@Test
-	public void deleteEntitiesTest() {
+	public void deleteAllObjectTest() {
 		Mutation mutation = Mutation.delete("custom_test_table", Key.of("key"));
-		Iterable<TestEntity> entities = new ArrayList<TestEntity>();
-		when(this.mutationFactory.delete(eq(TestEntity.class), same(entities)))
-				.thenReturn(mutation);
-		this.spannerTemplate.delete(TestEntity.class, entities);
+		TestEntity entity = new TestEntity();
+		when(this.mutationFactory.delete(entity)).thenReturn(mutation);
+		this.spannerTemplate.deleteAll(ImmutableList.of(entity, entity, entity));
 		verify(this.databaseClient, times(1))
-				.write(eq(Collections.singleton(mutation)));
+				.write(eq(ImmutableList.of(mutation, mutation, mutation)));
 	}
 
 	@Test
@@ -384,7 +419,7 @@ public class SpannerTemplateTests {
 				.thenReturn(mutation);
 		this.spannerTemplate.delete(TestEntity.class, keys);
 		verify(this.databaseClient, times(1))
-				.write(eq(Collections.singleton(mutation)));
+				.write(eq(Collections.singletonList(mutation)));
 	}
 
 	@Test
