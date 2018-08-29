@@ -120,7 +120,11 @@ public class DefaultDatastoreEntityConverterTests {
 	@Test
 	public void testWrongTypeReadException() {
 		this.thrown.expect(DatastoreDataException.class);
-		this.thrown.expectMessage("Field not found: durationField");
+		this.thrown.expectMessage(
+				"Unable to read " +
+						"org.springframework.cloud.gcp.data.datastore.core.convert.TestDatastoreItem entity");
+		this.thrown.expectMessage("Unable to read property boolField");
+		this.thrown.expectMessage("Unable to convert class java.lang.Long to class java.lang.Boolean");
 
 		Entity entity = getEntityBuilder()
 				.set("stringField", "string value")
@@ -134,6 +138,7 @@ public class DefaultDatastoreEntityConverterTests {
 
 	@Test
 	public void writeTest() {
+		byte[] bytesForBlob = { 1, 2, 3 };
 		byte[] bytes = { 1, 2, 3 };
 		TestDatastoreItem item = new TestDatastoreItem();
 		item.setDurationField(Duration.ofDays(1));
@@ -143,9 +148,10 @@ public class DefaultDatastoreEntityConverterTests {
 		item.setLongField(123L);
 		item.setLatLngField(LatLng.of(10, 20));
 		item.setTimestampField(Timestamp.ofTimeSecondsAndNanos(30, 40));
-		item.setBlobField(Blob.copyFrom(bytes));
+		item.setBlobField(Blob.copyFrom(bytesForBlob));
 		item.setIntField(99);
 		item.setEnumField(TestDatastoreItem.Color.BLACK);
+		item.setByteArrayField(bytes);
 
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
@@ -166,9 +172,11 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(entity.getTimestamp("timestampField")).as("validate timestamp field")
 				.isEqualTo(Timestamp.ofTimeSecondsAndNanos(30, 40));
 		assertThat(entity.getBlob("blobField")).as("validate blob field")
-				.isEqualTo(Blob.copyFrom(bytes));
+				.isEqualTo(Blob.copyFrom(bytesForBlob));
 		assertThat(entity.getLong("intField")).as("validate int field").isEqualTo(99L);
 		assertThat(entity.getString("enumField")).as("validate enum field").isEqualTo("BLACK");
+		assertThat(entity.getBlob("byteArrayField")).as("validate blob field")
+				.isEqualTo(Blob.copyFrom(bytes));
 	}
 
 	@Test
@@ -197,13 +205,14 @@ public class DefaultDatastoreEntityConverterTests {
 	@Test
 	public void testUnsupportedTypeWriteException() {
 		this.thrown.expect(DatastoreDataException.class);
-		this.thrown.expectMessage("Unable to convert property unsupportedField " +
-				"(class org.springframework.cloud.gcp.data.datastore.core.convert." +
-				"TestDatastoreItemUnsupportedFields$UnsupportedType) to Datastore supported type.");
+		this.thrown.expectMessage("Unable to write testItemUnsupportedFields.unsupportedField");
+		this.thrown.expectMessage("Unable to convert class " +
+				"org.springframework.cloud.gcp.data.datastore.core.convert." +
+				"TestItemUnsupportedFields$NewType to Datastore supported type.");
 
-		TestDatastoreItemUnsupportedFields item = new TestDatastoreItemUnsupportedFields();
+		TestItemUnsupportedFields item = new TestItemUnsupportedFields();
 		item.setStringField("string value");
-		item.setUnsupportedField(new TestDatastoreItemUnsupportedFields.UnsupportedType(true));
+		item.setUnsupportedField(new TestItemUnsupportedFields.NewType(true));
 
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
@@ -213,25 +222,15 @@ public class DefaultDatastoreEntityConverterTests {
 
 	@Test
 	public void testUnsupportedTypeWrite() {
-		TestDatastoreItemUnsupportedFields item = new TestDatastoreItemUnsupportedFields();
+		TestItemUnsupportedFields item = new TestItemUnsupportedFields();
 		item.setStringField("string value");
-		item.setUnsupportedField(new TestDatastoreItemUnsupportedFields.UnsupportedType(true));
+		item.setUnsupportedField(new TestItemUnsupportedFields.NewType(true));
 
 		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(
 				new DatastoreMappingContext(), new TwoStepsConversions(new DatastoreCustomConversions(
 				Arrays.asList(
-						new Converter<Integer, TestDatastoreItemUnsupportedFields.UnsupportedType>() {
-							@Override
-							public TestDatastoreItemUnsupportedFields.UnsupportedType convert(Integer source) {
-								return new TestDatastoreItemUnsupportedFields.UnsupportedType(source == 1);
-							}
-						},
-						new Converter<TestDatastoreItemUnsupportedFields.UnsupportedType, Integer>() {
-							@Override
-							public Integer convert(TestDatastoreItemUnsupportedFields.UnsupportedType source) {
-								return source.isVal() ? 1 : 0;
-							}
-						}
+						getIntegerToNewTypeConverter(),
+						getNewTypeToIntegerConverter()
 				))));
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -242,8 +241,8 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(entity.getString("stringField")).as("validate string field")
 				.isEqualTo("string value");
 
-		TestDatastoreItemUnsupportedFields readItem =
-				entityConverter.read(TestDatastoreItemUnsupportedFields.class, entity);
+		TestItemUnsupportedFields readItem =
+				entityConverter.read(TestItemUnsupportedFields.class, entity);
 
 		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
 	}
@@ -251,6 +250,8 @@ public class DefaultDatastoreEntityConverterTests {
 	@Test
 	public void testCollectionFieldsUnsupportedCollection() {
 		this.thrown.expect(DatastoreDataException.class);
+		this.thrown.expectMessage("Unable to read " +
+				"org.springframework.cloud.gcp.data.datastore.core.convert.TestDatastoreItemCollections entity;");
 		this.thrown.expectMessage("Unable to read property doubleSet;");
 		this.thrown.expectMessage(
 				"Failed to convert from type [java.util.ArrayList<?>] " +
@@ -259,7 +260,7 @@ public class DefaultDatastoreEntityConverterTests {
 		TestDatastoreItemCollections item = new TestDatastoreItemCollections(
 				Arrays.asList(1, 2),
 				ImmutableSet.of(3.14, 2.71),
-				new String[] { "abc", "def" });
+				new String[] { "abc", "def" }, new boolean[] {true, false});
 
 		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
 
@@ -276,7 +277,7 @@ public class DefaultDatastoreEntityConverterTests {
 				new TestDatastoreItemCollections(
 						Arrays.asList(1, 2),
 						ImmutableSet.of(3.14, 2.71),
-						new String[]{"abc", "def"});
+						new String[]{"abc", "def"}, new boolean[] {true, false});
 
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(
@@ -318,7 +319,7 @@ public class DefaultDatastoreEntityConverterTests {
 				new TestDatastoreItemCollections(
 						Arrays.asList(1, 2),
 						null,
-						null);
+						null, new boolean[] {true, false});
 
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
@@ -349,11 +350,12 @@ public class DefaultDatastoreEntityConverterTests {
 	@Test
 	public void testCollectionFieldsUnsupported() {
 		this.thrown.expect(DatastoreDataException.class);
-		this.thrown.expectMessage("nable to convert elements of property unsupportedElts " +
-				"(class org.springframework.cloud.gcp.data.datastore.core.convert." +
-				"TestDatastoreItemUnsupportedFields$UnsupportedType) to Datastore supported type.");
+		this.thrown.expectMessage("Unable to write collectionOfUnsupportedTypes.unsupportedElts");
+		this.thrown.expectMessage("Unable to convert " +
+						"class org.springframework.cloud.gcp.data.datastore.core.convert." +
+						"TestItemUnsupportedFields$NewType to Datastore supported type.");
 
-		TestDatastoreItemUnsupportedFields.CollectionOfUnsupportedTypes item = getCollectionOfUnsupportedTypesItem();
+		TestItemUnsupportedFields.CollectionOfUnsupportedTypes item = getCollectionOfUnsupportedTypesItem();
 
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
@@ -364,17 +366,12 @@ public class DefaultDatastoreEntityConverterTests {
 
 	@Test
 	public void testCollectionFieldsUnsupportedWriteOnly() {
-		TestDatastoreItemUnsupportedFields.CollectionOfUnsupportedTypes item = getCollectionOfUnsupportedTypesItem();
+		TestItemUnsupportedFields.CollectionOfUnsupportedTypes item = getCollectionOfUnsupportedTypesItem();
 
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
 						new TwoStepsConversions(new DatastoreCustomConversions(Collections.singletonList(
-								new Converter<TestDatastoreItemUnsupportedFields.UnsupportedType, Integer>() {
-									@Override
-									public Integer convert(TestDatastoreItemUnsupportedFields.UnsupportedType source) {
-										return source.isVal() ? 1 : 0;
-									}
-								}))));
+								getNewTypeToIntegerConverter()))));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -388,53 +385,40 @@ public class DefaultDatastoreEntityConverterTests {
 	@Test
 	public void testCollectionFieldsUnsupportedWriteReadException() {
 		this.thrown.expect(DatastoreDataException.class);
-		this.thrown.expectMessage("Unable to read an element of property unsupportedElts " +
-				"(class org.springframework.cloud.gcp.data.datastore.core.convert." +
-				"TestDatastoreItemUnsupportedFields$UnsupportedType can't be converted to class java.lang.Long)");
+		this.thrown.expectMessage(
+				"Unable to read org.springframework.cloud.gcp.data.datastore.core.convert." +
+						"TestItemUnsupportedFields$CollectionOfUnsupportedTypes entity");
+		this.thrown.expectMessage("Unable to read property unsupportedElts");
+		this.thrown.expectMessage("Unable process elements of a collection");
 		this.thrown.expectMessage(
 				"No converter found capable of converting from type [java.lang.Integer] " +
 				"to type [org.springframework.cloud.gcp.data.datastore.core.convert." +
-				"TestDatastoreItemUnsupportedFields$UnsupportedType]");
+				"TestItemUnsupportedFields$NewType]");
 
-		TestDatastoreItemUnsupportedFields.CollectionOfUnsupportedTypes item = getCollectionOfUnsupportedTypesItem();
+		TestItemUnsupportedFields.CollectionOfUnsupportedTypes item = getCollectionOfUnsupportedTypesItem();
 
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
 						new TwoStepsConversions(new DatastoreCustomConversions(Collections.singletonList(
-								new Converter<TestDatastoreItemUnsupportedFields.UnsupportedType, Integer>() {
-									@Override
-									public Integer convert(TestDatastoreItemUnsupportedFields.UnsupportedType source) {
-										return source.isVal() ? 1 : 0;
-									}
-								}
+								getNewTypeToIntegerConverter()
 						))));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 		Entity entity = builder.build();
 
-		entityConverter.read(TestDatastoreItemUnsupportedFields.CollectionOfUnsupportedTypes.class, entity);
+		entityConverter.read(TestItemUnsupportedFields.CollectionOfUnsupportedTypes.class, entity);
 	}
 
 	@Test
 	public void testCollectionFieldsUnsupportedWriteRead() {
-		TestDatastoreItemUnsupportedFields.CollectionOfUnsupportedTypes item = getCollectionOfUnsupportedTypesItem();
+		TestItemUnsupportedFields.CollectionOfUnsupportedTypes item = getCollectionOfUnsupportedTypesItem();
 
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
 						new TwoStepsConversions(new DatastoreCustomConversions(Arrays.asList(
-								new Converter<Integer, TestDatastoreItemUnsupportedFields.UnsupportedType>() {
-									@Override
-									public TestDatastoreItemUnsupportedFields.UnsupportedType convert(Integer source) {
-										return new TestDatastoreItemUnsupportedFields.UnsupportedType(source == 1);
-									}
-								},
-								new Converter<TestDatastoreItemUnsupportedFields.UnsupportedType, Integer>() {
-									@Override
-									public Integer convert(TestDatastoreItemUnsupportedFields.UnsupportedType source) {
-										return source.isVal() ? 1 : 0;
-									}
-								}
+								getIntegerToNewTypeConverter(),
+								getNewTypeToIntegerConverter()
 						))));
 
 		Entity.Builder builder = getEntityBuilder();
@@ -445,25 +429,44 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(intList.stream().map(Value::get).collect(Collectors.toList()))
 				.as("validate long list values").isEqualTo(Arrays.asList(1L, 0L));
 
-		TestDatastoreItemUnsupportedFields.CollectionOfUnsupportedTypes read =
-				entityConverter.read(TestDatastoreItemUnsupportedFields.CollectionOfUnsupportedTypes.class, entity);
+		TestItemUnsupportedFields.CollectionOfUnsupportedTypes read =
+				entityConverter.read(TestItemUnsupportedFields.CollectionOfUnsupportedTypes.class, entity);
 
 		assertThat(read.equals(item)).as("read object should be equal to original").isTrue();
 
 	}
 
-	private TestDatastoreItemUnsupportedFields.CollectionOfUnsupportedTypes getCollectionOfUnsupportedTypesItem() {
-		TestDatastoreItemUnsupportedFields.CollectionOfUnsupportedTypes item =
-				new TestDatastoreItemUnsupportedFields.CollectionOfUnsupportedTypes();
+	private TestItemUnsupportedFields.CollectionOfUnsupportedTypes getCollectionOfUnsupportedTypesItem() {
+		TestItemUnsupportedFields.CollectionOfUnsupportedTypes item =
+				new TestItemUnsupportedFields.CollectionOfUnsupportedTypes();
 
 		item.getUnsupportedElts().addAll(
 				Arrays.asList(
-						new TestDatastoreItemUnsupportedFields.UnsupportedType(true),
-						new TestDatastoreItemUnsupportedFields.UnsupportedType(false)));
+						new TestItemUnsupportedFields.NewType(true),
+						new TestItemUnsupportedFields.NewType(false)));
 		return item;
 	}
 
 	private Entity.Builder getEntityBuilder() {
 		return Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
 	}
+
+	private static Converter<TestItemUnsupportedFields.NewType, Integer> getNewTypeToIntegerConverter() {
+		return new Converter<TestItemUnsupportedFields.NewType, Integer>() {
+			@Override
+			public Integer convert(TestItemUnsupportedFields.NewType source) {
+				return source.isVal() ? 1 : 0;
+			}
+		};
+	}
+
+	private static Converter<Integer, TestItemUnsupportedFields.NewType> getIntegerToNewTypeConverter() {
+		return new Converter<Integer, TestItemUnsupportedFields.NewType>() {
+			@Override
+			public TestItemUnsupportedFields.NewType convert(Integer source) {
+				return new TestItemUnsupportedFields.NewType(source == 1);
+			}
+		};
+	}
+
 }

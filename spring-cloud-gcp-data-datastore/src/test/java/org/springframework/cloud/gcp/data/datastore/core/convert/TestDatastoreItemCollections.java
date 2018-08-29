@@ -32,10 +32,14 @@ public class TestDatastoreItemCollections {
 
 	private String[] stringArray;
 
-	public TestDatastoreItemCollections(List<Integer> intList, ImmutableSet<Double> doubleSet, String[] stringArray) {
+	private boolean[] boolArray;
+
+	public TestDatastoreItemCollections(List<Integer> intList, ImmutableSet<Double> doubleSet, String[] stringArray,
+			boolean[] boolArray) {
 		this.intList = intList;
 		this.doubleSet = doubleSet;
 		this.stringArray = stringArray;
+		this.boolArray = boolArray;
 	}
 
 	public List<Integer> getIntList() {
@@ -50,6 +54,10 @@ public class TestDatastoreItemCollections {
 		return this.stringArray;
 	}
 
+	public boolean[] getBoolArray() {
+		return this.boolArray;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -61,13 +69,15 @@ public class TestDatastoreItemCollections {
 		TestDatastoreItemCollections that = (TestDatastoreItemCollections) o;
 		return Objects.equals(getIntList(), that.getIntList()) &&
 				Objects.equals(getDoubleSet(), that.getDoubleSet()) &&
-				Arrays.equals(getStringArray(), that.getStringArray());
+				Arrays.equals(getStringArray(), that.getStringArray()) &&
+				Arrays.equals(getBoolArray(), that.getBoolArray());
 	}
 
 	@Override
 	public int hashCode() {
 		int result = Objects.hash(getIntList(), getDoubleSet());
 		result = 31 * result + Arrays.hashCode(getStringArray());
+		result = 31 * result + Arrays.hashCode(getBoolArray());
 		return result;
 	}
 }

@@ -16,15 +16,9 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.google.cloud.datastore.Entity;
-import com.google.cloud.datastore.Value;
 
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
@@ -34,6 +28,7 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
+import org.springframework.util.CollectionUtils;
 
 /**
  * A class for object to entity and entity to object conversions
@@ -72,14 +67,22 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 				new PersistentEntityParameterValueProvider<>(persistentEntity, propertyValueProvider, null);
 
 		EntityInstantiator instantiator = this.instantiators.getInstantiatorFor(persistentEntity);
-		R instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
-		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
-
-		persistentEntity.doWithProperties(
-				(PropertyHandler<DatastorePersistentProperty>) datastorePersistentProperty -> {
-					Object value = propertyValueProvider.getPropertyValue(datastorePersistentProperty);
-					accessor.setProperty(datastorePersistentProperty, value);
-				});
+		R instance;
+		try {
+			instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
+			PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
+			persistentEntity.doWithProperties(
+					(PropertyHandler<DatastorePersistentProperty>) datastorePersistentProperty -> {
+						// if a property is a constructor argument, it was already computed on instantiation
+						if (!persistentEntity.isConstructorArgument(datastorePersistentProperty)) {
+							Object value = propertyValueProvider.getPropertyValue(datastorePersistentProperty);
+							accessor.setProperty(datastorePersistentProperty, value);
+						}
+					});
+		}
+		catch (DatastoreDataException e) {
+			throw new DatastoreDataException("Unable to read " + persistentEntity.getName() + " entity", e);
+		}
 
 		return instance;
 	}
@@ -90,30 +93,23 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		DatastorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(source.getClass());
 		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(source);
 		persistentEntity.doWithProperties(
-				(DatastorePersistentProperty datastorePersistentProperty) ->
-						writeProperty(
-								sink, accessor.getProperty(datastorePersistentProperty), datastorePersistentProperty));
+				(DatastorePersistentProperty persistentProperty) -> {
+					try {
+						Object val = accessor.getProperty(persistentProperty);
+						//Check if property is a non-null array
+						if (val != null && persistentProperty.isArray() && val.getClass() != byte[].class) {
+							//if a propperty is an array, convert it to list
+							val = CollectionUtils.arrayToList(val);
+						}
+						sink.set(persistentProperty.getFieldName(), this.conversions.convertOnWrite(val));
+					}
+					catch (DatastoreDataException e) {
+						throw new DatastoreDataException(
+								"Unable to write "
+										+ persistentEntity.kindName() + "." + persistentProperty.getFieldName(),
+								e);
+					}
+				});
 	}
 
-	private void writeProperty(Entity.Builder sink, Object propertyVal,
-			DatastorePersistentProperty persistentProperty) {
-		boolean isArray = propertyVal != null && Object[].class.isAssignableFrom(propertyVal.getClass());
-		Object val = isArray ? Arrays.stream((Object[]) propertyVal).collect(Collectors.toList()) : propertyVal;
-		if (val instanceof Collection) {
-			List<Value<?>> values = new ArrayList<>();
-			for (Object propEltValue : (Collection) val) {
-				values.add(prepareSingle(propEltValue, persistentProperty));
-			}
-			sink.set(persistentProperty.getFieldName(), values);
-		}
-		else {
-			sink.set(persistentProperty.getFieldName(), prepareSingle(val, persistentProperty));
-		}
-	}
-
-	private Value prepareSingle(Object propertyVal, DatastorePersistentProperty persistentProperty) {
-		Object convertedPropertyVal = this.conversions.convertOnWrite(propertyVal);
-
-		return DatastoreNativeTypes.wrapValue(convertedPropertyVal, persistentProperty);
-	}
 }

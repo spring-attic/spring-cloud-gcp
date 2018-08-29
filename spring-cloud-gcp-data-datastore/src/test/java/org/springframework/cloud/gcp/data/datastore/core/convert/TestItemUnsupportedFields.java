@@ -24,10 +24,10 @@ import java.util.Objects;
 /**
  * @author Dmitry Solomakha
  */
-class TestDatastoreItemUnsupportedFields {
+class TestItemUnsupportedFields {
 	private String stringField;
 
-	private UnsupportedType unsupportedField;
+	private NewType unsupportedField;
 
 	public String getStringField() {
 		return this.stringField;
@@ -37,11 +37,11 @@ class TestDatastoreItemUnsupportedFields {
 		this.stringField = stringField;
 	}
 
-	public UnsupportedType getUnsupportedField() {
+	public NewType getUnsupportedField() {
 		return this.unsupportedField;
 	}
 
-	public void setUnsupportedField(UnsupportedType unsupportedField) {
+	public void setUnsupportedField(NewType unsupportedField) {
 		this.unsupportedField = unsupportedField;
 	}
 
@@ -53,7 +53,7 @@ class TestDatastoreItemUnsupportedFields {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		TestDatastoreItemUnsupportedFields that = (TestDatastoreItemUnsupportedFields) o;
+		TestItemUnsupportedFields that = (TestItemUnsupportedFields) o;
 		return Objects.equals(getStringField(), that.getStringField()) &&
 				Objects.equals(getUnsupportedField(), that.getUnsupportedField());
 	}
@@ -64,10 +64,10 @@ class TestDatastoreItemUnsupportedFields {
 		return Objects.hash(getStringField(), getUnsupportedField());
 	}
 
-	static class UnsupportedType {
+	static class NewType {
 		boolean val;
 
-		UnsupportedType(boolean val) {
+		NewType(boolean val) {
 			this.val = val;
 		}
 
@@ -83,7 +83,7 @@ class TestDatastoreItemUnsupportedFields {
 			if (o == null || getClass() != o.getClass()) {
 				return false;
 			}
-			UnsupportedType that = (UnsupportedType) o;
+			NewType that = (NewType) o;
 			return isVal() == that.isVal();
 		}
 
@@ -95,9 +95,9 @@ class TestDatastoreItemUnsupportedFields {
 	}
 
 	static class CollectionOfUnsupportedTypes {
-		List<UnsupportedType> unsupportedElts = new ArrayList<>();
+		List<NewType> unsupportedElts = new ArrayList<>();
 
-		public List<UnsupportedType> getUnsupportedElts() {
+		public List<NewType> getUnsupportedElts() {
 			return this.unsupportedElts;
 		}
 
