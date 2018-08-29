@@ -40,7 +40,7 @@ public class DatastoreRepositoriesAutoConfigureRegistrar
 
 	@Override
 	protected Class<?> getConfiguration() {
-		return DatastoreRepositoriesAutoConfigureRegistrar.EnableDatastoreRepositoriesConfiguration.class;
+		return EnableDatastoreRepositoriesConfiguration.class;
 	}
 
 	@Override

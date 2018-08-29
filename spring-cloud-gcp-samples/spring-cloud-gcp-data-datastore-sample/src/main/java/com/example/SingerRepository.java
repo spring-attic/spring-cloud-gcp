@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,19 +14,13 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.pubsub.support;
+package com.example;
+
+import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 
 /**
- * Google Cloud Platform internal headers for Spring Messaging messages.
- *
- * @author João André Martins
+ * @author Chengyuan Zhao
  */
-public abstract class GcpPubSubHeaders {
-
-	private static final String PREFIX = "gcp_pubsub_";
-
-	public static final String ACKNOWLEDGEMENT = PREFIX + "acknowledgement";
-
-	public static final String TOPIC = PREFIX + "topic";
+public interface SingerRepository extends DatastoreRepository<Singer, String> {
 
 }

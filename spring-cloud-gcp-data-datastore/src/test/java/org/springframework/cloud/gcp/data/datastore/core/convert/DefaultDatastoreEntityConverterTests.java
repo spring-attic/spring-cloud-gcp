@@ -447,6 +447,31 @@ public class DefaultDatastoreEntityConverterTests {
 		return item;
 	}
 
+	@Test
+	public void testUnindexedField() {
+		UnindexedTestDatastoreItem item = new UnindexedTestDatastoreItem();
+		item.setIndexedField(1L);
+		item.setUnindexedField(2L);
+
+		DatastoreEntityConverter entityConverter =
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
+
+		Entity.Builder builder = getEntityBuilder();
+		entityConverter.write(item, builder);
+		Entity entity = builder.build();
+
+		assertThat(entity.getLong("indexedField")).as("validate indexed field value")
+				.isEqualTo(1L);
+
+		assertThat(entity.getLong("unindexedField")).as("validate unindexed field value")
+				.isEqualTo(2L);
+
+		assertThat(entity.getValue("indexedField").excludeFromIndexes())
+				.as("validate excludeFromIndexes on indexed field").isFalse();
+		assertThat(entity.getValue("unindexedField").excludeFromIndexes())
+				.as("validate excludeFromIndexes on unindexed field").isTrue();
+	}
+
 	private Entity.Builder getEntityBuilder() {
 		return Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
 	}

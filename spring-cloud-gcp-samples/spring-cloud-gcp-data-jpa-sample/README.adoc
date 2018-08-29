@@ -7,6 +7,7 @@ or link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-postgresql[
 
 We will create an instance, a database within the instance, populate the database and then query it.
 
+
 == Setup
 
 1. Follow https://cloud.google.com/sql/docs/mysql/quickstart[these instructions] to set up a Google
@@ -34,6 +35,7 @@ from the Google Cloud Console] and download its private key.
 Then, uncomment the `spring.cloud.gcp.sql.credentials.location` property in the
 link:src/main/resources/application.properties[application.properties] file and fill its value with
 the path to your service account private key on your local file system, prepended with `file:`.
+
 
 == Running the application
 

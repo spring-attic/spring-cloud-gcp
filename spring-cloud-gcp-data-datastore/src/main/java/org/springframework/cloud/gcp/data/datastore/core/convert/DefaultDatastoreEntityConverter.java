@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.Value;
+import com.google.cloud.datastore.ValueBuilder;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -101,7 +103,15 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 							//if a propperty is an array, convert it to list
 							val = CollectionUtils.arrayToList(val);
 						}
-						sink.set(persistentProperty.getFieldName(), this.conversions.convertOnWrite(val));
+
+						Value convertedVal = this.conversions.convertOnWrite(val);
+
+						if (persistentProperty.isUnindexed()) {
+							ValueBuilder valueBuilder = convertedVal.toBuilder();
+							valueBuilder.setExcludeFromIndexes(true);
+							convertedVal = valueBuilder.build();
+						}
+						sink.set(persistentProperty.getFieldName(), convertedVal);
 					}
 					catch (DatastoreDataException e) {
 						throw new DatastoreDataException(
@@ -111,5 +121,4 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 					}
 				});
 	}
-
 }

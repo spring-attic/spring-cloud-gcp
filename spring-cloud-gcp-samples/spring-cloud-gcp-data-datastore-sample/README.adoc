@@ -1,0 +1,23 @@
+= Spring Cloud GCP Cloud Datastore Starter Example
+
+This code sample demonstrates how to read and write POJOs from Google Cloud Datastore using the Spring
+Data Cloud Datastore module
+link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Cloud GCP Cloud Datastore Starter].
+
+= Running the example
+
+. Create a new Cloud Datastore database in your GCP project if this has not already been done to allow
+Cloud Datastore to create and store entities.
+[start=2]
+. https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login[If
+you are authenticated in the Cloud SDK], your credentials will be automatically found by the Spring
+Boot Starter for Google Cloud Datastore.
++
+Alternatively, http://console.cloud.google.com/iam-admin/serviceaccounts[create a service account from the Google Cloud Console] and download its private key.
++
+Then, uncomment the `spring.cloud.gcp.datastore.credentials.location` property in the
+link:src/main/resources/application.properties[application.properties] file and fill its value with the path to your service account private key on your local file system, prepended with `file:`.
+
+. Run the `DatastoreRepositoryExample` Spring Boot console app. This causes the app to generate sample `Singer`
+objects filled with some demo data and persists them to Cloud Datastore.
+These POJOs are then retrieved and their contents are printed in the output.

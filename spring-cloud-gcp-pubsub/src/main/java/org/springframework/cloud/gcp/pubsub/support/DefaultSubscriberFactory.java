@@ -42,6 +42,7 @@ import org.springframework.util.Assert;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Doug Hoard
  */
 public class DefaultSubscriberFactory implements SubscriberFactory {
 
@@ -79,6 +80,11 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 		this.projectId = projectIdProvider.getProjectId();
 		Assert.hasText(this.projectId, "The project ID can't be null or empty.");
+	}
+
+	@Override
+	public String getProjectId() {
+		return this.projectId;
 	}
 
 	/**
