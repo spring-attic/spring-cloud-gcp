@@ -29,4 +29,7 @@ public abstract class GcpPubSubHeaders {
 
 	public static final String TOPIC = PREFIX + "topic";
 
+	public static final String ACK_ID = PREFIX + "ackId";
+
+	public static final String SUBSCRIPTION = PREFIX + "subscriptionName";
 }
