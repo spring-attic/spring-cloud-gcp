@@ -1,0 +1,29 @@
+{
+  "properties": [
+    {
+      "name": "spring.cloud.gcp.logging.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Stackdriver logging for Spring MVC.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Pub/Sub components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.sql.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud SQL support components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.trace.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Stackdriver tracing components.",
+      "defaultValue": true
+    }
+  ]
+}
+
