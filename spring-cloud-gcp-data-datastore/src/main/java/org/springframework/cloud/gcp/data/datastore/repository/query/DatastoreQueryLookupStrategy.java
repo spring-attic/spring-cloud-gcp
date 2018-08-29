@@ -67,15 +67,6 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 		this.expressionParser = expressionParser;
 	}
 
-	Class<?> getEntityType(QueryMethod queryMethod) {
-		return queryMethod.getResultProcessor().getReturnedType().getDomainType();
-	}
-
-	DatastoreQueryMethod createQueryMethod(Method method, RepositoryMetadata metadata,
-			ProjectionFactory factory) {
-		return new DatastoreQueryMethod(method, metadata, factory);
-	}
-
 	@Override
 	public RepositoryQuery resolveQuery(Method method, RepositoryMetadata metadata,
 			ProjectionFactory factory, NamedQueries namedQueries) {
@@ -102,4 +93,16 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 				gql, this.evaluationContextProvider, this.expressionParser,
 				this.datastoreMappingContext);
 	}
+
+	@VisibleForTesting
+	Class<?> getEntityType(QueryMethod queryMethod) {
+		return queryMethod.getResultProcessor().getReturnedType().getDomainType();
+	}
+
+	@VisibleForTesting
+	DatastoreQueryMethod createQueryMethod(Method method, RepositoryMetadata metadata,
+			ProjectionFactory factory) {
+		return new DatastoreQueryMethod(method, metadata, factory);
+	}
+
 }
