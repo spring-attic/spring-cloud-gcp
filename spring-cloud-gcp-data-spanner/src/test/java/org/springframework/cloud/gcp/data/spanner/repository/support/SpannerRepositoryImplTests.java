@@ -42,8 +42,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -257,18 +255,6 @@ public class SpannerRepositoryImplTests {
 		Object ob = new Object();
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class).delete(ob);
 		verify(this.template, times(1)).delete(eq(ob));
-	}
-
-	@Test
-	public void deleteManyObsTest() {
-		Iterable<String> obs = Arrays.asList("ob1", "ob2");
-		doAnswer(invocation -> {
-			Iterable<String> toDelete = invocation.getArgument(1);
-			assertThat(toDelete, containsInAnyOrder("ob1", "ob2"));
-			return null;
-		}).when(this.template).delete(eq(String.class), same(obs));
-		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
-				.deleteAll(obs);
 	}
 
 	@Test

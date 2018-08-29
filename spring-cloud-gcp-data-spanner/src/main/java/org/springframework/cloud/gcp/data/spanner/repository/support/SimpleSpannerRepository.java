@@ -141,7 +141,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	@Override
 	public void deleteAll(Iterable<? extends T> entities) {
 		Assert.notNull(entities, "A non-null list of entities is required.");
-		this.spannerTemplate.delete(this.entityType, entities);
+		this.spannerTemplate.deleteAll(entities);
 	}
 
 	@Override

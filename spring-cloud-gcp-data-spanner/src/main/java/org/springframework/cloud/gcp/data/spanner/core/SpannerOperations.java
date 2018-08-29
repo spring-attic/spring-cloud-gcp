@@ -151,14 +151,6 @@ public interface SpannerOperations {
 	void deleteAll(Iterable objects);
 
 	/**
-	 * Deletes multiple objects from storage.
-	 * @param entityClass the type of the object to delete.
-	 * @param objects the objects to delete.
-	 * @param <T> the type of the object to delete.
-	 */
-	<T> void delete(Class<T> entityClass, Iterable<? extends T> objects);
-
-	/**
 	 * Deletes objects given a set of keys.
 	 * @param entityClass the type of object to delete.
 	 * @param keys the keys of the objects to delete.

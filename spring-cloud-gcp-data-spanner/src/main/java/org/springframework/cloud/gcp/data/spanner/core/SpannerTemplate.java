@@ -284,11 +284,6 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public <T> void delete(Class<T> entityClass, Iterable<? extends T> entities) {
-		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, entities);
-	}
-
-	@Override
 	public void delete(Class entityClass, KeySet keys) {
 		applyMutationTwoArgs(this.mutationFactory::delete, entityClass, keys);
 	}
