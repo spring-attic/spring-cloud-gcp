@@ -274,8 +274,8 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public void deleteAll(Iterable objects) {
-		this.databaseClient.write(
-				(Iterable<Mutation>) StreamSupport.stream(objects.spliterator(), false)
+		applyMutations(
+				(Collection<Mutation>) StreamSupport.stream(objects.spliterator(), false)
 						.map(this.mutationFactory::delete).collect(Collectors.toList()));
 	}
 
