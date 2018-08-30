@@ -407,6 +407,20 @@ public interface TraderRepository extends CrudRepository<Trader, String> {
 }
 ----
 
+The following parameter types are supported:
+
+* `com.google.cloud.Timestamp`
+* `com.google.cloud.datastore.Blob`
+* `com.google.cloud.datastore.Key`
+* `com.google.cloud.datastore.Cursor`
+* `java.lang.Boolean`
+* `java.lang.Double`
+* `java.lang.Long`
+* `java.lang.String`
+
+With the exception of `Cursor`, array forms of each of the types are also supported.
+
+
 ===== Query methods with named queries properties
 
 You can also specify queries with Cloud Datastore parameter tags and SpEL expressions in properties files.
