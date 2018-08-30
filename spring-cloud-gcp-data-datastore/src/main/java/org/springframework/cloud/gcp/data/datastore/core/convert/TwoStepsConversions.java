@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +34,7 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.CollectionUtils;
 
 /**
  * In order to support {@link CustomConversions}, this class applies 2-step conversions.
@@ -84,7 +84,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	@SuppressWarnings("unchecked")
 	public <T> T convertOnRead(Value val, Class<?> targetType, Class<?> componentType) {
 		Object unwrappedVal = val.get();
-		if (unwrappedVal instanceof List) {
+		if (unwrappedVal instanceof Iterable && componentType != null) {
 			try {
 				List<?> elements = ((List<Value>) unwrappedVal)
 						.stream()
@@ -137,15 +137,22 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	@Override
-	public Value convertOnWrite(Object propertyVal) {
-		if (propertyVal instanceof Collection) {
+	public Value convertOnWrite(Object proppertyVal) {
+		Object val = proppertyVal;
+		//Check if property is a non-null array
+		if (val != null && val.getClass().isArray() && val.getClass() != byte[].class) {
+			//if a propperty is an array, convert it to list
+			val = CollectionUtils.arrayToList(val);
+		}
+
+		if (val instanceof Iterable) {
 			List<Value<?>> values = new ArrayList<>();
-			for (Object propEltValue : (Collection) propertyVal) {
+			for (Object propEltValue : (Iterable) val) {
 				values.add(this.convertOnWriteSingle(propEltValue));
 			}
 			return ListValue.of(values);
 		}
-		return convertOnWriteSingle(propertyVal);
+		return convertOnWriteSingle(val);
 	}
 
 	@SuppressWarnings("unchecked")

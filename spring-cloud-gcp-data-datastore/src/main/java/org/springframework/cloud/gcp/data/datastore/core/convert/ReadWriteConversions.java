@@ -26,8 +26,20 @@ import com.google.cloud.datastore.Value;
  * @since 1.1
  */
 public interface ReadWriteConversions {
+	/**
+	 * Converts a Cloud Datastore Value to an object of a target type
+	 * @param val Cloud Datastore Value.
+	 * @param targetType the target type.
+	 * @param componentType if the taget type is collection-like, this is the type of elements it holds.
+	 * @return an object of a target type.
+	 */
 	<T> T convertOnRead(Value val, Class<?> targetType, Class<?> componentType);
 
+	/**
+	 * Converts an object to a Cloud Datastore Value
+	 * @param obj the objects to convert.
+	 * @return a Cloud Datastore value.
+	 */
 	Value convertOnWrite(Object obj);
 
 }

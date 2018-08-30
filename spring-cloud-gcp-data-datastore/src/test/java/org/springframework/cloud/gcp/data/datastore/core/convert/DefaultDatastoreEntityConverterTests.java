@@ -28,6 +28,7 @@ import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.LatLng;
+import com.google.cloud.datastore.ListValue;
 import com.google.cloud.datastore.NullValue;
 import com.google.cloud.datastore.Value;
 import com.google.cloud.datastore.testing.LocalDatastoreHelper;
@@ -129,6 +130,27 @@ public class DefaultDatastoreEntityConverterTests {
 		Entity entity = getEntityBuilder()
 				.set("stringField", "string value")
 				.set("boolField", 123L)
+				.build();
+
+		DatastoreEntityConverter entityConverter =
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
+		entityConverter.read(TestDatastoreItem.class, entity);
+	}
+
+	@Test
+	public void testWrongTypeReadExceptionList() {
+		this.thrown.expect(DatastoreDataException.class);
+		this.thrown.expectMessage(
+				"Unable to read " +
+						"org.springframework.cloud.gcp.data.datastore.core.convert.TestDatastoreItem entity");
+		this.thrown.expectMessage("Unable to read property boolField");
+		this.thrown.expectMessage(
+				"Unable to convert class " +
+				"com.google.common.collect.SingletonImmutableList to class java.lang.Boolean");
+
+		Entity entity = getEntityBuilder()
+				.set("stringField", "string value")
+				.set("boolField", ListValue.of(true))
 				.build();
 
 		DatastoreEntityConverter entityConverter =
@@ -260,7 +282,7 @@ public class DefaultDatastoreEntityConverterTests {
 		TestDatastoreItemCollections item = new TestDatastoreItemCollections(
 				Arrays.asList(1, 2),
 				ImmutableSet.of(3.14, 2.71),
-				new String[] { "abc", "def" }, new boolean[] {true, false});
+				new String[] { "abc", "def" }, new boolean[] {true, false}, null, null);
 
 		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
 
@@ -273,11 +295,13 @@ public class DefaultDatastoreEntityConverterTests {
 
 	@Test
 	public void testCollectionFields() {
+		byte[][] bytes = {{1, 2}, {3, 4}};
+		List<byte[]> listByteArray = Arrays.asList(bytes);
 		TestDatastoreItemCollections item =
 				new TestDatastoreItemCollections(
 						Arrays.asList(1, 2),
 						ImmutableSet.of(3.14, 2.71),
-						new String[]{"abc", "def"}, new boolean[] {true, false});
+						new String[]{"abc", "def"}, new boolean[] {true, false}, bytes, listByteArray);
 
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(
@@ -308,6 +332,16 @@ public class DefaultDatastoreEntityConverterTests {
 				.as("validate double set values")
 				.isEqualTo(new HashSet<>(Arrays.asList(3.14, 2.71)));
 
+		List<Value<?>> bytesVals = entity.getList("bytes");
+		assertThat(bytesVals.stream().map(Value::get).collect(Collectors.toList()))
+				.as("validate array of byte[] values")
+				.isEqualTo(Arrays.asList(Blob.copyFrom(new byte[]{1, 2}), Blob.copyFrom(new byte[]{3, 4})));
+
+		List<Value<?>> listByteArrayVals = entity.getList("listByteArray");
+		assertThat(listByteArrayVals.stream().map(Value::get).collect(Collectors.toList()))
+				.as("validate list of byte[]")
+				.isEqualTo(Arrays.asList(Blob.copyFrom(new byte[]{1, 2}), Blob.copyFrom(new byte[]{3, 4})));
+
 		TestDatastoreItemCollections readItem =
 				entityConverter.read(TestDatastoreItemCollections.class, entity);
 		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
@@ -319,7 +353,7 @@ public class DefaultDatastoreEntityConverterTests {
 				new TestDatastoreItemCollections(
 						Arrays.asList(1, 2),
 						null,
-						null, new boolean[] {true, false});
+						null, new boolean[] {true, false}, null, null);
 
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());

@@ -16,11 +16,14 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 import com.google.common.collect.ImmutableSet;
+
+import org.springframework.util.CollectionUtils;
 
 /**
  * @author Dmitry Solomakha
@@ -34,12 +37,18 @@ public class TestDatastoreItemCollections {
 
 	private boolean[] boolArray;
 
+	private byte[][] bytes;
+
+	private List<byte[]> listByteArray;
+
 	public TestDatastoreItemCollections(List<Integer> intList, ImmutableSet<Double> doubleSet, String[] stringArray,
-			boolean[] boolArray) {
+			boolean[] boolArray, byte[][] bytes, List<byte[]> listByteArray) {
 		this.intList = intList;
 		this.doubleSet = doubleSet;
 		this.stringArray = stringArray;
 		this.boolArray = boolArray;
+		this.bytes = bytes;
+		this.listByteArray = listByteArray;
 	}
 
 	public List<Integer> getIntList() {
@@ -58,6 +67,14 @@ public class TestDatastoreItemCollections {
 		return this.boolArray;
 	}
 
+	public byte[][] getBytes() {
+		return this.bytes;
+	}
+
+	public List<byte[]> getListByteArray() {
+		return this.listByteArray;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -70,14 +87,42 @@ public class TestDatastoreItemCollections {
 		return Objects.equals(getIntList(), that.getIntList()) &&
 				Objects.equals(getDoubleSet(), that.getDoubleSet()) &&
 				Arrays.equals(getStringArray(), that.getStringArray()) &&
-				Arrays.equals(getBoolArray(), that.getBoolArray());
+				Arrays.equals(getBoolArray(), that.getBoolArray()) &&
+				equal(getBytes(), that.getBytes()) &&
+				equal(getListByteArray(), that.getListByteArray());
 	}
 
 	@Override
 	public int hashCode() {
-		int result = Objects.hash(getIntList(), getDoubleSet());
+		int result = Objects.hash(getIntList(), getDoubleSet(), getListByteArray());
 		result = 31 * result + Arrays.hashCode(getStringArray());
 		result = 31 * result + Arrays.hashCode(getBoolArray());
+		result = 31 * result + Arrays.hashCode(getBytes());
 		return result;
+	}
+
+	private List<List<Byte>> arraysToLists(Object[] arrays) {
+		List<List<Byte>> result = new ArrayList<>();
+		for (Object e : arrays) {
+			result.add(CollectionUtils.arrayToList(e));
+		}
+		return result;
+	}
+
+	private boolean equal(Object a, Object b) {
+		if (a == null && b == null) {
+			return true;
+		}
+		if (a == null || b == null) {
+			return false;
+		}
+
+		Object valA = a;
+		Object valB = b;
+		if (a instanceof List) {
+			valA = ((List<byte[]>) a).toArray();
+			valB = ((List<byte[]>) b).toArray();
+		}
+		return arraysToLists((Object[]) valA).equals(arraysToLists((Object[]) valB));
 	}
 }

@@ -30,7 +30,6 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
-import org.springframework.util.CollectionUtils;
 
 /**
  * A class for object to entity and entity to object conversions
@@ -98,11 +97,6 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 				(DatastorePersistentProperty persistentProperty) -> {
 					try {
 						Object val = accessor.getProperty(persistentProperty);
-						//Check if property is a non-null array
-						if (val != null && persistentProperty.isArray() && val.getClass() != byte[].class) {
-							//if a propperty is an array, convert it to list
-							val = CollectionUtils.arrayToList(val);
-						}
 
 						Value convertedVal = this.conversions.convertOnWrite(val);
 
