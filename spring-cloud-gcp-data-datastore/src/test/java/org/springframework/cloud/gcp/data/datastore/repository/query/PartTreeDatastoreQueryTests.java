@@ -25,6 +25,7 @@ import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.OrderBy;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -78,21 +79,22 @@ public class PartTreeDatastoreQueryTests {
 	@Test
 	public void compoundNameConventionTest() {
 		when(this.queryMethod.getName())
-				.thenReturn("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
-						+ "ThanEqualAndIdIsNullOrderByIdDescLimit333");
+				.thenReturn("findTop333ByActionAndSymbolAndPriceLessThanAndPriceGreater"
+						+ "ThanEqualAndIdIsNullOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33 };
 
 		when(this.spannerTemplate.query(any(), any())).thenAnswer(invocation -> {
-			EntityQuery statement = invocation.getArgument(1);
+			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
-							PropertyFilter.eq("symbol", "abcd"),
+							PropertyFilter.eq("ticker", "abcd"),
 							PropertyFilter.lt("price", 8.88),
 							PropertyFilter.ge("price", 3.33),
 							PropertyFilter.isNull("id")))
+					.setKind("trades")
 					.setOrderBy(OrderBy.desc("id")).setLimit(333).build();
 
 			assertEquals(expected, statement);
@@ -108,7 +110,7 @@ public class PartTreeDatastoreQueryTests {
 	public void unspecifiedParametersTest() {
 		when(this.queryMethod.getName())
 				.thenReturn("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
-						+ "ThanEqualAndIdIsNullOrderByIdDescLimit333");
+						+ "ThanEqualAndIdIsNullOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
 
 		// There are too few params specified, so the exception will occur.
@@ -121,7 +123,7 @@ public class PartTreeDatastoreQueryTests {
 	public void unsupportedParamTypeTest() {
 		when(this.queryMethod.getName())
 				.thenReturn("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
-						+ "ThanEqualAndIdIsNullOrderByIdDescLimit333");
+						+ "ThanEqualAndIdIsNullOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
 
 		// There are too few params specified, so the exception will occur.
@@ -143,6 +145,13 @@ public class PartTreeDatastoreQueryTests {
 	@Test(expected = DatastoreDataException.class)
 	public void unSupportedPredicateTest() {
 		when(this.queryMethod.getName()).thenReturn("countByTraderIdBetween");
+		this.partTreeSpannerQuery = createQuery();
+		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
+	}
+
+	@Test(expected = DatastoreDataException.class)
+	public void unSupportedOrTest() {
+		when(this.queryMethod.getName()).thenReturn("countByTraderIdOrPrice");
 		this.partTreeSpannerQuery = createQuery();
 		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
 	}

@@ -84,14 +84,17 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					"Cloud Datastore structured queries do not support the Distinct keyword.");
 		}
 
-		List orParts = this.tree.getParts().get().collect(Collectors.toList());
-		if (orParts.size() != 1) {
-			throw new DatastoreDataException(
-					"Cloud Datastore only supports multiple filters combined with AND.");
+		List parts = this.tree.getParts().get().collect(Collectors.toList());
+		if (parts.size() > 0) {
+			if (parts.get(0) instanceof OrPart) {
+				throw new DatastoreDataException(
+						"Cloud Datastore only supports multiple filters combined with AND.");
+			}
+			this.filterParts = parts;
 		}
-		this.filterParts = StreamSupport
-				.stream(((OrPart) orParts.get(0)).spliterator(), false)
-				.collect(Collectors.toList());
+		else {
+			this.filterParts = Collections.emptyList();
+		}
 	}
 
 	@Override
@@ -173,22 +176,18 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				case GREATER_THAN_EQUAL:
 					filter = PropertyFilter.ge(fieldName,
 							DatastoreNativeTypes.wrapValue(it.next()));
-					;
 					break;
 				case GREATER_THAN:
 					filter = PropertyFilter.gt(fieldName,
 							DatastoreNativeTypes.wrapValue(it.next()));
-					;
 					break;
 				case LESS_THAN_EQUAL:
 					filter = PropertyFilter.le(fieldName,
 							DatastoreNativeTypes.wrapValue(it.next()));
-					;
 					break;
 				case LESS_THAN:
 					filter = PropertyFilter.lt(fieldName,
 							DatastoreNativeTypes.wrapValue(it.next()));
-					;
 					break;
 				default:
 					throw new DatastoreDataException(
