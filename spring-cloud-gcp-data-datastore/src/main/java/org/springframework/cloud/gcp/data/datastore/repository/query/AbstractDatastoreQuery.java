@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -70,8 +71,12 @@ abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 		if (rawResult == null) {
 			return null;
 		}
-		return rawResult.stream()
-				.map(x -> this.queryMethod.getResultProcessor().processResult(x))
+		return rawResult.stream().map(this::processRawObjectForProjection)
 				.collect(Collectors.toList());
+	}
+
+	@VisibleForTesting
+	Object processRawObjectForProjection(Object object) {
+		return this.queryMethod.getResultProcessor().processResult(object);
 	}
 }

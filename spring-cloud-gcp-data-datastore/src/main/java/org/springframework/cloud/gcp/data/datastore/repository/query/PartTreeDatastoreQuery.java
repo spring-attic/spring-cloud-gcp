@@ -20,13 +20,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.StructuredQuery;
+import com.google.cloud.datastore.StructuredQuery.Builder;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.Filter;
+import com.google.cloud.datastore.StructuredQuery.OrderBy;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
@@ -76,6 +79,10 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					"Delete queries are not supported in Cloud Datastore: "
 							+ this.queryMethod.getName());
 		}
+		else if (this.tree.isDistinct()) {
+			throw new UnsupportedOperationException(
+					"Cloud Datastore structured queries do not support the Distinct keyword.");
+		}
 
 		List orParts = this.tree.getParts().get().collect(Collectors.toList());
 		if (orParts.size() != 1) {
@@ -111,7 +118,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private StructuredQuery<Entity> getQuery(Object[] parameters) {
-		StructuredQuery.Builder<Entity> builder = StructuredQuery.newEntityQueryBuilder();
+		Builder<Entity> builder = StructuredQuery.newEntityQueryBuilder();
 
 		builder.setKind(this.datastorePersistentEntity.kindName());
 
@@ -119,7 +126,29 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			builder.setFilter(getFilter(parameters));
 		}
 
+		if (!this.tree.getSort().isUnsorted()) {
+			applySort(builder);
+		}
+
+		if (this.tree.isLimiting()) {
+			builder.setLimit(this.tree.getMaxResults());
+		}
+
 		return builder.build();
+	}
+
+	private void applySort(Builder builder) {
+		OrderBy[] orders = this.tree.getSort().get().map(sort -> {
+			String fieldName = ((DatastorePersistentProperty) this.datastorePersistentEntity
+					.getPersistentProperty(sort.getProperty())).getFieldName();
+			return sort.isAscending() ? OrderBy.asc(fieldName) : OrderBy.desc(fieldName);
+		}).toArray(OrderBy[]::new);
+		if (orders.length > 1) {
+			builder.setOrderBy(orders[0], Arrays.copyOfRange(orders, 1, orders.length));
+		}
+		else {
+			builder.setOrderBy(orders[0]);
+		}
 	}
 
 	private Filter getFilter(Object[] parameters) {
@@ -129,48 +158,56 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			String fieldName = ((DatastorePersistentProperty) this.datastorePersistentEntity
 					.getPersistentProperty(part.getProperty().getSegment()))
 							.getFieldName();
-			Object paramValue = it.next();
-			switch (part.getType()) {
-			case IS_NULL:
-				filter = PropertyFilter.isNull(fieldName);
-				break;
-			case IS_EMPTY:
-				filter = PropertyFilter.isNull(fieldName);
-				break;
-			case SIMPLE_PROPERTY:
-				filter = PropertyFilter.eq(fieldName,
-						DatastoreNativeTypes.wrapValue(paramValue));
-				break;
-			case GREATER_THAN_EQUAL:
-				filter = PropertyFilter.ge(fieldName,
-						DatastoreNativeTypes.wrapValue(paramValue));
-				;
-				break;
-			case GREATER_THAN:
-				filter = PropertyFilter.gt(fieldName,
-						DatastoreNativeTypes.wrapValue(paramValue));
-				;
-				break;
-			case LESS_THAN_EQUAL:
-				filter = PropertyFilter.le(fieldName,
-						DatastoreNativeTypes.wrapValue(paramValue));
-				;
-				break;
-			case LESS_THAN:
-				filter = PropertyFilter.lt(fieldName,
-						DatastoreNativeTypes.wrapValue(paramValue));
-				;
-				break;
-			default:
-				throw new DatastoreDataException(
-						"Only equals, greater-than-or-equals, greater-than, less-than-or-equals, "
-                + "less-than, and is-null are supported filters in Cloud Datastore.");
+			try {
+				switch (part.getType()) {
+				case IS_NULL:
+					filter = PropertyFilter.isNull(fieldName);
+					break;
+				case IS_EMPTY:
+					filter = PropertyFilter.isNull(fieldName);
+					break;
+				case SIMPLE_PROPERTY:
+					filter = PropertyFilter.eq(fieldName,
+							DatastoreNativeTypes.wrapValue(it.next()));
+					break;
+				case GREATER_THAN_EQUAL:
+					filter = PropertyFilter.ge(fieldName,
+							DatastoreNativeTypes.wrapValue(it.next()));
+					;
+					break;
+				case GREATER_THAN:
+					filter = PropertyFilter.gt(fieldName,
+							DatastoreNativeTypes.wrapValue(it.next()));
+					;
+					break;
+				case LESS_THAN_EQUAL:
+					filter = PropertyFilter.le(fieldName,
+							DatastoreNativeTypes.wrapValue(it.next()));
+					;
+					break;
+				case LESS_THAN:
+					filter = PropertyFilter.lt(fieldName,
+							DatastoreNativeTypes.wrapValue(it.next()));
+					;
+					break;
+				default:
+					throw new DatastoreDataException(
+							"Only equals, greater-than-or-equals, greater-than, less-than-or-equals, "
+									+ "less-than, and is-null are supported filters in Cloud Datastore.");
 
+				}
+				return filter;
 			}
-			return filter;
+			catch (NoSuchElementException e) {
+				throw new DatastoreDataException(
+						"Too few parameters are provided for query method: "
+								+ this.queryMethod.getName());
+			}
 		}).toArray(Filter[]::new);
-		return CompositeFilter.and(filters[0],
-				Arrays.copyOfRange(filters, 1, filters.length));
+		return filters.length > 1
+				? CompositeFilter.and(filters[0],
+						Arrays.copyOfRange(filters, 1, filters.length))
+				: filters[0];
 	}
 
 }
