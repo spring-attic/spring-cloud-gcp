@@ -40,7 +40,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 
 /**
@@ -61,13 +60,13 @@ public abstract class DatastoreNativeTypes {
 	static {
 		//keys are used for type resolution, in order of insertion
 		DATASTORE_TYPE_WRAPPERS = ImmutableMap.<Class<?>, Function<?, Value<?>>>builder()
+				.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of)
 				.put(Boolean.class, (Function<Boolean, Value<?>>) BooleanValue::of)
 				.put(Long.class, (Function<Long, Value<?>>) LongValue::of)
 				.put(Double.class, (Function<Double, Value<?>>) DoubleValue::of)
 				.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of)
 				.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of)
 				.put(String.class, (Function<String, Value<?>>) StringValue::of)
-				.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of)
 				.put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of)
 				.put(Key.class, (Function<Key, Value<?>>) KeyValue::of)
 				.build();
@@ -95,7 +94,7 @@ public abstract class DatastoreNativeTypes {
 	* Wraps datastore native type to datastore value type
 	*/
 	@SuppressWarnings("unchecked")
-	public static Value wrapValue(Object propertyVal, DatastorePersistentProperty persistentProperty) {
+	public static Value wrapValue(Object propertyVal) {
 		if (propertyVal == null) {
 			return new NullValue();
 		}
@@ -103,8 +102,7 @@ public abstract class DatastoreNativeTypes {
 		if (wrapper != null) {
 			return (Value) wrapper.apply(propertyVal);
 		}
-		throw new DatastoreDataException("Unable to convert a property" +
-				" with name " + persistentProperty.getFieldName()
-				+ " to Datastore supported type. The property's type is " + propertyVal.getClass());
+		throw new DatastoreDataException("Unable to convert " + propertyVal.getClass()
+				+ " to Datastore supported type.");
 	}
 }

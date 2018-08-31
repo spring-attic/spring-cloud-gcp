@@ -20,6 +20,7 @@ import com.google.cloud.datastore.Entity;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.core.convert.ConversionException;
 import org.springframework.data.mapping.model.PropertyValueProvider;
 
 /**
@@ -41,32 +42,24 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 	}
 
 	@Override
-	public <T> T getPropertyValue(DatastorePersistentProperty datastorePersistentProperty) {
-		String fieldName = datastorePersistentProperty.getFieldName();
+	@SuppressWarnings("unchecked")
+	public <T> T getPropertyValue(DatastorePersistentProperty persistentProperty) {
+		String fieldName = persistentProperty.getFieldName();
 
 		if (!this.entity.contains(fieldName)) {
-			throw new DatastoreDataException("Field not found: " + fieldName);
-		}
-
-		return readSingleWithConversion(datastorePersistentProperty);
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T> T readSingleWithConversion(DatastorePersistentProperty persistentProperty) {
-		Object val = this.entity.getValue(persistentProperty.getFieldName()).get();
-		if (val == null) {
 			return null;
 		}
+		try {
 
-		Class<?> targetType = persistentProperty.getType();
-		T result = this.conversion.convertOnRead(val, targetType);
-
-		if (result != null) {
-			return result;
+			return this.conversion.convertOnRead(
+					this.entity.getValue(fieldName),
+					persistentProperty.getType(),
+					persistentProperty.getComponentType());
 		}
-		throw new DatastoreDataException("The value in entity's property with name " + persistentProperty.getFieldName()
-				+ " could not be converted to the corresponding property in the class. " +
-				"The property's type is " + targetType + " but the value's type is " + val.getClass());
+		catch (ConversionException | DatastoreDataException e) {
+			throw new DatastoreDataException("Unable to read property " + fieldName, e);
+		}
+
 	}
 
 }

@@ -17,15 +17,17 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
  * @author Dmitry Solomakha
  */
-class TestDatastoreItemUnsupportedFields {
+class TestItemUnsupportedFields {
 	private String stringField;
 
-	private UnsupportedType unsupportedField;
+	private NewType unsupportedField;
 
 	public String getStringField() {
 		return this.stringField;
@@ -35,11 +37,11 @@ class TestDatastoreItemUnsupportedFields {
 		this.stringField = stringField;
 	}
 
-	public UnsupportedType getUnsupportedField() {
+	public NewType getUnsupportedField() {
 		return this.unsupportedField;
 	}
 
-	public void setUnsupportedField(UnsupportedType unsupportedField) {
+	public void setUnsupportedField(NewType unsupportedField) {
 		this.unsupportedField = unsupportedField;
 	}
 
@@ -51,7 +53,7 @@ class TestDatastoreItemUnsupportedFields {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		TestDatastoreItemUnsupportedFields that = (TestDatastoreItemUnsupportedFields) o;
+		TestItemUnsupportedFields that = (TestItemUnsupportedFields) o;
 		return Objects.equals(getStringField(), that.getStringField()) &&
 				Objects.equals(getUnsupportedField(), that.getUnsupportedField());
 	}
@@ -62,19 +64,15 @@ class TestDatastoreItemUnsupportedFields {
 		return Objects.hash(getStringField(), getUnsupportedField());
 	}
 
-	static class UnsupportedType {
+	static class NewType {
 		boolean val;
 
-		UnsupportedType(boolean val) {
+		NewType(boolean val) {
 			this.val = val;
 		}
 
 		public boolean isVal() {
 			return this.val;
-		}
-
-		public void setVal(boolean val) {
-			this.val = val;
 		}
 
 		@Override
@@ -85,7 +83,7 @@ class TestDatastoreItemUnsupportedFields {
 			if (o == null || getClass() != o.getClass()) {
 				return false;
 			}
-			UnsupportedType that = (UnsupportedType) o;
+			NewType that = (NewType) o;
 			return isVal() == that.isVal();
 		}
 
@@ -93,6 +91,31 @@ class TestDatastoreItemUnsupportedFields {
 		public int hashCode() {
 
 			return Objects.hash(isVal());
+		}
+	}
+
+	static class CollectionOfUnsupportedTypes {
+		List<NewType> unsupportedElts = new ArrayList<>();
+
+		public List<NewType> getUnsupportedElts() {
+			return this.unsupportedElts;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+			CollectionOfUnsupportedTypes that = (CollectionOfUnsupportedTypes) o;
+			return Objects.equals(getUnsupportedElts(), that.getUnsupportedElts());
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(getUnsupportedElts());
 		}
 	}
 }

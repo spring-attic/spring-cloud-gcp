@@ -20,6 +20,7 @@ import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Value;
 import com.google.cloud.datastore.ValueBuilder;
 
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
@@ -67,39 +68,51 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 				new PersistentEntityParameterValueProvider<>(persistentEntity, propertyValueProvider, null);
 
 		EntityInstantiator instantiator = this.instantiators.getInstantiatorFor(persistentEntity);
-		R instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
-		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
-
-		persistentEntity.doWithProperties(
-				(PropertyHandler<DatastorePersistentProperty>) datastorePersistentProperty -> {
-					Object value = propertyValueProvider.getPropertyValue(datastorePersistentProperty);
-					accessor.setProperty(datastorePersistentProperty, value);
-				});
+		R instance;
+		try {
+			instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
+			PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
+			persistentEntity.doWithProperties(
+					(PropertyHandler<DatastorePersistentProperty>) datastorePersistentProperty -> {
+						// if a property is a constructor argument, it was already computed on instantiation
+						if (!persistentEntity.isConstructorArgument(datastorePersistentProperty)) {
+							Object value = propertyValueProvider.getPropertyValue(datastorePersistentProperty);
+							accessor.setProperty(datastorePersistentProperty, value);
+						}
+					});
+		}
+		catch (DatastoreDataException e) {
+			throw new DatastoreDataException("Unable to read " + persistentEntity.getName() + " entity", e);
+		}
 
 		return instance;
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void write(Object source, Entity.Builder sink) {
 		DatastorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(source.getClass());
 		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(source);
 		persistentEntity.doWithProperties(
-				(DatastorePersistentProperty datastorePersistentProperty) ->
-						writeProperty(sink, accessor, datastorePersistentProperty));
-	}
+				(DatastorePersistentProperty persistentProperty) -> {
+					try {
+						Object val = accessor.getProperty(persistentProperty);
 
-	private void writeProperty(Entity.Builder sink, PersistentPropertyAccessor accessor,
-			DatastorePersistentProperty persistentProperty) {
-		Object propertyVal = accessor.getProperty(persistentProperty);
+						Value convertedVal = this.conversions.convertOnWrite(val);
 
-		propertyVal = this.conversions.convertOnWrite(propertyVal);
-
-		Value val = DatastoreNativeTypes.wrapValue(propertyVal, persistentProperty);
-		if (persistentProperty.isUnindexed()) {
-			ValueBuilder valueBuilder = val.toBuilder();
-			valueBuilder.setExcludeFromIndexes(true);
-			val = valueBuilder.build();
-		}
-		sink.set(persistentProperty.getFieldName(), val);
+						if (persistentProperty.isUnindexed()) {
+							ValueBuilder valueBuilder = convertedVal.toBuilder();
+							valueBuilder.setExcludeFromIndexes(true);
+							convertedVal = valueBuilder.build();
+						}
+						sink.set(persistentProperty.getFieldName(), convertedVal);
+					}
+					catch (DatastoreDataException e) {
+						throw new DatastoreDataException(
+								"Unable to write "
+										+ persistentEntity.kindName() + "." + persistentProperty.getFieldName(),
+								e);
+					}
+				});
 	}
 }

@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import com.google.cloud.datastore.Value;
+
 /**
  * An interface for type conversions on read and on write
  *
@@ -24,7 +26,20 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
  * @since 1.1
  */
 public interface ReadWriteConversions {
-	<T> T convertOnRead(Object val, Class<?> targetType);
+	/**
+	 * Converts a Cloud Datastore Value to an object of a target type
+	 * @param val Cloud Datastore Value.
+	 * @param targetType the target type.
+	 * @param componentType if the taget type is collection-like, this is the type of elements it holds.
+	 * @return an object of a target type.
+	 */
+	<T> T convertOnRead(Value val, Class<?> targetType, Class<?> componentType);
 
-	<T> T convertOnWrite(Object obj);
+	/**
+	 * Converts an object to a Cloud Datastore Value
+	 * @param obj the objects to convert.
+	 * @return a Cloud Datastore value.
+	 */
+	Value convertOnWrite(Object obj);
+
 }

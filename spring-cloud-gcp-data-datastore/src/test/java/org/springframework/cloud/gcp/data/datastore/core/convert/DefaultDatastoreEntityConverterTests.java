@@ -18,16 +18,25 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.LatLng;
+import com.google.cloud.datastore.ListValue;
 import com.google.cloud.datastore.NullValue;
+import com.google.cloud.datastore.Value;
 import com.google.cloud.datastore.testing.LocalDatastoreHelper;
+import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -43,6 +52,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class DefaultDatastoreEntityConverterTests {
 	private static final LocalDatastoreHelper HELPER = LocalDatastoreHelper.create(1.0);
+
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	private Datastore datastore;
 
@@ -64,6 +76,7 @@ public class DefaultDatastoreEntityConverterTests {
 				.set("timestampField", Timestamp.ofTimeSecondsAndNanos(30, 40))
 				.set("blobField", Blob.copyFrom(bytes))
 				.set("intField", 99)
+				.set("enumField", "WHITE")
 				.build();
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
@@ -80,6 +93,7 @@ public class DefaultDatastoreEntityConverterTests {
 				.isEqualTo(Timestamp.ofTimeSecondsAndNanos(30, 40));
 		assertThat(item.getBlobField()).as("validate blob field").isEqualTo(Blob.copyFrom(bytes));
 		assertThat(item.getIntField()).as("validate int field").isEqualTo(99);
+		assertThat(item.getEnumField()).as("validate enum field").isEqualTo(TestDatastoreItem.Color.WHITE);
 	}
 
 	@Test
@@ -95,6 +109,7 @@ public class DefaultDatastoreEntityConverterTests {
 				.set("timestampField", Timestamp.ofTimeSecondsAndNanos(30, 40))
 				.set("blobField", Blob.copyFrom(bytes))
 				.set("intField", 99)
+				.set("enumField", "BLACK")
 				.build();
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
@@ -103,8 +118,15 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(item.getStringField()).as("validate null field").isNull();
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void testWrongTypeReadException() {
+		this.thrown.expect(DatastoreDataException.class);
+		this.thrown.expectMessage(
+				"Unable to read " +
+						"org.springframework.cloud.gcp.data.datastore.core.convert.TestDatastoreItem entity");
+		this.thrown.expectMessage("Unable to read property boolField");
+		this.thrown.expectMessage("Unable to convert class java.lang.Long to class java.lang.Boolean");
+
 		Entity entity = getEntityBuilder()
 				.set("stringField", "string value")
 				.set("boolField", 123L)
@@ -116,7 +138,29 @@ public class DefaultDatastoreEntityConverterTests {
 	}
 
 	@Test
+	public void testWrongTypeReadExceptionList() {
+		this.thrown.expect(DatastoreDataException.class);
+		this.thrown.expectMessage(
+				"Unable to read " +
+						"org.springframework.cloud.gcp.data.datastore.core.convert.TestDatastoreItem entity");
+		this.thrown.expectMessage("Unable to read property boolField");
+		this.thrown.expectMessage(
+				"Unable to convert class " +
+				"com.google.common.collect.SingletonImmutableList to class java.lang.Boolean");
+
+		Entity entity = getEntityBuilder()
+				.set("stringField", "string value")
+				.set("boolField", ListValue.of(true))
+				.build();
+
+		DatastoreEntityConverter entityConverter =
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
+		entityConverter.read(TestDatastoreItem.class, entity);
+	}
+
+	@Test
 	public void writeTest() {
+		byte[] bytesForBlob = { 1, 2, 3 };
 		byte[] bytes = { 1, 2, 3 };
 		TestDatastoreItem item = new TestDatastoreItem();
 		item.setDurationField(Duration.ofDays(1));
@@ -126,8 +170,10 @@ public class DefaultDatastoreEntityConverterTests {
 		item.setLongField(123L);
 		item.setLatLngField(LatLng.of(10, 20));
 		item.setTimestampField(Timestamp.ofTimeSecondsAndNanos(30, 40));
-		item.setBlobField(Blob.copyFrom(bytes));
+		item.setBlobField(Blob.copyFrom(bytesForBlob));
 		item.setIntField(99);
+		item.setEnumField(TestDatastoreItem.Color.BLACK);
+		item.setByteArrayField(bytes);
 
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
@@ -148,8 +194,11 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(entity.getTimestamp("timestampField")).as("validate timestamp field")
 				.isEqualTo(Timestamp.ofTimeSecondsAndNanos(30, 40));
 		assertThat(entity.getBlob("blobField")).as("validate blob field")
-				.isEqualTo(Blob.copyFrom(bytes));
+				.isEqualTo(Blob.copyFrom(bytesForBlob));
 		assertThat(entity.getLong("intField")).as("validate int field").isEqualTo(99L);
+		assertThat(entity.getString("enumField")).as("validate enum field").isEqualTo("BLACK");
+		assertThat(entity.getBlob("byteArrayField")).as("validate blob field")
+				.isEqualTo(Blob.copyFrom(bytes));
 	}
 
 	@Test
@@ -175,41 +224,35 @@ public class DefaultDatastoreEntityConverterTests {
 				.as("validate null field").isTrue();
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void testUnsupportedTypeWriteException() {
-		TestDatastoreItemUnsupportedFields item = new TestDatastoreItemUnsupportedFields();
+		this.thrown.expect(DatastoreDataException.class);
+		this.thrown.expectMessage("Unable to write testItemUnsupportedFields.unsupportedField");
+		this.thrown.expectMessage("Unable to convert class " +
+				"org.springframework.cloud.gcp.data.datastore.core.convert." +
+				"TestItemUnsupportedFields$NewType to Datastore supported type.");
+
+		TestItemUnsupportedFields item = new TestItemUnsupportedFields();
 		item.setStringField("string value");
-		item.setUnsupportedField(new TestDatastoreItemUnsupportedFields.UnsupportedType(true));
+		item.setUnsupportedField(new TestItemUnsupportedFields.NewType(true));
 
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
-		System.out.println(builder.build());
 	}
 
 	@Test
 	public void testUnsupportedTypeWrite() {
-		TestDatastoreItemUnsupportedFields item = new TestDatastoreItemUnsupportedFields();
+		TestItemUnsupportedFields item = new TestItemUnsupportedFields();
 		item.setStringField("string value");
-		item.setUnsupportedField(new TestDatastoreItemUnsupportedFields.UnsupportedType(true));
+		item.setUnsupportedField(new TestItemUnsupportedFields.NewType(true));
 
 		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(
 				new DatastoreMappingContext(), new TwoStepsConversions(new DatastoreCustomConversions(
 				Arrays.asList(
-						new Converter<Integer, TestDatastoreItemUnsupportedFields.UnsupportedType>() {
-							@Override
-							public TestDatastoreItemUnsupportedFields.UnsupportedType convert(Integer source) {
-								return new TestDatastoreItemUnsupportedFields.UnsupportedType(source == 1);
-							}
-						},
-						new Converter<TestDatastoreItemUnsupportedFields.UnsupportedType, Integer>() {
-							@Override
-							public Integer convert(TestDatastoreItemUnsupportedFields.UnsupportedType source) {
-								return source.isVal() ? 1 : 0;
-							}
-
-						}
+						getIntegerToNewTypeConverter(),
+						getNewTypeToIntegerConverter()
 				))));
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -220,10 +263,222 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(entity.getString("stringField")).as("validate string field")
 				.isEqualTo("string value");
 
-		TestDatastoreItemUnsupportedFields readItem =
-				entityConverter.read(TestDatastoreItemUnsupportedFields.class, entity);
+		TestItemUnsupportedFields readItem =
+				entityConverter.read(TestItemUnsupportedFields.class, entity);
 
 		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
+	}
+
+	@Test
+	public void testCollectionFieldsUnsupportedCollection() {
+		this.thrown.expect(DatastoreDataException.class);
+		this.thrown.expectMessage("Unable to read " +
+				"org.springframework.cloud.gcp.data.datastore.core.convert.TestDatastoreItemCollections entity;");
+		this.thrown.expectMessage("Unable to read property doubleSet;");
+		this.thrown.expectMessage(
+				"Failed to convert from type [java.util.ArrayList<?>] " +
+						"to type [com.google.common.collect.ImmutableSet<?>]");
+
+		TestDatastoreItemCollections item = new TestDatastoreItemCollections(
+				Arrays.asList(1, 2),
+				ImmutableSet.of(3.14, 2.71),
+				new String[] { "abc", "def" }, new boolean[] {true, false}, null, null);
+
+		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
+
+		Entity.Builder builder = getEntityBuilder();
+		entityConverter.write(item, builder);
+		Entity entity = builder.build();
+
+		entityConverter.read(TestDatastoreItemCollections.class, entity);
+	}
+
+	@Test
+	public void testCollectionFields() {
+		byte[][] bytes = {{1, 2}, {3, 4}};
+		List<byte[]> listByteArray = Arrays.asList(bytes);
+		TestDatastoreItemCollections item =
+				new TestDatastoreItemCollections(
+						Arrays.asList(1, 2),
+						ImmutableSet.of(3.14, 2.71),
+						new String[]{"abc", "def"}, new boolean[] {true, false}, bytes, listByteArray);
+
+		DatastoreEntityConverter entityConverter =
+				new DefaultDatastoreEntityConverter(
+						new DatastoreMappingContext(),
+						new TwoStepsConversions(new DatastoreCustomConversions(
+								Collections.singletonList(
+										new Converter<List<?>, ImmutableSet<?>>() {
+											@Override
+											public ImmutableSet<?> convert(List<?> source) {
+												return ImmutableSet.copyOf(source);
+											}
+										}))));
+
+		Entity.Builder builder = getEntityBuilder();
+		entityConverter.write(item, builder);
+		Entity entity = builder.build();
+
+		List<Value<?>> intList = entity.getList("intList");
+		assertThat(intList.stream().map(Value::get).collect(Collectors.toList()))
+				.as("validate int list values").isEqualTo(Arrays.asList(1L, 2L));
+
+		List<Value<?>> stringArray = entity.getList("stringArray");
+		assertThat(stringArray.stream().map(Value::get).collect(Collectors.toList()))
+				.as("validate string array values").isEqualTo(Arrays.asList("abc", "def"));
+
+		List<Value<?>> doubleSet = entity.getList("doubleSet");
+		assertThat(doubleSet.stream().map(Value::get).collect(Collectors.toSet()))
+				.as("validate double set values")
+				.isEqualTo(new HashSet<>(Arrays.asList(3.14, 2.71)));
+
+		List<Value<?>> bytesVals = entity.getList("bytes");
+		assertThat(bytesVals.stream().map(Value::get).collect(Collectors.toList()))
+				.as("validate array of byte[] values")
+				.isEqualTo(Arrays.asList(Blob.copyFrom(new byte[]{1, 2}), Blob.copyFrom(new byte[]{3, 4})));
+
+		List<Value<?>> listByteArrayVals = entity.getList("listByteArray");
+		assertThat(listByteArrayVals.stream().map(Value::get).collect(Collectors.toList()))
+				.as("validate list of byte[]")
+				.isEqualTo(Arrays.asList(Blob.copyFrom(new byte[]{1, 2}), Blob.copyFrom(new byte[]{3, 4})));
+
+		TestDatastoreItemCollections readItem =
+				entityConverter.read(TestDatastoreItemCollections.class, entity);
+		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
+	}
+
+	@Test
+	public void testCollectionFieldsNulls() {
+		TestDatastoreItemCollections item =
+				new TestDatastoreItemCollections(
+						Arrays.asList(1, 2),
+						null,
+						null, new boolean[] {true, false}, null, null);
+
+		DatastoreEntityConverter entityConverter =
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
+
+		Entity.Builder builder = getEntityBuilder();
+		entityConverter.write(item, builder);
+		Entity entity = builder.build();
+
+		List<Value<?>> intList = entity.getList("intList");
+		assertThat(intList.stream().map(Value::get).collect(Collectors.toList()))
+				.as("validate int list values").isEqualTo(Arrays.asList(1L, 2L));
+
+		List<Value<?>> stringArray = entity.getList("stringArray");
+		assertThat(stringArray)
+				.as("validate string array is null").isNull();
+
+		List<Value<?>> doubleSet = entity.getList("doubleSet");
+		assertThat(doubleSet)
+				.as("validate double set is null")
+				.isNull();
+
+		TestDatastoreItemCollections readItem =
+				entityConverter.read(TestDatastoreItemCollections.class, entity);
+		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
+
+	}
+
+	@Test
+	public void testCollectionFieldsUnsupported() {
+		this.thrown.expect(DatastoreDataException.class);
+		this.thrown.expectMessage("Unable to write collectionOfUnsupportedTypes.unsupportedElts");
+		this.thrown.expectMessage("Unable to convert " +
+						"class org.springframework.cloud.gcp.data.datastore.core.convert." +
+						"TestItemUnsupportedFields$NewType to Datastore supported type.");
+
+		TestItemUnsupportedFields.CollectionOfUnsupportedTypes item = getCollectionOfUnsupportedTypesItem();
+
+		DatastoreEntityConverter entityConverter =
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext());
+
+		Entity.Builder builder = getEntityBuilder();
+		entityConverter.write(item, builder);
+	}
+
+	@Test
+	public void testCollectionFieldsUnsupportedWriteOnly() {
+		TestItemUnsupportedFields.CollectionOfUnsupportedTypes item = getCollectionOfUnsupportedTypesItem();
+
+		DatastoreEntityConverter entityConverter =
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
+						new TwoStepsConversions(new DatastoreCustomConversions(Collections.singletonList(
+								getNewTypeToIntegerConverter()))));
+
+		Entity.Builder builder = getEntityBuilder();
+		entityConverter.write(item, builder);
+		Entity entity = builder.build();
+
+		List<Value<?>> intList = entity.getList("unsupportedElts");
+		assertThat(intList.stream().map(Value::get).collect(Collectors.toList()))
+				.as("validate int list values").isEqualTo(Arrays.asList(1L, 0L));
+	}
+
+	@Test
+	public void testCollectionFieldsUnsupportedWriteReadException() {
+		this.thrown.expect(DatastoreDataException.class);
+		this.thrown.expectMessage(
+				"Unable to read org.springframework.cloud.gcp.data.datastore.core.convert." +
+						"TestItemUnsupportedFields$CollectionOfUnsupportedTypes entity");
+		this.thrown.expectMessage("Unable to read property unsupportedElts");
+		this.thrown.expectMessage("Unable process elements of a collection");
+		this.thrown.expectMessage(
+				"No converter found capable of converting from type [java.lang.Integer] " +
+				"to type [org.springframework.cloud.gcp.data.datastore.core.convert." +
+				"TestItemUnsupportedFields$NewType]");
+
+		TestItemUnsupportedFields.CollectionOfUnsupportedTypes item = getCollectionOfUnsupportedTypesItem();
+
+		DatastoreEntityConverter entityConverter =
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
+						new TwoStepsConversions(new DatastoreCustomConversions(Collections.singletonList(
+								getNewTypeToIntegerConverter()
+						))));
+
+		Entity.Builder builder = getEntityBuilder();
+		entityConverter.write(item, builder);
+		Entity entity = builder.build();
+
+		entityConverter.read(TestItemUnsupportedFields.CollectionOfUnsupportedTypes.class, entity);
+	}
+
+	@Test
+	public void testCollectionFieldsUnsupportedWriteRead() {
+		TestItemUnsupportedFields.CollectionOfUnsupportedTypes item = getCollectionOfUnsupportedTypesItem();
+
+		DatastoreEntityConverter entityConverter =
+				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
+						new TwoStepsConversions(new DatastoreCustomConversions(Arrays.asList(
+								getIntegerToNewTypeConverter(),
+								getNewTypeToIntegerConverter()
+						))));
+
+		Entity.Builder builder = getEntityBuilder();
+		entityConverter.write(item, builder);
+		Entity entity = builder.build();
+
+		List<Value<?>> intList = entity.getList("unsupportedElts");
+		assertThat(intList.stream().map(Value::get).collect(Collectors.toList()))
+				.as("validate long list values").isEqualTo(Arrays.asList(1L, 0L));
+
+		TestItemUnsupportedFields.CollectionOfUnsupportedTypes read =
+				entityConverter.read(TestItemUnsupportedFields.CollectionOfUnsupportedTypes.class, entity);
+
+		assertThat(read.equals(item)).as("read object should be equal to original").isTrue();
+
+	}
+
+	private TestItemUnsupportedFields.CollectionOfUnsupportedTypes getCollectionOfUnsupportedTypesItem() {
+		TestItemUnsupportedFields.CollectionOfUnsupportedTypes item =
+				new TestItemUnsupportedFields.CollectionOfUnsupportedTypes();
+
+		item.getUnsupportedElts().addAll(
+				Arrays.asList(
+						new TestItemUnsupportedFields.NewType(true),
+						new TestItemUnsupportedFields.NewType(false)));
+		return item;
 	}
 
 	@Test
@@ -254,4 +509,23 @@ public class DefaultDatastoreEntityConverterTests {
 	private Entity.Builder getEntityBuilder() {
 		return Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"));
 	}
+
+	private static Converter<TestItemUnsupportedFields.NewType, Integer> getNewTypeToIntegerConverter() {
+		return new Converter<TestItemUnsupportedFields.NewType, Integer>() {
+			@Override
+			public Integer convert(TestItemUnsupportedFields.NewType source) {
+				return source.isVal() ? 1 : 0;
+			}
+		};
+	}
+
+	private static Converter<Integer, TestItemUnsupportedFields.NewType> getIntegerToNewTypeConverter() {
+		return new Converter<Integer, TestItemUnsupportedFields.NewType>() {
+			@Override
+			public TestItemUnsupportedFields.NewType convert(Integer source) {
+				return new TestItemUnsupportedFields.NewType(source == 1);
+			}
+		};
+	}
+
 }

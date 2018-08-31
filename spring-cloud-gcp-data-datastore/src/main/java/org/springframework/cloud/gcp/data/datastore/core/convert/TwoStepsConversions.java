@@ -16,14 +16,25 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.google.cloud.datastore.Blob;
+import com.google.cloud.datastore.ListValue;
+import com.google.cloud.datastore.Value;
+
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
+import org.springframework.core.convert.ConversionException;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.CollectionUtils;
 
 /**
  * In order to support {@link CustomConversions}, this class applies 2-step conversions.
@@ -36,6 +47,20 @@ import org.springframework.util.ClassUtils;
  * @since 1.1
  */
 public class TwoStepsConversions implements ReadWriteConversions {
+	private static final Converter<Blob, byte[]> BLOB_TO_BYTE_ARRAY_CONVERTER = new Converter<Blob, byte[]>() {
+		@Override
+		public byte[] convert(Blob source) {
+			return source.toByteArray();
+		}
+	};
+
+	private static final Converter<byte[], Blob> BYTE_ARRAY_TO_BLOB_CONVERTER = new Converter<byte[], Blob>() {
+		@Override
+		public Blob convert(byte[] source) {
+			return Blob.copyFrom(source);
+		}
+	};
+
 	private final GenericConversionService conversionService;
 
 	private final GenericConversionService internalConversionService;
@@ -49,11 +74,35 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		this.internalConversionService = new DefaultConversionService();
 		this.customConversions = customConversions;
 		this.customConversions.registerConvertersIn(this.conversionService);
+
+		this.internalConversionService.addConverter(BYTE_ARRAY_TO_BLOB_CONVERTER);
+		this.internalConversionService.addConverter(BLOB_TO_BYTE_ARRAY_CONVERTER);
+
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T convertOnRead(Object val, Class<?> targetType) {
+	public <T> T convertOnRead(Value val, Class<?> targetType, Class<?> componentType) {
+		Object unwrappedVal = val.get();
+		if (unwrappedVal instanceof Iterable && componentType != null) {
+			try {
+				List<?> elements = ((List<Value>) unwrappedVal)
+						.stream()
+						.map(v -> convertOnReadSingle(v.get(), componentType))
+						.collect(Collectors.toList());
+				return (T) convertCollection(elements, targetType);
+
+			}
+			catch (ConversionException | DatastoreDataException e) {
+				throw new DatastoreDataException("Unable process elements of a collection", e);
+			}
+		}
+
+		return convertOnReadSingle(unwrappedVal, targetType);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T convertOnReadSingle(Object val, Class<?> targetType) {
 		if (val == null) {
 			return null;
 		}
@@ -78,12 +127,36 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			Object secondStepVal = this.internalConversionService.convert(val, typeTargets.getFirstStepTarget());
 			result = this.conversionService.convert(secondStepVal, targetType);
 		}
-		return (T) result;
+		if (result != null) {
+			return (T) result;
+		}
+		else {
+			throw new DatastoreDataException("Unable to convert " + val.getClass() + " to " + targetType);
+		}
+
 	}
 
 	@Override
+	public Value convertOnWrite(Object proppertyVal) {
+		Object val = proppertyVal;
+		//Check if property is a non-null array
+		if (val != null && val.getClass().isArray() && val.getClass() != byte[].class) {
+			//if a propperty is an array, convert it to list
+			val = CollectionUtils.arrayToList(val);
+		}
+
+		if (val instanceof Iterable) {
+			List<Value<?>> values = new ArrayList<>();
+			for (Object propEltValue : (Iterable) val) {
+				values.add(this.convertOnWriteSingle(propEltValue));
+			}
+			return ListValue.of(values);
+		}
+		return convertOnWriteSingle(val);
+	}
+
 	@SuppressWarnings("unchecked")
-	public <T> T convertOnWrite(Object propertyVal) {
+	public Value convertOnWriteSingle(Object propertyVal) {
 		Object result = propertyVal;
 		if (result != null) {
 			TypeTargets typeTargets = computeTypeTargets(result.getClass());
@@ -95,7 +168,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 				result = this.internalConversionService.convert(result, typeTargets.getSecondStepTarget());
 			}
 		}
-		return (T) result;
+		return DatastoreNativeTypes.wrapValue(result);
 	}
 
 	private TypeTargets computeTypeTargets(Class<?> firstStepSource) {
@@ -118,6 +191,15 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			}
 		}
 		return new TypeTargets(firstStepTarget, secondStepTarget);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T convertCollection(Object collection, Class<?> target) {
+		if (collection == null || target == null || ClassUtils.isAssignableValue(target, collection)) {
+			return (T) collection;
+		}
+
+		return (T) this.conversionService.convert(collection, target);
 	}
 
 	private Optional<Class<?>> getCustomWriteTarget(Class<?> sourceType) {
