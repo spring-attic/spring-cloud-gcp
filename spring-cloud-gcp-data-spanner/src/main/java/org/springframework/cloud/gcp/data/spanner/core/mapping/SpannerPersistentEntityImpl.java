@@ -63,7 +63,7 @@ public class SpannerPersistentEntityImpl<T>
 	private static final Pattern TABLE_NAME_ILLEGAL_CHAR_PATTERN = Pattern
 			.compile("[^a-zA-Z0-9_]");
 
-	private final String tableName;
+	private final Class rawType;
 
 	private final Set<String> columnNames = new HashSet<>();
 
@@ -78,6 +78,8 @@ public class SpannerPersistentEntityImpl<T>
 	private StandardEvaluationContext context;
 
 	private SpannerCompositeKeyProperty idProperty;
+
+	private String tableName;
 
 	/**
 	 * Creates a {@link SpannerPersistentEntityImpl}
@@ -101,23 +103,21 @@ public class SpannerPersistentEntityImpl<T>
 				"A valid SpannerMappingContext is required.");
 		this.spannerMappingContext = spannerMappingContext;
 
-		Class<?> rawType = information.getType();
-		String fallback = StringUtils.uncapitalize(rawType.getSimpleName());
+		this.rawType = information.getType();
 
 		this.context = new StandardEvaluationContext();
 
 		this.table = this.findAnnotation(Table.class);
-		this.tableName = this.hasTableName() ? this.table.name() : fallback;
 		this.tableNameExpression = detectExpression();
 	}
 
-	protected boolean hasTableName() {
+	protected boolean hasAnnotatedTableName() {
 		return this.table != null && StringUtils.hasText(this.table.name());
 	}
 
 	@Nullable
 	private Expression detectExpression() {
-		if (!hasTableName()) {
+		if (!hasAnnotatedTableName()) {
 			return null;
 		}
 
@@ -310,14 +310,25 @@ public class SpannerPersistentEntityImpl<T>
 
 	@Override
 	public String tableName() {
-		try {
-			return validateTableName(this.tableNameExpression == null
-					? this.tableName
-					: this.tableNameExpression.getValue(this.context, String.class));
+		if (this.tableName == null) {
+			if (this.hasAnnotatedTableName()) {
+				try {
+					this.tableName = validateTableName(
+							this.tableNameExpression == null ? this.table.name()
+									: this.tableNameExpression.getValue(this.context,
+											String.class));
+				}
+				catch (RuntimeException e) {
+					throw new SpannerDataException(
+							"Error getting table name for " + getType().getSimpleName(),
+							e);
+				}
+			}
+			else {
+				this.tableName = StringUtils.uncapitalize(this.rawType.getSimpleName());
+			}
 		}
-		catch (RuntimeException e) {
-			throw new SpannerDataException("Error getting table name for " + getType().getSimpleName(), e);
-		}
+		return this.tableName;
 	}
 
 	// Because SpEL expressions in table name definitions are allowed, validation is
