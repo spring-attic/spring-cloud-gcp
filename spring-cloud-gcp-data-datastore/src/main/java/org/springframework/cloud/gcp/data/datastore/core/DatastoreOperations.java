@@ -17,7 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.core;
 
 import com.google.cloud.datastore.Entity;
-import com.google.cloud.datastore.GqlQuery;
+import com.google.cloud.datastore.Query;
 
 /**
  * An interface of operations that can be done with Cloud Datastore.
@@ -129,7 +129,7 @@ public interface DatastoreOperations {
 	 * @return a list of the objects found. If no keys could be found the list will be
 	 * empty.
 	 */
-	<T> Iterable<T> query(GqlQuery<Entity> gqlQuery, Class<T> entityClass);
+	<T> Iterable<T> query(Query<Entity> gqlQuery, Class<T> entityClass);
 
 	/**
 	 * Get all the entities of the given domain type.
