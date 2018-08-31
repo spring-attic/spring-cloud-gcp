@@ -382,7 +382,36 @@ public class MyApplication {
 
 ==== Query methods by convention
 
-This feature is not supported yet.
+[source, java]
+----
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
+    List<Trader> findByAction(String action);
+
+	int countByAction(String action);
+
+  boolean existsByAction(String action);
+
+	List<Trade> findTop3ByActionAndSymbolAndPriceGreaterThanAndPriceLessThanOrEqualOrderBySymbolDesc(
+  			String action, String symbol, double priceFloor, double priceCeiling);
+}
+----
+
+In the example above, the {spring-data-commons-ref}/#repositories.query-methods[query methods]
+in `TradeRepository` are generated based on the name of the methods, using the
+{spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation
+naming convention].
+
+Cloud Datastore only supports filter components joined by AND, and the following operations:
+
+* `equals`
+* `greater than or equals`
+* `greater than`
+* `less than or equals`
+* `less than`
+* `is null`
+
+After writing a custom repository interface specifying just the signatures of these methods, you can
+implementations are generated for you and can be used with an auto-wired instance of the repository.
 
 ==== Custom GQL query methods
 

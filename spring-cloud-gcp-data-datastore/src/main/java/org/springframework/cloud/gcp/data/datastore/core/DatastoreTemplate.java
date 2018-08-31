@@ -135,8 +135,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public <T> Iterable<T> query(Query<Entity> gqlQuery, Class<T> entityClass) {
-		return convertEntities(this.datastore.run(gqlQuery), entityClass);
+	public <T> Iterable<T> query(Query<Entity> query, Class<T> entityClass) {
+		return convertEntities(this.datastore.run(query), entityClass);
 	}
 
 	@Override

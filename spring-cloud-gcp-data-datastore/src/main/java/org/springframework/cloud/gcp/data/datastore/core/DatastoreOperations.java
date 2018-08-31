@@ -122,14 +122,14 @@ public interface DatastoreOperations {
 	<T> Iterable<T> findAllById(Iterable<?> ids, Class<T> entityClass);
 
 	/**
-	 * Finds objects by using a GQL statement.
-	 * @param gqlQuery the GQL query to execute.
+	 * Finds objects by using a Cloud Datastore query.
+	 * @param query the query to execute.
 	 * @param entityClass the type of object to retrieve.
 	 * @param <T> the type of object to retrieve.
 	 * @return a list of the objects found. If no keys could be found the list will be
 	 * empty.
 	 */
-	<T> Iterable<T> query(Query<Entity> gqlQuery, Class<T> entityClass);
+	<T> Iterable<T> query(Query<Entity> query, Class<T> entityClass);
 
 	/**
 	 * Get all the entities of the given domain type.
