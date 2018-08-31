@@ -16,11 +16,18 @@
 
 package org.springframework.cloud.gcp.data.datastore.it;
 
+import java.util.List;
+
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
+import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
  * @author Chengyuan Zhao
  */
 public interface TestEntityRepository extends DatastoreRepository<TestEntity, String> {
+
+	@Query("select * from  test_entities_ci where id = @id_val")
+	List<TestEntity> findEntitiesWithCustomQuery(@Param("id_val") String id);
 
 }

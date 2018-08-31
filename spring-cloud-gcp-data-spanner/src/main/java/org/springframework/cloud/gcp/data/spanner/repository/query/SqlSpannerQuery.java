@@ -106,7 +106,8 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 	}
 
 	private String resolveEntityClassNames(String sql) {
-		Pattern pattern = Pattern.compile("\\:\\S+\\:");
+		Pattern pattern = Pattern.compile("\\" + ENTITY_CLASS_NAME_BOOKEND + "\\S+\\"
+				+ ENTITY_CLASS_NAME_BOOKEND + "");
 		Matcher matcher = pattern.matcher(sql);
 		String result = sql;
 		while (matcher.find()) {

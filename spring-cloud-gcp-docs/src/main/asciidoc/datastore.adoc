@@ -386,15 +386,64 @@ This feature is not supported yet.
 
 ==== Custom GQL query methods
 
-This feature is not supported yet.
+Custom GQL queries can be mapped to repository methods in one of two ways:
 
-===== Query methods with named queries properties
-
-This feature is not supported yet.
+ * `namedQueries` properties file
+ * using the `@Query` annotation
 
 ===== Query methods with annotation
 
-This feature is not supported yet.
+Using the `@Query` annotation:
+
+The names of the tags of the GQL correspond to the `@Param` annotated names of the method parameters.
+
+[source, java]
+----
+public interface TraderRepository extends CrudRepository<Trader, String> {
+
+  @Query("SELECT * FROM traders WHERE name = @trader_name")
+  List<Trader> tradersByName(@Param("trader_name) String traderName);
+
+}
+----
+
+The following parameter types are supported:
+
+* `com.google.cloud.Timestamp`
+* `com.google.cloud.datastore.Blob`
+* `com.google.cloud.datastore.Key`
+* `com.google.cloud.datastore.Cursor`
+* `java.lang.Boolean`
+* `java.lang.Double`
+* `java.lang.Long`
+* `java.lang.String`
+
+With the exception of `Cursor`, array forms of each of the types are also supported.
+
+
+===== Query methods with named queries properties
+
+You can also specify queries with Cloud Datastore parameter tags and SpEL expressions in properties files.
+
+By default, the `namedQueriesLocation` attribute on `@EnableDatastoreRepositories` points to the
+`META-INF/datastore-named-queries.properties` file.
+You can specify the query for a method in the properties file by providing the GQL as the value for
+the "interface.method" property:
+
+[source, properties]
+----
+Trader.fetchByName=SELECT * FROM traders WHERE name = @tag0
+----
+
+[source, java]
+----
+public interface TraderRepository extends CrudRepository<Trader, String> {
+
+	// This method uses the query from the properties file instead of one generated based on name.
+	List<Trader> fetchByName(@Param("tag0") String traderName);
+
+}
+----
 
 ==== Projections
 
