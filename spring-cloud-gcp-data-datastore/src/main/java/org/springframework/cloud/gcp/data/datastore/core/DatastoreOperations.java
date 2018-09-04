@@ -156,7 +156,7 @@ public interface DatastoreOperations {
 	/**
 	 * Performs multiple read and write operations in a single transaction.
 	 * @param operations the function representing the operations to perform using a
-	 * DatastoreRepository based on a single transaction.
+	 * DatastoreOperations based on a single transaction.
 	 * @param <A> the final return type of the operations.
 	 * @return the final result of the transaction.
 	 */
