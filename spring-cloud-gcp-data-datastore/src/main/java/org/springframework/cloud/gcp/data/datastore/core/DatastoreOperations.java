@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
+import java.util.function.Function;
+
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.GqlQuery;
 
@@ -150,4 +152,13 @@ public interface DatastoreOperations {
 	 * @return true if the given ID refers to an existing entity. False otherwise.
 	 */
 	<T> boolean existsById(Object id, Class<T> entityClass);
+
+	/**
+	 * Performs multiple read and write operations in a single transaction.
+	 * @param operations the function representing the operations to perform using a
+	 * DatastoreRepository based on a single transaction.
+	 * @param <A> the final return type of the operations.
+	 * @return the final result of the transaction.
+	 */
+	<A> A performTransaction(Function<DatastoreOperations, A> operations);
 }

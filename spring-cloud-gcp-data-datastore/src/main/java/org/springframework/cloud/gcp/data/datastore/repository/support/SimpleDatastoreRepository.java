@@ -19,7 +19,7 @@ package org.springframework.cloud.gcp.data.datastore.repository.support;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.data.domain.Page;
@@ -36,13 +36,13 @@ import org.springframework.util.Assert;
  */
 public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, ID> {
 
-	private final DatastoreTemplate datastoreTemplate;
+	private final DatastoreOperations datastoreTemplate;
 
 	private final Class<T> entityType;
 
-	public SimpleDatastoreRepository(DatastoreTemplate datastoreTemplate,
+	public SimpleDatastoreRepository(DatastoreOperations datastoreTemplate,
 			Class<T> entityType) {
-		Assert.notNull(datastoreTemplate, "A non-null DatastoreTemplate is required.");
+		Assert.notNull(datastoreTemplate, "A non-null DatastoreOperations is required.");
 		Assert.notNull(entityType, "A non-null entity type is required.");
 		this.datastoreTemplate = datastoreTemplate;
 		this.entityType = entityType;
@@ -50,8 +50,8 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 
 	@Override
 	public <A> A performTransaction(Function<DatastoreRepository<T, ID>, A> operations) {
-		throw new DatastoreDataException(
-				"Running a function as a transaction is not yet supported.");
+		return this.datastoreTemplate.performTransaction(template -> operations
+				.apply(new SimpleDatastoreRepository<>(template, this.entityType)));
 	}
 
 	@Override
