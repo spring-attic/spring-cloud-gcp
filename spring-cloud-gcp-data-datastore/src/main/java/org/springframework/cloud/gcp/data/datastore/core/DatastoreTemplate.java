@@ -162,7 +162,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 	public <A> A performTransaction(Function<DatastoreOperations, A> operations) {
 		if (!(this.datastore instanceof Datastore)) {
 			throw new DatastoreDataException(
-					"A Datastore object is required to run transactions.");
+					"This DatastoreReadWriter cannot be used to run transactions. A full Datastore service"
+							+ " object is required to run functions as transactions.");
 		}
 		return ((Datastore) this.datastore).runInTransaction(
 				readerWriter -> operations.apply(new DatastoreTemplate(readerWriter,
