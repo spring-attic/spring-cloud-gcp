@@ -218,25 +218,162 @@ This feature is not supported yet.
 
 ==== Supported Types
 
-Spring Data Cloud Datastore supports the following types for regular fields:
+Spring Data Cloud Datastore supports the following types for regular fields and elements of collections:
 
 * `com.google.cloud.Timestamp`
 * `com.google.cloud.datastore.Blob`
 * `com.google.cloud.datastore.LatLng`
-* `java.lang.Boolean`
-* `java.lang.Double`
-* `java.lang.Long`
-* `java.lang.Integer`
+* `java.lang.Boolean`, `boolean`
+* `java.lang.Double`, `double`
+* `java.lang.Long`, `long`
+* `java.lang.Integer`, `int`
 * `java.lang.String`
-
-
-==== Lists
-
-This feature is not supported yet.
+* `java.lang.Enum`
+* `byte[]`
 
 ==== Custom types
 
-This feature is not supported yet.
+Custom converters can be used extending the type support for user defined types.
+
+. Converters need to implement the `org.springframework.core.convert.converter.Converter` interface
+both directions.
+
+. The user defined type needs to be mapped to one the basic types supported by Cloud Datastore.
+
+. An instance of both Converters (read and write) needs to be passed to the DatastoreCustomConversions constructor,
+which then has to be made available as a `@Bean` for `SpannerEntityProcessor`.
+
+For example:
+
+We would like to have a field of type  `Album` on our `Singer` POJO:
+[source, java]
+----
+@Entity
+public class Singer {
+
+	@Id
+	private String singerId;
+
+	private String name;
+
+	private Album album;
+}
+----
+
+Where Album is a simple class:
+
+[source, java]
+----
+public class Album {
+	final private String albumName;
+
+	final private LocalDate date;
+}
+----
+
+We have to define the two converters:
+
+[source, java]
+----
+	//Converter to write custom Album type
+	static final Converter<Album, String> ALBUM_STRING_CONVERTER =
+			new Converter<Album, String>() {
+				@Override
+				public String convert(Album album) {
+					return album.getAlbumName() + " " + album.getDate().format(DateTimeFormatter.ISO_DATE);
+				}
+			};
+
+	//Converters to read custom Album type
+	static final Converter<String, Album> STRING_ALBUM_CONVERTER =
+			new Converter<String, Album>() {
+				@Override
+				public Album convert(String s) {
+					String[] parts = s.split(" ");
+					return new Album(parts[0], LocalDate.parse(parts[1], DateTimeFormatter.ISO_DATE));
+				}
+			};
+----
+
+That will be configured in our `@Configuration` file:
+
+[source, java]
+----
+@Configuration
+public class ConverterConfiguration {
+	@Bean
+	public DatastoreCustomConversions datastoreCustomConversions() {
+		return new DatastoreCustomConversions(
+				Arrays.asList(
+						ALBUM_STRING_CONVERTER,
+						STRING_ALBUM_CONVERTER));
+	}
+}
+----
+
+==== Collections and arrays
+
+Arrays and collections (types that implement java.util.Collection) of supported types are supported.
+Elements a converted to Cloud Datastore supported types individually. `byte[]` is an exception, it is converted to
+`com.google.cloud.datastore.Blob`.
+
+
+==== Custom Converter for collections
+Users can provide converters from  `List<?>` to the custom collection type.
+Only read converter is necessary, the Collection API is used on write side to convert a collection to
+the internal list type.
+
+Collection converters need to implement the `org.springframework.core.convert.converter.Converter` interface.
+
+
+Example:
+
+Let's improve the Singer class from the previous example.
+Instead of a field of type `Album`,
+we would like to have a field of type `ImmutableSet<Album>`:
+
+[source, java]
+----
+@Entity
+public class Singer {
+
+	@Id
+	private String singerId;
+
+	private String name;
+
+	private ImmutableSet<Album> albums;
+}
+----
+
+We have to define a read converter only:
+[source, java]
+----
+static final Converter<List<?>, ImmutableSet<?>> LIST_IMMUTABLE_SET_CONVERTER =
+			new Converter<List<?>, ImmutableSet<?>>() {
+				@Override
+				public ImmutableSet<?> convert(List<?> source) {
+					return ImmutableSet.copyOf(source);
+				}
+			};
+----
+
+And add it to the list of custom converters:
+[source, java]
+----
+@Configuration
+public class ConverterConfiguration {
+	@Bean
+	public DatastoreCustomConversions datastoreCustomConversions() {
+		return new DatastoreCustomConversions(
+				Arrays.asList(
+						LIST_IMMUTABLE_SET_CONVERTER,
+
+						ALBUM_STRING_CONVERTER,
+						STRING_ALBUM_CONVERTER));
+	}
+}
+----
 
 === Datastore Template
 
