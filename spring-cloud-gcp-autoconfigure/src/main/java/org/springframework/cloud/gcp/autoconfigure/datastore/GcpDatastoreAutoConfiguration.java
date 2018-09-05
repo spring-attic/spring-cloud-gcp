@@ -111,7 +111,7 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DatastoreCustomConversions datastoreCustomConversions(){
+	public DatastoreCustomConversions datastoreCustomConversions() {
 		return new DatastoreCustomConversions();
 	}
 
