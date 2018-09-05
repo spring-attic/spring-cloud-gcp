@@ -105,7 +105,9 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	public Object execute(Object[] parameters) {
 		List<T> results = executeRawResult(parameters);
 		if (this.tree.isCountProjection()) {
-			return results.size();
+			throw new DatastoreDataException(
+					"Count-queries are not natively supported for Cloud Datastore. "
+							+ "Please explicitly use a find-query and examine the result size.");
 		}
 		else if (this.tree.isExistsProjection()) {
 			return !results.isEmpty();

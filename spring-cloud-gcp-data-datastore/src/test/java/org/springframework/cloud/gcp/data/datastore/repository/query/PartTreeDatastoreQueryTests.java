@@ -25,7 +25,6 @@ import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.OrderBy;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -156,20 +155,16 @@ public class PartTreeDatastoreQueryTests {
 		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
 	}
 
-	@Test
-	public void countShouldReturnSizeOfResultSet() {
+	@Test(expected = DatastoreDataException.class)
+	public void countTest() {
 		List<Trade> results = new ArrayList<>();
 		results.add(new Trade());
 
 		queryWithMockResult("countByAction", results);
 
 		PartTreeDatastoreQuery spyQuery = spy(this.partTreeSpannerQuery);
-
-		doAnswer(invocation -> invocation.getArgument(0)).when(spyQuery)
-				.processRawObjectForProjection(any());
-
 		Object[] params = new Object[] { "BUY", };
-		assertEquals(1, spyQuery.execute(params));
+		spyQuery.execute(params);
 	}
 
 	@Test
