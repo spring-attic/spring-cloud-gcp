@@ -7,6 +7,9 @@ or link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-postgresql[
 
 We will create an instance, a database within the instance, populate the database and then query it.
 
+There is also a
+https://codelabs.developers.google.com/codelabs/cloud-spring-petclinic-cloudsql/index.html[codelab based on Spring PetClinic]
+that uses the same Spring libraries.
 
 == Setup
 
