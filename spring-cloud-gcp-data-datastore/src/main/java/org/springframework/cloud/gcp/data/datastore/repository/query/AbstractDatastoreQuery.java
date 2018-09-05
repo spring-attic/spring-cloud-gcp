@@ -29,13 +29,15 @@ import org.springframework.data.repository.query.RepositoryQuery;
 /**
  * Abstract class for implementing Cloud Datastore query methods.
  *
+ * @param <T> The domain type of the repository class containing this query method.
+ *
  * @author Chengyuan Zhao
  *
  * @since 1.1
  */
-abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
+public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 
-	protected final DatastoreMappingContext datastoreMappingContext;
+	final DatastoreMappingContext datastoreMappingContext;
 
 	final QueryMethod queryMethod;
 
@@ -71,7 +73,7 @@ abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 	 */
 	abstract List<T> executeRawResult(Object[] parameters);
 
-	Object applyProjection(List<T> rawResult) {
+	List applyProjection(List<T> rawResult) {
 		if (rawResult == null) {
 			return null;
 		}
@@ -80,7 +82,7 @@ abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 	}
 
 	@VisibleForTesting
-	Object processRawObjectForProjection(Object object) {
+	Object processRawObjectForProjection(T object) {
 		return this.queryMethod.getResultProcessor().processResult(object);
 	}
 }

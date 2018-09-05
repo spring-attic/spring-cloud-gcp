@@ -56,7 +56,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	private final DatastorePersistentEntity datastorePersistentEntity;
 
-	private final List<Part> filterParts;
+	private List<Part> filterParts;
 
 	/**
 	 * Constructor
@@ -74,6 +74,10 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		this.datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(this.entityType);
 
+		validateAndSetFilterParts();
+	}
+
+	private void validateAndSetFilterParts() {
 		if (this.tree.isDelete()) {
 			throw new UnsupportedOperationException(
 					"Delete queries are not supported in Cloud Datastore: "
@@ -133,7 +137,10 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			applySort(builder);
 		}
 
-		if (this.tree.isLimiting()) {
+		if (this.tree.isExistsProjection()) {
+			builder.setLimit(1);
+		}
+		else if (this.tree.isLimiting()) {
 			builder.setLimit(this.tree.getMaxResults());
 		}
 
@@ -141,17 +148,12 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private void applySort(Builder builder) {
-		OrderBy[] orders = this.tree.getSort().get().map(sort -> {
+		this.tree.getSort().get().forEach(sort -> {
 			String fieldName = ((DatastorePersistentProperty) this.datastorePersistentEntity
 					.getPersistentProperty(sort.getProperty())).getFieldName();
-			return sort.isAscending() ? OrderBy.asc(fieldName) : OrderBy.desc(fieldName);
-		}).toArray(OrderBy[]::new);
-		if (orders.length > 1) {
-			builder.setOrderBy(orders[0], Arrays.copyOfRange(orders, 1, orders.length));
-		}
-		else {
-			builder.setOrderBy(orders[0]);
-		}
+			builder.addOrderBy(sort.isAscending() ? OrderBy.asc(fieldName)
+					: OrderBy.desc(fieldName));
+		});
 	}
 
 	private Filter getFilter(Object[] parameters) {
@@ -164,9 +166,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			try {
 				switch (part.getType()) {
 				case IS_NULL:
-					filter = PropertyFilter.isNull(fieldName);
-					break;
-				case IS_EMPTY:
 					filter = PropertyFilter.isNull(fieldName);
 					break;
 				case SIMPLE_PROPERTY:
@@ -191,8 +190,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					break;
 				default:
 					throw new DatastoreDataException(
-							"Only equals, greater-than-or-equals, greater-than, less-than-or-equals, "
-									+ "less-than, and is-null are supported filters in Cloud Datastore.");
+							"Unsupported predicate keyword: " + part.getProperty());
 
 				}
 				return filter;

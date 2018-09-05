@@ -387,11 +387,11 @@ public class MyApplication {
 public interface TradeRepository extends CrudRepository<Trade, String[]> {
     List<Trader> findByAction(String action);
 
-	int countByAction(String action);
+  int countByAction(String action);
 
   boolean existsByAction(String action);
 
-	List<Trade> findTop3ByActionAndSymbolAndPriceGreaterThanAndPriceLessThanOrEqualOrderBySymbolDesc(
+  List<Trade> findTop3ByActionAndSymbolAndPriceGreaterThanAndPriceLessThanOrEqualOrderBySymbolDesc(
   			String action, String symbol, double priceFloor, double priceCeiling);
 }
 ----
