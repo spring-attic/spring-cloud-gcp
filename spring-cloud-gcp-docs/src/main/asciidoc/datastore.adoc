@@ -435,7 +435,20 @@ the first two reads utilize keys, while the third is executed using a query base
 
 ===== Indexes
 
-This feature is not supported yet.
+By default, all fields are indexed. To disable indexing on a particular field, @Unindexed annotation can be used.
+
+Example:
+[source, java]
+----
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
+
+public class ExapleItem {
+	private long indexedField;
+
+	@Unindexed
+	private long unindexedField;
+}
+----
 
 ===== Read with offsets and limits
 
