@@ -7,6 +7,8 @@ For a deep dive into the project, refer to the
 https://docs.spring.io/spring-cloud-gcp/docs/1.0.0.RELEASE/reference/htmlsingle/[Spring
 Cloud GCP 1.0 Reference Document].
 
+If you prefer to learn by doing, try https://codelabs.developers.google.com/spring[Spring on GCP codelabs].
+
 Currently, this repository provides support for:
 
 * link:spring-cloud-gcp-pubsub[Spring Cloud GCP Pub/Sub, including Spring Integration Channel Adapters]
