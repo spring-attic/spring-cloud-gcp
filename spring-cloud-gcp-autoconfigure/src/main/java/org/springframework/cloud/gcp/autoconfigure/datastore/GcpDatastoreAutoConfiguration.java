@@ -92,15 +92,8 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DatastoreMappingContext datastoreMappingContext() {
-		return new DatastoreMappingContext();
-	}
-
-	@Bean
-	@ConditionalOnMissingBean
-	public DatastoreEntityConverter datastoreEntityConverter(DatastoreMappingContext datastoreMappingContext,
-			ReadWriteConversions conversions) {
-		return new DefaultDatastoreEntityConverter(datastoreMappingContext, conversions);
+	public DatastoreCustomConversions datastoreCustomConversions() {
+		return new DatastoreCustomConversions();
 	}
 
 	@Bean
@@ -111,8 +104,15 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DatastoreCustomConversions datastoreCustomConversions() {
-		return new DatastoreCustomConversions();
+	public DatastoreMappingContext datastoreMappingContext() {
+		return new DatastoreMappingContext();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public DatastoreEntityConverter datastoreEntityConverter(DatastoreMappingContext datastoreMappingContext,
+			ReadWriteConversions conversions) {
+		return new DefaultDatastoreEntityConverter(datastoreMappingContext, conversions);
 	}
 
 	@Bean

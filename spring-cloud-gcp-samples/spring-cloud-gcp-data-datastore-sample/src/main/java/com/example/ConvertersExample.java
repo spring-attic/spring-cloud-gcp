@@ -53,7 +53,7 @@ public class ConvertersExample {
 				@Override
 				public Album convert(String s) {
 					String[] parts = s.split(" ");
-					return new Album(parts[0], LocalDate.parse(parts[1], DateTimeFormatter.ISO_DATE));
+					return new Album(parts[0], LocalDate.parse(parts[parts.length - 1], DateTimeFormatter.ISO_DATE));
 				}
 			};
 }
