@@ -110,15 +110,15 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DatastoreEntityConverter datastoreEntityConverter(DatastoreMappingContext datastoreMappingContext,
-			ReadWriteConversions conversions) {
-		return new DefaultDatastoreEntityConverter(datastoreMappingContext, conversions);
+	public ObjectToKeyFactory objectToKeyFactory(Datastore datastore) {
+		return new DatastoreServiceObjectToKeyFactory(datastore);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public ObjectToKeyFactory objectToKeyFactory(Datastore datastore) {
-		return new DatastoreServiceObjectToKeyFactory(datastore);
+	public DatastoreEntityConverter datastoreEntityConverter(DatastoreMappingContext datastoreMappingContext,
+			ReadWriteConversions conversions, ObjectToKeyFactory objectToKeyFactory) {
+		return new DefaultDatastoreEntityConverter(datastoreMappingContext, conversions, objectToKeyFactory);
 	}
 
 	@Bean

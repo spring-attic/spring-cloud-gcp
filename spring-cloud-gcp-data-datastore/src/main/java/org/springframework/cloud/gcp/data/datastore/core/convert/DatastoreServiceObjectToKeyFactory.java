@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
 
@@ -40,6 +41,11 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 	public DatastoreServiceObjectToKeyFactory(Datastore datastore) {
 		Assert.notNull(datastore, "A non-null Datastore service is required.");
 		this.datastore = datastore;
+	}
+
+	@Override
+	public IncompleteKey getIncompleteKey(String kindName) {
+		return this.datastore.newKeyFactory().setKind(kindName).newKey();
 	}
 
 	@Override

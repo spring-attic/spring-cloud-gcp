@@ -62,7 +62,7 @@ public class EntityPropertyValueProviderTests {
 				.set("blobField", Blob.copyFrom(bytes))
 				.build();
 
-		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(entity, this.twoStepsConversion);
+		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(entity, this.twoStepsConversion, null);
 
 		assertThat((String) provider.getPropertyValue(this.persistentEntity.getPersistentProperty("stringField")))
 				.as("validate string field").isEqualTo("string value");
@@ -87,7 +87,7 @@ public class EntityPropertyValueProviderTests {
 				.set("boolField", 123L)
 				.build();
 
-		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(entity, this.twoStepsConversion);
+		EntityPropertyValueProvider provider = new EntityPropertyValueProvider(entity, this.twoStepsConversion, null);
 
 		provider.getPropertyValue(this.persistentEntity.getPersistentProperty("boolField"));
 	}

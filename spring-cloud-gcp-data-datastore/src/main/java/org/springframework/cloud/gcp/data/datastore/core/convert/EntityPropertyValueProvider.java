@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.BaseEntity;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
@@ -31,14 +31,17 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
  * @since 1.1
  */
 public class EntityPropertyValueProvider implements PropertyValueProvider<DatastorePersistentProperty> {
-	private final Entity entity;
+	private final BaseEntity entity;
 
 	private final ReadWriteConversions conversion;
 
-	EntityPropertyValueProvider(Entity entity, ReadWriteConversions readWriteConversions) {
-		this.entity = entity;
+	private final DatastoreEntityConverter datastoreEntityConverter;
 
+	public EntityPropertyValueProvider(BaseEntity entity, ReadWriteConversions readWriteConversions,
+			DatastoreEntityConverter datastoreEntityConverter) {
+		this.entity = entity;
 		this.conversion = readWriteConversions;
+		this.datastoreEntityConverter = datastoreEntityConverter;
 	}
 
 	@Override
@@ -50,7 +53,10 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 			return null;
 		}
 		try {
-
+			if (persistentProperty.isEmbedded()) {
+				Class<?> type = persistentProperty.getType();
+				return (T) this.datastoreEntityConverter.read(type, this.entity.getEntity(fieldName));
+			}
 			return this.conversion.convertOnRead(
 					this.entity.getValue(fieldName),
 					persistentProperty.getType(),

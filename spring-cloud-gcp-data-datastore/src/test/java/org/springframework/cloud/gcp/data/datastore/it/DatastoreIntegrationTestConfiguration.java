@@ -79,8 +79,8 @@ public class DatastoreIntegrationTestConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public DatastoreEntityConverter datastoreEntityConverter(
-			DatastoreMappingContext datastoreMappingContext) {
-		return new DefaultDatastoreEntityConverter(datastoreMappingContext);
+			DatastoreMappingContext datastoreMappingContext, ObjectToKeyFactory objectToKeyFactory) {
+		return new DefaultDatastoreEntityConverter(datastoreMappingContext, objectToKeyFactory);
 	}
 
 	@Bean

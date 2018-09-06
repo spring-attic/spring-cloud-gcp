@@ -16,7 +16,10 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.BaseEntity;
+import com.google.cloud.datastore.EntityValue;
+import com.google.cloud.datastore.FullEntity;
+import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Value;
 import com.google.cloud.datastore.ValueBuilder;
 
@@ -45,24 +48,28 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 
 	private final ReadWriteConversions conversions;
 
+	private final ObjectToKeyFactory objectToKeyFactory;
 
-	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext) {
-		this(mappingContext, new TwoStepsConversions(new DatastoreCustomConversions()));
+	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext,
+			ObjectToKeyFactory objectToKeyFactory) {
+		this(mappingContext, new TwoStepsConversions(new DatastoreCustomConversions()), objectToKeyFactory);
 	}
 
 	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext,
-			ReadWriteConversions conversions) {
+			ReadWriteConversions conversions, ObjectToKeyFactory objectToKeyFactory) {
 		this.mappingContext = mappingContext;
 		this.conversions = conversions;
+		this.objectToKeyFactory = objectToKeyFactory;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <R> R read(Class<R> aClass, Entity entity) {
+	public <R> R read(Class<R> aClass, BaseEntity entity) {
 		DatastorePersistentEntity<R> persistentEntity = (DatastorePersistentEntity<R>) this.mappingContext
 				.getPersistentEntity(aClass);
 
-		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(entity, this.conversions);
+		EntityPropertyValueProvider propertyValueProvider =
+				new EntityPropertyValueProvider(entity, this.conversions, this);
 
 		ParameterValueProvider<DatastorePersistentProperty> parameterValueProvider =
 				new PersistentEntityParameterValueProvider<>(persistentEntity, propertyValueProvider, null);
@@ -90,15 +97,26 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void write(Object source, Entity.Builder sink) {
+	public void write(Object source, BaseEntity.Builder sink) {
 		DatastorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(source.getClass());
 		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(source);
 		persistentEntity.doWithProperties(
 				(DatastorePersistentProperty persistentProperty) -> {
 					try {
 						Object val = accessor.getProperty(persistentProperty);
+						Value convertedVal;
 
-						Value convertedVal = this.conversions.convertOnWrite(val);
+						if (persistentProperty.isEmbedded()) {
+							IncompleteKey key = this.objectToKeyFactory.getIncompleteKey(persistentEntity.kindName());
+
+							FullEntity.Builder<IncompleteKey> builder = FullEntity.newBuilder(key);
+							write(val, builder);
+							FullEntity<IncompleteKey> entity = builder.build();
+							convertedVal = EntityValue.of(entity);
+						}
+						else {
+							convertedVal = this.conversions.convertOnWrite(val);
+						}
 
 						if (persistentProperty.isUnindexed()) {
 							ValueBuilder valueBuilder = convertedVal.toBuilder();

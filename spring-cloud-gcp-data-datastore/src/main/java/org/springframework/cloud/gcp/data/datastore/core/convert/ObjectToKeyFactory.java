@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Key;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
@@ -28,6 +29,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersis
  * @since 1.1
  */
 public interface ObjectToKeyFactory {
+
+	IncompleteKey getIncompleteKey(String kindName);
 
 	/**
 	 * Get a Key from a provided ID value and a kind name. If the given ID value is
