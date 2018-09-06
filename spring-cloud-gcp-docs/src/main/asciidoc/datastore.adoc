@@ -180,18 +180,18 @@ requires a single ID value:
 public class Trade {
 	@Id
 	@Field(name = "trade_id")
-	private String tradeId;
+	String tradeId;
 
 	@Field(name = "trader_id")
-	private String traderId;
+	String traderId;
 
-	private String action;
+	String action;
 
-	private Double price;
+	Double price;
 
-	private Double shares;
+	Double shares;
 
-	private String symbol;
+	String symbol;
 }
 ----
 
@@ -260,11 +260,11 @@ We would like to have a field of type  `Album` on our `Singer` POJO and want it 
 public class Singer {
 
 	@Id
-	private String singerId;
+	String singerId;
 
-	private String name;
+	String name;
 
-	private Album album;
+	Album album;
 }
 ----
 
@@ -273,9 +273,9 @@ Where Album is a simple class:
 [source, java]
 ----
 public class Album {
-	final private String albumName;
+	final String albumName;
 
-	final private LocalDate date;
+	final LocalDate date;
 }
 ----
 
@@ -347,11 +347,11 @@ we would like to have a field of type `ImmutableSet<Album>`:
 public class Singer {
 
 	@Id
-	private String singerId;
+	String singerId;
 
-	private String name;
+	String name;
 
-	private ImmutableSet<Album> albums;
+	ImmutableSet<Album> albums;
 }
 ----
 
@@ -451,11 +451,11 @@ Example:
 ----
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
 
-public class ExapleItem {
-	private long indexedField;
+public class ExampleItem {
+	long indexedField;
 
 	@Unindexed
-	private long unindexedField;
+	long unindexedField;
 }
 ----
 
