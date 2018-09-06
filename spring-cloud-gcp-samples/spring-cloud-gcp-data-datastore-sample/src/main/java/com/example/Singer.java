@@ -16,12 +16,15 @@
 
 package com.example;
 
+import com.google.common.collect.ImmutableSet;
+
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.data.annotation.Id;
 
 /**
  * @author Chengyuan Zhao
+ * @author Dmitry Solomakha
  */
 @Entity(name = "singers")
 public class Singer {
@@ -36,37 +39,16 @@ public class Singer {
 	@Field(name = "last_name")
 	private String lastName;
 
+	private ImmutableSet<Album> albums;
+
 	public Singer() {
 	}
 
-	public Singer(String id, String firstName, String lastName) {
+	public Singer(String id, String firstName, String lastName, ImmutableSet<Album> albums) {
 		this.singerId = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
-	}
-
-	public String getSingerId() {
-		return this.singerId;
-	}
-
-	public void setSingerId(String singerId) {
-		this.singerId = singerId;
-	}
-
-	public String getFirstName() {
-		return this.firstName;
-	}
-
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return this.lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+		this.albums = albums;
 	}
 
 	@Override
@@ -75,6 +57,7 @@ public class Singer {
 				"singerId='" + this.singerId + '\'' +
 				", firstName='" + this.firstName + '\'' +
 				", lastName='" + this.lastName + '\'' +
+				", albums=" + this.albums +
 				'}';
 	}
 }

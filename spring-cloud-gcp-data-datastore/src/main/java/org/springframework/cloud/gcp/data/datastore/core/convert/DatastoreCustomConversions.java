@@ -50,7 +50,7 @@ public class DatastoreCustomConversions extends CustomConversions {
 				StoreConversions.of(DatastoreNativeTypes.HOLDER, STORE_CONVERTERS);
 	}
 
-	DatastoreCustomConversions() {
+	public DatastoreCustomConversions() {
 		this(Collections.emptyList());
 	}
 

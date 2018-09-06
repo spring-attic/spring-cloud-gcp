@@ -34,10 +34,13 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreServiceObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DefaultDatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
+import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
+import org.springframework.cloud.gcp.data.datastore.core.convert.TwoStepsConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -89,14 +92,27 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
+	public DatastoreCustomConversions datastoreCustomConversions() {
+		return new DatastoreCustomConversions();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public ReadWriteConversions datastoreReadWriteConversions(DatastoreCustomConversions customConversions) {
+		return new TwoStepsConversions(customConversions);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
 	public DatastoreMappingContext datastoreMappingContext() {
 		return new DatastoreMappingContext();
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DatastoreEntityConverter datastoreEntityConverter(DatastoreMappingContext datastoreMappingContext) {
-		return new DefaultDatastoreEntityConverter(datastoreMappingContext);
+	public DatastoreEntityConverter datastoreEntityConverter(DatastoreMappingContext datastoreMappingContext,
+			ReadWriteConversions conversions) {
+		return new DefaultDatastoreEntityConverter(datastoreMappingContext, conversions);
 	}
 
 	@Bean

@@ -180,18 +180,18 @@ requires a single ID value:
 public class Trade {
 	@Id
 	@Field(name = "trade_id")
-	private String tradeId;
+	String tradeId;
 
 	@Field(name = "trader_id")
-	private String traderId;
+	String traderId;
 
-	private String action;
+	String action;
 
-	private Double price;
+	Double price;
 
-	private Double shares;
+	Double shares;
 
-	private String symbol;
+	String symbol;
 }
 ----
 
@@ -218,25 +218,171 @@ This feature is not supported yet.
 
 ==== Supported Types
 
-Spring Data Cloud Datastore supports the following types for regular fields:
+Spring Data Cloud Datastore supports the following types for regular fields and elements of collections:
 
-* `com.google.cloud.Timestamp`
-* `com.google.cloud.datastore.Blob`
-* `com.google.cloud.datastore.LatLng`
-* `java.lang.Boolean`
-* `java.lang.Double`
-* `java.lang.Long`
-* `java.lang.Integer`
-* `java.lang.String`
+[options="header"]
+|===
+| Type| Stored as
+| `com.google.cloud.Timestamp`|com.google.cloud.datastore.TimestampValue
+| `com.google.cloud.datastore.Blob`|com.google.cloud.datastore.BlobValue
+| `com.google.cloud.datastore.LatLng`|com.google.cloud.datastore.LatLngValue
+| `java.lang.Boolean`, `boolean`|com.google.cloud.datastore.BooleanValue
+| `java.lang.Double`, `double`|com.google.cloud.datastore.DoubleValue
+| `java.lang.Long`, `long`|com.google.cloud.datastore.LongValue
+| `java.lang.Integer`, `int`|com.google.cloud.datastore.LongValue
+| `java.lang.String`|com.google.cloud.datastore.StringValue
+| `com.google.cloud.datastore.Entity`|com.google.cloud.datastore.EntityValue
+| `com.google.cloud.datastore.Key`|com.google.cloud.datastore.KeyValue
+| `byte[]`|com.google.cloud.datastore.BlobValue
+|===
 
-
-==== Lists
-
-This feature is not supported yet.
+In addition, all types that can be converted to the ones listed in the table by
+`org.springframework.core.convert.support.DefaultConversionService` are supported.
 
 ==== Custom types
 
-This feature is not supported yet.
+Custom converters can be used extending the type support for user defined types.
+
+. Converters need to implement the `org.springframework.core.convert.converter.Converter` interface in
+both directions.
+
+. The user defined type needs to be mapped to one of the basic types supported by Cloud Datastore.
+
+. An instance of both Converters (read and write) needs to be passed to the `DatastoreCustomConversions` constructor,
+which then has to be made available as a `@Bean` for `DatastoreCustomConversions`.
+
+For example:
+
+We would like to have a field of type  `Album` on our `Singer` POJO and want it to be stored as a string property:
+[source, java]
+----
+@Entity
+public class Singer {
+
+	@Id
+	String singerId;
+
+	String name;
+
+	Album album;
+}
+----
+
+Where Album is a simple class:
+
+[source, java]
+----
+public class Album {
+	String albumName;
+
+	LocalDate date;
+}
+----
+
+We have to define the two converters:
+
+[source, java]
+----
+	//Converter to write custom Album type
+	static final Converter<Album, String> ALBUM_STRING_CONVERTER =
+			new Converter<Album, String>() {
+				@Override
+				public String convert(Album album) {
+					return album.getAlbumName() + " " + album.getDate().format(DateTimeFormatter.ISO_DATE);
+				}
+			};
+
+	//Converters to read custom Album type
+	static final Converter<String, Album> STRING_ALBUM_CONVERTER =
+			new Converter<String, Album>() {
+				@Override
+				public Album convert(String s) {
+					String[] parts = s.split(" ");
+					return new Album(parts[0], LocalDate.parse(parts[parts.length - 1], DateTimeFormatter.ISO_DATE));
+				}
+			};
+----
+
+That will be configured in our `@Configuration` file:
+
+[source, java]
+----
+@Configuration
+public class ConverterConfiguration {
+	@Bean
+	public DatastoreCustomConversions datastoreCustomConversions() {
+		return new DatastoreCustomConversions(
+				Arrays.asList(
+						ALBUM_STRING_CONVERTER,
+						STRING_ALBUM_CONVERTER));
+	}
+}
+----
+
+==== Collections and arrays
+
+Arrays and collections (types that implement `java.util.Collection`) of supported types are supported.
+They are stored as `com.google.cloud.datastore.ListValue`.
+Elements are converted to Cloud Datastore supported types individually. `byte[]` is an exception, it is converted to
+`com.google.cloud.datastore.Blob`.
+
+
+==== Custom Converter for collections
+Users can provide converters from  `List<?>` to the custom collection type.
+Only read converter is necessary, the Collection API is used on the write side to convert a collection to
+the internal list type.
+
+Collection converters need to implement the `org.springframework.core.convert.converter.Converter` interface.
+
+
+Example:
+
+Let's improve the Singer class from the previous example.
+Instead of a field of type `Album`,
+we would like to have a field of type `ImmutableSet<Album>`:
+
+[source, java]
+----
+@Entity
+public class Singer {
+
+	@Id
+	String singerId;
+
+	String name;
+
+	ImmutableSet<Album> albums;
+}
+----
+
+We have to define a read converter only:
+[source, java]
+----
+static final Converter<List<?>, ImmutableSet<?>> LIST_IMMUTABLE_SET_CONVERTER =
+			new Converter<List<?>, ImmutableSet<?>>() {
+				@Override
+				public ImmutableSet<?> convert(List<?> source) {
+					return ImmutableSet.copyOf(source);
+				}
+			};
+----
+
+And add it to the list of custom converters:
+[source, java]
+----
+@Configuration
+public class ConverterConfiguration {
+	@Bean
+	public DatastoreCustomConversions datastoreCustomConversions() {
+		return new DatastoreCustomConversions(
+				Arrays.asList(
+						LIST_IMMUTABLE_SET_CONVERTER,
+
+						ALBUM_STRING_CONVERTER,
+						STRING_ALBUM_CONVERTER));
+	}
+}
+----
 
 === Datastore Template
 
@@ -298,7 +444,20 @@ the first two reads utilize keys, while the third is executed using a query base
 
 ===== Indexes
 
-This feature is not supported yet.
+By default, all fields are indexed. To disable indexing on a particular field, `@Unindexed` annotation can be used.
+
+Example:
+[source, java]
+----
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
+
+public class ExampleItem {
+	long indexedField;
+
+	@Unindexed
+	long unindexedField;
+}
+----
 
 ===== Read with offsets and limits
 
