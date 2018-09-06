@@ -17,20 +17,25 @@
 package org.springframework.cloud.gcp.data.datastore.repository.support;
 
 import java.util.List;
+import java.util.function.Function;
 
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Chengyuan Zhao
@@ -126,9 +131,15 @@ public class SimpleDatastoreRepositoryTests {
 		this.simpleDatastoreRepository.findAll(mock(Pageable.class));
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void runTransactionCallableTest() {
-		this.simpleDatastoreRepository.performTransaction(x -> null);
+		when(this.datastoreTemplate.performTransaction(any())).thenAnswer(invocation -> {
+			Function<DatastoreOperations, String> f = invocation.getArgument(0);
+			return f.apply(this.datastoreTemplate);
+		});
+		assertEquals("test",
+				new SimpleDatastoreRepository<Object, String>(this.datastoreTemplate,
+						Object.class).performTransaction(repo -> "test"));
 	}
 
 }

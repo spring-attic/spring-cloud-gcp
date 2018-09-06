@@ -22,9 +22,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Entity.Builder;
 import com.google.cloud.datastore.GqlQuery;
@@ -34,6 +36,7 @@ import com.google.cloud.datastore.QueryResults;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
@@ -48,7 +51,7 @@ import org.springframework.util.Assert;
  */
 public class DatastoreTemplate implements DatastoreOperations {
 
-	private final Datastore datastore;
+	private final DatastoreReaderWriter datastore;
 
 	private final DatastoreEntityConverter datastoreEntityConverter;
 
@@ -56,7 +59,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	private final ObjectToKeyFactory objectToKeyFactory;
 
-	public DatastoreTemplate(Datastore datastore,
+	public DatastoreTemplate(DatastoreReaderWriter datastore,
 			DatastoreEntityConverter datastoreEntityConverter,
 			DatastoreMappingContext datastoreMappingContext,
 			ObjectToKeyFactory objectToKeyFactory) {
@@ -153,6 +156,20 @@ public class DatastoreTemplate implements DatastoreOperations {
 	@Override
 	public <T> boolean existsById(Object id, Class<T> entityClass) {
 		return findById(id, entityClass) != null;
+	}
+
+	@Override
+	public <A> A performTransaction(Function<DatastoreOperations, A> operations) {
+		if (!(this.datastore instanceof Datastore)) {
+			throw new DatastoreDataException(
+					"This DatastoreReadWriter cannot be used to run transactions. A full Datastore service"
+							+ " object is required to run functions as transactions.");
+		}
+		return ((Datastore) this.datastore).runInTransaction(
+				(DatastoreReaderWriter readerWriter) -> operations.apply(new DatastoreTemplate(readerWriter,
+						DatastoreTemplate.this.datastoreEntityConverter,
+						DatastoreTemplate.this.datastoreMappingContext,
+						DatastoreTemplate.this.objectToKeyFactory)));
 	}
 
 	private Entity convertToEntityForSave(Object entity) {

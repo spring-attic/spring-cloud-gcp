@@ -335,7 +335,31 @@ This feature is not supported yet.
 
 ==== Transactions
 
-This feature is not supported yet.
+Read and write transactions are provided by `DatastoreOperations` via the `performTransaction` method:
+
+[source,java]
+----
+
+@Autowired
+DatastoreOperations myDatastoreOperations;
+
+public String doWorkInsideTransaction() {
+  return myDatastoreOperations.performTransaction(
+    transactionDatastoreOperations -> {
+      // work with transactionDatastoreOperations here. It is also a DatastoreOperations object.
+
+      return "transaction completed";
+    }
+  );
+}
+----
+
+The `performTransaction` method accepts a `Function` that is provided an instance of a
+`DatastoreOperations` object. The final returned value and type of the function is determined by the user.
+You can use this object just as you would a regular `DatastoreOperations` with
+an exception:
+
+- It cannot perform sub-transactions.
 
 === Repositories
 
@@ -378,6 +402,31 @@ public class MyApplication {
 	}
 }
 
+----
+
+==== Transactions
+
+These transactions work very similarly to
+those of `DatastoreOperations`, but is specific to the repository's domain type and provides repository functions
+instead of template functions.
+
+For example, this is a read-write transaction:
+
+[source,java]
+----
+
+@Autowired
+DatastoreRepository myRepo;
+
+public String doWorkInsideTransaction() {
+  return myRepo.performTransaction(
+    transactionDatastoreRepo -> {
+      // work with the single-transaction transactionDatastoreRepo here. This is a DatastoreRepository object.
+
+      return "transaction completed";
+    }
+  );
+}
 ----
 
 ==== Query methods by convention

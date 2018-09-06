@@ -19,6 +19,8 @@ package org.springframework.cloud.gcp.data.datastore.core;
 import java.util.List;
 
 import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.Datastore.TransactionCallable;
+import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.FullEntity;
 import com.google.cloud.datastore.GqlQuery;
@@ -78,6 +80,38 @@ public class DatastoreTemplateTests {
 		this.datastoreTemplate = new DatastoreTemplate(this.datastore,
 				this.datastoreEntityConverter, new DatastoreMappingContext(),
 				this.objectToKeyFactory);
+	}
+
+	@Test
+	public void performTransactionTest() {
+
+		DatastoreReaderWriter transactionContext = mock(DatastoreReaderWriter.class);
+
+		when(this.datastore.runInTransaction(any())).thenAnswer(invocation -> {
+			TransactionCallable<String> callable = invocation.getArgument(0);
+			return callable.run(transactionContext);
+		});
+
+		TestEntity t = new TestEntity();
+		t.id = "key1";
+
+		when(this.objectToKeyFactory.getKeyFromObject(same(t), any()))
+				.thenReturn(createFakeKey("key1"));
+
+		Key key1 = createFakeKey("key1");
+		Entity e1 = Entity.newBuilder(key1).build();
+		when(transactionContext.get(ArgumentMatchers.<Key>any())).thenReturn(e1);
+
+		String finalResult = this.datastoreTemplate
+				.performTransaction(datastoreOperations -> {
+					datastoreOperations.save(t);
+					datastoreOperations.findById("ignored", TestEntity.class);
+					return "all done";
+				});
+
+		assertEquals("all done", finalResult);
+		verify(transactionContext, times(1)).put((FullEntity<?>) any());
+		verify(transactionContext, times(1)).get((Key) any());
 	}
 
 	@Test
