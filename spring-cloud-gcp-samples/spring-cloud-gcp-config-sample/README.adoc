@@ -3,8 +3,8 @@
 This sample application demonstrates using the
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Spring Cloud GCP Config Client Starter] in your code.
 
-The same content is also available in
-https://codelabs.developers.google.com/codelabs/cloud-spring-runtime-config/index.html[codelab format].
+The same content is also available in the
+https://codelabs.developers.google.com/codelabs/cloud-spring-runtime-config/index.html[Dynamic configuration for Spring Boot applications] codelab.
 
 == Setup & Configuration
 1. Checkout the code of this sample.

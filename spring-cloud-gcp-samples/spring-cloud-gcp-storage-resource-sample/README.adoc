@@ -4,8 +4,8 @@ This code sample demonstrates how to read and write files with the Spring Resour
 Google Cloud Storage using the
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-storage[Spring Cloud GCP Storage Starter].
 
-The same content is also available in
-https://codelabs.developers.google.com/codelabs/spring-cloud-gcp-gcs/index.html[codelab format].
+This content is also available in the
+https://codelabs.developers.google.com/codelabs/spring-cloud-gcp-gcs/index.html[Reading and Writing Files with Spring Resource Abstraction] codelab.
 
 = Running the example
 
