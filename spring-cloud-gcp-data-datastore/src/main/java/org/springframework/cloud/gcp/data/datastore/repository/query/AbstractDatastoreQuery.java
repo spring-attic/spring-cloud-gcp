@@ -45,7 +45,7 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 
 	final Class<T> entityType;
 
-	AbstractDatastoreQuery(QueryMethod queryMethod,
+	public AbstractDatastoreQuery(QueryMethod queryMethod,
 			DatastoreOperations datastoreOperations,
 			DatastoreMappingContext datastoreMappingContext, Class<T> entityType) {
 		this.queryMethod = queryMethod;
@@ -71,9 +71,9 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 	 * @param parameters the parameters with which to run the query.
 	 * @return the domain objects.
 	 */
-	abstract List<T> executeRawResult(Object[] parameters);
+	protected abstract List<T> executeRawResult(Object[] parameters);
 
-	List applyProjection(List<T> rawResult) {
+	protected List applyProjection(List<T> rawResult) {
 		if (rawResult == null) {
 			return null;
 		}

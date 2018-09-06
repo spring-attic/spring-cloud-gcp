@@ -66,7 +66,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * objects.
 	 * @param entityType the result domain type.
 	 */
-	PartTreeDatastoreQuery(QueryMethod queryMethod,
+	public PartTreeDatastoreQuery(QueryMethod queryMethod,
 			DatastoreOperations datastoreOperations,
 			DatastoreMappingContext datastoreMappingContext, Class<T> entityType) {
 		super(queryMethod, datastoreOperations, datastoreMappingContext, entityType);
@@ -118,7 +118,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	@Override
-	List<T> executeRawResult(Object[] parameters) {
+	protected List<T> executeRawResult(Object[] parameters) {
 		Iterable<T> found = this.datastoreOperations.query(getQuery(parameters),
 				this.entityType);
 		return found == null ? Collections.emptyList()

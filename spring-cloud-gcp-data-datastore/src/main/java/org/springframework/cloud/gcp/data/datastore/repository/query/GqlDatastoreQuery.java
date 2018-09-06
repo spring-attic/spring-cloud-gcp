@@ -100,7 +100,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * @param datastoreOperations used for executing queries.
 	 * @param datastoreMappingContext used for getting metadata about entities.
 	 */
-	GqlDatastoreQuery(Class<T> type, QueryMethod queryMethod,
+	public GqlDatastoreQuery(Class<T> type, QueryMethod queryMethod,
 			DatastoreOperations datastoreOperations, String gql,
 			QueryMethodEvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser,
@@ -112,7 +112,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	@Override
-	List<T> executeRawResult(Object[] parameters) {
+	protected List<T> executeRawResult(Object[] parameters) {
 		Iterable<T> found = this.datastoreOperations
 				.query(bindArgsToGqlQuery(this.gql, getParamTags(), parameters),
 						this.entityType);
