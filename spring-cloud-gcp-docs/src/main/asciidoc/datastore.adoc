@@ -273,9 +273,9 @@ Where Album is a simple class:
 [source, java]
 ----
 public class Album {
-	final String albumName;
+	String albumName;
 
-	final LocalDate date;
+	LocalDate date;
 }
 ----
 
