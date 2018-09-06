@@ -166,7 +166,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 							+ " object is required to run functions as transactions.");
 		}
 		return ((Datastore) this.datastore).runInTransaction(
-				readerWriter -> operations.apply(new DatastoreTemplate(readerWriter,
+				(DatastoreReaderWriter readerWriter) -> operations.apply(new DatastoreTemplate(readerWriter,
 						DatastoreTemplate.this.datastoreEntityConverter,
 						DatastoreTemplate.this.datastoreMappingContext,
 						DatastoreTemplate.this.objectToKeyFactory)));
