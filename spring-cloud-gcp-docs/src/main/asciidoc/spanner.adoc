@@ -485,9 +485,9 @@ class TwoInts {
 
 Custom converters can be used extending the type support for user defined types.
 
-. Converters need to implement the `org.springframework.core.convert.converter.Converter` interface
+. Converters need to implement the `org.springframework.core.convert.converter.Converter` interface in
 both directions.
-. The user defined type needs to be mapped to one the basic types supported by Spanner:
+. The user defined type needs to be mapped to one of the basic types supported by Spanner:
 
 * `com.google.cloud.ByteArray`
 * `com.google.cloud.Date`

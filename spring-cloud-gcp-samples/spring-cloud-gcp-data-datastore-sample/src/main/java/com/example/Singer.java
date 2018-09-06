@@ -24,6 +24,7 @@ import org.springframework.data.annotation.Id;
 
 /**
  * @author Chengyuan Zhao
+ * @author Dmitry Solomakha
  */
 @Entity(name = "singers")
 public class Singer {

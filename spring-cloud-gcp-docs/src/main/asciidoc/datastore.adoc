@@ -243,12 +243,12 @@ In addition, all types that can be converted to the ones listed in the table by
 
 Custom converters can be used extending the type support for user defined types.
 
-. Converters need to implement the `org.springframework.core.convert.converter.Converter` interface
+. Converters need to implement the `org.springframework.core.convert.converter.Converter` interface in
 both directions.
 
-. The user defined type needs to be mapped to one the basic types supported by Cloud Datastore.
+. The user defined type needs to be mapped to one of the basic types supported by Cloud Datastore.
 
-. An instance of both Converters (read and write) needs to be passed to the DatastoreCustomConversions constructor,
+. An instance of both Converters (read and write) needs to be passed to the `DatastoreCustomConversions` constructor,
 which then has to be made available as a `@Bean` for `DatastoreCustomConversions`.
 
 For example:
@@ -329,7 +329,7 @@ Elements are converted to Cloud Datastore supported types individually. `byte[]`
 
 ==== Custom Converter for collections
 Users can provide converters from  `List<?>` to the custom collection type.
-Only read converter is necessary, the Collection API is used on write side to convert a collection to
+Only read converter is necessary, the Collection API is used on the write side to convert a collection to
 the internal list type.
 
 Collection converters need to implement the `org.springframework.core.convert.converter.Converter` interface.
