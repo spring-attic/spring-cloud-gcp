@@ -4,7 +4,10 @@ This code sample demonstrates how to connect to a Google Cloud SQL instance usin
 link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-mysql[Spring Cloud GCP MySQL Starter]
 or link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-postgresql[Spring Cloud GCP PostgreSQL Starter].
 
-We will create an instance, a database within the instance, populate the database and then query it.
+You will create an instance, a database within the instance, populate the database and then query it.
+
+You can also explore the GCP MySQL Starter in the
+https://codelabs.developers.google.com/codelabs/cloud-spring-petclinic-cloudsql/index.html[Spring Pet Clinic using Cloud SQL] codelab.
 
 == Setup
 

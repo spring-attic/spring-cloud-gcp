@@ -30,7 +30,8 @@ dependencies {
 You must enable Stackdriver Trace API from the Google Cloud Console in order to capture traces.
 Navigate to the https://console.cloud.google.com/apis/api/cloudtrace.googleapis.com/overview[Stackdriver Trace API] for your project and make sure it’s enabled.
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[sample application] is available.
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[sample application]
+and a https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html[codelab] are available.
 
 [NOTE]
 ====

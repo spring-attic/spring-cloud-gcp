@@ -4,6 +4,9 @@ This code sample contains a couple of apps.
 One app gets a message provided by the user through a webpage and publishes it to a Google Cloud Pub/Sub topic.
 The other app subscribes to that topic and logs received messages.
 
+The same content is also available in the
+https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-pubsub-integration/index.html[Messaging with Spring Integration and Google Cloud Pub/Sub] codelab.
+
 == Setup & Configuration
 
 1. Configure your GCP project ID and credentials by following link:../../spring-cloud-gcp-docs/src/main/asciidoc/core.adoc#project-id[these instructions].

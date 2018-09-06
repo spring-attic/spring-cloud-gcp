@@ -4,6 +4,9 @@ This sample application demonstrates using the link:../../spring-cloud-gcp-start
 
 You can read about the Spring Boot Starter for Stackdriver Trace in more detail at the link:../../spring-cloud-gcp-docs/src/main/asciidoc/trace.adoc[Spring Cloud GCP Reference Document Stackdriver Trace section].
 
+Similar content is also available in the
+https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html[Distributed tracing with Spring Cloud Sleuth] codelab.
+
 == Setup & Configuration
 1. Create a Google Cloud Platform Project
 2. https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account] with Trace Append permission. Furnish a new JSON key and then set the credentials using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable or link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter/README.adoc[using GCP Starter Core properties].
