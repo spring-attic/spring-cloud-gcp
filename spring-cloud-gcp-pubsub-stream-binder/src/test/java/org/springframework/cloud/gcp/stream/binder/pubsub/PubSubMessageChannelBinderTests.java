@@ -16,7 +16,8 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub;
 
-import org.junit.BeforeClass;
+
+import org.junit.ClassRule;
 
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
@@ -25,7 +26,7 @@ import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.Spy;
 
-import static org.assertj.core.api.Assumptions.assumeThat;
+//import java.nio.file.;
 
 /**
  * Integration tests that require the Pub/Sub emulator to be installed and only run if the
@@ -33,26 +34,29 @@ import static org.assertj.core.api.Assumptions.assumeThat;
  *
  * @author João André Martins
  */
-public class PubSubMessageChannelBinderTests extends AbstractBinderTests<PubSubTestBinder,
-		ExtendedConsumerProperties<PubSubConsumerProperties>,
-		ExtendedProducerProperties<PubSubProducerProperties>> {
+public class PubSubMessageChannelBinderTests extends
+		AbstractBinderTests<PubSubTestBinder, ExtendedConsumerProperties<PubSubConsumerProperties>,
+				ExtendedProducerProperties<PubSubProducerProperties>> {
 
-	private static final String EMULATOR_HOST_ENVVAR_NAME = "PUBSUB_EMULATOR_HOST";
+	@ClassRule
+	public static PubSubEmulator emulator = new PubSubEmulator();
 
-	private PubSubTestBinder binder;
+	//private static final String EMULATOR_HOST_ENVVAR_NAME = "PUBSUB_EMULATOR_HOST";
 
-	public PubSubMessageChannelBinderTests() {
-		this.binder = new PubSubTestBinder(System.getenv(EMULATOR_HOST_ENVVAR_NAME));
-	}
+	//private PubSubTestBinder binder;
 
-	@BeforeClass
-	public static void enableTests() {
-		assumeThat(System.getenv(EMULATOR_HOST_ENVVAR_NAME)).isNotNull();
-	}
+	//public PubSubMessageChannelBinderTests() {
+	// this.binder = new PubSubTestBinder(System.getenv(EMULATOR_HOST_ENVVAR_NAME));
+	//}
+
+	//@BeforeClass
+	//public static void enableTests() {
+	//	assumeThat(System.getenv(EMULATOR_HOST_ENVVAR_NAME)).isNotNull();
+	//}
 
 	@Override
 	protected PubSubTestBinder getBinder() throws Exception {
-		return this.binder;
+		return this.emulator.getBinder();
 	}
 
 	@Override
