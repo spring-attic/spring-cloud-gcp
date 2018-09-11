@@ -34,6 +34,13 @@ public class TestEntity {
 
 	private String shape;
 
+	public TestEntity(String id, String color, String shape, Blob blobField) {
+		this.id = id;
+		this.color = color;
+		this.shape = shape;
+		this.blobField = blobField;
+	}
+
 	private Blob blobField;
 
 	public String getId() {

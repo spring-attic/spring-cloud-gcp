@@ -65,25 +65,13 @@ public class DatastoreIntegrationTests {
 	@Test
 	public void testSaveAndDeleteRepository() throws InterruptedException {
 
-		TestEntity testEntityA = new TestEntity();
-		testEntityA.setId("a");
-		testEntityA.setColor("red");
-		testEntityA.setShape("round");
+		TestEntity testEntityA = new TestEntity("a", "red", "round", null);
 
-		TestEntity testEntityB = new TestEntity();
-		testEntityB.setId("b");
-		testEntityB.setColor("blue");
-		testEntityB.setShape("round");
+		TestEntity testEntityB = new TestEntity("b", "blue", "round", null);
 
-		TestEntity testEntityC = new TestEntity();
-		testEntityC.setId("c");
-		testEntityC.setColor("red");
-		testEntityC.setShape("round");
+		TestEntity testEntityC = new TestEntity("c", "red", "round", null);
 
-		TestEntity testEntityD = new TestEntity();
-		testEntityD.setId("d");
-		testEntityD.setColor("red");
-		testEntityD.setShape("round");
+		TestEntity testEntityD = new TestEntity("d", "red", "round", null);
 
 		this.testEntityRepository.saveAll(
 				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
@@ -100,14 +88,17 @@ public class DatastoreIntegrationTests {
 		List<TestEntity> foundByCustomQuery = Collections.emptyList();
 		for (int i = 0; i < QUERY_WAIT_ATTEMPTS; i++) {
 			if (!foundByCustomQuery.isEmpty() && this.testEntityRepository
-					.countByShapeAndColor("round", "red") == 3) {
+					.findTop3ByShapeAndColor("round", "red").size() == 3) {
 				break;
 			}
 			Thread.sleep(QUERY_WAIT_INTERVAL_MILLIS);
 			foundByCustomQuery = this.testEntityRepository
 					.findEntitiesWithCustomQuery("a");
 		}
-		assertEquals(1, this.testEntityRepository.countByShapeAndColor("round", "blue"));
+		assertEquals(1, this.testEntityRepository.findTop3ByShapeAndColor("round", "blue")
+				.size());
+		assertEquals(3,
+				this.testEntityRepository.findTop3ByShapeAndColor("round", "red").size());
 		assertThat(
 				this.testEntityRepository.findTop3ByShapeAndColor("round", "red").stream()
 						.map(TestEntity::getId).collect(Collectors.toList()),
