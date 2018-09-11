@@ -2,10 +2,8 @@
 
 == Spring Data Cloud Datastore
 
-http://projects.spring.io/spring-data/[Spring Data]
-is an abstraction for storing and retrieving POJOs in numerous storage technologies.
-Spring Cloud GCP adds Spring Data support for http://cloud.google.com/datastore/[Google Cloud
-Datastore].
+http://projects.spring.io/spring-data/[Spring Data] is an abstraction for storing and retrieving POJOs in numerous storage technologies.
+Spring Cloud GCP adds Spring Data support for http://cloud.google.com/datastore/[Google Cloud Datastore].
 
 Maven coordinates for this module only, using https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-dependencies/pom.xml[Spring Cloud GCP BOM]:
 
@@ -26,8 +24,7 @@ dependencies {
 }
 ----
 
-We provide a link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore],
-with which you can use our recommended auto-configuration setup.
+We provide a link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore], with which you can use our recommended auto-configuration setup.
 To use the starter, see the coordinates below.
 
 
@@ -50,11 +47,9 @@ dependencies {
 }
 ----
 
-This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Datastore libraries
-as well.
+This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Datastore libraries as well.
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[sample application]
-is available.
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[sample application] is available.
 
 === Configuration
 
@@ -64,10 +59,8 @@ To setup Spring Data Cloud Datastore, you have to configure the following:
 
 ==== Cloud Datastore settings
 
-You can the use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot
-Starter for Spring Data Datastore] to autoconfigure Google Cloud Datastore in your Spring application.
-It contains all the necessary setup that makes it easy to authenticate with your Google Cloud
-project.
+You can the use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore] to autoconfigure Google Cloud Datastore in your Spring application.
+It contains all the necessary setup that makes it easy to authenticate with your Google Cloud project.
 The following configuration options are available:
 
 |===
@@ -90,13 +83,9 @@ Cloud Datastore credentials | No | https://www.googleapis.com/auth/datastore
 
 ==== Repository settings
 
-Spring Data Repositories can be configured via the `@EnableDatastoreRepositories` annotation on your
-main `@Configuration` class.
-With our Spring Boot Starter for Spring Data Cloud Datastore, `@EnableDatastoreRepositories` is automatically
-added.
-It is not required to add it to any other class, unless there is a need to override finer
-grain configuration parameters provided by
-https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-datastore/src/main/java/org/springframework/cloud/gcp/data/datastore/repository/config/EnableDatastoreRepositories.java[`@EnableDatastoreRepositories`].
+Spring Data Repositories can be configured via the `@EnableDatastoreRepositories` annotation on your main `@Configuration` class.
+With our Spring Boot Starter for Spring Data Cloud Datastore, `@EnableDatastoreRepositories` is automatically added.
+It is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-datastore/src/main/java/org/springframework/cloud/gcp/data/datastore/repository/config/EnableDatastoreRepositories.java[`@EnableDatastoreRepositories`].
 
 ==== Autoconfiguration
 
@@ -129,8 +118,7 @@ public class Trader {
 }
 ----
 
-Spring Data Cloud Datastore will ignore any property annotated with `@Transient`. These properties will
-not be written to or read from Cloud Datastore.
+Spring Data Cloud Datastore will ignore any property annotated with `@Transient`. These properties will not be written to or read from Cloud Datastore.
 
 ==== Constructors
 
@@ -171,8 +159,7 @@ The `@Entity` annotation can provide the name of the Cloud Datastore kind that s
 
 `@Id` identifies the property corresponding to the ID value.
 
-You must annotate one of your POJO's fields as the ID value, because every entity in Cloud Datastore
-requires a single ID value:
+You must annotate one of your POJO's fields as the ID value, because every entity in Cloud Datastore requires a single ID value:
 
 [source,java]
 ----
@@ -196,9 +183,7 @@ public class Trade {
 ----
 
 
-Datastore has automatic ID allocation. If a POJO instance is written to Cloud Datastore with `null` as the ID value,
-then Spring Data Cloud Datastore will obtain a newly allocated ID value from Cloud Datastore and set that in the POJO
-for saving.
+Datastore has automatic ID allocation. If a POJO instance is written to Cloud Datastore with `null` as the ID value, then Spring Data Cloud Datastore will obtain a newly allocated ID value from Cloud Datastore and set that in the POJO for saving.
 
 
 ==== Fields
@@ -386,12 +371,9 @@ public class ConverterConfiguration {
 
 === Datastore Template
 
-`DatastoreOperations` and its implementation, `DatastoreTemplate`, provides the Template pattern
-familiar to Spring developers.
+`DatastoreOperations` and its implementation, `DatastoreTemplate`, provides the Template pattern familiar to Spring developers.
 
-Using the auto-configuration provided by Spring Boot Starter for Datastore, your Spring application
-context will contain a fully configured `DatastoreTemplate` object that you can autowire in
-your application:
+Using the auto-configuration provided by Spring Boot Starter for Datastore, your Spring application context will contain a fully configured `DatastoreTemplate` object that you can autowire in your application:
 
 [source,java]
 ----
@@ -438,8 +420,8 @@ List<Trader> traders = this.datastoreTemplate.findAllById(ImmutableList.of("trad
 List<Trader> allTraders = this.datastoreTemplate.findAll(Trader.class);
 ----
 
-Cloud Datastore executes key-based reads with strong consistency, but queries with eventual consistency. In the example above
-the first two reads utilize keys, while the third is executed using a query based on the corresponding Kind of `Trader`.
+Cloud Datastore executes key-based reads with strong consistency, but queries with eventual consistency.
+In the example above the first two reads utilize keys, while the third is executed using a query based on the corresponding Kind of `Trader`.
 
 
 ===== Indexes
@@ -476,9 +458,8 @@ This feature is not supported yet.
 The write methods of `DatastoreOperations` accept a POJO and writes all of its properties to Datastore.
 The required Datastore kind and entity metadata is obtained from the given object's actual type.
 
-If a POJO was retrieved from Datastore and its ID value was changed and then
-written or updated, the operation will occur as if against a row with the new ID value. The entity with the
-original ID value will not be affected.
+If a POJO was retrieved from Datastore and its ID value was changed and then written or updated, the operation will occur as if against a row with the new ID value.
+The entity with the original ID value will not be affected.
 
 [source, java]
 ----
@@ -522,8 +503,7 @@ an exception:
 
 === Repositories
 
-{spring-data-commons-ref}/#repositories[Spring Data Repositories] are an abstraction that
-can reduce boilerplate code.
+{spring-data-commons-ref}/#repositories[Spring Data Repositories] are an abstraction that can reduce boilerplate code.
 
 For example:
 
@@ -533,12 +513,10 @@ public interface TraderRepository extends CrudRepository<Trader, String> {
 }
 ----
 
-Spring Data generates a working implementation of the specified interface, which can be
-autowired into an application.
+Spring Data generates a working implementation of the specified interface, which can be autowired into an application.
 
 The `Trader` type parameter to `CrudRepository` refers to the underlying domain type.
-The second type parameter, `String` in this case, refers to the type of the key of the domain
-type.
+The second type parameter, `String` in this case, refers to the type of the key of the domain type.
 
 [source,java]
 ----
@@ -590,7 +568,32 @@ public String doWorkInsideTransaction() {
 
 ==== Query methods by convention
 
-This feature is not supported yet.
+[source, java]
+----
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
+    List<Trader> findByAction(String action);
+
+  int countByAction(String action);
+
+  boolean existsByAction(String action);
+
+  List<Trade> findTop3ByActionAndSymbolAndPriceGreaterThanAndPriceLessThanOrEqualOrderBySymbolDesc(
+  			String action, String symbol, double priceFloor, double priceCeiling);
+}
+----
+
+In the example above the {spring-data-commons-ref}/#repositories.query-methods[query methods] in `TradeRepository` are generated based on the name of the methods using the{spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
+
+Cloud Datastore only supports filter components joined by AND, and the following operations:
+
+* `equals`
+* `greater than or equals`
+* `greater than`
+* `less than or equals`
+* `less than`
+* `is null`
+
+After writing a custom repository interface specifying just the signatures of these methods, implementations are generated for you and can be used with an auto-wired instance of the repository.
 
 ==== Custom GQL query methods
 
@@ -633,10 +636,8 @@ With the exception of `Cursor`, array forms of each of the types are also suppor
 
 You can also specify queries with Cloud Datastore parameter tags and SpEL expressions in properties files.
 
-By default, the `namedQueriesLocation` attribute on `@EnableDatastoreRepositories` points to the
-`META-INF/datastore-named-queries.properties` file.
-You can specify the query for a method in the properties file by providing the GQL as the value for
-the "interface.method" property:
+By default, the `namedQueriesLocation` attribute on `@EnableDatastoreRepositories` points to the `META-INF/datastore-named-queries.properties` file.
+You can specify the query for a method in the properties file by providing the GQL as the value for the "interface.method" property:
 
 [source, properties]
 ----

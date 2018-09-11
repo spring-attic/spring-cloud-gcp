@@ -21,7 +21,6 @@ import java.lang.reflect.Method;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
@@ -82,8 +81,8 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 			return createGqlDatastoreQuery(entityType, queryMethod, sql);
 		}
 
-		throw new DatastoreDataException(
-				"Name-based query methods are not supported yet.");
+		return new PartTreeDatastoreQuery<>(queryMethod, this.datastoreOperations,
+				this.datastoreMappingContext, entityType);
 	}
 
 	@VisibleForTesting

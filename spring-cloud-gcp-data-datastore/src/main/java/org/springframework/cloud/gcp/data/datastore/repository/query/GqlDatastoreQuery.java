@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
@@ -43,7 +45,6 @@ import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
-import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.StringUtils;
 
@@ -54,7 +55,7 @@ import org.springframework.util.StringUtils;
  *
  * @since 1.1
  */
-public class GqlDatastoreQuery<T> implements RepositoryQuery {
+public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	private static final Map<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>
 			GQL_PARAM_BINDING_FUNC_MAP;
@@ -84,14 +85,6 @@ public class GqlDatastoreQuery<T> implements RepositoryQuery {
 				.build();
 	}
 
-	private final QueryMethod queryMethod;
-
-	private final DatastoreOperations datastoreOperations;
-
-	protected final DatastoreMappingContext datastoreMappingContext;
-
-	private final Class<T> entityType;
-
 	private final String gql;
 
 	// unused currently, but will be used for SpEL expression in the query.
@@ -107,40 +100,25 @@ public class GqlDatastoreQuery<T> implements RepositoryQuery {
 	 * @param datastoreOperations used for executing queries.
 	 * @param datastoreMappingContext used for getting metadata about entities.
 	 */
-	GqlDatastoreQuery(Class<T> type, QueryMethod queryMethod,
+	public GqlDatastoreQuery(Class<T> type, QueryMethod queryMethod,
 			DatastoreOperations datastoreOperations, String gql,
 			QueryMethodEvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser,
 			DatastoreMappingContext datastoreMappingContext) {
-		this.queryMethod = queryMethod;
-		this.entityType = type;
-		this.datastoreOperations = datastoreOperations;
-		this.datastoreMappingContext = datastoreMappingContext;
+		super(queryMethod, datastoreOperations, datastoreMappingContext, type);
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
 		this.gql = StringUtils.trimTrailingCharacter(gql.trim(), ';');
 	}
 
 	@Override
-	public Object execute(Object[] parameters) {
-		List<T> rawResult = executeRawResult(parameters);
-		return applyProjection(rawResult);
-	}
-
-	@Override
-	public QueryMethod getQueryMethod() {
-		return this.queryMethod;
-	}
-
-	private List<T> executeRawResult(Object[] parameters) {
-		List<T> results = new ArrayList<>();
+	protected List<T> executeRawResult(Object[] parameters) {
 		Iterable<T> found = this.datastoreOperations
 				.query(bindArgsToGqlQuery(this.gql, getParamTags(), parameters),
 						this.entityType);
-		if (found != null) {
-			found.forEach(results::add);
-		}
-		return results;
+		return found == null ? Collections.emptyList()
+				: StreamSupport.stream(found.spliterator(), false)
+						.collect(Collectors.toList());
 	}
 
 	private List<String> getParamTags() {
@@ -164,18 +142,6 @@ public class GqlDatastoreQuery<T> implements RepositoryQuery {
 			tags.add(name);
 		}
 		return tags;
-	}
-
-	private Object processRawObjectForProjection(Object object) {
-		return this.queryMethod.getResultProcessor().processResult(object);
-	}
-
-	private Object applyProjection(List<T> rawResult) {
-		if (rawResult == null) {
-			return null;
-		}
-		return rawResult.stream().map(this::processRawObjectForProjection)
-				.collect(Collectors.toList());
 	}
 
 	private GqlQuery<Entity> bindArgsToGqlQuery(String gql, List<String> tags,
