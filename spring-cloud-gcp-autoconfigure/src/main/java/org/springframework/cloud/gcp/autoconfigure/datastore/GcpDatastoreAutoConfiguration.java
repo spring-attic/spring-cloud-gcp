@@ -98,8 +98,9 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public ReadWriteConversions datastoreReadWriteConversions(DatastoreCustomConversions customConversions) {
-		return new TwoStepsConversions(customConversions);
+	public ReadWriteConversions datastoreReadWriteConversions(DatastoreCustomConversions customConversions,
+			ObjectToKeyFactory objectToKeyFactory) {
+		return new TwoStepsConversions(customConversions, objectToKeyFactory);
 	}
 
 	@Bean

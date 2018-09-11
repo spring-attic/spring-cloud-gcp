@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
@@ -24,14 +25,19 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
  * @author Dmitry Solomakha
  */
 public class TestItemWithEmbeddedEntity {
-	int intField;
+	private int intField;
 
 	@Embedded
-	EmbeddedEtity embeddedEntityField;
+	private EmbeddedEtity embeddedEntityField;
 
-	public TestItemWithEmbeddedEntity(int intField, EmbeddedEtity embeddedEntityField) {
+	@Embedded
+	private List<EmbeddedEtity> listOfEmbeddedEntities;
+
+	public TestItemWithEmbeddedEntity(int intField, EmbeddedEtity embeddedEntityField,
+			List<EmbeddedEtity> listOfEmbeddedEntities) {
 		this.intField = intField;
 		this.embeddedEntityField = embeddedEntityField;
+		this.listOfEmbeddedEntities = listOfEmbeddedEntities;
 	}
 
 	@Override
@@ -42,15 +48,16 @@ public class TestItemWithEmbeddedEntity {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		TestItemWithEmbeddedEntity that = (TestItemWithEmbeddedEntity) o;
-		return this.intField == that.intField &&
-				Objects.equals(this.embeddedEntityField, that.embeddedEntityField);
+		TestItemWithEmbeddedEntity item = (TestItemWithEmbeddedEntity) o;
+		return this.intField == item.intField &&
+				Objects.equals(this.embeddedEntityField, item.embeddedEntityField) &&
+				Objects.equals(this.listOfEmbeddedEntities, item.listOfEmbeddedEntities);
 	}
 
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(this.intField, this.embeddedEntityField);
+		return Objects.hash(this.intField, this.embeddedEntityField, this.listOfEmbeddedEntities);
 	}
 
 	public static class EmbeddedEtity {

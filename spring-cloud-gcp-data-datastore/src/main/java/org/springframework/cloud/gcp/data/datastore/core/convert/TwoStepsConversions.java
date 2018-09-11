@@ -21,13 +21,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Blob;
+import com.google.cloud.datastore.EntityValue;
+import com.google.cloud.datastore.FullEntity;
+import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.ListValue;
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -67,9 +74,14 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	private final CustomConversions customConversions;
 
+	private final ObjectToKeyFactory objectToKeyFactory;
+
+	private DatastoreEntityConverter datastoreEntityConverter;
+
 	private final Map<Class, Optional<Class<?>>> writeConverters = new HashMap<>();
 
-	public TwoStepsConversions(CustomConversions customConversions) {
+	public TwoStepsConversions(CustomConversions customConversions, ObjectToKeyFactory objectToKeyFactory) {
+		this.objectToKeyFactory = objectToKeyFactory;
 		this.conversionService = new DefaultConversionService();
 		this.internalConversionService = new DefaultConversionService();
 		this.customConversions = customConversions;
@@ -82,13 +94,20 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> T convertOnRead(Value val, Class<?> targetType, Class<?> componentType) {
+	public <T> T convertOnRead(Value val, DatastorePersistentProperty persistentProperty) {
+		BiFunction<Object, Class<?>, T> readConverter = persistentProperty.isEmbedded()
+				? (value, targetClass) -> (T) this.datastoreEntityConverter.read(targetClass, (BaseEntity) value)
+				: this::convertOnReadSingle;
+
+		Class<?> targetType = persistentProperty.getType();
+
+		Class<?> componentType = persistentProperty.getComponentType();
 		Object unwrappedVal = val.get();
 		if (unwrappedVal instanceof Iterable && componentType != null) {
 			try {
 				List<?> elements = ((List<Value>) unwrappedVal)
 						.stream()
-						.map(v -> convertOnReadSingle(v.get(), componentType))
+						.map(v -> readConverter.apply(v.get(), componentType))
 						.collect(Collectors.toList());
 				return (T) convertCollection(elements, targetType);
 
@@ -98,7 +117,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			}
 		}
 
-		return convertOnReadSingle(unwrappedVal, targetType);
+		return readConverter.apply(unwrappedVal, targetType);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -137,8 +156,15 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	@Override
-	public Value convertOnWrite(Object proppertyVal) {
+	public Value convertOnWrite(Object proppertyVal, DatastorePersistentProperty persistentProperty) {
 		Object val = proppertyVal;
+
+		Function<Object, Value> writeConverter = this::convertOnWriteSingle;
+
+		if (persistentProperty.isEmbedded() && val != null) {
+			writeConverter = this::convertSingleEmbeddedEntity;
+		}
+
 		//Check if property is a non-null array
 		if (val != null && val.getClass().isArray() && val.getClass() != byte[].class) {
 			//if a propperty is an array, convert it to list
@@ -148,11 +174,19 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		if (val instanceof Iterable) {
 			List<Value<?>> values = new ArrayList<>();
 			for (Object propEltValue : (Iterable) val) {
-				values.add(this.convertOnWriteSingle(propEltValue));
+				values.add(writeConverter.apply(propEltValue));
 			}
 			return ListValue.of(values);
 		}
-		return convertOnWriteSingle(val);
+		return writeConverter.apply(val);
+	}
+
+	private EntityValue convertSingleEmbeddedEntity(Object val) {
+		IncompleteKey key = this.objectToKeyFactory.getIncompleteKey("embedded");
+
+		FullEntity.Builder<IncompleteKey> builder = FullEntity.newBuilder(key);
+		this.datastoreEntityConverter.write(val, builder);
+		return EntityValue.of(builder.build());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -215,6 +249,11 @@ public class TwoStepsConversions implements ReadWriteConversions {
 						this.internalConversionService.canConvert(inputType, simpleType)
 								&& this.internalConversionService.canConvert(simpleType, inputType))
 				.findAny();
+	}
+
+	@Override
+	public void registerEntityConverter(DatastoreEntityConverter datastoreEntityConverter) {
+		this.datastoreEntityConverter = datastoreEntityConverter;
 	}
 
 	private static class TypeTargets {

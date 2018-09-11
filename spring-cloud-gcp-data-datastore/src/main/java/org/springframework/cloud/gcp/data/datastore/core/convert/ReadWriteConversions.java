@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import com.google.cloud.datastore.Value;
 
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+
 /**
  * An interface for type conversions on read and on write
  *
@@ -29,17 +31,18 @@ public interface ReadWriteConversions {
 	/**
 	 * Converts a Cloud Datastore Value to an object of a target type
 	 * @param val Cloud Datastore Value.
-	 * @param targetType the target type.
-	 * @param componentType if the taget type is collection-like, this is the type of elements it holds.
+	 * @param persistentProperty the target field information.
 	 * @return an object of a target type.
 	 */
-	<T> T convertOnRead(Value val, Class<?> targetType, Class<?> componentType);
+	<T> T convertOnRead(Value val, DatastorePersistentProperty persistentProperty);
 
 	/**
 	 * Converts an object to a Cloud Datastore Value
 	 * @param obj the objects to convert.
+	 * @param persistentProperty the source field information.
 	 * @return a Cloud Datastore value.
 	 */
-	Value convertOnWrite(Object obj);
+	Value convertOnWrite(Object obj, DatastorePersistentProperty persistentProperty);
 
+	void registerEntityConverter(DatastoreEntityConverter datastoreEntityConverter);
 }

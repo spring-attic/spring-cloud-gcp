@@ -17,9 +17,6 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import com.google.cloud.datastore.BaseEntity;
-import com.google.cloud.datastore.EntityValue;
-import com.google.cloud.datastore.FullEntity;
-import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Value;
 import com.google.cloud.datastore.ValueBuilder;
 
@@ -52,7 +49,8 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 
 	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext,
 			ObjectToKeyFactory objectToKeyFactory) {
-		this(mappingContext, new TwoStepsConversions(new DatastoreCustomConversions()), objectToKeyFactory);
+		this(mappingContext, new TwoStepsConversions(new DatastoreCustomConversions(), objectToKeyFactory),
+				objectToKeyFactory);
 	}
 
 	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext,
@@ -60,16 +58,21 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		this.mappingContext = mappingContext;
 		this.conversions = conversions;
 		this.objectToKeyFactory = objectToKeyFactory;
+
+		conversions.registerEntityConverter(this);
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public <R> R read(Class<R> aClass, BaseEntity entity) {
+		if (entity == null) {
+			return null;
+		}
 		DatastorePersistentEntity<R> persistentEntity = (DatastorePersistentEntity<R>) this.mappingContext
 				.getPersistentEntity(aClass);
 
 		EntityPropertyValueProvider propertyValueProvider =
-				new EntityPropertyValueProvider(entity, this.conversions, this);
+				new EntityPropertyValueProvider(entity, this.conversions);
 
 		ParameterValueProvider<DatastorePersistentProperty> parameterValueProvider =
 				new PersistentEntityParameterValueProvider<>(persistentEntity, propertyValueProvider, null);
@@ -104,19 +107,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 				(DatastorePersistentProperty persistentProperty) -> {
 					try {
 						Object val = accessor.getProperty(persistentProperty);
-						Value convertedVal;
-
-						if (persistentProperty.isEmbedded()) {
-							IncompleteKey key = this.objectToKeyFactory.getIncompleteKey(persistentEntity.kindName());
-
-							FullEntity.Builder<IncompleteKey> builder = FullEntity.newBuilder(key);
-							write(val, builder);
-							FullEntity<IncompleteKey> entity = builder.build();
-							convertedVal = EntityValue.of(entity);
-						}
-						else {
-							convertedVal = this.conversions.convertOnWrite(val);
-						}
+						Value convertedVal = this.conversions.convertOnWrite(val, persistentProperty);
 
 						if (persistentProperty.isUnindexed()) {
 							ValueBuilder valueBuilder = convertedVal.toBuilder();

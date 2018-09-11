@@ -35,13 +35,13 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 
 	private final ReadWriteConversions conversion;
 
-	private final DatastoreEntityConverter datastoreEntityConverter;
 
-	public EntityPropertyValueProvider(BaseEntity entity, ReadWriteConversions readWriteConversions,
-			DatastoreEntityConverter datastoreEntityConverter) {
+	public EntityPropertyValueProvider(BaseEntity entity, ReadWriteConversions readWriteConversions) {
+		if (entity == null) {
+			throw new DatastoreDataException("A non-null entity is required");
+		}
 		this.entity = entity;
 		this.conversion = readWriteConversions;
-		this.datastoreEntityConverter = datastoreEntityConverter;
 	}
 
 	@Override
@@ -53,14 +53,9 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 			return null;
 		}
 		try {
-			if (persistentProperty.isEmbedded()) {
-				Class<?> type = persistentProperty.getType();
-				return (T) this.datastoreEntityConverter.read(type, this.entity.getEntity(fieldName));
-			}
 			return this.conversion.convertOnRead(
 					this.entity.getValue(fieldName),
-					persistentProperty.getType(),
-					persistentProperty.getComponentType());
+					persistentProperty);
 		}
 		catch (ConversionException | DatastoreDataException e) {
 			throw new DatastoreDataException("Unable to read property " + fieldName, e);
