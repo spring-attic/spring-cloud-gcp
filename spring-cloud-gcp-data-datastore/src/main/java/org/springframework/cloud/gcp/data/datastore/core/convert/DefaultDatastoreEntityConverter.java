@@ -45,19 +45,14 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 
 	private final ReadWriteConversions conversions;
 
-	private final ObjectToKeyFactory objectToKeyFactory;
-
 	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext,
 			ObjectToKeyFactory objectToKeyFactory) {
-		this(mappingContext, new TwoStepsConversions(new DatastoreCustomConversions(), objectToKeyFactory),
-				objectToKeyFactory);
+		this(mappingContext, new TwoStepsConversions(new DatastoreCustomConversions(), objectToKeyFactory));
 	}
 
-	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext,
-			ReadWriteConversions conversions, ObjectToKeyFactory objectToKeyFactory) {
+	public DefaultDatastoreEntityConverter(DatastoreMappingContext mappingContext, ReadWriteConversions conversions) {
 		this.mappingContext = mappingContext;
 		this.conversions = conversions;
-		this.objectToKeyFactory = objectToKeyFactory;
 
 		conversions.registerEntityConverter(this);
 	}
@@ -71,8 +66,11 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		DatastorePersistentEntity<R> persistentEntity = (DatastorePersistentEntity<R>) this.mappingContext
 				.getPersistentEntity(aClass);
 
-		EntityPropertyValueProvider propertyValueProvider =
-				new EntityPropertyValueProvider(entity, this.conversions);
+		if (persistentEntity == null) {
+			throw new DatastoreDataException("Unable to convert Datastore Entity to " + aClass);
+		}
+
+		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(entity, this.conversions);
 
 		ParameterValueProvider<DatastorePersistentProperty> parameterValueProvider =
 				new PersistentEntityParameterValueProvider<>(persistentEntity, propertyValueProvider, null);

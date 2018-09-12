@@ -96,7 +96,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	@SuppressWarnings("unchecked")
 	public <T> T convertOnRead(Value val, DatastorePersistentProperty persistentProperty) {
 		BiFunction<Object, Class<?>, T> readConverter = persistentProperty.isEmbedded()
-				? (value, targetClass) -> (T) this.datastoreEntityConverter.read(targetClass, (BaseEntity) value)
+				? this::convertOnReadSingleEmbedded
 				: this::convertOnReadSingle;
 
 		Class<?> targetType = persistentProperty.getType();
@@ -118,6 +118,14 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		}
 
 		return readConverter.apply(unwrappedVal, targetType);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> T convertOnReadSingleEmbedded(Object value, Class<?> targetClass) {
+		if (value instanceof BaseEntity || value == null) {
+			return (T) this.datastoreEntityConverter.read(targetClass, (BaseEntity) value);
+		}
+		throw new DatastoreDataException("Embedded entity was expected, but " + value.getClass() + " found");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -159,11 +167,9 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	public Value convertOnWrite(Object proppertyVal, DatastorePersistentProperty persistentProperty) {
 		Object val = proppertyVal;
 
-		Function<Object, Value> writeConverter = this::convertOnWriteSingle;
-
-		if (persistentProperty.isEmbedded() && val != null) {
-			writeConverter = this::convertSingleEmbeddedEntity;
-		}
+		Function<Object, Value> writeConverter = (persistentProperty.isEmbedded() && val != null)
+				? (Object value) -> convertOnWriteSingleEmbedded(value, persistentProperty.getFieldName())
+				: this::convertOnWriteSingle;
 
 		//Check if property is a non-null array
 		if (val != null && val.getClass().isArray() && val.getClass() != byte[].class) {
@@ -181,8 +187,8 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		return writeConverter.apply(val);
 	}
 
-	private EntityValue convertSingleEmbeddedEntity(Object val) {
-		IncompleteKey key = this.objectToKeyFactory.getIncompleteKey("embedded");
+	private EntityValue convertOnWriteSingleEmbedded(Object val, String kindName) {
+		IncompleteKey key = this.objectToKeyFactory.getIncompleteKey(kindName);
 
 		FullEntity.Builder<IncompleteKey> builder = FullEntity.newBuilder(key);
 		this.datastoreEntityConverter.write(val, builder);

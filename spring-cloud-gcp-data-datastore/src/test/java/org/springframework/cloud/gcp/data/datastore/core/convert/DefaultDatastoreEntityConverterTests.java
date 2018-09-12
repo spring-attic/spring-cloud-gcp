@@ -54,6 +54,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DefaultDatastoreEntityConverterTests {
 	private static final LocalDatastoreHelper HELPER = LocalDatastoreHelper.create(1.0);
 
+	private static final DatastoreEntityConverter ENTITY_CONVERTER =
+			new DefaultDatastoreEntityConverter(new DatastoreMappingContext(), (ObjectToKeyFactory) null);
+
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
@@ -79,9 +82,7 @@ public class DefaultDatastoreEntityConverterTests {
 				.set("intField", 99)
 				.set("enumField", "WHITE")
 				.build();
-		DatastoreEntityConverter entityConverter =
-				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(), null);
-		TestDatastoreItem item = entityConverter.read(TestDatastoreItem.class, entity);
+		TestDatastoreItem item = ENTITY_CONVERTER.read(TestDatastoreItem.class, entity);
 
 		assertThat(item.getDurationField()).as("validate duration field").isEqualTo(Duration.ofDays(1));
 		assertThat(item.getStringField()).as("validate string field").isEqualTo("string value");
@@ -112,9 +113,7 @@ public class DefaultDatastoreEntityConverterTests {
 				.set("intField", 99)
 				.set("enumField", "BLACK")
 				.build();
-		DatastoreEntityConverter entityConverter =
-				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(), null);
-		TestDatastoreItem item = entityConverter.read(TestDatastoreItem.class, entity);
+		TestDatastoreItem item = ENTITY_CONVERTER.read(TestDatastoreItem.class, entity);
 
 		assertThat(item.getStringField()).as("validate null field").isNull();
 	}
@@ -133,9 +132,20 @@ public class DefaultDatastoreEntityConverterTests {
 				.set("boolField", 123L)
 				.build();
 
-		DatastoreEntityConverter entityConverter =
-				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(), null);
-		entityConverter.read(TestDatastoreItem.class, entity);
+		ENTITY_CONVERTER.read(TestDatastoreItem.class, entity);
+	}
+
+	@Test
+	public void testObjectEntityException() {
+		this.thrown.expect(DatastoreDataException.class);
+		this.thrown.expectMessage("Unable to convert Datastore Entity to class java.lang.Object");
+
+		Entity entity = getEntityBuilder()
+				.set("stringField", "string value")
+				.set("boolField", 123L)
+				.build();
+
+		ENTITY_CONVERTER.read(Object.class, entity);
 	}
 
 	@Test
@@ -154,9 +164,7 @@ public class DefaultDatastoreEntityConverterTests {
 				.set("boolField", ListValue.of(true))
 				.build();
 
-		DatastoreEntityConverter entityConverter =
-				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(), null);
-		entityConverter.read(TestDatastoreItem.class, entity);
+		ENTITY_CONVERTER.read(TestDatastoreItem.class, entity);
 	}
 
 	@Test
@@ -176,10 +184,8 @@ public class DefaultDatastoreEntityConverterTests {
 		item.setEnumField(TestDatastoreItem.Color.BLACK);
 		item.setByteArrayField(bytes);
 
-		DatastoreEntityConverter entityConverter =
-				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(), null);
 		Entity.Builder builder = getEntityBuilder();
-		entityConverter.write(item, builder);
+		ENTITY_CONVERTER.write(item, builder);
 
 		Entity entity = builder.build();
 
@@ -214,10 +220,8 @@ public class DefaultDatastoreEntityConverterTests {
 		item.setTimestampField(Timestamp.ofTimeSecondsAndNanos(30, 40));
 		item.setBlobField(Blob.copyFrom(bytes));
 
-		DatastoreEntityConverter entityConverter =
-				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(), null);
 		Entity.Builder builder = getEntityBuilder();
-		entityConverter.write(item, builder);
+		ENTITY_CONVERTER.write(item, builder);
 
 		Entity entity = builder.build();
 
@@ -237,10 +241,8 @@ public class DefaultDatastoreEntityConverterTests {
 		item.setStringField("string value");
 		item.setUnsupportedField(new TestItemUnsupportedFields.NewType(true));
 
-		DatastoreEntityConverter entityConverter =
-				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(), null);
 		Entity.Builder builder = getEntityBuilder();
-		entityConverter.write(item, builder);
+		ENTITY_CONVERTER.write(item, builder);
 	}
 
 	@Test
@@ -254,7 +256,7 @@ public class DefaultDatastoreEntityConverterTests {
 				Arrays.asList(
 						getIntegerToNewTypeConverter(),
 						getNewTypeToIntegerConverter()
-				)), null), null);
+				)), null));
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 		Entity entity = builder.build();
@@ -285,14 +287,11 @@ public class DefaultDatastoreEntityConverterTests {
 				ImmutableSet.of(3.14, 2.71),
 				new String[] { "abc", "def" }, new boolean[] {true, false}, null, null);
 
-		DatastoreEntityConverter entityConverter =
-				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(), null);
-
 		Entity.Builder builder = getEntityBuilder();
-		entityConverter.write(item, builder);
+		ENTITY_CONVERTER.write(item, builder);
 		Entity entity = builder.build();
 
-		entityConverter.read(TestDatastoreItemCollections.class, entity);
+		ENTITY_CONVERTER.read(TestDatastoreItemCollections.class, entity);
 	}
 
 	@Test
@@ -315,7 +314,7 @@ public class DefaultDatastoreEntityConverterTests {
 											public ImmutableSet<?> convert(List<?> source) {
 												return ImmutableSet.copyOf(source);
 											}
-										})), null), null);
+										})), null));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -357,11 +356,8 @@ public class DefaultDatastoreEntityConverterTests {
 						null,
 						null, new boolean[] {true, false}, null, null);
 
-		DatastoreEntityConverter entityConverter =
-				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(), null);
-
 		Entity.Builder builder = getEntityBuilder();
-		entityConverter.write(item, builder);
+		ENTITY_CONVERTER.write(item, builder);
 		Entity entity = builder.build();
 
 		List<Value<?>> intList = entity.getList("intList");
@@ -377,8 +373,7 @@ public class DefaultDatastoreEntityConverterTests {
 				.as("validate double set is null")
 				.isNull();
 
-		TestDatastoreItemCollections readItem =
-				entityConverter.read(TestDatastoreItemCollections.class, entity);
+		TestDatastoreItemCollections readItem = ENTITY_CONVERTER.read(TestDatastoreItemCollections.class, entity);
 		assertThat(item.equals(readItem)).as("read object should be equal to original").isTrue();
 
 	}
@@ -393,11 +388,8 @@ public class DefaultDatastoreEntityConverterTests {
 
 		TestItemUnsupportedFields.CollectionOfUnsupportedTypes item = getCollectionOfUnsupportedTypesItem();
 
-		DatastoreEntityConverter entityConverter =
-				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(), null);
-
 		Entity.Builder builder = getEntityBuilder();
-		entityConverter.write(item, builder);
+		ENTITY_CONVERTER.write(item, builder);
 	}
 
 	@Test
@@ -407,7 +399,7 @@ public class DefaultDatastoreEntityConverterTests {
 		DatastoreEntityConverter entityConverter =
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
 						new TwoStepsConversions(new DatastoreCustomConversions(Collections.singletonList(
-								getNewTypeToIntegerConverter())), null), null);
+								getNewTypeToIntegerConverter())), null));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -437,7 +429,7 @@ public class DefaultDatastoreEntityConverterTests {
 				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
 						new TwoStepsConversions(new DatastoreCustomConversions(Collections.singletonList(
 								getNewTypeToIntegerConverter()
-						)), null), null);
+						)), null));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -455,7 +447,7 @@ public class DefaultDatastoreEntityConverterTests {
 						new TwoStepsConversions(new DatastoreCustomConversions(Arrays.asList(
 								getIntegerToNewTypeConverter(),
 								getNewTypeToIntegerConverter()
-						)), null), null);
+						)), null));
 
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
@@ -489,11 +481,8 @@ public class DefaultDatastoreEntityConverterTests {
 		item.setIndexedField(1L);
 		item.setUnindexedField(2L);
 
-		DatastoreEntityConverter entityConverter =
-				new DefaultDatastoreEntityConverter(new DatastoreMappingContext(), null);
-
 		Entity.Builder builder = getEntityBuilder();
-		entityConverter.write(item, builder);
+		ENTITY_CONVERTER.write(item, builder);
 		Entity entity = builder.build();
 
 		assertThat(entity.getLong("indexedField")).as("validate indexed field value")

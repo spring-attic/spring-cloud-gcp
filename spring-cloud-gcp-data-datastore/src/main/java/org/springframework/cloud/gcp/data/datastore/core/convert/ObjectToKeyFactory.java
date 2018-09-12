@@ -30,6 +30,11 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersis
  */
 public interface ObjectToKeyFactory {
 
+	/**
+	 * Get an IncompleteKey (a Key without ID part) from a kind name.
+	 * @param kindName the kind name
+	 * @return an IncompleteKey.
+	 */
 	IncompleteKey getIncompleteKey(String kindName);
 
 	/**

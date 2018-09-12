@@ -44,5 +44,9 @@ public interface ReadWriteConversions {
 	 */
 	Value convertOnWrite(Object obj, DatastorePersistentProperty persistentProperty);
 
+	/**
+	 * Registers DatastoreEntityConverter to be used for embedded entities
+	 * @param datastoreEntityConverter the DatastoreEntityConverter.
+	 */
 	void registerEntityConverter(DatastoreEntityConverter datastoreEntityConverter);
 }
