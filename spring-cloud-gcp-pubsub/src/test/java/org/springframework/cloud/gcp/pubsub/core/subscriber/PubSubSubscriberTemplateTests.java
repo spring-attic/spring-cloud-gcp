@@ -57,12 +57,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.reset;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * Unit tests for {@link PubSubSubscriberTemplate}.
@@ -180,12 +175,12 @@ public class PubSubSubscriberTemplateTests {
 				.addReceivedMessages(ReceivedMessage.newBuilder().setMessage(this.pubsubMessage).build()).build());
 
 		// create object under test
-		this.pubSubSubscriberTemplate = new PubSubSubscriberTemplate(this.subscriberFactory);
+		this.pubSubSubscriberTemplate = spy(new PubSubSubscriberTemplate(this.subscriberFactory));
 		this.pubSubSubscriberTemplate.setMessageConverter(this.messageConverter);
 	}
 
 	@Test
-	public void testSubscribeAndAck() throws InterruptedException, ExecutionException, TimeoutException {
+	public void testSubscribe_AndAck() throws InterruptedException, ExecutionException, TimeoutException {
 		this.pubSubSubscriberTemplate.subscribe("sub1", this.consumer);
 
 		verify(this.subscriber).startAsync();
@@ -208,7 +203,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testSubscribeAndNack() throws InterruptedException, ExecutionException, TimeoutException {
+	public void testSubscribe_AndNack() throws InterruptedException, ExecutionException, TimeoutException {
 		this.pubSubSubscriberTemplate.subscribe("sub1", this.consumer);
 
 		verify(this.subscriber).startAsync();
@@ -231,7 +226,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testSubscribeConvertAndAck() throws InterruptedException, ExecutionException, TimeoutException {
+	public void testSubscribeAndConvert_AndAck() throws InterruptedException, ExecutionException, TimeoutException {
 		this.pubSubSubscriberTemplate.subscribeAndConvert("sub1", this.convertedConsumer, Boolean.class);
 
 		verify(this.subscriber).startAsync();
@@ -259,7 +254,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testSubscribeConvertAndNack() throws InterruptedException, ExecutionException, TimeoutException {
+	public void testSubscribeAndConvert_AndNack() throws InterruptedException, ExecutionException, TimeoutException {
 		this.pubSubSubscriberTemplate.subscribeAndConvert("sub1", this.convertedConsumer, Boolean.class);
 
 		verify(this.subscriber).startAsync();
@@ -287,7 +282,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testPullAndAck() throws InterruptedException, ExecutionException, TimeoutException {
+	public void testPull_AndAck() throws InterruptedException, ExecutionException, TimeoutException {
 		List<AcknowledgeablePubsubMessage> result =
 				this.pubSubSubscriberTemplate.pull(
 						"sub2", 1, true);
@@ -315,7 +310,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testPullAndNack() throws InterruptedException, ExecutionException, TimeoutException {
+	public void testPull_AndNack() throws InterruptedException, ExecutionException, TimeoutException {
 		List<AcknowledgeablePubsubMessage> result =
 				this.pubSubSubscriberTemplate.pull(
 						"sub2", 1, true);
@@ -340,6 +335,35 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(listenableFuture.isDone()).isTrue();
 
 		assertThat(testListenableFutureCallback.getThrowable()).isNull();
+	}
+
+	@Test
+	public void testPullAndAck() throws InterruptedException, ExecutionException, TimeoutException {
+		List<PubsubMessage> result =
+				this.pubSubSubscriberTemplate.pullAndAck(
+						"sub2", 1, true);
+
+		assertThat(result.size()).isEqualTo(1);
+
+		PubsubMessage pubsubMessage = result.get(0);
+		assertThat(pubsubMessage).isSameAs(this.pubsubMessage);
+
+		verify(this.pubSubSubscriberTemplate, times(1)).ack(any());
+	}
+
+	@Test
+	public void testPullAndAck_NoMessages() throws InterruptedException, ExecutionException, TimeoutException {
+		PubSubSubscriberTemplate pubSubSubscriberTemplateSpy = spy(this.pubSubSubscriberTemplate);
+
+		when(this.pullCallable.call(any(PullRequest.class))).thenReturn(PullResponse.newBuilder().build());
+
+		List<PubsubMessage> result =
+				this.pubSubSubscriberTemplate.pullAndAck(
+						"sub2", 1, true);
+
+		assertThat(result.size()).isEqualTo(0);
+
+		verify(this.pubSubSubscriberTemplate, never()).ack(any());
 	}
 
 	@Test
