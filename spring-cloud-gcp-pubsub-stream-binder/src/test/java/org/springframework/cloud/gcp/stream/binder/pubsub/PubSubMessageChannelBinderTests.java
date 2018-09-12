@@ -26,11 +26,8 @@ import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.Spy;
 
-//import java.nio.file.;
-
 /**
- * Integration tests that require the Pub/Sub emulator to be installed and only run if the
- * GCP_PUBSUB_EMULATOR envvar is present.
+ * Integration tests that require the Pub/Sub emulator to be installed.
  *
  * @author João André Martins
  */
@@ -40,19 +37,6 @@ public class PubSubMessageChannelBinderTests extends
 
 	@ClassRule
 	public static PubSubEmulator emulator = new PubSubEmulator();
-
-	//private static final String EMULATOR_HOST_ENVVAR_NAME = "PUBSUB_EMULATOR_HOST";
-
-	//private PubSubTestBinder binder;
-
-	//public PubSubMessageChannelBinderTests() {
-	// this.binder = new PubSubTestBinder(System.getenv(EMULATOR_HOST_ENVVAR_NAME));
-	//}
-
-	//@BeforeClass
-	//public static void enableTests() {
-	//	assumeThat(System.getenv(EMULATOR_HOST_ENVVAR_NAME)).isNotNull();
-	//}
 
 	@Override
 	protected PubSubTestBinder getBinder() throws Exception {
