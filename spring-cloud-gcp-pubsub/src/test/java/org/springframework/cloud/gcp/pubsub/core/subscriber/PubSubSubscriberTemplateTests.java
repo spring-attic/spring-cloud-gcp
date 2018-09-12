@@ -57,7 +57,14 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link PubSubSubscriberTemplate}.
@@ -116,7 +123,6 @@ public class PubSubSubscriberTemplateTests {
 
 	@Mock
 	private ApiFuture<Empty> apiFuture;
-
 
 	@Before
 	public void setUp() throws InterruptedException, TimeoutException, ExecutionException {
@@ -283,9 +289,8 @@ public class PubSubSubscriberTemplateTests {
 
 	@Test
 	public void testPull_AndAck() throws InterruptedException, ExecutionException, TimeoutException {
-		List<AcknowledgeablePubsubMessage> result =
-				this.pubSubSubscriberTemplate.pull(
-						"sub2", 1, true);
+		List<AcknowledgeablePubsubMessage> result = this.pubSubSubscriberTemplate.pull(
+				"sub2", 1, true);
 
 		assertThat(result.size()).isEqualTo(1);
 		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
@@ -311,9 +316,8 @@ public class PubSubSubscriberTemplateTests {
 
 	@Test
 	public void testPull_AndNack() throws InterruptedException, ExecutionException, TimeoutException {
-		List<AcknowledgeablePubsubMessage> result =
-				this.pubSubSubscriberTemplate.pull(
-						"sub2", 1, true);
+		List<AcknowledgeablePubsubMessage> result = this.pubSubSubscriberTemplate.pull(
+				"sub2", 1, true);
 
 		assertThat(result.size()).isEqualTo(1);
 		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
@@ -339,9 +343,8 @@ public class PubSubSubscriberTemplateTests {
 
 	@Test
 	public void testPullAndAck() throws InterruptedException, ExecutionException, TimeoutException {
-		List<PubsubMessage> result =
-				this.pubSubSubscriberTemplate.pullAndAck(
-						"sub2", 1, true);
+		List<PubsubMessage> result = this.pubSubSubscriberTemplate.pullAndAck(
+				"sub2", 1, true);
 
 		assertThat(result.size()).isEqualTo(1);
 
@@ -357,9 +360,8 @@ public class PubSubSubscriberTemplateTests {
 
 		when(this.pullCallable.call(any(PullRequest.class))).thenReturn(PullResponse.newBuilder().build());
 
-		List<PubsubMessage> result =
-				this.pubSubSubscriberTemplate.pullAndAck(
-						"sub2", 1, true);
+		List<PubsubMessage> result = this.pubSubSubscriberTemplate.pullAndAck(
+				"sub2", 1, true);
 
 		assertThat(result.size()).isEqualTo(0);
 
@@ -368,9 +370,8 @@ public class PubSubSubscriberTemplateTests {
 
 	@Test
 	public void testPullAndConvert() {
-		List<ConvertedAcknowledgeablePubsubMessage<BigInteger>> result =
-				this.pubSubSubscriberTemplate.pullAndConvert(
-						"sub2", 1, true, BigInteger.class);
+		List<ConvertedAcknowledgeablePubsubMessage<BigInteger>> result = this.pubSubSubscriberTemplate.pullAndConvert(
+				"sub2", 1, true, BigInteger.class);
 
 		verify(this.messageConverter).fromPubSubMessage(this.pubsubMessage, BigInteger.class);
 
@@ -379,7 +380,6 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
 		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub2");
 	}
-
 
 	private class TestConsumer implements Consumer<BasicAcknowledgeablePubsubMessage> {
 
