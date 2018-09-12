@@ -194,7 +194,9 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		List<AcknowledgeablePubsubMessage> ackableMessages = pull(pullRequest);
 
-		ack(ackableMessages);
+		if (ackableMessages.size() > 0) {
+			ack(ackableMessages);
+		}
 
 		return ackableMessages.stream().map(AcknowledgeablePubsubMessage::getPubsubMessage)
 				.collect(Collectors.toList());
