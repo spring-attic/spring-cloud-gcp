@@ -131,7 +131,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private StructuredQuery getQuery(Object[] parameters) {
 		StructuredQuery.Builder structredQueryBuilder;
 
-		if (this.tree.isExistsProjection() && this.tree.isCountProjection()) {
+		if (this.tree.isExistsProjection() || this.tree.isCountProjection()) {
 			structredQueryBuilder = StructuredQuery.newKeyQueryBuilder();
 		}
 		else if (!this.runAsProjectionQuery && !this.tree.isDistinct()) {

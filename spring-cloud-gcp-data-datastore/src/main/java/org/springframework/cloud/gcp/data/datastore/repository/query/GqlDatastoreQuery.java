@@ -34,8 +34,6 @@ import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.GqlQuery.Builder;
 import com.google.cloud.datastore.Key;
-import com.google.cloud.datastore.ProjectionEntity;
-import com.google.cloud.datastore.Query.ResultType;
 import com.google.common.collect.ImmutableMap;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
@@ -150,8 +148,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	private GqlQuery bindArgsToGqlQuery(String gql, List<String> tags,
 			Object[] vals) {
-		Builder<ProjectionEntity> builder = GqlQuery
-				.newGqlQueryBuilder(ResultType.PROJECTION_ENTITY, gql);
+		Builder builder = GqlQuery.newGqlQueryBuilder(gql);
 		if (tags.size() != vals.length) {
 			throw new DatastoreDataException("Annotated GQL Query Method "
 					+ this.queryMethod.getName() + " has " + tags.size()
