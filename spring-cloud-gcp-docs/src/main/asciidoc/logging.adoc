@@ -56,6 +56,29 @@ This appender builds a Stackdriver Logging log entry from a JUL or Logback log e
 
 `STACKDRIVER_LOG_NAME` and `STACKDRIVER_LOG_FLUSH_LEVEL` environment variables can be used to customize the `STACKDRIVER` appender.
 
+Your configuration may then look like this:
+[source, xml]
+----
+<configuration>
+  <include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml" />
+
+  <root level="INFO">
+    <appender-ref ref="STACKDRIVER" />
+  </root>
+</configuration>
+----
+
+If you want to have more control over the log output, you can further configure the appender.
+The following properties are available:
+
+[options="header",]
+|=======================================================================
+| Property | Default Value | Description
+| `log` | `spring.log` | The Stackdriver Log name. This can also be set via the `STACKDRIVER_LOG_NAME` environmental variable.
+| `flushLevel` | `WARN` | If a log entry with this level is encountered, trigger a flush of locally buffered log to Stackdriver Logging. This can also be set via the `STACKDRIVER_LOG_FLUSH_LEVEL` environmental variable.
+|=======================================================================
+
+
 ==== Log via Console
 
 For Logback, a `org/springframework/cloud/gcp/autoconfigure/logging/logback-json-appender.xml` file is made available for import to make it easier to configure the JSON Logback appender.
@@ -72,24 +95,11 @@ Your configuration may then look something like this:
 </configuration>
 ----
 
-If your application is running on Google Container Engine, Google Compute Engine or Google App Engine Flexible, your console logging is automatically saved to Google Stackdriver Logging.
+If your application is running on Google Kubernetes Engine, Google Compute Engine or Google App Engine Flexible, your console logging is automatically saved to Google Stackdriver Logging.
 Therefore, you can just include `org/springframework/cloud/gcp/autoconfigure/logging/logback-json-appender.xml` in your logging configuration, which logs JSON entries to the console.
 The trace id will be set correctly.
 
-Your Logback configuration may then look something like this:
-
-[source, xml]
-----
-<configuration>
-  <include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml" />
-
-  <root level="INFO">
-    <appender-ref ref="CONSOLE_JSON"/>
-  </root>
-</configuration>
-----
-
-If you want to have more control over the log output, you can also configure the `ConsoleAppender` yourself.
+If you want to have more control over the log output, you can further configure the appender.
 The following properties are available:
 
 [options="header",]

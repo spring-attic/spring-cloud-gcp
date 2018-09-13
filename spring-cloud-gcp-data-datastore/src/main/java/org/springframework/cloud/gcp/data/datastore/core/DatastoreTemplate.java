@@ -29,7 +29,6 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Entity.Builder;
-import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
@@ -139,8 +138,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public <T> Iterable<T> query(GqlQuery<Entity> gqlQuery, Class<T> entityClass) {
-		return convertEntities(this.datastore.run(gqlQuery), entityClass);
+	public <T> Iterable<T> query(Query<Entity> query, Class<T> entityClass) {
+		return convertEntities(this.datastore.run(query), entityClass);
 	}
 
 	@Override

@@ -13,18 +13,6 @@
 	<artifactId>spring-cloud-gcp-pubsub-sample</artifactId>
 	<name>Spring Cloud GCP Pub/Sub Code Sample</name>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-gcp-dependencies</artifactId>
-				<version>1.1.0.BUILD-SNAPSHOT</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>

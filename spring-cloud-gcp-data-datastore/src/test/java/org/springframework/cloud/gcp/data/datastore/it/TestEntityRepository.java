@@ -30,4 +30,5 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, St
 	@Query("select * from  test_entities_ci where id = @id_val")
 	List<TestEntity> findEntitiesWithCustomQuery(@Param("id_val") String id);
 
+	List<TestEntity> findTop3ByShapeAndColor(String shape, String color);
 }
