@@ -74,16 +74,6 @@ The following properties are available:
 [options="header",]
 |=======================================================================
 | Property | Default Value | Description
-| `projectId`
-a| If not set, default value is determined in the following order:
-
-1. `SPRING_CLOUD_GCP_LOGGING_PROJECT_ID` Environmental Variable.
-1. Value of `DefaultGcpProjectIdProvider.getProjectId()`
-a| This is used to generate fully qualified Stackdriver Trace ID format: `projects/[PROJECT-ID]/traces/[TRACE-ID]`.
-
-This format is required to correlate trace between Stackdriver Trace and Stackdriver Logging.
-
-If `projectId` is not set and cannot be determined, then it'll log `traceId` without the fully qualified format.
 | `log` | `spring.log` | The Stackdriver Log name. This can also be set via the `STACKDRIVER_LOG_NAME` environmental variable.
 | `flushLevel` | `WARN` | If a log entry with this level is encountered, trigger a flush of locally buffered log to Stackdriver Logging. This can also be set via the `STACKDRIVER_LOG_FLUSH_LEVEL` environmental variable.
 |=======================================================================
