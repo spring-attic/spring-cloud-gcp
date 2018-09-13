@@ -47,7 +47,7 @@ public class PubSubEmulator extends ExternalResource {
 	private static final Path EMULATOR_CONFIG_DIR = Paths.get(System.getProperty("user.home")).resolve(
 			Paths.get(".config", "gcloud", "emulators", "pubsub"));
 
-	public static final String ENV_FILE_NAME = "env.yaml";
+	private static final String ENV_FILE_NAME = "env.yaml";
 
 	private static final Path EMULATOR_CONFIG_PATH = EMULATOR_CONFIG_DIR.resolve(ENV_FILE_NAME);
 
@@ -76,7 +76,14 @@ public class PubSubEmulator extends ExternalResource {
 			EMULATOR_CONFIG_DIR.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
 		}
 
-		this.emulatorProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "start").start();
+		try {
+			this.emulatorProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "start")
+					.start();
+		}
+		catch (IOException e) {
+			LOGGER.warn("Gcloud not found; leaving host/port uninitialized");
+			return;
+		}
 
 		if (configPresent) {
 			waitForConfigUpdate(watchService);
@@ -106,6 +113,14 @@ public class PubSubEmulator extends ExternalResource {
 	 */
 	@Override
 	protected void after() {
+		if (this.emulatorProcess != null) {
+			this.emulatorProcess.destroy();
+		}
+
+		if (this.emulatorHostPort == null) {
+			return;
+		}
+
 		try {
 			int portSeparatorIndex = this.emulatorHostPort.indexOf(":");
 			if (portSeparatorIndex < 0 || !this.emulatorHostPort.contains("localhost")) {
@@ -121,14 +136,11 @@ public class PubSubEmulator extends ExternalResource {
 					.lines()
 					.filter(psLine -> psLine.contains(hostPortParams))
 					.map(psLine -> new StringTokenizer(psLine).nextToken())
-					.forEach(pid -> {
-						this.killProcess(pid);
-					});
+					.forEach(this::killProcess);
 		}
 		catch (IOException e) {
 			LOGGER.error("Failed to cleanup: ", e);
 		}
-		this.emulatorProcess.destroy();
 	}
 
 	/**
@@ -148,7 +160,7 @@ public class PubSubEmulator extends ExternalResource {
 	 */
 	private void waitForConfigCreation() throws InterruptedException {
 		int attempts = 10;
-		while (!Files.exists(this.EMULATOR_CONFIG_PATH) && --attempts >= 0) {
+		while (!Files.exists(EMULATOR_CONFIG_PATH) && --attempts >= 0) {
 			Thread.sleep(1000);
 		}
 		if (attempts < 0) {

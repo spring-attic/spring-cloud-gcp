@@ -26,6 +26,7 @@ import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.Spy;
 
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.Assume.assumeTrue;
 
 /**
@@ -43,13 +44,15 @@ public class PubSubMessageChannelBinderTests extends
 
 	@BeforeClass
 	public static void enableTests() {
-		assumeTrue(
+		assumeTrue("PubSub Binder tests are disabled. Please enable them with -Dit.pubsub or -Dit.localdeps",
 				"true".equals(System.getProperty("it.pubsub")) || "true".equals(System.getProperty("it.localdeps")));
+		assumeThat(emulator.getEmulatorHostPort())
+				.withFailMessage("No PubSub emulator host configured").isNotNull();
 	}
 
 	@Override
-	protected PubSubTestBinder getBinder() throws Exception {
-		return new PubSubTestBinder(this.emulator.getEmulatorHostPort());
+	protected PubSubTestBinder getBinder() {
+		return new PubSubTestBinder(emulator.getEmulatorHostPort());
 	}
 
 	@Override
@@ -68,7 +71,7 @@ public class PubSubMessageChannelBinderTests extends
 	}
 
 	@Override
-	public void testClean() throws Exception {
+	public void testClean() {
 		// Do nothing. Original test tests for Lifecycle logic that we don't need.
 	}
 }
