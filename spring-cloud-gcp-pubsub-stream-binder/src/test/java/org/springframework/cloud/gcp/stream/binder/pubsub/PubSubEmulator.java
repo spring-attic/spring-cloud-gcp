@@ -135,7 +135,7 @@ public class PubSubEmulator extends ExternalResource {
 	/**
 	 * Waits until a PubSub emulator configuration file is present.
 	 *
-	 * Fails if the file does not appear after 1 second.
+	 * Fails if the file does not appear after 10 seconds.
 	 *
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
@@ -143,7 +143,7 @@ public class PubSubEmulator extends ExternalResource {
 	private void waitForConfigCreation() throws InterruptedException {
 		int attempts = 10;
 		while (!Files.exists(this.EMULATOR_CONFIG_PATH) && --attempts >= 0) {
-			Thread.sleep(100);
+			Thread.sleep(1000);
 		}
 		if (attempts < 0) {
 			throw new RuntimeException(
