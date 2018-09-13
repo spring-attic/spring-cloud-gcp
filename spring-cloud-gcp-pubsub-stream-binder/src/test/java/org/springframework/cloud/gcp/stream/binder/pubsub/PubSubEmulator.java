@@ -27,6 +27,7 @@ import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.Optional;
+import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
@@ -107,14 +108,13 @@ public class PubSubEmulator extends ExternalResource {
 	 */
 	@Override
 	protected void after() {
-		this.emulatorProcess.destroy();
 		try {
 			String hostPortParams = String.format("--host=%s --port=%s", this.emulatorHost, this.emulatorPort);
 			Process psProcess = new ProcessBuilder("ps", "-v").start();
 			new BufferedReader(new InputStreamReader(psProcess.getInputStream()))
 					.lines()
 					.filter(psLine -> psLine.contains(hostPortParams))
-					.map(psLine -> psLine.substring(0, psLine.indexOf(' ')))
+					.map(psLine -> new StringTokenizer(psLine).nextToken())
 					.forEach(pid -> {
 						this.killProcess(pid);
 					});
@@ -122,6 +122,7 @@ public class PubSubEmulator extends ExternalResource {
 		catch (IOException e) {
 			LOGGER.error("Failed to cleanup: ", e);
 		}
+		this.emulatorProcess.destroy();
 	}
 
 	/**
