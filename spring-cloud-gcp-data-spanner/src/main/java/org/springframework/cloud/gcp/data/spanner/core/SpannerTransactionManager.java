@@ -81,6 +81,15 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 	@Override
 	protected void doBegin(Object transactionObject, TransactionDefinition transactionDefinition)
 			throws TransactionException {
+		if (transactionDefinition.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT) {
+			throw new IllegalStateException(
+					"SpannerTransactionManager supports only isolation level TransactionDefinition.ISOLATION_DEFAULT");
+		}
+		if (transactionDefinition.getPropagationBehavior() != TransactionDefinition.PROPAGATION_REQUIRED) {
+			throw new IllegalStateException(
+					"SpannerTransactionManager supports only propagation behavior " +
+							"TransactionDefinition.PROPAGATION_REQUIRED");
+		}
 		Tx tx = (Tx) transactionObject;
 		final TransactionContext targetTransactionContext = tx.transactionManager.begin();
 		if (transactionDefinition.isReadOnly()) {
