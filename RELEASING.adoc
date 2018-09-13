@@ -15,7 +15,9 @@ In order to simplify that process, here is a list of prerequisites to be perform
 
 . [For GA releases only.] Comment out any non-GA modules from the `pom.xml` file.
 
-. After the release scripts have been run by the release admin, revert the versions using the https://www.mojohaus.org/versions-maven-plugin/revert-mojo.html[mvn versions:revert] command.
+. After the release scripts have been run by the release admin, uncomment the commented out modules.
+
+. Rrevert the versions using the https://www.mojohaus.org/versions-maven-plugin/revert-mojo.html[mvn versions:revert] command.
 
     $ ./mvnw versions:revert
 
