@@ -19,9 +19,15 @@ package org.springframework.cloud.gcp.stream.binder.pubsub;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -31,11 +37,14 @@ import org.junit.rules.ExternalResource;
  * Rule for instantiating and tearing down a Pub/Sub emulator instance.
  */
 public class PubSubEmulator extends ExternalResource {
-	private static final Path emulatorConfigPath = Paths.get(System.getProperty("user.home")).resolve(
-			Paths.get(".config", "gcloud", "emulators", "pubsub", "env.yaml"));
+	private static final Path EMULATOR_CONFIG_DIR = Paths.get(System.getProperty("user.home")).resolve(
+			Paths.get(".config", "gcloud", "emulators", "pubsub"));
+
+	public static final String ENV_FILE_NAME = "env.yaml";
+
+	private static final Path EMULATOR_CONFIG_PATH = EMULATOR_CONFIG_DIR.resolve(ENV_FILE_NAME);
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubEmulator.class);
-
 
 	// Binder to Pub/Sub emulator for use in individual tests.
 	private PubSubTestBinder binder;
@@ -57,14 +66,29 @@ public class PubSubEmulator extends ExternalResource {
 	@Override
 	protected void before() throws Throwable {
 
+		boolean configPresent = Files.exists(this.EMULATOR_CONFIG_PATH);
+		WatchService watchService = null;
+
+		if (configPresent) {
+			watchService = FileSystems.getDefault().newWatchService();
+			EMULATOR_CONFIG_DIR.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+		}
+
 		this.emulatorProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "start").start();
-		assertConfigPresent();
+
+		if (configPresent) {
+			waitForConfigUpdate(watchService);
+		}
+		else {
+			waitForConfigCreation();
+		}
 
 		Process envInitProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "env-init").start();
 
-		// env-init output is a shell command of the form "export PUBSUB_EMULATOR_HOST=localhost:8085".
-		String emulatorInitString
-				= new BufferedReader(new InputStreamReader(envInitProcess.getInputStream())).readLine();
+		// env-init output is a shell command of the form "export
+		// PUBSUB_EMULATOR_HOST=localhost:8085".
+		String emulatorInitString = new BufferedReader(new InputStreamReader(envInitProcess.getInputStream()))
+				.readLine();
 		envInitProcess.waitFor();
 		String emulatorHostPort = emulatorInitString.substring(emulatorInitString.indexOf('=') + 1);
 		extractTeardownParams(emulatorHostPort);
@@ -75,11 +99,11 @@ public class PubSubEmulator extends ExternalResource {
 	/**
 	 * Shuts down the two emulator processes.
 	 *
-	 * gcloud command is shut down through the direct process handle.
-	 * java process is identified and shut down through shell commands.
+	 * gcloud command is shut down through the direct process handle. java process is
+	 * identified and shut down through shell commands.
 	 *
-	 * There should normally be only one process with that host/port combination, but if there are more, they will be
-	 * cleaned up as well.
+	 * There should normally be only one process with that host/port combination, but if there
+	 * are more, they will be cleaned up as well.
 	 */
 	@Override
 	protected void after() {
@@ -112,11 +136,12 @@ public class PubSubEmulator extends ExternalResource {
 	 *
 	 * Fails if the file does not appear after 1 second.
 	 *
-	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up to fail the test.
+	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
+	 * to fail the test.
 	 */
-	private void assertConfigPresent() throws InterruptedException {
+	private void waitForConfigCreation() throws InterruptedException {
 		int attempts = 10;
-		while (!Files.exists(this.emulatorConfigPath) && --attempts >= 0) {
+		while (!Files.exists(this.EMULATOR_CONFIG_PATH) && --attempts >= 0) {
 			Thread.sleep(100);
 		}
 		if (attempts < 0) {
@@ -126,10 +151,40 @@ public class PubSubEmulator extends ExternalResource {
 	}
 
 	/**
+	 * Waits until a PubSub emulator configuration file is updated.
+	 *
+	 * Fails if the file does not update after 1 second.
+	 *
+	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
+	 * to fail the test.
+	 */
+	private void waitForConfigUpdate(WatchService watchService) throws InterruptedException {
+		int attempts = 10;
+		while (--attempts >= 0) {
+			WatchKey key = watchService.poll(100, TimeUnit.MILLISECONDS);
+
+			if (key != null) {
+				Optional<Path> configFilePath = key.pollEvents().stream().filter(
+						event -> event.kind() == StandardWatchEventKinds.ENTRY_MODIFY)
+						.map(event -> (Path) event.context())
+						.filter(path -> ENV_FILE_NAME.equals(path.toString()))
+						.findAny();
+				if (configFilePath.isPresent()) {
+					return;
+				}
+			}
+		}
+
+		if (attempts < 0) {
+			throw new RuntimeException("Configuration file update could not be detected");
+		}
+	}
+
+	/**
 	 * Remembers host/port combination for future process cleanup.
 	 *
-	 * Validates that localhost is the only valid value; this will stop the test if emulator decides to start with an
-	 * IPv6 ::1 address.
+	 * Validates that localhost is the only valid value; this will stop the test if emulator
+	 * decides to start with an IPv6 ::1 address.
 	 *
 	 * @param emulatorHostPort typically "localhost:8085"
 	 */
