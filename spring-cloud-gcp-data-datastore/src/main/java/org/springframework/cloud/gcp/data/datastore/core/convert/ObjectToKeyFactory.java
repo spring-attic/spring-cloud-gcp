@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Key;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
@@ -30,7 +31,14 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersis
 public interface ObjectToKeyFactory {
 
 	/**
-	 * Get a Key from a provided ID value and a kind name. If the given ID value is
+	 * Get an {@link IncompleteKey} (a Key without ID part) from a kind name.
+	 * @param kindName the kind name
+	 * @return an IncompleteKey.
+	 */
+	IncompleteKey getIncompleteKey(String kindName);
+
+	/**
+	 * Get a {@link Key} from a provided ID value and a kind name. If the given ID value is
 	 * already a Key then this is the Key returned. Otherwise a Key is created with the
 	 * given kind name and the given ID value as the only and root value.
 	 * @param id the ID value that can be the root single ID value or a fully formed Key.
@@ -41,7 +49,7 @@ public interface ObjectToKeyFactory {
 	Key getKeyFromId(Object id, String kindName);
 
 	/**
-	 * Get a Key from an entity.
+	 * Get a {@link Key} from an entity.
 	 * @param entity the entity that whose ID value we want to form into a Key.
 	 * @param datastorePersistentEntity the metadata of the given entity.
 	 * @return a Key.
@@ -50,7 +58,7 @@ public interface ObjectToKeyFactory {
 			DatastorePersistentEntity datastorePersistentEntity);
 
 	/**
-	 * Allocates a new ID Key for the given entity object and sets the allocated ID value in the
+	 * Allocates a new ID {@link Key} for the given entity object and sets the allocated ID value in the
 	 * object.
 	 * @param entity the object for which to get and set the ID value.
 	 * @param datastorePersistentEntity the persistent entity metadata for the entity object.

@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.BaseEntity;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
@@ -31,13 +31,16 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
  * @since 1.1
  */
 public class EntityPropertyValueProvider implements PropertyValueProvider<DatastorePersistentProperty> {
-	private final Entity entity;
+	private final BaseEntity entity;
 
 	private final ReadWriteConversions conversion;
 
-	EntityPropertyValueProvider(Entity entity, ReadWriteConversions readWriteConversions) {
-		this.entity = entity;
 
+	public EntityPropertyValueProvider(BaseEntity entity, ReadWriteConversions readWriteConversions) {
+		if (entity == null) {
+			throw new DatastoreDataException("A non-null entity is required");
+		}
+		this.entity = entity;
 		this.conversion = readWriteConversions;
 	}
 
@@ -50,11 +53,9 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 			return null;
 		}
 		try {
-
 			return this.conversion.convertOnRead(
 					this.entity.getValue(fieldName),
-					persistentProperty.getType(),
-					persistentProperty.getComponentType());
+					persistentProperty);
 		}
 		catch (ConversionException | DatastoreDataException e) {
 			throw new DatastoreDataException("Unable to read property " + fieldName, e);

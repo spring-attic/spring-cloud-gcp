@@ -37,7 +37,7 @@ public class EntityPropertyValueProviderTests {
 
 	private Datastore datastore;
 
-	private TwoStepsConversions twoStepsConversion = new TwoStepsConversions(new DatastoreCustomConversions());
+	private TwoStepsConversions twoStepsConversion = new TwoStepsConversions(new DatastoreCustomConversions(), null);
 
 
 	private DatastorePersistentEntity<TestDatastoreItem> persistentEntity =

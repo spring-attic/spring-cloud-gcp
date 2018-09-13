@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
-import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.BaseEntity;
 
 import org.springframework.data.convert.EntityReader;
 import org.springframework.data.convert.EntityWriter;
@@ -29,6 +29,6 @@ import org.springframework.data.convert.EntityWriter;
  * @since 1.1
  */
 public interface DatastoreEntityConverter extends
-		EntityReader<Object, Entity>, EntityWriter<Object, Entity.Builder> {
+		EntityReader<Object, BaseEntity>, EntityWriter<Object, BaseEntity.Builder> {
 
 }

@@ -98,8 +98,9 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public ReadWriteConversions datastoreReadWriteConversions(DatastoreCustomConversions customConversions) {
-		return new TwoStepsConversions(customConversions);
+	public ReadWriteConversions datastoreReadWriteConversions(DatastoreCustomConversions customConversions,
+			ObjectToKeyFactory objectToKeyFactory) {
+		return new TwoStepsConversions(customConversions, objectToKeyFactory);
 	}
 
 	@Bean
@@ -110,15 +111,15 @@ public class GcpDatastoreAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public DatastoreEntityConverter datastoreEntityConverter(DatastoreMappingContext datastoreMappingContext,
-			ReadWriteConversions conversions) {
-		return new DefaultDatastoreEntityConverter(datastoreMappingContext, conversions);
+	public ObjectToKeyFactory objectToKeyFactory(Datastore datastore) {
+		return new DatastoreServiceObjectToKeyFactory(datastore);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public ObjectToKeyFactory objectToKeyFactory(Datastore datastore) {
-		return new DatastoreServiceObjectToKeyFactory(datastore);
+	public DatastoreEntityConverter datastoreEntityConverter(DatastoreMappingContext datastoreMappingContext,
+			ReadWriteConversions conversions) {
+		return new DefaultDatastoreEntityConverter(datastoreMappingContext, conversions);
 	}
 
 	@Bean

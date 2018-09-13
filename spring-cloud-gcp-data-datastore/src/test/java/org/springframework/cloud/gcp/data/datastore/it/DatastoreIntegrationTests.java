@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.it;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -41,6 +43,7 @@ import static org.junit.Assume.assumeThat;
 
 /**
  * @author Chengyuan Zhao
+ * @author Dmitry Solomakha
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { DatastoreIntegrationTestConfiguration.class })
@@ -53,6 +56,9 @@ public class DatastoreIntegrationTests {
 
 	@Autowired
 	private TestEntityRepository testEntityRepository;
+
+	@Autowired
+	private DatastoreTemplate datastoreTemplate;
 
 	@BeforeClass
 	public static void checkToRun() {
@@ -125,4 +131,39 @@ public class DatastoreIntegrationTests {
 		assertFalse(this.testEntityRepository.findAllById(ImmutableList.of("a", "b"))
 				.iterator().hasNext());
 	}
+
+	@Test
+	public void embeddedEntitiesTest() {
+		EmbeddableTreeNode treeNode10 = new EmbeddableTreeNode(10, null, null);
+		EmbeddableTreeNode treeNode8 = new EmbeddableTreeNode(8, null, null);
+		EmbeddableTreeNode treeNode9 = new EmbeddableTreeNode(9, treeNode8, treeNode10);
+		EmbeddableTreeNode treeNode7 = new EmbeddableTreeNode(7, null, treeNode9);
+
+
+		this.datastoreTemplate.save(treeNode7);
+
+		EmbeddableTreeNode loaded = this.datastoreTemplate.findById(7L, EmbeddableTreeNode.class);
+
+		this.datastoreTemplate.deleteAll(EmbeddableTreeNode.class);
+		assertEquals(treeNode7, loaded);
+	}
+
+	@Test
+	public void embeddedCollectionTest() {
+		EmbeddableTreeNode treeNode10 = new EmbeddableTreeNode(10, null, null);
+		EmbeddableTreeNode treeNode8 = new EmbeddableTreeNode(8, null, null);
+		EmbeddableTreeNode treeNode9 = new EmbeddableTreeNode(9, treeNode8, treeNode10);
+		EmbeddableTreeNode treeNode7 = new EmbeddableTreeNode(7, null, treeNode9);
+
+		TreeCollection treeCollection =
+				new TreeCollection(1L, Arrays.asList(treeNode7, treeNode8, treeNode9, treeNode10));
+
+		this.datastoreTemplate.save(treeCollection);
+
+		TreeCollection loaded = this.datastoreTemplate.findById(1L, TreeCollection.class);
+
+		this.datastoreTemplate.deleteAll(TreeCollection.class);
+		assertEquals(treeCollection, loaded);
+	}
+
 }
