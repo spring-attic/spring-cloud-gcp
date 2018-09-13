@@ -38,6 +38,10 @@ import org.junit.rules.ExternalResource;
  * Rule for instantiating and tearing down a Pub/Sub emulator instance.
  *
  * Tests can access the emulator's host/port combination by calling {@link #getEmulatorHostPort()} method.
+ *
+ * @author Elena Felder
+ *
+ * @since 1.1
  */
 public class PubSubEmulator extends ExternalResource {
 	private static final Path EMULATOR_CONFIG_DIR = Paths.get(System.getProperty("user.home")).resolve(
@@ -57,7 +61,7 @@ public class PubSubEmulator extends ExternalResource {
 
 
 	/**
-	 * Launches an instance of pubsub simulator, creates a binder.
+	 * Launch an instance of pubsub simulator, creates a binder.
 	 *
 	 * @throws Throwable for any failed setup.
 	 */
@@ -92,7 +96,7 @@ public class PubSubEmulator extends ExternalResource {
 	}
 
 	/**
-	 * Shuts down the two emulator processes.
+	 * Shut down the two emulator processes.
 	 *
 	 * gcloud command is shut down through the direct process handle. java process is
 	 * identified and shut down through shell commands.
@@ -128,14 +132,14 @@ public class PubSubEmulator extends ExternalResource {
 	}
 
 	/**
-	 * Returns the already-started emulator's host/port combination when called from within a JUnit method.
+	 * Return the already-started emulator's host/port combination when called from within a JUnit method.
 	 */
 	public String getEmulatorHostPort() {
 		return this.emulatorHostPort;
 	}
 
 	/**
-	 * Waits until a PubSub emulator configuration file is present.
+	 * Wait until a PubSub emulator configuration file is present.
 	 *
 	 * Fails if the file does not appear after 10 seconds.
 	 *
@@ -154,9 +158,9 @@ public class PubSubEmulator extends ExternalResource {
 	}
 
 	/**
-	 * Waits until a PubSub emulator configuration file is updated.
+	 * Wait until a PubSub emulator configuration file is updated.
 	 *
-	 * Fails if the file does not update after 1 second.
+	 * Fail if the file does not update after 1 second.
 	 *
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
@@ -167,8 +171,7 @@ public class PubSubEmulator extends ExternalResource {
 			WatchKey key = watchService.poll(100, TimeUnit.MILLISECONDS);
 
 			if (key != null) {
-				Optional<Path> configFilePath = key.pollEvents().stream().filter(
-						event -> event.kind() == StandardWatchEventKinds.ENTRY_MODIFY)
+				Optional<Path> configFilePath = key.pollEvents().stream()
 						.map(event -> (Path) event.context())
 						.filter(path -> ENV_FILE_NAME.equals(path.toString()))
 						.findAny();
@@ -184,7 +187,7 @@ public class PubSubEmulator extends ExternalResource {
 	}
 
 	/**
-	 * Attempts to kill a process on best effort basis.
+	 * Attempt to kill a process on best effort basis.
 	 *
 	 * Failure is logged and ignored.
 	 *

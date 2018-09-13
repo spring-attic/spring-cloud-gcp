@@ -32,6 +32,7 @@ import static org.junit.Assume.assumeTrue;
  * Integration tests that require the Pub/Sub emulator to be installed.
  *
  * @author João André Martins
+ * @author Elena Felder
  */
 public class PubSubMessageChannelBinderTests extends
 		AbstractBinderTests<PubSubTestBinder, ExtendedConsumerProperties<PubSubConsumerProperties>,
