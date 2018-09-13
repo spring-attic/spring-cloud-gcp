@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.google.cloud.datastore.EntityQuery;
+import com.google.cloud.datastore.ProjectionEntityQuery;
 import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.OrderBy;
@@ -72,7 +73,39 @@ public class PartTreeDatastoreQueryTests {
 
 	private PartTreeDatastoreQuery<Trade> createQuery() {
 		return new PartTreeDatastoreQuery<>(this.queryMethod, this.spannerTemplate,
-				this.spannerMappingContext, Trade.class);
+				this.spannerMappingContext, Trade.class, false);
+	}
+
+	@Test
+	public void compoundNameConventionProjectionTest() {
+		when(this.queryMethod.getName()).thenReturn(
+				"findDistinctTop333ByActionAndSymbolAndPriceLessThanAndPriceGreater"
+						+ "ThanEqualAndIdIsNullOrderByIdDesc");
+		this.partTreeSpannerQuery = createQuery();
+
+		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33 };
+
+		when(this.spannerTemplate.query(any(), any())).thenAnswer(invocation -> {
+			ProjectionEntityQuery statement = invocation.getArgument(0);
+
+			ProjectionEntityQuery expected = StructuredQuery
+					.newProjectionEntityQueryBuilder()
+					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
+							PropertyFilter.eq("ticker", "abcd"),
+							PropertyFilter.lt("price", 8.88),
+							PropertyFilter.ge("price", 3.33),
+							PropertyFilter.isNull("id")))
+					.setProjection("id", "price", "shares", "trader_id")
+					.setDistinctOn("id", "price", "shares", "trader_id").setKind("trades")
+					.setOrderBy(OrderBy.desc("id")).setLimit(333).build();
+
+			assertEquals(expected, statement);
+
+			return null;
+		});
+
+		this.partTreeSpannerQuery.execute(params);
+		verify(this.spannerTemplate, times(1)).query(any(), any());
 	}
 
 	@Test
@@ -155,7 +188,7 @@ public class PartTreeDatastoreQueryTests {
 		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void countTest() {
 		List<Trade> results = new ArrayList<>();
 		results.add(new Trade());
@@ -164,7 +197,7 @@ public class PartTreeDatastoreQueryTests {
 
 		PartTreeDatastoreQuery spyQuery = spy(this.partTreeSpannerQuery);
 		Object[] params = new Object[] { "BUY", };
-		spyQuery.execute(params);
+		assertEquals(1, spyQuery.execute(params));
 	}
 
 	@Test

@@ -31,6 +31,7 @@ import org.springframework.data.repository.query.QueryMethodEvaluationContextPro
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Query lookup strategy for Query Methods for Cloud Datastore.
@@ -72,25 +73,32 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 		DatastoreQueryMethod queryMethod = createQueryMethod(method, metadata, factory);
 		Class<?> entityType = getEntityType(queryMethod);
 
-		if (queryMethod.hasAnnotatedQuery()) {
-			String sql = queryMethod.getQueryAnnotation().value();
-			return createGqlDatastoreQuery(entityType, queryMethod, sql);
+		Query queryAnnotation = queryMethod.getQueryAnnotation();
+		boolean runAsProjectionQuery = queryAnnotation != null
+				&& queryAnnotation.runAsProjectionQuery();
+
+		if (queryMethod.hasAnnotatedQuery()
+				&& StringUtils.hasText(queryAnnotation.value())) {
+			String sql = queryAnnotation.value();
+			return createGqlDatastoreQuery(entityType, queryMethod, sql,
+					runAsProjectionQuery);
 		}
 		else if (namedQueries.hasQuery(queryMethod.getNamedQueryName())) {
 			String sql = namedQueries.getQuery(queryMethod.getNamedQueryName());
-			return createGqlDatastoreQuery(entityType, queryMethod, sql);
+			return createGqlDatastoreQuery(entityType, queryMethod, sql,
+					runAsProjectionQuery);
 		}
 
 		return new PartTreeDatastoreQuery<>(queryMethod, this.datastoreOperations,
-				this.datastoreMappingContext, entityType);
+				this.datastoreMappingContext, entityType, runAsProjectionQuery);
 	}
 
 	@VisibleForTesting
 	<T> GqlDatastoreQuery<T> createGqlDatastoreQuery(Class<T> entityType,
-			QueryMethod queryMethod, String gql) {
+			QueryMethod queryMethod, String gql, boolean runAsProjectionQuery) {
 		return new GqlDatastoreQuery<>(entityType, queryMethod, this.datastoreOperations,
 				gql, this.evaluationContextProvider, this.expressionParser,
-				this.datastoreMappingContext);
+				this.datastoreMappingContext, runAsProjectionQuery);
 	}
 
 	@VisibleForTesting

@@ -26,6 +26,7 @@ import com.google.cloud.datastore.FullEntity;
 import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
+import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.Query.ResultType;
 import com.google.cloud.datastore.QueryResults;
@@ -272,8 +273,16 @@ public class DatastoreTemplateTests {
 		when(this.datastore.run(any())).thenReturn(queryResults);
 
 		assertThat(this.datastoreTemplate.query(
-				GqlQuery.newGqlQueryBuilder(ResultType.ENTITY, "fake query").build(),
+				GqlQuery.newGqlQueryBuilder(ResultType.PROJECTION_ENTITY, "fake query")
+						.build(),
 				TestEntity.class), contains(ob1, ob2));
+	}
+
+	@Test
+	public void queryKeysTest() {
+		KeyQuery keyQuery = GqlQuery.newKeyQueryBuilder().build();
+		this.datastoreTemplate.queryKeys(keyQuery).iterator();
+		verify(this.datastore, times(1)).run(keyQuery);
 	}
 
 	@Test

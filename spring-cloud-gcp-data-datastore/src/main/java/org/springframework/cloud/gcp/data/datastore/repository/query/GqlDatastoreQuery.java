@@ -31,10 +31,10 @@ import java.util.stream.StreamSupport;
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.Cursor;
-import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.GqlQuery.Builder;
 import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.ProjectionEntity;
 import com.google.cloud.datastore.Query.ResultType;
 import com.google.common.collect.ImmutableMap;
 
@@ -99,13 +99,17 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * @param queryMethod the underlying query method to support.
 	 * @param datastoreOperations used for executing queries.
 	 * @param datastoreMappingContext used for getting metadata about entities.
+	 * @param runAsProjectionQuery if this query  method should be performed as a Cloud Datastore
+	 * Projection query.
 	 */
 	public GqlDatastoreQuery(Class<T> type, QueryMethod queryMethod,
 			DatastoreOperations datastoreOperations, String gql,
 			QueryMethodEvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser,
-			DatastoreMappingContext datastoreMappingContext) {
-		super(queryMethod, datastoreOperations, datastoreMappingContext, type);
+			DatastoreMappingContext datastoreMappingContext,
+			boolean runAsProjectionQuery) {
+		super(queryMethod, datastoreOperations, datastoreMappingContext, type,
+				runAsProjectionQuery);
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
 		this.gql = StringUtils.trimTrailingCharacter(gql.trim(), ';');
@@ -144,9 +148,10 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return tags;
 	}
 
-	private GqlQuery<Entity> bindArgsToGqlQuery(String gql, List<String> tags,
+	private GqlQuery bindArgsToGqlQuery(String gql, List<String> tags,
 			Object[] vals) {
-		Builder<Entity> builder = GqlQuery.newGqlQueryBuilder(ResultType.ENTITY, gql);
+		Builder<ProjectionEntity> builder = GqlQuery
+				.newGqlQueryBuilder(ResultType.PROJECTION_ENTITY, gql);
 		if (tags.size() != vals.length) {
 			throw new DatastoreDataException("Annotated GQL Query Method "
 					+ this.queryMethod.getName() + " has " + tags.size()

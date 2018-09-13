@@ -75,7 +75,7 @@ public class GqlDatastoreQueryTests {
 	private GqlDatastoreQuery<Trade> createQuery(String gql) {
 		return new GqlDatastoreQuery<>(Trade.class, this.queryMethod,
 				this.datastoreTemplate, gql, this.evaluationContextProvider,
-				this.expressionParser, new DatastoreMappingContext());
+				this.expressionParser, new DatastoreMappingContext(), false);
 	}
 
 	@Test

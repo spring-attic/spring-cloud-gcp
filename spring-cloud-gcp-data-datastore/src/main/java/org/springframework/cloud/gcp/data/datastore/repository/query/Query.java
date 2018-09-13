@@ -44,4 +44,12 @@ public @interface Query {
 	 * @return the SQL Cloud Datstore query string.
 	 */
 	String value() default "";
+
+	/**
+	 * Indicates if the annotated query method will utilize a Cloud Datastore Projection
+	 * query that is subject to the limitations of Projection queries.
+	 * @return {@code true} if the query method is intended to be run as a Projection
+	 * query. {@code false} otherwise.
+	 */
+	boolean runAsProjectionQuery() default false;
 }

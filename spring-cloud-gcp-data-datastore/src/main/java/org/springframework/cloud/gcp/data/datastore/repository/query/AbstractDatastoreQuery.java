@@ -45,13 +45,17 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 
 	final Class<T> entityType;
 
+	final boolean runAsProjectionQuery;
+
 	public AbstractDatastoreQuery(QueryMethod queryMethod,
 			DatastoreOperations datastoreOperations,
-			DatastoreMappingContext datastoreMappingContext, Class<T> entityType) {
+			DatastoreMappingContext datastoreMappingContext, Class<T> entityType,
+			boolean runAsProjectionQuery) {
 		this.queryMethod = queryMethod;
 		this.datastoreOperations = datastoreOperations;
 		this.datastoreMappingContext = datastoreMappingContext;
 		this.entityType = entityType;
+		this.runAsProjectionQuery = runAsProjectionQuery;
 	}
 
 	@Override

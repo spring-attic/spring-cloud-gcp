@@ -18,13 +18,15 @@ package org.springframework.cloud.gcp.data.datastore.repository.query;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.ProjectionEntityQuery;
 import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.Builder;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
@@ -38,6 +40,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.PartTree;
@@ -65,11 +68,16 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * @param datastoreMappingContext used to provide metadata for mapping results to
 	 * objects.
 	 * @param entityType the result domain type.
+	 * @param runAsProjectionQuery if this query  method should be performed as a Cloud Datastore
+	 * Projection query. Regardless of this setting the method will be treated as a Projection query
+	 * if the Distinct keyword appears in the query method's name.
 	 */
 	public PartTreeDatastoreQuery(QueryMethod queryMethod,
 			DatastoreOperations datastoreOperations,
-			DatastoreMappingContext datastoreMappingContext, Class<T> entityType) {
-		super(queryMethod, datastoreOperations, datastoreMappingContext, entityType);
+			DatastoreMappingContext datastoreMappingContext, Class<T> entityType,
+			boolean runAsProjectionQuery) {
+		super(queryMethod, datastoreOperations, datastoreMappingContext, entityType,
+				runAsProjectionQuery);
 		this.tree = new PartTree(queryMethod.getName(), entityType);
 		this.datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(this.entityType);
@@ -82,10 +90,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			throw new UnsupportedOperationException(
 					"Delete queries are not supported in Cloud Datastore: "
 							+ this.queryMethod.getName());
-		}
-		else if (this.tree.isDistinct()) {
-			throw new UnsupportedOperationException(
-					"Cloud Datastore structured queries do not support the Distinct keyword.");
 		}
 
 		List parts = this.tree.getParts().get().collect(Collectors.toList());
@@ -105,9 +109,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	public Object execute(Object[] parameters) {
 		List<T> results = executeRawResult(parameters);
 		if (this.tree.isCountProjection()) {
-			throw new DatastoreDataException(
-					"Count-queries are not natively supported for Cloud Datastore. "
-							+ "Please explicitly use a find-query and examine the result size.");
+			return results.size();
 		}
 		else if (this.tree.isExistsProjection()) {
 			return !results.isEmpty();
@@ -126,13 +128,27 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 						.collect(Collectors.toList());
 	}
 
-	private StructuredQuery<Entity> getQuery(Object[] parameters) {
-		Builder<Entity> builder = StructuredQuery.newEntityQueryBuilder();
+	private StructuredQuery getQuery(Object[] parameters) {
+		StructuredQuery.Builder structredQueryBuilder;
 
-		builder.setKind(this.datastorePersistentEntity.kindName());
+		if (this.tree.isExistsProjection() && this.tree.isCountProjection()) {
+			structredQueryBuilder = StructuredQuery.newKeyQueryBuilder();
+		}
+		else if (!this.runAsProjectionQuery && !this.tree.isDistinct()) {
+			structredQueryBuilder = StructuredQuery.newEntityQueryBuilder();
+		}
+		else {
+			structredQueryBuilder = StructuredQuery.newProjectionEntityQueryBuilder();
+		}
+		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
 
+		return applyQueryBody(parameters, structredQueryBuilder);
+	}
+
+	private StructuredQuery applyQueryBody(Object[] parameters,
+			StructuredQuery.Builder builder) {
 		if (this.tree.hasPredicate()) {
-			builder.setFilter(getFilter(parameters));
+			applySelectWithFilter(parameters, builder);
 		}
 
 		if (!this.tree.getSort().isUnsorted()) {
@@ -158,8 +174,9 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		});
 	}
 
-	private Filter getFilter(Object[] parameters) {
+	private void applySelectWithFilter(Object[] parameters, Builder builder) {
 		Iterator it = Arrays.asList(parameters).iterator();
+		Set<String> equalityComparedFields = new HashSet<>();
 		Filter[] filters = this.filterParts.stream().map(part -> {
 			Filter filter;
 			String fieldName = ((DatastorePersistentProperty) this.datastorePersistentEntity
@@ -173,6 +190,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				case SIMPLE_PROPERTY:
 					filter = PropertyFilter.eq(fieldName,
 							DatastoreNativeTypes.wrapValue(it.next()));
+					equalityComparedFields.add(fieldName);
 					break;
 				case GREATER_THAN_EQUAL:
 					filter = PropertyFilter.ge(fieldName,
@@ -203,10 +221,26 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 								+ this.queryMethod.getName());
 			}
 		}).toArray(Filter[]::new);
-		return filters.length > 1
+
+		if (builder instanceof ProjectionEntityQuery.Builder) {
+			ProjectionEntityQuery.Builder projectionBuilder = (ProjectionEntityQuery.Builder) builder;
+			this.datastorePersistentEntity.doWithProperties(
+					(PropertyHandler<DatastorePersistentProperty>) datastorePersistentProperty -> {
+						String fieldName = datastorePersistentProperty.getFieldName();
+						if (!equalityComparedFields.contains(fieldName)) {
+							projectionBuilder.addProjection(fieldName);
+							if (this.tree.isDistinct()) {
+								projectionBuilder.addDistinctOn(fieldName);
+							}
+						}
+					});
+		}
+
+		builder.setFilter(
+				filters.length > 1
 				? CompositeFilter.and(filters[0],
 						Arrays.copyOfRange(filters, 1, filters.length))
-				: filters[0];
+				: filters[0]);
 	}
 
 }
