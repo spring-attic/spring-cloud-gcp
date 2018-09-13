@@ -5,7 +5,6 @@ Stackdriver appender logback configuration provided for import.
 -->
 
 <included>
-  <property name="projectId" value="${projectId:-${GOOGLE_CLOUD_PROJECT}}"/>
   <property name="STACKDRIVER_LOG_NAME" value="${STACKDRIVER_LOG_NAME:-spring.log}"/>
   <property name="STACKDRIVER_LOG_FLUSH_LEVEL" value="${STACKDRIVER_LOG_FLUSH_LEVEL:-WARN}"/>
 
