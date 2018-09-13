@@ -3,12 +3,29 @@
 The actual release process is triggered by the release admin.
 In order to simplify that process, here is a list of prerequisites to be performed before asking the release admin to run the release scripts.
 
-1. Comment out the `spring-cloud-gcp-samples` module from the root `pom.xml` file, so that the samples aren't released.
+. Manually change the value of `TRACKING_HEADER_PROJECT_VERSION` in link:spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/UsageTrackingHeaderProvider.java[`UsageTrackingHeaderProvider`] to the version being released from the interim `BUILD-SNAPSHOT` value.
 
-2. Comment out any non-GA modules from the `pom.xml` file.
+. Change the value of the `<version>` elements of the `pom.xml` of all modules to the name of the version being released from the interim `BUILD-SNAPSHOT` values. This can be done using the https://www.mojohaus.org/versions-maven-plugin/set-mojo.html[mvn versions:set] command.
 
-3. Manually change the value of `TRACKING_HEADER_PROJECT_VERSION` in link:spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/UsageTrackingHeaderProvider.java[`UsageTrackingHeaderProvider`] to the version being released from the interim `BUILD-SNAPSHOT` value.
+    $ NEW_VERSION=[new-version]
+    $ ./mvnw versions:set -pl spring-cloud-gcp-dependencies -DnewVersion=$NEW_VERSION
+    $ ./mvnw versions:set -DnewVersion=$NEW_VERSION
 
-4. Change the value of the `<version>` elements of the `pom.xml` of each module in the project being released to the name of the version being released from the interim `BUILD-SNAPSHOT` values. This can be done manually or using the https://www.mojohaus.org/versions-maven-plugin/set-mojo.html[mvn versions:set] command.
+. Comment out the `spring-cloud-gcp-samples` module from the root `pom.xml` file, so that the samples aren't released.
 
-After the release scripts have been run by the release admin, revert the version names from steps 3 and 4 to the interim `BUILD-SNAPSHOT` name.
+. [For GA releases only.] Comment out any non-GA modules from the `pom.xml` file.
+
+. Wait for the release scripts have been run by the release admin.
+
+. Add a release tag.
+
+    $ git tag v$NEW_VERSION
+    $ git push origin v$NEW_VERSION
+
+. Uncomment the commented out modules.
+
+. Revert the versions using the https://www.mojohaus.org/versions-maven-plugin/revert-mojo.html[mvn versions:revert] command.
+
+    $ ./mvnw versions:revert
+
+. Change the `TRACKING_HEADER_PROJECT_VERSION` in link:spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/UsageTrackingHeaderProvider.java[`UsageTrackingHeaderProvider`] back to `BUILD-SNAPSHOT`.
