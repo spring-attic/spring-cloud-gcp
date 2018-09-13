@@ -16,7 +16,7 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub;
 
-
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
@@ -25,6 +25,8 @@ import org.springframework.cloud.stream.binder.AbstractBinderTests;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.Spy;
+
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Integration tests that require the Pub/Sub emulator to be installed.
@@ -37,6 +39,12 @@ public class PubSubMessageChannelBinderTests extends
 
 	@ClassRule
 	public static PubSubEmulator emulator = new PubSubEmulator();
+
+	@BeforeClass
+	public static void enableTests() {
+		assumeTrue(
+				"true".equals(System.getProperty("it.pubsub")) || "true".equals(System.getProperty("it.localdeps")));
+	}
 
 	@Override
 	protected PubSubTestBinder getBinder() throws Exception {
