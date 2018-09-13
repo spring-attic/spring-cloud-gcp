@@ -36,6 +36,8 @@ import org.junit.rules.ExternalResource;
 
 /**
  * Rule for instantiating and tearing down a Pub/Sub emulator instance.
+ *
+ * Tests can access the emulator's host/port combination by calling {@link #getEmulatorHostPort()} method.
  */
 public class PubSubEmulator extends ExternalResource {
 	private static final Path EMULATOR_CONFIG_DIR = Paths.get(System.getProperty("user.home")).resolve(
@@ -47,17 +49,12 @@ public class PubSubEmulator extends ExternalResource {
 
 	private static final Log LOGGER = LogFactory.getLog(PubSubEmulator.class);
 
-	// Binder to Pub/Sub emulator for use in individual tests.
-	private PubSubTestBinder binder;
-
 	// Reference to emulator instance, for cleanup.
 	private Process emulatorProcess;
 
 	// Hostname for cleanup, should always be localhost.
-	private String emulatorHost;
+	private String emulatorHostPort;
 
-	// Port for cleanup.
-	private String emulatorPort;
 
 	/**
 	 * Launches an instance of pubsub simulator, creates a binder.
@@ -67,7 +64,7 @@ public class PubSubEmulator extends ExternalResource {
 	@Override
 	protected void before() throws Throwable {
 
-		boolean configPresent = Files.exists(this.EMULATOR_CONFIG_PATH);
+		boolean configPresent = Files.exists(EMULATOR_CONFIG_PATH);
 		WatchService watchService = null;
 
 		if (configPresent) {
@@ -91,10 +88,7 @@ public class PubSubEmulator extends ExternalResource {
 		String emulatorInitString = new BufferedReader(new InputStreamReader(envInitProcess.getInputStream()))
 				.readLine();
 		envInitProcess.waitFor();
-		String emulatorHostPort = emulatorInitString.substring(emulatorInitString.indexOf('=') + 1);
-		extractTeardownParams(emulatorHostPort);
-
-		this.binder = new PubSubTestBinder(emulatorHostPort);
+		this.emulatorHostPort = emulatorInitString.substring(emulatorInitString.indexOf('=') + 1);
 	}
 
 	/**
@@ -109,7 +103,15 @@ public class PubSubEmulator extends ExternalResource {
 	@Override
 	protected void after() {
 		try {
-			String hostPortParams = String.format("--host=%s --port=%s", this.emulatorHost, this.emulatorPort);
+			int portSeparatorIndex = this.emulatorHostPort.indexOf(":");
+			if (portSeparatorIndex < 0 || !this.emulatorHostPort.contains("localhost")) {
+				LOGGER.error("Malformed host, can't create emulator: " + this.emulatorHostPort);
+				return;
+			}
+			String emulatorHost = this.emulatorHostPort.substring(0, portSeparatorIndex);
+			String emulatorPort = this.emulatorHostPort.substring(portSeparatorIndex + 1);
+
+			String hostPortParams = String.format("--host=%s --port=%s", emulatorHost, emulatorPort);
 			Process psProcess = new ProcessBuilder("ps", "-v").start();
 			new BufferedReader(new InputStreamReader(psProcess.getInputStream()))
 					.lines()
@@ -126,10 +128,10 @@ public class PubSubEmulator extends ExternalResource {
 	}
 
 	/**
-	 * Returns an already-configured emulator binder when called from within a JUnit method.
+	 * Returns the already-started emulator's host/port combination when called from within a JUnit method.
 	 */
-	public PubSubTestBinder getBinder() {
-		return this.binder;
+	public String getEmulatorHostPort() {
+		return this.emulatorHostPort;
 	}
 
 	/**
@@ -179,23 +181,6 @@ public class PubSubEmulator extends ExternalResource {
 		if (attempts < 0) {
 			throw new RuntimeException("Configuration file update could not be detected");
 		}
-	}
-
-	/**
-	 * Remembers host/port combination for future process cleanup.
-	 *
-	 * Validates that localhost is the only valid value; this will stop the test if emulator
-	 * decides to start with an IPv6 ::1 address.
-	 *
-	 * @param emulatorHostPort typically "localhost:8085"
-	 */
-	private void extractTeardownParams(String emulatorHostPort) {
-		int portSeparatorIndex = emulatorHostPort.indexOf(":");
-		if (portSeparatorIndex < 0 || !emulatorHostPort.contains("localhost")) {
-			throw new RuntimeException("Malformed host, can't create emulator: " + emulatorHostPort);
-		}
-		this.emulatorHost = emulatorHostPort.substring(0, portSeparatorIndex);
-		this.emulatorPort = emulatorHostPort.substring(portSeparatorIndex + 1);
 	}
 
 	/**

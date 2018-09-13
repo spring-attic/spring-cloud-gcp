@@ -48,7 +48,7 @@ public class PubSubMessageChannelBinderTests extends
 
 	@Override
 	protected PubSubTestBinder getBinder() throws Exception {
-		return this.emulator.getBinder();
+		return new PubSubTestBinder(this.emulator.getEmulatorHostPort());
 	}
 
 	@Override
