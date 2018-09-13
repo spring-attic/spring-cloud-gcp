@@ -29,7 +29,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersis
  */
 public interface ReadWriteConversions {
 	/**
-	 * Converts a Cloud Datastore Value to an object of a target type
+	 * Converts a Cloud Datastore {@link Value} to an object of a target type
 	 * @param val Cloud Datastore Value.
 	 * @param persistentProperty the target field information.
 	 * @return an object of a target type.
@@ -37,7 +37,7 @@ public interface ReadWriteConversions {
 	<T> T convertOnRead(Value val, DatastorePersistentProperty persistentProperty);
 
 	/**
-	 * Converts an object to a Cloud Datastore Value
+	 * Converts an object to a Cloud Datastore {@link Value}
 	 * @param obj the objects to convert.
 	 * @param persistentProperty the source field information.
 	 * @return a Cloud Datastore value.
@@ -45,7 +45,7 @@ public interface ReadWriteConversions {
 	Value convertOnWrite(Object obj, DatastorePersistentProperty persistentProperty);
 
 	/**
-	 * Registers DatastoreEntityConverter to be used for embedded entities
+	 * Registers {@link DatastoreEntityConverter} to be used for embedded entities
 	 * @param datastoreEntityConverter the DatastoreEntityConverter.
 	 */
 	void registerEntityConverter(DatastoreEntityConverter datastoreEntityConverter);
