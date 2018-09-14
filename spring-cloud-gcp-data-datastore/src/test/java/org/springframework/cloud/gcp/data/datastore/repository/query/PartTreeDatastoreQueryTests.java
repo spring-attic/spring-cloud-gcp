@@ -229,11 +229,12 @@ public class PartTreeDatastoreQueryTests {
 		assertFalse((boolean) spyQuery.execute(params));
 	}
 
-	private void queryWithMockResult(String queryName, List<Trade> results) {
+	private void queryWithMockResult(String queryName, List results) {
 		when(this.queryMethod.getName()).thenReturn(queryName);
 		this.partTreeSpannerQuery = createQuery();
 		when(this.spannerTemplate.query(any(), Mockito.<Class<Trade>>any()))
 				.thenReturn(results);
+		when(this.spannerTemplate.queryKeys(any())).thenReturn(results);
 	}
 
 	@Entity(name = "trades")
