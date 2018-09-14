@@ -26,8 +26,8 @@ import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.Spy;
 
-import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Integration tests that require the Pub/Sub emulator to be installed.
@@ -44,9 +44,8 @@ public class PubSubMessageChannelBinderTests extends
 
 	@BeforeClass
 	public static void enableTests() {
-		assumeThat(System.getProperty("it.emulator"))
-				.withFailMessage("PubSub Binder tests are disabled. Please enable them with -Dit.emulator")
-				.isEqualTo("true");
+		assumeTrue("PubSub Binder tests are disabled. Please enable them with -Dit.pubsub or -Dit.emulator",
+				"true".equals(System.getProperty("it.pubsub")) || "true".equals(System.getProperty("it.emulator")));
 	}
 
 	@Override

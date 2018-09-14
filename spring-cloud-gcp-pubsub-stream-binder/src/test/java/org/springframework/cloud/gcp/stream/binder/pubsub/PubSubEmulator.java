@@ -61,9 +61,9 @@ public class PubSubEmulator extends ExternalResource {
 
 
 	/**
-	 * Launch an instance of pubsub simulator, creates a binder.
+	 * Launch an instance of pubsub emulator.
 	 *
-	 * @throws Throwable for any failed setup.
+	 * @throws Throwable for any unexpected setup failure.
 	 */
 	@Override
 	protected void before() throws Throwable {
@@ -144,6 +144,8 @@ public class PubSubEmulator extends ExternalResource {
 
 	/**
 	 * Return the already-started emulator's host/port combination when called from within a JUnit method.
+	 *
+	 * @return Emulator host/port string or null if emulator setup failed.
 	 */
 	public String getEmulatorHostPort() {
 		return this.emulatorHostPort;
@@ -152,7 +154,9 @@ public class PubSubEmulator extends ExternalResource {
 	/**
 	 * Wait until a PubSub emulator configuration file is present.
 	 *
-	 * Fails if the file does not appear after 10 seconds.
+	 * Give up and log warning if the file does not appear after 10 seconds.
+	 *
+	 * @return whether configuration creation succeeded
 	 *
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
@@ -173,8 +177,9 @@ public class PubSubEmulator extends ExternalResource {
 	/**
 	 * Wait until a PubSub emulator configuration file is updated.
 	 *
-	 * Fail if the file does not update after 1 second.
+	 * Give up and log warning if the file does not update after 1 second.
 	 *
+	 * @return whether configuration update succeeded
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
 	 */
