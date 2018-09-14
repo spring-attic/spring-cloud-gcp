@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.ProjectionEntityQuery;
 import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.Builder;
@@ -107,7 +108,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	@Override
 	public Object execute(Object[] parameters) {
-		List<T> results = executeRawResult(parameters);
+		List results = executeRawResult(parameters);
 		if (this.tree.isCountProjection()) {
 			return results.size();
 		}
@@ -120,11 +121,13 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	@Override
-	protected List<T> executeRawResult(Object[] parameters) {
-		Iterable<T> found = this.datastoreOperations.query(getQuery(parameters),
+	protected List executeRawResult(Object[] parameters) {
+		Iterable found = (this.tree.isCountProjection() || this.tree.isExistsProjection())
+				? this.datastoreOperations.queryKeys((KeyQuery) getQuery(parameters))
+				: this.datastoreOperations.query(getQuery(parameters),
 				this.entityType);
 		return found == null ? Collections.emptyList()
-				: StreamSupport.stream(found.spliterator(), false)
+				: (List) StreamSupport.stream(found.spliterator(), false)
 						.collect(Collectors.toList());
 	}
 
