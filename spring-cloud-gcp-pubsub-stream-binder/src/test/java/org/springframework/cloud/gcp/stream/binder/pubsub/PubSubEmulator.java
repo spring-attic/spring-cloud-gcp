@@ -81,15 +81,14 @@ public class PubSubEmulator extends ExternalResource {
 					.start();
 		}
 		catch (IOException e) {
-			LOGGER.warn("Gcloud not found; leaving host/port uninitialized");
+			LOGGER.warn("Gcloud not found; leaving host/port uninitialized.");
 			return;
 		}
 
-		if (configPresent) {
-			waitForConfigUpdate(watchService);
-		}
-		else {
-			waitForConfigCreation();
+		boolean startStatus = (configPresent ? updateConfig(watchService) : createConfig());
+		if (!startStatus) {
+			LOGGER.warn("Pub/Sub emulator failed to start; leaving host/port uninitialized.");
+			return;
 		}
 
 		Process envInitProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "env-init").start();
@@ -158,15 +157,17 @@ public class PubSubEmulator extends ExternalResource {
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
 	 */
-	private void waitForConfigCreation() throws InterruptedException {
+	private boolean createConfig() throws InterruptedException {
 		int attempts = 10;
 		while (!Files.exists(EMULATOR_CONFIG_PATH) && --attempts >= 0) {
 			Thread.sleep(1000);
 		}
 		if (attempts < 0) {
-			throw new RuntimeException(
+			LOGGER.warn(
 					"Emulator could not be configured due to missing env.yaml. Are PubSub and beta tools installed?");
+			return false;
 		}
+		return true;
 	}
 
 	/**
@@ -177,7 +178,7 @@ public class PubSubEmulator extends ExternalResource {
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
 	 */
-	private void waitForConfigUpdate(WatchService watchService) throws InterruptedException {
+	private boolean updateConfig(WatchService watchService) throws InterruptedException {
 		int attempts = 10;
 		while (--attempts >= 0) {
 			WatchKey key = watchService.poll(100, TimeUnit.MILLISECONDS);
@@ -188,14 +189,13 @@ public class PubSubEmulator extends ExternalResource {
 						.filter(path -> ENV_FILE_NAME.equals(path.toString()))
 						.findAny();
 				if (configFilePath.isPresent()) {
-					return;
+					return true;
 				}
 			}
 		}
 
-		if (attempts < 0) {
-			throw new RuntimeException("Configuration file update could not be detected");
-		}
+		LOGGER.warn("Configuration file update could not be detected");
+		return false;
 	}
 
 	/**
