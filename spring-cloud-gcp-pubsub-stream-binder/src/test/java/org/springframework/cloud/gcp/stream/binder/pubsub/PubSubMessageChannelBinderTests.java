@@ -19,6 +19,11 @@ package org.springframework.cloud.gcp.stream.binder.pubsub;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
 import org.springframework.cloud.stream.binder.AbstractBinderTests;
@@ -26,8 +31,8 @@ import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.Spy;
 
+import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 /**
  * Integration tests that require the Pub/Sub emulator to be installed.
@@ -42,17 +47,26 @@ public class PubSubMessageChannelBinderTests extends
 	@ClassRule
 	public static PubSubEmulator emulator = new PubSubEmulator();
 
+	@Rule
+	public TestRule failOnAbsentEmulator = new TestRule() {
+		@Override
+		public Statement apply(Statement statement, Description description) {
+			if (emulator.getEmulatorHostPort() == null) {
+				fail("Pub/Sub emulator missing");
+			}
+			return statement;
+		}
+	};
+
 	@BeforeClass
 	public static void enableTests() {
-		assumeTrue("PubSub Binder tests are disabled. Please enable them with -Dit.pubsub or -Dit.emulator",
-				"true".equals(System.getProperty("it.pubsub")) || "true".equals(System.getProperty("it.emulator")));
+		assumeThat(System.getProperty("it.pubsub"))
+				.withFailMessage("PubSub Binder tests are disabled. Please enable them with -Dit.pubsub.")
+				.isEqualTo("true");
 	}
 
 	@Override
 	protected PubSubTestBinder getBinder() {
-		if (emulator.getEmulatorHostPort() == null) {
-			fail("No PubSub emulator host found.");
-		}
 		return new PubSubTestBinder(emulator.getEmulatorHostPort());
 	}
 

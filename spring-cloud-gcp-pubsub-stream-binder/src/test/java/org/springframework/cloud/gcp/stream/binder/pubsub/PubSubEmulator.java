@@ -59,46 +59,30 @@ public class PubSubEmulator extends ExternalResource {
 	// Hostname for cleanup, should always be localhost.
 	private String emulatorHostPort;
 
+	// Allow gating rule execution on a flag.
+	private boolean ruleDisabled;
+
+	public PubSubEmulator() {
+		if (!"true".equals(System.getProperty("it.emulator"))) {
+			LOGGER.warn("PubSubEmulator rule disabled. Please enable with -Dit.emulator");
+			this.ruleDisabled = true;
+		}
+	}
 
 	/**
 	 * Launch an instance of pubsub emulator.
 	 *
-	 * @throws Throwable for any unexpected setup failure.
+	 * @throws IOException if config file creation or directory watcher on existing file fails.
+	 * @throws InterruptedException if process is stopped while waiting to retry.
 	 */
 	@Override
-	protected void before() throws Throwable {
+	protected void before() throws IOException, InterruptedException {
 
-		boolean configPresent = Files.exists(EMULATOR_CONFIG_PATH);
-		WatchService watchService = null;
-
-		if (configPresent) {
-			watchService = FileSystems.getDefault().newWatchService();
-			EMULATOR_CONFIG_DIR.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
-		}
-
-		try {
-			this.emulatorProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "start")
-					.start();
-		}
-		catch (IOException e) {
-			LOGGER.warn("Gcloud not found; leaving host/port uninitialized.");
+		if (this.ruleDisabled || !startEmulator()) {
 			return;
 		}
 
-		boolean startStatus = (configPresent ? updateConfig(watchService) : createConfig());
-		if (!startStatus) {
-			LOGGER.warn("Pub/Sub emulator failed to start; leaving host/port uninitialized.");
-			return;
-		}
-
-		Process envInitProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "env-init").start();
-
-		// env-init output is a shell command of the form "export
-		// PUBSUB_EMULATOR_HOST=localhost:8085".
-		String emulatorInitString = new BufferedReader(new InputStreamReader(envInitProcess.getInputStream()))
-				.readLine();
-		envInitProcess.waitFor();
-		this.emulatorHostPort = emulatorInitString.substring(emulatorInitString.indexOf('=') + 1);
+		this.determineHostPort();
 	}
 
 	/**
@@ -112,9 +96,11 @@ public class PubSubEmulator extends ExternalResource {
 	 */
 	@Override
 	protected void after() {
-		if (this.emulatorProcess != null) {
-			this.emulatorProcess.destroy();
+		if (this.ruleDisabled || this.emulatorProcess == null) {
+			return;
 		}
+
+		this.emulatorProcess.destroy();
 
 		if (this.emulatorHostPort == null) {
 			return;
@@ -151,6 +137,45 @@ public class PubSubEmulator extends ExternalResource {
 		return this.emulatorHostPort;
 	}
 
+	private boolean startEmulator() throws IOException, InterruptedException {
+		boolean configPresent = Files.exists(EMULATOR_CONFIG_PATH);
+		WatchService watchService = null;
+
+		if (configPresent) {
+			watchService = FileSystems.getDefault().newWatchService();
+			EMULATOR_CONFIG_DIR.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+		}
+
+		try {
+			this.emulatorProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "start")
+					.start();
+		}
+		catch (IOException e) {
+			LOGGER.warn("Gcloud not found; leaving host/port uninitialized.");
+			return false;
+		}
+
+		boolean startStatus = (configPresent ? updateConfig(watchService) : createConfig());
+		if (!startStatus) {
+			LOGGER.warn("Pub/Sub emulator failed to start; leaving host/port uninitialized.");
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Extract host/port from output of env-init command: "export PUBSUB_EMULATOR_HOST=localhost:8085".
+	 */
+	private void determineHostPort() throws IOException, InterruptedException {
+		Process envInitProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "env-init").start();
+
+		String emulatorInitString = new BufferedReader(new InputStreamReader(envInitProcess.getInputStream()))
+				.readLine();
+		envInitProcess.waitFor();
+		this.emulatorHostPort = emulatorInitString.substring(emulatorInitString.indexOf('=') + 1);
+	}
+
 	/**
 	 * Wait until a PubSub emulator configuration file is present.
 	 *
@@ -180,6 +205,7 @@ public class PubSubEmulator extends ExternalResource {
 	 * Give up and log warning if the file does not update after 1 second.
 	 *
 	 * @return whether configuration update succeeded
+	 *
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
 	 */
