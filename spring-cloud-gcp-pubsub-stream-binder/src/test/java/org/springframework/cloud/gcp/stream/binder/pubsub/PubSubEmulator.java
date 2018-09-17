@@ -178,10 +178,12 @@ public class PubSubEmulator extends ExternalResource {
 	private void determineHostPort() throws IOException, InterruptedException {
 		Process envInitProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "env-init").start();
 
-		String emulatorInitString = new BufferedReader(new InputStreamReader(envInitProcess.getInputStream()))
-				.readLine();
-		envInitProcess.waitFor();
-		this.emulatorHostPort = emulatorInitString.substring(emulatorInitString.indexOf('=') + 1);
+
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(envInitProcess.getInputStream()))) {
+			String emulatorInitString = br.readLine();
+			envInitProcess.waitFor();
+			this.emulatorHostPort = emulatorInitString.substring(emulatorInitString.indexOf('=') + 1);
+		}
 	}
 
 	/**
