@@ -71,7 +71,7 @@ public class PubSubEmulator extends ExternalResource {
 			this.enableTests = true;
 		}
 		else {
-			LOGGER.warn("PubSubEmulator rule disabled. Please enable with -Dit.pubsub-emulator");
+			LOGGER.warn("PubSubEmulator rule disabled. Please enable with -Dit.pubsub-emulator.");
 		}
 	}
 
@@ -85,7 +85,7 @@ public class PubSubEmulator extends ExternalResource {
 	@Override
 	protected void before() throws IOException, InterruptedException {
 
-		assumeTrue(this.enableTests);
+		assumeTrue("PubSubEmulator rule disabled. Please enable with -Dit.pubsub-emulator.", this.enableTests);
 
 		startEmulator();
 		determineHostPort();
