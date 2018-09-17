@@ -34,6 +34,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.rules.ExternalResource;
 
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
 /**
  * Rule for instantiating and tearing down a Pub/Sub emulator instance.
  *
@@ -59,18 +62,24 @@ public class PubSubEmulator extends ExternalResource {
 	// Hostname for cleanup, should always be localhost.
 	private String emulatorHostPort;
 
-	// Allow gating rule execution on a flag.
-	private boolean ruleDisabled;
+	// Conditional rule execution based on an environmental flag.
+	private boolean enableTests;
 
 	public PubSubEmulator() {
-		if (!"true".equals(System.getProperty("it.emulator"))) {
-			LOGGER.warn("PubSubEmulator rule disabled. Please enable with -Dit.emulator");
-			this.ruleDisabled = true;
+		if ("true".equals(System.getProperty("it.pubsub-emulator"))) {
+			this.enableTests = true;
+		}
+		else {
+			LOGGER.warn("PubSubEmulator rule disabled. Please enable with -Dit.pubsub-emulator");
 		}
 	}
 
 	/**
-	 * Launch an instance of pubsub emulator.
+	 * Launch an instance of pubsub emulator or skip all tests.
+	 *
+	 * If it.pubsub-emulator environmental property is off, all tests will be skipped through the failed assumption.
+	 *
+	 * If the property is on, any setup failure will trigger test failure. Failures during teardown are merely logged.
 	 *
 	 * @throws IOException if config file creation or directory watcher on existing file fails.
 	 * @throws InterruptedException if process is stopped while waiting to retry.
@@ -78,10 +87,9 @@ public class PubSubEmulator extends ExternalResource {
 	@Override
 	protected void before() throws IOException, InterruptedException {
 
-		if (this.ruleDisabled || !startEmulator()) {
-			return;
-		}
+		assumeTrue(this.enableTests);
 
+		this.startEmulator();
 		this.determineHostPort();
 	}
 
@@ -93,23 +101,27 @@ public class PubSubEmulator extends ExternalResource {
 	 *
 	 * There should normally be only one process with that host/port combination, but if there
 	 * are more, they will be cleaned up as well.
+	 *
+	 * Any failure is logged and ignored since it's not critical to the tests' operation.
 	 */
 	@Override
 	protected void after() {
-		if (this.ruleDisabled || this.emulatorProcess == null) {
+		if (this.emulatorProcess == null) {
+			LOGGER.warn("Emulator process no longer alive after the test.");
 			return;
 		}
 
 		this.emulatorProcess.destroy();
 
 		if (this.emulatorHostPort == null) {
+			LOGGER.warn("Host/port null after the test.");
 			return;
 		}
 
 		try {
 			int portSeparatorIndex = this.emulatorHostPort.indexOf(":");
 			if (portSeparatorIndex < 0 || !this.emulatorHostPort.contains("localhost")) {
-				LOGGER.error("Malformed host, can't create emulator: " + this.emulatorHostPort);
+				LOGGER.warn("Malformed host: " + this.emulatorHostPort);
 				return;
 			}
 			String emulatorHost = this.emulatorHostPort.substring(0, portSeparatorIndex);
@@ -124,7 +136,7 @@ public class PubSubEmulator extends ExternalResource {
 					.forEach(this::killProcess);
 		}
 		catch (IOException e) {
-			LOGGER.error("Failed to cleanup: ", e);
+			LOGGER.warn("Failed to cleanup: ", e);
 		}
 	}
 
@@ -137,7 +149,7 @@ public class PubSubEmulator extends ExternalResource {
 		return this.emulatorHostPort;
 	}
 
-	private boolean startEmulator() throws IOException, InterruptedException {
+	private void startEmulator() throws IOException, InterruptedException {
 		boolean configPresent = Files.exists(EMULATOR_CONFIG_PATH);
 		WatchService watchService = null;
 
@@ -151,17 +163,16 @@ public class PubSubEmulator extends ExternalResource {
 					.start();
 		}
 		catch (IOException e) {
-			LOGGER.warn("Gcloud not found; leaving host/port uninitialized.");
-			return false;
+			fail("Gcloud not found; leaving host/port uninitialized.");
 		}
 
-		boolean startStatus = (configPresent ? updateConfig(watchService) : createConfig());
-		if (!startStatus) {
-			LOGGER.warn("Pub/Sub emulator failed to start; leaving host/port uninitialized.");
-			return false;
+		if (configPresent) {
+			updateConfig(watchService);
+		}
+		else {
+			createConfig();
 		}
 
-		return true;
 	}
 
 	/**
@@ -179,37 +190,31 @@ public class PubSubEmulator extends ExternalResource {
 	/**
 	 * Wait until a PubSub emulator configuration file is present.
 	 *
-	 * Give up and log warning if the file does not appear after 10 seconds.
-	 *
-	 * @return whether configuration creation succeeded
+	 * Fail if the file does not appear after 10 seconds.
 	 *
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
 	 */
-	private boolean createConfig() throws InterruptedException {
+	private void createConfig() throws InterruptedException {
 		int attempts = 10;
 		while (!Files.exists(EMULATOR_CONFIG_PATH) && --attempts >= 0) {
 			Thread.sleep(1000);
 		}
 		if (attempts < 0) {
-			LOGGER.warn(
+			fail(
 					"Emulator could not be configured due to missing env.yaml. Are PubSub and beta tools installed?");
-			return false;
 		}
-		return true;
 	}
 
 	/**
 	 * Wait until a PubSub emulator configuration file is updated.
 	 *
-	 * Give up and log warning if the file does not update after 1 second.
-	 *
-	 * @return whether configuration update succeeded
+	 * Fail if the file does not update after 1 second.
 	 *
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
 	 */
-	private boolean updateConfig(WatchService watchService) throws InterruptedException {
+	private void updateConfig(WatchService watchService) throws InterruptedException {
 		int attempts = 10;
 		while (--attempts >= 0) {
 			WatchKey key = watchService.poll(100, TimeUnit.MILLISECONDS);
@@ -220,19 +225,18 @@ public class PubSubEmulator extends ExternalResource {
 						.filter(path -> ENV_FILE_NAME.equals(path.toString()))
 						.findAny();
 				if (configFilePath.isPresent()) {
-					return true;
+					return;
 				}
 			}
 		}
 
-		LOGGER.warn("Configuration file update could not be detected");
-		return false;
+		fail("Configuration file update could not be detected");
 	}
 
 	/**
 	 * Attempt to kill a process on best effort basis.
 	 *
-	 * Failure is logged and ignored.
+	 * Failure is logged and ignored, as it is not critical to the tests' functionality.
 	 *
 	 * @param pid Presumably a valid PID. No checking done to validate.
 	 */
@@ -241,7 +245,7 @@ public class PubSubEmulator extends ExternalResource {
 			new ProcessBuilder("kill", pid).start();
 		}
 		catch (IOException e) {
-			LOGGER.error("Failed to clean up PID " + pid);
+			LOGGER.warn("Failed to clean up PID " + pid);
 		}
 	}
 }
