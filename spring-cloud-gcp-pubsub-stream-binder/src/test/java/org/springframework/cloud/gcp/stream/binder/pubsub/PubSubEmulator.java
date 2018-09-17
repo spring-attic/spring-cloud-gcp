@@ -47,6 +47,7 @@ import static org.junit.Assume.assumeTrue;
  * @since 1.1
  */
 public class PubSubEmulator extends ExternalResource {
+
 	private static final Path EMULATOR_CONFIG_DIR = Paths.get(System.getProperty("user.home")).resolve(
 			Paths.get(".config", "gcloud", "emulators", "pubsub"));
 
@@ -76,11 +77,8 @@ public class PubSubEmulator extends ExternalResource {
 
 	/**
 	 * Launch an instance of pubsub emulator or skip all tests.
-	 *
 	 * If it.pubsub-emulator environmental property is off, all tests will be skipped through the failed assumption.
-	 *
 	 * If the property is on, any setup failure will trigger test failure. Failures during teardown are merely logged.
-	 *
 	 * @throws IOException if config file creation or directory watcher on existing file fails.
 	 * @throws InterruptedException if process is stopped while waiting to retry.
 	 */
@@ -89,25 +87,22 @@ public class PubSubEmulator extends ExternalResource {
 
 		assumeTrue(this.enableTests);
 
-		this.startEmulator();
-		this.determineHostPort();
+		startEmulator();
+		determineHostPort();
 	}
 
 	/**
 	 * Shut down the two emulator processes.
-	 *
 	 * gcloud command is shut down through the direct process handle. java process is
 	 * identified and shut down through shell commands.
-	 *
 	 * There should normally be only one process with that host/port combination, but if there
 	 * are more, they will be cleaned up as well.
-	 *
 	 * Any failure is logged and ignored since it's not critical to the tests' operation.
 	 */
 	@Override
 	protected void after() {
 		if (this.emulatorProcess == null) {
-			LOGGER.warn("Emulator process no longer alive after the test.");
+			LOGGER.warn("Emulator process null after tests; nothing to terminate.");
 			return;
 		}
 
@@ -142,7 +137,6 @@ public class PubSubEmulator extends ExternalResource {
 
 	/**
 	 * Return the already-started emulator's host/port combination when called from within a JUnit method.
-	 *
 	 * @return Emulator host/port string or null if emulator setup failed.
 	 */
 	public String getEmulatorHostPort() {
@@ -189,9 +183,7 @@ public class PubSubEmulator extends ExternalResource {
 
 	/**
 	 * Wait until a PubSub emulator configuration file is present.
-	 *
 	 * Fail if the file does not appear after 10 seconds.
-	 *
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
 	 */
@@ -208,9 +200,7 @@ public class PubSubEmulator extends ExternalResource {
 
 	/**
 	 * Wait until a PubSub emulator configuration file is updated.
-	 *
 	 * Fail if the file does not update after 1 second.
-	 *
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
 	 */
@@ -235,9 +225,7 @@ public class PubSubEmulator extends ExternalResource {
 
 	/**
 	 * Attempt to kill a process on best effort basis.
-	 *
 	 * Failure is logged and ignored, as it is not critical to the tests' functionality.
-	 *
 	 * @param pid Presumably a valid PID. No checking done to validate.
 	 */
 	private void killProcess(String pid) {
