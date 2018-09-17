@@ -28,6 +28,7 @@ import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.LatLng;
 import com.google.cloud.datastore.ListValue;
 import com.google.cloud.datastore.NullValue;
@@ -70,6 +71,7 @@ public class DefaultDatastoreEntityConverterTests {
 	@Test
 	public void readTest() {
 		byte[] bytes = { 1, 2, 3 };
+		Key otherKey = Key.newBuilder("testproject", "test_kind", "test_name").build();
 		Entity entity = getEntityBuilder()
 				.set("durationField", "PT24H")
 				.set("stringField", "string value")
@@ -81,6 +83,7 @@ public class DefaultDatastoreEntityConverterTests {
 				.set("blobField", Blob.copyFrom(bytes))
 				.set("intField", 99)
 				.set("enumField", "WHITE")
+				.set("keyField", otherKey)
 				.build();
 		TestDatastoreItem item = ENTITY_CONVERTER.read(TestDatastoreItem.class, entity);
 
@@ -96,6 +99,7 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(item.getBlobField()).as("validate blob field").isEqualTo(Blob.copyFrom(bytes));
 		assertThat(item.getIntField()).as("validate int field").isEqualTo(99);
 		assertThat(item.getEnumField()).as("validate enum field").isEqualTo(TestDatastoreItem.Color.WHITE);
+		assertThat(item.getKeyField()).as("validate key field").isEqualTo(otherKey);
 	}
 
 	@Test
@@ -171,6 +175,7 @@ public class DefaultDatastoreEntityConverterTests {
 	public void writeTest() {
 		byte[] bytesForBlob = { 1, 2, 3 };
 		byte[] bytes = { 1, 2, 3 };
+		Key otherKey = Key.newBuilder("testproject", "test_kind", "test_name").build();
 		TestDatastoreItem item = new TestDatastoreItem();
 		item.setDurationField(Duration.ofDays(1));
 		item.setStringField("string value");
@@ -183,6 +188,7 @@ public class DefaultDatastoreEntityConverterTests {
 		item.setIntField(99);
 		item.setEnumField(TestDatastoreItem.Color.BLACK);
 		item.setByteArrayField(bytes);
+		item.setKeyField(otherKey);
 
 		Entity.Builder builder = getEntityBuilder();
 		ENTITY_CONVERTER.write(item, builder);
@@ -206,6 +212,8 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(entity.getString("enumField")).as("validate enum field").isEqualTo("BLACK");
 		assertThat(entity.getBlob("byteArrayField")).as("validate blob field")
 				.isEqualTo(Blob.copyFrom(bytes));
+		assertThat(entity.getKey("keyField")).as("validate key field")
+				.isEqualTo(otherKey);
 	}
 
 	@Test

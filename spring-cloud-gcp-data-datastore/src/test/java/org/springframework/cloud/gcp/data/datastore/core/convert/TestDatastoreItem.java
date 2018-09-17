@@ -20,11 +20,13 @@ import java.time.Duration;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
+import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.LatLng;
 
 
 /**
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  */
 class TestDatastoreItem {
 	private Duration durationField;
@@ -48,6 +50,16 @@ class TestDatastoreItem {
 	private Color enumField;
 
 	private byte[] byteArrayField;
+
+	private Key keyField;
+
+	public Key getKeyField() {
+		return this.keyField;
+	}
+
+	public void setKeyField(Key keyField) {
+		this.keyField = keyField;
+	}
 
 	public String getStringField() {
 		return this.stringField;
