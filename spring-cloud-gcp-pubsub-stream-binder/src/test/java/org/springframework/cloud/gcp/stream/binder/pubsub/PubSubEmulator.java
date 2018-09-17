@@ -124,11 +124,13 @@ public class PubSubEmulator extends ExternalResource {
 
 			String hostPortParams = String.format("--host=%s --port=%s", emulatorHost, emulatorPort);
 			Process psProcess = new ProcessBuilder("ps", "-v").start();
-			new BufferedReader(new InputStreamReader(psProcess.getInputStream()))
-					.lines()
-					.filter(psLine -> psLine.contains(hostPortParams))
-					.map(psLine -> new StringTokenizer(psLine).nextToken())
-					.forEach(this::killProcess);
+
+			try (BufferedReader br = new BufferedReader(new InputStreamReader(psProcess.getInputStream()))) {
+				br.lines()
+						.filter(psLine -> psLine.contains(hostPortParams))
+						.map(psLine -> new StringTokenizer(psLine).nextToken())
+						.forEach(this::killProcess);
+			}
 		}
 		catch (IOException e) {
 			LOGGER.warn("Failed to cleanup: ", e);
@@ -162,6 +164,7 @@ public class PubSubEmulator extends ExternalResource {
 
 		if (configPresent) {
 			updateConfig(watchService);
+			watchService.close();
 		}
 		else {
 			createConfig();
