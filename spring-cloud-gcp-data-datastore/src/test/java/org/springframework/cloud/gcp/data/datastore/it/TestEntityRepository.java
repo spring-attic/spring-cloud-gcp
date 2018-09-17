@@ -30,7 +30,7 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, St
 	@Query("select * from  test_entities_ci where id = @id_val")
 	List<TestEntity> findEntitiesWithCustomQuery(@Param("id_val") String id);
 
-	@Query(value = "select id from  test_entities_ci where id <= @id_val ", runAsProjectionQuery = true)
+	@Query("select id from  test_entities_ci where id <= @id_val ")
 	List<TestEntity> findEntitiesWithCustomProjectionQuery(@Param("id_val") String id);
 
 	long countByShapeAndColor(String shape, String color);

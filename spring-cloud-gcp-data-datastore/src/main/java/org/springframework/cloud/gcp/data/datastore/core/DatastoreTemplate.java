@@ -29,7 +29,6 @@ import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Entity.Builder;
 import com.google.cloud.datastore.Key;
-import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.Query;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
@@ -137,12 +136,13 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public <T> Iterable<T> query(Query query, Class<T> entityClass) {
+	public <T> Iterable<T> query(Query<? extends BaseEntity> query,
+			Class<T> entityClass) {
 		return convertEntities(this.datastore.run(query), entityClass);
 	}
 
 	@Override
-	public Iterable<Key> queryKeys(KeyQuery query) {
+	public Iterable<Key> queryKeys(Query<Key> query) {
 		return () -> this.datastore.run(query);
 	}
 
@@ -181,15 +181,14 @@ public class DatastoreTemplate implements DatastoreOperations {
 		return builder.build();
 	}
 
-	private <T> Collection<T> convertEntities(Iterator entities,
+	private <T> Collection<T> convertEntities(Iterator<? extends BaseEntity> entities,
 			Class<T> entityClass) {
 		List<T> results = new ArrayList<>();
 		if (entities == null) {
 			return results;
 		}
 		entities.forEachRemaining(entity -> results
-				.add(this.datastoreEntityConverter.read(entityClass,
-						(BaseEntity) entity)));
+				.add(this.datastoreEntityConverter.read(entityClass, entity)));
 		return results;
 	}
 

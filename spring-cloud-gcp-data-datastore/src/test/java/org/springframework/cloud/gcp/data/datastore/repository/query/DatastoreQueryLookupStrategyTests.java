@@ -74,7 +74,6 @@ public class DatastoreQueryLookupStrategyTests {
 		String query = "fake query";
 		when(this.queryMethod.getNamedQueryName()).thenReturn(queryName);
 		Query queryAnnotation = mock(Query.class);
-		when(queryAnnotation.runAsProjectionQuery()).thenReturn(false);
 		when(this.queryMethod.getQueryAnnotation()).thenReturn(queryAnnotation);
 		NamedQueries namedQueries = mock(NamedQueries.class);
 
@@ -97,7 +96,7 @@ public class DatastoreQueryLookupStrategyTests {
 		this.datastoreQueryLookupStrategy.resolveQuery(null, null, null, namedQueries);
 
 		verify(this.datastoreQueryLookupStrategy, times(1)).createGqlDatastoreQuery(
-				eq(Object.class), same(this.queryMethod), eq(query), eq(false));
+				eq(Object.class), same(this.queryMethod), eq(query));
 	}
 
 	private DatastoreQueryLookupStrategy getDatastoreQueryLookupStrategy() {

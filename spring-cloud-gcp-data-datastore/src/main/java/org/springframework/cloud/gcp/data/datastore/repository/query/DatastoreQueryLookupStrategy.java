@@ -31,7 +31,6 @@ import org.springframework.data.repository.query.QueryMethodEvaluationContextPro
 import org.springframework.data.repository.query.RepositoryQuery;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 /**
  * Query lookup strategy for Query Methods for Cloud Datastore.
@@ -74,31 +73,26 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 		Class<?> entityType = getEntityType(queryMethod);
 
 		Query queryAnnotation = queryMethod.getQueryAnnotation();
-		boolean runAsProjectionQuery = queryAnnotation != null
-				&& queryAnnotation.runAsProjectionQuery();
 
-		if (queryMethod.hasAnnotatedQuery()
-				&& StringUtils.hasText(queryAnnotation.value())) {
+		if (queryMethod.hasAnnotatedQuery()) {
 			String sql = queryAnnotation.value();
-			return createGqlDatastoreQuery(entityType, queryMethod, sql,
-					runAsProjectionQuery);
+			return createGqlDatastoreQuery(entityType, queryMethod, sql);
 		}
 		else if (namedQueries.hasQuery(queryMethod.getNamedQueryName())) {
 			String sql = namedQueries.getQuery(queryMethod.getNamedQueryName());
-			return createGqlDatastoreQuery(entityType, queryMethod, sql,
-					runAsProjectionQuery);
+			return createGqlDatastoreQuery(entityType, queryMethod, sql);
 		}
 
 		return new PartTreeDatastoreQuery<>(queryMethod, this.datastoreOperations,
-				this.datastoreMappingContext, entityType, runAsProjectionQuery);
+				this.datastoreMappingContext, entityType);
 	}
 
 	@VisibleForTesting
 	<T> GqlDatastoreQuery<T> createGqlDatastoreQuery(Class<T> entityType,
-			QueryMethod queryMethod, String gql, boolean runAsProjectionQuery) {
+			QueryMethod queryMethod, String gql) {
 		return new GqlDatastoreQuery<>(entityType, queryMethod, this.datastoreOperations,
 				gql, this.evaluationContextProvider, this.expressionParser,
-				this.datastoreMappingContext, runAsProjectionQuery);
+				this.datastoreMappingContext);
 	}
 
 	@VisibleForTesting

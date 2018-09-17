@@ -652,9 +652,6 @@ Cloud Datastore only supports filter components joined by AND, and the following
 
 After writing a custom repository interface specifying just the signatures of these methods, implementations are generated for you and can be used with an auto-wired instance of the repository.
 
-If your domain type is only a subset of columns of the corresponding Cloud Datastore Kind, you can annotate the query method `@Query(runAsProjection = true)` to run the query as a projection query.
-Note that there are https://cloud.google.com/datastore/docs/concepts/queries#limitations_on_projections[limitations] to this type of query, one consequence of which is that the properties used to filter in the query method will all be null in the result.
-
 ==== Custom GQL query methods
 
 Custom GQL queries can be mapped to repository methods in one of two ways:
@@ -690,9 +687,6 @@ The following parameter types are supported:
 * `java.lang.String`
 
 With the exception of `Cursor`, array forms of each of the types are also supported.
-
-If you want to specify the selected columns instead of using `SELECT *`, you must set `runAsProjection = true` in the `@Query` annotation.
-This causes the query to be run as a Cloud Datastore Projection query and has https://cloud.google.com/datastore/docs/concepts/queries#limitations_on_projections[limitations].
 
 
 ===== Query methods with named queries properties
