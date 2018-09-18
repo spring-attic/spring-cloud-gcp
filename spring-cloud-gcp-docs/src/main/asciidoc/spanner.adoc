@@ -1072,6 +1072,8 @@ This can be used:
 
 The results would be sorted by "id" in ascending order.
 
+If your query method's return type is `int/Integer/long/Long` or `boolean/Boolean` the method is assumed to be a `count` or `exists` query, respectively.
+In both cases the provided query string should provide the count in the first column of the first row of the result.
 
 ===== Query methods with named queries properties
 
