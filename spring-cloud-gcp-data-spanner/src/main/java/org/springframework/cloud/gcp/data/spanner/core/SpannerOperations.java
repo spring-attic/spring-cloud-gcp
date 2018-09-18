@@ -82,7 +82,8 @@ public interface SpannerOperations {
 	 * Executes a given query string with tags and parameters and applies a given function
 	 * to each row of the result.
 	 * @param rowFunc the function to apply to each row of the result.
-	 * @param entityClass the underlying domain type whose properties are used in sorts in the result.
+	 * @param entityClass the underlying domain type whose properties are used in sorts in
+	 * the result.
 	 * @param sql the query string to run.
 	 * @param tags the tags that appear in the query.
 	 * @param params the value to bind to those tags.
@@ -90,13 +91,14 @@ public interface SpannerOperations {
 	 * @param <T> the type to transform each row into.
 	 * @return a list of the rows each transformed with the given function.
 	 */
-	<A,T> List<A> query(Function<Struct, A> rowFunc, Class<T> entityClass, String sql, List<String> tags,
-			Object[] params, SpannerQueryOptions options);
+	<A, T> List<A> query(Function<Struct, A> rowFunc, Class<T> entityClass, String sql,
+			List<String> tags, Object[] params, SpannerQueryOptions options);
 
 	/**
 	 * Finds objects by using an SQL statement.
 	 * @param entityClass the type of object to retrieve.
-	 * @param sql the SQL string to execute. this string can have Cloud Spanner param tags.
+	 * @param sql the SQL string to execute. this string can have Cloud Spanner param
+	 * tags.
 	 * @param tags the names of the tags to use
 	 * @param params the values to attach those tags, in the same order.
 	 * @param options Cloud Spanner read options with which to conduct the read operation.
@@ -105,8 +107,7 @@ public interface SpannerOperations {
 	 * empty.
 	 */
 	<T> List<T> query(Class<T> entityClass, String sql, List<String> tags,
-			Object[] params,
-			SpannerQueryOptions options);
+			Object[] params, SpannerQueryOptions options);
 
 	/**
 	 * Finds objects by using an SQL statement.
@@ -140,7 +141,8 @@ public interface SpannerOperations {
 	/**
 	 * Finds all objects of the given type.
 	 * @param entityClass the type of the object to retrieve.
-	 * @param options Cloud Spanner query options with which to conduct the query operation.
+	 * @param options Cloud Spanner query options with which to conduct the query
+	 * operation.
 	 * @param <T> the type of the object to retrieve.
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
@@ -208,9 +210,9 @@ public interface SpannerOperations {
 	/**
 	 * Update an object in storage.
 	 * @param object the object to update.
-	 * @param includeColumns the columns to update. If null or an empty Optional is given, then
-	 * all columns are used. Note that an Optional occupied by an empty Set means that no columns
-	 * will be used.
+	 * @param includeColumns the columns to update. If null or an empty Optional is given,
+	 * then all columns are used. Note that an Optional occupied by an empty Set means
+	 * that no columns will be used.
 	 */
 	void update(Object object, Optional<Set<String>> includeColumns);
 
@@ -237,9 +239,9 @@ public interface SpannerOperations {
 	/**
 	 * Update or insert an object into storage.
 	 * @param object the object to update or insert.
-	 * @param includeColumns the columns to upsert. If null or an empty Optional is given, then
-	 * all columns are used. Note that an Optional occupied by an empty Set means that no columns
-	 * will be used.
+	 * @param includeColumns the columns to upsert. If null or an empty Optional is given,
+	 * then all columns are used. Note that an Optional occupied by an empty Set means
+	 * that no columns will be used.
 	 */
 	void upsert(Object object, Optional<Set<String>> includeColumns);
 

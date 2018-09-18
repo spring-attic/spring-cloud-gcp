@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -135,7 +136,13 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public <A, T> List<A> query(Function<Struct, A> rowFunc, Class<T> entityClass, String sql,
 			List<String> tags, Object[] params, SpannerQueryOptions options) {
-		return null;
+		ArrayList<A> result = new ArrayList<>();
+		ResultSet resultSet = runQueryString(entityClass, sql, tags, params, options);
+		while (resultSet.next()) {
+			result.add(rowFunc.apply(resultSet.getCurrentRowAsStruct()));
+		}
+		resultSet.close();
+		return result;
 	}
 
 	@Override
@@ -150,17 +157,23 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public <T> List<T> query(Class<T> entityClass, String sql, List<String> tags,
 			Object[] params, SpannerQueryOptions options) {
+		return mapToListAndResolveChildren(
+				runQueryString(entityClass, sql, tags, params, options), entityClass,
+				Optional.empty(), options != null && options.isAllowPartialRead());
+	}
+
+	private <T> ResultSet runQueryString(Class<T> entityClass, String sql,
+			List<String> tags, Object[] params, SpannerQueryOptions options) {
 		String finalSql = sql;
 		if (options != null) {
 			finalSql = applySortingPagingQueryOptions(entityClass, options, sql);
 		}
-		ResultSet queryResults = executeQuery(SpannerStatementQueryExecutor
+		return executeQuery(SpannerStatementQueryExecutor
 				.buildStatementFromSqlWithArgs(finalSql, tags, param -> {
 					Builder builder = Struct.newBuilder();
 					this.spannerEntityProcessor.write(param, builder::set);
 					return builder.build();
 				}, params), options);
-		return mapToListAndResolveChildren(queryResults, entityClass, Optional.empty(), options != null && options.isAllowPartialRead());
 	}
 
 	@Override

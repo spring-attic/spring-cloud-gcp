@@ -59,16 +59,16 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 
 	@Override
 	public Object execute(Object[] parameters) {
-		List<T> rawResult = executeRawResult(parameters);
-		return applyProjection(rawResult);
-	}
-
-	protected Object applyProjection(List<T> rawResult) {
-		if (rawResult == null) {
-			return null;
+		List results = executeRawResult(parameters);
+		if (isCountQuery()) {
+			return results.get(0);
 		}
-		return rawResult.stream().map(result -> processRawObjectForProjection(result))
-				.collect(Collectors.toList());
+		else if (isExistsQuery()) {
+			return ((long) results.get(0)) > 0;
+		}
+		else {
+			return applyProjection(results);
+		}
 	}
 
 	@VisibleForTesting
@@ -81,5 +81,21 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 		return this.queryMethod;
 	}
 
-	protected abstract List<T> executeRawResult(Object[] parameters);
+	public boolean isCountOrExistsQuery() {
+		return isCountQuery() || isExistsQuery();
+	}
+
+	protected Object applyProjection(List<T> rawResult) {
+		if (rawResult == null) {
+			return null;
+		}
+		return rawResult.stream().map(result -> processRawObjectForProjection(result))
+				.collect(Collectors.toList());
+	}
+
+	protected abstract List executeRawResult(Object[] parameters);
+
+	protected abstract boolean isCountQuery();
+
+	protected abstract boolean isExistsQuery();
 }

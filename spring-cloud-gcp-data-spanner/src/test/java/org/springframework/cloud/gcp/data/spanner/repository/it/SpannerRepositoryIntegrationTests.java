@@ -84,6 +84,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(allTradesRetrieved, containsInAnyOrder(allTrades.toArray()));
 
 		assertThat(this.tradeRepository.countByAction("BUY"), is(3));
+		assertThat(this.tradeRepository.countByActionQuery("BUY"), is(3));
 
 		List<Trade> trader2TradesRetrieved = this.tradeRepository
 				.findByTraderId("trader2");

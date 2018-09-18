@@ -173,7 +173,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 	}
 
 	@Override
-	public List<T> executeRawResult(Object[] parameters) {
+	public List executeRawResult(Object[] parameters) {
 		List<Object> params = new ArrayList<>();
 
 		Pageable pageable = null;
@@ -218,10 +218,28 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 		resolveSpELTags(queryTagValue);
 
-		return this.spannerOperations.query(this.entityType,
+		return this.isCountOrExistsQuery()
+				? this.spannerOperations.query(struct -> struct.getLong(0),
+						this.entityType, resolveEntityClassNames(queryTagValue.sql),
+						queryTagValue.tags, queryTagValue.params.toArray(),
+						spannerQueryOptions)
+				: this.spannerOperations.query(this.entityType,
 				resolveEntityClassNames(queryTagValue.sql), queryTagValue.tags,
 				queryTagValue.params.toArray(),
 				spannerQueryOptions);
+	}
+
+	@Override
+	protected boolean isCountQuery() {
+		Class returnedType = this.queryMethod.getReturnedObjectType();
+		return returnedType == long.class || returnedType == int.class
+				|| returnedType == Long.class || returnedType == Integer.class;
+	}
+
+	@Override
+	protected boolean isExistsQuery() {
+		Class returnedType = this.queryMethod.getReturnedObjectType();
+		return returnedType == boolean.class || returnedType == Boolean.class;
 	}
 
 	private Expression[] detectExpressions(String sql) {
