@@ -24,6 +24,7 @@ import java.util.function.Function;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
 
 /**
  * Defines operations available to use with Spanner.
@@ -76,6 +77,21 @@ public interface SpannerOperations {
 	 * could be found the list will be empty.
 	 */
 	<T> List<T> read(Class<T> entityClass, KeySet keys);
+
+	/**
+	 * Executes a given query string with tags and parameters and applies a given function
+	 * to each row of the result.
+	 * @param rowFunc the function to apply to each row of the result.
+	 * @param entityClass the underlying domain type whose properties are used in sorts in the result.
+	 * @param sql the query string to run.
+	 * @param tags the tags that appear in the query.
+	 * @param params the value to bind to those tags.
+	 * @param options the options with which to run this query.
+	 * @param <T> the type to transform each row into.
+	 * @return a list of the rows each transformed with the given function.
+	 */
+	<A,T> List<A> query(Function<Struct, A> rowFunc, Class<T> entityClass, String sql, List<String> tags,
+			Object[] params, SpannerQueryOptions options);
 
 	/**
 	 * Finds objects by using an SQL statement.

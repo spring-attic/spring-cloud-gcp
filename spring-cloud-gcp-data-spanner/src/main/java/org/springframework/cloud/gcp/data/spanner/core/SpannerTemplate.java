@@ -133,6 +133,12 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
+	public <A, T> List<A> query(Function<Struct, A> rowFunc, Class<T> entityClass, String sql,
+			List<String> tags, Object[] params, SpannerQueryOptions options) {
+		return null;
+	}
+
+	@Override
 	public <T> List<T> read(Class<T> entityClass, KeySet keys,
 			SpannerReadOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
@@ -145,17 +151,16 @@ public class SpannerTemplate implements SpannerOperations {
 	public <T> List<T> query(Class<T> entityClass, String sql, List<String> tags,
 			Object[] params, SpannerQueryOptions options) {
 		String finalSql = sql;
-		boolean allowPartialRead = false;
 		if (options != null) {
-			allowPartialRead = options.isAllowPartialRead();
 			finalSql = applySortingPagingQueryOptions(entityClass, options, sql);
 		}
-		return mapToListAndResolveChildren(executeQuery(SpannerStatementQueryExecutor
+		ResultSet queryResults = executeQuery(SpannerStatementQueryExecutor
 				.buildStatementFromSqlWithArgs(finalSql, tags, param -> {
 					Builder builder = Struct.newBuilder();
 					this.spannerEntityProcessor.write(param, builder::set);
 					return builder.build();
-				}, params), options), entityClass, Optional.empty(), allowPartialRead);
+				}, params), options);
+		return mapToListAndResolveChildren(queryResults, entityClass, Optional.empty(), options != null && options.isAllowPartialRead());
 	}
 
 	@Override
