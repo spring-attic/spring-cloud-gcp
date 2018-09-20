@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
 
+import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
+
 /**
  * @author João André Martins
+ * @author Artem Bilan
  */
-public class PubSubBindingProperties {
+public class PubSubBindingProperties implements BinderSpecificPropertiesProvider {
 
 	private PubSubConsumerProperties consumer = new PubSubConsumerProperties();
 
@@ -40,4 +43,5 @@ public class PubSubBindingProperties {
 	public void setProducer(PubSubProducerProperties producer) {
 		this.producer = producer;
 	}
+
 }
