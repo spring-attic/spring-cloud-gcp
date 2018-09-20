@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.pubsub.integration.inbound;
 
 import java.util.Map;
 
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.Subscriber;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
@@ -121,17 +120,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 		if (this.ackMode == AckMode.MANUAL) {
 			// Send the consumer downstream so user decides on when to ack/nack.
-			messageHeaders.put(GcpPubSubHeaders.ACKNOWLEDGEMENT, new AckReplyConsumer() {
-				@Override
-				public void ack() {
-					message.ack();
-				}
-
-				@Override
-				public void nack() {
-					message.nack();
-				}
-			});
+			messageHeaders.put(GcpPubSubHeaders.ORIGINAL_MESSAGE, message);
 		}
 
 		try {

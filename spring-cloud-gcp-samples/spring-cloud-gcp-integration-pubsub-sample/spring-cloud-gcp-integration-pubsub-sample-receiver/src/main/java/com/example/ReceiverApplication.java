@@ -16,7 +16,6 @@
 
 package com.example;
 
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -26,6 +25,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundChannelAdapter;
+import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -61,8 +61,8 @@ public class ReceiverApplication {
 
 	@ServiceActivator(inputChannel = "pubsubInputChannel")
 	public void messageReceiver(String payload,
-			@Header(GcpPubSubHeaders.ACKNOWLEDGEMENT) AckReplyConsumer ackReplyConsumer) {
+			@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) BasicAcknowledgeablePubsubMessage message) {
 		LOGGER.info("Message arrived! Payload: " + payload);
-		ackReplyConsumer.ack();
+		message.ack();
 	}
 }

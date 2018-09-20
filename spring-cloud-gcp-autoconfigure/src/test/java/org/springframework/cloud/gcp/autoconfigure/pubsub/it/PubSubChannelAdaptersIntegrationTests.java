@@ -23,7 +23,6 @@ import java.util.UUID;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
-import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -41,6 +40,7 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import org.springframework.cloud.gcp.pubsub.integration.outbound.PubSubMessageHandler;
+import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
@@ -150,15 +150,16 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 				Message<?> message = channel.receive(10000);
 				assertThat(message).isNotNull();
-				AckReplyConsumer acker =
-						(AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
-				assertThat(acker).isNotNull();
-				acker.nack();
+				BasicAcknowledgeablePubsubMessage origMessage =
+						(BasicAcknowledgeablePubsubMessage) message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
+				assertThat(origMessage).isNotNull();
+				origMessage.nack();
 				message = channel.receive(10000);
 				assertThat(message).isNotNull();
-				acker = (AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
-				assertThat(acker).isNotNull();
-				acker.ack();
+				origMessage = (BasicAcknowledgeablePubsubMessage)
+						message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
+				assertThat(origMessage).isNotNull();
+				origMessage.ack();
 				message = channel.receive(10000);
 				assertThat(message).isNull();
 			}
