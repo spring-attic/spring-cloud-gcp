@@ -57,6 +57,9 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.transaction.NoTransactionException;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.util.Assert;
 
 /**
@@ -101,11 +104,23 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	protected ReadContext getReadContext() {
-		return this.databaseClient.singleUse();
+		Optional<TransactionContext> txContext = getTransactionContext();
+		if (txContext.isPresent()) {
+			return txContext.get();
+		}
+		else {
+			return this.databaseClient.singleUse();
+		}
 	}
 
 	protected ReadContext getReadContext(Timestamp timestamp) {
-		return this.databaseClient.singleUse(TimestampBound.ofReadTimestamp(timestamp));
+		Optional<TransactionContext> txContext = getTransactionContext();
+		if (txContext.isPresent()) {
+			return txContext.get();
+		}
+		else {
+			return this.databaseClient.singleUse(TimestampBound.ofReadTimestamp(timestamp));
+		}
 	}
 
 	public SpannerMappingContext getMappingContext() {
@@ -233,8 +248,8 @@ public class SpannerTemplate implements SpannerOperations {
 	public void update(Object object, String... includeColumns) {
 		applyMutations(
 				this.mutationFactory.update(object,
-				includeColumns.length == 0 ? null
-						: Optional.of(new HashSet<>(Arrays.asList(includeColumns)))));
+						includeColumns.length == 0 ? null
+								: Optional.of(new HashSet<>(Arrays.asList(includeColumns)))));
 	}
 
 	@Override
@@ -258,8 +273,8 @@ public class SpannerTemplate implements SpannerOperations {
 	public void upsert(Object object, String... includeColumns) {
 		applyMutations(
 				this.mutationFactory.upsert(object,
-				includeColumns.length == 0 ? null
-						: Optional.of(new HashSet<>(Arrays.asList(includeColumns)))));
+						includeColumns.length == 0 ? null
+								: Optional.of(new HashSet<>(Arrays.asList(includeColumns)))));
 	}
 
 	@Override
@@ -305,6 +320,11 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> T performReadWriteTransaction(Function<SpannerTemplate, T> operations) {
+		Optional<TransactionContext> txContext = getTransactionContext();
+		if (txContext.isPresent()) {
+			throw new IllegalStateException("There is already declarative transaction open. " +
+					"Spanner does not support nested transactions");
+		}
 		return this.databaseClient.readWriteTransaction()
 				.run(new TransactionCallable<T>() {
 					@Nullable
@@ -326,7 +346,12 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> T performReadOnlyTransaction(Function<SpannerTemplate, T> operations,
-			SpannerReadOptions readOptions) {
+											SpannerReadOptions readOptions) {
+		Optional<TransactionContext> txContext = getTransactionContext();
+		if (txContext.isPresent()) {
+			throw new IllegalStateException("There is already declarative transaction open. " +
+					"Spanner does not support nested transactions");
+		}
 		SpannerReadOptions options = readOptions == null ? new SpannerReadOptions()
 				: readOptions;
 		try (ReadOnlyTransaction readOnlyTransaction = options.hasTimestamp()
@@ -424,7 +449,13 @@ public class SpannerTemplate implements SpannerOperations {
 
 	protected void applyMutations(Collection<Mutation> mutations) {
 		LOGGER.debug("Applying Mutation: " + mutations);
-		this.databaseClient.write(mutations);
+		Optional<TransactionContext> txContext = getTransactionContext();
+		if (txContext.isPresent()) {
+			txContext.get().buffer(mutations);
+		}
+		else {
+			this.databaseClient.write(mutations);
+		}
 	}
 
 	private <T> List<T> mapToListAndResolveChildren(ResultSet resultSet,
@@ -470,5 +501,18 @@ public class SpannerTemplate implements SpannerOperations {
 		return (Collection<Mutation>) StreamSupport.stream(it.spliterator(), false)
 				.flatMap(x -> individualEntityMutationFunc.apply(x).stream())
 				.collect(Collectors.toList());
+	}
+
+	protected Optional<TransactionContext> getTransactionContext() {
+		try {
+			return Optional.ofNullable(
+					((SpannerTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
+							.currentTransactionStatus())
+									.getTransaction())
+											.getTransactionContext());
+		}
+		catch (NoTransactionException e) {
+			return Optional.empty();
+		}
 	}
 }

@@ -885,6 +885,21 @@ point in time of the transaction.
 Because read-only transactions are non-locking and can be performed on points in time in the past, these
 are recommended for functions that do not perform write operations.
 
+===== Declarative transaction management
+
+To use `@Transactional` in [declarative spring transaction management](https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative)
+`SpannerTransactionManager` has to be registered in Spring.
+
+Example:
+```
+@Bean
+public SpannerTransactionManager transactionManager() {
+    return new SpannerTransactionManager(databaseClient)
+}
+```
+
+`SpannerTemplate` respects SpannerTransactionManager and transaction boundaries set by `@Transactional` annotation.
+
 === Repositories
 
 
