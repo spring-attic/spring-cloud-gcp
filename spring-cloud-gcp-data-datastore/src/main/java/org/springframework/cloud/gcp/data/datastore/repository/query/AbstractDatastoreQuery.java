@@ -55,23 +55,9 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 	}
 
 	@Override
-	public Object execute(Object[] parameters) {
-		List<T> rawResult = executeRawResult(parameters);
-		return applyProjection(rawResult);
-	}
-
-	@Override
 	public QueryMethod getQueryMethod() {
 		return this.queryMethod;
 	}
-
-	/**
-	 * Execute query with given parameters and produce objects of the repository's domain
-	 * type. These objects are then used to create projections.
-	 * @param parameters the parameters with which to run the query.
-	 * @return the domain objects.
-	 */
-	protected abstract List<T> executeRawResult(Object[] parameters);
 
 	protected List applyProjection(List<T> rawResult) {
 		if (rawResult == null) {

@@ -16,24 +16,14 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.StructuredQuery;
-import com.google.cloud.datastore.StructuredQuery.Builder;
-import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
-import com.google.cloud.datastore.StructuredQuery.Filter;
-import com.google.cloud.datastore.StructuredQuery.OrderBy;
-import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
+import com.google.cloud.datastore.StructuredQuery.*;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
@@ -106,20 +96,15 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	@Override
 	public Object execute(Object[] parameters) {
-		List results = executeRawResult(parameters);
-		return ifCountExistsQuery(results::size, () -> !results.isEmpty(),
-				() -> applyProjection(results));
-	}
-
-	@Override
-	protected List executeRawResult(Object[] parameters) {
 		Iterable found = ifCountOrExistQuery(
 				() -> this.datastoreOperations.queryKeys((KeyQuery) getQuery(parameters)),
 				() -> this.datastoreOperations.query(getQuery(parameters),
 						this.entityType));
-		return found == null ? Collections.emptyList()
+		List results = found == null ? Collections.emptyList()
 				: (List) StreamSupport.stream(found.spliterator(), false)
 						.collect(Collectors.toList());
+		return ifCountExistsQuery(results::size, () -> !results.isEmpty(),
+				() -> applyProjection(results));
 	}
 
 	private StructuredQuery getQuery(Object[] parameters) {
