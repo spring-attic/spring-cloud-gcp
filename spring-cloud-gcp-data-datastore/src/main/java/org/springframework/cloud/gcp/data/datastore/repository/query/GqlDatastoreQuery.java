@@ -16,15 +16,25 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.google.cloud.Timestamp;
-import com.google.cloud.datastore.*;
+import com.google.cloud.datastore.BaseEntity;
+import com.google.cloud.datastore.Blob;
+import com.google.cloud.datastore.Cursor;
+import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.GqlQuery.Builder;
+import com.google.cloud.datastore.Key;
 import com.google.common.collect.ImmutableMap;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;

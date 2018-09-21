@@ -16,14 +16,26 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.google.cloud.datastore.KeyQuery;
+import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.StructuredQuery;
-import com.google.cloud.datastore.StructuredQuery.*;
+import com.google.cloud.datastore.StructuredQuery.Builder;
+import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
+import com.google.cloud.datastore.StructuredQuery.Filter;
+import com.google.cloud.datastore.StructuredQuery.OrderBy;
+import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
@@ -96,25 +108,31 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	@Override
 	public Object execute(Object[] parameters) {
-		Iterable found = ifCountOrExistQuery(
-				() -> this.datastoreOperations.queryKeys((KeyQuery) getQuery(parameters)),
-				() -> this.datastoreOperations.query(getQuery(parameters),
-						this.entityType));
-		List results = found == null ? Collections.emptyList()
-				: (List) StreamSupport.stream(found.spliterator(), false)
-						.collect(Collectors.toList());
-		return ifCountExistsQuery(results::size, () -> !results.isEmpty(),
-				() -> applyProjection(results));
-	}
+		Supplier<StructuredQuery.Builder<?>> queryBuilderSupplier = StructuredQuery::newKeyQueryBuilder;
+		Function<Query, Iterable> queryMethod = this.datastoreOperations::queryKeys;
+		Function<T, ?> mapper = Function.identity();
+		Collector<?, ?, ?> collector;
 
-	private StructuredQuery getQuery(Object[] parameters) {
-		StructuredQuery.Builder structredQueryBuilder = ifCountOrExistQuery(
-				() -> (StructuredQuery.Builder) (StructuredQuery.newKeyQueryBuilder()),
-				StructuredQuery::newEntityQueryBuilder);
+		if (this.tree.isCountProjection()) {
+			collector = Collectors.reducing(0, e -> 1, Integer::sum);
+		}
+		else if (this.tree.isExistsProjection()) {
+			collector = Collectors.collectingAndThen(Collectors.counting(), count -> count > 0);
+		}
+		else {
+			queryBuilderSupplier = StructuredQuery::newEntityQueryBuilder;
+			queryMethod = q -> this.datastoreOperations.query(q, this.entityType);
+			mapper = this::processRawObjectForProjection;
+			collector = Collectors.toList();
+		}
 
+		StructuredQuery.Builder<?> structredQueryBuilder = queryBuilderSupplier.get();
 		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
+		applyQueryBody(parameters, structredQueryBuilder);
+		Iterable results = queryMethod.apply(structredQueryBuilder.build());
 
-		return applyQueryBody(parameters, structredQueryBuilder);
+		return results == null ? null
+				: StreamSupport.stream(results.spliterator(), false).map(mapper).collect(collector);
 	}
 
 	private StructuredQuery applyQueryBody(Object[] parameters,
@@ -201,21 +219,4 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				: filters[0]);
 	}
 
-	private <A> A ifCountExistsQuery(Supplier<A> ifCount, Supplier<A> ifExists,
-			Supplier<A> ifNeither) {
-		if (this.tree.isCountProjection()) {
-			return ifCount.get();
-		}
-		else if (this.tree.isExistsProjection()) {
-			return ifExists.get();
-		}
-		else {
-			return ifNeither.get();
-		}
-	}
-
-	private <A> A ifCountOrExistQuery(Supplier<A> ifCountOrExists,
-			Supplier<A> ifNeither) {
-		return ifCountExistsQuery(ifCountOrExists, ifCountOrExists, ifNeither);
-	}
 }
