@@ -43,10 +43,12 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	 * Patterns of headers to map in {@link #fromHeaders(MessageHeaders, Map)}.
 	 * First patterns take precedence.
 	 */
+	@SuppressWarnings("deprecation")
 	private String[] outboundHeaderPatterns = {
 			"!" + MessageHeaders.ID,
 			"!" + MessageHeaders.TIMESTAMP,
 			"!" + GcpPubSubHeaders.ACKNOWLEDGEMENT,
+			"!" + GcpPubSubHeaders.ORIGINAL_MESSAGE,
 			"!" + NativeMessageHeaderAccessor.NATIVE_HEADERS,
 			"*"};
 

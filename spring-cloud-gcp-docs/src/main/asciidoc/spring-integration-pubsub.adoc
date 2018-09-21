@@ -97,8 +97,8 @@ This is useful when using the subscription's ack deadline timeout as a retry del
 
 Manually acking (`AckMode.MANUAL`)
 
-The adapter attaches an `AckReplyConsumer` object to the `Message` headers.
-Users can extract the `AckReplyConsumer` using the `GcpPubSubHeaders.ACKNOWLEDGEMENT` key and use it to (n)ack a message.
+The adapter attaches a `BasicAcknowledgeablePubsubMessage` object to the `Message` headers.
+Users can extract the `BasicAcknowledgeablePubsubMessage` using the `GcpPubSubHeaders.ORIGINAL_MESSAGE` key and use it to (n)ack a message.
 
 [source,java]
 ----
@@ -107,9 +107,9 @@ Users can extract the `AckReplyConsumer` using the `GcpPubSubHeaders.ACKNOWLEDGE
 public MessageHandler messageReceiver() {
     return message -> {
         LOGGER.info("Message arrived! Payload: " + new String((byte[]) message.getPayload()));
-        AckReplyConsumer consumer =
-              message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT, AckReplyConsumer.class);
-        consumer.ack();
+        BasicAcknowledgeablePubsubMessage originalMessage =
+              message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
+        originalMessage.ack();
     };
 }
 ----

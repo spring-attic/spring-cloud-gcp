@@ -21,6 +21,9 @@ import java.util.Map;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.Subscriber;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
@@ -41,6 +44,8 @@ import org.springframework.util.Assert;
  * @author Doug Hoard
  */
 public class PubSubInboundChannelAdapter extends MessageProducerSupport {
+
+	private static final Log LOGGER = LogFactory.getLog(PubSubInboundChannelAdapter.class);
 
 	private final String subscriptionName;
 
@@ -115,20 +120,26 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		super.doStop();
 	}
 
+	@SuppressWarnings("deprecation")
 	private void consumeMessage(ConvertedBasicAcknowledgeablePubsubMessage message) {
 		Map<String, Object> messageHeaders =
 				this.headerMapper.toHeaders(message.getPubsubMessage().getAttributesMap());
 
 		if (this.ackMode == AckMode.MANUAL) {
-			// Send the consumer downstream so user decides on when to ack/nack.
+			// Send the original message downstream so user decides on when to ack/nack.
+			messageHeaders.put(GcpPubSubHeaders.ORIGINAL_MESSAGE, message);
+
+			// Deprecated mechanism for manual (n)acking.
 			messageHeaders.put(GcpPubSubHeaders.ACKNOWLEDGEMENT, new AckReplyConsumer() {
 				@Override
 				public void ack() {
+					LOGGER.warn("ACKNOWLEDGEMENT header is deprecated. Please use ORIGINAL_MESSAGE header to ack.");
 					message.ack();
 				}
 
 				@Override
 				public void nack() {
+					LOGGER.warn("ACKNOWLEDGEMENT header is deprecated. Please use ORIGINAL_MESSAGE header to nack.");
 					message.nack();
 				}
 			});

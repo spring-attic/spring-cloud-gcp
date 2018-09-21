@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub.it;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -24,6 +26,8 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
+import org.apache.commons.io.output.TeeOutputStream;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -41,6 +45,7 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import org.springframework.cloud.gcp.pubsub.integration.outbound.PubSubMessageHandler;
+import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
@@ -60,6 +65,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -69,6 +75,9 @@ import static org.mockito.Mockito.verify;
  * @author Mike Eltsufin
  */
 public class PubSubChannelAdaptersIntegrationTests {
+	private static PrintStream systemOut;
+
+	private static ByteArrayOutputStream baos;
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(
@@ -80,6 +89,19 @@ public class PubSubChannelAdaptersIntegrationTests {
 	@BeforeClass
 	public static void enableTests() {
 		assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
+	}
+
+	@BeforeClass
+	public static void captureStdout() {
+		systemOut = System.out;
+		baos = new ByteArrayOutputStream();
+		TeeOutputStream out = new TeeOutputStream(systemOut, baos);
+		System.setOut(new PrintStream(out));
+	}
+
+	@AfterClass
+	public static void resetStdout() {
+		System.setOut(systemOut);
 	}
 
 	@Test
@@ -150,15 +172,18 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 				Message<?> message = channel.receive(10000);
 				assertThat(message).isNotNull();
-				AckReplyConsumer acker =
-						(AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
-				assertThat(acker).isNotNull();
-				acker.nack();
+				BasicAcknowledgeablePubsubMessage origMessage =
+						(BasicAcknowledgeablePubsubMessage) message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
+				assertThat(origMessage).isNotNull();
+				origMessage.nack();
+
 				message = channel.receive(10000);
 				assertThat(message).isNotNull();
-				acker = (AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
-				assertThat(acker).isNotNull();
-				acker.ack();
+				origMessage = (BasicAcknowledgeablePubsubMessage)
+						message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
+				assertThat(origMessage).isNotNull();
+				origMessage.ack();
+
 				message = channel.receive(10000);
 				assertThat(message).isNull();
 			}
@@ -168,6 +193,53 @@ public class PubSubChannelAdaptersIntegrationTests {
 				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
 			}
 		});
+	}
+
+	@Test
+	@SuppressWarnings("deprecation")
+	public void sendAndReceiveMessageManualAckThroughAcknowledgementHeader() {
+		this.contextRunner.run(context -> {
+			try {
+				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.MANUAL);
+				context.getBean("inputChannel", MessageChannel.class).send(
+						MessageBuilder.withPayload("I am a message.".getBytes()).build());
+
+				PollableChannel channel = context.getBean("outputChannel", PollableChannel.class);
+
+				Message<?> message = channel.receive(10000);
+				assertThat(message).isNotNull();
+				AckReplyConsumer acker =
+						(AckReplyConsumer) message.getHeaders().get(GcpPubSubHeaders.ACKNOWLEDGEMENT);
+				assertThat(acker).isNotNull();
+				acker.ack();
+
+				message = channel.receive(10000);
+				assertThat(message).isNull();
+
+				validateOutput("ACKNOWLEDGEMENT header is deprecated");
+			}
+			finally {
+				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
+				pubSubAdmin.deleteSubscription((String) context.getBean("subscriptionName"));
+				pubSubAdmin.deleteTopic((String) context.getBean("topicName"));
+			}
+		});
+	}
+
+	private void validateOutput(String expectedText) {
+		for (int i = 0; i < 100; i++) {
+			if (baos.toString().contains(expectedText)) {
+				return;
+			}
+			try {
+				Thread.sleep(100);
+			}
+			catch (InterruptedException e) {
+				e.printStackTrace();
+				fail("Interrupted while waiting for text.");
+			}
+		}
+		fail("Did not find expected text on STDOUT: " + expectedText);
 	}
 
 	@Test

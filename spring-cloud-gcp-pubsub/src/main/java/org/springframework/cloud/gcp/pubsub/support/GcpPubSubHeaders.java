@@ -20,13 +20,19 @@ package org.springframework.cloud.gcp.pubsub.support;
  * Google Cloud Platform internal headers for Spring Messaging messages.
  *
  * @author João André Martins
+ * @author Elena Felder
  */
 public abstract class GcpPubSubHeaders {
 
 	private static final String PREFIX = "gcp_pubsub_";
 
+	/**
+	 * @deprecated as of 1.1, use {@link #ORIGINAL_MESSAGE} instead.
+	 */
+	@Deprecated
 	public static final String ACKNOWLEDGEMENT = PREFIX + "acknowledgement";
 
 	public static final String TOPIC = PREFIX + "topic";
 
+	public static final String ORIGINAL_MESSAGE = PREFIX + "original_message";
 }
