@@ -72,10 +72,8 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 		DatastoreQueryMethod queryMethod = createQueryMethod(method, metadata, factory);
 		Class<?> entityType = getEntityType(queryMethod);
 
-		Query queryAnnotation = queryMethod.getQueryAnnotation();
-
 		if (queryMethod.hasAnnotatedQuery()) {
-			String sql = queryAnnotation.value();
+			String sql = queryMethod.getQueryAnnotation().value();
 			return createGqlDatastoreQuery(entityType, queryMethod, sql);
 		}
 		else if (namedQueries.hasQuery(queryMethod.getNamedQueryName())) {

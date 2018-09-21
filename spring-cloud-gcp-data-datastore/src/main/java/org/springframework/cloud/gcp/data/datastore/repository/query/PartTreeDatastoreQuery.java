@@ -68,8 +68,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * @param datastoreMappingContext used to provide metadata for mapping results to
 	 * objects.
 	 * @param entityType the result domain type.
-	 * Projection query. Regardless of this setting the method will be treated as a Projection query
-	 * if the Distinct keyword appears in the query method's name.
 	 */
 	public PartTreeDatastoreQuery(QueryMethod queryMethod,
 			DatastoreOperations datastoreOperations,
