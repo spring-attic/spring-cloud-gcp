@@ -196,6 +196,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 	}
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void sendAndReceiveMessageManualAckThroughAcknowledgementHeader() {
 		this.contextRunner.run(context -> {
 			try {
