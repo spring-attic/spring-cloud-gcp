@@ -255,6 +255,17 @@
 						<enabled>false</enabled>
 					</snapshots>
 				</repository>
+				<repository>
+					<id>gcs-mirror</id>
+					<name>GCS Maven Mirror</name>
+					<url>https://maven-central.storage-download.googleapis.com/repos/central/data</url>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+				</repository>
 			</repositories>
 			<pluginRepositories>
 				<pluginRepository>
@@ -275,6 +286,17 @@
 					<snapshots>
 						<enabled>false</enabled>
 					</snapshots>
+				</pluginRepository>
+				<pluginRepository>
+					<id>gcs-mirror</id>
+					<name>GCS Maven Mirror</name>
+					<url>https://maven-central.storage-download.googleapis.com/repos/central/data</url>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
 				</pluginRepository>
 			</pluginRepositories>
 		</profile>
