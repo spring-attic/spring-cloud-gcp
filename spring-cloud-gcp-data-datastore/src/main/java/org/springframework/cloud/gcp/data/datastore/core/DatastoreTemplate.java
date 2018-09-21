@@ -20,18 +20,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
+import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Entity.Builder;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
-import com.google.cloud.datastore.QueryResults;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
@@ -138,8 +136,14 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public <T> Iterable<T> query(Query<Entity> query, Class<T> entityClass) {
+	public <T> Iterable<T> query(Query<? extends BaseEntity> query,
+			Class<T> entityClass) {
 		return convertEntities(this.datastore.run(query), entityClass);
+	}
+
+	@Override
+	public Iterable<Key> queryKeys(Query<Key> query) {
+		return () -> this.datastore.run(query);
 	}
 
 	@Override
@@ -177,7 +181,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 		return builder.build();
 	}
 
-	private <T> Collection<T> convertEntities(Iterator<Entity> entities,
+	private <T> Collection<T> convertEntities(Iterator<? extends BaseEntity> entities,
 			Class<T> entityClass) {
 		List<T> results = new ArrayList<>();
 		if (entities == null) {
@@ -207,11 +211,10 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	private Key[] findAllKeys(Class entityClass) {
-		QueryResults<Key> keysFound = this.datastore
-				.run(Query.newKeyQueryBuilder().setKind(this.datastoreMappingContext
+		Iterable<Key> keysFound = queryKeys(Query.newKeyQueryBuilder().setKind(
+				this.datastoreMappingContext
 						.getPersistentEntity(entityClass).kindName()).build());
-		return StreamSupport.stream(
-				Spliterators.spliteratorUnknownSize(keysFound, Spliterator.ORDERED),
+		return StreamSupport.stream(keysFound.spliterator(),
 				false).toArray(Key[]::new);
 	}
 

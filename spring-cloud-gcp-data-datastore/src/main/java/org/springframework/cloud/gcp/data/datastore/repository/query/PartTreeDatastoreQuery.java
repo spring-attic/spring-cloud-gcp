@@ -18,13 +18,18 @@ package org.springframework.cloud.gcp.data.datastore.repository.query;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.Builder;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
@@ -103,36 +108,37 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	@Override
 	public Object execute(Object[] parameters) {
-		List<T> results = executeRawResult(parameters);
+		Supplier<StructuredQuery.Builder<?>> queryBuilderSupplier = StructuredQuery::newKeyQueryBuilder;
+		Function<Query, Iterable> queryMethod = this.datastoreOperations::queryKeys;
+		Function<T, ?> mapper = Function.identity();
+		Collector<?, ?, ?> collector;
+
 		if (this.tree.isCountProjection()) {
-			throw new DatastoreDataException(
-					"Count-queries are not natively supported for Cloud Datastore. "
-							+ "Please explicitly use a find-query and examine the result size.");
+			collector = Collectors.reducing(0, e -> 1, Integer::sum);
 		}
 		else if (this.tree.isExistsProjection()) {
-			return !results.isEmpty();
+			collector = Collectors.collectingAndThen(Collectors.counting(), count -> count > 0);
 		}
 		else {
-			return applyProjection(results);
+			queryBuilderSupplier = StructuredQuery::newEntityQueryBuilder;
+			queryMethod = q -> this.datastoreOperations.query(q, this.entityType);
+			mapper = this::processRawObjectForProjection;
+			collector = Collectors.toList();
 		}
+
+		StructuredQuery.Builder<?> structredQueryBuilder = queryBuilderSupplier.get();
+		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
+		applyQueryBody(parameters, structredQueryBuilder);
+		Iterable results = queryMethod.apply(structredQueryBuilder.build());
+
+		return results == null ? null
+				: StreamSupport.stream(results.spliterator(), false).map(mapper).collect(collector);
 	}
 
-	@Override
-	protected List<T> executeRawResult(Object[] parameters) {
-		Iterable<T> found = this.datastoreOperations.query(getQuery(parameters),
-				this.entityType);
-		return found == null ? Collections.emptyList()
-				: StreamSupport.stream(found.spliterator(), false)
-						.collect(Collectors.toList());
-	}
-
-	private StructuredQuery<Entity> getQuery(Object[] parameters) {
-		Builder<Entity> builder = StructuredQuery.newEntityQueryBuilder();
-
-		builder.setKind(this.datastorePersistentEntity.kindName());
-
+	private StructuredQuery applyQueryBody(Object[] parameters,
+			StructuredQuery.Builder builder) {
 		if (this.tree.hasPredicate()) {
-			builder.setFilter(getFilter(parameters));
+			applySelectWithFilter(parameters, builder);
 		}
 
 		if (!this.tree.getSort().isUnsorted()) {
@@ -158,8 +164,9 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		});
 	}
 
-	private Filter getFilter(Object[] parameters) {
+	private void applySelectWithFilter(Object[] parameters, Builder builder) {
 		Iterator it = Arrays.asList(parameters).iterator();
+		Set<String> equalityComparedFields = new HashSet<>();
 		Filter[] filters = this.filterParts.stream().map(part -> {
 			Filter filter;
 			String fieldName = ((DatastorePersistentProperty) this.datastorePersistentEntity
@@ -173,6 +180,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				case SIMPLE_PROPERTY:
 					filter = PropertyFilter.eq(fieldName,
 							DatastoreNativeTypes.wrapValue(it.next()));
+					equalityComparedFields.add(fieldName);
 					break;
 				case GREATER_THAN_EQUAL:
 					filter = PropertyFilter.ge(fieldName,
@@ -203,10 +211,12 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 								+ this.queryMethod.getName());
 			}
 		}).toArray(Filter[]::new);
-		return filters.length > 1
+
+		builder.setFilter(
+				filters.length > 1
 				? CompositeFilter.and(filters[0],
 						Arrays.copyOfRange(filters, 1, filters.length))
-				: filters[0];
+				: filters[0]);
 	}
 
 }

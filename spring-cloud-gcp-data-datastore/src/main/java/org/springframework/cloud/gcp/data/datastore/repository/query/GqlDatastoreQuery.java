@@ -29,13 +29,12 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.google.cloud.Timestamp;
+import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.Cursor;
-import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.GqlQuery.Builder;
 import com.google.cloud.datastore.Key;
-import com.google.cloud.datastore.Query.ResultType;
 import com.google.common.collect.ImmutableMap;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
@@ -112,13 +111,14 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	@Override
-	protected List<T> executeRawResult(Object[] parameters) {
+	public Object execute(Object[] parameters) {
 		Iterable<T> found = this.datastoreOperations
 				.query(bindArgsToGqlQuery(this.gql, getParamTags(), parameters),
 						this.entityType);
-		return found == null ? Collections.emptyList()
+		List<T> rawResult = found == null ? Collections.emptyList()
 				: StreamSupport.stream(found.spliterator(), false)
 						.collect(Collectors.toList());
+		return applyProjection(rawResult);
 	}
 
 	private List<String> getParamTags() {
@@ -144,9 +144,10 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return tags;
 	}
 
-	private GqlQuery<Entity> bindArgsToGqlQuery(String gql, List<String> tags,
+	private GqlQuery<? extends BaseEntity> bindArgsToGqlQuery(String gql,
+			List<String> tags,
 			Object[] vals) {
-		Builder<Entity> builder = GqlQuery.newGqlQueryBuilder(ResultType.ENTITY, gql);
+		Builder builder = GqlQuery.newGqlQueryBuilder(gql);
 		if (tags.size() != vals.length) {
 			throw new DatastoreDataException("Annotated GQL Query Method "
 					+ this.queryMethod.getName() + " has " + tags.size()

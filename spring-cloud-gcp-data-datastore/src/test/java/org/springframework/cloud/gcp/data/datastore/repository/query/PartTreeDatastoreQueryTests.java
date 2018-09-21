@@ -155,7 +155,7 @@ public class PartTreeDatastoreQueryTests {
 		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void countTest() {
 		List<Trade> results = new ArrayList<>();
 		results.add(new Trade());
@@ -164,7 +164,7 @@ public class PartTreeDatastoreQueryTests {
 
 		PartTreeDatastoreQuery spyQuery = spy(this.partTreeSpannerQuery);
 		Object[] params = new Object[] { "BUY", };
-		spyQuery.execute(params);
+		assertEquals(1, spyQuery.execute(params));
 	}
 
 	@Test
@@ -196,11 +196,12 @@ public class PartTreeDatastoreQueryTests {
 		assertFalse((boolean) spyQuery.execute(params));
 	}
 
-	private void queryWithMockResult(String queryName, List<Trade> results) {
+	private void queryWithMockResult(String queryName, List results) {
 		when(this.queryMethod.getName()).thenReturn(queryName);
 		this.partTreeSpannerQuery = createQuery();
 		when(this.spannerTemplate.query(any(), Mockito.<Class<Trade>>any()))
 				.thenReturn(results);
+		when(this.spannerTemplate.queryKeys(any())).thenReturn(results);
 	}
 
 	@Entity(name = "trades")

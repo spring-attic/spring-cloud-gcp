@@ -63,7 +63,7 @@ public class DatastoreIntegrationTests {
 	@BeforeClass
 	public static void checkToRun() {
 		assumeThat(
-				"Datastre integration tests are disabled. Please use '-Dit.datastore=true' "
+				"Datastore integration tests are disabled. Please use '-Dit.datastore=true' "
 						+ "to enable them. ",
 				System.getProperty("it.datastore"), is("true"));
 	}
@@ -92,26 +92,34 @@ public class DatastoreIntegrationTests {
 				this.testEntityRepository.findById("a").get().getBlobField());
 
 		List<TestEntity> foundByCustomQuery = Collections.emptyList();
+		List<TestEntity> foundByCustomProjectionQuery = Collections.emptyList();
+
 		for (int i = 0; i < QUERY_WAIT_ATTEMPTS; i++) {
 			if (!foundByCustomQuery.isEmpty() && this.testEntityRepository
-					.findTop3ByShapeAndColor("round", "red").size() == 3) {
+					.countByShapeAndColor("round", "red") == 3) {
 				break;
 			}
 			Thread.sleep(QUERY_WAIT_INTERVAL_MILLIS);
 			foundByCustomQuery = this.testEntityRepository
 					.findEntitiesWithCustomQuery("a");
+			foundByCustomProjectionQuery = this.testEntityRepository
+					.findEntitiesWithCustomProjectionQuery("a");
 		}
-		assertEquals(1, this.testEntityRepository.findTop3ByShapeAndColor("round", "blue")
-				.size());
+		assertEquals(1, this.testEntityRepository.countByShapeAndColor("round", "blue"));
 		assertEquals(3,
-				this.testEntityRepository.findTop3ByShapeAndColor("round", "red").size());
+				this.testEntityRepository.countByShapeAndColor("round", "red"));
 		assertThat(
 				this.testEntityRepository.findTop3ByShapeAndColor("round", "red").stream()
 						.map(TestEntity::getId).collect(Collectors.toList()),
 				containsInAnyOrder("a", "c", "d"));
+
 		assertEquals(1, foundByCustomQuery.size());
 		assertEquals(Blob.copyFrom("testValueA".getBytes()),
 				foundByCustomQuery.get(0).getBlobField());
+
+		assertEquals(1, foundByCustomProjectionQuery.size());
+		assertNull(foundByCustomProjectionQuery.get(0).getBlobField());
+		assertEquals("a", foundByCustomProjectionQuery.get(0).getId());
 
 		testEntityA.setBlobField(null);
 

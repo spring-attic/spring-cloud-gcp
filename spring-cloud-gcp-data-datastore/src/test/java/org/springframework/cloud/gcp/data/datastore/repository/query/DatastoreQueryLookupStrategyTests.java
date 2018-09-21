@@ -73,6 +73,8 @@ public class DatastoreQueryLookupStrategyTests {
 		String queryName = "fakeNamedQueryName";
 		String query = "fake query";
 		when(this.queryMethod.getNamedQueryName()).thenReturn(queryName);
+		Query queryAnnotation = mock(Query.class);
+		when(this.queryMethod.getQueryAnnotation()).thenReturn(queryAnnotation);
 		NamedQueries namedQueries = mock(NamedQueries.class);
 
 		Parameters parameters = mock(Parameters.class);
