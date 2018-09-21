@@ -46,7 +46,8 @@ spring.cloud.stream.bindings.output.destination=myConsumer
 spring.cloud.stream.gcp.pubsub.bindings.output.consumer.auto-create-resources=true
 ----
 
+Starting with version 1.1, these properties can be configured globally for all the bindings, e.g. `spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources`.
+
 If you are using Pub/Sub auto-configuration from the Spring Cloud GCP Pub/Sub Starter, you should refer to the <<pubsub-configuration,configuration>> section for other Pub/Sub parameters.
 
-NOTE: To use this binder with a https://cloud.google.com/pubsub/docs/emulator[running emulator], configure its host and port via
-`spring.cloud.gcp.pubsub.emulator-host`.
+NOTE: To use this binder with a https://cloud.google.com/pubsub/docs/emulator[running emulator], configure its host and port via `spring.cloud.gcp.pubsub.emulator-host`.
