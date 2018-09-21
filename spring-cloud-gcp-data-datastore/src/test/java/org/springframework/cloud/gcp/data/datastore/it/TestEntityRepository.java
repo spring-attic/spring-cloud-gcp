@@ -30,6 +30,12 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, St
 	@Query("select * from  test_entities_ci where id = @id_val")
 	List<TestEntity> findEntitiesWithCustomQuery(@Param("id_val") String id);
 
+	@Query("select * from  test_entities_ci where id = @id_val")
+	int countEntitiesWithCustomQuery(@Param("id_val") String id);
+
+	@Query("select * from  test_entities_ci where id = @id_val")
+	boolean existsByEntitiesWithCustomQuery(@Param("id_val") String id);
+
 	@Query("select id from  test_entities_ci where id <= @id_val ")
 	List<TestEntity> findEntitiesWithCustomProjectionQuery(@Param("id_val") String id);
 

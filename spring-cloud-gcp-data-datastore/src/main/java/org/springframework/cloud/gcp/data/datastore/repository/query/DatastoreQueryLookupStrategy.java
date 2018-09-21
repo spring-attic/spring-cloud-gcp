@@ -87,7 +87,7 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 
 	@VisibleForTesting
 	<T> GqlDatastoreQuery<T> createGqlDatastoreQuery(Class<T> entityType,
-			QueryMethod queryMethod, String gql) {
+			DatastoreQueryMethod queryMethod, String gql) {
 		return new GqlDatastoreQuery<>(entityType, queryMethod, this.datastoreOperations,
 				gql, this.evaluationContextProvider, this.expressionParser,
 				this.datastoreMappingContext);

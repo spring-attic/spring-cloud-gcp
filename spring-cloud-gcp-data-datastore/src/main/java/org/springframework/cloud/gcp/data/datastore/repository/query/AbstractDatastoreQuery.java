@@ -39,13 +39,13 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 
 	final DatastoreMappingContext datastoreMappingContext;
 
-	final QueryMethod queryMethod;
+	final DatastoreQueryMethod queryMethod;
 
 	final DatastoreOperations datastoreOperations;
 
 	final Class<T> entityType;
 
-	public AbstractDatastoreQuery(QueryMethod queryMethod,
+	public AbstractDatastoreQuery(DatastoreQueryMethod queryMethod,
 			DatastoreOperations datastoreOperations,
 			DatastoreMappingContext datastoreMappingContext, Class<T> entityType) {
 		this.queryMethod = queryMethod;

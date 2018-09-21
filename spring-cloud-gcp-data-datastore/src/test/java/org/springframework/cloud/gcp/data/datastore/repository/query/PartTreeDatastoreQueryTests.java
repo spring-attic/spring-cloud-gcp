@@ -35,7 +35,6 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.repository.query.QueryMethod;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -57,7 +56,7 @@ public class PartTreeDatastoreQueryTests {
 
 	private DatastoreTemplate spannerTemplate;
 
-	private QueryMethod queryMethod;
+	private DatastoreQueryMethod queryMethod;
 
 	private DatastoreMappingContext spannerMappingContext;
 
@@ -65,7 +64,7 @@ public class PartTreeDatastoreQueryTests {
 
 	@Before
 	public void initMocks() {
-		this.queryMethod = mock(QueryMethod.class);
+		this.queryMethod = mock(DatastoreQueryMethod.class);
 		this.spannerTemplate = mock(DatastoreTemplate.class);
 		this.spannerMappingContext = new DatastoreMappingContext();
 	}

@@ -39,6 +39,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -114,6 +115,8 @@ public class DatastoreIntegrationTests {
 				containsInAnyOrder("a", "c", "d"));
 
 		assertEquals(1, foundByCustomQuery.size());
+		assertEquals(1, this.testEntityRepository.countEntitiesWithCustomQuery("a"));
+		assertTrue(this.testEntityRepository.existsByEntitiesWithCustomQuery("a"));
 		assertEquals(Blob.copyFrom("testValueA".getBytes()),
 				foundByCustomQuery.get(0).getBlobField());
 
