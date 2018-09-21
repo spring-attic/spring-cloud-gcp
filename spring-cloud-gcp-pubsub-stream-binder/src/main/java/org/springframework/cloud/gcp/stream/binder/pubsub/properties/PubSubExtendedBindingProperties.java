@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,14 +20,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
 import org.springframework.cloud.stream.binder.ExtendedBindingProperties;
 
 /**
  * @author João André Martins
+ * @author Artem Bilan
  */
 @ConfigurationProperties("spring.cloud.stream.gcp.pubsub")
 public class PubSubExtendedBindingProperties
 		implements ExtendedBindingProperties<PubSubConsumerProperties, PubSubProducerProperties> {
+
+	private static final String DEFAULTS_PREFIX = "spring.cloud.stream.gcp.pubsub.default";
 
 	private Map<String, PubSubBindingProperties> bindings = new HashMap<>();
 
@@ -36,22 +40,55 @@ public class PubSubExtendedBindingProperties
 	}
 
 	@Override
-	public PubSubConsumerProperties getExtendedConsumerProperties(String channelName) {
-		if (this.bindings.containsKey(channelName)
-				&& this.bindings.get(channelName).getConsumer() != null) {
-			return this.bindings.get(channelName).getConsumer();
+	public synchronized PubSubConsumerProperties getExtendedConsumerProperties(String channelName) {
+		PubSubConsumerProperties properties;
+		if (this.bindings.containsKey(channelName)) {
+			if (this.bindings.get(channelName).getConsumer() != null) {
+				properties = this.bindings.get(channelName).getConsumer();
+			}
+			else {
+				properties = new PubSubConsumerProperties();
+				this.bindings.get(channelName).setConsumer(properties);
+			}
 		}
-
-		return new PubSubConsumerProperties();
+		else {
+			properties = new PubSubConsumerProperties();
+			PubSubBindingProperties rbp = new PubSubBindingProperties();
+			rbp.setConsumer(properties);
+			this.bindings.put(channelName, rbp);
+		}
+		return properties;
 	}
 
 	@Override
-	public PubSubProducerProperties getExtendedProducerProperties(String channelName) {
-		if (this.bindings.containsKey(channelName)
-				&& this.bindings.get(channelName).getProducer() != null) {
-			return this.bindings.get(channelName).getProducer();
+	public synchronized PubSubProducerProperties getExtendedProducerProperties(String channelName) {
+		PubSubProducerProperties properties;
+		if (this.bindings.containsKey(channelName)) {
+			if (this.bindings.get(channelName).getProducer() != null) {
+				properties = this.bindings.get(channelName).getProducer();
+			}
+			else {
+				properties = new PubSubProducerProperties();
+				this.bindings.get(channelName).setProducer(properties);
+			}
 		}
-
-		return new PubSubProducerProperties();
+		else {
+			properties = new PubSubProducerProperties();
+			PubSubBindingProperties rbp = new PubSubBindingProperties();
+			rbp.setProducer(properties);
+			this.bindings.put(channelName, rbp);
+		}
+		return properties;
 	}
+
+	@Override
+	public String getDefaultsPrefix() {
+		return DEFAULTS_PREFIX;
+	}
+
+	@Override
+	public Class<? extends BinderSpecificPropertiesProvider> getExtendedPropertiesEntryClass() {
+		return PubSubBindingProperties.class;
+	}
+
 }

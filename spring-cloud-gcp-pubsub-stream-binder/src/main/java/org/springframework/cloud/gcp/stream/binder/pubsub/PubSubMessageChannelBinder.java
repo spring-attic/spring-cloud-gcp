@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExten
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.provisioning.PubSubChannelProvisioner;
 import org.springframework.cloud.stream.binder.AbstractMessageChannelBinder;
+import org.springframework.cloud.stream.binder.BinderSpecificPropertiesProvider;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
 import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.cloud.stream.binder.ExtendedPropertiesBinder;
@@ -36,6 +37,7 @@ import org.springframework.messaging.MessageHandler;
 /**
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Artem Bilan
  */
 public class PubSubMessageChannelBinder
 		extends AbstractMessageChannelBinder<ExtendedConsumerProperties<PubSubConsumerProperties>,
@@ -44,13 +46,14 @@ public class PubSubMessageChannelBinder
 	implements ExtendedPropertiesBinder<MessageChannel, PubSubConsumerProperties,
 		PubSubProducerProperties> {
 
-	private PubSubTemplate pubSubTemplate;
+	private final PubSubTemplate pubSubTemplate;
 
-	private PubSubExtendedBindingProperties pubSubExtendedBindingProperties =
+	private final PubSubExtendedBindingProperties pubSubExtendedBindingProperties =
 			new PubSubExtendedBindingProperties();
 
 	public PubSubMessageChannelBinder(String[] headersToEmbed,
 			PubSubChannelProvisioner provisioningProvider, PubSubTemplate pubSubTemplate) {
+
 		super(headersToEmbed, provisioningProvider);
 		this.pubSubTemplate = pubSubTemplate;
 	}
@@ -59,6 +62,7 @@ public class PubSubMessageChannelBinder
 	protected MessageHandler createProducerMessageHandler(ProducerDestination destination,
 			ExtendedProducerProperties<PubSubProducerProperties> producerProperties,
 			MessageChannel errorChannel) {
+
 		PubSubMessageHandler messageHandler = new PubSubMessageHandler(this.pubSubTemplate, destination.getName());
 		messageHandler.setBeanFactory(getBeanFactory());
 		return messageHandler;
@@ -67,10 +71,8 @@ public class PubSubMessageChannelBinder
 	@Override
 	protected MessageProducer createConsumerEndpoint(ConsumerDestination destination, String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties) {
-		PubSubInboundChannelAdapter inboundAdapter =
-				new PubSubInboundChannelAdapter(this.pubSubTemplate, destination.getName());
 
-		return inboundAdapter;
+		return new PubSubInboundChannelAdapter(this.pubSubTemplate, destination.getName());
 	}
 
 	@Override
@@ -81,6 +83,16 @@ public class PubSubMessageChannelBinder
 	@Override
 	public PubSubProducerProperties getExtendedProducerProperties(String channelName) {
 		return this.pubSubExtendedBindingProperties.getExtendedProducerProperties(channelName);
+	}
+
+	@Override
+	public String getDefaultsPrefix() {
+		return this.pubSubExtendedBindingProperties.getDefaultsPrefix();
+	}
+
+	@Override
+	public Class<? extends BinderSpecificPropertiesProvider> getExtendedPropertiesEntryClass() {
+		return this.pubSubExtendedBindingProperties.getExtendedPropertiesEntryClass();
 	}
 
 }
