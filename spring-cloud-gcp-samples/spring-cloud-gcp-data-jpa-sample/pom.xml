@@ -23,4 +23,14 @@
 			<artifactId>spring-cloud-gcp-starter-sql-mysql</artifactId>
 		</dependency>
 	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>
