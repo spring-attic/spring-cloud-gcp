@@ -43,7 +43,6 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
-import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
@@ -71,7 +70,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * objects.
 	 * @param entityType the result domain type.
 	 */
-	public PartTreeDatastoreQuery(QueryMethod queryMethod,
+	public PartTreeDatastoreQuery(DatastoreQueryMethod queryMethod,
 			DatastoreOperations datastoreOperations,
 			DatastoreMappingContext datastoreMappingContext, Class<T> entityType) {
 		super(queryMethod, datastoreOperations, datastoreMappingContext, entityType);

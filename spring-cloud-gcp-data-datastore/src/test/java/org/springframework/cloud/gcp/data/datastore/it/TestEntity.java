@@ -28,26 +28,26 @@ import org.springframework.data.annotation.Id;
 public class TestEntity {
 
 	@Id
-	private String id;
+	private Long id;
 
 	private String color;
 
-	private String shape;
+	private Long size;
 
-	public TestEntity(String id, String color, String shape, Blob blobField) {
+	public TestEntity(Long id, String color, Long size, Blob blobField) {
 		this.id = id;
 		this.color = color;
-		this.shape = shape;
+		this.size = size;
 		this.blobField = blobField;
 	}
 
 	private Blob blobField;
 
-	public String getId() {
+	public Long getId() {
 		return this.id;
 	}
 
-	public void setId(String id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -67,11 +67,11 @@ public class TestEntity {
 		this.color = color;
 	}
 
-	public String getShape() {
-		return this.shape;
+	public Long getSize() {
+		return this.size;
 	}
 
-	public void setShape(String shape) {
-		this.shape = shape;
+	public void setSize(Long size) {
+		this.size = size;
 	}
 }

@@ -35,7 +35,6 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
-import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -58,7 +57,7 @@ public class GqlDatastoreQueryTests {
 
 	private DatastoreTemplate datastoreTemplate;
 
-	private QueryMethod queryMethod;
+	private DatastoreQueryMethod queryMethod;
 
 	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
@@ -66,7 +65,7 @@ public class GqlDatastoreQueryTests {
 
 	@Before
 	public void initMocks() {
-		this.queryMethod = mock(QueryMethod.class);
+		this.queryMethod = mock(DatastoreQueryMethod.class);
 		this.datastoreTemplate = mock(DatastoreTemplate.class);
 		this.expressionParser = new SpelExpressionParser();
 		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);

@@ -42,7 +42,6 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
-import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.StringUtils;
@@ -99,7 +98,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * @param datastoreOperations used for executing queries.
 	 * @param datastoreMappingContext used for getting metadata about entities.
 	 */
-	public GqlDatastoreQuery(Class<T> type, QueryMethod queryMethod,
+	public GqlDatastoreQuery(Class<T> type, DatastoreQueryMethod queryMethod,
 			DatastoreOperations datastoreOperations, String gql,
 			QueryMethodEvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser,
@@ -118,7 +117,17 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		List<T> rawResult = found == null ? Collections.emptyList()
 				: StreamSupport.stream(found.spliterator(), false)
 						.collect(Collectors.toList());
-		return applyProjection(rawResult);
+		Object result;
+		if (this.queryMethod.isCountQuery()) {
+			result = rawResult.size();
+		}
+		else if (this.queryMethod.isExistsQuery()) {
+			result = !rawResult.isEmpty();
+		}
+		else {
+			result = applyProjection(rawResult);
+		}
+		return result;
 	}
 
 	private List<String> getParamTags() {

@@ -39,6 +39,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -71,72 +72,74 @@ public class DatastoreIntegrationTests {
 	@Test
 	public void testSaveAndDeleteRepository() throws InterruptedException {
 
-		TestEntity testEntityA = new TestEntity("a", "red", "round", null);
+		TestEntity testEntityA = new TestEntity(1L, "red", 1L, null);
 
-		TestEntity testEntityB = new TestEntity("b", "blue", "round", null);
+		TestEntity testEntityB = new TestEntity(2L, "blue", 1L, null);
 
-		TestEntity testEntityC = new TestEntity("c", "red", "round", null);
+		TestEntity testEntityC = new TestEntity(3L, "red", 1L, null);
 
-		TestEntity testEntityD = new TestEntity("d", "red", "round", null);
+		TestEntity testEntityD = new TestEntity(4L, "red", 1L, null);
 
 		this.testEntityRepository.saveAll(
 				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
 
-		assertNull(this.testEntityRepository.findById("a").get().getBlobField());
+		assertNull(this.testEntityRepository.findById(1L).get().getBlobField());
 
 		testEntityA.setBlobField(Blob.copyFrom("testValueA".getBytes()));
 
 		this.testEntityRepository.save(testEntityA);
 
 		assertEquals(Blob.copyFrom("testValueA".getBytes()),
-				this.testEntityRepository.findById("a").get().getBlobField());
+				this.testEntityRepository.findById(1L).get().getBlobField());
 
 		List<TestEntity> foundByCustomQuery = Collections.emptyList();
 		List<TestEntity> foundByCustomProjectionQuery = Collections.emptyList();
 
 		for (int i = 0; i < QUERY_WAIT_ATTEMPTS; i++) {
 			if (!foundByCustomQuery.isEmpty() && this.testEntityRepository
-					.countByShapeAndColor("round", "red") == 3) {
+					.countBySizeAndColor(1L, "red") == 3) {
 				break;
 			}
 			Thread.sleep(QUERY_WAIT_INTERVAL_MILLIS);
 			foundByCustomQuery = this.testEntityRepository
-					.findEntitiesWithCustomQuery("a");
+					.findEntitiesWithCustomQuery(1L);
 			foundByCustomProjectionQuery = this.testEntityRepository
-					.findEntitiesWithCustomProjectionQuery("a");
+					.findEntitiesWithCustomProjectionQuery(1L);
 		}
-		assertEquals(1, this.testEntityRepository.countByShapeAndColor("round", "blue"));
+		assertEquals(1, this.testEntityRepository.countBySizeAndColor(1, "blue"));
 		assertEquals(3,
-				this.testEntityRepository.countByShapeAndColor("round", "red"));
+				this.testEntityRepository.countBySizeAndColor(1, "red"));
 		assertThat(
-				this.testEntityRepository.findTop3ByShapeAndColor("round", "red").stream()
+				this.testEntityRepository.findTop3BySizeAndColor(1, "red").stream()
 						.map(TestEntity::getId).collect(Collectors.toList()),
-				containsInAnyOrder("a", "c", "d"));
+				containsInAnyOrder(1L, 3L, 4L));
 
 		assertEquals(1, foundByCustomQuery.size());
+		assertEquals(4, this.testEntityRepository.countEntitiesWithCustomQuery(1L));
+		assertTrue(this.testEntityRepository.existsByEntitiesWithCustomQuery(1L));
 		assertEquals(Blob.copyFrom("testValueA".getBytes()),
 				foundByCustomQuery.get(0).getBlobField());
 
 		assertEquals(1, foundByCustomProjectionQuery.size());
 		assertNull(foundByCustomProjectionQuery.get(0).getBlobField());
-		assertEquals("a", foundByCustomProjectionQuery.get(0).getId());
+		assertEquals((Long) 1L, foundByCustomProjectionQuery.get(0).getId());
 
 		testEntityA.setBlobField(null);
 
 		this.testEntityRepository.save(testEntityA);
 
-		assertNull(this.testEntityRepository.findById("a").get().getBlobField());
+		assertNull(this.testEntityRepository.findById(1L).get().getBlobField());
 
-		assertThat(this.testEntityRepository.findAllById(ImmutableList.of("a", "b")),
+		assertThat(this.testEntityRepository.findAllById(ImmutableList.of(1L, 2L)),
 				iterableWithSize(2));
 
 		this.testEntityRepository.delete(testEntityA);
 
-		assertFalse(this.testEntityRepository.findById("a").isPresent());
+		assertFalse(this.testEntityRepository.findById(1L).isPresent());
 
 		this.testEntityRepository.deleteAll();
 
-		assertFalse(this.testEntityRepository.findAllById(ImmutableList.of("a", "b"))
+		assertFalse(this.testEntityRepository.findAllById(ImmutableList.of(1L, 2L))
 				.iterator().hasNext());
 	}
 

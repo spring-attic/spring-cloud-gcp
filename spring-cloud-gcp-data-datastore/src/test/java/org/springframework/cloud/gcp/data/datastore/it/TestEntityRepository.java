@@ -25,15 +25,21 @@ import org.springframework.data.repository.query.Param;
 /**
  * @author Chengyuan Zhao
  */
-public interface TestEntityRepository extends DatastoreRepository<TestEntity, String> {
+public interface TestEntityRepository extends DatastoreRepository<TestEntity, Long> {
 
 	@Query("select * from  test_entities_ci where id = @id_val")
-	List<TestEntity> findEntitiesWithCustomQuery(@Param("id_val") String id);
+	List<TestEntity> findEntitiesWithCustomQuery(@Param("id_val") long id);
+
+	@Query(value = "select size from  test_entities_ci where size <= @size", count = true)
+	int countEntitiesWithCustomQuery(@Param("size") long size);
+
+	@Query(value = "select * from  test_entities_ci where id = @id_val", exists = true)
+	boolean existsByEntitiesWithCustomQuery(@Param("id_val") long id);
 
 	@Query("select id from  test_entities_ci where id <= @id_val ")
-	List<TestEntity> findEntitiesWithCustomProjectionQuery(@Param("id_val") String id);
+	List<TestEntity> findEntitiesWithCustomProjectionQuery(@Param("id_val") long id);
 
-	long countByShapeAndColor(String shape, String color);
+	long countBySizeAndColor(long size, String color);
 
-	List<TestEntity> findTop3ByShapeAndColor(String shape, String color);
+	List<TestEntity> findTop3BySizeAndColor(long size, String color);
 }
