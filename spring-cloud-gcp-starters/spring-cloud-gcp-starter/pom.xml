@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-gcp-starters</artifactId>
-		<version>1.1.0.M2</version>
+		<version>1.1.0.BUILD-SNAPSHOT</version>
 	</parent>
 	<artifactId>spring-cloud-gcp-starter</artifactId>
 	<name>Spring Cloud GCP Support Starter</name>
