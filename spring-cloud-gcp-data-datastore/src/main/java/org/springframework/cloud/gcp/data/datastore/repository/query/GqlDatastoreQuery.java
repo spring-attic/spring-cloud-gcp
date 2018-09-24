@@ -118,27 +118,16 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				: StreamSupport.stream(found.spliterator(), false)
 						.collect(Collectors.toList());
 		Object result;
-		if (isCountQuery()) {
+		if (this.queryMethod.isCountQuery()) {
 			result = rawResult.size();
 		}
-		else if (isExistsQuery()) {
+		else if (this.queryMethod.isExistsQuery()) {
 			result = !rawResult.isEmpty();
 		}
 		else {
 			result = applyProjection(rawResult);
 		}
 		return result;
-	}
-
-	private boolean isCountQuery() {
-		Class returnType = this.queryMethod.getReturnedObjectType();
-		return returnType == int.class || returnType == Integer.class || returnType == long.class ||
-				returnType == Long.class;
-	}
-
-	private boolean isExistsQuery() {
-		Class returnType = this.queryMethod.getReturnedObjectType();
-		return returnType == boolean.class || returnType == Boolean.class;
 	}
 
 	private List<String> getParamTags() {
