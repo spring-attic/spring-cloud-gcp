@@ -10,7 +10,7 @@
     <parent>
         <artifactId>spring-cloud-gcp-samples</artifactId>
         <groupId>org.springframework.cloud</groupId>
-        <version>1.1.0.BUILD-SNAPSHOT</version>
+        <version>1.1.0.M2</version>
     </parent>
 
     <dependencies>
@@ -30,4 +30,15 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
