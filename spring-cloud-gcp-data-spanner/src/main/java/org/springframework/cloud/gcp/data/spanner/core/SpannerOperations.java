@@ -82,42 +82,24 @@ public interface SpannerOperations {
 	 * Executes a given query string with tags and parameters and applies a given function
 	 * to each row of the result.
 	 * @param rowFunc the function to apply to each row of the result.
-	 * @param entityClass the underlying domain type whose properties are used in sorts in
-	 * the result.
-	 * @param sql the query string to run.
-	 * @param tags the tags that appear in the query.
-	 * @param params the value to bind to those tags.
+	 * @param statement the SQL statement used to select the objects.
 	 * @param options the options with which to run this query.
-	 * @param <T> the type to transform each row into.
 	 * @return a list of the rows each transformed with the given function.
 	 */
-	<A, T> List<A> query(Function<Struct, A> rowFunc, Class<T> entityClass, String sql,
-			List<String> tags, Object[] params, SpannerQueryOptions options);
-
-	/**
-	 * Finds objects by using an SQL statement.
-	 * @param entityClass the type of object to retrieve.
-	 * @param sql the SQL string to execute. this string can have Cloud Spanner param
-	 * tags.
-	 * @param tags the names of the tags to use
-	 * @param params the values to attach those tags, in the same order.
-	 * @param options Cloud Spanner read options with which to conduct the read operation.
-	 * @param <T> the type of object to retrieve.
-	 * @return a list of the objects found. If no keys could be found the list will be
-	 * empty.
-	 */
-	<T> List<T> query(Class<T> entityClass, String sql, List<String> tags,
-			Object[] params, SpannerQueryOptions options);
+	<A> List<A> query(Function<Struct, A> rowFunc, Statement statement,
+			SpannerQueryOptions options);
 
 	/**
 	 * Finds objects by using an SQL statement.
 	 * @param entityClass the type of object to retrieve.
 	 * @param statement the SQL statement used to select the objects.
+	 * @param options Cloud Spanner read options with which to conduct the read operation.
 	 * @param <T> the type of object to retrieve.
 	 * @return a list of the objects found. If no keys could be found the list will be
 	 * empty.
 	 */
-	<T> List<T> query(Class<T> entityClass, Statement statement);
+	<T> List<T> query(Class<T> entityClass, Statement statement,
+			SpannerQueryOptions options);
 
 	/**
 	 * Finds all objects of the given type.
@@ -147,7 +129,7 @@ public interface SpannerOperations {
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
 	 */
-	<T> List<T> queryAll(Class<T> entityClass, SpannerQueryOptions options);
+	<T> List<T> queryAll(Class<T> entityClass, SpannerSortPageQueryOptions options);
 
 	/**
 	 * Deletes an object based on a key.

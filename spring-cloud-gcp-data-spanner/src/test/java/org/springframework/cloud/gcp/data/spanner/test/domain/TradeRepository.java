@@ -35,12 +35,12 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
 	int countByAction(String action);
 
-	@Query(" select count(1) from :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: "
-			+ "where action = @action")
+	@Query(value = " select count(1) from :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: "
+			+ "where action = @action", count = true)
 	int countByActionQuery(String action);
 
-	@Query(" select count(1) from :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: "
-			+ "where action = @action")
+	@Query(value = " select count(1) from :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: "
+			+ "where action = @action", exists = true)
 	boolean existsByActionQuery(String action);
 
 	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"

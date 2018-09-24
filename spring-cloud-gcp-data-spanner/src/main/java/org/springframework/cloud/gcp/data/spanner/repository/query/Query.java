@@ -42,4 +42,19 @@ public @interface Query {
 	 * @return the SQL Cloud Spanner query string.
 	 */
 	String value() default "";
+
+	/**
+	 * Returns whether the defined query should be executed as a count projection.
+	 *
+	 * @return {@code true} if this query method returns a count. {@code false} otherwise
+	 */
+	boolean count() default false;
+
+	/**
+	 * Returns whether the defined query should be executed as an exists projection.
+	 *
+	 * @return {@code true} if this query method returns an exists boolean. {@code false}
+	 * otherwise
+	 */
+	boolean exists() default false;
 }

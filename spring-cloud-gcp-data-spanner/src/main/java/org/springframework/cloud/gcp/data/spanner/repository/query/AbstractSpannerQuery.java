@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
@@ -33,9 +33,9 @@ import org.springframework.data.repository.query.RepositoryQuery;
  */
 abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 
-	protected final QueryMethod queryMethod;
+	protected final SpannerQueryMethod queryMethod;
 
-	protected final SpannerOperations spannerOperations;
+	protected final SpannerTemplate spannerTemplate;
 
 	protected final SpannerMappingContext spannerMappingContext;
 
@@ -45,15 +45,15 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	 * Constructor
 	 * @param type the underlying entity type
 	 * @param queryMethod the underlying query method to support.
-	 * @param spannerOperations used for executing queries.
+	 * @param spannerTemplate used for executing queries.
 	 * @param spannerMappingContext used for getting metadata about entities.
 	 */
-	AbstractSpannerQuery(Class<T> type, QueryMethod queryMethod,
-			SpannerOperations spannerOperations,
+	AbstractSpannerQuery(Class<T> type, SpannerQueryMethod queryMethod,
+			SpannerTemplate spannerTemplate,
 			SpannerMappingContext spannerMappingContext) {
 		this.queryMethod = queryMethod;
 		this.entityType = type;
-		this.spannerOperations = spannerOperations;
+		this.spannerTemplate = spannerTemplate;
 		this.spannerMappingContext = spannerMappingContext;
 	}
 
@@ -61,10 +61,10 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	public Object execute(Object[] parameters) {
 		List results = executeRawResult(parameters);
 		if (isCountQuery()) {
-			return results.get(0);
+			return results == null ? 0 : results.get(0);
 		}
 		else if (isExistsQuery()) {
-			return ((long) results.get(0)) > 0;
+			return results != null && ((long) results.get(0)) > 0;
 		}
 		else {
 			return applyProjection(results);

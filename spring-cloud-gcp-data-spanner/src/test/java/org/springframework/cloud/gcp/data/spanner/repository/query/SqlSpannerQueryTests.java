@@ -43,7 +43,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
-import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -68,7 +67,7 @@ public class SqlSpannerQueryTests {
 
 	private SpannerTemplate spannerTemplate;
 
-	private QueryMethod queryMethod;
+	private SpannerQueryMethod queryMethod;
 
 	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
@@ -85,7 +84,7 @@ public class SqlSpannerQueryTests {
 
 	@Before
 	public void initMocks() {
-		this.queryMethod = mock(QueryMethod.class);
+		this.queryMethod = mock(SpannerQueryMethod.class);
 		this.spannerTemplate = spy(new SpannerTemplate(mock(DatabaseClient.class),
 				this.spannerMappingContext, this.spannerEntityProcessor,
 				mock(SpannerMutationFactory.class), new SpannerSchemaUtils(

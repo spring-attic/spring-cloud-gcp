@@ -29,6 +29,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.ValueBinder;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerSortPageQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityWriter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -67,7 +68,7 @@ public class SpannerStatementQueryExecutor {
 		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
 				spannerMappingContext, type);
 		return spannerOperations.query(type, buildStatementFromSqlWithArgs(
-				sqlAndTags.getFirst(), sqlAndTags.getSecond(), null, params));
+				sqlAndTags.getFirst(), sqlAndTags.getSecond(), null, params), null);
 	}
 
 	/**
@@ -87,8 +88,28 @@ public class SpannerStatementQueryExecutor {
 			SpannerMappingContext spannerMappingContext) {
 		Pair<String, List<String>> sqlAndTags = buildPartTreeSqlString(tree,
 				spannerMappingContext, type);
-		return spannerOperations.query(rowFunc, type, sqlAndTags.getFirst(),
-				sqlAndTags.getSecond(), params, null);
+		return spannerOperations.query(rowFunc, buildStatementFromSqlWithArgs(
+				sqlAndTags.getFirst(), sqlAndTags.getSecond(), null, params), null);
+	}
+
+	public static <T> String applySortingPagingQueryOptions(Class<T> entityClass,
+			SpannerSortPageQueryOptions options, String sql,
+			SpannerMappingContext mappingContext) {
+		SpannerPersistentEntity<?> persistentEntity = mappingContext
+				.getPersistentEntity(entityClass);
+		StringBuilder sb = SpannerStatementQueryExecutor.applySort(options.getSort(),
+				new StringBuilder("SELECT * FROM (").append(sql).append(")"), o -> {
+					SpannerPersistentProperty property = persistentEntity
+							.getPersistentProperty(o.getProperty());
+					return property == null ? o.getProperty() : property.getColumnName();
+				});
+		if (options.hasLimit()) {
+			sb.append(" LIMIT ").append(options.getLimit());
+		}
+		if (options.hasOffset()) {
+			sb.append(" OFFSET ").append(options.getOffset());
+		}
+		return sb.toString();
 	}
 
 	/**
@@ -203,24 +224,17 @@ public class SpannerStatementQueryExecutor {
 				.getPersistentProperty(o.getProperty()).getColumnName());
 		buildLimit(tree, stringBuilder);
 
-		stringBuilder.append(";");
-		return Pair.of(stringBuilder.toString(), tags);
+		String selectSql = stringBuilder.toString();
+		return Pair.of(tree.isExistsProjection() || tree.isCountProjection()
+				? "SELECT COUNT(1) FROM (" + selectSql + ")"
+				: selectSql, tags);
 	}
 
 	private static StringBuilder buildSelect(
 			SpannerPersistentEntity spannerPersistentEntity, PartTree tree,
 			StringBuilder stringBuilder) {
-		stringBuilder.append("SELECT ");
-		if (tree.isDistinct()) {
-			stringBuilder.append("DISTINCT ");
-		}
-		if (tree.isExistsProjection() || tree.isCountProjection()) {
-			stringBuilder.append("COUNT(1) ");
-		}
-		else {
-			stringBuilder
-					.append(getColumnsStringForSelect(spannerPersistentEntity) + " ");
-		}
+		stringBuilder.append("SELECT " + (tree.isDistinct() ? "DISTINCT " : "")
+				+ getColumnsStringForSelect(spannerPersistentEntity) + " ");
 		return stringBuilder;
 	}
 

@@ -73,6 +73,26 @@ public class SpannerQueryMethod extends QueryMethod {
 		return findAnnotatedQuery().isPresent();
 	}
 
+	/**
+	 * Return whether this method is an exists query.
+	 *
+	 * @return True if this query method is an exists query, and false otherwise.
+	 */
+	boolean isExistsQuery() {
+		Query annotation = getQueryAnnotation();
+		return annotation != null && annotation.exists();
+	}
+
+	/**
+	 * Return whether this method is an count query.
+	 *
+	 * @return True if this query method is an count query, and false otherwise.
+	 */
+	boolean isCountQuery() {
+		Query annotation = getQueryAnnotation();
+		return annotation != null && annotation.count();
+	}
+
 	private Optional<String> findAnnotatedQuery() {
 
 		return Optional.ofNullable(getQueryAnnotation()) //

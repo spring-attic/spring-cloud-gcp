@@ -24,11 +24,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
+import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Struct.Builder;
+
+import org.springframework.cloud.gcp.data.spanner.core.SpannerSortPageQueryOptions;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
@@ -36,7 +40,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
-import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
@@ -60,16 +63,22 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 	private final String sql;
 
+	private final Function<Object, Struct> paramStructConvertFunc = param -> {
+		Builder builder = Struct.newBuilder();
+		this.spannerTemplate.getSpannerEntityProcessor().write(param, builder::set);
+		return builder.build();
+	};
+
 	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
 	private SpelExpressionParser expressionParser;
 
-	SqlSpannerQuery(Class<T> type, QueryMethod queryMethod,
-			SpannerOperations spannerOperations, String sql,
+	SqlSpannerQuery(Class<T> type, SpannerQueryMethod queryMethod,
+			SpannerTemplate spannerTemplate, String sql,
 			QueryMethodEvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser,
 			SpannerMappingContext spannerMappingContext) {
-		super(type, queryMethod, spannerOperations, spannerMappingContext);
+		super(type, queryMethod, spannerTemplate, spannerMappingContext);
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
 		this.sql = StringUtils.trimTrailingCharacter(sql.trim(), ';');
@@ -198,7 +207,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 			}
 		}
 
-		SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions()
+		SpannerSortPageQueryOptions spannerQueryOptions = new SpannerSortPageQueryOptions()
 				.setAllowPartialRead(true);
 
 		if (pageable == null) {
@@ -218,28 +227,34 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 		resolveSpELTags(queryTagValue);
 
+		String sqlStringWithPagingSorting = SpannerStatementQueryExecutor
+				.applySortingPagingQueryOptions(this.entityType, spannerQueryOptions,
+						resolveEntityClassNames(queryTagValue.sql),
+						this.spannerMappingContext);
+
 		return this.isCountOrExistsQuery()
-				? this.spannerOperations.query(struct -> struct.getLong(0),
-						this.entityType, resolveEntityClassNames(queryTagValue.sql),
-						queryTagValue.tags, queryTagValue.params.toArray(),
+				? this.spannerTemplate.query(struct -> struct.getLong(0),
+						SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
+								sqlStringWithPagingSorting, queryTagValue.tags,
+								this.paramStructConvertFunc,
+								queryTagValue.params.toArray()),
 						spannerQueryOptions)
-				: this.spannerOperations.query(this.entityType,
-				resolveEntityClassNames(queryTagValue.sql), queryTagValue.tags,
-				queryTagValue.params.toArray(),
+				: this.spannerTemplate.query(this.entityType,
+						SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
+								sqlStringWithPagingSorting, queryTagValue.tags,
+								this.paramStructConvertFunc,
+								queryTagValue.params.toArray()),
 				spannerQueryOptions);
 	}
 
 	@Override
 	protected boolean isCountQuery() {
-		Class returnedType = this.queryMethod.getReturnedObjectType();
-		return returnedType == long.class || returnedType == int.class
-				|| returnedType == Long.class || returnedType == Integer.class;
+		return this.queryMethod.isCountQuery();
 	}
 
 	@Override
 	protected boolean isExistsQuery() {
-		Class returnedType = this.queryMethod.getReturnedObjectType();
-		return returnedType == boolean.class || returnedType == Boolean.class;
+		return this.queryMethod.isExistsQuery();
 	}
 
 	private Expression[] detectExpressions(String sql) {

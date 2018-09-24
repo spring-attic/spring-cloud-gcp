@@ -18,8 +18,10 @@ package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Function;
 
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Value;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +31,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
-import org.springframework.data.repository.query.QueryMethod;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -48,7 +49,7 @@ public class SpannerStatementQueryTests {
 
 	private SpannerTemplate spannerTemplate;
 
-	private QueryMethod queryMethod;
+	private SpannerQueryMethod queryMethod;
 
 	private SpannerMappingContext spannerMappingContext;
 
@@ -56,7 +57,7 @@ public class SpannerStatementQueryTests {
 
 	@Before
 	public void initMocks() {
-		this.queryMethod = mock(QueryMethod.class);
+		this.queryMethod = mock(SpannerQueryMethod.class);
 		this.spannerTemplate = mock(SpannerTemplate.class);
 		this.spannerMappingContext = new SpannerMappingContext();
 	}
@@ -77,7 +78,7 @@ public class SpannerStatementQueryTests {
 		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, "ignored",
 				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
 
-		when(this.spannerTemplate.query(any(), any()))
+		when(this.spannerTemplate.query((Class<Object>) any(), any(), any()))
 				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
 
@@ -87,7 +88,7 @@ public class SpannerStatementQueryTests {
 									+ "AND ticker=@tag1 ) OR "
 									+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 									+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "
-									+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 3;",
+									+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 3",
 							statement.getSql());
 
 					Map<String, Value> paramMap = statement.getParameters();
@@ -109,32 +110,34 @@ public class SpannerStatementQueryTests {
 				});
 
 		this.partTreeSpannerQuery.execute(params);
-		verify(this.spannerTemplate, times(1)).query(any(), any());
+		verify(this.spannerTemplate, times(1)).query((Class<Object>) any(), any(), any());
 	}
 
 	@Test
 	public void compoundNameConventionCountTest() {
 		when(this.queryMethod.getName()).thenReturn(
-				"existsByActionIgnoreCaseAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
+				"existsDistinctByActionIgnoreCaseAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullAndTraderIdLikeAndPriceTrueAndPriceFalse"
 						+ "AndPriceGreaterThanAndPriceLessThanEqualOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
 
-		when(this.spannerTemplate.query(any(), any(), any(), any(), any(), any()))
+		when(this.spannerTemplate.query((Function<Struct, Object>) any(), any(), any()))
 				.thenReturn(Collections.singletonList(1L));
 
 		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, "ignored",
 				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
 
-		when(this.spannerTemplate.query(any(), any())).thenAnswer(invocation -> {
-			Statement statement = invocation.getArgument(1);
+		when(this.spannerTemplate.query((Function<Struct, Object>) any(), any(), any()))
+				.thenAnswer(invocation -> {
+					Statement statement = invocation.getArgument(1);
 
-			assertEquals("SELECT COUNT(1) "
+			assertEquals("SELECT COUNT(1) FROM "
+							+ "(SELECT DISTINCT shares , trader_id , ticker , price , action , id "
 					+ "FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
 					+ "AND ticker=@tag1 ) OR "
 					+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 					+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "
-					+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 1;",
+					+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 1)",
 					statement.getSql());
 
 			Map<String, Value> paramMap = statement.getParameters();
@@ -156,8 +159,8 @@ public class SpannerStatementQueryTests {
 		});
 
 		this.partTreeSpannerQuery.execute(params);
-		verify(this.spannerTemplate, times(1)).query(any(), any(), any(), any(), any(),
-				any());
+		verify(this.spannerTemplate, times(1)).query((Function<Struct, Object>) any(),
+				any(), any());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
