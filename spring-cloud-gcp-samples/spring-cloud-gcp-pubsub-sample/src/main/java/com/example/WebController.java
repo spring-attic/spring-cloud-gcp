@@ -16,11 +16,15 @@
 
 package com.example;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -62,6 +66,36 @@ public class WebController {
 		this.pubSubTemplate.publish(topicName, message);
 
 		return new RedirectView("/");
+	}
+
+	@GetMapping("/pull")
+	public RedirectView pull(
+			@RequestParam("subscription1") String subscriptionName1,
+			@RequestParam(value = "subscription2", required = false) String subscriptionName2) {
+
+		Set<AcknowledgeablePubsubMessage> mixedSubscriptionMessages = new HashSet<>();
+		mixedSubscriptionMessages.addAll(this.pubSubTemplate.pull(subscriptionName1, 10, true));
+		if (subscriptionName2 != null && !"".equals(subscriptionName2)) {
+			mixedSubscriptionMessages.addAll(this.pubSubTemplate.pull(subscriptionName2, 10, true));
+		}
+
+		if (mixedSubscriptionMessages.isEmpty()) {
+			return buildStatusView("No messages available for retrieval.");
+		}
+
+		try {
+			this.pubSubTemplate.ack(mixedSubscriptionMessages);
+		}
+		catch (IllegalArgumentException e) {
+			return buildStatusView("Acking from different subscriptions is not supported yet.");
+		}
+		return buildStatusView("Success!");
+	}
+
+	private RedirectView buildStatusView(String statusMessage) {
+		RedirectView view = new RedirectView("/");
+		view.addStaticAttribute("statusMessage", statusMessage);
+		return view;
 	}
 
 	@GetMapping("/subscribe")

@@ -43,11 +43,12 @@
 
 <div class="section">
     <h1>Pub/Sub -- post and subscribe</h1>
-
+    <div class="help">Send or retrieve/ack one message at a time</div>
     <div>
         <form action="/subscribe">
-            <span class="label">Subscribe to</span>
-            <input name="subscription" type="text" placeholder="subscription"> <input type="submit">
+            <span class="label">Message Retrieval</span>
+            <input name="subscription" type="text" placeholder="subscription">
+            <input type="submit" value="Subscribe"> (acks one message at a time)
         </form>
     </div>
     <div>
@@ -56,6 +57,21 @@
             <input name="message" type="text" placeholder="message text">
             to topic
             <input name="topicName" type="text" placeholder="topic name"> <input type="submit">
+        </form>
+    </div>
+</div>
+
+<div class="section">
+    <h1>Pub/Sub -- batch pull</h1>
+    <div class="help">Retrieve messages from different subscriptions, and ack as a batch</div>
+
+    <div>
+        <form action="/pull">
+            <span class="label">Subscription1</span>
+            <input name="subscription1" type="text" placeholder="first subscription name">
+            <span class="label">Subscription2</span>
+            <input name="subscription2" type="text" placeholder="second subscription name">
+            <input type="submit" value="Pull" formaction="/pull">
         </form>
     </div>
 </div>
