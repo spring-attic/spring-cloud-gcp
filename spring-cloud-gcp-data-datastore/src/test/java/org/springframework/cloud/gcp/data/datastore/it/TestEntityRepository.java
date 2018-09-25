@@ -33,6 +33,10 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	@Query(value = "select size from  test_entities_ci where size <= @size", count = true)
 	int countEntitiesWithCustomQuery(@Param("size") long size);
 
+	int deleteBySize(long size);
+
+	List<TestEntity> removeByColor(String color);
+
 	@Query(value = "select * from  test_entities_ci where id = @id_val", exists = true)
 	boolean existsByEntitiesWithCustomQuery(@Param("id_val") long id);
 

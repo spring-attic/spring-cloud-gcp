@@ -83,6 +83,19 @@ public class DatastoreIntegrationTests {
 		this.testEntityRepository.saveAll(
 				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
 
+		assertEquals(4, this.testEntityRepository.deleteBySize(1L));
+
+		this.testEntityRepository.saveAll(
+				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
+
+		assertThat(
+				this.testEntityRepository.removeByColor("red").stream()
+						.map(x -> x.getId()).collect(Collectors.toList()),
+				containsInAnyOrder(1L, 3L, 4L));
+
+		this.testEntityRepository.saveAll(
+				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
+
 		assertNull(this.testEntityRepository.findById(1L).get().getBlobField());
 
 		testEntityA.setBlobField(Blob.copyFrom("testValueA".getBytes()));

@@ -130,16 +130,6 @@ public class PartTreeDatastoreQueryTests {
 		this.partTreeSpannerQuery.execute(params);
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void deleteTest() {
-		// delete is not supported
-		when(this.queryMethod.getName()).thenReturn("deleteByAction");
-
-		this.partTreeSpannerQuery = createQuery();
-
-		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
-	}
-
 	@Test(expected = DatastoreDataException.class)
 	public void unSupportedPredicateTest() {
 		when(this.queryMethod.getName()).thenReturn("countByTraderIdBetween");

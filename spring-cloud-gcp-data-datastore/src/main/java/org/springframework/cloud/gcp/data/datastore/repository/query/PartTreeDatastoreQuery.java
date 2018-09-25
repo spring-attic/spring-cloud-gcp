@@ -82,12 +82,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private void validateAndSetFilterParts() {
-		if (this.tree.isDelete()) {
-			throw new UnsupportedOperationException(
-					"Delete queries are not supported in Cloud Datastore: "
-							+ this.queryMethod.getName());
-		}
-		else if (this.tree.isDistinct()) {
+		if (this.tree.isDistinct()) {
 			throw new UnsupportedOperationException(
 					"Cloud Datastore structured queries do not support the Distinct keyword.");
 		}
@@ -107,31 +102,46 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	@Override
 	public Object execute(Object[] parameters) {
-		Supplier<StructuredQuery.Builder<?>> queryBuilderSupplier = StructuredQuery::newKeyQueryBuilder;
-		Function<Query, Iterable> queryMethod = this.datastoreOperations::queryKeys;
-		Function<T, ?> mapper = Function.identity();
-		Collector<?, ?, ?> collector;
+		return this.tree.isDelete()
+				? this.datastoreOperations
+						.performTransaction(x -> executeQuery(parameters, x))
+				: executeQuery(parameters, this.datastoreOperations);
+	}
 
-		if (this.tree.isCountProjection()) {
+	private Object executeQuery(Object[] parameters,
+			DatastoreOperations datastoreOperations) {
+		Supplier<StructuredQuery.Builder<?>> queryBuilderSupplier = StructuredQuery::newKeyQueryBuilder;
+		Function<Query, Iterable> queryMethod = datastoreOperations::queryKeys;
+		Function<T, ?> mapper = Function.identity();
+		Collector<?, ?, ?> collector = Collectors.toList();
+		Class returnedType = this.queryMethod.getReturnedObjectType();
+
+		if (this.tree.isCountProjection()
+				|| (this.tree.isDelete() && (Number.class.isAssignableFrom(returnedType)
+						|| returnedType == int.class || returnedType == long.class))) {
 			collector = Collectors.reducing(0, e -> 1, Integer::sum);
 		}
 		else if (this.tree.isExistsProjection()) {
 			collector = Collectors.collectingAndThen(Collectors.counting(), count -> count > 0);
 		}
-		else {
+		else if (!this.tree.isDelete()) {
 			queryBuilderSupplier = StructuredQuery::newEntityQueryBuilder;
-			queryMethod = q -> this.datastoreOperations.query(q, this.entityType);
+			queryMethod = q -> datastoreOperations.query(q, this.entityType);
 			mapper = this::processRawObjectForProjection;
-			collector = Collectors.toList();
 		}
 
 		StructuredQuery.Builder<?> structredQueryBuilder = queryBuilderSupplier.get();
 		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
 		applyQueryBody(parameters, structredQueryBuilder);
-		Iterable results = queryMethod.apply(structredQueryBuilder.build());
+		Iterable rawResults = queryMethod.apply(structredQueryBuilder.build());
 
-		return results == null ? null
-				: StreamSupport.stream(results.spliterator(), false).map(mapper).collect(collector);
+		if (this.tree.isDelete()) {
+			datastoreOperations.deleteAllById(rawResults, this.entityType);
+		}
+
+		return rawResults == null ? null
+				: StreamSupport.stream(rawResults.spliterator(), false).map(mapper)
+						.collect(collector);
 	}
 
 	private StructuredQuery applyQueryBody(Object[] parameters,
