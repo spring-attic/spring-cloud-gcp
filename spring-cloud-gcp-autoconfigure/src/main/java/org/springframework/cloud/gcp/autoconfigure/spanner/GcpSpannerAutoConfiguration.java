@@ -40,6 +40,7 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTransactionManager;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityProcessor;
@@ -48,6 +49,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * Provides Spring Data classes to use with Cloud Spanner.
@@ -55,6 +57,7 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
  * @author Chengyuan Zhao
  */
 @Configuration
+@EnableTransactionManagement
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.spanner.enabled", matchIfMissing = true)
 @ConditionalOnClass({ SpannerMappingContext.class, SpannerOperations.class,
@@ -170,6 +173,12 @@ public class GcpSpannerAutoConfiguration {
 		@ConditionalOnMissingBean
 		public DatabaseClient spannerDatabaseClient(Spanner spanner, DatabaseId databaseId) {
 			return spanner.getDatabaseClient(databaseId);
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
+		public SpannerTransactionManager spannerTransactionManager(DatabaseClient databaseClient) {
+			return new SpannerTransactionManager(databaseClient);
 		}
 
 		@Bean
