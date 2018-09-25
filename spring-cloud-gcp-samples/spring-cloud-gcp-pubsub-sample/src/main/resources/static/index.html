@@ -3,39 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+
+    <style>
+        span.label {
+          display: inline-block;
+          width: 10em;
+          line-height: 200%;
+        }
+
+        div.section {
+          border: 1px solid grey;
+          margin: 1em;
+          padding: 1em;
+          width: 50em;
+        }
+
+    </style>
 </head>
 <body>
-<div>
-    <form action="/createTopic" method="post">
-        Create topic <input name="topicName" type="text"> <input type="submit">
-    </form>
+
+<div class="section">
+    <h1>Pub/Sub Admin -- create</h1>
+
+    <div>
+        <form action="/createTopic" method="post">
+            <span class="label">Create topic</span>
+            <input name="topicName" type="text" placeholder="topic name"> <input type="submit">
+        </form>
+    </div>
+    <div>
+        <form action="/createSubscription" method="post">
+            <span class="label">Create subscription</span>
+            <input name="subscriptionName" type="text" placeholder="subscription name">
+            for topic
+            <input name="topicName" placeholder="topic name"> <input type="submit">
+        </form>
+    </div>
 </div>
-<div>
-    <form action="/createSubscription" method="post">
-        Create subscription <input name="subscriptionName" type="text"> for topic
-        <input name="topicName"> <input type="submit">
-    </form>
+
+<div class="section">
+    <h1>Pub/Sub -- post and subscribe</h1>
+
+    <div>
+        <form action="/subscribe">
+            <span class="label">Subscribe to</span>
+            <input name="subscription" type="text" placeholder="subscription"> <input type="submit">
+        </form>
+    </div>
+    <div>
+        <form action="/postMessage">
+            <span class="label">Send message</span>
+            <input name="message" type="text" placeholder="message text">
+            to topic
+            <input name="topicName" type="text" placeholder="topic name"> <input type="submit">
+        </form>
+    </div>
 </div>
-<div>
-    <form action="/subscribe">
-        Subscribe to <input name="subscription" type="text"> subscription <input type="submit">
-    </form>
+
+<div class="section">
+    <h1>Pub/Sub Admin -- delete</h1>
+
+    <div>
+        <form action="/deleteTopic" method="post">
+            <span class="label">Delete topic</span>
+            <input name="topic" type="text" placeholder="topic name"> <input type="submit">
+        </form>
+    </div>
+    <div>
+        <form action="/deleteSubscription" method="post">
+            <span class="label">Delete subscription</span>
+            <input name="subscription" type="text" placeholder="subscription name"> <input type="submit">
+        </form>
+    </div>
 </div>
-<div>
-    <form action="/postMessage">
-        Send message <input name="message" type="text"> to topic
-        <input name="topicName" type="text"> <input type="submit">
-    </form>
-</div>
-<div>
-    <form action="/deleteTopic" method="post">
-        Delete topic <input name="topic" type="text"> <input type="submit">
-    </form>
-</div>
-<div>
-    <form action="/deleteSubscription" method="post">
-        Delete subscription <input name="subscription" type="text"> <input type="submit">
-    </form>
-</div>
+
 </body>
 </html>
