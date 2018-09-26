@@ -5,6 +5,9 @@
     <title>Title</title>
 
     <style>
+        div {
+            margin: 1em;
+        }
         span.label {
           display: inline-block;
           width: 10em;
@@ -13,14 +16,34 @@
 
         div.section {
           border: 1px solid grey;
-          margin: 1em;
           padding: 1em;
           width: 50em;
         }
 
+        div#statusMessage {
+            background-color: yellow;
+            width: fit-content;
+        }
+
     </style>
+
+    <script>
+
+        function escapeHTML(text) {
+            return text.replace(/[&<>]/g, (ch) => {
+                return {'&':'&amp;', '>': '&gt;', '<': '&lt;'}[ch];
+            })
+        }
+
+        function showStatus() {
+          const message = new URL(window.location.href).searchParams.get("statusMessage");
+          if (message) {
+            document.getElementById("statusMessage").innerHTML = "Status: " + escapeHTML(message);
+          }
+        }
+    </script>
 </head>
-<body>
+<body onload="showStatus();">
 
 <div class="section">
     <h1>Pub/Sub Admin -- create</h1>
@@ -67,10 +90,8 @@
 
     <div>
         <form action="/pull">
-            <span class="label">Subscription1</span>
-            <input name="subscription1" type="text" placeholder="first subscription name">
-            <span class="label">Subscription2</span>
-            <input name="subscription2" type="text" placeholder="second subscription name">
+            <span class="label">Subscription</span>
+            <input name="subscription" type="text" placeholder="subscription name">
             <input type="submit" value="Pull" formaction="/pull">
         </form>
     </div>
@@ -91,6 +112,10 @@
             <input name="subscription" type="text" placeholder="subscription name"> <input type="submit">
         </form>
     </div>
+</div>
+
+<div id="statusMessage">
+
 </div>
 
 </body>
