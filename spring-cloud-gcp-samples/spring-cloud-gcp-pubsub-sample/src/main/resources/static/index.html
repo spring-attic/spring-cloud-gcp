@@ -5,6 +5,9 @@
     <title>Title</title>
 
     <style>
+        div {
+            margin: 1em;
+        }
         span.label {
           display: inline-block;
           width: 10em;
@@ -13,14 +16,34 @@
 
         div.section {
           border: 1px solid grey;
-          margin: 1em;
           padding: 1em;
           width: 50em;
         }
 
+        div#statusMessage {
+            background-color: yellow;
+            width: fit-content;
+        }
+
     </style>
+
+    <script>
+
+        function escapeHTML(text) {
+            return text.replace(/[&<>]/g, (ch) => {
+                return {'&':'&amp;', '>': '&gt;', '<': '&lt;'}[ch];
+            })
+        }
+
+        function showStatus() {
+          const message = new URL(window.location.href).searchParams.get("statusMessage");
+          if (message) {
+            document.getElementById("statusMessage").innerHTML = "Status: " + escapeHTML(message);
+          }
+        }
+    </script>
 </head>
-<body>
+<body onload="showStatus();">
 
 <div class="section">
     <h1>Pub/Sub Admin -- create</h1>
@@ -43,11 +66,12 @@
 
 <div class="section">
     <h1>Pub/Sub -- post and subscribe</h1>
-
+    <div class="help">Send or retrieve/ack one message at a time</div>
     <div>
         <form action="/subscribe">
-            <span class="label">Subscribe to</span>
-            <input name="subscription" type="text" placeholder="subscription"> <input type="submit">
+            <span class="label">Message Retrieval</span>
+            <input name="subscription" type="text" placeholder="subscription">
+            <input type="submit" value="Subscribe"> (acks one message at a time)
         </form>
     </div>
     <div>
@@ -56,6 +80,19 @@
             <input name="message" type="text" placeholder="message text">
             to topic
             <input name="topicName" type="text" placeholder="topic name"> <input type="submit">
+        </form>
+    </div>
+</div>
+
+<div class="section">
+    <h1>Pub/Sub -- batch pull</h1>
+    <div class="help">Retrieve messages from different subscriptions, and ack as a batch</div>
+
+    <div>
+        <form action="/pull">
+            <span class="label">Subscription</span>
+            <input name="subscription" type="text" placeholder="subscription name">
+            <input type="submit" value="Pull" formaction="/pull">
         </form>
     </div>
 </div>
@@ -75,6 +112,10 @@
             <input name="subscription" type="text" placeholder="subscription name"> <input type="submit">
         </form>
     </div>
+</div>
+
+<div id="statusMessage">
+
 </div>
 
 </body>

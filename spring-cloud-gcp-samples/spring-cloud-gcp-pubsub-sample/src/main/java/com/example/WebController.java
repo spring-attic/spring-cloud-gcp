@@ -16,11 +16,15 @@
 
 package com.example;
 
+import java.util.Collection;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
+import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,7 +49,7 @@ public class WebController {
 	public RedirectView createTopic(@RequestParam("topicName") String topicName) {
 		this.pubSubAdmin.createTopic(topicName);
 
-		return new RedirectView("/");
+		return buildStatusView("Topic creation successful.");
 	}
 
 	@PostMapping("/createSubscription")
@@ -53,7 +57,7 @@ public class WebController {
 			@RequestParam("subscriptionName") String subscriptionName) {
 		this.pubSubAdmin.createSubscription(subscriptionName, topicName);
 
-		return new RedirectView("/");
+		return buildStatusView("Subscription creation successful.");
 	}
 
 	@GetMapping("/postMessage")
@@ -61,7 +65,30 @@ public class WebController {
 			@RequestParam("message") String message) {
 		this.pubSubTemplate.publish(topicName, message);
 
-		return new RedirectView("/");
+		return buildStatusView("Messages published asynchronously; status unknown.");
+	}
+
+	@GetMapping("/pull")
+	public RedirectView pull(@RequestParam("subscription") String subscriptionName) {
+
+		Collection<AcknowledgeablePubsubMessage> messages = this.pubSubTemplate.pull(subscriptionName, 10, true);
+
+		if (messages.isEmpty()) {
+			return buildStatusView("No messages available for retrieval.");
+		}
+
+		RedirectView returnView;
+		try {
+			ListenableFuture<Void> ackFuture = this.pubSubTemplate.ack(messages);
+			ackFuture.get();
+			returnView = buildStatusView(
+					String.format("Pulled and acked %s message(s)", messages.size()));
+		}
+		catch (Exception e) {
+			returnView = buildStatusView("Acking failed");
+		}
+
+		return returnView;
 	}
 
 	@GetMapping("/subscribe")
@@ -72,20 +99,26 @@ public class WebController {
 			message.ack();
 		});
 
-		return new RedirectView("/");
+		return buildStatusView("Subscribed.");
 	}
 
 	@PostMapping("/deleteTopic")
 	public RedirectView deleteTopic(@RequestParam("topic") String topicName) {
 		this.pubSubAdmin.deleteTopic(topicName);
 
-		return new RedirectView("/");
+		return buildStatusView("Topic deleted successfully.");
 	}
 
 	@PostMapping("/deleteSubscription")
 	public RedirectView deleteSubscription(@RequestParam("subscription") String subscriptionName) {
 		this.pubSubAdmin.deleteSubscription(subscriptionName);
 
-		return new RedirectView("/");
+		return buildStatusView("Subscription deleted successfully.");
+	}
+
+	private RedirectView buildStatusView(String statusMessage) {
+		RedirectView view = new RedirectView("/");
+		view.addStaticAttribute("statusMessage", statusMessage);
+		return view;
 	}
 }
