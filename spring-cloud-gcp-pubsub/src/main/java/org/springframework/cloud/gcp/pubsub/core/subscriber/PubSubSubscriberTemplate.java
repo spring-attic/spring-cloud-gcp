@@ -64,6 +64,7 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  * @author Doug Hoard
+ * @author Elena Felder
  *
  * @since 1.1
  */
@@ -217,6 +218,13 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		return this.subscriberFactory;
 	}
 
+	/**
+	 * Acknowledge messages in per-subscription batches.
+	 * If any batch fails, the returned Future is marked as failed.
+	 * If multiple batches fail, the returned Future will contain whichever exception was detected first.
+	 * @param acknowledgeablePubsubMessages messages, potentially from different subscriptions.
+	 * @return ListenableFuture indicating overall success or failure.
+	 */
 	@Override
 	public ListenableFuture<Void> ack(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
@@ -225,12 +233,26 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		return doBatchedAsyncOperation(acknowledgeablePubsubMessages, this::ack);
 	}
 
+	/**
+	 * Nack messages in per-subscription batches.
+	 * If any batch fails, the returned Future is marked as failed.
+	 * If multiple batches fail, the returned Future will contain whichever exception was detected first.
+	 * @param acknowledgeablePubsubMessages messages, potentially from different subscriptions.
+	 * @return ListenableFuture indicating overall success or failure.
+	 */
 	@Override
 	public ListenableFuture<Void> nack(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		return modifyAckDeadline(acknowledgeablePubsubMessages, 0);
 	}
 
+	/**
+	 * Modify multiple messages' ack deadline in per-subscription batches.
+	 * If any batch fails, the returned Future is marked as failed.
+	 * If multiple batches fail, the returned Future will contain whichever exception was detected first.
+	 * @param acknowledgeablePubsubMessages messages, potentially from different subscriptions.
+	 * @return ListenableFuture indicating overall success or failure.
+	 */
 	@Override
 	public ListenableFuture<Void> modifyAckDeadline(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages, int ackDeadlineSeconds) {
@@ -271,10 +293,14 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	}
 
 	/**
-	 * Perform Pub/Sub operations (ack/nack/modifyAckDeadline) on per-subscription batches.
-	 * If any batch fails, the returned Future is marked as failed.
-	 * If multiple batches fail, the returned Future will contain whichever exception occurred first.
-	 * @param acknowledgeablePubsubMessages messages from potentially different subscriptions.
+	 * Perform Pub/Sub operations (ack/nack/modifyAckDeadline) in per-subscription batches.
+	 * <p>The returned {@link ListenableFuture} will complete when either all batches completes successfully or when at
+	 * least one fails.</p>
+	 * <p>
+	 * In case of multiple batch failures, which exception exception will be in the final {@link ListenableFuture} is
+	 * non-deterministic.
+	 * </p>
+	 * @param acknowledgeablePubsubMessages messages, could be from different subscriptions.
 	 * @param asyncOperation Pub/Sub operation to perform.
 	 * @return ListenableFuture indicating overall success or failure.
 	 */

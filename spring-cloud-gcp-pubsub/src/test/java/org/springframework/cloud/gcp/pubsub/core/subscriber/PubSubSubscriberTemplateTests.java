@@ -17,7 +17,9 @@
 package org.springframework.cloud.gcp.pubsub.core.subscriber;
 
 import java.math.BigInteger;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -186,7 +188,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testSubscribe_AndAck() throws InterruptedException, ExecutionException, TimeoutException {
+	public void testSubscribe_AndManualAck() throws InterruptedException, ExecutionException, TimeoutException {
 		this.pubSubSubscriberTemplate.subscribe("sub1", this.consumer);
 
 		verify(this.subscriber).startAsync();
@@ -209,7 +211,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testSubscribe_AndNack() throws InterruptedException, ExecutionException, TimeoutException {
+	public void testSubscribe_AndManualNack() throws InterruptedException, ExecutionException, TimeoutException {
 		this.pubSubSubscriberTemplate.subscribe("sub1", this.consumer);
 
 		verify(this.subscriber).startAsync();
@@ -232,7 +234,8 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testSubscribeAndConvert_AndAck() throws InterruptedException, ExecutionException, TimeoutException {
+	public void testSubscribeAndConvert_AndManualAck()
+			throws InterruptedException, ExecutionException, TimeoutException {
 		this.pubSubSubscriberTemplate.subscribeAndConvert("sub1", this.convertedConsumer, Boolean.class);
 
 		verify(this.subscriber).startAsync();
@@ -260,7 +263,8 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testSubscribeAndConvert_AndNack() throws InterruptedException, ExecutionException, TimeoutException {
+	public void testSubscribeAndConvert_AndManualNack()
+			throws InterruptedException, ExecutionException, TimeoutException {
 		this.pubSubSubscriberTemplate.subscribeAndConvert("sub1", this.convertedConsumer, Boolean.class);
 
 		verify(this.subscriber).startAsync();
@@ -288,7 +292,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testPull_AndAck() throws InterruptedException, ExecutionException, TimeoutException {
+	public void testPull_AndManualAck() throws InterruptedException, ExecutionException, TimeoutException {
 		List<AcknowledgeablePubsubMessage> result = this.pubSubSubscriberTemplate.pull(
 				"sub2", 1, true);
 
@@ -315,7 +319,7 @@ public class PubSubSubscriberTemplateTests {
 	}
 
 	@Test
-	public void testPull_AndNack() throws InterruptedException, ExecutionException, TimeoutException {
+	public void testPull_AndManualNack() throws InterruptedException, ExecutionException, TimeoutException {
 		List<AcknowledgeablePubsubMessage> result = this.pubSubSubscriberTemplate.pull(
 				"sub2", 1, true);
 
@@ -339,6 +343,31 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(listenableFuture.isDone()).isTrue();
 
 		assertThat(testListenableFutureCallback.getThrowable()).isNull();
+	}
+
+	@Test
+	public void testPull_AndManualMultiSubscriptionAck()
+			throws InterruptedException, ExecutionException, TimeoutException {
+		List<AcknowledgeablePubsubMessage> result1 = this.pubSubSubscriberTemplate.pull(
+				"sub1", 1, true);
+		List<AcknowledgeablePubsubMessage> result2 = this.pubSubSubscriberTemplate.pull(
+				"sub2", 1, true);
+		Set<AcknowledgeablePubsubMessage> combinedMessages = new HashSet(result1);
+		combinedMessages.addAll(result2);
+
+		assertThat(combinedMessages.size()).isEqualTo(2);
+
+		TestListenableFutureCallback testListenableFutureCallback = new TestListenableFutureCallback();
+
+		ListenableFuture<Void> listenableFuture = this.pubSubSubscriberTemplate.ack(combinedMessages);
+		assertThat(listenableFuture).isNotNull();
+
+		listenableFuture.addCallback(testListenableFutureCallback);
+		listenableFuture.get(10L, TimeUnit.SECONDS);
+
+		assertThat(listenableFuture.isDone()).isTrue();
+		assertThat(testListenableFutureCallback.getThrowable()).isNull();
+		verify(this.ackCallable, times(2)).futureCall(any(AcknowledgeRequest.class));
 	}
 
 	@Test
