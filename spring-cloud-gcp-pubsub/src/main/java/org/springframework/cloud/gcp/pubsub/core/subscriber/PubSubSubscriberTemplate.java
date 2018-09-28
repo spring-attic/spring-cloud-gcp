@@ -20,6 +20,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -218,24 +222,44 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages) {
 		Assert.notEmpty(acknowledgeablePubsubMessages, "The acknowledgeablePubsubMessages can't be empty.");
 
-		AcknowledgeablePubsubMessage acknowledgeablePubsubMessage = acknowledgeablePubsubMessages.iterator().next();
-		ProjectSubscriptionName projectSubscriptionName = acknowledgeablePubsubMessage.getProjectSubscriptionName();
-		List<String> ackIds = collectAckIds(projectSubscriptionName, acknowledgeablePubsubMessages);
+		Map<ProjectSubscriptionName, List<String>> groupedMessages
+				= acknowledgeablePubsubMessages.stream()
+				.collect(
+						Collectors.groupingBy(
+								AcknowledgeablePubsubMessage::getProjectSubscriptionName,
+								Collectors.mapping(AcknowledgeablePubsubMessage::getAckId, Collectors.toList())));
 
-		SettableListenableFuture<Void> settableListenableFuture = new SettableListenableFuture<>();
+		SettableListenableFuture<Void> settableListenableFuture	= new SettableListenableFuture<>();
+		// check concurrent add allowed
 
-		ApiFuture<Empty> apiFuture = ack(projectSubscriptionName.getSubscription(), ackIds);
-		ApiFutures.addCallback(apiFuture, new ApiFutureCallback<Empty>() {
-			@Override
-			public void onFailure(Throwable throwable) {
-				settableListenableFuture.setException(throwable);
-			}
+		ExecutorService cachedThreadPoolExecutorService = Executors.newCachedThreadPool();
+		int numExpectedFutures = groupedMessages.size();
+		AtomicInteger numCompletedFutures = new AtomicInteger();
 
-			@Override
-			public void onSuccess(Empty empty) {
-				settableListenableFuture.set(null);
-			}
-		});
+		for (ProjectSubscriptionName psName : groupedMessages.keySet()) {
+			ApiFuture<Empty> ackApiFuture = ack(psName.getSubscription(), groupedMessages.get(psName));
+
+			ApiFutures.addCallback(ackApiFuture, new ApiFutureCallback<Empty>() {
+				@Override
+				public void onFailure(Throwable throwable) {
+					processResult(psName, throwable);
+				}
+
+				@Override
+				public void onSuccess(Empty empty) {
+					processResult(psName, null);
+				}
+
+				private void processResult(ProjectSubscriptionName psName, Throwable throwable) {
+					if (throwable != null) {
+						settableListenableFuture.setException(throwable);
+					} else if (numCompletedFutures.incrementAndGet() == numExpectedFutures) {
+						settableListenableFuture.set(null);
+					}
+				}
+			}, cachedThreadPoolExecutorService);
+
+		}
 
 		return settableListenableFuture;
 	}
