@@ -135,7 +135,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		Subscriber subscriber =
 				this.subscriberFactory.createSubscriber(subscription,
 						(message, ackReplyConsumer) -> messageConsumer.accept(
-								new ConvertedPushedAcknowledgeablePubsubMessage<T>(
+								new ConvertedPushedAcknowledgeablePubsubMessage<>(
 										ProjectSubscriptionName.of(this.subscriberFactory.getProjectId(), subscription),
 										message,
 										this.getMessageConverter().fromPubSubMessage(message, payloadType),
@@ -155,16 +155,13 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		Assert.notNull(pullRequest, "The pull request can't be null.");
 
 		PullResponse pullResponse = this.subscriberStub.pullCallable().call(pullRequest);
-		List<AcknowledgeablePubsubMessage> receivedMessages =
-				pullResponse.getReceivedMessagesList().stream()
+		return pullResponse.getReceivedMessagesList().stream()
 						.map(message -> new PulledAcknowledgeablePubsubMessage(
 								ProjectSubscriptionName.of(
 										this.subscriberFactory.getProjectId(), pullRequest.getSubscription()),
 								message.getMessage(),
 								message.getAckId()))
 						.collect(Collectors.toList());
-
-		return receivedMessages;
 	}
 
 	@Override
@@ -270,15 +267,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 				.addAllAckIds(ackIds)
 				.setSubscription(subscriptionName)
 				.build();
-
-		System.out.println("Calling " + subscriptionName + " with " + ackIds.size() + " ack ids: "
-				+ System.currentTimeMillis());
 		return this.subscriberStub.acknowledgeCallable().futureCall(acknowledgeRequest);
-	}
-
-	private ApiFuture<Empty> nack(String subscriptionName, Collection<String> ackIds) {
-		System.out.println("Calling " + subscriptionName + " with " + ackIds.size() + " ack ids.");
-		return modifyAckDeadline(subscriptionName, ackIds, 0);
 	}
 
 	private ApiFuture<Empty> modifyAckDeadline(
@@ -315,7 +304,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 								AcknowledgeablePubsubMessage::getProjectSubscriptionName,
 								Collectors.mapping(AcknowledgeablePubsubMessage::getAckId, Collectors.toList())));
 
-		Assert.state(groupedMessages.keySet().stream().map(psName -> psName.getProject()).distinct().count() == 1,
+		Assert.state(groupedMessages.keySet().stream().map(ProjectSubscriptionName::getProject).distinct().count() == 1,
 				"The project id of all messages must match.");
 
 		SettableListenableFuture<Void> settableListenableFuture	= new SettableListenableFuture<>();
@@ -339,8 +328,6 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 				}
 
 				private void processResult(ProjectSubscriptionName psName, Throwable throwable) {
-					System.out.println("Process Result for " + psName.getSubscription()
-							+ "; " + (throwable == null ? "success" : "failure") + ": " + System.currentTimeMillis());
 					if (throwable != null) {
 						settableListenableFuture.setException(throwable);
 					}

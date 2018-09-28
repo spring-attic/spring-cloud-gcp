@@ -92,7 +92,6 @@ public class WebController {
 		try {
 			ListenableFuture<Void> ackFuture = this.pubSubTemplate.ack(mixedSubscriptionMessages);
 			ackFuture.get();
-			System.out.println("Got the results: " + System.currentTimeMillis());
 			returnView = buildStatusView(
 					String.format("Pulled and acked %s message(s)", mixedSubscriptionMessages.size()));
 		}
