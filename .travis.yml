@@ -30,7 +30,7 @@ before_install:
       export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
       CLOUD_SDK_VERSION=212.0.0;
       curl -LO https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz &&
-            tar -zxvf google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz &&
+            tar -zxvvvf google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz &&
             CLOUDSDK_PYTHON="python2.7" /google-cloud-sdk/install.sh --usage-reporting=false --bash-completion=false --disable-installation-options;
     fi
   - source /google-cloud-sdk/path.bash.inc
