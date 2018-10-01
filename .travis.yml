@@ -1,5 +1,4 @@
-sudo: false
-dist: trusty
+group: deprecated-2017Q2
 language: java
 jdk:
   - oraclejdk8
