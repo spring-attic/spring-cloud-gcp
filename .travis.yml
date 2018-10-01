@@ -7,6 +7,10 @@ branches:
   only:
     - master
     - 1.0.x
+cache:
+  directories:
+    - /google-cloud-sdk
+    - $HOME/.m2
 script:
   - ./mvnw -T 1.5C test -B ${INTEGRATION_TEST_FLAGS}
 install:
@@ -21,7 +25,13 @@ before_install:
             -Dspring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testmysql";
       fi;
       export INTEGRATION_TEST_FLAGS;
-  - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
-  - source $HOME/google-cloud-sdk/path.bash.inc
+  - if [ ! -d "/google-cloud-sdk/bin" ]; then rm -rf "/google-cloud-sdk";
+      export CLOUDSDK_CORE_DISABLE_PROMPTS=1;
+      CLOUD_SDK_VERSION=217.0.0;
+      curl -LO https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz &&
+            tar -zxvf google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz &&
+            CLOUDSDK_PYTHON="python2.7" /google-cloud-sdk/install.sh --usage-reporting=false --bash-completion=false --disable-installation-options;
+    fi
+  - source /google-cloud-sdk/path.bash.inc
   - gcloud components install beta pubsub-emulator --quiet
   - gcloud config set project spring-cloud-gcp-ci
