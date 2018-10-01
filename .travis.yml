@@ -1,4 +1,4 @@
-group: deprecated-2017Q2
+sudo: true
 language: java
 jdk:
   - oraclejdk8
