@@ -43,7 +43,8 @@ public class PubSubBinderConfiguration {
 	@Bean
 	public PubSubMessageChannelBinder pubSubBinder(
 			PubSubChannelProvisioner pubSubChannelProvisioner,
-			PubSubTemplate pubSubTemplate) {
-		return new PubSubMessageChannelBinder(null, pubSubChannelProvisioner, pubSubTemplate);
+			PubSubTemplate pubSubTemplate,
+			PubSubExtendedBindingProperties pubSubExtendedBindingProperties) {
+		return new PubSubMessageChannelBinder(null, pubSubChannelProvisioner, pubSubTemplate, pubSubExtendedBindingProperties);
 	}
 }
