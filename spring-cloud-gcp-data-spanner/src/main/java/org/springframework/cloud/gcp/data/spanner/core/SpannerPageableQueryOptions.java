@@ -28,7 +28,7 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class SpannerSortPageQueryOptions extends SpannerQueryOptions {
+public class SpannerPageableQueryOptions extends SpannerQueryOptions {
 
 	private OptionalLong limit = OptionalLong.empty();
 
@@ -36,17 +36,17 @@ public class SpannerSortPageQueryOptions extends SpannerQueryOptions {
 
 	private Sort sort = Sort.unsorted();
 
-	public SpannerSortPageQueryOptions unsetLimit() {
+	public SpannerPageableQueryOptions unsetLimit() {
 		this.limit = OptionalLong.empty();
 		return this;
 	}
 
-	public SpannerSortPageQueryOptions unsetOffset() {
+	public SpannerPageableQueryOptions unsetOffset() {
 		this.offset = OptionalLong.empty();
 		return this;
 	}
 
-	public SpannerSortPageQueryOptions unsetSort() {
+	public SpannerPageableQueryOptions unsetSort() {
 		this.sort = Sort.unsorted();
 		return this;
 	}
@@ -63,7 +63,7 @@ public class SpannerSortPageQueryOptions extends SpannerQueryOptions {
 		return this.limit.getAsLong();
 	}
 
-	public SpannerSortPageQueryOptions setLimit(long limit) {
+	public SpannerPageableQueryOptions setLimit(long limit) {
 		this.limit = OptionalLong.of(limit);
 		return this;
 	}
@@ -80,7 +80,7 @@ public class SpannerSortPageQueryOptions extends SpannerQueryOptions {
 		return this.offset.getAsLong();
 	}
 
-	public SpannerSortPageQueryOptions setOffset(long offset) {
+	public SpannerPageableQueryOptions setOffset(long offset) {
 		this.offset = OptionalLong.of(offset);
 		return this;
 	}
@@ -89,14 +89,14 @@ public class SpannerSortPageQueryOptions extends SpannerQueryOptions {
 		return this.sort;
 	}
 
-	public SpannerSortPageQueryOptions setSort(Sort sort) {
+	public SpannerPageableQueryOptions setSort(Sort sort) {
 		Assert.notNull(sort, "A valid sort is required.");
 		this.sort = sort;
 		return this;
 	}
 
 	@Override
-	public SpannerSortPageQueryOptions setAllowPartialRead(boolean allowPartialRead) {
+	public SpannerPageableQueryOptions setAllowPartialRead(boolean allowPartialRead) {
 		super.setAllowPartialRead(allowPartialRead);
 		return this;
 	}

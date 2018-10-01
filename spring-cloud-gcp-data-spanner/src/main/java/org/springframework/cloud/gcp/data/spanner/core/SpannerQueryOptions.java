@@ -26,7 +26,8 @@ import com.google.cloud.spanner.Options.QueryOption;
 import org.springframework.util.Assert;
 
 /**
- * Encapsulates Cloud Spanner query options.
+ * Encapsulates Cloud Spanner query options. These are options that are independent of the
+ * SQL being run.
  * @author Chengyuan Zhao
  *
  * @since 1.1

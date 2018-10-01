@@ -145,11 +145,11 @@ public class SpannerTemplate implements SpannerOperations {
 	public <A> List<A> query(Function<Struct, A> rowFunc, Statement statement,
 			SpannerQueryOptions options) {
 		ArrayList<A> result = new ArrayList<>();
-		ResultSet resultSet = executeQuery(statement, options);
-		while (resultSet.next()) {
-			result.add(rowFunc.apply(resultSet.getCurrentRowAsStruct()));
+		try (ResultSet resultSet = executeQuery(statement, options)) {
+			while (resultSet.next()) {
+				result.add(rowFunc.apply(resultSet.getCurrentRowAsStruct()));
+			}
 		}
-		resultSet.close();
 		return result;
 	}
 
@@ -172,7 +172,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> List<T> queryAll(Class<T> entityClass,
-			SpannerSortPageQueryOptions options) {
+			SpannerPageableQueryOptions options) {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		String sql = "SELECT " + SpannerStatementQueryExecutor.getColumnsStringForSelect(

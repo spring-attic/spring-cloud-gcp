@@ -29,7 +29,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.ValueBinder;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerSortPageQueryOptions;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerPageableQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityWriter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -93,7 +93,7 @@ public class SpannerStatementQueryExecutor {
 	}
 
 	public static <T> String applySortingPagingQueryOptions(Class<T> entityClass,
-			SpannerSortPageQueryOptions options, String sql,
+			SpannerPageableQueryOptions options, String sql,
 			SpannerMappingContext mappingContext) {
 		SpannerPersistentEntity<?> persistentEntity = mappingContext
 				.getPersistentEntity(entityClass);

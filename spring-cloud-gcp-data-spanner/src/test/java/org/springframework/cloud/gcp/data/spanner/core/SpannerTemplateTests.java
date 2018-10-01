@@ -425,7 +425,7 @@ public class SpannerTemplateTests {
 
 		long offset = 5L;
 		int limit = 3;
-		SpannerSortPageQueryOptions queryOption = new SpannerSortPageQueryOptions()
+		SpannerPageableQueryOptions queryOption = new SpannerPageableQueryOptions()
 				.setOffset(offset)
 				.setLimit(limit);
 

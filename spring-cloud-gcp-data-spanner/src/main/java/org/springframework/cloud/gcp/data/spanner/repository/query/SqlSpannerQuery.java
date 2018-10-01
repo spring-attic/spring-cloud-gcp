@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Struct.Builder;
 
-import org.springframework.cloud.gcp.data.spanner.core.SpannerSortPageQueryOptions;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerPageableQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -207,7 +207,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 			}
 		}
 
-		SpannerSortPageQueryOptions spannerQueryOptions = new SpannerSortPageQueryOptions()
+		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions()
 				.setAllowPartialRead(true);
 
 		if (pageable == null) {

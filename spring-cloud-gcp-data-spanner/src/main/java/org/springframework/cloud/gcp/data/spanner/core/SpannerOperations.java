@@ -129,7 +129,7 @@ public interface SpannerOperations {
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
 	 */
-	<T> List<T> queryAll(Class<T> entityClass, SpannerSortPageQueryOptions options);
+	<T> List<T> queryAll(Class<T> entityClass, SpannerPageableQueryOptions options);
 
 	/**
 	 * Deletes an object based on a key.
@@ -192,9 +192,9 @@ public interface SpannerOperations {
 	/**
 	 * Update an object in storage.
 	 * @param object the object to update.
-	 * @param includeColumns the columns to update. If null or an empty Optional is given,
-	 * then all columns are used. Note that an Optional occupied by an empty Set means
-	 * that no columns will be used.
+	 * @param includeColumns the columns to update. If null or an empty {@code Optional}
+	 * is given, then all columns are used. Note that an {@code Optional} occupied by an
+	 * empty {@code Set} means that no columns will be used.
 	 */
 	void update(Object object, Optional<Set<String>> includeColumns);
 
@@ -221,9 +221,9 @@ public interface SpannerOperations {
 	/**
 	 * Update or insert an object into storage.
 	 * @param object the object to update or insert.
-	 * @param includeColumns the columns to upsert. If null or an empty Optional is given,
-	 * then all columns are used. Note that an Optional occupied by an empty Set means
-	 * that no columns will be used.
+	 * @param includeColumns the columns to upsert. If null or an empty {@code Optional}
+	 * is given, then all columns are used. Note that an {@code Optional} occupied by an
+	 * empty {@code Set} means that no columns will be used.
 	 */
 	void upsert(Object object, Optional<Set<String>> includeColumns);
 
