@@ -1,4 +1,3 @@
-sudo: true
 language: java
 jdk:
   - oraclejdk8
@@ -8,10 +7,6 @@ branches:
   only:
     - master
     - 1.0.x
-cache:
-  directories:
-    - $HOME/google-cloud-sdk
-    - $HOME/.m2
 script:
   - ./mvnw -T 1.5C test -B ${INTEGRATION_TEST_FLAGS}
 install:
