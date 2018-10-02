@@ -310,9 +310,9 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		int numExpectedFutures = groupedMessages.size();
 		AtomicInteger numCompletedFutures = new AtomicInteger();
 
-		for (ProjectSubscriptionName psName : groupedMessages.keySet()) {
+		groupedMessages.forEach((ProjectSubscriptionName psName, List<String> ackIds) -> {
 
-			ApiFuture<Empty> ackApiFuture = asyncOperation.apply(psName.getSubscription(), groupedMessages.get(psName));
+			ApiFuture<Empty> ackApiFuture = asyncOperation.apply(psName.getSubscription(), ackIds);
 
 			ApiFutures.addCallback(ackApiFuture, new ApiFutureCallback<Empty>() {
 				@Override
@@ -334,8 +334,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 					}
 				}
 			}, MoreExecutors.directExecutor());
-
-		}
+		});
 
 		return settableListenableFuture;
 	}
