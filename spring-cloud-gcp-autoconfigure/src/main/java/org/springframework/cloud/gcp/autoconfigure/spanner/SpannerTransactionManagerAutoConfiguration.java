@@ -18,15 +18,16 @@ package org.springframework.cloud.gcp.autoconfigure.spanner;
 
 import com.google.cloud.spanner.DatabaseClient;
 
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTransactionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
@@ -39,9 +40,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EnableTransactionManagement
 @ConditionalOnClass(SpannerTransactionManager.class)
-@AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
+@AutoConfigureBefore(PlatformTransactionManager.class)
+@ConditionalOnProperty(value = "spring.cloud.gcp.spanner.transactional-annotation.enabled",
+		matchIfMissing = true)
 @EnableConfigurationProperties(GcpSpannerProperties.class)
-public class DatabaseClientTransactionManagerAutoConfiguration {
+public class SpannerTransactionManagerAutoConfiguration {
 
 	@Configuration
 	@ConditionalOnSingleCandidate(DatabaseClient.class)
@@ -54,7 +57,7 @@ public class DatabaseClientTransactionManagerAutoConfiguration {
 		}
 
 		@Bean
-		@ConditionalOnMissingBean(SpannerTransactionManager.class)
+		@ConditionalOnMissingBean(PlatformTransactionManager.class)
 		public SpannerTransactionManager spannerTransactionManager() {
 			return new SpannerTransactionManager(this.databaseClient);
 		}
