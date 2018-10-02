@@ -16,6 +16,7 @@
 
 package com.example;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -63,26 +64,45 @@ public class WebController {
 
 	@GetMapping("/postMessage")
 	public RedirectView publish(@RequestParam("topicName") String topicName,
-			@RequestParam("message") String message) {
-		this.pubSubTemplate.publish(topicName, message);
+			@RequestParam("message") String message, @RequestParam("count") int messageCount) {
+		for (int i = 0; i < messageCount; i++) {
+			this.pubSubTemplate.publish(topicName, message);
+		}
 
 		return buildStatusView("Messages published asynchronously; status unknown.");
 	}
 
 	@GetMapping("/pull")
-	public RedirectView pull(
+	public RedirectView pull(@RequestParam("subscription1") String subscriptionName) {
+
+		Collection<AcknowledgeablePubsubMessage> messages = this.pubSubTemplate.pull(subscriptionName, 10, true);
+
+		if (messages.isEmpty()) {
+			return buildStatusView("No messages available for retrieval.");
+		}
+
+		RedirectView returnView;
+		try {
+			ListenableFuture<Void> ackFuture = this.pubSubTemplate.ack(messages);
+			ackFuture.get();
+			returnView = buildStatusView(String.format("Pulled and acked %s message(s)", messages.size()));
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			returnView = buildStatusView("Acking failed");
+		}
+
+		return returnView;
+	}
+
+	@GetMapping("/multipull")
+	public RedirectView multipull(
 			@RequestParam("subscription1") String subscriptionName1,
-			@RequestParam(value = "subscription2", required = false) String subscriptionName2) {
+			@RequestParam("subscription2") String subscriptionName2) {
 
-		Set<AcknowledgeablePubsubMessage> mixedSubscriptionMessages = new HashSet<>(
-				this.pubSubTemplate.pull(subscriptionName1, 10, true));
-		if (subscriptionName2 != null && !"".equals(subscriptionName2)) {
-			mixedSubscriptionMessages.addAll(this.pubSubTemplate.pull(subscriptionName2, 10, true));
-		}
-
-		if (subscriptionName2 != null && !"".equals(subscriptionName2)) {
-			mixedSubscriptionMessages.addAll(this.pubSubTemplate.pull(subscriptionName2, 10, true));
-		}
+		Set<AcknowledgeablePubsubMessage> mixedSubscriptionMessages = new HashSet<>();
+		mixedSubscriptionMessages.addAll(this.pubSubTemplate.pull(subscriptionName1, 1000, true));
+		mixedSubscriptionMessages.addAll(this.pubSubTemplate.pull(subscriptionName2, 1000, true));
 
 		if (mixedSubscriptionMessages.isEmpty()) {
 			return buildStatusView("No messages available for retrieval.");

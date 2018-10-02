@@ -20,8 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -34,6 +32,7 @@ import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Empty;
 import com.google.pubsub.v1.AcknowledgeRequest;
 import com.google.pubsub.v1.ModifyAckDeadlineRequest;
@@ -220,7 +219,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	 * If any batch fails, the returned Future is marked as failed.
 	 * If multiple batches fail, the returned Future will contain whichever exception was detected first.
 	 * @param acknowledgeablePubsubMessages messages, potentially from different subscriptions.
-	 * @return ListenableFuture indicating overall success or failure.
+	 * @return {@link ListenableFuture} indicating overall success or failure.
 	 */
 	@Override
 	public ListenableFuture<Void> ack(
@@ -235,7 +234,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	 * If any batch fails, the returned Future is marked as failed.
 	 * If multiple batches fail, the returned Future will contain whichever exception was detected first.
 	 * @param acknowledgeablePubsubMessages messages, potentially from different subscriptions.
-	 * @return ListenableFuture indicating overall success or failure.
+	 * @return {@link ListenableFuture} indicating overall success or failure.
 	 */
 	@Override
 	public ListenableFuture<Void> nack(
@@ -248,7 +247,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	 * If any batch fails, the returned Future is marked as failed.
 	 * If multiple batches fail, the returned Future will contain whichever exception was detected first.
 	 * @param acknowledgeablePubsubMessages messages, potentially from different subscriptions.
-	 * @return ListenableFuture indicating overall success or failure.
+	 * @return {@link ListenableFuture} indicating overall success or failure.
 	 */
 	@Override
 	public ListenableFuture<Void> modifyAckDeadline(
@@ -286,12 +285,12 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	 * <p>The returned {@link ListenableFuture} will complete when either all batches completes successfully or when at
 	 * least one fails.</p>
 	 * <p>
-	 * In case of multiple batch failures, which exception exception will be in the final {@link ListenableFuture} is
+	 * In case of multiple batch failures, which exception will be in the final {@link ListenableFuture} is
 	 * non-deterministic.
 	 * </p>
 	 * @param acknowledgeablePubsubMessages messages, could be from different subscriptions.
-	 * @param asyncOperation Pub/Sub operation to perform.
-	 * @return ListenableFuture indicating overall success or failure.
+	 * @param asyncOperation specific Pub/Sub operation to perform.
+	 * @return {@link ListenableFuture} indicating overall success or failure.
 	 */
 	private ListenableFuture<Void> doBatchedAsyncOperation(
 			Collection<AcknowledgeablePubsubMessage> acknowledgeablePubsubMessages,
@@ -308,7 +307,6 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 				"The project id of all messages must match.");
 
 		SettableListenableFuture<Void> settableListenableFuture	= new SettableListenableFuture<>();
-		ExecutorService cachedThreadPoolExecutorService = Executors.newCachedThreadPool();
 		int numExpectedFutures = groupedMessages.size();
 		AtomicInteger numCompletedFutures = new AtomicInteger();
 
@@ -319,15 +317,15 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 			ApiFutures.addCallback(ackApiFuture, new ApiFutureCallback<Empty>() {
 				@Override
 				public void onFailure(Throwable throwable) {
-					processResult(psName, throwable);
+					processResult(throwable);
 				}
 
 				@Override
 				public void onSuccess(Empty empty) {
-					processResult(psName, null);
+					processResult(null);
 				}
 
-				private void processResult(ProjectSubscriptionName psName, Throwable throwable) {
+				private void processResult(Throwable throwable) {
 					if (throwable != null) {
 						settableListenableFuture.setException(throwable);
 					}
@@ -335,14 +333,14 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 						settableListenableFuture.set(null);
 					}
 				}
-			}, cachedThreadPoolExecutorService);
+			}, MoreExecutors.directExecutor());
 
 		}
 
 		return settableListenableFuture;
 	}
 
-	private static abstract class AbstractBasicAcknowledgeablePubsubMessage
+	private abstract static class AbstractBasicAcknowledgeablePubsubMessage
 			implements BasicAcknowledgeablePubsubMessage {
 
 		private final ProjectSubscriptionName projectSubscriptionName;
