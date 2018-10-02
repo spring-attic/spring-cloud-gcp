@@ -23,12 +23,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
+import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTransactionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * Auto-configuration for {@link SpannerTransactionManager}.
@@ -38,9 +38,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @since 1.1
  */
 @Configuration
-@EnableTransactionManagement
 @ConditionalOnClass(SpannerTransactionManager.class)
-@AutoConfigureBefore(PlatformTransactionManager.class)
+@AutoConfigureBefore(TransactionAutoConfiguration.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.spanner.transactional-annotation.enabled",
 		matchIfMissing = true)
 @EnableConfigurationProperties(GcpSpannerProperties.class)
