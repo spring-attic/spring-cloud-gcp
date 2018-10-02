@@ -24,9 +24,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
     properties = {
+				"spring.cloud.stream.gcp.pubsub.bindings.input.consumer.auto-create-resources=true",
 				"spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources=false",
 		})
-public class PubSubExtendedBindingsPropertiesTest {
+public class PubSubExtendedBindingsPropertiesTests {
 
 	@Autowired
 	private ConfigurableApplicationContext context;
@@ -36,14 +37,8 @@ public class PubSubExtendedBindingsPropertiesTest {
 		BinderFactory binderFactory = context.getBeanFactory().getBean(BinderFactory.class);
 		PubSubMessageChannelBinder binder = (PubSubMessageChannelBinder) binderFactory.getBinder("pubsub", MessageChannel.class);
 
-		// Print out the default values; they should both be false.
-		System.out.println("default for INPUT: "
-				+ binder.getExtendedConsumerProperties("input").isAutoCreateResources());
-		System.out.println("default for CUSTOM INPUT: "
-				+ binder.getExtendedConsumerProperties("custom-in").isAutoCreateResources());
-
-		assertThat(binder.getExtendedConsumerProperties("input").isAutoCreateResources()).isFalse();
 		assertThat(binder.getExtendedConsumerProperties("custom-in").isAutoCreateResources()).isFalse();
+		assertThat(binder.getExtendedConsumerProperties("input").isAutoCreateResources()).isTrue();
 	}
 
 	@EnableBinding(CustomTestSink.class)
