@@ -18,12 +18,14 @@ package org.springframework.cloud.gcp.autoconfigure.spanner;
 
 import com.google.cloud.spanner.DatabaseClient;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
+import org.springframework.boot.autoconfigure.transaction.TransactionManagerCustomizers;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTransactionManager;
 import org.springframework.context.annotation.Bean;
@@ -51,14 +53,24 @@ public class SpannerTransactionManagerAutoConfiguration {
 
 		private final DatabaseClient databaseClient;
 
-		DatabaseClientTransactionManagerConfiguration(DatabaseClient databaseClient) {
+		private final TransactionManagerCustomizers transactionManagerCustomizers;
+
+		DatabaseClientTransactionManagerConfiguration(DatabaseClient databaseClient,
+				ObjectProvider<TransactionManagerCustomizers> transactionManagerCustomizers) {
 			this.databaseClient = databaseClient;
+			this.transactionManagerCustomizers = transactionManagerCustomizers
+					.getIfAvailable();
 		}
 
 		@Bean
 		@ConditionalOnMissingBean(PlatformTransactionManager.class)
 		public SpannerTransactionManager spannerTransactionManager() {
-			return new SpannerTransactionManager(this.databaseClient);
+			SpannerTransactionManager transactionManager = new SpannerTransactionManager(
+					this.databaseClient);
+			if (this.transactionManagerCustomizers != null) {
+				this.transactionManagerCustomizers.customize(transactionManager);
+			}
+			return transactionManager;
 		}
 	}
 }
