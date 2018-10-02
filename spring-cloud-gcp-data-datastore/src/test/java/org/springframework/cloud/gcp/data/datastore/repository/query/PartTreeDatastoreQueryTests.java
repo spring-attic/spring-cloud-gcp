@@ -200,7 +200,6 @@ public class PartTreeDatastoreQueryTests {
 		this.partTreeSpannerQuery = createQuery();
 		when(this.spannerTemplate.query(any(), Mockito.<Class<Trade>>any()))
 				.thenReturn(results);
-		when(this.spannerTemplate.queryKeys(any())).thenReturn(results);
 	}
 
 	@Entity(name = "trades")

@@ -692,7 +692,6 @@ If you would like to obtain the count of items of a query or if there are any it
 The return type of the query method in these cases should be an integer type or a boolean type.
 
 Cloud Datastore provides provides the `SELECT __key__ FROM ...` special column for all kinds that retrieves the `Key`s of each row. Selecting this special `__key__` column is especially useful and efficient for `count` and `exists` queries.
-When selecting `__key__` the `keysQuery = true` setting must be set in the `@Query` annotation.
 
 ===== Query methods with named queries properties
 

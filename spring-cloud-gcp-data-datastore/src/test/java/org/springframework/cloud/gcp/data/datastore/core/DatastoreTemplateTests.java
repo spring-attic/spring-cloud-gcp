@@ -26,7 +26,6 @@ import com.google.cloud.datastore.FullEntity;
 import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
-import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.Query.ResultType;
 import com.google.cloud.datastore.QueryResults;
@@ -279,16 +278,10 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void queryKeysTest() {
-		KeyQuery keyQuery = GqlQuery.newKeyQueryBuilder().build();
-		this.datastoreTemplate.queryKeys(keyQuery).iterator();
-		verify(this.datastore, times(1)).run(keyQuery);
-	}
-
-	@Test
 	public void countTest() {
 		Key key = createFakeKey("key");
 		QueryResults<Key> queryResults = mock(QueryResults.class);
+		when(queryResults.getResultClass()).thenReturn((Class)Key.class);
 		doAnswer(invocation -> {
 			ImmutableList.of(key, key).iterator()
 					.forEachRemaining(invocation.getArgument(0));
@@ -363,6 +356,7 @@ public class DatastoreTemplateTests {
 		when(this.objectToKeyFactory.getKeyFromObject(same(object), any()))
 				.thenReturn(key);
 		QueryResults<Key> queryResults = mock(QueryResults.class);
+		when(queryResults.getResultClass()).thenReturn((Class)Key.class);
 		doAnswer(invocation -> {
 			ImmutableList.of(key, key).iterator()
 					.forEachRemaining(invocation.getArgument(0));

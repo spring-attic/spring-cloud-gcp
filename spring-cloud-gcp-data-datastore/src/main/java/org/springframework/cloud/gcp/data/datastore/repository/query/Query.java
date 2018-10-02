@@ -58,11 +58,4 @@ public @interface Query {
 	 * @return {@code true} if this query method returns an exists boolean. {@code false} otherwise
 	 */
 	boolean exists() default false;
-
-	/**
-	 * Returns whether the defined query returns Cloud Datastore Keys instead of entities.
-	 *
-	 * @return {@code true} if this query method returns keys. {@code false} otherwise
-	 */
-	boolean keyQuery() default false;
 }

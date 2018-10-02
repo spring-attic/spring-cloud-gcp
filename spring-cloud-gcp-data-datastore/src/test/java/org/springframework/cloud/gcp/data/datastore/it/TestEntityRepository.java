@@ -36,13 +36,13 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	int countEntitiesWithCustomQuery(@Param("size") long size);
 
 	@Query(value = "select __key__ from  test_entities_ci "
-			+ "where id = @id_val", exists = true, keyQuery = true)
+			+ "where id = @id_val", exists = true)
 	boolean existsByEntitiesWithCustomQuery(@Param("id_val") long id);
 
 	@Query("select id from  test_entities_ci where id <= @id_val ")
 	List<TestEntity> findEntitiesWithCustomProjectionQuery(@Param("id_val") long id);
 
-	@Query(value = "select __key__ from test_entities_ci", keyQuery = true)
+	@Query(value = "select __key__ from test_entities_ci")
 	List<Key> getKeys();
 
 	long countBySizeAndColor(long size, String color);

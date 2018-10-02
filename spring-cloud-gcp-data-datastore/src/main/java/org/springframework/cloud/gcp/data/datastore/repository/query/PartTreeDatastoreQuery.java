@@ -29,7 +29,6 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.Builder;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
@@ -108,7 +107,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	@Override
 	public Object execute(Object[] parameters) {
 		Supplier<StructuredQuery.Builder<?>> queryBuilderSupplier = StructuredQuery::newKeyQueryBuilder;
-		Function<Query, Iterable> queryMethod = this.datastoreOperations::queryKeys;
 		Function<T, ?> mapper = Function.identity();
 		Collector<?, ?, ?> collector;
 
@@ -120,7 +118,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 		else {
 			queryBuilderSupplier = StructuredQuery::newEntityQueryBuilder;
-			queryMethod = q -> this.datastoreOperations.query(q, this.entityType);
 			mapper = this::processRawObjectForProjection;
 			collector = Collectors.toList();
 		}
@@ -128,7 +125,8 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		StructuredQuery.Builder<?> structredQueryBuilder = queryBuilderSupplier.get();
 		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
 		applyQueryBody(parameters, structredQueryBuilder);
-		Iterable results = queryMethod.apply(structredQueryBuilder.build());
+		Iterable results = this.datastoreOperations.query(structredQueryBuilder.build(),
+				this.entityType);
 
 		return results == null ? null
 				: StreamSupport.stream(results.spliterator(), false).map(mapper).collect(collector);

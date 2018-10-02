@@ -79,16 +79,6 @@ public class DatastoreQueryMethod extends QueryMethod {
 	}
 
 	/**
-	 * Return whether this method is a count query.
-	 *
-	 * @return True if this query method is a count query, and false otherwise.
-	 */
-	boolean isKeysQuery() {
-		Query annotation = getQueryAnnotation();
-		return annotation != null && annotation.keyQuery();
-	}
-
-	/**
 	 * Returns the {@link Query} annotation that is applied to the method or {@code null}
 	 * if none available.
 	 *

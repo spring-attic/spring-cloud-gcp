@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.datastore.core;
 
 import java.util.function.Function;
 
-import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 
@@ -128,18 +127,12 @@ public interface DatastoreOperations {
 	 * Finds objects by using a Cloud Datastore query.
 	 * @param query the query to execute.
 	 * @param entityClass the type of object to retrieve.
-	 * @param <T> the type of object to retrieve.
+	 * @param <T> the type of object to retrieve. If the query was a key-query, then
+	 * {@link Key}s are returned instead of the mapped entities.
 	 * @return a list of the objects found. If no keys could be found the list will be
 	 * empty.
 	 */
-	<T> Iterable<T> query(Query<? extends BaseEntity> query, Class<T> entityClass);
-
-	/**
-	 * Finds Cloud Datastore Keys by using a Cloud Datastore query.
-	 * @param query the query to execute that retrieves only Keys.
-	 * @return the list of keys found.
-	 */
-	Iterable<Key> queryKeys(Query<Key> query);
+	<T> Iterable<?> query(Query query, Class<T> entityClass);
 
 	/**
 	 * Get all the entities of the given domain type.

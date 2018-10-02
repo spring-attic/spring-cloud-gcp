@@ -112,9 +112,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	@Override
 	public Object execute(Object[] parameters) {
 		GqlQuery query = bindArgsToGqlQuery(this.gql, getParamTags(), parameters);
-		Iterable found = this.queryMethod.isKeysQuery()
-				? this.datastoreOperations.queryKeys(query)
-				: this.datastoreOperations.query(query, this.entityType);
+		Iterable found = this.datastoreOperations.query(query, this.entityType);
 		List rawResult = found == null ? Collections.emptyList()
 				: (List) StreamSupport.stream(found.spliterator(), false)
 						.collect(Collectors.toList());
@@ -125,7 +123,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		else if (this.queryMethod.isExistsQuery()) {
 			result = !rawResult.isEmpty();
 		}
-		else if (this.queryMethod.isKeysQuery()) {
+		else if (rawResult.isEmpty() || rawResult.get(0).getClass() == Key.class) {
 			result = rawResult;
 		}
 		else {
