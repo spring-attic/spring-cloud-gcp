@@ -27,5 +27,6 @@ before_install:
       export INTEGRATION_TEST_FLAGS;
   - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
   - source $HOME/google-cloud-sdk/path.bash.inc
+  - gcloud components update --quiet
   - gcloud components install beta pubsub-emulator --quiet
   - gcloud config set project spring-cloud-gcp-ci
