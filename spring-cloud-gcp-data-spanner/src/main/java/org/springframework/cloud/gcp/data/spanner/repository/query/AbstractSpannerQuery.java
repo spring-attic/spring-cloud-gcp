@@ -60,17 +60,36 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	@Override
 	public Object execute(Object[] parameters) {
 		List results = executeRawResult(parameters);
-		Class itemType = this.queryMethod.isCollectionQuery() ? this.queryMethod.getResultProcessor().getReturnedType().getReturnedType(). : this.queryMethod.getReturnedObjectType();
-		this.spannerTemplate.getSpannerEntityProcessor().getCorrespondingSpannerJavaType()
-		if (isCountQuery()) {
-			return results == null ? 0 : results.get(0);
+		Class simpleConvertedType = getReturnedSimpleConvertableItemType();
+		if (simpleConvertedType != null) {
+			return convertToSimpleReturnType(results, simpleConvertedType);
 		}
-		else if (isExistsQuery()) {
-			return results != null && ((long) results.get(0)) > 0;
-		}
-		else {
 			return applyProjection(results);
-		}
+	}
+
+	@VisibleForTesting
+	Object convertToSimpleReturnType(List results, Class simpleConvertedType) {
+		return this.queryMethod.isCollectionQuery()
+				? results.stream()
+						.map(x -> this.spannerTemplate.getSpannerEntityProcessor()
+								.getReadConverter().convert(x, simpleConvertedType))
+						.collect(Collectors.toList())
+				: this.spannerTemplate.getSpannerEntityProcessor().getReadConverter()
+						.convert(results.get(0), simpleConvertedType);
+	}
+
+	@VisibleForTesting
+	Class getReturnedSimpleConvertableItemType() {
+		Class itemType = this.queryMethod.isCollectionQuery()
+				? this.queryMethod.getResultProcessor().getReturnedType()
+						.getReturnedType()
+				: this.queryMethod.getReturnedObjectType();
+
+		// If the user has configured converters that can handle the item type, then it is
+		// assumed
+		// to not be an entity type.
+		return this.spannerTemplate.getSpannerEntityProcessor()
+				.getCorrespondingSpannerJavaType(itemType, false);
 	}
 
 	@VisibleForTesting

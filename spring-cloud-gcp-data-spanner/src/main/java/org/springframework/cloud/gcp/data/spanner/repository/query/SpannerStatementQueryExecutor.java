@@ -232,7 +232,7 @@ public class SpannerStatementQueryExecutor {
 			finalSql = "SELECT COUNT(1) FROM (" + selectSql + ")";
 		}
 		else if (tree.isExistsProjection()) {
-			finalSql = "EXISTS(" + selectSql + ")";
+			finalSql = "SELECT EXISTS(" + selectSql + ")";
 		}
 		return Pair.of(finalSql, tags);
 	}

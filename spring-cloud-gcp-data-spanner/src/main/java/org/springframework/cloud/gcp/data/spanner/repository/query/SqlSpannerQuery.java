@@ -33,6 +33,7 @@ import com.google.cloud.spanner.Struct.Builder;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerPageableQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.convert.StructAccessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
@@ -232,8 +233,11 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 						resolveEntityClassNames(queryTagValue.sql),
 						this.spannerMappingContext);
 
-		return this.isCountOrExistsQuery()
-				? this.spannerTemplate.query(struct -> struct.getLong(0),
+		Class simpleItemType = getReturnedSimpleConvertableItemType();
+
+		return simpleItemType != null
+				? this.spannerTemplate.query(
+						struct -> new StructAccessor(struct).getSingleValue(0),
 						SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 								sqlStringWithPagingSorting, queryTagValue.tags,
 								this.paramStructConvertFunc,

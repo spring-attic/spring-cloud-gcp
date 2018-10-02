@@ -34,7 +34,9 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,7 +75,7 @@ public class SpannerStatementQueryTests {
 				"findTop3DistinctByActionIgnoreCaseAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullAndTraderIdLikeAndPriceTrueAndPriceFalse"
 						+ "AndPriceGreaterThanAndPriceLessThanEqualOrderByIdDesc");
-		this.partTreeSpannerQuery = createQuery();
+		this.partTreeSpannerQuery = spy(createQuery());
 
 		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, "ignored",
 				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
@@ -109,6 +111,11 @@ public class SpannerStatementQueryTests {
 					return null;
 				});
 
+		doReturn(Object.class).when(this.partTreeSpannerQuery)
+				.getReturnedSimpleConvertableItemType();
+		doReturn(null).when(this.partTreeSpannerQuery).convertToSimpleReturnType(any(),
+				any());
+
 		this.partTreeSpannerQuery.execute(params);
 		verify(this.spannerTemplate, times(1)).query((Class<Object>) any(), any(), any());
 	}
@@ -119,7 +126,7 @@ public class SpannerStatementQueryTests {
 				"existsDistinctByActionIgnoreCaseAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullAndTraderIdLikeAndPriceTrueAndPriceFalse"
 						+ "AndPriceGreaterThanAndPriceLessThanEqualOrderByIdDesc");
-		this.partTreeSpannerQuery = createQuery();
+		this.partTreeSpannerQuery = spy(createQuery());
 
 		when(this.spannerTemplate.query((Function<Struct, Object>) any(), any(), any()))
 				.thenReturn(Collections.singletonList(1L));
@@ -131,7 +138,7 @@ public class SpannerStatementQueryTests {
 				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
 
-			assertEquals("SELECT COUNT(1) FROM "
+					assertEquals("SELECT EXISTS"
 							+ "(SELECT DISTINCT shares , trader_id , ticker , price , action , id "
 					+ "FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
 					+ "AND ticker=@tag1 ) OR "
@@ -157,6 +164,11 @@ public class SpannerStatementQueryTests {
 
 			return null;
 		});
+
+		doReturn(Object.class).when(this.partTreeSpannerQuery)
+				.getReturnedSimpleConvertableItemType();
+		doReturn(null).when(this.partTreeSpannerQuery).convertToSimpleReturnType(any(),
+				any());
 
 		this.partTreeSpannerQuery.execute(params);
 		verify(this.spannerTemplate, times(1)).query((Function<Struct, Object>) any(),
