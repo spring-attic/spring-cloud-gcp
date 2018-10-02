@@ -26,6 +26,7 @@ import org.springframework.boot.test.context.FilteredClassLoader;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTransactionManager;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.context.annotation.Bean;
@@ -42,7 +43,7 @@ public class GcpSpannerAutoConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpSpannerAutoConfiguration.class,
-					GcpContextAutoConfiguration.class,
+					GcpContextAutoConfiguration.class, SpannerTransactionManagerAutoConfiguration.class,
 					SpannerRepositoriesAutoConfiguration.class))
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.spanner.project-id=test-project",
@@ -83,6 +84,16 @@ public class GcpSpannerAutoConfigurationTests {
 			BackendIdConverter idConverter = context.getBean(BackendIdConverter.class);
 			assertThat(idConverter).isNotNull();
 			assertThat(idConverter).isInstanceOf(SpannerKeyIdConverter.class);
+		});
+	}
+
+	@Test
+	public void spannerTransactionManagerCreated() {
+		this.contextRunner.run(context -> {
+			SpannerTransactionManager transactionManager = context
+					.getBean(SpannerTransactionManager.class);
+			assertThat(transactionManager).isNotNull();
+			assertThat(transactionManager).isInstanceOf(SpannerTransactionManager.class);
 		});
 	}
 
