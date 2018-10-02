@@ -60,6 +60,8 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	@Override
 	public Object execute(Object[] parameters) {
 		List results = executeRawResult(parameters);
+		Class itemType = this.queryMethod.isCollectionQuery() ? this.queryMethod.getResultProcessor().getReturnedType().getReturnedType().g
+		this.spannerTemplate.getSpannerEntityProcessor().getCorrespondingSpannerJavaType()
 		if (isCountQuery()) {
 			return results == null ? 0 : results.get(0);
 		}
@@ -81,10 +83,6 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 		return this.queryMethod;
 	}
 
-	public boolean isCountOrExistsQuery() {
-		return isCountQuery() || isExistsQuery();
-	}
-
 	protected Object applyProjection(List<T> rawResult) {
 		if (rawResult == null) {
 			return null;
@@ -94,8 +92,4 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	}
 
 	protected abstract List executeRawResult(Object[] parameters);
-
-	protected abstract boolean isCountQuery();
-
-	protected abstract boolean isExistsQuery();
 }

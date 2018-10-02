@@ -49,20 +49,24 @@ public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
 	@Override
 	protected List executeRawResult(Object[] parameters) {
 		return isCountOrExistsQuery()
-				? SpannerStatementQueryExecutor.executeQuery(struct -> struct.getLong(0),
+				? SpannerStatementQueryExecutor.executeQuery(
+						struct -> isCountQuery() ? struct.getLong(0)
+								: struct.getBoolean(0),
 						this.entityType, this.tree, parameters, this.spannerTemplate,
 						this.spannerMappingContext)
 				: SpannerStatementQueryExecutor.executeQuery(this.entityType, this.tree,
 						parameters, this.spannerTemplate, this.spannerMappingContext);
 	}
 
-	@Override
-	protected boolean isCountQuery() {
+	private boolean isCountOrExistsQuery() {
+		return isCountQuery() || isExistsQuery();
+	}
+
+	private boolean isCountQuery() {
 		return this.tree.isCountProjection();
 	}
 
-	@Override
-	protected boolean isExistsQuery() {
+	private boolean isExistsQuery() {
 		return this.tree.isExistsProjection();
 	}
 

@@ -247,16 +247,6 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 				spannerQueryOptions);
 	}
 
-	@Override
-	protected boolean isCountQuery() {
-		return this.queryMethod.isCountQuery();
-	}
-
-	@Override
-	protected boolean isExistsQuery() {
-		return this.queryMethod.isExistsQuery();
-	}
-
 	private Expression[] detectExpressions(String sql) {
 		Expression expression = this.expressionParser.parseExpression(sql,
 				ParserContext.TEMPLATE_EXPRESSION);

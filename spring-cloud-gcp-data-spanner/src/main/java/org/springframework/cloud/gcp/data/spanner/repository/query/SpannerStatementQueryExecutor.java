@@ -225,9 +225,16 @@ public class SpannerStatementQueryExecutor {
 		buildLimit(tree, stringBuilder);
 
 		String selectSql = stringBuilder.toString();
-		return Pair.of(tree.isExistsProjection() || tree.isCountProjection()
-				? "SELECT COUNT(1) FROM (" + selectSql + ")"
-				: selectSql, tags);
+
+		String finalSql = selectSql;
+
+		if (tree.isCountProjection()) {
+			finalSql = "SELECT COUNT(1) FROM (" + selectSql + ")";
+		}
+		else if (tree.isExistsProjection()) {
+			finalSql = "EXISTS(" + selectSql + ")";
+		}
+		return Pair.of(finalSql, tags);
 	}
 
 	private static StringBuilder buildSelect(
