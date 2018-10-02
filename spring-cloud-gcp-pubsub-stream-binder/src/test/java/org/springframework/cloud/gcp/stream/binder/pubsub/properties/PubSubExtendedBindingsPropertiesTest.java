@@ -20,6 +20,7 @@ import org.springframework.messaging.SubscribableChannel;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
+@EnableAutoConfiguration
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
     properties = {
@@ -36,14 +37,15 @@ public class PubSubExtendedBindingsPropertiesTest {
 		PubSubMessageChannelBinder binder = (PubSubMessageChannelBinder) binderFactory.getBinder("pubsub", MessageChannel.class);
 
 		// Print out the default values; they should both be false.
-		System.out.println("default for INPUT: " + binder.getExtendedConsumerProperties("input").isAutoCreateResources());
-		System.out.println("default for CUSTOM INPUT: " + binder.getExtendedConsumerProperties("custom-in").isAutoCreateResources());
+		System.out.println("default for INPUT: "
+				+ binder.getExtendedConsumerProperties("input").isAutoCreateResources());
+		System.out.println("default for CUSTOM INPUT: "
+				+ binder.getExtendedConsumerProperties("custom-in").isAutoCreateResources());
 
 		assertThat(binder.getExtendedConsumerProperties("input").isAutoCreateResources()).isFalse();
 		assertThat(binder.getExtendedConsumerProperties("custom-in").isAutoCreateResources()).isFalse();
 	}
 
-	@EnableAutoConfiguration
 	@EnableBinding(CustomTestSink.class)
 	public static class PubSubTestBindings {
 
