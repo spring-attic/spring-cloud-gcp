@@ -60,7 +60,7 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	@Override
 	public Object execute(Object[] parameters) {
 		List results = executeRawResult(parameters);
-		Class itemType = this.queryMethod.isCollectionQuery() ? this.queryMethod.getResultProcessor().getReturnedType().getReturnedType().g
+		Class itemType = this.queryMethod.isCollectionQuery() ? this.queryMethod.getResultProcessor().getReturnedType().getReturnedType(). : this.queryMethod.getReturnedObjectType();
 		this.spannerTemplate.getSpannerEntityProcessor().getCorrespondingSpannerJavaType()
 		if (isCountQuery()) {
 			return results == null ? 0 : results.get(0);
