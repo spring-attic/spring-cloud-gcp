@@ -68,11 +68,11 @@ For serialization and deserialization of POJOs using Jackson JSON, configure the
 ==== Subscribing to a subscription
 
 Google Cloud Pub/Sub allows many subscriptions to be associated to the same topic.
-`PubSubTemplate` allows you to subscribe to subscriptions via the `subscribe()` method.
+`PubSubTemplate` allows you to listen to subscriptions via the `subscribe()` method.
 It relies on a `SubscriberFactory` object, whose only task is to generate Google Cloud Pub/Sub
 `Subscriber` objects.
-When subscribing to a subscription, messages will be pulled from Google Cloud Pub/Sub
-asynchronously, on a certain interval.
+When listening to a subscription, messages will be pulled from Google Cloud Pub/Sub
+asynchronously, at a certain interval.
 
 The Spring Boot starter for Google Cloud Pub/Sub auto-configures a `SubscriberFactory`.
 
@@ -95,7 +95,7 @@ The `pullAndConvert()` method does the same as the `pull()` method and, addition
 To acknowledge multiple messages received from `pull()` or `pullAndConvert()` at once, you can use the `PubSubTemplate.ack()` method.
 You can also use the `PubSubTemplate.nack()` for negatively acknowledging messages.
 
-Using these methods for acknowledging messages in batches is more efficient than acknowledging messages individually, but they *require* the collection of messages to be from the same project and subscription.
+Using these methods for acknowledging messages in batches is more efficient than acknowledging messages individually, but they *require* the collection of messages to be from the same project.
 
 All `ack()`, `nack()`, and `modifyAckDeadline()` methods on messages as well as `PubSubSubscriberTemplate` are implemented asynchronously, returning a `ListenableFuture<Void>` to be able to process the asynchronous execution.
 

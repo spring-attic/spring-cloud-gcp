@@ -14,6 +14,11 @@
           line-height: 200%;
         }
 
+        span.narrow-label {
+          display: inline-block;
+          margin: 0 0.5em;
+        }
+
         div.section {
           border: 1px solid grey;
           padding: 1em;
@@ -24,6 +29,10 @@
             background-color: yellow;
             width: fit-content;
         }
+
+        input.small-number {
+            width: 2em;
+         }
 
     </style>
 
@@ -76,9 +85,11 @@
     </div>
     <div>
         <form action="/postMessage">
-            <span class="label">Send message</span>
+            <span class="narrow-label">Send</span>
+            <input class="small-number" name="count" type="text" value="1">
+            <span class="narrow-label">copies of message</span>
             <input name="message" type="text" placeholder="message text">
-            to topic
+            <span class="narrow-label">to topic</span>
             <input name="topicName" type="text" placeholder="topic name"> <input type="submit">
         </form>
     </div>
@@ -90,9 +101,13 @@
 
     <div>
         <form action="/pull">
-            <span class="label">Subscription</span>
-            <input name="subscription" type="text" placeholder="subscription name">
-            <input type="submit" value="Pull" formaction="/pull">
+            <span class="label">Subscription1</span>
+            <input name="subscription1" type="text" placeholder="first subscription name">
+            <input type="submit" value="Pull From Single Subscription" formaction="/pull">
+            <br/>
+            <span class="label">Subscription2</span>
+            <input name="subscription2" type="text" placeholder="second subscription name">
+            <input type="submit" value="Pull From Both Subscriptions" formaction="/multipull">
         </form>
     </div>
 </div>
