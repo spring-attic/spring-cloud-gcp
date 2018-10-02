@@ -3,6 +3,7 @@ jdk:
   - oraclejdk8
 env:
   - GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/travis/admin.json
+  - GOOGLE_CLOUD_PROJECT=spring-cloud-gcp-ci
 branches:
   only:
     - master
