@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 
 /**
  * @author Chengyuan Zhao
@@ -34,6 +35,7 @@ import org.springframework.context.annotation.Bean;
  * @author Mike Eltsufin
  */
 @SpringBootApplication
+@Profile("repository-example")
 public class SpannerRepositoryExample {
 
 	@Autowired

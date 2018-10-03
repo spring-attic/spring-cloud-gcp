@@ -30,12 +30,14 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 
 /**
  * @author Balint Pato
  * @author Mike Eltsufin
  */
 @SpringBootApplication
+@Profile("template-example")
 public class SpannerTemplateExample {
 
 	@Autowired
