@@ -135,6 +135,13 @@ public interface DatastoreOperations {
 	<T> Iterable<?> query(Query query, Class<T> entityClass);
 
 	/**
+	 * Finds Cloud Datastore Keys by using a Cloud Datastore query.
+	 * @param query the query to execute that retrieves only Keys.
+	 * @return the list of keys found.
+	 */
+	Iterable<Key> queryKeys(Query<Key> query);
+
+	/**
 	 * Get all the entities of the given domain type.
 	 * @param entityClass the domain type to get.
 	 * @param <T> the type param of the domain type.

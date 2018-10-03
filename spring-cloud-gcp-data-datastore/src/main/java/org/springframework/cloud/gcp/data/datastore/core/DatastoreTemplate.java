@@ -146,6 +146,11 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
+	public Iterable<Key> queryKeys(Query<Key> query) {
+		return () -> this.datastore.run(query);
+	}
+
+	@Override
 	public <T> Collection<T> findAll(Class<T> entityClass) {
 		return convertEntities(
 				this.datastore.run(Query.newEntityQueryBuilder()
@@ -210,14 +215,11 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	private Key[] findAllKeys(Class entityClass) {
-		Iterable keysFound = query(
-				Query.newKeyQueryBuilder()
-						.setKind(
+		Iterable<Key> keysFound = queryKeys(Query.newKeyQueryBuilder().setKind(
 				this.datastoreMappingContext
-										.getPersistentEntity(entityClass).kindName())
-						.build(),
-				null);
-		return (Key[]) StreamSupport.stream(keysFound.spliterator(),
+						.getPersistentEntity(entityClass).kindName())
+				.build());
+		return StreamSupport.stream(keysFound.spliterator(),
 				false).toArray(Key[]::new);
 	}
 
