@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import com.google.cloud.ByteArray;
@@ -292,7 +291,7 @@ public class SpannerTemplateTests {
 				.build();
 		TestEntity entity = new TestEntity();
 		when(this.mutationFactory.update(same(entity),
-				eq(Optional.of(new HashSet<>(Arrays.asList("a", "b"))))))
+				eq(new HashSet<>(Arrays.asList("a", "b")))))
 						.thenReturn(Collections.singletonList(mutation));
 		this.spannerTemplate.update(entity, "a", "b");
 		verify(this.databaseClient, times(1))
@@ -305,9 +304,9 @@ public class SpannerTemplateTests {
 				.build();
 		TestEntity entity = new TestEntity();
 		Set<String> cols = new HashSet<>(Arrays.asList("a", "b"));
-		when(this.mutationFactory.update(same(entity), eq(Optional.of(cols))))
+		when(this.mutationFactory.update(same(entity), eq(cols)))
 				.thenReturn(Collections.singletonList(mutation));
-		this.spannerTemplate.update(entity, Optional.of(cols));
+		this.spannerTemplate.update(entity, cols);
 		verify(this.databaseClient, times(1))
 				.write(eq(Collections.singletonList(mutation)));
 	}
@@ -342,7 +341,7 @@ public class SpannerTemplateTests {
 				.build();
 		TestEntity entity = new TestEntity();
 		when(this.mutationFactory.upsert(same(entity),
-				eq(Optional.of(new HashSet<>(Arrays.asList("a", "b"))))))
+				eq(new HashSet<>(Arrays.asList("a", "b")))))
 						.thenReturn(Collections.singletonList(mutation));
 		this.spannerTemplate.upsert(entity, "a", "b");
 		verify(this.databaseClient, times(1))
@@ -355,9 +354,9 @@ public class SpannerTemplateTests {
 				.build();
 		TestEntity entity = new TestEntity();
 		Set<String> cols = new HashSet<>(Arrays.asList("a", "b"));
-		when(this.mutationFactory.upsert(same(entity), eq(Optional.of(cols))))
+		when(this.mutationFactory.upsert(same(entity), eq(cols)))
 				.thenReturn(Collections.singletonList(mutation));
-		this.spannerTemplate.upsert(entity, Optional.of(cols));
+		this.spannerTemplate.upsert(entity, cols);
 		verify(this.databaseClient, times(1))
 				.write(eq(Collections.singletonList(mutation)));
 	}

@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -192,11 +191,10 @@ public interface SpannerOperations {
 	/**
 	 * Update an object in storage.
 	 * @param object the object to update.
-	 * @param includeColumns the columns to update. If null or an empty {@code Optional}
-	 * is given, then all columns are used. Note that an {@code Optional} occupied by an
-	 * empty {@code Set} means that no columns will be used.
+	 * @param includeColumns the columns to update. If null is given, then all columns are
+	 * used. Note that an empty {@code Set} means that no columns will be used.
 	 */
-	void update(Object object, Optional<Set<String>> includeColumns);
+	void update(Object object, Set<String> includeColumns);
 
 	/**
 	 * Update or insert an object into storage.
@@ -221,11 +219,10 @@ public interface SpannerOperations {
 	/**
 	 * Update or insert an object into storage.
 	 * @param object the object to update or insert.
-	 * @param includeColumns the columns to upsert. If null or an empty {@code Optional}
-	 * is given, then all columns are used. Note that an {@code Optional} occupied by an
-	 * empty {@code Set} means that no columns will be used.
+	 * @param includeColumns the columns to update. If null is given, then all columns are
+	 * used. Note that an empty {@code Set} means that no columns will be used.
 	 */
-	void upsert(Object object, Optional<Set<String>> includeColumns);
+	void upsert(Object object, Set<String> includeColumns);
 
 	/**
 	 * Count how many objects are stored of the given type.

@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import com.google.cloud.spanner.ResultSet;
@@ -46,18 +45,18 @@ public interface SpannerEntityProcessor extends SpannerEntityReader, SpannerEnti
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted and
-	 * closed.
+	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted
+	 * and closed.
 	 * @param entityClass The type of the objects the Spanner results represent.
 	 * @param <T> The type of the objects the Spanner results represent.
-	 * @param includeColumns the Set of columns to read. If the Set is not present or this
-	 * param is null then all columns will be read.
-	 * @param allowMissingColumns if true, then properties with no corresponding column are
-	 * not mapped. If false, then an exception is thrown.
+	 * @param includeColumns the Set of columns to read. If this param is null then all
+	 * columns will be read.
+	 * @param allowMissingColumns if true, then properties with no corresponding column
+	 * are not mapped. If false, then an exception is thrown.
 	 * @return A list of objects.
 	 */
 	<T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
-			Optional<Set<String>> includeColumns, boolean allowMissingColumns);
+			Set<String> includeColumns, boolean allowMissingColumns);
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
