@@ -1075,7 +1075,7 @@ The results would be sorted by "id" in ascending order.
 Your query method can also return non-entity types:
 [source, java]
 ----
-		@Query("SELECT COUNT(1) FROM trades WHERE action = @action")
+  	@Query("SELECT COUNT(1) FROM trades WHERE action = @action")
   	int countByActionQuery(String action);
 
   	@Query("SELECT COUNT(1) FROM trades WHERE action = @action")
