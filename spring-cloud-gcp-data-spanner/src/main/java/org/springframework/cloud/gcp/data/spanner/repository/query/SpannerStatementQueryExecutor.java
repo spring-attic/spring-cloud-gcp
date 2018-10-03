@@ -60,7 +60,6 @@ public class SpannerStatementQueryExecutor {
 	 * @param spannerOperations used to execute the query
 	 * @param spannerMappingContext used to get metadata about the entity type
 	 * @return List of entities.
-	 * @throws UnsupportedOperationException for DELETE queries.
 	 */
 	public static <T> List<T> executeQuery(Class<T> type, PartTree tree, Object[] params,
 			SpannerOperations spannerOperations,
@@ -81,7 +80,6 @@ public class SpannerStatementQueryExecutor {
 	 * @param spannerOperations used to execute the query
 	 * @param spannerMappingContext used to get metadata about the entity type
 	 * @return List of objects mapped using the given function.
-	 * @throws UnsupportedOperationException for DELETE queries.
 	 */
 	public static <A, T> List<A> executeQuery(Function<Struct, A> rowFunc, Class<T> type,
 			PartTree tree, Object[] params, SpannerOperations spannerOperations,
@@ -207,10 +205,6 @@ public class SpannerStatementQueryExecutor {
 
 	private static Pair<String, List<String>> buildPartTreeSqlString(PartTree tree,
 			SpannerMappingContext spannerMappingContext, Class type) {
-		if (tree.isDelete()) {
-			throw new UnsupportedOperationException(
-					"Delete queries are not supported in Spanner");
-		}
 
 		SpannerPersistentEntity<?> persistentEntity = spannerMappingContext
 				.getPersistentEntity(type);
