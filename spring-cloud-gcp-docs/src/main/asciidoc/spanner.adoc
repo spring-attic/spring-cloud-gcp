@@ -1048,6 +1048,15 @@ List<Trade> findBySymbolContains(String symbolFragment);
 ----
 The param `symbolFragment` is a https://cloud.google.com/spanner/docs/functions-and-operators#regexp_contains[regular expression] that is checked for occurrences.
 
+Delete queries are also supported.
+For example, query methods such as `deleteByAction` or `removeByAction` delete entities found by `findByAction`.
+The delete operation happens in a single transaction.
+
+Delete queries can have the following return types:
+- An integer type that is the number of entities deleted
+- A collection of entities that were deleted
+- `void`
+
 ==== Custom SQL query methods
 
 The example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the

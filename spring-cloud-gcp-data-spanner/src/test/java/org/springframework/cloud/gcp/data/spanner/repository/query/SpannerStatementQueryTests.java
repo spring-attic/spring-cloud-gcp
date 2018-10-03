@@ -202,18 +202,6 @@ public class SpannerStatementQueryTests {
 	}
 
 	@Test(expected = UnsupportedOperationException.class)
-	public void deleteTest() {
-		// delete is not supported
-		when(this.queryMethod.getName()).thenReturn(
-				"deleteTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
-						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
-
-		this.partTreeSpannerQuery = createQuery();
-
-		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
 	public void unSupportedPredicateTest() {
 		when(this.queryMethod.getName()).thenReturn("countByTraderIdBetween");
 		this.partTreeSpannerQuery = createQuery();

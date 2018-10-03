@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
@@ -48,13 +49,31 @@ public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 	@Override
 	protected List executeRawResult(Object[] parameters) {
-		return isCountOrExistsQuery()
-				? SpannerStatementQueryExecutor.executeQuery(
-						struct -> isCountQuery() ? struct.getLong(0)
-								: struct.getBoolean(0),
-						this.entityType, this.tree, parameters, this.spannerTemplate,
-						this.spannerMappingContext)
-				: SpannerStatementQueryExecutor.executeQuery(this.entityType, this.tree,
+		if (isCountOrExistsQuery()) {
+			return SpannerStatementQueryExecutor.executeQuery(
+					struct -> isCountQuery() ? struct.getLong(0) : struct.getBoolean(0),
+					this.entityType, this.tree, parameters, this.spannerTemplate,
+					this.spannerMappingContext);
+		}
+		if (this.tree.isDelete()) {
+			return this.spannerTemplate
+					.performReadWriteTransaction(transactionTemplate -> {
+						List<T> entitiesToDelete = SpannerStatementQueryExecutor
+								.executeQuery(this.entityType, this.tree, parameters,
+										transactionTemplate, this.spannerMappingContext);
+						transactionTemplate.deleteAll(entitiesToDelete);
+
+						List result = null;
+						if (this.queryMethod.isCollectionQuery()) {
+							result = entitiesToDelete;
+						}
+						else if (this.queryMethod.getReturnedObjectType() != void.class) {
+							result = Collections.singletonList(entitiesToDelete.size());
+						}
+						return result;
+					});
+		}
+		return SpannerStatementQueryExecutor.executeQuery(this.entityType, this.tree,
 						parameters, this.spannerTemplate, this.spannerMappingContext);
 	}
 

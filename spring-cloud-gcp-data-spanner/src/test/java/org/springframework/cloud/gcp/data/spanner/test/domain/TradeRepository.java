@@ -35,6 +35,14 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
 	int countByAction(String action);
 
+	// deletes with the given action string, and returns the number of deleted items.
+	int deleteByAction(String action);
+
+	// deletes and returns the items that were deleted.
+	List<Trade> deleteBySymbol(String symbol);
+
+	void deleteBySymbolAndAction(String symbol, String action);
+
 	@Query(" select count(1) from :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: "
 			+ "where action = @action")
 	int countByActionQuery(@Param("action") String action);

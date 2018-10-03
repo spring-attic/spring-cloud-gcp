@@ -80,6 +80,26 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		assertThat(this.tradeRepository.count(), is(8L));
 
+		assertThat(this.tradeRepository.deleteByAction("BUY"), is(3));
+
+		assertThat(this.tradeRepository.count(), is(5L));
+
+		List<Trade> deletedBySymbol = this.tradeRepository.deleteBySymbol("ABCD");
+
+		assertThat(deletedBySymbol.size(), is(5));
+
+		assertThat(this.tradeRepository.count(), is(0L));
+
+		this.tradeRepository.saveAll(deletedBySymbol);
+
+		assertThat(this.tradeRepository.count(), is(5L));
+
+		this.tradeRepository.deleteBySymbolAndAction("ABCD", "SELL");
+
+		assertThat(this.tradeRepository.count(), is(0L));
+
+		this.tradeRepository.saveAll(allTrades);
+
 		List<Trade> allTradesRetrieved = this.spannerOperations.readAll(Trade.class);
 		assertThat(
 				"size is not " + allTrades.size() + " in received records: \n"
