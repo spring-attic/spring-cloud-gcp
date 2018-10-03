@@ -100,6 +100,13 @@ public class SpannerRepositoryExample {
 				System.out.println(key);
 			});
 
+			System.out.println("A query method can retrieve a single entity:");
+			System.out.println(this.tradeRepository.getAnyOneTrade());
+
+			System.out.println("A query method can also select properties in entities:");
+			this.tradeRepository.getTradeIds("BUY").stream()
+					.forEach(x -> System.out.println(x));
+
 			System.out.println("Try http://localhost:8080/trades in the browser to see all trades.");
 		};
 	}

@@ -48,6 +48,10 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 			+ "where action = @action limit 1")
 	String getFirstString(@Param("action") String action);
 
+	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
+			+ " WHERE action=@action AND action=#{#action} ORDER BY action desc limit 1")
+	Trade getOneTrade(@Param("action") String action);
+
 	@Query("select action from :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: "
 			+ "where action = @action")
 	List<String> getFirstStringList(@Param("action") String action);

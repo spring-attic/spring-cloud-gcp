@@ -64,7 +64,11 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 		if (simpleConvertedType != null) {
 			return convertToSimpleReturnType(results, simpleConvertedType);
 		}
+		if (queryMethod.isCollectionQuery()) {
 			return applyProjection(results);
+		}
+		return results == null || results.isEmpty() ? null
+				: this.queryMethod.getResultProcessor().processResult(results.get(0));
 	}
 
 	@VisibleForTesting

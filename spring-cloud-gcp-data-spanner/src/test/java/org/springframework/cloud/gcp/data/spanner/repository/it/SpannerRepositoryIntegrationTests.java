@@ -87,6 +87,8 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(this.tradeRepository.countByActionQuery("BUY"), is(3));
 		assertTrue(this.tradeRepository.existsByActionQuery("BUY"));
 
+		assertNotNull(this.tradeRepository.getOneTrade("BUY"));
+
 		assertEquals("BUY", this.tradeRepository.getFirstString("BUY"));
 		assertThat(this.tradeRepository.getFirstStringList("BUY"),
 				containsInAnyOrder("BUY", "BUY", "BUY"));
