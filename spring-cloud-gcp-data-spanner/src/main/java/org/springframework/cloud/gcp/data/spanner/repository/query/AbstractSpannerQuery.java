@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -92,7 +93,8 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 		// If the user has configured converters that can handle the item type, then it is
 		// assumed
 		// to not be an entity type.
-		return this.spannerTemplate.getSpannerEntityProcessor()
+		return itemType == void.class ? null
+				: this.spannerTemplate.getSpannerEntityProcessor()
 				.getCorrespondingSpannerJavaType(itemType, false);
 	}
 
@@ -106,9 +108,9 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 		return this.queryMethod;
 	}
 
-	protected Object applyProjection(List<T> rawResult) {
+	private List applyProjection(List<T> rawResult) {
 		if (rawResult == null) {
-			return null;
+			return Collections.emptyList();
 		}
 		return rawResult.stream().map(result -> processRawObjectForProjection(result))
 				.collect(Collectors.toList());

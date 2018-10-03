@@ -62,8 +62,15 @@ public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
 								.executeQuery(this.entityType, this.tree, parameters,
 										transactionTemplate, this.spannerMappingContext);
 						transactionTemplate.deleteAll(entitiesToDelete);
-						return this.queryMethod.isCollectionQuery() ? entitiesToDelete
-								: Collections.singletonList(entitiesToDelete.size());
+
+						List result = null;
+						if (this.queryMethod.isCollectionQuery()) {
+							result = entitiesToDelete;
+						}
+						else if (this.queryMethod.getReturnedObjectType() != void.class) {
+							result = Collections.singletonList(entitiesToDelete.size());
+						}
+						return result;
 					});
 		}
 		return SpannerStatementQueryExecutor.executeQuery(this.entityType, this.tree,
