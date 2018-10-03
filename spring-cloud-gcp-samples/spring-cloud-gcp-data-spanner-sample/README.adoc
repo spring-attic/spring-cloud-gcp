@@ -25,11 +25,11 @@ These POJOs are then retrieved and their contents are printed in the browser.
 
 .. To run the SpannerRepositoryExample:
 
-  `mvn spring-boot:run -P spanner-repository-example`
+  mvn spring-boot:run -P spanner-repository-example
 
 .. To run the SpannerTemplateExample:
 
-  `mvn spring-boot:run -P spanner-template-example`
+  mvn spring-boot:run -P spanner-template-example
 
 
 Note that the sample application, still running, also provides REST endpoints.
