@@ -63,8 +63,10 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.util.Assert;
 
 /**
- * @author Ray Tsang
+ * An implementation of {@link SpannerOperations}.
+ *
  * @author Chengyuan Zhao
+ * @author Ray Tsang
  *
  * @since 1.1
  */
@@ -503,7 +505,7 @@ public class SpannerTemplate implements SpannerOperations {
 				.collect(Collectors.toList());
 	}
 
-	protected Optional<TransactionContext> getTransactionContext() {
+	private Optional<TransactionContext> getTransactionContext() {
 		try {
 			return Optional.ofNullable(
 					((SpannerTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport

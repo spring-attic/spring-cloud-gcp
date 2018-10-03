@@ -38,6 +38,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
@@ -62,6 +63,9 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 	@Autowired
 	SubTradeComponentRepository subTradeComponentRepository;
+
+	@Autowired
+	TradeRepositoryTransactionalService tradeRepositoryTransactionalService;
 
 	@Test
 	public void queryMethodsTest() {
@@ -212,9 +216,12 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		assertEquals(0, this.subTradeComponentRepository.count());
 		assertEquals(0, this.subTradeRepository.count());
+
+		this.tradeRepository.deleteAll();
+		this.tradeRepositoryTransactionalService.testTransactionalAnnotation();
 	}
 
-	protected List<Trade> insertTrades(String traderId1, String action, int numTrades) {
+	private List<Trade> insertTrades(String traderId1, String action, int numTrades) {
 		List<Trade> trades = new ArrayList<>();
 		for (int i = 0; i < numTrades; i++) {
 			Trade t = Trade.aTrade();
@@ -225,5 +232,21 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 			this.spannerOperations.insert(t);
 		}
 		return trades;
+	}
+
+	public static class TradeRepositoryTransactionalService {
+
+		@Autowired
+		TradeRepository tradeRepository;
+
+		@Transactional
+		public void testTransactionalAnnotation() {
+			Trade trade = Trade.aTrade();
+			this.tradeRepository.save(trade);
+
+			// because the insert happens within the same transaction, this count is still
+			// 1
+			assertThat(this.tradeRepository.count(), is(0L));
+		}
 	}
 }

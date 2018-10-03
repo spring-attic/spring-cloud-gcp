@@ -885,20 +885,13 @@ point in time of the transaction.
 Because read-only transactions are non-locking and can be performed on points in time in the past, these
 are recommended for functions that do not perform write operations.
 
-===== Declarative transaction management
+===== Declarative Transactions with @Transactional Annotation
 
-To use `@Transactional` in [declarative spring transaction management](https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative)
-`SpannerTransactionManager` has to be registered in Spring.
+This feature requires a bean of `SpannerTransactionManager`, which is provided when using `spring-cloud-gcp-starter-data-spanner`.
 
-Example:
-```
-@Bean
-public SpannerTransactionManager transactionManager() {
-    return new SpannerTransactionManager(databaseClient)
-}
-```
-
-`SpannerTemplate` respects SpannerTransactionManager and transaction boundaries set by `@Transactional` annotation.
+`SpannerTemplate` and `SpannerRepository` support running methods with the `@Transactional` [annotation](https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative) as transactions.
+If a method annotated with `@Transactional` calls another method also annotated, then both methods will work within the same transaction.
+`performReadOnlyTransaction` and `performReadWriteTransaction` cannot be used in `@Transactional` annotated methods because Cloud Spanner does not support transactions within transactions.
 
 === Repositories
 
