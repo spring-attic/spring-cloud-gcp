@@ -1060,6 +1060,10 @@ of any sorting or paging in the SQL:
 ----
 	@Query("SELECT * FROM trades ORDER BY action DESC")
 	List<Trade> sortedTrades(Pageable pageable);
+
+	@Query("SELECT * FROM trades ORDER BY action DESC LIMIT 1")
+ 	Trade sortedTopTrade(Pageable pageable);
+
 ----
 
 This can be used:
@@ -1078,7 +1082,7 @@ Your query method can also return non-entity types:
   	@Query("SELECT COUNT(1) FROM trades WHERE action = @action")
   	int countByActionQuery(String action);
 
-  	@Query("SELECT COUNT(1) FROM trades WHERE action = @action")
+  	@Query("SELECT EXISTS(SELECT COUNT(1) FROM trades WHERE action = @action)")
   	boolean existsByActionQuery(String action);
 
   	@Query("SELECT action FROM trades WHERE action = @action LIMIT 1")
