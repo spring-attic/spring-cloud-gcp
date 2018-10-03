@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import com.google.cloud.spanner.Key;
@@ -69,18 +68,17 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 
 	@Override
 	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass) {
-		return mapToList(resultSet, entityClass, Optional.empty(), false);
+		return mapToList(resultSet, entityClass, null, false);
 	}
 
 	@Override
 	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
-			Optional<Set<String>> includeColumns, boolean allowMissingColumns) {
+			Set<String> includeColumns, boolean allowMissingColumns) {
 		ArrayList<T> result = new ArrayList<>();
 		while (resultSet.next()) {
 			result.add(this.entityReader.read(entityClass,
 					resultSet.getCurrentRowAsStruct(),
-					includeColumns == null || !includeColumns.isPresent() ? null
-							: includeColumns.get(),
+					includeColumns == null ? null : includeColumns,
 					allowMissingColumns));
 		}
 		resultSet.close();
@@ -91,8 +89,8 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
 			String... includeColumns) {
 		return mapToList(resultSet, entityClass,
-				includeColumns.length == 0 ? Optional.empty()
-						: Optional.of(new HashSet<>(Arrays.asList(includeColumns))),
+				includeColumns.length == 0 ? null
+						: new HashSet<>(Arrays.asList(includeColumns)),
 				false);
 	}
 

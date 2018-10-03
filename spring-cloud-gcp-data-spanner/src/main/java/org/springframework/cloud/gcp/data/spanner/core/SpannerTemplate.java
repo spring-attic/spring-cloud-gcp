@@ -174,7 +174,7 @@ public class SpannerTemplate implements SpannerOperations {
 	public <T> List<T> query(Class<T> entityClass, Statement statement,
 			SpannerQueryOptions options) {
 		return mapToListAndResolveChildren(executeQuery(statement, options), entityClass,
-				Optional.empty(), options != null && options.isAllowPartialRead());
+				null, options != null && options.isAllowPartialRead());
 	}
 
 	@Override
@@ -230,11 +230,11 @@ public class SpannerTemplate implements SpannerOperations {
 		applyMutations(
 				this.mutationFactory.update(object,
 						includeColumns.length == 0 ? null
-								: Optional.of(new HashSet<>(Arrays.asList(includeColumns)))));
+								: new HashSet<>(Arrays.asList(includeColumns))));
 	}
 
 	@Override
-	public void update(Object object, Optional<Set<String>> includeColumns) {
+	public void update(Object object, Set<String> includeColumns) {
 		applyMutations(this.mutationFactory.update(object, includeColumns));
 	}
 
@@ -255,11 +255,11 @@ public class SpannerTemplate implements SpannerOperations {
 		applyMutations(
 				this.mutationFactory.upsert(object,
 						includeColumns.length == 0 ? null
-								: Optional.of(new HashSet<>(Arrays.asList(includeColumns)))));
+								: new HashSet<>(Arrays.asList(includeColumns))));
 	}
 
 	@Override
-	public void upsert(Object object, Optional<Set<String>> includeColumns) {
+	public void upsert(Object object, Set<String> includeColumns) {
 		applyMutations(this.mutationFactory.upsert(object, includeColumns));
 	}
 
@@ -440,7 +440,7 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	private <T> List<T> mapToListAndResolveChildren(ResultSet resultSet,
-			Class<T> entityClass, Optional<Set<String>> includeColumns,
+			Class<T> entityClass, Set<String> includeColumns,
 			boolean allowMissingColumns) {
 		return resolveChildEntities(this.spannerEntityProcessor.mapToList(resultSet,
 				entityClass, includeColumns, allowMissingColumns));
