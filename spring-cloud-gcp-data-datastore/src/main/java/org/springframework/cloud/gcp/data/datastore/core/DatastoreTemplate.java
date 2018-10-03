@@ -137,7 +137,12 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public <T> Iterable<?> query(Query query, Class<T> entityClass) {
+	public <T> Iterable<?> query(Query<? extends BaseEntity> query,
+			Class<T> entityClass) {
+		return convertEntities(this.datastore.run(query), entityClass);
+	}
+
+	public <T> Iterable<?> queryKeysOrEntities(Query query, Class<T> entityClass) {
 		QueryResults results = this.datastore.run(query);
 		if (results.getResultClass() == Key.class) {
 			return () -> this.datastore.run(query);

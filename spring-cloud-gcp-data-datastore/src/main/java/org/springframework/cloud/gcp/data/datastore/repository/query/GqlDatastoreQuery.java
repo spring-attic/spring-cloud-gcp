@@ -37,7 +37,7 @@ import com.google.cloud.datastore.GqlQuery.Builder;
 import com.google.cloud.datastore.Key;
 import com.google.common.collect.ImmutableMap;
 
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.data.repository.query.Parameter;
@@ -95,15 +95,15 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	 * Constructor
 	 * @param type the underlying entity type
 	 * @param queryMethod the underlying query method to support.
-	 * @param datastoreOperations used for executing queries.
+	 * @param datastoreTemplate used for executing queries.
 	 * @param datastoreMappingContext used for getting metadata about entities.
 	 */
 	public GqlDatastoreQuery(Class<T> type, DatastoreQueryMethod queryMethod,
-			DatastoreOperations datastoreOperations, String gql,
+			DatastoreTemplate datastoreTemplate, String gql,
 			QueryMethodEvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser,
 			DatastoreMappingContext datastoreMappingContext) {
-		super(queryMethod, datastoreOperations, datastoreMappingContext, type);
+		super(queryMethod, datastoreTemplate, datastoreMappingContext, type);
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
 		this.gql = StringUtils.trimTrailingCharacter(gql.trim(), ';');
@@ -112,7 +112,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	@Override
 	public Object execute(Object[] parameters) {
 		GqlQuery query = bindArgsToGqlQuery(this.gql, getParamTags(), parameters);
-		Iterable found = this.datastoreOperations.query(query, this.entityType);
+		Iterable found = this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
 		List rawResult = found == null ? Collections.emptyList()
 				: (List) StreamSupport.stream(found.spliterator(), false)
 						.collect(Collectors.toList());

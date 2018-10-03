@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
+import com.google.cloud.datastore.KeyQuery;
 import java.util.List;
 
 import com.google.cloud.datastore.Datastore;
@@ -275,6 +276,13 @@ public class DatastoreTemplateTests {
 				GqlQuery.newGqlQueryBuilder(ResultType.PROJECTION_ENTITY, "fake query")
 						.build(),
 				TestEntity.class), contains(ob1, ob2));
+	}
+
+	@Test
+	public void queryKeysTest() {
+		KeyQuery keyQuery = GqlQuery.newKeyQueryBuilder().build();
+		this.datastoreTemplate.queryKeys(keyQuery).iterator();
+		verify(this.datastore, times(1)).run(keyQuery);
 	}
 
 	@Test
