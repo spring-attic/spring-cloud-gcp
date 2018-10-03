@@ -1081,7 +1081,7 @@ Your query method can also return non-entity types:
   	@Query("SELECT COUNT(1) FROM trades WHERE action = @action")
   	boolean existsByActionQuery(String action);
 
-  	@Query("SELECT action FROM trades WHERE action = @action limit 1")
+  	@Query("SELECT action FROM trades WHERE action = @action LIMIT 1")
   	String getFirstString(@Param("action") String action);
 
   	@Query("SELECT action FROM trades WHERE action = @action")
