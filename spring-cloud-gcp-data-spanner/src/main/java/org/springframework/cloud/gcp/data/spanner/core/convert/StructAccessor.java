@@ -64,8 +64,10 @@ public class StructAccessor {
 					// @formatter:on
 					.put(Boolean.class, AbstractStructReader::getBoolean)
 					.put(Long.class, AbstractStructReader::getLong)
+					.put(long.class, AbstractStructReader::getLong)
 					.put(String.class, AbstractStructReader::getString)
 					.put(Double.class, AbstractStructReader::getDouble)
+					.put(double.class, AbstractStructReader::getDouble)
 					.put(Timestamp.class, AbstractStructReader::getTimestamp)
 					.put(Date.class, AbstractStructReader::getDate)
 					.put(ByteArray.class, AbstractStructReader::getBytes)
@@ -96,8 +98,10 @@ public class StructAccessor {
 					// @formatter:on
 					.put(Boolean.class, AbstractStructReader::getBoolean)
 					.put(Long.class, AbstractStructReader::getLong)
+					.put(long.class, AbstractStructReader::getLong)
 					.put(String.class, AbstractStructReader::getString)
 					.put(Double.class, AbstractStructReader::getDouble)
+					.put(double.class, AbstractStructReader::getDouble)
 					.put(Timestamp.class, AbstractStructReader::getTimestamp)
 					.put(Date.class, AbstractStructReader::getDate)
 					.put(ByteArray.class, AbstractStructReader::getBytes)
