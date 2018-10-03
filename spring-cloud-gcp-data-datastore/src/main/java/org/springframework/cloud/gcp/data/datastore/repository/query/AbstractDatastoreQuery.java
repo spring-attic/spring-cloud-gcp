@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
@@ -41,15 +41,15 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 
 	final DatastoreQueryMethod queryMethod;
 
-	final DatastoreOperations datastoreOperations;
+	final DatastoreTemplate datastoreTemplate;
 
 	final Class<T> entityType;
 
 	public AbstractDatastoreQuery(DatastoreQueryMethod queryMethod,
-			DatastoreOperations datastoreOperations,
+			DatastoreTemplate datastoreTemplate,
 			DatastoreMappingContext datastoreMappingContext, Class<T> entityType) {
 		this.queryMethod = queryMethod;
-		this.datastoreOperations = datastoreOperations;
+		this.datastoreTemplate = datastoreTemplate;
 		this.datastoreMappingContext = datastoreMappingContext;
 		this.entityType = entityType;
 	}

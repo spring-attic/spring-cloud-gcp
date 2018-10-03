@@ -69,9 +69,9 @@ public class DatastoreQueryMethod extends QueryMethod {
 	}
 
 	/**
-	 * Return whether this method is an count query.
+	 * Return whether this method is a count query.
 	 *
-	 * @return True if this query method is an count query, and false otherwise.
+	 * @return True if this query method is a count query, and false otherwise.
 	 */
 	boolean isCountQuery() {
 		Query annotation = getQueryAnnotation();
