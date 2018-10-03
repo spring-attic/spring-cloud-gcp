@@ -132,7 +132,7 @@ public interface DatastoreOperations {
 	 * @return a list of the objects found. If no keys could be found the list will be
 	 * empty.
 	 */
-	<T> Iterable<?> query(Query<? extends BaseEntity> query, Class<T> entityClass);
+	<T> Iterable<T> query(Query<? extends BaseEntity> query, Class<T> entityClass);
 
 	/**
 	 * Finds Cloud Datastore Keys by using a Cloud Datastore query.

@@ -137,11 +137,20 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public <T> Iterable<?> query(Query<? extends BaseEntity> query,
+	public <T> Iterable<T> query(Query<? extends BaseEntity> query,
 			Class<T> entityClass) {
 		return convertEntities(this.datastore.run(query), entityClass);
 	}
 
+	/**
+	 * Finds objects by using a Cloud Datastore query. If the query is a key-query, then keys are
+	 * returned.
+	 * @param query the query to execute.
+	 * @param entityClass the type of object to retrieve.
+	 * @param <T> the type of object to retrieve.
+	 * @return a list of the objects found. If no keys could be found the list will be
+	 * empty.
+	 */
 	public <T> Iterable<?> queryKeysOrEntities(Query query, Class<T> entityClass) {
 		QueryResults results = this.datastore.run(query);
 		if (results.getResultClass() == Key.class) {
