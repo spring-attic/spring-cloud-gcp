@@ -27,7 +27,6 @@ import java.util.Set;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -200,13 +199,13 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 		return this.entityReader.read(type, source, includeColumns, allowMissingColumns);
 	}
 
-	@VisibleForTesting
-	SpannerWriteConverter getWriteConverter() {
+	@Override
+	public SpannerWriteConverter getWriteConverter() {
 		return this.writeConverter;
 	}
 
-	@VisibleForTesting
-	SpannerReadConverter getReadConverter() {
+	@Override
+	public SpannerReadConverter getReadConverter() {
 		return this.readConverter;
 	}
 }

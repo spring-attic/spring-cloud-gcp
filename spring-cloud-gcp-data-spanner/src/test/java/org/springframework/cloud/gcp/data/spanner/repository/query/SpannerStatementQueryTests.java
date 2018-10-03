@@ -16,29 +16,25 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Value;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
-import org.springframework.data.repository.query.QueryMethod;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -55,7 +51,7 @@ public class SpannerStatementQueryTests {
 
 	private SpannerTemplate spannerTemplate;
 
-	private QueryMethod queryMethod;
+	private SpannerQueryMethod queryMethod;
 
 	private SpannerMappingContext spannerMappingContext;
 
@@ -63,7 +59,7 @@ public class SpannerStatementQueryTests {
 
 	@Before
 	public void initMocks() {
-		this.queryMethod = mock(QueryMethod.class);
+		this.queryMethod = mock(SpannerQueryMethod.class);
 		this.spannerTemplate = mock(SpannerTemplate.class);
 		this.spannerMappingContext = new SpannerMappingContext();
 	}
@@ -79,12 +75,12 @@ public class SpannerStatementQueryTests {
 				"findTop3DistinctByActionIgnoreCaseAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullAndTraderIdLikeAndPriceTrueAndPriceFalse"
 						+ "AndPriceGreaterThanAndPriceLessThanEqualOrderByIdDesc");
-		this.partTreeSpannerQuery = createQuery();
+		this.partTreeSpannerQuery = spy(createQuery());
 
 		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, "ignored",
 				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
 
-		when(this.spannerTemplate.query(any(), any()))
+		when(this.spannerTemplate.query((Class<Object>) any(), any(), any()))
 				.thenAnswer(invocation -> {
 					Statement statement = invocation.getArgument(1);
 
@@ -94,7 +90,7 @@ public class SpannerStatementQueryTests {
 									+ "AND ticker=@tag1 ) OR "
 									+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 									+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "
-									+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 3;",
+									+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 3",
 							statement.getSql());
 
 					Map<String, Value> paramMap = statement.getParameters();
@@ -115,8 +111,68 @@ public class SpannerStatementQueryTests {
 					return null;
 				});
 
+		doReturn(Object.class).when(this.partTreeSpannerQuery)
+				.getReturnedSimpleConvertableItemType();
+		doReturn(null).when(this.partTreeSpannerQuery).convertToSimpleReturnType(any(),
+				any());
+
 		this.partTreeSpannerQuery.execute(params);
-		verify(this.spannerTemplate, times(1)).query(any(), any());
+		verify(this.spannerTemplate, times(1)).query((Class<Object>) any(), any(), any());
+	}
+
+	@Test
+	public void compoundNameConventionCountTest() {
+		when(this.queryMethod.getName()).thenReturn(
+				"existsDistinctByActionIgnoreCaseAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
+						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullAndTraderIdLikeAndPriceTrueAndPriceFalse"
+						+ "AndPriceGreaterThanAndPriceLessThanEqualOrderByIdDesc");
+		this.partTreeSpannerQuery = spy(createQuery());
+
+		when(this.spannerTemplate.query((Function<Struct, Object>) any(), any(), any()))
+				.thenReturn(Collections.singletonList(1L));
+
+		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, "ignored",
+				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
+
+		when(this.spannerTemplate.query((Function<Struct, Object>) any(), any(), any()))
+				.thenAnswer(invocation -> {
+					Statement statement = invocation.getArgument(1);
+
+					assertEquals("SELECT EXISTS"
+							+ "(SELECT DISTINCT shares , trader_id , ticker , price , action , id "
+					+ "FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
+					+ "AND ticker=@tag1 ) OR "
+					+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
+					+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "
+					+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 1)",
+					statement.getSql());
+
+			Map<String, Value> paramMap = statement.getParameters();
+
+			assertEquals(params[0], paramMap.get("tag0").getString());
+			assertEquals(params[1], paramMap.get("tag1").getString());
+			assertEquals(params[2], paramMap.get("tag2").getString());
+			assertEquals(params[3], paramMap.get("tag3").getFloat64());
+			assertEquals(params[4], paramMap.get("tag4").getFloat64());
+			assertEquals(params[5], paramMap.get("tag5").getString());
+			assertEquals(params[6], paramMap.get("tag6").getString());
+			assertEquals(params[7], paramMap.get("tag7").getString());
+			assertEquals(params[8], paramMap.get("tag8").getString());
+			assertEquals(params[9], paramMap.get("tag9").getString());
+			assertEquals(params[10], paramMap.get("tag10").getFloat64());
+			assertEquals(params[11], paramMap.get("tag11").getFloat64());
+
+			return null;
+		});
+
+		doReturn(Object.class).when(this.partTreeSpannerQuery)
+				.getReturnedSimpleConvertableItemType();
+		doReturn(null).when(this.partTreeSpannerQuery).convertToSimpleReturnType(any(),
+				any());
+
+		this.partTreeSpannerQuery.execute(params);
+		verify(this.spannerTemplate, times(1)).query((Function<Struct, Object>) any(),
+				any(), any());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -162,60 +218,6 @@ public class SpannerStatementQueryTests {
 		when(this.queryMethod.getName()).thenReturn("countByTraderIdBetween");
 		this.partTreeSpannerQuery = createQuery();
 		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
-	}
-
-	@Test
-	public void countShouldReturnSizeOfResultSet() {
-		List<Trade> results = new ArrayList<>();
-		results.add(new Trade());
-
-		queryWithMockResult("countByAction", results);
-
-		PartTreeSpannerQuery spyQuery = spy(this.partTreeSpannerQuery);
-
-		doAnswer(invocation -> invocation.getArgument(0)).when(spyQuery)
-				.processRawObjectForProjection(any());
-
-		Object[] params = new Object[] { "BUY", };
-		assertEquals(1, spyQuery.execute(params));
-	}
-
-	@Test
-	public void existShouldBeTrueWhenResultSetIsNotEmpty() {
-		List<Trade> results = new ArrayList<>();
-		results.add(new Trade());
-
-		queryWithMockResult("existsByAction", results);
-
-		PartTreeSpannerQuery spyQuery = spy(this.partTreeSpannerQuery);
-
-		doAnswer(invocation -> invocation.getArgument(0)).when(spyQuery)
-				.processRawObjectForProjection(any());
-
-		Object[] params = new Object[] { "BUY", };
-		assertTrue((boolean) spyQuery.execute(params));
-	}
-
-	@Test
-	public void existShouldBeFalseWhenResultSetIsEmpty() {
-		queryWithMockResult("existsByAction", Collections.emptyList());
-
-		PartTreeSpannerQuery spyQuery = spy(this.partTreeSpannerQuery);
-
-		doAnswer(invocation -> invocation.getArgument(0)).when(spyQuery)
-				.processRawObjectForProjection(any());
-
-		Object[] params = new Object[] { "BUY", };
-		assertFalse((boolean) spyQuery.execute(params));
-	}
-
-	private void queryWithMockResult(String queryName, List<Trade> results) {
-		when(this.queryMethod.getName()).thenReturn(queryName);
-		this.partTreeSpannerQuery = createQuery();
-		// @formatter:off
-		when(this.spannerTemplate.query(Mockito.<Class<Trade>>any(), any()))
-				.thenReturn(results);
-		// @formatter:on
 	}
 
 	@Table(name = "trades")

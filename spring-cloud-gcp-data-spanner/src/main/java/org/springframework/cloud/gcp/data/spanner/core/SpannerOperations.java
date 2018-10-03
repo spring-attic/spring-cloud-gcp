@@ -24,6 +24,7 @@ import java.util.function.Function;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Statement;
+import com.google.cloud.spanner.Struct;
 
 /**
  * Defines operations available to use with Spanner.
@@ -78,29 +79,27 @@ public interface SpannerOperations {
 	<T> List<T> read(Class<T> entityClass, KeySet keys);
 
 	/**
-	 * Finds objects by using an SQL statement.
-	 * @param entityClass the type of object to retrieve.
-	 * @param sql the SQL string to execute. this string can have Cloud Spanner param tags.
-	 * @param tags the names of the tags to use
-	 * @param params the values to attach those tags, in the same order.
-	 * @param options Cloud Spanner read options with which to conduct the read operation.
-	 * @param <T> the type of object to retrieve.
-	 * @return a list of the objects found. If no keys could be found the list will be
-	 * empty.
+	 * Executes a given query string with tags and parameters and applies a given function
+	 * to each row of the result.
+	 * @param rowFunc the function to apply to each row of the result.
+	 * @param statement the SQL statement used to select the objects.
+	 * @param options the options with which to run this query.
+	 * @return a list of the rows each transformed with the given function.
 	 */
-	<T> List<T> query(Class<T> entityClass, String sql, List<String> tags,
-			Object[] params,
+	<A> List<A> query(Function<Struct, A> rowFunc, Statement statement,
 			SpannerQueryOptions options);
 
 	/**
 	 * Finds objects by using an SQL statement.
 	 * @param entityClass the type of object to retrieve.
 	 * @param statement the SQL statement used to select the objects.
+	 * @param options Cloud Spanner read options with which to conduct the read operation.
 	 * @param <T> the type of object to retrieve.
 	 * @return a list of the objects found. If no keys could be found the list will be
 	 * empty.
 	 */
-	<T> List<T> query(Class<T> entityClass, Statement statement);
+	<T> List<T> query(Class<T> entityClass, Statement statement,
+			SpannerQueryOptions options);
 
 	/**
 	 * Finds all objects of the given type.
@@ -124,12 +123,13 @@ public interface SpannerOperations {
 	/**
 	 * Finds all objects of the given type.
 	 * @param entityClass the type of the object to retrieve.
-	 * @param options Cloud Spanner query options with which to conduct the query operation.
+	 * @param options Cloud Spanner query options with which to conduct the query
+	 * operation.
 	 * @param <T> the type of the object to retrieve.
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
 	 */
-	<T> List<T> queryAll(Class<T> entityClass, SpannerQueryOptions options);
+	<T> List<T> queryAll(Class<T> entityClass, SpannerPageableQueryOptions options);
 
 	/**
 	 * Deletes an object based on a key.
@@ -192,9 +192,9 @@ public interface SpannerOperations {
 	/**
 	 * Update an object in storage.
 	 * @param object the object to update.
-	 * @param includeColumns the columns to update. If null or an empty Optional is given, then
-	 * all columns are used. Note that an Optional occupied by an empty Set means that no columns
-	 * will be used.
+	 * @param includeColumns the columns to update. If null or an empty {@code Optional}
+	 * is given, then all columns are used. Note that an {@code Optional} occupied by an
+	 * empty {@code Set} means that no columns will be used.
 	 */
 	void update(Object object, Optional<Set<String>> includeColumns);
 
@@ -221,9 +221,9 @@ public interface SpannerOperations {
 	/**
 	 * Update or insert an object into storage.
 	 * @param object the object to update or insert.
-	 * @param includeColumns the columns to upsert. If null or an empty Optional is given, then
-	 * all columns are used. Note that an Optional occupied by an empty Set means that no columns
-	 * will be used.
+	 * @param includeColumns the columns to upsert. If null or an empty {@code Optional}
+	 * is given, then all columns are used. Note that an {@code Optional} occupied by an
+	 * empty {@code Set} means that no columns will be used.
 	 */
 	void upsert(Object object, Optional<Set<String>> includeColumns);
 

@@ -30,7 +30,6 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
@@ -53,7 +52,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -62,7 +60,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -232,20 +229,6 @@ public class SpannerTemplateTests {
 				eq(TestEntity.class));
 		verify(this.readContext, times(1)).readUsingIndex(eq("custom_test_table"),
 				eq("index"), same(keySet), any(), same(readOption));
-	}
-
-	@Test
-	public void findByStatementTest() {
-		ResultSet results = mock(ResultSet.class);
-		QueryOption queryOption = mock(QueryOption.class);
-		SpannerQueryOptions options = new SpannerQueryOptions()
-				.addQueryOption(queryOption);
-		when(this.readContext.executeQuery(any(), any())).thenReturn(results);
-		this.spannerTemplate.query(TestEntity.class, "test", null, null, options);
-		verify(this.objectMapper, times(1)).mapToList(same(results),
-				eq(TestEntity.class), eq(Optional.empty()), eq(false));
-		verify(this.readContext, times(1)).executeQuery(eq(Statement.of("SELECT * FROM (test)")),
-				same(queryOption));
 	}
 
 	@Test
@@ -435,49 +418,6 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
-	public void findAllSortWithLimitsOffsetTest() {
-		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		SpannerQueryOptions queryOption = new SpannerQueryOptions().setLimit(3L)
-				.setOffset(5L);
-		Sort sort = Sort.by(Order.asc("id"), Order.desc("something").ignoreCase(),
-				Order.asc("other"), Order.desc("non_existant_prop"));
-
-		doAnswer(invocation -> {
-			assertEquals(
-					"SELECT * FROM (SELECT other , doubles , id2 , bytes , integerList , id , "
-							+ "custom_col , bytesList FROM custom_test_table) "
-							+ "ORDER BY id ASC , LOWER(custom_col) DESC , other ASC , non_existant_prop DESC "
-							+ "LIMIT 3 OFFSET 5",
-					((Statement) invocation.getArgument(0)).getSql());
-			return null;
-		}).when(spyTemplate).executeQuery(any(), any());
-
-		spyTemplate.queryAll(TestEntity.class, queryOption.setSort(sort));
-		verify(spyTemplate, times(1)).query(eq(TestEntity.class), any(), any(), any(),
-				any());
-	}
-
-	@Test
-	public void findAllNoSortWithLimitsOffsetTest() {
-		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
-		SpannerQueryOptions queryOption = new SpannerQueryOptions().setLimit(3L)
-				.setOffset(5L);
-
-		doAnswer(invocation -> {
-			assertEquals(
-					"SELECT * FROM (SELECT other , doubles , id2 , bytes , integerList , id , "
-							+ "custom_col , bytesList FROM custom_test_table) "
-							+ "LIMIT 3 OFFSET 5",
-					((Statement) invocation.getArgument(0)).getSql());
-			return null;
-		}).when(spyTemplate).executeQuery(any(), any());
-
-		spyTemplate.queryAll(TestEntity.class, queryOption);
-		verify(spyTemplate, times(1)).query(eq(TestEntity.class), any(), any(), any(),
-				any());
-	}
-
-	@Test
 	public void findAllPageableTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
 		Sort sort = mock(Sort.class);
@@ -485,7 +425,8 @@ public class SpannerTemplateTests {
 
 		long offset = 5L;
 		int limit = 3;
-		SpannerQueryOptions queryOption = new SpannerQueryOptions().setOffset(offset)
+		SpannerPageableQueryOptions queryOption = new SpannerPageableQueryOptions()
+				.setOffset(offset)
 				.setLimit(limit);
 
 		when(pageable.getOffset()).thenReturn(offset);
@@ -530,10 +471,10 @@ public class SpannerTemplateTests {
 		gc.id4 = "key4";
 		when(this.objectMapper.mapToList(any(), eq(ParentEntity.class)))
 				.thenReturn(ImmutableList.of(p));
-		when(this.objectMapper.mapToList(any(), eq(ChildEntity.class), any(), eq(true)))
+		when(this.objectMapper.mapToList(any(), eq(ChildEntity.class), any(), eq(false)))
 				.thenReturn(ImmutableList.of(c));
 		when(this.objectMapper.mapToList(any(), eq(GrandChildEntity.class), any(),
-				eq(true))).thenReturn(ImmutableList.of(gc));
+				eq(false))).thenReturn(ImmutableList.of(gc));
 		ParentEntity result = this.spannerTemplate.readAll(ParentEntity.class).get(0);
 		assertEquals(1, result.childEntities.size());
 		assertSame(c, result.childEntities.get(0));

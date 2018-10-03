@@ -1064,15 +1064,19 @@ The names of the tags of the SQL correspond to the `@Param` annotated names of t
 Custom SQL query methods can accept a single `Sort` or `Pageable` parameter that is applied on top
 of any sorting or paging in the SQL:
 
-[source, properties]
+[source, java]
 ----
 	@Query("SELECT * FROM trades ORDER BY action DESC")
 	List<Trade> sortedTrades(Pageable pageable);
+
+	@Query("SELECT * FROM trades ORDER BY action DESC LIMIT 1")
+ 	Trade sortedTopTrade(Pageable pageable);
+
 ----
 
 This can be used:
 
-[source, properties]
+[source, java]
 ----
 	List<Trade> customSortedTrades = tradeRepository.sortedTrades(PageRequest
   				.of(2, 2, org.springframework.data.domain.Sort.by(Order.asc("id"))));
@@ -1080,6 +1084,21 @@ This can be used:
 
 The results would be sorted by "id" in ascending order.
 
+Your query method can also return non-entity types:
+[source, java]
+----
+  	@Query("SELECT COUNT(1) FROM trades WHERE action = @action")
+  	int countByActionQuery(String action);
+
+  	@Query("SELECT EXISTS(SELECT COUNT(1) FROM trades WHERE action = @action)")
+  	boolean existsByActionQuery(String action);
+
+  	@Query("SELECT action FROM trades WHERE action = @action LIMIT 1")
+  	String getFirstString(@Param("action") String action);
+
+  	@Query("SELECT action FROM trades WHERE action = @action")
+  	List<String> getFirstStringList(@Param("action") String action);
+----
 
 ===== Query methods with named queries properties
 

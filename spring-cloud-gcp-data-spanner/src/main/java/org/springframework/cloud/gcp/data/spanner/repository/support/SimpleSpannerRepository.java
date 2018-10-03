@@ -23,7 +23,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerPageableQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.domain.Page;
@@ -152,13 +152,13 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	@Override
 	public Iterable<T> findAll(Sort sort) {
 		return this.spannerTemplate.queryAll(this.entityType,
-				new SpannerQueryOptions().setSort(sort));
+				new SpannerPageableQueryOptions().setSort(sort));
 	}
 
 	@Override
 	public Page<T> findAll(Pageable pageable) {
 		return new PageImpl<>(this.spannerTemplate.queryAll(this.entityType,
-				new SpannerQueryOptions().setLimit(pageable.getPageSize())
+				new SpannerPageableQueryOptions().setLimit(pageable.getPageSize())
 						.setOffset(pageable.getOffset()).setSort(pageable.getSort())),
 				pageable, this.spannerTemplate.count(this.entityType));
 	}

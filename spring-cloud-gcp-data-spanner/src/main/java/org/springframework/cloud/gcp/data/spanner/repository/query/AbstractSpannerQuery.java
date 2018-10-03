@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
@@ -33,9 +33,9 @@ import org.springframework.data.repository.query.RepositoryQuery;
  */
 abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 
-	protected final QueryMethod queryMethod;
+	protected final SpannerQueryMethod queryMethod;
 
-	protected final SpannerOperations spannerOperations;
+	protected final SpannerTemplate spannerTemplate;
 
 	protected final SpannerMappingContext spannerMappingContext;
 
@@ -45,30 +45,55 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	 * Constructor
 	 * @param type the underlying entity type
 	 * @param queryMethod the underlying query method to support.
-	 * @param spannerOperations used for executing queries.
+	 * @param spannerTemplate used for executing queries.
 	 * @param spannerMappingContext used for getting metadata about entities.
 	 */
-	AbstractSpannerQuery(Class<T> type, QueryMethod queryMethod,
-			SpannerOperations spannerOperations,
+	AbstractSpannerQuery(Class<T> type, SpannerQueryMethod queryMethod,
+			SpannerTemplate spannerTemplate,
 			SpannerMappingContext spannerMappingContext) {
 		this.queryMethod = queryMethod;
 		this.entityType = type;
-		this.spannerOperations = spannerOperations;
+		this.spannerTemplate = spannerTemplate;
 		this.spannerMappingContext = spannerMappingContext;
 	}
 
 	@Override
 	public Object execute(Object[] parameters) {
-		List<T> rawResult = executeRawResult(parameters);
-		return applyProjection(rawResult);
+		List results = executeRawResult(parameters);
+		Class simpleConvertedType = getReturnedSimpleConvertableItemType();
+		if (simpleConvertedType != null) {
+			return convertToSimpleReturnType(results, simpleConvertedType);
+		}
+		if (queryMethod.isCollectionQuery()) {
+			return applyProjection(results);
+		}
+		return results == null || results.isEmpty() ? null
+				: this.queryMethod.getResultProcessor().processResult(results.get(0));
 	}
 
-	protected Object applyProjection(List<T> rawResult) {
-		if (rawResult == null) {
-			return null;
-		}
-		return rawResult.stream().map(result -> processRawObjectForProjection(result))
-				.collect(Collectors.toList());
+	@VisibleForTesting
+	Object convertToSimpleReturnType(List results, Class simpleConvertedType) {
+		return this.queryMethod.isCollectionQuery()
+				? results.stream()
+						.map(x -> this.spannerTemplate.getSpannerEntityProcessor()
+								.getReadConverter().convert(x, simpleConvertedType))
+						.collect(Collectors.toList())
+				: this.spannerTemplate.getSpannerEntityProcessor().getReadConverter()
+						.convert(results.get(0), simpleConvertedType);
+	}
+
+	@VisibleForTesting
+	Class getReturnedSimpleConvertableItemType() {
+		Class itemType = this.queryMethod.isCollectionQuery()
+				? this.queryMethod.getResultProcessor().getReturnedType()
+						.getReturnedType()
+				: this.queryMethod.getReturnedObjectType();
+
+		// If the user has configured converters that can handle the item type, then it is
+		// assumed
+		// to not be an entity type.
+		return this.spannerTemplate.getSpannerEntityProcessor()
+				.getCorrespondingSpannerJavaType(itemType, false);
 	}
 
 	@VisibleForTesting
@@ -81,5 +106,13 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 		return this.queryMethod;
 	}
 
-	protected abstract List<T> executeRawResult(Object[] parameters);
+	protected Object applyProjection(List<T> rawResult) {
+		if (rawResult == null) {
+			return null;
+		}
+		return rawResult.stream().map(result -> processRawObjectForProjection(result))
+				.collect(Collectors.toList());
+	}
+
+	protected abstract List executeRawResult(Object[] parameters);
 }

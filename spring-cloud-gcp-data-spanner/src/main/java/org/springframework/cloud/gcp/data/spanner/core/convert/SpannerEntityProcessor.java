@@ -82,4 +82,15 @@ public interface SpannerEntityProcessor extends SpannerEntityReader, SpannerEnti
 	 */
 	Class getCorrespondingSpannerJavaType(Class originalType, boolean isIterableInnerType);
 
+	/**
+	 * Get the write converter used by this processor.
+	 * @return the write converter.
+	 */
+	SpannerWriteConverter getWriteConverter();
+
+	/**
+	 * Get the read converter used by this processor.
+	 * @return the read converter.
+	 */
+	SpannerReadConverter getReadConverter();
 }

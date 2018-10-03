@@ -18,9 +18,8 @@ package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.util.List;
 
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
-import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.parser.PartTree;
 
 /**
@@ -37,33 +36,38 @@ public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
 	 * Constructor
 	 * @param type the underlying entity type
 	 * @param queryMethod the underlying query method to support.
-	 * @param spannerOperations used for executing queries.
+	 * @param spannerTemplate used for executing queries.
 	 * @param spannerMappingContext used for getting metadata about entities.
 	 */
-	public PartTreeSpannerQuery(Class<T> type, QueryMethod queryMethod,
-			SpannerOperations spannerOperations,
+	public PartTreeSpannerQuery(Class<T> type, SpannerQueryMethod queryMethod,
+			SpannerTemplate spannerTemplate,
 			SpannerMappingContext spannerMappingContext) {
-		super(type, queryMethod, spannerOperations, spannerMappingContext);
+		super(type, queryMethod, spannerTemplate, spannerMappingContext);
 		this.tree = new PartTree(queryMethod.getName(), type);
 	}
 
 	@Override
-	public Object execute(Object[] parameters) {
-		List<T> results = executeRawResult(parameters);
-		if (this.tree.isCountProjection()) {
-			return results.size();
-		}
-		else if (this.tree.isExistsProjection()) {
-			return !results.isEmpty();
-		}
-		else {
-			return applyProjection(results);
-		}
+	protected List executeRawResult(Object[] parameters) {
+		return isCountOrExistsQuery()
+				? SpannerStatementQueryExecutor.executeQuery(
+						struct -> isCountQuery() ? struct.getLong(0)
+								: struct.getBoolean(0),
+						this.entityType, this.tree, parameters, this.spannerTemplate,
+						this.spannerMappingContext)
+				: SpannerStatementQueryExecutor.executeQuery(this.entityType, this.tree,
+						parameters, this.spannerTemplate, this.spannerMappingContext);
 	}
 
-	@Override
-	protected List<T> executeRawResult(Object[] parameters) {
-		return SpannerStatementQueryExecutor.executeQuery(this.entityType, this.tree,
-				parameters, this.spannerOperations, this.spannerMappingContext);
+	private boolean isCountOrExistsQuery() {
+		return isCountQuery() || isExistsQuery();
 	}
+
+	private boolean isCountQuery() {
+		return this.tree.isCountProjection();
+	}
+
+	private boolean isExistsQuery() {
+		return this.tree.isExistsProjection();
+	}
+
 }
