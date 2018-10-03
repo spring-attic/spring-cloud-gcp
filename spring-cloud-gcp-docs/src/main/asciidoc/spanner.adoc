@@ -1075,16 +1075,16 @@ The results would be sorted by "id" in ascending order.
 Your query method can also return non-entity types:
 [source, java]
 ----
-		@Query(" select count(1) from trades where action = @action")
+		@Query("SELECT COUNT(1) FROM trades WHERE action = @action")
   	int countByActionQuery(String action);
 
-  	@Query(" select count(1) from trades where action = @action")
+  	@Query("SELECT COUNT(1) FROM trades WHERE action = @action")
   	boolean existsByActionQuery(String action);
 
-  	@Query("select action from trades where action = @action limit 1")
+  	@Query("SELECT action FROM trades WHERE action = @action limit 1")
   	String getFirstString(@Param("action") String action);
 
-  	@Query("select action from trades where action = @action")
+  	@Query("SELECT action FROM trades WHERE action = @action")
   	List<String> getFirstStringList(@Param("action") String action);
 ----
 
