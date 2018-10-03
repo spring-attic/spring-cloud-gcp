@@ -71,8 +71,10 @@ public class SpannerSchemaUtilsTests {
 
 	public void getCreateDdlTest() {
 		assertEquals("CREATE TABLE custom_test_table ( id STRING(MAX) , id3 INT64 , "
-						+ "id_2 STRING(MAX) , bytes2 BYTES(MAX) , custom_col STRING(MAX) , other STRING(333) ,"
-						+ " bytes BYTES(MAX) , bytesList ARRAY<BYTES(111)> , integerList ARRAY<INT64> , "
+				+ "id_2 STRING(MAX) , bytes2 BYTES(MAX) , custom_col STRING(MAX) , other STRING(333) , "
+				+ "primitiveDoubleField FLOAT64 , bigDoubleField FLOAT64 , bigLongField INT64 , "
+				+ "primitiveIntField INT64 , bigIntField INT64 , bytes BYTES(MAX) , "
+				+ "bytesList ARRAY<BYTES(111)> , integerList ARRAY<INT64> , "
 						+ "doubles ARRAY<FLOAT64> ) PRIMARY KEY ( id , id_2 , id3 )",
 				this.spannerSchemaUtils.getCreateTableDdlString(TestEntity.class));
 	}
@@ -204,6 +206,16 @@ public class SpannerSchemaUtilsTests {
 		@ColumnLength(maxLength = 333)
 		@Column(name = "")
 		String other;
+
+		double primitiveDoubleField;
+
+		Double bigDoubleField;
+
+		Long bigLongField;
+
+		int primitiveIntField;
+
+		Integer bigIntField;
 
 		ByteArray bytes;
 
