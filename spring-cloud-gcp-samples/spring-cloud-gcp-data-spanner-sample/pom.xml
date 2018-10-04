@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<artifactId>spring-cloud-gcp-samples</artifactId>
 		<groupId>org.springframework.cloud</groupId>
@@ -28,48 +28,8 @@
 		</dependency>
 	</dependencies>
 
-	<profiles>
-		<profile>
-			<id>spanner-repository-example</id>
-			<properties>
-				<spring.boot.mainclass>com.example.SpannerRepositoryExample</spring.boot.mainclass>
-				<spring.profiles.active>repository-example</spring.profiles.active>
-			</properties>
-		</profile>
-		<profile>
-			<id>spanner-template-example</id>
-			<properties>
-				<spring.boot.mainclass>com.example.SpannerTemplateExample</spring.boot.mainclass>
-				<spring.profiles.active>template-example</spring.profiles.active>
-			</properties>
-		</profile>
-	</profiles>
-
-	<!-- We have more than 1 main classes,
-	this setup prevents Spring Boot failing at the package phase-->
 	<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>true</filtering>
-			</resource>
-		</resources>
-
 		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>repackage</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<mainClass>${spring.boot.mainclass}</mainClass>
-				</configuration>
-			</plugin>
 			<plugin>
 				<artifactId>maven-deploy-plugin</artifactId>
 				<configuration>
