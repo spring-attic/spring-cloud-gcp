@@ -53,7 +53,7 @@ public @interface Column {
 	 *
 	 * @return the maximum length for the column
 	 */
-	long generateSchemaMaxLength() default -1;
+	long spannerTypeMaxLength() default -1;
 
 	/**
 	 * If the column's schema should be NOT NULL when generating a schema based on an

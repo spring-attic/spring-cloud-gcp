@@ -202,10 +202,10 @@ public class SpannerSchemaUtilsTests {
 		EmbeddedColumns embeddedColumns;
 
 		// Intentionally incompatible column type for testing.
-		@Column(name = "custom_col", generateSchemaMaxLength = 123, spannerType = TypeCode.FLOAT64, nullable = false)
+		@Column(name = "custom_col", spannerTypeMaxLength = 123, spannerType = TypeCode.FLOAT64, nullable = false)
 		String something;
 
-		@Column(name = "", generateSchemaMaxLength = 333)
+		@Column(name = "", spannerTypeMaxLength = 333)
 		String other;
 
 		double primitiveDoubleField;
@@ -220,7 +220,7 @@ public class SpannerSchemaUtilsTests {
 
 		ByteArray bytes;
 
-		@Column(generateSchemaMaxLength = 111)
+		@Column(spannerTypeMaxLength = 111)
 		List<ByteArray> bytesList;
 
 		List<Integer> integerList;

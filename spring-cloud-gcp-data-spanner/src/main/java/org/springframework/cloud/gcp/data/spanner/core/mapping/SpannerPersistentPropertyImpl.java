@@ -157,10 +157,10 @@ public class SpannerPersistentPropertyImpl
 	@Override
 	public OptionalLong getMaxColumnLength() {
 		Column annotation = findAnnotation(Column.class);
-		if (annotation == null || annotation.generateSchemaMaxLength() < 0) {
+		if (annotation == null || annotation.spannerTypeMaxLength() < 0) {
 			return OptionalLong.empty();
 		}
-		return OptionalLong.of(annotation.generateSchemaMaxLength());
+		return OptionalLong.of(annotation.spannerTypeMaxLength());
 	}
 
 	@Override
