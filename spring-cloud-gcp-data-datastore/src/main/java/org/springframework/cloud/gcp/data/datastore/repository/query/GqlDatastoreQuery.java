@@ -117,6 +117,10 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				: (List) StreamSupport.stream(found.spliterator(), false)
 						.collect(Collectors.toList());
 		Object result;
+		boolean returnTypeIsCollection = this.queryMethod.isCollectionQuery();
+		Class returnedItemType = returnTypeIsCollection ? this.queryMethod.getResultProcessor().getReturnedType().getReturnedType() : this.queryMethod.getReturnedObjectType();
+		boolean returnItemTypeIsNonEntity =;
+
 		if (this.queryMethod.isCountQuery()) {
 			result = rawResult.size();
 		}
