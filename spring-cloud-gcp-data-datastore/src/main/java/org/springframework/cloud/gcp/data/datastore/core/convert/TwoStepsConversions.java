@@ -45,11 +45,13 @@ import org.springframework.util.CollectionUtils;
 
 /**
  * In order to support {@link CustomConversions}, this class applies 2-step conversions.
- * The first step produces one of {@link org.springframework.data.mapping.model.SimpleTypeHolder}'s simple types.
- * The second step converts simple types to Datastore-native types.
- * The second step is skipped if the first one produces a Datastore-native type.
+ * The first step produces one of
+ * {@link org.springframework.data.mapping.model.SimpleTypeHolder}'s simple types. The
+ * second step converts simple types to Datastore-native types. The second step is skipped
+ * if the first one produces a Datastore-native type.
  *
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  *
  * @since 1.1
  */
@@ -90,6 +92,11 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		this.internalConversionService.addConverter(BYTE_ARRAY_TO_BLOB_CONVERTER);
 		this.internalConversionService.addConverter(BLOB_TO_BYTE_ARRAY_CONVERTER);
 
+	}
+
+	@Override
+	public GenericConversionService getConversionService() {
+		return this.conversionService;
 	}
 
 	@Override

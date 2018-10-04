@@ -19,15 +19,24 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.core.convert.support.GenericConversionService;
 
 /**
  * An interface for type conversions on read and on write
  *
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  *
  * @since 1.1
  */
 public interface ReadWriteConversions {
+
+	/**
+	 * Get the conversion service used to convert data types.
+	 * @return the conversion service.
+	 */
+	GenericConversionService getConversionService();
+
 	/**
 	 * Converts a Cloud Datastore {@link Value} to an object of a target type
 	 * @param val Cloud Datastore Value.

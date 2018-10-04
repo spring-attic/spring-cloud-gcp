@@ -35,6 +35,7 @@ import org.springframework.data.mapping.model.PersistentEntityParameterValueProv
  * A class for object to entity and entity to object conversions
  *
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  *
  * @since 1.1
  */
@@ -55,6 +56,11 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		this.conversions = conversions;
 
 		conversions.registerEntityConverter(this);
+	}
+
+	@Override
+	public ReadWriteConversions getConversions() {
+		return this.conversions;
 	}
 
 	@Override
