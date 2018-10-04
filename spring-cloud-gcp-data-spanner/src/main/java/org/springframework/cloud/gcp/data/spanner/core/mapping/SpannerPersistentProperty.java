@@ -19,6 +19,8 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 
+import com.google.cloud.spanner.Type.Code;
+
 import org.springframework.data.mapping.PersistentProperty;
 
 /**
@@ -80,4 +82,20 @@ public interface SpannerPersistentProperty
 	 * child table. False otherwise.
 	 */
 	boolean isInterleaved();
+
+	/**
+	 * If the column's schema should be NOT NULL when generating a schema based on an
+	 * entity class.
+	 * @return {@code true} if the column should be NOT NULL in generated DDL.
+	 * {@code false } otherwise.
+	 */
+	boolean isGenerateSchemaNotNull();
+
+	/**
+	 * Optionally directly specify the column type in Cloud Spanner. For ARRAY columns
+	 * this refers to type of the item the array holds. If this is not specified then it
+	 * is inferred.
+	 * @return The user-specified column item type.
+	 */
+	Code getAnnotatedColumnItemType();
 }

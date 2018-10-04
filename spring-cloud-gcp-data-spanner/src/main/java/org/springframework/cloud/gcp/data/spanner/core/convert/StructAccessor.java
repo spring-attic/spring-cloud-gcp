@@ -33,6 +33,9 @@ import com.google.common.collect.ImmutableMap;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 
+import static org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper.getArrayJavaClassFor;
+import static org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper.getSimpleJavaClassFor;
+
 /**
  * A convenience wrapper class around Struct to make reading columns easier without
  * knowing their type.
@@ -114,7 +117,6 @@ public class StructAccessor {
 					// the case where the field within the POJO is Struct.
 					.put(Struct.class, Struct::getStruct).build();
 
-	private final SpannerTypeMapper spannerTypeMapper;
 
 	private Struct struct;
 
@@ -122,7 +124,6 @@ public class StructAccessor {
 
 	public StructAccessor(Struct struct) {
 		this.struct = struct;
-		this.spannerTypeMapper = new SpannerTypeMapper();
 		this.columnNamesIndex = indexColumnNames();
 	}
 
@@ -157,7 +158,7 @@ public class StructAccessor {
 			throw new SpannerDataException("Column is not an ARRAY type: " + colName);
 		}
 		Type.Code innerTypeCode = this.struct.getColumnType(colName).getArrayElementType().getCode();
-		Class clazz = this.spannerTypeMapper.getSimpleJavaClassFor(innerTypeCode);
+		Class clazz = getSimpleJavaClassFor(innerTypeCode);
 		BiFunction<Struct, String, List> readMethod = readIterableMapping.get(clazz);
 		return readMethod.apply(this.struct, colName);
 	}
@@ -181,8 +182,7 @@ public class StructAccessor {
 	private Class getSingleItemTypeCode(Type colType) {
 		Code code = colType.getCode();
 		return code.equals(Code.ARRAY)
-				? this.spannerTypeMapper
-						.getArrayJavaClassFor(colType.getArrayElementType().getCode())
-				: this.spannerTypeMapper.getSimpleJavaClassFor(code);
+				? getArrayJavaClassFor(colType.getArrayElementType().getCode())
+				: getSimpleJavaClassFor(code);
 	}
 }

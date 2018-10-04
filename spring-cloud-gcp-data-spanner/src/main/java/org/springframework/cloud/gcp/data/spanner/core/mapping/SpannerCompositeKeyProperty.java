@@ -25,6 +25,7 @@ import java.util.OptionalLong;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Key.Builder;
+import com.google.cloud.spanner.Type.Code;
 
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
@@ -107,6 +108,16 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	@Override
 	public boolean isInterleaved() {
 		return false;
+	}
+
+	@Override
+	public boolean isGenerateSchemaNotNull() {
+		return false;
+	}
+
+	@Override
+	public Code getAnnotatedColumnItemType() {
+		return null;
 	}
 
 	@Override

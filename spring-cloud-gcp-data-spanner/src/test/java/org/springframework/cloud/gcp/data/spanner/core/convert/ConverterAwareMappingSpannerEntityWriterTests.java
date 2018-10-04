@@ -163,7 +163,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		when(writeBuilder.set(eq("intField2"))).thenReturn(intField2Binder);
 
 		ValueBinder<WriteBuilder> longFieldBinder = mock(ValueBinder.class);
-		when(longFieldBinder.to(anyLong())).thenReturn(null);
+		when(longFieldBinder.to(anyString())).thenReturn(null);
 		when(writeBuilder.set(eq("longField"))).thenReturn(longFieldBinder);
 
 		ValueBinder<WriteBuilder> doubleFieldBinder = mock(ValueBinder.class);
@@ -171,7 +171,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		when(writeBuilder.set(eq("doubleField"))).thenReturn(doubleFieldBinder);
 
 		ValueBinder<WriteBuilder> doubleArrayFieldBinder = mock(ValueBinder.class);
-		when(doubleArrayFieldBinder.toFloat64Array((double[]) any())).thenReturn(null);
+		when(doubleArrayFieldBinder.toStringArray(any())).thenReturn(null);
 		when(writeBuilder.set(eq("doubleArray"))).thenReturn(doubleArrayFieldBinder);
 
 		ValueBinder<WriteBuilder> doubleListFieldBinder = mock(ValueBinder.class);
@@ -189,7 +189,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		when(writeBuilder.set(eq("booleanList"))).thenReturn(booleanListFieldBinder);
 
 		ValueBinder<WriteBuilder> longListFieldBinder = mock(ValueBinder.class);
-		when(longListFieldBinder.toInt64Array((Iterable<Long>) any())).thenReturn(null);
+		when(longListFieldBinder.toStringArray(any())).thenReturn(null);
 		when(writeBuilder.set(eq("longList"))).thenReturn(longListFieldBinder);
 
 		ValueBinder<WriteBuilder> timestampListFieldBinder = mock(ValueBinder.class);
@@ -229,13 +229,13 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		verify(booleanFieldBinder, times(1)).to(eq(Boolean.valueOf(t.booleanField)));
 		verify(intFieldBinder, times(1)).to(eq(Long.valueOf(t.intField)));
 		verify(intField2Binder, times(1)).to(eq(Long.valueOf(t.testEmbeddedColumns.intField2)));
-		verify(longFieldBinder, times(1)).to(eq(Long.valueOf(t.longField)));
+		verify(longFieldBinder, times(1)).to(eq(String.valueOf(t.longField)));
 		verify(doubleFieldBinder, times(1)).to(eq(Double.valueOf(t.doubleField)));
-		verify(doubleArrayFieldBinder, times(1)).toFloat64Array(eq(t.doubleArray));
+		verify(doubleArrayFieldBinder, times(1)).to("3.33,3.33,3.33");
 		verify(doubleListFieldBinder, times(1)).toFloat64Array(eq(t.doubleList));
 		verify(stringListFieldBinder, times(1)).toStringArray(eq(t.stringList));
 		verify(booleanListFieldBinder, times(1)).toBoolArray(eq(t.booleanList));
-		verify(longListFieldBinder, times(1)).toInt64Array(eq(t.longList));
+		verify(longListFieldBinder, times(1)).toStringArray(any());
 		verify(timestampListFieldBinder, times(1)).toTimestampArray(eq(t.timestampList));
 		verify(dateListFieldBinder, times(1)).toDateArray(eq(t.dateList));
 		verify(bytesListFieldBinder, times(1)).toBytesArray(eq(t.bytesList));
