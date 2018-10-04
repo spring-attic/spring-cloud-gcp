@@ -58,10 +58,10 @@ public @interface Column {
 	/**
 	 * If the column's schema should be NOT NULL when generating a schema based on an
 	 * entity class.
-	 * @return {@code true} if the column should be NOT NULL in generated DDL.
-	 * {@code false } otherwise.
+	 * @return {@code false} if the column should be NOT NULL in generated DDL.
+	 * {@code true} otherwise.
 	 */
-	boolean nullable() default false;
+	boolean nullable() default true;
 
 	/**
 	 * Optionally directly specify the column type in Cloud Spanner. For ARRAY columns

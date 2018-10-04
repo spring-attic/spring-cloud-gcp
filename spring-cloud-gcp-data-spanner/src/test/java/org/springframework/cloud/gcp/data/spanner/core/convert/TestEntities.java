@@ -61,7 +61,7 @@ public class TestEntities {
 
 		double doubleField;
 
-		// This long is forced to be stored as a String for testing
+		// This double array is forced to be stored as a String for testing
 		@Column(columnTypeCode = TypeCode.STRING)
 		double[] doubleArray;
 
@@ -74,7 +74,7 @@ public class TestEntities {
 
 		List<Boolean> booleanList;
 
-		// This long is forced to be stored as a String for testing
+		// This long list is forced to be stored as a String for testing
 		@Column(columnTypeCode = TypeCode.STRING)
 		List<Long> longList;
 
