@@ -56,13 +56,13 @@ public class TestEntities {
 		boolean booleanField;
 
 		// This long is forced to be stored as a String for testing
-		@Column(columnTypeCode = TypeCode.STRING)
+		@Column(spannerType = TypeCode.STRING)
 		long longField;
 
 		double doubleField;
 
 		// This double array is forced to be stored as a String for testing
-		@Column(columnTypeCode = TypeCode.STRING)
+		@Column(spannerType = TypeCode.STRING)
 		double[] doubleArray;
 
 		// int is not a native Cloud Spanner type, so this will utilize custom conversions.
@@ -75,7 +75,7 @@ public class TestEntities {
 		List<Boolean> booleanList;
 
 		// This long list is forced to be stored as a String for testing
-		@Column(columnTypeCode = TypeCode.STRING)
+		@Column(spannerType = TypeCode.STRING)
 		List<Long> longList;
 
 		List<Timestamp> timestampList;

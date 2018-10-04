@@ -202,7 +202,7 @@ public class SpannerSchemaUtilsTests {
 		EmbeddedColumns embeddedColumns;
 
 		// Intentionally incompatible column type for testing.
-		@Column(name = "custom_col", generateSchemaMaxLength = 123, columnTypeCode = TypeCode.FLOAT64, nullable = false)
+		@Column(name = "custom_col", generateSchemaMaxLength = 123, spannerType = TypeCode.FLOAT64, nullable = false)
 		String something;
 
 		@Column(name = "", generateSchemaMaxLength = 333)

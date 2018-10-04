@@ -49,11 +49,11 @@ public @interface Column {
 	 * The maximum length of the column in Cloud Spanner terms. For example, for STRING
 	 * columns this refers to the number of characters. For BYTES columns this refers to
 	 * the number of bytes. This setting is only used when generating schema from an
-	 * entity class. A setting of 0 indicates an unlimited maximum length.
+	 * entity class. A setting of less than 0 indicates an unlimited maximum length.
 	 *
 	 * @return the maximum length for the column
 	 */
-	long generateSchemaMaxLength() default 0;
+	long generateSchemaMaxLength() default -1;
 
 	/**
 	 * If the column's schema should be NOT NULL when generating a schema based on an
@@ -69,5 +69,5 @@ public @interface Column {
 	 * is inferred from the Java property type.
 	 * @return The user-specified column item type.
 	 */
-	TypeCode columnTypeCode() default TypeCode.TYPE_CODE_UNSPECIFIED;
+	TypeCode spannerType() default TypeCode.TYPE_CODE_UNSPECIFIED;
 }

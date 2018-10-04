@@ -41,7 +41,7 @@ public class SubTradeComponent {
 	@PrimaryKey(keyOrder = 3)
 	String componentIdPartB;
 
-	@Column(columnTypeCode = TypeCode.STRING)
+	@Column(spannerType = TypeCode.STRING)
 	boolean booleanValue;
 
 	public SubTradeComponent() {
