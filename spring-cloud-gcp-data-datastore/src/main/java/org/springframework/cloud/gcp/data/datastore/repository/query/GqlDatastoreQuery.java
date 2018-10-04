@@ -35,6 +35,7 @@ import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.GqlQuery.Builder;
 import com.google.cloud.datastore.Key;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
@@ -156,14 +157,17 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 						.collect(Collectors.toList());
 			}
 			else {
-				result = this.datastoreTemplate.getDatastoreEntityConverter()
+				result = rawResult.isEmpty() ? null
+						: this.datastoreTemplate.getDatastoreEntityConverter()
 						.getConversions().getConversionService()
 						.convert(rawResult.get(0), returnedItemType);
 
 			}
 		}
 		else if (!returnTypeIsCollection) {
-			return this.queryMethod.getResultProcessor().processResult(rawResult.get(0));
+			return rawResult.isEmpty() ? null
+					: this.queryMethod.getResultProcessor()
+							.processResult(rawResult.get(0));
 		}
 		else {
 			result = applyProjection(rawResult);
@@ -171,7 +175,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return result;
 	}
 
-	private boolean isNonEntityReturnedType(Class returnedType) {
+	@VisibleForTesting
+	boolean isNonEntityReturnedType(Class returnedType) {
 		for (Class nativeType : DATASTORE_NATIVE_TYPES) {
 			if (returnedType.isAssignableFrom(nativeType) || this.datastoreTemplate
 					.getDatastoreEntityConverter().getConversions().getConversionService()

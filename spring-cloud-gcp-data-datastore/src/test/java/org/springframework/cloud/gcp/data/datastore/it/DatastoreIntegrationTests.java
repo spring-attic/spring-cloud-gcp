@@ -37,6 +37,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -128,6 +129,11 @@ public class DatastoreIntegrationTests {
 		assertEquals((Long) 1L, foundByCustomProjectionQuery.get(0).getId());
 
 		testEntityA.setBlobField(null);
+
+		assertEquals((Long) 1L, this.testEntityRepository.getKey().getId());
+		assertEquals(1, this.testEntityRepository.getIds(1L).size());
+		assertEquals("1", this.testEntityRepository.getOneId(1L));
+		assertNotNull(this.testEntityRepository.getOneTestEntity(1L));
 
 		this.testEntityRepository.save(testEntityA);
 
