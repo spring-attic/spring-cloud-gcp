@@ -166,7 +166,7 @@ public class SpannerPersistentPropertyImpl
 	@Override
 	public boolean isGenerateSchemaNotNull() {
 		Column annotation = findAnnotation(Column.class);
-		return annotation != null && annotation.nullable();
+		return annotation != null && !annotation.nullable();
 	}
 
 	@Override
