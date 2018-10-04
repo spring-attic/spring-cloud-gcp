@@ -242,7 +242,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		Class<?> propertyType = property.getType();
 		ValueBinder<WriteBuilder> valueBinder = sink.set(property.getColumnName());
 
-		boolean valueSet;
+		boolean valueSet = false;
 
 		/*
 		 * Due to type erasure, binder methods for Iterable properties must be manually specified.
@@ -254,25 +254,28 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 					property);
 		}
 		else {
-			// First attempt to use the user's annotated column type
-			valueSet = property.getAnnotatedColumnItemType() != null
-					&& attemptSetSingleItemValue(propertyValue, propertyType, valueBinder,
-							getSimpleJavaClassFor(property.getAnnotatedColumnItemType()));
 
-			// Second directly try to set using the property's original Java type
-			if (!valueSet) {
+			// use the user's annotated column type if possible
+			if (property.getAnnotatedColumnItemType() != null) {
 				valueSet = attemptSetSingleItemValue(propertyValue, propertyType,
-						valueBinder, propertyType);
+						valueBinder,
+						getSimpleJavaClassFor(property.getAnnotatedColumnItemType()));
 			}
-
-			// Finally try and find any conversion that works
-			if (!valueSet) {
-				for (Class<?> targetType : singleItemType2ToMethodMap.keySet()) {
+			else {
+				// directly try to set using the property's original Java type
+				if (!valueSet) {
 					valueSet = attemptSetSingleItemValue(propertyValue, propertyType,
-							valueBinder,
-							targetType);
-					if (valueSet) {
-						break;
+							valueBinder, propertyType);
+				}
+
+				// Finally try and find any conversion that works
+				if (!valueSet) {
+					for (Class<?> targetType : singleItemType2ToMethodMap.keySet()) {
+						valueSet = attemptSetSingleItemValue(propertyValue, propertyType,
+								valueBinder, targetType);
+						if (valueSet) {
+							break;
+						}
 					}
 				}
 			}
@@ -293,28 +296,34 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			return false;
 		}
 
-		// First try to use the annotated column type if possible.
-		boolean valueSet = spannerPersistentProperty.getAnnotatedColumnItemType() != null
-				&& attemptSetIterablePropertyWithType(value, valueBinder, innerType,
-						getSimpleJavaClassFor(
-								spannerPersistentProperty.getAnnotatedColumnItemType()));
+		boolean valueSet = false;
 
-		// Second attempt check if there is directly a write method that can accept the
-		// property
-		if (!valueSet && iterablePropertyType2ToMethodMap.containsKey(innerType)) {
-			iterablePropertyType2ToMethodMap.get(innerType).accept(valueBinder,
-					value);
-			valueSet = true;
+		// use the annotated column type if possible.
+		if (spannerPersistentProperty.getAnnotatedColumnItemType() != null) {
+			valueSet = attemptSetIterablePropertyWithType(value, valueBinder, innerType,
+					getSimpleJavaClassFor(
+							spannerPersistentProperty.getAnnotatedColumnItemType()));
 		}
+		else {
 
-		// Finally find any compatible conversion
-		if (!valueSet) {
-			for (Class<?> targetType : iterablePropertyType2ToMethodMap.keySet()) {
-				valueSet = attemptSetIterablePropertyWithType(value, valueBinder,
-						innerType, targetType);
-				if (valueSet) {
-					break;
+			// attempt check if there is directly a write method that can accept the
+			// property
+			if (!valueSet && iterablePropertyType2ToMethodMap.containsKey(innerType)) {
+				iterablePropertyType2ToMethodMap.get(innerType).accept(valueBinder,
+						value);
+				valueSet = true;
+			}
+
+			// Finally find any compatible conversion
+			if (!valueSet) {
+				for (Class<?> targetType : iterablePropertyType2ToMethodMap.keySet()) {
+					valueSet = attemptSetIterablePropertyWithType(value, valueBinder,
+							innerType, targetType);
+					if (valueSet) {
+						break;
+					}
 				}
+
 			}
 		}
 		return valueSet;

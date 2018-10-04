@@ -30,6 +30,7 @@ import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.ValueBinder;
 import com.google.common.collect.ImmutableSet;
+import com.google.spanner.v1.TypeCode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
@@ -39,6 +40,8 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.Faul
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.FaultyTestEntity2;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEmbeddedColumns;
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.TestEntity;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 
@@ -327,4 +330,16 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		assertThat(key, is(Key.of(true)));
 	}
 
+	@Test(expected = SpannerDataException.class)
+	public void testUserSetUnconvertableColumnType() {
+		UserSetUnconvertableColumnType userSetUnconvertableColumnType = new UserSetUnconvertableColumnType();
+		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
+		this.spannerEntityWriter.write(userSetUnconvertableColumnType, writeBuilder::set);
+	}
+
+	static class UserSetUnconvertableColumnType {
+		@PrimaryKey
+		@Column(spannerType = TypeCode.DATE)
+		boolean id;
+	}
 }
