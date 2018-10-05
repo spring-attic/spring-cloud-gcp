@@ -182,11 +182,14 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 		else {
 			if (returnTypeIsCollection) {
-				result = rawResult.stream()
+				result = this.datastoreTemplate.getDatastoreEntityConverter()
+						.getConversions().convertCollection(
+								rawResult.stream()
 						.map(x -> this.datastoreTemplate.getDatastoreEntityConverter()
 								.getConversions().getConversionService()
 								.convert(x, returnedItemType))
-						.collect(Collectors.toList());
+										.collect(Collectors.toList()),
+								this.queryMethod.getReturnedObjectType());
 			}
 			else {
 				result = rawResult.isEmpty() ? null
