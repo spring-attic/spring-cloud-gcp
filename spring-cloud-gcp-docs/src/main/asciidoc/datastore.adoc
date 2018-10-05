@@ -691,6 +691,8 @@ With the exception of `Cursor`, array forms of each of the types are also suppor
 If you would like to obtain the count of items of a query or if there are any items returned by the query, set the `count = true` or `exists = true` properties of the `@Query` annotation, respectively.
 The return type of the query method in these cases should be an integer type or a boolean type.
 
+Cloud Datastore provides provides the `SELECT __key__ FROM ...` special column for all kinds that retrieves the `Key`s of each row. Selecting this special `__key__` column is especially useful and efficient for `count` and `exists` queries.
+
 ===== Query methods with named queries properties
 
 You can also specify queries with Cloud Datastore parameter tags and SpEL expressions in properties files.

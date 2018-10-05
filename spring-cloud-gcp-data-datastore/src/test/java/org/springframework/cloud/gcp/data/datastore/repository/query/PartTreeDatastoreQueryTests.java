@@ -83,7 +83,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33 };
 
-		when(this.spannerTemplate.query(any(), any())).thenAnswer(invocation -> {
+		when(this.spannerTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -101,7 +101,8 @@ public class PartTreeDatastoreQueryTests {
 		});
 
 		this.partTreeSpannerQuery.execute(params);
-		verify(this.spannerTemplate, times(1)).query(any(), any());
+		verify(this.spannerTemplate, times(1))
+				.queryKeysOrEntities(any(), any());
 	}
 
 	@Test(expected = DatastoreDataException.class)
@@ -198,9 +199,8 @@ public class PartTreeDatastoreQueryTests {
 	private void queryWithMockResult(String queryName, List results) {
 		when(this.queryMethod.getName()).thenReturn(queryName);
 		this.partTreeSpannerQuery = createQuery();
-		when(this.spannerTemplate.query(any(), Mockito.<Class<Trade>>any()))
+		when(this.spannerTemplate.queryKeysOrEntities(any(), Mockito.<Class<Trade>>any()))
 				.thenReturn(results);
-		when(this.spannerTemplate.queryKeys(any())).thenReturn(results);
 	}
 
 	@Entity(name = "trades")

@@ -35,7 +35,7 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Chengyuan Zhao
  */
-public class SpannerQueryOptionsTests {
+public class SpannerSortPageQueryOptionsTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void addNullQueryOptionTest() {
@@ -44,14 +44,14 @@ public class SpannerQueryOptionsTests {
 
 	@Test(expected = UnsupportedOperationException.class)
 	public void timestampErrorTest() {
-		SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions();
+		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
 		assertFalse(spannerQueryOptions.hasTimestamp());
 		spannerQueryOptions.getTimestamp();
 	}
 
 	@Test
 	public void timestampTest() {
-		SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions();
+		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
 		Timestamp timestamp = Timestamp.now();
 		assertFalse(spannerQueryOptions.hasTimestamp());
 		spannerQueryOptions.setTimestamp(timestamp);
@@ -63,7 +63,7 @@ public class SpannerQueryOptionsTests {
 
 	@Test
 	public void limitTest() {
-		SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions();
+		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
 		long limit = 3L;
 		assertFalse(spannerQueryOptions.hasLimit());
 		spannerQueryOptions.setLimit(limit);
@@ -75,7 +75,7 @@ public class SpannerQueryOptionsTests {
 
 	@Test
 	public void offsetTest() {
-		SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions();
+		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
 		long offset = 3L;
 		assertFalse(spannerQueryOptions.hasOffset());
 		spannerQueryOptions.setOffset(offset);
@@ -87,7 +87,7 @@ public class SpannerQueryOptionsTests {
 
 	@Test
 	public void sortTest() {
-		SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions();
+		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
 		Sort sort = Sort.by(Order.asc("test"));
 		assertFalse(spannerQueryOptions.getSort().isSorted());
 		spannerQueryOptions.setSort(sort);
@@ -98,7 +98,7 @@ public class SpannerQueryOptionsTests {
 
 	@Test
 	public void addQueryOptionTest() {
-		SpannerQueryOptions spannerQueryOptions = new SpannerQueryOptions();
+		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
 		QueryOption r1 = mock(QueryOption.class);
 		QueryOption r2 = mock(QueryOption.class);
 		spannerQueryOptions.addQueryOption(r1).addQueryOption(r2);

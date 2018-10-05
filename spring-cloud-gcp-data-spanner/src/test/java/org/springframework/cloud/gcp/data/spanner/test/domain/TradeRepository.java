@@ -35,6 +35,35 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
 	int countByAction(String action);
 
+	// deletes with the given action string, and returns the number of deleted items.
+	int deleteByAction(String action);
+
+	// deletes and returns the items that were deleted.
+	List<Trade> deleteBySymbol(String symbol);
+
+	void deleteBySymbolAndAction(String symbol, String action);
+
+	@Query(" select count(1) from :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: "
+			+ "where action = @action")
+	int countByActionQuery(@Param("action") String action);
+
+	@Query("SELECT EXISTS(select * from "
+			+ ":org.springframework.cloud.gcp.data.spanner.test.domain.Trade: "
+			+ "where action = @action limit 1)")
+	boolean existsByActionQuery(@Param("action") String action);
+
+	@Query("select action from :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: "
+			+ "where action = @action limit 1")
+	String getFirstString(@Param("action") String action);
+
+	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
+			+ " WHERE action=@action AND action=#{#action} ORDER BY action desc limit 1")
+	Trade getOneTrade(@Param("action") String action);
+
+	@Query("select action from :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: "
+			+ "where action = @action")
+	List<String> getFirstStringList(@Param("action") String action);
+
 	@Query("SELECT * FROM :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:"
 			+ " WHERE action=@action AND action=#{#action} ORDER BY action desc")
 	List<Trade> annotatedTradesByAction(@Param("action") String action);

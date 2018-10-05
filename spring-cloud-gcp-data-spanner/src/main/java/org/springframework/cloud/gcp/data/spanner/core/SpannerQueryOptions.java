@@ -19,16 +19,15 @@ package org.springframework.cloud.gcp.data.spanner.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalLong;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.QueryOption;
 
-import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
 /**
- * Encapsulates Cloud Spanner query options.
+ * Encapsulates Cloud Spanner query options. These are options that are independent of the
+ * SQL being run.
  * @author Chengyuan Zhao
  *
  * @since 1.1
@@ -38,12 +37,6 @@ public class SpannerQueryOptions {
 	private List<QueryOption> queryOptions = new ArrayList<>();
 
 	private Optional<Timestamp> timestamp = Optional.empty();
-
-	private OptionalLong limit = OptionalLong.empty();
-
-	private OptionalLong offset = OptionalLong.empty();
-
-	private Sort sort = Sort.unsorted();
 
 	private boolean allowPartialRead;
 
@@ -65,21 +58,6 @@ public class SpannerQueryOptions {
 		return this;
 	}
 
-	public SpannerQueryOptions unsetLimit() {
-		this.limit = OptionalLong.empty();
-		return this;
-	}
-
-	public SpannerQueryOptions unsetOffset() {
-		this.offset = OptionalLong.empty();
-		return this;
-	}
-
-	public SpannerQueryOptions unsetSort() {
-		this.sort = Sort.unsorted();
-		return this;
-	}
-
 	public boolean hasTimestamp() {
 		return this.timestamp.isPresent();
 	}
@@ -98,40 +76,6 @@ public class SpannerQueryOptions {
 		return this;
 	}
 
-	public boolean hasLimit() {
-		return this.limit.isPresent();
-	}
-
-	public long getLimit() {
-		if (!hasLimit()) {
-			throw new UnsupportedOperationException(
-					"Cannot get limit because it hasn't been set.");
-		}
-		return this.limit.getAsLong();
-	}
-
-	public SpannerQueryOptions setLimit(long limit) {
-		this.limit = OptionalLong.of(limit);
-		return this;
-	}
-
-	public boolean hasOffset() {
-		return this.offset.isPresent();
-	}
-
-	public long getOffset() {
-		if (!hasOffset()) {
-			throw new UnsupportedOperationException(
-					"Cannot get offset because it hasn't been set.");
-		}
-		return this.offset.getAsLong();
-	}
-
-	public SpannerQueryOptions setOffset(long offset) {
-		this.offset = OptionalLong.of(offset);
-		return this;
-	}
-
 	public QueryOption[] getQueryOptions() {
 		return this.queryOptions.toArray(new QueryOption[this.queryOptions.size()]);
 	}
@@ -143,16 +87,6 @@ public class SpannerQueryOptions {
 	public SpannerQueryOptions setAllowPartialRead(
 			boolean allowPartialRead) {
 		this.allowPartialRead = allowPartialRead;
-		return this;
-	}
-
-	public Sort getSort() {
-		return this.sort;
-	}
-
-	public SpannerQueryOptions setSort(Sort sort) {
-		Assert.notNull(sort, "A valid sort is required.");
-		this.sort = sort;
 		return this;
 	}
 }

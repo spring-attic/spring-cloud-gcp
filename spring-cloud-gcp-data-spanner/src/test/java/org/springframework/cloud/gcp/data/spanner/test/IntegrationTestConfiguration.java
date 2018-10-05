@@ -31,21 +31,28 @@ import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTransactionManager;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.it.SpannerTemplateIntegrationTests.TemplateTransactionalService;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
+import org.springframework.cloud.gcp.data.spanner.repository.it.SpannerRepositoryIntegrationTests.
+		TradeRepositoryTransactionalService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * @author Balint Pato
+ * @author Chengyuan Zhao
  */
 
 @Configuration
+@EnableTransactionManagement
 @PropertySource("application-test.properties")
 @EnableSpannerRepositories
 public class IntegrationTestConfiguration {
@@ -80,6 +87,16 @@ public class IntegrationTestConfiguration {
 		catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Bean
+	public TemplateTransactionalService templateTransactionalService() {
+		return new TemplateTransactionalService();
+	}
+
+	@Bean
+	public TradeRepositoryTransactionalService tradeRepositoryTransactionalService() {
+		return new TradeRepositoryTransactionalService();
 	}
 
 	@Bean
@@ -120,6 +137,12 @@ public class IntegrationTestConfiguration {
 	@Bean
 	public SpannerEntityProcessor spannerConverter(SpannerMappingContext mappingContext) {
 		return new ConverterAwareMappingSpannerEntityProcessor(mappingContext);
+	}
+
+	@Bean
+	public SpannerTransactionManager spannerTransactionManager(
+			DatabaseClient databaseClient) {
+		return new SpannerTransactionManager(databaseClient);
 	}
 
 	@Bean

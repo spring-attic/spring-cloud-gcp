@@ -39,6 +39,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 @Table(name = "#{'trades_'.concat(tableNameSuffix)}")
 public class Trade {
 
+	@Column(nullable = false)
 	private int age;
 
 	private Instant tradeTime;
