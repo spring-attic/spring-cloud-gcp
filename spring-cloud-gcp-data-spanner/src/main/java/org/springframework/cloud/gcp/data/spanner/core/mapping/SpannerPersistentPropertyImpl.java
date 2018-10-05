@@ -21,6 +21,9 @@ import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.stream.Collectors;
 
+import com.google.cloud.spanner.Type.Code;
+import com.google.spanner.v1.TypeCode;
+
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.PersistentEntity;
@@ -153,11 +156,27 @@ public class SpannerPersistentPropertyImpl
 
 	@Override
 	public OptionalLong getMaxColumnLength() {
-		ColumnLength annotation = findAnnotation(ColumnLength.class);
-		if (annotation == null) {
+		Column annotation = findAnnotation(Column.class);
+		if (annotation == null || annotation.spannerTypeMaxLength() < 0) {
 			return OptionalLong.empty();
 		}
-		return OptionalLong.of(annotation.maxLength());
+		return OptionalLong.of(annotation.spannerTypeMaxLength());
+	}
+
+	@Override
+	public boolean isGenerateSchemaNotNull() {
+		Column annotation = findAnnotation(Column.class);
+		return annotation != null && !annotation.nullable();
+	}
+
+	@Override
+	public Code getAnnotatedColumnItemType() {
+		Column annotation = findAnnotation(Column.class);
+		if (annotation == null
+				|| annotation.spannerType() == TypeCode.TYPE_CODE_UNSPECIFIED) {
+			return null;
+		}
+		return Code.valueOf(annotation.spannerType().name());
 	}
 
 	@Override

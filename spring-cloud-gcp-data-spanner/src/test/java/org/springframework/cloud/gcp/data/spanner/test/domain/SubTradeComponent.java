@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.data.spanner.test.domain;
 
+import com.google.spanner.v1.TypeCode;
+
+import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
@@ -37,6 +40,9 @@ public class SubTradeComponent {
 
 	@PrimaryKey(keyOrder = 3)
 	String componentIdPartB;
+
+	@Column(spannerType = TypeCode.STRING)
+	boolean booleanValue;
 
 	public SubTradeComponent() {
 
