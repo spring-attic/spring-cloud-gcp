@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import com.google.cloud.spanner.KeySet;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -18,10 +19,12 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
-@TestPropertySource("classpath:application-test.properties")
+@TestPropertySource("classpath:application.properties")
 @SpringBootTest(classes = { SpannerExampleDriver.class })
 public class SpannerTemplateTests {
 	@Autowired
@@ -32,6 +35,14 @@ public class SpannerTemplateTests {
 
 	@Autowired
 	private SpannerTemplateExample spannerTemplateExample;
+
+	@BeforeClass
+	public static void checkToRun() {
+		assumeThat(
+				"Spanner integration tests are disabled. "
+						+ "Please use '-Dit.spanner=true' to enable them. ",
+				System.getProperty("it.spanner"), is("true"));
+	}
 
 	@Before
 	@After

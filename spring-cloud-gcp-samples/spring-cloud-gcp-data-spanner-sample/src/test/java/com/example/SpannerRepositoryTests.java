@@ -31,7 +31,7 @@ import static org.junit.Assume.assumeThat;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
-@TestPropertySource("classpath:application-test.properties")
+@TestPropertySource("classpath:application.properties")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = { SpannerExampleDriver.class })
 public class SpannerRepositoryTests {
 	@LocalServerPort
