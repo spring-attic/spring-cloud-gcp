@@ -241,6 +241,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	@SuppressWarnings("unchecked")
+	@Override
 	public <T> T convertCollection(Object collection, Class<?> target) {
 		if (collection == null || target == null || ClassUtils.isAssignableValue(target, collection)) {
 			return (T) collection;

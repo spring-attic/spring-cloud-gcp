@@ -120,22 +120,15 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				? this.queryMethod.getResultProcessor().getReturnedType()
 						.getReturnedType()
 				: this.queryMethod.getReturnedObjectType();
-		boolean returnItemTypeIsNonEntity = isNonEntityReturnedType(returnedItemType);
 
-		Iterable found = returnItemTypeIsNonEntity
-				? this.datastoreTemplate.query(query, x -> {
-					Object mappedResult;
-					if (x instanceof Key) {
-						mappedResult = x;
-					}
-					else {
-						BaseEntity entity = (BaseEntity) x;
-						mappedResult = entity
-								.getValue((String) entity.getNames().toArray()[0]).get();
-					}
-					return mappedResult;
-				})
-				: this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
+		return isNonEntityReturnedType(returnedItemType)
+				? executeNonEntityQuery(query, returnTypeIsCollection, returnedItemType)
+				: executeEntityQuery(query, returnTypeIsCollection);
+	}
+
+	private Object executeEntityQuery(GqlQuery query, boolean returnTypeIsCollection) {
+		Iterable found = this.datastoreTemplate.queryKeysOrEntities(query,
+				this.entityType);
 
 		List rawResult = found == null ? Collections.emptyList()
 				: (List) StreamSupport.stream(found.spliterator(), false)
@@ -148,7 +141,46 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		else if (this.queryMethod.isExistsQuery()) {
 			result = !rawResult.isEmpty();
 		}
-		else if (returnItemTypeIsNonEntity) {
+		else if (!returnTypeIsCollection) {
+			return rawResult.isEmpty() ? null
+					: this.queryMethod.getResultProcessor()
+							.processResult(rawResult.get(0));
+		}
+		else {
+			result = this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+					.convertCollection(applyProjection(rawResult),
+							this.queryMethod.getReturnedObjectType());
+		}
+		return result;
+	}
+
+	private Object executeNonEntityQuery(GqlQuery query, boolean returnTypeIsCollection,
+			Class returnedItemType) {
+		Iterable found = this.datastoreTemplate.query(query, x -> {
+			Object mappedResult;
+			if (x instanceof Key) {
+				mappedResult = x;
+			}
+			else {
+				BaseEntity entity = (BaseEntity) x;
+				mappedResult = entity.getValue((String) entity.getNames().toArray()[0])
+						.get();
+			}
+			return mappedResult;
+		});
+
+		List rawResult = found == null ? Collections.emptyList()
+				: (List) StreamSupport.stream(found.spliterator(), false)
+						.collect(Collectors.toList());
+		Object result;
+
+		if (this.queryMethod.isCountQuery()) {
+			result = rawResult.size();
+		}
+		else if (this.queryMethod.isExistsQuery()) {
+			result = !rawResult.isEmpty();
+		}
+		else {
 			if (returnTypeIsCollection) {
 				result = rawResult.stream()
 						.map(x -> this.datastoreTemplate.getDatastoreEntityConverter()
@@ -159,18 +191,10 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			else {
 				result = rawResult.isEmpty() ? null
 						: this.datastoreTemplate.getDatastoreEntityConverter()
-						.getConversions().getConversionService()
-						.convert(rawResult.get(0), returnedItemType);
+								.getConversions().getConversionService()
+								.convert(rawResult.get(0), returnedItemType);
 
 			}
-		}
-		else if (!returnTypeIsCollection) {
-			return rawResult.isEmpty() ? null
-					: this.queryMethod.getResultProcessor()
-							.processResult(rawResult.get(0));
-		}
-		else {
-			result = applyProjection(rawResult);
 		}
 		return result;
 	}

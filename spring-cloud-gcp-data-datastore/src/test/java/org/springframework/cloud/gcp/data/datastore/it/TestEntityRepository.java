@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.it;
 
 import java.util.List;
+import java.util.Set;
 
 import com.google.cloud.datastore.Key;
 
@@ -40,17 +41,17 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	boolean existsByEntitiesWithCustomQuery(@Param("id_val") long id);
 
 	@Query("select id from  test_entities_ci where id <= @id_val ")
-	List<TestEntity> findEntitiesWithCustomProjectionQuery(@Param("id_val") long id);
+	TestEntity[] findEntitiesWithCustomProjectionQuery(@Param("id_val") long id);
 
 	@Query(value = "select __key__ from test_entities_ci")
-	List<Key> getKeys();
+	Set<Key> getKeys();
 
 	@Query(value = "select __key__ from test_entities_ci")
 	Key getKey();
 
 	// Also involves conversion from long id to String
 	@Query("select id from  test_entities_ci where id <= @id_val ")
-	List<String> getIds(@Param("id_val") long id);
+	String[] getIds(@Param("id_val") long id);
 
 	// Also involves conversion from long id to String
 	@Query("select id from  test_entities_ci where id <= @id_val")

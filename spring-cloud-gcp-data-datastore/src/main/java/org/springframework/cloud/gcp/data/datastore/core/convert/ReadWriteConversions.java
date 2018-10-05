@@ -54,6 +54,15 @@ public interface ReadWriteConversions {
 	Value convertOnWrite(Object obj, DatastorePersistentProperty persistentProperty);
 
 	/**
+	 * Converts a given collection-like object to a target collection type
+	 * @param collection the source collection-like object.
+	 * @param target the target collection type.
+	 * @param <T> the target collection type.
+	 * @return the converted collection.
+	 */
+	<T> T convertCollection(Object collection, Class<?> target);
+
+	/**
 	 * Registers {@link DatastoreEntityConverter} to be used for embedded entities
 	 * @param datastoreEntityConverter the DatastoreEntityConverter.
 	 */
