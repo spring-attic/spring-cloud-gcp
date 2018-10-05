@@ -16,10 +16,11 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.Optional;
+
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
-import org.springframework.core.convert.support.GenericConversionService;
 
 /**
  * An interface for type conversions on read and on write
@@ -32,18 +33,28 @@ import org.springframework.core.convert.support.GenericConversionService;
 public interface ReadWriteConversions {
 
 	/**
-	 * Get the conversion service used to convert data types.
-	 * @return the conversion service.
-	 */
-	GenericConversionService getConversionService();
-
-	/**
-	 * Converts a Cloud Datastore {@link Value} to an object of a target type
-	 * @param val Cloud Datastore Value.
-	 * @param persistentProperty the target field information.
+	 * Converts a given object to an object of a target type.
+	 * @param val the value to convert
+	 * @param targetCollectionType the type of the collection to be converted into.
+	 * {@code null} if the property is a singular object.
+	 * @param targetComponentType the type of the property to convert. For collection-like
+	 * properties this refers to the individual items' type.
 	 * @return an object of a target type.
 	 */
-	<T> T convertOnRead(Value val, DatastorePersistentProperty persistentProperty);
+	<T> T convertOnRead(Object val, Class targetCollectionType,
+			Class targetComponentType);
+
+	/**
+	 * Converts a given object to an object of a target type that is an embedded entity.
+	 * @param val the value to convert.
+	 * @param targetCollectionType the type of the collection to be converted into.
+	 * {@code null} if the property is a singular object.
+	 * @param targetComponentType the type of the property to convert. For collection-like
+	 * properties this refers to the individual items' type.
+	 * @return an object of a target type.
+	 */
+	<T> T convertOnReadEmbedded(Object val, Class targetCollectionType,
+			Class targetComponentType);
 
 	/**
 	 * Converts an object to a Cloud Datastore {@link Value}
@@ -54,13 +65,12 @@ public interface ReadWriteConversions {
 	Value convertOnWrite(Object obj, DatastorePersistentProperty persistentProperty);
 
 	/**
-	 * Converts a given collection-like object to a target collection type
-	 * @param collection the source collection-like object.
-	 * @param target the target collection type.
-	 * @param <T> the target collection type.
-	 * @return the converted collection.
+	 * Get the Cloud Datastore-compatible native Java type that can be used to store the
+	 * given type.
+	 * @param inputType the given type to test.
+	 * @return the Cloud Datastore-compatible native Java type, if it exists.
 	 */
-	<T> T convertCollection(Object collection, Class<?> target);
+	Optional<Class<?>> getSimpleTypeWithBidirectionalConversion(Class inputType);
 
 	/**
 	 * Registers {@link DatastoreEntityConverter} to be used for embedded entities

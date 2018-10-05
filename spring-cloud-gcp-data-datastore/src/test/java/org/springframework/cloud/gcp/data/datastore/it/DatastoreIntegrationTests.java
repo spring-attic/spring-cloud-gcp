@@ -132,7 +132,7 @@ public class DatastoreIntegrationTests {
 
 		assertEquals((Long) 1L, this.testEntityRepository.getKey().getId());
 		assertEquals(1, this.testEntityRepository.getIds(1L).length);
-		assertEquals("1", this.testEntityRepository.getOneId(1L));
+		assertEquals(1, this.testEntityRepository.getOneId(1L));
 		assertNotNull(this.testEntityRepository.getOneTestEntity(1L));
 
 		this.testEntityRepository.save(testEntityA);

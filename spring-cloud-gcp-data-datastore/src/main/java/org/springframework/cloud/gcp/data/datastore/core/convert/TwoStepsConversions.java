@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,28 +96,48 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	@Override
-	public GenericConversionService getConversionService() {
-		return this.conversionService;
+	public <T> T convertOnRead(Object val, Class targetCollectionType,
+			Class targetComponentType) {
+		return convertOnRead(val, false, targetCollectionType, targetComponentType);
 	}
 
 	@Override
+	public <T> T convertOnReadEmbedded(Object val, Class targetCollectionType,
+			Class targetComponentType) {
+		return convertOnRead(val, true, targetCollectionType, targetComponentType);
+	}
+
 	@SuppressWarnings("unchecked")
-	public <T> T convertOnRead(Value val, DatastorePersistentProperty persistentProperty) {
-		BiFunction<Object, Class<?>, T> readConverter = persistentProperty.isEmbedded()
-				? this::convertOnReadSingleEmbedded
-				: this::convertOnReadSingle;
+	private <T> T convertOnRead(Object val, boolean isEmbedded,
+			Class targetCollectionType, Class targetComponentType) {
+		if(val == null){
+			return null;
+		}
+		BiFunction<Object, Class<?>, T> readConverter = (ob, type) -> {
+			T result;
+			if (ob.getClass() == type) {
+				result = (T) ob;
+			}
+			else if (isEmbedded) {
+				result = convertOnReadSingleEmbedded(ob, type);
+			}
+			else {
+				result = convertOnReadSingle(ob, type);
+			}
+			return result;
+		};
 
-		Class<?> targetType = persistentProperty.getType();
-
-		Class<?> componentType = persistentProperty.getComponentType();
-		Object unwrappedVal = val.get();
-		if (unwrappedVal instanceof Iterable && componentType != null) {
+		if ((val instanceof Iterable || val.getClass().isArray())
+				&& targetComponentType != null) {
 			try {
-				List<?> elements = ((List<Value>) unwrappedVal)
+				List elements = (val.getClass().isArray() ? (Arrays.asList(val))
+						: ((List<?>) val))
 						.stream()
-						.map(v -> readConverter.apply(v.get(), componentType))
+								.map(v -> readConverter.apply(
+										v instanceof Value ? ((Value) v).get() : v,
+										targetComponentType))
 						.collect(Collectors.toList());
-				return (T) convertCollection(elements, targetType);
+				return (T) convertCollection(elements, targetCollectionType);
 
 			}
 			catch (ConversionException | DatastoreDataException e) {
@@ -124,22 +145,19 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			}
 		}
 
-		return readConverter.apply(unwrappedVal, targetType);
+		return readConverter.apply(val, targetCollectionType == null ? targetComponentType : targetCollectionType);
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T> T convertOnReadSingleEmbedded(Object value, Class<?> targetClass) {
-		if (value instanceof BaseEntity || value == null) {
+		if (value instanceof BaseEntity) {
 			return (T) this.datastoreEntityConverter.read(targetClass, (BaseEntity) value);
 		}
 		throw new DatastoreDataException("Embedded entity was expected, but " + value.getClass() + " found");
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T convertOnReadSingle(Object val, Class<?> targetType) {
-		if (val == null) {
-			return null;
-		}
+	private <T> T convertOnReadSingle(Object val, Class<?> targetType) {
 		Object result = null;
 		TypeTargets typeTargets = computeTypeTargets(targetType);
 
@@ -241,8 +259,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Override
-	public <T> T convertCollection(Object collection, Class<?> target) {
+	private <T> T convertCollection(Object collection, Class<?> target) {
 		if (collection == null || target == null || ClassUtils.isAssignableValue(target, collection)) {
 			return (T) collection;
 		}
@@ -257,7 +274,8 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		return this.writeConverters.computeIfAbsent(sourceType, this::getSimpleTypeWithBidirectionalConversion);
 	}
 
-	private Optional<Class<?>> getSimpleTypeWithBidirectionalConversion(Class inputType) {
+	@Override
+	public Optional<Class<?>> getSimpleTypeWithBidirectionalConversion(Class inputType) {
 		return DatastoreNativeTypes.DATASTORE_NATIVE_TYPES.stream()
 				.filter(simpleType ->
 						this.internalConversionService.canConvert(inputType, simpleType)

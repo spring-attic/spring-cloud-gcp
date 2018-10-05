@@ -51,11 +51,11 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 
 	// Also involves conversion from long id to String
 	@Query("select id from  test_entities_ci where id <= @id_val ")
-	String[] getIds(@Param("id_val") long id);
+	Long[] getIds(@Param("id_val") long id);
 
 	// Also involves conversion from long id to String
 	@Query("select id from  test_entities_ci where id <= @id_val")
-	String getOneId(@Param("id_val") long id);
+	long getOneId(@Param("id_val") long id);
 
 	@Query("select * from  test_entities_ci where id = @id_val")
 	TestEntity getOneTestEntity(@Param("id_val") long id);

@@ -47,8 +47,6 @@ import org.springframework.data.repository.query.QueryMethodEvaluationContextPro
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.StringUtils;
 
-import static org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes.DATASTORE_NATIVE_TYPES;
-
 /**
  * Query Method for GQL queries.
  *
@@ -116,17 +114,15 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	public Object execute(Object[] parameters) {
 		GqlQuery query = bindArgsToGqlQuery(this.gql, getParamTags(), parameters);
 		boolean returnTypeIsCollection = this.queryMethod.isCollectionQuery();
-		Class returnedItemType = returnTypeIsCollection
-				? this.queryMethod.getResultProcessor().getReturnedType()
-						.getReturnedType()
-				: this.queryMethod.getReturnedObjectType();
+		Class returnedItemType = this.queryMethod.getReturnedObjectType();
 
 		return isNonEntityReturnedType(returnedItemType)
 				? executeNonEntityQuery(query, returnTypeIsCollection, returnedItemType)
-				: executeEntityQuery(query, returnTypeIsCollection);
+				: executeEntityQuery(query, returnTypeIsCollection, returnedItemType);
 	}
 
-	private Object executeEntityQuery(GqlQuery query, boolean returnTypeIsCollection) {
+	private Object executeEntityQuery(GqlQuery query, boolean returnTypeIsCollection,
+			Class returnedItemType) {
 		Iterable found = this.datastoreTemplate.queryKeysOrEntities(query,
 				this.entityType);
 
@@ -148,8 +144,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 		else {
 			result = this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
-					.convertCollection(applyProjection(rawResult),
-							this.queryMethod.getReturnedObjectType());
+					.convertOnRead(applyProjection(rawResult),
+							this.queryMethod.getCollectionReturnType(), returnedItemType);
 		}
 		return result;
 	}
@@ -183,19 +179,15 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		else {
 			if (returnTypeIsCollection) {
 				result = this.datastoreTemplate.getDatastoreEntityConverter()
-						.getConversions().convertCollection(
-								rawResult.stream()
-						.map(x -> this.datastoreTemplate.getDatastoreEntityConverter()
-								.getConversions().getConversionService()
-								.convert(x, returnedItemType))
-										.collect(Collectors.toList()),
-								this.queryMethod.getReturnedObjectType());
+						.getConversions().convertOnRead(rawResult,
+								this.queryMethod.getCollectionReturnType(),
+								returnedItemType);
 			}
 			else {
 				result = rawResult.isEmpty() ? null
 						: this.datastoreTemplate.getDatastoreEntityConverter()
-								.getConversions().getConversionService()
-								.convert(rawResult.get(0), returnedItemType);
+								.getConversions()
+								.convertOnRead(rawResult.get(0), null, returnedItemType);
 
 			}
 		}
@@ -204,14 +196,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	@VisibleForTesting
 	boolean isNonEntityReturnedType(Class returnedType) {
-		for (Class nativeType : DATASTORE_NATIVE_TYPES) {
-			if (returnedType.isAssignableFrom(nativeType) || this.datastoreTemplate
-					.getDatastoreEntityConverter().getConversions().getConversionService()
-					.canConvert(nativeType, returnedType)) {
-				return true;
-			}
-		}
-		return false;
+		return this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+				.getSimpleTypeWithBidirectionalConversion(returnedType).isPresent();
 	}
 
 	private List<String> getParamTags() {

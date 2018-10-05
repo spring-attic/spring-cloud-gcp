@@ -59,6 +59,15 @@ public class DatastoreQueryMethod extends QueryMethod {
 	}
 
 	/**
+	 * Get the type of the collection of the returned object.
+	 * @return the collection type of returned object if it is collection-like.
+	 * {@code null} otherwise
+	 */
+	Class getCollectionReturnType() {
+		return isCollectionQuery() ? this.method.getReturnType() : null;
+	}
+
+	/**
 	 * Return whether this method is an exists query.
 	 *
 	 * @return True if this query method is an exists query, and false otherwise.

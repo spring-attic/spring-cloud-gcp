@@ -21,10 +21,12 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.JodaTimeConverters;
 import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.convert.ThreeTenBackPortConverters;
+import org.springframework.lang.Nullable;
 
 /**
  * Value object to capture custom conversion. {@link DatastoreCustomConversions}
