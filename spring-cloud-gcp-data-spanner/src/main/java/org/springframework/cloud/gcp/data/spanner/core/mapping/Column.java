@@ -22,6 +22,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.google.spanner.v1.TypeCode;
+
 /**
  * Annotation for a {@link SpannerPersistentProperty} that allows specifying the column name
  * instead of deriving it from the field's name.
@@ -41,5 +43,31 @@ public @interface Column {
 	 * field which it annotates.
 	 * @return the name of the column in the Spanner table
 	 */
-	String name();
+	String name() default "";
+
+	/**
+	 * The maximum length of the column in Cloud Spanner terms. For example, for STRING
+	 * columns this refers to the number of characters. For BYTES columns this refers to
+	 * the number of bytes. This setting is only used when generating schema from an
+	 * entity class. A setting of less than 0 indicates an unlimited maximum length.
+	 *
+	 * @return the maximum length for the column
+	 */
+	long spannerTypeMaxLength() default -1;
+
+	/**
+	 * If the column's schema should be NOT NULL when generating a schema based on an
+	 * entity class.
+	 * @return {@code false} if the column should be NOT NULL in generated DDL.
+	 * {@code true} otherwise.
+	 */
+	boolean nullable() default true;
+
+	/**
+	 * Optionally directly specify the column type in Cloud Spanner. For ARRAY columns
+	 * this refers to type of the item the array holds. If this is not specified then it
+	 * is inferred from the Java property type.
+	 * @return The user-specified column item type.
+	 */
+	TypeCode spannerType() default TypeCode.TYPE_CODE_UNSPECIFIED;
 }

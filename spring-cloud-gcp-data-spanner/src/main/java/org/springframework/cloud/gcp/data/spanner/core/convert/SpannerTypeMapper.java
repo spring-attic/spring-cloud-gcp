@@ -87,19 +87,19 @@ public class SpannerTypeMapper {
 		JAVA_TYPE_TO_SPANNER_ARRAY_COLUMN_TYPE_MAPPING = builder.build();
 	}
 
-	public Class getSimpleJavaClassFor(Type.Code code) {
+	public static Class getSimpleJavaClassFor(Type.Code code) {
 		return SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(code);
 	}
 
-	public Class getArrayJavaClassFor(Type.Code code) {
+	public static Class getArrayJavaClassFor(Type.Code code) {
 		return SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(code);
 	}
 
-	public Type.Code getSimpleTypeCodeForJavaType(Class spannerJavaType) {
+	public static Type.Code getSimpleTypeCodeForJavaType(Class spannerJavaType) {
 		return JAVA_TYPE_TO_SPANNER_SIMPLE_COLUMN_TYPE_MAPPING.get(spannerJavaType);
 	}
 
-	public Type.Code getArrayTypeCodeForJavaType(Class spannerJavaType) {
+	public static Type.Code getArrayTypeCodeForJavaType(Class spannerJavaType) {
 		return JAVA_TYPE_TO_SPANNER_ARRAY_COLUMN_TYPE_MAPPING.get(spannerJavaType);
 	}
 }

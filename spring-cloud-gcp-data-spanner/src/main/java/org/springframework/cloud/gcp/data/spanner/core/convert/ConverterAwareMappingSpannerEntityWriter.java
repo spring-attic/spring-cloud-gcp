@@ -39,6 +39,8 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.util.Assert;
 
+import static org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper.getSimpleJavaClassFor;
+
 /**
  * The primary class for adding values from entity objects to {@link WriteBuilder} for
  * the purpose of creating mutations for Spanner.
@@ -240,7 +242,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		Class<?> propertyType = property.getType();
 		ValueBinder<WriteBuilder> valueBinder = sink.set(property.getColumnName());
 
-		boolean valueSet;
+		boolean valueSet = false;
 
 		/*
 		 * Due to type erasure, binder methods for Iterable properties must be manually specified.
@@ -252,15 +254,28 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 					property);
 		}
 		else {
-			valueSet = attemptSetSingleItemValue(propertyValue, propertyType, valueBinder,
-					propertyType);
-			if (!valueSet) {
-				for (Class<?> targetType : singleItemType2ToMethodMap.keySet()) {
+
+			// use the user's annotated column type if possible
+			if (property.getAnnotatedColumnItemType() != null) {
+				valueSet = attemptSetSingleItemValue(propertyValue, propertyType,
+						valueBinder,
+						getSimpleJavaClassFor(property.getAnnotatedColumnItemType()));
+			}
+			else {
+				// directly try to set using the property's original Java type
+				if (!valueSet) {
 					valueSet = attemptSetSingleItemValue(propertyValue, propertyType,
-							valueBinder,
-							targetType);
-					if (valueSet) {
-						break;
+							valueBinder, propertyType);
+				}
+
+				// Finally try and find any conversion that works
+				if (!valueSet) {
+					for (Class<?> targetType : singleItemType2ToMethodMap.keySet()) {
+						valueSet = attemptSetSingleItemValue(propertyValue, propertyType,
+								valueBinder, targetType);
+						if (valueSet) {
+							break;
+						}
 					}
 				}
 			}
@@ -281,30 +296,51 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			return false;
 		}
 
-		// due to checkstyle limit of 3 return statments per function, this variable is
-		// used.
 		boolean valueSet = false;
 
-		if (iterablePropertyType2ToMethodMap.containsKey(innerType)) {
-			iterablePropertyType2ToMethodMap.get(innerType).accept(valueBinder,
-					value);
-			valueSet = true;
+		// use the annotated column type if possible.
+		if (spannerPersistentProperty.getAnnotatedColumnItemType() != null) {
+			valueSet = attemptSetIterablePropertyWithType(value, valueBinder, innerType,
+					getSimpleJavaClassFor(
+							spannerPersistentProperty.getAnnotatedColumnItemType()));
 		}
+		else {
 
-		if (!valueSet) {
-			for (Class<?> targetType : iterablePropertyType2ToMethodMap.keySet()) {
-				if (this.writeConverter.canConvert(innerType, targetType)) {
-					BiConsumer<ValueBinder<?>, Iterable> toMethod =
-							iterablePropertyType2ToMethodMap.get(targetType);
-					toMethod.accept(valueBinder,
-							value == null ? null
-									: ConversionUtils.convertIterable(value, targetType, this.writeConverter));
-					valueSet = true;
-					break;
+			// attempt check if there is directly a write method that can accept the
+			// property
+			if (!valueSet && iterablePropertyType2ToMethodMap.containsKey(innerType)) {
+				iterablePropertyType2ToMethodMap.get(innerType).accept(valueBinder,
+						value);
+				valueSet = true;
+			}
+
+			// Finally find any compatible conversion
+			if (!valueSet) {
+				for (Class<?> targetType : iterablePropertyType2ToMethodMap.keySet()) {
+					valueSet = attemptSetIterablePropertyWithType(value, valueBinder,
+							innerType, targetType);
+					if (valueSet) {
+						break;
+					}
 				}
+
 			}
 		}
 		return valueSet;
+	}
+
+	private boolean attemptSetIterablePropertyWithType(Iterable<Object> value,
+			ValueBinder<WriteBuilder> valueBinder, Class innerType, Class<?> targetType) {
+		if (this.writeConverter.canConvert(innerType, targetType)) {
+			BiConsumer<ValueBinder<?>, Iterable> toMethod = iterablePropertyType2ToMethodMap
+					.get(targetType);
+			toMethod.accept(valueBinder,
+					value == null ? null
+							: ConversionUtils.convertIterable(value, targetType,
+									this.writeConverter));
+			return true;
+		}
+		return false;
 	}
 
 	@SuppressWarnings("unchecked")

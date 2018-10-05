@@ -21,6 +21,7 @@ import java.util.OptionalLong;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.Key;
+import com.google.spanner.v1.TypeCode;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +30,6 @@ import org.mockito.Mockito;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.ColumnLength;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -71,7 +71,8 @@ public class SpannerSchemaUtilsTests {
 
 	public void getCreateDdlTest() {
 		assertEquals("CREATE TABLE custom_test_table ( id STRING(MAX) , id3 INT64 , "
-				+ "id_2 STRING(MAX) , bytes2 BYTES(MAX) , custom_col STRING(MAX) , other STRING(333) , "
+				+ "id_2 STRING(MAX) , bytes2 BYTES(MAX) , custom_col FLOAT64 NOT NULL , "
+				+ "other STRING(333) , "
 				+ "primitiveDoubleField FLOAT64 , bigDoubleField FLOAT64 , bigLongField INT64 , "
 				+ "primitiveIntField INT64 , bigIntField INT64 , bytes BYTES(MAX) , "
 				+ "bytesList ARRAY<BYTES(111)> , integerList ARRAY<INT64> , "
@@ -200,11 +201,11 @@ public class SpannerSchemaUtilsTests {
 		@Embedded
 		EmbeddedColumns embeddedColumns;
 
-		@Column(name = "custom_col")
+		// Intentionally incompatible column type for testing.
+		@Column(name = "custom_col", spannerTypeMaxLength = 123, spannerType = TypeCode.FLOAT64, nullable = false)
 		String something;
 
-		@ColumnLength(maxLength = 333)
-		@Column(name = "")
+		@Column(name = "", spannerTypeMaxLength = 333)
 		String other;
 
 		double primitiveDoubleField;
@@ -219,7 +220,7 @@ public class SpannerSchemaUtilsTests {
 
 		ByteArray bytes;
 
-		@ColumnLength(maxLength = 111)
+		@Column(spannerTypeMaxLength = 111)
 		List<ByteArray> bytesList;
 
 		List<Integer> integerList;
