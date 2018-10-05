@@ -19,22 +19,22 @@ package com.example;
 import java.util.Arrays;
 
 import com.google.cloud.spanner.Key;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
-import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Chengyuan Zhao
  * @author Balint Pato
  * @author Mike Eltsufin
  */
-@SpringBootApplication
+@Component
 public class SpannerRepositoryExample {
+	private static final Log LOGGER = LogFactory.getLog(SpannerRepositoryExample.class);
 
 	@Autowired
 	private TraderRepository traderRepository;
@@ -48,70 +48,64 @@ public class SpannerRepositoryExample {
 	@Autowired
 	private SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
 
-	public static void main(String[] args) {
-		SpringApplication.run(SpannerRepositoryExample.class, args);
+	public void runExample() {
+		createTablesIfNotExists();
+		this.traderRepository.deleteAll();
+		this.tradeRepository.deleteAll();
+
+		this.traderRepository.save(new Trader("demo_trader1", "John", "Doe"));
+		this.traderRepository.save(new Trader("demo_trader2", "Mary", "Jane"));
+		this.traderRepository.save(new Trader("demo_trader3", "Scott", "Smith"));
+
+		this.tradeRepository
+				.save(new Trade("1", "BUY", 100.0, 50.0, "STOCK1", "demo_trader1", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository
+				.save(new Trade("2", "BUY", 105.0, 60.0, "STOCK2", "demo_trader1", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository
+				.save(new Trade("3", "BUY", 100.0, 50.0, "STOCK1", "demo_trader1", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository
+				.save(new Trade("1", "BUY", 100.0, 70.0, "STOCK2", "demo_trader2", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository
+				.save(new Trade("2", "BUY", 103.0, 50.0, "STOCK1", "demo_trader2", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository
+				.save(new Trade("3", "SELL", 100.0, 52.0, "STOCK2", "demo_trader2", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository
+				.save(new Trade("1", "SELL", 98.0, 50.0, "STOCK1", "demo_trader3", Arrays.asList(99.0, 101.00)));
+		this.tradeRepository
+				.save(new Trade("2", "SELL", 110.0, 50.0, "STOCK2", "demo_trader3", Arrays.asList(99.0, 101.00)));
+
+		LOGGER.info("The table for trades has been cleared and "
+				+ this.tradeRepository.count() + " new trades have been inserted:");
+
+		Iterable<Trade> allTrades = this.tradeRepository.findAll();
+
+		LOGGER.info("All trades:");
+		for (Trade t : allTrades) {
+			LOGGER.info(t);
+		}
+
+		LOGGER.info("These are the Cloud Spanner primary keys for the trades:");
+		for (Trade t : allTrades) {
+			Key key = this.spannerSchemaUtils.getKey(t);
+			LOGGER.info(key);
+		}
+
+		LOGGER.info("There are " + this.tradeRepository.countByAction("BUY") + " BUY trades:");
+		for (Trade t : this.tradeRepository.findByAction("BUY")) {
+			LOGGER.info(t);
+		}
+
+		LOGGER.info("A query method can retrieve a single entity:");
+		LOGGER.info(this.tradeRepository.getAnyOneTrade());
+
+		LOGGER.info("A query method can also select properties in entities:");
+		this.tradeRepository.getTradeIds("BUY").stream()
+				.forEach(x -> LOGGER.info(x));
+
+		LOGGER.info("Try http://localhost:8080/trades in the browser to see all trades.");
 	}
 
-	@Bean
-	public CommandLineRunner commandLineRunner() {
-		return args -> {
-
-			createTablesIfNotExists();
-
-			this.traderRepository.deleteAll();
-			this.tradeRepository.deleteAll();
-
-			this.traderRepository.save(new Trader("demo_trader1", "John", "Doe"));
-			this.traderRepository.save(new Trader("demo_trader2", "Mary", "Jane"));
-			this.traderRepository.save(new Trader("demo_trader3", "Scott", "Smith"));
-
-			this.tradeRepository
-					.save(new Trade("1", "BUY", 100.0, 50.0, "STOCK1", "demo_trader1", Arrays.asList(99.0, 101.00)));
-			this.tradeRepository
-					.save(new Trade("2", "BUY", 105.0, 60.0, "STOCK2", "demo_trader1", Arrays.asList(99.0, 101.00)));
-			this.tradeRepository
-					.save(new Trade("3", "BUY", 100.0, 50.0, "STOCK1", "demo_trader1", Arrays.asList(99.0, 101.00)));
-			this.tradeRepository
-					.save(new Trade("1", "BUY", 100.0, 70.0, "STOCK2", "demo_trader2", Arrays.asList(99.0, 101.00)));
-			this.tradeRepository
-					.save(new Trade("2", "BUY", 103.0, 50.0, "STOCK1", "demo_trader2", Arrays.asList(99.0, 101.00)));
-			this.tradeRepository
-					.save(new Trade("3", "SELL", 100.0, 52.0, "STOCK2", "demo_trader2", Arrays.asList(99.0, 101.00)));
-			this.tradeRepository
-					.save(new Trade("1", "SELL", 98.0, 50.0, "STOCK1", "demo_trader3", Arrays.asList(99.0, 101.00)));
-			this.tradeRepository
-					.save(new Trade("2", "SELL", 110.0, 50.0, "STOCK2", "demo_trader3", Arrays.asList(99.0, 101.00)));
-
-			System.out.println("The table for trades has been cleared and "
-					+ this.tradeRepository.count() + " new trades have been inserted:");
-
-			Iterable<Trade> allTrades = this.tradeRepository.findAll();
-			allTrades.forEach(System.out::println);
-
-			System.out.println("There are " + this.tradeRepository.countByAction("BUY")
-					+ " BUY trades: ");
-
-			this.tradeRepository.findByAction("BUY").forEach(System.out::println);
-
-			System.out.println("These are the Cloud Spanner primary keys for the trades:");
-
-			allTrades.forEach(t -> {
-				Key key = this.spannerSchemaUtils.getKey(t);
-				System.out.println(key);
-			});
-
-			System.out.println("A query method can retrieve a single entity:");
-			System.out.println(this.tradeRepository.getAnyOneTrade());
-
-			System.out.println("A query method can also select properties in entities:");
-			this.tradeRepository.getTradeIds("BUY").stream()
-					.forEach(x -> System.out.println(x));
-
-			System.out.println("Try http://localhost:8080/trades in the browser to see all trades.");
-		};
-	}
-
-	private void createTablesIfNotExists() {
+	void createTablesIfNotExists() {
 		if (!this.spannerDatabaseAdminTemplate.tableExists("trades")) {
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(
 					Arrays.asList(
