@@ -95,6 +95,13 @@ public class SpannerRepositoryExample {
 			LOGGER.info(t);
 		}
 
+		LOGGER.info("A query method can retrieve a single entity:");
+		LOGGER.info(this.tradeRepository.getAnyOneTrade());
+
+		LOGGER.info("A query method can also select properties in entities:");
+		this.tradeRepository.getTradeIds("BUY").stream()
+				.forEach(x -> LOGGER.info(x));
+
 		LOGGER.info("Try http://localhost:8080/trades in the browser to see all trades.");
 	}
 

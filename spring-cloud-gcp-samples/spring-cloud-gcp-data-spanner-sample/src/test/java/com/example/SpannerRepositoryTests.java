@@ -109,5 +109,8 @@ public class SpannerRepositoryTests {
 				"[demo_trader2,3]",
 				"[demo_trader3,1]",
 				"[demo_trader3,2]");
+
+		List<String> buyTradeIds = this.tradeRepository.getTradeIds("BUY");
+		assertThat(buyTradeIds).hasSize(5);
 	}
 }
