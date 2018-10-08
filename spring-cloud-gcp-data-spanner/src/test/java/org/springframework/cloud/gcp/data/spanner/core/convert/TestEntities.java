@@ -23,6 +23,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Struct;
+import com.google.spanner.v1.TypeCode;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Embedded;
@@ -54,10 +55,14 @@ public class TestEntities {
 		@Column(name = "")
 		boolean booleanField;
 
+		// This long is forced to be stored as a String for testing
+		@Column(spannerType = TypeCode.STRING)
 		long longField;
 
 		double doubleField;
 
+		// This double array is forced to be stored as a String for testing
+		@Column(spannerType = TypeCode.STRING)
 		double[] doubleArray;
 
 		// int is not a native Cloud Spanner type, so this will utilize custom conversions.
@@ -69,6 +74,8 @@ public class TestEntities {
 
 		List<Boolean> booleanList;
 
+		// This long list is forced to be stored as a String for testing
+		@Column(spannerType = TypeCode.STRING)
 		List<Long> longList;
 
 		List<Timestamp> timestampList;

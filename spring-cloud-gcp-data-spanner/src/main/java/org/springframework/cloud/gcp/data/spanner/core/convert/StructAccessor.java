@@ -33,6 +33,9 @@ import com.google.common.collect.ImmutableMap;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 
+import static org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper.getArrayJavaClassFor;
+import static org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper.getSimpleJavaClassFor;
+
 /**
  * A convenience wrapper class around Struct to make reading columns easier without
  * knowing their type.
@@ -42,7 +45,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
  *
  * @since 1.1
  */
-class StructAccessor {
+public class StructAccessor {
 
 	// @formatter:off
 	static final Map<Class, BiFunction<Struct, String, List>> readIterableMapping =
@@ -64,8 +67,10 @@ class StructAccessor {
 					// @formatter:on
 					.put(Boolean.class, AbstractStructReader::getBoolean)
 					.put(Long.class, AbstractStructReader::getLong)
+					.put(long.class, AbstractStructReader::getLong)
 					.put(String.class, AbstractStructReader::getString)
 					.put(Double.class, AbstractStructReader::getDouble)
+					.put(double.class, AbstractStructReader::getDouble)
 					.put(Timestamp.class, AbstractStructReader::getTimestamp)
 					.put(Date.class, AbstractStructReader::getDate)
 					.put(ByteArray.class, AbstractStructReader::getBytes)
@@ -77,24 +82,54 @@ class StructAccessor {
 					// the case where the field within the POJO is Struct.
 					.put(Struct.class, Struct::getStruct).build();
 
-	private final SpannerTypeMapper spannerTypeMapper;
+	// @formatter:off
+	static final Map<Class, BiFunction<Struct, Integer, List>> readIterableMappingIntCol =
+			new ImmutableMap.Builder<Class, BiFunction<Struct, Integer, List>>()
+					// @formatter:on
+					.put(Boolean.class, AbstractStructReader::getBooleanList)
+					.put(Long.class, AbstractStructReader::getLongList)
+					.put(String.class, AbstractStructReader::getStringList)
+					.put(Double.class, AbstractStructReader::getDoubleList)
+					.put(Timestamp.class, AbstractStructReader::getTimestampList)
+					.put(Date.class, AbstractStructReader::getDateList)
+					.put(ByteArray.class, AbstractStructReader::getBytesList)
+					.put(Struct.class, AbstractStructReader::getStructList).build();
+
+	// @formatter:off
+	static final Map<Class, BiFunction<Struct, Integer, ?>> singleItemReadMethodMappingIntCol =
+			new ImmutableMap.Builder<Class, BiFunction<Struct, Integer, ?>>()
+					// @formatter:on
+					.put(Boolean.class, AbstractStructReader::getBoolean)
+					.put(Long.class, AbstractStructReader::getLong)
+					.put(long.class, AbstractStructReader::getLong)
+					.put(String.class, AbstractStructReader::getString)
+					.put(Double.class, AbstractStructReader::getDouble)
+					.put(double.class, AbstractStructReader::getDouble)
+					.put(Timestamp.class, AbstractStructReader::getTimestamp)
+					.put(Date.class, AbstractStructReader::getDate)
+					.put(ByteArray.class, AbstractStructReader::getBytes)
+					.put(double[].class, AbstractStructReader::getDoubleArray)
+					.put(long[].class, AbstractStructReader::getLongArray)
+					.put(boolean[].class, AbstractStructReader::getBooleanArray)
+					// Note that Struct.class appears in this map. While we support
+					// converting structs into POJO fields of POJOs, the value in this map
+					// is for
+					// the case where the field within the POJO is Struct.
+					.put(Struct.class, Struct::getStruct).build();
+
 
 	private Struct struct;
 
 	private Set<String> columnNamesIndex;
 
-	StructAccessor(Struct struct) {
+	public StructAccessor(Struct struct) {
 		this.struct = struct;
-		this.spannerTypeMapper = new SpannerTypeMapper();
 		this.columnNamesIndex = indexColumnNames();
 	}
 
 	Object getSingleValue(String colName) {
 		Type colType = this.struct.getColumnType(colName);
-		Type.Code code = colType.getCode();
-		Class sourceType = code.equals(Type.Code.ARRAY)
-				? this.spannerTypeMapper.getArrayJavaClassFor(colType.getArrayElementType().getCode())
-				: this.spannerTypeMapper.getSimpleJavaClassFor(code);
+		Class sourceType = getSingleItemTypeCode(colType);
 		BiFunction readFunction = singleItemReadMethodMapping.get(sourceType);
 		if (readFunction == null) {
 			// This case should only occur if the POJO field is non-Iterable, but the column type
@@ -104,12 +139,26 @@ class StructAccessor {
 		return readFunction.apply(this.struct, colName);
 	}
 
+	public Object getSingleValue(int colIndex) {
+		Type colType = this.struct.getColumnType(colIndex);
+		Class sourceType = getSingleItemTypeCode(colType);
+		BiFunction readFunction = singleItemReadMethodMappingIntCol.get(sourceType);
+		if (readFunction == null) {
+			// This case should only occur if the POJO field is non-Iterable, but the
+			// column type
+			// is ARRAY of STRUCT, TIMESTAMP, DATE, BYTES, or STRING. This use-case is not
+			// supported.
+			return null;
+		}
+		return readFunction.apply(this.struct, colIndex);
+	}
+
 	List getListValue(String colName) {
 		if (this.struct.getColumnType(colName).getCode() != Code.ARRAY) {
 			throw new SpannerDataException("Column is not an ARRAY type: " + colName);
 		}
 		Type.Code innerTypeCode = this.struct.getColumnType(colName).getArrayElementType().getCode();
-		Class clazz = this.spannerTypeMapper.getSimpleJavaClassFor(innerTypeCode);
+		Class clazz = getSimpleJavaClassFor(innerTypeCode);
 		BiFunction<Struct, String, List> readMethod = readIterableMapping.get(clazz);
 		return readMethod.apply(this.struct, colName);
 	}
@@ -128,5 +177,12 @@ class StructAccessor {
 			cols.add(f.getName());
 		}
 		return cols;
+	}
+
+	private Class getSingleItemTypeCode(Type colType) {
+		Code code = colType.getCode();
+		return code.equals(Code.ARRAY)
+				? getArrayJavaClassFor(colType.getArrayElementType().getCode())
+				: getSimpleJavaClassFor(code);
 	}
 }

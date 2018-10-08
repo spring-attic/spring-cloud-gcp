@@ -149,11 +149,12 @@ public class GqlDatastoreQueryTests {
 			assertEquals(params[7], paramMap.get("tag7").get());
 
 			return null;
-		}).when(this.datastoreTemplate).query(any(), eq(Trade.class));
+		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
 
 		gqlDatastoreQuery.execute(params);
 
-		verify(this.datastoreTemplate, times(1)).query(any(), eq(Trade.class));
+		verify(this.datastoreTemplate, times(1))
+				.queryKeysOrEntities(any(), eq(Trade.class));
 	}
 
 	@Entity(name = "trades")

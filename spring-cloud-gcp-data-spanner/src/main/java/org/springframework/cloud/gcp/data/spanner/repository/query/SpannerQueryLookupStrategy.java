@@ -18,7 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.lang.reflect.Method;
 
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.data.repository.core.NamedQueries;
@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
  */
 public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 
-	private final SpannerOperations spannerOperations;
+	private final SpannerTemplate spannerTemplate;
 
 	private final SpannerMappingContext spannerMappingContext;
 
@@ -47,18 +47,18 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 	private SpelExpressionParser expressionParser;
 
 	public SpannerQueryLookupStrategy(SpannerMappingContext spannerMappingContext,
-			SpannerOperations spannerOperations,
+			SpannerTemplate spannerTemplate,
 			QueryMethodEvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser) {
 		Assert.notNull(spannerMappingContext,
 				"A valid SpannerMappingContext is required.");
-		Assert.notNull(spannerOperations, "A valid SpannerOperations is required.");
+		Assert.notNull(spannerTemplate, "A valid SpannerTemplate is required.");
 		Assert.notNull(evaluationContextProvider,
 				"A valid EvaluationContextProvider is required.");
 		Assert.notNull(expressionParser, "A valid SpelExpressionParser is required.");
 		this.spannerMappingContext = spannerMappingContext;
 		this.evaluationContextProvider = evaluationContextProvider;
-		this.spannerOperations = spannerOperations;
+		this.spannerTemplate = spannerTemplate;
 		this.expressionParser = expressionParser;
 	}
 
@@ -91,15 +91,15 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 	}
 
 	<T> SqlSpannerQuery<T> createSqlSpannerQuery(Class<T> entityType,
-			QueryMethod queryMethod, String sql) {
-		return new SqlSpannerQuery<T>(entityType, queryMethod, this.spannerOperations, sql,
+			SpannerQueryMethod queryMethod, String sql) {
+		return new SqlSpannerQuery<T>(entityType, queryMethod, this.spannerTemplate, sql,
 				this.evaluationContextProvider, this.expressionParser,
 				this.spannerMappingContext);
 	}
 
 	<T> PartTreeSpannerQuery<T> createPartTreeSpannerQuery(Class<T> entityType,
-			QueryMethod queryMethod) {
-		return new PartTreeSpannerQuery<>(entityType, queryMethod, this.spannerOperations,
+			SpannerQueryMethod queryMethod) {
+		return new PartTreeSpannerQuery<>(entityType, queryMethod, this.spannerTemplate,
 				this.spannerMappingContext);
 	}
 }

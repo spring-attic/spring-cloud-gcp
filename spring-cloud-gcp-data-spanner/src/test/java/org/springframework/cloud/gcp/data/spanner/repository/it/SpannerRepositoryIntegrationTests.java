@@ -38,6 +38,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
@@ -63,6 +64,9 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 	@Autowired
 	SubTradeComponentRepository subTradeComponentRepository;
 
+	@Autowired
+	TradeRepositoryTransactionalService tradeRepositoryTransactionalService;
+
 	@Test
 	public void queryMethodsTest() {
 		List<Trade> trader1BuyTrades = insertTrades("trader1", "BUY", 3);
@@ -76,6 +80,26 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		assertThat(this.tradeRepository.count(), is(8L));
 
+		assertThat(this.tradeRepository.deleteByAction("BUY"), is(3));
+
+		assertThat(this.tradeRepository.count(), is(5L));
+
+		List<Trade> deletedBySymbol = this.tradeRepository.deleteBySymbol("ABCD");
+
+		assertThat(deletedBySymbol.size(), is(5));
+
+		assertThat(this.tradeRepository.count(), is(0L));
+
+		this.tradeRepository.saveAll(deletedBySymbol);
+
+		assertThat(this.tradeRepository.count(), is(5L));
+
+		this.tradeRepository.deleteBySymbolAndAction("ABCD", "SELL");
+
+		assertThat(this.tradeRepository.count(), is(0L));
+
+		this.tradeRepository.saveAll(allTrades);
+
 		List<Trade> allTradesRetrieved = this.spannerOperations.readAll(Trade.class);
 		assertThat(
 				"size is not " + allTrades.size() + " in received records: \n"
@@ -84,6 +108,14 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(allTradesRetrieved, containsInAnyOrder(allTrades.toArray()));
 
 		assertThat(this.tradeRepository.countByAction("BUY"), is(3));
+		assertThat(this.tradeRepository.countByActionQuery("BUY"), is(3));
+		assertTrue(this.tradeRepository.existsByActionQuery("BUY"));
+
+		assertNotNull(this.tradeRepository.getOneTrade("BUY"));
+
+		assertEquals("BUY", this.tradeRepository.getFirstString("BUY"));
+		assertThat(this.tradeRepository.getFirstStringList("BUY"),
+				containsInAnyOrder("BUY", "BUY", "BUY"));
 
 		List<Trade> trader2TradesRetrieved = this.tradeRepository
 				.findByTraderId("trader2");
@@ -212,9 +244,12 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		assertEquals(0, this.subTradeComponentRepository.count());
 		assertEquals(0, this.subTradeRepository.count());
+
+		this.tradeRepository.deleteAll();
+		this.tradeRepositoryTransactionalService.testTransactionalAnnotation();
 	}
 
-	protected List<Trade> insertTrades(String traderId1, String action, int numTrades) {
+	private List<Trade> insertTrades(String traderId1, String action, int numTrades) {
 		List<Trade> trades = new ArrayList<>();
 		for (int i = 0; i < numTrades; i++) {
 			Trade t = Trade.aTrade();
@@ -225,5 +260,21 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 			this.spannerOperations.insert(t);
 		}
 		return trades;
+	}
+
+	public static class TradeRepositoryTransactionalService {
+
+		@Autowired
+		TradeRepository tradeRepository;
+
+		@Transactional
+		public void testTransactionalAnnotation() {
+			Trade trade = Trade.aTrade();
+			this.tradeRepository.save(trade);
+
+			// because the insert happens within the same transaction, this count is still
+			// 1
+			assertThat(this.tradeRepository.count(), is(0L));
+		}
 	}
 }

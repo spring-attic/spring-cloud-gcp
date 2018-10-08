@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
@@ -54,7 +54,7 @@ import static org.mockito.Mockito.when;
  */
 public class SpannerQueryLookupStrategyTests {
 
-	private SpannerOperations spannerOperations;
+	private SpannerTemplate spannerTemplate;
 
 	private SpannerMappingContext spannerMappingContext;
 
@@ -68,7 +68,7 @@ public class SpannerQueryLookupStrategyTests {
 
 	@Before
 	public void initMocks() {
-		this.spannerOperations = mock(SpannerOperations.class);
+		this.spannerTemplate = mock(SpannerTemplate.class);
 		this.spannerMappingContext = new SpannerMappingContext();
 		this.queryMethod = mock(SpannerQueryMethod.class);
 		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
@@ -124,7 +124,7 @@ public class SpannerQueryLookupStrategyTests {
 	private SpannerQueryLookupStrategy getSpannerQueryLookupStrategy() {
 		SpannerQueryLookupStrategy spannerQueryLookupStrategy = spy(
 				new SpannerQueryLookupStrategy(this.spannerMappingContext,
-						this.spannerOperations, this.evaluationContextProvider,
+						this.spannerTemplate, this.evaluationContextProvider,
 						this.spelExpressionParser));
 		doReturn(Object.class).when(spannerQueryLookupStrategy).getEntityType(any());
 		doReturn(null).when(spannerQueryLookupStrategy).createPartTreeSpannerQuery(any(),

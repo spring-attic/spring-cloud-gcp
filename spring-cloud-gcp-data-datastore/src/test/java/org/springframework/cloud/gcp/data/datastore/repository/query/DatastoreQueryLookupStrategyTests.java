@@ -22,7 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.query.Parameter;
@@ -46,7 +46,7 @@ import static org.mockito.Mockito.when;
  */
 public class DatastoreQueryLookupStrategyTests {
 
-	private DatastoreOperations datastoreOperations;
+	private DatastoreTemplate datastoreTemplate;
 
 	private DatastoreMappingContext datastoreMappingContext;
 
@@ -60,7 +60,7 @@ public class DatastoreQueryLookupStrategyTests {
 
 	@Before
 	public void initMocks() {
-		this.datastoreOperations = mock(DatastoreOperations.class);
+		this.datastoreTemplate = mock(DatastoreTemplate.class);
 		this.datastoreMappingContext = new DatastoreMappingContext();
 		this.queryMethod = mock(DatastoreQueryMethod.class);
 		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
@@ -102,7 +102,7 @@ public class DatastoreQueryLookupStrategyTests {
 	private DatastoreQueryLookupStrategy getDatastoreQueryLookupStrategy() {
 		DatastoreQueryLookupStrategy spannerQueryLookupStrategy = spy(
 				new DatastoreQueryLookupStrategy(this.datastoreMappingContext,
-						this.datastoreOperations, this.evaluationContextProvider,
+						this.datastoreTemplate, this.evaluationContextProvider,
 						this.spelExpressionParser));
 		doReturn(Object.class).when(spannerQueryLookupStrategy).getEntityType(any());
 		doReturn(this.queryMethod).when(spannerQueryLookupStrategy)

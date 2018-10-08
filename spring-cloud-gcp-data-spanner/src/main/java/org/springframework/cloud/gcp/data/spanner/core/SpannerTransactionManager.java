@@ -24,6 +24,7 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Options;
+import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
@@ -44,6 +45,9 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
  * Spanner transaction manager
  *
  * @author Alexander Khimich
+ * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class SpannerTransactionManager extends AbstractPlatformTransactionManager {
 	private final DatabaseClient databaseClient;
@@ -91,8 +95,9 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 							"TransactionDefinition.PROPAGATION_REQUIRED");
 		}
 		Tx tx = (Tx) transactionObject;
-		final TransactionContext targetTransactionContext = tx.transactionManager.begin();
 		if (transactionDefinition.isReadOnly()) {
+			final ReadContext targetTransactionContext = this.databaseClient
+					.readOnlyTransaction();
 
 			tx.transactionContext = new TransactionContext() {
 				@Override
@@ -155,7 +160,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			};
 		}
 		else {
-			tx.transactionContext = targetTransactionContext;
+			tx.transactionContext = tx.transactionManager.begin();
 		}
 
 		logger.debug(tx + " begin; state = " + tx.transactionManager.getState());

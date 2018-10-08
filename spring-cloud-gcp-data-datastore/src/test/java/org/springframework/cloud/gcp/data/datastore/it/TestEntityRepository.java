@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.data.datastore.it;
 
 import java.util.List;
 
+import com.google.cloud.datastore.Key;
+
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,11 +35,15 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	@Query(value = "select size from  test_entities_ci where size <= @size", count = true)
 	int countEntitiesWithCustomQuery(@Param("size") long size);
 
-	@Query(value = "select * from  test_entities_ci where id = @id_val", exists = true)
+	@Query(value = "select __key__ from  test_entities_ci "
+			+ "where id = @id_val", exists = true)
 	boolean existsByEntitiesWithCustomQuery(@Param("id_val") long id);
 
 	@Query("select id from  test_entities_ci where id <= @id_val ")
 	List<TestEntity> findEntitiesWithCustomProjectionQuery(@Param("id_val") long id);
+
+	@Query(value = "select __key__ from test_entities_ci")
+	List<Key> getKeys();
 
 	long countBySizeAndColor(long size, String color);
 

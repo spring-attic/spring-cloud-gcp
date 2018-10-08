@@ -114,6 +114,9 @@ public class DatastoreIntegrationTests {
 						.map(TestEntity::getId).collect(Collectors.toList()),
 				containsInAnyOrder(1L, 3L, 4L));
 
+		assertThat(this.testEntityRepository.getKeys().stream().map(x -> x.getId())
+				.collect(Collectors.toList()), containsInAnyOrder(1L, 2L, 3L, 4L));
+
 		assertEquals(1, foundByCustomQuery.size());
 		assertEquals(4, this.testEntityRepository.countEntitiesWithCustomQuery(1L));
 		assertTrue(this.testEntityRepository.existsByEntitiesWithCustomQuery(1L));
