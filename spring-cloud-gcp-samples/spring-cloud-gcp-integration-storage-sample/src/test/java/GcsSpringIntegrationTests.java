@@ -66,7 +66,7 @@ public class GcsSpringIntegrationTests {
 	}
 
 	@Test
-	public void testBucketPropagatesFile() {
+	public void testFilePropagatedToLocalDirectory() {
 		Storage storage = StorageOptions.getDefaultInstance().getService();
 		BlobId blobId = BlobId.of("gcp-storage-bucket-sample-input", TEST_FILE_NAME);
 		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain").build();
