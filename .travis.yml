@@ -9,6 +9,7 @@ branches:
   only:
     - master
     - 1.0.x
+    - test
 cache:
   directories:
     - $HOME/google-cloud-sdk
