@@ -46,7 +46,7 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	@Query(value = "select __key__ from test_entities_ci")
 	Set<Key> getKeys();
 
-	@Query(value = "select __key__ from test_entities_ci ")
+	@Query(value = "select __key__ from test_entities_ci limit 1")
 	Key getKey();
 
 	// Also involves conversion from long id to String

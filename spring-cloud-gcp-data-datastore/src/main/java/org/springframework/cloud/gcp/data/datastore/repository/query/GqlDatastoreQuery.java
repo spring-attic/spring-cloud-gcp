@@ -156,6 +156,11 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				result = null;
 			}
 			else {
+				if (rawResult.size() > 1) {
+					throw new DatastoreDataException(
+							"The query method returns a singular object but "
+									+ "the query returned more than one result.");
+				}
 				result = isNonEntityReturnType
 						? this.datastoreTemplate.getDatastoreEntityConverter()
 								.getConversions()
@@ -208,6 +213,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			List<String> tags,
 			Object[] vals) {
 		Builder builder = GqlQuery.newGqlQueryBuilder(gql);
+		builder.setAllowLiteral(true);
 		if (tags.size() != vals.length) {
 			throw new DatastoreDataException("Annotated GQL Query Method "
 					+ this.queryMethod.getName() + " has " + tags.size()
