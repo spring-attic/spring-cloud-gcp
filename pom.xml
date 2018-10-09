@@ -44,6 +44,7 @@
 		<spring-cloud-sleuth.version>2.1.0.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
 		<spring-cloud-stream.version>Fishtown.BUILD-SNAPSHOT</spring-cloud-stream.version>
 		<zipkin-gcp.version>0.8.2</zipkin-gcp.version>
+		<app-engine-maven-plugin.version>1.3.2</app-engine-maven-plugin.version>
 	</properties>
 
 	<dependencyManagement>
@@ -198,6 +199,11 @@
 						</manifest>
 					</archive>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>appengine-maven-plugin</artifactId>
+				<version>${app-engine-maven-plugin.version}</version>
 			</plugin>
 		</plugins>
 	</build>
