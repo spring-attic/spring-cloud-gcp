@@ -27,10 +27,11 @@ import com.google.api.gax.rpc.HeaderProvider;
  *
  * @author João André Martins
  * @author Chengyuan Zhao
+ * @author Artem Bilan
  */
 public class UsageTrackingHeaderProvider implements HeaderProvider {
 
-	public static final String TRACKING_HEADER_PROJECT_VERSION = "1.1.0.BUILD-SNAPSHOT";
+	public static final String TRACKING_HEADER_PROJECT_VERSION = "${project.version}";
 
 	/** Class whose project name and version will be used in the header */
 	private Class clazz;
@@ -52,8 +53,9 @@ public class UsageTrackingHeaderProvider implements HeaderProvider {
 
 		headers.put("User-Agent",
 				"Spring/" + TRACKING_HEADER_PROJECT_VERSION
-				+ " " + springLibrary + "/" + TRACKING_HEADER_PROJECT_VERSION);
+						+ " " + springLibrary + "/" + TRACKING_HEADER_PROJECT_VERSION);
 
 		return headers;
 	}
+
 }
