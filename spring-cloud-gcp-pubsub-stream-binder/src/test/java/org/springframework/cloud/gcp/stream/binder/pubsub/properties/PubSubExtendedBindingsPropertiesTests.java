@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
 
+import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.Subscription;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,8 +29,6 @@ import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberTemplate;
-import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
-import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.stream.binder.pubsub.PubSubMessageChannelBinder;
@@ -48,6 +48,7 @@ import org.springframework.messaging.SubscribableChannel;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -90,8 +91,15 @@ public class PubSubExtendedBindingsPropertiesTests {
 
 		@Bean
 		public PubSubTemplate pubSubTemplate() {
-			PublisherFactory publisherFactory = new DefaultPublisherFactory(() -> "test-project");
-			SubscriberFactory subscriberFactory = new DefaultSubscriberFactory(() -> "test-project");
+			PublisherFactory publisherFactory = Mockito.mock(PublisherFactory.class);
+
+			SubscriberFactory subscriberFactory = Mockito.mock(SubscriberFactory.class);
+			when(subscriberFactory.getProjectId()).thenReturn("test-project");
+			when(subscriberFactory.createSubscriberStub())
+					.thenReturn(Mockito.mock(SubscriberStub.class));
+			when(subscriberFactory.createSubscriber(anyString(), any()))
+					.thenReturn(Mockito.mock(Subscriber.class));
+
 			return new PubSubTemplate(
 					new PubSubPublisherTemplate(publisherFactory),
 					new PubSubSubscriberTemplate(subscriberFactory));
