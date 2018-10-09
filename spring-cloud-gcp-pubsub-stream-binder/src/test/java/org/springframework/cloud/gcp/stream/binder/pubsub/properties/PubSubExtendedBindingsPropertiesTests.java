@@ -18,12 +18,11 @@ package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
 
 import com.google.pubsub.v1.Subscription;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
-import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.context.annotation.Configurations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.core.publisher.PubSubPublisherTemplate;
@@ -41,35 +40,40 @@ import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.cloud.stream.binder.BinderFactory;
 import org.springframework.cloud.stream.config.BindingServiceConfiguration;
 import org.springframework.cloud.stream.messaging.Sink;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.SubscribableChannel;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
+		classes = {
+				PubSubBindingsTestConfiguration.class,
+				BindingServiceConfiguration.class
+		},
+		properties = {
+				"spring.cloud.stream.gcp.pubsub.bindings.input.consumer.auto-create-resources=true",
+				"spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources=false",
+		})
 public class PubSubExtendedBindingsPropertiesTests {
 
-	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withPropertyValues(
-					"spring.cloud.stream.gcp.pubsub.bindings.input.consumer.auto-create-resources=true",
-					"spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources=false")
-			.withUserConfiguration(
-					PubSubBindingsTestConfiguration.class,
-					BindingServiceConfiguration.class);
+	@Autowired
+	private ConfigurableApplicationContext context;
 
 	@Test
 	public void testExtendedPropertiesOverrideDefaults() {
-		this.contextRunner.run(context -> {
-			BinderFactory binderFactory = context.getBeanFactory().getBean(BinderFactory.class);
-			PubSubMessageChannelBinder binder = (PubSubMessageChannelBinder) binderFactory.getBinder("pubsub",
-					MessageChannel.class);
+		BinderFactory binderFactory = context.getBeanFactory().getBean(BinderFactory.class);
+		PubSubMessageChannelBinder binder = (PubSubMessageChannelBinder) binderFactory.getBinder("pubsub",
+				MessageChannel.class);
 
-			assertThat(binder.getExtendedConsumerProperties("custom-in").isAutoCreateResources()).isFalse();
-			assertThat(binder.getExtendedConsumerProperties("input").isAutoCreateResources()).isTrue();
-		});
+		assertThat(binder.getExtendedConsumerProperties("custom-in").isAutoCreateResources()).isFalse();
+		assertThat(binder.getExtendedConsumerProperties("input").isAutoCreateResources()).isTrue();
 	}
 
 	@Configuration
