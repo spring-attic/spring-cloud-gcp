@@ -116,19 +116,33 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		boolean returnTypeIsCollection = this.queryMethod.isCollectionQuery();
 		Class returnedItemType = this.queryMethod.getReturnedObjectType();
 
-		return isNonEntityReturnedType(returnedItemType)
-				? executeNonEntityQuery(query, returnTypeIsCollection, returnedItemType)
-				: executeEntityQuery(query, returnTypeIsCollection, returnedItemType);
-	}
+		boolean isNonEntityReturnType = isNonEntityReturnedType(returnedItemType);
 
-	private Object executeEntityQuery(GqlQuery query, boolean returnTypeIsCollection,
-			Class returnedItemType) {
-		Iterable found = this.datastoreTemplate.queryKeysOrEntities(query,
-				this.entityType);
+		Iterable found = isNonEntityReturnType
+				? this.datastoreTemplate.query(query, x -> {
+					Object mappedResult;
+					if (x instanceof Key) {
+						mappedResult = x;
+					}
+					else {
+						BaseEntity entity = (BaseEntity) x;
+						Set<String> colNames = entity.getNames();
+						if (colNames.size() > 1) {
+							throw new DatastoreDataException(
+									"The query method returns non-entity types, but the query result has "
+											+ "more than one column. Use a Projection entity type instead.");
+						}
+						mappedResult = entity.getValue((String) colNames.toArray()[0])
+								.get();
+					}
+					return mappedResult;
+				})
+				: this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
 
 		List rawResult = found == null ? Collections.emptyList()
 				: (List) StreamSupport.stream(found.spliterator(), false)
 						.collect(Collectors.toList());
+
 		Object result;
 
 		if (this.queryMethod.isCountQuery()) {
@@ -138,66 +152,33 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			result = !rawResult.isEmpty();
 		}
 		else if (!returnTypeIsCollection) {
-			return rawResult.isEmpty() ? null
-					: this.queryMethod.getResultProcessor()
-							.processResult(rawResult.get(0));
-		}
-		else {
-			result = this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
-					.convertOnRead(applyProjection(rawResult),
-							this.queryMethod.getCollectionReturnType(), returnedItemType);
-		}
-		return result;
-	}
-
-	private Object executeNonEntityQuery(GqlQuery query, boolean returnTypeIsCollection,
-			Class returnedItemType) {
-		Iterable found = this.datastoreTemplate.query(query, x -> {
-			Object mappedResult;
-			if (x instanceof Key) {
-				mappedResult = x;
+			if (rawResult.isEmpty()) {
+				result = null;
 			}
 			else {
-				BaseEntity entity = (BaseEntity) x;
-				mappedResult = entity.getValue((String) entity.getNames().toArray()[0])
-						.get();
-			}
-			return mappedResult;
-		});
-
-		List rawResult = found == null ? Collections.emptyList()
-				: (List) StreamSupport.stream(found.spliterator(), false)
-						.collect(Collectors.toList());
-		Object result;
-
-		if (this.queryMethod.isCountQuery()) {
-			result = rawResult.size();
-		}
-		else if (this.queryMethod.isExistsQuery()) {
-			result = !rawResult.isEmpty();
-		}
-		else {
-			if (returnTypeIsCollection) {
-				result = this.datastoreTemplate.getDatastoreEntityConverter()
-						.getConversions().convertOnRead(rawResult,
-								this.queryMethod.getCollectionReturnType(),
-								returnedItemType);
-			}
-			else {
-				result = rawResult.isEmpty() ? null
-						: this.datastoreTemplate.getDatastoreEntityConverter()
+				result = isNonEntityReturnType
+						? this.datastoreTemplate.getDatastoreEntityConverter()
 								.getConversions()
-								.convertOnRead(rawResult.get(0), null, returnedItemType);
-
+								.convertOnRead(rawResult.get(0), null, returnedItemType)
+						: this.queryMethod.getResultProcessor()
+								.processResult(rawResult.get(0));
 			}
 		}
+		else {
+			Function<Object, Object> processCollectionResults = x -> this.datastoreTemplate
+					.getDatastoreEntityConverter().getConversions().convertOnRead(x,
+							this.queryMethod.getCollectionReturnType(), returnedItemType);
+			result = processCollectionResults.apply(
+					isNonEntityReturnType ? rawResult : applyProjection(rawResult));
+		}
+
 		return result;
 	}
 
 	@VisibleForTesting
 	boolean isNonEntityReturnedType(Class returnedType) {
 		return this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
-				.getSimpleTypeWithBidirectionalConversion(returnedType).isPresent();
+				.getDatastoreCompatibleType(returnedType).isPresent();
 	}
 
 	private List<String> getParamTags() {

@@ -70,7 +70,7 @@ public interface ReadWriteConversions {
 	 * @param inputType the given type to test.
 	 * @return the Cloud Datastore-compatible native Java type, if it exists.
 	 */
-	Optional<Class<?>> getSimpleTypeWithBidirectionalConversion(Class inputType);
+	Optional<Class<?>> getDatastoreCompatibleType(Class inputType);
 
 	/**
 	 * Registers {@link DatastoreEntityConverter} to be used for embedded entities

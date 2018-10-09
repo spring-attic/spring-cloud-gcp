@@ -46,7 +46,7 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	@Query(value = "select __key__ from test_entities_ci")
 	Set<Key> getKeys();
 
-	@Query(value = "select __key__ from test_entities_ci")
+	@Query(value = "select __key__ from test_entities_ci ")
 	Key getKey();
 
 	// Also involves conversion from long id to String
@@ -63,4 +63,7 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	long countBySizeAndColor(long size, String color);
 
 	List<TestEntity> findTop3BySizeAndColor(long size, String color);
+
+	@Query("select * from  test_entities_ci where id = @id")
+	TestEntityProjection getById(@Param("id") long id);
 }

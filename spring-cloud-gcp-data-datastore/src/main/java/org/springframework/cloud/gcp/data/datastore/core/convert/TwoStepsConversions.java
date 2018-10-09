@@ -41,6 +41,7 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.CustomConversions;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 
@@ -110,22 +111,12 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	@SuppressWarnings("unchecked")
 	private <T> T convertOnRead(Object val, boolean isEmbedded,
 			Class targetCollectionType, Class targetComponentType) {
-		if(val == null){
+		if (val == null) {
 			return null;
 		}
-		BiFunction<Object, Class<?>, T> readConverter = (ob, type) -> {
-			T result;
-			if (ob.getClass() == type) {
-				result = (T) ob;
-			}
-			else if (isEmbedded) {
-				result = convertOnReadSingleEmbedded(ob, type);
-			}
-			else {
-				result = convertOnReadSingle(ob, type);
-			}
-			return result;
-		};
+		BiFunction<Object, Class<?>, T> readConverter = isEmbedded
+				? this::convertOnReadSingleEmbedded
+				: this::convertOnReadSingle;
 
 		if ((val instanceof Iterable || val.getClass().isArray())
 				&& targetComponentType != null) {
@@ -150,6 +141,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	@SuppressWarnings("unchecked")
 	private <T> T convertOnReadSingleEmbedded(Object value, Class<?> targetClass) {
+		Assert.notNull(value, "Cannot convert a null value.");
 		if (value instanceof BaseEntity) {
 			return (T) this.datastoreEntityConverter.read(targetClass, (BaseEntity) value);
 		}
@@ -158,6 +150,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	@SuppressWarnings("unchecked")
 	private <T> T convertOnReadSingle(Object val, Class<?> targetType) {
+		Assert.notNull(val, "Cannot convert a null value.");
 		Object result = null;
 		TypeTargets typeTargets = computeTypeTargets(targetType);
 
@@ -259,7 +252,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> T convertCollection(Object collection, Class<?> target) {
+	public <T> T convertCollection(Object collection, Class<?> target) {
 		if (collection == null || target == null || ClassUtils.isAssignableValue(target, collection)) {
 			return (T) collection;
 		}
@@ -271,11 +264,12 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		if (DatastoreNativeTypes.isNativeType(sourceType)) {
 			return Optional.empty();
 		}
-		return this.writeConverters.computeIfAbsent(sourceType, this::getSimpleTypeWithBidirectionalConversion);
+		return this.writeConverters.computeIfAbsent(sourceType,
+				this::getDatastoreCompatibleType);
 	}
 
 	@Override
-	public Optional<Class<?>> getSimpleTypeWithBidirectionalConversion(Class inputType) {
+	public Optional<Class<?>> getDatastoreCompatibleType(Class inputType) {
 		return DatastoreNativeTypes.DATASTORE_NATIVE_TYPES.stream()
 				.filter(simpleType ->
 						this.internalConversionService.canConvert(inputType, simpleType)

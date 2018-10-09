@@ -108,6 +108,7 @@ public class DatastoreIntegrationTests {
 					.findEntitiesWithCustomProjectionQuery(1L);
 		}
 		assertEquals(1, this.testEntityRepository.countBySizeAndColor(1, "blue"));
+		assertEquals("blue", this.testEntityRepository.getById(2L).getColor());
 		assertEquals(3,
 				this.testEntityRepository.countBySizeAndColor(1, "red"));
 		assertThat(

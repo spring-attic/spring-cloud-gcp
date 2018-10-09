@@ -138,7 +138,8 @@ public interface DatastoreOperations {
 	 * Runs given query and applies given function to each entity in the result.
 	 * @param query the query to run.
 	 * @param entityFunc the function to apply to each found entity or key.
-	 * @param <A> the row type of the query.
+	 * @param <A> the row type of the query. This type can be either {@code Key} or a
+	 * Cloud Datastore entity.
 	 * @param <T> the type to map each entity or key to.
 	 * @return the mapped entities or keys.
 	 */
