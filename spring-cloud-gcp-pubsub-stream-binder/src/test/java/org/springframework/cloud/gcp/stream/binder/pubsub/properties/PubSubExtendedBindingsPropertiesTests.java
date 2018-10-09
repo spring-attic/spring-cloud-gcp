@@ -21,6 +21,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.context.annotation.Configurations;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
@@ -31,6 +33,7 @@ import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.stream.binder.pubsub.PubSubMessageChannelBinder;
+import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingsPropertiesTests.PubSubBindingsTestConfiguration;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingsPropertiesTests.PubSubBindingsTestConfiguration.CustomTestSink;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Input;
@@ -53,9 +56,9 @@ public class PubSubExtendedBindingsPropertiesTests {
 			.withPropertyValues(
 					"spring.cloud.stream.gcp.pubsub.bindings.input.consumer.auto-create-resources=true",
 					"spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources=false")
-			.withConfiguration(AutoConfigurations.of(
-					BindingServiceConfiguration.class,
-					PubSubBindingsTestConfiguration.class));
+			.withUserConfiguration(
+					PubSubBindingsTestConfiguration.class,
+					BindingServiceConfiguration.class);
 
 	@Test
 	public void testExtendedPropertiesOverrideDefaults() {
