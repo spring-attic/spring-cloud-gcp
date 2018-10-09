@@ -20,7 +20,6 @@ import org.springframework.messaging.SubscribableChannel;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@EnableAutoConfiguration
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
     properties = {
@@ -42,6 +41,7 @@ public class PubSubExtendedBindingsPropertiesTests {
 	}
 
 	@EnableBinding(CustomTestSink.class)
+	@EnableAutoConfiguration
 	public static class PubSubTestBindings {
 
 		@StreamListener("input")
