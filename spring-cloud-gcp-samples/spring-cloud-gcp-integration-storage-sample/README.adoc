@@ -13,7 +13,7 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 
 3. In the link:src/main/resources/applications.properties[application.properties] file, change the value of the `gcs-read-bucket` constant to the input bucket name and `gcs-write-bucket` to the output bucket name.
 +
-In the same file, set the `local-directory` constant to a folder in your local file system where the non-streaming Inbound Channel Adapter will save files to.
+In the same file, set the `gcs-local-directory` constant to a folder in your local file system where the non-streaming Inbound Channel Adapter will save files to.
 
 4. Run the application by running the `mvn spring-boot:run` goal in the sample's root folder.
 
