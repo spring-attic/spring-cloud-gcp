@@ -110,6 +110,24 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		this.gql = StringUtils.trimTrailingCharacter(gql.trim(), ';');
 	}
 
+	private static Object getNonEntityObjectFromRow(Object x) {
+		Object mappedResult;
+		if (x instanceof Key) {
+			mappedResult = x;
+		}
+		else {
+			BaseEntity entity = (BaseEntity) x;
+			Set<String> colNames = entity.getNames();
+			if (colNames.size() > 1) {
+				throw new DatastoreDataException(
+						"The query method returns non-entity types, but the query result has "
+								+ "more than one column. Use a Projection entity type instead.");
+			}
+			mappedResult = entity.getValue((String) colNames.toArray()[0]).get();
+		}
+		return mappedResult;
+	}
+
 	@Override
 	public Object execute(Object[] parameters) {
 		GqlQuery query = bindArgsToGqlQuery(this.gql, getParamTags(), parameters);
@@ -119,24 +137,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		boolean isNonEntityReturnType = isNonEntityReturnedType(returnedItemType);
 
 		Iterable found = isNonEntityReturnType
-				? this.datastoreTemplate.query(query, x -> {
-					Object mappedResult;
-					if (x instanceof Key) {
-						mappedResult = x;
-					}
-					else {
-						BaseEntity entity = (BaseEntity) x;
-						Set<String> colNames = entity.getNames();
-						if (colNames.size() > 1) {
-							throw new DatastoreDataException(
-									"The query method returns non-entity types, but the query result has "
-											+ "more than one column. Use a Projection entity type instead.");
-						}
-						mappedResult = entity.getValue((String) colNames.toArray()[0])
-								.get();
-					}
-					return mappedResult;
-				})
+				? this.datastoreTemplate.query(query,
+						GqlDatastoreQuery::getNonEntityObjectFromRow)
 				: this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
 
 		List rawResult = found == null ? Collections.emptyList()
@@ -161,23 +163,35 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 							"The query method returns a singular object but "
 									+ "the query returned more than one result.");
 				}
-				result = isNonEntityReturnType
-						? this.datastoreTemplate.getDatastoreEntityConverter()
-								.getConversions()
-								.convertOnRead(rawResult.get(0), null, returnedItemType)
-						: this.queryMethod.getResultProcessor()
-								.processResult(rawResult.get(0));
+				result = convertSingularResult(returnedItemType, isNonEntityReturnType,
+						rawResult);
 			}
 		}
 		else {
-			Function<Object, Object> processCollectionResults = x -> this.datastoreTemplate
-					.getDatastoreEntityConverter().getConversions().convertOnRead(x,
-							this.queryMethod.getCollectionReturnType(), returnedItemType);
-			result = processCollectionResults.apply(
-					isNonEntityReturnType ? rawResult : applyProjection(rawResult));
+			result = convertCollectionResult(returnedItemType, isNonEntityReturnType,
+					rawResult);
 		}
 
 		return result;
+	}
+
+	private Object convertCollectionResult(Class returnedItemType,
+			boolean isNonEntityReturnType, List rawResult) {
+		Object result;
+		Function<Object, Object> processCollectionResults = x -> this.datastoreTemplate
+				.getDatastoreEntityConverter().getConversions().convertOnRead(x,
+						this.queryMethod.getCollectionReturnType(), returnedItemType);
+		result = processCollectionResults
+				.apply(isNonEntityReturnType ? rawResult : applyProjection(rawResult));
+		return result;
+	}
+
+	private Object convertSingularResult(Class returnedItemType,
+			boolean isNonEntityReturnType, List rawResult) {
+		return isNonEntityReturnType
+				? this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+						.convertOnRead(rawResult.get(0), null, returnedItemType)
+				: this.queryMethod.getResultProcessor().processResult(rawResult.get(0));
 	}
 
 	@VisibleForTesting
