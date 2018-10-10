@@ -55,7 +55,7 @@ public class GcsSpringIntegrationApplication {
 	@Value("${gcs-write-bucket}")
 	private String gcsWriteBucket;
 
-	@Value("${local-directory}")
+	@Value("${gcs-local-directory}")
 	private String localDirectory;
 
 	private static final Log LOGGER = LogFactory.getLog(GcsSpringIntegrationApplication.class);
