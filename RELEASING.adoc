@@ -6,7 +6,7 @@ In order to simplify that process, here is a list of prerequisites to be perform
 . Manually change the value of `TRACKING_HEADER_PROJECT_VERSION` in link:spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/UsageTrackingHeaderProvider.java[`UsageTrackingHeaderProvider`] to the version being released from the interim `BUILD-SNAPSHOT` value.
 
 . Ensure that modules that shouldn't be released have the `maven-deploy-plugin` configuration set to `<skip>true</skip>`.
-This is especially import for GA releases, when certain non-GA modules need to be skipped.
+For GA releases this should be configured under the `central` Maven profile.
 
 	<build>
 		<plugins>
