@@ -59,6 +59,7 @@ import static org.junit.Assume.assumeThat;
 @PropertySource("classpath:application.properties")
 @SpringBootTest(classes = { GcsSpringIntegrationApplication.class })
 public class GcsSpringIntegrationTests {
+
 	private static final String TEST_FILE_NAME = "test_file";
 
 	@Autowired
