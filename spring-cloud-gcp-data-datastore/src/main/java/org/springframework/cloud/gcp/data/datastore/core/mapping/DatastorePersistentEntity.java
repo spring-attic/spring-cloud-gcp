@@ -54,4 +54,14 @@ public interface DatastorePersistentEntity<T> extends
 	 */
 	void doWithColumnBackedProperties(
 			PropertyHandler<DatastorePersistentProperty> handler);
+
+	/**
+	 * Applies the given {@link PropertyHandler} to all
+	 * {@link DatastorePersistentProperty} contained in this
+	 * {@link DatastorePersistentEntity} that are properties backed by descendants.
+	 *
+	 * @param handler must not be {@literal null}.
+	 */
+	void doWithDescendantProperties(
+			PropertyHandler<DatastorePersistentProperty> handler);
 }

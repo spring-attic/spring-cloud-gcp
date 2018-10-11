@@ -114,6 +114,17 @@ public class DatastorePersistentEntityImpl<T>
 	}
 
 	@Override
+	public void doWithDescendantProperties(
+			PropertyHandler<DatastorePersistentProperty> handler) {
+		doWithProperties(
+				(PropertyHandler<DatastorePersistentProperty>) datastorePersistentProperty -> {
+					if (datastorePersistentProperty.isDescendants()) {
+						handler.doWithPersistentProperty(datastorePersistentProperty);
+					}
+				});
+	}
+
+	@Override
 	public void setApplicationContext(ApplicationContext applicationContext)
 			throws BeansException {
 		this.context.addPropertyAccessor(new BeanFactoryAccessor());

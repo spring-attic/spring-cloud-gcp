@@ -54,7 +54,7 @@ public class DatastorePersistentPropertyImplTests {
 							}
 							else if (property.getFieldName().equals("doubleList")) {
 								assertEquals(Double.class,
-										property.getIterableInnerType());
+										property.getComponentType());
 								assertTrue(property.isIterable());
 							}
 							else if (property.getFieldName().equals("embeddedEntity")) {
@@ -90,7 +90,7 @@ public class DatastorePersistentPropertyImplTests {
 				.doWithProperties(
 						(PropertyHandler<DatastorePersistentProperty>) property -> {
 							if (property.getFieldName().equals("untypedList")) {
-								property.getIterableInnerType();
+								property.getComponentType();
 							}
 						});
 	}

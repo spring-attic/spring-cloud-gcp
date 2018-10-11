@@ -29,9 +29,11 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Entity.Builder;
+import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
+import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
@@ -222,8 +224,30 @@ public class DatastoreTemplate implements DatastoreOperations {
 		if (entities == null) {
 			return results;
 		}
-		entities.forEachRemaining(entity -> results
-				.add(this.datastoreEntityConverter.read(entityClass, entity)));
+
+		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
+				.getPersistentEntity(entityClass);
+
+		entities.forEachRemaining(entity -> {
+			T ob = this.datastoreEntityConverter.read(entityClass, entity);
+			results.add(ob);
+
+			datastorePersistentEntity.doWithDescendantProperties(persistentProperty -> {
+
+				Class descendantType = persistentProperty.getComponentType();
+
+				EntityQuery descendantQuery = Query.newEntityQueryBuilder()
+						.setKind(this.datastoreMappingContext
+								.getPersistentEntity(descendantType).kindName())
+						.setFilter(PropertyFilter.hasAncestor(this.objectToKeyFactory
+								.getKeyFromObject(ob, datastorePersistentEntity)))
+						.build();
+
+				datastorePersistentEntity.getPropertyAccessor(ob)
+						.setProperty(persistentProperty, convertEntitiesForRead(
+								this.datastore.run(descendantQuery), descendantType));
+			});
+		});
 		return results;
 	}
 
