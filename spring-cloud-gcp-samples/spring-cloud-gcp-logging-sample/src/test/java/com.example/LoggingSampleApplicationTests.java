@@ -89,7 +89,7 @@ public class LoggingSampleApplicationTests {
 
 		String logFilter = String.format(LOG_FILTER_FORMAT, traceHeader);
 
-		await().atMost(200, TimeUnit.SECONDS)
+		await().atMost(20, TimeUnit.SECONDS)
 				.pollInterval(2, TimeUnit.SECONDS)
 				.untilAsserted(() -> {
 					Page<LogEntry> logEntryPage = logClient.listLogEntries(
