@@ -42,6 +42,13 @@ public interface DatastorePersistentProperty
 	boolean isIterable();
 
 	/**
+	 * True if the property is a POJO and is to be stored in Datastore as an embedded
+	 * entity in the field.
+	 * @return true if the property is stored in Datastore as an embedded entity.
+	 */
+	boolean isEmbedded();
+
+	/**
 	 * True if the property is a POJO and is to be stored in Datastore as a Key of the
 	 * POJO, which is a separate entity in Datastore.
 	 * @return true if the property is stored in Datastore as a Key.
@@ -49,11 +56,12 @@ public interface DatastorePersistentProperty
 	boolean isReference();
 
 	/**
-	 * True if the property is a POJO and is to be stored in Datastore as an embedded
-	 * entity in the field.
-	 * @return true if the property is stored in Datastore as an embedded entity.
+	 * Whether the property contains entities that are related to this entity via the
+	 * Cloud Datastore Ancestor relationship and have this entity as their ancestor.
+	 * @return {@code true} if the property contains child entities. {@code false}
+	 * otherwise.
 	 */
-	boolean isEmbedded();
+	boolean isDescendants();
 
 	/**
 	 * True if the property should be excluded from indexes

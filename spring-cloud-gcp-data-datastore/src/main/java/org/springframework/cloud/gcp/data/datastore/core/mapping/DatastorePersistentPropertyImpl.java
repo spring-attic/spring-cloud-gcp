@@ -62,9 +62,14 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	private void verify() {
-		if (isEmbedded() && isReference()) {
+		if (isEmbedded() && (isDescendants() || isReference())) {
 			throw new DatastoreDataException(
-					"Property cannot be annotated both Embedded and Reference: "
+					"Property cannot be annotated both Embedded and Descendants or Reference: "
+							+ getFieldName());
+		}
+		if (isDescendants() && isReference()) {
+			throw new DatastoreDataException(
+					"Property cannot be annotated both Descendants and Reference: "
 							+ getFieldName());
 		}
 	}
@@ -96,13 +101,27 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	@Override
+	public boolean isEmbedded() {
+		return findAnnotation(Embedded.class) != null;
+	}
+
+	@Override
 	public boolean isReference() {
 		return findAnnotation(Reference.class) != null;
 	}
 
 	@Override
-	public boolean isEmbedded() {
-		return findAnnotation(Embedded.class) != null;
+	public boolean isDescendants() {
+		boolean hasDescendantsAnnotation = findAnnotation(Descendants.class) != null;
+		if (!hasDescendantsAnnotation) {
+			return false;
+		}
+		else if (isCollectionLike()) {
+			return true;
+		}
+		throw new DatastoreDataException(
+				"Only collection-like properties can contain the "
+						+ "descendant entity objects can be annotated @Descendants.");
 	}
 
 	@Override

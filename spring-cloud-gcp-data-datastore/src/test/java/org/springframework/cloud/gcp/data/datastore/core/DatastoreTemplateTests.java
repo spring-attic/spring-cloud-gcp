@@ -16,7 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
-import com.google.cloud.datastore.KeyQuery;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import com.google.cloud.datastore.Datastore;
@@ -27,6 +28,7 @@ import com.google.cloud.datastore.FullEntity;
 import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
+import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.Query.ResultType;
 import com.google.cloud.datastore.QueryResults;
@@ -97,11 +99,12 @@ public class DatastoreTemplateTests {
 		t.id = "key1";
 
 		when(this.objectToKeyFactory.getKeyFromObject(same(t), any()))
-				.thenReturn(createFakeKey("key1"));
+				.thenReturn(createFakeKey(t.id));
 
 		Key key1 = createFakeKey("key1");
-		Entity e1 = Entity.newBuilder(key1).build();
-		when(transactionContext.get(ArgumentMatchers.<Key>any())).thenReturn(e1);
+		Iterator<Entity> e1 = Collections.singletonList(Entity.newBuilder(key1).build())
+				.iterator();
+		when(transactionContext.get(ArgumentMatchers.<Key[]> any())).thenReturn(e1);
 
 		String finalResult = this.datastoreTemplate
 				.performTransaction(datastoreOperations -> {
@@ -112,16 +115,22 @@ public class DatastoreTemplateTests {
 
 		assertEquals("all done", finalResult);
 		verify(transactionContext, times(1)).put((FullEntity<?>) any());
-		verify(transactionContext, times(1)).get((Key) any());
+		verify(transactionContext, times(1)).get((Key[]) any());
 	}
 
 	@Test
 	public void findByIdTest() {
 		Key key1 = createFakeKey("key1");
 		TestEntity ob1 = new TestEntity();
-		Entity e1 = Entity.newBuilder(key1).build();
-		when(this.datastore.get(ArgumentMatchers.<Key>any())).thenReturn(e1);
-		when(this.datastoreEntityConverter.read(eq(TestEntity.class), any())).thenReturn(ob1);
+		Entity entity = Entity.newBuilder(key1).build();
+		Iterator<Entity> entities = Collections.singletonList(entity).iterator();
+		when(this.objectToKeyFactory.getKeyFromId(eq(key1), any())).thenReturn(key1);
+		when(this.datastore.get((Key[]) any())).thenAnswer(invocation -> {
+			assertEquals(key1, invocation.getArgument(0));
+			return entities;
+		});
+		when(this.datastoreEntityConverter.read(eq(TestEntity.class), same(entity)))
+				.thenReturn(ob1);
 
 		assertEquals(ob1, this.datastoreTemplate.findById(key1, TestEntity.class));
 	}

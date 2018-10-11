@@ -61,6 +61,9 @@ public class DatastorePersistentPropertyImplTests {
 								assertTrue(property.isEmbedded());
 							}
 							else if (property.getFieldName().equals("linkedEntity")) {
+								assertTrue(property.isDescendants());
+							}
+							else if (property.getFieldName().equals("linkedEntityRef")) {
 								assertTrue(property.isReference());
 							}
 							else {
@@ -118,8 +121,11 @@ public class DatastorePersistentPropertyImplTests {
 		@Embedded
 		TestSubEntity embeddedEntity;
 
+		@Descendants
+		List<TestSubEntity> linkedEntity;
+
 		@Reference
-		TestSubEntity linkedEntity;
+		TestSubEntity linkedEntityRef;
 	}
 
 	private static class TestSubEntity {
@@ -132,7 +138,7 @@ public class DatastorePersistentPropertyImplTests {
 
 	private static class EmbeddedReferenceAnnotatedEntity {
 		@Embedded
-		@Reference
-		TestSubEntity subEntity;
+		@Descendants
+		TestSubEntity[] subEntity;
 	}
 }

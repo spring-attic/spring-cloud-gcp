@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.datastore.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -84,9 +85,9 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> T findById(Object id, Class<T> entityClass) {
-		Entity entity = this.datastore.get(getKeyFromId(id, entityClass));
-		return entity == null ? null
-				: this.datastoreEntityConverter.read(entityClass, entity);
+		Iterator<T> results = findAllById(Collections.singleton(id), entityClass)
+				.iterator();
+		return results.hasNext() ? results.next() : null;
 	}
 
 	@Override
@@ -139,7 +140,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 	@Override
 	public <T> Collection<T> findAllById(Iterable<?> ids, Class<T> entityClass) {
 		List<Key> keysToFind = getKeysFromIds(ids, entityClass);
-		return convertEntities(
+		return convertEntitiesForRead(
 				this.datastore.get(keysToFind.toArray(new Key[keysToFind.size()])),
 				entityClass);
 	}
@@ -147,7 +148,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 	@Override
 	public <T> Iterable<T> query(Query<? extends BaseEntity> query,
 			Class<T> entityClass) {
-		return convertEntities(this.datastore.run(query), entityClass);
+		return convertEntitiesForRead(this.datastore.run(query), entityClass);
 	}
 
 	/**
@@ -164,7 +165,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 		if (results.getResultClass() == Key.class) {
 			return () -> this.datastore.run(query);
 		}
-		return convertEntities(results, entityClass);
+		return convertEntitiesForRead(results, entityClass);
 	}
 
 	@Override
@@ -181,7 +182,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> Collection<T> findAll(Class<T> entityClass) {
-		return convertEntities(
+		return convertEntitiesForRead(
 				this.datastore.run(Query.newEntityQueryBuilder()
 						.setKind(this.datastoreMappingContext
 								.getPersistentEntity(entityClass).kindName())
@@ -214,7 +215,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 		return builder.build();
 	}
 
-	private <T> Collection<T> convertEntities(Iterator<? extends BaseEntity> entities,
+	private <T> Collection<T> convertEntitiesForRead(
+			Iterator<? extends BaseEntity> entities,
 			Class<T> entityClass) {
 		List<T> results = new ArrayList<>();
 		if (entities == null) {
