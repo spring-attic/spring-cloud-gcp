@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
 import java.util.List;
 
+import com.google.protobuf.ByteString;
+
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
@@ -72,8 +74,8 @@ public class DatastorePersistentPropertyImpl
 					"Property cannot be annotated both Descendants and Reference: "
 							+ getFieldName());
 		}
-		if(isCollectionLike() && getComponentType()== null){
-			throw new DatastoreDataException("Collection-like types must have a type parameter.");
+		if (isIterableNonByteString()) {
+			getIterableInnerType();
 		}
 	}
 
@@ -85,9 +87,21 @@ public class DatastorePersistentPropertyImpl
 		return this.fieldNamingStrategy.getFieldName(this);
 	}
 
-	@Override
-	public boolean isIterable() {
-		return Iterable.class.isAssignableFrom(getType());
+	private Class<?> getIterableInnerType() {
+		TypeInformation<?> ti = getTypeInformation();
+		List<TypeInformation<?>> typeParams = ti.getTypeArguments();
+		if (typeParams.size() != 1) {
+			throw new DatastoreDataException("in field '" + getFieldName()
+					+ "': Unsupported number of type parameters found: "
+					+ typeParams.size()
+					+ " Only collections of exactly 1 type parameter are supported.");
+		}
+		return typeParams.get(0).getType();
+	}
+
+	private boolean isIterableNonByteString() {
+		return Iterable.class.isAssignableFrom(getType())
+				&& getType() != ByteString.class;
 	}
 
 	@Override

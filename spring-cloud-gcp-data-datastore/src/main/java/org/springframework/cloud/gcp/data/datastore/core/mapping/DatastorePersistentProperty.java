@@ -35,13 +35,6 @@ public interface DatastorePersistentProperty
 	String getFieldName();
 
 	/**
-	 * True for iterable properties that are stored as ARRAY of items in the Datastore
-	 * field.
-	 * @return true for iterable properties. false for singular properties.
-	 */
-	boolean isIterable();
-
-	/**
 	 * True if the property is a POJO and is to be stored in Datastore as an embedded
 	 * entity in the field.
 	 * @return true if the property is stored in Datastore as an embedded entity.

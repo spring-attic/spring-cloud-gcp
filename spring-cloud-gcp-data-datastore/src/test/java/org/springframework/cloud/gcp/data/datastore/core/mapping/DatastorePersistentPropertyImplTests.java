@@ -55,7 +55,7 @@ public class DatastorePersistentPropertyImplTests {
 							else if (property.getFieldName().equals("doubleList")) {
 								assertEquals(Double.class,
 										property.getComponentType());
-								assertTrue(property.isIterable());
+								assertTrue(property.isCollectionLike());
 							}
 							else if (property.getFieldName().equals("embeddedEntity")) {
 								assertTrue(property.isEmbedded());
@@ -86,13 +86,7 @@ public class DatastorePersistentPropertyImplTests {
 
 	@Test(expected = DatastoreDataException.class)
 	public void untypedListPropertyTest() {
-		this.datastoreMappingContext.getPersistentEntity(UntypedListEntity.class)
-				.doWithProperties(
-						(PropertyHandler<DatastorePersistentProperty>) property -> {
-							if (property.getFieldName().equals("untypedList")) {
-								property.getComponentType();
-							}
-						});
+		this.datastoreMappingContext.getPersistentEntity(UntypedListEntity.class);
 	}
 
 	@Test(expected = DatastoreDataException.class)
