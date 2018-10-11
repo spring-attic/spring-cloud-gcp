@@ -14,26 +14,12 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.datastore.core.convert;
-
-import com.google.cloud.datastore.BaseEntity;
-
-import org.springframework.data.convert.EntityReader;
-import org.springframework.data.convert.EntityWriter;
+package org.springframework.cloud.gcp.data.datastore.it;
 
 /**
- * An interface for converting objects to Datastore Entities and vice versa.
- *
  * @author Chengyuan Zhao
- *
- * @since 1.1
  */
-public interface DatastoreEntityConverter extends
-		EntityReader<Object, BaseEntity>, EntityWriter<Object, BaseEntity.Builder> {
+public interface TestEntityProjection {
 
-	/**
-	 * Get the {@link ReadWriteConversions} used in this converter.
-	 * @return the conversions used.
-	 */
-	ReadWriteConversions getConversions();
+	String getColor();
 }

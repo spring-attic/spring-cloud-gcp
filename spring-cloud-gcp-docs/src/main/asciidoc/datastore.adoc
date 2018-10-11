@@ -672,6 +672,8 @@ public interface TraderRepository extends CrudRepository<Trader, String> {
   @Query("SELECT * FROM traders WHERE name = @trader_name")
   List<Trader> tradersByName(@Param("trader_name) String traderName);
 
+  @Query("SELECT * FROM  test_entities_ci WHERE id = @id_val")
+  TestEntity getOneTestEntity(@Param("id_val") long id);
 }
 ----
 
@@ -692,6 +694,23 @@ If you would like to obtain the count of items of a query or if there are any it
 The return type of the query method in these cases should be an integer type or a boolean type.
 
 Cloud Datastore provides provides the `SELECT __key__ FROM ...` special column for all kinds that retrieves the `Key`s of each row. Selecting this special `__key__` column is especially useful and efficient for `count` and `exists` queries.
+
+You can also query for non-entity types:
+
+[source, java]
+----
+	@Query(value = "SELECT __key__ from test_entities_ci")
+	List<Key> getKeys();
+
+	@Query(value = "SELECT __key__ from test_entities_ci limit 1")
+	Key getKey();
+
+	@Query("SELECT id FROM test_entities_ci WHERE id <= @id_val")
+	List<String> getIds(@Param("id_val") long id);
+
+	@Query("SELECT id FROM test_entities_ci WHERE id <= @id_val limit 1")
+	String getOneId(@Param("id_val") long id);
+----
 
 ===== Query methods with named queries properties
 

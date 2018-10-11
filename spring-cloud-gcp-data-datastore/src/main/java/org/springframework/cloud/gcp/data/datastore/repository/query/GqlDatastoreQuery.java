@@ -35,6 +35,7 @@ import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.GqlQuery.Builder;
 import com.google.cloud.datastore.Key;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
@@ -109,27 +110,94 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		this.gql = StringUtils.trimTrailingCharacter(gql.trim(), ';');
 	}
 
+	private static Object getNonEntityObjectFromRow(Object x) {
+		Object mappedResult;
+		if (x instanceof Key) {
+			mappedResult = x;
+		}
+		else {
+			BaseEntity entity = (BaseEntity) x;
+			Set<String> colNames = entity.getNames();
+			if (colNames.size() > 1) {
+				throw new DatastoreDataException(
+						"The query method returns non-entity types, but the query result has "
+								+ "more than one column. Use a Projection entity type instead.");
+			}
+			mappedResult = entity.getValue((String) colNames.toArray()[0]).get();
+		}
+		return mappedResult;
+	}
+
 	@Override
 	public Object execute(Object[] parameters) {
 		GqlQuery query = bindArgsToGqlQuery(this.gql, getParamTags(), parameters);
-		Iterable found = this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
+		boolean returnTypeIsCollection = this.queryMethod.isCollectionQuery();
+		Class returnedItemType = this.queryMethod.getReturnedObjectType();
+
+		boolean isNonEntityReturnType = isNonEntityReturnedType(returnedItemType);
+
+		Iterable found = isNonEntityReturnType
+				? this.datastoreTemplate.query(query,
+						GqlDatastoreQuery::getNonEntityObjectFromRow)
+				: this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
+
 		List rawResult = found == null ? Collections.emptyList()
 				: (List) StreamSupport.stream(found.spliterator(), false)
 						.collect(Collectors.toList());
+
 		Object result;
-		if (this.queryMethod.isCountQuery()) {
-			result = rawResult.size();
-		}
-		else if (this.queryMethod.isExistsQuery()) {
-			result = !rawResult.isEmpty();
-		}
-		else if (rawResult.isEmpty() || rawResult.get(0).getClass() == Key.class) {
-			result = rawResult;
+
+		if (returnTypeIsCollection) {
+			result = convertCollectionResult(returnedItemType, isNonEntityReturnType,
+					rawResult);
 		}
 		else {
-			result = applyProjection(rawResult);
+			if (rawResult.isEmpty()) {
+				result = null;
+			}
+			else {
+
+				result = convertSingularResult(returnedItemType, isNonEntityReturnType,
+						rawResult);
+			}
 		}
+
 		return result;
+	}
+
+	private Object convertCollectionResult(Class returnedItemType,
+			boolean isNonEntityReturnType, List rawResult) {
+		Object result = this.datastoreTemplate.getDatastoreEntityConverter()
+				.getConversions().convertOnRead(
+						isNonEntityReturnType ? rawResult : applyProjection(rawResult),
+						this.queryMethod.getCollectionReturnType(), returnedItemType);
+		return result;
+	}
+
+	private Object convertSingularResult(Class returnedItemType,
+			boolean isNonEntityReturnType, List rawResult) {
+
+		if (this.queryMethod.isCountQuery()) {
+			return rawResult.size();
+		}
+		else if (this.queryMethod.isExistsQuery()) {
+			return !rawResult.isEmpty();
+		}
+		if (rawResult.size() > 1) {
+			throw new DatastoreDataException(
+					"The query method returns a singular object but "
+							+ "the query returned more than one result.");
+		}
+		return isNonEntityReturnType
+				? this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+						.convertOnRead(rawResult.get(0), null, returnedItemType)
+				: this.queryMethod.getResultProcessor().processResult(rawResult.get(0));
+	}
+
+	@VisibleForTesting
+	boolean isNonEntityReturnedType(Class returnedType) {
+		return this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+				.getDatastoreCompatibleType(returnedType).isPresent();
 	}
 
 	private List<String> getParamTags() {
@@ -159,6 +227,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			List<String> tags,
 			Object[] vals) {
 		Builder builder = GqlQuery.newGqlQueryBuilder(gql);
+		builder.setAllowLiteral(true);
 		if (tags.size() != vals.length) {
 			throw new DatastoreDataException("Annotated GQL Query Method "
 					+ this.queryMethod.getName() + " has " + tags.size()

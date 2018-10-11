@@ -74,6 +74,14 @@ public class DatastoreTemplate implements DatastoreOperations {
 		this.objectToKeyFactory = objectToKeyFactory;
 	}
 
+	/**
+	 * Get the {@link DatastoreEntityConverter} used by this template.
+	 * @return the converter.
+	 */
+	public DatastoreEntityConverter getDatastoreEntityConverter() {
+		return this.datastoreEntityConverter;
+	}
+
 	@Override
 	public <T> T findById(Object id, Class<T> entityClass) {
 		Entity entity = this.datastore.get(getKeyFromId(id, entityClass));
@@ -157,6 +165,13 @@ public class DatastoreTemplate implements DatastoreOperations {
 			return () -> this.datastore.run(query);
 		}
 		return convertEntities(results, entityClass);
+	}
+
+	@Override
+	public <A, T> Iterable<T> query(Query<A> query, Function<A, T> entityFunc) {
+		List<T> results = new ArrayList<>();
+		this.datastore.run(query).forEachRemaining(x -> results.add(entityFunc.apply(x)));
+		return results;
 	}
 
 	@Override

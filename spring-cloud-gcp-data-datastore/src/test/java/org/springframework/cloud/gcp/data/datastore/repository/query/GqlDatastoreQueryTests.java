@@ -45,7 +45,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -122,7 +124,7 @@ public class GqlDatastoreQueryTests {
 		when(this.evaluationContextProvider.getEvaluationContext(any(), any()))
 				.thenReturn(evaluationContext);
 
-		GqlDatastoreQuery gqlDatastoreQuery = createQuery(gql);
+		GqlDatastoreQuery gqlDatastoreQuery = spy(createQuery(gql));
 
 		doAnswer(invocation -> {
 			GqlQuery statement = invocation.getArgument(0);
@@ -150,6 +152,8 @@ public class GqlDatastoreQueryTests {
 
 			return null;
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));
+
+		doReturn(false).when(gqlDatastoreQuery).isNonEntityReturnedType(any());
 
 		gqlDatastoreQuery.execute(params);
 
