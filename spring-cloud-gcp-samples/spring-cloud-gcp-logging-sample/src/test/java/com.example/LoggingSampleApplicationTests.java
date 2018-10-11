@@ -18,6 +18,7 @@ package com.example;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.google.api.gax.paging.Page;
@@ -36,12 +37,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
@@ -49,7 +52,10 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { Application.class })
 public class LoggingSampleApplicationTests {
 
-	private static final String LOG_FILTER = "resource.type=global AND trace:%s";
+	private static final String LOG_FILTER_FORMAT = "resource.type=global AND trace:%s";
+
+	@Autowired
+	private GcpProjectIdProvider projectIdProvider;
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;
@@ -81,17 +87,28 @@ public class LoggingSampleApplicationTests {
 		headers.add("x-cloud-trace-context", traceHeader);
 		testRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
 
-		String logFilter = String.format(LOG_FILTER, traceHeader);
-		Page<LogEntry> logEntryPage = logClient.listLogEntries(
-				Logging.EntryListOption.filter(logFilter));
+		String logFilter = String.format(LOG_FILTER_FORMAT, traceHeader);
 
-		ImmutableList<LogEntry> logEntries = ImmutableList.copyOf(logEntryPage.iterateAll());
-		List<String> logContents = logEntries.stream()
-				.map(logEntry -> ((StringPayload) logEntry.getPayload()).getData())
-				.collect(Collectors.toList());
+		await().atMost(200, TimeUnit.SECONDS)
+				.pollInterval(2, TimeUnit.SECONDS)
+				.untilAsserted(() -> {
+					Page<LogEntry> logEntryPage = logClient.listLogEntries(
+							Logging.EntryListOption.filter(logFilter));
+					ImmutableList<LogEntry> logEntries = ImmutableList.copyOf(logEntryPage.iterateAll());
 
-		assertThat(logContents).containsExactlyInAnyOrder(
-				"This line was written to the log.",
-				"This line was also written to the log with the same Trace ID.");
+					List<String> logContents = logEntries.stream()
+							.map(logEntry -> ((StringPayload) logEntry.getPayload()).getData())
+							.collect(Collectors.toList());
+
+					assertThat(logContents).containsExactlyInAnyOrder(
+							"This line was written to the log.",
+							"This line was also written to the log with the same Trace ID.");
+
+					for (LogEntry logEntry : logEntries) {
+						assertThat(logEntry.getLogName()).isEqualTo("spring.log");
+						assertThat(logEntry.getResource().getLabels())
+								.containsEntry("project_id", projectIdProvider.getProjectId());
+					}
+				});
 	}
 }
