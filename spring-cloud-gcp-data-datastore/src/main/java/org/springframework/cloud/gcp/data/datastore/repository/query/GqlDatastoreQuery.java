@@ -147,29 +147,19 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		Object result;
 
-		if (this.queryMethod.isCountQuery()) {
-			result = rawResult.size();
+		if (returnTypeIsCollection) {
+			result = convertCollectionResult(returnedItemType, isNonEntityReturnType,
+					rawResult);
 		}
-		else if (this.queryMethod.isExistsQuery()) {
-			result = !rawResult.isEmpty();
-		}
-		else if (!returnTypeIsCollection) {
+		else {
 			if (rawResult.isEmpty()) {
 				result = null;
 			}
 			else {
-				if (rawResult.size() > 1) {
-					throw new DatastoreDataException(
-							"The query method returns a singular object but "
-									+ "the query returned more than one result.");
-				}
+
 				result = convertSingularResult(returnedItemType, isNonEntityReturnType,
 						rawResult);
 			}
-		}
-		else {
-			result = convertCollectionResult(returnedItemType, isNonEntityReturnType,
-					rawResult);
 		}
 
 		return result;
@@ -177,17 +167,27 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	private Object convertCollectionResult(Class returnedItemType,
 			boolean isNonEntityReturnType, List rawResult) {
-		Object result;
-		Function<Object, Object> processCollectionResults = x -> this.datastoreTemplate
-				.getDatastoreEntityConverter().getConversions().convertOnRead(x,
+		Object result = this.datastoreTemplate.getDatastoreEntityConverter()
+				.getConversions().convertOnRead(
+						isNonEntityReturnType ? rawResult : applyProjection(rawResult),
 						this.queryMethod.getCollectionReturnType(), returnedItemType);
-		result = processCollectionResults
-				.apply(isNonEntityReturnType ? rawResult : applyProjection(rawResult));
 		return result;
 	}
 
 	private Object convertSingularResult(Class returnedItemType,
 			boolean isNonEntityReturnType, List rawResult) {
+
+		if (this.queryMethod.isCountQuery()) {
+			return rawResult.size();
+		}
+		else if (this.queryMethod.isExistsQuery()) {
+			return !rawResult.isEmpty();
+		}
+		if (rawResult.size() > 1) {
+			throw new DatastoreDataException(
+					"The query method returns a singular object but "
+							+ "the query returned more than one result.");
+		}
 		return isNonEntityReturnType
 				? this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
 						.convertOnRead(rawResult.get(0), null, returnedItemType)
