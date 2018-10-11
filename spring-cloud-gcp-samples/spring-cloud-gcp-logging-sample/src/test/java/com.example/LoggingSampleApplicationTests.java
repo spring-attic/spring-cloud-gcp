@@ -16,6 +16,8 @@
 
 package com.example;
 
+import com.google.api.gax.core.CredentialsProvider;
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -58,6 +60,9 @@ public class LoggingSampleApplicationTests {
 	private GcpProjectIdProvider projectIdProvider;
 
 	@Autowired
+	private CredentialsProvider credentialsProvider;
+
+	@Autowired
 	private TestRestTemplate testRestTemplate;
 
 	@LocalServerPort
@@ -74,8 +79,10 @@ public class LoggingSampleApplicationTests {
 	}
 
 	@Before
-	public void setupLogging() {
-		logClient = LoggingOptions.getDefaultInstance().getService();
+	public void setupLogging() throws IOException {
+		this.logClient = LoggingOptions.newBuilder()
+				.setCredentials(this.credentialsProvider.getCredentials())
+				.build().getService();
 	}
 
 	@Test
@@ -85,14 +92,14 @@ public class LoggingSampleApplicationTests {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("x-cloud-trace-context", traceHeader);
-		testRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+		this.testRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
 
 		String logFilter = String.format(LOG_FILTER_FORMAT, traceHeader);
 
 		await().atMost(20, TimeUnit.SECONDS)
 				.pollInterval(2, TimeUnit.SECONDS)
 				.untilAsserted(() -> {
-					Page<LogEntry> logEntryPage = logClient.listLogEntries(
+					Page<LogEntry> logEntryPage = this.logClient.listLogEntries(
 							Logging.EntryListOption.filter(logFilter));
 					ImmutableList<LogEntry> logEntries = ImmutableList.copyOf(logEntryPage.iterateAll());
 
@@ -107,7 +114,7 @@ public class LoggingSampleApplicationTests {
 					for (LogEntry logEntry : logEntries) {
 						assertThat(logEntry.getLogName()).isEqualTo("spring.log");
 						assertThat(logEntry.getResource().getLabels())
-								.containsEntry("project_id", projectIdProvider.getProjectId());
+								.containsEntry("project_id", this.projectIdProvider.getProjectId());
 					}
 				});
 	}
