@@ -23,9 +23,12 @@
 		<appender-ref ref="STDOUT" />
 	</logger>
 
-	<include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml"/>
-	<logger name="org.springframework.cloud.gcp.autoconfigure.logging.it.StackdriverLoggingIntegrationTests" level="warn">
-		<appender-ref ref="STACKDRIVER" />
-	</logger>
-
+	<if condition='property("it.logging").equalsIgnoreCase("true")'>
+		<then>
+			<include resource="org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml"/>
+			<logger name="org.springframework.cloud.gcp.autoconfigure.logging.it.StackdriverLoggingIntegrationTests" level="warn">
+				<appender-ref ref="STACKDRIVER" />
+			</logger>
+		</then>
+	</if>
 </configuration>
