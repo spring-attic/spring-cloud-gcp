@@ -16,10 +16,6 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
-import java.util.List;
-
-import com.google.protobuf.ByteString;
-
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
@@ -28,7 +24,6 @@ import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
 
 /**
@@ -64,9 +59,10 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	private void verify() {
-		if (isEmbedded() && (isDescendants() || isReference())) {
+		if ((hasFieldAnnotation() || isEmbedded())
+				&& (isDescendants() || isReference())) {
 			throw new DatastoreDataException(
-					"Property cannot be annotated both Embedded and Descendants or Reference: "
+					"Property cannot be annotated both Embedded or Field and Descendants or Reference: "
 							+ getFieldName());
 		}
 		if (isDescendants() && isReference()) {
@@ -87,6 +83,10 @@ public class DatastorePersistentPropertyImpl
 			return getAnnotatedFieldName();
 		}
 		return this.fieldNamingStrategy.getFieldName(this);
+	}
+
+	private boolean hasFieldAnnotation() {
+		return findAnnotation(Field.class) != null;
 	}
 
 	@Override
