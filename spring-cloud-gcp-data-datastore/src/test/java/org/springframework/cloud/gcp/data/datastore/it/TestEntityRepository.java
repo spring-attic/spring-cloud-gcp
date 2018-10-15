@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.it;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import com.google.cloud.datastore.Key;

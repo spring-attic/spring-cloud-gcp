@@ -109,8 +109,10 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		boolean returnedTypeisNumber = Number.class.isAssignableFrom(returnedType)
 				|| returnedType == int.class || returnedType == long.class;
 
-		if (this.tree.isCountProjection()
-				|| (this.tree.isDelete() && returnedTypeisNumber)) {
+		boolean isCountingQuery = this.tree.isCountProjection()
+				|| (this.tree.isDelete() && returnedTypeisNumber);
+
+		if (isCountingQuery) {
 			collector = Collectors.reducing(0, e -> 1, Integer::sum);
 		}
 		else if (this.tree.isExistsProjection()) {
@@ -142,8 +144,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			}
 		}
 
-		return this.tree.isExistsProjection() || this.tree.isCountProjection()
-				|| rawResults == null
+		return this.tree.isExistsProjection() || isCountingQuery || result == null
 						? result
 						: this.datastoreTemplate.getDatastoreEntityConverter()
 								.getConversions().convertOnRead(result,

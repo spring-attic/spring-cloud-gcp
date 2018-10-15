@@ -108,14 +108,12 @@ public class DatastoreIntegrationTests {
 		assertEquals(Blob.copyFrom("testValueA".getBytes()),
 				this.testEntityRepository.findById(1L).get().getBlobField());
 
-		List<TestEntity> foundByCustomQuery = Collections.emptyList();
-		TestEntity[] foundByCustomProjectionQuery = new TestEntity[] {};
 		waitUntilTrue(
 				() -> this.testEntityRepository.countBySizeAndColor(1L, "red") == 3);
 
 		List<TestEntity> foundByCustomQuery = this.testEntityRepository
 				.findEntitiesWithCustomQuery(1L);
-		List<TestEntity> foundByCustomProjectionQuery = this.testEntityRepository
+		TestEntity[] foundByCustomProjectionQuery = this.testEntityRepository
 				.findEntitiesWithCustomProjectionQuery(1L);
 
 		assertEquals(1, this.testEntityRepository.countBySizeAndColor(1, "blue"));
