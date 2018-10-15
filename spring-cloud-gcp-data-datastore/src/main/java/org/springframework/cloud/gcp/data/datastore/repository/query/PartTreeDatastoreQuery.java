@@ -102,31 +102,26 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	@Override
 	public Object execute(Object[] parameters) {
-		return this.tree.isDelete()
-				? this.datastoreOperations
-						.performTransaction(x -> executeQuery(parameters, x))
-				: executeQuery(parameters, this.datastoreOperations);
-	}
-
-	private Object executeQuery(Object[] parameters,
-			DatastoreOperations datastoreOperations) {
 		Supplier<StructuredQuery.Builder<?>> queryBuilderSupplier = StructuredQuery::newKeyQueryBuilder;
-		Function<Query, Iterable> queryMethod = datastoreOperations::queryKeys;
+		Function<Query, Iterable> queryMethod = this.datastoreOperations::queryKeys;
 		Function<T, ?> mapper = Function.identity();
 		Collector<?, ?, ?> collector = Collectors.toList();
 		Class returnedType = this.queryMethod.getReturnedObjectType();
 
+		boolean returnedTypeisNumber = Number.class.isAssignableFrom(returnedType)
+				|| returnedType == int.class || returnedType == long.class;
+
 		if (this.tree.isCountProjection()
-				|| (this.tree.isDelete() && (Number.class.isAssignableFrom(returnedType)
-						|| returnedType == int.class || returnedType == long.class))) {
+				|| (this.tree.isDelete() && returnedTypeisNumber)) {
 			collector = Collectors.reducing(0, e -> 1, Integer::sum);
 		}
 		else if (this.tree.isExistsProjection()) {
-			collector = Collectors.collectingAndThen(Collectors.counting(), count -> count > 0);
+			collector = Collectors.collectingAndThen(Collectors.counting(),
+					count -> count > 0);
 		}
-		else if (!this.tree.isDelete()) {
+		else if (!returnedTypeisNumber) {
 			queryBuilderSupplier = StructuredQuery::newEntityQueryBuilder;
-			queryMethod = q -> datastoreOperations.query(q, this.entityType);
+			queryMethod = q -> this.datastoreOperations.query(q, this.entityType);
 			mapper = this::processRawObjectForProjection;
 		}
 
@@ -135,13 +130,20 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		applyQueryBody(parameters, structredQueryBuilder);
 		Iterable rawResults = queryMethod.apply(structredQueryBuilder.build());
 
-		if (this.tree.isDelete()) {
-			datastoreOperations.deleteAllById(rawResults, this.entityType);
-		}
-
-		return rawResults == null ? null
+		Object result = rawResults == null ? null
 				: StreamSupport.stream(rawResults.spliterator(), false).map(mapper)
 						.collect(collector);
+
+		if (this.tree.isDelete()) {
+			if (returnedTypeisNumber) {
+				this.datastoreOperations.deleteAllById(rawResults, this.entityType);
+			}
+			else {
+				this.datastoreOperations.deleteAll(rawResults);
+			}
+		}
+
+		return result;
 	}
 
 	private StructuredQuery applyQueryBody(Object[] parameters,

@@ -17,8 +17,8 @@
 package org.springframework.cloud.gcp.data.datastore.it;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
@@ -83,6 +83,8 @@ public class DatastoreIntegrationTests {
 		this.testEntityRepository.saveAll(
 				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
 
+		waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4);
+
 		assertEquals(4, this.testEntityRepository.deleteBySize(1L));
 
 		this.testEntityRepository.saveAll(
@@ -105,20 +107,14 @@ public class DatastoreIntegrationTests {
 		assertEquals(Blob.copyFrom("testValueA".getBytes()),
 				this.testEntityRepository.findById(1L).get().getBlobField());
 
-		List<TestEntity> foundByCustomQuery = Collections.emptyList();
-		List<TestEntity> foundByCustomProjectionQuery = Collections.emptyList();
+		waitUntilTrue(
+				() -> this.testEntityRepository.countBySizeAndColor(1L, "red") == 3);
 
-		for (int i = 0; i < QUERY_WAIT_ATTEMPTS; i++) {
-			if (!foundByCustomQuery.isEmpty() && this.testEntityRepository
-					.countBySizeAndColor(1L, "red") == 3) {
-				break;
-			}
-			Thread.sleep(QUERY_WAIT_INTERVAL_MILLIS);
-			foundByCustomQuery = this.testEntityRepository
-					.findEntitiesWithCustomQuery(1L);
-			foundByCustomProjectionQuery = this.testEntityRepository
-					.findEntitiesWithCustomProjectionQuery(1L);
-		}
+		List<TestEntity> foundByCustomQuery = this.testEntityRepository
+				.findEntitiesWithCustomQuery(1L);
+		List<TestEntity> foundByCustomProjectionQuery = this.testEntityRepository
+				.findEntitiesWithCustomProjectionQuery(1L);
+
 		assertEquals(1, this.testEntityRepository.countBySizeAndColor(1, "blue"));
 		assertEquals(3,
 				this.testEntityRepository.countBySizeAndColor(1, "red"));
@@ -190,4 +186,12 @@ public class DatastoreIntegrationTests {
 		assertEquals(treeCollection, loaded);
 	}
 
+	private void waitUntilTrue(Supplier<Boolean> condition) throws InterruptedException {
+		for (int i = 0; i < QUERY_WAIT_ATTEMPTS; i++) {
+			if (condition.get()) {
+				break;
+			}
+			Thread.sleep(QUERY_WAIT_INTERVAL_MILLIS);
+		}
+	}
 }
