@@ -17,7 +17,7 @@ cache:
 script:
   - ./mvnw -T 1.5C test -B ${INTEGRATION_TEST_FLAGS}
 install:
-  - ./mvnw -T 1.5C install -P it -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+  - ./mvnw -T 1.5C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 before_install:
   - INTEGRATION_TEST_FLAGS="-Dit.pubsub-emulator";
       if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
