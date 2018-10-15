@@ -16,7 +16,10 @@
 
 package org.springframework.cloud.gcp.data.datastore.it;
 
-import java.util.List;
+import java.util.LinkedList;
+import java.util.Set;
+
+import com.google.cloud.datastore.Key;
 
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
@@ -28,7 +31,7 @@ import org.springframework.data.repository.query.Param;
 public interface TestEntityRepository extends DatastoreRepository<TestEntity, Long> {
 
 	@Query("select * from  test_entities_ci where id = @id_val")
-	List<TestEntity> findEntitiesWithCustomQuery(@Param("id_val") long id);
+	LinkedList<TestEntity> findEntitiesWithCustomQuery(@Param("id_val") long id);
 
 	@Query(value = "select size from  test_entities_ci where size <= @size", count = true)
 	int countEntitiesWithCustomQuery(@Param("size") long size);
@@ -39,13 +42,34 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 
 	List<TestEntity> removeByColor(String color);
 
-	@Query(value = "select * from  test_entities_ci where id = @id_val", exists = true)
+	@Query(value = "select __key__ from  test_entities_ci "
+			+ "where id = @id_val", exists = true)
 	boolean existsByEntitiesWithCustomQuery(@Param("id_val") long id);
 
 	@Query("select id from  test_entities_ci where id <= @id_val ")
-	List<TestEntity> findEntitiesWithCustomProjectionQuery(@Param("id_val") long id);
+	TestEntity[] findEntitiesWithCustomProjectionQuery(@Param("id_val") long id);
+
+	@Query(value = "select __key__ from test_entities_ci")
+	Set<Key> getKeys();
+
+	@Query(value = "select __key__ from test_entities_ci limit 1")
+	Key getKey();
+
+	// Also involves conversion from long id to String
+	@Query("select id from  test_entities_ci where id <= @id_val ")
+	Long[] getIds(@Param("id_val") long id);
+
+	// Also involves conversion from long id to String
+	@Query("select id from  test_entities_ci where id <= @id_val")
+	long getOneId(@Param("id_val") long id);
+
+	@Query("select * from  test_entities_ci where id = @id_val")
+	TestEntity getOneTestEntity(@Param("id_val") long id);
 
 	long countBySizeAndColor(long size, String color);
 
-	List<TestEntity> findTop3BySizeAndColor(long size, String color);
+	LinkedList<TestEntity> findTop3BySizeAndColor(long size, String color);
+
+	@Query("select * from  test_entities_ci where id = @id")
+	TestEntityProjection getById(@Param("id") long id);
 }

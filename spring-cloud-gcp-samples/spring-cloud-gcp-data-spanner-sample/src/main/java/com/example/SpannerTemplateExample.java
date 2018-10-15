@@ -20,23 +20,22 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.google.cloud.spanner.KeySet;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
-import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Balint Pato
  * @author Mike Eltsufin
  */
-@SpringBootApplication
+@Component
 public class SpannerTemplateExample {
+	private static final Log LOGGER = LogFactory.getLog(SpannerTemplateExample.class);
 
 	@Autowired
 	private SpannerOperations spannerOperations;
@@ -47,47 +46,36 @@ public class SpannerTemplateExample {
 	@Autowired
 	private SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
 
-	public static void main(String[] args) {
-		new SpringApplicationBuilder(SpannerTemplateExample.class)
-				.web(WebApplicationType.NONE)
-				.run(args);
+	public void runExample() {
+		createTablesIfNotExists();
+		this.spannerOperations.delete(Trader.class, KeySet.all());
+		this.spannerOperations.delete(Trade.class, KeySet.all());
+
+		Trader trader = new Trader("template_trader1", "John", "Doe");
+
+		this.spannerOperations.insert(trader);
+
+		Trade t = new Trade("1", "BUY", 100.0, 50.0, "STOCK1", "template_trader1", Arrays.asList(99.0, 101.00));
+
+		this.spannerOperations.insert(t);
+
+		t.setTradeId("2");
+		t.setTraderId("template_trader1");
+		t.setAction("SELL");
+		this.spannerOperations.insert(t);
+
+		t.setTradeId("1");
+		t.setTraderId("template_trader2");
+		this.spannerOperations.insert(t);
+
+		List<Trade> tradesByAction = this.spannerOperations.readAll(Trade.class);
+		LOGGER.info("All trades created by the example:");
+		for (Trade trade : tradesByAction) {
+			LOGGER.info(trade);
+		}
 	}
 
-	@Bean
-	public CommandLineRunner commandLineRunner() {
-		return args -> {
-
-			createTablesIfNotExists();
-
-			this.spannerOperations.delete(Trader.class, KeySet.all());
-			this.spannerOperations.delete(Trade.class, KeySet.all());
-
-			Trader trader = new Trader("template_trader1", "John", "Doe");
-
-			this.spannerOperations.insert(trader);
-
-			Trade t = new Trade("1", "BUY", 100.0, 50.0, "STOCK1", "template_trader1", Arrays.asList(99.0, 101.00));
-
-			this.spannerOperations.insert(t);
-
-			t.setTradeId("2");
-			t.setTraderId("template_trader1");
-			t.setAction("SELL");
-			this.spannerOperations.insert(t);
-
-			t.setTradeId("1");
-			t.setTraderId("template_trader2");
-			this.spannerOperations.insert(t);
-
-			List<Trade> tradesByAction = this.spannerOperations.readAll(Trade.class);
-
-			tradesByAction.forEach(System.out::println);
-
-			System.exit(0);
-		};
-	}
-
-	private void createTablesIfNotExists() {
+	void createTablesIfNotExists() {
 		if (!this.spannerDatabaseAdminTemplate.tableExists("trades")) {
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(
 					Arrays.asList(

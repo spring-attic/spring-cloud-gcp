@@ -31,4 +31,9 @@ import org.springframework.data.convert.EntityWriter;
 public interface DatastoreEntityConverter extends
 		EntityReader<Object, BaseEntity>, EntityWriter<Object, BaseEntity.Builder> {
 
+	/**
+	 * Get the {@link ReadWriteConversions} used in this converter.
+	 * @return the conversions used.
+	 */
+	ReadWriteConversions getConversions();
 }

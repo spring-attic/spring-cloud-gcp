@@ -30,6 +30,7 @@ import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Entity.Builder;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
+import com.google.cloud.datastore.QueryResults;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
@@ -71,6 +72,14 @@ public class DatastoreTemplate implements DatastoreOperations {
 		this.datastoreEntityConverter = datastoreEntityConverter;
 		this.datastoreMappingContext = datastoreMappingContext;
 		this.objectToKeyFactory = objectToKeyFactory;
+	}
+
+	/**
+	 * Get the {@link DatastoreEntityConverter} used by this template.
+	 * @return the converter.
+	 */
+	public DatastoreEntityConverter getDatastoreEntityConverter() {
+		return this.datastoreEntityConverter;
 	}
 
 	@Override
@@ -139,6 +148,30 @@ public class DatastoreTemplate implements DatastoreOperations {
 	public <T> Iterable<T> query(Query<? extends BaseEntity> query,
 			Class<T> entityClass) {
 		return convertEntities(this.datastore.run(query), entityClass);
+	}
+
+	/**
+	 * Finds objects by using a Cloud Datastore query. If the query is a key-query, then keys are
+	 * returned.
+	 * @param query the query to execute.
+	 * @param entityClass the type of object to retrieve.
+	 * @param <T> the type of object to retrieve.
+	 * @return a list of the objects found. If no keys could be found the list will be
+	 * empty.
+	 */
+	public <T> Iterable<?> queryKeysOrEntities(Query query, Class<T> entityClass) {
+		QueryResults results = this.datastore.run(query);
+		if (results.getResultClass() == Key.class) {
+			return () -> this.datastore.run(query);
+		}
+		return convertEntities(results, entityClass);
+	}
+
+	@Override
+	public <A, T> Iterable<T> query(Query<A> query, Function<A, T> entityFunc) {
+		List<T> results = new ArrayList<>();
+		this.datastore.run(query).forEachRemaining(x -> results.add(entityFunc.apply(x)));
+		return results;
 	}
 
 	@Override
@@ -213,7 +246,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 	private Key[] findAllKeys(Class entityClass) {
 		Iterable<Key> keysFound = queryKeys(Query.newKeyQueryBuilder().setKind(
 				this.datastoreMappingContext
-						.getPersistentEntity(entityClass).kindName()).build());
+						.getPersistentEntity(entityClass).kindName())
+				.build());
 		return StreamSupport.stream(keysFound.spliterator(),
 				false).toArray(Key[]::new);
 	}

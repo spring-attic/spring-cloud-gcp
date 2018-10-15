@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
+import org.springframework.cloud.gcp.data.spanner.core.SpannerPageableQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
@@ -190,7 +190,7 @@ public class SpannerRepositoryImplTests {
 	public void findAllSortTest() {
 		Sort sort = mock(Sort.class);
 		when(this.template.queryAll(eq(Object.class), any())).thenAnswer(invocation -> {
-			SpannerQueryOptions spannerQueryOptions = invocation.getArgument(1);
+			SpannerPageableQueryOptions spannerQueryOptions = invocation.getArgument(1);
 			assertSame(sort, spannerQueryOptions.getSort());
 			return null;
 		});
@@ -207,7 +207,7 @@ public class SpannerRepositoryImplTests {
 		when(pageable.getOffset()).thenReturn(3L);
 		when(pageable.getPageSize()).thenReturn(5);
 		when(this.template.queryAll(eq(Object.class), any())).thenAnswer(invocation -> {
-			SpannerQueryOptions spannerQueryOptions = invocation.getArgument(1);
+			SpannerPageableQueryOptions spannerQueryOptions = invocation.getArgument(1);
 			assertSame(sort, spannerQueryOptions.getSort());
 			assertEquals(3L, spannerQueryOptions.getOffset());
 			assertEquals(5L, spannerQueryOptions.getLimit());

@@ -27,6 +27,7 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
  * A {@link PropertyValueProvider} for Datastore entities
  *
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  *
  * @since 1.1
  */
@@ -53,9 +54,14 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 			return null;
 		}
 		try {
-			return this.conversion.convertOnRead(
-					this.entity.getValue(fieldName),
-					persistentProperty);
+			return persistentProperty.isEmbedded()
+					? this.conversion.convertOnReadEmbedded(
+					this.entity.getValue(fieldName).get(),
+							persistentProperty.getType(),
+							persistentProperty.getComponentType())
+					: this.conversion.convertOnRead(this.entity.getValue(fieldName).get(),
+							persistentProperty.getType(),
+							persistentProperty.getComponentType());
 		}
 		catch (ConversionException | DatastoreDataException e) {
 			throw new DatastoreDataException("Unable to read property " + fieldName, e);

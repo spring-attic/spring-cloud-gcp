@@ -43,7 +43,8 @@
 		<spring-cloud-commons.version>2.1.0.BUILD-SNAPSHOT</spring-cloud-commons.version>
 		<spring-cloud-sleuth.version>2.1.0.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
 		<spring-cloud-stream.version>Fishtown.BUILD-SNAPSHOT</spring-cloud-stream.version>
-		<zipkin-gcp.version>0.8.0</zipkin-gcp.version>
+		<zipkin-gcp.version>0.8.2</zipkin-gcp.version>
+		<app-engine-maven-plugin.version>1.3.2</app-engine-maven-plugin.version>
 	</properties>
 
 	<dependencyManagement>
@@ -102,6 +103,12 @@
 	</dependencyManagement>
 
 	<dependencies>
+		<dependency>
+			<groupId>org.awaitility</groupId>
+			<artifactId>awaitility</artifactId>
+			<version>3.1.2</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -198,6 +205,11 @@
 						</manifest>
 					</archive>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>appengine-maven-plugin</artifactId>
+				<version>${app-engine-maven-plugin.version}</version>
 			</plugin>
 		</plugins>
 	</build>

@@ -21,13 +21,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -70,18 +68,17 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 
 	@Override
 	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass) {
-		return mapToList(resultSet, entityClass, Optional.empty(), false);
+		return mapToList(resultSet, entityClass, null, false);
 	}
 
 	@Override
 	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
-			Optional<Set<String>> includeColumns, boolean allowMissingColumns) {
+			Set<String> includeColumns, boolean allowMissingColumns) {
 		ArrayList<T> result = new ArrayList<>();
 		while (resultSet.next()) {
 			result.add(this.entityReader.read(entityClass,
 					resultSet.getCurrentRowAsStruct(),
-					includeColumns == null || !includeColumns.isPresent() ? null
-							: includeColumns.get(),
+					includeColumns == null ? null : includeColumns,
 					allowMissingColumns));
 		}
 		resultSet.close();
@@ -92,8 +89,8 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
 			String... includeColumns) {
 		return mapToList(resultSet, entityClass,
-				includeColumns.length == 0 ? Optional.empty()
-						: Optional.of(new HashSet<>(Arrays.asList(includeColumns))),
+				includeColumns.length == 0 ? null
+						: new HashSet<>(Arrays.asList(includeColumns)),
 				false);
 	}
 
@@ -200,13 +197,13 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 		return this.entityReader.read(type, source, includeColumns, allowMissingColumns);
 	}
 
-	@VisibleForTesting
-	SpannerWriteConverter getWriteConverter() {
+	@Override
+	public SpannerWriteConverter getWriteConverter() {
 		return this.writeConverter;
 	}
 
-	@VisibleForTesting
-	SpannerReadConverter getReadConverter() {
+	@Override
+	public SpannerReadConverter getReadConverter() {
 		return this.readConverter;
 	}
 }

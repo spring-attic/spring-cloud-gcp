@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.Optional;
+
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
@@ -24,17 +26,35 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersis
  * An interface for type conversions on read and on write
  *
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  *
  * @since 1.1
  */
 public interface ReadWriteConversions {
+
 	/**
-	 * Converts a Cloud Datastore {@link Value} to an object of a target type
-	 * @param val Cloud Datastore Value.
-	 * @param persistentProperty the target field information.
+	 * Converts a given object to an object of a target type.
+	 * @param val the value to convert
+	 * @param targetCollectionType the type of the collection to be converted into.
+	 * {@code null} if the property is a singular object.
+	 * @param targetComponentType the type of the property to convert. For collection-like
+	 * properties this refers to the individual items' type.
 	 * @return an object of a target type.
 	 */
-	<T> T convertOnRead(Value val, DatastorePersistentProperty persistentProperty);
+	<T> T convertOnRead(Object val, Class targetCollectionType,
+			Class targetComponentType);
+
+	/**
+	 * Converts a given object to an object of a target type that is an embedded entity.
+	 * @param val the value to convert.
+	 * @param targetCollectionType the type of the collection to be converted into.
+	 * {@code null} if the property is a singular object.
+	 * @param targetComponentType the type of the property to convert. For collection-like
+	 * properties this refers to the individual items' type.
+	 * @return an object of a target type.
+	 */
+	<T> T convertOnReadEmbedded(Object val, Class targetCollectionType,
+			Class targetComponentType);
 
 	/**
 	 * Converts an object to a Cloud Datastore {@link Value}
@@ -43,6 +63,14 @@ public interface ReadWriteConversions {
 	 * @return a Cloud Datastore value.
 	 */
 	Value convertOnWrite(Object obj, DatastorePersistentProperty persistentProperty);
+
+	/**
+	 * Get the Cloud Datastore-compatible native Java type that can be used to store the
+	 * given type.
+	 * @param inputType the given type to test.
+	 * @return the Cloud Datastore-compatible native Java type, if it exists.
+	 */
+	Optional<Class<?>> getDatastoreCompatibleType(Class inputType);
 
 	/**
 	 * Registers {@link DatastoreEntityConverter} to be used for embedded entities

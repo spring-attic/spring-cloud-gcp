@@ -37,6 +37,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -107,6 +108,8 @@ public class DatastoreIntegrationTests {
 		assertEquals(Blob.copyFrom("testValueA".getBytes()),
 				this.testEntityRepository.findById(1L).get().getBlobField());
 
+		List<TestEntity> foundByCustomQuery = Collections.emptyList();
+		TestEntity[] foundByCustomProjectionQuery = new TestEntity[] {};
 		waitUntilTrue(
 				() -> this.testEntityRepository.countBySizeAndColor(1L, "red") == 3);
 
@@ -116,6 +119,7 @@ public class DatastoreIntegrationTests {
 				.findEntitiesWithCustomProjectionQuery(1L);
 
 		assertEquals(1, this.testEntityRepository.countBySizeAndColor(1, "blue"));
+		assertEquals("blue", this.testEntityRepository.getById(2L).getColor());
 		assertEquals(3,
 				this.testEntityRepository.countBySizeAndColor(1, "red"));
 		assertThat(
@@ -123,17 +127,25 @@ public class DatastoreIntegrationTests {
 						.map(TestEntity::getId).collect(Collectors.toList()),
 				containsInAnyOrder(1L, 3L, 4L));
 
+		assertThat(this.testEntityRepository.getKeys().stream().map(x -> x.getId())
+				.collect(Collectors.toList()), containsInAnyOrder(1L, 2L, 3L, 4L));
+
 		assertEquals(1, foundByCustomQuery.size());
 		assertEquals(4, this.testEntityRepository.countEntitiesWithCustomQuery(1L));
 		assertTrue(this.testEntityRepository.existsByEntitiesWithCustomQuery(1L));
 		assertEquals(Blob.copyFrom("testValueA".getBytes()),
 				foundByCustomQuery.get(0).getBlobField());
 
-		assertEquals(1, foundByCustomProjectionQuery.size());
-		assertNull(foundByCustomProjectionQuery.get(0).getBlobField());
-		assertEquals((Long) 1L, foundByCustomProjectionQuery.get(0).getId());
+		assertEquals(1, foundByCustomProjectionQuery.length);
+		assertNull(foundByCustomProjectionQuery[0].getBlobField());
+		assertEquals((Long) 1L, foundByCustomProjectionQuery[0].getId());
 
 		testEntityA.setBlobField(null);
+
+		assertEquals((Long) 1L, this.testEntityRepository.getKey().getId());
+		assertEquals(1, this.testEntityRepository.getIds(1L).length);
+		assertEquals(1, this.testEntityRepository.getOneId(1L));
+		assertNotNull(this.testEntityRepository.getOneTestEntity(1L));
 
 		this.testEntityRepository.save(testEntityA);
 

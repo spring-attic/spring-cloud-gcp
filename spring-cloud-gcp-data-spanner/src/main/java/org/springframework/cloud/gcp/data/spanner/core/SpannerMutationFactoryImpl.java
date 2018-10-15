@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import com.google.cloud.spanner.Key;
@@ -78,17 +77,15 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	}
 
 	@Override
-	public List<Mutation> upsert(Object object, Optional<Set<String>> includeColumns) {
+	public List<Mutation> upsert(Object object, Set<String> includeColumns) {
 		return saveObject(Op.INSERT_OR_UPDATE, object,
-				includeColumns == null || !includeColumns.isPresent() ? null
-						: includeColumns.get());
+				includeColumns == null ? null : includeColumns);
 	}
 
 	@Override
-	public List<Mutation> update(Object object, Optional<Set<String>> includeColumns) {
+	public List<Mutation> update(Object object, Set<String> includeColumns) {
 		return saveObject(Op.UPDATE, object,
-				includeColumns == null || !includeColumns.isPresent() ? null
-						: includeColumns.get());
+				includeColumns == null ? null : includeColumns);
 	}
 
 	@Override

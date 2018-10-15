@@ -29,7 +29,6 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.Builder;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
@@ -37,7 +36,7 @@ import com.google.cloud.datastore.StructuredQuery.Filter;
 import com.google.cloud.datastore.StructuredQuery.OrderBy;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -65,15 +64,15 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	/**
 	 * Constructor
 	 * @param queryMethod the metadata for this query method.
-	 * @param datastoreOperations used to execute the given query.
+	 * @param datastoreTemplate used to execute the given query.
 	 * @param datastoreMappingContext used to provide metadata for mapping results to
 	 * objects.
 	 * @param entityType the result domain type.
 	 */
 	public PartTreeDatastoreQuery(DatastoreQueryMethod queryMethod,
-			DatastoreOperations datastoreOperations,
+			DatastoreTemplate datastoreTemplate,
 			DatastoreMappingContext datastoreMappingContext, Class<T> entityType) {
-		super(queryMethod, datastoreOperations, datastoreMappingContext, entityType);
+		super(queryMethod, datastoreTemplate, datastoreMappingContext, entityType);
 		this.tree = new PartTree(queryMethod.getName(), entityType);
 		this.datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(this.entityType);
@@ -103,7 +102,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	@Override
 	public Object execute(Object[] parameters) {
 		Supplier<StructuredQuery.Builder<?>> queryBuilderSupplier = StructuredQuery::newKeyQueryBuilder;
-		Function<Query, Iterable> queryMethod = this.datastoreOperations::queryKeys;
 		Function<T, ?> mapper = Function.identity();
 		Collector<?, ?, ?> collector = Collectors.toList();
 		Class returnedType = this.queryMethod.getReturnedObjectType();
@@ -121,14 +119,15 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 		else if (!returnedTypeisNumber) {
 			queryBuilderSupplier = StructuredQuery::newEntityQueryBuilder;
-			queryMethod = q -> this.datastoreOperations.query(q, this.entityType);
 			mapper = this::processRawObjectForProjection;
 		}
 
 		StructuredQuery.Builder<?> structredQueryBuilder = queryBuilderSupplier.get();
 		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
 		applyQueryBody(parameters, structredQueryBuilder);
-		Iterable rawResults = queryMethod.apply(structredQueryBuilder.build());
+		Iterable rawResults = this.datastoreTemplate
+				.queryKeysOrEntities(structredQueryBuilder.build(),
+				this.entityType);
 
 		Object result = rawResults == null ? null
 				: StreamSupport.stream(rawResults.spliterator(), false).map(mapper)
@@ -136,14 +135,20 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		if (this.tree.isDelete()) {
 			if (returnedTypeisNumber) {
-				this.datastoreOperations.deleteAllById(rawResults, this.entityType);
+				this.datastoreTemplate.deleteAllById(rawResults, this.entityType);
 			}
 			else {
-				this.datastoreOperations.deleteAll(rawResults);
+				this.datastoreTemplate.deleteAll(rawResults);
 			}
 		}
 
-		return result;
+		return this.tree.isExistsProjection() || this.tree.isCountProjection()
+				|| rawResults == null
+						? result
+						: this.datastoreTemplate.getDatastoreEntityConverter()
+								.getConversions().convertOnRead(result,
+										this.queryMethod.getCollectionReturnType(),
+										this.queryMethod.getReturnedObjectType());
 	}
 
 	private StructuredQuery applyQueryBody(Object[] parameters,

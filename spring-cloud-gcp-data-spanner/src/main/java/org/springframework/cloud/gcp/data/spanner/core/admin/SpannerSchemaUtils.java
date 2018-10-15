@@ -29,13 +29,15 @@ import com.google.cloud.spanner.Type;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
-import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.Assert;
+
+import static org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper.getArrayTypeCodeForJavaType;
+import static org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper.getSimpleTypeCodeForJavaType;
 
 /**
  * Contains functions related to the table schema of entities.
@@ -49,8 +51,6 @@ public class SpannerSchemaUtils {
 	private final SpannerMappingContext mappingContext;
 
 	private final SpannerEntityProcessor spannerEntityProcessor;
-
-	private final SpannerTypeMapper spannerTypeMapper;
 
 	private final boolean createInterleavedTableDdlOnDeleteCascade;
 
@@ -75,7 +75,6 @@ public class SpannerSchemaUtils {
 				"A valid results mapper for Cloud Spanner is required.");
 		this.mappingContext = mappingContext;
 		this.spannerEntityProcessor = spannerEntityProcessor;
-		this.spannerTypeMapper = new SpannerTypeMapper();
 		this.createInterleavedTableDdlOnDeleteCascade = createInterleavedTableDdlOnDeleteCascade;
 	}
 
@@ -168,13 +167,16 @@ public class SpannerSchemaUtils {
 		Class columnType = spannerPersistentProperty.getType();
 		String columnName = spannerPersistentProperty.getColumnName() + " ";
 		Class spannerJavaType;
-		Type.Code spannerColumnType;
+		Type.Code spannerColumnType = spannerPersistentProperty
+				.getAnnotatedColumnItemType();
 		if (ConversionUtils.isIterableNonByteArrayType(columnType)) {
 			Class innerType = spannerPersistentProperty.getColumnInnerType();
 			spannerJavaType = spannerEntityProcessor
 					.getCorrespondingSpannerJavaType(innerType, true);
-			spannerColumnType = this.spannerTypeMapper
-					.getSimpleTypeCodeForJavaType(spannerJavaType);
+
+			if (spannerColumnType == null) {
+				spannerColumnType = getSimpleTypeCodeForJavaType(spannerJavaType);
+			}
 
 			if (spannerColumnType == null) {
 				throw new SpannerDataException(
@@ -182,7 +184,8 @@ public class SpannerSchemaUtils {
 								+ "property type: " + innerType);
 			}
 			return columnName + getTypeDdlString(spannerColumnType, true,
-					spannerPersistentProperty.getMaxColumnLength());
+					spannerPersistentProperty.getMaxColumnLength(),
+					spannerPersistentProperty.isGenerateSchemaNotNull());
 		}
 		spannerJavaType = spannerEntityProcessor
 					.getCorrespondingSpannerJavaType(columnType, false);
@@ -194,11 +197,11 @@ public class SpannerSchemaUtils {
 							+ columnType);
 		}
 
-		spannerColumnType = spannerJavaType.isArray()
-					? this.spannerTypeMapper.getArrayTypeCodeForJavaType(spannerJavaType)
-					: this.spannerTypeMapper
-							.getSimpleTypeCodeForJavaType(spannerJavaType);
-
+		if (spannerColumnType == null) {
+			spannerColumnType = spannerJavaType.isArray()
+					? getArrayTypeCodeForJavaType(spannerJavaType)
+					: getSimpleTypeCodeForJavaType(spannerJavaType);
+		}
 		if (spannerColumnType == null) {
 			throw new SpannerDataException(
 					"Could not find suitable Cloud Spanner column type for property "
@@ -206,7 +209,8 @@ public class SpannerSchemaUtils {
 		}
 
 		return columnName + getTypeDdlString(spannerColumnType, spannerJavaType.isArray(),
-					spannerPersistentProperty.getMaxColumnLength());
+				spannerPersistentProperty.getMaxColumnLength(),
+				spannerPersistentProperty.isGenerateSchemaNotNull());
 	}
 
 	private <T> void addPrimaryKeyColumnNames(
@@ -228,7 +232,7 @@ public class SpannerSchemaUtils {
 			SpannerPersistentEntity<T> spannerPersistentEntity,
 			StringJoiner stringJoiner) {
 		spannerPersistentEntity.doWithColumnBackedProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+				spannerPersistentProperty -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						addColumnDdlStrings(
 								this.mappingContext.getPersistentEntity(
@@ -281,10 +285,16 @@ public class SpannerSchemaUtils {
 	}
 
 	private String getTypeDdlString(Type.Code type, boolean isArray,
+			OptionalLong dataLength, boolean isNotNull) {
+		return getTypeDdlStringWithLength(type, isArray, dataLength)
+				+ (isNotNull ? " NOT NULL" : "");
+	}
+
+	private String getTypeDdlStringWithLength(Type.Code type, boolean isArray,
 			OptionalLong dataLength) {
 		Assert.notNull(type, "A valid Spanner column type is required.");
 		if (isArray) {
-			return "ARRAY<" + getTypeDdlString(type, false, dataLength) + ">";
+			return "ARRAY<" + getTypeDdlStringWithLength(type, false, dataLength) + ">";
 		}
 		return type.toString() + (type == Type.Code.STRING || type == Type.Code.BYTES
 				? "(" + (dataLength.isPresent() ? dataLength.getAsLong() : "MAX") + ")"
