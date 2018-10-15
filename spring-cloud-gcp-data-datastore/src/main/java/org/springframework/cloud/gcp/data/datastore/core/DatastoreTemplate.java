@@ -228,27 +228,42 @@ public class DatastoreTemplate implements DatastoreOperations {
 		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(entityClass);
 
-		entities.forEachRemaining(entity -> {
-			T ob = this.datastoreEntityConverter.read(entityClass, entity);
-			results.add(ob);
-
-			datastorePersistentEntity.doWithDescendantProperties(persistentProperty -> {
-
-				Class descendantType = persistentProperty.getComponentType();
-
-				EntityQuery descendantQuery = Query.newEntityQueryBuilder()
-						.setKind(this.datastoreMappingContext
-								.getPersistentEntity(descendantType).kindName())
-						.setFilter(PropertyFilter.hasAncestor(this.objectToKeyFactory
-								.getKeyFromObject(ob, datastorePersistentEntity)))
-						.build();
-
-				datastorePersistentEntity.getPropertyAccessor(ob)
-						.setProperty(persistentProperty, convertEntitiesForRead(
-								this.datastore.run(descendantQuery), descendantType));
-			});
-		});
+		entities.forEachRemaining(entity -> convertEntityResolveDescendants(entityClass,
+				results, datastorePersistentEntity, entity));
 		return results;
+	}
+
+	private <T> void convertEntityResolveDescendants(Class<T> entityClass,
+			List<T> results, DatastorePersistentEntity datastorePersistentEntity,
+			BaseEntity entity) {
+		T convertedObject = this.datastoreEntityConverter.read(entityClass, entity);
+		results.add(convertedObject);
+
+		datastorePersistentEntity
+				.doWithDescendantProperties(descendantPersistentProperty -> {
+
+					Class descendantType = descendantPersistentProperty
+							.getComponentType();
+
+					EntityQuery descendantQuery = Query.newEntityQueryBuilder()
+							.setKind(this.datastoreMappingContext
+									.getPersistentEntity(descendantType).kindName())
+							.setFilter(PropertyFilter.hasAncestor((Key) entity.getKey()))
+							.build();
+
+					datastorePersistentEntity.getPropertyAccessor(convertedObject)
+							.setProperty(descendantPersistentProperty,
+									// Converting the collection type.
+									this.datastoreEntityConverter.getConversions()
+											.convertOnRead(
+													convertEntitiesForRead(
+															this.datastore
+																	.run(descendantQuery),
+															descendantType),
+													descendantPersistentProperty
+															.getType(),
+													descendantType));
+				});
 	}
 
 	private Key getKeyFromId(Object id, Class entityClass) {

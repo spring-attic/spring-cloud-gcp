@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.datastore.core;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.google.cloud.datastore.Datastore;
@@ -40,6 +41,7 @@ import org.mockito.ArgumentMatchers;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
+import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.data.annotation.Id;
@@ -55,9 +57,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -80,18 +80,25 @@ public class DatastoreTemplateTests {
 		return new KeyFactory("project").setKind("custom_test_kind").newKey(val);
 	}
 
+	// A fake entity query used for testing.
 	private final Query testEntityQuery = GqlQuery
 			.newGqlQueryBuilder(ResultType.PROJECTION_ENTITY, "fake query").build();
 
+	// This is the query that is expected to be constructed by the template.
 	private final Query findAllTestEntityQuery = Query.newEntityQueryBuilder()
 			.setKind("custom_test_kind").build();
+
+	// The keys, entities, and objects below are constructed for all tests below. the
+	// number of each
+	// object here corresponds to the same thing across keys, entities, objects.
 	private final Key key1 = createFakeKey("key1");
 	private final Key key2 = createFakeKey("key2");
+	private final Key badKey = createFakeKey("badkey");
 	private final Entity e1 = Entity.newBuilder(this.key1).build();
 	private final Entity e2 = Entity.newBuilder(this.key2).build();
 	private TestEntity ob1;
 	private TestEntity ob2;
-	private ChildEntity childEntity;
+	private ChildEntity childEntity1;
 
 	@Before
 	public void setup() {
@@ -99,40 +106,41 @@ public class DatastoreTemplateTests {
 				this.datastoreEntityConverter, new DatastoreMappingContext(),
 				this.objectToKeyFactory);
 
+		ReadWriteConversions readWriteConversions = mock(ReadWriteConversions.class);
+		when(this.datastoreEntityConverter.getConversions())
+				.thenReturn(readWriteConversions);
+
+		// The readWriteConversions are only mocked for purposes of collection-conversion
+		// for
+		// descendants. no other conversions take place in the template.
+		doAnswer(invocation -> {
+			LinkedList linkedList = new LinkedList();
+			for (Object object : (List) invocation.getArgument(0)) {
+				linkedList.add(object);
+			}
+			return linkedList;
+		}).when(readWriteConversions).convertOnRead(any(), any(), any());
+
 		this.ob1 = new TestEntity();
 		this.ob2 = new TestEntity();
 
-		this.ob1.id = "value";
-		this.ob2.id = "value";
+		this.ob1.id = "value1";
+		this.ob2.id = "value2";
 
 		Entity ce1 = Entity.newBuilder(createFakeKey("key3")).build();
 
 		Query childTestEntityQuery = Query.newEntityQueryBuilder().setKind("child_entity")
 				.setFilter(PropertyFilter.hasAncestor(key1)).build();
 
-		this.childEntity = new ChildEntity();
-		this.childEntity.id = "child_id";
+		this.childEntity1 = new ChildEntity();
+		this.childEntity1.id = "child_id";
 
+		// mocked query results for entities and child entities.
 		QueryResults childTestEntityQueryResults = mock(QueryResults.class);
 		doAnswer(invocation -> {
 			ImmutableList.of(ce1).iterator().forEachRemaining(invocation.getArgument(0));
 			return null;
 		}).when(childTestEntityQueryResults).forEachRemaining(any());
-
-		when(this.datastoreEntityConverter.read(eq(TestEntity.class), any()))
-				.thenAnswer(invocation -> {
-					Object ret;
-					if (invocation.getArgument(1) == e1) {
-						ret = this.ob1;
-					}
-					else {
-						ret = this.ob2;
-					}
-					return ret;
-				});
-
-		when(this.datastoreEntityConverter.read(eq(ChildEntity.class), same(ce1)))
-				.thenReturn(childEntity);
 
 		QueryResults testEntityQueryResults = mock(QueryResults.class);
 		doAnswer(invocation -> {
@@ -141,35 +149,43 @@ public class DatastoreTemplateTests {
 			return null;
 		}).when(testEntityQueryResults).forEachRemaining(any());
 
-		when(this.datastore.run(any())).thenAnswer(invocation -> {
-			Query query = invocation.getArgument(0);
-			Object result = null;
-			if (this.testEntityQuery.equals(query)
-					|| this.findAllTestEntityQuery.equals(query)) {
-				result = testEntityQueryResults;
-			}
-			else if (childTestEntityQuery.equals(query)) {
-				result = childTestEntityQueryResults;
-			}
-			return result;
-		});
+		// mocking the converter to return the final objects corresponding to their
+		// specific entities.
+		when(this.datastoreEntityConverter.read(eq(TestEntity.class), eq(this.e1)))
+				.thenReturn(this.ob1);
+		when(this.datastoreEntityConverter.read(eq(TestEntity.class), eq(this.e2)))
+				.thenReturn(this.ob2);
+		when(this.datastoreEntityConverter.read(eq(ChildEntity.class), same(ce1)))
+				.thenReturn(childEntity1);
 
-		when(this.datastore.get(ArgumentMatchers.<Key[]> any()))
-				.thenReturn(ImmutableList.of(this.e1, this.e2).iterator());
+		when(this.datastore.run(eq(this.testEntityQuery)))
+				.thenReturn(testEntityQueryResults);
+		when(this.datastore.run(eq(this.findAllTestEntityQuery)))
+				.thenReturn(testEntityQueryResults);
+		when(this.datastore.run(eq(childTestEntityQuery)))
+				.thenReturn(childTestEntityQueryResults);
 
-		when(this.objectToKeyFactory.getKeyFromObject(any(), any()))
-				.thenAnswer(invocation -> {
-					Object ret;
-					if (invocation.getArgument(0) == this.ob1) {
-						ret = this.key1;
-					}
-					else {
-						ret = this.key2;
-					}
-					return ret;
-				});
+		// Because get() takes varags, there is difficulty in matching the single param
+		// case using just thenReturn.
+		doAnswer(invocation -> {
+			Object key = invocation.getArgument(0);
+			return key instanceof Key && key == this.key1
+					? ImmutableList.of(this.e1).iterator()
+					: null;
+		}).when(this.datastore).get((Key[]) any());
+
+		when(this.objectToKeyFactory.getKeyFromId(eq(this.key1), any()))
+				.thenReturn(this.key1);
+		when(this.objectToKeyFactory.getKeyFromId(eq(this.key2), any()))
+				.thenReturn(this.key2);
+		when(this.objectToKeyFactory.getKeyFromId(eq(this.badKey), any()))
+				.thenReturn(this.badKey);
+
+		when(this.objectToKeyFactory.getKeyFromObject(eq(this.ob1), any()))
+				.thenReturn(this.key1);
+		when(this.objectToKeyFactory.getKeyFromObject(eq(this.ob2), any()))
+				.thenReturn(this.key2);
 	}
-
 	@Test
 	public void performTransactionTest() {
 
@@ -199,9 +215,10 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void findByIdTest() {
+
 		TestEntity result = this.datastoreTemplate.findById(this.key1, TestEntity.class);
 		assertEquals(this.ob1, result);
-		assertThat(result.childEntities, contains(this.childEntity));
+		assertThat(result.childEntities, contains(this.childEntity1));
 	}
 
 	@Test
@@ -213,6 +230,8 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void findAllByIdTest() {
+		when(this.datastore.get(eq(this.key1), eq(this.key2)))
+				.thenReturn(ImmutableList.of(this.e1, this.e2).iterator());
 		List<Key> keys = ImmutableList.of(this.key1, this.key2);
 		assertThat(this.datastoreTemplate.findAllById(keys, TestEntity.class),
 				contains(this.ob1, this.ob2));
@@ -289,11 +308,8 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void existsByIdTest() {
-		DatastoreTemplate spy = spy(this.datastoreTemplate);
-		doReturn(new Object()).when(spy).findById(same(this.key1), eq(Object.class));
-		doReturn(null).when(spy).findById(same(this.key2), eq(Object.class));
-		assertTrue(spy.existsById(this.key1, Object.class));
-		assertFalse(spy.existsById(this.key2, Object.class));
+		assertTrue(this.datastoreTemplate.existsById(this.key1, TestEntity.class));
+		assertFalse(this.datastoreTemplate.existsById(this.badKey, TestEntity.class));
 	}
 
 	@Test
@@ -349,7 +365,7 @@ public class DatastoreTemplateTests {
 		String id;
 
 		@Descendants
-		List<ChildEntity> childEntities;
+		LinkedList<ChildEntity> childEntities;
 
 		@Override
 		public boolean equals(Object other) {

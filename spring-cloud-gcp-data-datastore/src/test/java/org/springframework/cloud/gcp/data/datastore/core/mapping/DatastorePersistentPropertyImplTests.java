@@ -85,11 +85,6 @@ public class DatastorePersistentPropertyImplTests {
 	}
 
 	@Test(expected = DatastoreDataException.class)
-	public void untypedListPropertyTest() {
-		this.datastoreMappingContext.getPersistentEntity(UntypedListEntity.class);
-	}
-
-	@Test(expected = DatastoreDataException.class)
 	public void embeddedReferenceAnnotatedTest() {
 		this.datastoreMappingContext
 				.getPersistentEntity(EmbeddedReferenceAnnotatedEntity.class);

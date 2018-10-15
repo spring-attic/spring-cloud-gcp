@@ -74,8 +74,10 @@ public class DatastorePersistentPropertyImpl
 					"Property cannot be annotated both Descendants and Reference: "
 							+ getFieldName());
 		}
-		if (isIterableNonByteString()) {
-			getIterableInnerType();
+		if(isDescendants() && !isCollectionLike()) {
+			throw new DatastoreDataException(
+					"Only collection-like properties can contain the "
+							+ "descendant entity objects can be annotated @Descendants.");
 		}
 	}
 
@@ -85,23 +87,6 @@ public class DatastorePersistentPropertyImpl
 			return getAnnotatedFieldName();
 		}
 		return this.fieldNamingStrategy.getFieldName(this);
-	}
-
-	private Class<?> getIterableInnerType() {
-		TypeInformation<?> ti = getTypeInformation();
-		List<TypeInformation<?>> typeParams = ti.getTypeArguments();
-		if (typeParams.size() != 1) {
-			throw new DatastoreDataException("in field '" + getFieldName()
-					+ "': Unsupported number of type parameters found: "
-					+ typeParams.size()
-					+ " Only collections of exactly 1 type parameter are supported.");
-		}
-		return typeParams.get(0).getType();
-	}
-
-	private boolean isIterableNonByteString() {
-		return Iterable.class.isAssignableFrom(getType())
-				&& getType() != ByteString.class;
 	}
 
 	@Override
@@ -116,16 +101,7 @@ public class DatastorePersistentPropertyImpl
 
 	@Override
 	public boolean isDescendants() {
-		boolean hasDescendantsAnnotation = findAnnotation(Descendants.class) != null;
-		if (!hasDescendantsAnnotation) {
-			return false;
-		}
-		else if (isCollectionLike()) {
-			return true;
-		}
-		throw new DatastoreDataException(
-				"Only collection-like properties can contain the "
-						+ "descendant entity objects can be annotated @Descendants.");
+		return findAnnotation(Descendants.class) != null;
 	}
 
 	@Override
