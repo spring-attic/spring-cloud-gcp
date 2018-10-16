@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
-import java.util.List;
-
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
@@ -26,7 +24,6 @@ import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
 
 /**
@@ -62,10 +59,21 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	private void verify() {
-		if (isEmbedded() && isReference()) {
+		if ((hasFieldAnnotation() || isEmbedded())
+				&& (isDescendants() || isReference())) {
 			throw new DatastoreDataException(
-					"Property cannot be annotated both Embedded and Reference: "
+					"Property cannot be annotated both Embedded or Field and Descendants or Reference: "
 							+ getFieldName());
+		}
+		if (isDescendants() && isReference()) {
+			throw new DatastoreDataException(
+					"Property cannot be annotated both Descendants and Reference: "
+							+ getFieldName());
+		}
+		if(isDescendants() && !isCollectionLike()) {
+			throw new DatastoreDataException(
+					"Only collection-like properties can contain the "
+							+ "descendant entity objects can be annotated @Descendants.");
 		}
 	}
 
@@ -77,22 +85,13 @@ public class DatastorePersistentPropertyImpl
 		return this.fieldNamingStrategy.getFieldName(this);
 	}
 
-	@Override
-	public Class<?> getIterableInnerType() {
-		TypeInformation<?> ti = getTypeInformation();
-		List<TypeInformation<?>> typeParams = ti.getTypeArguments();
-		if (typeParams.size() != 1) {
-			throw new DatastoreDataException("in field '" + getFieldName()
-					+ "': Unsupported number of type parameters found: "
-					+ typeParams.size()
-					+ " Only collections of exactly 1 type parameter are supported.");
-		}
-		return typeParams.get(0).getType();
+	private boolean hasFieldAnnotation() {
+		return findAnnotation(Field.class) != null;
 	}
 
 	@Override
-	public boolean isIterable() {
-		return Iterable.class.isAssignableFrom(getType());
+	public boolean isEmbedded() {
+		return findAnnotation(Embedded.class) != null;
 	}
 
 	@Override
@@ -101,8 +100,8 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	@Override
-	public boolean isEmbedded() {
-		return findAnnotation(Embedded.class) != null;
+	public boolean isDescendants() {
+		return findAnnotation(Descendants.class) != null;
 	}
 
 	@Override

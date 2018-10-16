@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.datastore.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -28,9 +29,11 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Entity.Builder;
+import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
+import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
@@ -84,9 +87,9 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> T findById(Object id, Class<T> entityClass) {
-		Entity entity = this.datastore.get(getKeyFromId(id, entityClass));
-		return entity == null ? null
-				: this.datastoreEntityConverter.read(entityClass, entity);
+		Iterator<T> results = findAllById(Collections.singleton(id), entityClass)
+				.iterator();
+		return results.hasNext() ? results.next() : null;
 	}
 
 	@Override
@@ -139,7 +142,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 	@Override
 	public <T> Collection<T> findAllById(Iterable<?> ids, Class<T> entityClass) {
 		List<Key> keysToFind = getKeysFromIds(ids, entityClass);
-		return convertEntities(
+		return convertEntitiesForRead(
 				this.datastore.get(keysToFind.toArray(new Key[keysToFind.size()])),
 				entityClass);
 	}
@@ -147,7 +150,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 	@Override
 	public <T> Iterable<T> query(Query<? extends BaseEntity> query,
 			Class<T> entityClass) {
-		return convertEntities(this.datastore.run(query), entityClass);
+		return convertEntitiesForRead(this.datastore.run(query), entityClass);
 	}
 
 	/**
@@ -164,7 +167,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 		if (results.getResultClass() == Key.class) {
 			return () -> this.datastore.run(query);
 		}
-		return convertEntities(results, entityClass);
+		return convertEntitiesForRead(results, entityClass);
 	}
 
 	@Override
@@ -181,7 +184,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> Collection<T> findAll(Class<T> entityClass) {
-		return convertEntities(
+		return convertEntitiesForRead(
 				this.datastore.run(Query.newEntityQueryBuilder()
 						.setKind(this.datastoreMappingContext
 								.getPersistentEntity(entityClass).kindName())
@@ -214,15 +217,53 @@ public class DatastoreTemplate implements DatastoreOperations {
 		return builder.build();
 	}
 
-	private <T> Collection<T> convertEntities(Iterator<? extends BaseEntity> entities,
+	private <T> Collection<T> convertEntitiesForRead(
+			Iterator<? extends BaseEntity> entities,
 			Class<T> entityClass) {
 		List<T> results = new ArrayList<>();
 		if (entities == null) {
 			return results;
 		}
-		entities.forEachRemaining(entity -> results
-				.add(this.datastoreEntityConverter.read(entityClass, entity)));
+
+		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
+				.getPersistentEntity(entityClass);
+
+		entities.forEachRemaining(entity -> convertEntityResolveDescendants(entityClass,
+				results, datastorePersistentEntity, entity));
 		return results;
+	}
+
+	private <T> void convertEntityResolveDescendants(Class<T> entityClass,
+			List<T> results, DatastorePersistentEntity datastorePersistentEntity,
+			BaseEntity entity) {
+		T convertedObject = this.datastoreEntityConverter.read(entityClass, entity);
+		results.add(convertedObject);
+
+		datastorePersistentEntity
+				.doWithDescendantProperties(descendantPersistentProperty -> {
+
+					Class descendantType = descendantPersistentProperty
+							.getComponentType();
+
+					EntityQuery descendantQuery = Query.newEntityQueryBuilder()
+							.setKind(this.datastoreMappingContext
+									.getPersistentEntity(descendantType).kindName())
+							.setFilter(PropertyFilter.hasAncestor((Key) entity.getKey()))
+							.build();
+
+					datastorePersistentEntity.getPropertyAccessor(convertedObject)
+							.setProperty(descendantPersistentProperty,
+									// Converting the collection type.
+									this.datastoreEntityConverter.getConversions()
+											.convertOnRead(
+													convertEntitiesForRead(
+															this.datastore
+																	.run(descendantQuery),
+															descendantType),
+													descendantPersistentProperty
+															.getType(),
+													descendantType));
+				});
 	}
 
 	private Key getKeyFromId(Object id, Class entityClass) {
