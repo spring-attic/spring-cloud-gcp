@@ -50,6 +50,7 @@ public class PubSubBinderConfiguration {
 			PubSubChannelProvisioner pubSubChannelProvisioner,
 			PubSubTemplate pubSubTemplate,
 			PubSubExtendedBindingProperties pubSubExtendedBindingProperties) {
+
 		return new PubSubMessageChannelBinder(null, pubSubChannelProvisioner, pubSubTemplate,
 				pubSubExtendedBindingProperties);
 	}
