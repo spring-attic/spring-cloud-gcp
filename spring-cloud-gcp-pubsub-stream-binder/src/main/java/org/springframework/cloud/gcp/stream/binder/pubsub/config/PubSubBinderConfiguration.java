@@ -33,6 +33,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * @author João André Martins
+ * @author Daniel Zou
  */
 @Configuration
 @ConditionalOnMissingBean(Binder.class)

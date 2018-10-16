@@ -45,6 +45,7 @@ import org.springframework.context.support.GenericApplicationContext;
 
 /**
  * @author João André Martins
+ * @author Daniel Zou
  */
 public class PubSubTestBinder extends AbstractTestBinder<PubSubMessageChannelBinder,
 		ExtendedConsumerProperties<PubSubConsumerProperties>,
