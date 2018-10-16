@@ -35,6 +35,7 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.DefaultPublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.DefaultSubscriberFactory;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
+import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.provisioning.PubSubChannelProvisioner;
 import org.springframework.cloud.stream.binder.AbstractTestBinder;
@@ -96,7 +97,8 @@ public class PubSubTestBinder extends AbstractTestBinder<PubSubMessageChannelBin
 		PubSubTemplate pubSubTemplate = new PubSubTemplate(publisherFactory, subscriberFactory);
 
 		PubSubMessageChannelBinder binder =
-				new PubSubMessageChannelBinder(null, pubSubChannelProvisioner, pubSubTemplate);
+				new PubSubMessageChannelBinder(null, pubSubChannelProvisioner, pubSubTemplate,
+						new PubSubExtendedBindingProperties());
 		GenericApplicationContext context = new GenericApplicationContext();
 		binder.setApplicationContext(context);
 		this.setBinder(binder);

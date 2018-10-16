@@ -16,10 +16,8 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
 
-import org.springframework.cloud.stream.config.MergableProperties;
-
 /**
  * @author João André Martins
  */
-public class PubSubProducerProperties implements MergableProperties {
+public class PubSubProducerProperties {
 }

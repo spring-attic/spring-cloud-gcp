@@ -48,14 +48,15 @@ public class PubSubMessageChannelBinder
 
 	private final PubSubTemplate pubSubTemplate;
 
-	private final PubSubExtendedBindingProperties pubSubExtendedBindingProperties =
-			new PubSubExtendedBindingProperties();
+	private final PubSubExtendedBindingProperties pubSubExtendedBindingProperties;
 
 	public PubSubMessageChannelBinder(String[] headersToEmbed,
-			PubSubChannelProvisioner provisioningProvider, PubSubTemplate pubSubTemplate) {
+			PubSubChannelProvisioner provisioningProvider, PubSubTemplate pubSubTemplate,
+			PubSubExtendedBindingProperties pubSubExtendedBindingProperties) {
 
 		super(headersToEmbed, provisioningProvider);
 		this.pubSubTemplate = pubSubTemplate;
+		this.pubSubExtendedBindingProperties = pubSubExtendedBindingProperties;
 	}
 
 	@Override
