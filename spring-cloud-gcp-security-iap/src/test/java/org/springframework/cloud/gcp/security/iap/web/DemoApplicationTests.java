@@ -1,7 +1,5 @@
-package com.example.iap;
+package org.springframework.cloud.gcp.security.iap.web;
 
-import com.example.iap.IapAuthentication;
-import com.example.iap.VerifyIapRequestHeader;
 import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpRequest;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package com.example.iap;
+package org.springframework.cloud.gcp.security.iap.web;
 
 import com.google.common.base.Preconditions;
 import com.nimbusds.jose.JOSEException;

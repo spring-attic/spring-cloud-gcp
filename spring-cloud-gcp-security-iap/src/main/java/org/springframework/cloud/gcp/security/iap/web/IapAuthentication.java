@@ -1,4 +1,4 @@
-package com.example.iap;
+package org.springframework.cloud.gcp.security.iap.web;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
