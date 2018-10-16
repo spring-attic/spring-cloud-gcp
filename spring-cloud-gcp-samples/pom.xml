@@ -31,6 +31,7 @@
 		<module>spring-cloud-gcp-vision-api-sample</module>
 		<module>spring-cloud-gcp-integration-storage-sample</module>
 		<module>spring-cloud-gcp-pubsub-binder-sample</module>
+		<module>spring-cloud-gcp-security-iap-sample</module>
 	</modules>
 
 	<build>
