@@ -39,8 +39,7 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.it.SpannerTemplateIntegrationTests.TemplateTransactionalService;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.repository.config.EnableSpannerRepositories;
-import org.springframework.cloud.gcp.data.spanner.repository.it.SpannerRepositoryIntegrationTests.
-		TradeRepositoryTransactionalService;
+import org.springframework.cloud.gcp.data.spanner.repository.it.SpannerRepositoryIntegrationTests.TradeRepositoryTransactionalService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;

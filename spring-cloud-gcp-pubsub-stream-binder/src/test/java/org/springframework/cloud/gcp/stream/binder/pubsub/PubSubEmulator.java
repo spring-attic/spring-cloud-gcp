@@ -101,26 +101,15 @@ public class PubSubEmulator extends ExternalResource {
 	 */
 	@Override
 	protected void after() {
-		if (this.emulatorProcess == null) {
-			LOGGER.warn("Emulator process null after tests; nothing to terminate.");
-			return;
-		}
-
-		this.emulatorProcess.destroy();
-
-		if (this.emulatorHostPort == null) {
-			LOGGER.warn("Host/port null after the test.");
-			return;
-		}
-
 		try {
-			int portSeparatorIndex = this.emulatorHostPort.indexOf(":");
-			if (portSeparatorIndex < 0 || !this.emulatorHostPort.contains("localhost")) {
+			int getSeparatorIndex = validateEmulator();
+			if (getSeparatorIndex < 0 || !this.emulatorHostPort.contains("localhost")) {
 				LOGGER.warn("Malformed host: " + this.emulatorHostPort);
 				return;
 			}
-			String emulatorHost = this.emulatorHostPort.substring(0, portSeparatorIndex);
-			String emulatorPort = this.emulatorHostPort.substring(portSeparatorIndex + 1);
+
+			String emulatorHost = this.emulatorHostPort.substring(0, getSeparatorIndex);
+			String emulatorPort = this.emulatorHostPort.substring(getSeparatorIndex + 1);
 
 			String hostPortParams = String.format("--host=%s --port=%s", emulatorHost, emulatorPort);
 			Process psProcess = new ProcessBuilder("ps", "-v").start();
@@ -135,6 +124,21 @@ public class PubSubEmulator extends ExternalResource {
 		catch (IOException e) {
 			LOGGER.warn("Failed to cleanup: ", e);
 		}
+	}
+
+	private int validateEmulator() {
+		if (this.emulatorProcess == null) {
+			LOGGER.warn("Emulator process null after tests; nothing to terminate.");
+			return -1;
+		}
+
+		this.emulatorProcess.destroy();
+
+		if (this.emulatorHostPort == null) {
+			LOGGER.warn("Host/port null after the test.");
+			return -1;
+		}
+		return this.emulatorHostPort.indexOf(":");
 	}
 
 	/**
