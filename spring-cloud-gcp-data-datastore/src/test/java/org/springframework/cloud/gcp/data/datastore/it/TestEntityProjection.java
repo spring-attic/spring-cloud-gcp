@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,11 +14,12 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
+package org.springframework.cloud.gcp.data.datastore.it;
 
 /**
- * @author João André Martins
- * @author Daniel Zou
+ * @author Chengyuan Zhao
  */
-public class PubSubProducerProperties {
+public interface TestEntityProjection {
+
+	String getColor();
 }

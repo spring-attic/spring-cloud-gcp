@@ -14,26 +14,25 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.datastore.core.convert;
+package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
-import com.google.cloud.datastore.BaseEntity;
-
-import org.springframework.data.convert.EntityReader;
-import org.springframework.data.convert.EntityWriter;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * An interface for converting objects to Datastore Entities and vice versa.
+ * Annotation for Datastore property that indicates it holds child entities that are
+ * linked to this entity by the Cloud Datastore Ancestor relationship.
  *
  * @author Chengyuan Zhao
  *
  * @since 1.1
  */
-public interface DatastoreEntityConverter extends
-		EntityReader<Object, BaseEntity>, EntityWriter<Object, BaseEntity.Builder> {
+@Documented
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Descendants {
 
-	/**
-	 * Get the {@link ReadWriteConversions} used in this converter.
-	 * @return the conversions used.
-	 */
-	ReadWriteConversions getConversions();
 }

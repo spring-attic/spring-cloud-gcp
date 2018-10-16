@@ -129,8 +129,17 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				.queryKeysOrEntities(structredQueryBuilder.build(),
 				this.entityType);
 
-		return results == null ? null
-				: StreamSupport.stream(results.spliterator(), false).map(mapper).collect(collector);
+		Object returned = results == null ? null
+				: StreamSupport.stream(results.spliterator(), false).map(mapper)
+						.collect(collector);
+
+		return this.tree.isExistsProjection() || this.tree.isCountProjection()
+				|| results == null
+						? returned
+						: this.datastoreTemplate.getDatastoreEntityConverter()
+								.getConversions().convertOnRead(returned,
+										this.queryMethod.getCollectionReturnType(),
+										this.queryMethod.getReturnedObjectType());
 	}
 
 	private StructuredQuery applyQueryBody(Object[] parameters,

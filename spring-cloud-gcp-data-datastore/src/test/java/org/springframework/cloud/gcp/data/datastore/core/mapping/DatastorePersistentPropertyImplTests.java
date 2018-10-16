@@ -54,13 +54,16 @@ public class DatastorePersistentPropertyImplTests {
 							}
 							else if (property.getFieldName().equals("doubleList")) {
 								assertEquals(Double.class,
-										property.getIterableInnerType());
-								assertTrue(property.isIterable());
+										property.getComponentType());
+								assertTrue(property.isCollectionLike());
 							}
 							else if (property.getFieldName().equals("embeddedEntity")) {
 								assertTrue(property.isEmbedded());
 							}
 							else if (property.getFieldName().equals("linkedEntity")) {
+								assertTrue(property.isDescendants());
+							}
+							else if (property.getFieldName().equals("linkedEntityRef")) {
 								assertTrue(property.isReference());
 							}
 							else {
@@ -79,17 +82,6 @@ public class DatastorePersistentPropertyImplTests {
 					assertNull(((DatastorePersistentPropertyImpl) prop)
 							.createAssociation().getObverse());
 				});
-	}
-
-	@Test(expected = DatastoreDataException.class)
-	public void untypedListPropertyTest() {
-		this.datastoreMappingContext.getPersistentEntity(UntypedListEntity.class)
-				.doWithProperties(
-						(PropertyHandler<DatastorePersistentProperty>) property -> {
-							if (property.getFieldName().equals("untypedList")) {
-								property.getIterableInnerType();
-							}
-						});
 	}
 
 	@Test(expected = DatastoreDataException.class)
@@ -118,8 +110,11 @@ public class DatastorePersistentPropertyImplTests {
 		@Embedded
 		TestSubEntity embeddedEntity;
 
+		@Descendants
+		List<TestSubEntity> linkedEntity;
+
 		@Reference
-		TestSubEntity linkedEntity;
+		TestSubEntity linkedEntityRef;
 	}
 
 	private static class TestSubEntity {
@@ -132,7 +127,7 @@ public class DatastorePersistentPropertyImplTests {
 
 	private static class EmbeddedReferenceAnnotatedEntity {
 		@Embedded
-		@Reference
-		TestSubEntity subEntity;
+		@Descendants
+		TestSubEntity[] subEntity;
 	}
 }

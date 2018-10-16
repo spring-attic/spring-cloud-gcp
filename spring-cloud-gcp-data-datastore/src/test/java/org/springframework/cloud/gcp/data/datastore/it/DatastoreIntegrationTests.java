@@ -37,6 +37,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -93,7 +94,7 @@ public class DatastoreIntegrationTests {
 				this.testEntityRepository.findById(1L).get().getBlobField());
 
 		List<TestEntity> foundByCustomQuery = Collections.emptyList();
-		List<TestEntity> foundByCustomProjectionQuery = Collections.emptyList();
+		TestEntity[] foundByCustomProjectionQuery = new TestEntity[] {};
 
 		for (int i = 0; i < QUERY_WAIT_ATTEMPTS; i++) {
 			if (!foundByCustomQuery.isEmpty() && this.testEntityRepository
@@ -107,6 +108,7 @@ public class DatastoreIntegrationTests {
 					.findEntitiesWithCustomProjectionQuery(1L);
 		}
 		assertEquals(1, this.testEntityRepository.countBySizeAndColor(1, "blue"));
+		assertEquals("blue", this.testEntityRepository.getById(2L).getColor());
 		assertEquals(3,
 				this.testEntityRepository.countBySizeAndColor(1, "red"));
 		assertThat(
@@ -123,11 +125,16 @@ public class DatastoreIntegrationTests {
 		assertEquals(Blob.copyFrom("testValueA".getBytes()),
 				foundByCustomQuery.get(0).getBlobField());
 
-		assertEquals(1, foundByCustomProjectionQuery.size());
-		assertNull(foundByCustomProjectionQuery.get(0).getBlobField());
-		assertEquals((Long) 1L, foundByCustomProjectionQuery.get(0).getId());
+		assertEquals(1, foundByCustomProjectionQuery.length);
+		assertNull(foundByCustomProjectionQuery[0].getBlobField());
+		assertEquals((Long) 1L, foundByCustomProjectionQuery[0].getId());
 
 		testEntityA.setBlobField(null);
+
+		assertEquals((Long) 1L, this.testEntityRepository.getKey().getId());
+		assertEquals(1, this.testEntityRepository.getIds(1L).length);
+		assertEquals(1, this.testEntityRepository.getOneId(1L));
+		assertNotNull(this.testEntityRepository.getOneTestEntity(1L));
 
 		this.testEntityRepository.save(testEntityA);
 

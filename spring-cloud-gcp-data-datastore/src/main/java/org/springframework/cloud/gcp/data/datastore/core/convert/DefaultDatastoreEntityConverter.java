@@ -27,7 +27,6 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersis
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 
@@ -35,6 +34,7 @@ import org.springframework.data.mapping.model.PersistentEntityParameterValueProv
  * A class for object to entity and entity to object conversions
  *
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  *
  * @since 1.1
  */
@@ -55,6 +55,11 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		this.conversions = conversions;
 
 		conversions.registerEntityConverter(this);
+	}
+
+	@Override
+	public ReadWriteConversions getConversions() {
+		return this.conversions;
 	}
 
 	@Override
@@ -80,8 +85,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		try {
 			instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
 			PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
-			persistentEntity.doWithProperties(
-					(PropertyHandler<DatastorePersistentProperty>) datastorePersistentProperty -> {
+			persistentEntity.doWithColumnBackedProperties(datastorePersistentProperty -> {
 						// if a property is a constructor argument, it was already computed on instantiation
 						if (!persistentEntity.isConstructorArgument(datastorePersistentProperty)) {
 							Object value = propertyValueProvider.getPropertyValue(datastorePersistentProperty);
@@ -101,7 +105,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	public void write(Object source, BaseEntity.Builder sink) {
 		DatastorePersistentEntity<?> persistentEntity = this.mappingContext.getPersistentEntity(source.getClass());
 		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(source);
-		persistentEntity.doWithProperties(
+		persistentEntity.doWithColumnBackedProperties(
 				(DatastorePersistentProperty persistentProperty) -> {
 					try {
 						Object val = accessor.getProperty(persistentProperty);

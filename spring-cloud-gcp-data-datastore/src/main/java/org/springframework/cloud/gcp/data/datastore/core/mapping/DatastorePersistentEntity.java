@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
 /**
@@ -41,4 +42,26 @@ public interface DatastorePersistentEntity<T> extends
 	 * @return the ID property.
 	 */
 	DatastorePersistentProperty getIdPropertyOrFail();
+
+	/**
+	 * Applies the given {@link PropertyHandler} to all
+	 * {@link DatastorePersistentProperty} contained in this
+	 * {@link DatastorePersistentEntity} that are stored as columns in the table for this
+	 * entity. This means properties backed by descendants or references to entities of
+	 * other Kinds are not provided to the {@code handler}.
+	 *
+	 * @param handler must not be {@literal null}.
+	 */
+	void doWithColumnBackedProperties(
+			PropertyHandler<DatastorePersistentProperty> handler);
+
+	/**
+	 * Applies the given {@link PropertyHandler} to all
+	 * {@link DatastorePersistentProperty} contained in this
+	 * {@link DatastorePersistentEntity} that are properties backed by descendants.
+	 *
+	 * @param handler must not be {@literal null}.
+	 */
+	void doWithDescendantProperties(
+			PropertyHandler<DatastorePersistentProperty> handler);
 }

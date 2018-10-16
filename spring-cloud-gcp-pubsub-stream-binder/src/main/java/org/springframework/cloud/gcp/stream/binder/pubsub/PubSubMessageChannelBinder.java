@@ -38,6 +38,7 @@ import org.springframework.messaging.MessageHandler;
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Artem Bilan
+ * @author Daniel Zou
  */
 public class PubSubMessageChannelBinder
 		extends AbstractMessageChannelBinder<ExtendedConsumerProperties<PubSubConsumerProperties>,
@@ -48,14 +49,15 @@ public class PubSubMessageChannelBinder
 
 	private final PubSubTemplate pubSubTemplate;
 
-	private final PubSubExtendedBindingProperties pubSubExtendedBindingProperties =
-			new PubSubExtendedBindingProperties();
+	private final PubSubExtendedBindingProperties pubSubExtendedBindingProperties;
 
 	public PubSubMessageChannelBinder(String[] headersToEmbed,
-			PubSubChannelProvisioner provisioningProvider, PubSubTemplate pubSubTemplate) {
+			PubSubChannelProvisioner provisioningProvider, PubSubTemplate pubSubTemplate,
+			PubSubExtendedBindingProperties pubSubExtendedBindingProperties) {
 
 		super(headersToEmbed, provisioningProvider);
 		this.pubSubTemplate = pubSubTemplate;
+		this.pubSubExtendedBindingProperties = pubSubExtendedBindingProperties;
 	}
 
 	@Override
