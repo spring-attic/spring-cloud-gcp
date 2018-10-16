@@ -41,6 +41,7 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,7 +86,9 @@ public class LoggingSampleApplicationTests {
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("x-cloud-trace-context", traceHeader);
-		this.testRestTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+		ResponseEntity<String> responseEntity = this.testRestTemplate.exchange(
+				url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+		assertThat(responseEntity.getStatusCode().is2xxSuccessful()).isTrue();
 
 		String logFilter = String.format(LOG_FILTER_FORMAT, traceHeader);
 
