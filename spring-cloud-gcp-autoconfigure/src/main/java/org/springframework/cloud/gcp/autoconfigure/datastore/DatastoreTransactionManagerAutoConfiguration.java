@@ -43,14 +43,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class DatastoreTransactionManagerAutoConfiguration {
 
 	@Configuration
-	@ConditionalOnSingleCandidate(Datastore.class)
-	static class DatabaseClientTransactionManagerConfiguration {
+	static class DatastoreTransactionManagerConfiguration {
 
 		private final Datastore datastore;
 
 		private final TransactionManagerCustomizers transactionManagerCustomizers;
 
-		DatabaseClientTransactionManagerConfiguration(Datastore datastore,
+		DatastoreTransactionManagerConfiguration(Datastore datastore,
 				ObjectProvider<TransactionManagerCustomizers> transactionManagerCustomizers) {
 			this.datastore = datastore;
 			this.transactionManagerCustomizers = transactionManagerCustomizers
