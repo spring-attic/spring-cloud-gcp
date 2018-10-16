@@ -1057,9 +1057,9 @@ For example, query methods such as `deleteByAction` or `removeByAction` delete e
 The delete operation happens in a single transaction.
 
 Delete queries can have the following return types:
-- An integer type that is the number of entities deleted
-- A collection of entities that were deleted
-- `void`
+* An integer type that is the number of entities deleted
+* A collection of entities that were deleted
+* `void`
 
 ==== Custom SQL query methods
 
