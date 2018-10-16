@@ -53,7 +53,6 @@ public class PubSubMessageChannelBinder
 	public PubSubMessageChannelBinder(String[] headersToEmbed,
 			PubSubChannelProvisioner provisioningProvider, PubSubTemplate pubSubTemplate,
 			PubSubExtendedBindingProperties pubSubExtendedBindingProperties) {
-
 		super(headersToEmbed, provisioningProvider);
 		this.pubSubTemplate = pubSubTemplate;
 		this.pubSubExtendedBindingProperties = pubSubExtendedBindingProperties;
@@ -63,7 +62,6 @@ public class PubSubMessageChannelBinder
 	protected MessageHandler createProducerMessageHandler(ProducerDestination destination,
 			ExtendedProducerProperties<PubSubProducerProperties> producerProperties,
 			MessageChannel errorChannel) {
-
 		PubSubMessageHandler messageHandler = new PubSubMessageHandler(this.pubSubTemplate, destination.getName());
 		messageHandler.setBeanFactory(getBeanFactory());
 		return messageHandler;
@@ -72,7 +70,6 @@ public class PubSubMessageChannelBinder
 	@Override
 	protected MessageProducer createConsumerEndpoint(ConsumerDestination destination, String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties) {
-
 		return new PubSubInboundChannelAdapter(this.pubSubTemplate, destination.getName());
 	}
 
