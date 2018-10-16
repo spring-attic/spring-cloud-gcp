@@ -16,8 +16,6 @@
 
 package com.example;
 
-import com.google.api.gax.core.CredentialsProvider;
-import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -60,9 +58,6 @@ public class LoggingSampleApplicationTests {
 	private GcpProjectIdProvider projectIdProvider;
 
 	@Autowired
-	private CredentialsProvider credentialsProvider;
-
-	@Autowired
 	private TestRestTemplate testRestTemplate;
 
 	@LocalServerPort
@@ -79,10 +74,8 @@ public class LoggingSampleApplicationTests {
 	}
 
 	@Before
-	public void setupLogging() throws IOException {
-		this.logClient = LoggingOptions.newBuilder()
-				.setCredentials(this.credentialsProvider.getCredentials())
-				.build().getService();
+	public void setupLogging() {
+		this.logClient = LoggingOptions.getDefaultInstance().getService();
 	}
 
 	@Test
