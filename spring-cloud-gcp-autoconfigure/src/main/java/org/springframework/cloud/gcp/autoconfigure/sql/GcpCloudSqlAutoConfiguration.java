@@ -233,6 +233,7 @@ public class GcpCloudSqlAutoConfiguration {
 				if (gcpCloudSqlProperties.getCredentials().getLocation() != null) {
 					credentialsLocationFile =
 							gcpCloudSqlProperties.getCredentials().getLocation().getFile();
+					setSystemProperties(credentialsLocationFile);
 				}
 				// Then, the global credential.
 				else if (gcpProperties != null
@@ -240,17 +241,18 @@ public class GcpCloudSqlAutoConfiguration {
 					// A resource might not be in the filesystem, but the Cloud SQL credential must.
 					credentialsLocationFile =
 							gcpProperties.getCredentials().getLocation().getFile();
+					setSystemProperties(credentialsLocationFile);
 				}
-				else {
-					// Do nothing, let sockets factory use application default credentials.
-					return;
-				}
+
+				// Else do nothing, let sockets factory use application default credentials.
+
 			}
 			catch (IOException ioe) {
 				LOGGER.info("Error reading Cloud SQL credentials file.", ioe);
-				return;
 			}
+		}
 
+		private void setSystemProperties(File credentialsLocationFile) {
 			// This should happen if the Spring resource isn't in the filesystem, but a URL,
 			// classpath file, etc.
 			if (credentialsLocationFile == null) {

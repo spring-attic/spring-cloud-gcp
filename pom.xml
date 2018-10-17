@@ -174,17 +174,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>2.17</version>
-				<configuration>
-					<configLocation>src/checkstyle/checkstyle.xml</configLocation>
-					<headerLocation>src/checkstyle/checkstyle-header.txt</headerLocation>
-					<encoding>UTF-8</encoding>
-					<consoleOutput>true</consoleOutput>
-					<failsOnError>true</failsOnError>
-					<includeTestSourceDirectory>true</includeTestSourceDirectory>
-					<failOnViolation>true</failOnViolation>
-					<violationSeverity>warning</violationSeverity>
-				</configuration>
 				<executions>
 					<execution>
 						<id>checkstyle-validation</id>
@@ -192,6 +181,16 @@
 						<goals>
 							<goal>check</goal>
 						</goals>
+						<configuration>
+							<configLocation>src/checkstyle/checkstyle.xml</configLocation>
+							<headerLocation>src/checkstyle/checkstyle-header.txt</headerLocation>
+							<encoding>UTF-8</encoding>
+							<consoleOutput>true</consoleOutput>
+							<failsOnError>true</failsOnError>
+							<includeTestSourceDirectory>true</includeTestSourceDirectory>
+							<failOnViolation>true</failOnViolation>
+							<violationSeverity>warning</violationSeverity>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -57,24 +58,28 @@ public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
 		}
 		if (this.tree.isDelete()) {
 			return this.spannerTemplate
-					.performReadWriteTransaction(transactionTemplate -> {
-						List<T> entitiesToDelete = SpannerStatementQueryExecutor
-								.executeQuery(this.entityType, this.tree, parameters,
-										transactionTemplate, this.spannerMappingContext);
-						transactionTemplate.deleteAll(entitiesToDelete);
-
-						List result = null;
-						if (this.queryMethod.isCollectionQuery()) {
-							result = entitiesToDelete;
-						}
-						else if (this.queryMethod.getReturnedObjectType() != void.class) {
-							result = Collections.singletonList(entitiesToDelete.size());
-						}
-						return result;
-					});
+					.performReadWriteTransaction(getDeleteFunction(parameters));
 		}
 		return SpannerStatementQueryExecutor.executeQuery(this.entityType, this.tree,
 						parameters, this.spannerTemplate, this.spannerMappingContext);
+	}
+
+	private Function<SpannerTemplate, List> getDeleteFunction(Object[] parameters) {
+		return transactionTemplate -> {
+			List<T> entitiesToDelete = SpannerStatementQueryExecutor
+					.executeQuery(this.entityType, this.tree, parameters,
+							transactionTemplate, this.spannerMappingContext);
+			transactionTemplate.deleteAll(entitiesToDelete);
+
+			List result = null;
+			if (this.queryMethod.isCollectionQuery()) {
+				result = entitiesToDelete;
+			}
+			else if (this.queryMethod.getReturnedObjectType() != void.class) {
+				result = Collections.singletonList(entitiesToDelete.size());
+			}
+			return result;
+		};
 	}
 
 	private boolean isCountOrExistsQuery() {

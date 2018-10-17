@@ -30,7 +30,6 @@ import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.HttpMethod;
 import com.google.cloud.storage.Storage;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
