@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Datastore.TransactionCallable;
@@ -144,7 +145,7 @@ public class DatastoreTemplateTests {
 		this.ob1.id = "value1";
 		this.ob2.id = "value2";
 
-		Entity ce1 = Entity.newBuilder(keyChild1).build();
+		Entity ce1 = Entity.newBuilder(this.keyChild1).build();
 
 		Query childTestEntityQuery = Query.newEntityQueryBuilder().setKind("child_entity")
 				.setFilter(PropertyFilter.hasAncestor(this.key1)).build();
@@ -212,6 +213,7 @@ public class DatastoreTemplateTests {
 		when(this.objectToKeyFactory.getKeyFromObject(eq(this.ob2), any()))
 				.thenReturn(this.key2);
 	}
+
 	@Test
 	public void performTransactionTest() {
 
@@ -225,7 +227,7 @@ public class DatastoreTemplateTests {
 		Iterator<Entity> e1 = Collections
 				.singletonList(this.e1)
 				.iterator();
-		when(transactionContext.get(ArgumentMatchers.<Key[]> any())).thenReturn(e1);
+		when(transactionContext.get(ArgumentMatchers.<Key[]>any())).thenReturn(e1);
 
 		String finalResult = this.datastoreTemplate
 				.performTransaction(datastoreOperations -> {
@@ -250,7 +252,7 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void findByIdNotFoundTest() {
-		when(this.datastore.get(ArgumentMatchers.<Key[]> any())).thenReturn(null);
+		when(this.datastore.get(ArgumentMatchers.<Key[]>any())).thenReturn(null);
 		assertNull(
 				this.datastoreTemplate.findById(createFakeKey("key0"), TestEntity.class));
 	}
@@ -325,7 +327,7 @@ public class DatastoreTemplateTests {
 	@Test
 	public void countTest() {
 		QueryResults<Key> queryResults = mock(QueryResults.class);
-		when(queryResults.getResultClass()).thenReturn((Class)Key.class);
+		when(queryResults.getResultClass()).thenReturn((Class) Key.class);
 		doAnswer(invocation -> {
 			ImmutableList.of(this.key1, this.key2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
@@ -371,13 +373,13 @@ public class DatastoreTemplateTests {
 	@Test
 	public void deleteMultipleObjectsTest() {
 		this.datastoreTemplate.deleteAll(ImmutableList.of(this.ob1, this.ob2));
-		verify(this.datastore, times(1)).delete(eq(key1), eq(key2));
+		verify(this.datastore, times(1)).delete(eq(this.key1), eq(this.key2));
 	}
 
 	@Test
 	public void deleteAllTest() {
 		QueryResults<Key> queryResults = mock(QueryResults.class);
-		when(queryResults.getResultClass()).thenReturn((Class)Key.class);
+		when(queryResults.getResultClass()).thenReturn((Class) Key.class);
 		doAnswer(invocation -> {
 			ImmutableList.of(this.key1, this.key2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
@@ -409,6 +411,11 @@ public class DatastoreTemplateTests {
 			TestEntity o = (TestEntity) other;
 			return this.id.equals(o.id);
 		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(this.id);
+		}
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "child_entity")
@@ -420,6 +427,12 @@ public class DatastoreTemplateTests {
 		public boolean equals(Object other) {
 			ChildEntity o = (ChildEntity) other;
 			return this.id.equals(o.id);
+		}
+
+		@Override
+		public int hashCode() {
+
+			return Objects.hash(this.id);
 		}
 	}
 
