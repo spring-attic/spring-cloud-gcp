@@ -102,14 +102,14 @@ public class PubSubEmulator extends ExternalResource {
 	@Override
 	protected void after() {
 		try {
-			int getSeparatorIndex = validateEmulator();
-			if (getSeparatorIndex < 0 || !this.emulatorHostPort.contains("localhost")) {
+			int portSeparatorIndex = findAndDestroyEmulator();
+			if (portSeparatorIndex < 0 || !this.emulatorHostPort.contains("localhost")) {
 				LOGGER.warn("Malformed host: " + this.emulatorHostPort);
 				return;
 			}
 
-			String emulatorHost = this.emulatorHostPort.substring(0, getSeparatorIndex);
-			String emulatorPort = this.emulatorHostPort.substring(getSeparatorIndex + 1);
+			String emulatorHost = this.emulatorHostPort.substring(0, portSeparatorIndex);
+			String emulatorPort = this.emulatorHostPort.substring(portSeparatorIndex + 1);
 
 			String hostPortParams = String.format("--host=%s --port=%s", emulatorHost, emulatorPort);
 			Process psProcess = new ProcessBuilder("ps", "-v").start();
@@ -126,7 +126,7 @@ public class PubSubEmulator extends ExternalResource {
 		}
 	}
 
-	private int validateEmulator() {
+	private int findAndDestroyEmulator() {
 		if (this.emulatorProcess == null) {
 			LOGGER.warn("Emulator process null after tests; nothing to terminate.");
 			return -1;

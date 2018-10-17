@@ -175,7 +175,7 @@ public class DatastoreTemplateTests {
 
 		// Because get() takes varags, there is difficulty in matching the single param
 		// case using just thenReturn.
-		doAnswer(invocation -> invocation.getArgument(0) instanceof Key && invocation.getArgument(0) == this.key1
+		doAnswer(invocation -> invocation.getArgument(0) == this.key1
 				? ImmutableList.of(this.e1).iterator()
 				: null).when(this.datastore).get((Key[]) any());
 

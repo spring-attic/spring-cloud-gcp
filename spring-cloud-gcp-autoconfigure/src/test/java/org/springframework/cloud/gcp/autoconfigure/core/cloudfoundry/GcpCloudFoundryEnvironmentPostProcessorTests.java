@@ -135,8 +135,7 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 
 	@EnableConfigurationProperties({ GcpPubSubProperties.class, GcpStorageProperties.class,
 			GcpSpannerProperties.class, GcpDatastoreProperties.class, GcpTraceProperties.class,
-			GcpCloudSqlProperties.class,
-			DataSourceProperties.class })
+			GcpCloudSqlProperties.class, DataSourceProperties.class })
 	static class GcpCfEnvPPTestConfiguration {
 
 	}
