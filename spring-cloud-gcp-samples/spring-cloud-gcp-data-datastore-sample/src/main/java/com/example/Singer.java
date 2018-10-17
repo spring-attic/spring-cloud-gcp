@@ -16,6 +16,8 @@
 
 package com.example;
 
+import java.util.Objects;
+
 import com.google.common.collect.ImmutableSet;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
@@ -49,6 +51,38 @@ public class Singer {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.albums = albums;
+	}
+
+	public String getSingerId() {
+		return this.singerId;
+	}
+
+	public String getFirstName() {
+		return this.firstName;
+	}
+
+	public String getLastName() {
+		return this.lastName;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Singer singer = (Singer) o;
+		return Objects.equals(getSingerId(), singer.getSingerId()) &&
+				Objects.equals(getFirstName(), singer.getFirstName()) &&
+				Objects.equals(getLastName(), singer.getLastName()) &&
+				Objects.equals(this.albums, singer.albums);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getSingerId(), getFirstName(), getLastName(), this.albums);
 	}
 
 	@Override

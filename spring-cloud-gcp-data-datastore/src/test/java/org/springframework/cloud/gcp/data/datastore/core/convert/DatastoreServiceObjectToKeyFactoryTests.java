@@ -102,14 +102,14 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 	@Test
 	public void allocateIdForObjectTest() {
 		TestEntityWithId testEntityWithId = new TestEntityWithId();
-		Key key = new KeyFactory("project").setKind("kind").newKey("key");
+		Key key = new KeyFactory("project").setKind("kind").newKey(123L);
 		when(this.datastore.allocateId((IncompleteKey) any())).thenReturn(key);
 		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("project"));
 		Key allocatedKey = this.datastoreServiceObjectToKeyFactory
 				.allocateKeyForObject(testEntityWithId, this.datastoreMappingContext
 						.getPersistentEntity(testEntityWithId.getClass()));
 		assertEquals(key, allocatedKey);
-		assertEquals("key", testEntityWithId.id);
+		assertEquals("123", testEntityWithId.id);
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "custom_test_kind")

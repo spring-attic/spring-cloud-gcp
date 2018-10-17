@@ -26,6 +26,7 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Datastore.TransactionCallable;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Entity;
+import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.FullEntity;
 import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.Key;
@@ -34,6 +35,7 @@ import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.Query.ResultType;
 import com.google.cloud.datastore.QueryResults;
+import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
@@ -45,7 +47,9 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFact
 import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.domain.Sort;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -138,7 +142,7 @@ public class DatastoreTemplateTests {
 		Entity ce1 = Entity.newBuilder(createFakeKey("key3")).build();
 
 		Query childTestEntityQuery = Query.newEntityQueryBuilder().setKind("child_entity")
-				.setFilter(PropertyFilter.hasAncestor(key1)).build();
+				.setFilter(PropertyFilter.hasAncestor(this.key1)).build();
 
 		this.childEntity1 = new ChildEntity();
 		this.childEntity1.id = "child_id";
@@ -264,9 +268,9 @@ public class DatastoreTemplateTests {
 	@Test
 	public void saveAllTest() {
 		when(this.objectToKeyFactory.allocateKeyForObject(same(this.ob1), any()))
-				.thenReturn(key1);
+				.thenReturn(this.key1);
 		when(this.objectToKeyFactory.getKeyFromObject(same(this.ob2), any()))
-				.thenReturn(key2);
+				.thenReturn(this.key2);
 
 		when(this.datastore.put(any(), any()))
 				.thenReturn(ImmutableList.of(this.e1, this.e2));
@@ -365,10 +369,51 @@ public class DatastoreTemplateTests {
 		verify(this.datastore, times(1)).delete(same(this.key1), same(this.key2));
 	}
 
+
+	@Test
+	public void findAllTestLimitOffset() {
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("custom_test_kind");
+
+		this.datastoreTemplate.findAll(TestEntity.class, 1, 5, null);
+		verify(this.datastore, times(1)).run(builder.setLimit(1).setOffset(5).build());
+
+		this.datastoreTemplate.findAll(TestEntity.class, -1, -1, null);
+		verify(this.datastore, times(1)).run(builder.build());
+	}
+
+	@Test
+	public void findAllTestSort() {
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("custom_test_kind");
+
+		this.datastoreTemplate.findAll(TestEntity.class, -1, -1, new Sort(Sort.Direction.ASC, "sortProperty"));
+		verify(this.datastore, times(1)).run(
+				builder.setOrderBy(
+						new StructuredQuery.OrderBy("prop", StructuredQuery.OrderBy.Direction.ASCENDING)).build());
+
+		this.datastoreTemplate.findAll(TestEntity.class, -1, -1, new Sort(Sort.Direction.DESC, "sortProperty"));
+		verify(this.datastore, times(1)).run(
+				builder.setOrderBy(
+						new StructuredQuery.OrderBy("prop", StructuredQuery.OrderBy.Direction.DESCENDING)).build());
+	}
+
+	@Test
+	public void findAllTestSortLimitOffset() {
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("custom_test_kind");
+
+		this.datastoreTemplate.findAll(TestEntity.class, 2, 3, new Sort(Sort.Direction.ASC, "sortProperty"));
+		verify(this.datastore, times(1)).run(
+				builder.setLimit(2).setOffset(3)
+						.setOrderBy(
+						new StructuredQuery.OrderBy("prop", StructuredQuery.OrderBy.Direction.ASCENDING)).build());
+	}
+
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "custom_test_kind")
 	private static class TestEntity {
 		@Id
 		String id;
+
+		@Field(name = "prop")
+		String sortProperty;
 
 		@Descendants
 		LinkedList<ChildEntity> childEntities;
@@ -398,7 +443,6 @@ public class DatastoreTemplateTests {
 
 		@Override
 		public int hashCode() {
-
 			return Objects.hash(this.id);
 		}
 	}

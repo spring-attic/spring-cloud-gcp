@@ -33,6 +33,7 @@ import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
+import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
@@ -41,6 +42,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
 /**
@@ -184,12 +186,28 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> Collection<T> findAll(Class<T> entityClass) {
-		return convertEntitiesForRead(
-				this.datastore.run(Query.newEntityQueryBuilder()
-						.setKind(this.datastoreMappingContext
-								.getPersistentEntity(entityClass).kindName())
-						.build()),
-				entityClass);
+		return findAll(entityClass, -1, -1, null);
+	}
+
+	@Override
+	public <T> Collection<T> findAll(Class<T> entityClass, int limit, int offset,
+			Sort sort) {
+		DatastorePersistentEntity<?> persistentEntity = this.datastoreMappingContext.getPersistentEntity(entityClass);
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder()
+				.setKind(persistentEntity.kindName());
+		if (limit > 0) {
+			builder.setLimit(limit);
+		}
+		if (offset > 0) {
+			builder.setOffset(offset);
+		}
+		if (sort != null) {
+			sort.stream()
+					.map(order -> createOrderBy(persistentEntity, order))
+					.forEachOrdered(orderBy -> builder.addOrderBy(orderBy));
+		}
+
+		return convertEntitiesForRead(this.datastore.run(builder.build()), entityClass);
 	}
 
 	@Override
@@ -209,6 +227,21 @@ public class DatastoreTemplate implements DatastoreOperations {
 						DatastoreTemplate.this.datastoreEntityConverter,
 						DatastoreTemplate.this.datastoreMappingContext,
 						DatastoreTemplate.this.objectToKeyFactory)));
+	}
+
+	private StructuredQuery.OrderBy createOrderBy(DatastorePersistentEntity<?> persistentEntity, Sort.Order order) {
+		return new StructuredQuery.OrderBy(
+				persistentEntity.getPersistentProperty(order.getProperty()).getFieldName(),
+				directionToOrderBy(order.getDirection()));
+	}
+
+	private StructuredQuery.OrderBy.Direction directionToOrderBy(Sort.Direction direction) {
+		Sort.Direction effectiveDirection = direction == null ? Sort.DEFAULT_DIRECTION : direction;
+
+		if (effectiveDirection == Sort.Direction.ASC) {
+			return StructuredQuery.OrderBy.Direction.ASCENDING;
+		}
+		return StructuredQuery.OrderBy.Direction.DESCENDING;
 	}
 
 	private Entity convertToEntityForSave(Object entity) {
