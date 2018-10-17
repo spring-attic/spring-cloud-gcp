@@ -146,10 +146,9 @@ public class StackdriverJsonLayout extends JsonLayout {
 
 		if (this.includeMDC) {
 			event.getMDCPropertyMap().forEach((key, value) -> {
-				if (FILTERED_MDC_FIELDS.contains(key)) {
-					return;
+				if (!FILTERED_MDC_FIELDS.contains(key)) {
+					map.put(key, value);
 				}
-				map.put(key, value);
 			});
 		}
 		if (this.includeTimestamp) {

@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.autoconfigure.sql;
 import javax.sql.DataSource;
 
 import com.zaxxer.hikari.HikariDataSource;
-
 import org.junit.Test;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;

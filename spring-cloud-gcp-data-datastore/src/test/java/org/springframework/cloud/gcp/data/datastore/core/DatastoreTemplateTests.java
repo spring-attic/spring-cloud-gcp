@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.Datastore.TransactionCallable;
@@ -92,12 +93,19 @@ public class DatastoreTemplateTests {
 	// number of each
 	// object here corresponds to the same thing across keys, entities, objects.
 	private final Key key1 = createFakeKey("key1");
+
 	private final Key key2 = createFakeKey("key2");
+
 	private final Key badKey = createFakeKey("badkey");
+
 	private final Entity e1 = Entity.newBuilder(this.key1).build();
+
 	private final Entity e2 = Entity.newBuilder(this.key2).build();
+
 	private TestEntity ob1;
+
 	private TestEntity ob2;
+
 	private ChildEntity childEntity1;
 
 	@Before
@@ -144,7 +152,7 @@ public class DatastoreTemplateTests {
 
 		QueryResults testEntityQueryResults = mock(QueryResults.class);
 		doAnswer(invocation -> {
-			ImmutableList.of(e1, e2).iterator()
+			ImmutableList.of(this.e1, this.e2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
 			return null;
 		}).when(testEntityQueryResults).forEachRemaining(any());
@@ -156,7 +164,7 @@ public class DatastoreTemplateTests {
 		when(this.datastoreEntityConverter.read(eq(TestEntity.class), eq(this.e2)))
 				.thenReturn(this.ob2);
 		when(this.datastoreEntityConverter.read(eq(ChildEntity.class), same(ce1)))
-				.thenReturn(childEntity1);
+				.thenReturn(this.childEntity1);
 
 		when(this.datastore.run(eq(this.testEntityQuery)))
 				.thenReturn(testEntityQueryResults);
@@ -167,12 +175,9 @@ public class DatastoreTemplateTests {
 
 		// Because get() takes varags, there is difficulty in matching the single param
 		// case using just thenReturn.
-		doAnswer(invocation -> {
-			Object key = invocation.getArgument(0);
-			return key instanceof Key && key == this.key1
-					? ImmutableList.of(this.e1).iterator()
-					: null;
-		}).when(this.datastore).get((Key[]) any());
+		doAnswer(invocation -> invocation.getArgument(0) == this.key1
+				? ImmutableList.of(this.e1).iterator()
+				: null).when(this.datastore).get((Key[]) any());
 
 		when(this.objectToKeyFactory.getKeyFromId(eq(this.key1), any()))
 				.thenReturn(this.key1);
@@ -186,6 +191,7 @@ public class DatastoreTemplateTests {
 		when(this.objectToKeyFactory.getKeyFromObject(eq(this.ob2), any()))
 				.thenReturn(this.key2);
 	}
+
 	@Test
 	public void performTransactionTest() {
 
@@ -199,7 +205,7 @@ public class DatastoreTemplateTests {
 		Iterator<Entity> e1 = Collections
 				.singletonList(Entity.newBuilder(this.key1).build())
 				.iterator();
-		when(transactionContext.get(ArgumentMatchers.<Key[]> any())).thenReturn(e1);
+		when(transactionContext.get(ArgumentMatchers.<Key[]>any())).thenReturn(e1);
 
 		String finalResult = this.datastoreTemplate
 				.performTransaction(datastoreOperations -> {
@@ -223,7 +229,7 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void findByIdNotFoundTest() {
-		when(this.datastore.get(ArgumentMatchers.<Key[]> any())).thenReturn(null);
+		when(this.datastore.get(ArgumentMatchers.<Key[]>any())).thenReturn(null);
 		assertNull(
 				this.datastoreTemplate.findById(createFakeKey("key0"), TestEntity.class));
 	}
@@ -294,7 +300,7 @@ public class DatastoreTemplateTests {
 	@Test
 	public void countTest() {
 		QueryResults<Key> queryResults = mock(QueryResults.class);
-		when(queryResults.getResultClass()).thenReturn((Class)Key.class);
+		when(queryResults.getResultClass()).thenReturn((Class) Key.class);
 		doAnswer(invocation -> {
 			ImmutableList.of(this.key1, this.key2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
@@ -340,13 +346,13 @@ public class DatastoreTemplateTests {
 	@Test
 	public void deleteMultipleObjectsTest() {
 		this.datastoreTemplate.deleteAll(ImmutableList.of(this.ob1, this.ob2));
-		verify(this.datastore, times(1)).delete(eq(key1), eq(key2));
+		verify(this.datastore, times(1)).delete(eq(this.key1), eq(this.key2));
 	}
 
 	@Test
 	public void deleteAllTest() {
 		QueryResults<Key> queryResults = mock(QueryResults.class);
-		when(queryResults.getResultClass()).thenReturn((Class)Key.class);
+		when(queryResults.getResultClass()).thenReturn((Class) Key.class);
 		doAnswer(invocation -> {
 			ImmutableList.of(this.key1, this.key2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
@@ -372,6 +378,11 @@ public class DatastoreTemplateTests {
 			TestEntity o = (TestEntity) other;
 			return this.id.equals(o.id);
 		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(this.id);
+		}
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "child_entity")
@@ -383,6 +394,12 @@ public class DatastoreTemplateTests {
 		public boolean equals(Object other) {
 			ChildEntity o = (ChildEntity) other;
 			return this.id.equals(o.id);
+		}
+
+		@Override
+		public int hashCode() {
+
+			return Objects.hash(this.id);
 		}
 	}
 

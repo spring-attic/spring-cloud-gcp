@@ -70,7 +70,7 @@ public class DatastorePersistentPropertyImpl
 					"Property cannot be annotated both Descendants and Reference: "
 							+ getFieldName());
 		}
-		if(isDescendants() && !isCollectionLike()) {
+		if (isDescendants() && !isCollectionLike()) {
 			throw new DatastoreDataException(
 					"Only collection-like properties can contain the "
 							+ "descendant entity objects can be annotated @Descendants.");
