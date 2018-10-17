@@ -66,7 +66,7 @@ public class PartTreeDatastoreQueryTests {
 	@Before
 	public void initMocks() {
 		this.queryMethod = mock(DatastoreQueryMethod.class);
-		when(this.queryMethod.getReturnedObjectType()).thenReturn((Class)TestEntity.class);
+		when(this.queryMethod.getReturnedObjectType()).thenReturn((Class) TestEntity.class);
 		this.spannerTemplate = mock(DatastoreTemplate.class);
 		this.spannerMappingContext = new DatastoreMappingContext();
 	}

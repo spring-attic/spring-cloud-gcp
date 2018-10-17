@@ -18,11 +18,13 @@ package org.springframework.cloud.gcp.data.datastore.it;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
 import com.google.common.collect.ImmutableList;
+import org.awaitility.Awaitility;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,9 +54,7 @@ import static org.junit.Assume.assumeThat;
 public class DatastoreIntegrationTests {
 
 	// queries are eventually consistent, so we may need to retry a few times.
-	private static final int QUERY_WAIT_ATTEMPTS = 100;
-
-	private static final int QUERY_WAIT_INTERVAL_MILLIS = 1000;
+	private static final int QUERY_WAIT_INTERVAL_SECONDS = 15;
 
 	@Autowired
 	private TestEntityRepository testEntityRepository;
@@ -197,11 +197,7 @@ public class DatastoreIntegrationTests {
 	}
 
 	private void waitUntilTrue(Supplier<Boolean> condition) throws InterruptedException {
-		for (int i = 0; i < QUERY_WAIT_ATTEMPTS; i++) {
-			if (condition.get()) {
-				break;
-			}
-			Thread.sleep(QUERY_WAIT_INTERVAL_MILLIS);
-		}
+		Awaitility.await().atMost(QUERY_WAIT_INTERVAL_SECONDS, TimeUnit.SECONDS)
+				.untilAsserted(() -> assertTrue(condition.get()));
 	}
 }
