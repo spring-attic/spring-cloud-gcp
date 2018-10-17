@@ -94,8 +94,13 @@ public class PubSubApplicationTests {
 
 	@AfterClass
 	public static void cleanupPubsubClients() {
-		topicAdminClient.close();
-		subscriptionAdminClient.close();
+		if (topicAdminClient != null) {
+			topicAdminClient.close();
+		}
+
+		if (subscriptionAdminClient != null) {
+			subscriptionAdminClient.close();
+		}
 	}
 
 	@Before
