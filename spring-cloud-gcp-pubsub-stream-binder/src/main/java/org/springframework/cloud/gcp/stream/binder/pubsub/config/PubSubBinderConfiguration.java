@@ -16,19 +16,24 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub.config;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.source.ConfigurationPropertyName;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.stream.binder.pubsub.PubSubMessageChannelBinder;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.provisioning.PubSubChannelProvisioner;
 import org.springframework.cloud.stream.binder.Binder;
+import org.springframework.cloud.stream.config.BindingHandlerAdvise.MappingsProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * @author João André Martins
+ * @author Daniel Zou
  */
 @Configuration
 @ConditionalOnMissingBean(Binder.class)
@@ -43,7 +48,17 @@ public class PubSubBinderConfiguration {
 	@Bean
 	public PubSubMessageChannelBinder pubSubBinder(
 			PubSubChannelProvisioner pubSubChannelProvisioner,
-			PubSubTemplate pubSubTemplate) {
-		return new PubSubMessageChannelBinder(null, pubSubChannelProvisioner, pubSubTemplate);
+			PubSubTemplate pubSubTemplate,
+			PubSubExtendedBindingProperties pubSubExtendedBindingProperties) {
+
+		return new PubSubMessageChannelBinder(null, pubSubChannelProvisioner, pubSubTemplate,
+				pubSubExtendedBindingProperties);
+	}
+
+	@Bean
+	public MappingsProvider pubSubExtendedPropertiesDefaultMappingsProvider() {
+		return () -> ImmutableMap.of(
+				ConfigurationPropertyName.of("spring.cloud.stream.gcp.pubsub.bindings"),
+				ConfigurationPropertyName.of("spring.cloud.stream.gcp.pubsub.default"));
 	}
 }

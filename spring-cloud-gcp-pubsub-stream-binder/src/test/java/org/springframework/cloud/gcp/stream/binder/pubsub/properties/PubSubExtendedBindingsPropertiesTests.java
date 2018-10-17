@@ -60,7 +60,7 @@ import static org.mockito.Mockito.when;
 		},
 		properties = {
 				"spring.cloud.stream.gcp.pubsub.bindings.input.consumer.auto-create-resources=true",
-				"spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources=false",
+				"spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources=false"
 		})
 public class PubSubExtendedBindingsPropertiesTests {
 

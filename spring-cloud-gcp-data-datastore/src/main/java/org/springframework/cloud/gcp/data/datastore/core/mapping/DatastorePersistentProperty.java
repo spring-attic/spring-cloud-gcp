@@ -35,11 +35,11 @@ public interface DatastorePersistentProperty
 	String getFieldName();
 
 	/**
-	 * True for iterable properties that are stored as ARRAY of items in the Datastore
-	 * field.
-	 * @return true for iterable properties. false for singular properties.
+	 * True if the property is a POJO and is to be stored in Datastore as an embedded
+	 * entity in the field.
+	 * @return true if the property is stored in Datastore as an embedded entity.
 	 */
-	boolean isIterable();
+	boolean isEmbedded();
 
 	/**
 	 * True if the property is a POJO and is to be stored in Datastore as a Key of the
@@ -49,22 +49,16 @@ public interface DatastorePersistentProperty
 	boolean isReference();
 
 	/**
-	 * True if the property is a POJO and is to be stored in Datastore as an embedded
-	 * entity in the field.
-	 * @return true if the property is stored in Datastore as an embedded entity.
+	 * Whether the property contains entities that are related to this entity via the
+	 * Cloud Datastore Ancestor relationship and have this entity as their ancestor.
+	 * @return {@code true} if the property contains child entities. {@code false}
+	 * otherwise.
 	 */
-	boolean isEmbedded();
+	boolean isDescendants();
 
 	/**
 	 * True if the property should be excluded from indexes
 	 * @return true if if the property should be indexed
 	 */
 	boolean isUnindexed();
-
-	/**
-	 * Gets the inner type of the property, which is meaningful for fields of type ARRAY
-	 * in Datastore.
-	 * @return the inner type of the iterable property.
-	 */
-	Class<?> getIterableInnerType();
 }

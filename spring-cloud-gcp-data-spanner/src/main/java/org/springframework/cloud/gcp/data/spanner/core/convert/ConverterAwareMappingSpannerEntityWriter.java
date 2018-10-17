@@ -39,8 +39,6 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.util.Assert;
 
-import static org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper.getSimpleJavaClassFor;
-
 /**
  * The primary class for adding values from entity objects to {@link WriteBuilder} for
  * the purpose of creating mutations for Spanner.
@@ -259,7 +257,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			if (property.getAnnotatedColumnItemType() != null) {
 				valueSet = attemptSetSingleItemValue(propertyValue, propertyType,
 						valueBinder,
-						getSimpleJavaClassFor(property.getAnnotatedColumnItemType()));
+						SpannerTypeMapper.getSimpleJavaClassFor(property.getAnnotatedColumnItemType()));
 			}
 			else {
 				// directly try to set using the property's original Java type
@@ -301,7 +299,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		// use the annotated column type if possible.
 		if (spannerPersistentProperty.getAnnotatedColumnItemType() != null) {
 			valueSet = attemptSetIterablePropertyWithType(value, valueBinder, innerType,
-					getSimpleJavaClassFor(
+					SpannerTypeMapper.getSimpleJavaClassFor(
 							spannerPersistentProperty.getAnnotatedColumnItemType()));
 		}
 		else {

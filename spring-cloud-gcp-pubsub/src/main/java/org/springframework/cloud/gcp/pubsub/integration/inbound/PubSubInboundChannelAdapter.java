@@ -20,7 +20,6 @@ import java.util.Map;
 
 import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.Subscriber;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

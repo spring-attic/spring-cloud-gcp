@@ -47,3 +47,5 @@ include::config.adoc[]
 include::spanner.adoc[]
 
 include::cloudfoundry.adoc[]
+
+include::memorystore.adoc[]

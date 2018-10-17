@@ -133,9 +133,9 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 				.get("credentials")).get("PrivateKeyData");
 	}
 
-	@EnableConfigurationProperties({GcpPubSubProperties.class, GcpStorageProperties.class,
-			GcpSpannerProperties.class, GcpDatastoreProperties.class, GcpTraceProperties.class, GcpCloudSqlProperties.class,
-			DataSourceProperties.class})
+	@EnableConfigurationProperties({ GcpPubSubProperties.class, GcpStorageProperties.class,
+			GcpSpannerProperties.class, GcpDatastoreProperties.class, GcpTraceProperties.class,
+			GcpCloudSqlProperties.class, DataSourceProperties.class })
 	static class GcpCfEnvPPTestConfiguration {
 
 	}
