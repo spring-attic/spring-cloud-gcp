@@ -35,6 +35,7 @@ import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
 import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.Topic;
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -52,7 +53,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
@@ -129,28 +129,28 @@ public class PubSubApplicationTests {
 		String projectSubscriptionName = ProjectSubscriptionName.format(projectName, SAMPLE_TEST_SUBSCRIPTION1);
 
 		createTopic(SAMPLE_TEST_TOPIC);
-		await().atMost(5, TimeUnit.SECONDS).untilAsserted(
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
 				() -> {
 					List<String> projectTopics = getTopicNamesFromProject();
 					assertThat(projectTopics).contains(projectTopicName);
 				});
 
 		createSubscription(SAMPLE_TEST_SUBSCRIPTION1, SAMPLE_TEST_TOPIC);
-		await().atMost(5, TimeUnit.SECONDS).untilAsserted(
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
 				() -> {
 					List<String> subscriptions = getSubscriptionNamesFromProject();
 					assertThat(subscriptions).contains(projectSubscriptionName);
 				});
 
 		deleteSubscription(SAMPLE_TEST_SUBSCRIPTION1);
-		await().atMost(5, TimeUnit.SECONDS).untilAsserted(
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
 				() -> {
 					List<String> subscriptions = getSubscriptionNamesFromProject();
 					assertThat(subscriptions).doesNotContain(projectSubscriptionName);
 				});
 
 		deleteTopic(SAMPLE_TEST_TOPIC);
-		await().atMost(5, TimeUnit.SECONDS).untilAsserted(
+		Awaitility.await().atMost(5, TimeUnit.SECONDS).untilAsserted(
 				() -> {
 					List<String> projectTopics = getTopicNamesFromProject();
 					assertThat(projectTopics).doesNotContain(projectTopicName);
