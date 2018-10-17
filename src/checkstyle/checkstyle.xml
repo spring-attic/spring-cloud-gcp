@@ -83,7 +83,8 @@
         <module name="AvoidStarImport"/>
         <module name="AvoidStaticImport">
             <property name="excludes"
-                      value="org.junit.Assert.*,
+                      value="org.awaitility.Awaitility.*,
+                             org.junit.Assert.*,
                              org.junit.Assume.*,
                              org.mockito.Mockito.*,
                              org.mockito.ArgumentMatchers.*,
