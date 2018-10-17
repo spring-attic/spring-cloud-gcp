@@ -166,7 +166,13 @@ public class DatastoreTemplateTests {
 					.forEachRemaining(invocation.getArgument(0));
 			return null;
 		}).when(testEntityQueryResults).forEachRemaining(any());
+		setUpConverters(ce1, childTestEntityQuery, childTestEntityQueryResults, testEntityQueryResults);
 
+
+	}
+
+	private void setUpConverters(Entity ce1, Query childTestEntityQuery,
+			QueryResults childTestEntityQueryResults, QueryResults testEntityQueryResults) {
 		// mocking the converter to return the final objects corresponding to their
 		// specific entities.
 		when(this.datastoreEntityConverter.read(eq(TestEntity.class), eq(this.e1)))

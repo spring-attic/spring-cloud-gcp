@@ -112,6 +112,7 @@ public class DatastorePersistentPropertyImplTests {
 		this.datastoreMappingContext
 				.getPersistentEntity(FieldReferenceAnnotatedEntity.class);
 	}
+
 	@Entity(name = "custom_test_kind")
 	private static class TestEntity {
 		@Id
