@@ -30,13 +30,13 @@ import com.google.cloud.datastore.Transaction;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 
-import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Cloud Datastore transaction manager
@@ -54,13 +54,10 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 
 	@VisibleForTesting
 	Tx getCurrentTX() {
-		try {
-			return (Tx) ((DefaultTransactionStatus) TransactionAspectSupport
-					.currentTransactionStatus()).getTransaction();
-		}
-		catch (NoTransactionException e) {
-			return null;
-		}
+		return TransactionSynchronizationManager.isActualTransactionActive()
+				? (Tx) ((DefaultTransactionStatus) TransactionAspectSupport
+						.currentTransactionStatus()).getTransaction()
+				: null;
 	}
 
 	@Override
@@ -77,113 +74,23 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 	protected void doBegin(Object transactionObject,
 			TransactionDefinition transactionDefinition) throws TransactionException {
 		if (transactionDefinition
-				.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT) {
+				.getIsolationLevel() != TransactionDefinition.ISOLATION_DEFAULT
+				&& transactionDefinition
+						.getIsolationLevel() != TransactionDefinition.ISOLATION_SERIALIZABLE) {
 			throw new IllegalStateException(
-					"SpannerTransactionManager supports only isolation level TransactionDefinition.ISOLATION_DEFAULT");
+					"DatastoreTransactionManager supports only isolation level "
+							+ "TransactionDefinition.ISOLATION_DEFAULT or ISOLATION_SERIALIZABLE");
 		}
 		if (transactionDefinition
 				.getPropagationBehavior() != TransactionDefinition.PROPAGATION_REQUIRED) {
 			throw new IllegalStateException(
-					"SpannerTransactionManager supports only propagation behavior "
+					"DatastoreTransactionManager supports only propagation behavior "
 							+ "TransactionDefinition.PROPAGATION_REQUIRED");
 		}
 		Tx tx = (Tx) transactionObject;
 		Transaction transaction = this.datastore.newTransaction();
 		if (transactionDefinition.isReadOnly()) {
-			tx.transaction = new Transaction() {
-				@Override
-				public Entity get(Key key) {
-					return transaction.get(key);
-				}
-
-				@Override
-				public Iterator<Entity> get(Key... key) {
-					return transaction.get(key);
-				}
-
-				@Override
-				public List<Entity> fetch(Key... keys) {
-					return transaction.fetch(keys);
-				}
-
-				@Override
-				public <T> QueryResults<T> run(Query<T> query) {
-					return transaction.run(query);
-				}
-
-				@Override
-				public void addWithDeferredIdAllocation(FullEntity<?>... entities) {
-					throw new UnsupportedOperationException(
-							"The Cloud Datastore transaction is in read-only mode.");
-				}
-
-				@Override
-				public Entity add(FullEntity<?> entity) {
-					throw new UnsupportedOperationException(
-							"The Cloud Datastore transaction is in read-only mode.");
-				}
-
-				@Override
-				public List<Entity> add(FullEntity<?>... entities) {
-					throw new UnsupportedOperationException(
-							"The Cloud Datastore transaction is in read-only mode.");
-				}
-
-				@Override
-				public void update(Entity... entities) {
-					throw new UnsupportedOperationException(
-							"The Cloud Datastore transaction is in read-only mode.");
-				}
-
-				@Override
-				public void delete(Key... keys) {
-					throw new UnsupportedOperationException(
-							"The Cloud Datastore transaction is in read-only mode.");
-				}
-
-				@Override
-				public void putWithDeferredIdAllocation(FullEntity<?>... entities) {
-					throw new UnsupportedOperationException(
-							"The Cloud Datastore transaction is in read-only mode.");
-				}
-
-				@Override
-				public Entity put(FullEntity<?> entity) {
-					throw new UnsupportedOperationException(
-							"The Cloud Datastore transaction is in read-only mode.");
-				}
-
-				@Override
-				public List<Entity> put(FullEntity<?>... entities) {
-					throw new UnsupportedOperationException(
-							"The Cloud Datastore transaction is in read-only mode.");
-				}
-
-				@Override
-				public Response commit() {
-					return transaction.commit();
-				}
-
-				@Override
-				public void rollback() {
-					transaction.rollback();
-				}
-
-				@Override
-				public boolean isActive() {
-					return transaction.isActive();
-				}
-
-				@Override
-				public Datastore getDatastore() {
-					return transaction.getDatastore();
-				}
-
-				@Override
-				public ByteString getTransactionId() {
-					return transaction.getTransactionId();
-				}
-			};
+			tx.transaction = new ReadOnlyTransaction(transaction);
 		}
 		else {
 			tx.transaction = transaction;
@@ -197,6 +104,10 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 		try {
 			if (tx.transaction.isActive()) {
 				tx.transaction.commit();
+			}
+			else {
+				this.logger.debug(
+						"Transaction was not committed because it is no longer active.");
 			}
 		}
 		catch (DatastoreException e) {
@@ -213,6 +124,10 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 			if (tx.transaction.isActive()) {
 				tx.transaction.rollback();
 			}
+			else {
+				this.logger.debug(
+						"Transaction was not rolled back because it is no longer active.");
+			}
 		}
 		catch (DatastoreException e) {
 			throw new TransactionSystemException(
@@ -226,15 +141,117 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 	}
 
 	public static class Tx {
-    private Transaction transaction;
+		private Transaction transaction;
 
-    public Transaction getTransaction() {
-      return this.transaction;
-    }
-
-    @VisibleForTesting
-    void setTransaction(Transaction transaction) {
-    	this.transaction = transaction;
+		public Transaction getTransaction() {
+			return this.transaction;
 		}
-  }
+
+		@VisibleForTesting
+		void setTransaction(Transaction transaction) {
+			this.transaction = transaction;
+		}
+	}
+
+	private static final class ReadOnlyTransaction implements Transaction {
+
+		private final Transaction transaction;
+
+		private ReadOnlyTransaction(Transaction transaction) {
+			this.transaction = transaction;
+		}
+
+		@Override
+		public Entity get(Key key) {
+			return this.transaction.get(key);
+		}
+
+		@Override
+		public Iterator<Entity> get(Key... key) {
+			return this.transaction.get(key);
+		}
+
+		@Override
+		public List<Entity> fetch(Key... keys) {
+			return this.transaction.fetch(keys);
+		}
+
+		@Override
+		public <T> QueryResults<T> run(Query<T> query) {
+			return this.transaction.run(query);
+		}
+
+		@Override
+		public void addWithDeferredIdAllocation(FullEntity<?>... entities) {
+			throw new UnsupportedOperationException(
+					"The Cloud Datastore transaction is in read-only mode.");
+		}
+
+		@Override
+		public Entity add(FullEntity<?> entity) {
+			throw new UnsupportedOperationException(
+					"The Cloud Datastore transaction is in read-only mode.");
+		}
+
+		@Override
+		public List<Entity> add(FullEntity<?>... entities) {
+			throw new UnsupportedOperationException(
+					"The Cloud Datastore transaction is in read-only mode.");
+		}
+
+		@Override
+		public void update(Entity... entities) {
+			throw new UnsupportedOperationException(
+					"The Cloud Datastore transaction is in read-only mode.");
+		}
+
+		@Override
+		public void delete(Key... keys) {
+			throw new UnsupportedOperationException(
+					"The Cloud Datastore transaction is in read-only mode.");
+		}
+
+		@Override
+		public void putWithDeferredIdAllocation(FullEntity<?>... entities) {
+			throw new UnsupportedOperationException(
+					"The Cloud Datastore transaction is in read-only mode.");
+		}
+
+		@Override
+		public Entity put(FullEntity<?> entity) {
+			throw new UnsupportedOperationException(
+					"The Cloud Datastore transaction is in read-only mode.");
+		}
+
+		@Override
+		public List<Entity> put(FullEntity<?>... entities) {
+			throw new UnsupportedOperationException(
+					"The Cloud Datastore transaction is in read-only mode.");
+		}
+
+		@Override
+		public Response commit() {
+			return this.transaction.commit();
+		}
+
+		@Override
+		public void rollback() {
+			this.transaction.rollback();
+		}
+
+		@Override
+		public boolean isActive() {
+			return this.transaction.isActive();
+		}
+
+		@Override
+		public Datastore getDatastore() {
+			return this.transaction.getDatastore();
+		}
+
+		@Override
+		public ByteString getTransactionId() {
+			return this.transaction.getTransactionId();
+		}
+	}
 }

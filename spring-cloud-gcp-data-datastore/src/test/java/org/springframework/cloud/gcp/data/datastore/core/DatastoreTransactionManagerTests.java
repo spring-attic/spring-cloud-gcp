@@ -17,22 +17,26 @@
 package org.springframework.cloud.gcp.data.datastore.core;
 
 import com.google.cloud.datastore.Datastore;
+import com.google.cloud.datastore.DatastoreException;
 import com.google.cloud.datastore.Transaction;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManager.Tx;
 import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -50,8 +54,7 @@ public class DatastoreTransactionManagerTests {
 
 	private DatastoreTransactionManager manager;
 
-	private DefaultTransactionStatus status = Mockito
-			.mock(DefaultTransactionStatus.class);
+	private DefaultTransactionStatus status = mock(DefaultTransactionStatus.class);
 
 	@Before
 	public void initMocks() {
@@ -89,7 +92,7 @@ public class DatastoreTransactionManagerTests {
 	public void testDoBegin() {
 		TransactionDefinition definition = new DefaultTransactionDefinition();
 		this.manager.doBegin(this.tx, definition);
-		Mockito.verify(this.datastore, times(1)).newTransaction();
+		verify(this.datastore, times(1)).newTransaction();
 	}
 
 	@Test
@@ -97,7 +100,15 @@ public class DatastoreTransactionManagerTests {
 		when(this.transaction.isActive()).thenReturn(true);
 		this.tx.setTransaction(this.transaction);
 		this.manager.doCommit(this.status);
-		Mockito.verify(this.transaction, times(1)).commit();
+		verify(this.transaction, times(1)).commit();
+	}
+
+	@Test(expected = TransactionSystemException.class)
+	public void testDoCommitFailure() {
+		when(this.transaction.isActive()).thenReturn(true);
+		this.tx.setTransaction(this.transaction);
+		when(this.transaction.commit()).thenThrow(new DatastoreException(0, "", ""));
+		this.manager.doCommit(this.status);
 	}
 
 	@Test
@@ -105,7 +116,7 @@ public class DatastoreTransactionManagerTests {
 		when(this.transaction.isActive()).thenReturn(false);
 		this.tx.setTransaction(this.transaction);
 		this.manager.doCommit(this.status);
-		Mockito.verify(this.transaction, never()).commit();
+		verify(this.transaction, never()).commit();
 	}
 
 	@Test
@@ -113,7 +124,15 @@ public class DatastoreTransactionManagerTests {
 		when(this.transaction.isActive()).thenReturn(true);
 		this.tx.setTransaction(this.transaction);
 		this.manager.doRollback(this.status);
-		Mockito.verify(this.transaction, times(1)).rollback();
+		verify(this.transaction, times(1)).rollback();
+	}
+
+	@Test(expected = TransactionSystemException.class)
+	public void testDoRollbackFailure() {
+		when(this.transaction.isActive()).thenReturn(true);
+		this.tx.setTransaction(this.transaction);
+		doThrow(new DatastoreException(0, "", "")).when(this.transaction).rollback();
+		this.manager.doRollback(this.status);
 	}
 
 	@Test
@@ -121,6 +140,6 @@ public class DatastoreTransactionManagerTests {
 		when(this.transaction.isActive()).thenReturn(false);
 		this.tx.setTransaction(this.transaction);
 		this.manager.doRollback(this.status);
-		Mockito.verify(this.transaction, never()).rollback();
+		verify(this.transaction, never()).rollback();
 	}
 }

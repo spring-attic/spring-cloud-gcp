@@ -23,7 +23,6 @@ import com.google.cloud.datastore.Transaction;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -37,15 +36,22 @@ import org.springframework.data.annotation.Id;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * This class tests that {@link DatastoreTemplate} is using the transction-specific
+ * read-write when inside transactions.
+ *
  * @author Chengyuan Zhao
  */
 @RunWith(SpringRunner.class)
@@ -53,12 +59,16 @@ import static org.mockito.Mockito.when;
 public class DatastoreTransactionTemplateTests {
 
 	private final Key key = Key.newBuilder("a", "b", "c").build();
+
 	@MockBean
 	Datastore datastore;
+
 	@MockBean
 	Transaction transaction;
+
 	@Autowired
 	TransactionalService transactionalService;
+
 	@MockBean
 	ObjectToKeyFactory objectToKeyFactory;
 
@@ -79,12 +89,12 @@ public class DatastoreTransactionTemplateTests {
 	@Test
 	public void newTransaction() {
 		this.transactionalService.doInTransaction(new TestEntity(), new TestEntity());
-		verify(this.datastore, Mockito.times(1)).newTransaction();
-		verify(this.transaction, Mockito.times(1)).commit();
-		verify(this.transaction, Mockito.times(0)).rollback();
-		verify(this.transaction, Mockito.times(3)).put((FullEntity<?>) any());
-		verify(this.transaction, Mockito.times(1)).get((Key[]) any());
-		verify(this.transaction, Mockito.times(1)).delete(any());
+		verify(this.datastore, times(1)).newTransaction();
+		verify(this.transaction, times(1)).commit();
+		verify(this.transaction, times(0)).rollback();
+		verify(this.transaction, times(3)).put((FullEntity<?>) any());
+		verify(this.transaction, times(1)).get((Key[]) any());
+		verify(this.transaction, times(1)).delete(any());
 	}
 
 	@Test
@@ -98,21 +108,41 @@ public class DatastoreTransactionTemplateTests {
 			exception = e;
 		}
 		assertNotNull(exception);
-		verify(this.transaction, Mockito.times(0)).commit();
-		verify(this.transaction, Mockito.times(1)).rollback();
-		verify(this.datastore, Mockito.times(1)).newTransaction();
+		verify(this.transaction, times(0)).commit();
+		verify(this.transaction, times(1)).rollback();
+		verify(this.datastore, times(1)).newTransaction();
 	}
 
 	@Test
 	public void doWithoutTransactionTest() {
 		this.transactionalService.doWithoutTransaction(new TestEntity(),
 				new TestEntity());
-		verify(this.transaction, Mockito.never()).commit();
-		verify(this.transaction, Mockito.never()).rollback();
-		verify(this.transaction, Mockito.never()).put((FullEntity<?>) any());
-		verify(this.transaction, Mockito.never()).get((Key[]) any());
-		verify(this.transaction, Mockito.never()).delete(any());
-		verify(this.datastore, Mockito.never()).newTransaction();
+		verify(this.transaction, never()).commit();
+		verify(this.transaction, never()).rollback();
+		verify(this.transaction, never()).put((FullEntity<?>) any());
+		verify(this.transaction, never()).get((Key[]) any());
+		verify(this.transaction, never()).delete(any());
+		verify(this.datastore, never()).newTransaction();
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void unsupportedIsolationTest() {
+		this.transactionalService.doNothingUnsupportedIsolation();
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void unsupportedPropagationTest() {
+		this.transactionalService.doNothingUnsupportedPropagation();
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void readOnlySaveTest() {
+		this.transactionalService.writingInReadOnly();
+	}
+
+	@Test(expected = UnsupportedOperationException.class)
+	public void readOnlyDeleteTest() {
+		this.transactionalService.deleteInReadOnly();
 	}
 
 	@Configuration
@@ -176,6 +206,28 @@ public class DatastoreTransactionTemplateTests {
 			this.datastoreTemplate.save(entity2);
 			this.datastoreTemplate.delete(entity1);
 			this.datastoreTemplate.save(entity2);
+		}
+
+		@Transactional(isolation = Isolation.READ_UNCOMMITTED)
+		public void doNothingUnsupportedIsolation() {
+			// This method does nothing, but should fail anyway because of the unsupported
+			// isolation.
+		}
+
+		@Transactional(propagation = Propagation.NESTED)
+		public void doNothingUnsupportedPropagation() {
+			// This method does nothing, but should fail anyway because of the unsupported
+			// propagation.
+		}
+
+		@Transactional(readOnly = true)
+		public void writingInReadOnly() {
+			this.datastoreTemplate.save(new TestEntity());
+		}
+
+		@Transactional(readOnly = true)
+		public void deleteInReadOnly() {
+			this.datastoreTemplate.delete(new TestEntity());
 		}
 	}
 

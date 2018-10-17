@@ -41,9 +41,9 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
-import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 /**
@@ -308,12 +308,9 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	private DatastoreReaderWriter getDatastoreReadWriter() {
-		try {
-			return ((DatastoreTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
-					.currentTransactionStatus()).getTransaction()).getTransaction();
-		}
-		catch (NoTransactionException e) {
-			return this.datastore;
-		}
+		return TransactionSynchronizationManager.isActualTransactionActive()
+				? ((DatastoreTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
+						.currentTransactionStatus()).getTransaction()).getTransaction()
+				: this.datastore;
 	}
 }
