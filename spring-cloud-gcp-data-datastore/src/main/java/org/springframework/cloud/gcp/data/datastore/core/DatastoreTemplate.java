@@ -41,6 +41,9 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 /**
@@ -94,43 +97,44 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> T save(T instance) {
-		this.datastore.put(convertToEntityForSave(instance));
+		getDatastoreReadWriter().put(convertToEntityForSave(instance));
 		return instance;
 	}
 
 	@Override
 	public <T> Iterable<T> saveAll(Iterable<T> entities) {
-		this.datastore.put(StreamSupport.stream(entities.spliterator(), false)
+		getDatastoreReadWriter().put(StreamSupport.stream(entities.spliterator(), false)
 				.map(this::convertToEntityForSave).toArray(Entity[]::new));
 		return entities;
 	}
 
 	@Override
 	public <T> void deleteById(Object id, Class<T> entityClass) {
-		this.datastore.delete(getKeyFromId(id, entityClass));
+		getDatastoreReadWriter().delete(getKeyFromId(id, entityClass));
 	}
 
 	@Override
 	public <T> void deleteAllById(Iterable<?> ids, Class<T> entityClass) {
 		List<Key> keys = getKeysFromIds(ids, entityClass);
-		this.datastore.delete(keys.toArray(new Key[keys.size()]));
+		getDatastoreReadWriter().delete(keys.toArray(new Key[keys.size()]));
 	}
 
 	@Override
 	public <T> void delete(T entity) {
-		this.datastore.delete(getKey(entity, false));
+		getDatastoreReadWriter().delete(getKey(entity, false));
 	}
 
 	@Override
 	public <T> void deleteAll(Iterable<T> entities) {
-		this.datastore.delete(StreamSupport.stream(entities.spliterator(), false)
+		getDatastoreReadWriter()
+				.delete(StreamSupport.stream(entities.spliterator(), false)
 				.map(x -> getKey(x, false)).toArray(Key[]::new));
 	}
 
 	@Override
 	public long deleteAll(Class<?> entityClass) {
 		Key[] keysToDelete = findAllKeys(entityClass);
-		this.datastore.delete(keysToDelete);
+		getDatastoreReadWriter().delete(keysToDelete);
 		return keysToDelete.length;
 	}
 
@@ -143,14 +147,15 @@ public class DatastoreTemplate implements DatastoreOperations {
 	public <T> Collection<T> findAllById(Iterable<?> ids, Class<T> entityClass) {
 		List<Key> keysToFind = getKeysFromIds(ids, entityClass);
 		return convertEntitiesForRead(
-				this.datastore.get(keysToFind.toArray(new Key[keysToFind.size()])),
+				getDatastoreReadWriter().get(
+						keysToFind.toArray(new Key[keysToFind.size()])),
 				entityClass);
 	}
 
 	@Override
 	public <T> Iterable<T> query(Query<? extends BaseEntity> query,
 			Class<T> entityClass) {
-		return convertEntitiesForRead(this.datastore.run(query), entityClass);
+		return convertEntitiesForRead(getDatastoreReadWriter().run(query), entityClass);
 	}
 
 	/**
@@ -163,9 +168,9 @@ public class DatastoreTemplate implements DatastoreOperations {
 	 * empty.
 	 */
 	public <T> Iterable<?> queryKeysOrEntities(Query query, Class<T> entityClass) {
-		QueryResults results = this.datastore.run(query);
+		QueryResults results = getDatastoreReadWriter().run(query);
 		if (results.getResultClass() == Key.class) {
-			return () -> this.datastore.run(query);
+			return () -> getDatastoreReadWriter().run(query);
 		}
 		return convertEntitiesForRead(results, entityClass);
 	}
@@ -173,19 +178,20 @@ public class DatastoreTemplate implements DatastoreOperations {
 	@Override
 	public <A, T> Iterable<T> query(Query<A> query, Function<A, T> entityFunc) {
 		List<T> results = new ArrayList<>();
-		this.datastore.run(query).forEachRemaining(x -> results.add(entityFunc.apply(x)));
+		getDatastoreReadWriter().run(query)
+				.forEachRemaining(x -> results.add(entityFunc.apply(x)));
 		return results;
 	}
 
 	@Override
 	public Iterable<Key> queryKeys(Query<Key> query) {
-		return () -> this.datastore.run(query);
+		return () -> getDatastoreReadWriter().run(query);
 	}
 
 	@Override
 	public <T> Collection<T> findAll(Class<T> entityClass) {
 		return convertEntitiesForRead(
-				this.datastore.run(Query.newEntityQueryBuilder()
+				getDatastoreReadWriter().run(Query.newEntityQueryBuilder()
 						.setKind(this.datastoreMappingContext
 								.getPersistentEntity(entityClass).kindName())
 						.build()),
@@ -199,12 +205,14 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <A> A performTransaction(Function<DatastoreOperations, A> operations) {
-		if (!(this.datastore instanceof Datastore)) {
+		if (!(getDatastoreReadWriter() instanceof Datastore)) {
 			throw new DatastoreDataException(
 					"This DatastoreReadWriter cannot be used to run transactions. A full Datastore service"
-							+ " object is required to run functions as transactions.");
+							+ " object is required to run functions as transactions. Ensure that this method "
+							+ "was not called in an ongoing transaction.");
 		}
-		return ((Datastore) this.datastore).runInTransaction(
+		return ((Datastore) getDatastoreReadWriter())
+				.runInTransaction(
 				(DatastoreReaderWriter readerWriter) -> operations.apply(new DatastoreTemplate(readerWriter,
 						DatastoreTemplate.this.datastoreEntityConverter,
 						DatastoreTemplate.this.datastoreMappingContext,
@@ -257,7 +265,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 									this.datastoreEntityConverter.getConversions()
 											.convertOnRead(
 													convertEntitiesForRead(
-															this.datastore
+															getDatastoreReadWriter()
 																	.run(descendantQuery),
 															descendantType),
 													descendantPersistentProperty
@@ -297,5 +305,12 @@ public class DatastoreTemplate implements DatastoreOperations {
 		List<Key> keys = new ArrayList<>();
 		ids.forEach(x -> keys.add(getKeyFromId(x, entityClass)));
 		return keys;
+	}
+
+	private DatastoreReaderWriter getDatastoreReadWriter() {
+		return TransactionSynchronizationManager.isActualTransactionActive()
+				? ((DatastoreTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
+						.currentTransactionStatus()).getTransaction()).getTransaction()
+				: this.datastore;
 	}
 }
