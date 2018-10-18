@@ -17,7 +17,6 @@
 package com.example;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -37,9 +36,9 @@ public class WebController {
 	}
 
 	@GetMapping("/getTuples")
-	public List getTuples() {
+	public List<String> getTuples() {
 		return this.jdbcTemplate.queryForList("SELECT * FROM users").stream()
-				.map(Map::values)
+				.map(m -> m.values().toString())
 				.collect(Collectors.toList());
 	}
 }
