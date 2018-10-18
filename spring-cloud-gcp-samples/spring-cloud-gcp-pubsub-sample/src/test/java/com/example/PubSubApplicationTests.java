@@ -60,6 +60,8 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubApplication.class })
 public class PubSubApplicationTests {
 
+	private static final int PUBSUB_CLIENT_TIMEOUT_SECONDS = 5;
+
 	private static final String SAMPLE_TEST_TOPIC = "pubsub-sample-test-exampleTopic";
 
 	private static final String SAMPLE_TEST_SUBSCRIPTION1 = "pubsub-sample-test-exampleSubscription1";
@@ -134,28 +136,28 @@ public class PubSubApplicationTests {
 		String projectSubscriptionName = ProjectSubscriptionName.format(projectName, SAMPLE_TEST_SUBSCRIPTION1);
 
 		createTopic(SAMPLE_TEST_TOPIC);
-		await().atMost(5, TimeUnit.SECONDS).untilAsserted(
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
 				() -> {
 					List<String> projectTopics = getTopicNamesFromProject();
 					assertThat(projectTopics).contains(projectTopicName);
 				});
 
 		createSubscription(SAMPLE_TEST_SUBSCRIPTION1, SAMPLE_TEST_TOPIC);
-		await().atMost(5, TimeUnit.SECONDS).untilAsserted(
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
 				() -> {
 					List<String> subscriptions = getSubscriptionNamesFromProject();
 					assertThat(subscriptions).contains(projectSubscriptionName);
 				});
 
 		deleteSubscription(SAMPLE_TEST_SUBSCRIPTION1);
-		await().atMost(5, TimeUnit.SECONDS).untilAsserted(
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
 				() -> {
 					List<String> subscriptions = getSubscriptionNamesFromProject();
 					assertThat(subscriptions).doesNotContain(projectSubscriptionName);
 				});
 
 		deleteTopic(SAMPLE_TEST_TOPIC);
-		await().atMost(5, TimeUnit.SECONDS).untilAsserted(
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
 				() -> {
 					List<String> projectTopics = getTopicNamesFromProject();
 					assertThat(projectTopics).doesNotContain(projectTopicName);
