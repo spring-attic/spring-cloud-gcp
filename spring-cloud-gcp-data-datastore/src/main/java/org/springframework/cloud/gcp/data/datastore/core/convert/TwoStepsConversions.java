@@ -41,6 +41,8 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.CustomConversions;
+import org.springframework.data.util.ClassTypeInformation;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
@@ -99,27 +101,44 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	@Override
 	public <T> T convertOnRead(Object val, Class targetCollectionType,
 			Class targetComponentType) {
-		return convertOnRead(val, false, targetCollectionType, targetComponentType);
+		return (T) convertOnRead(val, false, false, targetCollectionType,
+				ClassTypeInformation.from(targetComponentType));
 	}
 
 	@Override
 	public <T> T convertOnReadEmbedded(Object val, Class targetCollectionType,
 			Class targetComponentType) {
-		return convertOnRead(val, true, targetCollectionType, targetComponentType);
+		return (T) convertOnRead(val, true, false, targetCollectionType,
+				ClassTypeInformation.from(targetComponentType));
+	}
+
+	@Override
+	public <T> T convertOnReadEmbeddedMap(BaseEntity val,
+			TypeInformation targetComponentType) {
+		return convertOnRead(val, true, true, null, targetComponentType);
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> T convertOnRead(Object val, boolean isEmbedded,
-			Class targetCollectionType, Class targetComponentType) {
+	private <T> T convertOnRead(Object val, boolean isEmbedded, boolean isEmbeddedMap,
+			Class targetCollectionType, TypeInformation targetComponentType) {
 		if (val == null) {
 			return null;
 		}
-		BiFunction<Object, Class<?>, T> readConverter = isEmbedded
-				? this::convertOnReadSingleEmbedded
-				: this::convertOnReadSingle;
+		BiFunction<Object, TypeInformation<?>, ?> readConverter;
+		if (isEmbedded) {
+			if (isEmbeddedMap) {
+				readConverter = this::convertOnReadSingleEmbeddedMap;
+			}
+			else {
+				readConverter = this::convertOnReadSingleEmbedded;
+			}
+		}
+		else {
+			readConverter = this::convertOnReadSingle;
+		}
 
 		if ((val instanceof Iterable || val.getClass().isArray())
-				&& targetComponentType != null) {
+				&& targetComponentType != null && targetCollectionType != null) {
 			try {
 				List elements = (val.getClass().isArray() ? (Arrays.asList(val))
 						: ((List<?>) val))
@@ -135,21 +154,35 @@ public class TwoStepsConversions implements ReadWriteConversions {
 				throw new DatastoreDataException("Unable process elements of a collection", e);
 			}
 		}
+		return (T) readConverter.apply(val, targetComponentType);
+	}
 
-		return readConverter.apply(val, targetCollectionType == null ? targetComponentType : targetCollectionType);
+	private <T> Map<String, T> convertOnReadSingleEmbeddedMap(Object value,
+			TypeInformation<T> targetClass) {
+		Assert.notNull(value, "Cannot convert a null value.");
+		if (value instanceof BaseEntity) {
+			return this.datastoreEntityConverter.readAsMap(targetClass,
+					(BaseEntity) value);
+		}
+		throw new DatastoreDataException(
+				"Embedded entity was expected, but " + value.getClass() + " found");
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> T convertOnReadSingleEmbedded(Object value, Class<?> targetClass) {
+	private <T> T convertOnReadSingleEmbedded(Object value,
+			TypeInformation<?> targetTypeInformation) {
 		Assert.notNull(value, "Cannot convert a null value.");
 		if (value instanceof BaseEntity) {
-			return (T) this.datastoreEntityConverter.read(targetClass, (BaseEntity) value);
+			return (T) this.datastoreEntityConverter.read(targetTypeInformation.getType(),
+					(BaseEntity) value);
 		}
 		throw new DatastoreDataException("Embedded entity was expected, but " + value.getClass() + " found");
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> T convertOnReadSingle(Object val, Class<?> targetType) {
+	private <T> T convertOnReadSingle(Object val,
+			TypeInformation<?> targetTypeInformation) {
+		Class targetType = targetTypeInformation.getType();
 		Assert.notNull(val, "Cannot convert a null value.");
 		Object result = null;
 		TypeTargets typeTargets = computeTypeTargets(targetType);
@@ -256,7 +289,6 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		if (collection == null || target == null || ClassUtils.isAssignableValue(target, collection)) {
 			return (T) collection;
 		}
-
 		return (T) this.conversionService.convert(collection, target);
 	}
 

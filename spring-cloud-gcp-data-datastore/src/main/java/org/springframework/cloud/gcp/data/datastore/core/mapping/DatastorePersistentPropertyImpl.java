@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
+import java.util.Map;
+
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
@@ -23,6 +25,7 @@ import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
+import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
 
 /**
@@ -106,6 +109,14 @@ public class DatastorePersistentPropertyImpl
 	@Override
 	public boolean isUnindexed() {
 		return findAnnotation(Unindexed.class) != null;
+	}
+
+	@Override
+	public TypeInformation getEmbeddedMapValueType() {
+		if (!isEmbedded() || !Map.class.isAssignableFrom(getType())) {
+			return null;
+		}
+		return getTypeInformation().getTypeArguments().get(1);
 	}
 
 	@Override

@@ -18,9 +18,11 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.util.Optional;
 
+import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * An interface for type conversions on read and on write
@@ -55,6 +57,14 @@ public interface ReadWriteConversions {
 	 */
 	<T> T convertOnReadEmbedded(Object val, Class targetCollectionType,
 			Class targetComponentType);
+
+	/**
+	 * Converts a given object to a {@code Map} representing the embedded entity.
+	 * @param val the value to convert.
+	 * @param targetComponentType type metadata for the values of the map
+	 * @return an object of a target type.
+	 */
+	<T> T convertOnReadEmbeddedMap(BaseEntity val, TypeInformation targetComponentType);
 
 	/**
 	 * Converts an object to a Cloud Datastore {@link Value}

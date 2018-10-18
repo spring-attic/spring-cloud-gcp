@@ -16,10 +16,13 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.Map;
+
 import com.google.cloud.datastore.BaseEntity;
 
 import org.springframework.data.convert.EntityReader;
 import org.springframework.data.convert.EntityWriter;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * An interface for converting objects to Datastore Entities and vice versa.
@@ -36,4 +39,14 @@ public interface DatastoreEntityConverter extends
 	 * @return the conversions used.
 	 */
 	ReadWriteConversions getConversions();
+
+	/**
+	 * Read the entity as a {@link Map}.
+	 * @param type The value type of the map, into which each field value will be
+	 * converted.
+	 * @param entity The entity from Cloud Datastore.
+	 * @return a Map where the key values are the field names and the values the field
+	 * values.
+	 */
+	<R> Map<String, R> readAsMap(TypeInformation<R> type, BaseEntity entity);
 }

@@ -16,9 +16,14 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Value;
 import com.google.cloud.datastore.ValueBuilder;
+import com.google.cloud.datastore.ValueType;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -29,6 +34,7 @@ import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * A class for object to entity and entity to object conversions
@@ -60,6 +66,25 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	@Override
 	public ReadWriteConversions getConversions() {
 		return this.conversions;
+	}
+
+	@Override
+	public <R> Map<String, R> readAsMap(TypeInformation<R> type, BaseEntity entity) {
+		if (entity == null) {
+			return null;
+		}
+		Map<String, R> result = new HashMap<>();
+		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(
+				entity, this.conversions);
+		Set<String> fieldNames = entity.getNames();
+		for (String field : fieldNames) {
+			result.put(field,
+					propertyValueProvider.getPropertyValue(field,
+							entity.getValue(field).getType() == ValueType.ENTITY, false,
+							null, type.isCollectionLike() ? type.getType() : null,
+							type.getComponentType().getType()));
+		}
+		return result;
 	}
 
 	@Override

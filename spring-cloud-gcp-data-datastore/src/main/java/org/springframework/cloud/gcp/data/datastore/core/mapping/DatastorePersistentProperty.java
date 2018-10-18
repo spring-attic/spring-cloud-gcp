@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
 import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * Persistent property for Google Cloud Datastore
@@ -61,4 +62,10 @@ public interface DatastorePersistentProperty
 	 * @return true if if the property should be indexed
 	 */
 	boolean isUnindexed();
+
+	/**
+	 * Get the value type of {@code Map} properties that are stored as embedded entities.
+	 * @return the value type of the Map property.
+	 */
+	TypeInformation getEmbeddedMapValueType();
 }

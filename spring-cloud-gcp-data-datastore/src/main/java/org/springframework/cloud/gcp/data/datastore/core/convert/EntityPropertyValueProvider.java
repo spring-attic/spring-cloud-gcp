@@ -16,12 +16,15 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.Map;
+
 import com.google.cloud.datastore.BaseEntity;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.data.mapping.model.PropertyValueProvider;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * A {@link PropertyValueProvider} for Datastore entities
@@ -46,27 +49,57 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public <T> T getPropertyValue(DatastorePersistentProperty persistentProperty) {
-		String fieldName = persistentProperty.getFieldName();
+		Class singularType = persistentProperty.getComponentType();
+		Class collectionType = persistentProperty.getType();
+		if (singularType == null) {
+			singularType = collectionType;
+			collectionType = null;
+		}
+		return getPropertyValue(persistentProperty.getFieldName(),
+				persistentProperty.isEmbedded(),
+				Map.class.isAssignableFrom(persistentProperty.getType()),
+				persistentProperty.getEmbeddedMapValueType(), collectionType,
+				singularType);
+	}
 
+	/**
+	 * Get a property value from the entity.
+	 * @param fieldName the name of the field to get.
+	 * @param isEmbedded if the property is an embedded entity.
+	 * @param isEmbeddedMap if the property should be retrieved as a map representing the
+	 * entity value
+	 * @param embeddedMapValueType if the property is an embedded entity and also to be
+	 * read as a {@code Map}, the value type of the map.
+	 * @param collectionType the collection type if the property is not singular. null if
+	 * the property is singular.
+	 * @param componentType the singular item type.
+	 * @return the property converted from the entity.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T getPropertyValue(String fieldName, boolean isEmbedded,
+			boolean isEmbeddedMap, TypeInformation embeddedMapValueType,
+			Class collectionType, Class componentType) {
 		if (!this.entity.contains(fieldName)) {
 			return null;
 		}
 		try {
-			return persistentProperty.isEmbedded()
-					? this.conversion.convertOnReadEmbedded(
-					this.entity.getValue(fieldName).get(),
-							persistentProperty.getType(),
-							persistentProperty.getComponentType())
-					: this.conversion.convertOnRead(this.entity.getValue(fieldName).get(),
-							persistentProperty.getType(),
-							persistentProperty.getComponentType());
+			if (isEmbedded) {
+				return isEmbeddedMap
+						? this.conversion.convertOnReadEmbeddedMap(
+								this.entity.getEntity(fieldName), embeddedMapValueType)
+						: this.conversion.convertOnReadEmbedded(
+								this.entity.getValue(fieldName).get(), collectionType,
+								componentType);
+			}
+			else {
+				return this.conversion.convertOnRead(
+						this.entity.getValue(fieldName).get(), collectionType,
+						componentType);
+			}
 		}
 		catch (ConversionException | DatastoreDataException e) {
 			throw new DatastoreDataException("Unable to read property " + fieldName, e);
 		}
-
 	}
-
 }

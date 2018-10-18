@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -55,9 +56,16 @@ public class DatastorePersistentPropertyImplTests {
 								assertEquals(Double.class,
 										property.getComponentType());
 								assertTrue(property.isCollectionLike());
+								assertNull(property.getEmbeddedMapValueType());
 							}
 							else if (property.getFieldName().equals("embeddedEntity")) {
 								assertTrue(property.isEmbedded());
+								assertNull(property.getEmbeddedMapValueType());
+							}
+							else if (property.getFieldName().equals("embeddedMap")) {
+								assertTrue(property.isEmbedded());
+								assertEquals(String.class,
+										property.getEmbeddedMapValueType().getType());
 							}
 							else if (property.getFieldName().equals("linkedEntity")) {
 								assertTrue(property.isDescendants());
@@ -132,6 +140,9 @@ public class DatastorePersistentPropertyImplTests {
 
 		@Embedded
 		TestSubEntity embeddedEntity;
+
+		@Embedded
+		Map<String, String> embeddedMap;
 
 		@Descendants
 		List<TestSubEntity> linkedEntity;
