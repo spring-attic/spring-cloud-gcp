@@ -220,6 +220,13 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
+	public void findAllByIdTestNotNull() {
+		assertTrue(this.datastoreTemplate
+				.findAllById(Collections.singletonList(this.badKey), TestEntity.class)
+				.isEmpty());
+	}
+
+	@Test
 	public void findByIdTest() {
 
 		TestEntity result = this.datastoreTemplate.findById(this.key1, TestEntity.class);

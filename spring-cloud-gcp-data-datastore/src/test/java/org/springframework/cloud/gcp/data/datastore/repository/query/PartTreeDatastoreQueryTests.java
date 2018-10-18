@@ -30,6 +30,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
+import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
@@ -63,12 +65,22 @@ public class PartTreeDatastoreQueryTests {
 
 	private PartTreeDatastoreQuery partTreeSpannerQuery;
 
+	private DatastoreEntityConverter datastoreEntityConverter;
+
+	private ReadWriteConversions readWriteConversions;
+
 	@Before
 	public void initMocks() {
 		this.queryMethod = mock(DatastoreQueryMethod.class);
 		when(this.queryMethod.getReturnedObjectType()).thenReturn((Class) TestEntity.class);
 		this.spannerTemplate = mock(DatastoreTemplate.class);
 		this.spannerMappingContext = new DatastoreMappingContext();
+		this.datastoreEntityConverter = mock(DatastoreEntityConverter.class);
+		this.readWriteConversions = mock(ReadWriteConversions.class);
+		when(this.spannerTemplate.getDatastoreEntityConverter())
+				.thenReturn(this.datastoreEntityConverter);
+		when(this.datastoreEntityConverter.getConversions())
+				.thenReturn(readWriteConversions);
 	}
 
 	private PartTreeDatastoreQuery<Trade> createQuery() {
@@ -99,8 +111,10 @@ public class PartTreeDatastoreQueryTests {
 
 			assertEquals(expected, statement);
 
-			return null;
+					return Collections.emptyList();
 		});
+
+		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
 		this.partTreeSpannerQuery.execute(params);
 		verify(this.spannerTemplate, times(1))

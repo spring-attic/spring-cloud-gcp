@@ -103,15 +103,15 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	public Object execute(Object[] parameters) {
 		Supplier<StructuredQuery.Builder<?>> queryBuilderSupplier = StructuredQuery::newKeyQueryBuilder;
 		Function<T, ?> mapper = Function.identity();
-		Collector<?, ?, ?> collector = Collectors.toList();
 		Class returnedType = this.queryMethod.getReturnedObjectType();
 
-		boolean returnedTypeisNumber = Number.class.isAssignableFrom(returnedType)
+		boolean returnedTypeIsNumber = Number.class.isAssignableFrom(returnedType)
 				|| returnedType == int.class || returnedType == long.class;
 
 		boolean isCountingQuery = this.tree.isCountProjection()
-				|| (this.tree.isDelete() && returnedTypeisNumber);
+				|| (this.tree.isDelete() && returnedTypeIsNumber);
 
+		Collector<?, ?, ?> collector = Collectors.toList();
 		if (isCountingQuery) {
 			collector = Collectors.reducing(0, e -> 1, Integer::sum);
 		}
@@ -119,7 +119,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			collector = Collectors.collectingAndThen(Collectors.counting(),
 					count -> count > 0);
 		}
-		else if (!returnedTypeisNumber) {
+		else if (!returnedTypeIsNumber) {
 			queryBuilderSupplier = StructuredQuery::newEntityQueryBuilder;
 			mapper = this::processRawObjectForProjection;
 		}
@@ -131,25 +131,30 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				.queryKeysOrEntities(structredQueryBuilder.build(),
 				this.entityType);
 
-		Object result = rawResults == null ? null
-				: StreamSupport.stream(rawResults.spliterator(), false).map(mapper)
+		Object result = StreamSupport.stream(rawResults.spliterator(), false).map(mapper)
 						.collect(collector);
 
+		deleteFoundEntities(returnedTypeIsNumber, rawResults);
+
+		return this.tree.isExistsProjection() || isCountingQuery ? result
+				: convertResultCollection(result);
+	}
+
+	private Object convertResultCollection(Object result) {
+		return this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+				.convertOnRead(result, this.queryMethod.getCollectionReturnType(),
+						this.queryMethod.getReturnedObjectType());
+	}
+
+	private void deleteFoundEntities(boolean returnedTypeIsNumber, Iterable rawResults) {
 		if (this.tree.isDelete()) {
-			if (returnedTypeisNumber) {
+			if (returnedTypeIsNumber) {
 				this.datastoreTemplate.deleteAllById(rawResults, this.entityType);
 			}
 			else {
 				this.datastoreTemplate.deleteAll(rawResults);
 			}
 		}
-
-		return this.tree.isExistsProjection() || isCountingQuery || result == null
-						? result
-						: this.datastoreTemplate.getDatastoreEntityConverter()
-								.getConversions().convertOnRead(result,
-										this.queryMethod.getCollectionReturnType(),
-										this.queryMethod.getReturnedObjectType());
 	}
 
 	private StructuredQuery applyQueryBody(Object[] parameters,
