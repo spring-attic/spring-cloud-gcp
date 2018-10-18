@@ -456,7 +456,7 @@ public class DatastoreTemplateExample {
 The Template API provides convenience methods for:
 
 - Write operations (saving and deleting)
-- Locking read-write transactions
+- Read-write transactions
 
 ==== GQL Query
 
@@ -557,6 +557,15 @@ You can use this object just as you would a regular `DatastoreOperations` with
 an exception:
 
 - It cannot perform sub-transactions.
+
+===== Declarative Transactions with @Transactional Annotation
+
+This feature requires a bean of `DatastoreTransactionManager`, which is provided when using `spring-cloud-gcp-starter-data-datastore`.
+
+`DatastoreTemplate` and `DatastoreRepository` support running methods with the `@Transactional` [annotation](https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative) as transactions.
+If a method annotated with `@Transactional` calls another method also annotated, then both methods will work within the same transaction.
+`performTransaction` cannot be used in `@Transactional` annotated methods because Cloud Datastore does not support transactions within transactions.
+
 
 === Repositories
 
