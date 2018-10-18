@@ -134,7 +134,9 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		Object result = StreamSupport.stream(rawResults.spliterator(), false).map(mapper)
 						.collect(collector);
 
-		deleteFoundEntities(returnedTypeIsNumber, rawResults);
+		if (this.tree.isDelete()) {
+			deleteFoundEntities(returnedTypeIsNumber, rawResults);
+		}
 
 		return this.tree.isExistsProjection() || isCountingQuery ? result
 				: convertResultCollection(result);
@@ -147,13 +149,11 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	private void deleteFoundEntities(boolean returnedTypeIsNumber, Iterable rawResults) {
-		if (this.tree.isDelete()) {
-			if (returnedTypeIsNumber) {
-				this.datastoreTemplate.deleteAllById(rawResults, this.entityType);
-			}
-			else {
-				this.datastoreTemplate.deleteAll(rawResults);
-			}
+		if (returnedTypeIsNumber) {
+			this.datastoreTemplate.deleteAllById(rawResults, this.entityType);
+		}
+		else {
+			this.datastoreTemplate.deleteAll(rawResults);
 		}
 	}
 
