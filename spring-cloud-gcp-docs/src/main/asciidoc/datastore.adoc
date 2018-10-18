@@ -749,7 +749,7 @@ This feature is not supported yet.
 
 ==== REST Repositories
 
-When running with Spring Boot, repositories can act as REST services by adding this dependency in the pom file:
+When running with Spring Boot, repositories can be exposed as REST services by simply adding this dependency to your pom file:
 
 [source,xml]
 ----
@@ -759,7 +759,7 @@ When running with Spring Boot, repositories can act as REST services by adding t
 </dependency>
 ----
 
-If you prefer to configure parameters (such as path), you can use @RepositoryRestResource annotation:
+If you prefer to configure parameters (such as path), you can use `@RepositoryRestResource` annotation:
 [source,java]
 ----
 @RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
