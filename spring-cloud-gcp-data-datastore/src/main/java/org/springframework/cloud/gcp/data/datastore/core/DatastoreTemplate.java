@@ -243,32 +243,12 @@ public class DatastoreTemplate implements DatastoreOperations {
 		T convertedObject = this.datastoreEntityConverter.read(entityClass, entity);
 		results.add(convertedObject);
 
-		datastorePersistentEntity
-				.doWithDescendantProperties(descendantPersistentProperty -> {
+		resolveDescendantProperties(datastorePersistentEntity, entity, convertedObject);
+		resolveReferenceProperties(datastorePersistentEntity, entity, convertedObject);
+	}
 
-					Class descendantType = descendantPersistentProperty
-							.getComponentType();
-
-					EntityQuery descendantQuery = Query.newEntityQueryBuilder()
-							.setKind(this.datastoreMappingContext
-									.getPersistentEntity(descendantType).kindName())
-							.setFilter(PropertyFilter.hasAncestor((Key) entity.getKey()))
-							.build();
-
-					datastorePersistentEntity.getPropertyAccessor(convertedObject)
-							.setProperty(descendantPersistentProperty,
-									// Converting the collection type.
-									this.datastoreEntityConverter.getConversions()
-											.convertOnRead(
-													convertEntitiesForRead(
-															this.datastore
-																	.run(descendantQuery),
-															descendantType),
-													descendantPersistentProperty
-															.getType(),
-													descendantType));
-				});
-
+	private <T> void resolveReferenceProperties(DatastorePersistentEntity datastorePersistentEntity,
+			BaseEntity entity, T convertedObject) {
 		datastorePersistentEntity.doWithReferenceProperties(
 				(PropertyHandler<DatastorePersistentProperty>) referencePersistentProperty -> {
 					String fieldName = referencePersistentProperty.getFieldName();
@@ -298,6 +278,35 @@ public class DatastoreTemplate implements DatastoreOperations {
 								"Reference properties must be stored Keys or lists of Keys"
 										+ " in Cloud Datastore for singular or multiple references, respectively.");
 					}
+				});
+	}
+
+	private <T> void resolveDescendantProperties(DatastorePersistentEntity datastorePersistentEntity,
+			BaseEntity entity, T convertedObject) {
+		datastorePersistentEntity
+				.doWithDescendantProperties(descendantPersistentProperty -> {
+
+					Class descendantType = descendantPersistentProperty
+							.getComponentType();
+
+					EntityQuery descendantQuery = Query.newEntityQueryBuilder()
+							.setKind(this.datastoreMappingContext
+									.getPersistentEntity(descendantType).kindName())
+							.setFilter(PropertyFilter.hasAncestor((Key) entity.getKey()))
+							.build();
+
+					datastorePersistentEntity.getPropertyAccessor(convertedObject)
+							.setProperty(descendantPersistentProperty,
+									// Converting the collection type.
+									this.datastoreEntityConverter.getConversions()
+											.convertOnRead(
+													convertEntitiesForRead(
+															this.datastore
+																	.run(descendantQuery),
+															descendantType),
+													descendantPersistentProperty
+															.getType(),
+													descendantType));
 				});
 	}
 
