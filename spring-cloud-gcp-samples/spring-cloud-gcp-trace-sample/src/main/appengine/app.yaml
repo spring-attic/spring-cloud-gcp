@@ -10,3 +10,8 @@ manual_scaling:
 
 resources:
   memory_gb: 4
+
+env_variables:
+  # on App Engine flexible environment, logging flush level must be the same as the log level
+  # see: https://github.com/spring-cloud/spring-cloud-gcp/issues/1096
+  STACKDRIVER_LOG_FLUSH_LEVEL: 'INFO'
