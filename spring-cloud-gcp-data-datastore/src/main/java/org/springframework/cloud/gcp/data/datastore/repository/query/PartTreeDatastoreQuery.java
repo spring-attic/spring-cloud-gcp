@@ -33,7 +33,6 @@ import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.Builder;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.Filter;
-import com.google.cloud.datastore.StructuredQuery.OrderBy;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
@@ -111,7 +110,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		Collector<?, ?, ?> collector;
 
 		if (this.tree.isCountProjection()) {
-			collector = Collectors.reducing(0, e -> 1, Integer::sum);
+			collector = Collectors.counting();
 		}
 		else if (this.tree.isExistsProjection()) {
 			collector = Collectors.collectingAndThen(Collectors.counting(), count -> count > 0);
@@ -124,10 +123,8 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		StructuredQuery.Builder<?> structredQueryBuilder = queryBuilderSupplier.get();
 		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
-		applyQueryBody(parameters, structredQueryBuilder);
 		Iterable results = this.datastoreTemplate
-				.queryKeysOrEntities(structredQueryBuilder.build(),
-				this.entityType);
+				.queryKeysOrEntities(applyQueryBody(parameters, structredQueryBuilder), this.entityType);
 
 		Object returned = results == null ? null
 				: StreamSupport.stream(results.spliterator(), false).map(mapper)
@@ -148,27 +145,16 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			applySelectWithFilter(parameters, builder);
 		}
 
-		if (!this.tree.getSort().isUnsorted()) {
-			applySort(builder);
-		}
-
+		Integer limit = null;
 		if (this.tree.isExistsProjection()) {
-			builder.setLimit(1);
+			limit = 1;
 		}
 		else if (this.tree.isLimiting()) {
-			builder.setLimit(this.tree.getMaxResults());
+			limit = this.tree.getMaxResults();
 		}
-
+		this.datastoreTemplate.applyLimitOffsetSort(
+				builder, limit, null, this.tree.getSort(), this.datastorePersistentEntity);
 		return builder.build();
-	}
-
-	private void applySort(Builder builder) {
-		this.tree.getSort().get().forEach(sort -> {
-			String fieldName = ((DatastorePersistentProperty) this.datastorePersistentEntity
-					.getPersistentProperty(sort.getProperty())).getFieldName();
-			builder.addOrderBy(sort.isAscending() ? OrderBy.asc(fieldName)
-					: OrderBy.desc(fieldName));
-		});
 	}
 
 	private void applySelectWithFilter(Object[] parameters, Builder builder) {

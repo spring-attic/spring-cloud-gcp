@@ -164,7 +164,7 @@ public class PartTreeDatastoreQueryTests {
 
 		PartTreeDatastoreQuery spyQuery = spy(this.partTreeSpannerQuery);
 		Object[] params = new Object[] { "BUY", };
-		assertEquals(1, spyQuery.execute(params));
+		assertEquals(1L, spyQuery.execute(params));
 	}
 
 	@Test

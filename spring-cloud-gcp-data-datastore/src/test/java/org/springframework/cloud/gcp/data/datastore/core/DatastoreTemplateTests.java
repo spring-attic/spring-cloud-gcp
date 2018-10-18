@@ -377,7 +377,7 @@ public class DatastoreTemplateTests {
 		this.datastoreTemplate.findAll(TestEntity.class, 1, 5, null);
 		verify(this.datastore, times(1)).run(builder.setLimit(1).setOffset(5).build());
 
-		this.datastoreTemplate.findAll(TestEntity.class, -1, -1, null);
+		this.datastoreTemplate.findAll(TestEntity.class, null, null, null);
 		verify(this.datastore, times(1)).run(builder.build());
 	}
 
@@ -385,12 +385,12 @@ public class DatastoreTemplateTests {
 	public void findAllTestSort() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("custom_test_kind");
 
-		this.datastoreTemplate.findAll(TestEntity.class, -1, -1, new Sort(Sort.Direction.ASC, "sortProperty"));
+		this.datastoreTemplate.findAll(TestEntity.class, null, null, new Sort(Sort.Direction.ASC, "sortProperty"));
 		verify(this.datastore, times(1)).run(
 				builder.setOrderBy(
 						new StructuredQuery.OrderBy("prop", StructuredQuery.OrderBy.Direction.ASCENDING)).build());
 
-		this.datastoreTemplate.findAll(TestEntity.class, -1, -1, new Sort(Sort.Direction.DESC, "sortProperty"));
+		this.datastoreTemplate.findAll(TestEntity.class, null, null, new Sort(Sort.Direction.DESC, "sortProperty"));
 		verify(this.datastore, times(1)).run(
 				builder.setOrderBy(
 						new StructuredQuery.OrderBy("prop", StructuredQuery.OrderBy.Direction.DESCENDING)).build());

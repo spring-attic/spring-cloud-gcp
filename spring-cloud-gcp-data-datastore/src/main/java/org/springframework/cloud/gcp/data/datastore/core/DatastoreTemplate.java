@@ -186,28 +186,32 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> Collection<T> findAll(Class<T> entityClass) {
-		return findAll(entityClass, -1, -1, null);
+		return findAll(entityClass, null, null, null);
 	}
 
 	@Override
-	public <T> Collection<T> findAll(Class<T> entityClass, int limit, int offset,
-			Sort sort) {
+	public <T> Collection<T> findAll(Class<T> entityClass, Integer limit, Integer offset, Sort sort) {
 		DatastorePersistentEntity<?> persistentEntity = this.datastoreMappingContext.getPersistentEntity(entityClass);
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder()
 				.setKind(persistentEntity.kindName());
-		if (limit > 0) {
+		applyLimitOffsetSort(builder, limit, offset, sort, persistentEntity);
+
+		return convertEntitiesForRead(this.datastore.run(builder.build()), entityClass);
+	}
+
+	public static void applyLimitOffsetSort(StructuredQuery.Builder builder, Integer limit, Integer offset, Sort sort,
+			DatastorePersistentEntity<?> persistentEntity) {
+		if (limit != null) {
 			builder.setLimit(limit);
 		}
-		if (offset > 0) {
+		if (offset != null) {
 			builder.setOffset(offset);
 		}
-		if (sort != null) {
+		if (sort != null && persistentEntity != null) {
 			sort.stream()
 					.map(order -> createOrderBy(persistentEntity, order))
 					.forEachOrdered(orderBy -> builder.addOrderBy(orderBy));
 		}
-
-		return convertEntitiesForRead(this.datastore.run(builder.build()), entityClass);
 	}
 
 	@Override
@@ -229,19 +233,13 @@ public class DatastoreTemplate implements DatastoreOperations {
 						DatastoreTemplate.this.objectToKeyFactory)));
 	}
 
-	private StructuredQuery.OrderBy createOrderBy(DatastorePersistentEntity<?> persistentEntity, Sort.Order order) {
+	private static StructuredQuery.OrderBy createOrderBy(DatastorePersistentEntity<?> persistentEntity,
+			Sort.Order order) {
 		return new StructuredQuery.OrderBy(
 				persistentEntity.getPersistentProperty(order.getProperty()).getFieldName(),
-				directionToOrderBy(order.getDirection()));
-	}
-
-	private StructuredQuery.OrderBy.Direction directionToOrderBy(Sort.Direction direction) {
-		Sort.Direction effectiveDirection = direction == null ? Sort.DEFAULT_DIRECTION : direction;
-
-		if (effectiveDirection == Sort.Direction.ASC) {
-			return StructuredQuery.OrderBy.Direction.ASCENDING;
-		}
-		return StructuredQuery.OrderBy.Direction.DESCENDING;
+				order.getDirection() == Sort.Direction.DESC
+						? StructuredQuery.OrderBy.Direction.DESCENDING
+						: StructuredQuery.OrderBy.Direction.ASCENDING);
 	}
 
 	private Entity convertToEntityForSave(Object entity) {
