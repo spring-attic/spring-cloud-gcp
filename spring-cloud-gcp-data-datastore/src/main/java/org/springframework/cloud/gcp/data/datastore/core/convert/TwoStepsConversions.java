@@ -113,7 +113,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	@Override
-	public <T> T convertOnReadEmbeddedMap(BaseEntity val,
+	public <T> T convertOnReadEmbeddedMap(BaseEntity val, Class targetCollectionType,
 			TypeInformation targetComponentType) {
 		return convertOnRead(val, true, true, null, targetComponentType);
 	}
@@ -216,15 +216,21 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	@Override
 	public Value convertOnWrite(Object proppertyVal, DatastorePersistentProperty persistentProperty) {
+		return convertOnWrite(proppertyVal, persistentProperty.isEmbedded(),
+				persistentProperty.getFieldName());
+	}
+
+	private Value convertOnWrite(Object proppertyVal, boolean isEmbedded,
+			String fieldName) {
 		Object val = proppertyVal;
 
-		Function<Object, Value> writeConverter = (persistentProperty.isEmbedded() && val != null)
-				? (Object value) -> convertOnWriteSingleEmbedded(value, persistentProperty.getFieldName())
+		Function<Object, Value> writeConverter = (isEmbedded && val != null)
+				? (Object value) -> convertOnWriteSingleEmbedded(value, fieldName)
 				: this::convertOnWriteSingle;
 
 		//Check if property is a non-null array
 		if (val != null && val.getClass().isArray() && val.getClass() != byte[].class) {
-			//if a propperty is an array, convert it to list
+			// if a property is an array, convert it to list
 			val = CollectionUtils.arrayToList(val);
 		}
 
@@ -242,7 +248,17 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		IncompleteKey key = this.objectToKeyFactory.getIncompleteKey(kindName);
 
 		FullEntity.Builder<IncompleteKey> builder = FullEntity.newBuilder(key);
-		this.datastoreEntityConverter.write(val, builder);
+		// Write an embedded Map
+		if (val instanceof Map) {
+			Map<String, ?> map = (Map<String, ?>) val;
+			for (String field : map.keySet()) {
+				builder.set(field, convertOnWrite(map.get(field), false, field));
+			}
+		}
+		// Write an embedded POJO
+		else {
+			this.datastoreEntityConverter.write(val, builder);
+		}
 		return EntityValue.of(builder.build());
 	}
 

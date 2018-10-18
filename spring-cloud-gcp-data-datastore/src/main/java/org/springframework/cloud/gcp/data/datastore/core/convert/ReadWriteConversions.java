@@ -61,10 +61,12 @@ public interface ReadWriteConversions {
 	/**
 	 * Converts a given object to a {@code Map} representing the embedded entity.
 	 * @param val the value to convert.
+	 * @param targetComponentType the type of the property to convert. For collection-like
 	 * @param targetComponentType type metadata for the values of the map
 	 * @return an object of a target type.
 	 */
-	<T> T convertOnReadEmbeddedMap(BaseEntity val, TypeInformation targetComponentType);
+	<T> T convertOnReadEmbeddedMap(BaseEntity val, Class targetCollectionType,
+			TypeInformation targetComponentType);
 
 	/**
 	 * Converts an object to a Cloud Datastore {@link Value}
