@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -59,7 +60,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 	public Iterable<T> findAll(Sort sort) {
 		Assert.notNull(sort, "A non-null Sort is required.");
 		return this.datastoreTemplate
-				.findAll(this.entityType, -1, -1, sort);
+				.findAll(this.entityType, new DatastoreQueryOptions(null, null, sort));
 	}
 
 	@Override
@@ -67,8 +68,9 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 		Assert.notNull(pageable, "A non-null Pageable is required.");
 		return new PageImpl<>(
 				new ArrayList<>(this.datastoreTemplate
-						.findAll(this.entityType, pageable.getPageSize(), (int) pageable.getOffset(),
-								pageable.getSort())),
+						.findAll(this.entityType,
+								new DatastoreQueryOptions(pageable.getPageSize(), (int) pageable.getOffset(),
+										pageable.getSort()))),
 				pageable, this.datastoreTemplate.count(this.entityType));
 	}
 

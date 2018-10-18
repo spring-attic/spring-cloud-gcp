@@ -186,29 +186,32 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> Collection<T> findAll(Class<T> entityClass) {
-		return findAll(entityClass, null, null, null);
+		return findAll(entityClass, null);
 	}
 
 	@Override
-	public <T> Collection<T> findAll(Class<T> entityClass, Integer limit, Integer offset, Sort sort) {
+	public <T> Collection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions) {
 		DatastorePersistentEntity<?> persistentEntity = this.datastoreMappingContext.getPersistentEntity(entityClass);
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder()
 				.setKind(persistentEntity.kindName());
-		applyLimitOffsetSort(builder, limit, offset, sort, persistentEntity);
+		applyQueryOptions(builder, queryOptions, persistentEntity);
 
 		return convertEntitiesForRead(this.datastore.run(builder.build()), entityClass);
 	}
 
-	public static void applyLimitOffsetSort(StructuredQuery.Builder builder, Integer limit, Integer offset, Sort sort,
+	public static void applyQueryOptions(StructuredQuery.Builder builder, DatastoreQueryOptions queryOptions,
 			DatastorePersistentEntity<?> persistentEntity) {
-		if (limit != null) {
-			builder.setLimit(limit);
+		if (queryOptions == null) {
+			return;
 		}
-		if (offset != null) {
-			builder.setOffset(offset);
+		if (queryOptions.getLimit() != null) {
+			builder.setLimit(queryOptions.getLimit());
 		}
-		if (sort != null && persistentEntity != null) {
-			sort.stream()
+		if (queryOptions.getOffset() != null) {
+			builder.setOffset(queryOptions.getOffset());
+		}
+		if (queryOptions.getSort() != null && persistentEntity != null) {
+			queryOptions.getSort().stream()
 					.map(order -> createOrderBy(persistentEntity, order))
 					.forEachOrdered(orderBy -> builder.addOrderBy(orderBy));
 		}

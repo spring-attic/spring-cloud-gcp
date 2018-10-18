@@ -23,8 +23,6 @@ import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 
-import org.springframework.data.domain.Sort;
-
 /**
  * An interface of operations that can be done with Cloud Datastore.
  *
@@ -166,13 +164,11 @@ public interface DatastoreOperations {
 	/**
 	 * Get all the entities of the given domain type applying limit, offset and sort
 	 * @param entityClass the domain type to get.
-	 * @param limit max number of entities to return, null means no limit
-	 * @param offset number of entities to skip, null means no offset
-	 * @param sort sort order and properties
+	 * @param queryOptions query options
 	 * @param <T> the type param of the domain type.
 	 * @return the entities that were found.
 	 */
-	<T> Collection<T> findAll(Class<T> entityClass, Integer limit, Integer offset, Sort sort);
+	<T> Collection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions);
 
 	/**
 	 * Check if the given ID belongs to an entity in Cloud Datastore. If this is actually

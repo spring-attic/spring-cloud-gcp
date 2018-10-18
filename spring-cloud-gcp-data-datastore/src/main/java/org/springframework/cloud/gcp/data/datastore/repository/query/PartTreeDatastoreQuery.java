@@ -35,6 +35,7 @@ import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.Filter;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
@@ -152,8 +153,8 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		else if (this.tree.isLimiting()) {
 			limit = this.tree.getMaxResults();
 		}
-		this.datastoreTemplate.applyLimitOffsetSort(
-				builder, limit, null, this.tree.getSort(), this.datastorePersistentEntity);
+		this.datastoreTemplate.applyQueryOptions(
+				builder, new DatastoreQueryOptions(limit, null, this.tree.getSort()), this.datastorePersistentEntity);
 		return builder.build();
 	}
 
