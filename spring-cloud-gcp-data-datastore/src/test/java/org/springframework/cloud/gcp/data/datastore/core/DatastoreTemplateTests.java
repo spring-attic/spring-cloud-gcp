@@ -31,6 +31,7 @@ import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.KeyQuery;
+import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.Query.ResultType;
 import com.google.cloud.datastore.QueryResults;
@@ -45,6 +46,7 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFact
 import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Reference;
 import org.springframework.data.annotation.Id;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -96,11 +98,19 @@ public class DatastoreTemplateTests {
 
 	private final Key key2 = createFakeKey("key2");
 
+	private final Key keyChild1 = createFakeKey("key3");
+
 	private final Key badKey = createFakeKey("badkey");
 
-	private final Entity e1 = Entity.newBuilder(this.key1).build();
+	private final Entity e1 = Entity.newBuilder(this.key1)
+			.set("singularReference", this.keyChild1)
+			.set("multipleReference", Collections.singletonList(KeyValue.of(keyChild1)))
+			.build();
 
-	private final Entity e2 = Entity.newBuilder(this.key2).build();
+	private final Entity e2 = Entity.newBuilder(this.key2)
+			.set("singularReference", this.keyChild1)
+			.set("multipleReference", Collections.singletonList(KeyValue.of(keyChild1)))
+			.build();
 
 	private TestEntity ob1;
 
@@ -135,10 +145,10 @@ public class DatastoreTemplateTests {
 		this.ob1.id = "value1";
 		this.ob2.id = "value2";
 
-		Entity ce1 = Entity.newBuilder(createFakeKey("key3")).build();
+		Entity ce1 = Entity.newBuilder(this.keyChild1).build();
 
 		Query childTestEntityQuery = Query.newEntityQueryBuilder().setKind("child_entity")
-				.setFilter(PropertyFilter.hasAncestor(key1)).build();
+				.setFilter(PropertyFilter.hasAncestor(this.key1)).build();
 
 		this.childEntity1 = new ChildEntity();
 		this.childEntity1.id = "child_id";
@@ -156,7 +166,13 @@ public class DatastoreTemplateTests {
 					.forEachRemaining(invocation.getArgument(0));
 			return null;
 		}).when(testEntityQueryResults).forEachRemaining(any());
+		setUpConverters(ce1, childTestEntityQuery, childTestEntityQueryResults, testEntityQueryResults);
 
+
+	}
+
+	private void setUpConverters(Entity ce1, Query childTestEntityQuery,
+			QueryResults childTestEntityQueryResults, QueryResults testEntityQueryResults) {
 		// mocking the converter to return the final objects corresponding to their
 		// specific entities.
 		when(this.datastoreEntityConverter.read(eq(TestEntity.class), eq(this.e1)))
@@ -175,14 +191,26 @@ public class DatastoreTemplateTests {
 
 		// Because get() takes varags, there is difficulty in matching the single param
 		// case using just thenReturn.
-		doAnswer(invocation -> invocation.getArgument(0) == this.key1
-				? ImmutableList.of(this.e1).iterator()
-				: null).when(this.datastore).get((Key[]) any());
+		doAnswer(invocation -> {
+			Object key = invocation.getArgument(0);
+			Iterator<Entity> result = null;
+			if (key instanceof Key) {
+				if (key == this.key1) {
+					result = ImmutableList.of(this.e1).iterator();
+				}
+				else if (key == this.keyChild1) {
+					result = ImmutableList.of(ce1).iterator();
+				}
+			}
+			return result;
+		}).when(this.datastore).get((Key[]) any());
 
 		when(this.objectToKeyFactory.getKeyFromId(eq(this.key1), any()))
 				.thenReturn(this.key1);
 		when(this.objectToKeyFactory.getKeyFromId(eq(this.key2), any()))
 				.thenReturn(this.key2);
+		when(this.objectToKeyFactory.getKeyFromId(eq(this.keyChild1), any()))
+				.thenReturn(this.keyChild1);
 		when(this.objectToKeyFactory.getKeyFromId(eq(this.badKey), any()))
 				.thenReturn(this.badKey);
 
@@ -203,7 +231,7 @@ public class DatastoreTemplateTests {
 		});
 
 		Iterator<Entity> e1 = Collections
-				.singletonList(Entity.newBuilder(this.key1).build())
+				.singletonList(this.e1)
 				.iterator();
 		when(transactionContext.get(ArgumentMatchers.<Key[]>any())).thenReturn(e1);
 
@@ -216,15 +244,16 @@ public class DatastoreTemplateTests {
 
 		assertEquals("all done", finalResult);
 		verify(transactionContext, times(1)).put((FullEntity<?>) any());
-		verify(transactionContext, times(1)).get((Key[]) any());
+		verify(transactionContext, times(3)).get((Key[]) any());
 	}
 
 	@Test
 	public void findByIdTest() {
-
 		TestEntity result = this.datastoreTemplate.findById(this.key1, TestEntity.class);
 		assertEquals(this.ob1, result);
 		assertThat(result.childEntities, contains(this.childEntity1));
+		assertEquals(result.singularReference, this.childEntity1);
+		assertThat(result.multipleReference, contains(this.childEntity1));
 	}
 
 	@Test
@@ -247,7 +276,8 @@ public class DatastoreTemplateTests {
 	public void saveTest() {
 		when(this.datastore.put((FullEntity<?>) any())).thenReturn(this.e1);
 		assertTrue(this.datastoreTemplate.save(this.ob1) instanceof TestEntity);
-		verify(this.datastore, times(1)).put(eq(this.e1));
+		Entity writtenEntity = Entity.newBuilder(this.key1).build();
+		verify(this.datastore, times(1)).put(eq(writtenEntity));
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
 	}
 
@@ -257,7 +287,8 @@ public class DatastoreTemplateTests {
 				.thenReturn(this.key1);
 		when(this.datastore.put((FullEntity<?>) any())).thenReturn(this.e1);
 		assertTrue(this.datastoreTemplate.save(this.ob1) instanceof TestEntity);
-		verify(this.datastore, times(1)).put(eq(this.e1));
+		Entity writtenEntity1 = Entity.newBuilder(this.key1).build();
+		verify(this.datastore, times(1)).put(eq(writtenEntity1));
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
 	}
 
@@ -272,7 +303,9 @@ public class DatastoreTemplateTests {
 				.thenReturn(ImmutableList.of(this.e1, this.e2));
 
 		this.datastoreTemplate.saveAll(ImmutableList.of(this.ob1, this.ob2));
-		verify(this.datastore, times(1)).put(eq(this.e1), eq(this.e2));
+		Entity writtenEntity1 = Entity.newBuilder(this.key1).build();
+		Entity writtenEntity2 = Entity.newBuilder(this.key2).build();
+		verify(this.datastore, times(1)).put(eq(writtenEntity1), eq(writtenEntity2));
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob2), notNull());
 	}
@@ -372,6 +405,12 @@ public class DatastoreTemplateTests {
 
 		@Descendants
 		LinkedList<ChildEntity> childEntities;
+
+		@Reference
+		ChildEntity singularReference;
+
+		@Reference
+		LinkedList<ChildEntity> multipleReference;
 
 		@Override
 		public boolean equals(Object other) {

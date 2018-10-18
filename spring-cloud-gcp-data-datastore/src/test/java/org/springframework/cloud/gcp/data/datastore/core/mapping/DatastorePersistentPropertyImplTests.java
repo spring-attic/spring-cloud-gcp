@@ -21,7 +21,6 @@ import java.util.List;
 import org.junit.Test;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.PropertyHandler;
 
@@ -85,9 +84,33 @@ public class DatastorePersistentPropertyImplTests {
 	}
 
 	@Test(expected = DatastoreDataException.class)
+	public void embeddedDescendantAnnotatedTest() {
+		this.datastoreMappingContext
+				.getPersistentEntity(EmbeddedDescendantAnnotatedEntity.class);
+	}
+
+	@Test(expected = DatastoreDataException.class)
 	public void embeddedReferenceAnnotatedTest() {
 		this.datastoreMappingContext
 				.getPersistentEntity(EmbeddedReferenceAnnotatedEntity.class);
+	}
+
+	@Test(expected = DatastoreDataException.class)
+	public void referenceDescendantAnnotatedTest() {
+		this.datastoreMappingContext
+				.getPersistentEntity(DescendantReferenceAnnotatedEntity.class);
+	}
+
+	@Test(expected = DatastoreDataException.class)
+	public void fieldDescendantAnnotatedTest() {
+		this.datastoreMappingContext
+				.getPersistentEntity(DescendantFieldAnnotatedEntity.class);
+	}
+
+	@Test(expected = DatastoreDataException.class)
+	public void fieldReferenceAnnotatedTest() {
+		this.datastoreMappingContext
+				.getPersistentEntity(FieldReferenceAnnotatedEntity.class);
 	}
 
 	@Entity(name = "custom_test_kind")
@@ -125,9 +148,33 @@ public class DatastorePersistentPropertyImplTests {
 		List untypedList;
 	}
 
-	private static class EmbeddedReferenceAnnotatedEntity {
+	private static class EmbeddedDescendantAnnotatedEntity {
 		@Embedded
 		@Descendants
+		TestSubEntity[] subEntity;
+	}
+
+	private static class EmbeddedReferenceAnnotatedEntity {
+		@Embedded
+		@Reference
+		TestSubEntity[] subEntity;
+	}
+
+	private static class DescendantReferenceAnnotatedEntity {
+		@Descendants
+		@Reference
+		TestSubEntity[] subEntity;
+	}
+
+	private static class FieldReferenceAnnotatedEntity {
+		@Field(name = "name")
+		@Reference
+		TestSubEntity[] subEntity;
+	}
+
+	private static class DescendantFieldAnnotatedEntity {
+		@Descendants
+		@Field(name = "name")
 		TestSubEntity[] subEntity;
 	}
 }

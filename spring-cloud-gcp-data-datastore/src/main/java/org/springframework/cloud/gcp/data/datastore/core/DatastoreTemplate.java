@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.BaseEntity;
@@ -34,6 +35,7 @@ import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
+import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
@@ -41,6 +43,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -236,17 +239,58 @@ public class DatastoreTemplate implements DatastoreOperations {
 		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(entityClass);
 
-		entities.forEachRemaining(entity -> convertEntityResolveDescendants(entityClass,
+		entities.forEachRemaining(entity -> convertEntityResolveDescendantsAndReferences(
+				entityClass,
 				results, datastorePersistentEntity, entity));
 		return results;
 	}
 
-	private <T> void convertEntityResolveDescendants(Class<T> entityClass,
+	private <T> void convertEntityResolveDescendantsAndReferences(Class<T> entityClass,
 			List<T> results, DatastorePersistentEntity datastorePersistentEntity,
 			BaseEntity entity) {
 		T convertedObject = this.datastoreEntityConverter.read(entityClass, entity);
 		results.add(convertedObject);
 
+		resolveDescendantProperties(datastorePersistentEntity, entity, convertedObject);
+		resolveReferenceProperties(datastorePersistentEntity, entity, convertedObject);
+	}
+
+	private <T> void resolveReferenceProperties(DatastorePersistentEntity datastorePersistentEntity,
+			BaseEntity entity, T convertedObject) {
+		datastorePersistentEntity.doWithReferenceProperties(
+				(PropertyHandler<DatastorePersistentProperty>) referencePersistentProperty -> {
+					String fieldName = referencePersistentProperty.getFieldName();
+					try {
+						Object referenced;
+						if (referencePersistentProperty.isCollectionLike()) {
+							Class referencedType = referencePersistentProperty.getComponentType();
+							List<Value<Key>> keyValues = entity.getList(fieldName);
+							referenced = this.datastoreEntityConverter.getConversions()
+									.convertOnRead(
+											findAllById(
+													keyValues.stream().map(x -> x.get())
+															.collect(Collectors.toList()),
+													referencedType),
+											referencePersistentProperty.getType(),
+											referencedType);
+						}
+						else {
+							referenced = findById(entity.getKey(fieldName),
+									referencePersistentProperty.getType());
+						}
+						datastorePersistentEntity.getPropertyAccessor(convertedObject)
+								.setProperty(referencePersistentProperty, referenced);
+					}
+					catch (ClassCastException e) {
+						throw new DatastoreDataException(
+								"Reference properties must be stored Keys or lists of Keys"
+										+ " in Cloud Datastore for singular or multiple references, respectively.");
+					}
+				});
+	}
+
+	private <T> void resolveDescendantProperties(DatastorePersistentEntity datastorePersistentEntity,
+			BaseEntity entity, T convertedObject) {
 		datastorePersistentEntity
 				.doWithDescendantProperties(descendantPersistentProperty -> {
 

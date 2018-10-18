@@ -64,4 +64,15 @@ public interface DatastorePersistentEntity<T> extends
 	 */
 	void doWithDescendantProperties(
 			PropertyHandler<DatastorePersistentProperty> handler);
+
+	/**
+	 * Applies the given {@link PropertyHandler} to all
+	 * {@link DatastorePersistentProperty} contained in this
+	 * {@link DatastorePersistentEntity} that are properties stored as keys referring to other
+	 * entities in Cloud Datastore.
+	 *
+	 * @param handler must not be {@literal null}.
+	 */
+	void doWithReferenceProperties(
+			PropertyHandler<DatastorePersistentProperty> handler);
 }
