@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManager;
 import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +38,7 @@ public class GcpDatastoreAutoConfigurationTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpDatastoreAutoConfiguration.class,
-					GcpContextAutoConfiguration.class,
+					GcpContextAutoConfiguration.class, DatastoreTransactionManagerAutoConfiguration.class,
 					DatastoreRepositoriesAutoConfiguration.class))
 			.withUserConfiguration(TestConfiguration.class)
 			.withPropertyValues("spring.cloud.gcp.datastore.project-id=test-project",
@@ -51,6 +52,17 @@ public class GcpDatastoreAutoConfigurationTests {
 	@Test
 	public void testTestRepositoryCreated() {
 		this.contextRunner.run(context -> assertThat(context.getBean(TestRepository.class)).isNotNull());
+	}
+
+	@Test
+	public void datastoreTransactionManagerCreated() {
+		this.contextRunner.run(context -> {
+			DatastoreTransactionManager transactionManager = context
+					.getBean(DatastoreTransactionManager.class);
+			assertThat(transactionManager).isNotNull();
+			assertThat(transactionManager)
+					.isInstanceOf(DatastoreTransactionManager.class);
+		});
 	}
 
 	@AutoConfigurationPackage
