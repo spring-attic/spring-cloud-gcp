@@ -1,8 +1,9 @@
-package org.springframework.cloud.gcp.security.iap.web;
+package org.springframework.cloud.gcp.security.iap;
 
-import com.google.common.collect.ImmutableList;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.Collections;
 
 public final class IapAuthentication extends AbstractAuthenticationToken {
 
@@ -12,7 +13,7 @@ public final class IapAuthentication extends AbstractAuthenticationToken {
 	private final String jwtToken;
 
 	public IapAuthentication(String email, String subject, String jwtToken) {
-		super(ImmutableList.of(new SimpleGrantedAuthority(DEFAULT_ROLE)));
+		super(Collections.singletonList(new SimpleGrantedAuthority(DEFAULT_ROLE)));
 		this.email = email;
 		this.subject = subject;
 		this.jwtToken = jwtToken;

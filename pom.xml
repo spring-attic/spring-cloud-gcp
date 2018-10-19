@@ -46,6 +46,7 @@
 		<spring-cloud-stream.version>Fishtown.BUILD-SNAPSHOT</spring-cloud-stream.version>
 		<zipkin-gcp.version>0.8.3</zipkin-gcp.version>
 		<app-engine-maven-plugin.version>1.3.2</app-engine-maven-plugin.version>
+		<spring-security-oauth.version>2.3.3.RELEASE</spring-security-oauth.version>
 	</properties>
 
 	<dependencyManagement>
@@ -100,6 +101,11 @@
 				<version>${zipkin-gcp.version}</version>
 			</dependency>
 
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-oauth2</artifactId>
+				<version>${spring-security-oauth.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

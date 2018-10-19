@@ -73,6 +73,11 @@
 				<artifactId>spring-cloud-gcp-pubsub-stream-binder</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-security-iap</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!--Starters-->
 			<dependency>
@@ -123,6 +128,11 @@
 			<dependency>
 				<groupId>org.springframework.cloud</groupId>
 				<artifactId>spring-cloud-gcp-starter-logging</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-starter-security-iap</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
