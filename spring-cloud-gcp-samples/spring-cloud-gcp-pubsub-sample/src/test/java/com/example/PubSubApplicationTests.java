@@ -68,6 +68,8 @@ public class PubSubApplicationTests {
 
 	private static final String SAMPLE_TEST_SUBSCRIPTION2 = "pubsub-sample-test-exampleSubscription2";
 
+	private static final String SAMPLE_TEST_SUBSCRIPTION3 = "pubsub-sample-test-exampleSubscription3";
+
 	private static TopicAdminClient topicAdminClient;
 
 	private static SubscriptionAdminClient subscriptionAdminClient;
@@ -110,8 +112,11 @@ public class PubSubApplicationTests {
 		this.appUrl = "http://localhost:" + this.port;
 	}
 
+	@Before
 	@After
 	public void cleanupPubsubTestResources() {
+		clearSubscribers();
+
 		List<String> projectTopics = getTopicNamesFromProject();
 		String testTopicName = ProjectTopicName.format(projectName, SAMPLE_TEST_TOPIC);
 		if (projectTopics.contains(testTopicName)) {
@@ -120,7 +125,11 @@ public class PubSubApplicationTests {
 		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
 				.until(() -> !getTopicNamesFromProject().contains(testTopicName));
 
-		List<String> testSubscriptions = ImmutableList.of(SAMPLE_TEST_SUBSCRIPTION1, SAMPLE_TEST_SUBSCRIPTION2);
+		List<String> testSubscriptions = ImmutableList.of(
+				SAMPLE_TEST_SUBSCRIPTION1,
+				SAMPLE_TEST_SUBSCRIPTION2,
+				SAMPLE_TEST_SUBSCRIPTION3);
+
 		for (String testSubscription : testSubscriptions) {
 			String testSubscriptionName = ProjectSubscriptionName.format(
 					projectName, testSubscription);
@@ -160,27 +169,25 @@ public class PubSubApplicationTests {
 	@Test
 	public void testMultiPull() {
 		createTopic(SAMPLE_TEST_TOPIC);
-		createSubscription(SAMPLE_TEST_SUBSCRIPTION1, SAMPLE_TEST_TOPIC);
 		createSubscription(SAMPLE_TEST_SUBSCRIPTION2, SAMPLE_TEST_TOPIC);
+		createSubscription(SAMPLE_TEST_SUBSCRIPTION3, SAMPLE_TEST_TOPIC);
 		postMessage("HelloWorld", SAMPLE_TEST_TOPIC);
 		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-				.ignoreExceptions()
 				.untilAsserted(
 						() -> {
-							assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1))
-									.containsExactly("HelloWorld");
 							assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION2))
+									.containsExactly("HelloWorld");
+							assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION3))
 									.containsExactly("HelloWorld");
 						});
 
 		// After multi pull, the message will be acked by both subscriptions and no longer be present.
-		multiPull(SAMPLE_TEST_SUBSCRIPTION1, SAMPLE_TEST_SUBSCRIPTION2);
+		multiPull(SAMPLE_TEST_SUBSCRIPTION2, SAMPLE_TEST_SUBSCRIPTION3);
 		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-				.ignoreExceptions()
 				.untilAsserted(
 						() -> {
-							assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1)).isEmpty();
 							assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION2)).isEmpty();
+							assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION3)).isEmpty();
 						});
 	}
 
@@ -277,6 +284,12 @@ public class PubSubApplicationTests {
 		String url = UriComponentsBuilder.fromHttpUrl(appUrl + "/multipull")
 				.queryParam("subscription1", subscription1)
 				.queryParam("subscription2", subscription2)
+				.toUriString();
+		testRestTemplate.getForEntity(url, null, String.class);
+	}
+
+	private void clearSubscribers() {
+		String url = UriComponentsBuilder.fromHttpUrl(appUrl + "/clearSubscribers")
 				.toUriString();
 		testRestTemplate.getForEntity(url, null, String.class);
 	}
