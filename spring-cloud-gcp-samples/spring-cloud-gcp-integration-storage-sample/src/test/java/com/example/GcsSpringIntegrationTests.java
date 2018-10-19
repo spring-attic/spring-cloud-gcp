@@ -17,6 +17,7 @@
 package com.example;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,6 +31,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.common.collect.ImmutableList;
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -42,9 +44,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
@@ -97,9 +97,9 @@ public class GcsSpringIntegrationTests {
 	public void testFilePropagatedToLocalDirectory() {
 		BlobId blobId = BlobId.of(cloudInputBucket, TEST_FILE_NAME);
 		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain").build();
-		Blob blob = storage.create(blobInfo, "Hello World!".getBytes(UTF_8));
+		Blob blob = storage.create(blobInfo, "Hello World!".getBytes(StandardCharsets.UTF_8));
 
-		await().atMost(15, TimeUnit.SECONDS)
+		Awaitility.await().atMost(15, TimeUnit.SECONDS)
 				.untilAsserted(() -> {
 					Path outputFile = Paths.get(outputFolder + "/" + TEST_FILE_NAME);
 					assertThat(Files.exists(outputFile)).isTrue();

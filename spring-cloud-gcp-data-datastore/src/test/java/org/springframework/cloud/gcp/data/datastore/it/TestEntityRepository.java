@@ -43,10 +43,10 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	@Query("select id from  test_entities_ci where id <= @id_val ")
 	TestEntity[] findEntitiesWithCustomProjectionQuery(@Param("id_val") long id);
 
-	@Query(value = "select __key__ from test_entities_ci")
+	@Query("select __key__ from test_entities_ci")
 	Set<Key> getKeys();
 
-	@Query(value = "select __key__ from test_entities_ci limit 1")
+	@Query("select __key__ from test_entities_ci limit 1")
 	Key getKey();
 
 	// Also involves conversion from long id to String

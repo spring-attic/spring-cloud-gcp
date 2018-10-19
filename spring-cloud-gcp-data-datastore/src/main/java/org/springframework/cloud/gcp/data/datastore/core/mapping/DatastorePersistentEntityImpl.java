@@ -20,6 +20,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
+import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.expression.Expression;
@@ -98,6 +99,29 @@ public class DatastorePersistentEntityImpl<T>
 							+ getType());
 		}
 		return getIdProperty();
+	}
+
+	@Override
+	public void doWithColumnBackedProperties(
+			PropertyHandler<DatastorePersistentProperty> handler) {
+		doWithProperties(
+				(PropertyHandler<DatastorePersistentProperty>) datastorePersistentProperty -> {
+					if (!datastorePersistentProperty.isReference()
+							&& !datastorePersistentProperty.isDescendants()) {
+						handler.doWithPersistentProperty(datastorePersistentProperty);
+					}
+				});
+	}
+
+	@Override
+	public void doWithDescendantProperties(
+			PropertyHandler<DatastorePersistentProperty> handler) {
+		doWithProperties(
+				(PropertyHandler<DatastorePersistentProperty>) datastorePersistentProperty -> {
+					if (datastorePersistentProperty.isDescendants()) {
+						handler.doWithPersistentProperty(datastorePersistentProperty);
+					}
+				});
 	}
 
 	@Override

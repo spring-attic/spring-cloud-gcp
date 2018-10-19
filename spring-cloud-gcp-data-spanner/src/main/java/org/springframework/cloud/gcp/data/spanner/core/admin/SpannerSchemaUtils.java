@@ -29,15 +29,13 @@ import com.google.cloud.spanner.Type;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.util.Assert;
-
-import static org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper.getArrayTypeCodeForJavaType;
-import static org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper.getSimpleTypeCodeForJavaType;
 
 /**
  * Contains functions related to the table schema of entities.
@@ -175,7 +173,7 @@ public class SpannerSchemaUtils {
 					.getCorrespondingSpannerJavaType(innerType, true);
 
 			if (spannerColumnType == null) {
-				spannerColumnType = getSimpleTypeCodeForJavaType(spannerJavaType);
+				spannerColumnType = SpannerTypeMapper.getSimpleTypeCodeForJavaType(spannerJavaType);
 			}
 
 			if (spannerColumnType == null) {
@@ -199,8 +197,8 @@ public class SpannerSchemaUtils {
 
 		if (spannerColumnType == null) {
 			spannerColumnType = spannerJavaType.isArray()
-					? getArrayTypeCodeForJavaType(spannerJavaType)
-					: getSimpleTypeCodeForJavaType(spannerJavaType);
+					? SpannerTypeMapper.getArrayTypeCodeForJavaType(spannerJavaType)
+					: SpannerTypeMapper.getSimpleTypeCodeForJavaType(spannerJavaType);
 		}
 		if (spannerColumnType == null) {
 			throw new SpannerDataException(
