@@ -661,6 +661,15 @@ Cloud Datastore only supports filter components joined by AND, and the following
 
 After writing a custom repository interface specifying just the signatures of these methods, implementations are generated for you and can be used with an auto-wired instance of the repository.
 
+Delete queries are also supported. For example, query methods such as `deleteByAction` or `removeByAction` delete entities found by `findByAction`.
+Delete queries are executed as separate read and delete operations instead of as a single transaction because Cloud Datastore cannot query in transactions unless ancestors for queries are specified.
+As a result, `removeBy` and `deleteBy` name-convention query methods cannot be used inside transactions via either `performInTransaction` or `@Transactional` annotation.
+
+Delete queries can have the following return types:
+* An integer type that is the number of entities deleted
+* A collection of entities that were deleted
+* 'void'
+
 ==== Custom GQL query methods
 
 Custom GQL queries can be mapped to repository methods in one of two ways:

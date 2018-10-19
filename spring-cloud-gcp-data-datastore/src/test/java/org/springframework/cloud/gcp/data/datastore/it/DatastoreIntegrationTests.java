@@ -17,12 +17,14 @@
 package org.springframework.cloud.gcp.data.datastore.it;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
 import com.google.common.collect.ImmutableList;
+import org.awaitility.Awaitility;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,9 +54,7 @@ import static org.junit.Assume.assumeThat;
 public class DatastoreIntegrationTests {
 
 	// queries are eventually consistent, so we may need to retry a few times.
-	private static final int QUERY_WAIT_ATTEMPTS = 100;
-
-	private static final int QUERY_WAIT_INTERVAL_MILLIS = 1000;
+	private static final int QUERY_WAIT_INTERVAL_SECONDS = 15;
 
 	@Autowired
 	private TestEntityRepository testEntityRepository;
@@ -84,6 +84,21 @@ public class DatastoreIntegrationTests {
 		this.testEntityRepository.saveAll(
 				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
 
+		waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4);
+
+		assertEquals(4, this.testEntityRepository.deleteBySize(1L));
+
+		this.testEntityRepository.saveAll(
+				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
+
+		assertThat(
+				this.testEntityRepository.removeByColor("red").stream()
+						.map(x -> x.getId()).collect(Collectors.toList()),
+				containsInAnyOrder(1L, 3L, 4L));
+
+		this.testEntityRepository.saveAll(
+				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
+
 		assertNull(this.testEntityRepository.findById(1L).get().getBlobField());
 
 		testEntityA.setBlobField(Blob.copyFrom("testValueA".getBytes()));
@@ -93,20 +108,14 @@ public class DatastoreIntegrationTests {
 		assertEquals(Blob.copyFrom("testValueA".getBytes()),
 				this.testEntityRepository.findById(1L).get().getBlobField());
 
-		List<TestEntity> foundByCustomQuery = Collections.emptyList();
-		TestEntity[] foundByCustomProjectionQuery = new TestEntity[] {};
+		waitUntilTrue(
+				() -> this.testEntityRepository.countBySizeAndColor(1L, "red") == 3);
 
-		for (int i = 0; i < QUERY_WAIT_ATTEMPTS; i++) {
-			if (!foundByCustomQuery.isEmpty() && this.testEntityRepository
-					.countBySizeAndColor(1L, "red") == 3) {
-				break;
-			}
-			Thread.sleep(QUERY_WAIT_INTERVAL_MILLIS);
-			foundByCustomQuery = this.testEntityRepository
-					.findEntitiesWithCustomQuery(1L);
-			foundByCustomProjectionQuery = this.testEntityRepository
-					.findEntitiesWithCustomProjectionQuery(1L);
-		}
+		List<TestEntity> foundByCustomQuery = this.testEntityRepository
+				.findEntitiesWithCustomQuery(1L);
+		TestEntity[] foundByCustomProjectionQuery = this.testEntityRepository
+				.findEntitiesWithCustomProjectionQuery(1L);
+
 		assertEquals(1, this.testEntityRepository.countBySizeAndColor(1, "blue"));
 		assertEquals("blue", this.testEntityRepository.getById(2L).getColor());
 		assertEquals(3,
@@ -187,4 +196,8 @@ public class DatastoreIntegrationTests {
 		assertEquals(treeCollection, loaded);
 	}
 
+	private void waitUntilTrue(Supplier<Boolean> condition) throws InterruptedException {
+		Awaitility.await().atMost(QUERY_WAIT_INTERVAL_SECONDS, TimeUnit.SECONDS)
+				.untilAsserted(() -> assertTrue(condition.get()));
+	}
 }
