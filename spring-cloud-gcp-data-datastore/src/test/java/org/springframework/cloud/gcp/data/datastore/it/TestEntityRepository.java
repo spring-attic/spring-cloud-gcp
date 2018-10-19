@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.it;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import com.google.cloud.datastore.Key;
@@ -35,6 +36,12 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 
 	@Query(value = "select size from  test_entities_ci where size <= @size", count = true)
 	int countEntitiesWithCustomQuery(@Param("size") long size);
+
+	int countBySize(long size);
+
+	int deleteBySize(long size);
+
+	List<TestEntity> removeByColor(String color);
 
 	@Query(value = "select __key__ from  test_entities_ci "
 			+ "where id = @id_val", exists = true)

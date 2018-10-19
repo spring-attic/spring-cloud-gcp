@@ -30,10 +30,13 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
+import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
+import org.springframework.cloud.gcp.data.datastore.it.TestEntity;
 import org.springframework.data.annotation.Id;
 
 import static org.junit.Assert.assertEquals;
@@ -62,11 +65,22 @@ public class PartTreeDatastoreQueryTests {
 
 	private PartTreeDatastoreQuery partTreeSpannerQuery;
 
+	private DatastoreEntityConverter datastoreEntityConverter;
+
+	private ReadWriteConversions readWriteConversions;
+
 	@Before
 	public void initMocks() {
 		this.queryMethod = mock(DatastoreQueryMethod.class);
+		when(this.queryMethod.getReturnedObjectType()).thenReturn((Class) TestEntity.class);
 		this.spannerTemplate = mock(DatastoreTemplate.class);
 		this.spannerMappingContext = new DatastoreMappingContext();
+		this.datastoreEntityConverter = mock(DatastoreEntityConverter.class);
+		this.readWriteConversions = mock(ReadWriteConversions.class);
+		when(this.spannerTemplate.getDatastoreEntityConverter())
+				.thenReturn(this.datastoreEntityConverter);
+		when(this.datastoreEntityConverter.getConversions())
+				.thenReturn(readWriteConversions);
 	}
 
 	private PartTreeDatastoreQuery<Trade> createQuery() {
@@ -97,8 +111,10 @@ public class PartTreeDatastoreQueryTests {
 
 			assertEquals(expected, statement);
 
-			return null;
+					return Collections.emptyList();
 		});
+
+		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
 		this.partTreeSpannerQuery.execute(params);
 		verify(this.spannerTemplate, times(1))
@@ -129,16 +145,6 @@ public class PartTreeDatastoreQueryTests {
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, new ArrayList<>() };
 
 		this.partTreeSpannerQuery.execute(params);
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	public void deleteTest() {
-		// delete is not supported
-		when(this.queryMethod.getName()).thenReturn("deleteByAction");
-
-		this.partTreeSpannerQuery = createQuery();
-
-		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
 	}
 
 	@Test(expected = DatastoreDataException.class)
