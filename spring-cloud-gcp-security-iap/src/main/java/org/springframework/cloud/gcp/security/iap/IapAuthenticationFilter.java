@@ -28,7 +28,7 @@ public class IapAuthenticationFilter implements Filter {
 		LOGGER.info("In IapAuthenticationFilter");
 
 		String assertion = request.getHeader("x-goog-iap-jwt-assertion");
-		
+
 		if (assertion != null) {
 			Authentication authentication = this.verifyIapRequestHeader.verifyAndExtractPrincipal(
 					request.getHeader("x-goog-iap-jwt-assertion"), "TODO: either specify here or at filter level");
