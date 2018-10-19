@@ -758,4 +758,30 @@ This feature is not supported yet.
 
 ==== REST Repositories
 
-This feature is not supported yet.
+When running with Spring Boot, repositories can be exposed as REST services by simply adding this dependency to your pom file:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-data-rest</artifactId>
+</dependency>
+----
+
+If you prefer to configure parameters (such as path), you can use `@RepositoryRestResource` annotation:
+[source,java]
+----
+@RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
+public interface TradeRepository extends CrudRepository<Trade, String[]> {
+}
+----
+
+For example, you can retrieve all `Trade` objects in the repository by using
+`curl \http://<server>:<port>/trades`, or any specific trade via
+`curl \http://<server>:<port>/trades/<trader_id>`.
+
+You can also write trades using
+`curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/`
+where the file `test.json` holds the JSON representation of a `Trade` object.
+
+To delete trades, you can use `curl -XDELETE \http://<server>:<port>/trades/<trader_id>`

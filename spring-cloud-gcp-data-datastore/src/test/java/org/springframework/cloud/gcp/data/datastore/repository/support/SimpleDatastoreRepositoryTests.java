@@ -23,9 +23,9 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import static org.junit.Assert.assertEquals;
@@ -121,16 +121,6 @@ public class SimpleDatastoreRepositoryTests {
 		verify(this.datastoreTemplate, times(1)).deleteAll(eq(Object.class));
 	}
 
-	@Test(expected = DatastoreDataException.class)
-	public void findAllSortingTest() {
-		this.simpleDatastoreRepository.findAll(mock(Sort.class));
-	}
-
-	@Test(expected = DatastoreDataException.class)
-	public void findAllPagingTest() {
-		this.simpleDatastoreRepository.findAll(mock(Pageable.class));
-	}
-
 	@Test
 	public void runTransactionCallableTest() {
 		when(this.datastoreTemplate.performTransaction(any())).thenAnswer(invocation -> {
@@ -142,4 +132,34 @@ public class SimpleDatastoreRepositoryTests {
 						Object.class).performTransaction(repo -> "test"));
 	}
 
+	@Test
+	public void findAllPageableAsc() {
+		this.simpleDatastoreRepository.findAll(PageRequest.of(0, 5, Sort.Direction.ASC, "property1"));
+
+		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
+				eq(new DatastoreQueryOptions(5, 0, new Sort(Sort.Direction.ASC, "property1"))));
+	}
+
+	@Test
+	public void findAllPageableDesc() {
+		this.simpleDatastoreRepository.findAll(PageRequest.of(1, 5, Sort.Direction.DESC, "property1", "property2"));
+		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
+				eq(new DatastoreQueryOptions(5, 5,
+						Sort.by(
+								new Sort.Order(Sort.Direction.DESC, "property1"),
+								new Sort.Order(Sort.Direction.DESC, "property2")))));
+	}
+
+	@Test
+	public void findAllSortAsc() {
+		this.simpleDatastoreRepository.findAll(Sort.by(
+				new Sort.Order(Sort.Direction.DESC, "property1"),
+				new Sort.Order(Sort.Direction.ASC, "property2")));
+		verify(this.datastoreTemplate, times(1)).findAll(eq(Object.class),
+				eq(new DatastoreQueryOptions(null, null,
+						Sort.by(
+								new Sort.Order(Sort.Direction.DESC, "property1"),
+								new Sort.Order(Sort.Direction.ASC, "property2")))));
+
+	}
 }

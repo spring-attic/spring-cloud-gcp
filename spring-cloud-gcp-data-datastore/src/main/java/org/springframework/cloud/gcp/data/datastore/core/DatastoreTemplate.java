@@ -34,6 +34,7 @@ import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
+import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import com.google.cloud.datastore.Value;
 
@@ -43,6 +44,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionStatus;
@@ -193,12 +195,35 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> Collection<T> findAll(Class<T> entityClass) {
-		return convertEntitiesForRead(
-				getDatastoreReadWriter().run(Query.newEntityQueryBuilder()
-						.setKind(this.datastoreMappingContext
-								.getPersistentEntity(entityClass).kindName())
-						.build()),
-				entityClass);
+		return findAll(entityClass, null);
+	}
+
+	@Override
+	public <T> Collection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions) {
+		DatastorePersistentEntity<?> persistentEntity = this.datastoreMappingContext.getPersistentEntity(entityClass);
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder()
+				.setKind(persistentEntity.kindName());
+		applyQueryOptions(builder, queryOptions, persistentEntity);
+
+		return convertEntitiesForRead(getDatastoreReadWriter().run(builder.build()), entityClass);
+	}
+
+	public static void applyQueryOptions(StructuredQuery.Builder builder, DatastoreQueryOptions queryOptions,
+			DatastorePersistentEntity<?> persistentEntity) {
+		if (queryOptions == null) {
+			return;
+		}
+		if (queryOptions.getLimit() != null) {
+			builder.setLimit(queryOptions.getLimit());
+		}
+		if (queryOptions.getOffset() != null) {
+			builder.setOffset(queryOptions.getOffset());
+		}
+		if (queryOptions.getSort() != null && persistentEntity != null) {
+			queryOptions.getSort().stream()
+					.map(order -> createOrderBy(persistentEntity, order))
+					.forEachOrdered(orderBy -> builder.addOrderBy(orderBy));
+		}
 	}
 
 	@Override
@@ -220,6 +245,15 @@ public class DatastoreTemplate implements DatastoreOperations {
 						DatastoreTemplate.this.datastoreEntityConverter,
 						DatastoreTemplate.this.datastoreMappingContext,
 						DatastoreTemplate.this.objectToKeyFactory)));
+	}
+
+	private static StructuredQuery.OrderBy createOrderBy(DatastorePersistentEntity<?> persistentEntity,
+			Sort.Order order) {
+		return new StructuredQuery.OrderBy(
+				persistentEntity.getPersistentProperty(order.getProperty()).getFieldName(),
+				order.getDirection() == Sort.Direction.DESC
+						? StructuredQuery.OrderBy.Direction.DESCENDING
+						: StructuredQuery.OrderBy.Direction.ASCENDING);
 	}
 
 	private Entity convertToEntityForSave(Object entity) {
