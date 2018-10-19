@@ -3,7 +3,7 @@ package org.springframework.cloud.gcp.autoconfigure.security;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gcp.security.iap.web.IapAuthenticationFilter;
 import org.springframework.cloud.gcp.security.iap.web.VerifyIapRequestHeader;
-import org.springframework.cloud.gcp.security.iap.web.WebSecurityConfig;
+import org.springframework.cloud.gcp.security.iap.web.IapWebSecurityConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -26,6 +26,6 @@ public class IapAuthenticationAutoConfiguration {
 
 	@Bean
 	public WebSecurityConfigurerAdapter webSecurityConfigurerAdapter() {
-		return new WebSecurityConfig();
+		return new IapWebSecurityConfig();
 	}
 }

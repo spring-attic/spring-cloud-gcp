@@ -193,7 +193,7 @@ public class VerifyIapRequestHeader {
 
 		System.out.println("IAP_FILTER: email = " + email);
 		System.out.println("IAP_FILTER: subject = " + claims.getSubject());
-		return new IapAuthentication(email, claims.getSubject());
+		return new IapAuthentication(email, claims.getSubject(), jwtToken);
 
 
 	}

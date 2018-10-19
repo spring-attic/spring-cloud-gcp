@@ -1,26 +1,26 @@
 package org.springframework.cloud.gcp.security.iap.web;
 
+import com.google.common.collect.ImmutableList;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.Collection;
+public final class IapAuthentication extends AbstractAuthenticationToken {
 
-public class IapAuthentication extends AbstractAuthenticationToken {
-
+	public static final String DEFAULT_ROLE = "ROLE_USER";
 	private final String email;
 	private final String subject;
+	private final String jwtToken;
 
-	public IapAuthentication(String email, String subject) {
-		super(AuthorityUtils
-				.commaSeparatedStringToAuthorityList("ROLE_CLIENT"));
+	public IapAuthentication(String email, String subject, String jwtToken) {
+		super(ImmutableList.of(new SimpleGrantedAuthority(DEFAULT_ROLE)));
 		this.email = email;
 		this.subject = subject;
+		this.jwtToken = jwtToken;
 	}
 
 	@Override
 	public Object getCredentials() {
-		return "[from IAP header]";
+		return this.jwtToken;
 	}
 
 	@Override
@@ -30,13 +30,6 @@ public class IapAuthentication extends AbstractAuthenticationToken {
 
 	@Override
 	public boolean isAuthenticated() {
-		return true;
-	}
-
-	@Override
-	public String toString() {
-		return "IapAuthentication{" +
-				"email='" + email + '\'' +
-				'}';
+		return email != null && !email.equals("");
 	}
 }

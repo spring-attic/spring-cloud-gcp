@@ -29,10 +29,13 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SpringBootWebSecurityConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.storage.GoogleStorageResource;
@@ -82,7 +85,8 @@ public class GcpStorageAutoConfigurationTests {
 	@SpringBootApplication(exclude = {
 			GcpContextAutoConfiguration.class,
 			GcpCloudSqlAutoConfiguration.class,
-			DataSourceAutoConfiguration.class
+			DataSourceAutoConfiguration.class,
+			SecurityAutoConfiguration.class
 	})
 	@RestController
 	static class StorageApplication {

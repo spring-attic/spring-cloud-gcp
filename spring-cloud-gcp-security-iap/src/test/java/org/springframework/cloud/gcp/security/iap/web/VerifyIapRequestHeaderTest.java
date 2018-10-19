@@ -10,9 +10,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.google.api.client.testing.http.HttpTesting;
 import com.google.api.client.testing.http.MockHttpTransport;
 
+// TODO: this can't exist as is. The token needs to be either signed by local authority (and verifier needs to take a strategy)
+// or heavily mocked, or both.
 @RunWith(SpringRunner.class)
-@SpringBootTest
-public class DemoApplicationTests {
+public class VerifyIapRequestHeaderTest {
 
 	@Test
 	public void contextLoads() throws Exception {

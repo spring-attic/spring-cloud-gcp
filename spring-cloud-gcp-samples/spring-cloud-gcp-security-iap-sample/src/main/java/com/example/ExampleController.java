@@ -42,7 +42,7 @@ public class ExampleController {
 	@RequestMapping("/topsecret")
 	public String secured() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		return "This is a very secured resource; you are: "
-				+ authentication.getPrincipal() + " as determined by " + authentication.getCredentials();
+		return String.format("You are [%s], as determined by [%s]\n",
+				authentication.getPrincipal(), authentication.getCredentials());
 	}
 }
