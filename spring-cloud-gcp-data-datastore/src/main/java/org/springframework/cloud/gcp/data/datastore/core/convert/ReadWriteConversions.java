@@ -53,10 +53,12 @@ public interface ReadWriteConversions {
 	 * {@code null} if the property is a singular object.
 	 * @param targetComponentType the type of the property to convert. For collection-like
 	 * properties this refers to the individual items' type.
+	 * @param isEmbeddedComponents {@code true} if the property is collection-like and its
+	 * items are individually stored as embedded entities.
 	 * @return an object of a target type.
 	 */
 	<T> T convertOnReadEmbedded(Object val, Class targetCollectionType,
-			Class targetComponentType);
+			Class targetComponentType, boolean isEmbeddedComponents);
 
 	/**
 	 * Converts a given object to a {@code Map} representing the embedded entity.

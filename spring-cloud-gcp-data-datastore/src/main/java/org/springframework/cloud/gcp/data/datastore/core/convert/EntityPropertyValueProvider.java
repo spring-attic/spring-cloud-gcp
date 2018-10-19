@@ -67,7 +67,7 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 		}
 		return getPropertyValue(persistentProperty.getFieldName(),
 				persistentProperty.isEmbedded(), isMap,
-				persistentProperty.embeddedMapValueIsEmbedded(), collectionType,
+				persistentProperty.isEmbeddedComponents(), collectionType,
 				singularType);
 	}
 
@@ -75,33 +75,37 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 	 * Get a property value from the entity.
 	 * @param fieldName the name of the field to get.
 	 * @param isEmbedded if the property is an embedded entity.
+	 * @param isEmbeddedComponents if the property is collection-like and contains
+	 * embedded items.
 	 * @param collectionType the collection type if the property is not singular. null if
 	 * the property is singular.
 	 * @param componentType the singular item type.
 	 * @return the property converted from the entity.
 	 */
 	public <T> T getPropertyValue(String fieldName, boolean isEmbedded,
+			boolean isEmbeddedComponents,
 			Class collectionType, Class componentType) {
-		return (T) getPropertyValue(fieldName, isEmbedded, false, false, collectionType,
+		return (T) getPropertyValue(fieldName, isEmbedded, false, isEmbeddedComponents,
+				collectionType,
 				ClassTypeInformation.from(componentType));
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T> T getPropertyValue(String fieldName, boolean isEmbedded, boolean isMap,
-			boolean embeddedMapValueIsEmbedded,
+			boolean isEmbeddedComponents,
 			Class collectionType, TypeInformation componentType) {
 		if (!this.entity.contains(fieldName)) {
 			return null;
 		}
 		try {
-			if (isEmbedded) {
+			if (isEmbedded || isEmbeddedComponents) {
 				return isMap
 						? this.conversion.convertOnReadEmbeddedMap(
 								this.entity.getEntity(fieldName), collectionType,
-								componentType, embeddedMapValueIsEmbedded)
+								componentType, isEmbeddedComponents)
 						: this.conversion.convertOnReadEmbedded(
 								this.entity.getValue(fieldName).get(), collectionType,
-								componentType.getType());
+								componentType.getType(), isEmbeddedComponents);
 			}
 			else {
 				return this.conversion.convertOnRead(

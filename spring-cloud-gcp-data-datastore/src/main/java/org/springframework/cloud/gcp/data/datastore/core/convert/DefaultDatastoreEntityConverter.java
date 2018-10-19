@@ -80,7 +80,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		for (String field : fieldNames) {
 			result.put(field,
 					propertyValueProvider.getPropertyValue(field,
-							embeddedMapValueIsEmbedded,
+							embeddedMapValueIsEmbedded, false,
 							type.isCollectionLike() ? type.getType() : null,
 							type.isCollectionLike() ? type.getComponentType().getType()
 									: type.getType()));

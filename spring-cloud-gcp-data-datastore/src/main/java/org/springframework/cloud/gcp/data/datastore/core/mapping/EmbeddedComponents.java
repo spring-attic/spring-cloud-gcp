@@ -23,8 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for Datastore property that indicates it holds a POJO stored as an embedded
- * entity.
+ * Annotation for a collection-like Datastore property that indicates the items it holds
+ * should be stored as embedded entities.
  *
  * @author Chengyuan Zhao
  *
@@ -33,5 +33,5 @@ import java.lang.annotation.Target;
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Embedded {
+public @interface EmbeddedComponents {
 }

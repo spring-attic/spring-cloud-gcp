@@ -97,9 +97,8 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	@Override
-	public boolean embeddedMapValueIsEmbedded() {
-		return isEmbedded() && getEmbeddedMapValueType() != null
-				&& findAnnotation(Embedded.class).MapValueTypeIsEmbedded();
+	public boolean isEmbeddedComponents() {
+		return findAnnotation(EmbeddedComponents.class) != null;
 	}
 
 	@Override

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedComponents;
 
 /**
  * @author Dmitry Solomakha
@@ -33,7 +34,7 @@ public class TestItemWithEmbeddedEntity {
 	@Embedded
 	private EmbeddedEntity embeddedEntityField;
 
-	@Embedded
+	@EmbeddedComponents
 	private List<EmbeddedEntity> listOfEmbeddedEntities;
 
 	@Embedded
@@ -42,10 +43,12 @@ public class TestItemWithEmbeddedEntity {
 	@Embedded
 	private Map<String, String[]> embeddedMapListOfValues;
 
-	@Embedded(MapValueTypeIsEmbedded = true)
+	@Embedded
+	@EmbeddedComponents
 	private Map<String, EmbeddedEntity> embeddedEntityMapEmbeddedEntity;
 
-	@Embedded(MapValueTypeIsEmbedded = true)
+	@Embedded
+	@EmbeddedComponents
 	private Map<String, List<EmbeddedEntity>> embeddedEntityMapListOfEmbeddedEntities;
 
 	public TestItemWithEmbeddedEntity(int intField, EmbeddedEntity embeddedEntityField,

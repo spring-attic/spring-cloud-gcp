@@ -106,8 +106,9 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	@Override
 	public <T> T convertOnReadEmbedded(Object val, Class targetCollectionType,
-			Class targetComponentType) {
-		return (T) convertOnRead(val, true, false, false, targetCollectionType,
+			Class targetComponentType, boolean isEmbeddedComponents) {
+		return (T) convertOnRead(val, !isEmbeddedComponents, false, isEmbeddedComponents,
+				targetCollectionType,
 				ClassTypeInformation.from(targetComponentType));
 	}
 
@@ -120,20 +121,18 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	@SuppressWarnings("unchecked")
 	private <T> T convertOnRead(Object val, boolean isEmbedded, boolean isEmbeddedMap,
-			boolean embeddedMapValueIsEmbedded,
+			boolean isEmbeddedComponents,
 			Class targetCollectionType, TypeInformation targetComponentType) {
 		if (val == null) {
 			return null;
 		}
 		BiFunction<Object, TypeInformation<?>, ?> readConverter;
-		if (isEmbedded) {
-			if (isEmbeddedMap) {
-				readConverter = (x, y) -> convertOnReadSingleEmbeddedMap(x, y,
-						embeddedMapValueIsEmbedded);
-			}
-			else {
-				readConverter = this::convertOnReadSingleEmbedded;
-			}
+		if (isEmbeddedMap) {
+			readConverter = (x, y) -> convertOnReadSingleEmbeddedMap(x, y,
+					isEmbeddedComponents);
+		}
+		else if (isEmbedded ^ isEmbeddedComponents) {
+			readConverter = this::convertOnReadSingleEmbedded;
 		}
 		else {
 			readConverter = this::convertOnReadSingle;
@@ -219,18 +218,19 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	@Override
 	public Value convertOnWrite(Object proppertyVal, DatastorePersistentProperty persistentProperty) {
 		return convertOnWrite(proppertyVal, persistentProperty.isEmbedded(),
-				persistentProperty.embeddedMapValueIsEmbedded(),
+				persistentProperty.isEmbeddedComponents(),
 				persistentProperty.getFieldName());
 	}
 
 	private Value convertOnWrite(Object proppertyVal, boolean isEmbedded,
-			boolean embeddedMapValueIsEmbedded,
+			boolean isEmbeddedComponents,
 			String fieldName) {
 		Object val = proppertyVal;
 
-		Function<Object, Value> writeConverter = (isEmbedded && val != null)
+		Function<Object, Value> writeConverter = ((isEmbedded || isEmbeddedComponents)
+				&& val != null)
 				? (Object value) -> convertOnWriteSingleEmbedded(value, fieldName,
-						embeddedMapValueIsEmbedded)
+								isEmbeddedComponents)
 				: this::convertOnWriteSingle;
 
 		//Check if property is a non-null array
@@ -250,7 +250,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	private EntityValue convertOnWriteSingleEmbedded(Object val, String kindName,
-			boolean embeddedMapValueIsEmbedded) {
+			boolean isEmbeddedComponents) {
 		IncompleteKey key = this.objectToKeyFactory.getIncompleteKey(kindName);
 
 		FullEntity.Builder<IncompleteKey> builder = FullEntity.newBuilder(key);
@@ -259,7 +259,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			Map<String, ?> map = (Map<String, ?>) val;
 			for (String field : map.keySet()) {
 				builder.set(field, convertOnWrite(map.get(field),
-						embeddedMapValueIsEmbedded, false, field));
+						isEmbeddedComponents, false, field));
 			}
 		}
 		// Write an embedded POJO

@@ -254,13 +254,15 @@ public class EmbeddableTreeNode {
   @Id
   long value;
 
-  @Embedded
+  @EmbeddedComponents
   List<EmbeddableTreeNode> children;
 
-  @Embedded(MapValueTypeIsEmbedded = true)
+  @Embedded
+  @EmbeddedComponents
   Map<String, EmbeddableTreeNode> siblingNodes;
 
-  @Embedded(MapValueTypeIsEmbedded = true)
+  @Embedded
+  @EmbeddedComponents
   Map<String, Set<EmbeddableTreeNode>> subNodeGroups;
 
   public EmbeddableTreeNode(List<EmbeddableTreeNode> children;) {
@@ -271,6 +273,8 @@ public class EmbeddableTreeNode {
 
 Embedded objects can be stored in the values of the embedded Maps such as embedded objects can be stored as properties.
 Collections of embedded objects can also be stored as the values of the embedded Maps.
+The `@Embedded` annotation on the map properties indicate that the entire property will be stored as an embedded entity.
+The `@EmbeddedComponent` annotation indicates that the individual items inside the list and map properties will be stored as embedded entities.
 
 ==== Relationships
 
