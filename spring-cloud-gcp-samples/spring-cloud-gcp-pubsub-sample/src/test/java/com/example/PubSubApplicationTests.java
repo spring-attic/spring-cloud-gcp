@@ -132,36 +132,11 @@ public class PubSubApplicationTests {
 
 	@Test
 	public void testCreateAndDeleteTopicAndSubscriptions() {
-		String projectTopicName = ProjectTopicName.format(projectName, SAMPLE_TEST_TOPIC);
-		String projectSubscriptionName = ProjectSubscriptionName.format(projectName, SAMPLE_TEST_SUBSCRIPTION1);
-
 		createTopic(SAMPLE_TEST_TOPIC);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
-				() -> {
-					List<String> projectTopics = getTopicNamesFromProject();
-					assertThat(projectTopics).contains(projectTopicName);
-				});
-
 		createSubscription(SAMPLE_TEST_SUBSCRIPTION1, SAMPLE_TEST_TOPIC);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
-				() -> {
-					List<String> subscriptions = getSubscriptionNamesFromProject();
-					assertThat(subscriptions).contains(projectSubscriptionName);
-				});
 
 		deleteSubscription(SAMPLE_TEST_SUBSCRIPTION1);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
-				() -> {
-					List<String> subscriptions = getSubscriptionNamesFromProject();
-					assertThat(subscriptions).doesNotContain(projectSubscriptionName);
-				});
-
 		deleteTopic(SAMPLE_TEST_TOPIC);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
-				() -> {
-					List<String> projectTopics = getTopicNamesFromProject();
-					assertThat(projectTopics).doesNotContain(projectTopicName);
-				});
 	}
 
 	@Test
@@ -212,6 +187,13 @@ public class PubSubApplicationTests {
 				.queryParam("topicName", topicName)
 				.toUriString();
 		ResponseEntity<String> response = testRestTemplate.postForEntity(url, null, String.class);
+
+		String projectTopicName = ProjectTopicName.format(projectName, topicName);
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+				() -> {
+					List<String> projectTopics = getTopicNamesFromProject();
+					assertThat(projectTopics).contains(projectTopicName);
+				});
 	}
 
 	private void deleteTopic(String topicName) {
@@ -219,6 +201,13 @@ public class PubSubApplicationTests {
 				.queryParam("topic", topicName)
 				.toUriString();
 		testRestTemplate.postForEntity(url, null, String.class);
+
+		String projectTopicName = ProjectTopicName.format(projectName, topicName);
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+				() -> {
+					List<String> projectTopics = getTopicNamesFromProject();
+					assertThat(projectTopics).doesNotContain(projectTopicName);
+				});
 	}
 
 	private void createSubscription(String subscriptionName, String topicName) {
@@ -227,6 +216,13 @@ public class PubSubApplicationTests {
 				.queryParam("subscriptionName", subscriptionName)
 				.toUriString();
 		testRestTemplate.postForEntity(url, null, String.class);
+
+		String projectSubscriptionName = ProjectSubscriptionName.format(projectName, subscriptionName);
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+				() -> {
+					List<String> subscriptions = getSubscriptionNamesFromProject();
+					assertThat(subscriptions).contains(projectSubscriptionName);
+				});
 	}
 
 	private void deleteSubscription(String subscriptionName) {
@@ -234,6 +230,13 @@ public class PubSubApplicationTests {
 				.queryParam("subscription", subscriptionName)
 				.toUriString();
 		testRestTemplate.postForEntity(url, null, String.class);
+
+		String projectSubscriptionName = ProjectSubscriptionName.format(projectName, subscriptionName);
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+				() -> {
+					List<String> subscriptions = getSubscriptionNamesFromProject();
+					assertThat(subscriptions).doesNotContain(projectSubscriptionName);
+				});
 	}
 
 	private void subscribe(String subscriptionName) {
