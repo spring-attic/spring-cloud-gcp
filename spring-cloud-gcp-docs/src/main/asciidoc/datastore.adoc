@@ -211,14 +211,14 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
 import org.springframework.data.annotation.Id;
 
 public class EmbeddableTreeNode {
-	@Id
-	long value;
+  @Id
+  long value;
 
-	@Embedded
-	EmbeddableTreeNode left;
+  @Embedded
+  EmbeddableTreeNode left;
 
-	@Embedded
-	EmbeddableTreeNode right;
+  @Embedded
+  EmbeddableTreeNode right;
 
   @Embedded
   Map<String, Long> longValues;
@@ -226,11 +226,11 @@ public class EmbeddableTreeNode {
   @Embedded
   Map<String, List<Timestamp>> listTimestamps;
 
-	public EmbeddableTreeNode(long value, EmbeddableTreeNode left, EmbeddableTreeNode right) {
-		this.value = value;
-		this.left = left;
-		this.right = right;
-	}
+  public EmbeddableTreeNode(long value, EmbeddableTreeNode left, EmbeddableTreeNode right) {
+    this.value = value;
+    this.left = left;
+    this.right = right;
+  }
 }
 ----
 
@@ -251,11 +251,11 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
 import org.springframework.data.annotation.Id;
 
 public class EmbeddableTreeNode {
-	@Id
-	long value;
+  @Id
+  long value;
 
-	@Embedded
-	List<EmbeddableTreeNode> children;
+  @Embedded
+  List<EmbeddableTreeNode> children;
 
   @Embedded(MapValueTypeIsEmbedded = true)
   Map<String, EmbeddableTreeNode> siblingNodes;
@@ -263,9 +263,9 @@ public class EmbeddableTreeNode {
   @Embedded(MapValueTypeIsEmbedded = true)
   Map<String, Set<EmbeddableTreeNode>> subNodeGroups;
 
-	public EmbeddableTreeNode(List<EmbeddableTreeNode> children;) {
-		this.children = children;
-	}
+  public EmbeddableTreeNode(List<EmbeddableTreeNode> children;) {
+    this.children = children;
+  }
 }
 ----
 
