@@ -60,7 +60,7 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubApplication.class })
 public class PubSubApplicationTests {
 
-	private static final int PUBSUB_CLIENT_TIMEOUT_SECONDS = 5;
+	private static final int PUBSUB_CLIENT_TIMEOUT_SECONDS = 10;
 
 	private static final String SAMPLE_TEST_TOPIC = "pubsub-sample-test-exampleTopic";
 
@@ -144,11 +144,14 @@ public class PubSubApplicationTests {
 		createTopic(SAMPLE_TEST_TOPIC);
 		createSubscription(SAMPLE_TEST_SUBSCRIPTION1, SAMPLE_TEST_TOPIC);
 		postMessage("HelloWorld", SAMPLE_TEST_TOPIC);
-		assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1)).containsExactly("HelloWorld");
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+				() -> assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1))
+						.containsExactly("HelloWorld"));
 
 		// After subscribing, the message will be acked by the application and no longer be present.
 		subscribe(SAMPLE_TEST_SUBSCRIPTION1);
-		assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1)).isEmpty();
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+				() -> assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1)).isEmpty());
 	}
 
 	@Test
@@ -157,13 +160,21 @@ public class PubSubApplicationTests {
 		createSubscription(SAMPLE_TEST_SUBSCRIPTION1, SAMPLE_TEST_TOPIC);
 		createSubscription(SAMPLE_TEST_SUBSCRIPTION2, SAMPLE_TEST_TOPIC);
 		postMessage("HelloWorld", SAMPLE_TEST_TOPIC);
-		assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1)).containsExactly("HelloWorld");
-		assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION2)).containsExactly("HelloWorld");
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+				() -> {
+					assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1))
+							.containsExactly("HelloWorld");
+					assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION2))
+							.containsExactly("HelloWorld");
+				});
 
 		// After multi pull, the message will be acked by both subscriptions and no longer be present.
 		multiPull(SAMPLE_TEST_SUBSCRIPTION1, SAMPLE_TEST_SUBSCRIPTION2);
-		assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1)).isEmpty();
-		assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION2)).isEmpty();
+		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+				() -> {
+					assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1)).isEmpty();
+					assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION2)).isEmpty();
+				});
 	}
 
 	private List<String> getMessagesFromSubscription(String subscriptionName) {
@@ -171,8 +182,8 @@ public class PubSubApplicationTests {
 				projectName, subscriptionName);
 
 		PullRequest pullRequest = PullRequest.newBuilder()
-				.setMaxMessages(10)
 				.setReturnImmediately(true)
+				.setMaxMessages(10)
 				.setSubscription(projectSubscriptionName)
 				.build();
 
