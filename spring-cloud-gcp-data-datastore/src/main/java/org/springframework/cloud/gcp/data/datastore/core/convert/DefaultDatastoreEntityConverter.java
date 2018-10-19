@@ -23,7 +23,6 @@ import java.util.Set;
 import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Value;
 import com.google.cloud.datastore.ValueBuilder;
-import com.google.cloud.datastore.ValueType;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -69,7 +68,8 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	}
 
 	@Override
-	public <R> Map<String, R> readAsMap(TypeInformation<R> type, BaseEntity entity) {
+	public <R> Map<String, R> readAsMap(TypeInformation<R> type, BaseEntity entity,
+			boolean embeddedMapValueIsEmbedded) {
 		if (entity == null) {
 			return null;
 		}
@@ -80,9 +80,10 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		for (String field : fieldNames) {
 			result.put(field,
 					propertyValueProvider.getPropertyValue(field,
-							entity.getValue(field).getType() == ValueType.ENTITY,
+							embeddedMapValueIsEmbedded,
 							type.isCollectionLike() ? type.getType() : null,
-							type.getComponentType().getType()));
+							type.isCollectionLike() ? type.getComponentType().getType()
+									: type.getType()));
 		}
 		return result;
 	}

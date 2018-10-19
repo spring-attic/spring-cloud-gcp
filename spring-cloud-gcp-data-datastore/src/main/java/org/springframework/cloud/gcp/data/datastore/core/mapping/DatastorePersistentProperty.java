@@ -43,6 +43,14 @@ public interface DatastorePersistentProperty
 	boolean isEmbedded();
 
 	/**
+	 * {@code true }if the property is an embedded {@code Map} and that the value type of
+	 * the map is also an embedded entity.
+	 * @return {@code true} if the embedded map's value type is also embedded.
+	 * {@code false} otherwise.
+	 */
+	boolean embeddedMapValueIsEmbedded();
+
+	/**
 	 * True if the property is a POJO and is to be stored in Datastore as a Key of the
 	 * POJO, which is a separate entity in Datastore.
 	 * @return true if the property is stored in Datastore as a Key.

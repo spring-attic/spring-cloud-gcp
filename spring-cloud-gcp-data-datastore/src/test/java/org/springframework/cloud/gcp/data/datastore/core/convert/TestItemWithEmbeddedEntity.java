@@ -16,28 +16,51 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
 
 /**
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  */
 public class TestItemWithEmbeddedEntity {
 	private int intField;
 
 	@Embedded
-	private EmbeddedEtity embeddedEntityField;
+	private EmbeddedEntity embeddedEntityField;
 
 	@Embedded
-	private List<EmbeddedEtity> listOfEmbeddedEntities;
+	private List<EmbeddedEntity> listOfEmbeddedEntities;
 
-	public TestItemWithEmbeddedEntity(int intField, EmbeddedEtity embeddedEntityField,
-			List<EmbeddedEtity> listOfEmbeddedEntities) {
+	@Embedded
+	private Map<String, String> embeddedMapSimpleValues;
+
+	@Embedded
+	private Map<String, String[]> embeddedMapListOfValues;
+
+	@Embedded(MapValueTypeIsEmbedded = true)
+	private Map<String, EmbeddedEntity> embeddedEntityMapEmbeddedEntity;
+
+	@Embedded(MapValueTypeIsEmbedded = true)
+	private Map<String, List<EmbeddedEntity>> embeddedEntityMapListOfEmbeddedEntities;
+
+	public TestItemWithEmbeddedEntity(int intField, EmbeddedEntity embeddedEntityField,
+			List<EmbeddedEntity> listOfEmbeddedEntities,
+			Map<String, String> embeddedMapSimpleValues,
+			Map<String, String[]> embeddedMapListOfValues,
+			Map<String, EmbeddedEntity> embeddedEntityMapEmbeddedEntity,
+			Map<String, List<EmbeddedEntity>> embeddedEntityMapListOfEmbeddedEntities) {
 		this.intField = intField;
 		this.embeddedEntityField = embeddedEntityField;
 		this.listOfEmbeddedEntities = listOfEmbeddedEntities;
+		this.embeddedMapSimpleValues = embeddedMapSimpleValues;
+		this.embeddedMapListOfValues = embeddedMapListOfValues;
+		this.embeddedEntityMapEmbeddedEntity = embeddedEntityMapEmbeddedEntity;
+		this.embeddedEntityMapListOfEmbeddedEntities = embeddedEntityMapListOfEmbeddedEntities;
 	}
 
 	@Override
@@ -49,9 +72,29 @@ public class TestItemWithEmbeddedEntity {
 			return false;
 		}
 		TestItemWithEmbeddedEntity item = (TestItemWithEmbeddedEntity) o;
+
+		boolean mapListValuesEquals = true;
+		boolean mapListEmbeddedEntitiesEquals = true;
+
+		for (String key : this.embeddedMapListOfValues.keySet()) {
+			mapListValuesEquals = mapListValuesEquals
+					&& Arrays.equals(this.embeddedMapListOfValues.get(key),
+							item.embeddedMapListOfValues.get(key));
+		}
+
+		for (String key : this.embeddedEntityMapListOfEmbeddedEntities.keySet()) {
+			mapListEmbeddedEntitiesEquals = mapListEmbeddedEntitiesEquals && Objects
+					.equals(this.embeddedEntityMapListOfEmbeddedEntities.get(key),
+							item.embeddedEntityMapListOfEmbeddedEntities.get(key));
+		}
+
 		return this.intField == item.intField &&
 				Objects.equals(this.embeddedEntityField, item.embeddedEntityField) &&
-				Objects.equals(this.listOfEmbeddedEntities, item.listOfEmbeddedEntities);
+				Objects.equals(this.listOfEmbeddedEntities, item.listOfEmbeddedEntities)
+				&& this.embeddedMapSimpleValues.equals(item.embeddedMapSimpleValues)
+				&& this.embeddedEntityMapEmbeddedEntity
+						.equals(item.embeddedEntityMapEmbeddedEntity)
+				&& mapListValuesEquals && mapListEmbeddedEntitiesEquals;
 	}
 
 	@Override
@@ -60,10 +103,10 @@ public class TestItemWithEmbeddedEntity {
 		return Objects.hash(this.intField, this.embeddedEntityField, this.listOfEmbeddedEntities);
 	}
 
-	public static class EmbeddedEtity {
+	public static class EmbeddedEntity {
 		String stringField;
 
-		public EmbeddedEtity(String stringField) {
+		public EmbeddedEntity(String stringField) {
 			this.stringField = stringField;
 		}
 
@@ -75,7 +118,7 @@ public class TestItemWithEmbeddedEntity {
 			if (o == null || getClass() != o.getClass()) {
 				return false;
 			}
-			EmbeddedEtity that = (EmbeddedEtity) o;
+			EmbeddedEntity that = (EmbeddedEntity) o;
 			return Objects.equals(this.stringField, that.stringField);
 		}
 

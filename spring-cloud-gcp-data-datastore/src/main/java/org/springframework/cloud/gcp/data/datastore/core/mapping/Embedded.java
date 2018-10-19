@@ -35,4 +35,12 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Embedded {
 
+	/**
+	 * This setting is only relevant for {@code Map} properties that are written as
+	 * embedded entities. The value type of these maps can also be an embedded entity. Set
+	 * this to {@code true} if that is the case.
+	 * @return {@code true} if the value type of the embedded map property is also
+	 * embedded. {@code false otherwise}.
+	 */
+	boolean MapValueTypeIsEmbedded() default false;
 }

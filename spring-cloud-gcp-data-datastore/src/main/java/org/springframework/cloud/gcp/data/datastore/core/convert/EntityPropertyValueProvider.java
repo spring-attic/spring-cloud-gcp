@@ -66,7 +66,8 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 			collectionType = null;
 		}
 		return getPropertyValue(persistentProperty.getFieldName(),
-				persistentProperty.isEmbedded(), isMap, collectionType,
+				persistentProperty.isEmbedded(), isMap,
+				persistentProperty.embeddedMapValueIsEmbedded(), collectionType,
 				singularType);
 	}
 
@@ -81,12 +82,13 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 	 */
 	public <T> T getPropertyValue(String fieldName, boolean isEmbedded,
 			Class collectionType, Class componentType) {
-		return (T) getPropertyValue(fieldName, isEmbedded, false, collectionType,
+		return (T) getPropertyValue(fieldName, isEmbedded, false, false, collectionType,
 				ClassTypeInformation.from(componentType));
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T> T getPropertyValue(String fieldName, boolean isEmbedded, boolean isMap,
+			boolean embeddedMapValueIsEmbedded,
 			Class collectionType, TypeInformation componentType) {
 		if (!this.entity.contains(fieldName)) {
 			return null;
@@ -96,7 +98,7 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 				return isMap
 						? this.conversion.convertOnReadEmbeddedMap(
 								this.entity.getEntity(fieldName), collectionType,
-								componentType)
+								componentType, embeddedMapValueIsEmbedded)
 						: this.conversion.convertOnReadEmbedded(
 								this.entity.getValue(fieldName).get(), collectionType,
 								componentType.getType());

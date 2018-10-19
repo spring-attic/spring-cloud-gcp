@@ -66,7 +66,7 @@ public interface ReadWriteConversions {
 	 * @return an object of a target type.
 	 */
 	<T> T convertOnReadEmbeddedMap(BaseEntity val, Class targetCollectionType,
-			TypeInformation targetComponentType);
+			TypeInformation targetComponentType, boolean embeddedMapValueIsEmbedded);
 
 	/**
 	 * Converts an object to a Cloud Datastore {@link Value}

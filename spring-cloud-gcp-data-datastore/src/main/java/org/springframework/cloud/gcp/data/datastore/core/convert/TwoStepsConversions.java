@@ -95,31 +95,32 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 		this.internalConversionService.addConverter(BYTE_ARRAY_TO_BLOB_CONVERTER);
 		this.internalConversionService.addConverter(BLOB_TO_BYTE_ARRAY_CONVERTER);
-
 	}
 
 	@Override
 	public <T> T convertOnRead(Object val, Class targetCollectionType,
 			Class targetComponentType) {
-		return (T) convertOnRead(val, false, false, targetCollectionType,
+		return (T) convertOnRead(val, false, false, false, targetCollectionType,
 				ClassTypeInformation.from(targetComponentType));
 	}
 
 	@Override
 	public <T> T convertOnReadEmbedded(Object val, Class targetCollectionType,
 			Class targetComponentType) {
-		return (T) convertOnRead(val, true, false, targetCollectionType,
+		return (T) convertOnRead(val, true, false, false, targetCollectionType,
 				ClassTypeInformation.from(targetComponentType));
 	}
 
 	@Override
 	public <T> T convertOnReadEmbeddedMap(BaseEntity val, Class targetCollectionType,
-			TypeInformation targetComponentType) {
-		return convertOnRead(val, true, true, null, targetComponentType);
+			TypeInformation targetComponentType, boolean embeddedMapValueIsEmbedded) {
+		return convertOnRead(val, true, true, embeddedMapValueIsEmbedded, null,
+				targetComponentType);
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T> T convertOnRead(Object val, boolean isEmbedded, boolean isEmbeddedMap,
+			boolean embeddedMapValueIsEmbedded,
 			Class targetCollectionType, TypeInformation targetComponentType) {
 		if (val == null) {
 			return null;
@@ -127,7 +128,8 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		BiFunction<Object, TypeInformation<?>, ?> readConverter;
 		if (isEmbedded) {
 			if (isEmbeddedMap) {
-				readConverter = this::convertOnReadSingleEmbeddedMap;
+				readConverter = (x, y) -> convertOnReadSingleEmbeddedMap(x, y,
+						embeddedMapValueIsEmbedded);
 			}
 			else {
 				readConverter = this::convertOnReadSingleEmbedded;
@@ -158,11 +160,11 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	private <T> Map<String, T> convertOnReadSingleEmbeddedMap(Object value,
-			TypeInformation<T> targetClass) {
+			TypeInformation<T> targetClass, boolean embeddedMapValueIsEmbedded) {
 		Assert.notNull(value, "Cannot convert a null value.");
 		if (value instanceof BaseEntity) {
 			return this.datastoreEntityConverter.readAsMap(targetClass,
-					(BaseEntity) value);
+					(BaseEntity) value, embeddedMapValueIsEmbedded);
 		}
 		throw new DatastoreDataException(
 				"Embedded entity was expected, but " + value.getClass() + " found");
@@ -217,15 +219,18 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	@Override
 	public Value convertOnWrite(Object proppertyVal, DatastorePersistentProperty persistentProperty) {
 		return convertOnWrite(proppertyVal, persistentProperty.isEmbedded(),
+				persistentProperty.embeddedMapValueIsEmbedded(),
 				persistentProperty.getFieldName());
 	}
 
 	private Value convertOnWrite(Object proppertyVal, boolean isEmbedded,
+			boolean embeddedMapValueIsEmbedded,
 			String fieldName) {
 		Object val = proppertyVal;
 
 		Function<Object, Value> writeConverter = (isEmbedded && val != null)
-				? (Object value) -> convertOnWriteSingleEmbedded(value, fieldName)
+				? (Object value) -> convertOnWriteSingleEmbedded(value, fieldName,
+						embeddedMapValueIsEmbedded)
 				: this::convertOnWriteSingle;
 
 		//Check if property is a non-null array
@@ -244,7 +249,8 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		return writeConverter.apply(val);
 	}
 
-	private EntityValue convertOnWriteSingleEmbedded(Object val, String kindName) {
+	private EntityValue convertOnWriteSingleEmbedded(Object val, String kindName,
+			boolean embeddedMapValueIsEmbedded) {
 		IncompleteKey key = this.objectToKeyFactory.getIncompleteKey(kindName);
 
 		FullEntity.Builder<IncompleteKey> builder = FullEntity.newBuilder(key);
@@ -252,7 +258,8 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		if (val instanceof Map) {
 			Map<String, ?> map = (Map<String, ?>) val;
 			for (String field : map.keySet()) {
-				builder.set(field, convertOnWrite(map.get(field), false, field));
+				builder.set(field, convertOnWrite(map.get(field),
+						embeddedMapValueIsEmbedded, false, field));
 			}
 		}
 		// Write an embedded POJO
