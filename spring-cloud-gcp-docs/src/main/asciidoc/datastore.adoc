@@ -220,6 +220,12 @@ public class EmbeddableTreeNode {
 	@Embedded
 	EmbeddableTreeNode right;
 
+  @Embedded
+  Map<String, Long> longValues;
+
+  @Embedded
+  Map<String, List<Timestamp>> listTimestamps;
+
 	public EmbeddableTreeNode(long value, EmbeddableTreeNode left, EmbeddableTreeNode right) {
 		this.value = value;
 		this.left = left;
@@ -227,6 +233,9 @@ public class EmbeddableTreeNode {
 	}
 }
 ----
+
+Maps with String key types can also be embedded as entities where the key values become the field names in the embedded entity.
+The value types in these maps can be any regularly supported property type.
 
 Also, a collection of entities can be embedded; it will be converted to `ListValue` on write.
 
@@ -248,11 +257,20 @@ public class EmbeddableTreeNode {
 	@Embedded
 	List<EmbeddableTreeNode> children;
 
+  @Embedded(MapValueTypeIsEmbedded = true)
+  Map<String, EmbeddableTreeNode> siblingNodes;
+
+  @Embedded(MapValueTypeIsEmbedded = true)
+  Map<String, Set<EmbeddableTreeNode>> subNodeGroups;
+
 	public EmbeddableTreeNode(List<EmbeddableTreeNode> children;) {
 		this.children = children;
 	}
 }
 ----
+
+Embedded objects can be stored in the values of the embedded Maps such as embedded objects can be stored as properties.
+Collections of embedded objects can also be stored as the values of the embedded Maps.
 
 ==== Relationships
 
