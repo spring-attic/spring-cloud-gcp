@@ -1,17 +1,15 @@
 package org.springframework.cloud.gcp.security.iap;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Enumeration;
-
-public class IapAuthenticationFilter implements Filter {
+public class IapAuthenticationFilter extends AbstractPreAuthenticatedProcessingFilter {
 	private static final Log LOGGER = LogFactory.getLog(IapAuthenticationFilter.class);
 
 	private JwtTokenVerifier verifyIapRequestHeader;
@@ -21,21 +19,23 @@ public class IapAuthenticationFilter implements Filter {
 	}
 
 	@Override
-	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-		HttpServletRequest request = (HttpServletRequest) servletRequest;
-		HttpServletResponse response = (HttpServletResponse) servletResponse;
-
-		LOGGER.info("In IapAuthenticationFilter");
-
+	protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
 		String assertion = request.getHeader("x-goog-iap-jwt-assertion");
+		Authentication authentication = null;
 
 		if (assertion != null) {
-			Authentication authentication = this.verifyIapRequestHeader.verifyAndExtractPrincipal(
-					request.getHeader("x-goog-iap-jwt-assertion"), "TODO: either specify here or at filter level");
+			authentication = this.verifyIapRequestHeader.verifyAndExtractPrincipal(
+					assertion, "TODO: either specify here or at filter level");
 			if (authentication != null) {
 				SecurityContextHolder.getContext().setAuthentication(authentication);
 			}
 		}
-		filterChain.doFilter(request, response);
+
+		return authentication;
+	}
+
+	@Override
+	protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
+		return request.getHeader("x-goog-iap-jwt-assertion");
 	}
 }
