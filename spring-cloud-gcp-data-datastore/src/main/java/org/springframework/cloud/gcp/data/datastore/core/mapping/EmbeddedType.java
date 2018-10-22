@@ -16,22 +16,33 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 /**
- * Annotation for a collection-like Datastore property that indicates the items it holds
- * should be stored as embedded entities.
+ * The various types of properties with respect to their storage as embedded entities.
  *
  * @author Chengyuan Zhao
  *
  * @since 1.1
  */
-@Documented
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface EmbeddedComponents {
+public enum EmbeddedType {
+
+	/**
+	 * These are properties that stored as singualr or arrays of Cloud Datastore native
+	 * field types. This excludes the embedded entity field type.
+	 */
+	NOT_EMBEDDED,
+
+	/**
+	 * These are properties that are stored as a singular embedded entity in the field.
+	 */
+	SINGULAR_EMBEDDED,
+
+	/**
+	 * These are properties stored as arrays of embedded entities in the field.
+	 */
+	COLLECTION_EMBEDDED_ELEMENTS,
+
+	/**
+	 * These are {@code Map}s that are stored as a single embedded entity in the field.
+	 */
+	EMBEDDED_MAP;
 }

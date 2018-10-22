@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedComponents;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedMap;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 
 /**
  * @author Dmitry Solomakha
@@ -31,24 +31,20 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedCompone
 public class TestItemWithEmbeddedEntity {
 	private int intField;
 
-	@Embedded
 	private EmbeddedEntity embeddedEntityField;
 
-	@EmbeddedComponents
 	private List<EmbeddedEntity> listOfEmbeddedEntities;
 
-	@Embedded
+	@EmbeddedMap
 	private Map<String, String> embeddedMapSimpleValues;
 
-	@Embedded
+	@EmbeddedMap
 	private Map<String, String[]> embeddedMapListOfValues;
 
-	@Embedded
-	@EmbeddedComponents
+	@EmbeddedMap
 	private Map<String, EmbeddedEntity> embeddedEntityMapEmbeddedEntity;
 
-	@Embedded
-	@EmbeddedComponents
+	@EmbeddedMap
 	private Map<String, List<EmbeddedEntity>> embeddedEntityMapListOfEmbeddedEntities;
 
 	public TestItemWithEmbeddedEntity(int intField, EmbeddedEntity embeddedEntityField,
@@ -106,6 +102,7 @@ public class TestItemWithEmbeddedEntity {
 		return Objects.hash(this.intField, this.embeddedEntityField, this.listOfEmbeddedEntities);
 	}
 
+	@Entity
 	public static class EmbeddedEntity {
 		String stringField;
 

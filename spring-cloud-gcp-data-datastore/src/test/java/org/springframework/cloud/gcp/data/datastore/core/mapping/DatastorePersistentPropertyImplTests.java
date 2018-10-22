@@ -56,16 +56,17 @@ public class DatastorePersistentPropertyImplTests {
 								assertEquals(Double.class,
 										property.getComponentType());
 								assertTrue(property.isCollectionLike());
-								assertNull(property.getEmbeddedMapValueType());
 							}
 							else if (property.getFieldName().equals("embeddedEntity")) {
-								assertTrue(property.isEmbedded());
-								assertNull(property.getEmbeddedMapValueType());
+								assertTrue(property
+										.getEmbeddedType() == EmbeddedType.SINGULAR_EMBEDDED);
 							}
 							else if (property.getFieldName().equals("embeddedMap")) {
-								assertTrue(property.isEmbedded());
+								assertTrue(property
+										.getEmbeddedType() == EmbeddedType.EMBEDDED_MAP);
 								assertEquals(String.class,
-										property.getEmbeddedMapValueType().getType());
+										property.getTypeInformation().getTypeArguments()
+												.get(1).getType());
 							}
 							else if (property.getFieldName().equals("linkedEntity")) {
 								assertTrue(property.isDescendants());
@@ -92,16 +93,11 @@ public class DatastorePersistentPropertyImplTests {
 	}
 
 	@Test(expected = DatastoreDataException.class)
-	public void embeddedDescendantAnnotatedTest() {
+	public void embeddedMapNotMapTest() {
 		this.datastoreMappingContext
-				.getPersistentEntity(EmbeddedDescendantAnnotatedEntity.class);
+				.getPersistentEntity(EmbeddedMapNotMap.class);
 	}
 
-	@Test(expected = DatastoreDataException.class)
-	public void embeddedReferenceAnnotatedTest() {
-		this.datastoreMappingContext
-				.getPersistentEntity(EmbeddedReferenceAnnotatedEntity.class);
-	}
 
 	@Test(expected = DatastoreDataException.class)
 	public void referenceDescendantAnnotatedTest() {
@@ -138,10 +134,9 @@ public class DatastorePersistentPropertyImplTests {
 		@Field(name = "not_mapped")
 		String notMappedString;
 
-		@Embedded
 		TestSubEntity embeddedEntity;
 
-		@Embedded
+		@EmbeddedMap
 		Map<String, String> embeddedMap;
 
 		@Descendants
@@ -151,6 +146,7 @@ public class DatastorePersistentPropertyImplTests {
 		TestSubEntity linkedEntityRef;
 	}
 
+	@Entity
 	private static class TestSubEntity {
 
 	}
@@ -159,15 +155,8 @@ public class DatastorePersistentPropertyImplTests {
 		List untypedList;
 	}
 
-	private static class EmbeddedDescendantAnnotatedEntity {
-		@Embedded
-		@Descendants
-		TestSubEntity[] subEntity;
-	}
-
-	private static class EmbeddedReferenceAnnotatedEntity {
-		@Embedded
-		@Reference
+	private static class EmbeddedMapNotMap {
+		@EmbeddedMap
 		TestSubEntity[] subEntity;
 	}
 

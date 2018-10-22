@@ -68,8 +68,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	}
 
 	@Override
-	public <R> Map<String, R> readAsMap(TypeInformation<R> type, BaseEntity entity,
-			boolean embeddedMapValueIsEmbedded) {
+	public <R> Map<String, R> readAsMap(TypeInformation<R> type, BaseEntity entity) {
 		if (entity == null) {
 			return null;
 		}
@@ -80,10 +79,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		for (String field : fieldNames) {
 			result.put(field,
 					propertyValueProvider.getPropertyValue(field,
-							embeddedMapValueIsEmbedded, false,
-							type.isCollectionLike() ? type.getType() : null,
-							type.isCollectionLike() ? type.getComponentType().getType()
-									: type.getType()));
+							DatastoreNativeTypes.getEmbeddedType(type), type));
 		}
 		return result;
 	}

@@ -45,11 +45,8 @@ public interface DatastoreEntityConverter extends
 	 * @param type The value type of the map, into which each field value will be
 	 * converted.
 	 * @param entity The entity from Cloud Datastore.
-	 * @param embeddedMapValueIsEmbedded {@code true} if the value type of the map is also
-	 * an embedded entity. {@code false} otherwise.
 	 * @return a Map where the key values are the field names and the values the field
 	 * values.
 	 */
-	<R> Map<String, R> readAsMap(TypeInformation<R> type, BaseEntity entity,
-			boolean embeddedMapValueIsEmbedded);
+	<R> Map<String, R> readAsMap(TypeInformation<R> type, BaseEntity entity);
 }

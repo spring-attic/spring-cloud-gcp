@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
 import java.util.Map;
 
+import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
@@ -25,7 +26,6 @@ import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.Property;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.util.TypeInformation;
 import org.springframework.util.StringUtils;
 
 /**
@@ -61,21 +61,27 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	private void verify() {
-		if ((hasFieldAnnotation() || isEmbedded())
+		if (hasFieldAnnotation()
 				&& (isDescendants() || isReference())) {
 			throw new DatastoreDataException(
-					"Property cannot be annotated both Embedded or Field and Descendants or Reference: "
+					"Property cannot be annotated as @Field if it is annotated @Descendants or @Reference: "
 							+ getFieldName());
 		}
 		if (isDescendants() && isReference()) {
 			throw new DatastoreDataException(
-					"Property cannot be annotated both Descendants and Reference: "
+					"Property cannot be annotated both @Descendants and @Reference: "
 							+ getFieldName());
 		}
 		if (isDescendants() && !isCollectionLike()) {
 			throw new DatastoreDataException(
 					"Only collection-like properties can contain the "
 							+ "descendant entity objects can be annotated @Descendants.");
+		}
+		if (getEmbeddedType() == EmbeddedType.EMBEDDED_MAP
+				&& !Map.class.isAssignableFrom(getType())) {
+			throw new DatastoreDataException(
+					"Property was annotated as an embedded map but was not a Map with a String key type: "
+							+ getName());
 		}
 	}
 
@@ -89,16 +95,6 @@ public class DatastorePersistentPropertyImpl
 
 	private boolean hasFieldAnnotation() {
 		return findAnnotation(Field.class) != null;
-	}
-
-	@Override
-	public boolean isEmbedded() {
-		return findAnnotation(Embedded.class) != null;
-	}
-
-	@Override
-	public boolean isEmbeddedComponents() {
-		return findAnnotation(EmbeddedComponents.class) != null;
 	}
 
 	@Override
@@ -117,11 +113,11 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	@Override
-	public TypeInformation getEmbeddedMapValueType() {
-		if (!isEmbedded() || !Map.class.isAssignableFrom(getType())) {
-			return null;
+	public EmbeddedType getEmbeddedType() {
+		if (findAnnotation(EmbeddedMap.class) != null) {
+			return EmbeddedType.EMBEDDED_MAP;
 		}
-		return getTypeInformation().getTypeArguments().get(1);
+		return DatastoreNativeTypes.getEmbeddedType(getTypeInformation());
 	}
 
 	@Override

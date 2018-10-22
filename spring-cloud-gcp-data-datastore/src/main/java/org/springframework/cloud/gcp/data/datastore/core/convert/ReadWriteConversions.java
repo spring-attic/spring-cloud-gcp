@@ -18,10 +18,10 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.util.Optional;
 
-import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedType;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -47,28 +47,15 @@ public interface ReadWriteConversions {
 			Class targetComponentType);
 
 	/**
-	 * Converts a given object to an object of a target type that is an embedded entity.
+	 * Converts a given object to an object of a target type that is possibly an embedded
+	 * entity.
 	 * @param val the value to convert.
-	 * @param targetCollectionType the type of the collection to be converted into.
-	 * {@code null} if the property is a singular object.
-	 * @param targetComponentType the type of the property to convert. For collection-like
-	 * properties this refers to the individual items' type.
-	 * @param isEmbeddedComponents {@code true} if the property is collection-like and its
-	 * items are individually stored as embedded entities.
+	 * @param embeddedType contains the type of embedded entity conversion should produce.
+	 * @param targetTypeInformation type metadata information for the desired type.
 	 * @return an object of a target type.
 	 */
-	<T> T convertOnReadEmbedded(Object val, Class targetCollectionType,
-			Class targetComponentType, boolean isEmbeddedComponents);
-
-	/**
-	 * Converts a given object to a {@code Map} representing the embedded entity.
-	 * @param val the value to convert.
-	 * @param targetComponentType the type of the property to convert. For collection-like
-	 * @param targetComponentType type metadata for the values of the map
-	 * @return an object of a target type.
-	 */
-	<T> T convertOnReadEmbeddedMap(BaseEntity val, Class targetCollectionType,
-			TypeInformation targetComponentType, boolean embeddedMapValueIsEmbedded);
+	<T> T convertOnRead(Object val, EmbeddedType embeddedType,
+			TypeInformation targetTypeInformation);
 
 	/**
 	 * Converts an object to a Cloud Datastore {@link Value}

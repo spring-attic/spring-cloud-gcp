@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
 import org.springframework.data.mapping.PersistentProperty;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * Persistent property for Google Cloud Datastore
@@ -34,21 +33,6 @@ public interface DatastorePersistentProperty
 	 * @return the string name of the field.
 	 */
 	String getFieldName();
-
-	/**
-	 * True if the property is a POJO and is to be stored in Datastore as an embedded
-	 * entity in the field.
-	 * @return true if the property is stored in Datastore as an embedded entity.
-	 */
-	boolean isEmbedded();
-
-	/**
-	 * {@code true }if the property is collection-like and that the items it holds should
-	 * be stored as embedded entities.
-	 * @return {@code true} if the individual items in this property should be stored as
-	 * embedded. {@code false} otherwise.
-	 */
-	boolean isEmbeddedComponents();
 
 	/**
 	 * True if the property is a POJO and is to be stored in Datastore as a Key of the
@@ -72,8 +56,9 @@ public interface DatastorePersistentProperty
 	boolean isUnindexed();
 
 	/**
-	 * Get the value type of {@code Map} properties that are stored as embedded entities.
-	 * @return the value type of the Map property.
+	 * Get the {@link EmbeddedType} of the property indicating what what type of embedding
+	 * pathway will be used to store the property.
+	 * @return the embedded type.
 	 */
-	TypeInformation getEmbeddedMapValueType();
+	EmbeddedType getEmbeddedType();
 }

@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.data.datastore.it;
 import java.util.List;
 import java.util.Objects;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
 import org.springframework.data.annotation.Id;
 
 /**
@@ -29,7 +28,6 @@ public class TreeCollection {
 	@Id
 	private long id;
 
-	@Embedded
 	private List<EmbeddableTreeNode> treeNodes;
 
 	public TreeCollection(long id, List<EmbeddableTreeNode> treeNodes) {

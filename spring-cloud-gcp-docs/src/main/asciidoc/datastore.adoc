@@ -195,7 +195,7 @@ The `@Field` annotation optionally provides a different field name than that of 
 
 ==== Embedded Entities
 
-Fields marked as `@Embedded` are converted to `EntityValue` and stored inside the parent entity.
+Fields whose types are also annotated with `@Entity` are converted to `EntityValue` and stored inside the parent entity.
 Multiple levels of embedded entities are supported.
 
 NOTE: Embedded entities don't need to have `@Id` field, it is only required for top level entities.
@@ -203,7 +203,6 @@ NOTE: Embedded entities don't need to have `@Id` field, it is only required for 
 Example:
 
 We would like to store a binary tree in Cloud Datastore.
-To do that, we need to create a node class and annotate children with `@Embedded`:
 
 [source, java]
 ----
@@ -214,16 +213,14 @@ public class EmbeddableTreeNode {
   @Id
   long value;
 
-  @Embedded
   EmbeddableTreeNode left;
 
-  @Embedded
   EmbeddableTreeNode right;
 
-  @Embedded
+  @EmbeddedMap
   Map<String, Long> longValues;
 
-  @Embedded
+  @EmbeddedMap
   Map<String, List<Timestamp>> listTimestamps;
 
   public EmbeddableTreeNode(long value, EmbeddableTreeNode left, EmbeddableTreeNode right) {
@@ -236,6 +233,7 @@ public class EmbeddableTreeNode {
 
 Maps with String key types can also be embedded as entities where the key values become the field names in the embedded entity.
 The value types in these maps can be any regularly supported property type.
+These maps are annotated with `@EmbeddedMap`.
 
 Also, a collection of entities can be embedded; it will be converted to `ListValue` on write.
 
@@ -243,7 +241,7 @@ Example:
 
 Instead of a binary tree from the previous example, we would like to store a general tree
 (each node can have an arbitrary number of children) in Cloud Datastore.
-To do that, we need to create a field of type `List<EmbeddableTreeNode>` and annotate it with `@Embedded`:
+To do that, we need to create a field of type `List<EmbeddableTreeNode>`:
 
 [source, java]
 ----
@@ -254,15 +252,12 @@ public class EmbeddableTreeNode {
   @Id
   long value;
 
-  @EmbeddedComponents
   List<EmbeddableTreeNode> children;
 
-  @Embedded
-  @EmbeddedComponents
+  @EmbeddedMap
   Map<String, EmbeddableTreeNode> siblingNodes;
 
-  @Embedded
-  @EmbeddedComponents
+  @EmbeddedMap
   Map<String, Set<EmbeddableTreeNode>> subNodeGroups;
 
   public EmbeddableTreeNode(List<EmbeddableTreeNode> children;) {
@@ -273,8 +268,8 @@ public class EmbeddableTreeNode {
 
 Embedded objects can be stored in the values of the embedded Maps such as embedded objects can be stored as properties.
 Collections of embedded objects can also be stored as the values of the embedded Maps.
-The `@Embedded` annotation on the map properties indicate that the entire property will be stored as an embedded entity.
-The `@EmbeddedComponent` annotation indicates that the individual items inside the list and map properties will be stored as embedded entities.
+The `@EmbeddedMap` annotation on the map properties indicate that the entire property will be stored as an embedded entity.
+Without this annotation the maps would be converted and stored as collections.
 
 ==== Relationships
 
