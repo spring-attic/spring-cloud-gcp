@@ -53,7 +53,7 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { Application.class })
 public class LoggingSampleApplicationTests {
 
-	private static final String LOG_FILTER_FORMAT = "resource.type=global AND trace:%s";
+	private static final String LOG_FILTER_FORMAT = "trace:%s";
 
 	@Autowired
 	private GcpProjectIdProvider projectIdProvider;
@@ -100,6 +100,7 @@ public class LoggingSampleApplicationTests {
 					ImmutableList<LogEntry> logEntries = ImmutableList.copyOf(logEntryPage.iterateAll());
 
 					List<String> logContents = logEntries.stream()
+							.peek(logEntry -> System.out.println("Found: " + logEntry))
 							.map(logEntry -> ((StringPayload) logEntry.getPayload()).getData())
 							.collect(Collectors.toList());
 
