@@ -16,15 +16,15 @@
 
 package org.springframework.cloud.gcp.autoconfigure.storage;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Java6Assertions.catchThrowable;
-
 import com.google.cloud.storage.Storage;
 import org.junit.Test;
 
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
  * Verifies that GCP Storage may be disabled via the property:
