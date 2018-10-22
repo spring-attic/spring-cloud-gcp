@@ -124,39 +124,39 @@ public class PubSubApplicationTests {
 
 	@AfterClass
 	public static void cleanupPubsubClients() {
-		List<String> testTopics = ImmutableList.of(
-				SAMPLE_TEST_TOPIC,
-				SAMPLE_TEST_TOPIC2,
-				SAMPLE_TEST_TOPIC_DELETE);
-
-		for (String topicName : testTopics) {
-			List<String> projectTopics = getTopicNamesFromProject();
-			String testTopicName = ProjectTopicName.format(projectName, topicName);
-			if (projectTopics.contains(testTopicName)) {
-				topicAdminClient.deleteTopic(testTopicName);
-			}
-		}
-
-		List<String> testSubscriptions = ImmutableList.of(
-				SAMPLE_TEST_SUBSCRIPTION1,
-				SAMPLE_TEST_SUBSCRIPTION2,
-				SAMPLE_TEST_SUBSCRIPTION3,
-				SAMPLE_TEST_SUBSCRIPTION_DELETE);
-
-		for (String testSubscription : testSubscriptions) {
-			String testSubscriptionName = ProjectSubscriptionName.format(
-					projectName, testSubscription);
-			List<String> projectSubscriptions = getSubscriptionNamesFromProject();
-			if (projectSubscriptions.contains(testSubscriptionName)) {
-				subscriptionAdminClient.deleteSubscription(testSubscriptionName);
-			}
-		}
-
 		if (topicAdminClient != null) {
+			List<String> testTopics = ImmutableList.of(
+					SAMPLE_TEST_TOPIC,
+					SAMPLE_TEST_TOPIC2,
+					SAMPLE_TEST_TOPIC_DELETE);
+
+			for (String topicName : testTopics) {
+				List<String> projectTopics = getTopicNamesFromProject();
+				String testTopicName = ProjectTopicName.format(projectName, topicName);
+				if (projectTopics.contains(testTopicName)) {
+					topicAdminClient.deleteTopic(testTopicName);
+				}
+			}
+
 			topicAdminClient.close();
 		}
 
 		if (subscriptionAdminClient != null) {
+			List<String> testSubscriptions = ImmutableList.of(
+					SAMPLE_TEST_SUBSCRIPTION1,
+					SAMPLE_TEST_SUBSCRIPTION2,
+					SAMPLE_TEST_SUBSCRIPTION3,
+					SAMPLE_TEST_SUBSCRIPTION_DELETE);
+
+			for (String testSubscription : testSubscriptions) {
+				String testSubscriptionName = ProjectSubscriptionName.format(
+						projectName, testSubscription);
+				List<String> projectSubscriptions = getSubscriptionNamesFromProject();
+				if (projectSubscriptions.contains(testSubscriptionName)) {
+					subscriptionAdminClient.deleteSubscription(testSubscriptionName);
+				}
+			}
+
 			subscriptionAdminClient.close();
 		}
 	}
