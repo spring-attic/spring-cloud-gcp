@@ -140,13 +140,6 @@ public class WebController {
 		return buildStatusView("Subscribed.");
 	}
 
-	@GetMapping("/clearSubscribers")
-	public RedirectView clearSubscribers() {
-		allSubscribers.forEach(Subscriber::stopAsync);
-		return buildStatusView("Stopped All Subscribers. New messages from subscriptions "
-				+ "are no longer being ack'd and logged to console.");
-	}
-
 	@PostMapping("/deleteTopic")
 	public RedirectView deleteTopic(@RequestParam("topic") String topicName) {
 		this.pubSubAdmin.deleteTopic(topicName);
