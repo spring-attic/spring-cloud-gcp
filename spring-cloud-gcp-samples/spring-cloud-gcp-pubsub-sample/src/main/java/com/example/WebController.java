@@ -16,10 +16,12 @@
 
 package com.example;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.google.cloud.pubsub.v1.Subscriber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,9 +44,12 @@ public class WebController {
 
 	private final PubSubAdmin pubSubAdmin;
 
+	private final ArrayList<Subscriber> allSubscribers;
+
 	public WebController(PubSubTemplate pubSubTemplate, PubSubAdmin pubSubAdmin) {
 		this.pubSubTemplate = pubSubTemplate;
 		this.pubSubAdmin = pubSubAdmin;
+		this.allSubscribers = new ArrayList<>();
 	}
 
 	@PostMapping("/createTopic")
@@ -125,12 +130,13 @@ public class WebController {
 
 	@GetMapping("/subscribe")
 	public RedirectView subscribe(@RequestParam("subscription") String subscriptionName) {
-		this.pubSubTemplate.subscribe(subscriptionName, (message) -> {
+		Subscriber subscriber = this.pubSubTemplate.subscribe(subscriptionName, (message) -> {
 			LOGGER.info("Message received from " + subscriptionName + " subscription. "
 					+ message.getPubsubMessage().getData().toStringUtf8());
 			message.ack();
 		});
 
+		allSubscribers.add(subscriber);
 		return buildStatusView("Subscribed.");
 	}
 
