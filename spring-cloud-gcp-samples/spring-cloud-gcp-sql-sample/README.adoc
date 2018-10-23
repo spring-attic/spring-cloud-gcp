@@ -1,3 +1,6 @@
+NOTE: For this branch: replace ~/tools/openjdk11/jdk-11.0.1/bin/javac with the correct location in pom.xml.
+
+
 = Spring Cloud GCP SQL Sample
 
 This code sample demonstrates how to connect to a Google Cloud SQL instance using either the
