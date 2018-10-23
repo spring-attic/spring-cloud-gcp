@@ -71,7 +71,7 @@ public class DatastoreIntegrationTests {
 	}
 
 	@Test
-	public void testSaveAndDeleteRepository() throws InterruptedException {
+	public void testSaveAndDeleteRepository() {
 
 		TestEntity testEntityA = new TestEntity(1L, "red", 1L, null);
 
@@ -196,8 +196,44 @@ public class DatastoreIntegrationTests {
 		assertEquals(treeCollection, loaded);
 	}
 
-	private void waitUntilTrue(Supplier<Boolean> condition) throws InterruptedException {
-		Awaitility.await().atMost(QUERY_WAIT_INTERVAL_SECONDS, TimeUnit.SECONDS)
-				.untilAsserted(() -> assertTrue(condition.get()));
+	@Test
+	public void ancestorsTest() {
+		AncestorEntity.DescendatEntry descendatEntryA = new AncestorEntity.DescendatEntry("a");
+		AncestorEntity.DescendatEntry descendatEntryB = new AncestorEntity.DescendatEntry("b");
+		AncestorEntity.DescendatEntry descendatEntryC = new AncestorEntity.DescendatEntry("c");
+
+		AncestorEntity ancestorEntity =
+				new AncestorEntity("abc", Arrays.asList(descendatEntryA, descendatEntryB, descendatEntryC));
+
+		this.datastoreTemplate.save(ancestorEntity);
+
+		waitUntilTrue(() -> {
+			AncestorEntity byId = this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
+			return byId != null && byId.descndants.size() == 3;
+		});
+
+		AncestorEntity loadedEntity = this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
+
+		boolean loadedEqualToOriginal = ancestorEntity.equals(loadedEntity);
+
+		ancestorEntity.descndants.forEach(descendatEntry -> descendatEntry.name = descendatEntry.name + " updated");
+
+		this.datastoreTemplate.save(ancestorEntity);
+
+		waitUntilTrue(() ->
+				this.datastoreTemplate.findAll(AncestorEntity.DescendatEntry.class)
+						.stream().allMatch(descendatEntry -> descendatEntry.name.contains("updated")));
+
+		AncestorEntity loadedEntityAfterUpdate =
+				this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
+
+		this.datastoreTemplate.deleteAll(AncestorEntity.class);
+		this.datastoreTemplate.deleteAll(AncestorEntity.DescendatEntry.class);
+		assertTrue("Loaded entity is equal to the original one", loadedEqualToOriginal);
+		assertEquals(ancestorEntity, loadedEntityAfterUpdate);
+	}
+
+	private void waitUntilTrue(Supplier<Boolean> condition) {
+		Awaitility.await().atMost(QUERY_WAIT_INTERVAL_SECONDS, TimeUnit.SECONDS).until(condition::get);
 	}
 }

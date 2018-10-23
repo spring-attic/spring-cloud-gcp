@@ -20,6 +20,7 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
+import com.google.cloud.datastore.PathElement;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
@@ -74,13 +75,11 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 	}
 
 	@Override
-	public Key getKeyFromObject(Object entity,
-			DatastorePersistentEntity datastorePersistentEntity) {
+	public Key getKeyFromObject(Object entity, DatastorePersistentEntity datastorePersistentEntity) {
 		Assert.notNull(entity, "Cannot get key for null entity object.");
 		Assert.notNull(datastorePersistentEntity, "Persistent entity must not be null.");
 		PersistentProperty idProp = datastorePersistentEntity.getIdPropertyOrFail();
-		Object idVal = datastorePersistentEntity.getPropertyAccessor(entity)
-				.getProperty(idProp);
+		Object idVal = datastorePersistentEntity.getPropertyAccessor(entity).getProperty(idProp);
 		if (idVal == null) {
 			return null;
 		}
@@ -91,17 +90,34 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 
 	@Override
 	public Key allocateKeyForObject(Object entity,
-			DatastorePersistentEntity datastorePersistentEntity) {
+			DatastorePersistentEntity datastorePersistentEntity, Key... ancestors) {
 		Assert.notNull(entity, "Cannot get key for null entity object.");
 		Assert.notNull(datastorePersistentEntity, "Persistent entity must not be null.");
 		PersistentProperty idProp = datastorePersistentEntity.getIdPropertyOrFail();
-		Key allocatedKey = this.datastore.allocateId(
-				getKeyFactory().setKind(datastorePersistentEntity.kindName()).newKey());
-		Class idPropType = idProp.getType();
-		Object id = idPropType.equals(Long.class) ? allocatedKey.getId() : allocatedKey.getId().toString();
 
-		datastorePersistentEntity.getPropertyAccessor(entity).setProperty(idProp,
-				idPropType.equals(Key.class) ? allocatedKey : id);
+		KeyFactory keyFactory = getKeyFactory().setKind(datastorePersistentEntity.kindName());
+		if (ancestors != null) {
+			for (Key ancestor : ancestors) {
+				keyFactory.addAncestor(ancestor.getName() != null
+						? PathElement.of(ancestor.getKind(), ancestor.getName())
+						: PathElement.of(ancestor.getKind(), ancestor.getId()));
+			}
+		}
+		Key allocatedKey = this.datastore.allocateId(keyFactory.newKey());
+		Class idPropType = idProp.getType();
+
+		Object value;
+		if (idPropType.equals(Key.class)) {
+			value = allocatedKey;
+		}
+		else if (idPropType.equals(Long.class)) {
+			value = allocatedKey.getId();
+		}
+		else {
+			value = allocatedKey.getId().toString();
+		}
+
+		datastorePersistentEntity.getPropertyAccessor(entity).setProperty(idProp, value);
 		return allocatedKey;
 	}
 

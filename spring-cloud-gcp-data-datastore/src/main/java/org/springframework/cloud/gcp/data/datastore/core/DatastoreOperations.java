@@ -47,17 +47,19 @@ public interface DatastoreOperations {
 	/**
 	 * Saves an instance of an object to Cloud Datastore. Behaves as update or insert.
 	 * @param instance the instance to save.
+	 * @param ancestors ancestors
 	 * @return the instance that was saved.
 	 */
-	<T> T save(T instance);
+	<T> T save(T instance, Key... ancestors);
 
 	/**
 	 * Saves multiple instances of objects to Cloud Datastore. Behaves as update or
 	 * insert.
 	 * @param entities the objects to save.
+	 * @param ancestors ancestors
 	 * @return the entities that were saved.
 	 */
-	<T> Iterable<T> saveAll(Iterable<T> entities);
+	<T> Iterable<T> saveAll(Iterable<T> entities, Key... ancestors);
 
 	/**
 	 * Delete an entity from Cloud Datastore. Deleting IDs that do not exist in Cloud

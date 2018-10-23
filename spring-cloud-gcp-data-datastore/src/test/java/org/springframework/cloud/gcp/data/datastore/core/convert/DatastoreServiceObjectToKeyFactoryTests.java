@@ -20,6 +20,7 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
+import com.google.cloud.datastore.PathElement;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
@@ -30,6 +31,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -102,14 +104,32 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 	@Test
 	public void allocateIdForObjectTest() {
 		TestEntityWithId testEntityWithId = new TestEntityWithId();
-		Key key = new KeyFactory("project").setKind("kind").newKey(123L);
-		when(this.datastore.allocateId((IncompleteKey) any())).thenReturn(key);
+
+		doAnswer(invocation -> {
+			IncompleteKey incompleteKey = (IncompleteKey) invocation.getArguments()[0];
+			long id = 123L;
+			if (incompleteKey.getAncestors().size() > 0) {
+				id = 456L;
+			}
+			return Key.newBuilder(incompleteKey, id).build();
+		}).when(this.datastore).allocateId((IncompleteKey) any());
+
 		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("project"));
 		Key allocatedKey = this.datastoreServiceObjectToKeyFactory
 				.allocateKeyForObject(testEntityWithId, this.datastoreMappingContext
 						.getPersistentEntity(testEntityWithId.getClass()));
+		Key key = new KeyFactory("project").setKind("custom_test_kind").newKey(123L);
 		assertEquals(key, allocatedKey);
 		assertEquals("123", testEntityWithId.id);
+
+		Key allocatedKeyWithAncestor = this.datastoreServiceObjectToKeyFactory
+				.allocateKeyForObject(testEntityWithId, this.datastoreMappingContext
+						.getPersistentEntity(testEntityWithId.getClass()), allocatedKey);
+		Key keyWithAncestor = new KeyFactory("project").setKind("custom_test_kind")
+				.addAncestor(PathElement.of(key.getKind(), key.getId()))
+				.newKey(456L);
+		assertEquals(keyWithAncestor, allocatedKeyWithAncestor);
+		assertEquals("456", testEntityWithId.id);
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "custom_test_kind")
