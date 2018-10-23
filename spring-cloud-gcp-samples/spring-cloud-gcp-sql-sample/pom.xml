@@ -76,7 +76,7 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.0</version>
 				<configuration>
-					<executable>/usr/local/google/home/elfel/tools/openjdk11/jdk-11.0.1/bin/javac</executable>
+					<executable>~/tools/openjdk11/jdk-11.0.1/bin/javac</executable>
 					<fork>true</fork>
 				</configuration>
 			</plugin>
