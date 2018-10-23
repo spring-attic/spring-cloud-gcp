@@ -44,6 +44,7 @@ import org.springframework.context.annotation.Import;
  * @author Vinicius Carvalho
  * @author Artem Bilan
  * @author Mike Eltsufin
+ * @author Daniel Zou
  *
  * @see GoogleStorageProtocolResolver
  */
