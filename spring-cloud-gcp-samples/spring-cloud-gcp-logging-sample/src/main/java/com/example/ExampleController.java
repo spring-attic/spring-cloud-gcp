@@ -35,8 +35,8 @@ public class ExampleController {
 	public String log() {
 		String message = "This line was written to the log.";
 		String secondMessage = "This line was also written to the log with the same Trace ID.";
-		LOGGER.warn(message);
-		LOGGER.warn(secondMessage);
+		LOGGER.info(message);
+		LOGGER.info(secondMessage);
 		return message;
 	}
 }
