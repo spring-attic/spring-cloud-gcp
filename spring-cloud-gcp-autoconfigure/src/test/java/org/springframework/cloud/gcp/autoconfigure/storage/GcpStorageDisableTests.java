@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -30,9 +30,10 @@ import static org.assertj.core.api.Assertions.catchThrowable;
  * Verifies that GCP Storage may be disabled via the property:
  * "spring.cloud.gcp.storage.enabled=false"
  *
- * @author dzou
+ * @author Daniel Zou
  */
 public class GcpStorageDisableTests {
+
 	ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(GcpStorageAutoConfiguration.class))
 			.withPropertyValues("spring.cloud.gcp.storage.enabled=false");

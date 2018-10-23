@@ -23,6 +23,12 @@
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud Stackdriver tracing components.",
       "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.storage.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Storage components.",
+      "defaultValue": true
     }
   ]
 }
