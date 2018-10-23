@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.rule.OutputCapture;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.is;
@@ -33,20 +32,17 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 /**
+ * This test verifies that the jpa-sample works.
+ *
+ * Run with: mvn -Dit.cloudsql test
+ *
+ * The test will inherit the properties set in resources/application.properties.
+ *
  * @author Mike Eltsufin
  * @author Dmitry Solomakha
- */
-
-
-/*
-	This tests verifies that the jpa-sample works.
-	In order to run it, use the following parameters:
-
-	-Dit.cloudsql=true -Dspring.cloud.gcp.sql.database-name=[...]
-	-Dspring.cloud.gcp.sql.instance-connection-name=[...] -Dspring.datasource.password=[...]
+ * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource("classpath:application-test.properties")
 @SpringBootTest(classes = {DemoApplication.class})
 public class ApplicationTests {
 	@BeforeClass

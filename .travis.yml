@@ -26,6 +26,8 @@ before_install:
         INTEGRATION_TEST_FLAGS="${INTEGRATION_TEST_FLAGS} -Dit.spanner=true -Dit.storage=true -Dit.config=true -Dit.pubsub=true -Dit.logging=true
             -Dit.cloudsql=true -Dit.datastore=true
             -Dspring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testmysql
+            -Dspring.cloud.gcp.sql.database-name=code_samples_test_db
+            -Dspring.datasource.password=test
             -Dgcs-read-bucket=gcp-storage-bucket-sample-input
             -Dgcs-write-bucket=gcp-storage-bucket-sample-output
             -Dgcs-local-directory=/tmp/gcp_integration_tests/integration_storage_sample";
