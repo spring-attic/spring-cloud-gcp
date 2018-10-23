@@ -16,10 +16,14 @@
 
 package com.example;
 
+import com.google.common.collect.Iterators;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,15 +35,28 @@ import org.springframework.web.bind.annotation.RestController;
 public class WebController {
 
 	private final JdbcTemplate jdbcTemplate;
+	UserRepository repository;
 
-	public WebController(JdbcTemplate jdbcTemplate) {
+	public WebController(JdbcTemplate jdbcTemplate, UserRepository repository) {
 		this.jdbcTemplate = jdbcTemplate;
+		this.repository = repository;
 	}
 
 	@GetMapping("/getTuples")
 	public List getTuples() {
-		return this.jdbcTemplate.queryForList("SELECT * FROM users").stream()
+		/*return this.jdbcTemplate.queryForList("SELECT * FROM users").stream()
 				.map(Map::values)
 				.collect(Collectors.toList());
+				*/
+		List<Map> list = new ArrayList<>();
+		repository.findAll().forEach( e -> {
+			System.out.println("got an element: " + e);
+			Map<String,String> m = new HashMap<>();
+			m.put("first_name", e.getFirstName());
+			m.put("last_name", e.getFirstName());
+			m.put("id", e.getFirstName());
+			list.add(m);
+		});
+		return list;
 	}
 }
