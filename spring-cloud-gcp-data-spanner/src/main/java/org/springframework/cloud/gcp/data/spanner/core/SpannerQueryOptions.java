@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -38,6 +39,8 @@ public class SpannerQueryOptions {
 
 	private Optional<Timestamp> timestamp = Optional.empty();
 
+	private Set<String> includeProperties;
+
 	private boolean allowPartialRead;
 
 	/**
@@ -50,6 +53,15 @@ public class SpannerQueryOptions {
 	public SpannerQueryOptions addQueryOption(QueryOption queryOption) {
 		Assert.notNull(queryOption, "Valid query option is required!");
 		this.queryOptions.add(queryOption);
+		return this;
+	}
+
+	public Set<String> getIncludeProperties() {
+		return includeProperties;
+	}
+
+	public SpannerQueryOptions setIncludeProperties(Set<String> includeProperties) {
+		this.includeProperties = includeProperties;
 		return this;
 	}
 

@@ -155,7 +155,9 @@ public class SpannerTemplate implements SpannerOperations {
 		SpannerPersistentEntity<?> persistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		return mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
-				persistentEntity.columns(), options), entityClass);
+				persistentEntity.columns(), options), entityClass,
+				options == null ? null : options.getIncludeProperties(),
+				options != null && options.isAllowPartialRead());
 	}
 
 	@Override
@@ -174,7 +176,8 @@ public class SpannerTemplate implements SpannerOperations {
 	public <T> List<T> query(Class<T> entityClass, Statement statement,
 			SpannerQueryOptions options) {
 		return mapToListAndResolveChildren(executeQuery(statement, options), entityClass,
-				null, options != null && options.isAllowPartialRead());
+				options == null ? null : options.getIncludeProperties(),
+				options != null && options.isAllowPartialRead());
 	}
 
 	@Override
@@ -226,16 +229,16 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public void update(Object object, String... includeColumns) {
+	public void update(Object object, String... includeProperties) {
 		applyMutations(
 				this.mutationFactory.update(object,
-						includeColumns.length == 0 ? null
-								: new HashSet<>(Arrays.asList(includeColumns))));
+						includeProperties.length == 0 ? null
+								: new HashSet<>(Arrays.asList(includeProperties))));
 	}
 
 	@Override
-	public void update(Object object, Set<String> includeColumns) {
-		applyMutations(this.mutationFactory.update(object, includeColumns));
+	public void update(Object object, Set<String> includeProperties) {
+		applyMutations(this.mutationFactory.update(object, includeProperties));
 	}
 
 	@Override
@@ -251,16 +254,16 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	@Override
-	public void upsert(Object object, String... includeColumns) {
+	public void upsert(Object object, String... includeProperties) {
 		applyMutations(
 				this.mutationFactory.upsert(object,
-						includeColumns.length == 0 ? null
-								: new HashSet<>(Arrays.asList(includeColumns))));
+						includeProperties.length == 0 ? null
+								: new HashSet<>(Arrays.asList(includeProperties))));
 	}
 
 	@Override
-	public void upsert(Object object, Set<String> includeColumns) {
-		applyMutations(this.mutationFactory.upsert(object, includeColumns));
+	public void upsert(Object object, Set<String> includeProperties) {
+		applyMutations(this.mutationFactory.upsert(object, includeProperties));
 	}
 
 	@Override
@@ -440,32 +443,31 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	private <T> List<T> mapToListAndResolveChildren(ResultSet resultSet,
-			Class<T> entityClass, Set<String> includeColumns,
+			Class<T> entityClass, Set<String> includeProperties,
 			boolean allowMissingColumns) {
 		return resolveChildEntities(this.spannerEntityProcessor.mapToList(resultSet,
-				entityClass, includeColumns, allowMissingColumns));
+				entityClass, includeProperties, allowMissingColumns), includeProperties);
 	}
 
-	private <T> List<T> mapToListAndResolveChildren(ResultSet resultSet,
-			Class<T> entityClass) {
-		return resolveChildEntities(
-				this.spannerEntityProcessor.mapToList(resultSet, entityClass));
-	}
-
-	private <T> List<T> resolveChildEntities(List<T> entities) {
+	private <T> List<T> resolveChildEntities(List<T> entities,
+			Set<String> includeProperties) {
 		for (Object entity : entities) {
-			resolveChildEntity(entity);
+			resolveChildEntity(entity, includeProperties);
 		}
 		return entities;
 	}
 
-	private void resolveChildEntity(Object entity) {
+	private void resolveChildEntity(Object entity, Set<String> includeProperties) {
 		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
 				.getPersistentEntity(entity.getClass());
 		PersistentPropertyAccessor accessor = spannerPersistentEntity
 				.getPropertyAccessor(entity);
 		spannerPersistentEntity.doWithInterleavedProperties(
 				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+					if (includeProperties != null && !includeProperties
+							.contains(spannerPersistentEntity.getName())) {
+						return;
+					}
 					Class childType = spannerPersistentProperty.getColumnInnerType();
 					SpannerPersistentEntity childPersistentEntity = this.mappingContext
 							.getPersistentEntity(childType);

@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.QueryOption;
@@ -28,6 +30,8 @@ import org.springframework.data.domain.Sort.Order;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -71,6 +75,15 @@ public class SpannerSortPageQueryOptionsTests {
 		assertEquals(limit, spannerQueryOptions.getLimit());
 		spannerQueryOptions.unsetLimit();
 		assertFalse(spannerQueryOptions.hasLimit());
+	}
+
+	@Test
+	public void includePropertiesTest() {
+		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
+		Set<String> includeProperties = Collections.emptySet();
+		assertNull(spannerQueryOptions.getIncludeProperties());
+		spannerQueryOptions.setIncludeProperties(includeProperties);
+		assertNotNull(spannerQueryOptions.getIncludeProperties());
 	}
 
 	@Test

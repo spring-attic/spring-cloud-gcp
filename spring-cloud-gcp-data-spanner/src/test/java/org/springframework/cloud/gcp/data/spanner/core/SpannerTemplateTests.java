@@ -209,7 +209,7 @@ public class SpannerTemplateTests {
 		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
 		this.spannerTemplate.read(TestEntity.class, keySet, options);
 		verify(this.objectMapper, times(1)).mapToList(same(results),
-				eq(TestEntity.class));
+				eq(TestEntity.class), isNull(), eq(false));
 		verify(this.readContext, times(1)).read(eq("custom_test_table"), same(keySet),
 				any(), same(readOption));
 	}
@@ -225,7 +225,7 @@ public class SpannerTemplateTests {
 				.thenReturn(results);
 		this.spannerTemplate.read(TestEntity.class, keySet, options);
 		verify(this.objectMapper, times(1)).mapToList(same(results),
-				eq(TestEntity.class));
+				eq(TestEntity.class), isNull(), eq(false));
 		verify(this.readContext, times(1)).readUsingIndex(eq("custom_test_table"),
 				eq("index"), same(keySet), any(), same(readOption));
 	}
@@ -470,10 +470,20 @@ public class SpannerTemplateTests {
 		gc.id4 = "key4";
 		when(this.objectMapper.mapToList(any(), eq(ParentEntity.class)))
 				.thenReturn(ImmutableList.of(p));
+		when(this.objectMapper.mapToList(any(), eq(ParentEntity.class), any(), eq(false)))
+				.thenReturn(ImmutableList.of(p));
 		when(this.objectMapper.mapToList(any(), eq(ChildEntity.class), any(), eq(false)))
 				.thenReturn(ImmutableList.of(c));
 		when(this.objectMapper.mapToList(any(), eq(GrandChildEntity.class), any(),
 				eq(false))).thenReturn(ImmutableList.of(gc));
+
+		ParentEntity resultWithoutChildren = this.spannerTemplate
+				.readAll(ParentEntity.class,
+						new SpannerReadOptions()
+								.setIncludeProperties(Collections.singleton("id")))
+				.get(0);
+		assertNull(resultWithoutChildren.childEntities);
+
 		ParentEntity result = this.spannerTemplate.readAll(ParentEntity.class).get(0);
 		assertEquals(1, result.childEntities.size());
 		assertSame(c, result.childEntities.get(0));

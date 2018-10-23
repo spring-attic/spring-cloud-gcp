@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ReadOption;
@@ -25,6 +27,8 @@ import org.junit.Test;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -66,6 +70,15 @@ public class SpannerReadOptionsTests {
 		spannerReadOptions.addReadOption(r1).addReadOption(r2);
 		assertThat(Arrays.asList(spannerReadOptions.getReadOptions()),
 				containsInAnyOrder(r1, r2));
+	}
+
+	@Test
+	public void includePropertiesTest() {
+		SpannerReadOptions spannerReadOptions = new SpannerReadOptions();
+		Set<String> includeProperties = Collections.emptySet();
+		assertNull(spannerReadOptions.getIncludeProperties());
+		spannerReadOptions.setIncludeProperties(includeProperties);
+		assertNotNull(spannerReadOptions.getIncludeProperties());
 	}
 
 	@Test

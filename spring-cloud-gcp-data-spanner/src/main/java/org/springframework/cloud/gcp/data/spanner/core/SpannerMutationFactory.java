@@ -49,11 +49,11 @@ public interface SpannerMutationFactory {
 	 * If there are no interleaved children then the returned list will contain the single
 	 * mutation for the given object.
 	 * @param object The object to update or newly insert.
-	 * @param includeColumns The columns to use in the operation. if null then all columns
-	 * are used.
+	 * @param includeProperties The properties to use in the operation. if null then all
+	 * properties are used.
 	 * @return The mutation operations which will store the object and its children.
 	 */
-	List<Mutation> upsert(Object object, Set<String> includeColumns);
+	List<Mutation> upsert(Object object, Set<String> includeProperties);
 
 	/**
 	 * Updates an object and its interleaved child properties in Cloud Spanner. There will
@@ -61,11 +61,11 @@ public interface SpannerMutationFactory {
 	 * no interleaved children then the returned list will contain the single mutation for
 	 * the given object.
 	 * @param object The object to update.
-	 * @param includeColumns The columns to use in the operation. if null then all columns
-	 * are used.
+	 * @param includeProperties The properties to use in the operation. if null then all
+	 * properties are used.
 	 * @return The mutation operations which will store the object and its children.
 	 */
-	List<Mutation> update(Object object, Set<String> includeColumns);
+	List<Mutation> update(Object object, Set<String> includeProperties);
 
 	/**
 	 * Deletes several objects from Spanner.
