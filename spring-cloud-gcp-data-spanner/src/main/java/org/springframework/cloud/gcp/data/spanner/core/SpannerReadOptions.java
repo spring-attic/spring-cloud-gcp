@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ReadOption;
@@ -40,6 +41,10 @@ public class SpannerReadOptions {
 
 	private Optional<String> index = Optional.empty();
 
+	private Set<String> includeProperties;
+
+	private boolean allowPartialRead;
+
 	/**
 	 * Constructor to create an instance. Use the extension-style add/set functions to add
 	 * options and settings.
@@ -50,6 +55,15 @@ public class SpannerReadOptions {
 	public SpannerReadOptions addReadOption(ReadOption readOption) {
 		Assert.notNull(readOption, "Valid read option is required!");
 		this.readOptions.add(readOption);
+		return this;
+	}
+
+	public Set<String> getIncludeProperties() {
+		return includeProperties;
+	}
+
+	public SpannerReadOptions setIncludeProperties(Set<String> includeProperties) {
+		this.includeProperties = includeProperties;
 		return this;
 	}
 
@@ -101,5 +115,14 @@ public class SpannerReadOptions {
 
 	public ReadOption[] getReadOptions() {
 		return this.readOptions.toArray(new ReadOption[this.readOptions.size()]);
+	}
+
+	public boolean isAllowPartialRead() {
+		return this.allowPartialRead;
+	}
+
+	public SpannerReadOptions setAllowPartialRead(boolean allowPartialRead) {
+		this.allowPartialRead = allowPartialRead;
+		return this;
 	}
 }

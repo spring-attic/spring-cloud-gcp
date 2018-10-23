@@ -183,18 +183,19 @@ public interface SpannerOperations {
 	/**
 	 * Update an object in storage.
 	 * @param object the object to update.
-	 * @param includeColumns the columns to upsert. if none are given then all columns are
-	 * used
+	 * @param includeProperties the properties to upsert. if none are given then all
+	 * properties are used
 	 */
-	void update(Object object, String... includeColumns);
+	void update(Object object, String... includeProperties);
 
 	/**
 	 * Update an object in storage.
 	 * @param object the object to update.
-	 * @param includeColumns the columns to update. If null is given, then all columns are
-	 * used. Note that an empty {@code Set} means that no columns will be used.
+	 * @param includeProperties the properties to update. If null is given, then all
+	 * properties are used. Note that an empty {@code Set} means that no properties will
+	 * be used.
 	 */
-	void update(Object object, Set<String> includeColumns);
+	void update(Object object, Set<String> includeProperties);
 
 	/**
 	 * Update or insert an object into storage.
@@ -211,18 +212,19 @@ public interface SpannerOperations {
 	/**
 	 * Update or insert an object into storage.
 	 * @param object the object to update or insert.
-	 * @param includeColumns the columns to upsert. if none are given then all columns are
-	 * upserted.
+	 * @param includeProperties the properties to upsert. if none are given then all
+	 * properties are upserted.
 	 */
-	void upsert(Object object, String... includeColumns);
+	void upsert(Object object, String... includeProperties);
 
 	/**
 	 * Update or insert an object into storage.
 	 * @param object the object to update or insert.
-	 * @param includeColumns the columns to update. If null is given, then all columns are
-	 * used. Note that an empty {@code Set} means that no columns will be used.
+	 * @param includeProperties the properties to update. If null is given, then all
+	 * properties are used. Note that an empty {@code Set} means that no properties will
+	 * be used.
 	 */
-	void upsert(Object object, Set<String> includeColumns);
+	void upsert(Object object, Set<String> includeProperties);
 
 	/**
 	 * Count how many objects are stored of the given type.

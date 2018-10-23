@@ -77,15 +77,15 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	}
 
 	@Override
-	public List<Mutation> upsert(Object object, Set<String> includeColumns) {
+	public List<Mutation> upsert(Object object, Set<String> includeProperties) {
 		return saveObject(Op.INSERT_OR_UPDATE, object,
-				includeColumns == null ? null : includeColumns);
+				includeProperties == null ? null : includeProperties);
 	}
 
 	@Override
-	public List<Mutation> update(Object object, Set<String> includeColumns) {
+	public List<Mutation> update(Object object, Set<String> includeProperties) {
 		return saveObject(Op.UPDATE, object,
-				includeColumns == null ? null : includeColumns);
+				includeProperties == null ? null : includeProperties);
 	}
 
 	@Override
@@ -122,24 +122,30 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 		return delete(entityClass, KeySet.singleKey(key));
 	}
 
-	private List<Mutation> saveObject(Op op, Object object, Set<String> includeColumns) {
+	private List<Mutation> saveObject(Op op, Object object,
+			Set<String> includeProperties) {
 		SpannerPersistentEntity<?> persistentEntity = this.spannerMappingContext
 				.getPersistentEntity(object.getClass());
 		List<Mutation> mutations = new ArrayList<>();
 		Mutation.WriteBuilder writeBuilder = writeBuilder(op,
 				persistentEntity.tableName());
-		this.spannerEntityProcessor.write(object, writeBuilder::set, includeColumns);
+		this.spannerEntityProcessor.write(object, writeBuilder::set, includeProperties);
 		mutations.add(writeBuilder.build());
 
 		persistentEntity.doWithInterleavedProperties(spannerPersistentProperty -> {
-			Iterable kids = (Iterable) persistentEntity.getPropertyAccessor(object)
-					.getProperty(spannerPersistentProperty);
-			if (kids != null) {
-				for (Object child : kids) {
-					verifyChildHasParentId(persistentEntity, object,
-							this.spannerMappingContext.getPersistentEntity(
-									spannerPersistentProperty.getColumnInnerType()), child);
-					mutations.addAll(saveObject(op, child, includeColumns));
+			if (includeProperties == null
+					|| includeProperties.contains(spannerPersistentProperty.getName())) {
+
+				Iterable kids = (Iterable) persistentEntity.getPropertyAccessor(object)
+						.getProperty(spannerPersistentProperty);
+				if (kids != null) {
+					for (Object child : kids) {
+						verifyChildHasParentId(persistentEntity, object,
+								this.spannerMappingContext.getPersistentEntity(
+										spannerPersistentProperty.getColumnInnerType()),
+								child);
+						mutations.addAll(saveObject(op, child, includeProperties));
+					}
 				}
 			}
 		});
