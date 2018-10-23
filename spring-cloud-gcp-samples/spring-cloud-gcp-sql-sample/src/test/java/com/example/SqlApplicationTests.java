@@ -28,11 +28,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,16 +40,15 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Simple integration test to verify the SQL sample application.
+ * Simple integration test to verify the SQL sample application. This test will use the
+ * properties set in resources/application.properties.
  *
- * Run with: mvn -Dit.cloudsql -Dspring.cloud.gcp.sql.database-name=[...]
- * -Dspring.cloud.gcp.sql.instance-connection-name=[...]
- * -Dspring.datasource.password=[...] test
+ * Run with: mvn -Dit.cloudsql test
  *
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@TestPropertySource("classpath:application-test.properties")
+@PropertySource("classpath:application.properties")
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { SqlApplication.class })
 public class SqlApplicationTests {
 
