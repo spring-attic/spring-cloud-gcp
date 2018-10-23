@@ -44,7 +44,6 @@ import static org.junit.Assume.assumeThat;
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
-@PropertySource("classpath:application.properties")
 @SpringBootTest(classes = {DemoApplication.class})
 public class ApplicationTests {
 	@BeforeClass
