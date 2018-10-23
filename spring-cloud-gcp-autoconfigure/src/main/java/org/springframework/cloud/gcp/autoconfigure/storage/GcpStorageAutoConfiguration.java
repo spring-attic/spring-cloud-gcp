@@ -24,6 +24,7 @@ import com.google.cloud.storage.StorageOptions;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
@@ -43,11 +44,13 @@ import org.springframework.context.annotation.Import;
  * @author Vinicius Carvalho
  * @author Artem Bilan
  * @author Mike Eltsufin
+ * @author Daniel Zou
  *
  * @see GoogleStorageProtocolResolver
  */
 @Configuration
 @ConditionalOnClass({ GoogleStorageProtocolResolverSettings.class, Storage.class })
+@ConditionalOnProperty(value = "spring.cloud.gcp.storage.enabled", matchIfMissing = true)
 @EnableConfigurationProperties({GcpProperties.class, GcpStorageProperties.class})
 @Import(GoogleStorageProtocolResolver.class)
 public class GcpStorageAutoConfiguration {
