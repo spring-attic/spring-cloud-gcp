@@ -40,7 +40,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedType;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedStatus;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedStatus.EmbeddedType;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 import org.springframework.data.util.TypeInformation;
 
@@ -92,27 +93,36 @@ public abstract class DatastoreNativeTypes {
 		return aClass == null || DATASTORE_NATIVE_TYPES.contains(aClass);
 	}
 
-	public static EmbeddedType getEmbeddedType(TypeInformation typeInformation) {
-		EmbeddedType embeddedType;
-		if (typeInformation.isCollectionLike()) {
-			if (typeInformation.getComponentType().getType().isAnnotationPresent(
-					org.springframework.cloud.gcp.data.datastore.core.mapping.Entity.class)) {
-				embeddedType = EmbeddedType.COLLECTION_EMBEDDED_ELEMENTS;
+	public static EmbeddedStatus getEmbeddedType(TypeInformation typeInformation,
+			int embeddedMapDepthAllowance) {
+		EmbeddedStatus.EmbeddedType embeddedType;
+		if (typeInformation.isMap()) {
+			if (embeddedMapDepthAllowance > 0) {
+				embeddedType = EmbeddedType.EMBEDDED_MAP;
 			}
 			else {
 				embeddedType = EmbeddedType.NOT_EMBEDDED;
+			}
+		}
+		else if (typeInformation.isCollectionLike()) {
+			if (typeInformation.getComponentType().getType().isAnnotationPresent(
+					org.springframework.cloud.gcp.data.datastore.core.mapping.Entity.class)) {
+				embeddedType = EmbeddedStatus.EmbeddedType.COLLECTION_EMBEDDED_ELEMENTS;
+			}
+			else {
+				embeddedType = EmbeddedStatus.EmbeddedType.NOT_EMBEDDED;
 			}
 		}
 		else {
 			if (typeInformation.getType().isAnnotationPresent(
 					org.springframework.cloud.gcp.data.datastore.core.mapping.Entity.class)) {
-				embeddedType = EmbeddedType.SINGULAR_EMBEDDED;
+				embeddedType = EmbeddedStatus.EmbeddedType.SINGULAR_EMBEDDED;
 			}
 			else {
-				embeddedType = EmbeddedType.NOT_EMBEDDED;
+				embeddedType = EmbeddedStatus.EmbeddedType.NOT_EMBEDDED;
 			}
 		}
-		return embeddedType;
+		return new EmbeddedStatus(embeddedMapDepthAllowance, embeddedType);
 	}
 
 	/*

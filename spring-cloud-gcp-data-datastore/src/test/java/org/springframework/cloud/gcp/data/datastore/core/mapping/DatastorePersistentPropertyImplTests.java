@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedStatus.EmbeddedType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.PropertyHandler;
@@ -59,10 +60,11 @@ public class DatastorePersistentPropertyImplTests {
 							}
 							else if (property.getFieldName().equals("embeddedEntity")) {
 								assertTrue(property
+										.getEmbeddedStatus()
 										.getEmbeddedType() == EmbeddedType.SINGULAR_EMBEDDED);
 							}
 							else if (property.getFieldName().equals("embeddedMap")) {
-								assertTrue(property
+								assertTrue(property.getEmbeddedStatus()
 										.getEmbeddedType() == EmbeddedType.EMBEDDED_MAP);
 								assertEquals(String.class,
 										property.getTypeInformation().getTypeArguments()

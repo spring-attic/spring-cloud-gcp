@@ -268,8 +268,12 @@ public class EmbeddableTreeNode {
 
 Embedded objects can be stored in the values of the embedded Maps such as embedded objects can be stored as properties.
 Collections of embedded objects can also be stored as the values of the embedded Maps.
+
 The `@EmbeddedMap` annotation on the map properties indicate that the entire property will be stored as an embedded entity.
 Without this annotation the maps would be converted and stored as collections.
+The annotation can also have a parameter `@EmbeddedMap(depth = 2)`.
+This is the maximum depth of nested embedded `Map` values in the embedded map property that this annotates.
+For example, a depth of 2 means `Map<String, Map<String, Long>>` means the the value type is also stored as an embedded entity, while a depth of 1 means that map in the value is converted to a collection.
 
 ==== Relationships
 

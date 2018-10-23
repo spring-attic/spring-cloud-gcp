@@ -47,6 +47,9 @@ public class TestItemWithEmbeddedEntity {
 	@EmbeddedMap
 	private Map<String, List<EmbeddedEntity>> embeddedEntityMapListOfEmbeddedEntities;
 
+	@EmbeddedMap(depth = 3)
+	private Map<String, Map<String, Map<String, String>>> nestedEmbeddedMaps;
+
 	public TestItemWithEmbeddedEntity(int intField, EmbeddedEntity embeddedEntityField,
 			List<EmbeddedEntity> listOfEmbeddedEntities,
 			Map<String, String> embeddedMapSimpleValues,
@@ -100,6 +103,15 @@ public class TestItemWithEmbeddedEntity {
 	public int hashCode() {
 
 		return Objects.hash(this.intField, this.embeddedEntityField, this.listOfEmbeddedEntities);
+	}
+
+	public Map<String, Map<String, Map<String, String>>> getNestedEmbeddedMaps() {
+		return this.nestedEmbeddedMaps;
+	}
+
+	public void setNestedEmbeddedMaps(
+			Map<String, Map<String, Map<String, String>>> nestedEmbeddedMaps) {
+		this.nestedEmbeddedMaps = nestedEmbeddedMaps;
 	}
 
 	@Entity

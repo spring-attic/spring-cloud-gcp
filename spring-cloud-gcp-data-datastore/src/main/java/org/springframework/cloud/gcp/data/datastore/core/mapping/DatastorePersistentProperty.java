@@ -56,9 +56,9 @@ public interface DatastorePersistentProperty
 	boolean isUnindexed();
 
 	/**
-	 * Get the {@link EmbeddedType} of the property indicating what what type of embedding
-	 * pathway will be used to store the property.
-	 * @return the embedded type.
+	 * Get the {@link EmbeddedStatus} of the property indicating what what type of
+	 * embedding pathway will be used to store the property.
+	 * @return the embedded status.
 	 */
-	EmbeddedType getEmbeddedType();
+	EmbeddedStatus getEmbeddedStatus();
 }

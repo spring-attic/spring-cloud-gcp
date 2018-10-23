@@ -38,7 +38,7 @@ import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedType;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedStatus;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -103,39 +103,43 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	@Override
 	public <T> T convertOnRead(Object val, Class targetCollectionType,
 			Class targetComponentType) {
-		return (T) convertOnRead(val, EmbeddedType.NOT_EMBEDDED, targetCollectionType,
+		return (T) convertOnRead(val,
+				new EmbeddedStatus(0, EmbeddedStatus.EmbeddedType.NOT_EMBEDDED),
+				targetCollectionType,
 				ClassTypeInformation.from(targetComponentType));
 	}
 
 	@Override
-	public <T> T convertOnRead(Object val, EmbeddedType embeddedType,
+	public <T> T convertOnRead(Object val, EmbeddedStatus embeddedStatus,
 			TypeInformation targetTypeInformation) {
 		TypeInformation componentTypeInformation;
 		if (targetTypeInformation.isCollectionLike()) {
 			componentTypeInformation = targetTypeInformation.getComponentType();
 		}
-		else if (embeddedType == EmbeddedType.EMBEDDED_MAP) {
+		else if (embeddedStatus
+				.getEmbeddedType() == EmbeddedStatus.EmbeddedType.EMBEDDED_MAP) {
 			componentTypeInformation = (TypeInformation) targetTypeInformation
 					.getTypeArguments().get(1);
 		}
 		else {
 			componentTypeInformation = targetTypeInformation;
 		}
-		return convertOnRead(val, embeddedType,
+		return convertOnRead(val, embeddedStatus,
 				targetTypeInformation.isCollectionLike() ? targetTypeInformation.getType()
 						: null,
 				componentTypeInformation);
 	}
 
-	private <T> T convertOnRead(Object val, EmbeddedType embeddedType,
+	private <T> T convertOnRead(Object val, EmbeddedStatus embeddedStatus,
 			Class targetCollectionType, TypeInformation targetComponentType) {
 		if (val == null) {
 			return null;
 		}
 		BiFunction<Object, TypeInformation<?>, ?> readConverter;
-		switch (embeddedType) {
+		switch (embeddedStatus.getEmbeddedType()) {
 		case EMBEDDED_MAP:
-			readConverter = this::convertOnReadSingleEmbeddedMap;
+			readConverter = (x, y) -> convertOnReadSingleEmbeddedMap(x, y,
+					embeddedStatus.getEmbeddedMapDepthAllowance());
 			break;
 		case SINGULAR_EMBEDDED:
 			readConverter = this::convertOnReadSingleEmbedded;
@@ -168,11 +172,11 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	private <T> Map<String, T> convertOnReadSingleEmbeddedMap(Object value,
-			TypeInformation<T> targetComponentType) {
+			TypeInformation<T> targetComponentType, int embeddedMapDepthAllowance) {
 		Assert.notNull(value, "Cannot convert a null value.");
 		if (value instanceof BaseEntity) {
 			return this.datastoreEntityConverter.readAsMap(targetComponentType,
-					(BaseEntity) value);
+					(BaseEntity) value, embeddedMapDepthAllowance);
 		}
 		throw new DatastoreDataException(
 				"Embedded entity was expected, but " + value.getClass() + " found");
@@ -226,21 +230,22 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	@Override
 	public Value convertOnWrite(Object proppertyVal, DatastorePersistentProperty persistentProperty) {
-		return convertOnWrite(proppertyVal, persistentProperty.getEmbeddedType(),
+		return convertOnWrite(proppertyVal, persistentProperty.getEmbeddedStatus(),
 				persistentProperty.getFieldName(),
 				persistentProperty.getTypeInformation());
 	}
 
-	private Value convertOnWrite(Object proppertyVal, EmbeddedType embeddedType,
+	private Value convertOnWrite(Object proppertyVal, EmbeddedStatus embeddedStatus,
 			String fieldName, TypeInformation typeInformation) {
 		Object val = proppertyVal;
 
 		Function<Object, Value> writeConverter = this::convertOnWriteSingle;
 		if (proppertyVal != null) {
-			switch (embeddedType) {
+			switch (embeddedStatus.getEmbeddedType()) {
 			case EMBEDDED_MAP:
 				writeConverter = x -> convertOnWriteSingleEmbeddedMap(x, fieldName,
-						(TypeInformation) typeInformation.getTypeArguments().get(1));
+						(TypeInformation) typeInformation.getTypeArguments().get(1),
+						embeddedStatus.getEmbeddedMapDepthAllowance());
 				break;
 			case SINGULAR_EMBEDDED:
 				writeConverter = x -> convertOnWriteSingleEmbedded(x, fieldName);
@@ -276,14 +281,15 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	private EntityValue convertOnWriteSingleEmbeddedMap(Object val, String kindName,
-			TypeInformation valueTypeInformation) {
+			TypeInformation valueTypeInformation, int embeddedMapDepthAllowance) {
 		return applyEntityValueBuilder(kindName, builder -> {
 			Map<String, ?> map = (Map<String, ?>) val;
 			for (String field : map.keySet()) {
 				builder.set(field,
 						convertOnWrite(map.get(field),
 								DatastoreNativeTypes
-										.getEmbeddedType(valueTypeInformation),
+										.getEmbeddedType(valueTypeInformation,
+												embeddedMapDepthAllowance - 1),
 								field, valueTypeInformation));
 			}
 		});

@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
-import java.util.Map;
-
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
@@ -77,8 +75,7 @@ public class DatastorePersistentPropertyImpl
 					"Only collection-like properties can contain the "
 							+ "descendant entity objects can be annotated @Descendants.");
 		}
-		if (getEmbeddedType() == EmbeddedType.EMBEDDED_MAP
-				&& !Map.class.isAssignableFrom(getType())) {
+		if (findAnnotation(EmbeddedMap.class) != null && !isMap()) {
 			throw new DatastoreDataException(
 					"Property was annotated as an embedded map but was not a Map with a String key type: "
 							+ getName());
@@ -113,11 +110,10 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	@Override
-	public EmbeddedType getEmbeddedType() {
-		if (findAnnotation(EmbeddedMap.class) != null) {
-			return EmbeddedType.EMBEDDED_MAP;
-		}
-		return DatastoreNativeTypes.getEmbeddedType(getTypeInformation());
+	public EmbeddedStatus getEmbeddedStatus() {
+		EmbeddedMap annotation = findAnnotation(EmbeddedMap.class);
+		return DatastoreNativeTypes.getEmbeddedType(getTypeInformation(),
+				annotation == null ? 0 : annotation.depth());
 	}
 
 	@Override

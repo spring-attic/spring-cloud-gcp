@@ -34,4 +34,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EmbeddedMap {
 
+	/**
+	 * The maximum depth of nested embedded {@code Map} values in the embedded map
+	 * property that this annotates. For example, a depth of 2 means
+	 * {@code Map<String, Map<String, Long>>} means the the value type is also stored as
+	 * an embedded entity, while a depth of 1 means that map in the value is converted to
+	 * a collection.
+	 * @return the maximum depth of nested map values to store as embedded entities.
+	 */
+	int depth() default 1;
 }
