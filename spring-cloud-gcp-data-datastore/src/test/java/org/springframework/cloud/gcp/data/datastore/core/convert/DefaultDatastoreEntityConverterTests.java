@@ -544,9 +544,9 @@ public class DefaultDatastoreEntityConverterTests {
 		embeddedEntityMapListOfEmbeddedEntities.put("a", Arrays.asList(embeddedEntityA));
 		embeddedEntityMapListOfEmbeddedEntities.put("b", Arrays.asList(embeddedEntityB));
 
-		Map<String, Map<String, Map<String, String>>> nestedEmbeddedMap = new HashMap<>();
-		Map<String, Map<String, String>> nestedInnerEmbeddedMap = new HashMap<>();
-		nestedInnerEmbeddedMap.put("inner1", mapSimpleValues);
+		Map<String, Map<Long, Map<String, String>>> nestedEmbeddedMap = new HashMap<>();
+		Map<Long, Map<String, String>> nestedInnerEmbeddedMap = new HashMap<>();
+		nestedInnerEmbeddedMap.put(1L, mapSimpleValues);
 		nestedEmbeddedMap.put("outer1", nestedInnerEmbeddedMap);
 
 		TestItemWithEmbeddedEntity item = new TestItemWithEmbeddedEntity(123,
@@ -575,9 +575,9 @@ public class DefaultDatastoreEntityConverterTests {
 				.as("validate int field").isEqualTo(123L);
 
 		assertThat(entity.getEntity("nestedEmbeddedMaps").getEntity("outer1")
-				.getEntity("inner1").getString("a")).isEqualTo("valueA");
+				.getEntity("1").getString("a")).isEqualTo("valueA");
 		assertThat(entity.getEntity("nestedEmbeddedMaps").getEntity("outer1")
-				.getEntity("inner1").getString("b")).isEqualTo("valueB");
+				.getEntity("1").getString("b")).isEqualTo("valueB");
 
 		assertThat(entity.getEntity("embeddedMapSimpleValues").getString("a"))
 				.isEqualTo("valueA");
@@ -611,9 +611,9 @@ public class DefaultDatastoreEntityConverterTests {
 				.read(TestItemWithEmbeddedEntity.class, entity);
 
 		assertEquals("valueA",
-				read.getNestedEmbeddedMaps().get("outer1").get("inner1").get("a"));
+				read.getNestedEmbeddedMaps().get("outer1").get(1L).get("a"));
 		assertEquals("valueB",
-				read.getNestedEmbeddedMaps().get("outer1").get("inner1").get("b"));
+				read.getNestedEmbeddedMaps().get("outer1").get(1L).get("b"));
 
 		assertThat(read).as("read objects equals the original one").isEqualTo(item);
 	}

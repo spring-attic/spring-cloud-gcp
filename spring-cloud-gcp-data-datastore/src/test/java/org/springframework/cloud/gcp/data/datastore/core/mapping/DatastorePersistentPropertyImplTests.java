@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedStatus.EmbeddedType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.PropertyHandler;
@@ -60,11 +59,10 @@ public class DatastorePersistentPropertyImplTests {
 							}
 							else if (property.getFieldName().equals("embeddedEntity")) {
 								assertTrue(property
-										.getEmbeddedStatus()
-										.getEmbeddedType() == EmbeddedType.SINGULAR_EMBEDDED);
+										.getEmbeddedType() == EmbeddedType.EMBEDDED_ENTITY);
 							}
 							else if (property.getFieldName().equals("embeddedMap")) {
-								assertTrue(property.getEmbeddedStatus()
+								assertTrue(property
 										.getEmbeddedType() == EmbeddedType.EMBEDDED_MAP);
 								assertEquals(String.class,
 										property.getTypeInformation().getTypeArguments()
@@ -93,13 +91,6 @@ public class DatastorePersistentPropertyImplTests {
 							.createAssociation().getObverse());
 				});
 	}
-
-	@Test(expected = DatastoreDataException.class)
-	public void embeddedMapNotMapTest() {
-		this.datastoreMappingContext
-				.getPersistentEntity(EmbeddedMapNotMap.class);
-	}
-
 
 	@Test(expected = DatastoreDataException.class)
 	public void referenceDescendantAnnotatedTest() {
@@ -138,7 +129,6 @@ public class DatastorePersistentPropertyImplTests {
 
 		TestSubEntity embeddedEntity;
 
-		@EmbeddedMap
 		Map<String, String> embeddedMap;
 
 		@Descendants
@@ -155,11 +145,6 @@ public class DatastorePersistentPropertyImplTests {
 
 	private static class UntypedListEntity {
 		List untypedList;
-	}
-
-	private static class EmbeddedMapNotMap {
-		@EmbeddedMap
-		TestSubEntity[] subEntity;
 	}
 
 	private static class DescendantReferenceAnnotatedEntity {

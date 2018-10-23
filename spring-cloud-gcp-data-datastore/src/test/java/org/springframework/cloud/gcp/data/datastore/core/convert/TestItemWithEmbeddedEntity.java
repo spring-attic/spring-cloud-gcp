@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedMap;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 
 /**
@@ -35,20 +34,15 @@ public class TestItemWithEmbeddedEntity {
 
 	private List<EmbeddedEntity> listOfEmbeddedEntities;
 
-	@EmbeddedMap
 	private Map<String, String> embeddedMapSimpleValues;
 
-	@EmbeddedMap
 	private Map<String, String[]> embeddedMapListOfValues;
 
-	@EmbeddedMap
 	private Map<String, EmbeddedEntity> embeddedEntityMapEmbeddedEntity;
 
-	@EmbeddedMap
 	private Map<String, List<EmbeddedEntity>> embeddedEntityMapListOfEmbeddedEntities;
 
-	@EmbeddedMap(depth = 3)
-	private Map<String, Map<String, Map<String, String>>> nestedEmbeddedMaps;
+	private Map<String, Map<Long, Map<String, String>>> nestedEmbeddedMaps;
 
 	public TestItemWithEmbeddedEntity(int intField, EmbeddedEntity embeddedEntityField,
 			List<EmbeddedEntity> listOfEmbeddedEntities,
@@ -105,12 +99,12 @@ public class TestItemWithEmbeddedEntity {
 		return Objects.hash(this.intField, this.embeddedEntityField, this.listOfEmbeddedEntities);
 	}
 
-	public Map<String, Map<String, Map<String, String>>> getNestedEmbeddedMaps() {
+	public Map<String, Map<Long, Map<String, String>>> getNestedEmbeddedMaps() {
 		return this.nestedEmbeddedMaps;
 	}
 
 	public void setNestedEmbeddedMaps(
-			Map<String, Map<String, Map<String, String>>> nestedEmbeddedMaps) {
+			Map<String, Map<Long, Map<String, String>>> nestedEmbeddedMaps) {
 		this.nestedEmbeddedMaps = nestedEmbeddedMaps;
 	}
 

@@ -217,10 +217,8 @@ public class EmbeddableTreeNode {
 
   EmbeddableTreeNode right;
 
-  @EmbeddedMap
   Map<String, Long> longValues;
 
-  @EmbeddedMap
   Map<String, List<Timestamp>> listTimestamps;
 
   public EmbeddableTreeNode(long value, EmbeddableTreeNode left, EmbeddableTreeNode right) {
@@ -231,9 +229,8 @@ public class EmbeddableTreeNode {
 }
 ----
 
-Maps with String key types can also be embedded as entities where the key values become the field names in the embedded entity.
-The value types in these maps can be any regularly supported property type.
-These maps are annotated with `@EmbeddedMap`.
+Maps will be stored as embedded as entities where the key values become the field names in the embedded entity.
+The value types in these maps can be any regularly supported property type, and the key values will be converted to String using the configured converters.
 
 Also, a collection of entities can be embedded; it will be converted to `ListValue` on write.
 
@@ -254,10 +251,8 @@ public class EmbeddableTreeNode {
 
   List<EmbeddableTreeNode> children;
 
-  @EmbeddedMap
   Map<String, EmbeddableTreeNode> siblingNodes;
 
-  @EmbeddedMap
   Map<String, Set<EmbeddableTreeNode>> subNodeGroups;
 
   public EmbeddableTreeNode(List<EmbeddableTreeNode> children;) {
@@ -266,14 +261,9 @@ public class EmbeddableTreeNode {
 }
 ----
 
-Embedded objects can be stored in the values of the embedded Maps such as embedded objects can be stored as properties.
+Embedded objects can be stored in the values of embedded Maps.
 Collections of embedded objects can also be stored as the values of the embedded Maps.
 
-The `@EmbeddedMap` annotation on the map properties indicate that the entire property will be stored as an embedded entity.
-Without this annotation the maps would be converted and stored as collections.
-The annotation can also have a parameter `@EmbeddedMap(depth = 2)`.
-This is the maximum depth of nested embedded `Map` values in the embedded map property that this annotates.
-For example, a depth of 2 means `Map<String, Map<String, Long>>` means the the value type is also stored as an embedded entity, while a depth of 1 means that map in the value is converted to a collection.
 
 ==== Relationships
 

@@ -75,11 +75,6 @@ public class DatastorePersistentPropertyImpl
 					"Only collection-like properties can contain the "
 							+ "descendant entity objects can be annotated @Descendants.");
 		}
-		if (findAnnotation(EmbeddedMap.class) != null && !isMap()) {
-			throw new DatastoreDataException(
-					"Property was annotated as an embedded map but was not a Map with a String key type: "
-							+ getName());
-		}
 	}
 
 	@Override
@@ -110,10 +105,8 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	@Override
-	public EmbeddedStatus getEmbeddedStatus() {
-		EmbeddedMap annotation = findAnnotation(EmbeddedMap.class);
-		return DatastoreNativeTypes.getEmbeddedType(getTypeInformation(),
-				annotation == null ? 0 : annotation.depth());
+	public EmbeddedType getEmbeddedType() {
+		return DatastoreNativeTypes.getEmbeddedType(getTypeInformation());
 	}
 
 	@Override

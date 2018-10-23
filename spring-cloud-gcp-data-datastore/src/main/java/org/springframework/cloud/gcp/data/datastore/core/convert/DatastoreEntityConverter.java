@@ -42,14 +42,12 @@ public interface DatastoreEntityConverter extends
 
 	/**
 	 * Read the entity as a {@link Map}.
-	 * @param type The value type of the map, into which each field value will be
+	 * @param componentType The value type of the map, into which each field value will be
 	 * converted.
 	 * @param entity The entity from Cloud Datastore.
-	 * @param embeddedMapDepthAllowance the maximum depth to which nested {@code Map}
-	 * values of embedded maps will also be read as embedded entities.
 	 * @return a Map where the key values are the field names and the values the field
 	 * values.
 	 */
-	<R> Map<String, R> readAsMap(TypeInformation<R> type, BaseEntity entity,
-			int embeddedMapDepthAllowance);
+	<T, R> Map<T, R> readAsMap(Class<T> keyType, TypeInformation<R> componentType,
+			BaseEntity entity);
 }

@@ -21,7 +21,7 @@ import java.util.Optional;
 import com.google.cloud.datastore.Value;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedStatus;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedType;
 import org.springframework.data.util.TypeInformation;
 
 /**
@@ -55,7 +55,7 @@ public interface ReadWriteConversions {
 	 * @param targetTypeInformation type metadata information for the desired type.
 	 * @return an object of a target type.
 	 */
-	<T> T convertOnRead(Object val, EmbeddedStatus embeddedStatus,
+	<T> T convertOnRead(Object val, EmbeddedType embeddedStatus,
 			TypeInformation targetTypeInformation);
 
 	/**
