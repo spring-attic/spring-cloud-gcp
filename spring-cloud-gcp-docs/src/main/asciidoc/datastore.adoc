@@ -229,7 +229,7 @@ public class EmbeddableTreeNode {
 }
 ----
 
-Maps will be stored as embedded as entities where the key values become the field names in the embedded entity.
+Maps will be stored as embedded entities where the key values become the field names in the embedded entity.
 The value types in these maps can be any regularly supported property type, and the key values will be converted to String using the configured converters.
 
 Also, a collection of entities can be embedded; it will be converted to `ListValue` on write.
