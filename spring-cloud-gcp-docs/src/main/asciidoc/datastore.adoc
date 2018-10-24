@@ -262,7 +262,7 @@ public class EmbeddableTreeNode {
 ----
 
 Embedded objects can be stored in the values of embedded Maps.
-Collections of embedded objects can also be stored as the values of the embedded Maps.
+Collections of embedded objects can also be stored as the values of embedded Maps.
 
 
 ==== Relationships
