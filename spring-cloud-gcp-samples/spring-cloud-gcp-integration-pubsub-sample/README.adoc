@@ -1,13 +1,26 @@
 = Spring Integration Channel Adapters for Google Cloud Pub/Sub Code Sample
 
 This code sample contains a couple of apps.
-One app gets a message provided by the user through a webpage and publishes it to a Google Cloud Pub/Sub topic.
-The other app subscribes to that topic and logs received messages.
 
+* Pub/Sub Sender & Receiver Applications:
++
+The `sample-sender` and `sample-receiver` applications demonstrate how to send messages from one
+application to another using Pub/Sub. The `sample-sender` provides a web interface to send messages
+to a topic whose messages are received by the `sample-receiver`.
++
 The same content is also available in the
 https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-pubsub-integration/index.html[Messaging with Spring Integration and Google Cloud Pub/Sub] codelab.
 
-== Setup & Configuration
+* JSON Payload Application:
++
+The `sample-json-payloads` application demonstrates how the Cloud GCP Pub/Sub APIs can
+automatically serialize and deserialize JSON payloads that are published to topics or received
+by subscribers using Jackson converters.
+
+== Base Setup & Configuration
+
+Before running the applications, you must first configure your GCP project and set up the Pub/Sub
+topic and subscription.
 
 1. Configure your GCP project ID and credentials by following link:../../spring-cloud-gcp-docs/src/main/asciidoc/core.adoc#project-id[these instructions].
 +
@@ -18,10 +31,31 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 3. Still in the same page, locate the newly created topic, click the button with the three vertical dots at the end of the topic's line and click "New subscription".
 Create a new subscription called `exampleSubscription` with all default parameters.
 
-3. In separate terminal windows, start the `spring-cloud-gcp-spring-integration-pubsub-sample-sender` and `spring-cloud-gcp-spring-integration-pubsub-sample-receiver` applications with the `$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
+=== Running the Sender and Receiver Pair
 
-4. Go to http://localhost:8080, write a message in the text box and hit the `Submit` button.
+The sender and receiver application pair demonstrates how one may send messages from one application
+to another over Pub/Sub.
 
-5. Verify that the receiver logged the message you wrote.
+1. In separate terminal windows, start the `spring-cloud-gcp-integration-pubsub-sample-sender` and `spring-cloud-gcp-integration-pubsub-sample-receiver` applications with the `$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
+
+2. Go to http://localhost:8080, write a message in the text box and hit the `Submit` button.
+
+3. Verify that the receiver logged the message you wrote.
 +
 `Message arrived! Payload: [message-entered]`
+
+=== Running the JSON Payload sample application
+
+The JSON payload application demonstrates how the PubSub template can be configured to automatically
+serialize and deserialize JSON payloads that are sent to topics or received by subscribers.
+
+1. In a terminal window, move into the `spring-cloud-gcp-integration-pubsub-sample-json-payloads`
+directory and run `mvn spring-boot:run`.
+
+2. Visit `http://localhost:8080`, enter a person name and age, and click Submit. In the backend,
+the application sends a JSON-serialized `Person` object to the topic which will then be received
+by the subscriber and logged in your terminal.
+
+3. You should see the entry be logged in your terminal window.
++
+`Person{name='[name-entered]', age=[age-entered]}`
