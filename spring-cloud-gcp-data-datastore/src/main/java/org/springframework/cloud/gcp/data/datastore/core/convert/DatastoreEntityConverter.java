@@ -42,6 +42,7 @@ public interface DatastoreEntityConverter extends
 
 	/**
 	 * Read the entity as a {@link Map}.
+	 * @param keyType the key type of the map to be read.
 	 * @param componentType The value type of the map, into which each field value will be
 	 * converted.
 	 * @param entity The entity from Cloud Datastore.

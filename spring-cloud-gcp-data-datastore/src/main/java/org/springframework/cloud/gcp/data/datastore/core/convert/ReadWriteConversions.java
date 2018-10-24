@@ -50,12 +50,11 @@ public interface ReadWriteConversions {
 	 * Converts a given object to an object of a target type that is possibly an embedded
 	 * entity.
 	 * @param val the value to convert.
-	 * @param embeddedStatus contains the type of embedded entity conversion should
-	 * produce.
+	 * @param embeddedType contains the type of embedded entity conversion should produce.
 	 * @param targetTypeInformation type metadata information for the desired type.
 	 * @return an object of a target type.
 	 */
-	<T> T convertOnRead(Object val, EmbeddedType embeddedStatus,
+	<T> T convertOnRead(Object val, EmbeddedType embeddedType,
 			TypeInformation targetTypeInformation);
 
 	/**

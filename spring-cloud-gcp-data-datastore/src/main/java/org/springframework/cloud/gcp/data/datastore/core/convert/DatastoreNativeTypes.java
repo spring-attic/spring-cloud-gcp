@@ -40,9 +40,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
-import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedType;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
-import org.springframework.data.util.TypeInformation;
 
 /**
  * A class to manage Datastore-specific simple type conversions.
@@ -90,24 +88,6 @@ public abstract class DatastoreNativeTypes {
 
 	public static boolean isNativeType(Class aClass) {
 		return aClass == null || DATASTORE_NATIVE_TYPES.contains(aClass);
-	}
-
-	public static EmbeddedType getEmbeddedType(TypeInformation typeInformation) {
-		EmbeddedType embeddedType;
-		if (typeInformation.isMap()) {
-				embeddedType = EmbeddedType.EMBEDDED_MAP;
-		}
-		else if ((typeInformation.isCollectionLike()
-				&& typeInformation.getComponentType().getType().isAnnotationPresent(
-						org.springframework.cloud.gcp.data.datastore.core.mapping.Entity.class))
-				|| typeInformation.getType().isAnnotationPresent(
-						org.springframework.cloud.gcp.data.datastore.core.mapping.Entity.class)) {
-			embeddedType = EmbeddedType.EMBEDDED_ENTITY;
-		}
-		else {
-			embeddedType = EmbeddedType.NOT_EMBEDDED;
-		}
-		return embeddedType;
 	}
 
 	/*

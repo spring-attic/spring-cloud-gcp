@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedType;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -80,7 +81,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		for (String field : fieldNames) {
 			result.put(this.conversions.convertOnRead(field, null, keyType),
 					propertyValueProvider.getPropertyValue(field,
-							DatastoreNativeTypes.getEmbeddedType(componentType),
+							EmbeddedType.of(componentType),
 							componentType));
 		}
 		return result;

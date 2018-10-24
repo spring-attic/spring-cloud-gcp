@@ -101,27 +101,24 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	@Override
-	public <T> T convertOnRead(Object val, Class targetCollectionType,
-			Class targetComponentType) {
+	public <T> T convertOnRead(Object val, Class targetCollectionType, Class targetComponentType) {
 		return (T) convertOnRead(val, EmbeddedType.NOT_EMBEDDED,
 				targetCollectionType,
 				ClassTypeInformation.from(targetComponentType));
 	}
 
 	@Override
-	public <T> T convertOnRead(Object val, EmbeddedType embeddedType,
-			TypeInformation targetTypeInformation) {
+	public <T> T convertOnRead(Object val, EmbeddedType embeddedType, TypeInformation targetTypeInformation) {
 		TypeInformation componentTypeInformation;
+		Class collectionType = null;
 		if (targetTypeInformation.isCollectionLike()) {
 			componentTypeInformation = targetTypeInformation.getComponentType();
+			collectionType = targetTypeInformation.getType();
 		}
 		else {
 			componentTypeInformation = targetTypeInformation;
 		}
-		return convertOnRead(val, embeddedType,
-				targetTypeInformation.isCollectionLike() ? targetTypeInformation.getType()
-						: null,
-				componentTypeInformation);
+		return convertOnRead(val, embeddedType, collectionType, componentTypeInformation);
 	}
 
 	private <T> T convertOnRead(Object val, EmbeddedType embeddedType,
@@ -132,8 +129,9 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		BiFunction<Object, TypeInformation<?>, ?> readConverter;
 		switch (embeddedType) {
 		case EMBEDDED_MAP:
-			readConverter = (x, y) -> convertOnReadSingleEmbeddedMap(x,
-					y.getTypeArguments().get(0).getType(), y.getTypeArguments().get(1));
+			readConverter = (x, typeInformation) -> convertOnReadSingleEmbeddedMap(x,
+					typeInformation.getTypeArguments().get(0).getType(),
+					typeInformation.getTypeArguments().get(1));
 			break;
 		case EMBEDDED_ENTITY:
 			readConverter = this::convertOnReadSingleEmbedded;
@@ -178,8 +176,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> T convertOnReadSingleEmbedded(Object value,
-			TypeInformation<?> targetTypeInformation) {
+	private <T> T convertOnReadSingleEmbedded(Object value, TypeInformation<?> targetTypeInformation) {
 		Assert.notNull(value, "Cannot convert a null value.");
 		if (value instanceof BaseEntity) {
 			return (T) this.datastoreEntityConverter.read(targetTypeInformation.getType(),
@@ -190,8 +187,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> T convertOnReadSingle(Object val,
-			TypeInformation<?> targetTypeInformation) {
+	private <T> T convertOnReadSingle(Object val, TypeInformation<?> targetTypeInformation) {
 		Class targetType = targetTypeInformation.getType();
 		Class sourceType = val.getClass();
 		Assert.notNull(val, "Cannot convert a null value.");
@@ -204,18 +200,15 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			//neither first or second steps were applied, no conversion is necessary
 			result = val;
 		}
-		else if (typeTargets.getFirstStepTarget() == null &&
-				typeTargets.getSecondStepTarget() != null) {
+		else if (typeTargets.getFirstStepTarget() == null && typeTargets.getSecondStepTarget() != null) {
 			//only second step was applied on write
 			result = this.internalConversionService.convert(val, targetType);
 		}
-		else if (typeTargets.getFirstStepTarget() != null &&
-				typeTargets.getSecondStepTarget() == null) {
+		else if (typeTargets.getFirstStepTarget() != null && typeTargets.getSecondStepTarget() == null) {
 			//only first step was applied on write
 			result = this.conversionService.convert(val, targetType);
 		}
-		else if (typeTargets.getFirstStepTarget() != null &&
-				typeTargets.getSecondStepTarget() != null) {
+		else if (typeTargets.getFirstStepTarget() != null && typeTargets.getSecondStepTarget() != null) {
 			//both steps were applied
 			Object secondStepVal = this.internalConversionService.convert(val,
 					typeTargets.getFirstStepTarget());
@@ -303,8 +296,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 						ClassTypeInformation.from(String.class));
 				builder.set(field,
 						convertOnWrite(map.get(key),
-								DatastoreNativeTypes
-										.getEmbeddedType(valueTypeInformation),
+								EmbeddedType.of(valueTypeInformation),
 								field, valueTypeInformation));
 			}
 		});

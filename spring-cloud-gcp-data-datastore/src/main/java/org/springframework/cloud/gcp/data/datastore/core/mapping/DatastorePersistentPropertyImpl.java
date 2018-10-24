@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
-import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.model.AnnotationBasedPersistentProperty;
@@ -106,7 +105,7 @@ public class DatastorePersistentPropertyImpl
 
 	@Override
 	public EmbeddedType getEmbeddedType() {
-		return DatastoreNativeTypes.getEmbeddedType(getTypeInformation());
+		return EmbeddedType.of(getTypeInformation());
 	}
 
 	@Override

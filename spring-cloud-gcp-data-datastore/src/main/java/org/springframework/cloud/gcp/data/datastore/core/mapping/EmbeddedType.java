@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
+import org.springframework.data.util.TypeInformation;
+
 /**
  * The various types of properties with respect to their storage as embedded entities.
  *
@@ -41,4 +43,23 @@ public enum EmbeddedType {
 	 * These are {@code Map}s that are stored as a single embedded entity in the field.
 	 */
 	EMBEDDED_MAP;
+
+	public static EmbeddedType of(TypeInformation typeInformation) {
+		EmbeddedType embeddedType;
+		if (typeInformation.isMap()) {
+			embeddedType = EmbeddedType.EMBEDDED_MAP;
+		}
+		else if ((typeInformation.isCollectionLike()
+				&& typeInformation.getComponentType().getType().isAnnotationPresent(
+						org.springframework.cloud.gcp.data.datastore.core.mapping.Entity.class))
+				|| typeInformation.getType().isAnnotationPresent(
+						org.springframework.cloud.gcp.data.datastore.core.mapping.Entity.class)) {
+			embeddedType = EmbeddedType.EMBEDDED_ENTITY;
+		}
+		else {
+			embeddedType = EmbeddedType.NOT_EMBEDDED;
+		}
+		return embeddedType;
+	}
+
 }

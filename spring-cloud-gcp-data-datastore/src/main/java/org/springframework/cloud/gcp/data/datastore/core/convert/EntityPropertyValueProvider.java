@@ -55,7 +55,7 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T getPropertyValue(String fieldName, EmbeddedType embeddedStatus,
+	public <T> T getPropertyValue(String fieldName, EmbeddedType embeddedType,
 			TypeInformation targetTypeInformation) {
 		if (!this.entity.contains(fieldName)) {
 			return null;
@@ -63,7 +63,7 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 
 		try {
 			return this.conversion.convertOnRead(this.entity.getValue(fieldName).get(),
-					embeddedStatus, targetTypeInformation);
+					embeddedType, targetTypeInformation);
 		}
 		catch (ConversionException | DatastoreDataException e) {
 			throw new DatastoreDataException("Unable to read property " + fieldName, e);
