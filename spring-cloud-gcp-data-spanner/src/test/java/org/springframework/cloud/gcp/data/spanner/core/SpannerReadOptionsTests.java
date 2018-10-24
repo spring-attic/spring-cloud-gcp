@@ -20,17 +20,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
-import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.ReadOption;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -41,25 +37,6 @@ public class SpannerReadOptionsTests {
 	@Test(expected = IllegalArgumentException.class)
 	public void addNullReadOptionTest() {
 		new SpannerReadOptions().addReadOption(null);
-	}
-
-	@Test(expected = UnsupportedOperationException.class)
-	public void timestampErrorTest() {
-		SpannerReadOptions spannerReadOptions = new SpannerReadOptions();
-		assertFalse(spannerReadOptions.hasTimestamp());
-		spannerReadOptions.getTimestamp();
-	}
-
-	@Test
-	public void timestampTest() {
-		SpannerReadOptions spannerReadOptions = new SpannerReadOptions();
-		Timestamp timestamp = Timestamp.now();
-		assertFalse(spannerReadOptions.hasTimestamp());
-		spannerReadOptions.setTimestamp(timestamp);
-		assertTrue(spannerReadOptions.hasTimestamp());
-		assertEquals(timestamp, spannerReadOptions.getTimestamp());
-		spannerReadOptions.unsetTimestamp();
-		assertFalse(spannerReadOptions.hasTimestamp());
 	}
 
 	@Test
@@ -81,15 +58,4 @@ public class SpannerReadOptionsTests {
 		assertNotNull(spannerReadOptions.getIncludeProperties());
 	}
 
-	@Test
-	public void indexTest() {
-		SpannerReadOptions spannerReadOptions = new SpannerReadOptions();
-		String index = "index";
-		assertFalse(spannerReadOptions.hasIndex());
-		spannerReadOptions.setIndex(index);
-		assertTrue(spannerReadOptions.hasIndex());
-		assertEquals(index, spannerReadOptions.getIndex());
-		spannerReadOptions.unsetIndex();
-		assertFalse(spannerReadOptions.hasIndex());
-	}
 }

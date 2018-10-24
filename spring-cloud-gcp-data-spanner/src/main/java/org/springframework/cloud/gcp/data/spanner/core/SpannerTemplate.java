@@ -67,6 +67,7 @@ import org.springframework.util.Assert;
  *
  * @author Chengyuan Zhao
  * @author Ray Tsang
+ * @author Mike Eltsufin
  *
  * @since 1.1
  */
@@ -338,7 +339,7 @@ public class SpannerTemplate implements SpannerOperations {
 		}
 		SpannerReadOptions options = readOptions == null ? new SpannerReadOptions()
 				: readOptions;
-		try (ReadOnlyTransaction readOnlyTransaction = options.hasTimestamp()
+		try (ReadOnlyTransaction readOnlyTransaction = options.getTimestamp() != null
 				? this.databaseClient.readOnlyTransaction(
 						TimestampBound.ofReadTimestamp(options.getTimestamp()))
 				: this.databaseClient.readOnlyTransaction()) {
@@ -357,7 +358,7 @@ public class SpannerTemplate implements SpannerOperations {
 			resultSet = getReadContext().executeQuery(statement);
 		}
 		else {
-			resultSet = (options.hasTimestamp() ? getReadContext(options.getTimestamp())
+			resultSet = (options.getTimestamp() != null ? getReadContext(options.getTimestamp())
 					: getReadContext()).executeQuery(statement,
 							options.getQueryOptions());
 		}
@@ -368,7 +369,7 @@ public class SpannerTemplate implements SpannerOperations {
 			}
 			else {
 				StringBuilder logSb = new StringBuilder("Executing query").append(
-						options.hasTimestamp() ? " at timestamp" + options.getTimestamp()
+						options.getTimestamp() != null ? " at timestamp" + options.getTimestamp()
 								: "");
 				for (QueryOption queryOption : options.getQueryOptions()) {
 					logSb.append(" with option: " + queryOption);
@@ -394,11 +395,11 @@ public class SpannerTemplate implements SpannerOperations {
 			return getReadContext().read(tableName, keys, columns);
 		}
 
-		ReadContext readContext = options.hasTimestamp()
+		ReadContext readContext = options.getTimestamp() != null
 				? getReadContext(options.getTimestamp())
 				: getReadContext();
 
-		if (options.hasIndex()) {
+		if (options.getIndex() != null) {
 			return readContext.readUsingIndex(tableName, options.getIndex(), keys,
 					columns, options.getReadOptions());
 		}
@@ -410,13 +411,13 @@ public class SpannerTemplate implements SpannerOperations {
 		if (options == null) {
 			return;
 		}
-		if (options.hasTimestamp()) {
+		if (options.getTimestamp() != null) {
 			logs.append(" at timestamp " + options.getTimestamp());
 		}
 		for (ReadOption readOption : options.getReadOptions()) {
 			logs.append(" with option: " + readOption);
 		}
-		if (options.hasIndex()) {
+		if (options.getIndex() != null) {
 			logs.append(" secondary index: " + options.getIndex());
 		}
 	}

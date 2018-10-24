@@ -41,8 +41,9 @@ import org.springframework.util.Assert;
  * Pub/Sub admin utility that creates new topics and subscriptions on Google Cloud Pub/Sub.
  *
  * @author João André Martins
+ * @author Mike Eltsufin
  */
-public class PubSubAdmin {
+public class PubSubAdmin implements AutoCloseable {
 
 	private static final int MIN_ACK_DEADLINE_SECONDS = 10;
 
@@ -288,6 +289,16 @@ public class PubSubAdmin {
 						+ " and "
 						+ MAX_ACK_DEADLINE_SECONDS
 						+ " seconds.");
+	}
+
+	@Override
+	public void close() throws Exception {
+		if (topicAdminClient != null) {
+			topicAdminClient.close();
+		}
+		if (subscriptionAdminClient != null) {
+			subscriptionAdminClient.close();
+		}
 	}
 
 }
