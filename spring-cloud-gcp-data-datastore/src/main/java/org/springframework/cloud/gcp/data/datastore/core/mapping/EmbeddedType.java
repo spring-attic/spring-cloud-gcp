@@ -44,6 +44,11 @@ public enum EmbeddedType {
 	 */
 	EMBEDDED_MAP;
 
+	/**
+	 * Get the {@link EmbeddedType} of a given {@link TypeInformation}.
+	 * @param typeInformation the given type metadata to check for embedded type.
+	 * @return the embedded type.
+	 */
 	public static EmbeddedType of(TypeInformation typeInformation) {
 		EmbeddedType embeddedType;
 		if (typeInformation.isMap()) {
