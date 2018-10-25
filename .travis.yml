@@ -15,7 +15,7 @@ cache:
     - $HOME/google-cloud-sdk
     - $HOME/.m2
 script:
-  - ./mvnw -T 1.5C test -B ${INTEGRATION_TEST_FLAGS}
+  - ./mvnw -T 1.5C test -B -P codecov ${INTEGRATION_TEST_FLAGS}
 install:
   - ./mvnw -T 1.5C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 before_install:
@@ -38,3 +38,5 @@ before_install:
   - gcloud components update --quiet
   - gcloud components install beta pubsub-emulator --quiet
   - gcloud config set project spring-cloud-gcp-ci
+after_success:
+  - bash < (curl -s https://codecov.io/bash)
