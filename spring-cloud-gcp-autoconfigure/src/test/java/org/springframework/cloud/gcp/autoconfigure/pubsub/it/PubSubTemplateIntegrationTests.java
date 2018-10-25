@@ -16,9 +16,6 @@
 
 package org.springframework.cloud.gcp.autoconfigure.pubsub.it;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +29,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import org.awaitility.Duration;
@@ -226,14 +226,13 @@ public class PubSubTemplateIntegrationTests {
 	}
 
 	static class TestUser {
+
 		public final String username;
+
 		public final String password;
 
 		@JsonCreator
-		public TestUser(
-				@JsonProperty("username") String username,
-				@JsonProperty("password") String password) {
-
+		TestUser(@JsonProperty("username") String username, @JsonProperty("password") String password) {
 			this.username = username;
 			this.password = password;
 		}
