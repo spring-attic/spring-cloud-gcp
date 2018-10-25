@@ -16,6 +16,12 @@
 
 package com.example;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,5 +50,13 @@ public class ExampleController {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		return String.format("You are [%s], as determined by [%s]\n",
 				authentication.getPrincipal(), authentication.getCredentials());
+	}
+
+	@RequestMapping("/headers")
+	public List<String> headers(HttpServletRequest req) {
+		return Collections.list(req.getHeaderNames())
+				.stream()
+				.map(name -> req.getHeader(name))
+				.collect(Collectors.toList());
 	}
 }

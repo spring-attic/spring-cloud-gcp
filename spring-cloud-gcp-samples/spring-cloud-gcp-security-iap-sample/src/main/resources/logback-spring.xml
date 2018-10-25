@@ -3,7 +3,7 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
-    <root level="INFO">
+    <root level="DEBUG">
         <!-- If running in GCP, remove the CONSOLE appender otherwise logs will be duplicated. -->
         <appender-ref ref="CONSOLE"/>
     </root>

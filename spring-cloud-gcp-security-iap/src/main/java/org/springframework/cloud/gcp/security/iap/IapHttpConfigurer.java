@@ -19,24 +19,31 @@ package org.springframework.cloud.gcp.security.iap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @EnableWebSecurity
-public class IapWebSecurityConfig extends WebSecurityConfigurerAdapter {
-	private static final Log LOGGER = LogFactory.getLog(IapWebSecurityConfig.class);
+public class IapHttpConfigurer extends AbstractHttpConfigurer<IapHttpConfigurer, HttpSecurity> {
+	private static final Log LOGGER = LogFactory.getLog(IapHttpConfigurer.class);
 
-	@Autowired
-	IapAuthenticationFilter filter;
+
+	public static IapHttpConfigurer iapHttpConfigurer() {
+		LOGGER.info("************ IapHttpConfigurer instantiated through static factory");
+
+		return new IapHttpConfigurer();
+
+	}
 
 	@Override
-	protected void configure(HttpSecurity http) throws Exception {
+	public void configure(HttpSecurity http) {
+		LOGGER.info("*********** IapHttpConfigurer configuring HTTP: " + http);
 
+		ApplicationContext context = http.getSharedObject(ApplicationContext.class);
+		IapAuthenticationFilter filter = context.getBean(IapAuthenticationFilter.class);
 		http.addFilterBefore(filter, BasicAuthenticationFilter.class);
-
-		LOGGER.info("IapWebSecurityConfig picked up: " + http);
 	}
+
 }

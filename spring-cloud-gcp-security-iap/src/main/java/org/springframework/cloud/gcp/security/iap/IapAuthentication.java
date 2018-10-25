@@ -16,40 +16,46 @@
 
 package org.springframework.cloud.gcp.security.iap;
 
+import java.util.Collection;
 import java.util.Collections;
 
-import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-public final class IapAuthentication extends AbstractAuthenticationToken {
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.GrantedAuthoritiesContainer;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+
+public final class IapAuthentication extends PreAuthenticatedAuthenticationToken
+	implements GrantedAuthoritiesContainer {
+	private static final Log LOGGER = LogFactory.getLog(IapAuthentication.class);
 
 	public static final String DEFAULT_ROLE = "ROLE_USER";
 
-	private final String email;
+	@Override
+	public Collection<? extends GrantedAuthority> getGrantedAuthorities() {
+		LOGGER.info("IapAuthentication getGrantedAuthorities() called; returning authorities container.");
+
+		return super.getAuthorities();
+	}
 
 	private final String subject;
 
-	private final String jwtToken;
-
 	public IapAuthentication(String email, String subject, String jwtToken) {
-		super(Collections.singletonList(new SimpleGrantedAuthority(DEFAULT_ROLE)));
-		this.email = email;
+		super(email, jwtToken, Collections.singletonList(new SimpleGrantedAuthority(DEFAULT_ROLE)));
 		this.subject = subject;
-		this.jwtToken = jwtToken;
 	}
 
 	@Override
-	public Object getCredentials() {
-		return this.jwtToken;
-	}
-
-	@Override
-	public Object getPrincipal() {
-		return email;
-	}
-
-	@Override
-	public boolean isAuthenticated() {
-		return email != null && !email.equals("");
+	public Object getDetails() {
+		LOGGER.info("IapAuthentication getDetails() called; returning authorities container.");
+		// TODO: figure out how to get details from parent container
+		return new GrantedAuthoritiesContainer() {
+			@Override
+			public Collection<? extends GrantedAuthority> getGrantedAuthorities() {
+				return IapAuthentication.this.getAuthorities();
+			}
+		};
 	}
 }
