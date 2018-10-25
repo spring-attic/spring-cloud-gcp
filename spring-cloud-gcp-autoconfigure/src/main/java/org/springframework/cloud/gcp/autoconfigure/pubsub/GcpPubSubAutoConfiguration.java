@@ -67,6 +67,7 @@ import org.springframework.context.annotation.Configuration;
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
+ * @author Daniel Zou
  */
 @Configuration
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
