@@ -16,6 +16,10 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Value;
 import com.google.cloud.datastore.ValueBuilder;
@@ -24,11 +28,13 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedType;
 import org.springframework.data.convert.EntityInstantiator;
 import org.springframework.data.convert.EntityInstantiators;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * A class for object to entity and entity to object conversions
@@ -60,6 +66,25 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 	@Override
 	public ReadWriteConversions getConversions() {
 		return this.conversions;
+	}
+
+	@Override
+	public <T, R> Map<T, R> readAsMap(Class<T> keyType, TypeInformation<R> componentType,
+			BaseEntity entity) {
+		if (entity == null) {
+			return null;
+		}
+		Map<T, R> result = new HashMap<>();
+		EntityPropertyValueProvider propertyValueProvider = new EntityPropertyValueProvider(
+				entity, this.conversions);
+		Set<String> fieldNames = entity.getNames();
+		for (String field : fieldNames) {
+			result.put(this.conversions.convertOnRead(field, null, keyType),
+					propertyValueProvider.getPropertyValue(field,
+							EmbeddedType.of(componentType),
+							componentType));
+		}
+		return result;
 	}
 
 	@Override

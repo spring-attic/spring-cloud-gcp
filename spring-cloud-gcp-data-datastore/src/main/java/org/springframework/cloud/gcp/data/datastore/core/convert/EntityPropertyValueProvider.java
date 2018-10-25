@@ -20,8 +20,10 @@ import com.google.cloud.datastore.BaseEntity;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedType;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.data.mapping.model.PropertyValueProvider;
+import org.springframework.data.util.TypeInformation;
 
 /**
  * A {@link PropertyValueProvider} for Datastore entities
@@ -46,27 +48,25 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public <T> T getPropertyValue(DatastorePersistentProperty persistentProperty) {
-		String fieldName = persistentProperty.getFieldName();
+		return getPropertyValue(persistentProperty.getFieldName(),
+				persistentProperty.getEmbeddedType(),
+				persistentProperty.getTypeInformation());
+	}
 
+	@SuppressWarnings("unchecked")
+	public <T> T getPropertyValue(String fieldName, EmbeddedType embeddedType,
+			TypeInformation targetTypeInformation) {
 		if (!this.entity.contains(fieldName)) {
 			return null;
 		}
+
 		try {
-			return persistentProperty.isEmbedded()
-					? this.conversion.convertOnReadEmbedded(
-					this.entity.getValue(fieldName).get(),
-							persistentProperty.getType(),
-							persistentProperty.getComponentType())
-					: this.conversion.convertOnRead(this.entity.getValue(fieldName).get(),
-							persistentProperty.getType(),
-							persistentProperty.getComponentType());
+			return this.conversion.convertOnRead(this.entity.getValue(fieldName).get(),
+					embeddedType, targetTypeInformation);
 		}
 		catch (ConversionException | DatastoreDataException e) {
 			throw new DatastoreDataException("Unable to read property " + fieldName, e);
 		}
-
 	}
-
 }

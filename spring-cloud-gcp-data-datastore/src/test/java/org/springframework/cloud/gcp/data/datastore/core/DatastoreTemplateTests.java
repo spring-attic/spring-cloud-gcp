@@ -141,7 +141,7 @@ public class DatastoreTemplateTests {
 				linkedList.add(object);
 			}
 			return linkedList;
-		}).when(readWriteConversions).convertOnRead(any(), any(), any());
+		}).when(readWriteConversions).convertOnRead(any(), any(), (Class) any());
 
 		this.ob1 = new TestEntity();
 		this.ob2 = new TestEntity();

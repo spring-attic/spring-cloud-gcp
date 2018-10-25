@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -57,7 +58,15 @@ public class DatastorePersistentPropertyImplTests {
 								assertTrue(property.isCollectionLike());
 							}
 							else if (property.getFieldName().equals("embeddedEntity")) {
-								assertTrue(property.isEmbedded());
+								assertTrue(property
+										.getEmbeddedType() == EmbeddedType.EMBEDDED_ENTITY);
+							}
+							else if (property.getFieldName().equals("embeddedMap")) {
+								assertTrue(property
+										.getEmbeddedType() == EmbeddedType.EMBEDDED_MAP);
+								assertEquals(String.class,
+										property.getTypeInformation().getTypeArguments()
+												.get(1).getType());
 							}
 							else if (property.getFieldName().equals("linkedEntity")) {
 								assertTrue(property.isDescendants());
@@ -81,18 +90,6 @@ public class DatastorePersistentPropertyImplTests {
 					assertNull(((DatastorePersistentPropertyImpl) prop)
 							.createAssociation().getObverse());
 				});
-	}
-
-	@Test(expected = DatastoreDataException.class)
-	public void embeddedDescendantAnnotatedTest() {
-		this.datastoreMappingContext
-				.getPersistentEntity(EmbeddedDescendantAnnotatedEntity.class);
-	}
-
-	@Test(expected = DatastoreDataException.class)
-	public void embeddedReferenceAnnotatedTest() {
-		this.datastoreMappingContext
-				.getPersistentEntity(EmbeddedReferenceAnnotatedEntity.class);
 	}
 
 	@Test(expected = DatastoreDataException.class)
@@ -130,8 +127,9 @@ public class DatastorePersistentPropertyImplTests {
 		@Field(name = "not_mapped")
 		String notMappedString;
 
-		@Embedded
 		TestSubEntity embeddedEntity;
+
+		Map<String, String> embeddedMap;
 
 		@Descendants
 		List<TestSubEntity> linkedEntity;
@@ -140,24 +138,13 @@ public class DatastorePersistentPropertyImplTests {
 		TestSubEntity linkedEntityRef;
 	}
 
+	@Entity
 	private static class TestSubEntity {
 
 	}
 
 	private static class UntypedListEntity {
 		List untypedList;
-	}
-
-	private static class EmbeddedDescendantAnnotatedEntity {
-		@Embedded
-		@Descendants
-		TestSubEntity[] subEntity;
-	}
-
-	private static class EmbeddedReferenceAnnotatedEntity {
-		@Embedded
-		@Reference
-		TestSubEntity[] subEntity;
 	}
 
 	private static class DescendantReferenceAnnotatedEntity {

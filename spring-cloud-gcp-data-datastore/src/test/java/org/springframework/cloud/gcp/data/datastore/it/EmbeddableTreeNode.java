@@ -18,20 +18,19 @@ package org.springframework.cloud.gcp.data.datastore.it;
 
 import java.util.Objects;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
 /**
  * @author Dmitry Solomakha
  */
+@Entity
 public class EmbeddableTreeNode {
 	@Id
 	long value;
 
-	@Embedded
 	EmbeddableTreeNode left;
 
-	@Embedded
 	EmbeddableTreeNode right;
 
 	public EmbeddableTreeNode(long value, EmbeddableTreeNode left, EmbeddableTreeNode right) {

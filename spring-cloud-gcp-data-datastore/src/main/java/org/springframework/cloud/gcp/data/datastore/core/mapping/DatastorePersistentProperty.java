@@ -35,13 +35,6 @@ public interface DatastorePersistentProperty
 	String getFieldName();
 
 	/**
-	 * True if the property is a POJO and is to be stored in Datastore as an embedded
-	 * entity in the field.
-	 * @return true if the property is stored in Datastore as an embedded entity.
-	 */
-	boolean isEmbedded();
-
-	/**
 	 * True if the property is a POJO and is to be stored in Datastore as a Key of the
 	 * POJO, which is a separate entity in Datastore.
 	 * @return true if the property is stored in Datastore as a Key.
@@ -61,4 +54,11 @@ public interface DatastorePersistentProperty
 	 * @return true if if the property should be indexed
 	 */
 	boolean isUnindexed();
+
+	/**
+	 * Get the {@link EmbeddedType} of the property indicating what what type of embedding
+	 * pathway will be used to store the property.
+	 * @return the embedded type.
+	 */
+	EmbeddedType getEmbeddedType();
 }

@@ -19,8 +19,10 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.cloud.Timestamp;
@@ -32,6 +34,7 @@ import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.LatLng;
 import com.google.cloud.datastore.ListValue;
 import com.google.cloud.datastore.NullValue;
+import com.google.cloud.datastore.StringValue;
 import com.google.cloud.datastore.Value;
 import com.google.cloud.datastore.testing.LocalDatastoreHelper;
 import com.google.common.collect.ImmutableSet;
@@ -40,11 +43,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import org.springframework.cloud.gcp.data.datastore.core.convert.TestItemWithEmbeddedEntity.EmbeddedEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Dmitry Solomakha
@@ -57,7 +63,15 @@ public class DefaultDatastoreEntityConverterTests {
 	private static final LocalDatastoreHelper HELPER = LocalDatastoreHelper.create(1.0);
 
 	private static final DatastoreEntityConverter ENTITY_CONVERTER =
-			new DefaultDatastoreEntityConverter(new DatastoreMappingContext(), (ObjectToKeyFactory) null);
+			new DefaultDatastoreEntityConverter(new DatastoreMappingContext(),
+					new TwoStepsConversions(new DatastoreCustomConversions(
+							Collections.singletonList(new Converter<HashMap, String>() {
+								@Nullable
+								@Override
+								public String convert(HashMap source) {
+									return "Map was converted to String";
+								}
+							})), null));
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
@@ -508,13 +522,39 @@ public class DefaultDatastoreEntityConverterTests {
 
 	@Test
 	public void testEmbeddedEntity() {
-		List<TestItemWithEmbeddedEntity.EmbeddedEtity> embeddedEtities = Arrays.asList(
-				new TestItemWithEmbeddedEntity.EmbeddedEtity("item 0"),
-				new TestItemWithEmbeddedEntity.EmbeddedEtity("item 1"));
+		EmbeddedEntity embeddedEntityA = new EmbeddedEntity("item 0");
+		EmbeddedEntity embeddedEntityB = new EmbeddedEntity("item 1");
+
+		List<EmbeddedEntity> embeddedEntities = Arrays.asList(embeddedEntityA,
+				embeddedEntityB);
+
+		Map<String, String> mapSimpleValues = new HashMap<>();
+		mapSimpleValues.put("a", "valueA");
+		mapSimpleValues.put("b", "valueB");
+
+		Map<String, String[]> mapListValues = new HashMap<>();
+		mapListValues.put("a", new String[] { "valueA" });
+		mapListValues.put("b", new String[] { "valueB" });
+
+		Map<String, EmbeddedEntity> embeddedEntityMapEmbeddedEntity = new HashMap<>();
+		embeddedEntityMapEmbeddedEntity.put("a", embeddedEntityA);
+		embeddedEntityMapEmbeddedEntity.put("b", embeddedEntityB);
+
+		Map<String, List<EmbeddedEntity>> embeddedEntityMapListOfEmbeddedEntities = new HashMap<>();
+		embeddedEntityMapListOfEmbeddedEntities.put("a", Arrays.asList(embeddedEntityA));
+		embeddedEntityMapListOfEmbeddedEntities.put("b", Arrays.asList(embeddedEntityB));
+
+		Map<String, Map<Long, Map<String, String>>> nestedEmbeddedMap = new HashMap<>();
+		Map<Long, Map<String, String>> nestedInnerEmbeddedMap = new HashMap<>();
+		nestedInnerEmbeddedMap.put(1L, mapSimpleValues);
+		nestedEmbeddedMap.put("outer1", nestedInnerEmbeddedMap);
 
 		TestItemWithEmbeddedEntity item = new TestItemWithEmbeddedEntity(123,
-				new TestItemWithEmbeddedEntity.EmbeddedEtity("abc"),
-				embeddedEtities);
+				new EmbeddedEntity("abc"), embeddedEntities, mapSimpleValues,
+				mapListValues, embeddedEntityMapEmbeddedEntity,
+				embeddedEntityMapListOfEmbeddedEntities);
+
+		item.setNestedEmbeddedMaps(nestedEmbeddedMap);
 
 		DatastoreEntityConverter entityConverter = new DefaultDatastoreEntityConverter(
 				new DatastoreMappingContext(),
@@ -523,8 +563,6 @@ public class DefaultDatastoreEntityConverterTests {
 		Entity.Builder builder = getEntityBuilder();
 		entityConverter.write(item, builder);
 		Entity entity = builder.build();
-
-		TestItemWithEmbeddedEntity read = entityConverter.read(TestItemWithEmbeddedEntity.class, entity);
 
 		assertThat(entity.getList("listOfEmbeddedEntities").stream()
 				.map(val -> ((BaseEntity<?>) val.get()).getString("stringField")).collect(Collectors.toList()))
@@ -536,7 +574,48 @@ public class DefaultDatastoreEntityConverterTests {
 		assertThat(entity.getLong("intField"))
 				.as("validate int field").isEqualTo(123L);
 
-		assertThat(read.equals(item)).as("read objects equals the original one").isTrue();
+		assertThat(entity.getEntity("nestedEmbeddedMaps").getEntity("outer1")
+				.getEntity("1").getString("a")).isEqualTo("valueA");
+		assertThat(entity.getEntity("nestedEmbeddedMaps").getEntity("outer1")
+				.getEntity("1").getString("b")).isEqualTo("valueB");
+
+		assertThat(entity.getEntity("embeddedMapSimpleValues").getString("a"))
+				.isEqualTo("valueA");
+		assertThat(entity.getEntity("embeddedMapSimpleValues").getString("b"))
+				.isEqualTo("valueB");
+
+		assertThat(entity.getEntity("embeddedMapListOfValues").getList("a"))
+				.contains(StringValue.of("valueA"));
+		assertThat(entity.getEntity("embeddedMapListOfValues").getList("b"))
+				.contains(StringValue.of("valueB"));
+
+		assertThat(entity.getEntity("embeddedEntityMapEmbeddedEntity").getEntity("a")
+				.getString("stringField")).isEqualTo("item 0");
+		assertThat(entity.getEntity("embeddedEntityMapEmbeddedEntity").getEntity("b")
+				.getString("stringField")).isEqualTo("item 1");
+
+		List<Value> embeddedMapValuesEmbeddedEntityA = entity
+				.getEntity("embeddedEntityMapListOfEmbeddedEntities").getList("a");
+		List<Value> embeddedMapValuesEmbeddedEntityB = entity
+				.getEntity("embeddedEntityMapListOfEmbeddedEntities").getList("b");
+
+		assertThat(((BaseEntity) embeddedMapValuesEmbeddedEntityA.get(0).get())
+				.getString("stringField")).isEqualTo("item 0");
+		assertEquals(1, embeddedMapValuesEmbeddedEntityA.size());
+
+		assertThat(((BaseEntity) embeddedMapValuesEmbeddedEntityB.get(0).get())
+				.getString("stringField")).isEqualTo("item 1");
+		assertEquals(1, embeddedMapValuesEmbeddedEntityB.size());
+
+		TestItemWithEmbeddedEntity read = entityConverter
+				.read(TestItemWithEmbeddedEntity.class, entity);
+
+		assertEquals("valueA",
+				read.getNestedEmbeddedMaps().get("outer1").get(1L).get("a"));
+		assertEquals("valueB",
+				read.getNestedEmbeddedMaps().get("outer1").get(1L).get("b"));
+
+		assertThat(read).as("read objects equals the original one").isEqualTo(item);
 	}
 
 	private Entity.Builder getEntityBuilder() {

@@ -58,15 +58,15 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	private void verify() {
-		if ((hasFieldAnnotation() || isEmbedded())
+		if (hasFieldAnnotation()
 				&& (isDescendants() || isReference())) {
 			throw new DatastoreDataException(
-					"Property cannot be annotated both Embedded or Field and Descendants or Reference: "
+					"Property cannot be annotated as @Field if it is annotated @Descendants or @Reference: "
 							+ getFieldName());
 		}
 		if (isDescendants() && isReference()) {
 			throw new DatastoreDataException(
-					"Property cannot be annotated both Descendants and Reference: "
+					"Property cannot be annotated both @Descendants and @Reference: "
 							+ getFieldName());
 		}
 		if (isDescendants() && !isCollectionLike()) {
@@ -89,11 +89,6 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	@Override
-	public boolean isEmbedded() {
-		return findAnnotation(Embedded.class) != null;
-	}
-
-	@Override
 	public boolean isReference() {
 		return findAnnotation(Reference.class) != null;
 	}
@@ -106,6 +101,11 @@ public class DatastorePersistentPropertyImpl
 	@Override
 	public boolean isUnindexed() {
 		return findAnnotation(Unindexed.class) != null;
+	}
+
+	@Override
+	public EmbeddedType getEmbeddedType() {
+		return EmbeddedType.of(getTypeInformation());
 	}
 
 	@Override

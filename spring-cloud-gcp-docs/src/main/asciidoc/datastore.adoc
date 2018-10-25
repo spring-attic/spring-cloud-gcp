@@ -195,7 +195,7 @@ The `@Field` annotation optionally provides a different field name than that of 
 
 ==== Embedded Entities
 
-Fields marked as `@Embedded` are converted to `EntityValue` and stored inside the parent entity.
+Fields whose types are also annotated with `@Entity` are converted to `EntityValue` and stored inside the parent entity.
 Multiple levels of embedded entities are supported.
 
 NOTE: Embedded entities don't need to have `@Id` field, it is only required for top level entities.
@@ -203,7 +203,6 @@ NOTE: Embedded entities don't need to have `@Id` field, it is only required for 
 Example:
 
 We would like to store a binary tree in Cloud Datastore.
-To do that, we need to create a node class and annotate children with `@Embedded`:
 
 [source, java]
 ----
@@ -211,22 +210,27 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
 import org.springframework.data.annotation.Id;
 
 public class EmbeddableTreeNode {
-	@Id
-	long value;
+  @Id
+  long value;
 
-	@Embedded
-	EmbeddableTreeNode left;
+  EmbeddableTreeNode left;
 
-	@Embedded
-	EmbeddableTreeNode right;
+  EmbeddableTreeNode right;
 
-	public EmbeddableTreeNode(long value, EmbeddableTreeNode left, EmbeddableTreeNode right) {
-		this.value = value;
-		this.left = left;
-		this.right = right;
-	}
+  Map<String, Long> longValues;
+
+  Map<String, List<Timestamp>> listTimestamps;
+
+  public EmbeddableTreeNode(long value, EmbeddableTreeNode left, EmbeddableTreeNode right) {
+    this.value = value;
+    this.left = left;
+    this.right = right;
+  }
 }
 ----
+
+Maps will be stored as embedded entities where the key values become the field names in the embedded entity.
+The value types in these maps can be any regularly supported property type, and the key values will be converted to String using the configured converters.
 
 Also, a collection of entities can be embedded; it will be converted to `ListValue` on write.
 
@@ -234,7 +238,7 @@ Example:
 
 Instead of a binary tree from the previous example, we would like to store a general tree
 (each node can have an arbitrary number of children) in Cloud Datastore.
-To do that, we need to create a field of type `List<EmbeddableTreeNode>` and annotate it with `@Embedded`:
+To do that, we need to create a field of type `List<EmbeddableTreeNode>`:
 
 [source, java]
 ----
@@ -242,17 +246,24 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
 import org.springframework.data.annotation.Id;
 
 public class EmbeddableTreeNode {
-	@Id
-	long value;
+  @Id
+  long value;
 
-	@Embedded
-	List<EmbeddableTreeNode> children;
+  List<EmbeddableTreeNode> children;
 
-	public EmbeddableTreeNode(List<EmbeddableTreeNode> children;) {
-		this.children = children;
-	}
+  Map<String, EmbeddableTreeNode> siblingNodes;
+
+  Map<String, Set<EmbeddableTreeNode>> subNodeGroups;
+
+  public EmbeddableTreeNode(List<EmbeddableTreeNode> children;) {
+    this.children = children;
+  }
 }
 ----
+
+Embedded objects can be stored in the values of embedded Maps.
+Collections of embedded objects can also be stored as the values of embedded Maps.
+
 
 ==== Relationships
 
