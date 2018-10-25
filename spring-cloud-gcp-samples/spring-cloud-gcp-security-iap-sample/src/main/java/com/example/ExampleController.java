@@ -17,7 +17,8 @@
 package com.example;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -53,10 +54,9 @@ public class ExampleController {
 	}
 
 	@RequestMapping("/headers")
-	public List<String> headers(HttpServletRequest req) {
+	public Map<String, String> headers(HttpServletRequest req) {
 		return Collections.list(req.getHeaderNames())
 				.stream()
-				.map(name -> req.getHeader(name))
-				.collect(Collectors.toList());
+				.collect(Collectors.toMap(Function.identity(), req::getHeader));
 	}
 }
