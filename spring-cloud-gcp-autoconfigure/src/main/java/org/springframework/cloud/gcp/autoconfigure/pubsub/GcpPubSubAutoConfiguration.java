@@ -130,8 +130,11 @@ public class GcpPubSubAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PubSubSubscriberTemplate pubSubSubscriberTemplate(SubscriberFactory subscriberFactory) {
-		return new PubSubSubscriberTemplate(subscriberFactory);
+	public PubSubSubscriberTemplate pubSubSubscriberTemplate(SubscriberFactory subscriberFactory,
+			ObjectProvider<PubSubMessageConverter> pubSubMessageConverter) {
+		PubSubSubscriberTemplate pubSubSubscriberTemplate = new PubSubSubscriberTemplate(subscriberFactory);
+		pubSubMessageConverter.ifUnique(pubSubSubscriberTemplate::setMessageConverter);
+		return pubSubSubscriberTemplate;
 	}
 
 	@Bean
