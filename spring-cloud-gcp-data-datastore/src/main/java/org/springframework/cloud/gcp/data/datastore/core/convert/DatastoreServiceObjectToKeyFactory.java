@@ -96,13 +96,16 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 		PersistentProperty idProp = datastorePersistentEntity.getIdPropertyOrFail();
 
 		KeyFactory keyFactory = getKeyFactory().setKind(datastorePersistentEntity.kindName());
+		Class idPropType = idProp.getType();
 		if (ancestors != null) {
+			if (!idPropType.equals(Key.class)) {
+				throw new DatastoreDataException("Only Key types are allowed for descendants id");
+			}
 			for (Key ancestor : ancestors) {
 				keyFactory.addAncestor(DatastoreTemplate.keyToPathElement(ancestor));
 			}
 		}
 		Key allocatedKey = this.datastore.allocateId(keyFactory.newKey());
-		Class idPropType = idProp.getType();
 
 		Object value;
 		if (idPropType.equals(Key.class)) {

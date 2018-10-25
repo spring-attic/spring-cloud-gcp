@@ -21,7 +21,9 @@ import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.PathElement;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -39,6 +41,9 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  */
 public class DatastoreServiceObjectToKeyFactoryTests {
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+
 
 	private final Datastore datastore = mock(Datastore.class);
 
@@ -103,7 +108,7 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 
 	@Test
 	public void allocateIdForObjectTest() {
-		TestEntityWithId testEntityWithId = new TestEntityWithId();
+		TestEntityWithKeyId testEntityWithKeyId = new TestEntityWithKeyId();
 
 		doAnswer(invocation -> {
 			IncompleteKey incompleteKey = (IncompleteKey) invocation.getArguments()[0];
@@ -116,20 +121,33 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 
 		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("project"));
 		Key allocatedKey = this.datastoreServiceObjectToKeyFactory
-				.allocateKeyForObject(testEntityWithId, this.datastoreMappingContext
-						.getPersistentEntity(testEntityWithId.getClass()));
+				.allocateKeyForObject(testEntityWithKeyId, this.datastoreMappingContext
+						.getPersistentEntity(testEntityWithKeyId.getClass()));
 		Key key = new KeyFactory("project").setKind("custom_test_kind").newKey(123L);
 		assertEquals(key, allocatedKey);
-		assertEquals("123", testEntityWithId.id);
+		assertEquals(key, testEntityWithKeyId.id);
 
 		Key allocatedKeyWithAncestor = this.datastoreServiceObjectToKeyFactory
-				.allocateKeyForObject(testEntityWithId, this.datastoreMappingContext
-						.getPersistentEntity(testEntityWithId.getClass()), allocatedKey);
+				.allocateKeyForObject(testEntityWithKeyId, this.datastoreMappingContext
+						.getPersistentEntity(testEntityWithKeyId.getClass()), allocatedKey);
 		Key keyWithAncestor = new KeyFactory("project").setKind("custom_test_kind")
 				.addAncestor(PathElement.of(key.getKind(), key.getId()))
 				.newKey(456L);
 		assertEquals(keyWithAncestor, allocatedKeyWithAncestor);
-		assertEquals("456", testEntityWithId.id);
+		assertEquals(keyWithAncestor, testEntityWithKeyId.id);
+	}
+
+	@Test
+	public void allocateIdForObjectNonKeyIdTest() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage("Only Key types are allowed for descendants id");
+
+		TestEntityWithId testEntityWithId = new TestEntityWithId();
+
+		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("project"));
+		this.datastoreServiceObjectToKeyFactory
+				.allocateKeyForObject(testEntityWithId, this.datastoreMappingContext
+						.getPersistentEntity(testEntityWithId.getClass()));
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "custom_test_kind")
@@ -140,5 +158,11 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "custom_test_kind")
 	private static class TestEntityNoId {
+	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "custom_test_kind")
+	private static class TestEntityWithKeyId {
+		@Id
+		Key id;
 	}
 }

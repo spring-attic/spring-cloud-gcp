@@ -59,9 +59,10 @@ public interface ObjectToKeyFactory {
 	/**
 	 * Allocates a new ID {@link Key} for the given entity object and sets the allocated ID value in the
 	 * object.
+	 * Only Key ids are allowed in entities if ancestors are present.
 	 * @param entity the object for which to get and set the ID value.
 	 * @param datastorePersistentEntity the persistent entity metadata for the entity object.
-	 * @param ancestors ancestors
+	 * @param ancestors ancestors that should be added to the entity
 	 * @return the newly allocated Key.
 	 */
 	Key allocateKeyForObject(Object entity, DatastorePersistentEntity datastorePersistentEntity, Key... ancestors);
