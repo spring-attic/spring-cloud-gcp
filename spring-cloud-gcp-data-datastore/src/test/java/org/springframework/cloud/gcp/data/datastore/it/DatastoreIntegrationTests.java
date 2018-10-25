@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import com.google.cloud.datastore.Blob;
 import com.google.common.collect.ImmutableList;
 import org.awaitility.Awaitility;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,8 +71,17 @@ public class DatastoreIntegrationTests {
 				System.getProperty("it.datastore"), is("true"));
 	}
 
+	@After
+	public void deleteAll() {
+		this.datastoreTemplate.deleteAll(EmbeddableTreeNode.class);
+		this.datastoreTemplate.deleteAll(AncestorEntity.class);
+		this.datastoreTemplate.deleteAll(AncestorEntity.DescendatEntry.class);
+		this.datastoreTemplate.deleteAll(TreeCollection.class);
+		this.testEntityRepository.deleteAll();
+	}
+
 	@Test
-	public void testSaveAndDeleteRepository() throws InterruptedException {
+	public void testSaveAndDeleteRepository() {
 
 		TestEntity testEntityA = new TestEntity(1L, "red", 1L, null);
 
@@ -174,7 +184,6 @@ public class DatastoreIntegrationTests {
 
 		EmbeddableTreeNode loaded = this.datastoreTemplate.findById(7L, EmbeddableTreeNode.class);
 
-		this.datastoreTemplate.deleteAll(EmbeddableTreeNode.class);
 		assertEquals(treeNode7, loaded);
 	}
 
@@ -192,12 +201,39 @@ public class DatastoreIntegrationTests {
 
 		TreeCollection loaded = this.datastoreTemplate.findById(1L, TreeCollection.class);
 
-		this.datastoreTemplate.deleteAll(TreeCollection.class);
 		assertEquals(treeCollection, loaded);
 	}
 
-	private void waitUntilTrue(Supplier<Boolean> condition) throws InterruptedException {
-		Awaitility.await().atMost(QUERY_WAIT_INTERVAL_SECONDS, TimeUnit.SECONDS)
-				.untilAsserted(() -> assertTrue(condition.get()));
+	@Test
+	public void ancestorsTest() {
+		AncestorEntity.DescendatEntry descendantEntryA = new AncestorEntity.DescendatEntry("a");
+		AncestorEntity.DescendatEntry descendantEntryB = new AncestorEntity.DescendatEntry("b");
+		AncestorEntity.DescendatEntry descendantEntryC = new AncestorEntity.DescendatEntry("c");
+
+		AncestorEntity ancestorEntity =
+				new AncestorEntity("abc", Arrays.asList(descendantEntryA, descendantEntryB, descendantEntryC));
+
+		this.datastoreTemplate.save(ancestorEntity);
+		waitUntilTrue(() -> {
+			AncestorEntity byId = this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
+			return byId != null && byId.descendants.size() == 3;
+		});
+
+		AncestorEntity loadedEntity = this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
+		assertEquals(ancestorEntity, loadedEntity);
+
+		ancestorEntity.descendants.forEach(descendatEntry -> descendatEntry.name = descendatEntry.name + " updated");
+		this.datastoreTemplate.save(ancestorEntity);
+		waitUntilTrue(() ->
+				this.datastoreTemplate.findAll(AncestorEntity.DescendatEntry.class)
+						.stream().allMatch(descendatEntry -> descendatEntry.name.contains("updated")));
+
+		AncestorEntity loadedEntityAfterUpdate =
+				this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
+		assertEquals(ancestorEntity, loadedEntityAfterUpdate);
+	}
+
+	private void waitUntilTrue(Supplier<Boolean> condition) {
+		Awaitility.await().atMost(QUERY_WAIT_INTERVAL_SECONDS, TimeUnit.SECONDS).until(condition::get);
 	}
 }

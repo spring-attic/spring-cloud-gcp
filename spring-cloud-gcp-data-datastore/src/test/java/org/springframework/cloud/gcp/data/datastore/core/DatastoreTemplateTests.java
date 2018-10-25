@@ -33,6 +33,7 @@ import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.KeyValue;
+import com.google.cloud.datastore.PathElement;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.Query.ResultType;
 import com.google.cloud.datastore.QueryResults;
@@ -40,12 +41,15 @@ import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentMatchers;
 
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
@@ -74,6 +78,9 @@ import static org.mockito.Mockito.when;
  */
 public class DatastoreTemplateTests {
 
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+
 	private final Datastore datastore = mock(Datastore.class);
 
 	private final DatastoreEntityConverter datastoreEntityConverter = mock(
@@ -82,6 +89,14 @@ public class DatastoreTemplateTests {
 	private final ObjectToKeyFactory objectToKeyFactory = mock(ObjectToKeyFactory.class);
 
 	private DatastoreTemplate datastoreTemplate;
+
+	private ChildEntity childEntity2;
+
+	private ChildEntity childEntity3;
+
+	private Key childKey2;
+
+	private Key childKey3;
 
 	private Key createFakeKey(String val) {
 		return new KeyFactory("project").setKind("custom_test_kind").newKey(val);
@@ -108,12 +123,12 @@ public class DatastoreTemplateTests {
 
 	private final Entity e1 = Entity.newBuilder(this.key1)
 			.set("singularReference", this.keyChild1)
-			.set("multipleReference", Collections.singletonList(KeyValue.of(keyChild1)))
+			.set("multipleReference", Collections.singletonList(KeyValue.of(this.keyChild1)))
 			.build();
 
 	private final Entity e2 = Entity.newBuilder(this.key2)
 			.set("singularReference", this.keyChild1)
-			.set("multipleReference", Collections.singletonList(KeyValue.of(keyChild1)))
+			.set("multipleReference", Collections.singletonList(KeyValue.of(this.keyChild1)))
 			.build();
 
 	private TestEntity ob1;
@@ -155,7 +170,15 @@ public class DatastoreTemplateTests {
 				.setFilter(PropertyFilter.hasAncestor(this.key1)).build();
 
 		this.childEntity1 = new ChildEntity();
-		this.childEntity1.id = "child_id";
+		this.childEntity1.id = createFakeKey("child_id");
+
+		this.ob1.childEntities = new LinkedList<>();
+		this.childEntity2 = new ChildEntity();
+		this.ob1.childEntities.add(this.childEntity2);
+
+		this.childEntity3 = new ChildEntity();
+		this.ob1.childEntities.add(this.childEntity3);
+
 
 		// mocked query results for entities and child entities.
 		QueryResults childTestEntityQueryResults = mock(QueryResults.class);
@@ -222,6 +245,12 @@ public class DatastoreTemplateTests {
 				.thenReturn(this.key1);
 		when(this.objectToKeyFactory.getKeyFromObject(eq(this.ob2), any()))
 				.thenReturn(this.key2);
+		this.childKey2 = createFakeKey("child_id2");
+		when(this.objectToKeyFactory.allocateKeyForObject(same(this.childEntity2), any(), eq(this.key1)))
+				.thenReturn(this.childKey2);
+		this.childKey3 = createFakeKey("child_id3");
+		when(this.objectToKeyFactory.allocateKeyForObject(same(this.childEntity3), any(), eq(this.key1)))
+				.thenReturn(this.childKey3);
 	}
 
 	@Test
@@ -287,9 +316,56 @@ public class DatastoreTemplateTests {
 	public void saveTest() {
 		when(this.datastore.put((FullEntity<?>) any())).thenReturn(this.e1);
 		assertTrue(this.datastoreTemplate.save(this.ob1) instanceof TestEntity);
+
 		Entity writtenEntity = Entity.newBuilder(this.key1).build();
 		verify(this.datastore, times(1)).put(eq(writtenEntity));
+
+		Entity writtenChildEntity2 = Entity.newBuilder(this.childKey2).build();
+		Entity writtenChildEntity3 = Entity.newBuilder(this.childKey3).build();
+		verify(this.datastore, times(1)).put(eq(writtenChildEntity2), eq(writtenChildEntity3));
+
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity2), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity3), notNull());
+	}
+
+
+	@Test
+	public void saveTestNonKeyId() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage("Only Key types are allowed for descendants id");
+
+		this.datastoreTemplate.save(this.ob1, createFakeKey("key0"));
+	}
+
+	@Test
+	public void saveTestNullDescendants() {
+		//making sure save works when descendants are null
+		assertNull(this.ob2.childEntities);
+		this.datastoreTemplate.save(this.ob2);
+	}
+
+	@Test
+	public void saveTestKeyNoAncestor() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage("Descendant object has a key without current ancestor");
+
+		when(this.objectToKeyFactory.getKeyFromObject(eq(this.childEntity1), any())).thenReturn(this.childEntity1.id);
+		this.datastoreTemplate.save(this.childEntity1, createFakeKey("key0"));
+	}
+
+	@Test
+	public void saveTestKeyWithAncestor() {
+		Key key0 = createFakeKey("key0");
+		Key keyA = Key.newBuilder(key0)
+				.addAncestor(PathElement.of(key0.getKind(), key0.getName())).setName("keyA").build();
+		ChildEntity childEntity = new ChildEntity();
+		childEntity.id = keyA;
+		when(this.objectToKeyFactory.getKeyFromObject(eq(childEntity), any())).thenReturn(keyA);
+		this.datastoreTemplate.save(childEntity, key0);
+
+		Entity writtenChildEntity = Entity.newBuilder(keyA).build();
+		verify(this.datastore, times(1)).put(eq(writtenChildEntity));
 	}
 
 	@Test
@@ -319,6 +395,13 @@ public class DatastoreTemplateTests {
 		verify(this.datastore, times(1)).put(eq(writtenEntity1), eq(writtenEntity2));
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob2), notNull());
+
+		Entity writtenChildEntity2 = Entity.newBuilder(this.childKey2).build();
+		Entity writtenChildEntity3 = Entity.newBuilder(this.childKey3).build();
+		verify(this.datastore, times(1)).put(eq(writtenChildEntity2), eq(writtenChildEntity3));
+
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity2), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity3), notNull());
 	}
 
 	@Test
@@ -470,9 +553,15 @@ public class DatastoreTemplateTests {
 		LinkedList<ChildEntity> multipleReference;
 
 		@Override
-		public boolean equals(Object other) {
-			TestEntity o = (TestEntity) other;
-			return this.id.equals(o.id);
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+			TestEntity that = (TestEntity) o;
+			return Objects.equals(this.id, that.id);
 		}
 
 		@Override
@@ -484,12 +573,18 @@ public class DatastoreTemplateTests {
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "child_entity")
 	private static class ChildEntity {
 		@Id
-		String id;
+		Key id;
 
 		@Override
-		public boolean equals(Object other) {
-			ChildEntity o = (ChildEntity) other;
-			return this.id.equals(o.id);
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+			ChildEntity that = (ChildEntity) o;
+			return Objects.equals(this.id, that.id);
 		}
 
 		@Override
@@ -497,5 +592,4 @@ public class DatastoreTemplateTests {
 			return Objects.hash(this.id);
 		}
 	}
-
 }

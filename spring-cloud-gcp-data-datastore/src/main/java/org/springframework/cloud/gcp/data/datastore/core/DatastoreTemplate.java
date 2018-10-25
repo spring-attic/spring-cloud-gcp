@@ -26,12 +26,14 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.BaseEntity;
+import com.google.cloud.datastore.BaseKey;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Entity.Builder;
 import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.PathElement;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
 import com.google.cloud.datastore.StructuredQuery;
@@ -45,11 +47,15 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mapping.PersistentProperty;
+import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.TypeUtils;
 
 /**
  * An implementation of {@link DatastoreOperations}.
@@ -101,15 +107,15 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public <T> T save(T instance) {
-		getDatastoreReadWriter().put(convertToEntityForSave(instance));
+	public <T> T save(T instance, Key... ancestors) {
+		getDatastoreReadWriter().put(convertToEntityForSave(instance, ancestors));
 		return instance;
 	}
 
 	@Override
-	public <T> Iterable<T> saveAll(Iterable<T> entities) {
+	public <T> Iterable<T> saveAll(Iterable<T> entities, Key... ancestors) {
 		getDatastoreReadWriter().put(StreamSupport.stream(entities.spliterator(), false)
-				.map(this::convertToEntityForSave).toArray(Entity[]::new));
+				.map(entity -> convertToEntityForSave(entity, ancestors)).toArray(Entity[]::new));
 		return entities;
 	}
 
@@ -256,10 +262,60 @@ public class DatastoreTemplate implements DatastoreOperations {
 						: StructuredQuery.OrderBy.Direction.ASCENDING);
 	}
 
-	private Entity convertToEntityForSave(Object entity) {
-		Builder builder = Entity.newBuilder(getKey(entity, true));
+	private Entity convertToEntityForSave(Object entity, Key... ancestors) {
+		if (ancestors != null) {
+			for (Key ancestor : ancestors) {
+				validateKey(entity, keyToPathElement(ancestor));
+			}
+		}
+		Key key = getKey(entity, true, ancestors);
+		Builder builder = Entity.newBuilder(key);
 		this.datastoreEntityConverter.write(entity, builder);
+		saveDescendents(entity, key);
 		return builder.build();
+	}
+
+	private void saveDescendents(Object entity, Key key) {
+		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
+				.getPersistentEntity(entity.getClass());
+		datastorePersistentEntity.doWithDescendantProperties(
+				(PersistentProperty persistentProperty) -> {
+					//Convert and write descendants, applying ancestor from parent entry
+					PersistentPropertyAccessor accessor = datastorePersistentEntity.getPropertyAccessor(entity);
+					Object val = accessor.getProperty(persistentProperty);
+					if (val != null) {
+						//we can be sure that the property is an array or an iterable,
+						//because we check it in isDescendant
+						if (val.getClass().isArray() && val.getClass() != byte[].class) {
+							//if a property is an array, convert it to list
+							val = CollectionUtils.arrayToList(val);
+						}
+						saveAll((Iterable<?>) val, key);
+					}
+				});
+	}
+
+	public static PathElement keyToPathElement(Key key) {
+		Assert.notNull(key, "A non-null key is required");
+		return key.getName() != null
+				? PathElement.of(key.getKind(), key.getName())
+				: PathElement.of(key.getKind(), key.getId());
+	}
+
+	private void validateKey(Object entity, PathElement ancestorPE) {
+		DatastorePersistentEntity datastorePersistentEntity =
+				this.datastoreMappingContext.getPersistentEntity(entity.getClass());
+		DatastorePersistentProperty idProp = datastorePersistentEntity.getIdPropertyOrFail();
+
+		if (!TypeUtils.isAssignable(BaseKey.class, idProp.getType())) {
+			throw new DatastoreDataException("Only Key types are allowed for descendants id");
+		}
+
+		Key key = getKey(entity, false);
+		if (key == null || key.getAncestors().stream().anyMatch(pe -> pe.equals(ancestorPE))) {
+			return;
+		}
+		throw new DatastoreDataException("Descendant object has a key without current ancestor");
 	}
 
 	private <T> Collection<T> convertEntitiesForRead(
@@ -357,17 +413,15 @@ public class DatastoreTemplate implements DatastoreOperations {
 				this.datastoreMappingContext.getPersistentEntity(entityClass).kindName());
 	}
 
-	private Key getKey(Object entity, boolean allocateKey) {
+	private Key getKey(Object entity, boolean allocateKey, Key... ancestors) {
 		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(entity.getClass());
 		DatastorePersistentProperty idProp = datastorePersistentEntity
 				.getIdPropertyOrFail();
-		return datastorePersistentEntity.getPropertyAccessor(entity)
-				.getProperty(idProp) == null && allocateKey
-						? this.objectToKeyFactory.allocateKeyForObject(entity,
-								datastorePersistentEntity)
-						: this.objectToKeyFactory.getKeyFromObject(entity,
-								datastorePersistentEntity);
+		if (datastorePersistentEntity.getPropertyAccessor(entity).getProperty(idProp) == null && allocateKey) {
+			return this.objectToKeyFactory.allocateKeyForObject(entity, datastorePersistentEntity, ancestors);
+		}
+		return this.objectToKeyFactory.getKeyFromObject(entity, datastorePersistentEntity);
 	}
 
 	private Key[] findAllKeys(Class entityClass) {
