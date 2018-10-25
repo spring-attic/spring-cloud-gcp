@@ -105,7 +105,7 @@ public class SpannerStatementQueryExecutor {
 		if (options.getLimit() != null) {
 			sb.append(" LIMIT ").append(options.getLimit());
 		}
-		if (options.getLimit() != null) {
+		if (options.getOffset() != null) {
 			sb.append(" OFFSET ").append(options.getOffset());
 		}
 		return sb.toString();
