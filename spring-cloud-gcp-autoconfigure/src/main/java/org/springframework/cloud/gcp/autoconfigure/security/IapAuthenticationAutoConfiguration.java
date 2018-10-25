@@ -16,33 +16,25 @@
 
 package org.springframework.cloud.gcp.autoconfigure.security;
 
-import java.util.Collection;
 import java.util.Collections;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cloud.gcp.security.iap.IapAuthenticationDetailsSource;
 import org.springframework.cloud.gcp.security.iap.IapAuthenticationFilter;
-import org.springframework.cloud.gcp.security.iap.IapHttpConfigurer;
 import org.springframework.cloud.gcp.security.iap.JwtTokenVerifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.GrantedAuthoritiesContainer;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesUserDetailsService;
 
 @Configuration
 @ConditionalOnProperty("spring.cloud.gcp.security.iap.enabled")
-@AutoConfigureBefore (IapHttpConfigurer.class)
+//@AutoConfigureBefore (IapHttpConfigurer.class)
 public class IapAuthenticationAutoConfiguration {
 	private static final Log LOGGER = LogFactory.getLog(IapAuthenticationAutoConfiguration.class);
 
@@ -73,21 +65,5 @@ public class IapAuthenticationAutoConfiguration {
 	@Bean
 	public PreAuthenticatedGrantedAuthoritiesUserDetailsService userDetailsService() {
 		return new PreAuthenticatedGrantedAuthoritiesUserDetailsService();
-	}
-
-	static class IapAuthenticationDetailsSource implements AuthenticationDetailsSource<HttpServletRequest, IapDetails> {
-		@Override
-		public IapDetails buildDetails(HttpServletRequest httpServletRequest) {
-			return new IapDetails();
-		}
-	}
-
-	static class IapDetails implements GrantedAuthoritiesContainer {
-		@Override
-		public Collection<? extends GrantedAuthority> getGrantedAuthorities() {
-			LOGGER.info("******************* RETURNING hardcoded role from IAP_DETAILS");
-
-			return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
-		}
 	}
 }
