@@ -38,3 +38,5 @@ before_install:
   - gcloud components update --quiet
   - gcloud components install beta pubsub-emulator --quiet
   - gcloud config set project spring-cloud-gcp-ci
+after_success:
+- bash < (curl -s https://codecov.io/bash)
