@@ -20,8 +20,8 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
-import com.google.cloud.datastore.PathElement;
 
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;
@@ -98,9 +98,7 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 		KeyFactory keyFactory = getKeyFactory().setKind(datastorePersistentEntity.kindName());
 		if (ancestors != null) {
 			for (Key ancestor : ancestors) {
-				keyFactory.addAncestor(ancestor.getName() != null
-						? PathElement.of(ancestor.getKind(), ancestor.getName())
-						: PathElement.of(ancestor.getKind(), ancestor.getId()));
+				keyFactory.addAncestor(DatastoreTemplate.keyToPathElement(ancestor));
 			}
 		}
 		Key allocatedKey = this.datastore.allocateId(keyFactory.newKey());

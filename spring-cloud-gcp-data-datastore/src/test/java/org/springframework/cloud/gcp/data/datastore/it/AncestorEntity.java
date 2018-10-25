@@ -35,11 +35,11 @@ public class AncestorEntity {
 	String name;
 
 	@Descendants
-	List<DescendatEntry> descndants;
+	List<DescendatEntry> descendants;
 
-	AncestorEntity(String name, List<DescendatEntry> descndants) {
+	AncestorEntity(String name, List<DescendatEntry> descendants) {
 		this.name = name;
-		this.descndants = descndants;
+		this.descendants = descendants;
 	}
 
 	@Override
@@ -52,13 +52,13 @@ public class AncestorEntity {
 		}
 		AncestorEntity that = (AncestorEntity) o;
 		return Objects.equals(this.name, that.name) &&
-				new HashSet<>(this.descndants).equals(new HashSet<>(that.descndants));
+				new HashSet<>(this.descendants).equals(new HashSet<>(that.descendants));
 	}
 
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(this.name, this.descndants);
+		return Objects.hash(this.name, this.descendants);
 	}
 
 	public static class DescendatEntry {

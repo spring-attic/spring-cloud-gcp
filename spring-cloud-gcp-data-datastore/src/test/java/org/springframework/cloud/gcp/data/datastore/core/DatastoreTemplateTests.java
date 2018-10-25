@@ -339,6 +339,13 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
+	public void saveTestNullDescendants() {
+		//making sure save works when descendants are null
+		assertNull(this.ob2.childEntities);
+		this.datastoreTemplate.save(this.ob2);
+	}
+
+	@Test
 	public void saveTestKeyNoAncestor() {
 		this.expectedEx.expect(DatastoreDataException.class);
 		this.expectedEx.expectMessage("Descendant object has a key without current ancestor");

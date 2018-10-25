@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import com.google.cloud.datastore.Blob;
 import com.google.common.collect.ImmutableList;
 import org.awaitility.Awaitility;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,6 +69,15 @@ public class DatastoreIntegrationTests {
 				"Datastore integration tests are disabled. Please use '-Dit.datastore=true' "
 						+ "to enable them. ",
 				System.getProperty("it.datastore"), is("true"));
+	}
+
+	@After
+	public void deleteAll() {
+		this.datastoreTemplate.deleteAll(EmbeddableTreeNode.class);
+		this.datastoreTemplate.deleteAll(AncestorEntity.class);
+		this.datastoreTemplate.deleteAll(AncestorEntity.DescendatEntry.class);
+		this.datastoreTemplate.deleteAll(TreeCollection.class);
+		this.testEntityRepository.deleteAll();
 	}
 
 	@Test
@@ -174,7 +184,6 @@ public class DatastoreIntegrationTests {
 
 		EmbeddableTreeNode loaded = this.datastoreTemplate.findById(7L, EmbeddableTreeNode.class);
 
-		this.datastoreTemplate.deleteAll(EmbeddableTreeNode.class);
 		assertEquals(treeNode7, loaded);
 	}
 
@@ -192,44 +201,35 @@ public class DatastoreIntegrationTests {
 
 		TreeCollection loaded = this.datastoreTemplate.findById(1L, TreeCollection.class);
 
-		this.datastoreTemplate.deleteAll(TreeCollection.class);
 		assertEquals(treeCollection, loaded);
 	}
 
 	@Test
 	public void ancestorsTest() {
-		AncestorEntity.DescendatEntry descendatEntryA = new AncestorEntity.DescendatEntry("a");
-		AncestorEntity.DescendatEntry descendatEntryB = new AncestorEntity.DescendatEntry("b");
-		AncestorEntity.DescendatEntry descendatEntryC = new AncestorEntity.DescendatEntry("c");
+		AncestorEntity.DescendatEntry descendantEntryA = new AncestorEntity.DescendatEntry("a");
+		AncestorEntity.DescendatEntry descendantEntryB = new AncestorEntity.DescendatEntry("b");
+		AncestorEntity.DescendatEntry descendantEntryC = new AncestorEntity.DescendatEntry("c");
 
 		AncestorEntity ancestorEntity =
-				new AncestorEntity("abc", Arrays.asList(descendatEntryA, descendatEntryB, descendatEntryC));
+				new AncestorEntity("abc", Arrays.asList(descendantEntryA, descendantEntryB, descendantEntryC));
 
 		this.datastoreTemplate.save(ancestorEntity);
-
 		waitUntilTrue(() -> {
 			AncestorEntity byId = this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
-			return byId != null && byId.descndants.size() == 3;
+			return byId != null && byId.descendants.size() == 3;
 		});
 
 		AncestorEntity loadedEntity = this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
+		assertEquals(ancestorEntity, loadedEntity);
 
-		boolean loadedEqualToOriginal = ancestorEntity.equals(loadedEntity);
-
-		ancestorEntity.descndants.forEach(descendatEntry -> descendatEntry.name = descendatEntry.name + " updated");
-
+		ancestorEntity.descendants.forEach(descendatEntry -> descendatEntry.name = descendatEntry.name + " updated");
 		this.datastoreTemplate.save(ancestorEntity);
-
 		waitUntilTrue(() ->
 				this.datastoreTemplate.findAll(AncestorEntity.DescendatEntry.class)
 						.stream().allMatch(descendatEntry -> descendatEntry.name.contains("updated")));
 
 		AncestorEntity loadedEntityAfterUpdate =
 				this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
-
-		this.datastoreTemplate.deleteAll(AncestorEntity.class);
-		this.datastoreTemplate.deleteAll(AncestorEntity.DescendatEntry.class);
-		assertTrue("Loaded entity is equal to the original one", loadedEqualToOriginal);
 		assertEquals(ancestorEntity, loadedEntityAfterUpdate);
 	}
 

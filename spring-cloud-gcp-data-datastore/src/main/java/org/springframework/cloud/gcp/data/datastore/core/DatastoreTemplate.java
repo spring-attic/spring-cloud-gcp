@@ -268,9 +268,10 @@ public class DatastoreTemplate implements DatastoreOperations {
 				validateKey(entity, keyToPathElement(ancestor));
 			}
 		}
-		Builder builder = Entity.newBuilder(getKey(entity, true, ancestors));
+		Key key = getKey(entity, true, ancestors);
+		Builder builder = Entity.newBuilder(key);
 		this.datastoreEntityConverter.write(entity, builder);
-		saveDescendents(entity, getKey(entity, true, ancestors));
+		saveDescendents(entity, key);
 		return builder.build();
 	}
 
@@ -282,21 +283,20 @@ public class DatastoreTemplate implements DatastoreOperations {
 					//Convert and write descendants, applying ancestor from parent entry
 					PersistentPropertyAccessor accessor = datastorePersistentEntity.getPropertyAccessor(entity);
 					Object val = accessor.getProperty(persistentProperty);
-
-					//Check if property is a non-null array
-					if (val != null && val.getClass().isArray() && val.getClass() != byte[].class) {
-						//if a propperty is an array, convert it to list
-						val = CollectionUtils.arrayToList(val);
-					}
-					if (val instanceof Iterable) {
-						PathElement ancestorPE = keyToPathElement(key);
-						((Iterable<?>) val).forEach(descendant -> validateKey(descendant, ancestorPE));
+					if (val != null) {
+						//we can be sure that the property is an array or an iterable,
+						//because we check it in isDescendant
+						if (val.getClass().isArray() && val.getClass() != byte[].class) {
+							//if a property is an array, convert it to list
+							val = CollectionUtils.arrayToList(val);
+						}
 						saveAll((Iterable<?>) val, key);
 					}
 				});
 	}
 
-	private PathElement keyToPathElement(Key key) {
+	public static PathElement keyToPathElement(Key key) {
+		Assert.notNull(key, "A non-null key is required");
 		return key.getName() != null
 				? PathElement.of(key.getKind(), key.getName())
 				: PathElement.of(key.getKind(), key.getId());
