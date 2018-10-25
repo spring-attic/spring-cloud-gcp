@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Sample REST Controller to demonstrate Spring Cloud Sleuth & Stackdriver Trace
  *
  * @author Ray Tsang
+ * @author Mike Eltsufin
  */
 @RestController
 public class ExampleController {
@@ -44,13 +45,11 @@ public class ExampleController {
 	}
 
 	@RequestMapping("/meet")
-	public String meet() {
+	public String meet() throws InterruptedException {
 		long duration = 200L + (long) (Math.random() * 800L);
-		try {
-			Thread.sleep(duration);
-		}
-		catch (InterruptedException e) {
-		}
+
+		Thread.sleep(duration);
+
 		LOGGER.info("meeting took " + duration + "ms");
 		return "meeting finished in " + duration + "ms";
 	}

@@ -20,20 +20,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;
 
-import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Options.QueryOption;
 import org.junit.Test;
 
-import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Order;
-
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -46,37 +39,6 @@ public class SpannerSortPageQueryOptionsTests {
 		new SpannerQueryOptions().addQueryOption(null);
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
-	public void timestampErrorTest() {
-		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
-		assertFalse(spannerQueryOptions.hasTimestamp());
-		spannerQueryOptions.getTimestamp();
-	}
-
-	@Test
-	public void timestampTest() {
-		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
-		Timestamp timestamp = Timestamp.now();
-		assertFalse(spannerQueryOptions.hasTimestamp());
-		spannerQueryOptions.setTimestamp(timestamp);
-		assertTrue(spannerQueryOptions.hasTimestamp());
-		assertEquals(timestamp, spannerQueryOptions.getTimestamp());
-		spannerQueryOptions.unsetTimestamp();
-		assertFalse(spannerQueryOptions.hasTimestamp());
-	}
-
-	@Test
-	public void limitTest() {
-		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
-		long limit = 3L;
-		assertFalse(spannerQueryOptions.hasLimit());
-		spannerQueryOptions.setLimit(limit);
-		assertTrue(spannerQueryOptions.hasLimit());
-		assertEquals(limit, spannerQueryOptions.getLimit());
-		spannerQueryOptions.unsetLimit();
-		assertFalse(spannerQueryOptions.hasLimit());
-	}
-
 	@Test
 	public void includePropertiesTest() {
 		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
@@ -84,29 +46,6 @@ public class SpannerSortPageQueryOptionsTests {
 		assertNull(spannerQueryOptions.getIncludeProperties());
 		spannerQueryOptions.setIncludeProperties(includeProperties);
 		assertNotNull(spannerQueryOptions.getIncludeProperties());
-	}
-
-	@Test
-	public void offsetTest() {
-		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
-		long offset = 3L;
-		assertFalse(spannerQueryOptions.hasOffset());
-		spannerQueryOptions.setOffset(offset);
-		assertTrue(spannerQueryOptions.hasOffset());
-		assertEquals(offset, spannerQueryOptions.getOffset());
-		spannerQueryOptions.unsetOffset();
-		assertFalse(spannerQueryOptions.hasOffset());
-	}
-
-	@Test
-	public void sortTest() {
-		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
-		Sort sort = Sort.by(Order.asc("test"));
-		assertFalse(spannerQueryOptions.getSort().isSorted());
-		spannerQueryOptions.setSort(sort);
-		assertTrue(spannerQueryOptions.getSort().getOrderFor("test").isAscending());
-		spannerQueryOptions.unsetSort();
-		assertFalse(spannerQueryOptions.getSort().isSorted());
 	}
 
 	@Test

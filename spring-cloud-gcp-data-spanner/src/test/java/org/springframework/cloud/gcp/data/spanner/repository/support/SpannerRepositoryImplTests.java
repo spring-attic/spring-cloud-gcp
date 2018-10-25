@@ -209,8 +209,8 @@ public class SpannerRepositoryImplTests {
 		when(this.template.queryAll(eq(Object.class), any())).thenAnswer(invocation -> {
 			SpannerPageableQueryOptions spannerQueryOptions = invocation.getArgument(1);
 			assertSame(sort, spannerQueryOptions.getSort());
-			assertEquals(3L, spannerQueryOptions.getOffset());
-			assertEquals(5L, spannerQueryOptions.getLimit());
+			assertEquals(new Long(3), spannerQueryOptions.getOffset());
+			assertEquals(new Integer(5), spannerQueryOptions.getLimit());
 			return new ArrayList<>();
 		});
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)

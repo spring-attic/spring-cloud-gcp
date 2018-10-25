@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import com.google.cloud.Timestamp;
@@ -30,6 +29,7 @@ import org.springframework.util.Assert;
  * Encapsulates Cloud Spanner read options.
  *
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  *
  * @since 1.1
  */
@@ -37,9 +37,9 @@ public class SpannerReadOptions {
 
 	private List<ReadOption> readOptions = new ArrayList<>();
 
-	private Optional<Timestamp> timestamp = Optional.empty();
+	private Timestamp timestamp;
 
-	private Optional<String> index = Optional.empty();
+	private String index;
 
 	private Set<String> includeProperties;
 
@@ -67,49 +67,21 @@ public class SpannerReadOptions {
 		return this;
 	}
 
-	public SpannerReadOptions unsetTimestamp() {
-		this.timestamp = Optional.empty();
-		return this;
-	}
-
-	public boolean hasTimestamp() {
-		return this.timestamp.isPresent();
-	}
-
 	public Timestamp getTimestamp() {
-		if (!hasTimestamp()) {
-			throw new UnsupportedOperationException(
-					"Cannot get timestamp because it hasn't been set.");
-		}
-		return this.timestamp.get();
+		return this.timestamp;
 	}
 
 	public SpannerReadOptions setTimestamp(Timestamp timestamp) {
-		Assert.notNull(timestamp, "A valid timestamp is required!");
-		this.timestamp = Optional.of(timestamp);
+		this.timestamp = timestamp;
 		return this;
-	}
-
-	public SpannerReadOptions unsetIndex() {
-		this.index = Optional.empty();
-		return this;
-	}
-
-	public boolean hasIndex() {
-		return this.index.isPresent();
 	}
 
 	public String getIndex() {
-		if (!hasIndex()) {
-			throw new UnsupportedOperationException(
-					"Cannot get index because it hasn't been set.");
-		}
-		return this.index.get();
+		return this.index;
 	}
 
 	public SpannerReadOptions setIndex(String index) {
-		Assert.notNull(index, "A valid index is required!");
-		this.index = Optional.of(index);
+		this.index = index;
 		return this;
 	}
 

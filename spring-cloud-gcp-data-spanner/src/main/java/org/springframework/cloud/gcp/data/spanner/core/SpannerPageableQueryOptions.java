@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.data.spanner.core;
 
-import java.util.OptionalLong;
-
 import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
@@ -25,63 +23,33 @@ import org.springframework.util.Assert;
  * Encapsulates Cloud Spanner query options with sort and paging.
  *
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  *
  * @since 1.1
  */
 public class SpannerPageableQueryOptions extends SpannerQueryOptions {
 
-	private OptionalLong limit = OptionalLong.empty();
+	private Integer limit;
 
-	private OptionalLong offset = OptionalLong.empty();
+	private Long offset;
 
 	private Sort sort = Sort.unsorted();
 
-	public SpannerPageableQueryOptions unsetLimit() {
-		this.limit = OptionalLong.empty();
+	public Integer getLimit() {
+		return this.limit;
+	}
+
+	public SpannerPageableQueryOptions setLimit(Integer limit) {
+		this.limit = limit;
 		return this;
 	}
 
-	public SpannerPageableQueryOptions unsetOffset() {
-		this.offset = OptionalLong.empty();
-		return this;
+	public Long getOffset() {
+		return this.offset;
 	}
 
-	public SpannerPageableQueryOptions unsetSort() {
-		this.sort = Sort.unsorted();
-		return this;
-	}
-
-	public boolean hasLimit() {
-		return this.limit.isPresent();
-	}
-
-	public long getLimit() {
-		if (!hasLimit()) {
-			throw new UnsupportedOperationException(
-					"Cannot get limit because it hasn't been set.");
-		}
-		return this.limit.getAsLong();
-	}
-
-	public SpannerPageableQueryOptions setLimit(long limit) {
-		this.limit = OptionalLong.of(limit);
-		return this;
-	}
-
-	public boolean hasOffset() {
-		return this.offset.isPresent();
-	}
-
-	public long getOffset() {
-		if (!hasOffset()) {
-			throw new UnsupportedOperationException(
-					"Cannot get offset because it hasn't been set.");
-		}
-		return this.offset.getAsLong();
-	}
-
-	public SpannerPageableQueryOptions setOffset(long offset) {
-		this.offset = OptionalLong.of(offset);
+	public SpannerPageableQueryOptions setOffset(Long offset) {
+		this.offset = offset;
 		return this;
 	}
 

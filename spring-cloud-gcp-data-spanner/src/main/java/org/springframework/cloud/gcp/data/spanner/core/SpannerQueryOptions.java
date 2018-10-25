@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.spanner.core;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import com.google.cloud.Timestamp;
@@ -29,7 +28,9 @@ import org.springframework.util.Assert;
 /**
  * Encapsulates Cloud Spanner query options. These are options that are independent of the
  * SQL being run.
+ *
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  *
  * @since 1.1
  */
@@ -37,7 +38,7 @@ public class SpannerQueryOptions {
 
 	private List<QueryOption> queryOptions = new ArrayList<>();
 
-	private Optional<Timestamp> timestamp = Optional.empty();
+	private Timestamp timestamp;
 
 	private Set<String> includeProperties;
 
@@ -65,26 +66,13 @@ public class SpannerQueryOptions {
 		return this;
 	}
 
-	public SpannerQueryOptions unsetTimestamp() {
-		this.timestamp = Optional.empty();
-		return this;
-	}
-
-	public boolean hasTimestamp() {
-		return this.timestamp.isPresent();
-	}
-
 	public Timestamp getTimestamp() {
-		if (!hasTimestamp()) {
-			throw new UnsupportedOperationException(
-					"Cannot get timestamp because it hasn't been set.");
-		}
-		return this.timestamp.get();
+		return this.timestamp;
 	}
 
 	public SpannerQueryOptions setTimestamp(Timestamp timestamp) {
 		Assert.notNull(timestamp, "A valid timestamp is required!");
-		this.timestamp = Optional.of(timestamp);
+		this.timestamp = timestamp;
 		return this;
 	}
 

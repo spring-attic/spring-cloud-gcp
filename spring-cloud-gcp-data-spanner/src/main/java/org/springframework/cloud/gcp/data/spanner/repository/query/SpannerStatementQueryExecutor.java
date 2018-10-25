@@ -48,6 +48,7 @@ import org.springframework.data.util.Pair;
  *
  * @author Chengyuan Zhao
  * @author Balint Pato
+ * @author Mike Eltsufin
  *
  * @since 1.1
  */
@@ -101,10 +102,10 @@ public class SpannerStatementQueryExecutor {
 							.getPersistentProperty(o.getProperty());
 					return property == null ? o.getProperty() : property.getColumnName();
 				});
-		if (options.hasLimit()) {
+		if (options.getLimit() != null) {
 			sb.append(" LIMIT ").append(options.getLimit());
 		}
-		if (options.hasOffset()) {
+		if (options.getOffset() != null) {
 			sb.append(" OFFSET ").append(options.getOffset());
 		}
 		return sb.toString();
@@ -161,7 +162,7 @@ public class SpannerStatementQueryExecutor {
 		if (tags == null && params == null) {
 			return Statement.of(sql);
 		}
-		if (tags.size() != params.length) {
+		if (tags == null || params == null || tags.size() != params.length) {
 			throw new IllegalArgumentException(
 					"The number of tags does match the number of params.");
 		}
