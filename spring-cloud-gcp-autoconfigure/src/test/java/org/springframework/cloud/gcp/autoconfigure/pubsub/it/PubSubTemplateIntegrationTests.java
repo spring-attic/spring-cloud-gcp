@@ -29,8 +29,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
+import org.awaitility.Duration;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -41,14 +45,21 @@ import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfigura
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessageConverter;
+import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
+import static org.awaitility.Awaitility.await;
 
 /**
  * @author João André Martins
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
+ * @author Daniel Zou
  */
 public class PubSubTemplateIntegrationTests {
 
@@ -171,5 +182,59 @@ public class PubSubTemplateIntegrationTests {
 			pubSubAdmin.deleteSubscription(subscriptionName);
 			pubSubAdmin.deleteTopic(topicName);
 		});
+	}
+
+	@Test
+	public void testPubSubTemplateLoadsMessageConverter() {
+		this.contextRunner
+				.withUserConfiguration(JsonPayloadTestConfiguration.class)
+				.run(context -> {
+					PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
+					PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
+
+					String topicName = "json-payload-topic" + UUID.randomUUID();
+					String subscriptionName = "json-payload-subscription" + UUID.randomUUID();
+					pubSubAdmin.createTopic(topicName);
+					pubSubAdmin.createSubscription(subscriptionName, topicName, 10);
+
+					TestUser user = new TestUser("John", "password");
+					pubSubTemplate.publish(topicName, user);
+
+					await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
+						List<ConvertedAcknowledgeablePubsubMessage<TestUser>> messages =
+								pubSubTemplate.pullAndConvert(
+										subscriptionName, 1, true, TestUser.class);
+						assertThat(messages).hasSize(1);
+
+						TestUser receivedTestUser = messages.get(0).getPayload();
+						assertThat(receivedTestUser.username).isEqualTo("John");
+						assertThat(receivedTestUser.password).isEqualTo("password");
+					});
+
+					pubSubAdmin.deleteSubscription(subscriptionName);
+					pubSubAdmin.deleteTopic(topicName);
+				});
+	}
+
+	@Configuration
+	static class JsonPayloadTestConfiguration {
+
+		@Bean
+		public PubSubMessageConverter pubSubMessageConverter() {
+			return new JacksonPubSubMessageConverter(new ObjectMapper());
+		}
+	}
+
+	static class TestUser {
+
+		public final String username;
+
+		public final String password;
+
+		@JsonCreator
+		TestUser(@JsonProperty("username") String username, @JsonProperty("password") String password) {
+			this.username = username;
+			this.password = password;
+		}
 	}
 }
