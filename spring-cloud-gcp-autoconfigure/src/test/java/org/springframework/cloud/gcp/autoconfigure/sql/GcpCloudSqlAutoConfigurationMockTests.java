@@ -45,8 +45,9 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 
 	@Test
 	public void testCloudSqlDataSourceTest() {
-		this.contextRunner.withPropertyValues("spring.cloud.gcp.sql.instanceConnectionName="
-				+ "tubular-bells:singapore:test-instance")
+		this.contextRunner.withPropertyValues(
+				"spring.cloud.gcp.sql.instanceConnectionName=tubular-bells:singapore:test-instance",
+				"spring.datasource.password=")
 				.run(context -> {
 					HikariDataSource dataSource =
 							(HikariDataSource) context.getBean(DataSource.class);
@@ -67,7 +68,8 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 	public void testCloudSqlAppEngineDataSourceTest() {
 		this.contextRunner.withPropertyValues(
 				"spring.cloud.gcp.project-id=im-not-used-for-anything",
-				"spring.cloud.gcp.sql.instanceConnectionName=tubular-bells:australia:test-instance")
+				"spring.cloud.gcp.sql.instanceConnectionName=tubular-bells:australia:test-instance",
+				"spring.datasource.password=")
 				.withSystemProperties(
 						"com.google.appengine.runtime.version=Google App Engine/Some Server")
 				.run(context -> {
