@@ -43,8 +43,13 @@ public class IapHttpConfigurer extends AbstractHttpConfigurer<IapHttpConfigurer,
 		LOGGER.info("*********** IapHttpConfigurer configuring HTTP: " + http);
 
 		ApplicationContext context = http.getSharedObject(ApplicationContext.class);
-		IapAuthenticationFilter filter = context.getBean(IapAuthenticationFilter.class);
-		http.addFilterBefore(filter, BasicAuthenticationFilter.class);
-	}
 
+		if (context.getEnvironment().getProperty("spring.cloud.gcp.security.iap.enabled", Boolean.class)) {
+			IapAuthenticationFilter filter = context.getBean(IapAuthenticationFilter.class);
+			http.addFilterBefore(filter, BasicAuthenticationFilter.class);
+		}
+		else {
+			LOGGER.info("IapAuthenticationFilter bean not found; skipping IAP authentication.");
+		}
+	}
 }
