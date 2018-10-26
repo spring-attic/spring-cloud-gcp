@@ -290,7 +290,7 @@ public class Item {
 
   String name;
 
-  Timestamp originalAcquisitionTime;
+  Timestamp timeAddedToOrder;
 }
 ----
 
