@@ -297,7 +297,7 @@ public class Item {
 The parent-child relationship structure of objects is stored in Cloud Datastore using Datastore's https://cloud.google.com/datastore/docs/concepts/entities#ancestor_paths[ancestor relationships].
 These relationships can be many levels deep.
 
-Properties holding child entities must be collection-like, but they can be any of the supported types inter-convertible collection-like types that are supported for regular properties such as `List`, arrays, `Set`, etc...
+Properties holding child entities must be collection-like, but they can be any of the supported inter-convertible collection-like types that are supported for regular properties such as `List`, arrays, `Set`, etc...
 Child items must have `Key` as their ID type because Cloud Datastore stores the ancestor relationship link inside the keys of the children.
 
 Reading or saving an entity automatically causes all subsequent levels of children under that entity to be read or saved, respectively.
