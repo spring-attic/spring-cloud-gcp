@@ -280,7 +280,7 @@ public class ShoppingOrder {
   long id;
 
   @Descendants
-  List<Item> children;
+  List<Item> items;
 }
 
 @Entity
