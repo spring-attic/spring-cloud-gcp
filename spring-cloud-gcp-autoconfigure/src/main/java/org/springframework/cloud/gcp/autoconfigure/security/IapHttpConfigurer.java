@@ -30,21 +30,21 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 public class IapHttpConfigurer extends AbstractHttpConfigurer<IapHttpConfigurer, HttpSecurity> {
 	private static final Log LOGGER = LogFactory.getLog(IapHttpConfigurer.class);
 
-
+	/**
+	 * The static method is for overriding the default from a custom WebSecurityConfigurerAdapter.
+	 * spring.factories entry will use the default constructor instead.
+	 */
 	public static IapHttpConfigurer iapHttpConfigurer() {
-		LOGGER.info("************ IapHttpConfigurer instantiated through static factory");
-
 		return new IapHttpConfigurer();
-
 	}
 
 	@Override
 	public void configure(HttpSecurity http) {
-		LOGGER.info("*********** IapHttpConfigurer configuring HTTP: " + http);
 
 		ApplicationContext context = http.getSharedObject(ApplicationContext.class);
 
 		if (context.getEnvironment().getProperty(IapSecurityConstants.IAP_GATING_PROPERTY, Boolean.class)) {
+			LOGGER.info("Adding IapAuthenticationFilter to default filter chain.");
 			IapAuthenticationFilter filter = context.getBean(IapAuthenticationFilter.class);
 			http.addFilterBefore(filter, BasicAuthenticationFilter.class);
 		}

@@ -40,14 +40,13 @@ public class IapAuthenticationAutoConfiguration {
 	// TODO: differentiate based on either AppEngine or ComputeEngine
 	@Bean
 	public JwtTokenVerifier jwtTokenVerifier() {
-		LOGGER.info("IapAuthenticationAutoConfiguration verifier bean creation");
+		// todo: externalize JWK key URL property?
 		return new JwtTokenVerifier();
 	}
 
 	@Bean
 	public IapAuthenticationFilter iapAuthenticationFilter() {
 		IapAuthenticationFilter filter = new IapAuthenticationFilter(jwtTokenVerifier());
-		LOGGER.info("******************* INSTANTIATING IAP AUTH FILTER: " + filter);
 
 		PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
 		provider.setPreAuthenticatedUserDetailsService(new PreAuthenticatedGrantedAuthoritiesUserDetailsService());
