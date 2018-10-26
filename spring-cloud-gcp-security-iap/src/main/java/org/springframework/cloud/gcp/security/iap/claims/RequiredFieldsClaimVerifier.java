@@ -18,31 +18,42 @@ package org.springframework.cloud.gcp.security.iap.claims;
 
 import java.util.Map;
 
-import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
-import org.springframework.security.oauth2.provider.token.store.JwtClaimsSetVerifier;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-public class RequiredFieldsClaimVerifier implements JwtClaimsSetVerifier {
+public class RequiredFieldsClaimVerifier implements ClaimVerifier {
+	private static final Log LOGGER = LogFactory.getLog(RequiredFieldsClaimVerifier.class);
+
 	@Override
-	public void verify(Map<String, Object> claims) throws InvalidTokenException {
+	public boolean verify(Map<String, Object> claims) {
+
+		boolean requiredFieldsPresent = true;
 
 		if (!claims.containsKey("sub")) {
-			throw new InvalidTokenException("Subject missing.");
+			LOGGER.warn("Subject missing.");
+			requiredFieldsPresent = false;
 		}
 
 		if (!claims.containsKey("email")) {
-			throw new InvalidTokenException("E-mail missing.");
+			LOGGER.warn("E-mail missing.");
+			requiredFieldsPresent =  false;
 		}
 
 		if (!claims.containsKey("aud")) {
-			throw new InvalidTokenException("Audience missing.");
+			LOGGER.warn("Audience missing.");
+			requiredFieldsPresent =  false;
 		}
 
 		if (!claims.containsKey("exp")) {
-			throw new InvalidTokenException("Expiration missing.");
+			LOGGER.warn("Expiration missing.");
+			requiredFieldsPresent =  false;
 		}
 
 		if (!claims.containsKey("iat")) {
-			throw new InvalidTokenException("Issue time missing.");
+			LOGGER.warn("Issue time missing.");
+			requiredFieldsPresent =  false;
 		}
+
+		return requiredFieldsPresent;
 	}
 }
