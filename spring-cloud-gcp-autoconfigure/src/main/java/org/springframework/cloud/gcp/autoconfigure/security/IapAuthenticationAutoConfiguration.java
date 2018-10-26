@@ -31,8 +31,9 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesUserDetailsService;
 
+
 @Configuration
-@ConditionalOnProperty("spring.cloud.gcp.security.iap.enabled")
+@ConditionalOnProperty(IapSecurityConstants.IAP_GATING_PROPERTY)
 public class IapAuthenticationAutoConfiguration {
 	private static final Log LOGGER = LogFactory.getLog(IapAuthenticationAutoConfiguration.class);
 
