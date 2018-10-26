@@ -27,14 +27,12 @@ import org.springframework.cloud.gcp.security.iap.IapAuthenticationFilter;
 import org.springframework.cloud.gcp.security.iap.JwtTokenVerifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesUserDetailsService;
 
 @Configuration
 @ConditionalOnProperty("spring.cloud.gcp.security.iap.enabled")
-//@AutoConfigureBefore (IapHttpConfigurer.class)
 public class IapAuthenticationAutoConfiguration {
 	private static final Log LOGGER = LogFactory.getLog(IapAuthenticationAutoConfiguration.class);
 
@@ -50,20 +48,10 @@ public class IapAuthenticationAutoConfiguration {
 		IapAuthenticationFilter filter = new IapAuthenticationFilter(jwtTokenVerifier());
 		LOGGER.info("******************* INSTANTIATING IAP AUTH FILTER: " + filter);
 
-		filter.setAuthenticationManager(new ProviderManager(Collections.singletonList(authenticationProvider())));
+		PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
+		provider.setPreAuthenticatedUserDetailsService(new PreAuthenticatedGrantedAuthoritiesUserDetailsService());
+		filter.setAuthenticationManager(new ProviderManager(Collections.singletonList(provider)));
 		filter.setAuthenticationDetailsSource(new IapAuthenticationDetailsSource());
 		return filter;
-	}
-
-	@Bean
-	public AuthenticationProvider authenticationProvider() {
-		PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
-		provider.setPreAuthenticatedUserDetailsService(userDetailsService());
-		return provider;
-	}
-
-	@Bean
-	public PreAuthenticatedGrantedAuthoritiesUserDetailsService userDetailsService() {
-		return new PreAuthenticatedGrantedAuthoritiesUserDetailsService();
 	}
 }
