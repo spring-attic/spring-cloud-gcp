@@ -32,7 +32,6 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
-import org.springframework.cloud.gcp.data.datastore.it.AncestorEntity.DescendantEntry;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -79,7 +78,7 @@ public class DatastoreIntegrationTests {
 	public void deleteAll() {
 		this.datastoreTemplate.deleteAll(EmbeddableTreeNode.class);
 		this.datastoreTemplate.deleteAll(AncestorEntity.class);
-		this.datastoreTemplate.deleteAll(DescendantEntry.class);
+		this.datastoreTemplate.deleteAll(AncestorEntity.DescendantEntry.class);
 		this.datastoreTemplate.deleteAll(TreeCollection.class);
 		this.testEntityRepository.deleteAll();
 	}
@@ -224,9 +223,9 @@ public class DatastoreIntegrationTests {
 
 	@Test
 	public void ancestorsTest() {
-		DescendantEntry descendantEntryA = new DescendantEntry("a");
-		DescendantEntry descendantEntryB = new DescendantEntry("b");
-		DescendantEntry descendantEntryC = new DescendantEntry("c");
+		AncestorEntity.DescendantEntry descendantEntryA = new AncestorEntity.DescendantEntry("a");
+		AncestorEntity.DescendantEntry descendantEntryB = new AncestorEntity.DescendantEntry("b");
+		AncestorEntity.DescendantEntry descendantEntryC = new AncestorEntity.DescendantEntry("c");
 
 		AncestorEntity ancestorEntity =
 				new AncestorEntity("abc", Arrays.asList(descendantEntryA, descendantEntryB, descendantEntryC));
@@ -243,7 +242,7 @@ public class DatastoreIntegrationTests {
 		ancestorEntity.descendants.forEach(descendatEntry -> descendatEntry.name = descendatEntry.name + " updated");
 		this.datastoreTemplate.save(ancestorEntity);
 		waitUntilTrue(() ->
-				this.datastoreTemplate.findAll(DescendantEntry.class)
+				this.datastoreTemplate.findAll(AncestorEntity.DescendantEntry.class)
 						.stream().allMatch(descendatEntry -> descendatEntry.name.contains("updated")));
 
 		AncestorEntity loadedEntityAfterUpdate =
