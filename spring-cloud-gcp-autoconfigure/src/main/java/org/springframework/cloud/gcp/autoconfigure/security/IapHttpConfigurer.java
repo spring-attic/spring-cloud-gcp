@@ -43,7 +43,7 @@ public class IapHttpConfigurer extends AbstractHttpConfigurer<IapHttpConfigurer,
 
 		ApplicationContext context = http.getSharedObject(ApplicationContext.class);
 
-		if (context.getEnvironment().getProperty(IapSecurityConstants.IAP_GATING_PROPERTY, Boolean.class)) {
+		if (context.getEnvironment().getProperty(IapSecurityConstants.IAP_GATING_PROPERTY, Boolean.class, false)) {
 			LOGGER.info("Adding IapAuthenticationFilter to default filter chain.");
 			IapAuthenticationFilter filter = context.getBean(IapAuthenticationFilter.class);
 			http.addFilterBefore(filter, BasicAuthenticationFilter.class);
