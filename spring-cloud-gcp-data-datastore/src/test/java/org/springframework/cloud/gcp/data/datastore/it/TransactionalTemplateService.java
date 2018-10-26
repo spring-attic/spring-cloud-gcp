@@ -45,13 +45,11 @@ public class TransactionalTemplateService {
 		this.datastoreTemplate.saveAll(testEntities);
 
 		// Because these saved entities should NOT appear when we subsequently check, we
-		// must wait
-		// a period of time that would see a non-transactional save go through.
+		// must wait a period of time that would see a non-transactional save go through.
 		Thread.sleep(DatastoreIntegrationTests.QUERY_WAIT_INTERVAL_SECONDS * 1000);
 
-		// Datastore transactions always the state at the start of the transaction. Even
-		// after
-		// waiting these entities should not be found.
+		// Datastore transactions always see the state at the start of the transaction. Even
+		// after waiting these entities should not be found.
 		for (TestEntity testEntity : testEntities) {
 			assertNull(this.datastoreTemplate.findById(testEntity.getId(),
 					TestEntity.class));
