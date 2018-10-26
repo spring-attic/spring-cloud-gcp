@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManager;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreServiceObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DefaultDatastoreEntityConverter;
@@ -37,6 +38,7 @@ import org.springframework.cloud.gcp.data.datastore.repository.config.EnableData
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * @author Chengyuan Zhao
@@ -44,6 +46,7 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @PropertySource("application-test.properties")
 @EnableDatastoreRepositories
+@EnableTransactionManagement
 public class DatastoreIntegrationTestConfiguration {
 
 	private final String projectId = new DefaultGcpProjectIdProvider().getProjectId();
@@ -55,6 +58,18 @@ public class DatastoreIntegrationTestConfiguration {
 	private String namespacePrefix;
 
 	public DatastoreIntegrationTestConfiguration() throws IOException {
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public TransactionalTemplateService transactionalTemplateService() {
+		return new TransactionalTemplateService();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	DatastoreTransactionManager datastoreTransactionManager(Datastore datastore) {
+		return new DatastoreTransactionManager(datastore);
 	}
 
 	@Bean

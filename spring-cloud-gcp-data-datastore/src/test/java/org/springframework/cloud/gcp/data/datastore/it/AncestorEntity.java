@@ -35,9 +35,9 @@ public class AncestorEntity {
 	String name;
 
 	@Descendants
-	List<DescendatEntry> descendants;
+	List<DescendantEntry> descendants;
 
-	AncestorEntity(String name, List<DescendatEntry> descendants) {
+	AncestorEntity(String name, List<DescendantEntry> descendants) {
 		this.name = name;
 		this.descendants = descendants;
 	}
@@ -61,13 +61,13 @@ public class AncestorEntity {
 		return Objects.hash(this.name, this.descendants);
 	}
 
-	public static class DescendatEntry {
+	public static class DescendantEntry {
 		@Id
 		Key id;
 
 		String name;
 
-		DescendatEntry(String name) {
+		DescendantEntry(String name) {
 			this.name = name;
 		}
 
@@ -79,7 +79,7 @@ public class AncestorEntity {
 			if (o == null || getClass() != o.getClass()) {
 				return false;
 			}
-			DescendatEntry that = (DescendatEntry) o;
+			DescendantEntry that = (DescendantEntry) o;
 			return Objects.equals(this.name, that.name);
 		}
 

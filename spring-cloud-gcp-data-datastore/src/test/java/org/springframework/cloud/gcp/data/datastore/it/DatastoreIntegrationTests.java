@@ -32,6 +32,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.it.AncestorEntity.DescendantEntry;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -55,13 +56,16 @@ import static org.junit.Assume.assumeThat;
 public class DatastoreIntegrationTests {
 
 	// queries are eventually consistent, so we may need to retry a few times.
-	private static final int QUERY_WAIT_INTERVAL_SECONDS = 15;
+	public static final int QUERY_WAIT_INTERVAL_SECONDS = 15;
 
 	@Autowired
 	private TestEntityRepository testEntityRepository;
 
 	@Autowired
 	private DatastoreTemplate datastoreTemplate;
+
+	@Autowired
+	private TransactionalTemplateService transactionalTemplateService;
 
 	@BeforeClass
 	public static void checkToRun() {
@@ -75,13 +79,13 @@ public class DatastoreIntegrationTests {
 	public void deleteAll() {
 		this.datastoreTemplate.deleteAll(EmbeddableTreeNode.class);
 		this.datastoreTemplate.deleteAll(AncestorEntity.class);
-		this.datastoreTemplate.deleteAll(AncestorEntity.DescendatEntry.class);
+		this.datastoreTemplate.deleteAll(DescendantEntry.class);
 		this.datastoreTemplate.deleteAll(TreeCollection.class);
 		this.testEntityRepository.deleteAll();
 	}
 
 	@Test
-	public void testSaveAndDeleteRepository() {
+	public void testSaveAndDeleteRepository() throws InterruptedException {
 
 		TestEntity testEntityA = new TestEntity(1L, "red", 1L, null);
 
@@ -91,23 +95,24 @@ public class DatastoreIntegrationTests {
 
 		TestEntity testEntityD = new TestEntity(4L, "red", 1L, null);
 
-		this.testEntityRepository.saveAll(
-				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
+		List<TestEntity> allTestEntities = ImmutableList.of(testEntityA, testEntityB,
+				testEntityC, testEntityD);
+
+		this.transactionalTemplateService
+				.testSaveAndStateConstantInTransaction(allTestEntities);
 
 		waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4);
 
 		assertEquals(4, this.testEntityRepository.deleteBySize(1L));
 
-		this.testEntityRepository.saveAll(
-				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
+		this.testEntityRepository.saveAll(allTestEntities);
 
 		assertThat(
 				this.testEntityRepository.removeByColor("red").stream()
 						.map(x -> x.getId()).collect(Collectors.toList()),
 				containsInAnyOrder(1L, 3L, 4L));
 
-		this.testEntityRepository.saveAll(
-				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
+		this.testEntityRepository.saveAll(allTestEntities);
 
 		assertNull(this.testEntityRepository.findById(1L).get().getBlobField());
 
@@ -168,6 +173,19 @@ public class DatastoreIntegrationTests {
 
 		this.testEntityRepository.deleteAll();
 
+		try {
+			this.transactionalTemplateService
+					.testSaveInTransactionFailed(allTestEntities);
+		}
+		catch (Exception ignored) {
+		}
+
+		// we wait a period long enough that the previously attempted failed save would
+		// show up if it is unexpectedly successful and committed.
+		Thread.sleep(QUERY_WAIT_INTERVAL_SECONDS * 1000);
+
+		assertEquals(0, this.testEntityRepository.count());
+
 		assertFalse(this.testEntityRepository.findAllById(ImmutableList.of(1L, 2L))
 				.iterator().hasNext());
 	}
@@ -206,9 +224,9 @@ public class DatastoreIntegrationTests {
 
 	@Test
 	public void ancestorsTest() {
-		AncestorEntity.DescendatEntry descendantEntryA = new AncestorEntity.DescendatEntry("a");
-		AncestorEntity.DescendatEntry descendantEntryB = new AncestorEntity.DescendatEntry("b");
-		AncestorEntity.DescendatEntry descendantEntryC = new AncestorEntity.DescendatEntry("c");
+		DescendantEntry descendantEntryA = new DescendantEntry("a");
+		DescendantEntry descendantEntryB = new DescendantEntry("b");
+		DescendantEntry descendantEntryC = new DescendantEntry("c");
 
 		AncestorEntity ancestorEntity =
 				new AncestorEntity("abc", Arrays.asList(descendantEntryA, descendantEntryB, descendantEntryC));
@@ -225,7 +243,7 @@ public class DatastoreIntegrationTests {
 		ancestorEntity.descendants.forEach(descendatEntry -> descendatEntry.name = descendatEntry.name + " updated");
 		this.datastoreTemplate.save(ancestorEntity);
 		waitUntilTrue(() ->
-				this.datastoreTemplate.findAll(AncestorEntity.DescendatEntry.class)
+				this.datastoreTemplate.findAll(DescendantEntry.class)
 						.stream().allMatch(descendatEntry -> descendatEntry.name.contains("updated")));
 
 		AncestorEntity loadedEntityAfterUpdate =
