@@ -304,7 +304,7 @@ Reading or saving an entity automatically causes all subsequent levels of childr
 If a new child is created and added to a property annotated `@Descendants` and the key property is left null, then a new key will be allocated for that child.
 The ordering of the retrieved children may not be the same as the ordering in the original property that was saved.
 
-Children entities cannot be moved from the property of one parent to that of another unless the child's key property is set to null or a value that contains the new parent as an ancestor.
+Child entities cannot be moved from the property of one parent to that of another unless the child's key property is set to `null` or a value that contains the new parent as an ancestor.
 Since Cloud Datastore entity keys can have multiple parents it is possible that a child entity appears in the property of multiple parent entities.
 Because entity keys are immutable in Cloud Datastore, to change the key of a child you must delete the existing one and re-save it with the new key.
 
