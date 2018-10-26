@@ -14,11 +14,12 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.security.iap;
+package org.springframework.cloud.gcp.autoconfigure.security;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.cloud.gcp.security.iap.IapAuthenticationFilter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
