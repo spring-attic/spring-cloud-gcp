@@ -267,7 +267,47 @@ Collections of embedded objects can also be stored as the values of embedded Map
 
 ==== Relationships
 
-This feature is not supported yet.
+Parent-child relationships are supported via the `@Descendants` annotation.
+
+[source, java]
+----
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
+import org.springframework.data.annotation.Id;
+
+@Entity
+public class ShoppingOrder {
+  @Id
+  long id;
+
+  @Descendants
+  List<Item> items;
+}
+
+@Entity
+public class Item {
+  @Id
+  Key purchasedItemKey;
+
+  String name;
+
+  Timestamp timeAddedToOrder;
+}
+----
+
+The parent-child relationship structure of objects is stored in Cloud Datastore using Datastore's https://cloud.google.com/datastore/docs/concepts/entities#ancestor_paths[ancestor relationships].
+These relationships can be many levels deep.
+
+Properties holding child entities must be collection-like, but they can be any of the supported inter-convertible collection-like types that are supported for regular properties such as `List`, arrays, `Set`, etc...
+Child items must have `Key` as their ID type because Cloud Datastore stores the ancestor relationship link inside the keys of the children.
+
+Reading or saving an entity automatically causes all subsequent levels of children under that entity to be read or saved, respectively.
+If a new child is created and added to a property annotated `@Descendants` and the key property is left null, then a new key will be allocated for that child.
+The ordering of the retrieved children may not be the same as the ordering in the original property that was saved.
+
+Child entities cannot be moved from the property of one parent to that of another unless the child's key property is set to `null` or a value that contains the new parent as an ancestor.
+Since Cloud Datastore entity keys can have multiple parents, it is possible that a child entity appears in the property of multiple parent entities.
+Because entity keys are immutable in Cloud Datastore, to change the key of a child you must delete the existing one and re-save it with the new key.
+
 
 ==== Supported Types
 
