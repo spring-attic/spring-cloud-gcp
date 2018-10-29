@@ -20,8 +20,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -95,15 +94,12 @@ public abstract class AbstractSpannerIntegrationTest {
 	private boolean setupFailed;
 
 	@BeforeClass
-	public static void checkToRun() {
+	public void setup() {
 		assumeThat(
 				"Spanner integration tests are disabled. Please use '-Dit.spanner=true' "
 						+ "to enable them. ",
 				System.getProperty("it.spanner"), is("true"));
-	}
 
-	@Before
-	public void setup() {
 		try {
 			createDatabaseWithSchema();
 		}
@@ -150,7 +146,7 @@ public abstract class AbstractSpannerIntegrationTest {
 				.getDropTableDdlStringsForInterleavedHierarchy(Trade.class);
 	}
 
-	@After
+	@AfterClass
 	public void clean() {
 		try {
 			// this is to reduce duplicated errors reported by surefire plugin
