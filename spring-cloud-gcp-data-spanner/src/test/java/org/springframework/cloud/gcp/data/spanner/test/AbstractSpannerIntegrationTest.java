@@ -20,7 +20,8 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.AfterClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -91,20 +92,31 @@ public abstract class AbstractSpannerIntegrationTest {
 	@Autowired
 	SpannerMappingContext spannerMappingContext;
 
-	private boolean setupFailed;
+	private static boolean setupFailed;
+
+	private static boolean tablesInitialized;
+
+	private static boolean tablesCleanedUp;
 
 	@BeforeClass
-	public void setup() {
+	public static void checkToRun() {
 		assumeThat(
 				"Spanner integration tests are disabled. Please use '-Dit.spanner=true' "
 						+ "to enable them. ",
 				System.getProperty("it.spanner"), is("true"));
+	}
 
+	@Before
+	public void setup() {
 		try {
+			if (tablesInitialized) {
+				return;
+			}
 			createDatabaseWithSchema();
+			tablesInitialized = true;
 		}
 		catch (Exception e) {
-			this.setupFailed = true;
+			setupFailed = true;
 			throw e;
 		}
 	}
@@ -146,15 +158,16 @@ public abstract class AbstractSpannerIntegrationTest {
 				.getDropTableDdlStringsForInterleavedHierarchy(Trade.class);
 	}
 
-	@AfterClass
+	@After
 	public void clean() {
 		try {
 			// this is to reduce duplicated errors reported by surefire plugin
-			if (this.setupFailed) {
+			if (setupFailed || tablesCleanedUp) {
 				return;
 			}
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(dropSchemaStatements(),
 					false);
+			tablesCleanedUp = true;
 			LOGGER.debug("Integration database cleaned up!");
 		}
 		finally {
