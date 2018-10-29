@@ -96,7 +96,7 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	private static boolean tablesInitialized;
 
-	private static boolean tablesCleanedUp;
+	private static int initializeAttempts;
 
 	@BeforeClass
 	public static void checkToRun() {
@@ -109,6 +109,7 @@ public abstract class AbstractSpannerIntegrationTest {
 	@Before
 	public void setup() {
 		try {
+			initializeAttempts++;
 			if (tablesInitialized) {
 				return;
 			}
@@ -162,12 +163,12 @@ public abstract class AbstractSpannerIntegrationTest {
 	public void clean() {
 		try {
 			// this is to reduce duplicated errors reported by surefire plugin
-			if (setupFailed || tablesCleanedUp) {
+			if (setupFailed || initializeAttempts > 0) {
+				initializeAttempts--;
 				return;
 			}
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(dropSchemaStatements(),
 					false);
-			tablesCleanedUp = true;
 			LOGGER.debug("Integration database cleaned up!");
 		}
 		finally {
