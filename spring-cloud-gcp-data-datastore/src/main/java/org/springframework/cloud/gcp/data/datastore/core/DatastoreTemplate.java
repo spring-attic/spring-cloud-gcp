@@ -33,6 +33,8 @@ import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Entity.Builder;
 import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.KeyValue;
+import com.google.cloud.datastore.ListValue;
 import com.google.cloud.datastore.PathElement;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
@@ -272,7 +274,38 @@ public class DatastoreTemplate implements DatastoreOperations {
 		Builder builder = Entity.newBuilder(key);
 		this.datastoreEntityConverter.write(entity, builder);
 		saveDescendents(entity, key);
+		saveReferences(entity, builder);
 		return builder.build();
+	}
+
+	private void saveReferences(Object entity, Builder builder) {
+		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
+				.getPersistentEntity(entity.getClass());
+		datastorePersistentEntity.doWithReferenceProperties(persistentProperty -> {
+			PersistentPropertyAccessor accessor = datastorePersistentEntity.getPropertyAccessor(entity);
+			Object val = accessor.getProperty(persistentProperty);
+			if (val == null) {
+				return;
+			}
+			Value<?> value;
+			if (persistentProperty.isCollectionLike()) {
+				if (val.getClass().isArray() && val.getClass() != byte[].class) {
+					//if a property is an array, convert it to list
+					val = CollectionUtils.arrayToList(val);
+				}
+				saveAll((Iterable<?>) val);
+				List<KeyValue> keyValues = StreamSupport.stream(((Iterable<?>) val).spliterator(), false)
+						.map(o -> KeyValue.of(this.getKey(o, false)))
+						.collect(Collectors.toList());
+				value = ListValue.of(keyValues);
+			}
+			else {
+				save(val);
+				Key key = getKey(val, false);
+				value = KeyValue.of(key);
+			}
+			builder.set(((DatastorePersistentProperty) persistentProperty).getFieldName(), value);
+		});
 	}
 
 	private void saveDescendents(Object entity, Key key) {
@@ -349,34 +382,44 @@ public class DatastoreTemplate implements DatastoreOperations {
 			BaseEntity entity, T convertedObject) {
 		datastorePersistentEntity.doWithReferenceProperties(
 				(PropertyHandler<DatastorePersistentProperty>) referencePersistentProperty -> {
-					String fieldName = referencePersistentProperty.getFieldName();
-					try {
-						Object referenced;
-						if (referencePersistentProperty.isCollectionLike()) {
-							Class referencedType = referencePersistentProperty.getComponentType();
-							List<Value<Key>> keyValues = entity.getList(fieldName);
-							referenced = this.datastoreEntityConverter.getConversions()
-									.convertOnRead(
-											findAllById(
-													keyValues.stream().map(x -> x.get())
-															.collect(Collectors.toList()),
-													referencedType),
-											referencePersistentProperty.getType(),
-											referencedType);
-						}
-						else {
-							referenced = findById(entity.getKey(fieldName),
-									referencePersistentProperty.getType());
-						}
+					Object referenced = findReferenced(entity, referencePersistentProperty);
+					if (referenced != null) {
 						datastorePersistentEntity.getPropertyAccessor(convertedObject)
 								.setProperty(referencePersistentProperty, referenced);
 					}
-					catch (ClassCastException e) {
-						throw new DatastoreDataException(
-								"Reference properties must be stored Keys or lists of Keys"
-										+ " in Cloud Datastore for singular or multiple references, respectively.");
-					}
+
 				});
+	}
+
+	private Object findReferenced(BaseEntity entity, DatastorePersistentProperty referencePersistentProperty) {
+		String fieldName = referencePersistentProperty.getFieldName();
+		try {
+			Object referenced;
+			if (!entity.contains(fieldName)) {
+				referenced = null;
+			}
+			else if (referencePersistentProperty.isCollectionLike()) {
+				Class referencedType = referencePersistentProperty.getComponentType();
+				List<Value<Key>> keyValues = entity.getList(fieldName);
+				referenced = this.datastoreEntityConverter.getConversions()
+						.convertOnRead(
+								findAllById(
+										keyValues.stream().map(Value::get).collect(Collectors.toList()),
+										referencedType),
+								referencePersistentProperty.getType(),
+								referencedType);
+			}
+			else {
+				referenced = findById(entity.getKey(fieldName), referencePersistentProperty.getType());
+			}
+			return referenced;
+		}
+		catch (ClassCastException e) {
+				throw new DatastoreDataException(
+					"Error loading reference property " + fieldName + "."
+							+ "Reference properties must be stored as Keys or lists of Keys"
+							+ " in Cloud Datastore for singular or multiple references, respectively.");
+			}
 	}
 
 	private <T> void resolveDescendantProperties(DatastorePersistentEntity datastorePersistentEntity,
