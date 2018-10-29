@@ -27,8 +27,11 @@ import org.apache.commons.logging.LogFactory;
 public class ExpirationTimeInFutureClaimVerifier implements ClaimVerifier {
 	private static final Log LOGGER = LogFactory.getLog(ExpirationTimeInFutureClaimVerifier.class);
 
-	// TODO: make injectable for testing. Or is that a security hole waiting to happen?
-	private static Clock clock = Clock.systemUTC();
+	private final Clock clock;
+
+	public ExpirationTimeInFutureClaimVerifier(Clock clock) {
+		this.clock = clock;
+	}
 
 	@Override
 	public boolean verify(JWTClaimsSet claims) {

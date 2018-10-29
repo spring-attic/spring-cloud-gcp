@@ -45,7 +45,7 @@ public class JwtTokenVerifier {
 		this.claimVerifiers = claimVerifiers;
 	}
 
-	public IapAuthentication verifyAndExtractPrincipal(String jwtToken, String expectedAudience) {
+	public IapAuthentication verifyAndExtractPrincipal(String jwtToken) {
 		if (jwtToken == null) {
 			LOGGER.warn("Jwt token verification requested, yet no token passed in; not authenticating");
 			return null;
@@ -103,14 +103,11 @@ public class JwtTokenVerifier {
 			}
 		}
 
-		// claims must have audience, issuer
 		// TODO: Vary expectec audience based on whether installed in AppEngine or ComputeEngine
 		// Preconditions.checkArgument(claims.getAudience().contains(expectedAudience));
 
 		return true;
 	}
-
-
 
 	private SignedJWT extractSignedToken(String jwtToken) {
 		SignedJWT signedJwt = null;
@@ -124,5 +121,4 @@ public class JwtTokenVerifier {
 
 		return signedJwt;
 	}
-
 }

@@ -40,17 +40,18 @@ public class JwkRegistry {
 
 	private static final Log LOGGER = LogFactory.getLog(JwkRegistry.class);
 
-	// using a simple cache with no eviction for this sample
-	private Map<String, JWK> keyCache = new HashMap<>();
-
-	private static Clock clock = Clock.systemUTC();
-
 	// Wait at least 60 seconds before cache can be redownloaded.
 	private static final int MIN_MS_BEFORE_RETRY = 60000;
 
-	private long lastJwkStoreDownloadTimestamp;
+	private static Clock clock = Clock.systemUTC();
 
 	private final URL publicKeyVerificationUrl;
+
+	private Map<String, JWK> keyCache = new HashMap<>();
+
+
+	private long lastJwkStoreDownloadTimestamp;
+
 
 	public JwkRegistry(URL verificationUrl) {
 		this.publicKeyVerificationUrl = verificationUrl;

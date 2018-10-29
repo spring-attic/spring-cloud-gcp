@@ -44,7 +44,7 @@ public class VerifyIapRequestHeaderTest {
 		+ "TQySuUw7gJj9w";
 
 		JwtTokenVerifier verifier = new DefaultJwtTokenVerifier(new URL(PUBLIC_KEY_VERIFICATION_LINK));
-		IapAuthentication verified = verifier.verifyAndExtractPrincipal(token, "does not matter right now");
+		IapAuthentication verified = verifier.verifyAndExtractPrincipal(token);
 
 		System.out.println("VERIFIED? " + verified);
 	}

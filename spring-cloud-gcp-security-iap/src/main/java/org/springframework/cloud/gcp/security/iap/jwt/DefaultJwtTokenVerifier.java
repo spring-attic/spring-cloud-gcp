@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.security.iap.jwt;
 
 import java.net.URL;
+import java.time.Clock;
 
 import com.google.common.collect.ImmutableList;
 
@@ -24,6 +25,8 @@ import org.springframework.cloud.gcp.security.iap.claims.IssueTimeInPastClaimVer
 import org.springframework.cloud.gcp.security.iap.claims.IssuerClaimVerifier;
 import org.springframework.cloud.gcp.security.iap.claims.RequiredFieldsClaimVerifier;
 
+// TODO: should this even exist? Or is it enough to have autoconfiguration do the same thing, with the assumption
+// that anyone who does not use autoconfig is okay wiring up their own?
 public class DefaultJwtTokenVerifier extends JwtTokenVerifier {
 
 	public DefaultJwtTokenVerifier(URL jwkRegistryUrl) {
@@ -31,9 +34,9 @@ public class DefaultJwtTokenVerifier extends JwtTokenVerifier {
 				new JwtSignatureVerifier(jwkRegistryUrl),
 				ImmutableList.of(
 					new RequiredFieldsClaimVerifier(),
-					new IssueTimeInPastClaimVerifier(),
+					new IssueTimeInPastClaimVerifier(Clock.systemUTC()),
 					// TODO: uncomment; commented out for local testing
-					//new ExpirationTimeInFutureClaimVerifier()
+					//new ExpirationTimeInFutureClaimVerifier(Clock.systemUTC())
 					new IssuerClaimVerifier()
 				)
 		);

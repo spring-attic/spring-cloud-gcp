@@ -28,6 +28,8 @@ import org.springframework.security.web.authentication.preauth.AbstractPreAuthen
 public class IapAuthenticationFilter extends AbstractPreAuthenticatedProcessingFilter {
 	private static final Log LOGGER = LogFactory.getLog(IapAuthenticationFilter.class);
 
+	public static final String HEADER_NAME = "x-goog-iap-jwt-assertion";
+
 	private JwtTokenVerifier verifyIapRequestHeader;
 
 	public IapAuthenticationFilter(JwtTokenVerifier verifyIapRequestHeader) {
@@ -36,12 +38,11 @@ public class IapAuthenticationFilter extends AbstractPreAuthenticatedProcessingF
 
 	@Override
 	protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
-		String assertion = request.getHeader("x-goog-iap-jwt-assertion");
+		String assertion = request.getHeader(HEADER_NAME);
 		Authentication authentication = null;
 
 		if (assertion != null) {
-			authentication = this.verifyIapRequestHeader.verifyAndExtractPrincipal(
-					assertion, "TODO: either specify here or at filter level");
+			authentication = this.verifyIapRequestHeader.verifyAndExtractPrincipal(assertion);
 		}
 
 		// TODO: move actual authentication into user details source; return string principal from here

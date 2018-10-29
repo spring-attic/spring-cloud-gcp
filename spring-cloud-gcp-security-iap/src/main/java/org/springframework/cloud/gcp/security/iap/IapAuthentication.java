@@ -50,7 +50,6 @@ public final class IapAuthentication extends PreAuthenticatedAuthenticationToken
 	@Override
 	public Object getDetails() {
 		LOGGER.info("IapAuthentication getDetails() called; returning authorities container.");
-		// TODO: figure out how to get details from parent container
 		return new GrantedAuthoritiesContainer() {
 			@Override
 			public Collection<? extends GrantedAuthority> getGrantedAuthorities() {

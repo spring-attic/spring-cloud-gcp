@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.gcp.security.iap.jwk.JwkRegistry;
 
+// TODO: this is likely misnamed; JwtSignatureVerifier should be an interface; this is an elliptic-curve-specific impl
 public class JwtSignatureVerifier {
 
 	private static final Log LOGGER = LogFactory.getLog(JwtSignatureVerifier.class);

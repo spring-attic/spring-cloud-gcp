@@ -45,6 +45,7 @@ public class IapAuthenticationAutoConfiguration {
 	private static final String PUBLIC_KEY_VERIFICATION_LINK = "https://www.gstatic.com/iap/verify/public_key-jwk";
 
 	// TODO: differentiate based on either AppEngine or ComputeEngine
+
 	@Bean
 	public JwtTokenVerifier jwtTokenVerifier() {
 

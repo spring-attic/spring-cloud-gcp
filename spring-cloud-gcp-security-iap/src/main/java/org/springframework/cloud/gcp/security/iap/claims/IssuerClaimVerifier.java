@@ -23,7 +23,6 @@ public class IssuerClaimVerifier implements ClaimVerifier {
 	// TODO: make configurable
 	private static final String IAP_ISSUER_URL = "https://cloud.google.com/iap";
 
-
 	@Override
 	public boolean verify(JWTClaimsSet claims) {
 		return IAP_ISSUER_URL.equals(claims.getIssuer());
