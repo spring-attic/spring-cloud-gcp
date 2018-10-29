@@ -23,6 +23,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import org.awaitility.Awaitility;
 import org.junit.After;
@@ -55,7 +56,11 @@ import static org.junit.Assume.assumeThat;
 public class DatastoreIntegrationTests {
 
 	// queries are eventually consistent, so we may need to retry a few times.
-	public static final int QUERY_WAIT_INTERVAL_SECONDS = 15;
+	private static final int QUERY_WAIT_INTERVAL_SECONDS = 15;
+
+	// This value is multiplied against recorded actual times needed to wait for eventual
+	// consistency.
+	private static final int WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE = 3;
 
 	@Autowired
 	private TestEntityRepository testEntityRepository;
@@ -97,14 +102,17 @@ public class DatastoreIntegrationTests {
 		List<TestEntity> allTestEntities = ImmutableList.of(testEntityA, testEntityB,
 				testEntityC, testEntityD);
 
-		this.transactionalTemplateService
-				.testSaveAndStateConstantInTransaction(allTestEntities);
+		this.testEntityRepository.saveAll(allTestEntities);
 
-		waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4);
+		long millisWaited = waitUntilTrue(
+				() -> this.testEntityRepository.countBySize(1L) == 4);
 
 		assertEquals(4, this.testEntityRepository.deleteBySize(1L));
 
 		this.testEntityRepository.saveAll(allTestEntities);
+
+		millisWaited = Math.max(millisWaited,
+				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4));
 
 		assertThat(
 				this.testEntityRepository.removeByColor("red").stream()
@@ -122,8 +130,8 @@ public class DatastoreIntegrationTests {
 		assertEquals(Blob.copyFrom("testValueA".getBytes()),
 				this.testEntityRepository.findById(1L).get().getBlobField());
 
-		waitUntilTrue(
-				() -> this.testEntityRepository.countBySizeAndColor(1L, "red") == 3);
+		millisWaited = Math.max(millisWaited, waitUntilTrue(
+				() -> this.testEntityRepository.countBySizeAndColor(1L, "red") == 3));
 
 		List<TestEntity> foundByCustomQuery = this.testEntityRepository
 				.findEntitiesWithCustomQuery(1L);
@@ -172,6 +180,15 @@ public class DatastoreIntegrationTests {
 
 		this.testEntityRepository.deleteAll();
 
+		this.transactionalTemplateService.testSaveAndStateConstantInTransaction(
+				allTestEntities,
+				millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
+
+		millisWaited = Math.max(millisWaited,
+				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4));
+
+		this.testEntityRepository.deleteAll();
+
 		try {
 			this.transactionalTemplateService
 					.testSaveInTransactionFailed(allTestEntities);
@@ -181,7 +198,7 @@ public class DatastoreIntegrationTests {
 
 		// we wait a period long enough that the previously attempted failed save would
 		// show up if it is unexpectedly successful and committed.
-		Thread.sleep(QUERY_WAIT_INTERVAL_SECONDS * 1000);
+		Thread.sleep(millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
 
 		assertEquals(0, this.testEntityRepository.count());
 
@@ -250,7 +267,10 @@ public class DatastoreIntegrationTests {
 		assertEquals(ancestorEntity, loadedEntityAfterUpdate);
 	}
 
-	private void waitUntilTrue(Supplier<Boolean> condition) {
+	private long waitUntilTrue(Supplier<Boolean> condition) {
+		Stopwatch stopwatch = Stopwatch.createStarted();
 		Awaitility.await().atMost(QUERY_WAIT_INTERVAL_SECONDS, TimeUnit.SECONDS).until(condition::get);
+		stopwatch.stop();
+		return stopwatch.elapsed(TimeUnit.MILLISECONDS);
 	}
 }

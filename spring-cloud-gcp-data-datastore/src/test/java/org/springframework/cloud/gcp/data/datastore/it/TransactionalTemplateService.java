@@ -34,7 +34,8 @@ public class TransactionalTemplateService {
 	private DatastoreTemplate datastoreTemplate;
 
 	@Transactional
-	public void testSaveAndStateConstantInTransaction(List<TestEntity> testEntities)
+	public void testSaveAndStateConstantInTransaction(List<TestEntity> testEntities,
+			long waitMillisecondsForConfirmation)
 			throws InterruptedException {
 
 		for (TestEntity testEntity : testEntities) {
@@ -46,7 +47,7 @@ public class TransactionalTemplateService {
 
 		// Because these saved entities should NOT appear when we subsequently check, we
 		// must wait a period of time that would see a non-transactional save go through.
-		Thread.sleep(DatastoreIntegrationTests.QUERY_WAIT_INTERVAL_SECONDS * 1000);
+		Thread.sleep(waitMillisecondsForConfirmation);
 
 		// Datastore transactions always see the state at the start of the transaction. Even
 		// after waiting these entities should not be found.
