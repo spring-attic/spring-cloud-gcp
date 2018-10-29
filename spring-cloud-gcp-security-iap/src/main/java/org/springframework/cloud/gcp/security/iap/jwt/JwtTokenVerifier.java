@@ -14,28 +14,18 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.security.iap;
+package org.springframework.cloud.gcp.security.iap.jwt;
 
-import java.net.MalformedURLException;
-import java.security.interfaces.ECPublicKey;
 import java.text.ParseException;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.cloud.gcp.security.iap.IapAuthentication;
 import org.springframework.cloud.gcp.security.iap.claims.ClaimVerifier;
-import org.springframework.cloud.gcp.security.iap.claims.IssueTimeInPastClaimVerifier;
-import org.springframework.cloud.gcp.security.iap.claims.IssuerClaimVerifier;
-import org.springframework.cloud.gcp.security.iap.claims.RequiredFieldsClaimVerifier;
-import org.springframework.cloud.gcp.security.iap.jwk.JwkRegistry;
 
 /**
  * Verify IAP authorization JWT token in incoming request.
@@ -46,35 +36,14 @@ public class JwtTokenVerifier {
 
 	private static final Log LOGGER = LogFactory.getLog(JwtTokenVerifier.class);
 
-	// todo: externalize as properties?
-	private static final String PUBLIC_KEY_VERIFICATION_LINK = "https://www.gstatic.com/iap/verify/public_key-jwk";
-
-	private final JwkRegistry jwkRegistry = new JwkRegistry(PUBLIC_KEY_VERIFICATION_LINK);
-
 	private final List<ClaimVerifier> claimVerifiers;
 
-	public JwtTokenVerifier() throws MalformedURLException {
-		claimVerifiers = ImmutableList.of(
-				new RequiredFieldsClaimVerifier(),
-				new IssueTimeInPastClaimVerifier(),
-				// TODO: uncomment; commented out for local testing
-				//new ExpirationTimeInFutureClaimVerifier()
-				new IssuerClaimVerifier()
-		);
-	}
+	private final JwtSignatureVerifier jwtSignatureVerifier;
 
-	/*
-	 * private JwkTokenStore tokenStore = new JwkTokenStore(PUBLIC_KEY_VERIFICATION_URL, new
-	 * IapJwtClaimsSetVerifier());
-	 *
-	 * public IapAuthentication verifyAndExtractPrincipal(String jwtToken, String
-	 * expectedAudience) {
-	 *
-	 * // reads and validates OAuth2AccessToken token = tokenStore.readAccessToken(jwtToken);
-	 *
-	 * IapAuthentication iapAuth = new IapAuthentication((String)
-	 * token.getAdditionalInformation().get("email"), null, jwtToken); return iapAuth; }
-	 */
+	public JwtTokenVerifier(JwtSignatureVerifier jwtSignatureVerifier, List<ClaimVerifier> claimVerifiers) {
+		this.jwtSignatureVerifier = jwtSignatureVerifier;
+		this.claimVerifiers = claimVerifiers;
+	}
 
 	public IapAuthentication verifyAndExtractPrincipal(String jwtToken, String expectedAudience) {
 		if (jwtToken == null) {
@@ -85,7 +54,7 @@ public class JwtTokenVerifier {
 		IapAuthentication authentication = null;
 		SignedJWT signedJwt = extractSignedToken(jwtToken);
 
-		if (validateJwt(signedJwt)) {
+		if (jwtSignatureVerifier.validateJwt(signedJwt)) {
 			JWTClaimsSet claims = extractClaims(signedJwt);
 			String email = extractClaimValue(claims, "email");
 
@@ -156,48 +125,4 @@ public class JwtTokenVerifier {
 		return signedJwt;
 	}
 
-	private boolean validateJwt(SignedJWT signedJwt) {
-		if (signedJwt == null) {
-			LOGGER.warn("Null signed JWT is invalid.");
-			return false;
-		}
-
-		JWSHeader jwsHeader = signedJwt.getHeader();
-		ECPublicKey publicKey = null;
-
-		if (jwsHeader.getAlgorithm() == null) {
-			LOGGER.warn("JWT header algorithm null.");
-		}
-		else if (jwsHeader.getKeyID() == null) {
-			LOGGER.warn("JWT key ID null.");
-		}
-		else {
-
-			publicKey = this.jwkRegistry.getPublicKey(jwsHeader.getKeyID(), jwsHeader.getAlgorithm().getName());
-			if (publicKey != null) {
-				return verifyAgainstPublicKey(signedJwt, publicKey);
-			}
-		}
-
-		return false;
-	}
-
-	private boolean verifyAgainstPublicKey(SignedJWT signedJwt, ECPublicKey publicKey) {
-		JWSVerifier jwsVerifier = null;
-		try {
-			jwsVerifier = new ECDSAVerifier(publicKey);
-		}
-		catch (JOSEException e) {
-			LOGGER.warn("Public key verifier could not be created.", e);
-			return false;
-		}
-
-		try {
-			return signedJwt.verify(jwsVerifier);
-		}
-		catch (JOSEException e) {
-			LOGGER.warn("Signed JWT Token could not be verified against public key.", e);
-			return false;
-		}
-	}
 }

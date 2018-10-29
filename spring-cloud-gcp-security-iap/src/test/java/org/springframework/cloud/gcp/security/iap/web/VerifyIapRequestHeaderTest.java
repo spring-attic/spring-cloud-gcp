@@ -16,11 +16,14 @@
 
 package org.springframework.cloud.gcp.security.iap.web;
 
+import java.net.URL;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.cloud.gcp.security.iap.IapAuthentication;
-import org.springframework.cloud.gcp.security.iap.JwtTokenVerifier;
+import org.springframework.cloud.gcp.security.iap.jwt.DefaultJwtTokenVerifier;
+import org.springframework.cloud.gcp.security.iap.jwt.JwtTokenVerifier;
 import org.springframework.test.context.junit4.SpringRunner;
 
 // TODO: this can't exist as is. The token needs to be either signed by local authority.
@@ -28,6 +31,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 // or heavily mocked, or both.
 @RunWith(SpringRunner.class)
 public class VerifyIapRequestHeaderTest {
+
+	String PUBLIC_KEY_VERIFICATION_LINK = "https://www.gstatic.com/iap/verify/public_key-jwk";
 
 	@Test
 	public void contextLoads() throws Exception {
@@ -38,7 +43,7 @@ public class VerifyIapRequestHeaderTest {
 		+ "k2MTY4MjcsImhkIjoiZ29vZ2xlLmNvbSJ9.dGPlQIcJo--9H1vwY73lHvAK2rPleHltPXUADFvlbC7vZtoLRtPcRc0w0xPvaVpdf8lY7U7iZ"
 		+ "TQySuUw7gJj9w";
 
-		JwtTokenVerifier verifier = new JwtTokenVerifier();
+		JwtTokenVerifier verifier = new DefaultJwtTokenVerifier(new URL(PUBLIC_KEY_VERIFICATION_LINK));
 		IapAuthentication verified = verifier.verifyAndExtractPrincipal(token, "does not matter right now");
 
 		System.out.println("VERIFIED? " + verified);

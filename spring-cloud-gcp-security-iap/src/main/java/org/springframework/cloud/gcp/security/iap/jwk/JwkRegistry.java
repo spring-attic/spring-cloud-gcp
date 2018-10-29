@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.security.iap.jwk;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.interfaces.ECPublicKey;
 import java.text.ParseException;
@@ -53,8 +52,8 @@ public class JwkRegistry {
 
 	private final URL publicKeyVerificationUrl;
 
-	public JwkRegistry(String verificationUrl) throws MalformedURLException {
-		this.publicKeyVerificationUrl = new URL(verificationUrl);
+	public JwkRegistry(URL verificationUrl) {
+		this.publicKeyVerificationUrl = verificationUrl;
 	}
 
 	public ECPublicKey getPublicKey(String kid, String alg) {

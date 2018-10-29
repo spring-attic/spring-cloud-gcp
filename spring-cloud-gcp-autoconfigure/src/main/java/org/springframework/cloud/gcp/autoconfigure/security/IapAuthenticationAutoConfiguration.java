@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.autoconfigure.security;
 
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collections;
 
 import org.apache.commons.logging.Log;
@@ -26,7 +27,8 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gcp.security.iap.IapAuthenticationDetailsSource;
 import org.springframework.cloud.gcp.security.iap.IapAuthenticationFilter;
-import org.springframework.cloud.gcp.security.iap.JwtTokenVerifier;
+import org.springframework.cloud.gcp.security.iap.jwt.DefaultJwtTokenVerifier;
+import org.springframework.cloud.gcp.security.iap.jwt.JwtTokenVerifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.ProviderManager;
@@ -39,16 +41,22 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedG
 public class IapAuthenticationAutoConfiguration {
 	private static final Log LOGGER = LogFactory.getLog(IapAuthenticationAutoConfiguration.class);
 
+	// todo: externalize as properties?
+	private static final String PUBLIC_KEY_VERIFICATION_LINK = "https://www.gstatic.com/iap/verify/public_key-jwk";
+
 	// TODO: differentiate based on either AppEngine or ComputeEngine
 	@Bean
 	public JwtTokenVerifier jwtTokenVerifier() {
-		// todo: externalize JWK key URL property?
+
+		URL registryUrl = null;
 		try {
-			return new JwtTokenVerifier();
+			registryUrl = new URL(PUBLIC_KEY_VERIFICATION_LINK);
 		}
 		catch (MalformedURLException e) {
 			throw new BeanInstantiationException(JwtTokenVerifier.class, "Invalid JWK URL", e);
 		}
+
+		return new DefaultJwtTokenVerifier(registryUrl);
 	}
 
 	@Bean
