@@ -26,6 +26,7 @@ import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 
@@ -82,25 +83,25 @@ public class SpannerDatabaseAdminTemplate {
 	 * Execute the given DDL strings in order and creates the database if it does not
 	 * exist.
 	 * @param ddlStrings the DDL strings
-	 * @param createDatabaseIfNotExists Has no effect if the database already exists.
-	 * Otherwise, if True then the database is created and the DDL strings are executed;
-	 * the DDL is not executed if False.
+	 * @param createDatabase if {@code true}, then the database is created at the same
+	 * time as the tables using the DDL strings. if {@code false}, then the database must
+	 * already exist.
 	 */
 	public void executeDdlStrings(Iterable<String> ddlStrings,
-			boolean createDatabaseIfNotExists) {
-		if (createDatabaseIfNotExists && !databaseExists()) {
-			this.databaseAdminClient
-					.createDatabase(getInstanceId(), getDatabase(), ddlStrings).waitFor();
+			boolean createDatabase) {
+		try {
+			if (createDatabase) {
+				this.databaseAdminClient
+						.createDatabase(getInstanceId(), getDatabase(), ddlStrings)
+						.waitFor();
+			}
+			else {
+				this.databaseAdminClient.updateDatabaseDdl(getInstanceId(), getDatabase(),
+						ddlStrings, null).waitFor();
+			}
 		}
-		else if (databaseExists()) {
-			this.databaseAdminClient
-					.updateDatabaseDdl(getInstanceId(), getDatabase(), ddlStrings, null)
-					.waitFor();
-		}
-		else {
-			throw new SpannerDataException(
-					"DDL could not be executed because the database does"
-							+ " not exist and it was not auto-created");
+		catch (SpannerException e) {
+			throw new SpannerDataException("DDL could not be executed", e);
 		}
 	}
 

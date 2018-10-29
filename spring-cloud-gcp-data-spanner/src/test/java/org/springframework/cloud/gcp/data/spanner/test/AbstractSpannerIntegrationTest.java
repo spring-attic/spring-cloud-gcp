@@ -38,7 +38,6 @@ import org.springframework.test.context.ContextConfiguration;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -122,19 +121,20 @@ public abstract class AbstractSpannerIntegrationTest {
 		String tableName = this.spannerMappingContext.getPersistentEntity(Trade.class)
 				.tableName();
 
+		List<String> createStatements = createSchemaStatements();
+
 		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
 			assertFalse(this.spannerDatabaseAdminTemplate.tableExists(tableName));
 			LOGGER.debug(
 					this.getClass() + " - Integration database created with schema: "
-							+ createSchemaStatements());
+							+ createStatements);
+			this.spannerDatabaseAdminTemplate.executeDdlStrings(createStatements, true);
 		}
 		else {
 			LOGGER.debug(
-					this.getClass() + " - schema created: " + createSchemaStatements());
+					this.getClass() + " - schema created: " + createStatements);
+			this.spannerDatabaseAdminTemplate.executeDdlStrings(createStatements, false);
 		}
-		this.spannerDatabaseAdminTemplate.executeDdlStrings(createSchemaStatements(),
-				true);
-		assertTrue(this.spannerDatabaseAdminTemplate.tableExists(tableName));
 	}
 
 	protected List<String> createSchemaStatements() {
