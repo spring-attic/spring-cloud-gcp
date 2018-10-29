@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -37,7 +38,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -112,19 +113,21 @@ public abstract class AbstractSpannerIntegrationTest {
 		}
 	}
 
+	@Test
+	public void tableCreatedTest() {
+		assertTrue(this.spannerDatabaseAdminTemplate.tableExists(
+				this.spannerMappingContext.getPersistentEntity(Trade.class).tableName()));
+	}
+
 	protected void createDatabaseWithSchema() {
 		this.tableNameSuffix = String.valueOf(System.currentTimeMillis());
 		ConfigurableListableBeanFactory beanFactory =
 				((ConfigurableApplicationContext) this.applicationContext).getBeanFactory();
 		beanFactory.registerSingleton("tableNameSuffix", this.tableNameSuffix);
 
-		String tableName = this.spannerMappingContext.getPersistentEntity(Trade.class)
-				.tableName();
-
 		List<String> createStatements = createSchemaStatements();
 
 		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
-			assertFalse(this.spannerDatabaseAdminTemplate.tableExists(tableName));
 			LOGGER.debug(
 					this.getClass() + " - Integration database created with schema: "
 							+ createStatements);
