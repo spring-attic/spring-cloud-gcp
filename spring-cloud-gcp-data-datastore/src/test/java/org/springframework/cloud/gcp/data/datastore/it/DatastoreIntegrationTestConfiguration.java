@@ -23,7 +23,6 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
@@ -61,19 +60,16 @@ public class DatastoreIntegrationTestConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public TransactionalTemplateService transactionalTemplateService() {
 		return new TransactionalTemplateService();
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	DatastoreTransactionManager datastoreTransactionManager(Datastore datastore) {
 		return new DatastoreTransactionManager(datastore);
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public Datastore datastore() {
 		DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
 				.setProjectId(this.projectId)
@@ -86,26 +82,22 @@ public class DatastoreIntegrationTestConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public DatastoreMappingContext datastoreMappingContext() {
 		return new DatastoreMappingContext();
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public DatastoreEntityConverter datastoreEntityConverter(
 			DatastoreMappingContext datastoreMappingContext, ObjectToKeyFactory objectToKeyFactory) {
 		return new DefaultDatastoreEntityConverter(datastoreMappingContext, objectToKeyFactory);
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public ObjectToKeyFactory objectToKeyFactory(Datastore datastore) {
 		return new DatastoreServiceObjectToKeyFactory(datastore);
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public DatastoreTemplate datastoreTemplate(Datastore datastore,
 			DatastoreMappingContext datastoreMappingContext,
 			DatastoreEntityConverter datastoreEntityConverter,
