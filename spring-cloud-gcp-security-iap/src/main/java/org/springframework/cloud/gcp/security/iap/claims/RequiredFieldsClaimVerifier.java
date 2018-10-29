@@ -16,8 +16,7 @@
 
 package org.springframework.cloud.gcp.security.iap.claims;
 
-import java.util.Map;
-
+import com.nimbusds.jwt.JWTClaimsSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -25,31 +24,31 @@ public class RequiredFieldsClaimVerifier implements ClaimVerifier {
 	private static final Log LOGGER = LogFactory.getLog(RequiredFieldsClaimVerifier.class);
 
 	@Override
-	public boolean verify(Map<String, Object> claims) {
+	public boolean verify(JWTClaimsSet claims) {
 
 		boolean requiredFieldsPresent = true;
 
-		if (!claims.containsKey("sub")) {
+		if (claims.getSubject() == null) {
 			LOGGER.warn("Subject missing.");
 			requiredFieldsPresent = false;
 		}
 
-		if (!claims.containsKey("email")) {
+		if (claims.getClaim("email") == null) {
 			LOGGER.warn("E-mail missing.");
 			requiredFieldsPresent =  false;
 		}
 
-		if (!claims.containsKey("aud")) {
+		if (claims.getAudience() == null) {
 			LOGGER.warn("Audience missing.");
 			requiredFieldsPresent =  false;
 		}
 
-		if (!claims.containsKey("exp")) {
+		if (claims.getExpirationTime() == null) {
 			LOGGER.warn("Expiration missing.");
 			requiredFieldsPresent =  false;
 		}
 
-		if (!claims.containsKey("iat")) {
+		if (claims.getIssueTime() == null) {
 			LOGGER.warn("Issue time missing.");
 			requiredFieldsPresent =  false;
 		}

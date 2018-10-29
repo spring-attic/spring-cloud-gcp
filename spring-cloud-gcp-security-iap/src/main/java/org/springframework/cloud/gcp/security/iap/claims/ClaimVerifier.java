@@ -16,8 +16,8 @@
 
 package org.springframework.cloud.gcp.security.iap.claims;
 
-import java.util.Map;
+import com.nimbusds.jwt.JWTClaimsSet;
 
 public interface ClaimVerifier {
-	boolean verify(Map<String, Object> claims);
+	boolean verify(JWTClaimsSet claims);
 }

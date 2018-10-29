@@ -22,14 +22,13 @@ import java.net.URL;
 import java.security.interfaces.ECPublicKey;
 import java.text.ParseException;
 import java.time.Clock;
-import java.time.Instant;
-import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSVerifier;
@@ -41,6 +40,11 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.springframework.cloud.gcp.security.iap.claims.ClaimVerifier;
+import org.springframework.cloud.gcp.security.iap.claims.IssueTimeInPastClaimVerifier;
+import org.springframework.cloud.gcp.security.iap.claims.IssuerClaimVerifier;
+import org.springframework.cloud.gcp.security.iap.claims.RequiredFieldsClaimVerifier;
 
 /**
  * Verify IAP authorization JWT token in incoming request.
@@ -66,10 +70,18 @@ public class JwtTokenVerifier {
 
 	private final URL publicKeyVerificationUrl;
 
-	private static final String IAP_ISSUER_URL = "https://cloud.google.com/iap";
+
+	private final List<ClaimVerifier> claimVerifiers;
 
 	public JwtTokenVerifier() throws MalformedURLException {
 		this.publicKeyVerificationUrl = new URL(PUBLIC_KEY_VERIFICATION_LINK);
+		claimVerifiers = ImmutableList.of(
+				new RequiredFieldsClaimVerifier(),
+				new IssueTimeInPastClaimVerifier(),
+				// TODO: uncomment; commented out for local testing
+				//new ExpirationTimeInFutureClaimVerifier()
+				new IssuerClaimVerifier()
+		);
 	}
 
 	/*
@@ -91,54 +103,63 @@ public class JwtTokenVerifier {
 			return null;
 		}
 
-		// parse signed token into header / claims
+		IapAuthentication authentication = null;
 		SignedJWT signedJwt = extractSignedToken(jwtToken);
-		if (!validateJwt(signedJwt)) {
+
+		if (validateJwt(signedJwt)) {
+			JWTClaimsSet claims = extractClaims(signedJwt);
+			String email = extractClaimValue(claims, "email");
+
+			if (validateClaims(claims) && email != null) {
+				authentication = new IapAuthentication(email, claims.getSubject(), jwtToken);
+			}
+		}
+		else {
 			LOGGER.warn("Jwt public key verification failed; not authenticating");
+		}
+
+		return authentication;
+	}
+
+	private String extractClaimValue(JWTClaimsSet claims, String propertyName) {
+		try {
+			return claims.getStringClaim(propertyName);
+		}
+		catch (ParseException e) {
+			LOGGER.warn("String value could not be parsed from claims.", e);
 			return null;
 		}
+	}
+
+	private JWTClaimsSet extractClaims(SignedJWT signedJwt) {
 
 		JWTClaimsSet claims = null;
 		try {
 			claims = signedJwt.getJWTClaimsSet();
-			System.out.println("IAP_FILTER: got claims = " + claims);
 		}
 		catch (ParseException e) {
-			// TODO: log properly
-			System.err.println("JWT Claims could not be parsed");
-			e.printStackTrace();
-			return null;
+			LOGGER.warn("JWT Claims could not be parsed", e);
 		}
+		return claims;
+	}
+
+	private boolean validateClaims(JWTClaimsSet claims) {
+		if (claims == null) {
+			LOGGER.warn("Null claims cannot be validated.");
+			return false;
+		}
+
+		for (ClaimVerifier verifier : this.claimVerifiers) {
+			if (!verifier.verify(claims)) {
+				return false;
+			}
+		}
+
 		// claims must have audience, issuer
 		// TODO: Vary expectec audience based on whether installed in AppEngine or ComputeEngine
 		// Preconditions.checkArgument(claims.getAudience().contains(expectedAudience));
-		Preconditions.checkArgument(claims.getIssuer().equals(IAP_ISSUER_URL));
-		System.out.println("IAP_FILTER: checked issuer URL = ");
-		// claim must have issued at time in the past
-		Date currentTime = Date.from(Instant.now(clock));
-		Preconditions.checkArgument(claims.getIssueTime().before(currentTime));
-		// claim must have expiration time in the future
-		// Preconditions.checkArgument(claims.getExpirationTime().after(currentTime));
-		System.out.println("IAP_FILTER: checked time");
-		// must have subject, email
-		Preconditions.checkNotNull(claims.getSubject());
-		Preconditions.checkNotNull(claims.getClaim("email"));
-		System.out.println("IAP_FILTER: subject and claim exist");
-		// verify using public key : lookup with key id, algorithm name provided
 
-		String email = null;
-		try {
-			email = claims.getStringClaim("email");
-		}
-		catch (ParseException e) {
-			// TODO: log properly
-			System.err.println("E-mail string could not be parsed from claims.");
-			e.printStackTrace();
-			return null;
-		}
-		System.out.println("IAP_FILTER: email = " + email);
-		System.out.println("IAP_FILTER: subject = " + claims.getSubject());
-		return new IapAuthentication(email, claims.getSubject(), jwtToken);
+		return true;
 	}
 
 	private ECPublicKey getPublicKey(String kid, String alg) {
@@ -151,13 +172,16 @@ public class JwtTokenVerifier {
 
 		if (jwk == null) {
 			LOGGER.warn(String.format("JWK key [%s] not found.", kid));
-		} else if (!jwk.getAlgorithm().getName().equals(alg)) {
+		}
+		else if (!jwk.getAlgorithm().getName().equals(alg)) {
 			LOGGER.warn(String.format(
 							"JWK key alorithm [%s] does not match expected algorithm [%s].", jwk.getAlgorithm(), alg));
-		} else {
+		}
+		else {
 			try {
 				ecPublicKey = ECKey.parse(jwk.toJSONString()).toECPublicKey();
-			} catch (JOSEException | ParseException e) {
+			}
+			catch (JOSEException | ParseException e) {
 				LOGGER.warn("JWK Public key extraction failed.", e);
 			}
 		}
@@ -172,7 +196,8 @@ public class JwtTokenVerifier {
 				LOGGER.info("Re-downloading JWK cache.");
 				jwkSet = JWKSet.load(publicKeyVerificationUrl);
 				this.lastJwkStoreDownloadTimestamp = this.clock.millis();
-			} catch (IOException | ParseException e) {
+			}
+			catch (IOException | ParseException e) {
 				LOGGER.warn("Downloading JWK keys failed.", e);
 				return null;
 			}
@@ -195,6 +220,11 @@ public class JwtTokenVerifier {
 	}
 
 	private boolean validateJwt(SignedJWT signedJwt) {
+		if (signedJwt == null) {
+			LOGGER.warn("Null signed JWT is invalid.");
+			return false;
+		}
+
 		JWSHeader jwsHeader = signedJwt.getHeader();
 		ECPublicKey publicKey = null;
 

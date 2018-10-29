@@ -16,11 +16,13 @@
 
 package org.springframework.cloud.gcp.autoconfigure.security;
 
+import java.net.MalformedURLException;
 import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.beans.BeanInstantiationException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gcp.security.iap.IapAuthenticationDetailsSource;
 import org.springframework.cloud.gcp.security.iap.IapAuthenticationFilter;
@@ -41,7 +43,12 @@ public class IapAuthenticationAutoConfiguration {
 	@Bean
 	public JwtTokenVerifier jwtTokenVerifier() {
 		// todo: externalize JWK key URL property?
-		return new JwtTokenVerifier();
+		try {
+			return new JwtTokenVerifier();
+		}
+		catch (MalformedURLException e) {
+			throw new BeanInstantiationException(JwtTokenVerifier.class, "Invalid JWK URL", e);
+		}
 	}
 
 	@Bean

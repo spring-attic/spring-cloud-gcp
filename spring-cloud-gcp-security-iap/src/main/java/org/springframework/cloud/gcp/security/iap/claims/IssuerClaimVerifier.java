@@ -16,29 +16,16 @@
 
 package org.springframework.cloud.gcp.security.iap.claims;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.util.Date;
-
 import com.nimbusds.jwt.JWTClaimsSet;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-public class IssueTimeInPastClaimVerifier implements ClaimVerifier {
-	private static final Log LOGGER = LogFactory.getLog(IssueTimeInPastClaimVerifier.class);
+public class IssuerClaimVerifier implements ClaimVerifier {
 
-	// TODO: make injectable for testing. Or is that a security hole waiting to happen?
-	private static Clock clock = Clock.systemUTC();
+	// TODO: make configurable
+	private static final String IAP_ISSUER_URL = "https://cloud.google.com/iap";
+
 
 	@Override
 	public boolean verify(JWTClaimsSet claims) {
-		Date currentTime = Date.from(Instant.now(clock));
-		LOGGER.info(String.format("Token issued at %s; current time %s", claims.getIssueTime(), currentTime));
-		if (!claims.getIssueTime().before(currentTime)) {
-			LOGGER.warn("Issue time claim verification failed.");
-			return false;
-		}
-
-		return true;
+		return IAP_ISSUER_URL.equals(claims.getIssuer());
 	}
 }
