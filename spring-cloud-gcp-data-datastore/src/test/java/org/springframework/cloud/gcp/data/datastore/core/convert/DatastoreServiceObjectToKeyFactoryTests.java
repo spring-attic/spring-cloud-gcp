@@ -143,11 +143,12 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 		this.expectedEx.expectMessage("Only Key types are allowed for descendants id");
 
 		TestEntityWithId testEntityWithId = new TestEntityWithId();
-
-		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("project"));
+		KeyFactory keyFactory = new KeyFactory("project").setKind("kind");
+		when(this.datastore.newKeyFactory()).thenReturn(keyFactory);
 		this.datastoreServiceObjectToKeyFactory
 				.allocateKeyForObject(testEntityWithId, this.datastoreMappingContext
-						.getPersistentEntity(testEntityWithId.getClass()));
+						.getPersistentEntity(testEntityWithId.getClass()),
+						keyFactory.newKey("ancestor"));
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "custom_test_kind")
