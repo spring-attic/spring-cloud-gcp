@@ -14,19 +14,34 @@
  *  limitations under the License.
  */
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.integration.annotation.ServiceActivator;
-import org.springframework.integration.channel.DirectChannel;
+package com.example;
 
-public class PubSubJsonPayloadApplication {
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-	@Bean
-	public DirectChannel pubSubInputChannel() {
-		return new DirectChannel();
+/**
+ * This is a sample POJO which is serialized/deserialized as a JSON payload and sent
+ * through Cloud Pub/Sub.
+ *
+ * @author Daniel Zou
+ */
+public class Person {
+
+	public final String name;
+
+	public final int age;
+
+	@JsonCreator
+	public Person(@JsonProperty("name") String name, @JsonProperty("age") int age) {
+		this.name = name;
+		this.age = age;
 	}
 
-	@Bean
-	public DirectChannel pubSubOutputChannel() {
-		return new DirectChannel();
+	@Override
+	public String toString() {
+		return "Person{" +
+				"name='" + name + '\'' +
+				", age=" + age +
+				'}';
 	}
 }
