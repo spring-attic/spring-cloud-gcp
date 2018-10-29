@@ -16,26 +16,16 @@
 
 package org.springframework.cloud.gcp.security.iap;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.interfaces.ECPublicKey;
 import java.text.ParseException;
-import java.time.Clock;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableList;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.ECDSAVerifier;
-import com.nimbusds.jose.jwk.ECKey;
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.logging.Log;
@@ -45,6 +35,7 @@ import org.springframework.cloud.gcp.security.iap.claims.ClaimVerifier;
 import org.springframework.cloud.gcp.security.iap.claims.IssueTimeInPastClaimVerifier;
 import org.springframework.cloud.gcp.security.iap.claims.IssuerClaimVerifier;
 import org.springframework.cloud.gcp.security.iap.claims.RequiredFieldsClaimVerifier;
+import org.springframework.cloud.gcp.security.iap.jwk.JwkRegistry;
 
 /**
  * Verify IAP authorization JWT token in incoming request.
@@ -58,23 +49,11 @@ public class JwtTokenVerifier {
 	// todo: externalize as properties?
 	private static final String PUBLIC_KEY_VERIFICATION_LINK = "https://www.gstatic.com/iap/verify/public_key-jwk";
 
-	// using a simple cache with no eviction for this sample
-	private Map<String, JWK> keyCache = new HashMap<>();
-
-	private static Clock clock = Clock.systemUTC();
-
-	// Wait at least 60 seconds before cache can be redownloaded.
-	private static final int MIN_MS_BEFORE_RETRY = 60000;
-
-	private long lastJwkStoreDownloadTimestamp;
-
-	private final URL publicKeyVerificationUrl;
-
+	private final JwkRegistry jwkRegistry = new JwkRegistry(PUBLIC_KEY_VERIFICATION_LINK);
 
 	private final List<ClaimVerifier> claimVerifiers;
 
 	public JwtTokenVerifier() throws MalformedURLException {
-		this.publicKeyVerificationUrl = new URL(PUBLIC_KEY_VERIFICATION_LINK);
 		claimVerifiers = ImmutableList.of(
 				new RequiredFieldsClaimVerifier(),
 				new IssueTimeInPastClaimVerifier(),
@@ -162,49 +141,7 @@ public class JwtTokenVerifier {
 		return true;
 	}
 
-	private ECPublicKey getPublicKey(String kid, String alg) {
-		JWK jwk = keyCache.get(kid);
-		if (jwk == null) {
-			jwk = downloadJwkKeysIfCacheNotFresh(kid);
-		}
 
-		ECPublicKey ecPublicKey = null;
-
-		if (jwk == null) {
-			LOGGER.warn(String.format("JWK key [%s] not found.", kid));
-		}
-		else if (!jwk.getAlgorithm().getName().equals(alg)) {
-			LOGGER.warn(String.format(
-							"JWK key alorithm [%s] does not match expected algorithm [%s].", jwk.getAlgorithm(), alg));
-		}
-		else {
-			try {
-				ecPublicKey = ECKey.parse(jwk.toJSONString()).toECPublicKey();
-			}
-			catch (JOSEException | ParseException e) {
-				LOGGER.warn("JWK Public key extraction failed.", e);
-			}
-		}
-
-		return ecPublicKey;
-	}
-
-	private JWK downloadJwkKeysIfCacheNotFresh(String kid) {
-		if (this.clock.millis() - this.lastJwkStoreDownloadTimestamp > MIN_MS_BEFORE_RETRY) {
-			JWKSet jwkSet = null;
-			try {
-				LOGGER.info("Re-downloading JWK cache.");
-				jwkSet = JWKSet.load(publicKeyVerificationUrl);
-				this.lastJwkStoreDownloadTimestamp = this.clock.millis();
-			}
-			catch (IOException | ParseException e) {
-				LOGGER.warn("Downloading JWK keys failed.", e);
-				return null;
-			}
-			keyCache = jwkSet.getKeys().stream().collect(Collectors.toMap(key -> key.getKeyID(), Function.identity()));
-		}
-		return keyCache.get(kid);
-	}
 
 	private SignedJWT extractSignedToken(String jwtToken) {
 		SignedJWT signedJwt = null;
@@ -235,7 +172,8 @@ public class JwtTokenVerifier {
 			LOGGER.warn("JWT key ID null.");
 		}
 		else {
-			publicKey = getPublicKey(jwsHeader.getKeyID(), jwsHeader.getAlgorithm().getName());
+
+			publicKey = this.jwkRegistry.getPublicKey(jwsHeader.getKeyID(), jwsHeader.getAlgorithm().getName());
 			if (publicKey != null) {
 				return verifyAgainstPublicKey(signedJwt, publicKey);
 			}
