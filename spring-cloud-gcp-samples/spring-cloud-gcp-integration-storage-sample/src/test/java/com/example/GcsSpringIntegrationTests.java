@@ -95,13 +95,13 @@ public class GcsSpringIntegrationTests {
 
 	@Test
 	public void testFilePropagatedToLocalDirectory() {
-		BlobId blobId = BlobId.of(cloudInputBucket, TEST_FILE_NAME);
+		BlobId blobId = BlobId.of(this.cloudInputBucket, TEST_FILE_NAME);
 		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain").build();
-		Blob blob = storage.create(blobInfo, "Hello World!".getBytes(StandardCharsets.UTF_8));
+		Blob blob = this.storage.create(blobInfo, "Hello World!".getBytes(StandardCharsets.UTF_8));
 
 		Awaitility.await().atMost(15, TimeUnit.SECONDS)
 				.untilAsserted(() -> {
-					Path outputFile = Paths.get(outputFolder + "/" + TEST_FILE_NAME);
+					Path outputFile = Paths.get(this.outputFolder + "/" + TEST_FILE_NAME);
 					assertThat(Files.exists(outputFile)).isTrue();
 					assertThat(Files.isRegularFile(outputFile)).isTrue();
 
@@ -109,7 +109,7 @@ public class GcsSpringIntegrationTests {
 					assertThat(firstLine).isEqualTo("Hello World!");
 
 					List<String> blobNamesInOutputBucket = ImmutableList
-							.copyOf(storage.list(cloudOutputBucket).iterateAll())
+							.copyOf(this.storage.list(this.cloudOutputBucket).iterateAll())
 							.stream()
 							.map(Blob::getName)
 							.collect(Collectors.toList());
@@ -118,18 +118,18 @@ public class GcsSpringIntegrationTests {
 	}
 
 	private void cleanupCloudStorage() {
-		Page<Blob> blobs = storage.list(cloudInputBucket);
+		Page<Blob> blobs = this.storage.list(this.cloudInputBucket);
 		for (Blob blob : blobs.iterateAll()) {
 			blob.delete();
 		}
 	}
 
 	private void cleanupLocalDirectory() throws IOException {
-		Path localDirectory = Paths.get(outputFolder);
+		Path localDirectory = Paths.get(this.outputFolder);
 		List<Path> files = Files.list(localDirectory).collect(Collectors.toList());
 		for (Path file : files) {
 			Files.delete(file);
 		}
-		Files.deleteIfExists(Paths.get(outputFolder));
+		Files.deleteIfExists(Paths.get(this.outputFolder));
 	}
 }

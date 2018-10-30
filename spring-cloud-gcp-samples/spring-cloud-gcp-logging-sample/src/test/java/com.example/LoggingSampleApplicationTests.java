@@ -81,7 +81,7 @@ public class LoggingSampleApplicationTests {
 
 	@Test
 	public void testLogRecordedInStackDriver() {
-		String url = String.format("http://localhost:%s/log", port);
+		String url = String.format("http://localhost:%s/log", this.port);
 		String traceHeader = "gcp-logging-test-" + Instant.now().toEpochMilli();
 
 		HttpHeaders headers = new HttpHeaders();

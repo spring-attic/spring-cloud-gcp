@@ -64,7 +64,7 @@ public class DatastoreTransactionManagerTests {
 		this.manager = new DatastoreTransactionManager(this.datastore) {
 			@Override
 			protected Tx getCurrentTX() {
-				return tx;
+				return DatastoreTransactionManagerTests.this.tx;
 			}
 		};
 	}

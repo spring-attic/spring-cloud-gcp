@@ -63,7 +63,7 @@ public class SpannerTemplateTests {
 	@Before
 	@After
 	public void cleanupSpannerTables() {
-		spannerTemplateExample.createTablesIfNotExists();
+		this.spannerTemplateExample.createTablesIfNotExists();
 		this.spannerOperations.delete(Trader.class, KeySet.all());
 		this.spannerOperations.delete(Trade.class, KeySet.all());
 	}
@@ -72,11 +72,11 @@ public class SpannerTemplateTests {
 	public void testSpannerTemplateLoadsData() {
 		assertThat(this.spannerOperations.readAll(Trade.class)).isEmpty();
 
-		spannerTemplateExample.runExample();
+		this.spannerTemplateExample.runExample();
 
 		Set<String> tradeSpannerKeys = this.spannerOperations.readAll(Trade.class)
 				.stream()
-				.map(t -> spannerSchemaUtils.getKey(t).toString())
+				.map(t -> this.spannerSchemaUtils.getKey(t).toString())
 				.collect(Collectors.toSet());
 
 		assertThat(tradeSpannerKeys).containsExactlyInAnyOrder(

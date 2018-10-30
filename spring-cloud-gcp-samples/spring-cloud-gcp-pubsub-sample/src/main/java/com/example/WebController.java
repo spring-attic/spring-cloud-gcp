@@ -136,7 +136,7 @@ public class WebController {
 			message.ack();
 		});
 
-		allSubscribers.add(subscriber);
+		this.allSubscribers.add(subscriber);
 		return buildStatusView("Subscribed.");
 	}
 
