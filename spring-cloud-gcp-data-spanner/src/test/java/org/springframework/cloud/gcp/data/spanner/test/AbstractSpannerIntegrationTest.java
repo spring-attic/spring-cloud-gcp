@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -37,7 +38,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
@@ -92,7 +92,11 @@ public abstract class AbstractSpannerIntegrationTest {
 	@Autowired
 	SpannerMappingContext spannerMappingContext;
 
-	private boolean setupFailed;
+	private static boolean setupFailed;
+
+	private static boolean tablesInitialized;
+
+	private static int initializeAttempts;
 
 	@BeforeClass
 	public static void checkToRun() {
@@ -105,12 +109,23 @@ public abstract class AbstractSpannerIntegrationTest {
 	@Before
 	public void setup() {
 		try {
+			initializeAttempts++;
+			if (tablesInitialized) {
+				return;
+			}
 			createDatabaseWithSchema();
+			tablesInitialized = true;
 		}
 		catch (Exception e) {
-			this.setupFailed = true;
+			setupFailed = true;
 			throw e;
 		}
+	}
+
+	@Test
+	public void tableCreatedTest() {
+		assertTrue(this.spannerDatabaseAdminTemplate.tableExists(
+				this.spannerMappingContext.getPersistentEntity(Trade.class).tableName()));
 	}
 
 	protected void createDatabaseWithSchema() {
@@ -119,22 +134,19 @@ public abstract class AbstractSpannerIntegrationTest {
 				((ConfigurableApplicationContext) this.applicationContext).getBeanFactory();
 		beanFactory.registerSingleton("tableNameSuffix", this.tableNameSuffix);
 
-		String tableName = this.spannerMappingContext.getPersistentEntity(Trade.class)
-				.tableName();
+		List<String> createStatements = createSchemaStatements();
 
 		if (!this.spannerDatabaseAdminTemplate.databaseExists()) {
-			assertFalse(this.spannerDatabaseAdminTemplate.tableExists(tableName));
 			LOGGER.debug(
 					this.getClass() + " - Integration database created with schema: "
-							+ createSchemaStatements());
+							+ createStatements);
+			this.spannerDatabaseAdminTemplate.executeDdlStrings(createStatements, true);
 		}
 		else {
 			LOGGER.debug(
-					this.getClass() + " - schema created: " + createSchemaStatements());
+					this.getClass() + " - schema created: " + createStatements);
+			this.spannerDatabaseAdminTemplate.executeDdlStrings(createStatements, false);
 		}
-		this.spannerDatabaseAdminTemplate.executeDdlStrings(createSchemaStatements(),
-				true);
-		assertTrue(this.spannerDatabaseAdminTemplate.tableExists(tableName));
 	}
 
 	protected List<String> createSchemaStatements() {
@@ -151,7 +163,8 @@ public abstract class AbstractSpannerIntegrationTest {
 	public void clean() {
 		try {
 			// this is to reduce duplicated errors reported by surefire plugin
-			if (this.setupFailed) {
+			if (setupFailed || initializeAttempts > 0) {
+				initializeAttempts--;
 				return;
 			}
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(dropSchemaStatements(),

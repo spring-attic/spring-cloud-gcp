@@ -85,6 +85,7 @@ public class DatastoreIntegrationTests {
 		this.datastoreTemplate.deleteAll(AncestorEntity.class);
 		this.datastoreTemplate.deleteAll(AncestorEntity.DescendantEntry.class);
 		this.datastoreTemplate.deleteAll(TreeCollection.class);
+		this.datastoreTemplate.deleteAll(ReferenceEntry.class);
 		this.testEntityRepository.deleteAll();
 	}
 
@@ -266,6 +267,34 @@ public class DatastoreIntegrationTests {
 				this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
 		assertEquals(ancestorEntity, loadedEntityAfterUpdate);
 	}
+
+	@Test
+	public void referenceTest() {
+		ReferenceEntry child1 = new ReferenceEntry("child1", null, null);
+		ReferenceEntry child2 = new ReferenceEntry("child2", null, null);
+		ReferenceEntry sibling = new ReferenceEntry("sibling", null, null);
+		ReferenceEntry parent = new ReferenceEntry("parent", sibling, Arrays.asList(child1, child2));
+
+		this.datastoreTemplate.save(parent);
+		waitUntilTrue(() -> this.datastoreTemplate.findAll(ReferenceEntry.class).size() == 4);
+
+		ReferenceEntry loadedParent = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
+		assertEquals(parent, loadedParent);
+
+		parent.name = "parent updated";
+		parent.childeren.forEach(child -> child.name = child.name + " updated");
+		parent.sibling.name = "sibling updated";
+
+		this.datastoreTemplate.save(parent);
+
+		waitUntilTrue(() ->
+				this.datastoreTemplate.findAll(ReferenceEntry.class)
+						.stream().allMatch(entry -> entry.name.contains("updated")));
+
+		ReferenceEntry loadedParentAfterUpdate = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
+		assertEquals(parent, loadedParentAfterUpdate);
+	}
+
 
 	private long waitUntilTrue(Supplier<Boolean> condition) {
 		Stopwatch stopwatch = Stopwatch.createStarted();

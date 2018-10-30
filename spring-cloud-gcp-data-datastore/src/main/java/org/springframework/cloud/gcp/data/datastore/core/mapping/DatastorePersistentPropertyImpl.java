@@ -104,6 +104,11 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	@Override
+	public boolean isColumnBacked() {
+		return !isDescendants() && !isReference();
+	}
+
+	@Override
 	public EmbeddedType getEmbeddedType() {
 		return EmbeddedType.of(getTypeInformation());
 	}

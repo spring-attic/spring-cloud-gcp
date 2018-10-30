@@ -106,8 +106,7 @@ public class DatastorePersistentEntityImpl<T>
 			PropertyHandler<DatastorePersistentProperty> handler) {
 		doWithProperties(
 				(PropertyHandler<DatastorePersistentProperty>) datastorePersistentProperty -> {
-					if (!datastorePersistentProperty.isReference()
-							&& !datastorePersistentProperty.isDescendants()) {
+					if (datastorePersistentProperty.isColumnBacked()) {
 						handler.doWithPersistentProperty(datastorePersistentProperty);
 					}
 				});

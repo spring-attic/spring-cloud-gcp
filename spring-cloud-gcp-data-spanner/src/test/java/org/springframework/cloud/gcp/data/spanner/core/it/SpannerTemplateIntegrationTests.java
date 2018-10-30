@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.core.it;
 
 import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.KeySet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,6 +45,9 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 
 	@Test
 	public void insertAndDeleteSequence() {
+
+		this.spannerOperations.delete(Trade.class, KeySet.all());
+
 		assertThat(this.spannerOperations.count(Trade.class), is(0L));
 
 		Trade trade = Trade.aTrade();
