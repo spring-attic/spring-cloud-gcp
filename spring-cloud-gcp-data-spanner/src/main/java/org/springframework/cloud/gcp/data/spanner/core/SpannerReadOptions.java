@@ -59,7 +59,7 @@ public class SpannerReadOptions {
 	}
 
 	public Set<String> getIncludeProperties() {
-		return includeProperties;
+		return this.includeProperties;
 	}
 
 	public SpannerReadOptions setIncludeProperties(Set<String> includeProperties) {

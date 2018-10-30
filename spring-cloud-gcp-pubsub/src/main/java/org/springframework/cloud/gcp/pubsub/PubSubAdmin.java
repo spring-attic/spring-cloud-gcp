@@ -293,11 +293,11 @@ public class PubSubAdmin implements AutoCloseable {
 
 	@Override
 	public void close() throws Exception {
-		if (topicAdminClient != null) {
-			topicAdminClient.close();
+		if (this.topicAdminClient != null) {
+			this.topicAdminClient.close();
 		}
-		if (subscriptionAdminClient != null) {
-			subscriptionAdminClient.close();
+		if (this.subscriptionAdminClient != null) {
+			this.subscriptionAdminClient.close();
 		}
 	}
 

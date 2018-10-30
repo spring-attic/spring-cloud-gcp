@@ -69,7 +69,7 @@ public class PubSubExtendedBindingsPropertiesTests {
 
 	@Test
 	public void testExtendedPropertiesOverrideDefaults() {
-		BinderFactory binderFactory = context.getBeanFactory().getBean(BinderFactory.class);
+		BinderFactory binderFactory = this.context.getBeanFactory().getBean(BinderFactory.class);
 		PubSubMessageChannelBinder binder = (PubSubMessageChannelBinder) binderFactory.getBinder("pubsub",
 				MessageChannel.class);
 

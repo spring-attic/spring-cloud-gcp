@@ -73,6 +73,7 @@
         <module name="MultipleVariableDeclarations"/>
         <module name="RequireThis">
             <property name="checkMethods" value="false"/>
+            <property name="validateOnlyOverlapping" value="false"/>
         </module>
         <module name="OneStatementPerLine"/>
         <module name="ExplicitInitialization"/>

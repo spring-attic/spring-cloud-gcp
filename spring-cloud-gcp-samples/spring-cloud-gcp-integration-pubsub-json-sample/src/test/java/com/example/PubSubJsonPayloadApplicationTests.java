@@ -60,7 +60,7 @@ public class PubSubJsonPayloadApplicationTests {
 	@Test
 	public void testReceivesJsonPayload() {
 		TestMessageConsumer messageConsumer = new TestMessageConsumer();
-		pubSubTemplate.subscribeAndConvert(SUBSCRIPTION_NAME, messageConsumer, Person.class);
+		this.pubSubTemplate.subscribeAndConvert(SUBSCRIPTION_NAME, messageConsumer, Person.class);
 
 		ImmutableMap<String, String> params = ImmutableMap.of(
 				"name", "Bob",
@@ -85,11 +85,11 @@ public class PubSubJsonPayloadApplicationTests {
 			message.ack();
 			assertThat(person.name).isEqualTo("Bob");
 			assertThat(person.age).isEqualTo(25);
-			messageHasBeenProcessed = true;
+			this.messageHasBeenProcessed = true;
 		}
 
 		public boolean isMessageProcessed() {
-			return messageHasBeenProcessed;
+			return this.messageHasBeenProcessed;
 		}
 	}
 }

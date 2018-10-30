@@ -69,13 +69,13 @@ public class SqlApplicationTests {
 
 	@After
 	public void clearTable() {
-		jdbcTemplate.execute("DROP TABLE IF EXISTS users");
+		this.jdbcTemplate.execute("DROP TABLE IF EXISTS users");
 	}
 
 	@Test
 	public void testSqlRowsAccess() {
-		String url = String.format("http://localhost:%s/getTuples", port);
-		ResponseEntity<List<String>> result = testRestTemplate.exchange(
+		String url = String.format("http://localhost:%s/getTuples", this.port);
+		ResponseEntity<List<String>> result = this.testRestTemplate.exchange(
 				url, HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
 				});
 

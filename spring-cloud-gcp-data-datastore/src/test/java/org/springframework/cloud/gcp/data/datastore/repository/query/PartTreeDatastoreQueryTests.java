@@ -80,7 +80,7 @@ public class PartTreeDatastoreQueryTests {
 		when(this.spannerTemplate.getDatastoreEntityConverter())
 				.thenReturn(this.datastoreEntityConverter);
 		when(this.datastoreEntityConverter.getConversions())
-				.thenReturn(readWriteConversions);
+				.thenReturn(this.readWriteConversions);
 	}
 
 	private PartTreeDatastoreQuery<Trade> createQuery() {
