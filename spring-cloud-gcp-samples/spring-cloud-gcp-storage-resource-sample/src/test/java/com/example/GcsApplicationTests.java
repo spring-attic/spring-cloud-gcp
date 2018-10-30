@@ -74,7 +74,7 @@ public class GcsApplicationTests {
 	@Before
 	@After
 	public void cleanupCloudStorage() {
-		Page<Blob> blobs = storage.list(this.bucketName);
+		Page<Blob> blobs = this.storage.list(this.bucketName);
 		for (Blob blob : blobs.iterateAll()) {
 			blob.delete();
 		}
