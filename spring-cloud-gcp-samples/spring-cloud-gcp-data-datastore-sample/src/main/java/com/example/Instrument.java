@@ -16,6 +16,8 @@
 
 package com.example;
 
+import com.google.cloud.datastore.Key;
+
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
@@ -27,29 +29,20 @@ import org.springframework.data.annotation.Id;
 @Entity
 public class Instrument {
 
-  @Id
-  private String instrumentId;
+	@Id
+	Key instrumentId;
 
-  private String type;
+	private String type;
 
-  public Instrument(String instrumentId, String type) {
-    this.instrumentId = instrumentId;
-    this.type = type;
-  }
+	public Instrument(String type) {
+		this.type = type;
+	}
 
-  public String getType() {
-    return this.type;
-  }
+	public String getType() {
+		return this.type;
+	}
 
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  public String getInstrumentId() {
-    return this.instrumentId;
-  }
-
-  public void setInstrumentId(String instrumentId) {
-    this.instrumentId = instrumentId;
-  }
+	public void setType(String type) {
+		this.type = type;
+	}
 }

@@ -18,6 +18,7 @@ package com.example;
 
 import java.time.LocalDate;
 import java.util.Objects;
+
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 
 /**
@@ -51,8 +52,8 @@ public class Album {
 			return false;
 		}
 		Album album = (Album) o;
-		return Objects.equals(getAlbumName(), album.getAlbumName()) &&
-				Objects.equals(this.date, album.date);
+		return Objects.equals(getAlbumName(), album.getAlbumName())
+				&& Objects.equals(this.date, album.date);
 	}
 
 	@Override
@@ -62,9 +63,7 @@ public class Album {
 
 	@Override
 	public String toString() {
-		return "Album{" +
-				"albumName='" + this.albumName + '\'' +
-				", date=" + this.date +
-				'}';
+		return "Album{" + "albumName='" + this.albumName + '\'' + ", date=" + this.date
+				+ '}';
 	}
 }

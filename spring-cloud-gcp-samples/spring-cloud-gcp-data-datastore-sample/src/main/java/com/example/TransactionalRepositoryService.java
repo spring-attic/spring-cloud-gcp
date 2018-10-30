@@ -16,46 +16,35 @@
 
 package com.example;
 
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * A transactional service that provides methods run as transactions.
+ *
  * @author Chengyuan Zhao
  */
 public class TransactionalRepositoryService {
 
-  @Autowired
-  private SingerRepository singerRepository;
+	@Autowired
+	private SingerRepository singerRepository;
 
-  @Transactional
-  public void testSaveAndStateConstantInTransaction(List<TestEntity> testEntities,
-      long waitMillisecondsForConfirmation)
-      throws InterruptedException {
+	@Transactional
+	public void createAndSaveSingerRelationshipsInTransaction(Singer singer,
+			Band firstBand, List<Band> bands, Set<Instrument> instruments) {
 
-    for (TestEntity testEntity : testEntities) {
-      assertNull(this.datastoreTemplate.findById(testEntity.getId(),
-          TestEntity.class));
-    }
+		singer.setFirstBand(firstBand);
+		singer.setBands(bands);
+		singer.setPersonalInstruments(instruments);
 
-    this.datastoreTemplate.saveAll(testEntities);
+		this.singerRepository.save(singer);
 
-    // Because these saved entities should NOT appear when we subsequently check, we
-    // must wait a period of time that would see a non-transactional save go through.
-    Thread.sleep(waitMillisecondsForConfirmation);
+		System.out.println(
+				"Relationship links were saved between a singer, bands, and instruments"
+						+ " in a single transaction: " + singer);
+	}
 
-    // Datastore transactions always see the state at the start of the transaction. Even
-    // after waiting these entities should not be found.
-    for (TestEntity testEntity : testEntities) {
-      assertNull(this.datastoreTemplate.findById(testEntity.getId(),
-          TestEntity.class));
-    }
-  }
-
-  @Transactional
-  public void testSaveInTransactionFailed(List<TestEntity> testEntities) {
-    this.datastoreTemplate.saveAll(testEntities);
-    throw new RuntimeException("Intentional failure to cause rollback.");
-  }
 }
