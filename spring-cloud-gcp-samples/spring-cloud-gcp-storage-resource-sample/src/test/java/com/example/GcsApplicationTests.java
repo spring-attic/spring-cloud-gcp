@@ -74,7 +74,7 @@ public class GcsApplicationTests {
 	@Before
 	@After
 	public void cleanupCloudStorage() {
-		Page<Blob> blobs = storage.list(bucketName);
+		Page<Blob> blobs = storage.list(this.bucketName);
 		for (Blob blob : blobs.iterateAll()) {
 			blob.delete();
 		}
@@ -82,20 +82,20 @@ public class GcsApplicationTests {
 
 	@Test
 	public void testGcsResourceIsLoaded() {
-		BlobId blobId = BlobId.of(bucketName, "my-file.txt");
+		BlobId blobId = BlobId.of(this.bucketName, "my-file.txt");
 		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain").build();
-		Blob blob = storage.create(blobInfo, "Good Morning!".getBytes(StandardCharsets.UTF_8));
+		this.storage.create(blobInfo, "Good Morning!".getBytes(StandardCharsets.UTF_8));
 
 		Awaitility.await().atMost(15, TimeUnit.SECONDS)
 				.untilAsserted(() -> {
-					String result = testRestTemplate.getForObject("/", String.class);
+					String result = this.testRestTemplate.getForObject("/", String.class);
 					assertThat(result).isEqualTo("Good Morning!\n");
 				});
 
-		testRestTemplate.postForObject("/", "Good Night!", String.class);
+		this.testRestTemplate.postForObject("/", "Good Night!", String.class);
 		Awaitility.await().atMost(15, TimeUnit.SECONDS)
 				.untilAsserted(() -> {
-					String result = testRestTemplate.getForObject("/", String.class);
+					String result = this.testRestTemplate.getForObject("/", String.class);
 					assertThat(result).isEqualTo("Good Night!\n");
 				});
 	}
