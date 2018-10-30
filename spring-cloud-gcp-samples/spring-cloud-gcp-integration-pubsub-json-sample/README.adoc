@@ -9,10 +9,10 @@ It demonstrates how one can create a Java object, serialize it to JSON, send it 
 +
 Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials], Spring will auto-discover those parameters for you.
 
-2. Go to the https://console.cloud.google.com/cloudpubsub/topicList[Google Cloud Console Pub/Sub topics page] and create a topic called `exampleTopic`.
+2. Go to the https://console.cloud.google.com/cloudpubsub/topicList[Google Cloud Console Pub/Sub topics page] and create a topic called `json-payload-sample-topic`.
 
 3. Still in the same page, locate the newly created topic, click the button with the three vertical dots at the end of the topic's line and click "New subscription".
-Create a new subscription called `exampleSubscription` with all default parameters.
+Create a new subscription called `json-payload-sample-subscription` with all default parameters.
 
 3. In a terminal window, move into this directory (spring-cloud-gcp-integration-pubsub-json-sample) and run: `mvn spring-boot:run`.
 

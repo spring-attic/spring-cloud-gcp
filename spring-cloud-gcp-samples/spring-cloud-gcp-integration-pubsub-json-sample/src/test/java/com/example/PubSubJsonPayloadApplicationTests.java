@@ -41,7 +41,7 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubJsonPayloadApplication.class })
 public class PubSubJsonPayloadApplicationTests {
 
-	private static final String SUBSCRIPTION_NAME = "exampleSubscription";
+	private static final String SUBSCRIPTION_NAME = "json-payload-sample-subscription";
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;

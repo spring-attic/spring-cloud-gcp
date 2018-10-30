@@ -39,7 +39,7 @@ public class SenderConfiguration {
 
 	private static final Log LOGGER = LogFactory.getLog(SenderConfiguration.class);
 
-	private static final String TOPIC_NAME = "exampleTopic";
+	private static final String TOPIC_NAME = "json-payload-sample-topic";
 
 	@Bean
 	public DirectChannel pubSubOutputChannel() {
