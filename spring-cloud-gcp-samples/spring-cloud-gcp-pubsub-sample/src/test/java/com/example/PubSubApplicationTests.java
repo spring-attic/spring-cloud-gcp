@@ -227,10 +227,10 @@ public class PubSubApplicationTests {
 	}
 
 	private void createTopic(String topicName) {
-		String url = UriComponentsBuilder.fromHttpUrl(appUrl + "/createTopic")
+		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/createTopic")
 				.queryParam("topicName", topicName)
 				.toUriString();
-		ResponseEntity<String> response = testRestTemplate.postForEntity(url, null, String.class);
+		ResponseEntity<String> response = this.testRestTemplate.postForEntity(url, null, String.class);
 
 		String projectTopicName = ProjectTopicName.format(projectName, topicName);
 		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
@@ -241,10 +241,10 @@ public class PubSubApplicationTests {
 	}
 
 	private void deleteTopic(String topicName) {
-		String url = UriComponentsBuilder.fromHttpUrl(appUrl + "/deleteTopic")
+		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/deleteTopic")
 				.queryParam("topic", topicName)
 				.toUriString();
-		testRestTemplate.postForEntity(url, null, String.class);
+		this.testRestTemplate.postForEntity(url, null, String.class);
 
 		String projectTopicName = ProjectTopicName.format(projectName, topicName);
 		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
@@ -255,11 +255,11 @@ public class PubSubApplicationTests {
 	}
 
 	private void createSubscription(String subscriptionName, String topicName) {
-		String url = UriComponentsBuilder.fromHttpUrl(appUrl + "/createSubscription")
+		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/createSubscription")
 				.queryParam("topicName", topicName)
 				.queryParam("subscriptionName", subscriptionName)
 				.toUriString();
-		testRestTemplate.postForEntity(url, null, String.class);
+		this.testRestTemplate.postForEntity(url, null, String.class);
 
 		String projectSubscriptionName = ProjectSubscriptionName.format(projectName, subscriptionName);
 		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
@@ -270,10 +270,10 @@ public class PubSubApplicationTests {
 	}
 
 	private void deleteSubscription(String subscriptionName) {
-		String url = UriComponentsBuilder.fromHttpUrl(appUrl + "/deleteSubscription")
+		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/deleteSubscription")
 				.queryParam("subscription", subscriptionName)
 				.toUriString();
-		testRestTemplate.postForEntity(url, null, String.class);
+		this.testRestTemplate.postForEntity(url, null, String.class);
 
 		String projectSubscriptionName = ProjectSubscriptionName.format(projectName, subscriptionName);
 		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
@@ -284,27 +284,27 @@ public class PubSubApplicationTests {
 	}
 
 	private void subscribe(String subscriptionName) {
-		String url = UriComponentsBuilder.fromHttpUrl(appUrl + "/subscribe")
+		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/subscribe")
 				.queryParam("subscription", subscriptionName)
 				.toUriString();
-		testRestTemplate.getForEntity(url, null, String.class);
+		this.testRestTemplate.getForEntity(url, null, String.class);
 	}
 
 	private void postMessage(String message, String topicName) {
-		String url = UriComponentsBuilder.fromHttpUrl(appUrl + "/postMessage")
+		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/postMessage")
 				.queryParam("message", message)
 				.queryParam("topicName", topicName)
 				.queryParam("count", 1)
 				.toUriString();
-		testRestTemplate.getForEntity(url, null, String.class);
+		this.testRestTemplate.getForEntity(url, null, String.class);
 	}
 
 	private void multiPull(String subscription1, String subscription2) {
-		String url = UriComponentsBuilder.fromHttpUrl(appUrl + "/multipull")
+		String url = UriComponentsBuilder.fromHttpUrl(this.appUrl + "/multipull")
 				.queryParam("subscription1", subscription1)
 				.queryParam("subscription2", subscription2)
 				.toUriString();
-		testRestTemplate.getForEntity(url, null, String.class);
+		this.testRestTemplate.getForEntity(url, null, String.class);
 	}
 
 	private static List<String> getTopicNamesFromProject() {

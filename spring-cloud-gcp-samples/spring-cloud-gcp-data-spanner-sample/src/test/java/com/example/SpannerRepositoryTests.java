@@ -79,18 +79,18 @@ public class SpannerRepositoryTests {
 	@Before
 	@After
 	public void cleanupAndSetupTables() {
-		spannerRepositoryExample.createTablesIfNotExists();
+		this.spannerRepositoryExample.createTablesIfNotExists();
 		this.tradeRepository.deleteAll();
 		this.traderRepository.deleteAll();
 	}
 
 	@Test
 	public void testRestEndpoint() {
-		spannerRepositoryExample.runExample();
+		this.spannerRepositoryExample.runExample();
 
 		TestRestTemplate testRestTemplate = new TestRestTemplate();
 		ResponseEntity<PagedResources<Trade>> tradesResponse = testRestTemplate.exchange(
-				String.format("http://localhost:%s/trades/", port),
+				String.format("http://localhost:%s/trades/", this.port),
 				HttpMethod.GET,
 				null,
 				new ParameterizedTypeReference<PagedResources<Trade>>() {
@@ -100,21 +100,21 @@ public class SpannerRepositoryTests {
 
 	@Test
 	public void testLoadsCorrectData() {
-		assertThat(traderRepository.count()).isEqualTo(0);
-		assertThat(tradeRepository.count()).isEqualTo(0);
+		assertThat(this.traderRepository.count()).isEqualTo(0);
+		assertThat(this.tradeRepository.count()).isEqualTo(0);
 
-		spannerRepositoryExample.runExample();
-		List<String> traderIds = ImmutableList.copyOf(traderRepository.findAll())
+		this.spannerRepositoryExample.runExample();
+		List<String> traderIds = ImmutableList.copyOf(this.traderRepository.findAll())
 				.stream()
 				.map(Trader::getTraderId)
 				.collect(Collectors.toList());
 		assertThat(traderIds).containsExactlyInAnyOrder("demo_trader1", "demo_trader2", "demo_trader3");
 
-		List<Trade> actualTrades = ImmutableList.copyOf(tradeRepository.findAll());
+		List<Trade> actualTrades = ImmutableList.copyOf(this.tradeRepository.findAll());
 		assertThat(actualTrades).hasSize(8);
 
 		Set<String> tradeSpannerKeys = actualTrades.stream()
-				.map(t -> spannerSchemaUtils.getKey(t).toString())
+				.map(t -> this.spannerSchemaUtils.getKey(t).toString())
 				.collect(Collectors.toSet());
 		assertThat(tradeSpannerKeys).containsExactlyInAnyOrder(
 				"[demo_trader1,1]",

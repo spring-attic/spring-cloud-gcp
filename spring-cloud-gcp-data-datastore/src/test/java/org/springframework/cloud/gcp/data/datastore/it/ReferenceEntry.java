@@ -16,30 +16,33 @@
 
 package org.springframework.cloud.gcp.data.datastore.it;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
-import com.google.cloud.datastore.Key;
-
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Reference;
 import org.springframework.data.annotation.Id;
 
 /**
  * @author Dmitry Solomakha
  */
-public class AncestorEntity {
+class ReferenceEntry {
 	@Id
 	Long id;
 
 	String name;
 
-	@Descendants
-	List<DescendantEntry> descendants;
+	@Reference
+	ReferenceEntry sibling;
 
-	AncestorEntity(String name, List<DescendantEntry> descendants) {
+	@Reference
+	List<ReferenceEntry> childeren;
+
+	ReferenceEntry(String name, ReferenceEntry sibling, List<ReferenceEntry> childeren) {
 		this.name = name;
-		this.descendants = descendants;
+		this.sibling = sibling;
+		this.childeren = childeren;
 	}
 
 	@Override
@@ -50,42 +53,27 @@ public class AncestorEntity {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		AncestorEntity that = (AncestorEntity) o;
-		return Objects.equals(this.name, that.name) &&
-				new HashSet<>(this.descendants).equals(new HashSet<>(that.descendants));
+		ReferenceEntry that = (ReferenceEntry) o;
+		return Objects.equals(this.id, that.id) &&
+				Objects.equals(this.name, that.name) &&
+				Objects.equals(this.sibling, that.sibling) &&
+				new HashSet<>(this.childeren != null ? this.childeren : Collections.emptyList())
+						.equals(new HashSet<>(that.childeren != null ? that.childeren : Collections.emptyList()));
 	}
 
 	@Override
 	public int hashCode() {
 
-		return Objects.hash(this.name, this.descendants);
+		return Objects.hash(this.id, this.name, this.sibling, this.childeren);
 	}
 
-	public static class DescendantEntry {
-		@Id
-		Key id;
-
-		String name;
-
-		DescendantEntry(String name) {
-			this.name = name;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) {
-				return true;
-			}
-			if (o == null || getClass() != o.getClass()) {
-				return false;
-			}
-			DescendantEntry that = (DescendantEntry) o;
-			return Objects.equals(this.name, that.name);
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(this.name);
-		}
+	@Override
+	public String toString() {
+		return "ReferenceEntry{" +
+				"id=" + this.id +
+				", name='" + this.name + '\'' +
+				", sibling=" + this.sibling +
+				", childeren=" + this.childeren +
+				'}';
 	}
 }

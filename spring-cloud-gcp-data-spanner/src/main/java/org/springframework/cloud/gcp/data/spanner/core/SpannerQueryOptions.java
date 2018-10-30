@@ -58,7 +58,7 @@ public class SpannerQueryOptions {
 	}
 
 	public Set<String> getIncludeProperties() {
-		return includeProperties;
+		return this.includeProperties;
 	}
 
 	public SpannerQueryOptions setIncludeProperties(Set<String> includeProperties) {

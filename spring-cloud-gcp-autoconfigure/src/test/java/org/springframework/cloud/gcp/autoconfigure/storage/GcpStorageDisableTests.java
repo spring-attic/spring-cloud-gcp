@@ -40,7 +40,7 @@ public class GcpStorageDisableTests {
 
 	@Test
 	public void testStorageBeanIsNotProvided() {
-		contextRunner.run(context -> {
+		this.contextRunner.run(context -> {
 			Throwable thrown = catchThrowable(() -> context.getBean(Storage.class));
 			assertThat(thrown).isInstanceOf(NoSuchBeanDefinitionException.class);
 		});

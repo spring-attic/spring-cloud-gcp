@@ -39,6 +39,7 @@ import com.google.cloud.datastore.Value;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedType;
+import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
 import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -48,7 +49,6 @@ import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.CollectionUtils;
 
 /**
  * In order to support {@link CustomConversions}, this class applies 2-step conversions.
@@ -263,11 +263,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			}
 		}
 
-		//Check if property is a non-null array
-		if (val != null && val.getClass().isArray() && val.getClass() != byte[].class) {
-			// if a property is an array, convert it to list
-			val = CollectionUtils.arrayToList(val);
-		}
+		val = ValueUtil.toIterableIfArray(val);
 
 		if (val instanceof Iterable) {
 			List<Value<?>> values = new ArrayList<>();

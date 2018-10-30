@@ -23,11 +23,11 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManager;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreServiceObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DefaultDatastoreEntityConverter;
@@ -37,6 +37,7 @@ import org.springframework.cloud.gcp.data.datastore.repository.config.EnableData
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * @author Chengyuan Zhao
@@ -44,6 +45,7 @@ import org.springframework.context.annotation.PropertySource;
 @Configuration
 @PropertySource("application-test.properties")
 @EnableDatastoreRepositories
+@EnableTransactionManagement
 public class DatastoreIntegrationTestConfiguration {
 
 	private final String projectId = new DefaultGcpProjectIdProvider().getProjectId();
@@ -58,7 +60,16 @@ public class DatastoreIntegrationTestConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
+	public TransactionalTemplateService transactionalTemplateService() {
+		return new TransactionalTemplateService();
+	}
+
+	@Bean
+	DatastoreTransactionManager datastoreTransactionManager(Datastore datastore) {
+		return new DatastoreTransactionManager(datastore);
+	}
+
+	@Bean
 	public Datastore datastore() {
 		DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
 				.setProjectId(this.projectId)
@@ -71,26 +82,22 @@ public class DatastoreIntegrationTestConfiguration {
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public DatastoreMappingContext datastoreMappingContext() {
 		return new DatastoreMappingContext();
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public DatastoreEntityConverter datastoreEntityConverter(
 			DatastoreMappingContext datastoreMappingContext, ObjectToKeyFactory objectToKeyFactory) {
 		return new DefaultDatastoreEntityConverter(datastoreMappingContext, objectToKeyFactory);
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public ObjectToKeyFactory objectToKeyFactory(Datastore datastore) {
 		return new DatastoreServiceObjectToKeyFactory(datastore);
 	}
 
 	@Bean
-	@ConditionalOnMissingBean
 	public DatastoreTemplate datastoreTemplate(Datastore datastore,
 			DatastoreMappingContext datastoreMappingContext,
 			DatastoreEntityConverter datastoreEntityConverter,

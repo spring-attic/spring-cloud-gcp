@@ -63,7 +63,20 @@ public void publishMessage() {
 
 By default, the `SimplePubSubMessageConverter` is used to convert payloads of type `byte[]`, `ByteString`, `ByteBuffer`, and `String` to Pub/Sub messages.
 
-For serialization and deserialization of POJOs using Jackson JSON, configure the `PubSubTemplate` to use the `JacksonPubSubMessageConverter` by calling the `setMessageConverter()` method.
+===== JSON support
+
+For serialization and deserialization of POJOs using Jackson JSON, configure a `JacksonPubSubMessageConverter` bean, and the Spring Boot starter for GCP Pub/Sub will automatically wire it into the `PubSubTemplate`.
+
+[source,java]
+----
+@Bean
+public JacksonPubSubMessageConverter jacksonPubSubMessageConverter() {
+    return new JacksonPubSubMessageConverter(new ObjectMapper());
+}
+----
+
+Alternatively, you can set it directly by calling the `setMessageConverter()` method on the `PubSubTemplate`.
+Other implementations of the `PubSubMessageConverter` can also be configured in the same manner.
 
 ==== Subscribing to a subscription
 
