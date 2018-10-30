@@ -27,6 +27,7 @@ import com.google.cloud.storage.Storage;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,6 +39,8 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 
 /**
  * This verifies the sample application for using GCP Storage with Spring Resource abstractions.
@@ -59,6 +62,14 @@ public class GcsApplicationTests {
 
 	@Value("${gcs-resource-test-bucket}")
 	private String bucketName;
+
+	@BeforeClass
+	public static void checkToRun() {
+		assumeThat(
+				"Spanner Google Cloud Storage integration tests are disabled. "
+						+ "Please use '-Dit.storage=true' to enable them. ",
+				System.getProperty("it.storage"), is("true"));
+	}
 
 	@Before
 	@After
