@@ -17,7 +17,7 @@
 		<main.basedir>${basedir}/..</main.basedir>
 	</properties>
 
-    <modules>
+	<modules>
 		<module>spring-cloud-gcp-config-sample</module>
 		<module>spring-cloud-gcp-trace-sample</module>
 		<module>spring-cloud-gcp-logging-sample</module>
@@ -31,6 +31,7 @@
 		<module>spring-cloud-gcp-vision-api-sample</module>
 		<module>spring-cloud-gcp-integration-storage-sample</module>
 		<module>spring-cloud-gcp-pubsub-binder-sample</module>
+		<module>spring-cloud-gcp-integration-pubsub-json-sample</module>
 	</modules>
 
 	<build>
