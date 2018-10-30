@@ -97,7 +97,7 @@ public class GcsSpringIntegrationTests {
 	public void testFilePropagatedToLocalDirectory() {
 		BlobId blobId = BlobId.of(cloudInputBucket, TEST_FILE_NAME);
 		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain").build();
-		Blob blob = storage.create(blobInfo, "Hello World!".getBytes(StandardCharsets.UTF_8));
+		storage.create(blobInfo, "Hello World!".getBytes(StandardCharsets.UTF_8));
 
 		Awaitility.await().atMost(15, TimeUnit.SECONDS)
 				.untilAsserted(() -> {
