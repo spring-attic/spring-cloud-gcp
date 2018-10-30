@@ -23,6 +23,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import org.awaitility.Awaitility;
 import org.junit.After;
@@ -57,11 +58,18 @@ public class DatastoreIntegrationTests {
 	// queries are eventually consistent, so we may need to retry a few times.
 	private static final int QUERY_WAIT_INTERVAL_SECONDS = 15;
 
+	// This value is multiplied against recorded actual times needed to wait for eventual
+	// consistency.
+	private static final int WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE = 3;
+
 	@Autowired
 	private TestEntityRepository testEntityRepository;
 
 	@Autowired
 	private DatastoreTemplate datastoreTemplate;
+
+	@Autowired
+	private TransactionalTemplateService transactionalTemplateService;
 
 	@BeforeClass
 	public static void checkToRun() {
@@ -75,13 +83,13 @@ public class DatastoreIntegrationTests {
 	public void deleteAll() {
 		this.datastoreTemplate.deleteAll(EmbeddableTreeNode.class);
 		this.datastoreTemplate.deleteAll(AncestorEntity.class);
-		this.datastoreTemplate.deleteAll(AncestorEntity.DescendatEntry.class);
+		this.datastoreTemplate.deleteAll(AncestorEntity.DescendantEntry.class);
 		this.datastoreTemplate.deleteAll(TreeCollection.class);
 		this.testEntityRepository.deleteAll();
 	}
 
 	@Test
-	public void testSaveAndDeleteRepository() {
+	public void testSaveAndDeleteRepository() throws InterruptedException {
 
 		TestEntity testEntityA = new TestEntity(1L, "red", 1L, null);
 
@@ -91,23 +99,27 @@ public class DatastoreIntegrationTests {
 
 		TestEntity testEntityD = new TestEntity(4L, "red", 1L, null);
 
-		this.testEntityRepository.saveAll(
-				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
+		List<TestEntity> allTestEntities = ImmutableList.of(testEntityA, testEntityB,
+				testEntityC, testEntityD);
 
-		waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4);
+		this.testEntityRepository.saveAll(allTestEntities);
+
+		long millisWaited = waitUntilTrue(
+				() -> this.testEntityRepository.countBySize(1L) == 4);
 
 		assertEquals(4, this.testEntityRepository.deleteBySize(1L));
 
-		this.testEntityRepository.saveAll(
-				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
+		this.testEntityRepository.saveAll(allTestEntities);
+
+		millisWaited = Math.max(millisWaited,
+				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4));
 
 		assertThat(
 				this.testEntityRepository.removeByColor("red").stream()
 						.map(x -> x.getId()).collect(Collectors.toList()),
 				containsInAnyOrder(1L, 3L, 4L));
 
-		this.testEntityRepository.saveAll(
-				ImmutableList.of(testEntityA, testEntityB, testEntityC, testEntityD));
+		this.testEntityRepository.saveAll(allTestEntities);
 
 		assertNull(this.testEntityRepository.findById(1L).get().getBlobField());
 
@@ -118,8 +130,8 @@ public class DatastoreIntegrationTests {
 		assertEquals(Blob.copyFrom("testValueA".getBytes()),
 				this.testEntityRepository.findById(1L).get().getBlobField());
 
-		waitUntilTrue(
-				() -> this.testEntityRepository.countBySizeAndColor(1L, "red") == 3);
+		millisWaited = Math.max(millisWaited, waitUntilTrue(
+				() -> this.testEntityRepository.countBySizeAndColor(1L, "red") == 3));
 
 		List<TestEntity> foundByCustomQuery = this.testEntityRepository
 				.findEntitiesWithCustomQuery(1L);
@@ -168,6 +180,28 @@ public class DatastoreIntegrationTests {
 
 		this.testEntityRepository.deleteAll();
 
+		this.transactionalTemplateService.testSaveAndStateConstantInTransaction(
+				allTestEntities,
+				millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
+
+		millisWaited = Math.max(millisWaited,
+				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4));
+
+		this.testEntityRepository.deleteAll();
+
+		try {
+			this.transactionalTemplateService
+					.testSaveInTransactionFailed(allTestEntities);
+		}
+		catch (Exception ignored) {
+		}
+
+		// we wait a period long enough that the previously attempted failed save would
+		// show up if it is unexpectedly successful and committed.
+		Thread.sleep(millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
+
+		assertEquals(0, this.testEntityRepository.count());
+
 		assertFalse(this.testEntityRepository.findAllById(ImmutableList.of(1L, 2L))
 				.iterator().hasNext());
 	}
@@ -206,9 +240,9 @@ public class DatastoreIntegrationTests {
 
 	@Test
 	public void ancestorsTest() {
-		AncestorEntity.DescendatEntry descendantEntryA = new AncestorEntity.DescendatEntry("a");
-		AncestorEntity.DescendatEntry descendantEntryB = new AncestorEntity.DescendatEntry("b");
-		AncestorEntity.DescendatEntry descendantEntryC = new AncestorEntity.DescendatEntry("c");
+		AncestorEntity.DescendantEntry descendantEntryA = new AncestorEntity.DescendantEntry("a");
+		AncestorEntity.DescendantEntry descendantEntryB = new AncestorEntity.DescendantEntry("b");
+		AncestorEntity.DescendantEntry descendantEntryC = new AncestorEntity.DescendantEntry("c");
 
 		AncestorEntity ancestorEntity =
 				new AncestorEntity("abc", Arrays.asList(descendantEntryA, descendantEntryB, descendantEntryC));
@@ -225,7 +259,7 @@ public class DatastoreIntegrationTests {
 		ancestorEntity.descendants.forEach(descendatEntry -> descendatEntry.name = descendatEntry.name + " updated");
 		this.datastoreTemplate.save(ancestorEntity);
 		waitUntilTrue(() ->
-				this.datastoreTemplate.findAll(AncestorEntity.DescendatEntry.class)
+				this.datastoreTemplate.findAll(AncestorEntity.DescendantEntry.class)
 						.stream().allMatch(descendatEntry -> descendatEntry.name.contains("updated")));
 
 		AncestorEntity loadedEntityAfterUpdate =
@@ -233,7 +267,10 @@ public class DatastoreIntegrationTests {
 		assertEquals(ancestorEntity, loadedEntityAfterUpdate);
 	}
 
-	private void waitUntilTrue(Supplier<Boolean> condition) {
+	private long waitUntilTrue(Supplier<Boolean> condition) {
+		Stopwatch stopwatch = Stopwatch.createStarted();
 		Awaitility.await().atMost(QUERY_WAIT_INTERVAL_SECONDS, TimeUnit.SECONDS).until(condition::get);
+		stopwatch.stop();
+		return stopwatch.elapsed(TimeUnit.MILLISECONDS);
 	}
 }
