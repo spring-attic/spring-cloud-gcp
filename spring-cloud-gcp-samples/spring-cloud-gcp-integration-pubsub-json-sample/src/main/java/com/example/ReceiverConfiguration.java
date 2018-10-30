@@ -42,7 +42,7 @@ public class ReceiverConfiguration {
 
 	private static final Log LOGGER = LogFactory.getLog(ReceiverConfiguration.class);
 
-	private static final String SUBSCRIPTION_NAME = "exampleSubscription";
+	private static final String SUBSCRIPTION_NAME = "json-payload-sample-subscription";
 
 	@Bean
 	public DirectChannel pubSubInputChannel() {

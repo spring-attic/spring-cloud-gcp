@@ -31,10 +31,6 @@ import org.springframework.context.annotation.Bean;
 @SpringBootApplication
 public class PubSubJsonPayloadApplication {
 
-	private static final String EXAMPLE_TOPIC_NAME = "exampleTopic";
-
-	private static final String EXAMPLE_SUBSCRIPTION_NAME = "exampleSubscription";
-
 	public static void main(String[] args) {
 		SpringApplication.run(PubSubJsonPayloadApplication.class, args);
 	}
