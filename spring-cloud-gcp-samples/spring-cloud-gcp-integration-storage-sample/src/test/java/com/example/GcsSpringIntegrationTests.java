@@ -130,6 +130,6 @@ public class GcsSpringIntegrationTests {
 		for (Path file : files) {
 			Files.delete(file);
 		}
-		Files.deleteIfExists(Paths.get(outputFolder));
+		Files.deleteIfExists(Paths.get(this.outputFolder));
 	}
 }
