@@ -1,0 +1,25 @@
+= Google Cloud Pub/Sub Code Sample for Spring Integration and JSON
+
+This code sample demonstrates using the GCP Cloud Pub/Sub APIs with Spring Integration and JSON payloads.
+It demonstrates how one can create a Java object, serialize it to JSON, send it to a Cloud Pub/Sub topic, and then deserialize it on the receiver's end.
+
+== Setup & Configuration
+
+1. Configure your GCP project ID and credentials by following link:../../spring-cloud-gcp-docs/src/main/asciidoc/core.adoc#project-id[these instructions].
++
+Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials], Spring will auto-discover those parameters for you.
+
+2. Go to the https://console.cloud.google.com/cloudpubsub/topicList[Google Cloud Console Pub/Sub topics page] and create a topic called `exampleTopic`.
+
+3. Still in the same page, locate the newly created topic, click the button with the three vertical dots at the end of the topic's line and click "New subscription".
+Create a new subscription called `exampleSubscription` with all default parameters.
+
+3. In a terminal window, move into this directory (spring-cloud-gcp-integration-pubsub-json-sample) and run: `mvn spring-boot:run`.
+
+4. Go to http://localhost:8080 and create a `Person` by filling out `Name` and `Age` and clicking submit.
+In the backend, a Person object is created then serialized to JSON and sent to the Pub/Sub topic you created.
+The JSON payload is then received by the subscriber in the application which deserializes it and logs a message of the object that was received.
+
+5. Verify that the receiver logged the message you wrote.
++
+`Message arrived! Payload: Person{name='xxxxx' age=xx}`
