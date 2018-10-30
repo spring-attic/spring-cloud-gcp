@@ -16,9 +16,10 @@
 
 package com.example;
 
+import java.util.Objects;
+
 import com.google.cloud.datastore.Key;
 
-import java.util.Objects;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
