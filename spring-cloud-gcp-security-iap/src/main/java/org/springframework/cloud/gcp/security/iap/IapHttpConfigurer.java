@@ -14,12 +14,11 @@
  *  limitations under the License.
  */
 
-package org.springframework.cloud.gcp.autoconfigure.security;
+package org.springframework.cloud.gcp.security.iap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.cloud.gcp.security.iap.IapAuthenticationFilter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -43,13 +42,8 @@ public class IapHttpConfigurer extends AbstractHttpConfigurer<IapHttpConfigurer,
 
 		ApplicationContext context = http.getSharedObject(ApplicationContext.class);
 
-		if (context.getEnvironment().getProperty(IapSecurityConstants.IAP_GATING_PROPERTY, Boolean.class, false)) {
-			LOGGER.info("Adding IapAuthenticationFilter to default filter chain.");
-			IapAuthenticationFilter filter = context.getBean(IapAuthenticationFilter.class);
-			http.addFilterBefore(filter, BasicAuthenticationFilter.class);
-		}
-		else {
-			LOGGER.info("IapAuthenticationFilter bean not found; skipping IAP authentication.");
-		}
+		LOGGER.info("Adding IapAuthenticationFilter to default filter chain.");
+		IapAuthenticationFilter filter = context.getBean(IapAuthenticationFilter.class);
+		http.addFilterBefore(filter, BasicAuthenticationFilter.class);
 	}
 }

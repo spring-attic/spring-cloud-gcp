@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
@@ -43,7 +44,7 @@ public class JwkRegistry {
 	// Wait at least 60 seconds before cache can be redownloaded.
 	private static final int MIN_MS_BEFORE_RETRY = 60000;
 
-	private static Clock clock = Clock.systemUTC();
+	private Clock clock = Clock.systemUTC();
 
 	private final URL publicKeyVerificationUrl;
 
@@ -98,6 +99,12 @@ public class JwkRegistry {
 			}
 			keyCache = jwkSet.getKeys().stream().collect(Collectors.toMap(key -> key.getKeyID(), Function.identity()));
 		}
+
 		return keyCache.get(kid);
+	}
+
+	@VisibleForTesting
+	void setClock(Clock clock) {
+		this.clock = clock;
 	}
 }

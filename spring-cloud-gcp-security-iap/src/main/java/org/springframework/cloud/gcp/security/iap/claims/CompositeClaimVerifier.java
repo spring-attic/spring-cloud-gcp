@@ -16,25 +16,21 @@
 
 package org.springframework.cloud.gcp.security.iap.claims;
 
-import java.time.Instant;
-import java.util.Date;
+import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import com.nimbusds.jwt.JWTClaimsSet;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-public class IssueTimeInPastClaimVerifier extends TimeBasedClaimVerifier {
-	private static final Log LOGGER = LogFactory.getLog(IssueTimeInPastClaimVerifier.class);
+public class CompositeClaimVerifier implements ClaimVerifier {
+
+	private List<ClaimVerifier> delegates;
+
+	public CompositeClaimVerifier(ClaimVerifier... delegates) {
+		this.delegates = ImmutableList.copyOf(delegates);
+	}
 
 	@Override
 	public boolean verify(JWTClaimsSet claims) {
-		Date currentTime = Date.from(Instant.now(this.getClock()));
-		LOGGER.info(String.format("Token issued at %s; current time %s", claims.getIssueTime(), currentTime));
-		if (!claims.getIssueTime().before(currentTime)) {
-			LOGGER.warn("Issue time claim verification failed.");
-			return false;
-		}
-
-		return true;
+		return this.delegates.stream().allMatch(verifier -> verifier.verify(claims));
 	}
 }

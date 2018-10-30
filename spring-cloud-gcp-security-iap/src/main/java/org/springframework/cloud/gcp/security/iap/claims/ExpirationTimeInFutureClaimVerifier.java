@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.security.iap.claims;
 
-import java.time.Clock;
 import java.time.Instant;
 import java.util.Date;
 
@@ -24,18 +23,12 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class ExpirationTimeInFutureClaimVerifier implements ClaimVerifier {
+public class ExpirationTimeInFutureClaimVerifier extends TimeBasedClaimVerifier {
 	private static final Log LOGGER = LogFactory.getLog(ExpirationTimeInFutureClaimVerifier.class);
-
-	private final Clock clock;
-
-	public ExpirationTimeInFutureClaimVerifier(Clock clock) {
-		this.clock = clock;
-	}
 
 	@Override
 	public boolean verify(JWTClaimsSet claims) {
-		Date currentTime = Date.from(Instant.now(clock));
+		Date currentTime = Date.from(Instant.now(this.getClock()));
 		LOGGER.info(String.format("Token expires at at %s; current time %s", claims.getExpirationTime(), currentTime));
 		if (!claims.getExpirationTime().after(currentTime)) {
 			LOGGER.warn("Token expiration claim failed.");
@@ -43,4 +36,6 @@ public class ExpirationTimeInFutureClaimVerifier implements ClaimVerifier {
 		}
 		return true;
 	}
+
+
 }

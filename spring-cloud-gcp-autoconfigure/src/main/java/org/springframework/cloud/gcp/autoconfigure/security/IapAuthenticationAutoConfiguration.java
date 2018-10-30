@@ -20,26 +20,26 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.springframework.beans.BeanInstantiationException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gcp.security.iap.IapAuthenticationDetailsSource;
 import org.springframework.cloud.gcp.security.iap.IapAuthenticationFilter;
-import org.springframework.cloud.gcp.security.iap.jwt.DefaultJwtTokenVerifier;
 import org.springframework.cloud.gcp.security.iap.jwt.JwtTokenVerifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.AuthenticationUserDetailsService;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesUserDetailsService;
 
-
 @Configuration
-@ConditionalOnProperty(IapSecurityConstants.IAP_GATING_PROPERTY)
+@ConditionalOnProperty(value = IapSecurityConstants.IAP_GATING_PROPERTY, matchIfMissing = true)
+@ConditionalOnClass({ IapAuthenticationFilter.class, WebSecurityConfigurerAdapter.class })
 public class IapAuthenticationAutoConfiguration {
-	private static final Log LOGGER = LogFactory.getLog(IapAuthenticationAutoConfiguration.class);
 
 	// todo: externalize as properties?
 	private static final String PUBLIC_KEY_VERIFICATION_LINK = "https://www.gstatic.com/iap/verify/public_key-jwk";
@@ -47,6 +47,7 @@ public class IapAuthenticationAutoConfiguration {
 	// TODO: differentiate based on either AppEngine or ComputeEngine
 
 	@Bean
+	@ConditionalOnMissingBean
 	public JwtTokenVerifier jwtTokenVerifier() {
 
 		URL registryUrl = null;
@@ -57,17 +58,41 @@ public class IapAuthenticationAutoConfiguration {
 			throw new BeanInstantiationException(JwtTokenVerifier.class, "Invalid JWK URL", e);
 		}
 
-		return new DefaultJwtTokenVerifier(registryUrl);
+		return new JwtTokenVerifier(registryUrl);
 	}
 
 	@Bean
-	public IapAuthenticationFilter iapAuthenticationFilter() {
-		IapAuthenticationFilter filter = new IapAuthenticationFilter(jwtTokenVerifier());
-
+	@ConditionalOnMissingBean
+	public PreAuthenticatedAuthenticationProvider preAuthenticatedAuthenticationProvider(
+			AuthenticationUserDetailsService userDetailsService) {
 		PreAuthenticatedAuthenticationProvider provider = new PreAuthenticatedAuthenticationProvider();
-		provider.setPreAuthenticatedUserDetailsService(new PreAuthenticatedGrantedAuthoritiesUserDetailsService());
-		filter.setAuthenticationManager(new ProviderManager(Collections.singletonList(provider)));
-		filter.setAuthenticationDetailsSource(new IapAuthenticationDetailsSource());
-		return filter;
+		provider.setPreAuthenticatedUserDetailsService(userDetailsService);
+
+		return provider;
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public PreAuthenticatedGrantedAuthoritiesUserDetailsService preAuthenticatedUserDetailsService() {
+		return new PreAuthenticatedGrantedAuthoritiesUserDetailsService();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public ProviderManager preAuthenticatedAuthenticationManager(PreAuthenticatedAuthenticationProvider provider) {
+		return new ProviderManager(Collections.singletonList(provider));
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public IapAuthenticationDetailsSource iapAuthenticationDetailsSource() {
+		return new IapAuthenticationDetailsSource();
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public IapAuthenticationFilter iapAuthenticationFilter(JwtTokenVerifier tokenVerifier,
+			ProviderManager authenticationManager, AuthenticationDetailsSource detailsSource) {
+		return new IapAuthenticationFilter(tokenVerifier, authenticationManager, detailsSource);
 	}
 }

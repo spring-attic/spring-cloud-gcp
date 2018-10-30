@@ -1,0 +1,2 @@
+org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer=\
+org.springframework.cloud.gcp.security.iap.IapHttpConfigurer

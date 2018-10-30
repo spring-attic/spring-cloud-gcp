@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.cloud.gcp.security.iap.IapAuthentication;
-import org.springframework.cloud.gcp.security.iap.jwt.DefaultJwtTokenVerifier;
 import org.springframework.cloud.gcp.security.iap.jwt.JwtTokenVerifier;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -43,7 +42,7 @@ public class VerifyIapRequestHeaderTest {
 		+ "k2MTY4MjcsImhkIjoiZ29vZ2xlLmNvbSJ9.dGPlQIcJo--9H1vwY73lHvAK2rPleHltPXUADFvlbC7vZtoLRtPcRc0w0xPvaVpdf8lY7U7iZ"
 		+ "TQySuUw7gJj9w";
 
-		JwtTokenVerifier verifier = new DefaultJwtTokenVerifier(new URL(PUBLIC_KEY_VERIFICATION_LINK));
+		JwtTokenVerifier verifier = new JwtTokenVerifier(new URL(PUBLIC_KEY_VERIFICATION_LINK));
 		IapAuthentication verified = verifier.verifyAndExtractPrincipal(token);
 
 		System.out.println("VERIFIED? " + verified);
