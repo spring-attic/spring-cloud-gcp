@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -94,9 +95,21 @@ public class DatastoreTemplateTests {
 
 	private ChildEntity childEntity3;
 
+	private ChildEntity childEntity4;
+
+	private ChildEntity childEntity5;
+
+	private ChildEntity childEntity6;
+
 	private Key childKey2;
 
 	private Key childKey3;
+
+	private Key childKey4;
+
+	private Key childKey5;
+
+	private Key childKey6;
 
 	private Key createFakeKey(String val) {
 		return new KeyFactory("project").setKind("custom_test_kind").newKey(val);
@@ -179,6 +192,16 @@ public class DatastoreTemplateTests {
 		this.childEntity3 = new ChildEntity();
 		this.ob1.childEntities.add(this.childEntity3);
 
+		this.childEntity4 = new ChildEntity();
+		this.ob1.singularReference = this.childEntity4;
+
+		this.ob1.multipleReference = new LinkedList<>();
+		this.childEntity5 = new ChildEntity();
+		this.ob1.multipleReference.add(this.childEntity5);
+
+		this.childEntity6 = new ChildEntity();
+		this.ob1.multipleReference.add(this.childEntity6);
+
 
 		// mocked query results for entities and child entities.
 		QueryResults childTestEntityQueryResults = mock(QueryResults.class);
@@ -251,6 +274,21 @@ public class DatastoreTemplateTests {
 		this.childKey3 = createFakeKey("child_id3");
 		when(this.objectToKeyFactory.allocateKeyForObject(same(this.childEntity3), any(), eq(this.key1)))
 				.thenReturn(this.childKey3);
+		this.childKey4 = createFakeKey("child_id4");
+		when(this.objectToKeyFactory.allocateKeyForObject(same(this.childEntity4), any(), any()))
+				.thenReturn(this.childKey4);
+		when(this.objectToKeyFactory.getKeyFromObject(same(this.childEntity4), any()))
+				.thenReturn(this.childKey4);
+		this.childKey5 = createFakeKey("child_id5");
+		when(this.objectToKeyFactory.allocateKeyForObject(same(this.childEntity5), any(), any()))
+				.thenReturn(this.childKey5);
+		when(this.objectToKeyFactory.getKeyFromObject(same(this.childEntity5), any()))
+				.thenReturn(this.childKey5);
+		this.childKey6 = createFakeKey("child_id6");
+		when(this.objectToKeyFactory.allocateKeyForObject(same(this.childEntity6), any(), any()))
+				.thenReturn(this.childKey6);
+		when(this.objectToKeyFactory.getKeyFromObject(same(this.childEntity6), any()))
+				.thenReturn(this.childKey6);
 	}
 
 	@Test
@@ -270,7 +308,7 @@ public class DatastoreTemplateTests {
 
 		String finalResult = this.datastoreTemplate
 				.performTransaction(datastoreOperations -> {
-					datastoreOperations.save(this.ob1);
+					datastoreOperations.save(this.ob2);
 					datastoreOperations.findById("ignored", TestEntity.class);
 					return "all done";
 				});
@@ -317,16 +355,28 @@ public class DatastoreTemplateTests {
 		when(this.datastore.put((FullEntity<?>) any())).thenReturn(this.e1);
 		assertTrue(this.datastoreTemplate.save(this.ob1) instanceof TestEntity);
 
-		Entity writtenEntity = Entity.newBuilder(this.key1).build();
+		Entity writtenEntity = Entity.newBuilder(this.key1)
+				.set("singularReference", this.childKey4)
+				.set("multipleReference", Arrays.asList(KeyValue.of(this.childKey5), KeyValue.of(this.childKey6)))
+				.build();
 		verify(this.datastore, times(1)).put(eq(writtenEntity));
+
+		Entity writtenChildEntity4 = Entity.newBuilder(this.childKey4).build();
+		verify(this.datastore, times(1)).put(eq(writtenChildEntity4));
 
 		Entity writtenChildEntity2 = Entity.newBuilder(this.childKey2).build();
 		Entity writtenChildEntity3 = Entity.newBuilder(this.childKey3).build();
+		Entity writtenChildEntity5 = Entity.newBuilder(this.childKey5).build();
+		Entity writtenChildEntity6 = Entity.newBuilder(this.childKey6).build();
 		verify(this.datastore, times(1)).put(eq(writtenChildEntity2), eq(writtenChildEntity3));
+		verify(this.datastore, times(1)).put(eq(writtenChildEntity5), eq(writtenChildEntity6));
 
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity2), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity3), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity4), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity5), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity6), notNull());
 	}
 
 
@@ -339,9 +389,12 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void saveTestNullDescendants() {
+	public void saveTestNullDescendantsAndReferences() {
 		//making sure save works when descendants are null
 		assertNull(this.ob2.childEntities);
+		assertNull(this.ob2.singularReference);
+		assertNull(this.ob2.multipleReference);
+
 		this.datastoreTemplate.save(this.ob2);
 	}
 
@@ -374,7 +427,10 @@ public class DatastoreTemplateTests {
 				.thenReturn(this.key1);
 		when(this.datastore.put((FullEntity<?>) any())).thenReturn(this.e1);
 		assertTrue(this.datastoreTemplate.save(this.ob1) instanceof TestEntity);
-		Entity writtenEntity1 = Entity.newBuilder(this.key1).build();
+		Entity writtenEntity1 = Entity.newBuilder(this.key1)
+				.set("singularReference", this.childKey4)
+				.set("multipleReference", Arrays.asList(KeyValue.of(this.childKey5), KeyValue.of(this.childKey6)))
+				.build();
 		verify(this.datastore, times(1)).put(eq(writtenEntity1));
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
 	}
@@ -390,7 +446,10 @@ public class DatastoreTemplateTests {
 				.thenReturn(ImmutableList.of(this.e1, this.e2));
 
 		this.datastoreTemplate.saveAll(ImmutableList.of(this.ob1, this.ob2));
-		Entity writtenEntity1 = Entity.newBuilder(this.key1).build();
+		Entity writtenEntity1 = Entity.newBuilder(this.key1)
+				.set("singularReference", this.childKey4)
+				.set("multipleReference", Arrays.asList(KeyValue.of(this.childKey5), KeyValue.of(this.childKey6)))
+				.build();
 		Entity writtenEntity2 = Entity.newBuilder(this.key2).build();
 		verify(this.datastore, times(1)).put(eq(writtenEntity1), eq(writtenEntity2));
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
@@ -400,8 +459,20 @@ public class DatastoreTemplateTests {
 		Entity writtenChildEntity3 = Entity.newBuilder(this.childKey3).build();
 		verify(this.datastore, times(1)).put(eq(writtenChildEntity2), eq(writtenChildEntity3));
 
+		Entity writtenChildEntity4 = Entity.newBuilder(this.childKey4).build();
+		verify(this.datastore, times(1)).put(eq(writtenChildEntity4));
+
+
+		Entity writtenChildEntity5 = Entity.newBuilder(this.childKey5).build();
+		Entity writtenChildEntity6 = Entity.newBuilder(this.childKey6).build();
+		verify(this.datastore, times(1)).put(eq(writtenChildEntity2), eq(writtenChildEntity3));
+		verify(this.datastore, times(1)).put(eq(writtenChildEntity5), eq(writtenChildEntity6));
+
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity2), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity3), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity4), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity5), notNull());
+		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity6), notNull());
 	}
 
 	@Test

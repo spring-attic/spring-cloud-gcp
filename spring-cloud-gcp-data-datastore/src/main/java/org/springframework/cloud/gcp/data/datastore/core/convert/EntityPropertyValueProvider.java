@@ -49,14 +49,16 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 
 	@Override
 	public <T> T getPropertyValue(DatastorePersistentProperty persistentProperty) {
+		if (!persistentProperty.isColumnBacked()) {
+			return null;
+		}
 		return getPropertyValue(persistentProperty.getFieldName(),
 				persistentProperty.getEmbeddedType(),
 				persistentProperty.getTypeInformation());
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T> T getPropertyValue(String fieldName, EmbeddedType embeddedType,
-			TypeInformation targetTypeInformation) {
+	public <T> T getPropertyValue(String fieldName, EmbeddedType embeddedType, TypeInformation targetTypeInformation) {
 		if (!this.entity.contains(fieldName)) {
 			return null;
 		}

@@ -51,7 +51,7 @@ public interface DatastorePersistentProperty
 
 	/**
 	 * True if the property should be excluded from indexes
-	 * @return true if if the property should be indexed
+	 * @return true if the property should be indexed
 	 */
 	boolean isUnindexed();
 
@@ -61,4 +61,10 @@ public interface DatastorePersistentProperty
 	 * @return the embedded type.
 	 */
 	EmbeddedType getEmbeddedType();
+
+	/**
+	 * True if the property is stored within Datastore entity
+	 * @return true if the property is stored within Datastore entity
+	 */
+	boolean isColumnBacked();
 }
