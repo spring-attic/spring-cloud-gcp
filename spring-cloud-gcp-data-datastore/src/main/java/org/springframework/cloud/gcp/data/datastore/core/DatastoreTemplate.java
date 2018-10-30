@@ -48,6 +48,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -56,7 +57,6 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.TypeUtils;
 
 /**
@@ -289,12 +289,9 @@ public class DatastoreTemplate implements DatastoreOperations {
 			}
 			Value<?> value;
 			if (persistentProperty.isCollectionLike()) {
-				if (val.getClass().isArray() && val.getClass() != byte[].class) {
-					//if a property is an array, convert it to list
-					val = CollectionUtils.arrayToList(val);
-				}
-				saveAll((Iterable<?>) val);
-				List<KeyValue> keyValues = StreamSupport.stream(((Iterable<?>) val).spliterator(), false)
+				Iterable<?> iterableVal = (Iterable<?>) ValueUtil.toIterableIfArray(val);
+				saveAll(iterableVal);
+				List<KeyValue> keyValues = StreamSupport.stream((iterableVal).spliterator(), false)
 						.map(o -> KeyValue.of(this.getKey(o, false)))
 						.collect(Collectors.toList());
 				value = ListValue.of(keyValues);
@@ -319,11 +316,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 					if (val != null) {
 						//we can be sure that the property is an array or an iterable,
 						//because we check it in isDescendant
-						if (val.getClass().isArray() && val.getClass() != byte[].class) {
-							//if a property is an array, convert it to list
-							val = CollectionUtils.arrayToList(val);
-						}
-						saveAll((Iterable<?>) val, key);
+						saveAll((Iterable<?>) ValueUtil.toIterableIfArray(val), key);
 					}
 				});
 	}
