@@ -84,6 +84,7 @@ public class DatastoreRepositoryExample {
 				scottSmith.setBands(Arrays.asList(band3, band2));
 				scottSmith.setPersonalInstruments(new HashSet<>(Arrays
 						.asList(new Instrument("triangle"), new Instrument("marimba"))));
+				this.singerRepository.save(scottSmith);
 				return null;
 			});
 

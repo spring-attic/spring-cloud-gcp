@@ -18,6 +18,7 @@ package com.example;
 
 import com.google.cloud.datastore.Key;
 
+import java.util.Objects;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
@@ -44,5 +45,22 @@ public class Instrument {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Instrument instrument = (Instrument) o;
+		return this.type.equals(instrument.type);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.type);
 	}
 }
