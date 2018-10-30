@@ -18,10 +18,12 @@ package com.example;
 
 import java.time.LocalDate;
 import java.util.Objects;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 
 /**
  * @author Dmitry Solomakha
  */
+@Entity
 public class Album {
 	final private String albumName;
 

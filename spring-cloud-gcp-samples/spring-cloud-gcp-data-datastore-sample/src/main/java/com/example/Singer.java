@@ -16,12 +16,16 @@
 
 package com.example;
 
+import java.util.List;
 import java.util.Objects;
 
 import com.google.common.collect.ImmutableSet;
 
+import java.util.Set;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Reference;
 import org.springframework.data.annotation.Id;
 
 /**
@@ -40,6 +44,15 @@ public class Singer {
 
 	@Field(name = "last_name")
 	private String lastName;
+
+	@Reference
+	private Band firstBand;
+
+	@Reference
+	private List<Band> bands;
+
+	@Descendants
+	private Set<Instrument> personalInstruments;
 
 	private ImmutableSet<Album> albums;
 
@@ -63,6 +76,50 @@ public class Singer {
 
 	public String getLastName() {
 		return this.lastName;
+	}
+
+	public void setSingerId(String singerId) {
+		this.singerId = singerId;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public Band getFirstBand() {
+		return this.firstBand;
+	}
+
+	public void setFirstBand(Band firstBand) {
+		this.firstBand = firstBand;
+	}
+
+	public List<Band> getBands() {
+		return this.bands;
+	}
+
+	public void setBands(List<Band> bands) {
+		this.bands = bands;
+	}
+
+	public Set<Instrument> getPersonalInstruments() {
+		return this.personalInstruments;
+	}
+
+	public void setPersonalInstruments(Set<Instrument> personalInstruments) {
+		this.personalInstruments = personalInstruments;
+	}
+
+	public ImmutableSet<Album> getAlbums() {
+		return this.albums;
+	}
+
+	public void setAlbums(ImmutableSet<Album> albums) {
+		this.albums = albums;
 	}
 
 	@Override
