@@ -265,7 +265,7 @@ Embedded objects can be stored in the values of embedded Maps.
 Collections of embedded objects can also be stored as the values of embedded Maps.
 
 
-==== Relationships
+==== Implicit Ancestor/Descendant Relationships
 
 Parent-child relationships are supported via the `@Descendants` annotation.
 
@@ -295,6 +295,8 @@ public class Item {
 ----
 
 The parent-child relationship structure of objects is stored in Cloud Datastore using Datastore's https://cloud.google.com/datastore/docs/concepts/entities#ancestor_paths[ancestor relationships].
+Because the relationships are defined by the Ancestor mechanism, there is no extra column needed in either the parent or child entity to store this relationship.
+The relationship link is part of the descendant entity's key value.
 These relationships can be many levels deep.
 
 Properties holding child entities must be collection-like, but they can be any of the supported inter-convertible collection-like types that are supported for regular properties such as `List`, arrays, `Set`, etc...
@@ -307,6 +309,47 @@ The ordering of the retrieved children may not be the same as the ordering in th
 Child entities cannot be moved from the property of one parent to that of another unless the child's key property is set to `null` or a value that contains the new parent as an ancestor.
 Since Cloud Datastore entity keys can have multiple parents, it is possible that a child entity appears in the property of multiple parent entities.
 Because entity keys are immutable in Cloud Datastore, to change the key of a child you must delete the existing one and re-save it with the new key.
+
+
+==== Explicit Key-Column Reference Relationships
+
+General relationships can be stored using the `@Reference` annotation.
+
+[source, java]
+----
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Reference;
+import org.springframework.data.annotation.Id;
+
+@Entity
+public class ShoppingOrder {
+  @Id
+  long id;
+
+  @Reference
+  List<Item> items;
+
+  @Reference
+  Item specialSingleItem;
+}
+
+@Entity
+public class Item {
+  @Id
+  Key purchasedItemKey;
+
+  String name;
+
+  Timestamp timeAddedToOrder;
+}
+----
+
+Reference properties can either be singular or collection-like.
+These properties correspond to actual columns in the entity and Cloud Datastore Kind that hold the key values of the referenced entities.
+The referenced entities are full-fledged entities of other Kinds.
+
+Similar to the `@Descendants` relationships, reading or writing an entity will recursively read or write all of the referenced entities at all levels.
+If referenced entities have `null` ID values, then they will be saved as new entities and will have ID values allocated by Cloud Datastore.
+There are no requirements for relationships between the key of an entity and the keys that entity holds as references.
 
 
 ==== Supported Types
