@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.ImmutableSet;
 import org.apache.logging.log4j.util.Strings;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
@@ -56,13 +55,12 @@ public class Singer {
 	@Descendants
 	private Set<Instrument> personalInstruments;
 
-	private ImmutableSet<Album> albums;
+	private Set<Album> albums;
 
 	public Singer() {
 	}
 
-	public Singer(String id, String firstName, String lastName,
-			ImmutableSet<Album> albums) {
+	public Singer(String id, String firstName, String lastName, Set<Album> albums) {
 		this.singerId = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
@@ -117,11 +115,11 @@ public class Singer {
 		this.personalInstruments = personalInstruments;
 	}
 
-	public ImmutableSet<Album> getAlbums() {
+	public Set<Album> getAlbums() {
 		return this.albums;
 	}
 
-	public void setAlbums(ImmutableSet<Album> albums) {
+	public void setAlbums(Set<Album> albums) {
 		this.albums = albums;
 	}
 
@@ -150,11 +148,13 @@ public class Singer {
 		return "Singer{" + "singerId='" + this.singerId + '\'' + ", firstName='"
 				+ this.firstName + '\'' + ", lastName='" + this.lastName + '\''
 				+ ", albums=" + this.albums + ", firstBand=" + this.firstBand + ", bands="
-				+ (this.bands == null ? "" : Strings.join(this.bands.stream().map(x -> x.getName())
-						.collect(Collectors.toList()), ','))
-				+ ", personalInstruments=" + (this.personalInstruments == null ? "" :
-				Strings.join(this.personalInstruments
-						.stream().map(x -> x.getType()).collect(Collectors.toList()), ','))
+				+ (this.bands == null ? ""
+						: Strings.join(this.bands.stream().map(x -> x.getName())
+								.collect(Collectors.toList()), ','))
+				+ ", personalInstruments="
+				+ (this.personalInstruments == null ? ""
+						: Strings.join(this.personalInstruments.stream()
+								.map(x -> x.getType()).collect(Collectors.toList()), ','))
 				+ '}';
 	}
 }

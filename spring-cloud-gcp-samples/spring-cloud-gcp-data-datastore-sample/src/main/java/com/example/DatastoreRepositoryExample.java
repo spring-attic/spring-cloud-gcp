@@ -104,7 +104,7 @@ public class DatastoreRepositoryExample {
 			// / family is strongly consistent.
 			this.singerRepository
 					.findAllById(ImmutableList.of("singer1", "singer2", "singer3"))
-					.forEach(System.out::println);
+					.forEach(x -> System.out.println("retrieved singer: " + x));
 
 			System.out.println("This concludes the sample.");
 
