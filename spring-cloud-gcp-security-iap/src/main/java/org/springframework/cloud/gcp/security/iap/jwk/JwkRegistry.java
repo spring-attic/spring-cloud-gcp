@@ -35,7 +35,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * https://tools.ietf.org/html/rfc7517#section-8.1.2
+ * Cached registry implementation.
+ * If key not found, attempts to re-download JWK registry, at most once per minute.
+ *
+ * Registry format: https://tools.ietf.org/html/rfc7517#section-8.1.2
  */
 public class JwkRegistry {
 
@@ -50,9 +53,7 @@ public class JwkRegistry {
 
 	private Map<String, JWK> keyCache = new HashMap<>();
 
-
 	private long lastJwkStoreDownloadTimestamp;
-
 
 	public JwkRegistry(URL verificationUrl) {
 		this.publicKeyVerificationUrl = verificationUrl;

@@ -29,13 +29,10 @@ public class ExpirationTimeInFutureClaimVerifier extends TimeBasedClaimVerifier 
 	@Override
 	public boolean verify(JWTClaimsSet claims) {
 		Date currentTime = Date.from(Instant.now(this.getClock()));
-		LOGGER.info(String.format("Token expires at at %s; current time %s", claims.getExpirationTime(), currentTime));
 		if (!claims.getExpirationTime().after(currentTime)) {
 			LOGGER.warn("Token expiration claim failed.");
 			return false;
 		}
 		return true;
 	}
-
-
 }

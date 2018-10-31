@@ -43,9 +43,9 @@ public class IapAuthenticationFilter extends AbstractPreAuthenticatedProcessingF
 	}
 
 	@Override
-	protected Object getPreAuthenticatedPrincipal(HttpServletRequest request) {
+	protected IapAuthentication getPreAuthenticatedPrincipal(HttpServletRequest request) {
 		String assertion = request.getHeader(HEADER_NAME);
-		Authentication authentication = null;
+		IapAuthentication authentication = null;
 
 		if (assertion != null) {
 			authentication = this.verifyIapRequestHeader.verifyAndExtractPrincipal(assertion);

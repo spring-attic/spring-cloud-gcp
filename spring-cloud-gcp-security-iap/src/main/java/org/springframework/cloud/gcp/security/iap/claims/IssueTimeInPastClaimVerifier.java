@@ -29,7 +29,6 @@ public class IssueTimeInPastClaimVerifier extends TimeBasedClaimVerifier {
 	@Override
 	public boolean verify(JWTClaimsSet claims) {
 		Date currentTime = Date.from(Instant.now(this.getClock()));
-		LOGGER.info(String.format("Token issued at %s; current time %s", claims.getIssueTime(), currentTime));
 		if (!claims.getIssueTime().before(currentTime)) {
 			LOGGER.warn("Issue time claim verification failed.");
 			return false;

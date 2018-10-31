@@ -50,6 +50,9 @@ public class JwtTokenVerifier {
 		this.claimVerifier = claimVerifier;
 	}
 
+	/**
+	 * Builds up a default verifier assuming ECDSA signed key, plus common-sense claims checks.
+	 */
 	public JwtTokenVerifier(URL jwkRegistryUrl) {
 		this(new JwtECSignatureVerifier(jwkRegistryUrl),
 				new CompositeClaimVerifier(
@@ -59,6 +62,10 @@ public class JwtTokenVerifier {
 						new IssuerClaimVerifier()));
 	}
 
+	/**
+	 * Returns IapAuthentication principal object if token verification succeeds.
+	 * Returns null if any signature or claim verification fails.
+	 */
 	public IapAuthentication verifyAndExtractPrincipal(String jwtToken) {
 		if (jwtToken == null) {
 			LOGGER.warn("Jwt token verification requested, yet no token passed in; not authenticating");
