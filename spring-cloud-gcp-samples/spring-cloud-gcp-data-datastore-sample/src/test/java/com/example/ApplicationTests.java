@@ -66,11 +66,16 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(classes = {
 		DatastoreRepositoryExample.class }, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ApplicationTests {
+
 	private static PrintStream systemOut;
+
 	private static ByteArrayOutputStream baos;
+
 	final ObjectMapper mapper = new ObjectMapper();
+
 	@Autowired
 	private TestRestTemplate restTemplate;
+
 	@Autowired
 	private CommandLineRunner commandLineRunner;
 
