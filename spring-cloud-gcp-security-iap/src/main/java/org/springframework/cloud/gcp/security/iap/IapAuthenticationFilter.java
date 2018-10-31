@@ -24,7 +24,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.gcp.security.iap.jwt.JwtTokenVerifier;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 
 public class IapAuthenticationFilter extends AbstractPreAuthenticatedProcessingFilter {
