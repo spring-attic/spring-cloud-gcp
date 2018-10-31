@@ -24,15 +24,20 @@ import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails;
 
+/**
+ * Associates a pre-authenticated user account with a single role, "USER".
+ * All other request details are extracted by
+ * {@link org.springframework.security.web.authentication.WebAuthenticationDetails} superclass.
+ */
 public class IapAuthenticationDetailsSource implements AuthenticationDetailsSource<HttpServletRequest,
 		PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails> {
+	private static final String DEFAULT_ROLE = "ROLE_USER";
+
 	@Override
 	public PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails buildDetails(HttpServletRequest request) {
-		// todo: instanceof
-		// todo: is there a way to not duplicate authorities creation?
+
 		return new PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails(
 				request,
-				Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-		//((IapAuthentication)SecurityContextHolder.getContext().getAuthentication()).getGrantedAuthorities()
+				Collections.singletonList(new SimpleGrantedAuthority(DEFAULT_ROLE)));
 	}
 }

@@ -16,45 +16,25 @@
 
 package org.springframework.cloud.gcp.security.iap;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.GrantedAuthoritiesContainer;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
-public final class IapAuthentication extends PreAuthenticatedAuthenticationToken
-	implements GrantedAuthoritiesContainer {
-	private static final Log LOGGER = LogFactory.getLog(IapAuthentication.class);
-
-	public static final String DEFAULT_ROLE = "ROLE_USER";
-
-	@Override
-	public Collection<? extends GrantedAuthority> getGrantedAuthorities() {
-		LOGGER.info("IapAuthentication getGrantedAuthorities() called; returning authorities container.");
-
-		return super.getAuthorities();
-	}
+/**
+ * Null authorities are passed to the superclass, as there are no inherent authorities bestowed by IAP
+ * pre-authentication. The roles are instead determined in a provided implementation of
+ * {@link org.springframework.security.authentication.AuthenticationDetailsSource}
+ *
+ * TODO: enhance this object with additional claims available in the JWT token.
+ */
+public final class IapAuthentication extends PreAuthenticatedAuthenticationToken {
 
 	private final String subject;
 
 	public IapAuthentication(String email, String subject, String jwtToken) {
-		super(email, jwtToken, Collections.singletonList(new SimpleGrantedAuthority(DEFAULT_ROLE)));
+		super(email, jwtToken);
 		this.subject = subject;
 	}
 
-	@Override
-	public Object getDetails() {
-		LOGGER.info("IapAuthentication getDetails() called; returning authorities container.");
-		return new GrantedAuthoritiesContainer() {
-			@Override
-			public Collection<? extends GrantedAuthority> getGrantedAuthorities() {
-				return IapAuthentication.this.getAuthorities();
-			}
-		};
+	public String getSubject() {
+		return this.subject;
 	}
 }

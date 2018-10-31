@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.gcp.security.iap.IapAuthentication;
 import org.springframework.cloud.gcp.security.iap.claims.ClaimVerifier;
 import org.springframework.cloud.gcp.security.iap.claims.CompositeClaimVerifier;
+import org.springframework.cloud.gcp.security.iap.claims.ExpirationTimeInFutureClaimVerifier;
 import org.springframework.cloud.gcp.security.iap.claims.IssueTimeInPastClaimVerifier;
 import org.springframework.cloud.gcp.security.iap.claims.IssuerClaimVerifier;
 import org.springframework.cloud.gcp.security.iap.claims.RequiredFieldsClaimVerifier;
@@ -54,8 +55,7 @@ public class JwtTokenVerifier {
 				new CompositeClaimVerifier(
 						new RequiredFieldsClaimVerifier(),
 						new IssueTimeInPastClaimVerifier(),
-						// TODO: uncomment; commented out for local testing
-						// new ExpirationTimeInFutureClaimVerifier()
+						new ExpirationTimeInFutureClaimVerifier(),
 						new IssuerClaimVerifier()));
 	}
 
@@ -72,13 +72,9 @@ public class JwtTokenVerifier {
 			JWTClaimsSet claims = extractClaims(signedJwt);
 			String email = extractClaimValue(claims, "email");
 
-			LOGGER.info("******************* about to verify: " + this.claimVerifier);
-
 			if (claims != null && email != null && this.claimVerifier.verify(claims)) {
 				authentication = new IapAuthentication(email, claims.getSubject(), jwtToken);
 			}
-			LOGGER.info("******************* after verifying: " + this.claimVerifier);
-
 		}
 		else {
 			LOGGER.warn("Jwt public key verification failed; not authenticating");

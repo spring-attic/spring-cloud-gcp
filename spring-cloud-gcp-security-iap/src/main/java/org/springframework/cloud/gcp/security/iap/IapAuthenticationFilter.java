@@ -51,14 +51,11 @@ public class IapAuthenticationFilter extends AbstractPreAuthenticatedProcessingF
 			authentication = this.verifyIapRequestHeader.verifyAndExtractPrincipal(assertion);
 		}
 
-		// TODO: move actual authentication into user details source; return string principal from here
-		LOGGER.info("IapAuthenticationFilter returning an authentication: " + authentication);
-
 		return authentication;
 	}
 
 	@Override
 	protected Object getPreAuthenticatedCredentials(HttpServletRequest request) {
-		return request.getHeader("x-goog-iap-jwt-assertion");
+		return request.getHeader(HEADER_NAME);
 	}
 }
