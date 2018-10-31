@@ -18,16 +18,12 @@ package org.springframework.cloud.gcp.security.iap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.springframework.cloud.gcp.security.iap.jwt.JwtTokenVerifier;
 import org.springframework.security.authentication.AuthenticationDetailsSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 
 public class IapAuthenticationFilter extends AbstractPreAuthenticatedProcessingFilter {
-	private static final Log LOGGER = LogFactory.getLog(IapAuthenticationFilter.class);
 
 	public static final String HEADER_NAME = "x-goog-iap-jwt-assertion";
 
@@ -35,7 +31,7 @@ public class IapAuthenticationFilter extends AbstractPreAuthenticatedProcessingF
 
 	public IapAuthenticationFilter(JwtTokenVerifier verifyIapRequestHeader,
 									AuthenticationManager authenticationManager,
-									AuthenticationDetailsSource detailsSource) {
+									AuthenticationDetailsSource<HttpServletRequest, ?> detailsSource) {
 		this.verifyIapRequestHeader = verifyIapRequestHeader;
 		setAuthenticationManager(authenticationManager);
 		setAuthenticationDetailsSource(detailsSource);

@@ -98,7 +98,7 @@ public class JwkRegistry {
 				LOGGER.warn("Downloading JWK keys failed.", e);
 				return null;
 			}
-			keyCache = jwkSet.getKeys().stream().collect(Collectors.toMap(key -> key.getKeyID(), Function.identity()));
+			keyCache = jwkSet.getKeys().stream().collect(Collectors.toMap(JWK::getKeyID, Function.identity()));
 		}
 
 		return keyCache.get(kid);

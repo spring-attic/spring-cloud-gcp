@@ -91,6 +91,10 @@ public class JwtTokenVerifier {
 	}
 
 	private String extractClaimValue(JWTClaimsSet claims, String propertyName) {
+		if (claims == null) {
+			return null;
+		}
+
 		try {
 			return claims.getStringClaim(propertyName);
 		}
