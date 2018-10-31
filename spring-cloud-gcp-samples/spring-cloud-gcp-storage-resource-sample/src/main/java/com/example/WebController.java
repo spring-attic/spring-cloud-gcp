@@ -34,11 +34,12 @@ import org.springframework.web.bind.annotation.RestController;
  * accessed using the Spring Resource Abstraction.
  *
  * @author Mike Eltsufin
+ * @author Daniel Zou
  */
 @RestController
 public class WebController {
 
-	@Value("gs://REPLACE_WITH_YOUR_BUCKET/my-file.txt")
+	@Value("gs://${gcs-resource-test-bucket}/my-file.txt")
 	private Resource gcsFile;
 
 	@RequestMapping(value = "/", method = RequestMethod.GET)

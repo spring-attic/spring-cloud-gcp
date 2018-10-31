@@ -77,7 +77,7 @@ public class GcsSpringIntegrationTests {
 	@BeforeClass
 	public static void checkToRun() {
 		assumeThat(
-				"Spanner Google Cloud Storage integration tests are disabled. "
+				"Google Cloud Storage integration tests are disabled. "
 						+ "Please use '-Dit.storage=true' to enable them. ",
 				System.getProperty("it.storage"), is("true"));
 	}
@@ -97,7 +97,7 @@ public class GcsSpringIntegrationTests {
 	public void testFilePropagatedToLocalDirectory() {
 		BlobId blobId = BlobId.of(this.cloudInputBucket, TEST_FILE_NAME);
 		BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("text/plain").build();
-		Blob blob = this.storage.create(blobInfo, "Hello World!".getBytes(StandardCharsets.UTF_8));
+		this.storage.create(blobInfo, "Hello World!".getBytes(StandardCharsets.UTF_8));
 
 		Awaitility.await().atMost(15, TimeUnit.SECONDS)
 				.untilAsserted(() -> {

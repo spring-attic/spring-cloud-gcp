@@ -28,6 +28,7 @@ before_install:
             -Dspring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testmysql
             -Dspring.cloud.gcp.sql.database-name=code_samples_test_db
             -Dspring.datasource.password=test
+            -Dgcs-resource-test-bucket=gcp-storage-resource-bucket-sample
             -Dgcs-read-bucket=gcp-storage-bucket-sample-input
             -Dgcs-write-bucket=gcp-storage-bucket-sample-output
             -Dgcs-local-directory=/tmp/gcp_integration_tests/integration_storage_sample";
