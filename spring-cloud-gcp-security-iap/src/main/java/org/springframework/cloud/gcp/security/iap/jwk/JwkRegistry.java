@@ -60,7 +60,7 @@ public class JwkRegistry {
 	}
 
 	public ECPublicKey getPublicKey(String kid, String alg) {
-		JWK jwk = keyCache.get(kid);
+		JWK jwk = this.keyCache.get(kid);
 		if (jwk == null) {
 			jwk = downloadJwkKeysIfCacheNotFresh(kid);
 		}
@@ -91,17 +91,17 @@ public class JwkRegistry {
 			JWKSet jwkSet = null;
 			try {
 				LOGGER.info("Re-downloading JWK cache.");
-				jwkSet = JWKSet.load(publicKeyVerificationUrl);
+				jwkSet = JWKSet.load(this.publicKeyVerificationUrl);
 				this.lastJwkStoreDownloadTimestamp = this.clock.millis();
 			}
 			catch (IOException | ParseException e) {
 				LOGGER.warn("Downloading JWK keys failed.", e);
 				return null;
 			}
-			keyCache = jwkSet.getKeys().stream().collect(Collectors.toMap(JWK::getKeyID, Function.identity()));
+			this.keyCache = jwkSet.getKeys().stream().collect(Collectors.toMap(JWK::getKeyID, Function.identity()));
 		}
 
-		return keyCache.get(kid);
+		return this.keyCache.get(kid);
 	}
 
 	@VisibleForTesting

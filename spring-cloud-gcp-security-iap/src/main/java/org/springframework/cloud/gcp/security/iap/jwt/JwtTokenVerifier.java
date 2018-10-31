@@ -75,7 +75,7 @@ public class JwtTokenVerifier {
 		IapAuthentication authentication = null;
 		SignedJWT signedJwt = extractSignedToken(jwtToken);
 
-		if (jwtSignatureVerifier.validateJwt(signedJwt)) {
+		if (this.jwtSignatureVerifier.validateJwt(signedJwt)) {
 			JWTClaimsSet claims = extractClaims(signedJwt);
 			String email = extractClaimValue(claims, "email");
 
