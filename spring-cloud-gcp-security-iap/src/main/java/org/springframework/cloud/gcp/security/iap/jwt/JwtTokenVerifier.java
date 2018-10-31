@@ -50,7 +50,7 @@ public class JwtTokenVerifier {
 	}
 
 	public JwtTokenVerifier(URL jwkRegistryUrl) {
-		this(new JwtSignatureVerifier(jwkRegistryUrl),
+		this(new JwtECSignatureVerifier(jwkRegistryUrl),
 				new CompositeClaimVerifier(
 						new RequiredFieldsClaimVerifier(),
 						new IssueTimeInPastClaimVerifier(),
