@@ -45,6 +45,7 @@
 		<spring-cloud-stream.version>Fishtown.BUILD-SNAPSHOT</spring-cloud-stream.version>
 		<zipkin-gcp.version>0.8.3</zipkin-gcp.version>
 		<app-engine-maven-plugin.version>1.3.2</app-engine-maven-plugin.version>
+		<nimbus-jose-jwt.version>6.1.1</nimbus-jose-jwt.version>
 	</properties>
 
 	<dependencyManagement>
@@ -97,6 +98,12 @@
 				<groupId>io.zipkin.gcp</groupId>
 				<artifactId>brave-propagation-stackdriver</artifactId>
 				<version>${zipkin-gcp.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.nimbusds</groupId>
+				<artifactId>nimbus-jose-jwt</artifactId>
+				<version>${nimbus-jose-jwt.version}}</version>
 			</dependency>
 
 		</dependencies>

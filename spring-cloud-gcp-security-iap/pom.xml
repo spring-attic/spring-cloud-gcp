@@ -31,7 +31,6 @@
         <dependency>
             <groupId>com.nimbusds</groupId>
             <artifactId>nimbus-jose-jwt</artifactId>
-            <version>6.1.1</version>
         </dependency>
 
         <dependency>
