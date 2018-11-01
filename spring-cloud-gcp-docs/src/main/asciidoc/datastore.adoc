@@ -211,6 +211,7 @@ Spring Data Cloud Datastore supports the following types for regular fields and 
 | `com.google.cloud.datastore.Entity`|com.google.cloud.datastore.EntityValue
 | `com.google.cloud.datastore.Key`|com.google.cloud.datastore.KeyValue
 | `byte[]`|com.google.cloud.datastore.BlobValue
+| Java `enum` values|com.google.cloud.datastore.StringValue
 |===
 
 In addition, all types that can be converted to the ones listed in the table by
@@ -809,6 +810,7 @@ The following parameter types are supported:
 * `java.lang.Double`
 * `java.lang.Long`
 * `java.lang.String`
+* `enum` values. These are queried as `String` values.
 
 With the exception of `Cursor`, array forms of each of the types are also supported.
 
