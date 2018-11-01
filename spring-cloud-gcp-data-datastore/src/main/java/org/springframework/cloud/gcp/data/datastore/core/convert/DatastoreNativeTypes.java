@@ -46,6 +46,7 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  * A class to manage Datastore-specific simple type conversions.
  *
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  *
  * @since 1.1
  */
@@ -67,6 +68,7 @@ public abstract class DatastoreNativeTypes {
 				.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of)
 				.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of)
 				.put(String.class, (Function<String, Value<?>>) StringValue::of)
+				.put(Enum.class, (Function<Enum, Value<?>>) x -> StringValue.of(x.name()))
 				.put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of)
 				.put(Key.class, (Function<Key, Value<?>>) KeyValue::of)
 				.build();
@@ -98,11 +100,15 @@ public abstract class DatastoreNativeTypes {
 		if (propertyVal == null) {
 			return new NullValue();
 		}
-		Function wrapper = DatastoreNativeTypes.DATASTORE_TYPE_WRAPPERS.get(propertyVal.getClass());
+		Class propertyClass = propertyVal.getClass().isEnum() ? Enum.class
+				: propertyVal.getClass();
+		Function wrapper = DatastoreNativeTypes.DATASTORE_TYPE_WRAPPERS
+				.get(propertyClass);
 		if (wrapper != null) {
 			return (Value) wrapper.apply(propertyVal);
 		}
-		throw new DatastoreDataException("Unable to convert " + propertyVal.getClass()
+		throw new DatastoreDataException(
+				"Unable to convert " + propertyClass
 				+ " to Datastore supported type.");
 	}
 }

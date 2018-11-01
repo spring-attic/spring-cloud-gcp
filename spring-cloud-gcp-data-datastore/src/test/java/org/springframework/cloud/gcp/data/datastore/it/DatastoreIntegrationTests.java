@@ -33,9 +33,11 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
@@ -92,13 +94,13 @@ public class DatastoreIntegrationTests {
 	@Test
 	public void testSaveAndDeleteRepository() throws InterruptedException {
 
-		TestEntity testEntityA = new TestEntity(1L, "red", 1L, null);
+		TestEntity testEntityA = new TestEntity(1L, "red", 1L, Shape.CIRCLE, null);
 
-		TestEntity testEntityB = new TestEntity(2L, "blue", 1L, null);
+		TestEntity testEntityB = new TestEntity(2L, "blue", 1L, Shape.CIRCLE, null);
 
-		TestEntity testEntityC = new TestEntity(3L, "red", 1L, null);
+		TestEntity testEntityC = new TestEntity(3L, "red", 1L, Shape.CIRCLE, null);
 
-		TestEntity testEntityD = new TestEntity(4L, "red", 1L, null);
+		TestEntity testEntityD = new TestEntity(4L, "red", 1L, Shape.SQUARE, null);
 
 		List<TestEntity> allTestEntities = ImmutableList.of(testEntityA, testEntityB,
 				testEntityC, testEntityD);
@@ -107,6 +109,12 @@ public class DatastoreIntegrationTests {
 
 		long millisWaited = waitUntilTrue(
 				() -> this.testEntityRepository.countBySize(1L) == 4);
+
+		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
+				.map(x -> x.getId()).collect(Collectors.toList()), contains(4L));
+
+		assertThat(this.testEntityRepository.findByEnumQueryParam(Shape.SQUARE).stream()
+				.map(x -> x.getId()).collect(Collectors.toList()), contains(4L));
 
 		assertEquals(4, this.testEntityRepository.deleteBySize(1L));
 

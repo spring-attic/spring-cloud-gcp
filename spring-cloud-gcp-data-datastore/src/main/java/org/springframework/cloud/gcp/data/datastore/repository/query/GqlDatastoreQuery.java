@@ -64,6 +64,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				.<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>builder()
 				.put(Cursor.class, builder -> (s, o) -> builder.setBinding(s, (Cursor) o))
 				.put(String.class, builder -> (s, o) -> builder.setBinding(s, (String) o))
+				.put(Enum.class,
+						builder -> (s, o) -> builder.setBinding(s, ((Enum) o).name()))
 				.put(String[].class, builder -> (s, o) -> builder.setBinding(s, (String[]) o))
 				.put(Long.class, builder -> (s, o) -> builder.setBinding(s, (Long) o))
 				.put(long[].class, builder -> (s, o) -> builder.setBinding(s, (long[]) o))
@@ -235,13 +237,14 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 		for (int i = 0; i < tags.size(); i++) {
 			Object val = vals[i];
-			if (!GQL_PARAM_BINDING_FUNC_MAP.containsKey(val.getClass())) {
+			Class valClass = val.getClass().isEnum() ? Enum.class : val.getClass();
+			if (!GQL_PARAM_BINDING_FUNC_MAP.containsKey(valClass)) {
 				throw new DatastoreDataException(
 						"Param value for GQL annotated query is not a supported Cloud "
-								+ "Datastore GQL param type: " + val.getClass());
+								+ "Datastore GQL param type: " + valClass);
 			}
 			// this value must be set due to compiler rule
-			Object unusued = GQL_PARAM_BINDING_FUNC_MAP.get(val.getClass()).apply(builder)
+			Object unusued = GQL_PARAM_BINDING_FUNC_MAP.get(valClass).apply(builder)
 					.apply(tags.get(i), val);
 		}
 		return builder.build();
