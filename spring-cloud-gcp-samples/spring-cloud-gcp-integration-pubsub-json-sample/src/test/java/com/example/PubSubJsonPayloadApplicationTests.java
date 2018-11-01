@@ -16,12 +16,12 @@
 
 package com.example;
 
-import com.google.pubsub.v1.Subscription;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.pubsub.v1.Subscription;
+import org.awaitility.Duration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -71,22 +71,22 @@ public class PubSubJsonPayloadApplicationTests {
 
 	@Before
 	public void setupTestSubscription() {
-		testSubscriptionName = SUBSCRIPTION_NAME_PREFIX + UUID.randomUUID();
-		pubSubAdmin.createSubscription(testSubscriptionName, TOPIC_NAME);
+		this.testSubscriptionName = SUBSCRIPTION_NAME_PREFIX + UUID.randomUUID();
+		this.pubSubAdmin.createSubscription(this.testSubscriptionName, TOPIC_NAME);
 	}
 
 	@After
 	public void deleteTestSubscription() {
-		Subscription subscription = pubSubAdmin.getSubscription(testSubscriptionName);
+		Subscription subscription = this.pubSubAdmin.getSubscription(this.testSubscriptionName);
 		if (subscription != null) {
-			pubSubAdmin.deleteSubscription(testSubscriptionName);
+			this.pubSubAdmin.deleteSubscription(this.testSubscriptionName);
 		}
 	}
 
 	@Test
 	public void testReceivesJsonPayload() {
 		TestMessageConsumer messageConsumer = new TestMessageConsumer();
-		this.pubSubTemplate.subscribeAndConvert(testSubscriptionName, messageConsumer, Person.class);
+		this.pubSubTemplate.subscribeAndConvert(this.testSubscriptionName, messageConsumer, Person.class);
 
 		ImmutableMap<String, String> params = ImmutableMap.of(
 				"name", "Bob",
@@ -94,7 +94,7 @@ public class PubSubJsonPayloadApplicationTests {
 		this.testRestTemplate.postForObject(
 				"/createPerson?name={name}&age={age}", null, String.class, params);
 
-		await().atMost(10, TimeUnit.SECONDS).until(() -> messageConsumer.isMessageProcessed());
+		await().atMost(Duration.TEN_SECONDS).until(() -> messageConsumer.isMessageProcessed());
 	}
 
 	/**
