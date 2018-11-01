@@ -18,15 +18,18 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.BlobValue;
 import com.google.cloud.datastore.BooleanValue;
+import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.DoubleValue;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.EntityValue;
+import com.google.cloud.datastore.GqlQuery.Builder;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.LatLng;
@@ -58,6 +61,9 @@ public abstract class DatastoreNativeTypes {
 
 	private final static Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
 
+	private static final Map<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>
+			GQL_PARAM_BINDING_FUNC_MAP;
+
 	static {
 		//keys are used for type resolution, in order of insertion
 		DATASTORE_TYPE_WRAPPERS = ImmutableMap.<Class<?>, Function<?, Value<?>>>builder()
@@ -83,6 +89,33 @@ public abstract class DatastoreNativeTypes {
 				.add(String.class)
 				.add(Long.class)
 				.build();
+
+		GQL_PARAM_BINDING_FUNC_MAP = ImmutableMap
+				.<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>builder()
+				.put(Cursor.class, builder -> (s, o) -> builder.setBinding(s, (Cursor) o))
+				.put(String.class, builder -> (s, o) -> builder.setBinding(s, (String) o))
+				.put(Enum.class,
+						builder -> (s, o) -> builder.setBinding(s, ((Enum) o).name()))
+				.put(String[].class,
+						builder -> (s, o) -> builder.setBinding(s, (String[]) o))
+				.put(Long.class, builder -> (s, o) -> builder.setBinding(s, (Long) o))
+				.put(long[].class, builder -> (s, o) -> builder.setBinding(s, (long[]) o))
+				.put(Double.class, builder -> (s, o) -> builder.setBinding(s, (Double) o))
+				.put(double[].class,
+						builder -> (s, o) -> builder.setBinding(s, (double[]) o))
+				.put(Boolean.class,
+						builder -> (s, o) -> builder.setBinding(s, (Boolean) o))
+				.put(boolean[].class,
+						builder -> (s, o) -> builder.setBinding(s, (boolean[]) o))
+				.put(Timestamp.class,
+						builder -> (s, o) -> builder.setBinding(s, (Timestamp) o))
+				.put(Timestamp[].class,
+						builder -> (s, o) -> builder.setBinding(s, (Timestamp[]) o))
+				.put(Key.class, builder -> (s, o) -> builder.setBinding(s, (Key) o))
+				.put(Key[].class, builder -> (s, o) -> builder.setBinding(s, (Key[]) o))
+				.put(Blob.class, builder -> (s, o) -> builder.setBinding(s, (Blob) o))
+				.put(Blob[].class, builder -> (s, o) -> builder.setBinding(s, (Blob[]) o))
+				.build();
 	}
 
 	public final static SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_NATIVE_TYPES, true);
@@ -100,8 +133,7 @@ public abstract class DatastoreNativeTypes {
 		if (propertyVal == null) {
 			return new NullValue();
 		}
-		Class propertyClass = propertyVal.getClass().isEnum() ? Enum.class
-				: propertyVal.getClass();
+		Class propertyClass = getTypeForWrappingInDatastoreValue(propertyVal);
 		Function wrapper = DatastoreNativeTypes.DATASTORE_TYPE_WRAPPERS
 				.get(propertyClass);
 		if (wrapper != null) {
@@ -111,4 +143,28 @@ public abstract class DatastoreNativeTypes {
 				"Unable to convert " + propertyClass
 				+ " to Datastore supported type.");
 	}
+
+	/**
+	 * Bind a given tag and value to a GQL query builder.
+	 * @param builder the builder holding a GQL query that is being built.
+	 * @param tagName the name of the tag to bind.
+	 * @param val the value to bind to the tag.
+	 */
+	public static void bindValueToGqlBuilder(Builder builder, String tagName,
+			Object val) {
+		Class valClass = getTypeForWrappingInDatastoreValue(val);
+		if (!GQL_PARAM_BINDING_FUNC_MAP.containsKey(valClass)) {
+			throw new DatastoreDataException(
+					"Param value for GQL annotated query is not a supported Cloud "
+							+ "Datastore GQL param type: " + valClass);
+		}
+		// this value must be set due to compiler rule
+		Object unusued = GQL_PARAM_BINDING_FUNC_MAP.get(valClass).apply(builder)
+				.apply(tagName, val);
+	}
+
+	private static Class getTypeForWrappingInDatastoreValue(Object val) {
+		return val.getClass().isEnum() ? Enum.class : val.getClass();
+	}
+
 }
