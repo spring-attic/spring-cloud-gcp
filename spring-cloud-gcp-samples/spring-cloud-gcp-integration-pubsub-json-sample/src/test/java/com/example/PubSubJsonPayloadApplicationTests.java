@@ -16,10 +16,14 @@
 
 package com.example;
 
+import com.google.pubsub.v1.Subscription;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import com.google.common.collect.ImmutableMap;
-import org.awaitility.Duration;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -41,13 +46,20 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubJsonPayloadApplication.class })
 public class PubSubJsonPayloadApplicationTests {
 
-	private static final String SUBSCRIPTION_NAME = "json-payload-sample-subscription";
+	private static final String TOPIC_NAME = "json-payload-sample-topic";
+
+	private static final String SUBSCRIPTION_NAME_PREFIX = "json-payload-sample-subscription-test-";
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;
 
 	@Autowired
+	private PubSubAdmin pubSubAdmin;
+
+	@Autowired
 	private PubSubTemplate pubSubTemplate;
+
+	private String testSubscriptionName;
 
 	@BeforeClass
 	public static void prepare() {
@@ -57,10 +69,24 @@ public class PubSubJsonPayloadApplicationTests {
 				System.getProperty("it.pubsub"), is("true"));
 	}
 
+	@Before
+	public void setupTestSubscription() {
+		testSubscriptionName = SUBSCRIPTION_NAME_PREFIX + UUID.randomUUID();
+		pubSubAdmin.createSubscription(testSubscriptionName, TOPIC_NAME);
+	}
+
+	@After
+	public void deleteTestSubscription() {
+		Subscription subscription = pubSubAdmin.getSubscription(testSubscriptionName);
+		if (subscription != null) {
+			pubSubAdmin.deleteSubscription(testSubscriptionName);
+		}
+	}
+
 	@Test
 	public void testReceivesJsonPayload() {
 		TestMessageConsumer messageConsumer = new TestMessageConsumer();
-		this.pubSubTemplate.subscribeAndConvert(SUBSCRIPTION_NAME, messageConsumer, Person.class);
+		this.pubSubTemplate.subscribeAndConvert(testSubscriptionName, messageConsumer, Person.class);
 
 		ImmutableMap<String, String> params = ImmutableMap.of(
 				"name", "Bob",
@@ -68,7 +94,7 @@ public class PubSubJsonPayloadApplicationTests {
 		this.testRestTemplate.postForObject(
 				"/createPerson?name={name}&age={age}", null, String.class, params);
 
-		await().atMost(Duration.TEN_SECONDS).until(() -> messageConsumer.isMessageProcessed());
+		await().atMost(10, TimeUnit.SECONDS).until(() -> messageConsumer.isMessageProcessed());
 	}
 
 	/**
