@@ -16,6 +16,8 @@
 
 package com.example;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -43,5 +45,23 @@ public class Person {
 				"name='" + name + '\'' +
 				", age=" + age +
 				'}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		Person person = (Person) o;
+		return this.age == person.age &&
+				Objects.equals(this.name, person.name);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.name, this.age);
 	}
 }

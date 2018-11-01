@@ -16,14 +16,10 @@
 
 package com.example;
 
-import java.util.UUID;
-import java.util.function.Consumer;
+import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.pubsub.v1.Subscription;
 import org.awaitility.Duration;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,9 +28,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
-import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,20 +42,8 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubJsonPayloadApplication.class })
 public class PubSubJsonPayloadApplicationTests {
 
-	private static final String TOPIC_NAME = "json-payload-sample-topic";
-
-	private static final String SUBSCRIPTION_NAME_PREFIX = "json-payload-sample-subscription-test-";
-
 	@Autowired
 	private TestRestTemplate testRestTemplate;
-
-	@Autowired
-	private PubSubAdmin pubSubAdmin;
-
-	@Autowired
-	private PubSubTemplate pubSubTemplate;
-
-	private String testSubscriptionName;
 
 	@BeforeClass
 	public static void prepare() {
@@ -69,53 +53,23 @@ public class PubSubJsonPayloadApplicationTests {
 				System.getProperty("it.pubsub"), is("true"));
 	}
 
-	@Before
-	public void setupTestSubscription() {
-		this.testSubscriptionName = SUBSCRIPTION_NAME_PREFIX + UUID.randomUUID();
-		this.pubSubAdmin.createSubscription(this.testSubscriptionName, TOPIC_NAME);
-	}
-
-	@After
-	public void deleteTestSubscription() {
-		Subscription subscription = this.pubSubAdmin.getSubscription(this.testSubscriptionName);
-		if (subscription != null) {
-			this.pubSubAdmin.deleteSubscription(this.testSubscriptionName);
-		}
-	}
-
 	@Test
 	public void testReceivesJsonPayload() {
-		TestMessageConsumer messageConsumer = new TestMessageConsumer();
-		this.pubSubTemplate.subscribeAndConvert(this.testSubscriptionName, messageConsumer, Person.class);
-
 		ImmutableMap<String, String> params = ImmutableMap.of(
 				"name", "Bob",
 				"age", "25");
 		this.testRestTemplate.postForObject(
 				"/createPerson?name={name}&age={age}", null, String.class, params);
 
-		await().atMost(Duration.TEN_SECONDS).until(() -> messageConsumer.isMessageProcessed());
-	}
+		await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
+			ResponseEntity<List<Person>> response = this.testRestTemplate.exchange(
+					"/listPersons",
+					HttpMethod.GET,
+					null,
+					new ParameterizedTypeReference<List<Person>>() {
+					});
 
-	/**
-	 * Async consumer of Pub/Sub messages to verify JSON payload serialization.
-	 */
-	private static class TestMessageConsumer
-			implements Consumer<ConvertedBasicAcknowledgeablePubsubMessage<Person>> {
-
-		private boolean messageHasBeenProcessed;
-
-		@Override
-		public void accept(ConvertedBasicAcknowledgeablePubsubMessage<Person> message) {
-			Person person = message.getPayload();
-			message.ack();
-			assertThat(person.name).isEqualTo("Bob");
-			assertThat(person.age).isEqualTo(25);
-			this.messageHasBeenProcessed = true;
-		}
-
-		public boolean isMessageProcessed() {
-			return this.messageHasBeenProcessed;
-		}
+			assertThat(response.getBody()).containsExactly(new Person("Bob", 25));
+		});
 	}
 }

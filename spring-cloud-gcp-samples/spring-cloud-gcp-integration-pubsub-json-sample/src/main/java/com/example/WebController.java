@@ -16,8 +16,14 @@
 
 package com.example;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.example.SenderConfiguration.PubSubPersonGateway;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,6 +40,10 @@ public class WebController {
 
 	private final PubSubPersonGateway pubSubPersonGateway;
 
+	@Autowired
+	@Qualifier("ProcessedPersonsList")
+	private ArrayList<Person> processedPersonsList;
+
 	public WebController(PubSubPersonGateway pubSubPersonGateway) {
 		this.pubSubPersonGateway = pubSubPersonGateway;
 	}
@@ -43,5 +53,10 @@ public class WebController {
 		Person person = new Person(name, age);
 		this.pubSubPersonGateway.sendPersonToPubSub(person);
 		return new RedirectView("/");
+	}
+
+	@GetMapping("/listPersons")
+	public List<Person> listPersons() {
+		return this.processedPersonsList;
 	}
 }
