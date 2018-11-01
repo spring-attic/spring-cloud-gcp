@@ -45,8 +45,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
@@ -78,6 +80,9 @@ public class ApplicationTests {
 
 	@Autowired
 	private CommandLineRunner commandLineRunner;
+
+	@Autowired
+	private SingerRepository singerRepository;
 
 	@BeforeClass
 	public static void checkToRun() {
@@ -132,17 +137,27 @@ public class ApplicationTests {
 						+ "albums=[Album{albumName='a', date=2012-01-20}, Album{albumName='b', "
 						+ "date=2018-02-12}], firstBand=band1, bands=band1,band2, "
 						+ "personalInstruments=recorder,cow bell}"));
-		assertTrue("Verify retrieved Mary Jane",
-				baos.toString().contains("retrieved singer: "
-						+ "Singer{singerId='singer2', firstName='Mary', lastName='Jane', "
-						+ "albums=[Album{albumName='a', date=2012-01-20}, Album{albumName='b', date=2018-02-12}], "
-						+ "firstBand=band1, bands=band1,band2, "
-						+ "personalInstruments=recorder,cow bell}\n"));
-		assertTrue("Verify retrieved Scott Smith",
-				baos.toString().contains("retrieved singer:"
-						+ " Singer{singerId='singer3', firstName='Scott', lastName='Smith', "
-						+ "albums=[Album{albumName='c', date=2000-08-31}], firstBand=band3, "
-						+ "bands=band2,band3, personalInstruments=marimba,triangle}\n"));
+
+		assertThat(
+				this.singerRepository.findById("singer2").get().getPersonalInstruments()
+						.stream().map(Instrument::getType).collect(Collectors.toList()),
+				containsInAnyOrder("recorder", "cow bell"));
+
+		assertThat(
+				this.singerRepository.findById("singer2").get().getBands().stream()
+						.map(Band::getName).collect(Collectors.toList()),
+				containsInAnyOrder("band1", "band2"));
+
+		assertThat(
+				this.singerRepository.findById("singer3").get().getPersonalInstruments()
+						.stream().map(Instrument::getType).collect(Collectors.toList()),
+				containsInAnyOrder("triangle", "marimba"));
+
+		assertThat(
+				this.singerRepository.findById("singer3").get().getBands().stream()
+						.map(Band::getName).collect(Collectors.toList()),
+				containsInAnyOrder("band3", "band2"));
+
 		assertTrue("Verify successful run",
 				baos.toString().contains("This concludes the sample."));
 	}
