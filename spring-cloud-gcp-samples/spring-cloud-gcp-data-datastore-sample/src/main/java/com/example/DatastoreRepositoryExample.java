@@ -79,7 +79,7 @@ public class DatastoreRepositoryExample {
 
 	private void retrieveAndPrintSingers() {
 		System.out.println("The kind for singers has been cleared and "
-        + this.singerRepository.count() + " new singers have been inserted:");
+				+ this.singerRepository.count() + " new singers have been inserted:");
 
 		Iterable<Singer> allSingers = this.singerRepository.findAll();
 		allSingers.forEach(System.out::println);
@@ -89,8 +89,8 @@ public class DatastoreRepositoryExample {
 		// Retrieving by keys or querying with a restriction to a single entity group
 		// / family is strongly consistent.
 		this.singerRepository
-        .findAllById(ImmutableList.of("singer1", "singer2", "singer3"))
-        .forEach(x -> System.out.println("retrieved singer: " + x));
+				.findAllById(ImmutableList.of("singer1", "singer2", "singer3"))
+				.forEach(x -> System.out.println("retrieved singer: " + x));
 	}
 
 	private void createRelationshipsInTransaction(Singer maryJane, Singer scottSmith) {
@@ -100,24 +100,22 @@ public class DatastoreRepositoryExample {
 
 		// Creates the related Band and Instrument entities and links them to a Singer
 		// in a single atomic transaction
-		this.transactionalRepositoryService
-        .createAndSaveSingerRelationshipsInTransaction(maryJane, band1,
-            Arrays.asList(band1, band2),
-            new HashSet<>(Arrays.asList(new Instrument("recorder"),
-                new Instrument("cow bell"))));
+		this.transactionalRepositoryService.createAndSaveSingerRelationshipsInTransaction(
+				maryJane, band1, Arrays.asList(band1, band2), new HashSet<>(Arrays
+						.asList(new Instrument("recorder"), new Instrument("cow bell"))));
 
 		// You can also execute code within a transaction directly using the
 		// SingerRepository.
 		// The following call also performs the creation and saving of relationships
 		// in a single transaction.
 		this.singerRepository.performTransaction(transactionRepository -> {
-      scottSmith.setFirstBand(band3);
-      scottSmith.setBands(Arrays.asList(band3, band2));
-      scottSmith.setPersonalInstruments(new HashSet<>(Arrays
-          .asList(new Instrument("triangle"), new Instrument("marimba"))));
-      this.singerRepository.save(scottSmith);
-      return null;
-    });
+			scottSmith.setFirstBand(band3);
+			scottSmith.setBands(Arrays.asList(band3, band2));
+			scottSmith.setPersonalInstruments(new HashSet<>(Arrays
+					.asList(new Instrument("triangle"), new Instrument("marimba"))));
+			this.singerRepository.save(scottSmith);
+			return null;
+		});
 	}
 
 	@Bean
