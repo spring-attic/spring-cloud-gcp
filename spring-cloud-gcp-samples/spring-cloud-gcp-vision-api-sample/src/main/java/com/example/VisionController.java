@@ -41,7 +41,6 @@ import org.springframework.web.servlet.ModelAndView;
  * Libraries.
  *
  * <p>
- * </p>
  * This uses the Cloud Vision API with the {@link ImageAnnotatorClient}, which is
  * configured and produced in {@link Application}. See
  * {@link Application#imageAnnotatorClient(com.google.api.gax.core.CredentialsProvider)}
