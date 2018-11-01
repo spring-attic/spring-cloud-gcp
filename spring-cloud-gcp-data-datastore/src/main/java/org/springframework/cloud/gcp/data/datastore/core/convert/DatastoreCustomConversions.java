@@ -21,30 +21,19 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.JodaTimeConverters;
 import org.springframework.data.convert.Jsr310Converters;
 import org.springframework.data.convert.ThreeTenBackPortConverters;
-import org.springframework.lang.Nullable;
 
 /**
  * Value object to capture custom conversion. {@link DatastoreCustomConversions}
  *
  * @author Dmitry Solomakha
- * @author Chengyuan Zhao
  *
  * @since 1.1
  */
 public class DatastoreCustomConversions extends CustomConversions {
-
-	public static final Converter<Enum, String> ENUM_STRING_CONVERTER = new Converter<Enum, String>() {
-		@Nullable
-		@Override
-		public String convert(Enum source) {
-			return source.name();
-		}
-	};
 
 	private static final StoreConversions STORE_CONVERSIONS;
 
@@ -55,7 +44,6 @@ public class DatastoreCustomConversions extends CustomConversions {
 				.addAll(JodaTimeConverters.getConvertersToRegister())
 				.addAll(Jsr310Converters.getConvertersToRegister())
 				.addAll(ThreeTenBackPortConverters.getConvertersToRegister())
-				.add(ENUM_STRING_CONVERTER)
 				.build();
 
 		STORE_CONVERSIONS =
