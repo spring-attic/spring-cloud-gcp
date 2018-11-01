@@ -23,6 +23,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
+import com.google.cloud.datastore.Key;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import org.awaitility.Awaitility;
@@ -125,7 +126,7 @@ public class DatastoreIntegrationTests {
 
 		assertThat(
 				this.testEntityRepository.removeByColor("red").stream()
-						.map(x -> x.getId()).collect(Collectors.toList()),
+						.map(TestEntity::getId).collect(Collectors.toList()),
 				containsInAnyOrder(1L, 3L, 4L));
 
 		this.testEntityRepository.saveAll(allTestEntities);
@@ -156,7 +157,7 @@ public class DatastoreIntegrationTests {
 						.map(TestEntity::getId).collect(Collectors.toList()),
 				containsInAnyOrder(1L, 3L, 4L));
 
-		assertThat(this.testEntityRepository.getKeys().stream().map(x -> x.getId())
+		assertThat(this.testEntityRepository.getKeys().stream().map(Key::getId)
 				.collect(Collectors.toList()), containsInAnyOrder(1L, 2L, 3L, 4L));
 
 		assertEquals(1, foundByCustomQuery.size());
