@@ -60,7 +60,7 @@ public class ApplicationTests {
 	}
 
 	@Test
-	public void shouldReturnDefaultMessage() throws Exception {
+	public void shouldCorrectlyClassifyImage() throws Exception {
 		this.mockMvc.perform(get(VISION_SAMPLE_ENDPOINT))
 				.andDo(response -> {
 					ModelAndView result = response.getModelAndView();
