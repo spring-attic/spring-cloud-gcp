@@ -34,14 +34,25 @@ public class TestEntity {
 
 	private Long size;
 
-	public TestEntity(Long id, String color, Long size, Blob blobField) {
+	private Shape shape;
+
+	private Blob blobField;
+
+	public TestEntity(Long id, String color, Long size, Shape shape, Blob blobField) {
 		this.id = id;
 		this.color = color;
 		this.size = size;
+		this.shape = shape;
 		this.blobField = blobField;
 	}
 
-	private Blob blobField;
+	public Shape getShape() {
+		return this.shape;
+	}
+
+	public void setShape(Shape shape) {
+		this.shape = shape;
+	}
 
 	public Long getId() {
 		return this.id;
@@ -73,5 +84,9 @@ public class TestEntity {
 
 	public void setSize(Long size) {
 		this.size = size;
+	}
+
+	enum Shape {
+		CIRCLE, SQUARE;
 	}
 }
