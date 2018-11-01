@@ -51,7 +51,8 @@ public class JwtTokenVerifier {
 	}
 
 	/**
-	 * Builds up a default verifier assuming ECDSA signed key, plus common-sense claims checks.
+	 * Builds up a default verifier assuming ECDSA signed key, plus common-sense
+	 * org.springframework.cloud.gcp.security.iap.claims checks.
 	 */
 	public JwtTokenVerifier(URL jwkRegistryUrl) {
 		this(new JwtECSignatureVerifier(jwkRegistryUrl),
@@ -99,7 +100,7 @@ public class JwtTokenVerifier {
 			return claims.getStringClaim(propertyName);
 		}
 		catch (ParseException e) {
-			LOGGER.warn("String value could not be parsed from claims.", e);
+			LOGGER.warn("String value could not be parsed from org.springframework.cloud.gcp.security.iap.claims.", e);
 			return null;
 		}
 	}

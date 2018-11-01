@@ -23,7 +23,8 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
  * pre-authentication. The roles are instead determined in a provided implementation of
  * {@link org.springframework.security.authentication.AuthenticationDetailsSource}
  *
- * TODO: enhance this object with additional claims available in the JWT token.
+ * TODO: enhance this object with additional org.springframework.cloud.gcp.security.iap.claims available in the JWT
+ * token.
  */
 public final class IapAuthentication extends PreAuthenticatedAuthenticationToken {
 
