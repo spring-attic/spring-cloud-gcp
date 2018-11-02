@@ -65,6 +65,10 @@ public interface ReadWriteConversions {
 	 */
 	Value convertOnWrite(Object obj, DatastorePersistentProperty persistentProperty);
 
+	Value convertOnWriteSingle(Object propertyVal);
+
+	<T> T convertOnReadSingle(Object val, Class targetType);
+
 	/**
 	 * Get the Cloud Datastore-compatible native Java type that can be used to store the
 	 * given type.

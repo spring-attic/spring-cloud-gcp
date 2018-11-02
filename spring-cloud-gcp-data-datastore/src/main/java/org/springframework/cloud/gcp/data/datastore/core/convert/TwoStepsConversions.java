@@ -137,7 +137,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			readConverter = this::convertOnReadSingleEmbedded;
 			break;
 		case NOT_EMBEDDED:
-			readConverter = this::convertOnReadSingle;
+			readConverter = (x, targetTypeInformation) -> convertOnReadSingle(x, targetTypeInformation.getType());
 			break;
 		default:
 			throw new DatastoreDataException(
@@ -186,11 +186,11 @@ public class TwoStepsConversions implements ReadWriteConversions {
 				+ value.getClass() + " found");
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
-	private <T> T convertOnReadSingle(Object val, TypeInformation<?> targetTypeInformation) {
-		Class targetType = targetTypeInformation.getType();
-		Class sourceType = val.getClass();
+	public <T> T convertOnReadSingle(Object val, Class targetType) {
 		Assert.notNull(val, "Cannot convert a null value.");
+		Class sourceType = val.getClass();
 		Object result = null;
 		TypeTargets typeTargets = computeTypeTargets(targetType);
 
@@ -288,8 +288,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		return applyEntityValueBuilder(kindName, builder -> {
 			Map map = (Map) val;
 			for (Object key : map.keySet()) {
-				String field = convertOnReadSingle(key,
-						ClassTypeInformation.from(String.class));
+				String field = convertOnReadSingle(key, String.class);
 				builder.set(field,
 						convertOnWrite(map.get(key),
 								EmbeddedType.of(valueTypeInformation),
@@ -303,6 +302,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 				builder -> this.datastoreEntityConverter.write(val, builder));
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public Value convertOnWriteSingle(Object propertyVal) {
 		Object result = propertyVal;

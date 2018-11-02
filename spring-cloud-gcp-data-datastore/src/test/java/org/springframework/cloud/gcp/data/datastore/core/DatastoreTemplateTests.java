@@ -18,9 +18,11 @@ package org.springframework.cloud.gcp.data.datastore.core;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import com.google.cloud.datastore.Datastore;
@@ -34,6 +36,7 @@ import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.KeyValue;
+import com.google.cloud.datastore.LongValue;
 import com.google.cloud.datastore.PathElement;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.Query.ResultType;
@@ -111,6 +114,8 @@ public class DatastoreTemplateTests {
 
 	private Key childKey6;
 
+	private ReadWriteConversions readWriteConversions = mock(ReadWriteConversions.class);
+
 	private Key createFakeKey(String val) {
 		return new KeyFactory("project").setKind("custom_test_kind").newKey(val);
 	}
@@ -156,9 +161,8 @@ public class DatastoreTemplateTests {
 				this.datastoreEntityConverter, new DatastoreMappingContext(),
 				this.objectToKeyFactory);
 
-		ReadWriteConversions readWriteConversions = mock(ReadWriteConversions.class);
 		when(this.datastoreEntityConverter.getConversions())
-				.thenReturn(readWriteConversions);
+				.thenReturn(this.readWriteConversions);
 
 		// The readWriteConversions are only mocked for purposes of collection-conversion
 		// for
@@ -169,7 +173,7 @@ public class DatastoreTemplateTests {
 				linkedList.add(object);
 			}
 			return linkedList;
-		}).when(readWriteConversions).convertOnRead(any(), any(), (Class) any());
+		}).when(this.readWriteConversions).convertOnRead(any(), any(), (Class) any());
 
 		this.ob1 = new TestEntity();
 		this.ob2 = new TestEntity();
@@ -604,6 +608,40 @@ public class DatastoreTemplateTests {
 				builder.setLimit(2).setOffset(3)
 						.setOrderBy(
 						new StructuredQuery.OrderBy("prop", StructuredQuery.OrderBy.Direction.ASCENDING)).build());
+	}
+
+	@Test
+	public void writeMapTest() {
+		Map<String, Long> map = new HashMap<>();
+		map.put("field1", 1L);
+		Key keyForMap = createFakeKey("map1");
+
+		when(this.readWriteConversions.convertOnWriteSingle(eq(1L))).thenReturn(LongValue.of(1L));
+
+		this.datastoreTemplate.writeMap(keyForMap, map);
+
+		Entity datastoreEntity = Entity.newBuilder(keyForMap).set("field1", 1L).build();
+		verify(this.datastore, times(1)).put(eq(datastoreEntity));
+	}
+
+	@Test
+	public void findByIdAsMapTest() {
+		Map<String, Long> map = new HashMap<>();
+		map.put("field1", 1L);
+		Key keyForMap = createFakeKey("map1");
+
+		Entity datastoreEntity = Entity.newBuilder(keyForMap).set("field1", 1L).build();
+		when(this.datastore.get(eq(keyForMap))).thenReturn(datastoreEntity);
+		when(this.readWriteConversions.convertOnReadSingle(eq(1L), eq(Long.class))).thenReturn(1L);
+
+		Map<String, Long> loadedMap = this.datastoreTemplate.findByIdAsMap(keyForMap, Long.class);
+		assertEquals(map, loadedMap);
+	}
+
+	@Test
+	public void createKeyTest() {
+		this.datastoreTemplate.createKey("kind1", 1L);
+		verify(this.objectToKeyFactory, times(1)).getKeyFromId(eq(1L), eq("kind1"));
 	}
 
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "custom_test_kind")

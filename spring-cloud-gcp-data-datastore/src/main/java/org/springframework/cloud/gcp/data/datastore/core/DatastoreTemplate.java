@@ -19,8 +19,10 @@ package org.springframework.cloud.gcp.data.datastore.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -253,6 +255,42 @@ public class DatastoreTemplate implements DatastoreOperations {
 						DatastoreTemplate.this.datastoreEntityConverter,
 						DatastoreTemplate.this.datastoreMappingContext,
 						DatastoreTemplate.this.objectToKeyFactory)));
+	}
+
+	@Override
+	public <T> Map<String, T> findByIdAsMap(Key key, Class<T> valueType) {
+		Assert.notNull(key, "A non-null Key is required.");
+		Assert.notNull(valueType, "A non-null valueType is required.");
+
+		Entity entity = getDatastoreReadWriter().get(key);
+		if (entity == null) {
+			return null;
+		}
+		Map<String, T> map = new HashMap<>();
+		entity.getNames().forEach(
+				propertyName -> {
+					Value<?> value = entity.getValue(propertyName);
+					map.put(propertyName,
+							this.datastoreEntityConverter.getConversions().convertOnReadSingle(value.get(), valueType));
+				});
+		return map;
+	}
+
+	@Override
+	public <V> void writeMap(Key datastoreKey, Map<String, V> map) {
+		Assert.notNull(datastoreKey, "A non-null Key is required.");
+		Assert.notNull(map, "A non-null map is required.");
+
+		Builder builder = Entity.newBuilder(datastoreKey);
+		map.forEach(
+				(key, value) ->
+						builder.set(key, this.datastoreEntityConverter.getConversions().convertOnWriteSingle(value)));
+		Entity entity = builder.build();
+		getDatastoreReadWriter().put(entity);
+	}
+
+	public Key createKey(String kind, Object id) {
+		return this.objectToKeyFactory.getKeyFromId(id, kind);
 	}
 
 	private static StructuredQuery.OrderBy createOrderBy(DatastorePersistentEntity<?> persistentEntity,
