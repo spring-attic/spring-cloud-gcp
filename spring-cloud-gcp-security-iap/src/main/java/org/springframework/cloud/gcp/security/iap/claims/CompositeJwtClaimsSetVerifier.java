@@ -19,18 +19,23 @@ package org.springframework.cloud.gcp.security.iap.claims;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
+import com.nimbusds.jose.proc.SimpleSecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.proc.BadJWTException;
+import com.nimbusds.jwt.proc.JWTClaimsSetVerifier;
 
-public class CompositeClaimVerifier implements ClaimVerifier {
+public class CompositeJwtClaimsSetVerifier implements JWTClaimsSetVerifier<SimpleSecurityContext> {
 
-	private List<ClaimVerifier> delegates;
+	private List<JWTClaimsSetVerifier> delegates;
 
-	public CompositeClaimVerifier(ClaimVerifier... delegates) {
+	public CompositeJwtClaimsSetVerifier(JWTClaimsSetVerifier... delegates) {
 		this.delegates = ImmutableList.copyOf(delegates);
 	}
 
 	@Override
-	public boolean verify(JWTClaimsSet claims) {
-		return this.delegates.stream().allMatch(verifier -> verifier.verify(claims));
+	public void verify(JWTClaimsSet jwtClaimsSet, SimpleSecurityContext securityContext) throws BadJWTException {
+		for (JWTClaimsSetVerifier verifier : this.delegates) {
+			verifier.verify(jwtClaimsSet, securityContext);
+		}
 	}
 }

@@ -19,18 +19,20 @@ package org.springframework.cloud.gcp.security.iap.jwt;
 import java.net.URL;
 import java.text.ParseException;
 
+import com.nimbusds.jose.proc.SecurityContext;
+import com.nimbusds.jose.proc.SimpleSecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.jwt.proc.BadJWTException;
+import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
+import com.nimbusds.jwt.proc.JWTClaimsSetVerifier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.gcp.security.iap.IapAuthentication;
-import org.springframework.cloud.gcp.security.iap.claims.ClaimVerifier;
-import org.springframework.cloud.gcp.security.iap.claims.CompositeClaimVerifier;
-import org.springframework.cloud.gcp.security.iap.claims.ExpirationTimeInFutureClaimVerifier;
-import org.springframework.cloud.gcp.security.iap.claims.IssueTimeInPastClaimVerifier;
-import org.springframework.cloud.gcp.security.iap.claims.IssuerClaimVerifier;
-import org.springframework.cloud.gcp.security.iap.claims.RequiredFieldsClaimVerifier;
+import org.springframework.cloud.gcp.security.iap.claims.CompositeJwtClaimsSetVerifier;
+import org.springframework.cloud.gcp.security.iap.claims.IssuerJwtClaimsSetVerifier;
+import org.springframework.cloud.gcp.security.iap.claims.RequiredFieldsJwtClaimsSetVerifier;
 
 /**
  * Verify IAP authorization JWT token in incoming request.
@@ -41,13 +43,14 @@ public class JwtTokenVerifier {
 
 	private static final Log LOGGER = LogFactory.getLog(JwtTokenVerifier.class);
 
-	private final ClaimVerifier claimVerifier;
+	private final JWTClaimsSetVerifier<? extends SecurityContext> jwtClaimsSetVerifier;
 
 	private final JwtSignatureVerifier jwtSignatureVerifier;
 
-	public JwtTokenVerifier(JwtSignatureVerifier jwtSignatureVerifier, ClaimVerifier claimVerifier) {
+	public JwtTokenVerifier(JwtSignatureVerifier jwtSignatureVerifier,
+							JWTClaimsSetVerifier<? extends SecurityContext> jwtClaimsSetVerifier) {
 		this.jwtSignatureVerifier = jwtSignatureVerifier;
-		this.claimVerifier = claimVerifier;
+		this.jwtClaimsSetVerifier = jwtClaimsSetVerifier;
 	}
 
 	/**
@@ -56,11 +59,10 @@ public class JwtTokenVerifier {
 	 */
 	public JwtTokenVerifier(URL jwkRegistryUrl) {
 		this(new JwtECSignatureVerifier(jwkRegistryUrl),
-				new CompositeClaimVerifier(
-						new RequiredFieldsClaimVerifier(),
-						new IssueTimeInPastClaimVerifier(),
-						new ExpirationTimeInFutureClaimVerifier(),
-						new IssuerClaimVerifier()));
+				new CompositeJwtClaimsSetVerifier(
+						new DefaultJWTClaimsVerifier<SimpleSecurityContext>(),
+						new RequiredFieldsJwtClaimsSetVerifier(),
+						new IssuerJwtClaimsSetVerifier()));
 	}
 
 	/**
@@ -69,40 +71,47 @@ public class JwtTokenVerifier {
 	 */
 	public IapAuthentication verifyAndExtractPrincipal(String jwtToken) {
 		if (jwtToken == null) {
-			LOGGER.warn("Jwt token verification requested, yet no token passed in; not authenticating");
+			LOGGER.warn("JWT token verification requested, yet no token passed in; not authenticating.");
 			return null;
 		}
 
-		IapAuthentication authentication = null;
 		SignedJWT signedJwt = extractSignedToken(jwtToken);
 
-		if (this.jwtSignatureVerifier.validateJwt(signedJwt)) {
-			JWTClaimsSet claims = extractClaims(signedJwt);
-			String email = extractClaimValue(claims, "email");
-
-			if (claims != null && email != null && this.claimVerifier.verify(claims)) {
-				authentication = new IapAuthentication(email, claims.getSubject(), jwtToken);
-			}
-		}
-		else {
-			LOGGER.warn("Jwt public key verification failed; not authenticating");
-		}
-
-		return authentication;
-	}
-
-	private String extractClaimValue(JWTClaimsSet claims, String propertyName) {
-		if (claims == null) {
+		if (signedJwt == null || !this.jwtSignatureVerifier.validateJwt(signedJwt)) {
+			LOGGER.info("Jwt public key verification failed; not authenticating.");
 			return null;
 		}
 
+		JWTClaimsSet claims = extractClaims(signedJwt);
+		return validateClaims(claims) ? extractPrincipal(claims, jwtToken) : null;
+	}
+
+	private IapAuthentication extractPrincipal(JWTClaimsSet claims, String jwtToken) {
 		try {
-			return claims.getStringClaim(propertyName);
+			String email = claims.getStringClaim("email");
+			return new IapAuthentication(email, claims.getSubject(), jwtToken);
 		}
 		catch (ParseException e) {
 			LOGGER.warn("String value could not be parsed from org.springframework.cloud.gcp.security.iap.claims.", e);
 			return null;
 		}
+	}
+
+	private boolean validateClaims(JWTClaimsSet claims) {
+		if (claims == null) {
+			LOGGER.warn("Null claims; cannot validate.");
+			return false;
+		}
+
+		try {
+			this.jwtClaimsSetVerifier.verify(claims, null);
+		}
+		catch (BadJWTException e) {
+			LOGGER.info("Claim verification failed.");
+			return false;
+		}
+
+		return true;
 	}
 
 	private JWTClaimsSet extractClaims(SignedJWT signedJwt) {

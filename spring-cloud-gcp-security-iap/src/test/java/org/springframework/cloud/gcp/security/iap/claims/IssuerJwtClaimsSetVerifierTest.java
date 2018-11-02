@@ -16,35 +16,37 @@
 
 package org.springframework.cloud.gcp.security.iap.claims;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Date;
-
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.proc.BadJWTException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import static org.junit.Assert.assertTrue;
-
 @RunWith(JUnit4.class)
-public class RequiredFieldsClaimVerifierTest {
+public class IssuerJwtClaimsSetVerifierTest {
 
-	LocalDateTime fakeIssueTime = LocalDateTime.of(2018, 11, 1, 11, 10, 00);
+	public static final String ISSUER = "https://cloud.google.com/iap";
 
-	LocalDateTime fakeExpirationTime = LocalDateTime.of(2018, 11, 1, 11, 20, 00);
-
-	private JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-			.claim("email", "ford@betelgeuse.tours")
-			.subject("Ix")
-			.issueTime(new Date(this.fakeIssueTime.toEpochSecond(ZoneOffset.UTC)))
-			.expirationTime(new Date(this.fakeIssueTime.toEpochSecond(ZoneOffset.UTC)))
-			.build();
-
-	RequiredFieldsClaimVerifier verifier = new RequiredFieldsClaimVerifier();
+	public static final String BAD_ISSUER = "galactic-nomenclaturoid-office";
 
 	@Test
-	public void allRequiredFieldsPresentSucceeds() {
-		assertTrue(this.verifier.verify(this.claimsSet));
+	public void correctIssuerSucceeds() throws BadJWTException {
+		IssuerJwtClaimsSetVerifier verifier = new IssuerJwtClaimsSetVerifier();
+
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+				.issuer(ISSUER)
+				.build();
+
+		verifier.verify(claimsSet, null);
+	}
+
+	@Test (expected = BadJWTException.class)
+	public void incorrectIssuerFails() throws BadJWTException {
+		IssuerJwtClaimsSetVerifier verifier = new IssuerJwtClaimsSetVerifier();
+
+		JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+				.issuer(BAD_ISSUER)
+				.build();
+		verifier.verify(claimsSet, null);
 	}
 }
