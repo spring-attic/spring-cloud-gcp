@@ -50,7 +50,7 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	List<TestEntity> findByEnumQueryParam(@Param("enum_val") Shape shape);
 
 	@Query(value = "select __key__ from  test_entities_ci "
-			+ "where id = @id_val", exists = true)
+			+ "where id = #{#id_val}", exists = true)
 	boolean existsByEntitiesWithCustomQuery(@Param("id_val") long id);
 
 	@Query("select id from  test_entities_ci where id <= @id_val ")
