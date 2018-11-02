@@ -17,11 +17,16 @@
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -35,9 +40,16 @@ import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
+import org.springframework.expression.EvaluationContext;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ParserContext;
+import org.springframework.expression.common.CompositeStringExpression;
+import org.springframework.expression.common.LiteralExpression;
+import org.springframework.expression.spel.standard.SpelExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.StringUtils;
 
@@ -50,8 +62,16 @@ import org.springframework.util.StringUtils;
  */
 public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
+	// A small string that isn't used in GQL syntax
+	private static final String ENTITY_CLASS_NAME_BOOKEND = "|";
 
-	private final String gql;
+	private final String originalGql;
+
+	private String gqlResolvedEntityClassName;
+
+	private Expression[] spelExpressionParts;
+
+	private List<String> originalParamTags;
 
 	// unused currently, but will be used for SpEL expression in the query.
 	private QueryMethodEvaluationContextProvider evaluationContextProvider;
@@ -74,7 +94,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		super(queryMethod, datastoreTemplate, datastoreMappingContext, type);
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
-		this.gql = StringUtils.trimTrailingCharacter(gql.trim(), ';');
+		this.originalGql = StringUtils.trimTrailingCharacter(gql.trim(), ';');
 	}
 
 	private static Object getNonEntityObjectFromRow(Object x) {
@@ -97,7 +117,12 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	@Override
 	public Object execute(Object[] parameters) {
-		GqlQuery query = bindArgsToGqlQuery(this.gql, getParamTags(), parameters);
+
+		QueryTagValue queryTagValue = getQueryTagsValues(parameters);
+
+		GqlQuery query = bindArgsToGqlQuery(queryTagValue.finalGql,
+				queryTagValue.tagsOrdered, queryTagValue.params);
+
 		boolean returnTypeIsCollection = this.queryMethod.isCollectionQuery();
 		Class returnedItemType = this.queryMethod.getReturnedObjectType();
 
@@ -130,6 +155,20 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 
 		return result;
+	}
+
+	private QueryTagValue getQueryTagsValues(Object[] parameters) {
+		QueryTagValue queryTagValue = new QueryTagValue(getOriginalParamTags(),
+				parameters);
+		resolveSpelTags(queryTagValue);
+		return queryTagValue;
+	}
+
+	private String getGqlResolvedEntityClassName() {
+		if (this.gqlResolvedEntityClassName == null) {
+			this.gqlResolvedEntityClassName = resolveEntityClassNames(this.originalGql);
+		}
+		return this.gqlResolvedEntityClassName;
 	}
 
 	private Object convertCollectionResult(Class returnedItemType,
@@ -167,43 +206,156 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				.getDatastoreCompatibleType(returnedType).isPresent();
 	}
 
-	private List<String> getParamTags() {
-		List<String> tags = new ArrayList<>();
-		Set<String> seen = new HashSet<>();
-		Parameters parameters = getQueryMethod().getParameters();
-		for (int i = 0; i < parameters.getNumberOfParameters(); i++) {
-			Parameter param = parameters.getParameter(i);
-			Optional<String> paramName = param.getName();
-			if (!paramName.isPresent()) {
-				throw new DatastoreDataException(
-						"Query method has a parameter without a valid name: "
-								+ getQueryMethod().getName());
+	private List<String> getOriginalParamTags() {
+		if (this.originalParamTags == null) {
+			this.originalParamTags = new ArrayList<>();
+			Set<String> seen = new HashSet<>();
+			Parameters parameters = getQueryMethod().getParameters();
+			for (int i = 0; i < parameters.getNumberOfParameters(); i++) {
+				Parameter param = parameters.getParameter(i);
+				Optional<String> paramName = param.getName();
+				if (!paramName.isPresent()) {
+					throw new DatastoreDataException(
+							"Query method has a parameter without a valid name: "
+									+ getQueryMethod().getName());
+				}
+				String name = paramName.get();
+				if (seen.contains(name)) {
+					throw new DatastoreDataException(
+							"More than one param has the same name: " + name);
+				}
+				seen.add(name);
+				this.originalParamTags.add(name);
 			}
-			String name = paramName.get();
-			if (seen.contains(name)) {
-				throw new DatastoreDataException(
-						"More than one param has the same name: " + name);
-			}
-			seen.add(name);
-			tags.add(name);
 		}
-		return tags;
+		return this.originalParamTags;
 	}
 
 	private GqlQuery<? extends BaseEntity> bindArgsToGqlQuery(String gql,
 			List<String> tags,
-			Object[] vals) {
+			List vals) {
 		Builder builder = GqlQuery.newGqlQueryBuilder(gql);
 		builder.setAllowLiteral(true);
-		if (tags.size() != vals.length) {
+		if (tags.size() != vals.size()) {
 			throw new DatastoreDataException("Annotated GQL Query Method "
 					+ this.queryMethod.getName() + " has " + tags.size()
-					+ " tags but a different number of parameter values: " + vals.length);
+					+ " initialTags but a different number of parameter values: " + vals.size());
 		}
 		for (int i = 0; i < tags.size(); i++) {
-			Object val = vals[i];
+			Object val = vals.get(i);
 			DatastoreNativeTypes.bindValueToGqlBuilder(builder, tags.get(i), val);
 		}
 		return builder.build();
+	}
+
+	private void resolveSpelTags(QueryTagValue queryTagValue) {
+		Expression[] expressions = getSpelExpressionParts();
+		StringBuilder sb = new StringBuilder();
+		Map<Object, String> valueToTag = new HashMap<>();
+		int tagNum = 0;
+		EvaluationContext evaluationContext = this.evaluationContextProvider
+				.getEvaluationContext(this.queryMethod.getParameters(),
+						queryTagValue.rawParams);
+		for (Expression expression : expressions) {
+			if (expression instanceof LiteralExpression) {
+				sb.append(expression.getValue(String.class));
+			}
+			else if (expression instanceof SpelExpression) {
+				Object value = expression.getValue(evaluationContext);
+				if (valueToTag.containsKey(value)) {
+					sb.append("@").append(valueToTag.get(value));
+				}
+				else {
+					String newTag;
+					do {
+						tagNum++;
+						newTag = "SpELtag" + tagNum;
+					}
+					while (queryTagValue.initialTags.contains(newTag));
+					valueToTag.put(value, newTag);
+					queryTagValue.params.add(value);
+					queryTagValue.tagsOrdered.add(newTag);
+					sb.append("@").append(newTag);
+				}
+			}
+			else {
+				throw new DatastoreDataException(
+						"Unexpected expression type. GQL queries are expected to be "
+								+ "concatenation of Literal and SpEL expressions.");
+			}
+		}
+		queryTagValue.finalGql = sb.toString();
+	}
+
+	private Expression[] getSpelExpressionParts() {
+		if (this.spelExpressionParts == null) {
+			this.spelExpressionParts = detectExpressions(getGqlResolvedEntityClassName());
+		}
+		return this.spelExpressionParts;
+	}
+
+	private Expression[] detectExpressions(String gql) {
+		Expression expression = this.expressionParser.parseExpression(gql,
+				ParserContext.TEMPLATE_EXPRESSION);
+		if (expression instanceof LiteralExpression) {
+			return new Expression[] { expression };
+		}
+		else if (expression instanceof CompositeStringExpression) {
+			return ((CompositeStringExpression) expression).getExpressions();
+		}
+		else {
+			throw new DatastoreDataException("Unexpected expression type. "
+					+ "Query can either contain no SpEL expressions or have only "
+					+ "literal SpEL expressions in the GQL.");
+		}
+	}
+
+	private String resolveEntityClassNames(String sql) {
+		Pattern pattern = Pattern.compile("\\" + ENTITY_CLASS_NAME_BOOKEND + "\\S+\\"
+				+ ENTITY_CLASS_NAME_BOOKEND + "");
+		Matcher matcher = pattern.matcher(sql);
+		String result = sql;
+		while (matcher.find()) {
+			String matched = matcher.group();
+			String className = matched.substring(1, matched.length() - 1);
+			try {
+				Class entityClass = Class.forName(className);
+				DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
+						.getPersistentEntity(entityClass);
+				if (datastorePersistentEntity == null) {
+					throw new DatastoreDataException(
+							"The class used in the GQL statement is not a Cloud Datastore persistent entity: "
+									+ className);
+				}
+				result = result.replace(matched, datastorePersistentEntity.kindName());
+			}
+			catch (ClassNotFoundException e) {
+				throw new DatastoreDataException(
+						"The class name does not refer to an available entity type: "
+								+ className);
+			}
+		}
+		return result;
+	}
+
+	// Convenience class to hold a grouping of GQL, initialTags, and parameter values.
+	private static class QueryTagValue {
+
+		final Set<String> initialTags;
+
+		final List<String> tagsOrdered;
+
+		final Object[] rawParams;
+
+		final List<Object> params;
+
+		String finalGql;
+
+		QueryTagValue(List<String> initialTags, Object[] rawParams) {
+			this.params = new ArrayList<>(Arrays.asList(rawParams));
+			this.rawParams = rawParams;
+			this.initialTags = new HashSet<>(initialTags);
+			this.tagsOrdered = new ArrayList<>(initialTags);
+		}
 	}
 }

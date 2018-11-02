@@ -145,7 +145,7 @@ Michiel Hendriks <elmuerte at users.sourceforge.net>
 		<ignoreCase />
 	</highlighter>
 	<highlighter type="word">
-		<!-- highlight the php open and close tags as directives -->
+		<!-- highlight the php open and close initialTags as directives -->
 		<word>?&gt;</word>
 		<word>&lt;?php</word>
 		<word>&lt;?=</word>
