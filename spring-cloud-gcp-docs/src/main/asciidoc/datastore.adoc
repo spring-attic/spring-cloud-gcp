@@ -848,7 +848,7 @@ List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
 ----
 
 
-SpEL can also be used to provide SQL parameters:
+SpEL can also be used to provide GQL parameters:
 
 [source, java]
 ----
