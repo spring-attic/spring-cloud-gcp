@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.security.iap.jwk;
 
-import java.io.IOException;
 import java.net.URL;
 import java.security.interfaces.ECPublicKey;
 import java.text.ParseException;
@@ -49,14 +48,14 @@ public class JwkRegistry {
 
 	private Clock clock = Clock.systemUTC();
 
-	private final URL publicKeyVerificationUrl;
+	private JwkLoader jwkLoader;
 
 	private Map<String, JWK> keyCache = new HashMap<>();
 
 	private long lastJwkStoreDownloadTimestamp;
 
 	public JwkRegistry(URL verificationUrl) {
-		this.publicKeyVerificationUrl = verificationUrl;
+		this.jwkLoader = new JwkLoader(verificationUrl);
 	}
 
 	public ECPublicKey getPublicKey(String kid, String alg) {
@@ -88,17 +87,11 @@ public class JwkRegistry {
 
 	private JWK downloadJwkKeysIfCacheNotFresh(String kid) {
 		if (this.clock.millis() - this.lastJwkStoreDownloadTimestamp > MIN_MS_BEFORE_RETRY) {
-			JWKSet jwkSet = null;
-			try {
-				LOGGER.info("Re-downloading JWK cache.");
-				jwkSet = JWKSet.load(this.publicKeyVerificationUrl);
+			JWKSet jwkSet = this.jwkLoader.load();
+			if (jwkSet != null) {
 				this.lastJwkStoreDownloadTimestamp = this.clock.millis();
+				this.keyCache = jwkSet.getKeys().stream().collect(Collectors.toMap(JWK::getKeyID, Function.identity()));
 			}
-			catch (IOException | ParseException e) {
-				LOGGER.warn("Downloading JWK keys failed.", e);
-				return null;
-			}
-			this.keyCache = jwkSet.getKeys().stream().collect(Collectors.toMap(JWK::getKeyID, Function.identity()));
 		}
 
 		return this.keyCache.get(kid);
