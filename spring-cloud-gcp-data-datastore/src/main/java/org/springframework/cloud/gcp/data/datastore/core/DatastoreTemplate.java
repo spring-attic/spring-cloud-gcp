@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.data.datastore.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +54,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -263,17 +263,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 		Assert.notNull(valueType, "A non-null valueType is required.");
 
 		Entity entity = getDatastoreReadWriter().get(key);
-		if (entity == null) {
-			return null;
-		}
-		Map<String, T> map = new HashMap<>();
-		entity.getNames().forEach(
-				propertyName -> {
-					Value<?> value = entity.getValue(propertyName);
-					map.put(propertyName,
-							this.datastoreEntityConverter.getConversions().convertOnReadSingle(value.get(), valueType));
-				});
-		return map;
+		return this.datastoreEntityConverter.readAsMap(String.class, ClassTypeInformation.from(valueType), entity);
 	}
 
 	@Override

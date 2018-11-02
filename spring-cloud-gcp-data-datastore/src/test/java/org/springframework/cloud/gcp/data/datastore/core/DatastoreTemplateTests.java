@@ -60,6 +60,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Reference;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.util.ClassTypeInformation;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -114,7 +115,7 @@ public class DatastoreTemplateTests {
 
 	private Key childKey6;
 
-	private ReadWriteConversions readWriteConversions = mock(ReadWriteConversions.class);
+	private final ReadWriteConversions readWriteConversions = mock(ReadWriteConversions.class);
 
 	private Key createFakeKey(String val) {
 		return new KeyFactory("project").setKind("custom_test_kind").newKey(val);
@@ -626,16 +627,14 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void findByIdAsMapTest() {
-		Map<String, Long> map = new HashMap<>();
-		map.put("field1", 1L);
 		Key keyForMap = createFakeKey("map1");
 
 		Entity datastoreEntity = Entity.newBuilder(keyForMap).set("field1", 1L).build();
 		when(this.datastore.get(eq(keyForMap))).thenReturn(datastoreEntity);
-		when(this.readWriteConversions.convertOnReadSingle(eq(1L), eq(Long.class))).thenReturn(1L);
 
-		Map<String, Long> loadedMap = this.datastoreTemplate.findByIdAsMap(keyForMap, Long.class);
-		assertEquals(map, loadedMap);
+		this.datastoreTemplate.findByIdAsMap(keyForMap, Long.class);
+		verify(this.datastoreEntityConverter, times(1))
+				.readAsMap(eq(String.class), eq(ClassTypeInformation.from(Long.class)), eq(datastoreEntity));
 	}
 
 	@Test

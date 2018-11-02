@@ -207,9 +207,9 @@ public interface DatastoreOperations {
 	<T> Map<String, T> findByIdAsMap(Key key, Class<T> valueType);
 
 	/**
-	 * Save map as a Datastore entity
+	 * Save a map as a Datastore entity
 	 * @param key the key for the entity
-	 * @param map type information that is used to convert a datastore entity to a map
+	 * @param map a map
 	 */
 	<V> void writeMap(Key key, Map<String, V> map);
 
