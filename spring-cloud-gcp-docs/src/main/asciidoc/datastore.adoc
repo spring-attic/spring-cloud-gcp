@@ -859,7 +859,7 @@ List<Trade> fetchByActionNamedQuery(@Param("tag0") String action, @Param("priceR
 
 ===== Query methods with named queries properties
 
-You can also specify queries with Cloud Datastore parameter initialTags and SpEL expressions in properties files.
+You can also specify queries with Cloud Datastore parameter tags and SpEL expressions in properties files.
 
 By default, the `namedQueriesLocation` attribute on `@EnableDatastoreRepositories` points to the `META-INF/datastore-named-queries.properties` file.
 You can specify the query for a method in the properties file by providing the GQL as the value for the "interface.method" property:

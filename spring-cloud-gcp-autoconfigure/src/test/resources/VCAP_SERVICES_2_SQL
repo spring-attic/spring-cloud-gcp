@@ -25,7 +25,7 @@
     "plan": "mysql-micro-dev",
     "provider": null,
     "syslog_drain_url": null,
-    "initialTags": [
+    "tags": [
      "gcp",
      "cloudsql",
      "mysql"
@@ -59,7 +59,7 @@
       "plan": "postgres-micro-dev",
       "provider": null,
       "syslog_drain_url": null,
-      "initialTags": [
+      "tags": [
        "gcp",
        "cloudsql",
        "postgres"
@@ -83,7 +83,7 @@
     "plan": "default",
     "provider": null,
     "syslog_drain_url": null,
-    "initialTags": [
+    "tags": [
      "gcp",
      "pubsub"
     ],
@@ -105,7 +105,7 @@
     "plan": "spanner-regional-micro-dev",
     "provider": null,
     "syslog_drain_url": null,
-    "initialTags": [
+    "tags": [
      "gcp",
      "spanner"
     ],
@@ -126,7 +126,7 @@
     "plan": "default",
     "provider": null,
     "syslog_drain_url": null,
-    "initialTags": [
+    "tags": [
      "gcp",
      "stackdriver",
      "trace"
@@ -149,7 +149,7 @@
     "plan": "standard",
     "provider": null,
     "syslog_drain_url": null,
-    "initialTags": [
+    "tags": [
      "gcp",
      "storage"
     ],
