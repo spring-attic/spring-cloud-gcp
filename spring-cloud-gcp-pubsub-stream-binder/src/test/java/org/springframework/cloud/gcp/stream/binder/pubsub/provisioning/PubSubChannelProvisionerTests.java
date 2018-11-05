@@ -36,6 +36,8 @@ import static org.mockito.Mockito.when;
 
 /**
  * @author Mike Eltsufin
+ *
+ * @since 1.1
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubChannelProvisionerTests {
@@ -75,7 +77,7 @@ public class PubSubChannelProvisionerTests {
 
 	@Test
 	public void testProvisionConsumerDestination_anonymousGroup() {
-		String subscriptionNameRegex = "anonymous\\.[a-f0-9\\-]{36}";
+		String subscriptionNameRegex = "anonymous\\.topic_A\\.[a-f0-9\\-]{36}";
 
 		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
 				.provisionConsumerDestination("topic_A", null, this.properties);

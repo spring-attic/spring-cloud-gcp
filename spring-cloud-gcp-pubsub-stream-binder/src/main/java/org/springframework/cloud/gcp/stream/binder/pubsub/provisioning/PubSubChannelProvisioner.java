@@ -60,7 +60,9 @@ public class PubSubChannelProvisioner
 			throws ProvisioningException {
 		// Use group name as subscription name
 		// Generate anonymous random group, if one not provided
-		String subscription = !StringUtils.hasText(group) ? "anonymous." + UUID.randomUUID().toString() : group;
+		String subscription = !StringUtils.hasText(group) ?
+				"anonymous." + name + "." + UUID.randomUUID().toString()
+				: group;
 
 		if (this.pubSubAdmin.getSubscription(subscription) == null) {
 			if (properties.getExtension().isAutoCreateResources()) {
