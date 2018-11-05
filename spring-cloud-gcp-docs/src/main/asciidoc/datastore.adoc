@@ -894,8 +894,8 @@ public interface TradeRepository extends DatastoreRepository<Trade, Key> {
 }
 ----
 
-Projections can be provided by name-convention-based query methods as well as by custom SQL queries.
-If using custom SQL queries, you can further restrict the fields retrieved from Datastore to just those required by the projection.
+Projections can be provided by name-convention-based query methods as well as by custom GQL queries.
+If using custom GQL queries, you can further restrict the fields retrieved from Datastore to just those required by the projection.
 However, custom select statements (those not using `SELECT *`) require composite indexes containing the selected fields.
 
 Properties of projection types defined using SpEL use the fixed name `target` for the underlying domain object.
