@@ -215,7 +215,7 @@ public interface DatastoreOperations {
 
 	/**
 	 * Create a {@link com.google.cloud.datastore.Key} from kind name and id.
-	 * @param kind the kind name
+	 * @param kind the Cloud Datastore kind name
 	 * @param id object to be used as id; if it is a Long, the value is used, otherwise it is
 	 * converted to String
 	 * @return created key
