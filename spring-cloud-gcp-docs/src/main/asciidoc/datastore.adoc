@@ -620,7 +620,7 @@ public class ExampleItem {
 ===== Read with offsets, limits, and sorting
 
 `DatastoreRepository` and custom defined entitiy repositories implement Spring Data's `PagingAndSortingRepository`, which supports offsets and limits using page numbers and page sizes.
-Paging and sorting options are also supported in `DatastoreTemplate` by supplying a `DatastoreQueryOptions`.
+Paging and sorting options are also supported in `DatastoreTemplate` by supplying a `DatastoreQueryOptions` to `findAll`.
 
 ===== Partial read
 
@@ -776,6 +776,7 @@ Cloud Datastore only supports filter components joined by AND, and the following
 * `is null`
 
 After writing a custom repository interface specifying just the signatures of these methods, implementations are generated for you and can be used with an auto-wired instance of the repository.
+Because of Cloud Datastore's requirement that explicitly selected fields must all appear in a composite index together, `find` name-based query methods are run as `SELECT *`.
 
 Delete queries are also supported. For example, query methods such as `deleteByAction` or `removeByAction` delete entities found by `findByAction`.
 Delete queries are executed as separate read and delete operations instead of as a single transaction because Cloud Datastore cannot query in transactions unless ancestors for queries are specified.
