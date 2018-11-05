@@ -31,13 +31,25 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedG
  */
 public class IapAuthenticationDetailsSource implements AuthenticationDetailsSource<HttpServletRequest,
 		PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails> {
+
 	private static final String DEFAULT_ROLE = "ROLE_USER";
+
+	private String role;
+
+	public IapAuthenticationDetailsSource() {
+		this(DEFAULT_ROLE);
+	}
+
+	public IapAuthenticationDetailsSource(String role) {
+		this.role = role;
+	}
+
 
 	@Override
 	public PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails buildDetails(HttpServletRequest request) {
 
 		return new PreAuthenticatedGrantedAuthoritiesWebAuthenticationDetails(
 				request,
-				Collections.singletonList(new SimpleGrantedAuthority(DEFAULT_ROLE)));
+				Collections.singletonList(new SimpleGrantedAuthority(this.role)));
 	}
 }

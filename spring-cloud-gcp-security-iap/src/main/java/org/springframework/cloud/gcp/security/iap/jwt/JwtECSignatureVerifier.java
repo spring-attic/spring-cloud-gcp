@@ -18,11 +18,14 @@ package org.springframework.cloud.gcp.security.iap.jwt;
 
 import java.net.URL;
 import java.security.interfaces.ECPublicKey;
+import java.text.ParseException;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.ECDSAVerifier;
+import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,7 +49,6 @@ public class JwtECSignatureVerifier implements JwtSignatureVerifier {
 		}
 
 		JWSHeader jwsHeader = signedJwt.getHeader();
-		ECPublicKey publicKey = null;
 
 		if (jwsHeader.getAlgorithm() == null) {
 			LOGGER.warn("JWT header algorithm null.");
@@ -56,9 +58,17 @@ public class JwtECSignatureVerifier implements JwtSignatureVerifier {
 		}
 		else {
 
-			publicKey = this.jwkRegistry.getPublicKey(jwsHeader.getKeyID(), jwsHeader.getAlgorithm().getName());
-			if (publicKey != null) {
-				return verifyAgainstPublicKey(signedJwt, publicKey);
+			JWK jwk = this.jwkRegistry.getKey(jwsHeader.getKeyID(), jwsHeader.getAlgorithm().getName());
+			ECPublicKey ecPublicKey = null;
+
+			try {
+				ecPublicKey = ECKey.parse(jwk.toJSONString()).toECPublicKey();
+				if (ecPublicKey != null) {
+					return verifyAgainstPublicKey(signedJwt, ecPublicKey);
+				}
+			}
+			catch (JOSEException | ParseException e) {
+				LOGGER.warn("JWK Public key extraction failed.", e);
 			}
 		}
 

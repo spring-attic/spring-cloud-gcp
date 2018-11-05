@@ -17,8 +17,6 @@
 package org.springframework.cloud.gcp.security.iap.jwk;
 
 import java.net.URL;
-import java.security.interfaces.ECPublicKey;
-import java.text.ParseException;
 import java.time.Clock;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,8 +24,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import org.apache.commons.logging.Log;
@@ -58,13 +54,12 @@ public class JwkRegistry {
 		this.jwkLoader = new JwkLoader(verificationUrl);
 	}
 
-	public ECPublicKey getPublicKey(String kid, String alg) {
+	public JWK getKey(String kid, String alg) {
 		JWK jwk = this.keyCache.get(kid);
 		if (jwk == null) {
 			jwk = downloadJwkKeysIfCacheNotFresh(kid);
 		}
 
-		ECPublicKey ecPublicKey = null;
 
 		if (jwk == null) {
 			LOGGER.warn(String.format("JWK key [%s] not found.", kid));
@@ -73,16 +68,8 @@ public class JwkRegistry {
 			LOGGER.warn(String.format(
 					"JWK key alorithm [%s] does not match expected algorithm [%s].", jwk.getAlgorithm(), alg));
 		}
-		else {
-			try {
-				ecPublicKey = ECKey.parse(jwk.toJSONString()).toECPublicKey();
-			}
-			catch (JOSEException | ParseException e) {
-				LOGGER.warn("JWK Public key extraction failed.", e);
-			}
-		}
 
-		return ecPublicKey;
+		return jwk;
 	}
 
 	private JWK downloadJwkKeysIfCacheNotFresh(String kid) {

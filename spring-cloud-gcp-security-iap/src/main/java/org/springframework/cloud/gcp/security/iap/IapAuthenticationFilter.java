@@ -27,12 +27,12 @@ public class IapAuthenticationFilter extends AbstractPreAuthenticatedProcessingF
 
 	public static final String HEADER_NAME = "x-goog-iap-jwt-assertion";
 
-	private JwtTokenVerifier verifyIapRequestHeader;
+	private JwtTokenVerifier jwtTokenVerifier;
 
-	public IapAuthenticationFilter(JwtTokenVerifier verifyIapRequestHeader,
+	public IapAuthenticationFilter(JwtTokenVerifier jwtTokenVerifier,
 									AuthenticationManager authenticationManager,
 									AuthenticationDetailsSource<HttpServletRequest, ?> detailsSource) {
-		this.verifyIapRequestHeader = verifyIapRequestHeader;
+		this.jwtTokenVerifier = jwtTokenVerifier;
 		setAuthenticationManager(authenticationManager);
 		setAuthenticationDetailsSource(detailsSource);
 	}
@@ -43,7 +43,7 @@ public class IapAuthenticationFilter extends AbstractPreAuthenticatedProcessingF
 		IapAuthentication authentication = null;
 
 		if (assertion != null) {
-			authentication = this.verifyIapRequestHeader.verifyAndExtractPrincipal(assertion);
+			authentication = this.jwtTokenVerifier.verifyAndExtractPrincipal(assertion);
 		}
 
 		return authentication;
