@@ -279,6 +279,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 		getDatastoreReadWriter().put(entity);
 	}
 
+	@Override
 	public Key createKey(String kind, Object id) {
 		return this.objectToKeyFactory.getKeyFromId(id, kind);
 	}
