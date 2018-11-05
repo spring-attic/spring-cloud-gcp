@@ -58,7 +58,7 @@ public interface ReadWriteConversions {
 			TypeInformation targetTypeInformation);
 
 	/**
-	 * Converts an object to a Cloud Datastore {@link Value}
+	 * Converts an object to a Cloud Datastore {@link Value}; supports collections.
 	 * @param obj the objects to convert.
 	 * @param persistentProperty the source field information.
 	 * @return a Cloud Datastore value.
