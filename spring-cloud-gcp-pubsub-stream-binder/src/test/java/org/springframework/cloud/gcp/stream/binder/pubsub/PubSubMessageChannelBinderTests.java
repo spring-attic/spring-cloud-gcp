@@ -65,7 +65,6 @@ public class PubSubMessageChannelBinderTests extends
 		// Do nothing. Original test tests for Lifecycle logic that we don't need.
 	}
 
-
 	@Test
 	@Ignore("Subscriptions with the same name for different topics are not allowed by Pub/Sub.")
 	@Override
