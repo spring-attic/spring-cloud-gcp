@@ -20,25 +20,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.BaseEntity;
-import com.google.cloud.datastore.Blob;
-import com.google.cloud.datastore.Cursor;
 import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.GqlQuery.Builder;
 import com.google.cloud.datastore.Key;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.data.repository.query.Parameter;
@@ -56,33 +50,6 @@ import org.springframework.util.StringUtils;
  */
 public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
-	private static final Map<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>
-			GQL_PARAM_BINDING_FUNC_MAP;
-
-	static {
-		GQL_PARAM_BINDING_FUNC_MAP = ImmutableMap
-				.<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>builder()
-				.put(Cursor.class, builder -> (s, o) -> builder.setBinding(s, (Cursor) o))
-				.put(String.class, builder -> (s, o) -> builder.setBinding(s, (String) o))
-				.put(String[].class, builder -> (s, o) -> builder.setBinding(s, (String[]) o))
-				.put(Long.class, builder -> (s, o) -> builder.setBinding(s, (Long) o))
-				.put(long[].class, builder -> (s, o) -> builder.setBinding(s, (long[]) o))
-				.put(Double.class, builder -> (s, o) -> builder.setBinding(s, (Double) o))
-				.put(double[].class, builder -> (s, o) -> builder.setBinding(s, (double[]) o))
-				.put(Boolean.class,
-						builder -> (s, o) -> builder.setBinding(s, (Boolean) o))
-				.put(boolean[].class,
-						builder -> (s, o) -> builder.setBinding(s, (boolean[]) o))
-				.put(Timestamp.class,
-						builder -> (s, o) -> builder.setBinding(s, (Timestamp) o))
-				.put(Timestamp[].class,
-						builder -> (s, o) -> builder.setBinding(s, (Timestamp[]) o))
-				.put(Key.class, builder -> (s, o) -> builder.setBinding(s, (Key) o))
-				.put(Key[].class, builder -> (s, o) -> builder.setBinding(s, (Key[]) o))
-				.put(Blob.class, builder -> (s, o) -> builder.setBinding(s, (Blob) o))
-				.put(Blob[].class, builder -> (s, o) -> builder.setBinding(s, (Blob[]) o))
-				.build();
-	}
 
 	private final String gql;
 
@@ -235,14 +202,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 		for (int i = 0; i < tags.size(); i++) {
 			Object val = vals[i];
-			if (!GQL_PARAM_BINDING_FUNC_MAP.containsKey(val.getClass())) {
-				throw new DatastoreDataException(
-						"Param value for GQL annotated query is not a supported Cloud "
-								+ "Datastore GQL param type: " + val.getClass());
-			}
-			// this value must be set due to compiler rule
-			Object unusued = GQL_PARAM_BINDING_FUNC_MAP.get(val.getClass()).apply(builder)
-					.apply(tags.get(i), val);
+			DatastoreNativeTypes.bindValueToGqlBuilder(builder, tags.get(i), val);
 		}
 		return builder.build();
 	}

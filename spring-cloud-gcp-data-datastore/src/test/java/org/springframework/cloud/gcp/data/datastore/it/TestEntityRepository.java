@@ -22,6 +22,7 @@ import java.util.Set;
 
 import com.google.cloud.datastore.Key;
 
+import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,6 +43,11 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	int deleteBySize(long size);
 
 	List<TestEntity> removeByColor(String color);
+
+	List<TestEntity> findByShape(Shape shape);
+
+	@Query("select * from test_entities_ci where shape = @enum_val")
+	List<TestEntity> findByEnumQueryParam(@Param("enum_val") Shape shape);
 
 	@Query(value = "select __key__ from  test_entities_ci "
 			+ "where id = @id_val", exists = true)

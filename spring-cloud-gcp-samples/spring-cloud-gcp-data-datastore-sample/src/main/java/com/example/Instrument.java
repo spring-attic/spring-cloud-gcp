@@ -16,31 +16,36 @@
 
 package com.example;
 
-import java.time.LocalDate;
 import java.util.Objects;
 
+import com.google.cloud.datastore.Key;
+
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import org.springframework.data.annotation.Id;
 
 /**
- * @author Dmitry Solomakha
+ * Represents individual personal musical instruments a {@link Singer} can own.
+ *
+ * @author Chengyuan Zhao
  */
 @Entity
-public class Album {
-	final private String albumName;
+public class Instrument {
 
-	final private LocalDate date;
+	@Id
+	Key instrumentId;
 
-	Album(String albumName, LocalDate date) {
-		this.albumName = albumName;
-		this.date = date;
+	private String type;
+
+	public Instrument(String type) {
+		this.type = type;
 	}
 
-	String getAlbumName() {
-		return this.albumName;
+	public String getType() {
+		return this.type;
 	}
 
-	LocalDate getDate() {
-		return this.date;
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	@Override
@@ -51,19 +56,12 @@ public class Album {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		Album album = (Album) o;
-		return Objects.equals(getAlbumName(), album.getAlbumName())
-				&& Objects.equals(this.date, album.date);
+		Instrument instrument = (Instrument) o;
+		return this.type.equals(instrument.type);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getAlbumName(), this.date);
-	}
-
-	@Override
-	public String toString() {
-		return "Album{" + "albumName='" + this.albumName + '\'' + ", date=" + this.date
-				+ '}';
+		return Objects.hash(this.type);
 	}
 }

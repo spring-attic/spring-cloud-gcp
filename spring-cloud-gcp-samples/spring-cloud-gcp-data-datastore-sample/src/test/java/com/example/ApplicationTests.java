@@ -45,8 +45,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
@@ -63,21 +65,24 @@ import static org.junit.Assume.assumeThat;
  */
 @RunWith(SpringRunner.class)
 @TestPropertySource("classpath:application-test.properties")
-@SpringBootTest(classes = { DatastoreRepositoryExample.class },
-		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = {
+		DatastoreRepositoryExample.class }, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ApplicationTests {
-	@Autowired
-	private TestRestTemplate restTemplate;
-
-	final ObjectMapper mapper = new ObjectMapper();
-
-
-	@Autowired
-	private CommandLineRunner commandLineRunner;
 
 	private static PrintStream systemOut;
 
 	private static ByteArrayOutputStream baos;
+
+	final ObjectMapper mapper = new ObjectMapper();
+
+	@Autowired
+	private TestRestTemplate restTemplate;
+
+	@Autowired
+	private CommandLineRunner commandLineRunner;
+
+	@Autowired
+	private SingerRepository singerRepository;
 
 	@BeforeClass
 	public static void checkToRun() {
@@ -99,19 +104,22 @@ public class ApplicationTests {
 		Singer frodoBaggins = new Singer(null, "Frodo", "Baggins", null);
 
 		List<Singer> singersAsc = getSingers("/singers?sort=lastName,ASC");
-		assertEquals("Verify ASC order", Arrays.asList(johnDoe, maryJane, scottSmith), singersAsc);
+		assertEquals("Verify ASC order", Arrays.asList(johnDoe, maryJane, scottSmith),
+				singersAsc);
 		List<Singer> singersDesc = getSingers("/singers?sort=lastName,DESC");
-		assertEquals("Verify DESC order", Arrays.asList(scottSmith, maryJane, johnDoe), singersDesc);
+		assertEquals("Verify DESC order", Arrays.asList(scottSmith, maryJane, johnDoe),
+				singersDesc);
 
-		sendRequest("/singers", "{\"firstName\": \"Frodo\", \"lastName\": \"Baggins\"}", HttpMethod.POST);
+		sendRequest("/singers", "{\"firstName\": \"Frodo\", \"lastName\": \"Baggins\"}",
+				HttpMethod.POST);
 
 		Awaitility.await().atMost(15, TimeUnit.SECONDS)
 				.until(() -> getSingers("/singers?sort=lastName,ASC").size() == 4);
 
-
 		List<Singer> singersAfterInsertion = getSingers("/singers?sort=lastName,ASC");
 		assertEquals("Verify post",
-				Arrays.asList(frodoBaggins, johnDoe, maryJane, scottSmith), singersAfterInsertion);
+				Arrays.asList(frodoBaggins, johnDoe, maryJane, scottSmith),
+				singersAfterInsertion);
 
 		sendRequest("/singers/singer1", null, HttpMethod.DELETE);
 
@@ -119,11 +127,39 @@ public class ApplicationTests {
 				.until(() -> getSingers("/singers?sort=lastName,ASC").size() == 3);
 
 		List<Singer> singersAfterDeletion = getSingers("/singers?sort=lastName,ASC");
-		assertEquals("Verify delete",
-				Arrays.asList(frodoBaggins, maryJane, scottSmith), singersAfterDeletion);
+		assertEquals("Verify delete", Arrays.asList(frodoBaggins, maryJane, scottSmith),
+				singersAfterDeletion);
 
+		assertTrue("Verify relationships saved in transaction",
+				baos.toString().contains("Relationship links "
+						+ "were saved between a singer, bands, and instruments in a single transaction: "
+						+ "Singer{singerId='singer2', firstName='Mary', lastName='Jane', "
+						+ "albums=[Album{albumName='a', date=2012-01-20}, Album{albumName='b', "
+						+ "date=2018-02-12}], firstBand=band1, bands=band1,band2, "
+						+ "personalInstruments=recorder,cow bell}"));
 
-		assertTrue("Verify successful run", baos.toString().contains("This concludes the sample."));
+		assertThat(
+				this.singerRepository.findById("singer2").get().getPersonalInstruments()
+						.stream().map(Instrument::getType).collect(Collectors.toList()),
+				containsInAnyOrder("recorder", "cow bell"));
+
+		assertThat(
+				this.singerRepository.findById("singer2").get().getBands().stream()
+						.map(Band::getName).collect(Collectors.toList()),
+				containsInAnyOrder("band1", "band2"));
+
+		assertThat(
+				this.singerRepository.findById("singer3").get().getPersonalInstruments()
+						.stream().map(Instrument::getType).collect(Collectors.toList()),
+				containsInAnyOrder("triangle", "marimba"));
+
+		assertThat(
+				this.singerRepository.findById("singer3").get().getBands().stream()
+						.map(Band::getName).collect(Collectors.toList()),
+				containsInAnyOrder("band3", "band2"));
+
+		assertTrue("Verify successful run",
+				baos.toString().contains("This concludes the sample."));
 	}
 
 	private String sendRequest(String url, String json, HttpMethod method) {
@@ -131,7 +167,8 @@ public class ApplicationTests {
 		map.add("Content-Type", "application/json");
 
 		HttpEntity<String> entity = new HttpEntity<>(json, map);
-		ResponseEntity<String> response = this.restTemplate.exchange(url, method, entity, String.class);
+		ResponseEntity<String> response = this.restTemplate.exchange(url, method, entity,
+				String.class);
 		return response.getBody();
 	}
 
@@ -139,14 +176,14 @@ public class ApplicationTests {
 	private List<Singer> getSingers(String url) throws java.io.IOException {
 		String response = this.restTemplate.getForObject(url, String.class);
 
-		Map<String, Object> parsedResponse =
-				this.mapper.readValue(response, new TypeReference<HashMap<String, Object>>() { });
-		List<Map<String, Object>> singerMaps =
-				(List<Map<String, Object>>) ((Map<String, Object>) parsedResponse.get("_embedded")).get("singers");
+		Map<String, Object> parsedResponse = this.mapper.readValue(response,
+				new TypeReference<HashMap<String, Object>>() {
+				});
+		List<Map<String, Object>> singerMaps = (List<Map<String, Object>>) ((Map<String, Object>) parsedResponse
+				.get("_embedded")).get("singers");
 
-		return singerMaps.stream()
-				.map(som ->
-						new Singer(null, (String) som.get("firstName"), (String) som.get("lastName"), null))
+		return singerMaps.stream().map(som -> new Singer(null,
+				(String) som.get("firstName"), (String) som.get("lastName"), null))
 				.collect(Collectors.toList());
 	}
 }

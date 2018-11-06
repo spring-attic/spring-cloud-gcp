@@ -25,22 +25,29 @@ import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
+import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ByteString;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.ui.ModelMap;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 /**
- * Code sample that shows how Spring Cloud GCP can be leveraged to use Google Cloud Client Libraries.
+ * Code sample that shows how Spring Cloud GCP can be leveraged to use Google Cloud Client
+ * Libraries.
  *
- * <p></p>This uses the Cloud Vision API with the {@link ImageAnnotatorClient}, which is configured and produced
- * in {@link Application}. See {@link Application#imageAnnotatorClient(com.google.api.gax.core.CredentialsProvider)}
+ * <p>
+ * This uses the Cloud Vision API with the {@link ImageAnnotatorClient}, which is
+ * configured and produced in {@link Application}. See
+ * {@link Application#imageAnnotatorClient(com.google.api.gax.core.CredentialsProvider)}
  * to understand how the client is produced with the help of spring-cloud-gcp-starter.
  *
  * @author João André Martins
+ * @author Daniel Zou
  */
 @RestController
 public class VisionController {
@@ -58,7 +65,7 @@ public class VisionController {
 	 * @throws Exception if the Vision API call produces an error
 	 */
 	@GetMapping("/vision")
-	public String uploadImage(String imageUrl) throws Exception {
+	public ModelAndView uploadImage(String imageUrl, ModelMap map) throws Exception {
 		// Copies the content of the image to memory.
 		byte[] imageBytes = StreamUtils.copyToByteArray(this.resourceLoader.getResource(imageUrl).getInputStream());
 
@@ -72,31 +79,19 @@ public class VisionController {
 				AnnotateImageRequest.newBuilder().setImage(image).addFeatures(feature).build();
 		responses = this.imageAnnotatorClient.batchAnnotateImages(Collections.singletonList(request));
 
-		StringBuilder responseBuilder = new StringBuilder("<table border=\"1\">");
-
-		responseBuilder.append("<tr><th>description</th><th>score</th></tr>");
-
 		// We're only expecting one response.
 		if (responses.getResponsesCount() == 1) {
 			AnnotateImageResponse response = responses.getResponses(0);
 
-			if (response.hasError()) {
-				throw new Exception(response.getError().getMessage());
-			}
-
+			ImmutableMap.Builder<String, Float> annotations = ImmutableMap.builder();
 			for (EntityAnnotation annotation : response.getLabelAnnotationsList()) {
-				responseBuilder.append("<tr><td>")
-						.append(annotation.getDescription())
-						.append("</td><td>")
-						.append(annotation.getScore())
-						.append("</td></tr>");
+				annotations.put(annotation.getDescription(), annotation.getScore());
 			}
+			map.addAttribute("annotations", annotations.build());
 		}
 
-		responseBuilder.append("</table>");
+		map.addAttribute("imageUrl", imageUrl);
 
-		responseBuilder.append("<p><img src='" + imageUrl + "'/></p>");
-
-		return responseBuilder.toString();
+		return new ModelAndView("result", map);
 	}
 }

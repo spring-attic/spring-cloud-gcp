@@ -16,6 +16,8 @@
 
 package com.example;
 
+import java.util.ArrayList;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,6 +46,8 @@ public class ReceiverConfiguration {
 
 	private static final String SUBSCRIPTION_NAME = "json-payload-sample-subscription";
 
+	private final ArrayList<Person> processedPersonsList = new ArrayList<>();
+
 	@Bean
 	public DirectChannel pubSubInputChannel() {
 		return new DirectChannel();
@@ -64,7 +68,13 @@ public class ReceiverConfiguration {
 	public void messageReceiver(Person payload,
 			@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) BasicAcknowledgeablePubsubMessage message) {
 		LOGGER.info("Message arrived! Payload: " + payload);
+		this.processedPersonsList.add(payload);
 		message.ack();
 	}
 
+	@Bean
+	@Qualifier("ProcessedPersonsList")
+	public ArrayList<Person> processedPersonsList() {
+		return this.processedPersonsList;
+	}
 }
