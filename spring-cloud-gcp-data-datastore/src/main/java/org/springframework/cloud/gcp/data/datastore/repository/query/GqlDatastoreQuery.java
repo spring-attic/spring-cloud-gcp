@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -252,7 +253,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		Expression[] expressions = getSpelExpressionParts();
 		StringBuilder sb = new StringBuilder();
 		Map<Object, String> valueToTag = new HashMap<>();
-		int tagNum = 0;
+		AtomicInteger tagNum = new AtomicInteger(0);
 		EvaluationContext evaluationContext = this.evaluationContextProvider
 				.getEvaluationContext(this.queryMethod.getParameters(),
 						queryTagsValues.rawParams);
@@ -262,21 +263,16 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			}
 			else if (expression instanceof SpelExpression) {
 				Object value = expression.getValue(evaluationContext);
-				if (valueToTag.containsKey(value)) {
-					sb.append("@").append(valueToTag.get(value));
-				}
-				else {
+				sb.append("@").append(valueToTag.computeIfAbsent(value, val -> {
 					String newTag;
 					do {
-						tagNum++;
-						newTag = "SpELtag" + tagNum;
+						newTag = "SpELtag" + tagNum.incrementAndGet();
 					}
 					while (queryTagsValues.initialTags.contains(newTag));
-					valueToTag.put(value, newTag);
 					queryTagsValues.params.add(value);
 					queryTagsValues.tagsOrdered.add(newTag);
-					sb.append("@").append(newTag);
-				}
+					return newTag;
+				}));
 			}
 			else {
 				throw new DatastoreDataException(
