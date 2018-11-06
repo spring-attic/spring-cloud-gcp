@@ -16,6 +16,8 @@
 
 package com.example;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -39,14 +41,15 @@ public class ExampleController {
 	}
 
 	@RequestMapping("/")
-	public String work() {
-		this.workService.busyWork();
+	public String work(HttpServletRequest request) {
+		String meetUrl = request.getRequestURL().toString() + "/meet";
+		this.workService.visitMeetEndpoint(meetUrl);
 		return "finished";
 	}
 
 	@RequestMapping("/meet")
 	public String meet() throws InterruptedException {
-		long duration = 200L + (long) (Math.random() * 800L);
+		long duration = 200L + (long) (Math.random() * 500L);
 
 		Thread.sleep(duration);
 
