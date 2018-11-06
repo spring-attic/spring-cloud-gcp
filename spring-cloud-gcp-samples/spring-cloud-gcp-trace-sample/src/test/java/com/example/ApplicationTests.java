@@ -94,7 +94,11 @@ public class ApplicationTests {
 	@Before
 	public void setupTraceClient() throws IOException {
 		this.url = String.format("http://localhost:%d/", this.port);
+
+		// Create a new RestTemplate here because the auto-wired instance has built-in instrumentation
+		// which interferes with us setting the 'x-cloud-trace-context' header.
 		this.testRestTemplate = new TestRestTemplate();
+
 		this.logClient = LoggingOptions.newBuilder()
 				.setProjectId(this.projectIdProvider.getProjectId())
 				.setCredentials(this.credentialsProvider.getCredentials())
