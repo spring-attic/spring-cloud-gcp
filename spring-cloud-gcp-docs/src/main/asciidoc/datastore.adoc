@@ -565,7 +565,21 @@ The Template API provides convenience methods for:
 
 ==== GQL Query
 
-This feature is not supported yet.
+In addition to retrieving entities by their IDs, you can also submit queries.
+
+[source,java]
+----
+  <T> Iterable<T> query(Query<? extends BaseEntity> query, Class<T> entityClass);
+
+  <A, T> Iterable<T> query(Query<A> query, Function<A, T> entityFunc);
+
+  Iterable<Key> queryKeys(Query<Key> query);
+----
+
+These methods, respectively, allow querying for:
+* entities mapped by a given entity class using all the same mapping and converting features
+* arbitrary types produced by a given mapping function
+* only the Cloud Datastore keys of the entities found by the query
 
 ==== Find by ID(s)
 
@@ -603,13 +617,10 @@ public class ExampleItem {
 }
 ----
 
-===== Read with offsets and limits
+===== Read with offsets, limits, and sorting
 
-This feature is not supported yet.
-
-===== Sorting
-
-This feature is not supported yet.
+`DatastoreRepository` and custom-defined entitiy repositories implement the Spring Data `PagingAndSortingRepository`, which supports offsets and limits using page numbers and page sizes.
+Paging and sorting options are also supported in `DatastoreTemplate` by supplying a `DatastoreQueryOptions` to `findAll`.
 
 ===== Partial read
 
@@ -765,6 +776,7 @@ Cloud Datastore only supports filter components joined by AND, and the following
 * `is null`
 
 After writing a custom repository interface specifying just the signatures of these methods, implementations are generated for you and can be used with an auto-wired instance of the repository.
+Because of Cloud Datastore's requirement that explicitly selected fields must all appear in a composite index together, `find` name-based query methods are run as `SELECT *`.
 
 Delete queries are also supported. For example, query methods such as `deleteByAction` or `removeByAction` delete entities found by `findByAction`.
 Delete queries are executed as separate read and delete operations instead of as a single transaction because Cloud Datastore cannot query in transactions unless ancestors for queries are specified.
@@ -860,7 +872,35 @@ public interface TraderRepository extends CrudRepository<Trader, String> {
 
 ==== Projections
 
-This feature is not supported yet.
+Spring Data Cloud Datastore supports {spring-data-commons-ref}/#projections[projections]. You can define projection interfaces based on domain types and add query methods that return them in your repository:
+
+[source, java]
+----
+public interface TradeProjection {
+
+	String getAction();
+
+	@Value("#{target.symbol + ' ' + target.action}")
+	String getSymbolAndAction();
+}
+
+public interface TradeRepository extends DatastoreRepository<Trade, Key> {
+
+	List<Trade> findByTraderId(String traderId);
+
+	List<TradeProjection> findByAction(String action);
+
+	@Query("SELECT action, symbol FROM trades WHERE action = @action")
+	List<TradeProjection> findByQuery(String action);
+}
+----
+
+Projections can be provided by name-convention-based query methods as well as by custom GQL queries.
+If using custom GQL queries, you can further restrict the fields retrieved from Cloud Datastore to just those required by the projection.
+However, custom select statements (those not using `SELECT *`) require composite indexes containing the selected fields.
+
+Properties of projection types defined using SpEL use the fixed name `target` for the underlying domain object.
+As a result, accessing underlying properties take the form `target.<property-name>`.
 
 ==== REST Repositories
 
