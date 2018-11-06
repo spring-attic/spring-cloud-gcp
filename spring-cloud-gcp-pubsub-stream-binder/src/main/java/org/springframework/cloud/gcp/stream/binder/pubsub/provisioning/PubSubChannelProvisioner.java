@@ -62,7 +62,7 @@ public class PubSubChannelProvisioner
 		// Generate anonymous random group, if one not provided
 		String subscription = !StringUtils.hasText(group) ?
 				"anonymous." + name + "." + UUID.randomUUID().toString()
-				: name + "." + group;
+				: group;
 
 		if (this.pubSubAdmin.getSubscription(subscription) == null) {
 			if (properties.getExtension().isAutoCreateResources()) {
