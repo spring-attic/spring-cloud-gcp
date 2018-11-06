@@ -58,12 +58,19 @@ public interface ReadWriteConversions {
 			TypeInformation targetTypeInformation);
 
 	/**
-	 * Converts an object to a Cloud Datastore {@link Value}
+	 * Converts an object to a Cloud Datastore {@link Value}; supports collections.
 	 * @param obj the objects to convert.
 	 * @param persistentProperty the source field information.
 	 * @return a Cloud Datastore value.
 	 */
 	Value convertOnWrite(Object obj, DatastorePersistentProperty persistentProperty);
+
+	/**
+	 * Converts an object to a Cloud Datastore {@link Value}, for non-collection objects
+	 * @param obj the object to convert.
+	 * @return a Cloud Datastore value.
+	 */
+	Value convertOnWriteSingle(Object obj);
 
 	/**
 	 * Get the Cloud Datastore-compatible native Java type that can be used to store the

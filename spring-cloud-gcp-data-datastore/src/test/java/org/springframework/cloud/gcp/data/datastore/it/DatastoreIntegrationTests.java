@@ -17,12 +17,15 @@
 package org.springframework.cloud.gcp.data.datastore.it;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.cloud.datastore.Blob;
+import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Key;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
@@ -74,6 +77,11 @@ public class DatastoreIntegrationTests {
 	@Autowired
 	private TransactionalTemplateService transactionalTemplateService;
 
+	@Autowired
+	private DatastoreReaderWriter datastore;
+
+	private Key keyForMap;
+
 	@BeforeClass
 	public static void checkToRun() {
 		assumeThat(
@@ -90,6 +98,9 @@ public class DatastoreIntegrationTests {
 		this.datastoreTemplate.deleteAll(TreeCollection.class);
 		this.datastoreTemplate.deleteAll(ReferenceEntry.class);
 		this.testEntityRepository.deleteAll();
+		if (this.keyForMap != null) {
+			this.datastore.delete(this.keyForMap);
+		}
 	}
 
 	@Test
@@ -304,6 +315,20 @@ public class DatastoreIntegrationTests {
 		assertEquals(parent, loadedParentAfterUpdate);
 	}
 
+	@Test
+	public void mapTest() {
+		Map<String, Long> map = new HashMap<>();
+		map.put("field1", 1L);
+		map.put("field2", 2L);
+		map.put("field3", 3L);
+
+		this.keyForMap = this.datastoreTemplate.createKey("map", "myMap");
+
+		this.datastoreTemplate.writeMap(this.keyForMap, map);
+		Map<String, Long> loadedMap = this.datastoreTemplate.findByIdAsMap(this.keyForMap, Long.class);
+
+		assertEquals(map, loadedMap);
+	}
 
 	private long waitUntilTrue(Supplier<Boolean> condition) {
 		Stopwatch stopwatch = Stopwatch.createStarted();
