@@ -118,10 +118,10 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	@Override
 	public Object execute(Object[] parameters) {
 
-		QueryTagValue queryTagValue = getQueryTagsValues(parameters);
+		QueryTagsValues queryTagsValues = getQueryTagsValues(parameters);
 
-		GqlQuery query = bindArgsToGqlQuery(queryTagValue.finalGql,
-				queryTagValue.tagsOrdered, queryTagValue.params);
+		GqlQuery query = bindArgsToGqlQuery(queryTagsValues.finalGql,
+				queryTagsValues.tagsOrdered, queryTagsValues.params);
 
 		boolean returnTypeIsCollection = this.queryMethod.isCollectionQuery();
 		Class returnedItemType = this.queryMethod.getReturnedObjectType();
@@ -157,11 +157,11 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return result;
 	}
 
-	private QueryTagValue getQueryTagsValues(Object[] parameters) {
-		QueryTagValue queryTagValue = new QueryTagValue(getOriginalParamTags(),
+	private QueryTagsValues getQueryTagsValues(Object[] parameters) {
+		QueryTagsValues queryTagsValues = new QueryTagsValues(getOriginalParamTags(),
 				parameters);
-		resolveSpelTags(queryTagValue);
-		return queryTagValue;
+		resolveSpelTags(queryTagsValues);
+		return queryTagsValues;
 	}
 
 	private String getGqlResolvedEntityClassName() {
@@ -248,14 +248,14 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return builder.build();
 	}
 
-	private void resolveSpelTags(QueryTagValue queryTagValue) {
+	private void resolveSpelTags(QueryTagsValues queryTagsValues) {
 		Expression[] expressions = getSpelExpressionParts();
 		StringBuilder sb = new StringBuilder();
 		Map<Object, String> valueToTag = new HashMap<>();
 		int tagNum = 0;
 		EvaluationContext evaluationContext = this.evaluationContextProvider
 				.getEvaluationContext(this.queryMethod.getParameters(),
-						queryTagValue.rawParams);
+						queryTagsValues.rawParams);
 		for (Expression expression : expressions) {
 			if (expression instanceof LiteralExpression) {
 				sb.append(expression.getValue(String.class));
@@ -271,10 +271,10 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 						tagNum++;
 						newTag = "SpELtag" + tagNum;
 					}
-					while (queryTagValue.initialTags.contains(newTag));
+					while (queryTagsValues.initialTags.contains(newTag));
 					valueToTag.put(value, newTag);
-					queryTagValue.params.add(value);
-					queryTagValue.tagsOrdered.add(newTag);
+					queryTagsValues.params.add(value);
+					queryTagsValues.tagsOrdered.add(newTag);
 					sb.append("@").append(newTag);
 				}
 			}
@@ -284,7 +284,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 								+ "concatenation of Literal and SpEL expressions.");
 			}
 		}
-		queryTagValue.finalGql = sb.toString();
+		queryTagsValues.finalGql = sb.toString();
 	}
 
 	private Expression[] getSpelExpressionParts() {
@@ -310,6 +310,8 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 	}
 
+	// This allows users to use the java class name in place of the Kind name in queries
+	// because the kind name can contain SpEL and may vary.
 	private String resolveEntityClassNames(String sql) {
 		Pattern pattern = Pattern.compile("\\" + ENTITY_CLASS_NAME_BOOKEND + "\\S+\\"
 				+ ENTITY_CLASS_NAME_BOOKEND + "");
@@ -339,7 +341,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	}
 
 	// Convenience class to hold a grouping of GQL, initialTags, and parameter values.
-	private static class QueryTagValue {
+	private static class QueryTagsValues {
 
 		final Set<String> initialTags;
 
@@ -351,7 +353,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		String finalGql;
 
-		QueryTagValue(List<String> initialTags, Object[] rawParams) {
+		QueryTagsValues(List<String> initialTags, Object[] rawParams) {
 			this.params = new ArrayList<>(Arrays.asList(rawParams));
 			this.rawParams = rawParams;
 			this.initialTags = new HashSet<>(initialTags);
