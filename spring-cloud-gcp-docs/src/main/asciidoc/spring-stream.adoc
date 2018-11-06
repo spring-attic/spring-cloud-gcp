@@ -29,25 +29,45 @@ A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-
 
 This binder binds producers to Google Cloud Pub/Sub topics and consumers to subscriptions.
 
-NOTE: Partitioning and consumer groups are not currently supported by this binder.
+NOTE: Partitioning is currently not supported by this binder.
 
 === Configuration
 
-You can configure the Spring Cloud Stream Binder for Google Cloud Pub/Sub to automatically generate the underlying resources, like the Google Cloud Pub/Sub subscriptions for the consumers.
-For that, you can use the `spring.cloud.stream.gcp.pubsub.bindings.[CHANNEL-NAME].consumer.auto-create-resources` property, which is turned ON by default.
+You can configure the Spring Cloud Stream Binder for Google Cloud Pub/Sub to automatically generate the underlying resources, like the Google Cloud Pub/Sub topics and subscriptions for producers and consumers.
+For that, you can use the `spring.cloud.stream.gcp.pubsub.bindings.<channelName>.<consumer|producer>.auto-create-resources` property, which is turned ON by default.
 
-If automatic resource creation is turned ON and the subscription and the topic do not exist for a consumer, a subscription and a topic will be created with the same name.
-For example, for the following configuration, a topic and a subscription called `myConsumer` would be created.
-
-.application.properties
-----
-spring.cloud.stream.bindings.output.destination=myConsumer
-
-spring.cloud.stream.gcp.pubsub.bindings.output.consumer.auto-create-resources=true
-----
-
-Starting with version 1.1, these properties can be configured globally for all the bindings, e.g. `spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources`.
+Starting with version 1.1, these and other binder properties can be configured globally for all the bindings, e.g. `spring.cloud.stream.gcp.pubsub.default.consumer.auto-create-resources`.
 
 If you are using Pub/Sub auto-configuration from the Spring Cloud GCP Pub/Sub Starter, you should refer to the <<pubsub-configuration,configuration>> section for other Pub/Sub parameters.
 
 NOTE: To use this binder with a https://cloud.google.com/pubsub/docs/emulator[running emulator], configure its host and port via `spring.cloud.gcp.pubsub.emulator-host`.
+
+==== Producer Destination Configuration
+
+If automatic resource creation is turned ON and the topic corresponding to the destination name does not exist, it will be created.
+
+For example, for the following configuration, a topic called `myEvents` would be created.
+
+.application.properties
+----
+spring.cloud.stream.bindings.events.destination=myEvents
+spring.cloud.stream.gcp.pubsub.bindings.events.producer.auto-create-resources=true
+----
+
+==== Consumer Destination Configuration
+
+If automatic resource creation is turned ON and the subscription and/or the topic do not exist for a consumer, a subscription and potentially a topic will be created.
+The topic name will be the same as the destination name, and the subscription name will be the same as the consumer group name.
+If the consumer group is not specified, an anonymous one will be created with the name `anonymous.<destinationName>.<randomUUID>`.
+
+For example, for the following configuration, a topic named `myEvents` and a subscription called `counsumerGroup1` would be created.
+If the consumer group is not specified, a subscription called `anonymous.myEvents.a6d83782-c5a3-4861-ac38-e6e2af15a7be` would be created.
+
+.application.properties
+----
+spring.cloud.stream.bindings.events.destination=myEvents
+spring.cloud.stream.gcp.pubsub.bindings.events.consumer.auto-create-resources=true
+
+# specify consumer group, and avoid anonymous consumer group generation
+spring.cloud.stream.bindings.events.group=consumerGroup1
+----

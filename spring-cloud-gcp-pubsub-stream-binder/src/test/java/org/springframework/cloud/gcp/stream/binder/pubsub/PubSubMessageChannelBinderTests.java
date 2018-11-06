@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.stream.binder.pubsub;
 
 import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
@@ -61,5 +63,12 @@ public class PubSubMessageChannelBinderTests extends
 	@Override
 	public void testClean() {
 		// Do nothing. Original test tests for Lifecycle logic that we don't need.
+	}
+
+	@Test
+	@Ignore("Subscriptions with the same name for different topics are not allowed by Pub/Sub.")
+	@Override
+	public void testSendAndReceiveMultipleTopics() throws Exception {
+		super.testSendAndReceiveMultipleTopics();
 	}
 }
