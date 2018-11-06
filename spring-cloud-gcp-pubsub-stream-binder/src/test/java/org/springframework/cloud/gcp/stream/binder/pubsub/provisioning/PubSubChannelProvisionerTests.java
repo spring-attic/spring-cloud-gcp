@@ -70,9 +70,9 @@ public class PubSubChannelProvisionerTests {
 		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
 				.provisionConsumerDestination("topic_A", "group_A", this.properties);
 
-		assertThat(result.getName()).isEqualTo("group_A");
+		assertThat(result.getName()).isEqualTo("topic_A.group_A");
 
-		verify(this.pubSubAdminMock).createSubscription("group_A", "topic_A");
+		verify(this.pubSubAdminMock).createSubscription("topic_A.group_A", "topic_A");
 	}
 
 	@Test
