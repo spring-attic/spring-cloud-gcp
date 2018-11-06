@@ -900,7 +900,7 @@ If using custom GQL queries, you can further restrict the fields retrieved from 
 However, custom select statements (those not using `SELECT *`) require composite indexes containing the selected fields.
 
 Properties of projection types defined using SpEL use the fixed name `target` for the underlying domain object.
-As a result accessing underlying properties take the form `target.<property-name>`.
+As a result, accessing underlying properties take the form `target.<property-name>`.
 
 ==== REST Repositories
 
