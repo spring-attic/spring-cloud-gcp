@@ -619,7 +619,7 @@ public class ExampleItem {
 
 ===== Read with offsets, limits, and sorting
 
-`DatastoreRepository` and custom defined entitiy repositories implement Spring Data's `PagingAndSortingRepository`, which supports offsets and limits using page numbers and page sizes.
+`DatastoreRepository` and custom-defined entitiy repositories implement the Spring Data `PagingAndSortingRepository`, which supports offsets and limits using page numbers and page sizes.
 Paging and sorting options are also supported in `DatastoreTemplate` by supplying a `DatastoreQueryOptions` to `findAll`.
 
 ===== Partial read
