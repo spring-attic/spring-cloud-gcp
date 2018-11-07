@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -53,6 +54,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -253,6 +255,33 @@ public class DatastoreTemplate implements DatastoreOperations {
 						DatastoreTemplate.this.datastoreEntityConverter,
 						DatastoreTemplate.this.datastoreMappingContext,
 						DatastoreTemplate.this.objectToKeyFactory)));
+	}
+
+	@Override
+	public <T> Map<String, T> findByIdAsMap(Key key, Class<T> valueType) {
+		Assert.notNull(key, "A non-null Key is required.");
+		Assert.notNull(valueType, "A non-null valueType is required.");
+
+		Entity entity = getDatastoreReadWriter().get(key);
+		return this.datastoreEntityConverter.readAsMap(String.class, ClassTypeInformation.from(valueType), entity);
+	}
+
+	@Override
+	public <V> void writeMap(Key datastoreKey, Map<String, V> map) {
+		Assert.notNull(datastoreKey, "A non-null Key is required.");
+		Assert.notNull(map, "A non-null map is required.");
+
+		Builder builder = Entity.newBuilder(datastoreKey);
+		map.forEach(
+				(key, value) ->
+						builder.set(key, this.datastoreEntityConverter.getConversions().convertOnWriteSingle(value)));
+		Entity entity = builder.build();
+		getDatastoreReadWriter().put(entity);
+	}
+
+	@Override
+	public Key createKey(String kind, Object id) {
+		return this.objectToKeyFactory.getKeyFromId(id, kind);
 	}
 
 	private static StructuredQuery.OrderBy createOrderBy(DatastorePersistentEntity<?> persistentEntity,

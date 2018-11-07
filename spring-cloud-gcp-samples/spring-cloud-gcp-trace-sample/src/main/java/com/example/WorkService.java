@@ -34,10 +34,10 @@ public class WorkService {
 	}
 
 	@NewSpan
-	public void busyWork() {
+	public void visitMeetEndpoint(String meetUrl) {
 		LOGGER.info("starting busy work");
 		for (int i = 0; i < 3; i++) {
-			this.restTemplate.getForObject("http://localhost:8080/meet", String.class);
+			this.restTemplate.getForObject(meetUrl, String.class);
 		}
 		LOGGER.info("finished busy work");
 	}

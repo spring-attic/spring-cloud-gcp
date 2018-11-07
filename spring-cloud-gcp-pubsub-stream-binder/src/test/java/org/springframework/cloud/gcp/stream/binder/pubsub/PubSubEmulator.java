@@ -29,6 +29,7 @@ import java.nio.file.WatchService;
 import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,6 +44,7 @@ import static org.junit.Assume.assumeTrue;
  * Tests can access the emulator's host/port combination by calling {@link #getEmulatorHostPort()} method.
  *
  * @author Elena Felder
+ * @author Mike Eltsufin
  *
  * @since 1.1
  */
@@ -101,9 +103,25 @@ public class PubSubEmulator extends ExternalResource {
 	 */
 	@Override
 	protected void after() {
-		try {
-			int portSeparatorIndex = findAndDestroyEmulator();
-			if (portSeparatorIndex < 0 || !this.emulatorHostPort.contains("localhost")) {
+		findAndDestroyEmulator();
+	}
+
+	private void findAndDestroyEmulator() {
+		// destroy gcloud process
+		if (this.emulatorProcess != null) {
+			this.emulatorProcess.destroy();
+		}
+		else {
+			LOGGER.warn("Emulator process null after tests; nothing to terminate.");
+		}
+
+		// find destory emulator process spawned by gcloud
+		if (this.emulatorHostPort == null) {
+			LOGGER.warn("Host/port null after the test.");
+		}
+		else {
+			int portSeparatorIndex = this.emulatorHostPort.lastIndexOf(":");
+			if (portSeparatorIndex < 0) {
 				LOGGER.warn("Malformed host: " + this.emulatorHostPort);
 				return;
 			}
@@ -111,38 +129,35 @@ public class PubSubEmulator extends ExternalResource {
 			String emulatorHost = this.emulatorHostPort.substring(0, portSeparatorIndex);
 			String emulatorPort = this.emulatorHostPort.substring(portSeparatorIndex + 1);
 
+			AtomicBoolean foundEmulatorProcess = new AtomicBoolean(false);
 			String hostPortParams = String.format("--host=%s --port=%s", emulatorHost, emulatorPort);
-			Process psProcess = new ProcessBuilder("ps", "-v").start();
+			try {
+				Process psProcess = new ProcessBuilder("ps", "-vx").start();
 
-			try (BufferedReader br = new BufferedReader(new InputStreamReader(psProcess.getInputStream()))) {
-				br.lines()
-						.filter(psLine -> psLine.contains(hostPortParams))
-						.map(psLine -> new StringTokenizer(psLine).nextToken())
-						.forEach(this::killProcess);
+				try (BufferedReader br = new BufferedReader(new InputStreamReader(psProcess.getInputStream()))) {
+					br.lines()
+							.filter(psLine -> psLine.contains(hostPortParams))
+							.map(psLine -> new StringTokenizer(psLine).nextToken())
+							.forEach(p -> {
+								LOGGER.info("Found emulator process to kill: " + p);
+								this.killProcess(p);
+								foundEmulatorProcess.set(true);
+							});
+				}
+
+				if (!foundEmulatorProcess.get()) {
+					LOGGER.warn("Did not find the emualtor process to kill based on: " + hostPortParams);
+				}
+			}
+			catch (IOException e) {
+				LOGGER.warn("Failed to cleanup: ", e);
 			}
 		}
-		catch (IOException e) {
-			LOGGER.warn("Failed to cleanup: ", e);
-		}
-	}
-
-	private int findAndDestroyEmulator() {
-		if (this.emulatorProcess == null) {
-			LOGGER.warn("Emulator process null after tests; nothing to terminate.");
-			return -1;
-		}
-
-		this.emulatorProcess.destroy();
-
-		if (this.emulatorHostPort == null) {
-			LOGGER.warn("Host/port null after the test.");
-			return -1;
-		}
-		return this.emulatorHostPort.indexOf(":");
 	}
 
 	/**
-	 * Return the already-started emulator's host/port combination when called from within a JUnit method.
+	 * Return the already-started emulator's host/port combination when called from within a
+	 * JUnit method.
 	 * @return Emulator host/port string or null if emulator setup failed.
 	 */
 	public String getEmulatorHostPort() {
