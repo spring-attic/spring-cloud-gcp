@@ -682,6 +682,28 @@ This feature requires a bean of `DatastoreTransactionManager`, which is provided
 If a method annotated with `@Transactional` calls another method also annotated, then both methods will work within the same transaction.
 `performTransaction` cannot be used in `@Transactional` annotated methods because Cloud Datastore does not support transactions within transactions.
 
+==== Read-write support for maps
+Objects of type `Map<String, ?>` can be writen to and read from Cloud Datastore.
+The map keys are used as field names for a Datastore entity and map values are converted to Datastore supported types.
+Only simple types are supported (i.e. collections are not supported).
+Converters for custom value types can be added (see <<Custom types>> section).
+
+Example:
+[source,java]
+----
+Map<String, Long> map = new HashMap<>();
+map.put("field1", 1L);
+map.put("field2", 2L);
+map.put("field3", 3L);
+
+keyForMap = datastoreTemplate.createKey("kindName", "id");
+
+//write a map
+datastoreTemplate.writeMap(keyForMap, map);
+
+//read a map
+Map<String, Long> loadedMap = datastoreTemplate.findByIdAsMap(keyForMap, Long.class);
+----
 
 === Repositories
 

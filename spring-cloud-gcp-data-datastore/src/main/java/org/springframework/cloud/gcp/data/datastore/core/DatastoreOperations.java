@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.datastore.core;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.function.Function;
 
 import com.google.cloud.datastore.BaseEntity;
@@ -195,4 +196,29 @@ public interface DatastoreOperations {
 	 * @return the final result of the transaction.
 	 */
 	<A> A performTransaction(Function<DatastoreOperations, A> operations);
+
+	/**
+	 * Get a Datastore entity based on a id and convert it to a map.
+	 * @param key the key of the entity
+	 * @param valueType type values should be converted to
+	 * @return if an entity for a given key exists, returns the map representation of it,
+	 * {@code null} otherwise
+	 */
+	<T> Map<String, T> findByIdAsMap(Key key, Class<T> valueType);
+
+	/**
+	 * Save a map as a Datastore entity, using map keys as field names
+	 * @param key the key for the entity
+	 * @param map a map
+	 */
+	<V> void writeMap(Key key, Map<String, V> map);
+
+	/**
+	 * Create a {@link com.google.cloud.datastore.Key} from kind name and id.
+	 * @param kind the Cloud Datastore kind name
+	 * @param id object to be used as id; if it is a Long, the value is used, otherwise it is
+	 * converted to String
+	 * @return created key
+	 */
+	Key createKey(String kind, Object id);
 }

@@ -33,7 +33,6 @@ import org.springframework.cloud.gcp.pubsub.support.PublisherFactory;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.stream.binder.pubsub.PubSubMessageChannelBinder;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingsPropertiesTests.PubSubBindingsTestConfiguration;
-import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingsPropertiesTests.PubSubBindingsTestConfiguration.CustomTestSink;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Input;
 import org.springframework.cloud.stream.annotation.StreamListener;
@@ -78,7 +77,7 @@ public class PubSubExtendedBindingsPropertiesTests {
 	}
 
 	@Configuration
-	@EnableBinding(CustomTestSink.class)
+	@EnableBinding(PubSubBindingsTestConfiguration.CustomTestSink.class)
 	static class PubSubBindingsTestConfiguration {
 
 		@Bean

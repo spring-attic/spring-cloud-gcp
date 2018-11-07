@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub.provisioning;
 
+import java.util.UUID;
+
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
@@ -25,9 +27,11 @@ import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import org.springframework.cloud.stream.provisioning.ProducerDestination;
 import org.springframework.cloud.stream.provisioning.ProvisioningException;
 import org.springframework.cloud.stream.provisioning.ProvisioningProvider;
+import org.springframework.util.StringUtils;
 
 /**
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public class PubSubChannelProvisioner
 		implements ProvisioningProvider<ExtendedConsumerProperties<PubSubConsumerProperties>,
@@ -54,8 +58,12 @@ public class PubSubChannelProvisioner
 	public ConsumerDestination provisionConsumerDestination(String name, String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties)
 			throws ProvisioningException {
+		// Use group name as subscription name
+		// Generate anonymous random group, if one not provided
+		String subscription = !StringUtils.hasText(group) ?
+				"anonymous." + name + "." + UUID.randomUUID().toString()
+				: group;
 
-		String subscription = group == null ? name : (name + '.' + group);
 		if (this.pubSubAdmin.getSubscription(subscription) == null) {
 			if (properties.getExtension().isAutoCreateResources()) {
 				if (this.pubSubAdmin.getTopic(name) == null) {
@@ -65,7 +73,7 @@ public class PubSubChannelProvisioner
 				this.pubSubAdmin.createSubscription(subscription, name);
 			}
 			else {
-				throw new ProvisioningException("Unexisting '" + subscription + "' subscription.");
+				throw new ProvisioningException("Non-existing '" + subscription + "' subscription.");
 			}
 		}
 		return new PubSubConsumerDestination(subscription);
