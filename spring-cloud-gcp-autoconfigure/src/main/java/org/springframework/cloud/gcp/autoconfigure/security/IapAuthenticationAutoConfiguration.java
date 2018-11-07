@@ -23,13 +23,30 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 
 /**
- * Configures GCP IAP pre-authentication.
- * If the property is missing, this auto configuration is skipped.
+ * Autoconfiguration for extracting pre-authenticated user identity from Google Cloud IAP header.
+ *
+ * <p>The following conditions must be present for this configuration to take effect:
+ * <ul>
+ *   <li>{@code spring.cloud.gcp.security.iap.enabled} property is true. Note that a missing property is treated as
+ *   {@code false}. Because there is no custom code beyond what Spring Security OAuth provides, no dependency can be
+ *   used as a consistent signal for using IAP authentication, making an explicit property necessary.
+ *   <li>Spring Security OAuth Resource Server 5.0 or higher is present on the classpath.
+ * </ul>
+ * <p>If these conditions are met, a custom {@link BearerTokenResolver} and an ES256 web registry-based JWT token
+ * decoder beans are provided.
+ * <p>If a custom {@link WebSecurityConfigurerAdapter} is present, it must add {@code .oauth2ResourceServer().jwt()}
+ * customization to {@link org.springframework.security.config.annotation.web.builders.HttpSecurity} object. If no
+ * custom {@link WebSecurityConfigurerAdapter} is found,
+ * Spring Boot's default {@code OAuth2ResourceServerWebSecurityConfiguration} will add this customization.
+ *
+ * @author Elena Felder
+ * @since 1.1
  */
 @Configuration
 @ConditionalOnProperty(value = "spring.cloud.gcp.security.iap.enabled", matchIfMissing = false)

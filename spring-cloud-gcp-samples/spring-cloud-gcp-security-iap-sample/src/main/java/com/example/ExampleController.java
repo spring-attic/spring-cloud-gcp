@@ -33,9 +33,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Sample REST Controller to demonstrate IAP security header extraction
+ * Sample REST Controller to demonstrate IAP security header extraction.
+ *
+ * <p>Makes the following pages available:
+ * <ul>
+ *     <li>{@code /} - Unsecured page.
+ *     <li>{@code /topsecret} - Secured page requiring non-anonymous authentication. Prints IAP identity details.
+ *     <li>{@code /headers} - Unsecured page that can be used for troubleshooting.
+ * </ul>
  *
  * @author Elena Felder
+ * @since 1.1
  */
 @RestController
 public class ExampleController {

@@ -6,7 +6,7 @@
     <groupId>com.example</groupId>
     <artifactId>spring-cloud-gcp-security-iap-sample</artifactId>
     <name>Spring Cloud GCP Security IAP Sample</name>
-    <description>TODO</description>
+    <description>Spring Cloud IAP Security Sample</description>
 
     <parent>
         <artifactId>spring-cloud-gcp-samples</artifactId>
@@ -30,8 +30,7 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-gcp-starter-security-iap</artifactId>
         </dependency>
-
-
+        
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>

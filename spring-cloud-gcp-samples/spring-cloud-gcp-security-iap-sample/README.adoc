@@ -1,3 +1,7 @@
-WIP
+TODO
+
+Note: this sample should be tested when deployed to AppEngine Flexible or Kubernetes environments.
+
+It is possible, in principle, to grab a recent JWK token from a deployed apps' /headers path, and to test locally, but this token will expire, causing authentication to be declined locally.
 
 If you don't create your own implementation of WebSecurityConfigurerAdapter, Spring Boot will introduce its own, OAuth2ResourceServerWebSecurityConfiguration
