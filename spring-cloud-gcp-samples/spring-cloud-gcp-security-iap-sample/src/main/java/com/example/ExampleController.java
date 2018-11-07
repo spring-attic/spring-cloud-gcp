@@ -23,9 +23,6 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -47,8 +44,6 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 public class ExampleController {
-	private static final Log LOGGER = LogFactory.getLog(ExampleController.class);
-
 
 	@RequestMapping("/")
 	public String unsecured() {

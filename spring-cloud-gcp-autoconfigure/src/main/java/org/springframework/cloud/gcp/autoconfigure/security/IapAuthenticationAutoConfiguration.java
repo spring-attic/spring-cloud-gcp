@@ -49,7 +49,7 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
  * @since 1.1
  */
 @Configuration
-@ConditionalOnProperty(value = "spring.cloud.gcp.security.iap.enabled", matchIfMissing = false)
+@ConditionalOnProperty("spring.cloud.gcp.security.iap.enabled")
 @ConditionalOnClass({NimbusJwtDecoderJwkSupport.class})
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)
 public class IapAuthenticationAutoConfiguration {
