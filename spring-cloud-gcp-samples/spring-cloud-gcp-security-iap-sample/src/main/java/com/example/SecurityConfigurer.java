@@ -20,22 +20,19 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
+import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity (debug = true)
 public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http
-				.anonymous()
+				.authorizeRequests().antMatchers("/topsecret").authenticated()
 				.and()
-				.authorizeRequests()
-					.antMatchers("/topsecret")	.authenticated().and().anonymous().disable()
 				.oauth2ResourceServer()
-				.bearerTokenResolver(r -> r.getHeader("x-goog-iap-jwt-assertion"))
-
-				.jwt()
-				.decoder(new NimbusJwtDecoderJwkSupport("https://www.gstatic.com/iap/verify/public_key-jwk", "ES256"));
+					.jwt()
+					.and()
+					.authenticationEntryPoint(new Http403ForbiddenEntryPoint());
 	}
 }

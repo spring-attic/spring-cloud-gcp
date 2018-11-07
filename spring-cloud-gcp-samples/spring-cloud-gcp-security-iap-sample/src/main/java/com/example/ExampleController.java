@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,14 +44,21 @@ public class ExampleController {
 
 	@RequestMapping("/")
 	public String unsecured() {
-		return "No secrets here!";
+		return "No secrets here!\n";
 	}
 
 	@RequestMapping("/topsecret")
 	public String secured() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		return String.format("You are [%s], as determined by [%s]\n",
-				authentication.getPrincipal(), authentication.getCredentials());
+		if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+			Jwt jwt = (Jwt) authentication.getPrincipal();
+			return String.format("You are [%s] with e-mail address [%s].\n",
+					jwt.getSubject(), jwt.getClaimAsString("email"));
+		}
+		else {
+			return "Something went wrong; authentication is not provided by IAP/JWT.\n";
+		}
+
 	}
 
 	@RequestMapping("/headers")

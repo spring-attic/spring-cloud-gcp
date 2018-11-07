@@ -1,0 +1,3 @@
+WIP
+
+If you don't create your own implementation of WebSecurityConfigurerAdapter, Spring Boot will introduce its own, OAuth2ResourceServerWebSecurityConfiguration
