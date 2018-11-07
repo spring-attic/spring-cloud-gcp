@@ -22,29 +22,34 @@ addons:
     token:
       secure: "eTxYYXrExigaf4ELiNf87NjK//bu49tss5k8+l1+kKgyhsfGTP5aOE24ICJ9K7waBK5MV+P520s7oPhhMPjLJDxququDyTxoPV5xO9TAwVSqSSZwYfwRCPsGvlylP9NE/MCc211l6CihFrpJDb5pfJjndG64n3MBG691snTY5HXoWoZ0HarIAJc4KwhovFwqImL2+u5HOXogb+0y/kJsI/6qV+K16rC5Z5tNY3gIR9mrHvJvRgFzeZsZffCxJD1tJjNVsLoFBcTa2blpDlXd66dfCghGUlU30h7zm4WxD5J3R4hhrOvDzXdk4FFt2TPFz3TNbSf/MOEs/AMVSZH1SMH9ZXiBeBS86dGGWv+dFO5cxbP9Cg/lcL5JPupGYh0KSuZ4B2j6nbr65x9owD2+bBhi6qcP1Es01YVEa3WqsQI+/dbvOi6IChBDrrc9J6CL1RVBTzQVKeVlIEDkx7Mw/ivkL6DKKOeFRklz6bbYNAw4Z5gDkPZ3LezYW1gfpbUs5sUAcm/QYLDAFN37GhYMedCqeMbbxyMm9aTWob2qWShOCuytvHbseLP7r3VrvPfoUucDNF6T9oNLdSQ3OpyUl12LD7TgPikOqd3OqoRmb1/p/mCNmf8vX5USAp4L7G9edK4TzjZSwBcbRGZGqLrNvinwtCECP4wHJWPIzV33K90="
 script:
-  - ./mvnw test sonar:sonar -B -P codecov ${INTEGRATION_TEST_FLAGS} -Dsonar.projectKey=SC-GCP
+  # run unit tests
+  - ./mvnw test sonar:sonar -B -P codecov -Dit.pubsub-emulator -Dsonar.projectKey=SC-GCP
+  - bash <(curl -s https://codecov.io/bash) -F unittests
+  # run GCP integration tests
+  - if [ "$INTEGRATION_TEST_FLAGS" != "" ]; then
+      ./mvnw test -B -P codecov ${INTEGRATION_TEST_FLAGS};
+      bash <(curl -s https://codecov.io/bash) -F integration;
+    fi;
 install:
   - ./mvnw -T 1.5C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 before_install:
-  - INTEGRATION_TEST_FLAGS="-Dit.pubsub-emulator";
-      if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-        openssl aes-256-cbc -K $encrypted_1ef8dfbdb114_key -iv $encrypted_1ef8dfbdb114_iv -in travis.tar.gz.enc -out travis.tar.gz -d;
-        tar -xzf travis.tar.gz;
-        INTEGRATION_TEST_FLAGS="${INTEGRATION_TEST_FLAGS} -Dit.spanner=true -Dit.storage=true -Dit.config=true -Dit.pubsub=true -Dit.logging=true
-            -Dit.cloudsql=true -Dit.datastore=true -Dit.trace=true
-            -Dspring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testmysql
-            -Dspring.cloud.gcp.sql.database-name=code_samples_test_db
-            -Dspring.datasource.password=test
-            -Dgcs-resource-test-bucket=gcp-storage-resource-bucket-sample
-            -Dgcs-read-bucket=gcp-storage-bucket-sample-input
-            -Dgcs-write-bucket=gcp-storage-bucket-sample-output
-            -Dgcs-local-directory=/tmp/gcp_integration_tests/integration_storage_sample";
-      fi;
-      export INTEGRATION_TEST_FLAGS;
+  - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+      openssl aes-256-cbc -K $encrypted_1ef8dfbdb114_key -iv $encrypted_1ef8dfbdb114_iv -in travis.tar.gz.enc -out travis.tar.gz -d;
+      tar -xzf travis.tar.gz;
+      INTEGRATION_TEST_FLAGS="-Dit.pubsub-emulator=true -Dit.spanner=true -Dit.storage=true -Dit.config=true -Dit.pubsub=true -Dit.logging=true
+          -Dit.cloudsql=true -Dit.datastore=true -Dit.trace=true
+          -Dspring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testmysql
+          -Dspring.cloud.gcp.sql.database-name=code_samples_test_db
+          -Dspring.datasource.password=test
+          -Dgcs-resource-test-bucket=gcp-storage-resource-bucket-sample
+          -Dgcs-read-bucket=gcp-storage-bucket-sample-input
+          -Dgcs-write-bucket=gcp-storage-bucket-sample-output
+          -Dgcs-local-directory=/tmp/gcp_integration_tests/integration_storage_sample";
+    fi;
+    export INTEGRATION_TEST_FLAGS;
   - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
   - source $HOME/google-cloud-sdk/path.bash.inc
   - gcloud components update --quiet
   - gcloud components install beta pubsub-emulator --quiet
   - gcloud config set project spring-cloud-gcp-ci
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
+
