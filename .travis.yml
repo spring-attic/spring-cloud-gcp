@@ -27,8 +27,7 @@ script:
   - bash <(curl -s https://codecov.io/bash) -F unittests
   # run GCP integration tests
   - if [ "$INTEGRATION_TEST_FLAGS" != "" ]; then
-      ./mvnw test -B -P codecov ${INTEGRATION_TEST_FLAGS};
-      bash <(curl -s https://codecov.io/bash) -F integration;
+      ./mvnw test -B -P codecov ${INTEGRATION_TEST_FLAGS} && bash <(curl -s https://codecov.io/bash) -F integration;
     fi;
 install:
   - ./mvnw -T 1.5C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
