@@ -54,7 +54,6 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)
 public class IapAuthenticationAutoConfiguration {
 
-	// TODO: externalize as properties.
 	private static final String PUBLIC_KEY_VERIFICATION_LINK = "https://www.gstatic.com/iap/verify/public_key-jwk";
 
 	private static final String ENCRYPTION_ALGORITHM = "ES256";

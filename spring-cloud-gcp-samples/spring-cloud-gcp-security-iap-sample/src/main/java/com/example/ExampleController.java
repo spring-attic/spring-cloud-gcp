@@ -55,7 +55,7 @@ public class ExampleController {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
 			Jwt jwt = (Jwt) authentication.getPrincipal();
-			return String.format("You are [%s] with e-mail address [%s].\n",
+			return String.format("You are [%s] with e-mail address [%s].%n",
 					jwt.getSubject(), jwt.getClaimAsString("email"));
 		}
 		else {
