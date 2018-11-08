@@ -1,8 +1,6 @@
 = Spring Cloud GCP IAP Authentication Example
 
-This sample application demonstrates using
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-iap[Spring Cloud GCP IAP Authentication
-Starter] to extract user identity from a pre-authenticated header injected by https://cloud.google.com/iap/[Cloud Identity-Aware Proxy (IAP)].
+This sample application demonstrates using link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-iap[Spring Cloud GCP IAP Authentication Starter] to extract user identity from a pre-authenticated header injected by https://cloud.google.com/iap/[Cloud Identity-Aware Proxy (IAP)].
 
 If you run the sample locally, the following pages will be available:
 
@@ -21,10 +19,8 @@ If you run the sample locally, the following pages will be available:
 
 
 == Setup & Configuration
-1. Create a Google Cloud Platform Project
-1. Have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, initialized and logged in with
-https://developers.google.com/identity/protocols/application-default-credentials[application
-default credentials] (you can run the sample locally without logging in, but you'll need the credentials to deploy.
+1. Create a Google Cloud Platform Project.
+1. Have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, initialized and logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials] (you can run the sample locally without logging in, but you'll need the credentials to deploy).
 
 
 == Running the Sample Locally
