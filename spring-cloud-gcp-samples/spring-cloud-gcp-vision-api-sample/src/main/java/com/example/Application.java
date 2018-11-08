@@ -16,15 +16,8 @@
 
 package com.example;
 
-import java.io.IOException;
-
-import com.google.api.gax.core.CredentialsProvider;
-import com.google.cloud.vision.v1.ImageAnnotatorClient;
-import com.google.cloud.vision.v1.ImageAnnotatorSettings;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 
 /**
  * @author João André Martins
@@ -34,29 +27,5 @@ public class Application {
 
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
-	}
-
-	/**
-	 * Configure the Cloud Vision API client {@link ImageAnnotatorClient}. The
-	 * spring-cloud-gcp-starter autowires a {@link CredentialsProvider} object that provides
-	 * the GCP credentials, required to authenticate and authorize Vision API calls.
-	 *
-	 * <p>Cloud Vision API client implements {@link AutoCloseable}, which is automatically
-	 * honored by Spring bean lifecycle.
-	 *
-	 * <p>Most of the Google Cloud API clients are thread-safe heavy objects. I.e., it's better
-	 * to produce a singleton and re-using the client object for multiple requests.
-	 *
-	 * @param credentialsProvider GCP Credential to use to access Cloud Vision API
-	 * @return A Cloud Vision API client
-	 * @throws IOException if an exception occurs creating the ImageAnnotatorClient
-	 */
-	@Bean
-	public ImageAnnotatorClient imageAnnotatorClient(CredentialsProvider credentialsProvider) throws IOException {
-		ImageAnnotatorSettings clientSettings = ImageAnnotatorSettings.newBuilder()
-				.setCredentialsProvider(credentialsProvider)
-				.build();
-
-		return ImageAnnotatorClient.create(clientSettings);
 	}
 }

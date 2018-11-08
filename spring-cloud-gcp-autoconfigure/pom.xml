@@ -186,7 +186,14 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Config -->
+			<!-- Vision -->
+			<dependency>
+				<groupId>com.google.cloud</groupId>
+				<artifactId>google-cloud-vision</artifactId>
+				<optional>true</optional>
+			</dependency>
+
+			<!-- Config -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-context</artifactId>
