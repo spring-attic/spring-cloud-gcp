@@ -57,16 +57,14 @@ public class CloudVisionAutoConfiguration {
 	 * Most of the Google Cloud API clients are thread-safe heavy objects. I.e., it's better
 	 * to produce a singleton and re-using the client object for multiple requests.
 	 *
-	 * @param credentialsProvider GCP Credential to use to access Cloud Vision API
 	 * @return A Cloud Vision API client
 	 * @throws IOException if an exception occurs creating the ImageAnnotatorClient
 	 */
 	@Bean
 	@ConditionalOnMissingBean
-	public ImageAnnotatorClient imageAnnotatorClient(
-			CredentialsProvider credentialsProvider) throws IOException {
+	public ImageAnnotatorClient imageAnnotatorClient() throws IOException {
 		ImageAnnotatorSettings clientSettings = ImageAnnotatorSettings.newBuilder()
-				.setCredentialsProvider(credentialsProvider)
+				.setCredentialsProvider(this.credentialsProvider)
 				.build();
 
 		return ImageAnnotatorClient.create(clientSettings);
