@@ -16,8 +16,6 @@
 
 package org.springframework.cloud.gcp.autoconfigure.security;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -56,14 +54,11 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)
 public class IapAuthenticationAutoConfiguration {
 
-	@VisibleForTesting
-	static final String PUBLIC_KEY_VERIFICATION_LINK = "https://www.gstatic.com/iap/verify/public_key-jwk";
+	public static final String PUBLIC_KEY_VERIFICATION_LINK = "https://www.gstatic.com/iap/verify/public_key-jwk";
 
-	@VisibleForTesting
-	static final String ENCRYPTION_ALGORITHM = "ES256";
+	public static final String ENCRYPTION_ALGORITHM = "ES256";
 
-	@VisibleForTesting
-	static final String IAP_HEADER = "x-goog-iap-jwt-assertion";
+	public static final String IAP_HEADER = "x-goog-iap-jwt-assertion";
 
 	@Bean
 	@ConditionalOnMissingBean
