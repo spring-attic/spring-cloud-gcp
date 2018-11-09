@@ -42,11 +42,11 @@ public class IapAuthenticationProperties {
 	 */
 	private String header = "x-goog-iap-jwt-assertion";
 
-
 	/**
 	 * JWK issuer to verify.
 	 */
 	private String issuer = "https://cloud.google.com/iap";
+
 
 	public String getRegistry() {
 		return this.registry;
@@ -71,6 +71,7 @@ public class IapAuthenticationProperties {
 	public void setHeader(String header) {
 		this.header = header;
 	}
+<<<<<<< HEAD
 
 	public String getIssuer() {
 		return this.issuer;
@@ -79,4 +80,6 @@ public class IapAuthenticationProperties {
 	public void setIssuer(String issuer) {
 		this.issuer = issuer;
 	}
+=======
+>>>>>>> Turn IAP constants into properties.
 }
