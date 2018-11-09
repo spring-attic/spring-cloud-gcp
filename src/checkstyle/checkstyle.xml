@@ -6,6 +6,11 @@
 
     <!-- TAKEN FROM SPRING BOOT -->
     <!-- Root Checks -->
+    <!-- TODO: remove when spring-cloud-build starts checking copyright header -->
+    <module name="RegexpHeader">
+        <property name="headerFile" value="${checkstyle.header.file}"/>
+        <property name="fileExtensions" value="java"/>
+    </module>
     <!--<module name="io.spring.javaformat.checkstyle.check.SpringHeaderCheck">
         <property name="fileExtensions" value="java" />
         <property name="headerType" value="${headerType}"/>
