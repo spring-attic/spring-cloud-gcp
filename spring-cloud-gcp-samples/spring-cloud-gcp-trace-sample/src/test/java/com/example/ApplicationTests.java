@@ -130,7 +130,7 @@ public class ApplicationTests {
 		String logFilter = String.format(
 				"trace=projects/%s/traces/%s", this.projectIdProvider.getProjectId(), uuidString);
 
-		await().atMost(20, TimeUnit.SECONDS)
+		await().atMost(60, TimeUnit.SECONDS)
 				.pollInterval(Duration.TWO_SECONDS)
 				.ignoreExceptions()
 				.untilAsserted(() -> {
