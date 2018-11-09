@@ -1,0 +1,40 @@
+:spring-security-ref: https://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle/
+:spring-security-javadoc: https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/
+
+== Google Cloud IAP Authentication
+
+https://cloud.google.com/iap/[Cloud Identity-Aware Proxy (IAP)] provides a security layer over applications deployed to Google Cloud.
+
+The IAP starter uses {spring-security-ref}#oauth2resourceserver[Spring Security OAuth 2.0 Resource Server] functionality to automatically extract user identity from the proxy-injected `x-goog-iap-jwt-assertion` HTTP header.
+
+To use Cloud IAP authentication, you need to:
+
+ * Pull in the `org.springframework.cloud:spring-cloud-gcp-starter-security-iap` dependency.
+ * Set `spring.cloud.gcp.security.iap.enabled` property to `true`.
+ * If you create a custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`], enable extracting user identity by adding `.oauth2ResourceServer().jwt()` configuration to the {spring-security-javadoc}config/annotation/web/builders/HttpSecurity.html[`HttpSecurity`] object.
+ If no custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`] is present, nothing needs to be done because Spring Boot will add this customization by default.
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample[sample application] is available.
+
+Starter Maven coordinates, using https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-dependencies/pom.xml[Spring Cloud GCP BOM]:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-gcp-starter-security-iap</artifactId>
+</dependency>
+----
+
+Starter Gradle coordinates:
+
+[source]
+----
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-security-iap'
+}
+----
+
+
+
+
