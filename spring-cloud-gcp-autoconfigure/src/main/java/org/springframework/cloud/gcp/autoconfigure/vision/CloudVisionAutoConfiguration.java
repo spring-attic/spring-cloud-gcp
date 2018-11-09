@@ -50,7 +50,8 @@ public class CloudVisionAutoConfiguration {
 
 		if (properties.getCredentials().hasKey()) {
 			this.credentialsProvider = new DefaultCredentialsProvider(properties);
-		} else {
+		}
+		else {
 			this.credentialsProvider = credentialsProvider;
 		}
 	}
