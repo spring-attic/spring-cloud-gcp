@@ -55,7 +55,7 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)
 @EnableConfigurationProperties(IapAuthenticationProperties.class)
 public class IapAuthenticationAutoConfiguration {
-	
+
 	@Bean
 	@ConditionalOnMissingBean
 	public JwtDecoder iapJwtDecoder(IapAuthenticationProperties properties) {
