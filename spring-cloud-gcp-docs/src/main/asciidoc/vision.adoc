@@ -1,0 +1,26 @@
+== GCP Cloud Vision Support
+
+The https://cloud.google.com/vision/[Google Cloud Vision API] allows users to leverage powerful machine learning algorithms for images such as: image classification, face detection, and reading text within images.
+
+Spring Cloud GCP provides a convenience starter which automatically configures authentication settings and client objects needed to begin using the https://cloud.google.com/vision/[Google Cloud Vision API].
+
+Maven coordinates, using Spring Cloud GCP BOM:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.springframework.cloud</groupId>
+  <artifactId>spring-cloud-gcp-starter-vision</artifactId>
+</dependency>
+----
+
+Gradle coordinates:
+
+[source]
+----
+dependencies {
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-vision'
+}
+----
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[Sample Spring Boot Application] is provided to show how to use the Cloud Vision starter and Cloud Vision APIs.

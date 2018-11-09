@@ -34,6 +34,9 @@ Most of the autoconfiguration code is only enabled if other dependencies are add
 |Trace
 |org.springframework.cloud:spring-cloud-gcp-starter-trace
 
+|Vision
+|org.springframework.cloud:spring-cloud-gcp-starter-vision
+
 |===
 
 The GCP Messaging entry adds the GCP Support entry and all the required dependencies so that the Google Cloud Pub/Sub integrations work out of the box.
@@ -43,7 +46,8 @@ The GCP Storage entry adds the GCP Support entry and all the required dependenci
 === Code Samples
 
 There are https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples[code samples] available that demonstrate the usage of all our integrations.
-https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[The Vision API sample] shows how to use `spring-cloud-gcp-starter` for authentication.
+
+For example, https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[the Vision API sample] shows how to use `spring-cloud-gcp-starter-vision` to automatically configure Vision API clients.
 
 === Code Challenges
 
