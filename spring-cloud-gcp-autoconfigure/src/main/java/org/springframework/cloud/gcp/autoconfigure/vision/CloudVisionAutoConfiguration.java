@@ -22,9 +22,11 @@ import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.cloud.vision.v1.ImageAnnotatorSettings;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -32,29 +34,34 @@ import org.springframework.context.annotation.Configuration;
  * Provides Spring Beans for using Cloud Vision API.
  *
  * @author Daniel Zou
+ * @since 1.1
  */
 @Configuration
 @EnableConfigurationProperties(CloudVisionProperties.class)
+@ConditionalOnClass(ImageAnnotatorClient.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.vision.enabled", matchIfMissing = true)
 public class CloudVisionAutoConfiguration {
 
 	private final CredentialsProvider credentialsProvider;
 
-	public CloudVisionAutoConfiguration(CredentialsProvider credentialsProvider) {
-		this.credentialsProvider = credentialsProvider;
+	public CloudVisionAutoConfiguration(
+			CloudVisionProperties properties, CredentialsProvider credentialsProvider)
+			throws IOException {
+
+		if (properties.getCredentials().hasKey()) {
+			this.credentialsProvider = new DefaultCredentialsProvider(properties);
+		} else {
+			this.credentialsProvider = credentialsProvider;
+		}
 	}
 
 	/**
 	 * Configure the Cloud Vision API client {@link ImageAnnotatorClient}. The
 	 * spring-cloud-gcp-starter autowires a {@link CredentialsProvider} object that provides
 	 * the GCP credentials, required to authenticate and authorize Vision API calls.
-	 *
-	 * <p>
-	 * Cloud Vision API client implements {@link AutoCloseable}, which is automatically
+	 * <p>Cloud Vision API client implements {@link AutoCloseable}, which is automatically
 	 * honored by Spring bean lifecycle.
-	 *
-	 * <p>
-	 * Most of the Google Cloud API clients are thread-safe heavy objects. I.e., it's better
+	 * <p>Most of the Google Cloud API clients are thread-safe heavy objects. I.e., it's better
 	 * to produce a singleton and re-using the client object for multiple requests.
 	 *
 	 * @return A Cloud Vision API client

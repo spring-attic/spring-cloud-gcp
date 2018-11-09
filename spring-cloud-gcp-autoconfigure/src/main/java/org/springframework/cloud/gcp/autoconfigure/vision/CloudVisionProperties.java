@@ -22,10 +22,16 @@ import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.CredentialsSupplier;
 import org.springframework.cloud.gcp.core.GcpScope;
 
+/**
+ * Additional settings for use with Cloud Vision APIs.
+ *
+ * @author Daniel Zou
+ * @since 1.1
+ */
 @ConfigurationProperties("spring.cloud.gcp.vision")
 public class CloudVisionProperties implements CredentialsSupplier {
 
-	/** Overrides the GCP OAuth2 credentials specified in the Core module. */
+	// Overrides the GCP OAuth2 credentials specified in the Core module.
 	@NestedConfigurationProperty
 	private final Credentials credentials = new Credentials(GcpScope.CLOUD_VISION.getUrl());
 
