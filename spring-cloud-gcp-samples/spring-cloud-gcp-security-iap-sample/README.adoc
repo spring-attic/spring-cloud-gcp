@@ -1,0 +1,61 @@
+= Spring Cloud GCP IAP Authentication Example
+
+This sample application demonstrates using link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-iap[Spring Cloud GCP IAP Authentication Starter] to extract user identity from a pre-authenticated header injected by https://cloud.google.com/iap/[Cloud Identity-Aware Proxy (IAP)].
+
+If you run the sample locally, the following pages will be available:
+
+|===
+|URL |Description
+
+|`http://localhost:8080/`
+|Unsecured  page.
+
+|`http://localhost:8080/topsecret`
+|Secured page requiring non-anonymous authentication. Prints IAP identity details if authentication passes.
+
+|`http://localhost:8080/headers`
+|Unsecured page that can be used for troubleshooting or capturing IAP tokens from a deployed application for local testing (please don't give anyone else access to your IAP token or add this functionality to a real production application).
+|===
+
+
+== Setup & Configuration
+1. Create a Google Cloud Platform Project.
+1. Have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, initialized and logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials] (you can run the sample locally without logging in, but you'll need the credentials to deploy).
+
+
+== Running the Sample Locally
+Run with Maven from the root of this code sample:
+
+----
+mvn clean spring-boot:run
+----
+
+You can then try using `curl` against the paths made available in the sample.
+
+This will work, and pring "No secrets here":
+
+----
+curl localhost:8080/
+----
+
+This will not work, returning Access Denied:
+
+----
+curl localhost:8080/topsecret
+----
+
+It is possible, in principle, to grab a recent JWK token from a deployed application's `/headers` path, and to test locally.
+Please take care with your token if you do this.
+
+----
+curl -H "x-goog-iap-jwt-assertion: [JWK TOKEN]" localhost:8080/topsecret
+----
+
+
+== Deploying the Sample to AppEngine Flexible
+
+The following Maven target will deploy this application to the root of your AppEngine Flexible instance:
+----
+mvn appengine:deploy
+----
+

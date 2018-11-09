@@ -125,6 +125,11 @@
 				<artifactId>spring-cloud-gcp-starter-logging</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-starter-security-iap</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!-- spring-cloud-gcp-starter-sql -->
 			<dependency>
