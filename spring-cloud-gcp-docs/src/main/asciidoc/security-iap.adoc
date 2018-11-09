@@ -7,7 +7,7 @@ https://cloud.google.com/iap/[Cloud Identity-Aware Proxy (IAP)] provides a secur
 
 The IAP starter uses {spring-security-ref}#oauth2resourceserver[Spring Security OAuth 2.0 Resource Server] functionality to automatically extract user identity from the proxy-injected `x-goog-iap-jwt-assertion` HTTP header.
 
-To use IAP authentication, you need to:
+To use Cloud IAP authentication, you need to:
 
  * Pull in the `org.springframework.cloud:spring-cloud-gcp-starter-security-iap` dependency.
  * Set `spring.cloud.gcp.security.iap.enabled` property to `true`.
