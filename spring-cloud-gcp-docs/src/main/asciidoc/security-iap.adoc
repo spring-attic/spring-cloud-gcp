@@ -35,6 +35,23 @@ dependencies {
 }
 ----
 
+== Customizable Properties
+The following properties are available with `spring.cloud.gcp.security.iap` prefix:
 
+|===
+|Name |Value |Description
+
+|registry
+|https://www.gstatic.com/iap/verify/public_key-jwk
+|Link to JWK public key registry.
+
+|algorithm
+|ES256
+|Encryption algorithm used to sign the JWK token.
+
+|header
+|x-goog-iap-jwt-assertion
+|Header from which to extract the JWK key.
+|===
 
 
