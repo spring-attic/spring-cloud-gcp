@@ -58,4 +58,9 @@ CAUTION: Modifying registry, algorithm, and header properties might be useful fo
 |true
 |`x-goog-iap-jwt-assertion`
 
+|`spring.cloud.gcp.security.iap.issuer`
+|JWK issuer to verify.
+|true
+|`https://cloud.google.com/iap`
+
 |===
