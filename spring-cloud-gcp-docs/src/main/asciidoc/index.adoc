@@ -51,3 +51,5 @@ include::cloudfoundry.adoc[]
 include::memorystore.adoc[]
 
 include::security-iap.adoc[]
+
+include::vision.adoc[]

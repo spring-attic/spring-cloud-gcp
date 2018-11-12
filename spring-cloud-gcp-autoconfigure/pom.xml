@@ -71,7 +71,6 @@
         </dependency>
 
         <!-- Cloud SQL -->
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
@@ -184,6 +183,13 @@
             <groupId>io.zipkin.gcp</groupId>
             <artifactId>brave-propagation-stackdriver</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <!-- Vision -->
+        <dependency>
+          <groupId>com.google.cloud</groupId>
+          <artifactId>google-cloud-vision</artifactId>
+          <optional>true</optional>
         </dependency>
 
         <!-- Config -->

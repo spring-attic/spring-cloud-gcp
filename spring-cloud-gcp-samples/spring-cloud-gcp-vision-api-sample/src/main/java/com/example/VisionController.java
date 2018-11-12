@@ -42,15 +42,14 @@ import org.springframework.web.servlet.ModelAndView;
  *
  * <p>
  * This uses the Cloud Vision API with the {@link ImageAnnotatorClient}, which is
- * configured and produced in {@link Application}. See
- * {@link Application#imageAnnotatorClient(com.google.api.gax.core.CredentialsProvider)}
- * to understand how the client is produced with the help of spring-cloud-gcp-starter.
+ * configured and provided by the spring-cloud-gcp-starter-vision module.
  *
  * @author João André Martins
  * @author Daniel Zou
  */
 @RestController
 public class VisionController {
+
 	@Autowired
 	private ResourceLoader resourceLoader;
 
