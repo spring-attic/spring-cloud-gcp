@@ -56,7 +56,7 @@ CAUTION: Modifying registry, algorithm, and header properties might be useful fo
 |`spring.cloud.gcp.security.iap.header`
 |Header from which to extract the JWK key.
 |true
-|x-goog-iap-jwt-assertion
+|`x-goog-iap-jwt-assertion`
 |===
 
 
