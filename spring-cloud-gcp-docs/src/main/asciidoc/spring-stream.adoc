@@ -63,6 +63,8 @@ If the consumer group is not specified, an anonymous one will be created with th
 For example, for the following configuration, a topic named `myEvents` and a subscription called `myEvents.counsumerGroup1` would be created.
 If the consumer group is not specified, a subscription called `anonymous.myEvents.a6d83782-c5a3-4861-ac38-e6e2af15a7be` would be created.
 
+IMPORTANT: If you are manually creating Pub/Sub subscriptions for consumers, make sure that they follow the naming convention of `<destinationName>.<consumerGroup>`.
+
 .application.properties
 ----
 spring.cloud.stream.bindings.events.destination=myEvents
