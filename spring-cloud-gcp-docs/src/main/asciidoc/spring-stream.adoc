@@ -57,11 +57,13 @@ spring.cloud.stream.gcp.pubsub.bindings.events.producer.auto-create-resources=tr
 ==== Consumer Destination Configuration
 
 If automatic resource creation is turned ON and the subscription and/or the topic do not exist for a consumer, a subscription and potentially a topic will be created.
-The topic name will be the same as the destination name, and the subscription name will be the same as the consumer group name.
+The topic name will be the same as the destination name, and the subscription name will be the destination name followed by the consumer group name.
 If the consumer group is not specified, an anonymous one will be created with the name `anonymous.<destinationName>.<randomUUID>`.
 
-For example, for the following configuration, a topic named `myEvents` and a subscription called `counsumerGroup1` would be created.
+For example, for the following configuration, a topic named `myEvents` and a subscription called `myEvents.counsumerGroup1` would be created.
 If the consumer group is not specified, a subscription called `anonymous.myEvents.a6d83782-c5a3-4861-ac38-e6e2af15a7be` would be created.
+
+IMPORTANT: If you are manually creating Pub/Sub subscriptions for consumers, make sure that they follow the naming convention of `<destinationName>.<consumerGroup>`.
 
 .application.properties
 ----

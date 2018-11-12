@@ -110,6 +110,7 @@ service supported by Spring Cloud GCP.
 | Runtime Config | https://www.googleapis.com/auth/cloudruntimeconfig
 | Trace (Append) | https://www.googleapis.com/auth/trace.append
 | Cloud Platform | https://www.googleapis.com/auth/cloud-platform
+| Vision | https://www.googleapis.com/auth/cloud-vision
 |===
 
 The Spring Cloud GCP starter allows you to configure a custom scope list for the provided

@@ -30,5 +30,7 @@
 		<module>spring-cloud-gcp-starter-logging</module>
 		<module>spring-cloud-gcp-starter-sql-mysql</module>
 		<module>spring-cloud-gcp-starter-sql-postgresql</module>
-    </modules>
+		<module>spring-cloud-gcp-starter-security-iap</module>
+		<module>spring-cloud-gcp-starter-vision</module>
+	</modules>
 </project>
