@@ -33,13 +33,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.cloud.gcp.autoconfigure.logging.it.StackdriverLoggingIntegrationTests.LoggingApplication;
 import org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -60,8 +58,6 @@ import static org.awaitility.Awaitility.await;
  * @author Daniel Zou
  */
 @SpringBootTest(
-		classes = {
-				LoggingApplication.class },
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 		properties = {"spring.main.banner-mode=off"}
 )
@@ -122,9 +118,6 @@ public class StackdriverLoggingIntegrationTests {
 			SecurityAutoConfiguration.class
 	})
 	static class LoggingApplication {
-		public static void main(String[] args) {
-			SpringApplication.run(LoggingApplication.class, args);
-		}
 
 		@GetMapping("/")
 		public String log() {
