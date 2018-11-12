@@ -19,13 +19,11 @@ package org.springframework.cloud.gcp.data.datastore.repository.query;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -45,13 +43,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersis
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
-import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.Expression;
-import org.springframework.expression.ParserContext;
-import org.springframework.expression.common.CompositeStringExpression;
-import org.springframework.expression.common.LiteralExpression;
-import org.springframework.expression.spel.standard.SpelExpression;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
+import org.springframework.data.repository.query.SpelEvaluator;
+import org.springframework.data.repository.query.SpelQueryContext;
 import org.springframework.util.StringUtils;
 
 /**
@@ -70,15 +63,12 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	private String gqlResolvedEntityClassName;
 
-	private Expression[] spelExpressionParts;
-
 	private List<String> originalParamTags;
 
 	// unused currently, but will be used for SpEL expression in the query.
 	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
-	// unused currently, but will be used for SpEL expression in the query.
-	private SpelExpressionParser expressionParser;
+	private SpelQueryContext.EvaluatingSpelQueryContext evaluatingSpelQueryContext;
 
 	/**
 	 * Constructor
@@ -90,11 +80,9 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	public GqlDatastoreQuery(Class<T> type, DatastoreQueryMethod queryMethod,
 			DatastoreTemplate datastoreTemplate, String gql,
 			QueryMethodEvaluationContextProvider evaluationContextProvider,
-			SpelExpressionParser expressionParser,
 			DatastoreMappingContext datastoreMappingContext) {
 		super(queryMethod, datastoreTemplate, datastoreMappingContext, type);
 		this.evaluationContextProvider = evaluationContextProvider;
-		this.expressionParser = expressionParser;
 		this.originalGql = StringUtils.trimTrailingCharacter(gql.trim(), ';');
 	}
 
@@ -156,13 +144,6 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 
 		return result;
-	}
-
-	private QueryTagsValues getQueryTagsValues(Object[] parameters) {
-		QueryTagsValues queryTagsValues = new QueryTagsValues(getOriginalParamTags(),
-				parameters);
-		resolveSpelTags(queryTagsValues);
-		return queryTagsValues;
 	}
 
 	private String getGqlResolvedEntityClassName() {
@@ -249,61 +230,43 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return builder.build();
 	}
 
-	private void resolveSpelTags(QueryTagsValues queryTagsValues) {
-		Expression[] expressions = getSpelExpressionParts();
-		StringBuilder sb = new StringBuilder();
-		Map<Object, String> valueToTag = new HashMap<>();
-		AtomicInteger tagNum = new AtomicInteger(0);
-		EvaluationContext evaluationContext = this.evaluationContextProvider
-				.getEvaluationContext(this.queryMethod.getParameters(),
-						queryTagsValues.rawParams);
-		for (Expression expression : expressions) {
-			if (expression instanceof LiteralExpression) {
-				sb.append(expression.getValue(String.class));
-			}
-			else if (expression instanceof SpelExpression) {
-				Object value = expression.getValue(evaluationContext);
-				sb.append("@").append(valueToTag.computeIfAbsent(value, val -> {
-					String newTag;
-					do {
-						newTag = "SpELtag" + tagNum.incrementAndGet();
-					}
-					while (queryTagsValues.initialTags.contains(newTag));
-					queryTagsValues.params.add(value);
-					queryTagsValues.tagsOrdered.add(newTag);
-					return newTag;
-				}));
-			}
-			else {
-				throw new DatastoreDataException(
-						"Unexpected expression type. GQL queries are expected to be "
-								+ "concatenation of Literal and SpEL expressions.");
-			}
+	private QueryTagsValues getQueryTagsValues(Object[] parameters) {
+		QueryTagsValues queryTagsValues = new QueryTagsValues(getOriginalParamTags(),
+				parameters);
+
+		SpelQueryContext.EvaluatingSpelQueryContext spelQueryContext = getEvaluatingSpelQueryContext();
+
+		SpelEvaluator spelEvaluator = spelQueryContext.parse(getGqlResolvedEntityClassName(),
+				this.queryMethod.getParameters());
+		Map<String, Object> results = spelEvaluator.evaluate(queryTagsValues.rawParams);
+		queryTagsValues.finalGql = spelEvaluator.getQueryString();
+
+		for (String newTag : results.keySet()) {
+			queryTagsValues.params.add(results.get(newTag));
+			// Cloud Datastore requires the tag name without the
+			queryTagsValues.tagsOrdered.add(newTag.substring(1));
 		}
-		queryTagsValues.finalGql = sb.toString();
+		return queryTagsValues;
 	}
 
-	private Expression[] getSpelExpressionParts() {
-		if (this.spelExpressionParts == null) {
-			this.spelExpressionParts = detectExpressions(getGqlResolvedEntityClassName());
-		}
-		return this.spelExpressionParts;
-	}
+	private SpelQueryContext.EvaluatingSpelQueryContext getEvaluatingSpelQueryContext() {
+		if (this.evaluatingSpelQueryContext == null) {
+			Set<String> originalTags = new HashSet<>(getOriginalParamTags());
 
-	private Expression[] detectExpressions(String gql) {
-		Expression expression = this.expressionParser.parseExpression(gql,
-				ParserContext.TEMPLATE_EXPRESSION);
-		if (expression instanceof LiteralExpression) {
-			return new Expression[] { expression };
+			this.evaluatingSpelQueryContext = SpelQueryContext.EvaluatingSpelQueryContext
+					.of((counter, spelExpression) -> {
+						String newTag;
+						do {
+							counter++;
+							newTag = "@SpELtag" + counter;
+						}
+						while (originalTags.contains(newTag));
+						return newTag;
+					},
+							(prefix, newTag) -> newTag)
+					.withEvaluationContextProvider(this.evaluationContextProvider);
 		}
-		else if (expression instanceof CompositeStringExpression) {
-			return ((CompositeStringExpression) expression).getExpressions();
-		}
-		else {
-			throw new DatastoreDataException("Unexpected expression type. "
-					+ "Query can either contain no SpEL expressions or have only "
-					+ "literal SpEL expressions in the GQL.");
-		}
+		return this.evaluatingSpelQueryContext;
 	}
 
 	// This allows users to use the java class name in place of the Kind name in queries
@@ -339,8 +302,6 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	// Convenience class to hold a grouping of GQL, initialTags, and parameter values.
 	private static class QueryTagsValues {
 
-		final Set<String> initialTags;
-
 		final List<String> tagsOrdered;
 
 		final Object[] rawParams;
@@ -352,7 +313,6 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		QueryTagsValues(List<String> initialTags, Object[] rawParams) {
 			this.params = new ArrayList<>(Arrays.asList(rawParams));
 			this.rawParams = rawParams;
-			this.initialTags = new HashSet<>(initialTags);
 			this.tagsOrdered = new ArrayList<>(initialTags);
 		}
 	}

@@ -29,7 +29,6 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.data.repository.query.RepositoryQuery;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
 
 /**
@@ -47,23 +46,18 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 
 	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
-	private SpelExpressionParser expressionParser;
-
 	public DatastoreQueryLookupStrategy(DatastoreMappingContext datastoreMappingContext,
 			DatastoreTemplate datastoreTemplate,
-			QueryMethodEvaluationContextProvider evaluationContextProvider,
-			SpelExpressionParser expressionParser) {
+			QueryMethodEvaluationContextProvider evaluationContextProvider) {
 		Assert.notNull(datastoreMappingContext,
 				"A non-null DatastoreMappingContext is required.");
 		Assert.notNull(datastoreTemplate,
 				"A non-null DatastoreOperations is required.");
 		Assert.notNull(evaluationContextProvider,
 				"A non-null EvaluationContextProvider is required.");
-		Assert.notNull(expressionParser, "A non-null SpelExpressionParser is required.");
 		this.datastoreMappingContext = datastoreMappingContext;
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.datastoreTemplate = datastoreTemplate;
-		this.expressionParser = expressionParser;
 	}
 
 	@Override
@@ -89,7 +83,7 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 	<T> GqlDatastoreQuery<T> createGqlDatastoreQuery(Class<T> entityType,
 			DatastoreQueryMethod queryMethod, String gql) {
 		return new GqlDatastoreQuery<>(entityType, queryMethod, this.datastoreTemplate,
-				gql, this.evaluationContextProvider, this.expressionParser,
+				gql, this.evaluationContextProvider,
 				this.datastoreMappingContext);
 	}
 

@@ -28,7 +28,6 @@ import org.springframework.data.repository.core.NamedQueries;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -56,15 +55,12 @@ public class DatastoreQueryLookupStrategyTests {
 
 	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
-	private SpelExpressionParser spelExpressionParser;
-
 	@Before
 	public void initMocks() {
 		this.datastoreTemplate = mock(DatastoreTemplate.class);
 		this.datastoreMappingContext = new DatastoreMappingContext();
 		this.queryMethod = mock(DatastoreQueryMethod.class);
 		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
-		this.spelExpressionParser = new SpelExpressionParser();
 		this.datastoreQueryLookupStrategy = getDatastoreQueryLookupStrategy();
 	}
 
@@ -102,8 +98,7 @@ public class DatastoreQueryLookupStrategyTests {
 	private DatastoreQueryLookupStrategy getDatastoreQueryLookupStrategy() {
 		DatastoreQueryLookupStrategy spannerQueryLookupStrategy = spy(
 				new DatastoreQueryLookupStrategy(this.datastoreMappingContext,
-						this.datastoreTemplate, this.evaluationContextProvider,
-						this.spelExpressionParser));
+						this.datastoreTemplate, this.evaluationContextProvider));
 		doReturn(Object.class).when(spannerQueryLookupStrategy).getEntityType(any());
 		doReturn(this.queryMethod).when(spannerQueryLookupStrategy)
 				.createQueryMethod(any(), any(), any());
