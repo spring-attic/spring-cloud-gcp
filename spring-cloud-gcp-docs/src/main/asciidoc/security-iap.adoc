@@ -55,5 +55,3 @@ CAUTION: Modifying registry, algorithm, and header properties might be useful fo
 |true
 |`x-goog-iap-jwt-assertion`
 |===
-
-
