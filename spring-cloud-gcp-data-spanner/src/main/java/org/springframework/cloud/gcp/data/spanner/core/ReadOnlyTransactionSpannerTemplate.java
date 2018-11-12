@@ -24,6 +24,7 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ReadOnlyTransaction;
+import com.google.cloud.spanner.Statement;
 
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
@@ -57,6 +58,12 @@ class ReadOnlyTransactionSpannerTemplate extends SpannerTemplate {
 	protected void applyMutations(Collection<Mutation> mutations) {
 		throw new SpannerDataException(
 				"A read-only transaction template cannot perform mutations.");
+	}
+
+	@Override
+	public long executeDmlStatement(Statement statement) {
+		throw new SpannerDataException(
+				"A read-only transaction template cannot execute DML.");
 	}
 
 	@Override

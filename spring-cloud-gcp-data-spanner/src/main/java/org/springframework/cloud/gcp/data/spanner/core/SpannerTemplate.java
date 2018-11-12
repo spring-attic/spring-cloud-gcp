@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Function;
@@ -57,9 +56,9 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
-import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionStatus;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.Assert;
 
 /**
@@ -107,23 +106,13 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	protected ReadContext getReadContext() {
-		Optional<TransactionContext> txContext = getTransactionContext();
-		if (txContext.isPresent()) {
-			return txContext.get();
-		}
-		else {
-			return this.databaseClient.singleUse();
-		}
+		TransactionContext txContext = getTransactionContext();
+		return txContext == null ? this.databaseClient.singleUse() : txContext;
 	}
 
 	protected ReadContext getReadContext(Timestamp timestamp) {
-		Optional<TransactionContext> txContext = getTransactionContext();
-		if (txContext.isPresent()) {
-			return txContext.get();
-		}
-		else {
-			return this.databaseClient.singleUse(TimestampBound.ofReadTimestamp(timestamp));
-		}
+		TransactionContext txContext = getTransactionContext();
+		return txContext == null ? this.databaseClient.singleUse(TimestampBound.ofReadTimestamp(timestamp)) : txContext;
 	}
 
 	public SpannerMappingContext getMappingContext() {
@@ -132,6 +121,12 @@ public class SpannerTemplate implements SpannerOperations {
 
 	public SpannerEntityProcessor getSpannerEntityProcessor() {
 		return this.spannerEntityProcessor;
+	}
+
+	public long executeDmlStatement(Statement statement) {
+		TransactionContext txContext = getTransactionContext();
+		return txContext == null ? this.databaseClient.executePartitionedUpdate(statement)
+				: txContext.executeUpdate(statement);
 	}
 
 	@Override
@@ -305,8 +300,8 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> T performReadWriteTransaction(Function<SpannerTemplate, T> operations) {
-		Optional<TransactionContext> txContext = getTransactionContext();
-		if (txContext.isPresent()) {
+		TransactionContext txContext = getTransactionContext();
+		if (txContext != null) {
 			throw new IllegalStateException("There is already declarative transaction open. " +
 					"Spanner does not support nested transactions");
 		}
@@ -332,8 +327,8 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public <T> T performReadOnlyTransaction(Function<SpannerTemplate, T> operations,
 											SpannerReadOptions readOptions) {
-		Optional<TransactionContext> txContext = getTransactionContext();
-		if (txContext.isPresent()) {
+		TransactionContext txContext = getTransactionContext();
+		if (txContext != null) {
 			throw new IllegalStateException("There is already declarative transaction open. " +
 					"Spanner does not support nested transactions");
 		}
@@ -434,9 +429,9 @@ public class SpannerTemplate implements SpannerOperations {
 
 	protected void applyMutations(Collection<Mutation> mutations) {
 		LOGGER.debug("Applying Mutation: " + mutations);
-		Optional<TransactionContext> txContext = getTransactionContext();
-		if (txContext.isPresent()) {
-			txContext.get().buffer(mutations);
+		TransactionContext txContext = getTransactionContext();
+		if (txContext != null) {
+			txContext.buffer(mutations);
 		}
 		else {
 			this.databaseClient.write(mutations);
@@ -488,16 +483,10 @@ public class SpannerTemplate implements SpannerOperations {
 				.collect(Collectors.toList());
 	}
 
-	private Optional<TransactionContext> getTransactionContext() {
-		try {
-			return Optional.ofNullable(
-					((SpannerTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
-							.currentTransactionStatus())
-									.getTransaction())
-											.getTransactionContext());
-		}
-		catch (NoTransactionException e) {
-			return Optional.empty();
-		}
+	private TransactionContext getTransactionContext() {
+		return TransactionSynchronizationManager.isActualTransactionActive()
+				? ((SpannerTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
+						.currentTransactionStatus()).getTransaction()).getTransactionContext()
+				: null;
 	}
 }

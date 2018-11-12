@@ -71,6 +71,8 @@ import static org.mockito.Mockito.when;
  */
 public class SpannerTemplateTests {
 
+	private static final Statement DML = Statement.of("update statement");
+
 	private DatabaseClient databaseClient;
 
 	private SpannerMappingContext mappingContext;
@@ -101,6 +103,12 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
+	public void executeDmlTest() {
+		this.spannerTemplate.executeDmlStatement(DML);
+		verify(this.databaseClient, times(1)).executePartitionedUpdate(eq(DML));
+	}
+
+	@Test
 	public void readWriteTransactionTest() {
 
 		TransactionRunner transactionRunner = mock(TransactionRunner.class);
@@ -116,15 +124,17 @@ public class SpannerTemplateTests {
 		TestEntity t = new TestEntity();
 
 		String finalResult = this.spannerTemplate
-				.performReadWriteTransaction(spannerOperations -> {
-					List<TestEntity> items = spannerOperations.readAll(TestEntity.class);
-					spannerOperations.update(t);
+				.performReadWriteTransaction(spannerTemplate -> {
+					List<TestEntity> items = spannerTemplate.readAll(TestEntity.class);
+					spannerTemplate.update(t);
+					spannerTemplate.executeDmlStatement(DML);
 					return "all done";
 				});
 
 		assertEquals("all done", finalResult);
 		verify(transactionContext, times(1)).buffer((List<Mutation>) any());
 		verify(transactionContext, times(1)).read(eq("custom_test_table"), any(), any());
+		verify(transactionContext, times(1)).executeUpdate(eq(DML));
 	}
 
 	@Test

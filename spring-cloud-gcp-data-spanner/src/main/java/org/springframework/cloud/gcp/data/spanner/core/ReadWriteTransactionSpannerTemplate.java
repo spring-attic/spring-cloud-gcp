@@ -23,6 +23,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ReadContext;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
@@ -61,6 +62,11 @@ class ReadWriteTransactionSpannerTemplate extends SpannerTemplate {
 	@Override
 	protected ReadContext getReadContext() {
 		return this.transactionContext;
+	}
+
+	@Override
+	public long executeDmlStatement(Statement statement) {
+		return this.transactionContext.executeUpdate(statement);
 	}
 
 	@Override
