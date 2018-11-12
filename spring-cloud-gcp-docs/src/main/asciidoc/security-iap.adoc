@@ -51,7 +51,7 @@ CAUTION: Modifying registry, algorithm, and header properties might be useful fo
 |`spring.cloud.gcp.security.iap.algorithm`
 |Encryption algorithm used to sign the JWK token.
 |true
-|ES256
+|`ES256`
 
 |`spring.cloud.gcp.security.iap.header`
 |Header from which to extract the JWK key.
