@@ -36,6 +36,14 @@ import com.google.cloud.spanner.Struct;
 public interface SpannerOperations {
 
 	/**
+	 * Execute a DML statement on Cloud Spanner. If this is not performed in a transaction then it is done in
+	 * partitioned-mode.
+	 * @param statement the DML statement to execute.
+	 * @return the number of rows affected.
+	 */
+    long executeDmlStatement(Statement statement);
+
+    /**
 	 * Finds a single stored object using a key.
 	 * @param entityClass the type of the object to retrieve.
 	 * @param key the key of the object.

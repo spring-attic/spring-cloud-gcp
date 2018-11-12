@@ -123,6 +123,7 @@ public class SpannerTemplate implements SpannerOperations {
 		return this.spannerEntityProcessor;
 	}
 
+	@Override
 	public long executeDmlStatement(Statement statement) {
 		TransactionContext txContext = getTransactionContext();
 		return txContext == null ? this.databaseClient.executePartitionedUpdate(statement)
