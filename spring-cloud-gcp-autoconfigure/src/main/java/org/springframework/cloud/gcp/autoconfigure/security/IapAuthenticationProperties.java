@@ -71,7 +71,6 @@ public class IapAuthenticationProperties {
 	public void setHeader(String header) {
 		this.header = header;
 	}
-<<<<<<< HEAD
 
 	public String getIssuer() {
 		return this.issuer;
@@ -80,6 +79,4 @@ public class IapAuthenticationProperties {
 	public void setIssuer(String issuer) {
 		this.issuer = issuer;
 	}
-=======
->>>>>>> Turn IAP constants into properties.
 }
