@@ -43,17 +43,29 @@ CAUTION: Modifying registry, algorithm, and header properties might be useful fo
 |===
 |Name |Description |Required |Default
 
+<<<<<<< HEAD
 |`spring.cloud.gcp.security.iap.registry`
+=======
+|spring.cloud.gcp.security.iap.registry
+>>>>>>> Update docref wording.
 |Link to JWK public key registry.
 |true
 |`https://www.gstatic.com/iap/verify/public_key-jwk`
 
+<<<<<<< HEAD
 |`spring.cloud.gcp.security.iap.algorithm`
+=======
+|spring.cloud.gcp.security.iap.algorithm
+>>>>>>> Update docref wording.
 |Encryption algorithm used to sign the JWK token.
 |true
 |`ES256`
 
+<<<<<<< HEAD
 |`spring.cloud.gcp.security.iap.header`
+=======
+|spring.cloud.gcp.security.iap.header
+>>>>>>> Update docref wording.
 |Header from which to extract the JWK key.
 |true
 |`x-goog-iap-jwt-assertion`
