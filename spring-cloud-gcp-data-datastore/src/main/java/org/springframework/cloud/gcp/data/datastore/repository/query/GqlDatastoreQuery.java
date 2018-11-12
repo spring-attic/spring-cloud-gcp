@@ -241,10 +241,10 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		Map<String, Object> results = spelEvaluator.evaluate(queryTagsValues.rawParams);
 		queryTagsValues.finalGql = spelEvaluator.getQueryString();
 
-		for (String newTag : results.keySet()) {
-			queryTagsValues.params.add(results.get(newTag));
+		for (Map.Entry<String, Object> entry : results.entrySet()) {
+			queryTagsValues.params.add(entry.getValue());
 			// Cloud Datastore requires the tag name without the
-			queryTagsValues.tagsOrdered.add(newTag.substring(1));
+			queryTagsValues.tagsOrdered.add(entry.getKey().substring(1));
 		}
 		return queryTagsValues;
 	}
