@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 
@@ -59,7 +60,10 @@ public class IapAuthenticationAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public JwtDecoder iapJwtDecoder(IapAuthenticationProperties properties) {
-		return new NimbusJwtDecoderJwkSupport(properties.getRegistry(), properties.getAlgorithm());
+		NimbusJwtDecoderJwkSupport jwkSupport
+				= new NimbusJwtDecoderJwkSupport(properties.getRegistry(), properties.getAlgorithm());
+		jwkSupport.setJwtValidator(JwtValidators.createDefaultWithIssuer(properties.getIssuer()));
+		return jwkSupport;
 	}
 
 	@Bean
