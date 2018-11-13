@@ -104,8 +104,7 @@ public class PubSubChannelProvisioner
 		return new PubSubConsumerDestination(subscription);
 	}
 
-	public void afterUnbindConsumer(ConsumerDestination destination, String group,
-			ExtendedConsumerProperties<PubSubConsumerProperties> properties) {
+	public void afterUnbindConsumer(ConsumerDestination destination) {
 		if (this.anonymousSubscriptions.contains(destination.getName())) {
 			try {
 				this.pubSubAdmin.deleteSubscription(destination.getName());

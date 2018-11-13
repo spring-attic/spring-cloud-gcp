@@ -104,6 +104,6 @@ public class PubSubMessageChannelBinder
 	protected void afterUnbindConsumer(ConsumerDestination destination, String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties) {
 		super.afterUnbindConsumer(destination, group, consumerProperties);
-		this.pubSubChannelProvisioner.afterUnbindConsumer(destination, group, consumerProperties);
+		this.pubSubChannelProvisioner.afterUnbindConsumer(destination);
 	}
 }

@@ -94,7 +94,7 @@ public class PubSubChannelProvisionerTests {
 		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
 				.provisionConsumerDestination("topic_A", null, this.properties);
 
-		this.pubSubChannelProvisioner.afterUnbindConsumer(result, null, this.properties);
+		this.pubSubChannelProvisioner.afterUnbindConsumer(result);
 
 		verify(this.pubSubAdminMock).deleteSubscription(result.getName());
 	}
@@ -104,8 +104,8 @@ public class PubSubChannelProvisionerTests {
 		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
 				.provisionConsumerDestination("topic_A", null, this.properties);
 
-		this.pubSubChannelProvisioner.afterUnbindConsumer(result, null, this.properties);
-		this.pubSubChannelProvisioner.afterUnbindConsumer(result, null, this.properties);
+		this.pubSubChannelProvisioner.afterUnbindConsumer(result);
+		this.pubSubChannelProvisioner.afterUnbindConsumer(result);
 
 		verify(this.pubSubAdminMock, times(1)).deleteSubscription(result.getName());
 	}
@@ -115,7 +115,7 @@ public class PubSubChannelProvisionerTests {
 		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
 				.provisionConsumerDestination("topic_A", "group1", this.properties);
 
-		this.pubSubChannelProvisioner.afterUnbindConsumer(result, "group1", this.properties);
+		this.pubSubChannelProvisioner.afterUnbindConsumer(result);
 
 		verify(this.pubSubAdminMock, never()).deleteSubscription(result.getName());
 	}

@@ -66,8 +66,7 @@ public class PubSubMessageChannelBinderTests {
 	public void testAfterUnbindConsumer() {
 		this.binder.afterUnbindConsumer(this.consumerDestination, "group1", this.consumerProperties);
 
-		verify(this.channelProvisioner).afterUnbindConsumer(this.consumerDestination, "group1",
-				this.consumerProperties);
+		verify(this.channelProvisioner).afterUnbindConsumer(this.consumerDestination);
 	}
 
 }
