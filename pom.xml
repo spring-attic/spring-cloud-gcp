@@ -35,6 +35,7 @@
 		<module>spring-cloud-gcp-pubsub-stream-binder</module>
 		<module>spring-cloud-gcp-data-spanner</module>
 		<module>spring-cloud-gcp-data-datastore</module>
+		<module>spring-cloud-gcp-security-iap</module>
 	</modules>
 
 	<properties>
