@@ -47,7 +47,7 @@ public class PubSubChannelProvisioner
 
 	private final PubSubAdmin pubSubAdmin;
 
-	private final Set<String> anonymousSubscriptionNames = new HashSet<>();
+	private final Set<String> anonymousGroupSubscriptionNames = new HashSet<>();
 
 	public PubSubChannelProvisioner(PubSubAdmin pubSubAdmin) {
 		this.pubSubAdmin = pubSubAdmin;
@@ -80,7 +80,7 @@ public class PubSubChannelProvisioner
 			// Generate anonymous random group since one wasn't provided
 			subscriptionName = "anonymous." + topic + "." + UUID.randomUUID().toString();
 			subscription = this.pubSubAdmin.createSubscription(subscriptionName, topic);
-			this.anonymousSubscriptionNames.add(subscriptionName);
+			this.anonymousGroupSubscriptionNames.add(subscriptionName);
 		}
 
 		// make sure subscription exists
@@ -101,7 +101,7 @@ public class PubSubChannelProvisioner
 	}
 
 	public void afterUnbindConsumer(ConsumerDestination destination) {
-		if (this.anonymousSubscriptionNames.remove(destination.getName())) {
+		if (this.anonymousGroupSubscriptionNames.remove(destination.getName())) {
 			try {
 				this.pubSubAdmin.deleteSubscription(destination.getName());
 			}

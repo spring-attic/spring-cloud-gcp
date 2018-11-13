@@ -59,7 +59,7 @@ spring.cloud.stream.gcp.pubsub.bindings.events.producer.auto-create-resources=tr
 If automatic resource creation is turned ON and the subscription and/or the topic do not exist for a consumer, a subscription and potentially a topic will be created.
 The topic name will be the same as the destination name, and the subscription name will be the destination name followed by the consumer group name.
 
-Regardless of the automatic resource creation setting, if the consumer group is not specified, an anonymous one will be created with the name `anonymous.<destinationName>.<randomUUID>`.
+Regardless of the `auto-create-resources` setting, if the consumer group is not specified, an anonymous one will be created with the name `anonymous.<destinationName>.<randomUUID>`.
 Then when the binder shuts down, all Pub/Sub subscriptions created for anonymous consumer groups will be automatically cleaned up.
 
 For example, for the following configuration, a topic named `myEvents` and a subscription called `myEvents.counsumerGroup1` would be created.

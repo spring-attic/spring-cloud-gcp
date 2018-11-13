@@ -17,12 +17,13 @@
 package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
 
 /**
- * Properties commonn to consumers and producers.
+ * Properties common to consumers and producers.
  *
  * @author Mike Eltsufin
  * @since 1.1
  */
 public class PubSubCommonProperties {
+
 	private boolean autoCreateResources = true;
 
 	public boolean isAutoCreateResources() {
