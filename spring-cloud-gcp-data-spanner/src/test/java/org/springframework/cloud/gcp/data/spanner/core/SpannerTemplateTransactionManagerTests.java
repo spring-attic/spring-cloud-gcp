@@ -187,6 +187,21 @@ public class SpannerTemplateTransactionManagerTests {
 				.read(Mockito.anyString(), Mockito.any(KeySet.class), Mockito.any(Iterable.class), Mockito.any());
 	}
 
+	@Test(expected = IllegalStateException.class)
+	public void readOnlySaveTest() {
+		this.transactionalService.writingInReadOnly(new TestEntity());
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void readOnlyDeleteTest() {
+		this.transactionalService.deleteInReadOnly(new TestEntity());
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void readOnlyDmlTest() {
+		this.transactionalService.dmlInReadOnly();
+	}
+
 	@Configuration
 	@EnableTransactionManagement
 	static class Config {
@@ -247,6 +262,21 @@ public class SpannerTemplateTransactionManagerTests {
 			this.spannerTemplate.insert(entity2);
 			this.spannerTemplate.delete(entity1);
 			this.spannerTemplate.upsert(entity2);
+		}
+
+		@Transactional(readOnly = true)
+		public void writingInReadOnly(TestEntity testEntity) {
+			this.spannerTemplate.upsert(testEntity);
+		}
+
+		@Transactional(readOnly = true)
+		public void deleteInReadOnly(TestEntity testEntity) {
+			this.spannerTemplate.delete(testEntity);
+		}
+
+		@Transactional(readOnly = true)
+		public void dmlInReadOnly() {
+			this.spannerTemplate.executeDmlStatement(Statement.of("fake"));
 		}
 	}
 

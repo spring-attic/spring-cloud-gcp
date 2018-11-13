@@ -47,6 +47,7 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.domain.Pageable;
@@ -156,6 +157,22 @@ public class SpannerTemplateTests {
 
 		assertEquals("all done", finalResult);
 		verify(readOnlyTransaction, times(2)).read(eq("custom_test_table"), any(), any());
+	}
+
+	@Test(expected = SpannerDataException.class)
+	public void readOnlyTransactionDmlTest() {
+
+		ReadOnlyTransaction readOnlyTransaction = mock(ReadOnlyTransaction.class);
+		when(this.databaseClient.readOnlyTransaction(
+				eq(TimestampBound.ofReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
+						.thenReturn(readOnlyTransaction);
+
+		this.spannerTemplate
+				.performReadOnlyTransaction(spannerOperations -> {
+					spannerOperations.executeDmlStatement(Statement.of("fail"));
+					return null;
+				}, new SpannerReadOptions()
+						.setTimestamp(Timestamp.ofTimeMicroseconds(333)));
 	}
 
 	@Test(expected = IllegalArgumentException.class)
