@@ -47,70 +47,77 @@ public class PubSubChannelProvisioner
 
 	private final PubSubAdmin pubSubAdmin;
 
-	private final Set<String> anonymousSubscriptions = new HashSet<>();
+	private final Set<String> anonymousGroupSubscriptionNames = new HashSet<>();
 
 	public PubSubChannelProvisioner(PubSubAdmin pubSubAdmin) {
 		this.pubSubAdmin = pubSubAdmin;
 	}
 
 	@Override
-	public ProducerDestination provisionProducerDestination(String name,
+	public ProducerDestination provisionProducerDestination(String topic,
 			ExtendedProducerProperties<PubSubProducerProperties> properties)
 			throws ProvisioningException {
-		if (this.pubSubAdmin.getTopic(name) == null) {
-			this.pubSubAdmin.createTopic(name);
-		}
+		makeSureTopicExists(topic, properties.getExtension().isAutoCreateResources());
 
-		return new PubSubProducerDestination(name);
+		return new PubSubProducerDestination(topic);
 	}
 
 	@Override
-	public ConsumerDestination provisionConsumerDestination(String name, String group,
+	public ConsumerDestination provisionConsumerDestination(String topic, String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties)
 			throws ProvisioningException {
-		String subscription;
-		// Use <topic>.<groupName> as subscription name
-		// Generate anonymous random group, if one not provided
-		boolean anonymous = false;
+
+		makeSureTopicExists(topic, properties.getExtension().isAutoCreateResources());
+
+		String subscriptionName;
+		Subscription subscription;
 		if (StringUtils.hasText(group)) {
-			subscription = name + "." + group;
+			// Use <topic>.<group> as subscription name
+			subscriptionName = topic + "." + group;
+			subscription = this.pubSubAdmin.getSubscription(subscriptionName);
 		}
 		else {
-			subscription = "anonymous." + name + "." + UUID.randomUUID().toString();
-			anonymous = true;
+			// Generate anonymous random group since one wasn't provided
+			subscriptionName = "anonymous." + topic + "." + UUID.randomUUID().toString();
+			subscription = this.pubSubAdmin.createSubscription(subscriptionName, topic);
+			this.anonymousGroupSubscriptionNames.add(subscriptionName);
 		}
 
-		Subscription pubSubSubscription = this.pubSubAdmin.getSubscription(subscription);
-		if (pubSubSubscription == null) {
+		// make sure subscription exists
+		if (subscription == null) {
 			if (properties.getExtension().isAutoCreateResources()) {
-				if (this.pubSubAdmin.getTopic(name) == null) {
-					this.pubSubAdmin.createTopic(name);
-				}
-
-				this.pubSubAdmin.createSubscription(subscription, name);
-
-				if (anonymous) {
-					this.anonymousSubscriptions.add(subscription);
-				}
+				this.pubSubAdmin.createSubscription(subscriptionName, topic);
 			}
 			else {
-				throw new ProvisioningException("Non-existing '" + subscription + "' subscription.");
+				throw new ProvisioningException("Non-existing '" + subscriptionName + "' subscription.");
 			}
 		}
-		else if (!pubSubSubscription.getTopic().equals(name)) {
-			throw new ProvisioningException("Existing '" + subscription + "' subscription is for a different topic '"
-					+ pubSubSubscription.getTopic() + "'.");
+		else if (!subscription.getTopic().equals(topic)) {
+			throw new ProvisioningException(
+					"Existing '" + subscriptionName + "' subscription is for a different topic '"
+							+ subscription.getTopic() + "'.");
 		}
-		return new PubSubConsumerDestination(subscription);
+		return new PubSubConsumerDestination(subscriptionName);
 	}
 
 	public void afterUnbindConsumer(ConsumerDestination destination) {
-		if (this.anonymousSubscriptions.remove(destination.getName())) {
+		if (this.anonymousGroupSubscriptionNames.remove(destination.getName())) {
 			try {
 				this.pubSubAdmin.deleteSubscription(destination.getName());
 			}
 			catch (Exception ex) {
 				LOGGER.warn("Failed to delete auto-created anonymous subscription '" + destination.getName() + "'.");
+			}
+		}
+	}
+
+	private void makeSureTopicExists(String topic, boolean autoCreate) {
+		if (this.pubSubAdmin.getTopic(topic) == null) {
+			if (autoCreate) {
+				this.pubSubAdmin.createTopic(topic);
+			}
+			else {
+				throw new ProvisioningException("Non-existing '" + topic + "' topic.");
 			}
 		}
 	}

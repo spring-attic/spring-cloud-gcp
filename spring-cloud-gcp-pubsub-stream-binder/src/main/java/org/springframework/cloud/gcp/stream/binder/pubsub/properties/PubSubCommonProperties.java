@@ -1,5 +1,5 @@
 /*
- *  Copyright 2017 original author or authors.
+ *  Copyright 2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,10 +17,20 @@
 package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
 
 /**
- * @author João André Martins
- * @author Daniel Zou
+ * Properties common to consumers and producers.
+ *
  * @author Mike Eltsufin
+ * @since 1.1
  */
-public class PubSubConsumerProperties extends PubSubCommonProperties {
+public class PubSubCommonProperties {
 
+	private boolean autoCreateResources = true;
+
+	public boolean isAutoCreateResources() {
+		return this.autoCreateResources;
+	}
+
+	public void setAutoCreateResources(boolean autoCreateResources) {
+		this.autoCreateResources = autoCreateResources;
+	}
 }
