@@ -21,6 +21,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -52,23 +53,18 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 @ConditionalOnProperty("spring.cloud.gcp.security.iap.enabled")
 @ConditionalOnClass({NimbusJwtDecoderJwkSupport.class})
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)
+@EnableConfigurationProperties(IapAuthenticationProperties.class)
 public class IapAuthenticationAutoConfiguration {
-
-	public static final String PUBLIC_KEY_VERIFICATION_LINK = "https://www.gstatic.com/iap/verify/public_key-jwk";
-
-	public static final String ENCRYPTION_ALGORITHM = "ES256";
-
-	public static final String IAP_HEADER = "x-goog-iap-jwt-assertion";
 
 	@Bean
 	@ConditionalOnMissingBean
-	public JwtDecoder iapJwtDecoder() {
-		return new NimbusJwtDecoderJwkSupport(PUBLIC_KEY_VERIFICATION_LINK, ENCRYPTION_ALGORITHM);
+	public JwtDecoder iapJwtDecoder(IapAuthenticationProperties properties) {
+		return new NimbusJwtDecoderJwkSupport(properties.getRegistry(), properties.getAlgorithm());
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	public BearerTokenResolver iatTokenResolver() {
-		return r -> r.getHeader(IAP_HEADER);
+	public BearerTokenResolver iatTokenResolver(IapAuthenticationProperties properties) {
+		return r -> r.getHeader(properties.getHeader());
 	}
 }
