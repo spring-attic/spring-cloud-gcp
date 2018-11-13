@@ -59,6 +59,9 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	// A small string that isn't used in GQL syntax
 	private static final String ENTITY_CLASS_NAME_BOOKEND = "|";
 
+	private static final Pattern CLASS_NAME_PATTERN = Pattern.compile("\\" + ENTITY_CLASS_NAME_BOOKEND + "\\S+\\"
+			+ ENTITY_CLASS_NAME_BOOKEND + "");
+
 	private final String originalGql;
 
 	private String gqlResolvedEntityClassName;
@@ -107,10 +110,11 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	@Override
 	public Object execute(Object[] parameters) {
 
-		QueryTagsValues queryTagsValues = getQueryTagsValues(parameters);
+		ParsedQueryWithTagsAndValues parsedQueryWithTagsAndValues = new ParsedQueryWithTagsAndValues(
+				getOriginalParamTags(), parameters);
 
-		GqlQuery query = bindArgsToGqlQuery(queryTagsValues.finalGql,
-				queryTagsValues.tagsOrdered, queryTagsValues.params);
+		GqlQuery query = bindArgsToGqlQuery(parsedQueryWithTagsAndValues.finalGql,
+				parsedQueryWithTagsAndValues.tagsOrdered, parsedQueryWithTagsAndValues.params);
 
 		boolean returnTypeIsCollection = this.queryMethod.isCollectionQuery();
 		Class returnedItemType = this.queryMethod.getReturnedObjectType();
@@ -148,7 +152,29 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	private String getGqlResolvedEntityClassName() {
 		if (this.gqlResolvedEntityClassName == null) {
-			this.gqlResolvedEntityClassName = resolveEntityClassNames(this.originalGql);
+			Matcher matcher = CLASS_NAME_PATTERN.matcher(this.originalGql);
+			this.gqlResolvedEntityClassName = this.originalGql;
+			while (matcher.find()) {
+				String matched = matcher.group();
+				String className = matched.substring(1, matched.length() - 1);
+				try {
+					Class entityClass = Class.forName(className);
+					DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
+							.getPersistentEntity(entityClass);
+					if (datastorePersistentEntity == null) {
+						throw new DatastoreDataException(
+								"The class used in the GQL statement is not a Cloud Datastore persistent entity: "
+										+ className);
+					}
+					this.gqlResolvedEntityClassName = this.gqlResolvedEntityClassName.replace(matched,
+							datastorePersistentEntity.kindName());
+				}
+				catch (ClassNotFoundException e) {
+					throw new DatastoreDataException(
+							"The class name does not refer to an available entity type: "
+									+ className);
+				}
+			}
 		}
 		return this.gqlResolvedEntityClassName;
 	}
@@ -221,32 +247,13 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		if (tags.size() != vals.size()) {
 			throw new DatastoreDataException("Annotated GQL Query Method "
 					+ this.queryMethod.getName() + " has " + tags.size()
-					+ " initialTags but a different number of parameter values: " + vals.size());
+					+ " tags but a different number of parameter values: " + vals.size());
 		}
 		for (int i = 0; i < tags.size(); i++) {
 			Object val = vals.get(i);
 			DatastoreNativeTypes.bindValueToGqlBuilder(builder, tags.get(i), val);
 		}
 		return builder.build();
-	}
-
-	private QueryTagsValues getQueryTagsValues(Object[] parameters) {
-		QueryTagsValues queryTagsValues = new QueryTagsValues(getOriginalParamTags(),
-				parameters);
-
-		SpelQueryContext.EvaluatingSpelQueryContext spelQueryContext = getEvaluatingSpelQueryContext();
-
-		SpelEvaluator spelEvaluator = spelQueryContext.parse(getGqlResolvedEntityClassName(),
-				this.queryMethod.getParameters());
-		Map<String, Object> results = spelEvaluator.evaluate(queryTagsValues.rawParams);
-		queryTagsValues.finalGql = spelEvaluator.getQueryString();
-
-		for (Map.Entry<String, Object> entry : results.entrySet()) {
-			queryTagsValues.params.add(entry.getValue());
-			// Cloud Datastore requires the tag name without the
-			queryTagsValues.tagsOrdered.add(entry.getKey().substring(1));
-		}
-		return queryTagsValues;
 	}
 
 	private SpelQueryContext.EvaluatingSpelQueryContext getEvaluatingSpelQueryContext() {
@@ -261,46 +268,16 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 							newTag = "@SpELtag" + counter;
 						}
 						while (originalTags.contains(newTag));
+						originalTags.add(newTag);
 						return newTag;
-					},
-							(prefix, newTag) -> newTag)
+					}, (prefix, newTag) -> newTag)
 					.withEvaluationContextProvider(this.evaluationContextProvider);
 		}
 		return this.evaluatingSpelQueryContext;
 	}
 
-	// This allows users to use the java class name in place of the Kind name in queries
-	// because the kind name can contain SpEL and may vary.
-	private String resolveEntityClassNames(String sql) {
-		Pattern pattern = Pattern.compile("\\" + ENTITY_CLASS_NAME_BOOKEND + "\\S+\\"
-				+ ENTITY_CLASS_NAME_BOOKEND + "");
-		Matcher matcher = pattern.matcher(sql);
-		String result = sql;
-		while (matcher.find()) {
-			String matched = matcher.group();
-			String className = matched.substring(1, matched.length() - 1);
-			try {
-				Class entityClass = Class.forName(className);
-				DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
-						.getPersistentEntity(entityClass);
-				if (datastorePersistentEntity == null) {
-					throw new DatastoreDataException(
-							"The class used in the GQL statement is not a Cloud Datastore persistent entity: "
-									+ className);
-				}
-				result = result.replace(matched, datastorePersistentEntity.kindName());
-			}
-			catch (ClassNotFoundException e) {
-				throw new DatastoreDataException(
-						"The class name does not refer to an available entity type: "
-								+ className);
-			}
-		}
-		return result;
-	}
-
-	// Convenience class to hold a grouping of GQL, initialTags, and parameter values.
-	private static class QueryTagsValues {
+	// Convenience class to hold a grouping of GQL, tags, and parameter values.
+	private class ParsedQueryWithTagsAndValues {
 
 		final List<String> tagsOrdered;
 
@@ -308,12 +285,25 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		final List<Object> params;
 
-		String finalGql;
+		final String finalGql;
 
-		QueryTagsValues(List<String> initialTags, Object[] rawParams) {
+		ParsedQueryWithTagsAndValues(List<String> initialTags, Object[] rawParams) {
 			this.params = new ArrayList<>(Arrays.asList(rawParams));
 			this.rawParams = rawParams;
 			this.tagsOrdered = new ArrayList<>(initialTags);
+
+			SpelQueryContext.EvaluatingSpelQueryContext spelQueryContext = getEvaluatingSpelQueryContext();
+
+			SpelEvaluator spelEvaluator = spelQueryContext.parse(getGqlResolvedEntityClassName(),
+					GqlDatastoreQuery.this.queryMethod.getParameters());
+			Map<String, Object> results = spelEvaluator.evaluate(this.rawParams);
+			this.finalGql = spelEvaluator.getQueryString();
+
+			for (Map.Entry<String, Object> entry : results.entrySet()) {
+				this.params.add(entry.getValue());
+				// Cloud Datastore requires the tag name without the
+				this.tagsOrdered.add(entry.getKey().substring(1));
+			}
 		}
 	}
 }
