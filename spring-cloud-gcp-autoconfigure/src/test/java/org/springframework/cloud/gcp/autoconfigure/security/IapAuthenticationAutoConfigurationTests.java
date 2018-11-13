@@ -49,7 +49,7 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class IapAuthenticationAutoConfigurationTests {
 
-	static final String FAKE_TOKEN = "lol cats forever";
+	static final String FAKE_USER_TOKEN = "lol cats forever";
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(IapAuthenticationAutoConfiguration.class));
@@ -110,8 +110,24 @@ public class IapAuthenticationAutoConfigurationTests {
 
 					BearerTokenResolver resolver = context.getBean(BearerTokenResolver.class);
 					assertThat(resolver).isNotNull();
-					assertThat(resolver.resolve(this.mockIapRequest)).isEqualTo(FAKE_TOKEN);
-					assertThat(resolver.resolve(this.mockNonIapRequest)).isEqualTo(FAKE_TOKEN);
+					assertThat(resolver.resolve(this.mockIapRequest)).isEqualTo(FAKE_USER_TOKEN);
+					assertThat(resolver.resolve(this.mockNonIapRequest)).isEqualTo(FAKE_USER_TOKEN);
+				});
+	}
+
+	@Test
+	public void testCustomPropertyOverridesDefault() {
+		this.contextRunner
+				.withPropertyValues(
+						"spring.cloud.gcp.security.iap.enabled=true",
+						"spring.cloud.gcp.security.iap.header=some-other-header")
+				.run(context -> {
+					when(this.mockNonIapRequest.getHeader("some-other-header")).thenReturn("other header jwt");
+
+					BearerTokenResolver resolver = context.getBean(BearerTokenResolver.class);
+					assertThat(resolver).isNotNull();
+					assertThat(resolver.resolve(this.mockIapRequest)).isEqualTo(null);
+					assertThat(resolver.resolve(this.mockNonIapRequest)).isEqualTo("other header jwt");
 				});
 	}
 
@@ -136,7 +152,7 @@ public class IapAuthenticationAutoConfigurationTests {
 
 		@Bean
 		public BearerTokenResolver bearerTokenResolver() {
-			return httpServletRequest -> FAKE_TOKEN;
+			return httpServletRequest -> FAKE_USER_TOKEN;
 		}
 	}
 }

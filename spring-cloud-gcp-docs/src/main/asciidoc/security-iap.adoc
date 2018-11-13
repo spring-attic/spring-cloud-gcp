@@ -35,6 +35,28 @@ dependencies {
 }
 ----
 
+== Configuration
+The following properties are available.
 
+CAUTION: Modifying registry, algorithm, and header properties might be useful for testing, but the defaults should not be changed in production.
+
+|===
+|Name |Description |Required |Default
+
+|`spring.cloud.gcp.security.iap.registry`
+|Link to JWK public key registry.
+|true
+|`https://www.gstatic.com/iap/verify/public_key-jwk`
+
+|`spring.cloud.gcp.security.iap.algorithm`
+|Encryption algorithm used to sign the JWK token.
+|true
+|`ES256`
+
+|`spring.cloud.gcp.security.iap.header`
+|Header from which to extract the JWK key.
+|true
+|`x-goog-iap-jwt-assertion`
+|===
 
 
