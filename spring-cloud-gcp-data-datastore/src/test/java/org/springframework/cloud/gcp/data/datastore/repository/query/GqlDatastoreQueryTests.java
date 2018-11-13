@@ -37,7 +37,6 @@ import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
 import static org.junit.Assert.assertEquals;
@@ -63,33 +62,33 @@ public class GqlDatastoreQueryTests {
 
 	private QueryMethodEvaluationContextProvider evaluationContextProvider;
 
-	private SpelExpressionParser expressionParser;
-
 	@Before
 	public void initMocks() {
 		this.queryMethod = mock(DatastoreQueryMethod.class);
 		this.datastoreTemplate = mock(DatastoreTemplate.class);
-		this.expressionParser = new SpelExpressionParser();
 		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
 	}
 
 	private GqlDatastoreQuery<Trade> createQuery(String gql) {
 		return new GqlDatastoreQuery<>(Trade.class, this.queryMethod,
-				this.datastoreTemplate, gql, this.evaluationContextProvider,
-				this.expressionParser, new DatastoreMappingContext());
+				this.datastoreTemplate, gql, this.evaluationContextProvider, new DatastoreMappingContext());
 	}
 
 	@Test
 	public void compoundNameConventionTest() {
 
 		String gql = "SELECT * FROM "
-				+ "trades" + " WHERE ( action=@tag0 AND ticker=@tag1 ) OR "
+				+ "|org.springframework.cloud.gcp.data.datastore."
+				+ "repository.query.GqlDatastoreQueryTests$Trade|"
+				+ " WHERE price=:#{#tag6 * -1} AND price<>:#{#tag6 * -1} OR "
+				+ "price<>:#{#tag7 * -1} AND " + "( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3;";
 
 		String entityResolvedGql = "SELECT * FROM trades"
-				+ " WHERE ( action=@tag0 AND ticker=@tag1 ) OR "
+				+ " WHERE price=@SpELtag1 AND price<>@SpELtag2 OR price<>@SpELtag3 AND "
+				+ "( action=@tag0 AND ticker=@tag1 ) OR "
 				+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 				+ "trader_id=NULL AND trader_id LIKE %@tag5 AND price=TRUE AND price=FALSE AND "
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3";
@@ -149,6 +148,12 @@ public class GqlDatastoreQueryTests {
 			assertEquals(params[5], paramMap.get("tag5").get());
 			assertEquals(params[6], paramMap.get("tag6").get());
 			assertEquals(params[7], paramMap.get("tag7").get());
+			assertEquals(-1 * (double) params[6], (double) paramMap.get("SpELtag1").get(),
+					0.00001);
+			assertEquals(-1 * (double) params[6], (double) paramMap.get("SpELtag2").get(),
+					0.00001);
+			assertEquals(-1 * (double) params[7], (double) paramMap.get("SpELtag3").get(),
+					0.00001);
 
 			return null;
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));

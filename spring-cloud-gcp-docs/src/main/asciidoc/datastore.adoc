@@ -827,7 +827,7 @@ The names of the tags of the GQL correspond to the `@Param` annotated names of t
 public interface TraderRepository extends CrudRepository<Trader, String> {
 
   @Query("SELECT * FROM traders WHERE name = @trader_name")
-  List<Trader> tradersByName(@Param("trader_name) String traderName);
+  List<Trader> tradersByName(@Param("trader_name") String traderName);
 
   @Query("SELECT * FROM  test_entities_ci WHERE id = @id_val")
   TestEntity getOneTestEntity(@Param("id_val") long id);
@@ -868,6 +868,29 @@ You can also query for non-entity types:
 
 	@Query("SELECT id FROM test_entities_ci WHERE id <= @id_val limit 1")
 	String getOneId(@Param("id_val") long id);
+----
+
+SpEL can be used to provide GQL parameters:
+
+[source, java]
+----
+@Query("SELECT * FROM |com.example.Trade| WHERE trades.action = @act
+  AND price > :#{#priceRadius * -1} AND price < :#{#priceRadius * 2}")
+List<Trade> fetchByActionNamedQuery(@Param("act") String action, @Param("priceRadius") Double r);
+----
+
+
+Kind names can be directly written in the GQL annotations.
+Kind names can also be resolved from the `@Entity` annotation on domain classes.
+
+In this case, the query should refer to table names with fully qualified class names surrounded by `|` characters: `|fully.qualified.ClassName|`.
+This is useful when SpEL expressions appear in the kind name provided to the `@Entity` annotation.
+For example:
+
+[source, java]
+----
+@Query("SELECT * FROM |com.example.Trade| WHERE trades.action = @act")
+List<Trade> fetchByActionNamedQuery(@Param("act") String action);
 ----
 
 ===== Query methods with named queries properties

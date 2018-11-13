@@ -49,8 +49,8 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 	@Query("select * from test_entities_ci where shape = @enum_val")
 	List<TestEntity> findByEnumQueryParam(@Param("enum_val") Shape shape);
 
-	@Query(value = "select __key__ from  test_entities_ci "
-			+ "where id = @id_val", exists = true)
+	@Query(value = "select __key__ from |org.springframework.cloud.gcp.data.datastore.it.TestEntity| "
+			+ "where id = :#{#id_val}", exists = true)
 	boolean existsByEntitiesWithCustomQuery(@Param("id_val") long id);
 
 	@Query("select id from  test_entities_ci where id <= @id_val ")

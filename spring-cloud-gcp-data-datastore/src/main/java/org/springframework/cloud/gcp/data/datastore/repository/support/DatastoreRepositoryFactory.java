@@ -38,7 +38,6 @@ import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryLookupStrategy.Key;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.EvaluationContext;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -52,8 +51,6 @@ import org.springframework.util.Assert;
  */
 public class DatastoreRepositoryFactory extends RepositoryFactorySupport
 		implements ApplicationContextAware {
-
-	private static final SpelExpressionParser EXPRESSION_PARSER = new SpelExpressionParser();
 
 	private final DatastoreMappingContext datastoreMappingContext;
 
@@ -110,7 +107,7 @@ public class DatastoreRepositoryFactory extends RepositoryFactorySupport
 
 		return Optional.of(new DatastoreQueryLookupStrategy(this.datastoreMappingContext,
 				this.datastoreTemplate,
-				delegateContextProvider(evaluationContextProvider), EXPRESSION_PARSER));
+				delegateContextProvider(evaluationContextProvider)));
 	}
 
 	@Override

@@ -24,7 +24,7 @@ import org.springframework.data.annotation.Id;
 /**
  * @author Chengyuan Zhao
  */
-@Entity(name = "test_entities_ci")
+@Entity(name = "test_entities_#{\"ci\"}")
 public class TestEntity {
 
 	@Id
