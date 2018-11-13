@@ -321,7 +321,7 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-surefire-plugin</artifactId>
-						<version>2.22.0</version>
+						<version>2.20</version>
 						<configuration>
 							<!-- need for JaCoCo -->
 							<argLine>@{argLine} -Xms512m -Xmx512m</argLine>
