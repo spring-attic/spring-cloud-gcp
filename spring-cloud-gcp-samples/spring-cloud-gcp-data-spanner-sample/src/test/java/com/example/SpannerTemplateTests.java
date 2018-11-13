@@ -62,14 +62,14 @@ public class SpannerTemplateTests {
 
 	@Before
 	@After
-	public void cleanupSpannerTables() {
+	public void cleanupSpannerTables() throws InterruptedException {
 		this.spannerTemplateExample.createTablesIfNotExists();
 		this.spannerOperations.delete(Trader.class, KeySet.all());
 		this.spannerOperations.delete(Trade.class, KeySet.all());
 	}
 
 	@Test
-	public void testSpannerTemplateLoadsData() {
+	public void testSpannerTemplateLoadsData() throws InterruptedException {
 		assertThat(this.spannerOperations.readAll(Trade.class)).isEmpty();
 
 		this.spannerTemplateExample.runExample();

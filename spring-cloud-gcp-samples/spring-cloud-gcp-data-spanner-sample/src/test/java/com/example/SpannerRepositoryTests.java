@@ -78,14 +78,14 @@ public class SpannerRepositoryTests {
 
 	@Before
 	@After
-	public void cleanupAndSetupTables() {
+	public void cleanupAndSetupTables() throws InterruptedException {
 		this.spannerRepositoryExample.createTablesIfNotExists();
 		this.tradeRepository.deleteAll();
 		this.traderRepository.deleteAll();
 	}
 
 	@Test
-	public void testRestEndpoint() {
+	public void testRestEndpoint() throws InterruptedException {
 		this.spannerRepositoryExample.runExample();
 
 		TestRestTemplate testRestTemplate = new TestRestTemplate();
@@ -99,7 +99,7 @@ public class SpannerRepositoryTests {
 	}
 
 	@Test
-	public void testLoadsCorrectData() {
+	public void testLoadsCorrectData() throws InterruptedException {
 		assertThat(this.traderRepository.count()).isEqualTo(0);
 		assertThat(this.tradeRepository.count()).isEqualTo(0);
 
