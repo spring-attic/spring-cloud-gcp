@@ -261,7 +261,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		private String getGqlResolvedEntityClassName() {
 			if (GqlDatastoreQuery.this.gqlResolvedEntityClassName == null) {
 				Matcher matcher = CLASS_NAME_PATTERN.matcher(GqlDatastoreQuery.this.originalGql);
-				GqlDatastoreQuery.this.gqlResolvedEntityClassName = GqlDatastoreQuery.this.originalGql;
+				String result = GqlDatastoreQuery.this.originalGql;
 				while (matcher.find()) {
 					String matched = matcher.group();
 					String className = matched.substring(1, matched.length() - 1);
@@ -274,9 +274,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 									"The class used in the GQL statement is not a Cloud Datastore persistent entity: "
 											+ className);
 						}
-						GqlDatastoreQuery.this.gqlResolvedEntityClassName = GqlDatastoreQuery.this.gqlResolvedEntityClassName
-								.replace(matched,
-										datastorePersistentEntity.kindName());
+						result = result.replace(matched, datastorePersistentEntity.kindName());
 					}
 					catch (ClassNotFoundException e) {
 						throw new DatastoreDataException(
@@ -284,6 +282,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 										+ className);
 					}
 				}
+				GqlDatastoreQuery.this.gqlResolvedEntityClassName = result;
 			}
 			return GqlDatastoreQuery.this.gqlResolvedEntityClassName;
 		}
