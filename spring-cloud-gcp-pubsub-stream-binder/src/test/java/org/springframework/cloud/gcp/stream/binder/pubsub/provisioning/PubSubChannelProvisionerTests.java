@@ -31,6 +31,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.matches;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -85,5 +87,36 @@ public class PubSubChannelProvisionerTests {
 		assertThat(result.getName()).matches(subscriptionNameRegex);
 
 		verify(this.pubSubAdminMock).createSubscription(matches(subscriptionNameRegex), eq("topic_A"));
+	}
+
+	@Test
+	public void testAfterUnbindConsumer_anonymousGroup() {
+		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
+				.provisionConsumerDestination("topic_A", null, this.properties);
+
+		this.pubSubChannelProvisioner.afterUnbindConsumer(result);
+
+		verify(this.pubSubAdminMock).deleteSubscription(result.getName());
+	}
+
+	@Test
+	public void testAfterUnbindConsumer_twice() {
+		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
+				.provisionConsumerDestination("topic_A", null, this.properties);
+
+		this.pubSubChannelProvisioner.afterUnbindConsumer(result);
+		this.pubSubChannelProvisioner.afterUnbindConsumer(result);
+
+		verify(this.pubSubAdminMock, times(1)).deleteSubscription(result.getName());
+	}
+
+	@Test
+	public void testAfterUnbindConsumer_nonAnonymous() {
+		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
+				.provisionConsumerDestination("topic_A", "group1", this.properties);
+
+		this.pubSubChannelProvisioner.afterUnbindConsumer(result);
+
+		verify(this.pubSubAdminMock, never()).deleteSubscription(result.getName());
 	}
 }

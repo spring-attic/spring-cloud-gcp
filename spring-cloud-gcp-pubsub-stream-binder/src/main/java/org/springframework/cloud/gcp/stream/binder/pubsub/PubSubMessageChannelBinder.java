@@ -51,6 +51,8 @@ public class PubSubMessageChannelBinder
 
 	private final PubSubExtendedBindingProperties pubSubExtendedBindingProperties;
 
+	private final PubSubChannelProvisioner pubSubChannelProvisioner;
+
 	public PubSubMessageChannelBinder(String[] headersToEmbed,
 			PubSubChannelProvisioner provisioningProvider, PubSubTemplate pubSubTemplate,
 			PubSubExtendedBindingProperties pubSubExtendedBindingProperties) {
@@ -58,6 +60,7 @@ public class PubSubMessageChannelBinder
 		super(headersToEmbed, provisioningProvider);
 		this.pubSubTemplate = pubSubTemplate;
 		this.pubSubExtendedBindingProperties = pubSubExtendedBindingProperties;
+		this.pubSubChannelProvisioner = provisioningProvider;
 	}
 
 	@Override
@@ -97,4 +100,10 @@ public class PubSubMessageChannelBinder
 		return this.pubSubExtendedBindingProperties.getExtendedPropertiesEntryClass();
 	}
 
+	@Override
+	protected void afterUnbindConsumer(ConsumerDestination destination, String group,
+			ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties) {
+		super.afterUnbindConsumer(destination, group, consumerProperties);
+		this.pubSubChannelProvisioner.afterUnbindConsumer(destination);
+	}
 }

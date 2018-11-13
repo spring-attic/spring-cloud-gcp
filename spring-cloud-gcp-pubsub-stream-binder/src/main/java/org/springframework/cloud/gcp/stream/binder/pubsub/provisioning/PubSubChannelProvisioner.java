@@ -16,7 +16,13 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub.provisioning;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+
+import com.google.pubsub.v1.Subscription;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
@@ -37,7 +43,11 @@ public class PubSubChannelProvisioner
 		implements ProvisioningProvider<ExtendedConsumerProperties<PubSubConsumerProperties>,
 		ExtendedProducerProperties<PubSubProducerProperties>> {
 
+	private static final Log LOGGER = LogFactory.getLog(PubSubChannelProvisioner.class);
+
 	private final PubSubAdmin pubSubAdmin;
+
+	private final Set<String> anonymousSubscriptions = new HashSet<>();
 
 	public PubSubChannelProvisioner(PubSubAdmin pubSubAdmin) {
 		this.pubSubAdmin = pubSubAdmin;
@@ -58,24 +68,50 @@ public class PubSubChannelProvisioner
 	public ConsumerDestination provisionConsumerDestination(String name, String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties)
 			throws ProvisioningException {
-		// Use group name as subscription name
+		String subscription;
+		// Use <topic>.<groupName> as subscription name
 		// Generate anonymous random group, if one not provided
-		String subscription = !StringUtils.hasText(group) ?
-				"anonymous." + name + "." + UUID.randomUUID().toString()
-				: name + "." + group;
+		boolean anonymous = false;
+		if (StringUtils.hasText(group)) {
+			subscription = name + "." + group;
+		}
+		else {
+			subscription = "anonymous." + name + "." + UUID.randomUUID().toString();
+			anonymous = true;
+		}
 
-		if (this.pubSubAdmin.getSubscription(subscription) == null) {
+		Subscription pubSubSubscription = this.pubSubAdmin.getSubscription(subscription);
+		if (pubSubSubscription == null) {
 			if (properties.getExtension().isAutoCreateResources()) {
 				if (this.pubSubAdmin.getTopic(name) == null) {
 					this.pubSubAdmin.createTopic(name);
 				}
 
 				this.pubSubAdmin.createSubscription(subscription, name);
+
+				if (anonymous) {
+					this.anonymousSubscriptions.add(subscription);
+				}
 			}
 			else {
 				throw new ProvisioningException("Non-existing '" + subscription + "' subscription.");
 			}
 		}
+		else if (!pubSubSubscription.getTopic().equals(name)) {
+			throw new ProvisioningException("Existing '" + subscription + "' subscription is for a different topic '"
+					+ pubSubSubscription.getTopic() + "'.");
+		}
 		return new PubSubConsumerDestination(subscription);
+	}
+
+	public void afterUnbindConsumer(ConsumerDestination destination) {
+		if (this.anonymousSubscriptions.remove(destination.getName())) {
+			try {
+				this.pubSubAdmin.deleteSubscription(destination.getName());
+			}
+			catch (Exception ex) {
+				LOGGER.warn("Failed to delete auto-created anonymous subscription '" + destination.getName() + "'.");
+			}
+		}
 	}
 }

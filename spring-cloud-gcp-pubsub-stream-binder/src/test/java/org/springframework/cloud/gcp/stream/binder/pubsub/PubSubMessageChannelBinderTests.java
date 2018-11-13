@@ -16,51 +16,57 @@
 
 package org.springframework.cloud.gcp.stream.binder.pubsub;
 
-import org.junit.ClassRule;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
+import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
-import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubProducerProperties;
-import org.springframework.cloud.stream.binder.AbstractBinderTests;
+import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingProperties;
+import org.springframework.cloud.gcp.stream.binder.pubsub.provisioning.PubSubChannelProvisioner;
 import org.springframework.cloud.stream.binder.ExtendedConsumerProperties;
-import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
-import org.springframework.cloud.stream.binder.Spy;
+import org.springframework.cloud.stream.provisioning.ConsumerDestination;
+
+import static org.mockito.Mockito.verify;
 
 /**
- * Integration tests that require the Pub/Sub emulator to be installed.
+ * @author Mike Eltsufin
  *
- * @author João André Martins
- * @author Elena Felder
+ * @since 1.1
  */
-public class PubSubMessageChannelBinderTests extends
-		AbstractBinderTests<PubSubTestBinder, ExtendedConsumerProperties<PubSubConsumerProperties>,
-				ExtendedProducerProperties<PubSubProducerProperties>> {
+@RunWith(MockitoJUnitRunner.class)
+public class PubSubMessageChannelBinderTests {
 
-	@ClassRule
-	public static PubSubEmulator emulator = new PubSubEmulator();
+	PubSubMessageChannelBinder binder;
 
-	@Override
-	protected PubSubTestBinder getBinder() {
-		return new PubSubTestBinder(emulator.getEmulatorHostPort());
+	@Mock
+	PubSubChannelProvisioner channelProvisioner;
+
+	@Mock
+	PubSubTemplate pubSubTemplate;
+
+	@Mock
+	PubSubExtendedBindingProperties properties;
+
+	@Mock
+	ConsumerDestination consumerDestination;
+
+	@Mock
+	ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties;
+
+	@Before
+	public void before() {
+		this.binder = new PubSubMessageChannelBinder(new String[0], this.channelProvisioner, this.pubSubTemplate,
+				this.properties);
 	}
 
-	@Override
-	protected ExtendedConsumerProperties<PubSubConsumerProperties> createConsumerProperties() {
-		return new ExtendedConsumerProperties<>(new PubSubConsumerProperties());
-	}
+	@Test
+	public void testAfterUnbindConsumer() {
+		this.binder.afterUnbindConsumer(this.consumerDestination, "group1", this.consumerProperties);
 
-	@Override
-	protected ExtendedProducerProperties<PubSubProducerProperties> createProducerProperties() {
-		return new ExtendedProducerProperties<>(new PubSubProducerProperties());
-	}
-
-	@Override
-	public Spy spyOn(String name) {
-		return null;
-	}
-
-	@Override
-	public void testClean() {
-		// Do nothing. Original test tests for Lifecycle logic that we don't need.
+		verify(this.channelProvisioner).afterUnbindConsumer(this.consumerDestination);
 	}
 
 }
