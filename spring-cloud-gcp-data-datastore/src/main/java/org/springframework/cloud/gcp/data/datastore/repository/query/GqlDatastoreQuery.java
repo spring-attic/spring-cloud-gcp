@@ -68,10 +68,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	private List<String> originalParamTags;
 
-	// unused currently, but will be used for SpEL expression in the query.
 	private QueryMethodEvaluationContextProvider evaluationContextProvider;
-
-	private SpelQueryContext.EvaluatingSpelQueryContext evaluatingSpelQueryContext;
 
 	/**
 	 * Constructor
@@ -256,25 +253,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return builder.build();
 	}
 
-	private SpelQueryContext.EvaluatingSpelQueryContext getEvaluatingSpelQueryContext() {
-		if (this.evaluatingSpelQueryContext == null) {
-			Set<String> originalTags = new HashSet<>(getOriginalParamTags());
 
-			this.evaluatingSpelQueryContext = SpelQueryContext.EvaluatingSpelQueryContext
-					.of((counter, spelExpression) -> {
-						String newTag;
-						do {
-							counter++;
-							newTag = "@SpELtag" + counter;
-						}
-						while (originalTags.contains(newTag));
-						originalTags.add(newTag);
-						return newTag;
-					}, (prefix, newTag) -> newTag)
-					.withEvaluationContextProvider(this.evaluationContextProvider);
-		}
-		return this.evaluatingSpelQueryContext;
-	}
 
 	// Convenience class to hold a grouping of GQL, tags, and parameter values.
 	private class ParsedQueryWithTagsAndValues {
@@ -304,6 +283,23 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				// Cloud Datastore requires the tag name without the
 				this.tagsOrdered.add(entry.getKey().substring(1));
 			}
+		}
+
+		private SpelQueryContext.EvaluatingSpelQueryContext getEvaluatingSpelQueryContext() {
+			Set<String> originalTags = new HashSet<>(getOriginalParamTags());
+
+			return SpelQueryContext.EvaluatingSpelQueryContext
+					.of((counter, spelExpression) -> {
+						String newTag;
+						do {
+							counter++;
+							newTag = "@SpELtag" + counter;
+						}
+						while (originalTags.contains(newTag));
+						originalTags.add(newTag);
+						return newTag;
+					}, (prefix, newTag) -> newTag)
+					.withEvaluationContextProvider(GqlDatastoreQuery.this.evaluationContextProvider);
 		}
 	}
 }
