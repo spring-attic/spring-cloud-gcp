@@ -105,14 +105,13 @@ public class PubSubChannelProvisioner
 	}
 
 	public void afterUnbindConsumer(ConsumerDestination destination) {
-		if (this.anonymousSubscriptions.contains(destination.getName())) {
+		if (this.anonymousSubscriptions.remove(destination.getName())) {
 			try {
 				this.pubSubAdmin.deleteSubscription(destination.getName());
 			}
 			catch (Exception ex) {
 				LOGGER.warn("Failed to delete auto-created anonymous subscription '" + destination.getName() + "'.");
 			}
-			this.anonymousSubscriptions.remove(destination.getName());
 		}
 	}
 }
