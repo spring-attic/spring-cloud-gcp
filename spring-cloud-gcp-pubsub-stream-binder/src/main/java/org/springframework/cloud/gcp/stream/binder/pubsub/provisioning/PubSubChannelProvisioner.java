@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.google.pubsub.v1.Subscription;
+import com.google.pubsub.v1.Topic;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -63,36 +64,36 @@ public class PubSubChannelProvisioner
 	}
 
 	@Override
-	public ConsumerDestination provisionConsumerDestination(String topic, String group,
+	public ConsumerDestination provisionConsumerDestination(String topicName, String group,
 			ExtendedConsumerProperties<PubSubConsumerProperties> properties)
 			throws ProvisioningException {
 
-		makeSureTopicExists(topic, properties.getExtension().isAutoCreateResources());
+		Topic topic = makeSureTopicExists(topicName, properties.getExtension().isAutoCreateResources());
 
 		String subscriptionName;
 		Subscription subscription;
 		if (StringUtils.hasText(group)) {
-			// Use <topic>.<group> as subscription name
-			subscriptionName = topic + "." + group;
+			// Use <topicName>.<group> as subscription name
+			subscriptionName = topicName + "." + group;
 			subscription = this.pubSubAdmin.getSubscription(subscriptionName);
 		}
 		else {
 			// Generate anonymous random group since one wasn't provided
-			subscriptionName = "anonymous." + topic + "." + UUID.randomUUID().toString();
-			subscription = this.pubSubAdmin.createSubscription(subscriptionName, topic);
+			subscriptionName = "anonymous." + topicName + "." + UUID.randomUUID().toString();
+			subscription = this.pubSubAdmin.createSubscription(subscriptionName, topicName);
 			this.anonymousGroupSubscriptionNames.add(subscriptionName);
 		}
 
 		// make sure subscription exists
 		if (subscription == null) {
 			if (properties.getExtension().isAutoCreateResources()) {
-				this.pubSubAdmin.createSubscription(subscriptionName, topic);
+				this.pubSubAdmin.createSubscription(subscriptionName, topicName);
 			}
 			else {
 				throw new ProvisioningException("Non-existing '" + subscriptionName + "' subscription.");
 			}
 		}
-		else if (!subscription.getTopic().equals(topic)) {
+		else if (!subscription.getTopic().equals(topic.getName())) {
 			throw new ProvisioningException(
 					"Existing '" + subscriptionName + "' subscription is for a different topic '"
 							+ subscription.getTopic() + "'.");
@@ -111,14 +112,17 @@ public class PubSubChannelProvisioner
 		}
 	}
 
-	private void makeSureTopicExists(String topic, boolean autoCreate) {
-		if (this.pubSubAdmin.getTopic(topic) == null) {
+	private Topic makeSureTopicExists(String topicName, boolean autoCreate) {
+		Topic topic = this.pubSubAdmin.getTopic(topicName);
+		if (topic == null) {
 			if (autoCreate) {
-				this.pubSubAdmin.createTopic(topic);
+				topic = this.pubSubAdmin.createTopic(topicName);
 			}
 			else {
-				throw new ProvisioningException("Non-existing '" + topic + "' topic.");
+				throw new ProvisioningException("Non-existing '" + topicName + "' topic.");
 			}
 		}
+
+		return topic;
 	}
 }
