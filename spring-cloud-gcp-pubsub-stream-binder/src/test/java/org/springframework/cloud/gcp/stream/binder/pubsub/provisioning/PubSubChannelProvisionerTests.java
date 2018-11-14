@@ -69,9 +69,12 @@ public class PubSubChannelProvisionerTests {
 		when(this.pubSubAdminMock.getSubscription(any())).thenReturn(null);
 		doAnswer((invocation) ->
 			Subscription.newBuilder()
-					.setName(invocation.getArgument(0))
-					.setTopic(invocation.getArgument(1)).build()
+					.setName("projects/test-project/subscriptions/" + invocation.getArgument(0))
+					.setTopic("projects/test-project/topics/" + invocation.getArgument(1)).build()
 		).when(this.pubSubAdminMock).createSubscription(any(), any());
+		doAnswer((invocation) ->
+				Topic.newBuilder().setName("projects/test-project/topics/" + invocation.getArgument(0)).build()
+		).when(this.pubSubAdminMock).getTopic(any());
 		when(this.properties.getExtension()).thenReturn(this.pubSubConsumerProperties);
 		when(this.pubSubConsumerProperties.isAutoCreateResources()).thenReturn(true);
 
@@ -94,6 +97,7 @@ public class PubSubChannelProvisionerTests {
 		this.expectedEx.expectMessage("Non-existing 'topic_A' topic.");
 
 		when(this.pubSubConsumerProperties.isAutoCreateResources()).thenReturn(false);
+		when(this.pubSubAdminMock.getTopic("topic_A")).thenReturn(null);
 
 		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
 				.provisionConsumerDestination("topic_A", "group_A", this.properties);
@@ -105,7 +109,6 @@ public class PubSubChannelProvisionerTests {
 		this.expectedEx.expectMessage("Non-existing 'topic_A.group_A' subscription.");
 
 		when(this.pubSubConsumerProperties.isAutoCreateResources()).thenReturn(false);
-		when(this.pubSubAdminMock.getTopic("topic_A")).thenReturn(Topic.getDefaultInstance());
 
 		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
 				.provisionConsumerDestination("topic_A", "group_A", this.properties);
@@ -117,7 +120,6 @@ public class PubSubChannelProvisionerTests {
 		this.expectedEx.expectMessage("Existing 'topic_A.group_A' subscription is for a different topic 'topic_B'.");
 
 		when(this.pubSubConsumerProperties.isAutoCreateResources()).thenReturn(false);
-		when(this.pubSubAdminMock.getTopic("topic_A")).thenReturn(Topic.getDefaultInstance());
 		when(this.pubSubAdminMock.getSubscription("topic_A.group_A")).thenReturn(Subscription.newBuilder().setTopic("topic_B").build());
 
 		PubSubConsumerDestination result = (PubSubConsumerDestination) this.pubSubChannelProvisioner
@@ -128,8 +130,6 @@ public class PubSubChannelProvisionerTests {
 	public void testProvisionConsumerDestination_anonymousGroup() {
 		// should work with auto-create = false
 		when(this.pubSubConsumerProperties.isAutoCreateResources()).thenReturn(false);
-
-		when(this.pubSubAdminMock.getTopic("topic_A")).thenReturn(Topic.getDefaultInstance());
 
 		String subscriptionNameRegex = "anonymous\\.topic_A\\.[a-f0-9\\-]{36}";
 
