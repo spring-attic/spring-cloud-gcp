@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -106,13 +107,12 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	protected ReadContext getReadContext() {
-		TransactionContext txContext = getTransactionContext();
-		return txContext == null ? this.databaseClient.singleUse() : txContext;
+		return doWithOrWithoutTransactionContext(x -> x, this.databaseClient::singleUse);
 	}
 
 	protected ReadContext getReadContext(Timestamp timestamp) {
-		TransactionContext txContext = getTransactionContext();
-		return txContext == null ? this.databaseClient.singleUse(TimestampBound.ofReadTimestamp(timestamp)) : txContext;
+		return doWithOrWithoutTransactionContext(x -> x,
+				() -> this.databaseClient.singleUse(TimestampBound.ofReadTimestamp(timestamp)));
 	}
 
 	public SpannerMappingContext getMappingContext() {
@@ -125,9 +125,8 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public long executeDmlStatement(Statement statement) {
-		TransactionContext txContext = getTransactionContext();
-		return txContext == null ? this.databaseClient.executePartitionedUpdate(statement)
-				: txContext.executeUpdate(statement);
+		return doWithOrWithoutTransactionContext(x -> x.executeUpdate(statement),
+				() -> this.databaseClient.executePartitionedUpdate(statement));
 	}
 
 	@Override
@@ -301,19 +300,17 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> T performReadWriteTransaction(Function<SpannerTemplate, T> operations) {
-		TransactionContext txContext = getTransactionContext();
-		if (txContext != null) {
+		return doWithOrWithoutTransactionContext(x -> {
 			throw new IllegalStateException("There is already declarative transaction open. " +
 					"Spanner does not support nested transactions");
-		}
-		return this.databaseClient.readWriteTransaction()
+		}, () -> this.databaseClient.readWriteTransaction()
 				.run(new TransactionCallable<T>() {
 					@Nullable
 					@Override
 					public T run(TransactionContext transaction) { // @formatter:off
-						ReadWriteTransactionSpannerTemplate transactionSpannerTemplate =
-										new ReadWriteTransactionSpannerTemplate(
-										// @formatter:on
+									ReadWriteTransactionSpannerTemplate transactionSpannerTemplate =
+											new ReadWriteTransactionSpannerTemplate(
+													// @formatter:on
 										SpannerTemplate.this.databaseClient,
 										SpannerTemplate.this.mappingContext,
 										SpannerTemplate.this.spannerEntityProcessor,
@@ -322,30 +319,31 @@ public class SpannerTemplate implements SpannerOperations {
 										transaction);
 						return operations.apply(transactionSpannerTemplate);
 					}
-				});
+				}));
 	}
 
 	@Override
 	public <T> T performReadOnlyTransaction(Function<SpannerTemplate, T> operations,
 											SpannerReadOptions readOptions) {
-		TransactionContext txContext = getTransactionContext();
-		if (txContext != null) {
+		return doWithOrWithoutTransactionContext(x -> {
 			throw new IllegalStateException("There is already declarative transaction open. " +
 					"Spanner does not support nested transactions");
-		}
-		SpannerReadOptions options = readOptions == null ? new SpannerReadOptions()
-				: readOptions;
-		try (ReadOnlyTransaction readOnlyTransaction = options.getTimestamp() != null
-				? this.databaseClient.readOnlyTransaction(
-						TimestampBound.ofReadTimestamp(options.getTimestamp()))
-				: this.databaseClient.readOnlyTransaction()) {
-			return operations.apply(new ReadOnlyTransactionSpannerTemplate(
-					SpannerTemplate.this.databaseClient,
-					SpannerTemplate.this.mappingContext,
-					SpannerTemplate.this.spannerEntityProcessor,
-					SpannerTemplate.this.mutationFactory,
-					SpannerTemplate.this.spannerSchemaUtils, readOnlyTransaction));
-		}
+		}, () -> {
+
+			SpannerReadOptions options = readOptions == null ? new SpannerReadOptions()
+					: readOptions;
+			try (ReadOnlyTransaction readOnlyTransaction = options.getTimestamp() != null
+					? this.databaseClient.readOnlyTransaction(
+							TimestampBound.ofReadTimestamp(options.getTimestamp()))
+					: this.databaseClient.readOnlyTransaction()) {
+				return operations.apply(new ReadOnlyTransactionSpannerTemplate(
+						SpannerTemplate.this.databaseClient,
+						SpannerTemplate.this.mappingContext,
+						SpannerTemplate.this.spannerEntityProcessor,
+						SpannerTemplate.this.mutationFactory,
+						SpannerTemplate.this.spannerSchemaUtils, readOnlyTransaction));
+			}
+		});
 	}
 
 	public ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
@@ -430,13 +428,13 @@ public class SpannerTemplate implements SpannerOperations {
 
 	protected void applyMutations(Collection<Mutation> mutations) {
 		LOGGER.debug("Applying Mutation: " + mutations);
-		TransactionContext txContext = getTransactionContext();
-		if (txContext != null) {
-			txContext.buffer(mutations);
-		}
-		else {
+		doWithOrWithoutTransactionContext(x -> {
+			x.buffer(mutations);
+			return null;
+		}, () -> {
 			this.databaseClient.write(mutations);
-		}
+			return null;
+		});
 	}
 
 	private <T> List<T> mapToListAndResolveChildren(ResultSet resultSet,
@@ -489,5 +487,11 @@ public class SpannerTemplate implements SpannerOperations {
 				? ((SpannerTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
 						.currentTransactionStatus()).getTransaction()).getTransactionContext()
 				: null;
+	}
+
+	private <A> A doWithOrWithoutTransactionContext(Function<TransactionContext, A> funcWithTransactionContext,
+			Supplier<A> funcWithoutTransactionContext) {
+		TransactionContext txContext = getTransactionContext();
+		return txContext == null ? funcWithoutTransactionContext.get() : funcWithTransactionContext.apply(txContext);
 	}
 }
