@@ -40,14 +40,15 @@ import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.domain.Pageable;
@@ -87,6 +88,9 @@ public class SpannerTemplateTests {
 	private SpannerTemplate spannerTemplate;
 
 	private SpannerSchemaUtils schemaUtils;
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Before
 	public void setUp() {
@@ -159,8 +163,10 @@ public class SpannerTemplateTests {
 		verify(readOnlyTransaction, times(2)).read(eq("custom_test_table"), any(), any());
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void readOnlyTransactionDmlTest() {
+
+		this.expectedException.expectMessage("A read-only transaction template cannot execute DML.");
 
 		ReadOnlyTransaction readOnlyTransaction = mock(ReadOnlyTransaction.class);
 		when(this.databaseClient.readOnlyTransaction(

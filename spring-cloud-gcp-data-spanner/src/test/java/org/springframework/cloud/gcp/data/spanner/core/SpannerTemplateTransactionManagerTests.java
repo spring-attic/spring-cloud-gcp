@@ -30,7 +30,9 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionManager;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
@@ -68,6 +70,9 @@ public class SpannerTemplateTransactionManagerTests {
 	private static final Statement DML_STATEMENT = Statement.of("update statement here");
 
 	private final AtomicReference<TransactionManager.TransactionState> transactionState = new AtomicReference<>();
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@MockBean
 	DatabaseClient databaseClient;
@@ -187,18 +192,23 @@ public class SpannerTemplateTransactionManagerTests {
 				.read(Mockito.anyString(), Mockito.any(KeySet.class), Mockito.any(Iterable.class), Mockito.any());
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void readOnlySaveTest() {
+		this.expectedException
+				.expectMessage("Spanner transaction cannot apply mutations because it is in readonly mode");
 		this.transactionalService.writingInReadOnly(new TestEntity());
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void readOnlyDeleteTest() {
+		this.expectedException
+				.expectMessage("Spanner transaction cannot apply mutations because it is in readonly mode");
 		this.transactionalService.deleteInReadOnly(new TestEntity());
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void readOnlyDmlTest() {
+		this.expectedException.expectMessage("Spanner transaction cannot execute DML because it is in readonly mode");
 		this.transactionalService.dmlInReadOnly();
 	}
 
