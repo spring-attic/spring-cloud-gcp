@@ -49,7 +49,7 @@ import org.springframework.util.Assert;
  * @since 1.1
  */
 public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWriter {
-	private static Set<Class> SPANNER_KEY_COMPATIBLE_TYPES = ImmutableSet
+	private final static Set<Class> SPANNER_KEY_COMPATIBLE_TYPES = ImmutableSet
 			.<Class>builder()
 			.add(Boolean.class)
 			.add(Integer.class)
@@ -179,6 +179,11 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 					: Key.of(convertKeyPart(key));
 		}
 		return k;
+	}
+
+	@Override
+	public SpannerWriteConverter getSpannerWriteConverter() {
+		return this.writeConverter;
 	}
 
 	private Object convertKeyPart(Object object) {

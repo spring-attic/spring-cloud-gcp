@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 import java.util.List;
 
 import com.google.cloud.spanner.Key;
+import com.google.spanner.v1.TypeCode;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -226,8 +227,8 @@ public class SpannerPersistentEntityImplTests {
 
 		ParentEmbedded parentEmbedded = new ParentEmbedded();
 		parentEmbedded.grandParentEmbedded = grandParentEmbedded;
-		parentEmbedded.id2 = "2";
-		parentEmbedded.id3 = "3";
+		parentEmbedded.id2 = 2;
+		parentEmbedded.id3 = 3L;
 
 		ChildEmbedded childEmbedded = new ChildEmbedded();
 		childEmbedded.parentEmbedded = parentEmbedded;
@@ -337,11 +338,15 @@ public class SpannerPersistentEntityImplTests {
 		@Embedded
 		GrandParentEmbedded grandParentEmbedded;
 
+		// This property requires conversion to be stored as a STRING column.
 		@PrimaryKey(keyOrder = 2)
-		String id2;
+		@Column(name = "id2", spannerType = TypeCode.STRING)
+		int id2;
 
+		// This property will be stored as a STRING column even though Long is a natively supported type.
 		@PrimaryKey(keyOrder = 3)
-		String id3;
+		@Column(name = "id3", spannerType = TypeCode.STRING)
+		Long id3;
 	}
 
 	private static class ChildEmbedded {

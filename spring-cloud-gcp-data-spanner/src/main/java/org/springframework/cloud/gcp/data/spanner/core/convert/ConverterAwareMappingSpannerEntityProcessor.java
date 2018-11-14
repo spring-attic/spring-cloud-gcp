@@ -193,6 +193,11 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 	}
 
 	@Override
+	public SpannerWriteConverter getSpannerWriteConverter() {
+		return this.entityWriter.getSpannerWriteConverter();
+	}
+
+	@Override
 	public <R> R read(Class<R> type, Struct source, Set<String> includeColumns, boolean allowMissingColumns) {
 		return this.entityReader.read(type, source, includeColumns, allowMissingColumns);
 	}
