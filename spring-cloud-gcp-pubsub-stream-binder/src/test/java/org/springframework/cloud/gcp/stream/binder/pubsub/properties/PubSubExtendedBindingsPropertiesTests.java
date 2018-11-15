@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
 import com.google.pubsub.v1.Subscription;
+import com.google.pubsub.v1.Topic;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -83,8 +84,12 @@ public class PubSubExtendedBindingsPropertiesTests {
 		@Bean
 		public PubSubAdmin pubSubAdmin() {
 			PubSubAdmin pubSubAdminMock = Mockito.mock(PubSubAdmin.class);
+			when(pubSubAdminMock.createSubscription(anyString(), anyString())).thenReturn(
+					Subscription.getDefaultInstance());
 			when(pubSubAdminMock.getSubscription(anyString())).thenReturn(
 					Subscription.getDefaultInstance());
+			when(pubSubAdminMock.getTopic(anyString())).thenReturn(
+					Topic.getDefaultInstance());
 			return pubSubAdminMock;
 		}
 
