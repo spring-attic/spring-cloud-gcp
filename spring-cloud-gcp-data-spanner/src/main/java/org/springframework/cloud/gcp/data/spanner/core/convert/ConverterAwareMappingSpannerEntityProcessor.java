@@ -188,8 +188,13 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 	}
 
 	@Override
-	public Key writeToKey(Object key) {
-		return this.entityWriter.writeToKey(key);
+	public Key convertToKey(Object key) {
+		return this.entityWriter.convertToKey(key);
+	}
+
+	@Override
+	public SpannerWriteConverter getSpannerWriteConverter() {
+		return this.entityWriter.getSpannerWriteConverter();
 	}
 
 	@Override
