@@ -18,6 +18,8 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.Set;
 
+import com.google.cloud.spanner.Key;
+
 import org.springframework.data.convert.EntityWriter;
 
 /**
@@ -26,7 +28,7 @@ import org.springframework.data.convert.EntityWriter;
  *
  * @since 1.1
  */
-public interface SpannerEntityWriter extends EntityWriter<Object, MultipleValueBinder>, SpannerKeyWriter {
+public interface SpannerEntityWriter extends EntityWriter<Object, MultipleValueBinder> {
 
 	/**
 	 * Writes an object's properties to the sink.
@@ -36,4 +38,19 @@ public interface SpannerEntityWriter extends EntityWriter<Object, MultipleValueB
 	 * written.
 	 */
 	void write(Object source, MultipleValueBinder sink, Set<String> includeColumns);
+
+	/**
+	 * Convert a given object to a Cloud Spanner key.
+	 * @param key the object containing the key values. This can already be a Cloud Spanner
+	 *     key, a single key component, or an array of key components.
+	 * @return the Cloud Spanner key.
+	 */
+	Key convertToKey(Object key);
+
+	/**
+	 * Get the SpannerWriteConverter used to convert types into Cloud Spanner compatible
+	 * types.
+	 * @return a SpannerWriteConverter
+	 */
+	SpannerWriteConverter getSpannerWriteConverter();
 }

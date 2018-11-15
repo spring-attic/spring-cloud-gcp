@@ -76,7 +76,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 				}
 			}
 			else if (spannerPersistentProperty.getAnnotatedColumnItemType() != null) {
-				keyParts.add(this.spannerPersistentEntity.getSpannerKeyWriter().getSpannerWriteConverter()
+				keyParts.add(this.spannerPersistentEntity.getSpannerEntityWriter().getSpannerWriteConverter()
 						.convert(accessor.getProperty(spannerPersistentProperty), SpannerTypeMapper
 								.getSimpleJavaClassFor(spannerPersistentProperty.getAnnotatedColumnItemType())));
 			}
@@ -84,7 +84,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 				keyParts.add(accessor.getProperty(spannerPersistentProperty));
 			}
 		}
-		return this.spannerPersistentEntity.getSpannerKeyWriter().convertToKey(keyParts);
+		return this.spannerPersistentEntity.getSpannerEntityWriter().convertToKey(keyParts);
 	}
 
 	@Override

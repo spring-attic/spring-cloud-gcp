@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 import org.springframework.beans.BeansException;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConversionUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.ConverterAwareMappingSpannerEntityProcessor;
-import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerKeyWriter;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityWriter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.expression.BeanFactoryAccessor;
 import org.springframework.context.expression.BeanFactoryResolver;
@@ -77,7 +77,7 @@ public class SpannerPersistentEntityImpl<T>
 
 	private final SpannerMappingContext spannerMappingContext;
 
-	private final SpannerKeyWriter spannerKeyWriter;
+	private final SpannerEntityWriter spannerEntityWriter;
 
 	private StandardEvaluationContext context;
 
@@ -99,20 +99,20 @@ public class SpannerPersistentEntityImpl<T>
 	 * @param information type information about the underlying entity type.
 	 * @param spannerMappingContext a mapping context that can be used to create persistent
 	 *     entities from properties of this entity
-	 * @param spannerKeyWriter a key writer used to create keys by converting and combining id
-	 *     properties.
+	 * @param spannerEntityWriter an entity writer used to create keys by converting and
+	 *     combining id properties.
 	 */
 	public SpannerPersistentEntityImpl(TypeInformation<T> information,
-			SpannerMappingContext spannerMappingContext, SpannerKeyWriter spannerKeyWriter) {
+			SpannerMappingContext spannerMappingContext, SpannerEntityWriter spannerEntityWriter) {
 		super(information);
 
 		Assert.notNull(spannerMappingContext,
 				"A non-null SpannerMappingContext is required.");
-		Assert.notNull(spannerKeyWriter, "A non-null SpannerKeyWriter is required.");
+		Assert.notNull(spannerEntityWriter, "A non-null SpannerEntityWriter is required.");
 
 		this.spannerMappingContext = spannerMappingContext;
 
-		this.spannerKeyWriter = spannerKeyWriter;
+		this.spannerEntityWriter = spannerEntityWriter;
 
 		this.rawType = information.getType();
 
@@ -320,8 +320,8 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	@Override
-	public SpannerKeyWriter getSpannerKeyWriter() {
-		return this.spannerKeyWriter;
+	public SpannerEntityWriter getSpannerEntityWriter() {
+		return this.spannerEntityWriter;
 	}
 
 	@Override
