@@ -90,8 +90,7 @@ public class DatastoreIntegrationTests {
 		assumeThat(
 				"Datastore integration tests are disabled. Please use '-Dit.datastore=true' "
 						+ "to enable them. ",
-				"true", is("true"));
-		// System.getProperty("it.datastore"), is("true"));
+				System.getProperty("it.datastore"), is("true"));
 	}
 
 	@After
