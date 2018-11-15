@@ -897,6 +897,13 @@ This feature requires a bean of `SpannerTransactionManager`, which is provided w
 If a method annotated with `@Transactional` calls another method also annotated, then both methods will work within the same transaction.
 `performReadOnlyTransaction` and `performReadWriteTransaction` cannot be used in `@Transactional` annotated methods because Cloud Spanner does not support transactions within transactions.
 
+==== DML Statements
+
+`SpannerTemplate` supports [DML](https://cloud.google.com/spanner/docs/dml-tasks) `Statements`.
+DML statements can be executed in transactions via `performReadWriteTransaction` or using the `@Transactional` annotation.
+
+When DML statements are executed outside of transactions, they are executed in [partitioned-mode](https://cloud.google.com/spanner/docs/dml-tasks#partitioned-dml).
+
 === Repositories
 
 

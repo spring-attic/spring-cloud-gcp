@@ -102,12 +102,20 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 			tx.transactionContext = new TransactionContext() {
 				@Override
 				public void buffer(Mutation mutation) {
-					throw new IllegalStateException("Spanner transaction is in readonly mode");
+					throw new IllegalStateException("Spanner transaction cannot apply" +
+							" mutation because it is in readonly mode");
 				}
 
 				@Override
 				public void buffer(Iterable<Mutation> iterable) {
-					throw new IllegalStateException("Spanner transaction is in readonly mode");
+					throw new IllegalStateException("Spanner transaction cannot apply" +
+							" mutations because it is in readonly mode");
+				}
+
+				@Override
+				public long executeUpdate(Statement statement) {
+					throw new IllegalStateException("Spanner transaction cannot execute DML " +
+							"because it is in readonly mode");
 				}
 
 				@Override

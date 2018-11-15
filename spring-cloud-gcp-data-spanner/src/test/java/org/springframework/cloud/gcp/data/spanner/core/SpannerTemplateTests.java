@@ -40,7 +40,9 @@ import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
@@ -71,6 +73,8 @@ import static org.mockito.Mockito.when;
  */
 public class SpannerTemplateTests {
 
+	private static final Statement DML = Statement.of("update statement");
+
 	private DatabaseClient databaseClient;
 
 	private SpannerMappingContext mappingContext;
@@ -85,6 +89,9 @@ public class SpannerTemplateTests {
 
 	private SpannerSchemaUtils schemaUtils;
 
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
+
 	@Before
 	public void setUp() {
 		this.databaseClient = mock(DatabaseClient.class);
@@ -98,6 +105,12 @@ public class SpannerTemplateTests {
 		this.spannerTemplate = new SpannerTemplate(this.databaseClient,
 				this.mappingContext, this.objectMapper, this.mutationFactory,
 				this.schemaUtils);
+	}
+
+	@Test
+	public void executeDmlTest() {
+		this.spannerTemplate.executeDmlStatement(DML);
+		verify(this.databaseClient, times(1)).executePartitionedUpdate(eq(DML));
 	}
 
 	@Test
@@ -116,15 +129,17 @@ public class SpannerTemplateTests {
 		TestEntity t = new TestEntity();
 
 		String finalResult = this.spannerTemplate
-				.performReadWriteTransaction(spannerOperations -> {
-					List<TestEntity> items = spannerOperations.readAll(TestEntity.class);
-					spannerOperations.update(t);
+				.performReadWriteTransaction(spannerTemplate -> {
+					List<TestEntity> items = spannerTemplate.readAll(TestEntity.class);
+					spannerTemplate.update(t);
+					spannerTemplate.executeDmlStatement(DML);
 					return "all done";
 				});
 
 		assertEquals("all done", finalResult);
 		verify(transactionContext, times(1)).buffer((List<Mutation>) any());
 		verify(transactionContext, times(1)).read(eq("custom_test_table"), any(), any());
+		verify(transactionContext, times(1)).executeUpdate(eq(DML));
 	}
 
 	@Test
@@ -146,6 +161,24 @@ public class SpannerTemplateTests {
 
 		assertEquals("all done", finalResult);
 		verify(readOnlyTransaction, times(2)).read(eq("custom_test_table"), any(), any());
+	}
+
+	@Test
+	public void readOnlyTransactionDmlTest() {
+
+		this.expectedException.expectMessage("A read-only transaction template cannot execute DML.");
+
+		ReadOnlyTransaction readOnlyTransaction = mock(ReadOnlyTransaction.class);
+		when(this.databaseClient.readOnlyTransaction(
+				eq(TimestampBound.ofReadTimestamp(Timestamp.ofTimeMicroseconds(333)))))
+						.thenReturn(readOnlyTransaction);
+
+		this.spannerTemplate
+				.performReadOnlyTransaction(spannerOperations -> {
+					spannerOperations.executeDmlStatement(Statement.of("fail"));
+					return null;
+				}, new SpannerReadOptions()
+						.setTimestamp(Timestamp.ofTimeMicroseconds(333)));
 	}
 
 	@Test(expected = IllegalArgumentException.class)

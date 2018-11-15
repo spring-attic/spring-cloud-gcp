@@ -20,13 +20,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.SpannerException;
 import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 
@@ -93,14 +93,18 @@ public class SpannerDatabaseAdminTemplate {
 			if (createDatabase) {
 				this.databaseAdminClient
 						.createDatabase(getInstanceId(), getDatabase(), ddlStrings)
-						.waitFor();
+						.get();
 			}
 			else {
 				this.databaseAdminClient.updateDatabaseDdl(getInstanceId(), getDatabase(),
-						ddlStrings, null).waitFor();
+						ddlStrings, null).get();
 			}
 		}
-		catch (SpannerException e) {
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new SpannerDataException("DDL execution was interrupted", e);
+		}
+		catch (ExecutionException e) {
 			throw new SpannerDataException("DDL could not be executed", e);
 		}
 	}
