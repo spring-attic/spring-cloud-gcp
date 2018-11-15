@@ -107,7 +107,7 @@ public abstract class AbstractSpannerIntegrationTest {
 	}
 
 	@Before
-	public void setup() throws InterruptedException {
+	public void setup() {
 		try {
 			initializeAttempts++;
 			if (tablesInitialized) {
@@ -128,7 +128,7 @@ public abstract class AbstractSpannerIntegrationTest {
 				this.spannerMappingContext.getPersistentEntity(Trade.class).tableName()));
 	}
 
-	protected void createDatabaseWithSchema() throws InterruptedException {
+	protected void createDatabaseWithSchema() {
 		this.tableNameSuffix = String.valueOf(System.currentTimeMillis());
 		ConfigurableListableBeanFactory beanFactory =
 				((ConfigurableApplicationContext) this.applicationContext).getBeanFactory();
@@ -160,7 +160,7 @@ public abstract class AbstractSpannerIntegrationTest {
 	}
 
 	@After
-	public void clean() throws InterruptedException {
+	public void clean() {
 		try {
 			// this is to reduce duplicated errors reported by surefire plugin
 			if (setupFailed || initializeAttempts > 0) {

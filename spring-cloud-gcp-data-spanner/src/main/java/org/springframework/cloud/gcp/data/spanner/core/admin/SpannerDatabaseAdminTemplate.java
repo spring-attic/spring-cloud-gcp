@@ -88,7 +88,7 @@ public class SpannerDatabaseAdminTemplate {
 	 * already exist.
 	 */
 	public void executeDdlStrings(Iterable<String> ddlStrings,
-			boolean createDatabase) throws InterruptedException {
+			boolean createDatabase) {
 		try {
 			if (createDatabase) {
 				this.databaseAdminClient
@@ -99,6 +99,10 @@ public class SpannerDatabaseAdminTemplate {
 				this.databaseAdminClient.updateDatabaseDdl(getInstanceId(), getDatabase(),
 						ddlStrings, null).get();
 			}
+		}
+		catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new SpannerDataException("DDL execution was interrupted", e);
 		}
 		catch (ExecutionException e) {
 			throw new SpannerDataException("DDL could not be executed", e);

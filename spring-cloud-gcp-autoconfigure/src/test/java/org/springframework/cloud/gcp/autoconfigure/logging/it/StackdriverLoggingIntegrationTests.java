@@ -83,7 +83,7 @@ public class StackdriverLoggingIntegrationTests {
 	}
 
 	@Test
-	public void test() throws InterruptedException, IOException {
+	public void test() throws IOException {
 		HttpHeaders headers = new HttpHeaders();
 		headers.add("x-cloud-trace-context", "everything-zen");
 		ResponseEntity<String> responseEntity = this.testRestTemplate.exchange(

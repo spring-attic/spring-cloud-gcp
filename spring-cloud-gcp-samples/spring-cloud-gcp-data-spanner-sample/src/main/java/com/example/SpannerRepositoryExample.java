@@ -48,7 +48,7 @@ public class SpannerRepositoryExample {
 	@Autowired
 	private SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
 
-	public void runExample() throws InterruptedException {
+	public void runExample() {
 		createTablesIfNotExists();
 		this.traderRepository.deleteAll();
 		this.tradeRepository.deleteAll();
@@ -105,7 +105,7 @@ public class SpannerRepositoryExample {
 		LOGGER.info("Try http://localhost:8080/trades in the browser to see all trades.");
 	}
 
-	void createTablesIfNotExists() throws InterruptedException {
+	void createTablesIfNotExists() {
 		if (!this.spannerDatabaseAdminTemplate.tableExists("trades")) {
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(
 					Arrays.asList(

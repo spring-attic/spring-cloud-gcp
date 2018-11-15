@@ -46,7 +46,7 @@ public class SpannerTemplateExample {
 	@Autowired
 	private SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
 
-	public void runExample() throws InterruptedException {
+	public void runExample() {
 		createTablesIfNotExists();
 		this.spannerOperations.delete(Trader.class, KeySet.all());
 		this.spannerOperations.delete(Trade.class, KeySet.all());
@@ -75,7 +75,7 @@ public class SpannerTemplateExample {
 		}
 	}
 
-	void createTablesIfNotExists() throws InterruptedException {
+	void createTablesIfNotExists() {
 		if (!this.spannerDatabaseAdminTemplate.tableExists("trades")) {
 			this.spannerDatabaseAdminTemplate.executeDdlStrings(
 					Arrays.asList(
