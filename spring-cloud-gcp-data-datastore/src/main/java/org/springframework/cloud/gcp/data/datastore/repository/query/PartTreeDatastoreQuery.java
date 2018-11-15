@@ -34,6 +34,7 @@ import com.google.cloud.datastore.StructuredQuery.Builder;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.Filter;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
+import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
@@ -42,6 +43,12 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.ParameterAccessor;
+import org.springframework.data.repository.query.ParametersParameterAccessor;
 import org.springframework.data.repository.query.parser.Part;
 import org.springframework.data.repository.query.parser.PartTree;
 import org.springframework.data.repository.query.parser.PartTree.OrPart;
@@ -50,6 +57,7 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
  * Name-based query method for Cloud Datastore.
  *
  * @author Chengyuan Zhao
+ * @author Dmitry Solomakha
  *
  * @since 1.1
  */
@@ -86,13 +94,22 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					"Cloud Datastore structured queries do not support the Distinct keyword.");
 		}
 
-		List parts = this.tree.getParts().get().collect(Collectors.toList());
+		if ((!this.tree.getSort().equals(Sort.unsorted())) && (getQueryMethod().getParameters().hasPageableParameter()
+				|| getQueryMethod().getParameters().hasSortParameter())) {
+			throw new DatastoreDataException("Ambiguous sort options (method name and parameter).");
+		}
+
+		if (this.tree.isLimiting() || getQueryMethod().getParameters().hasPageableParameter()) {
+			throw new DatastoreDataException("Ambiguous limit options (method name and parameter).");
+		}
+
+		List parts = this.tree.get().collect(Collectors.toList());
 		if (parts.size() > 0) {
-			if (parts.get(0) instanceof OrPart) {
+			if (parts.get(0) instanceof OrPart && parts.size() > 1) {
 				throw new DatastoreDataException(
 						"Cloud Datastore only supports multiple filters combined with AND.");
 			}
-			this.filterParts = parts;
+			this.filterParts = this.tree.getParts().get().collect(Collectors.toList());
 		}
 		else {
 			this.filterParts = Collections.emptyList();
@@ -101,15 +118,50 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 	@Override
 	public Object execute(Object[] parameters) {
+		Class<?> returnedObjectType = getQueryMethod().getReturnedObjectType();
+		Object result;
+		if (isSliceQuery() || isPageQuery()) {
+			List<?> resultEntries = (List) execute(parameters, returnedObjectType, List.class, false);
+			Long totalCount = (Long) execute(parameters, Long.class, null, true);
+
+			ParameterAccessor paramAccessor =
+					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
+
+			Pageable pageable = paramAccessor.getPageable();
+			if (getQueryMethod().isSliceQuery()) {
+				boolean hasNext = !pageable.equals(Pageable.unpaged()) && pageable.next().getOffset() < totalCount;
+				result = new SliceImpl<>(resultEntries, pageable, hasNext);
+			}
+			else {
+				result = new PageImpl<>(resultEntries, pageable, totalCount);
+			}
+		}
+		else {
+			result = execute(parameters, returnedObjectType,
+					((DatastoreQueryMethod) getQueryMethod()).getCollectionReturnType(), false);
+		}
+		return result;
+	}
+
+	@VisibleForTesting
+	protected boolean isPageQuery() {
+		return getQueryMethod().isPageQuery();
+	}
+
+	@VisibleForTesting
+	protected boolean isSliceQuery() {
+		return getQueryMethod().isSliceQuery();
+	}
+
+	private Object execute(Object[] parameters, Class returnedElementType, Class<?> collectionType, boolean total) {
 		Supplier<StructuredQuery.Builder<?>> queryBuilderSupplier = StructuredQuery::newKeyQueryBuilder;
 		Function<T, ?> mapper = Function.identity();
-		Class returnedType = this.queryMethod.getReturnedObjectType();
 
-		boolean returnedTypeIsNumber = Number.class.isAssignableFrom(returnedType)
-				|| returnedType == int.class || returnedType == long.class;
+		boolean returnedTypeIsNumber = Number.class.isAssignableFrom(returnedElementType)
+				|| returnedElementType == int.class || returnedElementType == long.class;
 
 		boolean isCountingQuery = this.tree.isCountProjection()
-				|| (this.tree.isDelete() && returnedTypeIsNumber);
+				|| (this.tree.isDelete() && returnedTypeIsNumber) || total;
 
 		Collector<?, ?, ?> collector = Collectors.toList();
 		if (isCountingQuery) {
@@ -125,50 +177,62 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		StructuredQuery.Builder<?> structredQueryBuilder = queryBuilderSupplier.get();
 		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
-		Iterable rawResults = this.datastoreTemplate
-				.queryKeysOrEntities(applyQueryBody(parameters, structredQueryBuilder), this.entityType);
+		Iterable rawResults = getDatastoreTemplate()
+				.queryKeysOrEntities(applyQueryBody(parameters, structredQueryBuilder, total), this.entityType);
 
-		Object result = StreamSupport.stream(rawResults.spliterator(), false).map(mapper)
-						.collect(collector);
+		Object result = StreamSupport.stream(rawResults.spliterator(), false).map(mapper).collect(collector);
 
 		if (this.tree.isDelete()) {
 			deleteFoundEntities(returnedTypeIsNumber, rawResults);
 		}
 
 		return this.tree.isExistsProjection() || isCountingQuery ? result
-				: convertResultCollection(result);
+				: convertResultCollection(result, collectionType);
 	}
 
-	private Object convertResultCollection(Object result) {
-		return this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
-				.convertOnRead(result, this.queryMethod.getCollectionReturnType(),
-						this.queryMethod.getReturnedObjectType());
+	@VisibleForTesting
+	protected Object convertResultCollection(Object result, Class<?> collectionType) {
+		return getDatastoreTemplate().getDatastoreEntityConverter().getConversions()
+				.convertOnRead(result, collectionType, getQueryMethod().getReturnedObjectType());
 	}
 
 	private void deleteFoundEntities(boolean returnedTypeIsNumber, Iterable rawResults) {
 		if (returnedTypeIsNumber) {
-			this.datastoreTemplate.deleteAllById(rawResults, this.entityType);
+			getDatastoreTemplate().deleteAllById(rawResults, this.entityType);
 		}
 		else {
-			this.datastoreTemplate.deleteAll(rawResults);
+			getDatastoreTemplate().deleteAll(rawResults);
 		}
 	}
 
 	private StructuredQuery applyQueryBody(Object[] parameters,
-			StructuredQuery.Builder builder) {
+			StructuredQuery.Builder builder, boolean total) {
+		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
 		if (this.tree.hasPredicate()) {
 			applySelectWithFilter(parameters, builder);
 		}
 
 		Integer limit = null;
+		Integer offset = null;
 		if (this.tree.isExistsProjection()) {
 			limit = 1;
 		}
 		else if (this.tree.isLimiting()) {
 			limit = this.tree.getMaxResults();
 		}
-		this.datastoreTemplate.applyQueryOptions(
-				builder, new DatastoreQueryOptions(limit, null, this.tree.getSort()), this.datastorePersistentEntity);
+
+		Sort sort = getQueryMethod().getParameters().hasPageableParameter()
+				|| getQueryMethod().getParameters().hasSortParameter()
+						? paramAccessor.getSort()
+						: this.tree.getSort();
+
+		if (getQueryMethod().getParameters().hasPageableParameter() && !total) {
+			limit = paramAccessor.getPageable().getPageSize();
+			offset = (int) paramAccessor.getPageable().getOffset();
+		}
+
+		DatastoreTemplate.applyQueryOptions(
+				builder, new DatastoreQueryOptions(limit, offset, sort), this.datastorePersistentEntity);
 		return builder.build();
 	}
 
@@ -208,7 +272,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					break;
 				default:
 					throw new DatastoreDataException(
-							"Unsupported predicate keyword: " + part.getProperty());
+							"Unsupported predicate keyword: " + part.getType());
 
 				}
 				return filter;
@@ -216,7 +280,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			catch (NoSuchElementException e) {
 				throw new DatastoreDataException(
 						"Too few parameters are provided for query method: "
-								+ this.queryMethod.getName());
+								+ getQueryMethod().getName());
 			}
 		}).toArray(Filter[]::new);
 
