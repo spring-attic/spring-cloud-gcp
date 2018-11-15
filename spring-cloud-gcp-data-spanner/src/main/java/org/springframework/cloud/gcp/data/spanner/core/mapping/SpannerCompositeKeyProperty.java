@@ -84,7 +84,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 				keyParts.add(accessor.getProperty(spannerPersistentProperty));
 			}
 		}
-		return this.spannerPersistentEntity.getSpannerKeyWriter().writeToKey(keyParts);
+		return this.spannerPersistentEntity.getSpannerKeyWriter().convertToKey(keyParts);
 	}
 
 	@Override

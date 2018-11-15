@@ -156,7 +156,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	}
 
 	@Override
-	public Key writeToKey(Object key) {
+	public Key convertToKey(Object key) {
 		Assert.notNull(key, "Key of an entity to be written cannot be null!");
 
 		Key k;

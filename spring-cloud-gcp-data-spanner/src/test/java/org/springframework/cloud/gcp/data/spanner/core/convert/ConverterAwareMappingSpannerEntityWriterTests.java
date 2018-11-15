@@ -320,13 +320,13 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 
 	@Test(expected = IllegalArgumentException.class)
 	public void writingNullToKeyShouldThrowException() {
-		this.spannerEntityWriter.writeToKey(null);
+		this.spannerEntityWriter.convertToKey(null);
 	}
 
 	@Test
 	@Parameterized.Parameters
 	public void writeValidColumnToKey() {
-		Key key = this.spannerEntityWriter.writeToKey(true);
+		Key key = this.spannerEntityWriter.convertToKey(true);
 		assertThat(key, is(Key.of(true)));
 	}
 
