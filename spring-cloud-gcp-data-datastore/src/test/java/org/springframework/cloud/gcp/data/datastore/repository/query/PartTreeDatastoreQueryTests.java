@@ -190,7 +190,7 @@ public class PartTreeDatastoreQueryTests {
 	@Test
 	public void pageableParam() throws NoSuchMethodException {
 		queryWithMockResult("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
-				+ "ThanEqualAndIdIsNullOrderByIdDesc", null,
+				+ "ThanEqualAndIdIsNull", null,
 				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class,
 						Pageable.class));
 
@@ -224,7 +224,7 @@ public class PartTreeDatastoreQueryTests {
 	@Test
 	public void pageableQuery() throws NoSuchMethodException {
 		queryWithMockResult("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
-						+ "ThanEqualAndIdIsNullOrderByIdDesc", null,
+						+ "ThanEqualAndIdIsNull", null,
 				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class,
 						Pageable.class));
 
@@ -276,7 +276,7 @@ public class PartTreeDatastoreQueryTests {
 	@Test
 	public void sliceQueryLast() throws NoSuchMethodException {
 		queryWithMockResult("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
-						+ "ThanEqualAndIdIsNullOrderByIdDesc", null,
+						+ "ThanEqualAndIdIsNull", null,
 				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class,
 						Pageable.class));
 
@@ -328,7 +328,7 @@ public class PartTreeDatastoreQueryTests {
 	@Test
 	public void sliceQuery() throws NoSuchMethodException {
 		queryWithMockResult("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
-						+ "ThanEqualAndIdIsNullOrderByIdDesc", null,
+						+ "ThanEqualAndIdIsNull", null,
 				getClass().getMethod("tradeMethod", String.class, String.class, double.class, double.class,
 						Pageable.class));
 

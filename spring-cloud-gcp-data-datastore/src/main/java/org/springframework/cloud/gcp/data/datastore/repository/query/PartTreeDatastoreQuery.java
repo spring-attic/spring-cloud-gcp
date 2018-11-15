@@ -99,7 +99,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			throw new DatastoreDataException("Ambiguous sort options (method name and parameter).");
 		}
 
-		if (this.tree.isLimiting() || getQueryMethod().getParameters().hasPageableParameter()) {
+		if (this.tree.isLimiting() && getQueryMethod().getParameters().hasPageableParameter()) {
 			throw new DatastoreDataException("Ambiguous limit options (method name and parameter).");
 		}
 
