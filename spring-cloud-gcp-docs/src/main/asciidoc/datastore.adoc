@@ -817,7 +817,7 @@ Delete queries can have the following return types:
 
 Methods can have `org.springframework.data.domain.Pageable` parameter to control pagination and sorting,
 or `org.springframework.data.domain.Sort` parameter to control sorting only.
-See https://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories.query-methods[according Spring Data documentation] for details.
+See https://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories.query-methods[Spring Data documentation] for details.
 
 If a method's return type is `org.springframework.data.domain.Slice`, the return object besides results will have additional information (e.g. if there the next slice exists).
 If a method's return type is `org.springframework.data.domain.Page`, the returned object will include current page,
