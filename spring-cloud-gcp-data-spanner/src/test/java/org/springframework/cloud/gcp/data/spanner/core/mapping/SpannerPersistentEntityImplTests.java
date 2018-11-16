@@ -234,11 +234,14 @@ public class SpannerPersistentEntityImplTests {
 		childEmbedded.parentEmbedded = parentEmbedded;
 		childEmbedded.id4 = "4";
 
+		// intentionally null, which is a supported key component type.
+		childEmbedded.id5 = null;
+
 		Key key = (Key) this.spannerMappingContext
 				.getPersistentEntity(ChildEmbedded.class)
 				.getIdentifierAccessor(childEmbedded).getIdentifier();
 		assertEquals(
-				Key.newBuilder().append("1").append("2").append("3").append("4").build(),
+				Key.newBuilder().append("1").append("2").append("3").append("4").appendObject(null).build(),
 				key);
 	}
 
@@ -258,7 +261,7 @@ public class SpannerPersistentEntityImplTests {
 	@Test
 	public void testExcludeEmbeddedColumnNames() {
 		assertThat(this.spannerMappingContext.getPersistentEntity(ChildEmbedded.class)
-				.columns(), containsInAnyOrder("id", "id2", "id3", "id4"));
+				.columns(), containsInAnyOrder("id", "id2", "id3", "id4", "id5"));
 	}
 
 	@Test
@@ -356,6 +359,10 @@ public class SpannerPersistentEntityImplTests {
 
 		@PrimaryKey(keyOrder = 2)
 		String id4;
+
+		@PrimaryKey(keyOrder = 3)
+		@Column(spannerType = TypeCode.STRING)
+		Long id5;
 	}
 
 	private static class ChildCollectionEmbedded {

@@ -65,23 +65,24 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 		PersistentPropertyAccessor accessor = getOwner().getPropertyAccessor(entity);
 		List keyParts = new ArrayList();
 		for (SpannerPersistentProperty spannerPersistentProperty : this.primaryKeyColumns) {
+			Object value = accessor.getProperty(spannerPersistentProperty);
 			if (spannerPersistentProperty.isEmbedded()) {
 				Key embeddedKeyParts = this.spannerPersistentEntity
 						.getSpannerMappingContext()
 						.getPersistentEntity(spannerPersistentProperty.getType())
 						.getIdProperty()
-						.getId(accessor.getProperty(spannerPersistentProperty));
+						.getId(value);
 				for (Object keyPart : embeddedKeyParts.getParts()) {
 					keyParts.add(keyPart);
 				}
 			}
-			else if (spannerPersistentProperty.getAnnotatedColumnItemType() != null) {
-				keyParts.add(this.spannerPersistentEntity.getSpannerEntityWriter().getSpannerWriteConverter()
-						.convert(accessor.getProperty(spannerPersistentProperty), SpannerTypeMapper
-								.getSimpleJavaClassFor(spannerPersistentProperty.getAnnotatedColumnItemType())));
+			else if (spannerPersistentProperty.getAnnotatedColumnItemType() == null || value == null) {
+				keyParts.add(value);
 			}
 			else {
-				keyParts.add(accessor.getProperty(spannerPersistentProperty));
+				keyParts.add(this.spannerPersistentEntity.getSpannerEntityWriter().getSpannerWriteConverter()
+						.convert(value, SpannerTypeMapper
+								.getSimpleJavaClassFor(spannerPersistentProperty.getAnnotatedColumnItemType())));
 			}
 		}
 		return this.spannerPersistentEntity.getSpannerEntityWriter().convertToKey(keyParts);
