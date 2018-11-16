@@ -47,6 +47,10 @@ public class IapAuthenticationProperties {
 	 */
 	private String issuer = "https://cloud.google.com/iap";
 
+	/**
+	 * Non-dynamic audience string to validate.
+	 */
+	private String audience;
 
 	public String getRegistry() {
 		return this.registry;
@@ -78,5 +82,13 @@ public class IapAuthenticationProperties {
 
 	public void setIssuer(String issuer) {
 		this.issuer = issuer;
+	}
+
+	public String getAudience() {
+		return audience;
+	}
+
+	public void setAudience(String audience) {
+		this.audience = audience;
 	}
 }
