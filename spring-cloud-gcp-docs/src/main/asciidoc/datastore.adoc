@@ -783,6 +783,12 @@ public interface TradeRepository extends CrudRepository<Trade, String[]> {
 
   List<Trade> findTop3ByActionAndSymbolAndPriceGreaterThanAndPriceLessThanOrEqualOrderBySymbolDesc(
   			String action, String symbol, double priceFloor, double priceCeiling);
+
+  Page<TestEntity> findByAction(String action, Pageable pageable);
+
+  Slice<TestEntity> findBySymbol(String symbol, Pageable pageable);
+
+  List<TestEntity> findBySymbol(String symbol, Sort sort);
 }
 ----
 
@@ -808,6 +814,15 @@ Delete queries can have the following return types:
 * An integer type that is the number of entities deleted
 * A collection of entities that were deleted
 * 'void'
+
+Methods can have `org.springframework.data.domain.Pageable` parameter to control pagination and sorting,
+or `org.springframework.data.domain.Sort` parameter to control sorting only.
+See https://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories.query-methods[according Spring Data documentation] for details.
+
+If a method's return type is `org.springframework.data.domain.Slice`, the return object besides results will have additional information (e.g. if there the next slice exists).
+If a method's return type is `org.springframework.data.domain.Page`, the returned object will include current page,
+total number of results and total number of pages.
+This additional information is only reliable if used within a transaction.
 
 ==== Custom GQL query methods
 
