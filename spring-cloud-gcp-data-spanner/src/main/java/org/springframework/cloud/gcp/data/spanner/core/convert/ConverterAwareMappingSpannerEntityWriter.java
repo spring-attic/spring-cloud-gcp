@@ -188,7 +188,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 
 	private Object convertKeyPart(Object object) {
 
-		if (isValidSpannerKeyType(ConversionUtils.boxIfNeeded(object.getClass()))) {
+		if (object == null || isValidSpannerKeyType(ConversionUtils.boxIfNeeded(object.getClass()))) {
 			return object;
 		}
 		/*
