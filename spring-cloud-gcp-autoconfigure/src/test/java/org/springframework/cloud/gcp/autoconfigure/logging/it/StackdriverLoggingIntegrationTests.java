@@ -95,7 +95,7 @@ public class StackdriverLoggingIntegrationTests {
 				.setCredentials(credentialsProvider.getCredentials())
 				.build().getService();
 
-		await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+		await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
 			Page<LogEntry> page = logClient.listLogEntries(
 					Logging.EntryListOption.filter("textPayload:\"#$%^&" + NOW + "\" AND"
 							+ " logName=\"projects/" + this.projectIdProvider.getProjectId()
