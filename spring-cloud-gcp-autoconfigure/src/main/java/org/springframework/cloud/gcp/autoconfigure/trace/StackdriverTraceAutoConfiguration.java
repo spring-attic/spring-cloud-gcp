@@ -27,8 +27,9 @@ import brave.sampler.Sampler;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.api.gax.core.ExecutorProvider;
 import com.google.api.gax.core.FixedExecutorProvider;
-import com.google.api.gax.rpc.HeaderProvider;
 import io.grpc.CallOptions;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.auth.MoreCallCredentials;
 import zipkin2.Span;
 import zipkin2.codec.BytesEncoder;
@@ -77,7 +78,7 @@ public class StackdriverTraceAutoConfiguration {
 
 	private CredentialsProvider finalCredentialsProvider;
 
-	private HeaderProvider headerProvider = new UsageTrackingHeaderProvider(this.getClass());
+	private UsageTrackingHeaderProvider headerProvider = new UsageTrackingHeaderProvider(this.getClass());
 
 	public StackdriverTraceAutoConfiguration(GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider,
@@ -106,10 +107,19 @@ public class StackdriverTraceAutoConfiguration {
 				Executors.newScheduledThreadPool(traceProperties.getNumExecutorThreads()));
 	}
 
+	@Bean(destroyMethod = "shutdownNow")
+	@ConditionalOnMissingBean(name = "stackdriverSenderChannel")
+	public ManagedChannel stackdriverSenderChannel() {
+		return ManagedChannelBuilder.forTarget("cloudtrace.googleapis.com")
+				.userAgent(this.headerProvider.getUserAgent())
+				.build();
+	}
+
 	@Bean
 	@ConditionalOnMissingBean
 	public Sender stackdriverSender(GcpTraceProperties traceProperties,
-			@Qualifier("traceExecutorProvider") ExecutorProvider executorProvider)
+			@Qualifier("traceExecutorProvider") ExecutorProvider executorProvider,
+			@Qualifier("stackdriverSenderChannel") ManagedChannel channel)
 			throws IOException {
 		CallOptions callOptions = CallOptions.DEFAULT
 				.withCallCredentials(
@@ -146,7 +156,7 @@ public class StackdriverTraceAutoConfiguration {
 			}
 		}
 
-		return StackdriverSender.newBuilder()
+		return StackdriverSender.newBuilder(channel)
 				.projectId(this.finalProjectIdProvider.getProjectId())
 				.callOptions(callOptions)
 				.build();
