@@ -34,7 +34,6 @@ public class UsageTrackingHeaderProviderIT {
 	/**
 	 * This test is check if the hard-coded version needs to be manually updated.
 	 */
-	@Ignore
 	@Test
 	public void testGetHeaders() {
 		UsageTrackingHeaderProvider subject = new UsageTrackingHeaderProvider(this.getClass());
