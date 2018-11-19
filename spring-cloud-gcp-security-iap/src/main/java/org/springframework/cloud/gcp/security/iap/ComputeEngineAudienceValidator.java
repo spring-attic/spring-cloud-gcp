@@ -16,20 +16,23 @@
 
 package org.springframework.cloud.gcp.security.iap;
 
+import com.google.cloud.MetadataConfig;
 import com.google.cloud.resourcemanager.Project;
 import com.google.cloud.resourcemanager.ResourceManager;
 import com.google.cloud.resourcemanager.ResourceManagerOptions;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 
-public class AppEngineAudienceValidator extends AudienceValidator {
+public class ComputeEngineAudienceValidator extends AudienceValidator {
 
-	public AppEngineAudienceValidator(GcpProjectIdProvider projectIdProvider) {
+	public ComputeEngineAudienceValidator(GcpProjectIdProvider projectIdProvider) {
 		ResourceManager resourceManager = ResourceManagerOptions.getDefaultInstance().getService();
 		Project project = resourceManager.get(projectIdProvider.getProjectId());
-		System.out.println("============= project number = " + project.getProjectNumber());
+
+		String serviceId = MetadataConfig.getAttribute("id");
 
 		this.setAudience(String.format(
-				"/projects/%s/apps/%s", project.getProjectNumber(), projectIdProvider.getProjectId()));
+				"/projects/%s/global/backendServices/%s", project.getProjectNumber(), serviceId));
 	}
+
 }

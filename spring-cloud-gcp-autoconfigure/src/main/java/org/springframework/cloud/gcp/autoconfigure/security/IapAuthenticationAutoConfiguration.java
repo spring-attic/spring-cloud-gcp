@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.autoconfigure.security;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -23,12 +26,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.gcp.autoconfigure.core.AppEngineCondition;
+import org.springframework.cloud.gcp.autoconfigure.core.environment.ConditionalOnGcpEnvironment;
+import org.springframework.cloud.gcp.core.GcpEnvironment;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.security.iap.AppEngineAudienceValidator;
 import org.springframework.cloud.gcp.security.iap.AudienceValidator;
+import org.springframework.cloud.gcp.security.iap.ComputeEngineAudienceValidator;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
@@ -39,9 +43,6 @@ import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Autoconfiguration for extracting pre-authenticated user identity from Google Cloud IAP header.
@@ -73,7 +74,15 @@ public class IapAuthenticationAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public JwtDecoder iapJwtDecoder(IapAuthenticationProperties properties, GcpProjectIdProvider projectIdProvider,
-	                                ObjectProvider<AudienceValidator> audienceVerifier) {
+					ObjectProvider<AudienceValidator> audienceVerifier) {
+
+		System.out.println("============================= GCP Environment diagnostics; ");
+		for (GcpEnvironment env : GcpEnvironment.values()) {
+			System.out.println("======================= " + env + (env.matches() ? " YES" : " NO"));
+		}
+		System.out.println("============================= /GCP Environment diagnostics; ");
+
+
 		NimbusJwtDecoderJwkSupport jwkSupport
 				= new NimbusJwtDecoderJwkSupport(properties.getRegistry(), properties.getAlgorithm());
 
@@ -93,22 +102,26 @@ public class IapAuthenticationAutoConfiguration {
 	@ConditionalOnMissingBean
 	@ConditionalOnProperty ("spring.cloud.gcp.security.iap.audience")
 	AudienceValidator propertyBasedAudienceValidator(IapAuthenticationProperties properties) {
+		System.out.println("======================= Property based validator in use: " + properties.getAudience());
 		return new AudienceValidator(properties.getAudience());
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	@Conditional(AppEngineCondition.class)
+	@ConditionalOnGcpEnvironment(GcpEnvironment.ANY_APP_ENGINE)
 	AudienceValidator appEngineBasedAudienceValidator(
 			IapAuthenticationProperties properties, GcpProjectIdProvider projectIdProvider) {
+		System.out.println("======================= App Engine validator in use.");
 		return new AppEngineAudienceValidator(projectIdProvider);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
+	@ConditionalOnGcpEnvironment(GcpEnvironment.ANY_CONTAINER)
 	AudienceValidator computeEngineBasedAudienceValidator(
 			IapAuthenticationProperties properties, GcpProjectIdProvider projectIdProvider) {
-		return new AppEngineAudienceValidator(projectIdProvider);
+		System.out.println("======================= Compute Engine based validator in use.");
+		return new ComputeEngineAudienceValidator(projectIdProvider);
 	}
 
 	@Bean

@@ -85,7 +85,7 @@ public class IapAuthenticationProperties {
 	}
 
 	public String getAudience() {
-		return audience;
+		return this.audience;
 	}
 
 	public void setAudience(String audience) {

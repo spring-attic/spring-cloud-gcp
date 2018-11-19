@@ -29,6 +29,7 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -52,7 +53,8 @@ public class IapAuthenticationAutoConfigurationTests {
 	static final String FAKE_USER_TOKEN = "lol cats forever";
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(IapAuthenticationAutoConfiguration.class));
+			.withConfiguration(
+					AutoConfigurations.of(IapAuthenticationAutoConfiguration.class, TestConfiguration.class));
 
 	@Mock
 	HttpServletRequest mockIapRequest;
@@ -62,6 +64,9 @@ public class IapAuthenticationAutoConfigurationTests {
 
 	@Mock
 	static Jwt mockJwt;
+
+	@Mock
+	static GcpProjectIdProvider mockProjectIdProvider;
 
 	@Before
 	public void httpRequestSetup() {
@@ -92,8 +97,10 @@ public class IapAuthenticationAutoConfigurationTests {
 		new ApplicationContextRunner()
 				.withPropertyValues("spring.cloud.gcp.security.iap.enabled=true")
 				.withConfiguration(
-						AutoConfigurations.of(IapAuthenticationAutoConfiguration.class,
-						OAuth2ResourceServerAutoConfiguration.class))
+						AutoConfigurations.of(
+								IapAuthenticationAutoConfiguration.class,
+								OAuth2ResourceServerAutoConfiguration.class,
+								TestConfiguration.class))
 				.run(this::verifyJwtBeans);
 	}
 
@@ -155,4 +162,14 @@ public class IapAuthenticationAutoConfigurationTests {
 			return httpServletRequest -> FAKE_USER_TOKEN;
 		}
 	}
+
+	@Configuration
+	static class TestConfiguration {
+		@Bean
+		GcpProjectIdProvider mockProvider() {
+			//when(mockProjectIdProvider.getProjectId()).thenReturn("fake-project-id");
+			return mockProjectIdProvider;
+		}
+	}
+
 }

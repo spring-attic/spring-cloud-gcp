@@ -37,18 +37,22 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
 	/**
 	 * Allows subclasses to delay setting the audience value after the object is constructed.
 	 */
-	protected AudienceValidator() {}
+	protected AudienceValidator() { }
 
 	protected void setAudience(String audience) {
+		System.out.println("================= Setting audience to " + audience);
 		this.audience = audience;
 	}
 
 	@Override
 	public OAuth2TokenValidatorResult validate(Jwt t) {
-		if (t.getAudience() != null && t.getAudience().contains(audience)) {
+		if (t.getAudience() != null && t.getAudience().contains(this.audience)) {
+			System.out.println("================= Validating audience; success ===========");
 			return OAuth2TokenValidatorResult.success();
 		}
 
+		System.out.println("================= Validating audience; failure: expected [" + this.audience
+						+ "]; observed ]" + t.getAudience() + " ===========");
 		return OAuth2TokenValidatorResult.failure(INVALID_AUDIENCE);
 	}
 }
