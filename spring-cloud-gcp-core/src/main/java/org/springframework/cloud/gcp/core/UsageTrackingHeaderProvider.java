@@ -16,10 +16,10 @@
 
 package org.springframework.cloud.gcp.core;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.google.api.gax.rpc.HeaderProvider;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Provides the User-Agent header to signal to the Google Cloud Client Libraries that requests originate from a Spring
@@ -27,16 +27,19 @@ import com.google.api.gax.rpc.HeaderProvider;
  *
  * @author João André Martins
  * @author Chengyuan Zhao
+ * @author Mike Eltsufin
  */
 public class UsageTrackingHeaderProvider implements HeaderProvider {
 
 	public static final String TRACKING_HEADER_PROJECT_VERSION = "1.1.0.BUILD-SNAPSHOT";
 
-	/** Class whose project name and version will be used in the header */
-	private Class clazz;
+	private String userAgent;
+
+	private final Map<String, String> headers;
 
 	public UsageTrackingHeaderProvider(Class clazz) {
-		this.clazz = clazz;
+		this.userAgent = computeUserAgent(clazz);
+		this.headers = ImmutableMap.of("User-Agent", this.userAgent);
 	}
 
 	/**
@@ -45,15 +48,24 @@ public class UsageTrackingHeaderProvider implements HeaderProvider {
 	 */
 	@Override
 	public Map<String, String> getHeaders() {
-		Map<String, String> headers = new HashMap<>();
+		return this.headers;
+	}
 
-		String[] packageTokens = this.clazz.getPackage().getName().split("\\.");
+	/**
+	 * Returns the "User-Agent" header value which should be added to the google-cloud-java REST API calls.
+	 * e.g., {@code Spring/1.0.0.RELEASE spring-cloud-gcp-pubsub/1.0.0.RELEASE}.
+	 */
+	public String getUserAgent() {
+		return this.userAgent;
+	}
+
+	private String computeUserAgent(Class clazz) {
+		String[] packageTokens = clazz.getPackage().getName().split("\\.");
 		String springLibrary = "spring-cloud-gcp-" + packageTokens[packageTokens.length - 1];
 
-		headers.put("User-Agent",
-				"Spring/" + TRACKING_HEADER_PROJECT_VERSION
-				+ " " + springLibrary + "/" + TRACKING_HEADER_PROJECT_VERSION);
+		return "Spring/" + TRACKING_HEADER_PROJECT_VERSION
+				+ " " + springLibrary + "/" + TRACKING_HEADER_PROJECT_VERSION;
 
-		return headers;
 	}
+
 }
