@@ -87,7 +87,7 @@ public class KeyConversionTests {
 	@Test
 	public void keyWritingTestCase() {
 		try {
-			Key key = this.spannerEntityWriter.writeToKey(this.objectToTest);
+			Key key = this.spannerEntityWriter.convertToKey(this.objectToTest);
 			assertThat(key, is(this.expectedResult));
 		}
 		catch (Exception e) {

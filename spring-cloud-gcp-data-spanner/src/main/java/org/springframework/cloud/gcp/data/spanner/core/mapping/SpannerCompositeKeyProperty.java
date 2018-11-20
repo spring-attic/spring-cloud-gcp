@@ -19,14 +19,16 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 
 import com.google.cloud.spanner.Key;
-import com.google.cloud.spanner.Key.Builder;
 import com.google.cloud.spanner.Type.Code;
 
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerTypeMapper;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
@@ -61,23 +63,29 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 
 	Key getId(Object entity) {
 		PersistentPropertyAccessor accessor = getOwner().getPropertyAccessor(entity);
-		Builder keyBuilder = Key.newBuilder();
+		List keyParts = new ArrayList();
 		for (SpannerPersistentProperty spannerPersistentProperty : this.primaryKeyColumns) {
+			Object value = accessor.getProperty(spannerPersistentProperty);
 			if (spannerPersistentProperty.isEmbedded()) {
 				Key embeddedKeyParts = this.spannerPersistentEntity
 						.getSpannerMappingContext()
 						.getPersistentEntity(spannerPersistentProperty.getType())
 						.getIdProperty()
-						.getId(accessor.getProperty(spannerPersistentProperty));
+						.getId(value);
 				for (Object keyPart : embeddedKeyParts.getParts()) {
-					keyBuilder.appendObject(keyPart);
+					keyParts.add(keyPart);
 				}
 			}
+			else if (spannerPersistentProperty.getAnnotatedColumnItemType() == null || value == null) {
+				keyParts.add(value);
+			}
 			else {
-				keyBuilder.appendObject(accessor.getProperty(spannerPersistentProperty));
+				keyParts.add(this.spannerPersistentEntity.getSpannerEntityWriter().getSpannerWriteConverter()
+						.convert(value, SpannerTypeMapper
+								.getSimpleJavaClassFor(spannerPersistentProperty.getAnnotatedColumnItemType())));
 			}
 		}
-		return keyBuilder.build();
+		return this.spannerPersistentEntity.getSpannerEntityWriter().convertToKey(keyParts);
 	}
 
 	@Override

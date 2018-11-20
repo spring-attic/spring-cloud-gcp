@@ -16,14 +16,11 @@
 
 package org.springframework.cloud.gcp.autoconfigure.trace;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import brave.http.HttpClientParser;
 import brave.http.HttpServerParser;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.auth.Credentials;
-import com.google.devtools.cloudtrace.v1.Traces;
+import io.grpc.ManagedChannel;
 import org.junit.Test;
 import zipkin2.codec.BytesEncoder;
 import zipkin2.reporter.Sender;
@@ -43,6 +40,7 @@ import static org.mockito.Mockito.mock;
 /**
  * @author Ray Tsang
  * @author João André Martins
+ * @auther Mike Eltsufin
  */
 public class StackdriverTraceAutoConfigurationTests {
 
@@ -67,12 +65,11 @@ public class StackdriverTraceAutoConfigurationTests {
 			assertThat(context.getBean(HttpServerParser.class)).isNotNull();
 			assertThat(context.getBean(BytesEncoder.class)).isNotNull();
 			assertThat(context.getBean(Sender.class)).isNotNull();
+			assertThat(context.getBean(ManagedChannel.class)).isNotNull();
 		});
 	}
 
 	static class MockConfiguration {
-		private List<Traces> tracesList = new ArrayList<>();
-
 		@Bean
 		public static CredentialsProvider googleCredentials() {
 			return () -> mock(Credentials.class);

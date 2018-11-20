@@ -147,7 +147,7 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void findByIdTest() {
 		Object ret = new Object();
-		when(this.entityProcessor.writeToKey(eq(A_KEY))).thenReturn(A_KEY);
+		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
 		when(this.template.read(eq(Object.class), eq(A_KEY))).thenReturn(ret);
 		assertEquals(ret,
 				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
@@ -157,7 +157,7 @@ public class SpannerRepositoryImplTests {
 
 	@Test(expected = SpannerDataException.class)
 	public void findByIdKeyWritingThrowsAnException() {
-		when(this.entityProcessor.writeToKey(any())).thenThrow(SpannerDataException.class);
+		when(this.entityProcessor.convertToKey(any())).thenThrow(SpannerDataException.class);
 		new SimpleSpannerRepository<Object, Object[]>(this.template, Object.class)
 				.findById(new Object[] {});
 	}
@@ -165,7 +165,7 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void existsByIdTestFound() {
 		Object ret = new Object();
-		when(this.entityProcessor.writeToKey(eq(A_KEY))).thenReturn(A_KEY);
+		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
 		when(this.template.read(eq(Object.class), eq(A_KEY))).thenReturn(ret);
 		assertTrue(new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.existsById(A_KEY));
@@ -173,7 +173,7 @@ public class SpannerRepositoryImplTests {
 
 	@Test
 	public void existsByIdTestNotFound() {
-		when(this.entityProcessor.writeToKey(eq(A_KEY))).thenReturn(A_KEY);
+		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
 		when(this.template.read(eq(Object.class), (Key) any())).thenReturn(null);
 		assertFalse(
 				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
@@ -222,8 +222,8 @@ public class SpannerRepositoryImplTests {
 	public void findAllByIdTest() {
 		List<Key> unconvertedKey = Arrays.asList(Key.of("key1"), Key.of("key2"));
 
-		when(this.entityProcessor.writeToKey(eq(Key.of("key1")))).thenReturn(Key.of("key1"));
-		when(this.entityProcessor.writeToKey(eq(Key.of("key2")))).thenReturn(Key.of("key2"));
+		when(this.entityProcessor.convertToKey(eq(Key.of("key1")))).thenReturn(Key.of("key1"));
+		when(this.entityProcessor.convertToKey(eq(Key.of("key2")))).thenReturn(Key.of("key2"));
 		when(this.template.read(eq(Object.class), (KeySet) any())).thenAnswer(invocation -> {
 			KeySet keys = invocation.getArgument(1);
 			assertThat(keys.getKeys(),
@@ -243,7 +243,7 @@ public class SpannerRepositoryImplTests {
 
 	@Test
 	public void deleteByIdTest() {
-		when(this.entityProcessor.writeToKey(eq(A_KEY))).thenReturn(A_KEY);
+		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.deleteById(A_KEY);
 		verify(this.template, times(1)).delete(eq(Object.class), eq(A_KEY));

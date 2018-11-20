@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityWriter;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
@@ -67,6 +68,13 @@ public interface SpannerPersistentEntity<T> extends
 	 * @return the SpannerMappingContext instance
 	 */
 	SpannerMappingContext getSpannerMappingContext();
+
+	/**
+	 * Gets a SpannerEntityWriter that can be used to create Cloud Spanner keys from one or
+	 * more persistent properties.
+	 * @return a SpannerEntityWriter.
+	 */
+	SpannerEntityWriter getSpannerEntityWriter();
 
 	@Override
 	SpannerCompositeKeyProperty getIdProperty();

@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 import java.util.List;
 
 import com.google.cloud.spanner.Key;
+import com.google.spanner.v1.TypeCode;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -226,18 +227,21 @@ public class SpannerPersistentEntityImplTests {
 
 		ParentEmbedded parentEmbedded = new ParentEmbedded();
 		parentEmbedded.grandParentEmbedded = grandParentEmbedded;
-		parentEmbedded.id2 = "2";
-		parentEmbedded.id3 = "3";
+		parentEmbedded.id2 = 2;
+		parentEmbedded.id3 = 3L;
 
 		ChildEmbedded childEmbedded = new ChildEmbedded();
 		childEmbedded.parentEmbedded = parentEmbedded;
 		childEmbedded.id4 = "4";
 
+		// intentionally null, which is a supported key component type.
+		childEmbedded.id5 = null;
+
 		Key key = (Key) this.spannerMappingContext
 				.getPersistentEntity(ChildEmbedded.class)
 				.getIdentifierAccessor(childEmbedded).getIdentifier();
 		assertEquals(
-				Key.newBuilder().append("1").append("2").append("3").append("4").build(),
+				Key.newBuilder().append("1").append("2").append("3").append("4").appendObject(null).build(),
 				key);
 	}
 
@@ -257,7 +261,7 @@ public class SpannerPersistentEntityImplTests {
 	@Test
 	public void testExcludeEmbeddedColumnNames() {
 		assertThat(this.spannerMappingContext.getPersistentEntity(ChildEmbedded.class)
-				.columns(), containsInAnyOrder("id", "id2", "id3", "id4"));
+				.columns(), containsInAnyOrder("id", "id2", "id3", "id4", "id5"));
 	}
 
 	@Test
@@ -337,11 +341,15 @@ public class SpannerPersistentEntityImplTests {
 		@Embedded
 		GrandParentEmbedded grandParentEmbedded;
 
+		// This property requires conversion to be stored as a STRING column.
 		@PrimaryKey(keyOrder = 2)
-		String id2;
+		@Column(name = "id2", spannerType = TypeCode.STRING)
+		int id2;
 
+		// This property will be stored as a STRING column even though Long is a natively supported type.
 		@PrimaryKey(keyOrder = 3)
-		String id3;
+		@Column(name = "id3", spannerType = TypeCode.STRING)
+		Long id3;
 	}
 
 	private static class ChildEmbedded {
@@ -351,6 +359,10 @@ public class SpannerPersistentEntityImplTests {
 
 		@PrimaryKey(keyOrder = 2)
 		String id4;
+
+		@PrimaryKey(keyOrder = 3)
+		@Column(spannerType = TypeCode.STRING)
+		Long id5;
 	}
 
 	private static class ChildCollectionEmbedded {

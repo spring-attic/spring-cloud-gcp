@@ -164,7 +164,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	}
 
 	private <A> A doIfKey(Object key, Function<Key, A> operation) {
-		Key k = this.spannerTemplate.getSpannerEntityProcessor().writeToKey(key);
+		Key k = this.spannerTemplate.getSpannerEntityProcessor().convertToKey(key);
 		return operation.apply(k);
 	}
 

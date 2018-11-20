@@ -27,6 +27,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
+import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -73,6 +74,7 @@ public class CloudVisionAutoConfiguration {
 	public ImageAnnotatorClient imageAnnotatorClient() throws IOException {
 		ImageAnnotatorSettings clientSettings = ImageAnnotatorSettings.newBuilder()
 				.setCredentialsProvider(this.credentialsProvider)
+				.setHeaderProvider(new UsageTrackingHeaderProvider(CloudVisionAutoConfiguration.class))
 				.build();
 
 		return ImageAnnotatorClient.create(clientSettings);

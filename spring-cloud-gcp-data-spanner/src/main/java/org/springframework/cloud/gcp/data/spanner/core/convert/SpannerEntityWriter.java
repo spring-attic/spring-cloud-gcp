@@ -39,5 +39,18 @@ public interface SpannerEntityWriter extends EntityWriter<Object, MultipleValueB
 	 */
 	void write(Object source, MultipleValueBinder sink, Set<String> includeColumns);
 
-	Key writeToKey(Object key);
+	/**
+	 * Convert a given object to a Cloud Spanner key.
+	 * @param key the object containing the key values. This can already be a Cloud Spanner
+	 *     key, a single key component, or an array of key components.
+	 * @return the Cloud Spanner key.
+	 */
+	Key convertToKey(Object key);
+
+	/**
+	 * Get the SpannerWriteConverter used to convert types into Cloud Spanner compatible
+	 * types.
+	 * @return a SpannerWriteConverter
+	 */
+	SpannerWriteConverter getSpannerWriteConverter();
 }
