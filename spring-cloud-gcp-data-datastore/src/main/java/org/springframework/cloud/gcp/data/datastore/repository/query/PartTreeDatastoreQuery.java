@@ -44,8 +44,6 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
@@ -119,7 +117,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	@Override
 	public Object execute(Object[] parameters) {
 		Class<?> returnedObjectType = getQueryMethod().getReturnedObjectType();
-		Object result;
 		if (isSliceQuery() || isPageQuery()) {
 			List<?> resultEntries = (List) execute(parameters, returnedObjectType, List.class, false);
 			Long totalCount = (Long) execute(parameters, Long.class, null, true);
@@ -127,20 +124,11 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			ParameterAccessor paramAccessor =
 					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
 
-			Pageable pageable = paramAccessor.getPageable();
-			if (getQueryMethod().isSliceQuery()) {
-				boolean hasNext = !pageable.equals(Pageable.unpaged()) && pageable.next().getOffset() < totalCount;
-				result = new SliceImpl<>(resultEntries, pageable, hasNext);
-			}
-			else {
-				result = new PageImpl<>(resultEntries, pageable, totalCount);
-			}
+			return new PageImpl<>(resultEntries, paramAccessor.getPageable(), totalCount);
 		}
-		else {
-			result = execute(parameters, returnedObjectType,
-					((DatastoreQueryMethod) getQueryMethod()).getCollectionReturnType(), false);
-		}
-		return result;
+
+		return execute(parameters, returnedObjectType,
+				((DatastoreQueryMethod) getQueryMethod()).getCollectionReturnType(), false);
 	}
 
 	@VisibleForTesting
