@@ -20,14 +20,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.core.environment.ConditionalOnGcpEnvironment;
 import org.springframework.cloud.gcp.core.GcpEnvironment;
+import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.security.iap.AppEngineAudienceValidator;
 import org.springframework.cloud.gcp.security.iap.AudienceValidator;
@@ -68,8 +71,19 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 @ConditionalOnProperty("spring.cloud.gcp.security.iap.enabled")
 @ConditionalOnClass({NimbusJwtDecoderJwkSupport.class})
 @AutoConfigureBefore(OAuth2ResourceServerAutoConfiguration.class)
+@AutoConfigureAfter(GcpContextAutoConfiguration.class)
 @EnableConfigurationProperties(IapAuthenticationProperties.class)
 public class IapAuthenticationAutoConfiguration {
+
+	/**
+	 * Provides default implementation for determining GCP environment.
+	 * Can be overridden to avoid interacting with real environment.
+	 */
+	@Bean
+	@ConditionalOnMissingBean
+	public GcpEnvironmentProvider gcpEnvironmentProvider() {
+		return env -> env.matches();
+	}
 
 	@Bean
 	@ConditionalOnMissingBean
