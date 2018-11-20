@@ -18,15 +18,16 @@ package org.springframework.cloud.gcp.autoconfigure.core.environment;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
 import org.springframework.cloud.gcp.core.GcpEnvironment;
+import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
- * Determine whether the application is running inside of a Compute Engine or GKE environment by attempting to query
- * the metadata server.
+ * Determine which GCP environment the application is running on.
  *
  * @author Elena Felder
  */
@@ -38,10 +39,17 @@ public class OnGcpEnvironmentCondition extends SpringBootCondition {
 		Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnGcpEnvironment.class.getName());
 		GcpEnvironment targetEnvironment = (GcpEnvironment) attributes.get("value");
 
-		boolean match = targetEnvironment.matches();
-		String message = (match ? "Application is " : "Application is not")
-				+ " running on " + targetEnvironment.toString();
+		try {
+			GcpEnvironmentProvider environmentProvider = context.getBeanFactory().getBean(GcpEnvironmentProvider.class);
+			if (!environmentProvider.isCurrentEnvironment(targetEnvironment)) {
+				return new ConditionOutcome(false, "Application is not running on " + targetEnvironment);
+			}
+		}
+		catch (NoSuchBeanDefinitionException ex) {
+			return new ConditionOutcome(
+					false, "GcpEnvironmentProvider not found; environment-specific checks disabled.");
+		}
 
-		return new ConditionOutcome(match, message);
+		return new ConditionOutcome(true, "Application is running on " + targetEnvironment);
 	}
 }
