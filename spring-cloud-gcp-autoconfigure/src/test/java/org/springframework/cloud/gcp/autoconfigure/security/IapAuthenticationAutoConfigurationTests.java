@@ -16,8 +16,13 @@
 
 package org.springframework.cloud.gcp.autoconfigure.security;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.cloud.resourcemanager.Project;
+import com.google.cloud.resourcemanager.ResourceManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,14 +31,22 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.gcp.core.GcpEnvironment;
+import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.security.iap.AppEngineAudienceValidator;
+import org.springframework.cloud.gcp.security.iap.AudienceValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 
@@ -68,6 +81,15 @@ public class IapAuthenticationAutoConfigurationTests {
 	@Mock
 	static GcpProjectIdProvider mockProjectIdProvider;
 
+	@Mock
+	static GcpEnvironmentProvider mockEnvironmentProvider;
+
+	@Mock
+	static ResourceManager mockResourceManager;
+
+	@Mock
+	static Project mockProject;
+
 	@Before
 	public void httpRequestSetup() {
 		when(this.mockIapRequest.getHeader("x-goog-iap-jwt-assertion")).thenReturn("very fake jwt");
@@ -75,8 +97,7 @@ public class IapAuthenticationAutoConfigurationTests {
 
 	@Test
 	public void testIapAutoconfiguredBeansExistInContext() {
-		this.contextRunner.withPropertyValues("spring.cloud.gcp.security.iap.enabled=true")
-				.run(this::verifyJwtBeans);
+		this.contextRunner.run(this::verifyJwtBeans);
 	}
 
 	@Test (expected = NoSuchBeanDefinitionException.class)
@@ -86,16 +107,9 @@ public class IapAuthenticationAutoConfigurationTests {
 				.run(context ->	context.getBean(JwtDecoder.class));
 	}
 
-	@Test (expected = NoSuchBeanDefinitionException.class)
-	public void testAutoconfiguredBeansMissingWhenGatingPropertyMissing() {
-		this.contextRunner
-				.run(context -> context.getBean(JwtDecoder.class));
-	}
-
 	@Test
 	public void testIapBeansReturnedWhenBothIapAndSpringSecurityConfigPresent() {
 		new ApplicationContextRunner()
-				.withPropertyValues("spring.cloud.gcp.security.iap.enabled=true")
 				.withConfiguration(
 						AutoConfigurations.of(
 								IapAuthenticationAutoConfiguration.class,
@@ -107,7 +121,6 @@ public class IapAuthenticationAutoConfigurationTests {
 	@Test
 	public void testUserBeansReturnedUserConfigPresent() {
 		this.contextRunner
-				.withPropertyValues("spring.cloud.gcp.security.iap.enabled=true")
 				.withUserConfiguration(UserConfiguration.class)
 				.run(context -> {
 					JwtDecoder jwtDecoder =  context.getBean(JwtDecoder.class);
@@ -125,9 +138,7 @@ public class IapAuthenticationAutoConfigurationTests {
 	@Test
 	public void testCustomPropertyOverridesDefault() {
 		this.contextRunner
-				.withPropertyValues(
-						"spring.cloud.gcp.security.iap.enabled=true",
-						"spring.cloud.gcp.security.iap.header=some-other-header")
+				.withPropertyValues("spring.cloud.gcp.security.iap.header=some-other-header")
 				.run(context -> {
 					when(this.mockNonIapRequest.getHeader("some-other-header")).thenReturn("other header jwt");
 
@@ -135,6 +146,51 @@ public class IapAuthenticationAutoConfigurationTests {
 					assertThat(resolver).isNotNull();
 					assertThat(resolver.resolve(this.mockIapRequest)).isEqualTo(null);
 					assertThat(resolver.resolve(this.mockNonIapRequest)).isEqualTo("other header jwt");
+				});
+	}
+
+	@Test
+	public void testAudienceValidatorNotAddedWhenNotAvailable() {
+		this.contextRunner
+				.run(context -> {
+					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("jwtValidators", List.class);
+					assertThat(validators).isNotNull();
+					assertThat(validators.stream().map(v -> v.getClass().getName()).collect(Collectors.toSet()))
+							.containsExactlyInAnyOrder(
+									JwtTimestampValidator.class.getName(), JwtIssuerValidator.class.getName());
+				});
+	}
+
+	@Test
+	public void testFixedStringAudienceValidatorAddedWhenAvailable() {
+		this.contextRunner
+				.withPropertyValues("spring.cloud.gcp.security.iap.audience=friendly")
+				.run(context -> {
+					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("jwtValidators", List.class);
+					assertThat(validators).isNotNull();
+					assertThat(validators.stream().map(v -> v.getClass().getName()).collect(Collectors.toSet()))
+							.containsExactlyInAnyOrder(
+									JwtTimestampValidator.class.getName(),
+									JwtIssuerValidator.class.getName(),
+									AudienceValidator.class.getName());
+				});
+	}
+
+	@Test
+	public void testEnvironmentBasedAudienceValidatorAddedWhenAvailable() {
+		when(this.mockEnvironmentProvider.isCurrentEnvironment(GcpEnvironment.ANY_APP_ENGINE)).thenReturn(true);
+		when(this.mockResourceManager.get("fake-project-id")).thenReturn(this.mockProject);
+		when(this.mockProject.getProjectNumber()).thenReturn(42L);
+
+		this.contextRunner
+				.run(context -> {
+					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("jwtValidators", List.class);
+					assertThat(validators).isNotNull();
+					assertThat(validators.stream().map(v -> v.getClass().getName()).collect(Collectors.toSet()))
+							.containsExactlyInAnyOrder(
+									JwtTimestampValidator.class.getName(),
+									JwtIssuerValidator.class.getName(),
+									AppEngineAudienceValidator.class.getName());
 				});
 	}
 
@@ -164,11 +220,22 @@ public class IapAuthenticationAutoConfigurationTests {
 	}
 
 	@Configuration
+	@AutoConfigureBefore(IapAuthenticationAutoConfiguration.class)
 	static class TestConfiguration {
 		@Bean
-		GcpProjectIdProvider mockProvider() {
-			//when(mockProjectIdProvider.getProjectId()).thenReturn("fake-project-id");
+		static GcpProjectIdProvider mockProjectIdProvider() {
+			when(mockProjectIdProvider.getProjectId()).thenReturn("fake-project-id");
 			return mockProjectIdProvider;
+		}
+
+		@Bean
+		static GcpEnvironmentProvider mockEnvironmentProvider() {
+			return mockEnvironmentProvider;
+		}
+
+		@Bean
+		static ResourceManager mockResourceManager() {
+			return mockResourceManager;
 		}
 	}
 

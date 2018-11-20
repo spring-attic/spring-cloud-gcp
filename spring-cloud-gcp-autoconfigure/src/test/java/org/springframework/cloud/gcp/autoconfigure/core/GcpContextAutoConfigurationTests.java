@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,5 +52,14 @@ public class GcpContextAutoConfigurationTests {
 					context.getBean(GcpProjectIdProvider.class);
 			assertThat(projectIdProvider).isInstanceOf(DefaultGcpProjectIdProvider.class);
 		});
+	}
+
+	@Test
+	public void testEnvironmentProviderInteractsWithRealEnvironment() {
+		this.contextRunner
+				.run(context -> {
+					GcpEnvironmentProvider environmentProvider = context.getBean(GcpEnvironmentProvider.class);
+					assertThat(environmentProvider).isNotNull();
+				});
 	}
 }

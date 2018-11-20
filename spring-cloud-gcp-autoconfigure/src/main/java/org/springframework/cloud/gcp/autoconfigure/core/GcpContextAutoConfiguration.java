@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.autoconfigure.core;
 
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.cloud.resourcemanager.ResourceManager;
+import com.google.cloud.resourcemanager.ResourceManagerOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -82,5 +84,14 @@ public class GcpContextAutoConfiguration {
 	@ConditionalOnMissingBean
 	public static GcpEnvironmentProvider gcpEnvironmentProvider() {
 		return env -> env.matches();
+	}
+
+	/**
+	 * Provides default implementation of Cloud Resource Manager.
+	 */
+	@Bean
+	@ConditionalOnMissingBean
+	public ResourceManager gcpResourceManager() {
+		return ResourceManagerOptions.getDefaultInstance().getService();
 	}
 }
