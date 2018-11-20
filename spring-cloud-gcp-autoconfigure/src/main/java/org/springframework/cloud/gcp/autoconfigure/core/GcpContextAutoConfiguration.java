@@ -24,6 +24,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -71,5 +72,15 @@ public class GcpContextAutoConfiguration {
 		}
 
 		return projectIdProvider;
+	}
+
+	/**
+	 * Provides default implementation for determining GCP environment.
+	 * Can be overridden to avoid interacting with real environment.
+	 */
+	@Bean
+	@ConditionalOnMissingBean
+	public static GcpEnvironmentProvider gcpEnvironmentProvider() {
+		return env -> env.matches();
 	}
 }
