@@ -1,17 +1,17 @@
 /*
- *  Copyright 2018 original author or authors.
+ * Copyright 2018-2018 the original author or authors.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.springframework.cloud.gcp.data.spanner.core;
@@ -190,7 +190,7 @@ public interface SpannerOperations {
 	 * Update an object in storage.
 	 * @param object the object to update.
 	 * @param includeProperties the properties to upsert. if none are given then all
-	 *     properties are used
+	 *    properties are used
 	 */
 	void update(Object object, String... includeProperties);
 
@@ -198,8 +198,8 @@ public interface SpannerOperations {
 	 * Update an object in storage.
 	 * @param object the object to update.
 	 * @param includeProperties the properties to update. If null is given, then all
-	 *     properties are used. Note that an empty {@code Set} means that no properties will
-	 *     be used.
+	 *    properties are used. Note that an empty {@code Set} means that no properties will
+	 *    be used.
 	 */
 	void update(Object object, Set<String> includeProperties);
 
@@ -219,7 +219,7 @@ public interface SpannerOperations {
 	 * Update or insert an object into storage.
 	 * @param object the object to update or insert.
 	 * @param includeProperties the properties to upsert. if none are given then all
-	 *     properties are upserted.
+	 *    properties are upserted.
 	 */
 	void upsert(Object object, String... includeProperties);
 
@@ -227,8 +227,8 @@ public interface SpannerOperations {
 	 * Update or insert an object into storage.
 	 * @param object the object to update or insert.
 	 * @param includeProperties the properties to update. If null is given, then all
-	 *     properties are used. Note that an empty {@code Set} means that no properties will
-	 *     be used.
+	 *    properties are used. Note that an empty {@code Set} means that no properties will
+	 *    be used.
 	 */
 	void upsert(Object object, Set<String> includeProperties);
 
@@ -242,7 +242,7 @@ public interface SpannerOperations {
 	/**
 	 * Performs multiple read and write operations in a single transaction.
 	 * @param operations the function representing the operations to perform using a
-	 *     SpannerOperations based on a single transaction.
+	 *    SpannerOperations based on a single transaction.
 	 * @param <T> the final return type of the operations.
 	 * @return the final result of the transaction.
 	 */
@@ -251,7 +251,7 @@ public interface SpannerOperations {
 	/**
 	 * Performs multiple read-only operations in a single transaction.
 	 * @param operations the function representing the operations to perform using a
-	 *     SpannerOperations based on a single transaction.
+	 *    SpannerOperations based on a single transaction.
 	 * @param readOptions allows the user to specify staleness for the read transaction
 	 * @param <T> the final return type of the operations.
 	 * @return the final result of the transaction.
