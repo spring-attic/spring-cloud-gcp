@@ -822,7 +822,6 @@ See https://docs.spring.io/spring-data/data-commons/docs/current/reference/html/
 If a method's return type is `org.springframework.data.domain.Slice`, the return object besides results will have additional information (e.g. if there the next slice exists).
 If a method's return type is `org.springframework.data.domain.Page`, the returned object will include current page,
 total number of results and total number of pages.
-This additional information is only reliable if used within a transaction.
 
 ==== Custom GQL query methods
 
