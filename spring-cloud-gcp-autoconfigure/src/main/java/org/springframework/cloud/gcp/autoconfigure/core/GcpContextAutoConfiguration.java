@@ -25,9 +25,12 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
+import org.springframework.cloud.gcp.core.DefaultGcpEnvironmentProvider;
+import org.springframework.cloud.gcp.core.DefaultGcpMetadataProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.MetadataProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -83,7 +86,7 @@ public class GcpContextAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public static GcpEnvironmentProvider gcpEnvironmentProvider() {
-		return env -> env.matches();
+		return new DefaultGcpEnvironmentProvider();
 	}
 
 	/**
@@ -93,5 +96,14 @@ public class GcpContextAutoConfiguration {
 	@ConditionalOnMissingBean
 	public ResourceManager gcpResourceManager() {
 		return ResourceManagerOptions.getDefaultInstance().getService();
+	}
+
+	/**
+	 * Provides default implementation of Cloud Resource Manager.
+	 */
+	@Bean
+	@ConditionalOnMissingBean
+	public MetadataProvider gcpMetadataProvider() {
+		return new DefaultGcpMetadataProvider();
 	}
 }

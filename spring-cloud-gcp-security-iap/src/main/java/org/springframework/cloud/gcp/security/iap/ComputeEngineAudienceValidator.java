@@ -16,18 +16,23 @@
 
 package org.springframework.cloud.gcp.security.iap;
 
-import com.google.cloud.MetadataConfig;
 import com.google.cloud.resourcemanager.Project;
 import com.google.cloud.resourcemanager.ResourceManager;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.MetadataProvider;
+import org.springframework.util.Assert;
 
 public class ComputeEngineAudienceValidator extends AudienceValidator {
 
-	public ComputeEngineAudienceValidator(GcpProjectIdProvider projectIdProvider, ResourceManager resourceManager) {
-		Project project = resourceManager.get(projectIdProvider.getProjectId());
+	public ComputeEngineAudienceValidator(GcpProjectIdProvider projectIdProvider, ResourceManager resourceManager,
+			MetadataProvider metadataProvider) {
+		Assert.notNull(projectIdProvider, "GcpProjectIdProvider cannot be null.");
+		Assert.notNull(resourceManager, "ResourceManager cannot be null.");
+		Assert.notNull(metadataProvider, "MetadataProvider cannot be null.");
 
-		String serviceId = MetadataConfig.getAttribute("id");
+		Project project = resourceManager.get(projectIdProvider.getProjectId());
+		String serviceId = metadataProvider.getAttribute("id");
 
 		this.setAudience(String.format(
 				"/projects/%s/global/backendServices/%s", project.getProjectNumber(), serviceId));

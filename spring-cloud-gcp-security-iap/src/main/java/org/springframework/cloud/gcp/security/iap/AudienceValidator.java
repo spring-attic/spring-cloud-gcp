@@ -16,13 +16,20 @@
 
 package org.springframework.cloud.gcp.security.iap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.util.Assert;
 
 public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
+
+	private static final Log LOGGER = LogFactory.getLog(AudienceValidator.class);
+
 	private static OAuth2Error INVALID_AUDIENCE = new OAuth2Error(
 			OAuth2ErrorCodes.INVALID_REQUEST,
 					"This aud claim is not equal to the configured audience",
@@ -31,6 +38,7 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
 	private String audience;
 
 	public AudienceValidator(String audience) {
+		Assert.notNull(audience, "Audience cannot be null");
 		this.audience = audience;
 	}
 
@@ -40,19 +48,20 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
 	protected AudienceValidator() { }
 
 	protected void setAudience(String audience) {
-		System.out.println("================= Setting audience to " + audience);
+		Assert.notNull(audience, "Audience cannot be null");
 		this.audience = audience;
 	}
 
 	@Override
 	public OAuth2TokenValidatorResult validate(Jwt t) {
 		if (t.getAudience() != null && t.getAudience().contains(this.audience)) {
-			System.out.println("================= Validating audience; success ===========");
 			return OAuth2TokenValidatorResult.success();
 		}
 
-		System.out.println("================= Validating audience; failure: expected [" + this.audience
-						+ "]; observed ]" + t.getAudience() + " ===========");
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info(String.format(
+					"Expected audience %s did not match token audience %s", this.audience, t.getAudience()));
+		}
 		return OAuth2TokenValidatorResult.failure(INVALID_AUDIENCE);
 	}
 }

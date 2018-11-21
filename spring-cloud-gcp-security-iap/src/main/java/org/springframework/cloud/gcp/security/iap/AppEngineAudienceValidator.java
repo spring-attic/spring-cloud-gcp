@@ -20,13 +20,15 @@ import com.google.cloud.resourcemanager.Project;
 import com.google.cloud.resourcemanager.ResourceManager;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.util.Assert;
 
 public class AppEngineAudienceValidator extends AudienceValidator {
 
 	public AppEngineAudienceValidator(GcpProjectIdProvider projectIdProvider, ResourceManager resourceManager) {
+		Assert.notNull(projectIdProvider, "GcpProjectIdProvider cannot be null.");
+		Assert.notNull(resourceManager, "ResourceManager cannot be null.");
 
 		Project project = resourceManager.get(projectIdProvider.getProjectId());
-		System.out.println("============= project number = " + project.getProjectNumber());
 
 		this.setAudience(String.format(
 				"/projects/%s/apps/%s", project.getProjectNumber(), projectIdProvider.getProjectId()));
