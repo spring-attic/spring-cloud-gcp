@@ -399,22 +399,19 @@ public class SpannerTemplate implements SpannerOperations {
 
 		ResultSet resultSet;
 
+		ReadContext readContext = options != null && options.getTimestamp() != null
+				? getReadContext(options.getTimestamp())
+				: getReadContext();
+
 		if (options == null) {
 			resultSet = getReadContext().read(tableName, keys, columns);
 		}
+		else if (options.getIndex() != null) {
+			resultSet = readContext.readUsingIndex(tableName, options.getIndex(), keys,
+					columns, options.getReadOptions());
+		}
 		else {
-
-			ReadContext readContext = options.getTimestamp() != null
-					? getReadContext(options.getTimestamp())
-					: getReadContext();
-
-			if (options.getIndex() != null) {
-				resultSet = readContext.readUsingIndex(tableName, options.getIndex(), keys,
-						columns, options.getReadOptions());
-			}
-			else {
-				resultSet = readContext.read(tableName, keys, columns, options.getReadOptions());
-			}
+			resultSet = readContext.read(tableName, keys, columns, options.getReadOptions());
 		}
 
 		if (LOGGER.isDebugEnabled()) {
