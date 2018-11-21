@@ -19,14 +19,12 @@ package org.springframework.cloud.gcp.security.iap;
 import com.google.cloud.MetadataConfig;
 import com.google.cloud.resourcemanager.Project;
 import com.google.cloud.resourcemanager.ResourceManager;
-import com.google.cloud.resourcemanager.ResourceManagerOptions;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 
 public class ComputeEngineAudienceValidator extends AudienceValidator {
 
-	public ComputeEngineAudienceValidator(GcpProjectIdProvider projectIdProvider) {
-		ResourceManager resourceManager = ResourceManagerOptions.getDefaultInstance().getService();
+	public ComputeEngineAudienceValidator(GcpProjectIdProvider projectIdProvider, ResourceManager resourceManager) {
 		Project project = resourceManager.get(projectIdProvider.getProjectId());
 
 		String serviceId = MetadataConfig.getAttribute("id");
