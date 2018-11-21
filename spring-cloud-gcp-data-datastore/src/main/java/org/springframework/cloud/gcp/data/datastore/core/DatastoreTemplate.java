@@ -286,6 +286,12 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	private static StructuredQuery.OrderBy createOrderBy(DatastorePersistentEntity<?> persistentEntity,
 			Sort.Order order) {
+		if (order.isIgnoreCase()) {
+			throw new DatastoreDataException("Datastore doesn't support sorting ignoring case");
+		}
+		if (!order.getNullHandling().equals(Sort.NullHandling.NATIVE)) {
+			throw new DatastoreDataException("Datastore supports only NullHandling.NATIVE null handling");
+		}
 		return new StructuredQuery.OrderBy(
 				persistentEntity.getPersistentProperty(order.getProperty()).getFieldName(),
 				order.getDirection() == Sort.Direction.DESC

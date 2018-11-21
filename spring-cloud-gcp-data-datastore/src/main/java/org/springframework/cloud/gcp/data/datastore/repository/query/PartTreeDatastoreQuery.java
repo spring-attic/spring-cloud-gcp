@@ -92,15 +92,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					"Cloud Datastore structured queries do not support the Distinct keyword.");
 		}
 
-		if ((!this.tree.getSort().equals(Sort.unsorted())) && (getQueryMethod().getParameters().hasPageableParameter()
-				|| getQueryMethod().getParameters().hasSortParameter())) {
-			throw new DatastoreDataException("Ambiguous sort options (method name and parameter).");
-		}
-
-		if (this.tree.isLimiting() && getQueryMethod().getParameters().hasPageableParameter()) {
-			throw new DatastoreDataException("Ambiguous limit options (method name and parameter).");
-		}
-
 		List parts = this.tree.get().collect(Collectors.toList());
 		if (parts.size() > 0) {
 			if (parts.get(0) instanceof OrPart && parts.size() > 1) {
@@ -209,12 +200,15 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			limit = this.tree.getMaxResults();
 		}
 
-		Sort sort = getQueryMethod().getParameters().hasPageableParameter()
-				|| getQueryMethod().getParameters().hasSortParameter()
-						? paramAccessor.getSort()
-						: this.tree.getSort();
+		Sort sort = this.tree.getSort();
+		if (getQueryMethod().getParameters().hasPageableParameter()) {
+			sort = sort.and(paramAccessor.getPageable().getSort());
+		}
+		if (getQueryMethod().getParameters().hasSortParameter()) {
+			sort = sort.and(paramAccessor.getSort());
+		}
 
-		if (getQueryMethod().getParameters().hasPageableParameter() && !total) {
+		if (paramAccessor.getPageable().isPaged() && !total) {
 			limit = paramAccessor.getPageable().getPageSize();
 			offset = (int) paramAccessor.getPageable().getOffset();
 		}
