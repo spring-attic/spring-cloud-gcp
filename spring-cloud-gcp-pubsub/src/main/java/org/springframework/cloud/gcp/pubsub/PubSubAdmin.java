@@ -1,17 +1,17 @@
 /*
- * Copyright 2017-2017 the original author or authors.
+ *  Copyright 2017 original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 package org.springframework.cloud.gcp.pubsub;
@@ -161,7 +161,7 @@ public class PubSubAdmin implements AutoCloseable {
 	 * @param subscriptionName the name of the new subscription
 	 * @param topicName the name of the topic being subscribed to
 	 * @param ackDeadline deadline in seconds before a message is resent, must be between 10 and 600 seconds.
-	 *                   If not provided, set to default of 10 seconds
+	 *                    If not provided, set to default of 10 seconds
 	 * @return the created subscription
 	 */
 	public Subscription createSubscription(String subscriptionName, String topicName,
@@ -175,7 +175,7 @@ public class PubSubAdmin implements AutoCloseable {
 	 * @param subscriptionName the name of the new subscription
 	 * @param topicName the name of the topic being subscribed to
 	 * @param pushEndpoint URL of the service receiving the push messages. If not provided, uses
-	 *                    message pulling by default
+	 *                     message pulling by default
 	 * @return the created subscription
 	 */
 	public Subscription createSubscription(String subscriptionName, String topicName,
@@ -189,9 +189,9 @@ public class PubSubAdmin implements AutoCloseable {
 	 * @param subscriptionName the name of the new subscription
 	 * @param topicName the name of the topic being subscribed to
 	 * @param ackDeadline deadline in seconds before a message is resent, must be between 10 and 600 seconds.
-	 *                   If not provided, set to default of 10 seconds
+	 *                    If not provided, set to default of 10 seconds
 	 * @param pushEndpoint URL of the service receiving the push messages. If not provided, uses
-	 *                    message pulling by default
+	 *                     message pulling by default
 	 * @return the created subscription
 	 */
 	public Subscription createSubscription(String subscriptionName, String topicName,

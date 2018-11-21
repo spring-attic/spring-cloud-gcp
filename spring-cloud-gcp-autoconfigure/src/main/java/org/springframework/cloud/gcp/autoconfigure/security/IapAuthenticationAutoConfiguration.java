@@ -1,17 +1,17 @@
 /*
- * Copyright 2018-2018 the original author or authors.
+ *  Copyright 2018 original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 package org.springframework.cloud.gcp.autoconfigure.security;
@@ -35,10 +35,10 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
  *
  * <p>The following conditions must be present for this configuration to take effect:
  * <ul>
- *  <li>{@code spring.cloud.gcp.security.iap.enabled} property is true. Note that a missing property is treated as
- *  {@code false}. Because there is no custom code beyond what Spring Security OAuth provides, no dependency can be
- *  used as a consistent signal for using IAP authentication, making an explicit property necessary.
- *  <li>Spring Security OAuth Resource Server 5.0 or higher is present on the classpath.
+ *   <li>{@code spring.cloud.gcp.security.iap.enabled} property is true. Note that a missing property is treated as
+ *   {@code false}. Because there is no custom code beyond what Spring Security OAuth provides, no dependency can be
+ *   used as a consistent signal for using IAP authentication, making an explicit property necessary.
+ *   <li>Spring Security OAuth Resource Server 5.0 or higher is present on the classpath.
  * </ul>
  * <p>If these conditions are met, a custom {@link BearerTokenResolver} and an ES256 web registry-based JWT token
  * decoder beans are provided.
