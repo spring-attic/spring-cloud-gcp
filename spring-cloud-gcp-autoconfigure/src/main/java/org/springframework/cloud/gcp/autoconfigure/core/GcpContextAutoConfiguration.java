@@ -42,6 +42,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Elena Felder
  */
 @Configuration
 @EnableConfigurationProperties(GcpProperties.class)
@@ -82,6 +83,7 @@ public class GcpContextAutoConfiguration {
 	/**
 	 * Provides default implementation for determining GCP environment.
 	 * Can be overridden to avoid interacting with real environment.
+	 * @since 1.1
 	 */
 	@Bean
 	@ConditionalOnMissingBean
@@ -91,6 +93,7 @@ public class GcpContextAutoConfiguration {
 
 	/**
 	 * Provides default implementation of Cloud Resource Manager.
+	 * @since 1.1
 	 */
 	@Bean
 	@ConditionalOnMissingBean
@@ -99,7 +102,8 @@ public class GcpContextAutoConfiguration {
 	}
 
 	/**
-	 * Provides default implementation of Cloud Resource Manager.
+	 * Provides a wrapper around the static Metadata Provider.
+	 * @since 1.1
 	 */
 	@Bean
 	@ConditionalOnMissingBean

@@ -16,6 +16,16 @@
 
 package org.springframework.cloud.gcp.core;
 
+
+/**
+ * Environment-specific implementation determining whether the current GCP environment matches the passed in parameter.
+ *
+ * <p>Delegates the decision to {@link GcpEnvironment}.
+ *
+ * @author Elena Felder
+ *
+ * @since 1.1
+ */
 public class DefaultGcpEnvironmentProvider implements GcpEnvironmentProvider {
 
 	@Override

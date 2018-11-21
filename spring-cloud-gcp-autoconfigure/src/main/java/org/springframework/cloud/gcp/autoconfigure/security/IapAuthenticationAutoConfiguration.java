@@ -53,21 +53,25 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 /**
  * Autoconfiguration for extracting pre-authenticated user identity from Google Cloud IAP header.
  *
- * <p>The following conditions must be present for this configuration to take effect:
+ * <p>Provides:
  * <ul>
- *   <li>{@code spring.cloud.gcp.security.iap.enabled} property is true. Note that a missing property is treated as
- *   {@code false}. Because there is no custom code beyond what Spring Security OAuth provides, no dependency can be
- *   used as a consistent signal for using IAP authentication, making an explicit property necessary.
- *   <li>Spring Security OAuth Resource Server 5.0 or higher is present on the classpath.
+ *   <li>a custom {@link BearerTokenResolver} extracting identity from {@code x-goog-iap-jwt-assertion} header
+ *   <li>an ES256 web registry-based JWT token decoder bean with the following standard validations:
+ *     <ul>
+ *         <li>Issue time
+ *         <li>Expiration time
+ *         <li>Issuer
+ *         <li>Audience (this validation is only enabled if running on AppEngine or ComputeEngine, or if a custom
+ *         audience is provided through {@code spring.cloud.gcp.security.iap.audience} property)
+ *     </ul>
  * </ul>
- * <p>If these conditions are met, a custom {@link BearerTokenResolver} and an ES256 web registry-based JWT token
- * decoder beans are provided.
  * <p>If a custom {@link WebSecurityConfigurerAdapter} is present, it must add {@code .oauth2ResourceServer().jwt()}
  * customization to {@link org.springframework.security.config.annotation.web.builders.HttpSecurity} object. If no
  * custom {@link WebSecurityConfigurerAdapter} is found,
  * Spring Boot's default {@code OAuth2ResourceServerWebSecurityConfiguration} will add this customization.
  *
  * @author Elena Felder
+ *
  * @since 1.1
  */
 @Configuration
@@ -81,7 +85,7 @@ public class IapAuthenticationAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public JwtDecoder iapJwtDecoder(IapAuthenticationProperties properties, GcpProjectIdProvider projectIdProvider,
-									@Qualifier("jwtValidators") List<OAuth2TokenValidator<Jwt>> validators) {
+			@Qualifier("jwtValidators") List<OAuth2TokenValidator<Jwt>> validators) {
 
 		NimbusJwtDecoderJwkSupport jwkSupport
 				= new NimbusJwtDecoderJwkSupport(properties.getRegistry(), properties.getAlgorithm());
@@ -93,11 +97,11 @@ public class IapAuthenticationAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(name = "jwtValidators")
 	List<OAuth2TokenValidator<Jwt>> jwtValidators(IapAuthenticationProperties properties,
-													ObjectProvider<AudienceValidator> audienceVerifier) {
+			ObjectProvider<AudienceValidator> audienceVerifier) {
 		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList();
 		validators.add(new JwtTimestampValidator());
 		validators.add(new JwtIssuerValidator(properties.getIssuer()));
-		audienceVerifier.ifAvailable(audienceValidator -> validators.add(audienceValidator));
+		audienceVerifier.ifAvailable(validators::add);
 
 		return validators;
 	}

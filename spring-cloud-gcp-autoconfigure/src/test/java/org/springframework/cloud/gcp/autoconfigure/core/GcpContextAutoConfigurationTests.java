@@ -32,6 +32,7 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * @author João André Martins
+ * @author Elena Felder
  */
 public class GcpContextAutoConfigurationTests {
 

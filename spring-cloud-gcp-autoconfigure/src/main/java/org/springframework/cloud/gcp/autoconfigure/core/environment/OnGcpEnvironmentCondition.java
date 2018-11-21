@@ -27,9 +27,11 @@ import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
- * Determine which GCP environment the application is running on.
+ * {@Condition} that determines which GCP environment the application is running on.
  *
  * @author Elena Felder
+ *
+ * @since 1.1
  */
 public class OnGcpEnvironmentCondition extends SpringBootCondition {
 

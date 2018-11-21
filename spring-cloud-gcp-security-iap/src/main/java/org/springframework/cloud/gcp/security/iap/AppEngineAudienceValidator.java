@@ -22,6 +22,14 @@ import com.google.cloud.resourcemanager.ResourceManager;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.Assert;
 
+/**
+ * {@link org.springframework.security.oauth2.jwt.Jwt} token validator for GCP App Engine (both Flexible and Standard)
+ * audience strings.
+ *
+ * @author Elena Felder
+ *
+ * @since 1.1
+ */
 public class AppEngineAudienceValidator extends AudienceValidator {
 
 	public AppEngineAudienceValidator(GcpProjectIdProvider projectIdProvider, ResourceManager resourceManager) {

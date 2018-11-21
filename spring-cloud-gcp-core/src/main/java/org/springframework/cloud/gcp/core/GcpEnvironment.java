@@ -22,16 +22,43 @@ import com.google.cloud.MetadataConfig;
 import com.google.cloud.ServiceOptions;
 
 /**
- * {@code COMPUTE_ENGINE} matches instances of Compute Engine that are not also AppEngine Flexible.
- * {@code ANY_APP_ENGINE} matches both, AppEngine Flexible and AppEngine Standard.
- * {@code ANY_CONTAINER} matches both, Compute Engine and Kubernetes Engine.
+ * Enumeration of valid individual GCP environments.
+ *
+ * <p>Also includes meta-members for convenient evaluation of environment groups, such as {@code ANY_APP_ENGINE}.
+ *
+ * @author Elena Felder
+ *
+ * @since 1.1
  */
 public enum GcpEnvironment {
+	/**
+	 * Matches Kubernetes instances.
+	 */
 	KUBERNETES_ENGINE(() -> System.getenv("KUBERNETES_SERVICE_HOST") != null),
+
+	/**
+	 * Matches App Engine Flexible instances.
+	 */
 	APP_ENGINE_FLEXIBLE(() -> System.getenv("GAE_INSTANCE") != null),
+
+	/**
+	 * Matches App Engine Standard instances.
+	 */
 	APP_ENGINE_STANDARD(() -> ServiceOptions.getAppEngineAppId() != null),
+
+	/**
+	 * Matches instances of Compute Engine that are not also AppEngine Flexible.
+	 */
 	COMPUTE_ENGINE(() -> MetadataConfig.getInstanceId() != null && !APP_ENGINE_FLEXIBLE.matches()),
+
+	/**
+	 * Matches both, AppEngine Flexible and AppEngine Standard.
+	 */
 	ANY_APP_ENGINE(() -> APP_ENGINE_FLEXIBLE.matches() || APP_ENGINE_STANDARD.matches()),
+
+	/**
+	 * Matches both, Compute Engine and Kubernetes Engine.
+	 */
 	ANY_CONTAINER(() ->  KUBERNETES_ENGINE.matches() || COMPUTE_ENGINE.matches());
 
 	private BooleanSupplier matchCondition;
@@ -40,6 +67,9 @@ public enum GcpEnvironment {
 		this.matchCondition = matchCondition;
 	}
 
+	/**
+	 * @return whether the specified environment's presence is detected.
+	 */
 	public boolean matches() {
 		return this.matchCondition.getAsBoolean();
 	}

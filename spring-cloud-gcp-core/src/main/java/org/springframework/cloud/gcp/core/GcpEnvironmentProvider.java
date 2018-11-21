@@ -16,6 +16,13 @@
 
 package org.springframework.cloud.gcp.core;
 
+/**
+ * Interface for determining whether the current GCP environment matches the passed in parameter.
+ *
+ * @author Elena Felder
+ *
+ * @since 1.1
+ */
 public interface GcpEnvironmentProvider {
 	boolean isCurrentEnvironment(GcpEnvironment candidate);
 }
