@@ -365,7 +365,6 @@ public class SpannerTemplate implements SpannerOperations {
 							options.getQueryOptions());
 		}
 		if (LOGGER.isDebugEnabled()) {
-			stopwatch.stop();
 			String message;
 			if (options == null) {
 				message = "Executing query without additional options: " + statement;
@@ -381,7 +380,11 @@ public class SpannerTemplate implements SpannerOperations {
 				message = logSb.toString();
 			}
 			LOGGER.debug(message);
-			LOGGER.debug("Query elapsed milliseconds: " + stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+			if(stopwatch != null) {
+				stopwatch.stop();
+				LOGGER.debug("Query elapsed milliseconds: " + stopwatch.elapsed(TimeUnit.MILLISECONDS));
+			}
 		}
 		return resultSet;
 	}
@@ -415,11 +418,14 @@ public class SpannerTemplate implements SpannerOperations {
 		}
 
 		if (LOGGER.isDebugEnabled()) {
-			stopwatch.stop();
 			StringBuilder logs = logColumns(tableName, keys, columns);
 			logReadOptions(options, logs);
 			LOGGER.debug(logs.toString());
-			LOGGER.debug("Read elapsed milliseconds: " + stopwatch.elapsed(TimeUnit.MILLISECONDS));
+
+			if(stopwatch != null) {
+				stopwatch.stop();
+				LOGGER.debug("Read elapsed milliseconds: " + stopwatch.elapsed(TimeUnit.MILLISECONDS));
+			}
 		}
 
 		return resultSet;
