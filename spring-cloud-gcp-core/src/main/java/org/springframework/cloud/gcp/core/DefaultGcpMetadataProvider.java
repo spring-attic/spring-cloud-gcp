@@ -18,6 +18,13 @@ package org.springframework.cloud.gcp.core;
 
 import com.google.cloud.MetadataConfig;
 
+/**
+ * A wrapper around the static MetadataConfig.
+ *
+ * @author Elena Felder
+ *
+ * @since 1.1
+ */
 public class DefaultGcpMetadataProvider implements MetadataProvider {
 
 	@Override
