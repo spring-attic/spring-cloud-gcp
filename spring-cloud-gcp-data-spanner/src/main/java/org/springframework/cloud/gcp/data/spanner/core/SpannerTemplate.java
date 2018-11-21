@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -46,6 +47,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
+import com.google.common.base.Stopwatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -347,6 +349,12 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	public ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
+
+		Stopwatch stopwatch = null;
+		if (LOGGER.isDebugEnabled()) {
+			stopwatch = Stopwatch.createStarted();
+		}
+
 		ResultSet resultSet;
 		if (options == null) {
 			resultSet = getReadContext().executeQuery(statement);
@@ -357,6 +365,7 @@ public class SpannerTemplate implements SpannerOperations {
 							options.getQueryOptions());
 		}
 		if (LOGGER.isDebugEnabled()) {
+			stopwatch.stop();
 			String message;
 			if (options == null) {
 				message = "Executing query without additional options: " + statement;
@@ -372,6 +381,7 @@ public class SpannerTemplate implements SpannerOperations {
 				message = logSb.toString();
 			}
 			LOGGER.debug(message);
+			LOGGER.debug("Query elapsed milliseconds: " + stopwatch.elapsed(TimeUnit.MILLISECONDS));
 		}
 		return resultSet;
 	}
@@ -379,26 +389,40 @@ public class SpannerTemplate implements SpannerOperations {
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
 			SpannerReadOptions options) {
 
+		Stopwatch stopwatch = null;
 		if (LOGGER.isDebugEnabled()) {
+			stopwatch = Stopwatch.createStarted();
+		}
+
+		ResultSet resultSet;
+
+		if (options == null) {
+			resultSet = getReadContext().read(tableName, keys, columns);
+		}
+		else {
+
+			ReadContext readContext = options.getTimestamp() != null
+					? getReadContext(options.getTimestamp())
+					: getReadContext();
+
+			if (options.getIndex() != null) {
+				resultSet = readContext.readUsingIndex(tableName, options.getIndex(), keys,
+						columns, options.getReadOptions());
+			}
+			else {
+				resultSet = readContext.read(tableName, keys, columns, options.getReadOptions());
+			}
+		}
+
+		if (LOGGER.isDebugEnabled()) {
+			stopwatch.stop();
 			StringBuilder logs = logColumns(tableName, keys, columns);
 			logReadOptions(options, logs);
 			LOGGER.debug(logs.toString());
+			LOGGER.debug("Read elapsed milliseconds: " + stopwatch.elapsed(TimeUnit.MILLISECONDS));
 		}
 
-		if (options == null) {
-			return getReadContext().read(tableName, keys, columns);
-		}
-
-		ReadContext readContext = options.getTimestamp() != null
-				? getReadContext(options.getTimestamp())
-				: getReadContext();
-
-		if (options.getIndex() != null) {
-			return readContext.readUsingIndex(tableName, options.getIndex(), keys,
-					columns, options.getReadOptions());
-		}
-
-		return readContext.read(tableName, keys, columns, options.getReadOptions());
+		return resultSet;
 	}
 
 	private void logReadOptions(SpannerReadOptions options, StringBuilder logs) {
