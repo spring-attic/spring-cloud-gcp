@@ -326,7 +326,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> T performReadOnlyTransaction(Function<SpannerTemplate, T> operations,
-											SpannerReadOptions readOptions) {
+			SpannerReadOptions readOptions) {
 		return doWithOrWithoutTransactionContext(x -> {
 			throw new IllegalStateException("There is already declarative transaction open. " +
 					"Spanner does not support nested transactions");
@@ -381,7 +381,7 @@ public class SpannerTemplate implements SpannerOperations {
 			}
 			LOGGER.debug(message);
 
-			if(stopwatch != null) {
+			if (stopwatch != null) {
 				stopwatch.stop();
 				LOGGER.debug("Query elapsed milliseconds: " + stopwatch.elapsed(TimeUnit.MILLISECONDS));
 			}
@@ -422,7 +422,7 @@ public class SpannerTemplate implements SpannerOperations {
 			logReadOptions(options, logs);
 			LOGGER.debug(logs.toString());
 
-			if(stopwatch != null) {
+			if (stopwatch != null) {
 				stopwatch.stop();
 				LOGGER.debug("Read elapsed milliseconds: " + stopwatch.elapsed(TimeUnit.MILLISECONDS));
 			}
