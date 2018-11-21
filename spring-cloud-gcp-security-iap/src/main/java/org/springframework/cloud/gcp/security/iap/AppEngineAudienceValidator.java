@@ -30,7 +30,7 @@ public class AppEngineAudienceValidator extends AudienceValidator {
 
 		Project project = resourceManager.get(projectIdProvider.getProjectId());
 
-		this.setAudience(String.format(
+		setAudience(String.format(
 				"/projects/%s/apps/%s", project.getProjectNumber(), projectIdProvider.getProjectId()));
 	}
 }

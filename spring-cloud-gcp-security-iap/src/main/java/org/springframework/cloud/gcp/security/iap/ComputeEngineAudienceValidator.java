@@ -34,7 +34,7 @@ public class ComputeEngineAudienceValidator extends AudienceValidator {
 		Project project = resourceManager.get(projectIdProvider.getProjectId());
 		String serviceId = metadataProvider.getAttribute("id");
 
-		this.setAudience(String.format(
+		setAudience(String.format(
 				"/projects/%s/global/backendServices/%s", project.getProjectNumber(), serviceId));
 	}
 

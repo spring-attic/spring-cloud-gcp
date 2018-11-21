@@ -83,13 +83,6 @@ public class IapAuthenticationAutoConfiguration {
 	public JwtDecoder iapJwtDecoder(IapAuthenticationProperties properties, GcpProjectIdProvider projectIdProvider,
 									@Qualifier("jwtValidators") List<OAuth2TokenValidator<Jwt>> validators) {
 
-		System.out.println("============================= GCP Environment diagnostics; ");
-		for (GcpEnvironment env : GcpEnvironment.values()) {
-			System.out.println("======================= " + env + (env.matches() ? " YES" : " NO"));
-		}
-		System.out.println("============================= /GCP Environment diagnostics; ");
-
-
 		NimbusJwtDecoderJwkSupport jwkSupport
 				= new NimbusJwtDecoderJwkSupport(properties.getRegistry(), properties.getAlgorithm());
 		jwkSupport.setJwtValidator(new DelegatingOAuth2TokenValidator(validators));
@@ -106,7 +99,6 @@ public class IapAuthenticationAutoConfiguration {
 		validators.add(new JwtIssuerValidator(properties.getIssuer()));
 		audienceVerifier.ifAvailable(audienceValidator -> validators.add(audienceValidator));
 
-		System.out.println("Validators list: " + validators);
 		return validators;
 	}
 
