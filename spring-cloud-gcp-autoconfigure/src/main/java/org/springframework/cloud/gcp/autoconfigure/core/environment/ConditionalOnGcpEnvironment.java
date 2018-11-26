@@ -39,6 +39,7 @@ import org.springframework.context.annotation.Conditional;
 @Documented
 @Conditional(OnGcpEnvironmentCondition.class)
 public @interface ConditionalOnGcpEnvironment {
+
 	/**
 	 * Configures which environment to match.
 	 */

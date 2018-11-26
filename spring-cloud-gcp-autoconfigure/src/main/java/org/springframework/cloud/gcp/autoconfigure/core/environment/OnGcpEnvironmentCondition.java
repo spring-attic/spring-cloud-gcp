@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.autoconfigure.core.environment;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
 import org.springframework.cloud.gcp.core.GcpEnvironment;
@@ -35,21 +34,22 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
  */
 public class OnGcpEnvironmentCondition extends SpringBootCondition {
 
+	/**
+	 * Determines whether the current runtime environment matches the one passed through the annotation.
+	 * @param context the spring context at the point in time the condition is being evaluated
+	 * @param metadata annotation metadata containing "value" indicating which GCP environment to match
+	 * @throws org.springframework.beans.factory.NoSuchBeanDefinitionException if no GcpEnvironmentProvider is found in
+	 * spring context
+	 */
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
 
 		Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnGcpEnvironment.class.getName());
 		GcpEnvironment targetEnvironment = (GcpEnvironment) attributes.get("value");
 
-		try {
-			GcpEnvironmentProvider environmentProvider = context.getBeanFactory().getBean(GcpEnvironmentProvider.class);
-			if (!environmentProvider.isCurrentEnvironment(targetEnvironment)) {
-				return new ConditionOutcome(false, "Application is not running on " + targetEnvironment);
-			}
-		}
-		catch (NoSuchBeanDefinitionException ex) {
-			return new ConditionOutcome(
-					false, "GcpEnvironmentProvider not found; environment-specific checks disabled.");
+		GcpEnvironmentProvider environmentProvider = context.getBeanFactory().getBean(GcpEnvironmentProvider.class);
+		if (!environmentProvider.isCurrentEnvironment(targetEnvironment)) {
+			return new ConditionOutcome(false, "Application is not running on " + targetEnvironment);
 		}
 
 		return new ConditionOutcome(true, "Application is running on " + targetEnvironment);

@@ -60,15 +60,13 @@ public class OnGcpEnvironmentConditionTests {
 		when(this.mockBeanFactory.getBean(GcpEnvironmentProvider.class)).thenReturn(this.mockGcpEnvironmentProvider);
 	}
 
-	@Test
+	@Test (expected = NoSuchBeanDefinitionException.class)
 	public void testNoEnvironmentsMatchWhenMissingEnvironmentProvider() {
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 
 		when(this.mockBeanFactory.getBean(GcpEnvironmentProvider.class))
 				.thenThrow(new NoSuchBeanDefinitionException("no environment"));
-		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
-		assertFalse(outcome.isMatch());
-		assertThat(outcome.getMessage()).startsWith("GcpEnvironmentProvider not found");
+		onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 	}
 
 	@Test (expected = ClassCastException.class)
