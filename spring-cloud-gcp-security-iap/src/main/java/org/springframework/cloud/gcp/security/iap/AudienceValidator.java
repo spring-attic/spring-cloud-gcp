@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.security.iap;
 
+import java.util.function.Supplier;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -25,6 +27,7 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.util.Assert;
+
 
 /**
  * {@link Jwt} token validator for a custom audience claim.
@@ -44,19 +47,10 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
 
 	private String audience;
 
-	public AudienceValidator(String audience) {
-		Assert.notNull(audience, "Audience cannot be null");
-		this.audience = audience;
-	}
-
-	/**
-	 * Allows subclasses to delay setting the audience value after the object is constructed.
-	 */
-	protected AudienceValidator() { }
-
-	protected final void setAudience(String audience) {
-		Assert.notNull(audience, "Audience cannot be null");
-		this.audience = audience;
+	public AudienceValidator(Supplier<String> audienceSupplier) {
+		Assert.notNull(audienceSupplier, "Audience cannot be null");
+		this.audience = audienceSupplier.get();
+		Assert.notNull(this.audience, "Supplied audience cannot be null.");
 	}
 
 	@Override
@@ -69,5 +63,9 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
 					"Expected audience %s did not match token audience %s", this.audience, t.getAudience()));
 			return OAuth2TokenValidatorResult.failure(INVALID_AUDIENCE);
 		}
+	}
+
+	public String getAudience() {
+		return this.audience;
 	}
 }

@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.security.iap;
 
+import java.util.function.Supplier;
+
 import com.google.cloud.resourcemanager.Project;
 import com.google.cloud.resourcemanager.ResourceManager;
 
@@ -31,24 +33,39 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class ComputeEngineAudienceValidator extends AudienceValidator {
+public class ComputeEngineAudienceSupplier implements Supplier<String> {
 
+	/**
+	 * Compute Engine/Kubernetes audience format: {@code /projects/PROJECT_NUMBER/global/backendServices/SERVICE_ID}.
+	 */
 	public static final String AUDIENCE_FORMAT = "/projects/%s/global/backendServices/%s";
 
-	public ComputeEngineAudienceValidator(GcpProjectIdProvider projectIdProvider, ResourceManager resourceManager,
+	private GcpProjectIdProvider projectIdProvider;
+
+	private ResourceManager resourceManager;
+
+	private MetadataProvider metadataProvider;
+
+	public ComputeEngineAudienceSupplier(GcpProjectIdProvider projectIdProvider, ResourceManager resourceManager,
 			MetadataProvider metadataProvider) {
 		Assert.notNull(projectIdProvider, "GcpProjectIdProvider cannot be null.");
 		Assert.notNull(resourceManager, "ResourceManager cannot be null.");
 		Assert.notNull(metadataProvider, "MetadataProvider cannot be null.");
 
-		Project project = resourceManager.get(projectIdProvider.getProjectId());
+		this.projectIdProvider = projectIdProvider;
+		this.resourceManager = resourceManager;
+		this.metadataProvider = metadataProvider;
+	}
+
+	@Override
+	public String get() {
+		Project project = this.resourceManager.get(this.projectIdProvider.getProjectId());
 		Assert.notNull(project, "Project expected not to be null.");
 		Assert.notNull(project.getProjectNumber(), "Project Number expected not to be null.");
 
-		String serviceId = metadataProvider.getAttribute("id");
+		String serviceId = this.metadataProvider.getAttribute("id");
 		Assert.notNull(project, "Service ID expected not to be null.");
 
-		setAudience(String.format(AUDIENCE_FORMAT, project.getProjectNumber(), serviceId));
+		return String.format(AUDIENCE_FORMAT, project.getProjectNumber(), serviceId);
 	}
-
 }

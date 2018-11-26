@@ -36,9 +36,9 @@ import org.springframework.cloud.gcp.autoconfigure.core.environment.ConditionalO
 import org.springframework.cloud.gcp.core.GcpEnvironment;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.MetadataProvider;
-import org.springframework.cloud.gcp.security.iap.AppEngineAudienceValidator;
+import org.springframework.cloud.gcp.security.iap.AppEngineAudienceSupplier;
 import org.springframework.cloud.gcp.security.iap.AudienceValidator;
-import org.springframework.cloud.gcp.security.iap.ComputeEngineAudienceValidator;
+import org.springframework.cloud.gcp.security.iap.ComputeEngineAudienceSupplier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -119,7 +119,7 @@ public class IapAuthenticationAutoConfiguration {
 	@ConditionalOnMissingBean
 	@ConditionalOnProperty("spring.cloud.gcp.security.iap.audience")
 	public AudienceValidator propertyBasedAudienceValidator(IapAuthenticationProperties properties) {
-		return new AudienceValidator(properties.getAudience());
+		return new AudienceValidator(() -> properties.getAudience());
 	}
 
 	@Bean
@@ -127,7 +127,7 @@ public class IapAuthenticationAutoConfiguration {
 	@ConditionalOnGcpEnvironment(GcpEnvironment.ANY_APP_ENGINE)
 	public AudienceValidator appEngineBasedAudienceValidator(GcpProjectIdProvider projectIdProvider,
 			ResourceManager resourceManager) {
-		return new AppEngineAudienceValidator(projectIdProvider, resourceManager);
+		return new AudienceValidator(new AppEngineAudienceSupplier(projectIdProvider, resourceManager));
 	}
 
 	@Bean
@@ -135,7 +135,7 @@ public class IapAuthenticationAutoConfiguration {
 	@ConditionalOnGcpEnvironment(GcpEnvironment.GKE_OR_GCE)
 	public AudienceValidator computeEngineBasedAudienceValidator(GcpProjectIdProvider projectIdProvider,
 			ResourceManager resourceManager, MetadataProvider metadataProvider) {
-		return new ComputeEngineAudienceValidator(projectIdProvider, resourceManager, metadataProvider);
+		return new AudienceValidator(new ComputeEngineAudienceSupplier(projectIdProvider, resourceManager, metadataProvider));
 	}
 
 	@Bean

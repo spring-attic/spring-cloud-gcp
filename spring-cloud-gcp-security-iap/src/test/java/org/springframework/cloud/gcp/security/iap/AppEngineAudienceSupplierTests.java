@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.security.iap;
 
 import com.google.cloud.resourcemanager.Project;
 import com.google.cloud.resourcemanager.ResourceManager;
-import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,19 +27,15 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
  * @author Elena Felder
  */
 @RunWith(MockitoJUnitRunner.class)
-public class AppEngineAudienceValidatorTests {
+public class AppEngineAudienceSupplierTests {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
@@ -53,9 +48,6 @@ public class AppEngineAudienceValidatorTests {
 	@Mock
 	Project mockProject;
 
-	@Mock
-	Jwt mockJwt;
-
 	@Before
 	public void setUp() {
 		when(this.mockProjectIdProvider.getProjectId()).thenReturn("steal-spaceship");
@@ -66,7 +58,7 @@ public class AppEngineAudienceValidatorTests {
 		this.thrown.expect(IllegalArgumentException.class);
 		this.thrown.expectMessage("GcpProjectIdProvider cannot be null.");
 
-		new AppEngineAudienceValidator(null, this.mockResourceManager);
+		new AppEngineAudienceSupplier(null, this.mockResourceManager);
 	}
 
 	@Test
@@ -74,32 +66,16 @@ public class AppEngineAudienceValidatorTests {
 		this.thrown.expect(IllegalArgumentException.class);
 		this.thrown.expectMessage("ResourceManager cannot be null.");
 
-		new AppEngineAudienceValidator(this.mockProjectIdProvider, null);
+		new AppEngineAudienceSupplier(this.mockProjectIdProvider, null);
 	}
 
 	@Test
 	public void testCorrectAudienceFormatSucceeds() {
 		when(this.mockResourceManager.get("steal-spaceship")).thenReturn(this.mockProject);
 		when(this.mockProject.getProjectNumber()).thenReturn(42L);
-		when(this.mockJwt.getAudience()).thenReturn(ImmutableList.of("/projects/42/apps/steal-spaceship"));
 
-		AppEngineAudienceValidator validator
-				= new AppEngineAudienceValidator(this.mockProjectIdProvider, this.mockResourceManager);
-		assertFalse(validator.validate(this.mockJwt).hasErrors());
-	}
-
-	@Test
-	public void testIncorrectAudienceFormatFails() {
-		when(this.mockResourceManager.get("steal-spaceship")).thenReturn(this.mockProject);
-		when(this.mockProject.getProjectNumber()).thenReturn(42L);
-		when(this.mockJwt.getAudience()).thenReturn(ImmutableList.of("/projects/1/apps/magrathea"));
-
-		AppEngineAudienceValidator validator
-				= new AppEngineAudienceValidator(this.mockProjectIdProvider, this.mockResourceManager);
-		OAuth2TokenValidatorResult result = validator.validate(this.mockJwt);
-		assertTrue(result.hasErrors());
-		assertThat(result.getErrors().size()).isEqualTo(1);
-		assertThat(result.getErrors().stream().findFirst().get().getDescription())
-				.startsWith("This aud claim is not equal");
+		AppEngineAudienceSupplier supplier
+				= new AppEngineAudienceSupplier(this.mockProjectIdProvider, this.mockResourceManager);
+		assertThat(supplier.get()).isEqualTo("/projects/42/apps/steal-spaceship");
 	}
 }

@@ -51,31 +51,9 @@ public class AudienceValidatorTests {
 	}
 
 	@Test
-	public void testNullAudienceDisallowedInSetter() {
-		this.thrown.expect(IllegalArgumentException.class);
-		this.thrown.expectMessage("Audience cannot be null");
-
-		AudienceValidator validator = new AudienceValidator();
-		validator.setAudience(null);
-	}
-
-	@Test
 	public void testConstructorPassedAudienceMatchesCorrectly() {
 
-		AudienceValidator validator = new AudienceValidator("cats");
-
-		when(this.mockJwt.getAudience()).thenReturn(ImmutableList.of("cats"));
-		assertFalse(validator.validate(this.mockJwt).hasErrors());
-
-		when(this.mockJwt.getAudience()).thenReturn(ImmutableList.of("dogs"));
-		assertTrue(validator.validate(this.mockJwt).hasErrors());
-	}
-
-	@Test
-	public void testSetterPassedAudienceMatchesCorrectly() {
-
-		AudienceValidator validator = new AudienceValidator();
-		validator.setAudience("cats");
+		AudienceValidator validator = new AudienceValidator(() -> "cats");
 
 		when(this.mockJwt.getAudience()).thenReturn(ImmutableList.of("cats"));
 		assertFalse(validator.validate(this.mockJwt).hasErrors());

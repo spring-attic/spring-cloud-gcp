@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.security.iap;
 
 import com.google.cloud.resourcemanager.Project;
 import com.google.cloud.resourcemanager.ResourceManager;
-import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,19 +28,15 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.MetadataProvider;
-import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
  * @author Elena Felder
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ComputeEngineAudienceValidatorTests {
+public class ComputeEngineAudienceSupplierTests {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
@@ -58,9 +53,6 @@ public class ComputeEngineAudienceValidatorTests {
 	@Mock
 	Project mockProject;
 
-	@Mock
-	Jwt mockJwt;
-
 	@Before
 	public void setUp() {
 		when(this.mockProjectIdProvider.getProjectId()).thenReturn("steal-spaceship");
@@ -74,7 +66,7 @@ public class ComputeEngineAudienceValidatorTests {
 		this.thrown.expect(IllegalArgumentException.class);
 		this.thrown.expectMessage("GcpProjectIdProvider cannot be null.");
 
-		new ComputeEngineAudienceValidator(null, this.mockResourceManager, this.mockMetadataProvider);
+		new ComputeEngineAudienceSupplier(null, this.mockResourceManager, this.mockMetadataProvider);
 	}
 
 	@Test
@@ -82,7 +74,7 @@ public class ComputeEngineAudienceValidatorTests {
 		this.thrown.expect(IllegalArgumentException.class);
 		this.thrown.expectMessage("ResourceManager cannot be null.");
 
-		new ComputeEngineAudienceValidator(this.mockProjectIdProvider, null, this.mockMetadataProvider);
+		new ComputeEngineAudienceSupplier(this.mockProjectIdProvider, null, this.mockMetadataProvider);
 	}
 
 	@Test
@@ -90,30 +82,16 @@ public class ComputeEngineAudienceValidatorTests {
 		this.thrown.expect(IllegalArgumentException.class);
 		this.thrown.expectMessage("MetadataProvider cannot be null.");
 
-		new ComputeEngineAudienceValidator(this.mockProjectIdProvider, this.mockResourceManager, null);
+		new ComputeEngineAudienceSupplier(this.mockProjectIdProvider, this.mockResourceManager, null);
 	}
 
 	@Test
 	public void correctPatternSucceeds() {
-		when(this.mockJwt.getAudience()).thenReturn(ImmutableList.of("/projects/42/global/backendServices/123"));
 
-		ComputeEngineAudienceValidator validator
-				= new ComputeEngineAudienceValidator(
+		ComputeEngineAudienceSupplier supplier
+				= new ComputeEngineAudienceSupplier(
 						this.mockProjectIdProvider, this.mockResourceManager, this.mockMetadataProvider);
-		assertFalse(validator.validate(this.mockJwt).hasErrors());
+		assertThat(supplier.get()).isEqualTo("/projects/42/global/backendServices/123");
 	}
 
-	@Test
-	public void incorrectPatternFails() {
-		when(this.mockJwt.getAudience()).thenReturn(ImmutableList.of("/some-other-audience"));
-
-		ComputeEngineAudienceValidator validator
-				= new ComputeEngineAudienceValidator(
-				this.mockProjectIdProvider, this.mockResourceManager, this.mockMetadataProvider);
-		OAuth2TokenValidatorResult result = validator.validate(this.mockJwt);
-		assertTrue(result.hasErrors());
-		assertThat(result.getErrors().size()).isEqualTo(1);
-		assertThat(result.getErrors().stream().findFirst().get().getDescription())
-				.startsWith("This aud claim is not equal");
-	}
 }

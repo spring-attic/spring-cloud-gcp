@@ -38,7 +38,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.core.GcpEnvironment;
 import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.security.iap.AppEngineAudienceValidator;
+import org.springframework.cloud.gcp.core.MetadataProvider;
 import org.springframework.cloud.gcp.security.iap.AudienceValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -90,6 +90,9 @@ public class IapAuthenticationAutoConfigurationTests {
 
 	@Mock
 	static Project mockProject;
+
+	@Mock
+	static MetadataProvider mockMetadataProvider;
 
 	@Before
 	public void httpRequestSetup() {
@@ -191,7 +194,43 @@ public class IapAuthenticationAutoConfigurationTests {
 							.containsExactlyInAnyOrder(
 									JwtTimestampValidator.class.getName(),
 									JwtIssuerValidator.class.getName(),
-									AppEngineAudienceValidator.class.getName());
+									AudienceValidator.class.getName());
+
+					AudienceValidator validator = (AudienceValidator) validators
+							.stream()
+							.filter(v -> v instanceof AudienceValidator)
+							.findAny()
+							.get();
+
+					assertThat(validator.getAudience()).isEqualTo("/projects/42/apps/fake-project-id");
+				});
+	}
+
+
+	@Test
+	public void testComputeEngineAudienceValidatorAddedWhenAvailable() {
+		when(this.mockEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.COMPUTE_ENGINE);
+		when(this.mockResourceManager.get("fake-project-id")).thenReturn(this.mockProject);
+		when(this.mockProject.getProjectNumber()).thenReturn(42L);
+		when(this.mockMetadataProvider.getAttribute("id")).thenReturn("123");
+
+		this.contextRunner
+				.run(context -> {
+					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("iapJwtValidators", List.class);
+					assertThat(validators).isNotNull();
+					assertThat(validators.stream().map(v -> v.getClass().getName()).collect(Collectors.toSet()))
+							.containsExactlyInAnyOrder(
+									JwtTimestampValidator.class.getName(),
+									JwtIssuerValidator.class.getName(),
+									AudienceValidator.class.getName());
+
+					AudienceValidator validator = (AudienceValidator) validators
+							.stream()
+							.filter(v -> v instanceof AudienceValidator)
+							.findAny()
+							.get();
+
+					assertThat(validator.getAudience()).isEqualTo("/projects/42/global/backendServices/123");
 				});
 	}
 
@@ -237,6 +276,11 @@ public class IapAuthenticationAutoConfigurationTests {
 		@Bean
 		static ResourceManager mockResourceManager() {
 			return mockResourceManager;
+		}
+
+		@Bean
+		static MetadataProvider mockMetadataProvider() {
+			return mockMetadataProvider;
 		}
 	}
 
