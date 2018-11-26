@@ -24,5 +24,7 @@ package org.springframework.cloud.gcp.core;
  * @since 1.1
  */
 public interface GcpEnvironmentProvider {
+
 	boolean isCurrentEnvironment(GcpEnvironment candidate);
+
 }

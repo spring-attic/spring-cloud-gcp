@@ -31,6 +31,7 @@ import com.google.cloud.ServiceOptions;
  * @since 1.1
  */
 public enum GcpEnvironment {
+
 	/**
 	 * Matches Kubernetes instances.
 	 */
@@ -59,7 +60,7 @@ public enum GcpEnvironment {
 	/**
 	 * Matches both, Compute Engine and Kubernetes Engine.
 	 */
-	ANY_CONTAINER(() ->  KUBERNETES_ENGINE.matches() || COMPUTE_ENGINE.matches());
+	GKE_OR_GCE(() ->  KUBERNETES_ENGINE.matches() || COMPUTE_ENGINE.matches());
 
 	private BooleanSupplier matchCondition;
 

@@ -64,11 +64,10 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
 		if (t.getAudience() != null && t.getAudience().contains(this.audience)) {
 			return OAuth2TokenValidatorResult.success();
 		}
-
-		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info(String.format(
+		else {
+			LOGGER.warn(String.format(
 					"Expected audience %s did not match token audience %s", this.audience, t.getAudience()));
+			return OAuth2TokenValidatorResult.failure(INVALID_AUDIENCE);
 		}
-		return OAuth2TokenValidatorResult.failure(INVALID_AUDIENCE);
 	}
 }

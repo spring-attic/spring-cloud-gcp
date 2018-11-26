@@ -32,13 +32,17 @@ import org.springframework.util.Assert;
  */
 public class AppEngineAudienceValidator extends AudienceValidator {
 
+	public static final String AUDIENCE_FORMAT = "/projects/%s/apps/%s";
+
 	public AppEngineAudienceValidator(GcpProjectIdProvider projectIdProvider, ResourceManager resourceManager) {
 		Assert.notNull(projectIdProvider, "GcpProjectIdProvider cannot be null.");
+		Assert.notNull(projectIdProvider.getProjectId(), "Project Id expected not to be null.");
 		Assert.notNull(resourceManager, "ResourceManager cannot be null.");
 
 		Project project = resourceManager.get(projectIdProvider.getProjectId());
+		Assert.notNull(project, "Project expected not to be null.");
+		Assert.notNull(project.getProjectNumber(), "Project Number expected not to be null.");
 
-		setAudience(String.format(
-				"/projects/%s/apps/%s", project.getProjectNumber(), projectIdProvider.getProjectId()));
+		setAudience(String.format(AUDIENCE_FORMAT, project.getProjectNumber(), projectIdProvider.getProjectId()));
 	}
 }

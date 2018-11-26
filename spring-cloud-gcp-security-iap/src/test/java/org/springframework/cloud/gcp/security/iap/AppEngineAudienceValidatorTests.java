@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.security.iap;
 import com.google.cloud.resourcemanager.Project;
 import com.google.cloud.resourcemanager.ResourceManager;
 import com.google.common.collect.ImmutableList;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -55,6 +56,11 @@ public class AppEngineAudienceValidatorTests {
 	@Mock
 	Jwt mockJwt;
 
+	@Before
+	public void setUp() {
+		when(this.mockProjectIdProvider.getProjectId()).thenReturn("steal-spaceship");
+	}
+
 	@Test
 	public void testNullProjectIdProviderDisallowed() {
 		this.thrown.expect(IllegalArgumentException.class);
@@ -73,7 +79,6 @@ public class AppEngineAudienceValidatorTests {
 
 	@Test
 	public void testCorrectAudienceFormatSucceeds() {
-		when(this.mockProjectIdProvider.getProjectId()).thenReturn("steal-spaceship");
 		when(this.mockResourceManager.get("steal-spaceship")).thenReturn(this.mockProject);
 		when(this.mockProject.getProjectNumber()).thenReturn(42L);
 		when(this.mockJwt.getAudience()).thenReturn(ImmutableList.of("/projects/42/apps/steal-spaceship"));
@@ -85,7 +90,6 @@ public class AppEngineAudienceValidatorTests {
 
 	@Test
 	public void testIncorrectAudienceFormatFails() {
-		when(this.mockProjectIdProvider.getProjectId()).thenReturn("steal-spaceship");
 		when(this.mockResourceManager.get("steal-spaceship")).thenReturn(this.mockProject);
 		when(this.mockProject.getProjectNumber()).thenReturn(42L);
 		when(this.mockJwt.getAudience()).thenReturn(ImmutableList.of("/projects/1/apps/magrathea"));

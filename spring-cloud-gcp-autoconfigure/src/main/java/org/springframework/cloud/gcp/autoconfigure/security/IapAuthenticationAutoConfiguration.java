@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.cloud.resourcemanager.ResourceManager;
+import com.google.common.collect.ImmutableList;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -51,7 +52,8 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 
 /**
- * Autoconfiguration for extracting pre-authenticated user identity from Google Cloud IAP header.
+ * Autoconfiguration for extracting pre-authenticated user identity from
+ * <a href="https://cloud.google.com/iap/">Google Cloud IAP</a> header.
  *
  * <p>Provides:
  * <ul>
@@ -84,48 +86,54 @@ public class IapAuthenticationAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public JwtDecoder iapJwtDecoder(IapAuthenticationProperties properties, GcpProjectIdProvider projectIdProvider,
-			@Qualifier("jwtValidators") List<OAuth2TokenValidator<Jwt>> validators) {
+	public JwtDecoder iapJwtDecoder(IapAuthenticationProperties properties,
+			@Qualifier("iapJwtDelegatingValidator") DelegatingOAuth2TokenValidator<Jwt> validator) {
 
 		NimbusJwtDecoderJwkSupport jwkSupport
 				= new NimbusJwtDecoderJwkSupport(properties.getRegistry(), properties.getAlgorithm());
-		jwkSupport.setJwtValidator(new DelegatingOAuth2TokenValidator(validators));
+		jwkSupport.setJwtValidator(validator);
 
 		return jwkSupport;
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(name = "jwtValidators")
-	List<OAuth2TokenValidator<Jwt>> jwtValidators(IapAuthenticationProperties properties,
+	@ConditionalOnMissingBean(name = "iapJwtDelegatingValidator")
+	public DelegatingOAuth2TokenValidator<Jwt> iapJwtDelegatingValidator(
+			@Qualifier("iapJwtValidators") List<OAuth2TokenValidator<Jwt>> validators) {
+		return new DelegatingOAuth2TokenValidator<>(validators);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(name = "iapJwtValidators")
+	public List<OAuth2TokenValidator<Jwt>> iapJwtValidators(IapAuthenticationProperties properties,
 			ObjectProvider<AudienceValidator> audienceVerifier) {
-		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList();
+		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
 		validators.add(new JwtTimestampValidator());
 		validators.add(new JwtIssuerValidator(properties.getIssuer()));
 		audienceVerifier.ifAvailable(validators::add);
 
-		return validators;
+		return ImmutableList.copyOf(validators);
 	}
-
 
 	@Bean
 	@ConditionalOnMissingBean
-	@ConditionalOnProperty ("spring.cloud.gcp.security.iap.audience")
-	AudienceValidator propertyBasedAudienceValidator(IapAuthenticationProperties properties) {
+	@ConditionalOnProperty("spring.cloud.gcp.security.iap.audience")
+	public AudienceValidator propertyBasedAudienceValidator(IapAuthenticationProperties properties) {
 		return new AudienceValidator(properties.getAudience());
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	@ConditionalOnGcpEnvironment(GcpEnvironment.ANY_APP_ENGINE)
-	AudienceValidator appEngineBasedAudienceValidator(GcpProjectIdProvider projectIdProvider,
+	public AudienceValidator appEngineBasedAudienceValidator(GcpProjectIdProvider projectIdProvider,
 			ResourceManager resourceManager) {
 		return new AppEngineAudienceValidator(projectIdProvider, resourceManager);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	@ConditionalOnGcpEnvironment(GcpEnvironment.ANY_CONTAINER)
-	AudienceValidator computeEngineBasedAudienceValidator(GcpProjectIdProvider projectIdProvider,
+	@ConditionalOnGcpEnvironment(GcpEnvironment.GKE_OR_GCE)
+	public AudienceValidator computeEngineBasedAudienceValidator(GcpProjectIdProvider projectIdProvider,
 			ResourceManager resourceManager, MetadataProvider metadataProvider) {
 		return new ComputeEngineAudienceValidator(projectIdProvider, resourceManager, metadataProvider);
 	}

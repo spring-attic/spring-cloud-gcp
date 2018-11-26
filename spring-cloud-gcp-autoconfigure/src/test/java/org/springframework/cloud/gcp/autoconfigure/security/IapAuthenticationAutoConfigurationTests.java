@@ -58,6 +58,8 @@ import static org.mockito.Mockito.when;
 
 /**
  * @author Elena Felder
+ *
+ * @since 1.1
  */
 @RunWith(MockitoJUnitRunner.class)
 public class IapAuthenticationAutoConfigurationTests {
@@ -152,7 +154,7 @@ public class IapAuthenticationAutoConfigurationTests {
 	public void testAudienceValidatorNotAddedWhenNotAvailable() {
 		this.contextRunner
 				.run(context -> {
-					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("jwtValidators", List.class);
+					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("iapJwtValidators", List.class);
 					assertThat(validators).isNotNull();
 					assertThat(validators.stream().map(v -> v.getClass().getName()).collect(Collectors.toSet()))
 							.containsExactlyInAnyOrder(
@@ -165,7 +167,7 @@ public class IapAuthenticationAutoConfigurationTests {
 		this.contextRunner
 				.withPropertyValues("spring.cloud.gcp.security.iap.audience=friendly")
 				.run(context -> {
-					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("jwtValidators", List.class);
+					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("iapJwtValidators", List.class);
 					assertThat(validators).isNotNull();
 					assertThat(validators.stream().map(v -> v.getClass().getName()).collect(Collectors.toSet()))
 							.containsExactlyInAnyOrder(
@@ -183,7 +185,7 @@ public class IapAuthenticationAutoConfigurationTests {
 
 		this.contextRunner
 				.run(context -> {
-					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("jwtValidators", List.class);
+					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("iapJwtValidators", List.class);
 					assertThat(validators).isNotNull();
 					assertThat(validators.stream().map(v -> v.getClass().getName()).collect(Collectors.toSet()))
 							.containsExactlyInAnyOrder(

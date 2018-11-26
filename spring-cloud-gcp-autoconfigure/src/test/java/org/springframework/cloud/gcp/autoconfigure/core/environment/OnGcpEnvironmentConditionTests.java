@@ -38,6 +38,8 @@ import static org.mockito.Mockito.when;
 
 /**
  * @author Elena Felder
+ *
+ * @since 1.1
  */
 @RunWith(MockitoJUnitRunner.class)
 public class OnGcpEnvironmentConditionTests {

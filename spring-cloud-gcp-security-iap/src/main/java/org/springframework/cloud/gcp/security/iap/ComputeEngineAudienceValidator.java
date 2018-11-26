@@ -33,6 +33,8 @@ import org.springframework.util.Assert;
  */
 public class ComputeEngineAudienceValidator extends AudienceValidator {
 
+	public static final String AUDIENCE_FORMAT = "/projects/%s/global/backendServices/%s";
+
 	public ComputeEngineAudienceValidator(GcpProjectIdProvider projectIdProvider, ResourceManager resourceManager,
 			MetadataProvider metadataProvider) {
 		Assert.notNull(projectIdProvider, "GcpProjectIdProvider cannot be null.");
@@ -40,10 +42,13 @@ public class ComputeEngineAudienceValidator extends AudienceValidator {
 		Assert.notNull(metadataProvider, "MetadataProvider cannot be null.");
 
 		Project project = resourceManager.get(projectIdProvider.getProjectId());
-		String serviceId = metadataProvider.getAttribute("id");
+		Assert.notNull(project, "Project expected not to be null.");
+		Assert.notNull(project.getProjectNumber(), "Project Number expected not to be null.");
 
-		setAudience(String.format(
-				"/projects/%s/global/backendServices/%s", project.getProjectNumber(), serviceId));
+		String serviceId = metadataProvider.getAttribute("id");
+		Assert.notNull(project, "Service ID expected not to be null.");
+
+		setAudience(String.format(AUDIENCE_FORMAT, project.getProjectNumber(), serviceId));
 	}
 
 }
