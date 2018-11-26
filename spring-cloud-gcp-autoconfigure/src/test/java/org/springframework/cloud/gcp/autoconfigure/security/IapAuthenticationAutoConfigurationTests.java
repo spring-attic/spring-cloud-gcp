@@ -179,7 +179,7 @@ public class IapAuthenticationAutoConfigurationTests {
 
 	@Test
 	public void testAppEngineAudienceValidatorAddedWhenAvailable() {
-		when(this.mockEnvironmentProvider.isCurrentEnvironment(GcpEnvironment.ANY_APP_ENGINE)).thenReturn(true);
+		when(this.mockEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.APP_ENGINE_FLEXIBLE);
 		when(this.mockResourceManager.get("fake-project-id")).thenReturn(this.mockProject);
 		when(this.mockProject.getProjectNumber()).thenReturn(42L);
 

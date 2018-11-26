@@ -16,11 +16,6 @@
 
 package org.springframework.cloud.gcp.core;
 
-import java.util.function.BooleanSupplier;
-
-import com.google.cloud.MetadataConfig;
-import com.google.cloud.ServiceOptions;
-
 /**
  * Enumeration of valid individual GCP environments.
  *
@@ -35,43 +30,64 @@ public enum GcpEnvironment {
 	/**
 	 * Matches Kubernetes instances.
 	 */
-	KUBERNETES_ENGINE(() -> System.getenv("KUBERNETES_SERVICE_HOST") != null),
+	KUBERNETES_ENGINE,
 
 	/**
 	 * Matches App Engine Flexible instances.
 	 */
-	APP_ENGINE_FLEXIBLE(() -> System.getenv("GAE_INSTANCE") != null),
+	APP_ENGINE_FLEXIBLE,
 
 	/**
 	 * Matches App Engine Standard instances.
 	 */
-	APP_ENGINE_STANDARD(() -> ServiceOptions.getAppEngineAppId() != null),
+	APP_ENGINE_STANDARD,
 
 	/**
 	 * Matches instances of Compute Engine that are not also AppEngine Flexible.
 	 */
-	COMPUTE_ENGINE(() -> MetadataConfig.getInstanceId() != null && !APP_ENGINE_FLEXIBLE.matches()),
+	COMPUTE_ENGINE,
 
 	/**
 	 * Matches both, AppEngine Flexible and AppEngine Standard.
 	 */
-	ANY_APP_ENGINE(() -> APP_ENGINE_FLEXIBLE.matches() || APP_ENGINE_STANDARD.matches()),
+	ANY_APP_ENGINE {
+		public boolean matchesSimpleEnvironment(GcpEnvironment env) {
+			validateSimpleEnvironment(env);
+			return APP_ENGINE_FLEXIBLE == env || APP_ENGINE_STANDARD == env;
+		}
+	},
 
 	/**
 	 * Matches both, Compute Engine and Kubernetes Engine.
 	 */
-	GKE_OR_GCE(() ->  KUBERNETES_ENGINE.matches() || COMPUTE_ENGINE.matches());
+	GKE_OR_GCE {
+		public boolean matchesSimpleEnvironment(GcpEnvironment env) {
+			validateSimpleEnvironment(env);
+			return COMPUTE_ENGINE == env || KUBERNETES_ENGINE == env;
+		}
+	},
 
-	private BooleanSupplier matchCondition;
-
-	GcpEnvironment(BooleanSupplier matchCondition) {
-		this.matchCondition = matchCondition;
-	}
+	/**
+	 * Matches nothing; environment cannot be identified.
+	 */
+	UNKNOWN {
+		public boolean matchesSimpleEnvironment(GcpEnvironment env) {
+			return false;
+		}
+	};
 
 	/**
 	 * @return whether the specified environment's presence is detected.
 	 */
-	public boolean matches() {
-		return this.matchCondition.getAsBoolean();
+	public boolean matchesSimpleEnvironment(GcpEnvironment env) {
+		validateSimpleEnvironment(env);
+		return this == env;
 	}
+
+	private static void validateSimpleEnvironment(GcpEnvironment env) {
+		if (env == ANY_APP_ENGINE || env == GKE_OR_GCE) {
+			throw new IllegalArgumentException("Composite environments are not allowed here.");
+		}
+	}
+
 }

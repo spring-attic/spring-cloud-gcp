@@ -66,6 +66,7 @@ public class OnGcpEnvironmentConditionTests {
 	public void testNoEnvironmentsMatchWhenMissingEnvironmentProvider() {
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 
+		setUpAnnotationValue(GcpEnvironment.UNKNOWN);
 		when(this.mockBeanFactory.getBean(GcpEnvironmentProvider.class))
 				.thenThrow(new NoSuchBeanDefinitionException("no environment"));
 		onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
@@ -81,7 +82,7 @@ public class OnGcpEnvironmentConditionTests {
 	@Test
 	public void testNegativeOutcome() {
 		setUpAnnotationValue(GcpEnvironment.COMPUTE_ENGINE);
-		when(this.mockGcpEnvironmentProvider.isCurrentEnvironment(GcpEnvironment.COMPUTE_ENGINE)).thenReturn(false);
+		when(this.mockGcpEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.UNKNOWN);
 
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
@@ -93,7 +94,7 @@ public class OnGcpEnvironmentConditionTests {
 	@Test
 	public void testPositiveOutcome() {
 		setUpAnnotationValue(GcpEnvironment.COMPUTE_ENGINE);
-		when(this.mockGcpEnvironmentProvider.isCurrentEnvironment(GcpEnvironment.COMPUTE_ENGINE)).thenReturn(true);
+		when(this.mockGcpEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.COMPUTE_ENGINE);
 
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);

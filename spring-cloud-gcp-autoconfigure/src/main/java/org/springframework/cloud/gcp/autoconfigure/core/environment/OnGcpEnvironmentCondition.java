@@ -24,6 +24,7 @@ import org.springframework.cloud.gcp.core.GcpEnvironment;
 import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.util.Assert;
 
 /**
  * {@Condition} that determines which GCP environment the application is running on.
@@ -46,9 +47,10 @@ public class OnGcpEnvironmentCondition extends SpringBootCondition {
 
 		Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnGcpEnvironment.class.getName());
 		GcpEnvironment targetEnvironment = (GcpEnvironment) attributes.get("value");
+		Assert.notNull(targetEnvironment, "Value attribute of ConditionalOnGcpEnvironment cannot be null.");
 
 		GcpEnvironmentProvider environmentProvider = context.getBeanFactory().getBean(GcpEnvironmentProvider.class);
-		if (!environmentProvider.isCurrentEnvironment(targetEnvironment)) {
+		if (!targetEnvironment.matchesSimpleEnvironment(environmentProvider.getCurrentEnvironment())) {
 			return new ConditionOutcome(false, "Application is not running on " + targetEnvironment);
 		}
 
