@@ -37,6 +37,7 @@ import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.Options;
 import com.google.cloud.spanner.Options.QueryOption;
 import com.google.cloud.spanner.Options.ReadOption;
 import com.google.cloud.spanner.ReadContext;
@@ -355,6 +356,39 @@ public class SpannerTemplate implements SpannerOperations {
 			stopwatch = Stopwatch.createStarted();
 		}
 
+		ResultSet resultSet = performQuery(statement, options);
+		if (LOGGER.isDebugEnabled()) {
+			String message;
+			if (options == null) {
+				message = "Executing query without additional options: " + statement;
+			}
+			else {
+				message = getQueryLogMessageWithOptions(statement, options);
+			}
+			LOGGER.debug(message);
+
+			if (stopwatch != null) {
+				stopwatch.stop();
+				LOGGER.debug("Query elapsed milliseconds: " + stopwatch.elapsed(TimeUnit.MILLISECONDS));
+			}
+		}
+		return resultSet;
+	}
+
+	private String getQueryLogMessageWithOptions(Statement statement, SpannerQueryOptions options) {
+		String message;
+		StringBuilder logSb = new StringBuilder("Executing query").append(
+				options.getTimestamp() != null ? " at timestamp" + options.getTimestamp()
+						: "");
+		for (QueryOption queryOption : options.getQueryOptions()) {
+			logSb.append(" with option: " + queryOption);
+		}
+		logSb.append(" : ").append(statement);
+		message = logSb.toString();
+		return message;
+	}
+
+	private ResultSet performQuery(Statement statement, SpannerQueryOptions options) {
 		ResultSet resultSet;
 		if (options == null) {
 			resultSet = getReadContext().executeQuery(statement);
@@ -363,28 +397,6 @@ public class SpannerTemplate implements SpannerOperations {
 			resultSet = (options.getTimestamp() != null ? getReadContext(options.getTimestamp())
 					: getReadContext()).executeQuery(statement,
 							options.getQueryOptions());
-		}
-		if (LOGGER.isDebugEnabled()) {
-			String message;
-			if (options == null) {
-				message = "Executing query without additional options: " + statement;
-			}
-			else {
-				StringBuilder logSb = new StringBuilder("Executing query").append(
-						options.getTimestamp() != null ? " at timestamp" + options.getTimestamp()
-								: "");
-				for (QueryOption queryOption : options.getQueryOptions()) {
-					logSb.append(" with option: " + queryOption);
-				}
-				logSb.append(" : ").append(statement);
-				message = logSb.toString();
-			}
-			LOGGER.debug(message);
-
-			if (stopwatch != null) {
-				stopwatch.stop();
-				LOGGER.debug("Query elapsed milliseconds: " + stopwatch.elapsed(TimeUnit.MILLISECONDS));
-			}
 		}
 		return resultSet;
 	}
