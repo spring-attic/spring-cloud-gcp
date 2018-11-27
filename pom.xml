@@ -185,8 +185,6 @@
 						<configuration>
 							<!-- TODO: remove when it matches https://github.com/spring-cloud/spring-cloud-build/blob/master/spring-cloud-build-tools/src/main/resources/checkstyle.xml -->
 							<configLocation>src/checkstyle/checkstyle.xml</configLocation>
-							<!-- TODO: remove when spring-cloud-build starts checking copyright header -->
-							<headerLocation>src/checkstyle/checkstyle-header.txt</headerLocation>
 							<includeTestSourceDirectory>true</includeTestSourceDirectory>
 							<consoleOutput>true</consoleOutput>
 							<failsOnError>true</failsOnError>
