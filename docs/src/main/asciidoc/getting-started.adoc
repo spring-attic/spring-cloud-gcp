@@ -22,6 +22,9 @@ Most of the autoconfiguration code is only enabled if other dependencies are add
 |Cloud Spanner
 |org.springframework.cloud:spring-cloud-gcp-starter-data-spanner
 
+|Cloud Datastore
+|org.springframework.cloud:spring-cloud-gcp-starter-data-datastore
+
 |Logging
 |org.springframework.cloud:spring-cloud-gcp-starter-logging
 
