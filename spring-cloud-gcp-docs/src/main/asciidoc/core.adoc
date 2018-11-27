@@ -147,23 +147,6 @@ public interface GcpEnvironmentProvider {
 }
 ----
 
-=== ResourceManager
-
-A default instance of Google Cloud `ResourceManager` is auto-configured by the Spring Cloud GCP starter.
-
-
-=== Environment
-
-`MetadataProvider` is another functional interface that provides access to Google Cloud Metadata Server attributes.
-The implementation auto-configured by the Spring Cloud GCP starter is a thin wrapper around static `MetadataConfig` utility, which is mainly helpful for testability.
-
-[source,java]
-----
-public interface MetadataProvider {
-	String getAttribute(String attributeName);
-}
-----
-
 == Spring Initializr
 
 This starter is available from http://start.spring.io/[Spring Initializr] through the `GCP Support` entry.

@@ -16,11 +16,11 @@
 
 package org.springframework.cloud.gcp.security.iap;
 
-import java.util.function.Supplier;
-
 import com.google.cloud.resourcemanager.Project;
 import com.google.cloud.resourcemanager.ResourceManager;
+import com.google.cloud.resourcemanager.ResourceManagerOptions;
 
+import org.springframework.cloud.gcp.core.DefaultGcpMetadataProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.MetadataProvider;
 import org.springframework.util.Assert;
@@ -33,32 +33,23 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class ComputeEngineAudienceSupplier implements Supplier<String> {
+public class ComputeEngineAudienceProvider implements AudienceProvider {
 
-	/**
-	 * Compute Engine/Kubernetes audience format: {@code /projects/PROJECT_NUMBER/global/backendServices/SERVICE_ID}.
-	 */
-	public static final String AUDIENCE_FORMAT = "/projects/%s/global/backendServices/%s";
+	private static final String AUDIENCE_FORMAT = "/projects/%s/global/backendServices/%s";
 
 	private GcpProjectIdProvider projectIdProvider;
 
-	private ResourceManager resourceManager;
+	private ResourceManager resourceManager = ResourceManagerOptions.getDefaultInstance().getService();
 
-	private MetadataProvider metadataProvider;
+	private MetadataProvider metadataProvider = new DefaultGcpMetadataProvider();
 
-	public ComputeEngineAudienceSupplier(GcpProjectIdProvider projectIdProvider, ResourceManager resourceManager,
-			MetadataProvider metadataProvider) {
+	public ComputeEngineAudienceProvider(GcpProjectIdProvider projectIdProvider) {
 		Assert.notNull(projectIdProvider, "GcpProjectIdProvider cannot be null.");
-		Assert.notNull(resourceManager, "ResourceManager cannot be null.");
-		Assert.notNull(metadataProvider, "MetadataProvider cannot be null.");
-
 		this.projectIdProvider = projectIdProvider;
-		this.resourceManager = resourceManager;
-		this.metadataProvider = metadataProvider;
 	}
 
 	@Override
-	public String get() {
+	public String getAudience() {
 		Project project = this.resourceManager.get(this.projectIdProvider.getProjectId());
 		Assert.notNull(project, "Project expected not to be null.");
 		Assert.notNull(project.getProjectNumber(), "Project Number expected not to be null.");
@@ -67,5 +58,13 @@ public class ComputeEngineAudienceSupplier implements Supplier<String> {
 		Assert.notNull(project, "Service ID expected not to be null.");
 
 		return String.format(AUDIENCE_FORMAT, project.getProjectNumber(), serviceId);
+	}
+
+	public void setResourceManager(ResourceManager resourceManager) {
+		this.resourceManager = resourceManager;
+	}
+
+	public void setMetadataProvider(MetadataProvider metadataProvider) {
+		this.metadataProvider = metadataProvider;
 	}
 }

@@ -61,6 +61,7 @@ public enum GcpEnvironment {
 	 * Matches both, Compute Engine and Kubernetes Engine.
 	 */
 	GKE_OR_GCE {
+		@Override
 		public boolean matchesSimpleEnvironment(GcpEnvironment env) {
 			validateSimpleEnvironment(env);
 			return COMPUTE_ENGINE == env || KUBERNETES_ENGINE == env;
@@ -71,6 +72,7 @@ public enum GcpEnvironment {
 	 * Matches nothing; environment cannot be identified.
 	 */
 	UNKNOWN {
+		@Override
 		public boolean matchesSimpleEnvironment(GcpEnvironment env) {
 			return false;
 		}
@@ -84,9 +86,9 @@ public enum GcpEnvironment {
 		return this == env;
 	}
 
-	private static void validateSimpleEnvironment(GcpEnvironment env) {
-		if (env == ANY_APP_ENGINE || env == GKE_OR_GCE) {
-			throw new IllegalArgumentException("Composite environments are not allowed here.");
+	private static void validateSimpleEnvironment(GcpEnvironment runtimeEnvironment) {
+		if (runtimeEnvironment == ANY_APP_ENGINE || runtimeEnvironment == GKE_OR_GCE) {
+			throw new IllegalArgumentException("Please specify a single runtime environment.");
 		}
 	}
 

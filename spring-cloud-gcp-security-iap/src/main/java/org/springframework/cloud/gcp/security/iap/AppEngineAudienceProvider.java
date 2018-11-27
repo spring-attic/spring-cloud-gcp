@@ -16,10 +16,9 @@
 
 package org.springframework.cloud.gcp.security.iap;
 
-import java.util.function.Supplier;
-
 import com.google.cloud.resourcemanager.Project;
 import com.google.cloud.resourcemanager.ResourceManager;
+import com.google.cloud.resourcemanager.ResourceManagerOptions;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.util.Assert;
@@ -32,33 +31,33 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class AppEngineAudienceSupplier implements Supplier<String> {
+public class AppEngineAudienceProvider implements AudienceProvider {
 
-	/**
-	 * App Engine audience format: {@code /projects/PROJECT_NUMBER/apps/PROJECT_ID}.
-	 */
-	public static final String AUDIENCE_FORMAT = "/projects/%s/apps/%s";
+	private static final String AUDIENCE_FORMAT = "/projects/%s/apps/%s";
 
 	private GcpProjectIdProvider projectIdProvider;
 
-	private ResourceManager resourceManager;
+	private ResourceManager resourceManager = ResourceManagerOptions.getDefaultInstance().getService();
 
-	public AppEngineAudienceSupplier(GcpProjectIdProvider projectIdProvider, ResourceManager resourceManager) {
+	public AppEngineAudienceProvider(GcpProjectIdProvider projectIdProvider) {
 		Assert.notNull(projectIdProvider, "GcpProjectIdProvider cannot be null.");
-		Assert.notNull(projectIdProvider.getProjectId(), "Project Id expected not to be null.");
-		Assert.notNull(resourceManager, "ResourceManager cannot be null.");
 
 		this.projectIdProvider = projectIdProvider;
-		this.resourceManager = resourceManager;
 	}
 
 	@Override
-	public String get() {
-
+	public String getAudience() {
 		Project project = this.resourceManager.get(this.projectIdProvider.getProjectId());
 		Assert.notNull(project, "Project expected not to be null.");
 		Assert.notNull(project.getProjectNumber(), "Project Number expected not to be null.");
 
-		return String.format(AUDIENCE_FORMAT, project.getProjectNumber(), this.projectIdProvider.getProjectId());
+		String projectId = this.projectIdProvider.getProjectId();
+		Assert.notNull(projectId, "Project Id expected not to be null.");
+
+		return String.format(AUDIENCE_FORMAT, project.getProjectNumber(), projectId);
+	}
+
+	public void setResourceManager(ResourceManager resourceManager) {
+		this.resourceManager = resourceManager;
 	}
 }

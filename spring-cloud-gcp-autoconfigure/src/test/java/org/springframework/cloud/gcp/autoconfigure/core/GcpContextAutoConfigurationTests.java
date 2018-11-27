@@ -21,18 +21,15 @@ import org.junit.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.core.DefaultGcpEnvironmentProvider;
-import org.springframework.cloud.gcp.core.DefaultGcpMetadataProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.MetadataProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author João André Martins
- * @author Elena Felder
  */
 public class GcpContextAutoConfigurationTests {
 
@@ -65,16 +62,6 @@ public class GcpContextAutoConfigurationTests {
 					GcpEnvironmentProvider environmentProvider = context.getBean(GcpEnvironmentProvider.class);
 					assertThat(environmentProvider).isNotNull();
 					assertThat(environmentProvider).isInstanceOf(DefaultGcpEnvironmentProvider.class);
-				});
-	}
-
-	@Test
-	public void testMetadataProvider() {
-		this.contextRunner
-				.run(context -> {
-					MetadataProvider metadataProvider = context.getBean(MetadataProvider.class);
-					assertThat(metadataProvider).isNotNull();
-					assertThat(metadataProvider).isInstanceOf(DefaultGcpMetadataProvider.class);
 				});
 	}
 }

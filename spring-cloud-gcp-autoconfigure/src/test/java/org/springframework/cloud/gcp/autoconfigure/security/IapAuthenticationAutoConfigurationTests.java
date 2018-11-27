@@ -29,7 +29,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration;
@@ -39,7 +41,9 @@ import org.springframework.cloud.gcp.core.GcpEnvironment;
 import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.MetadataProvider;
+import org.springframework.cloud.gcp.security.iap.AppEngineAudienceProvider;
 import org.springframework.cloud.gcp.security.iap.AudienceValidator;
+import org.springframework.cloud.gcp.security.iap.ComputeEngineAudienceProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
@@ -274,14 +278,20 @@ public class IapAuthenticationAutoConfigurationTests {
 		}
 
 		@Bean
-		static ResourceManager mockResourceManager() {
-			return mockResourceManager;
-		}
-
-		@Bean
-		static MetadataProvider mockMetadataProvider() {
-			return mockMetadataProvider;
+		static BeanPostProcessor injectMocks() {
+			return new BeanPostProcessor() {
+				@Override
+				public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+					if (bean instanceof AppEngineAudienceProvider) {
+						((AppEngineAudienceProvider) bean).setResourceManager(mockResourceManager);
+					}
+					else if (bean instanceof ComputeEngineAudienceProvider) {
+						((ComputeEngineAudienceProvider) bean).setResourceManager(mockResourceManager);
+						((ComputeEngineAudienceProvider) bean).setMetadataProvider(mockMetadataProvider);
+					}
+					return bean;
+				}
+			};
 		}
 	}
-
 }

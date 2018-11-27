@@ -17,8 +17,6 @@
 package org.springframework.cloud.gcp.autoconfigure.core;
 
 import com.google.api.gax.core.CredentialsProvider;
-import com.google.cloud.resourcemanager.ResourceManager;
-import com.google.cloud.resourcemanager.ResourceManagerOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -26,11 +24,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpEnvironmentProvider;
-import org.springframework.cloud.gcp.core.DefaultGcpMetadataProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.MetadataProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -89,25 +85,5 @@ public class GcpContextAutoConfiguration {
 	@ConditionalOnMissingBean
 	public static GcpEnvironmentProvider gcpEnvironmentProvider() {
 		return new DefaultGcpEnvironmentProvider();
-	}
-
-	/**
-	 * Provides default implementation of Cloud Resource Manager.
-	 * @since 1.1
-	 */
-	@Bean
-	@ConditionalOnMissingBean
-	public ResourceManager gcpResourceManager() {
-		return ResourceManagerOptions.getDefaultInstance().getService();
-	}
-
-	/**
-	 * Provides a wrapper around the static Metadata Provider.
-	 * @since 1.1
-	 */
-	@Bean
-	@ConditionalOnMissingBean
-	public MetadataProvider gcpMetadataProvider() {
-		return new DefaultGcpMetadataProvider();
 	}
 }

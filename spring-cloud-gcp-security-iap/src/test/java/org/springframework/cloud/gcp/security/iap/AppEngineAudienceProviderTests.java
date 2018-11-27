@@ -27,7 +27,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.MetadataProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -36,8 +35,7 @@ import static org.mockito.Mockito.when;
  * @author Elena Felder
  */
 @RunWith(MockitoJUnitRunner.class)
-public class ComputeEngineAudienceSupplierTests {
-
+public class AppEngineAudienceProviderTests {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
@@ -48,17 +46,11 @@ public class ComputeEngineAudienceSupplierTests {
 	ResourceManager mockResourceManager;
 
 	@Mock
-	MetadataProvider mockMetadataProvider;
-
-	@Mock
 	Project mockProject;
 
 	@Before
 	public void setUp() {
 		when(this.mockProjectIdProvider.getProjectId()).thenReturn("steal-spaceship");
-		when(this.mockResourceManager.get("steal-spaceship")).thenReturn(this.mockProject);
-		when(this.mockProject.getProjectNumber()).thenReturn(42L);
-		when(this.mockMetadataProvider.getAttribute("id")).thenReturn("123");
 	}
 
 	@Test
@@ -66,32 +58,17 @@ public class ComputeEngineAudienceSupplierTests {
 		this.thrown.expect(IllegalArgumentException.class);
 		this.thrown.expectMessage("GcpProjectIdProvider cannot be null.");
 
-		new ComputeEngineAudienceSupplier(null, this.mockResourceManager, this.mockMetadataProvider);
+		new AppEngineAudienceProvider(null);
 	}
 
 	@Test
-	public void testNullResourceManagerDisallowed() {
-		this.thrown.expect(IllegalArgumentException.class);
-		this.thrown.expectMessage("ResourceManager cannot be null.");
+	public void testAudienceFormatCorrect() {
+		when(this.mockResourceManager.get("steal-spaceship")).thenReturn(this.mockProject);
+		when(this.mockProject.getProjectNumber()).thenReturn(42L);
 
-		new ComputeEngineAudienceSupplier(this.mockProjectIdProvider, null, this.mockMetadataProvider);
+		AppEngineAudienceProvider provider = new AppEngineAudienceProvider(this.mockProjectIdProvider);
+		provider.setResourceManager(this.mockResourceManager);
+
+		assertThat(provider.getAudience()).isEqualTo("/projects/42/apps/steal-spaceship");
 	}
-
-	@Test
-	public void testNullMetadataProviderDisallowed() {
-		this.thrown.expect(IllegalArgumentException.class);
-		this.thrown.expectMessage("MetadataProvider cannot be null.");
-
-		new ComputeEngineAudienceSupplier(this.mockProjectIdProvider, this.mockResourceManager, null);
-	}
-
-	@Test
-	public void correctPatternSucceeds() {
-
-		ComputeEngineAudienceSupplier supplier
-				= new ComputeEngineAudienceSupplier(
-						this.mockProjectIdProvider, this.mockResourceManager, this.mockMetadataProvider);
-		assertThat(supplier.get()).isEqualTo("/projects/42/global/backendServices/123");
-	}
-
 }

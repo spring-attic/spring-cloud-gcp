@@ -16,11 +16,10 @@
 
 package org.springframework.cloud.gcp.security.iap;
 
-import java.util.function.Supplier;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
@@ -36,7 +35,7 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
+public class AudienceValidator implements OAuth2TokenValidator<Jwt>, InitializingBean {
 
 	private static final Log LOGGER = LogFactory.getLog(AudienceValidator.class);
 
@@ -45,12 +44,13 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
 					"This aud claim is not equal to the configured audience",
 							"https://tools.ietf.org/html/rfc6750#section-3.1");
 
+	private AudienceProvider audienceProvider;
+
 	private String audience;
 
-	public AudienceValidator(Supplier<String> audienceSupplier) {
-		Assert.notNull(audienceSupplier, "Audience cannot be null");
-		this.audience = audienceSupplier.get();
-		Assert.notNull(this.audience, "Supplied audience cannot be null.");
+	public AudienceValidator(AudienceProvider audienceProvider) {
+		Assert.notNull(audienceProvider, "Audience Provider cannot be null");
+		this.audienceProvider = audienceProvider;
 	}
 
 	@Override
@@ -65,7 +65,13 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt> {
 		}
 	}
 
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		this.audience = this.audienceProvider.getAudience();
+		Assert.notNull(this.audience, "Audience cannot be null.");
+	}
+
 	public String getAudience() {
-		return this.audience;
+		return this.audienceProvider.getAudience();
 	}
 }
