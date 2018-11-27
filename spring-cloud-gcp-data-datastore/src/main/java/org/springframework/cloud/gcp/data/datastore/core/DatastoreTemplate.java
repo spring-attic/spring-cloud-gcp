@@ -185,7 +185,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 	public <T> Iterable<?> queryKeysOrEntities(Query query, Class<T> entityClass) {
 		QueryResults results = getDatastoreReadWriter().run(query);
 		if (results.getResultClass() == Key.class) {
-			return () -> getDatastoreReadWriter().run(query);
+			return () -> results;
 		}
 		return convertEntitiesForRead(results, entityClass);
 	}
