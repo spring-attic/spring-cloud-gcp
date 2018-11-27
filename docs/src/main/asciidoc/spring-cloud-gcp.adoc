@@ -1,6 +1,7 @@
 [[spring-cloud-gcp-reference]]
 = Spring Cloud GCP Reference Documentation
-João André Martins; Jisha Abubaker; Ray Tsang; Mike Eltsufin; Artem Bilan; Andreas Berger; Balint Pato; Chengyuan Zhao
+João André Martins; Jisha Abubaker; Ray Tsang; Mike Eltsufin; Artem Bilan; Andreas Berger; Balint Pato; Chengyuan Zhao; Dmitry Solomakha; Elena Felder; Daniel Zou
+
 :doctype: book
 :toc:
 :toclevels: 4
@@ -45,6 +46,8 @@ include::logging.adoc[]
 include::config.adoc[]
 
 include::spanner.adoc[]
+
+include::datastore.adoc[]
 
 include::cloudfoundry.adoc[]
 
