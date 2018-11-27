@@ -1039,6 +1039,22 @@ ORDER BY SYMBOL DESC
 LIMIT 3
 ----
 
+The following filter options are supported:
+
+* Equality
+* Greater than or equals
+* Greater than
+* Less than or equals
+* Less than
+* Is null
+* Is not null
+* Is true
+* Is false
+* Like a string
+* Not like a string
+* Contains a string
+* Not contains a string
+
 Note that the phrase `SymbolIgnoreCase` is translated to `LOWER(SYMBOL) = LOWER(?)` indicating
 a non-case-sensitive matching. The `IgnoreCase` phrase may only be appended to fields that correspond
 to columns of type STRING or BYTES.
