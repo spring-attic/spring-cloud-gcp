@@ -72,6 +72,6 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt>, Initializin
 	}
 
 	public String getAudience() {
-		return this.audienceProvider.getAudience();
+		return this.audience;
 	}
 }

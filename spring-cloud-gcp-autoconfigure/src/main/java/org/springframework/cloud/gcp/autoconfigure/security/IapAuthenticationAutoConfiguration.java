@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -84,6 +86,8 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 @EnableConfigurationProperties(IapAuthenticationProperties.class)
 public class IapAuthenticationAutoConfiguration {
 
+	private static final Log LOGGER = LogFactory.getLog(IapAuthenticationAutoConfiguration.class);
+
 	@Bean
 	@ConditionalOnMissingBean
 	public BearerTokenResolver iatTokenResolver(IapAuthenticationProperties properties) {
@@ -124,7 +128,10 @@ public class IapAuthenticationAutoConfiguration {
 		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
 		validators.add(new JwtTimestampValidator());
 		validators.add(new JwtIssuerValidator(properties.getIssuer()));
-		audienceVerifier.ifAvailable(validators::add);
+		audienceVerifier.ifAvailable(audienceValidator -> {
+			validators.add(audienceValidator);
+			LOGGER.info("IAP JWT Audience validation enabled for audience " + audienceValidator.getAudience());
+		});
 
 		return ImmutableList.copyOf(validators);
 	}
