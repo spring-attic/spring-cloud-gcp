@@ -28,6 +28,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
+import org.springframework.cloud.gcp.vision.CloudVisionTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -78,5 +79,11 @@ public class CloudVisionAutoConfiguration {
 				.build();
 
 		return ImageAnnotatorClient.create(clientSettings);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public CloudVisionTemplate cloudVisionTemplate(ImageAnnotatorClient imageAnnotatorClient) {
+		return new CloudVisionTemplate(imageAnnotatorClient);
 	}
 }
