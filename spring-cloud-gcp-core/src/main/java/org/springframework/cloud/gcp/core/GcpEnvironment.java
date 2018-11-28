@@ -19,8 +19,6 @@ package org.springframework.cloud.gcp.core;
 /**
  * Enumeration of valid individual GCP environments.
  *
- * <p>Also includes meta-members for convenient evaluation of environment groups, such as {@code ANY_APP_ENGINE}.
- *
  * @author Elena Felder
  *
  * @since 1.1
@@ -48,49 +46,8 @@ public enum GcpEnvironment {
 	COMPUTE_ENGINE,
 
 	/**
-	 * Matches both, AppEngine Flexible and AppEngine Standard.
-	 */
-	ANY_APP_ENGINE {
-		@Override
-		public boolean matchesSimpleEnvironment(GcpEnvironment env) {
-			validateSimpleEnvironment(env);
-			return APP_ENGINE_FLEXIBLE == env || APP_ENGINE_STANDARD == env;
-		}
-	},
-
-	/**
-	 * Matches both, Compute Engine and Kubernetes Engine.
-	 */
-	GKE_OR_GCE {
-		@Override
-		public boolean matchesSimpleEnvironment(GcpEnvironment env) {
-			validateSimpleEnvironment(env);
-			return COMPUTE_ENGINE == env || KUBERNETES_ENGINE == env;
-		}
-	},
-
-	/**
 	 * Matches nothing; environment cannot be identified.
 	 */
-	UNKNOWN {
-		@Override
-		public boolean matchesSimpleEnvironment(GcpEnvironment env) {
-			return false;
-		}
-	};
-
-	/**
-	 * @return whether the specified environment's presence is detected.
-	 */
-	public boolean matchesSimpleEnvironment(GcpEnvironment env) {
-		validateSimpleEnvironment(env);
-		return this == env;
-	}
-
-	private static void validateSimpleEnvironment(GcpEnvironment runtimeEnvironment) {
-		if (runtimeEnvironment == ANY_APP_ENGINE || runtimeEnvironment == GKE_OR_GCE) {
-			throw new IllegalArgumentException("Please specify a single runtime environment.");
-		}
-	}
+	UNKNOWN
 
 }

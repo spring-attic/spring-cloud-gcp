@@ -16,7 +16,9 @@
 
 package org.springframework.cloud.gcp.autoconfigure.core.environment;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.boot.autoconfigure.condition.ConditionOutcome;
 import org.springframework.boot.autoconfigure.condition.SpringBootCondition;
@@ -38,7 +40,7 @@ public class OnGcpEnvironmentCondition extends SpringBootCondition {
 	/**
 	 * Determines whether the current runtime environment matches the one passed through the annotation.
 	 * @param context the spring context at the point in time the condition is being evaluated
-	 * @param metadata annotation metadata containing "value" indicating which GCP environment to match
+	 * @param metadata annotation metadata containing all acceptable GCP environments
 	 * @throws org.springframework.beans.factory.NoSuchBeanDefinitionException if no GcpEnvironmentProvider is found in
 	 * spring context
 	 */
@@ -46,14 +48,19 @@ public class OnGcpEnvironmentCondition extends SpringBootCondition {
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
 
 		Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnGcpEnvironment.class.getName());
-		GcpEnvironment targetEnvironment = (GcpEnvironment) attributes.get("value");
-		Assert.notNull(targetEnvironment, "Value attribute of ConditionalOnGcpEnvironment cannot be null.");
+		GcpEnvironment[] targetEnvironments = (GcpEnvironment[]) attributes.get("value");
+		Assert.notNull(targetEnvironments, "Value attribute of ConditionalOnGcpEnvironment cannot be null.");
 
 		GcpEnvironmentProvider environmentProvider = context.getBeanFactory().getBean(GcpEnvironmentProvider.class);
-		if (!targetEnvironment.matchesSimpleEnvironment(environmentProvider.getCurrentEnvironment())) {
-			return new ConditionOutcome(false, "Application is not running on " + targetEnvironment);
+		GcpEnvironment currentEnvironment = environmentProvider.getCurrentEnvironment();
+
+		if (Arrays.stream(targetEnvironments).noneMatch(env -> env == currentEnvironment)) {
+			return new ConditionOutcome(false, "Application is not running on any of "
+					+ Arrays.stream(targetEnvironments)
+					.map(GcpEnvironment::toString)
+					.collect(Collectors.joining(", ")));
 		}
 
-		return new ConditionOutcome(true, "Application is running on " + targetEnvironment);
+		return new ConditionOutcome(true, "Application is running on " + currentEnvironment);
 	}
 }

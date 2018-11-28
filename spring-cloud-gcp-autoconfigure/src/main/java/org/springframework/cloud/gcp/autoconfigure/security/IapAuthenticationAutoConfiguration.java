@@ -102,14 +102,14 @@ public class IapAuthenticationAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	@ConditionalOnGcpEnvironment(GcpEnvironment.ANY_APP_ENGINE)
+	@ConditionalOnGcpEnvironment({GcpEnvironment.APP_ENGINE_FLEXIBLE, GcpEnvironment.APP_ENGINE_STANDARD})
 	public AudienceProvider appEngineBasedAudienceProvider(GcpProjectIdProvider projectIdProvider) {
 		return new AppEngineAudienceProvider(projectIdProvider);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
-	@ConditionalOnGcpEnvironment(GcpEnvironment.GKE_OR_GCE)
+	@ConditionalOnGcpEnvironment({GcpEnvironment.COMPUTE_ENGINE, GcpEnvironment.KUBERNETES_ENGINE})
 	public AudienceProvider computeEngineBasedAudienceProvider(GcpProjectIdProvider projectIdProvider) {
 		return new ComputeEngineAudienceProvider(projectIdProvider);
 	}

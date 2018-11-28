@@ -66,7 +66,7 @@ public class OnGcpEnvironmentConditionTests {
 	public void testNoEnvironmentsMatchWhenMissingEnvironmentProvider() {
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 
-		setUpAnnotationValue(GcpEnvironment.UNKNOWN);
+		setUpAnnotationValue(new GcpEnvironment[] { GcpEnvironment.UNKNOWN });
 		when(this.mockBeanFactory.getBean(GcpEnvironmentProvider.class))
 				.thenThrow(new NoSuchBeanDefinitionException("no environment"));
 		onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
@@ -74,26 +74,51 @@ public class OnGcpEnvironmentConditionTests {
 
 	@Test (expected = ClassCastException.class)
 	public void testExceptionThrownWhenWrongAttributeType() {
-		setUpAnnotationValue("invalid environment value");
+		setUpAnnotationValue("invalid type");
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 	}
 
 	@Test
 	public void testNegativeOutcome() {
-		setUpAnnotationValue(GcpEnvironment.COMPUTE_ENGINE);
+		setUpAnnotationValue(new GcpEnvironment[] { GcpEnvironment.COMPUTE_ENGINE });
 		when(this.mockGcpEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.UNKNOWN);
 
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 
 		assertFalse(outcome.isMatch());
-		assertThat(outcome.getMessage()).isEqualTo("Application is not running on COMPUTE_ENGINE");
+		assertThat(outcome.getMessage()).isEqualTo("Application is not running on any of COMPUTE_ENGINE");
+	}
+
+	@Test
+	public void testNegativeOutcomeForMultipleEnvironments() {
+		setUpAnnotationValue(new GcpEnvironment[] { GcpEnvironment.COMPUTE_ENGINE, GcpEnvironment.KUBERNETES_ENGINE });
+		when(this.mockGcpEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.UNKNOWN);
+
+		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
+		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
+
+		assertFalse(outcome.isMatch());
+		assertThat(outcome.getMessage())
+				.isEqualTo("Application is not running on any of COMPUTE_ENGINE, KUBERNETES_ENGINE");
+	}
+
+	@Test
+	public void testPositiveOutcomeForMultipleEnvironments() {
+		setUpAnnotationValue(new GcpEnvironment[] { GcpEnvironment.COMPUTE_ENGINE, GcpEnvironment.KUBERNETES_ENGINE });
+		when(this.mockGcpEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.KUBERNETES_ENGINE);
+
+		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
+		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
+
+		assertTrue(outcome.isMatch());
+		assertThat(outcome.getMessage()).isEqualTo("Application is running on KUBERNETES_ENGINE");
 	}
 
 	@Test
 	public void testPositiveOutcome() {
-		setUpAnnotationValue(GcpEnvironment.COMPUTE_ENGINE);
+		setUpAnnotationValue(new GcpEnvironment[] { GcpEnvironment.COMPUTE_ENGINE });
 		when(this.mockGcpEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.COMPUTE_ENGINE);
 
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
@@ -103,9 +128,9 @@ public class OnGcpEnvironmentConditionTests {
 		assertThat(outcome.getMessage()).isEqualTo("Application is running on COMPUTE_ENGINE");
 	}
 
-	private void setUpAnnotationValue(Object environment) {
+	private void setUpAnnotationValue(Object environments) {
 		when(this.mockMetadata.getAnnotationAttributes(ConditionalOnGcpEnvironment.class.getName())).thenReturn(
-				ImmutableMap.of("value", environment)
+				ImmutableMap.of("value", environments)
 		);
 	}
 }
