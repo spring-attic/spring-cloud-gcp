@@ -1,3 +1,0 @@
-dependencies {
-    compile '{@= groupId @}:spring-cloud-gcp:{@= version @}'
-}
