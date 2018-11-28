@@ -8,7 +8,7 @@ If the topic and subscription for the sink and source don't exist, the binder wi
 
 == Running the code sample
 
-1. Configure your credentials and project ID by following link:../../spring-cloud-gcp-docs/src/main/asciidoc/core.adoc#project-id[these instructions].
+1. Configure your credentials and project ID by following link:../../docs/src/main/asciidoc/core.adoc#project-id[these instructions].
 +
 Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials], Spring will auto-discover those parameters for you.
 
