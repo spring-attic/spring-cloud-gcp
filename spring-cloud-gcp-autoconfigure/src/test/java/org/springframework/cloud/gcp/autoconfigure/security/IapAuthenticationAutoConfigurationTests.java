@@ -16,8 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.security;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.net.URL;
+import java.time.Instant;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -29,9 +29,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration;
@@ -42,21 +40,23 @@ import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.MetadataProvider;
 import org.springframework.cloud.gcp.security.iap.AppEngineAudienceProvider;
+import org.springframework.cloud.gcp.security.iap.AudienceProvider;
 import org.springframework.cloud.gcp.security.iap.AudienceValidator;
 import org.springframework.cloud.gcp.security.iap.ComputeEngineAudienceProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
-import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
@@ -158,55 +158,50 @@ public class IapAuthenticationAutoConfigurationTests {
 	}
 
 	@Test
-	public void testAudienceValidatorNotAddedWhenNotAvailable() {
+	public void testAudienceValidatorNotAddedWhenNotAvailable() throws Exception {
+		when(mockJwt.getExpiresAt()).thenReturn(Instant.now().plusSeconds(10));
+		when(mockJwt.getNotBefore()).thenReturn(Instant.now().minusSeconds(10));
+		when(mockJwt.getIssuer()).thenReturn(new URL("https://cloud.google.com/iap"));
+		verify(mockJwt, never()).getAudience();
+
 		this.contextRunner
 				.run(context -> {
-					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("iapJwtValidators", List.class);
-					assertThat(validators).isNotNull();
-					assertThat(validators.stream().map(v -> v.getClass().getName()).collect(Collectors.toSet()))
-							.containsExactlyInAnyOrder(
-									JwtTimestampValidator.class.getName(), JwtIssuerValidator.class.getName());
+					DelegatingOAuth2TokenValidator validator
+							= context.getBean("iapJwtDelegatingValidator", DelegatingOAuth2TokenValidator.class);
+					assertFalse(validator.validate(mockJwt).hasErrors());
 				});
 	}
 
 	@Test
-	public void testFixedStringAudienceValidatorAddedWhenAvailable() {
+	public void testFixedStringAudienceValidatorAddedWhenAvailable() throws Exception {
+		when(mockJwt.getExpiresAt()).thenReturn(Instant.now().plusSeconds(10));
+		when(mockJwt.getNotBefore()).thenReturn(Instant.now().minusSeconds(10));
+		when(mockJwt.getIssuer()).thenReturn(new URL("https://cloud.google.com/iap"));
+
 		this.contextRunner
-				.withPropertyValues("spring.cloud.gcp.security.iap.audience=friendly")
+				.withUserConfiguration(FixedAudienceValidatorConfiguration.class)
 				.run(context -> {
-					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("iapJwtValidators", List.class);
-					assertThat(validators).isNotNull();
-					assertThat(validators.stream().map(v -> v.getClass().getName()).collect(Collectors.toSet()))
-							.containsExactlyInAnyOrder(
-									JwtTimestampValidator.class.getName(),
-									JwtIssuerValidator.class.getName(),
-									AudienceValidator.class.getName());
+					DelegatingOAuth2TokenValidator validator
+							= context.getBean("iapJwtDelegatingValidator", DelegatingOAuth2TokenValidator.class);
+					OAuth2TokenValidatorResult result = validator.validate(mockJwt);
+					assertTrue(result.hasErrors());
+					assertThat(result.getErrors().size()).isEqualTo(1);
+					assertThat(
+							result.getErrors().stream().findAny().get().getDescription())
+								.startsWith("This aud claim is not equal");
 				});
 	}
 
 	@Test
 	public void testAppEngineAudienceValidatorAddedWhenAvailable() {
 		when(this.mockEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.APP_ENGINE_FLEXIBLE);
-		when(this.mockResourceManager.get("fake-project-id")).thenReturn(this.mockProject);
-		when(this.mockProject.getProjectNumber()).thenReturn(42L);
 
 		this.contextRunner
+				.withUserConfiguration(FixedAudienceValidatorConfiguration.class)
 				.run(context -> {
-					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("iapJwtValidators", List.class);
-					assertThat(validators).isNotNull();
-					assertThat(validators.stream().map(v -> v.getClass().getName()).collect(Collectors.toSet()))
-							.containsExactlyInAnyOrder(
-									JwtTimestampValidator.class.getName(),
-									JwtIssuerValidator.class.getName(),
-									AudienceValidator.class.getName());
-
-					AudienceValidator validator = (AudienceValidator) validators
-							.stream()
-							.filter(v -> v instanceof AudienceValidator)
-							.findAny()
-							.get();
-
-					assertThat(validator.getAudience()).isEqualTo("/projects/42/apps/fake-project-id");
+					AudienceProvider audienceProvider = context.getBean(AudienceProvider.class);
+					assertThat(audienceProvider).isNotNull();
+					assertThat(audienceProvider).isInstanceOf(AppEngineAudienceProvider.class);
 				});
 	}
 
@@ -214,27 +209,13 @@ public class IapAuthenticationAutoConfigurationTests {
 	@Test
 	public void testComputeEngineAudienceValidatorAddedWhenAvailable() {
 		when(this.mockEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.COMPUTE_ENGINE);
-		when(this.mockResourceManager.get("fake-project-id")).thenReturn(this.mockProject);
-		when(this.mockProject.getProjectNumber()).thenReturn(42L);
-		when(this.mockMetadataProvider.getAttribute("id")).thenReturn("123");
 
 		this.contextRunner
+				.withUserConfiguration(FixedAudienceValidatorConfiguration.class)
 				.run(context -> {
-					List<OAuth2TokenValidator<Jwt>> validators = context.getBean("iapJwtValidators", List.class);
-					assertThat(validators).isNotNull();
-					assertThat(validators.stream().map(v -> v.getClass().getName()).collect(Collectors.toSet()))
-							.containsExactlyInAnyOrder(
-									JwtTimestampValidator.class.getName(),
-									JwtIssuerValidator.class.getName(),
-									AudienceValidator.class.getName());
-
-					AudienceValidator validator = (AudienceValidator) validators
-							.stream()
-							.filter(v -> v instanceof AudienceValidator)
-							.findAny()
-							.get();
-
-					assertThat(validator.getAudience()).isEqualTo("/projects/42/global/backendServices/123");
+					AudienceProvider audienceProvider = context.getBean(AudienceProvider.class);
+					assertThat(audienceProvider).isNotNull();
+					assertThat(audienceProvider).isInstanceOf(ComputeEngineAudienceProvider.class);
 				});
 	}
 
@@ -252,6 +233,7 @@ public class IapAuthenticationAutoConfigurationTests {
 
 	@Configuration
 	static class UserConfiguration {
+
 		@Bean
 		public JwtDecoder jwtDecoder() {
 			return s -> mockJwt;
@@ -266,9 +248,9 @@ public class IapAuthenticationAutoConfigurationTests {
 	@Configuration
 	@AutoConfigureBefore(IapAuthenticationAutoConfiguration.class)
 	static class TestConfiguration {
+
 		@Bean
 		static GcpProjectIdProvider mockProjectIdProvider() {
-			when(mockProjectIdProvider.getProjectId()).thenReturn("fake-project-id");
 			return mockProjectIdProvider;
 		}
 
@@ -276,22 +258,16 @@ public class IapAuthenticationAutoConfigurationTests {
 		static GcpEnvironmentProvider mockEnvironmentProvider() {
 			return mockEnvironmentProvider;
 		}
+	}
+
+	@Configuration
+	@AutoConfigureBefore(IapAuthenticationAutoConfiguration.class)
+	static class FixedAudienceValidatorConfiguration {
 
 		@Bean
-		static BeanPostProcessor injectMocks() {
-			return new BeanPostProcessor() {
-				@Override
-				public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-					if (bean instanceof AppEngineAudienceProvider) {
-						((AppEngineAudienceProvider) bean).setResourceManager(mockResourceManager);
-					}
-					else if (bean instanceof ComputeEngineAudienceProvider) {
-						((ComputeEngineAudienceProvider) bean).setResourceManager(mockResourceManager);
-						((ComputeEngineAudienceProvider) bean).setMetadataProvider(mockMetadataProvider);
-					}
-					return bean;
-				}
-			};
+		AudienceValidator audienceValidator() {
+			return new AudienceValidator(() -> "right audience");
 		}
 	}
+
 }

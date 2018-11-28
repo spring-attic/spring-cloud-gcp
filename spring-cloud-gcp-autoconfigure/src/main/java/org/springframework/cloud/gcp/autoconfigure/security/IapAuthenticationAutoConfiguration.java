@@ -19,7 +19,6 @@ package org.springframework.cloud.gcp.autoconfigure.security;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -117,29 +116,26 @@ public class IapAuthenticationAutoConfiguration {
 
 	@Bean
 	@ConditionalOnBean(AudienceProvider.class)
+	@ConditionalOnMissingBean
 	public AudienceValidator environmentBasedAudienceValidator(AudienceProvider audienceProvider) {
 		return new AudienceValidator(audienceProvider);
 	}
 
 	@Bean
-	@ConditionalOnMissingBean(name = "iapJwtValidators")
-	public List<OAuth2TokenValidator<Jwt>> iapJwtValidators(IapAuthenticationProperties properties,
+	@ConditionalOnMissingBean(name = "iapJwtDelegatingValidator")
+	public DelegatingOAuth2TokenValidator<Jwt> iapJwtDelegatingValidator(IapAuthenticationProperties properties,
 			ObjectProvider<AudienceValidator> audienceVerifier) {
+
 		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
 		validators.add(new JwtTimestampValidator());
 		validators.add(new JwtIssuerValidator(properties.getIssuer()));
+
 		audienceVerifier.ifAvailable(audienceValidator -> {
 			validators.add(audienceValidator);
-			LOGGER.info("IAP JWT Audience validation enabled for audience " + audienceValidator.getAudience());
+			if (LOGGER.isInfoEnabled()) {
+				LOGGER.info("IAP JWT Audience validation enabled for audience: " + audienceValidator.getAudience());
+			}
 		});
-
-		return ImmutableList.copyOf(validators);
-	}
-
-	@Bean
-	@ConditionalOnMissingBean(name = "iapJwtDelegatingValidator")
-	public DelegatingOAuth2TokenValidator<Jwt> iapJwtDelegatingValidator(
-			@Qualifier("iapJwtValidators") List<OAuth2TokenValidator<Jwt>> validators) {
 		return new DelegatingOAuth2TokenValidator<>(validators);
 	}
 

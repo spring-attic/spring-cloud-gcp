@@ -37,7 +37,7 @@ public class ComputeEngineAudienceProvider implements AudienceProvider {
 
 	private static final String AUDIENCE_FORMAT = "/projects/%s/global/backendServices/%s";
 
-	private GcpProjectIdProvider projectIdProvider;
+	private final GcpProjectIdProvider projectIdProvider;
 
 	private ResourceManager resourceManager = ResourceManagerOptions.getDefaultInstance().getService();
 
@@ -61,10 +61,13 @@ public class ComputeEngineAudienceProvider implements AudienceProvider {
 	}
 
 	public void setResourceManager(ResourceManager resourceManager) {
+		Assert.notNull(resourceManager, "ResourceManager cannot be null.");
 		this.resourceManager = resourceManager;
 	}
 
 	public void setMetadataProvider(MetadataProvider metadataProvider) {
+		Assert.notNull(metadataProvider, "MetadataProvider cannot be null.");
 		this.metadataProvider = metadataProvider;
 	}
+
 }

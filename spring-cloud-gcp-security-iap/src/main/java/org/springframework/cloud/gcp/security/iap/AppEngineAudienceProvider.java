@@ -35,7 +35,7 @@ public class AppEngineAudienceProvider implements AudienceProvider {
 
 	private static final String AUDIENCE_FORMAT = "/projects/%s/apps/%s";
 
-	private GcpProjectIdProvider projectIdProvider;
+	private final GcpProjectIdProvider projectIdProvider;
 
 	private ResourceManager resourceManager = ResourceManagerOptions.getDefaultInstance().getService();
 
@@ -58,6 +58,8 @@ public class AppEngineAudienceProvider implements AudienceProvider {
 	}
 
 	public void setResourceManager(ResourceManager resourceManager) {
+		Assert.notNull(resourceManager, "ResourceManager cannot be null.");
 		this.resourceManager = resourceManager;
 	}
+
 }

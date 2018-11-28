@@ -24,5 +24,7 @@ package org.springframework.cloud.gcp.security.iap;
  * @since 1.1
  */
 public interface AudienceProvider {
+
 	String getAudience();
+
 }

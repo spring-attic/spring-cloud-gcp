@@ -43,5 +43,5 @@ public @interface ConditionalOnGcpEnvironment {
 	/**
 	 * Configures which environment to match.
 	 */
-	GcpEnvironment value();
+	GcpEnvironment value() default GcpEnvironment.UNKNOWN;
 }

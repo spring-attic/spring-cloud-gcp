@@ -44,7 +44,7 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt>, Initializin
 					"This aud claim is not equal to the configured audience",
 							"https://tools.ietf.org/html/rfc6750#section-3.1");
 
-	private AudienceProvider audienceProvider;
+	private final AudienceProvider audienceProvider;
 
 	private String audience;
 
@@ -59,8 +59,10 @@ public class AudienceValidator implements OAuth2TokenValidator<Jwt>, Initializin
 			return OAuth2TokenValidatorResult.success();
 		}
 		else {
-			LOGGER.warn(String.format(
-					"Expected audience %s did not match token audience %s", this.audience, t.getAudience()));
+			if (LOGGER.isWarnEnabled()) {
+				LOGGER.warn(String.format(
+						"Expected audience %s did not match token audience %s", this.audience, t.getAudience()));
+			}
 			return OAuth2TokenValidatorResult.failure(INVALID_AUDIENCE);
 		}
 	}

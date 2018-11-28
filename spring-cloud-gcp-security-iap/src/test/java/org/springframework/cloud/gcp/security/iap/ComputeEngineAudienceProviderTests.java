@@ -34,6 +34,8 @@ import static org.mockito.Mockito.when;
 
 /**
  * @author Elena Felder
+ *
+ * @since 1.1
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ComputeEngineAudienceProviderTests {
@@ -70,8 +72,23 @@ public class ComputeEngineAudienceProviderTests {
 	}
 
 	@Test
-	public void testAudiencePattern() {
+	public void testNullResourceManagerDisallowed() {
+		this.thrown.expect(IllegalArgumentException.class);
+		this.thrown.expectMessage("ResourceManager cannot be null.");
 
+		new ComputeEngineAudienceProvider(this.mockProjectIdProvider).setResourceManager(null);
+	}
+
+	@Test
+	public void testNullMetadataProviderDisallowed() {
+		this.thrown.expect(IllegalArgumentException.class);
+		this.thrown.expectMessage("MetadataProvider cannot be null.");
+
+		new ComputeEngineAudienceProvider(this.mockProjectIdProvider).setMetadataProvider(null);
+	}
+
+	@Test
+	public void testAudiencePattern() {
 		ComputeEngineAudienceProvider provider = new ComputeEngineAudienceProvider(this.mockProjectIdProvider);
 		provider.setMetadataProvider(this.mockMetadataProvider);
 		provider.setResourceManager(this.mockResourceManager);
