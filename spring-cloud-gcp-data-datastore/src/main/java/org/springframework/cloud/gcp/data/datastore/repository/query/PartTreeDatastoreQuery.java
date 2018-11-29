@@ -35,6 +35,7 @@ import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.Filter;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
@@ -44,6 +45,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ParameterAccessor;
 import org.springframework.data.repository.query.ParametersParameterAccessor;
@@ -108,7 +110,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	@Override
 	public Object execute(Object[] parameters) {
 		Class<?> returnedObjectType = getQueryMethod().getReturnedObjectType();
-		if (isSliceQuery() || isPageQuery()) {
+		if (isPageQuery()) {
 			List<?> resultEntries = (List) execute(parameters, returnedObjectType, List.class, false);
 			Long totalCount = (Long) execute(parameters, Long.class, null, true);
 
@@ -116,6 +118,16 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
 
 			return new PageImpl<>(resultEntries, paramAccessor.getPageable(), totalCount);
+		}
+		if (isSliceQuery()) {
+			DatastoreTemplate.LimitedResult result = (DatastoreTemplate.LimitedResult) execute(parameters,
+					returnedObjectType, List.class, false);
+
+			ParameterAccessor paramAccessor =
+					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
+
+			return new SliceImpl(result == null ? Collections.emptyList() : Lists.newArrayList(result),
+					paramAccessor.getPageable(), result.exceedsLimit());
 		}
 
 		return execute(parameters, returnedObjectType,
@@ -156,6 +168,14 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		StructuredQuery.Builder<?> structredQueryBuilder = queryBuilderSupplier.get();
 		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
+
+		if (isSliceQuery()) {
+			DatastoreTemplate.LimitedResult result = getDatastoreTemplate()
+					.sliceQuery(applyQueryBody(parameters, structredQueryBuilder, total), this.entityType,
+							getLimit(parameters));
+			return result;
+		}
+
 		Iterable rawResults = getDatastoreTemplate()
 				.queryKeysOrEntities(applyQueryBody(parameters, structredQueryBuilder, total), this.entityType);
 
@@ -167,6 +187,15 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 
 		return this.tree.isExistsProjection() || isCountingQuery ? result
 				: convertResultCollection(result, collectionType);
+	}
+
+	private Integer getLimit(Object[] parameters) {
+		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
+		Integer limit = null;
+		if (paramAccessor.getPageable().isPaged()) {
+			limit = paramAccessor.getPageable().getPageSize();
+		}
+		return limit;
 	}
 
 	@VisibleForTesting
@@ -209,7 +238,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 
 		if (paramAccessor.getPageable().isPaged() && !total) {
-			limit = paramAccessor.getPageable().getPageSize();
+			limit = paramAccessor.getPageable().getPageSize() + (isSliceQuery() ? 1 : 0);
 			offset = (int) paramAccessor.getPageable().getOffset();
 		}
 

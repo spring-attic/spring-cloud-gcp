@@ -494,6 +494,30 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
+	public void queryKeysOrEntitiesTest() {
+		DatastoreTemplate.LimitedResult<?> actual = this.datastoreTemplate.sliceQuery(
+				(Query<Entity>) this.testEntityQuery, TestEntity.class, null);
+		assertThat(actual, contains(this.ob1, this.ob2));
+		assertFalse(actual.exceedsLimit());
+	}
+
+	@Test
+	public void queryKeysOrEntitiesTest1() {
+		DatastoreTemplate.LimitedResult<?> actual = this.datastoreTemplate.sliceQuery(
+				(Query<Entity>) this.testEntityQuery, TestEntity.class, 1);
+		assertThat(actual, contains(this.ob1));
+		assertTrue(actual.exceedsLimit());
+	}
+
+	@Test
+	public void queryKeysOrEntitiesTest2() {
+		DatastoreTemplate.LimitedResult<?> actual = this.datastoreTemplate.sliceQuery(
+				(Query<Entity>) this.testEntityQuery, TestEntity.class, 2);
+		assertThat(actual, contains(this.ob1, this.ob2));
+		assertFalse(actual.exceedsLimit());
+	}
+
+	@Test
 	public void queryKeysTest() {
 		KeyQuery keyQuery = GqlQuery.newKeyQueryBuilder().build();
 		this.datastoreTemplate.queryKeys(keyQuery).iterator();

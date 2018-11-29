@@ -351,7 +351,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 2, Sort.Direction.DESC, "id") };
 
-		preparePageSliceResults(2, 2);
+		preparePageResults(2, 2);
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -377,7 +377,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33 };
 
-		preparePageSliceResults(0, null);
+		preparePageResults(0, null);
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -403,7 +403,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 2, Sort.Direction.DESC, "id") };
 
-		preparePageSliceResults(2, 2);
+		prepareSliceResults(2, 3, false);
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -413,9 +413,9 @@ public class PartTreeDatastoreQueryTests {
 
 
 		verify(this.datastoreTemplate, times(1))
-				.queryKeysOrEntities(isA(EntityQuery.class), any());
+				.sliceQuery(isA(EntityQuery.class), any(), any());
 
-		verify(this.datastoreTemplate, times(1))
+		verify(this.datastoreTemplate, times(0))
 				.queryKeysOrEntities(isA(KeyQuery.class), any());
 	}
 
@@ -429,7 +429,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33 };
 
-		preparePageSliceResults(0, null);
+		prepareSliceResults(0, null, false);
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -438,9 +438,9 @@ public class PartTreeDatastoreQueryTests {
 
 
 		verify(this.datastoreTemplate, times(1))
-				.queryKeysOrEntities(isA(EntityQuery.class), any());
+				.sliceQuery(isA(EntityQuery.class), any(), any());
 
-		verify(this.datastoreTemplate, times(1))
+		verify(this.datastoreTemplate, times(0))
 				.queryKeysOrEntities(isA(KeyQuery.class), any());
 	}
 
@@ -455,7 +455,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(0, 2, Sort.Direction.DESC, "id") };
 
-		preparePageSliceResults(0, 2);
+		prepareSliceResults(0, 3, true);
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -465,13 +465,13 @@ public class PartTreeDatastoreQueryTests {
 
 
 		verify(this.datastoreTemplate, times(1))
-				.queryKeysOrEntities(isA(EntityQuery.class), any());
+				.sliceQuery(isA(EntityQuery.class), any(), any());
 
-		verify(this.datastoreTemplate, times(1))
+		verify(this.datastoreTemplate, times(0))
 				.queryKeysOrEntities(isA(KeyQuery.class), any());
 	}
 
-	private void preparePageSliceResults(int offset, Integer limit) {
+	private void preparePageResults(int offset, Integer limit) {
 		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -501,6 +501,25 @@ public class PartTreeDatastoreQueryTests {
 
 			assertEquals(expected, statement);
 			return Arrays.asList(1, 2, 3, 4);
+		});
+	}
+
+
+	private void prepareSliceResults(int offset, Integer limit, boolean exceedsLimit) {
+		when(this.datastoreTemplate.sliceQuery(isA(EntityQuery.class), any(), any())).thenAnswer(invocation -> {
+			EntityQuery statement = invocation.getArgument(0);
+			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
+					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
+							PropertyFilter.eq("ticker", "abcd"),
+							PropertyFilter.lt("price", 8.88),
+							PropertyFilter.ge("price", 3.33),
+							PropertyFilter.isNull("id")))
+					.setKind("trades")
+					.setOffset(offset)
+					.setOrderBy(OrderBy.desc("id")).setLimit(limit).build();
+
+			assertEquals(expected, statement);
+			return new DatastoreTemplate.LimitedResult(Arrays.asList(3, 4).iterator(), exceedsLimit);
 		});
 	}
 
