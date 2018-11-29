@@ -819,10 +819,9 @@ Methods can have `org.springframework.data.domain.Pageable` parameter to control
 or `org.springframework.data.domain.Sort` parameter to control sorting only.
 See https://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories.query-methods[Spring Data documentation] for details.
 
-If a method's return type is `org.springframework.data.domain.Slice`, the return object besides results will have additional information (e.g. if there the next slice exists).
+For returning multiple items in a repository method, we support Java collections as well as `org.springframework.data.domain.Page` and `org.springframework.data.domain.Slice`.
 If a method's return type is `org.springframework.data.domain.Page`, the returned object will include current page,
 total number of results and total number of pages.
-This additional information is only reliable if used within a transaction.
 
 ==== Custom GQL query methods
 
