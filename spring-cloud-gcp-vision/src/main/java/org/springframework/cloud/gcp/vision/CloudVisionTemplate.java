@@ -1,5 +1,5 @@
 /*
- *  Copyright 2018 original author or authors.
+ *  Copyright 2017-2018 original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.protobuf.ByteString;
 
 import org.springframework.core.io.Resource;
+import org.springframework.util.Assert;
 
 /**
  * Spring Template offering convenience methods for interacting with the Cloud Vision
@@ -46,17 +47,17 @@ public class CloudVisionTemplate {
 	private final ImageAnnotatorClient imageAnnotatorClient;
 
 	public CloudVisionTemplate(ImageAnnotatorClient imageAnnotatorClient) {
+		Assert.notNull(
+				imageAnnotatorClient,
+				"CloudVisionTemplate must be provided a non-null ImageAnnotatorClient.");
 		this.imageAnnotatorClient = imageAnnotatorClient;
 	}
 
 	/**
 	 * Analyze an image and extract the feature of the image specified by {@code featureType}.
-	 *
-	 * <p>
-	 * A feature describes the kind of Cloud Vision analysis one wishes to perform on an
+	 * <p>A feature describes the kind of Cloud Vision analysis one wishes to perform on an
 	 * image, such as text detection, image labelling, facial detection, etc. A full list of
 	 * feature types can be found in {@link Feature.Type}.
-	 *
 	 * @param imageResource the image one wishes to analyze. The Cloud Vision APIs support
 	 *     image formats described here: https://cloud.google.com/vision/docs/supported-files
 	 * @param featureType the type of image analysis to perform on the image.
@@ -71,12 +72,9 @@ public class CloudVisionTemplate {
 	/**
 	 * Analyze an image and extract the features of the image specified by
 	 * {@code featureTypes}.
-	 *
-	 * <p>
-	 * A feature describes the kind of Cloud Vision analysis one wishes to perform on an
+	 * <p>A feature describes the kind of Cloud Vision analysis one wishes to perform on an
 	 * image, such as text detection, image labelling, facial detection, etc. A full list of
 	 * feature types can be found in {@link Feature.Type}.
-	 *
 	 * @param imageResource the image one wishes to analyze. The Cloud Vision APIs support
 	 *     image formats described here: https://cloud.google.com/vision/docs/supported-files
 	 * @param featureTypes the types of image analysis to perform on the image.
@@ -104,4 +102,5 @@ public class CloudVisionTemplate {
 
 		return annotateImageResponses.get(0);
 	}
+
 }

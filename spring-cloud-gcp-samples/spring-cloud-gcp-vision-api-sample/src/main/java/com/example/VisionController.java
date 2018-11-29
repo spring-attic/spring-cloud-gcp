@@ -20,8 +20,9 @@ import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.Feature.Type;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
-import com.google.common.collect.ImmutableMap;
 
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.vision.CloudVisionTemplate;
 import org.springframework.core.io.ResourceLoader;
@@ -62,12 +63,13 @@ public class VisionController {
 		AnnotateImageResponse response = cloudVisionTemplate.analyzeImage(
 				resourceLoader.getResource(imageUrl), Type.LABEL_DETECTION);
 
-		ImmutableMap.Builder<String, Float> annotations = ImmutableMap.builder();
-		for (EntityAnnotation annotation : response.getLabelAnnotationsList()) {
-			annotations.put(annotation.getDescription(), annotation.getScore());
-		}
+		Map<String, Float> imageLabels =
+				response.getLabelAnnotationsList()
+						.stream()
+						.collect(Collectors.toMap(
+								EntityAnnotation::getDescription, EntityAnnotation::getScore));
 
-		map.addAttribute("annotations", annotations.build());
+		map.addAttribute("annotations", imageLabels);
 		map.addAttribute("imageUrl", imageUrl);
 
 		return new ModelAndView("result", map);
