@@ -18,10 +18,10 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -87,7 +87,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	private DatastoreEntityConverter datastoreEntityConverter;
 
-	private final Map<Class, Optional<Class<?>>> writeConverters = new HashMap<>();
+	private final Map<Class, Optional<Class<?>>> writeConverters = new ConcurrentHashMap<>();
 
 	public TwoStepsConversions(CustomConversions customConversions, ObjectToKeyFactory objectToKeyFactory) {
 		this.objectToKeyFactory = objectToKeyFactory;
