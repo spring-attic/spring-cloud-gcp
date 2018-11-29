@@ -53,8 +53,7 @@ public class CloudVisionTemplate {
 	/**
 	 * Analyze an image and extract the features of the image specified by
 	 * {@code featureTypes}.
-	 * <p>
-	 * A feature describes the kind of Cloud Vision analysis one wishes to perform on an
+	 * <p>A feature describes the kind of Cloud Vision analysis one wishes to perform on an
 	 * image, such as text detection, image labelling, facial detection, etc. A full list of
 	 * feature types can be found in {@link Feature.Type}.
 	 * @param imageResource the image one wishes to analyze. The Cloud Vision APIs support
