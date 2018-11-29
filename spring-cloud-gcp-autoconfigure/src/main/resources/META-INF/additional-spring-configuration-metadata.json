@@ -34,7 +34,7 @@
       "name": "spring.cloud.gcp.security.iap.enabled",
       "type": "java.lang.Boolean",
       "description": "Auto-configure Google Cloud IAP identity extraction components.",
-      "defaultValue": false
+      "defaultValue": true
     },
     {
       "name": "spring.cloud.gcp.vision.enabled",

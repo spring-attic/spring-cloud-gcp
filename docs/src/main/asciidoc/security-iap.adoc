@@ -7,11 +7,16 @@ https://cloud.google.com/iap/[Cloud Identity-Aware Proxy (IAP)] provides a secur
 
 The IAP starter uses {spring-security-ref}#oauth2resourceserver[Spring Security OAuth 2.0 Resource Server] functionality to automatically extract user identity from the proxy-injected `x-goog-iap-jwt-assertion` HTTP header.
 
-To use Cloud IAP authentication, you need to:
+The following claims are validated automatically:
 
- * Pull in the `org.springframework.cloud:spring-cloud-gcp-starter-security-iap` dependency.
- * Set `spring.cloud.gcp.security.iap.enabled` property to `true`.
- * If you create a custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`], enable extracting user identity by adding `.oauth2ResourceServer().jwt()` configuration to the {spring-security-javadoc}config/annotation/web/builders/HttpSecurity.html[`HttpSecurity`] object.
+ * Issue time
+ * Expiration time
+ * Issuer
+
+Additionally, Audience (`"aud"`) validation is enabled when the application is running on AppEngine/ComputeEngine/Kubernetes, or when a custom audience is provided through `spring.cloud.gcp.security.iap.audience` property.
+The custom property overrides automatic environment-based checks.
+
+NOTE: If you create a custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`], enable extracting user identity by adding `.oauth2ResourceServer().jwt()` configuration to the {spring-security-javadoc}config/annotation/web/builders/HttpSecurity.html[`HttpSecurity`] object.
  If no custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`] is present, nothing needs to be done because Spring Boot will add this customization by default.
 
 A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample[sample application] is available.
@@ -62,5 +67,11 @@ CAUTION: Modifying registry, algorithm, and header properties might be useful fo
 |JWK issuer to verify.
 |true
 |`https://cloud.google.com/iap`
+
+|`spring.cloud.gcp.security.iap.audience`
+|Custom JWK audience to verify.
+Note that without this option, the audience is automatically determined for applications deployed to App Engine/Compute Engine/Kubernetes Engine.
+|false
+|
 
 |===

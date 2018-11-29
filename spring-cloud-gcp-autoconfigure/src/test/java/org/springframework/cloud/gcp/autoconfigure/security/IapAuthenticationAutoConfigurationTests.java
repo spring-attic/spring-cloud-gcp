@@ -16,8 +16,13 @@
 
 package org.springframework.cloud.gcp.autoconfigure.security;
 
+import java.net.URL;
+import java.time.Instant;
+
 import javax.servlet.http.HttpServletRequest;
 
+import com.google.cloud.resourcemanager.Project;
+import com.google.cloud.resourcemanager.ResourceManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,11 +31,22 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration;
 import org.springframework.boot.test.context.assertj.AssertableApplicationContext;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.cloud.gcp.core.GcpEnvironment;
+import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
+import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.MetadataProvider;
+import org.springframework.cloud.gcp.security.iap.AppEngineAudienceProvider;
+import org.springframework.cloud.gcp.security.iap.AudienceProvider;
+import org.springframework.cloud.gcp.security.iap.AudienceValidator;
+import org.springframework.cloud.gcp.security.iap.ComputeEngineAudienceProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
@@ -39,11 +55,14 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
 /**
  * @author Elena Felder
+ *
  * @since 1.1
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -52,7 +71,8 @@ public class IapAuthenticationAutoConfigurationTests {
 	static final String FAKE_USER_TOKEN = "lol cats forever";
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withConfiguration(AutoConfigurations.of(IapAuthenticationAutoConfiguration.class));
+			.withConfiguration(
+					AutoConfigurations.of(IapAuthenticationAutoConfiguration.class, TestConfiguration.class));
 
 	@Mock
 	HttpServletRequest mockIapRequest;
@@ -63,6 +83,21 @@ public class IapAuthenticationAutoConfigurationTests {
 	@Mock
 	static Jwt mockJwt;
 
+	@Mock
+	static GcpProjectIdProvider mockProjectIdProvider;
+
+	@Mock
+	static GcpEnvironmentProvider mockEnvironmentProvider;
+
+	@Mock
+	static ResourceManager mockResourceManager;
+
+	@Mock
+	static Project mockProject;
+
+	@Mock
+	static MetadataProvider mockMetadataProvider;
+
 	@Before
 	public void httpRequestSetup() {
 		when(this.mockIapRequest.getHeader("x-goog-iap-jwt-assertion")).thenReturn("very fake jwt");
@@ -70,8 +105,7 @@ public class IapAuthenticationAutoConfigurationTests {
 
 	@Test
 	public void testIapAutoconfiguredBeansExistInContext() {
-		this.contextRunner.withPropertyValues("spring.cloud.gcp.security.iap.enabled=true")
-				.run(this::verifyJwtBeans);
+		this.contextRunner.run(this::verifyJwtBeans);
 	}
 
 	@Test (expected = NoSuchBeanDefinitionException.class)
@@ -81,26 +115,20 @@ public class IapAuthenticationAutoConfigurationTests {
 				.run(context ->	context.getBean(JwtDecoder.class));
 	}
 
-	@Test (expected = NoSuchBeanDefinitionException.class)
-	public void testAutoconfiguredBeansMissingWhenGatingPropertyMissing() {
-		this.contextRunner
-				.run(context -> context.getBean(JwtDecoder.class));
-	}
-
 	@Test
 	public void testIapBeansReturnedWhenBothIapAndSpringSecurityConfigPresent() {
 		new ApplicationContextRunner()
-				.withPropertyValues("spring.cloud.gcp.security.iap.enabled=true")
 				.withConfiguration(
-						AutoConfigurations.of(IapAuthenticationAutoConfiguration.class,
-						OAuth2ResourceServerAutoConfiguration.class))
+						AutoConfigurations.of(
+								IapAuthenticationAutoConfiguration.class,
+								OAuth2ResourceServerAutoConfiguration.class,
+								TestConfiguration.class))
 				.run(this::verifyJwtBeans);
 	}
 
 	@Test
 	public void testUserBeansReturnedUserConfigPresent() {
 		this.contextRunner
-				.withPropertyValues("spring.cloud.gcp.security.iap.enabled=true")
 				.withUserConfiguration(UserConfiguration.class)
 				.run(context -> {
 					JwtDecoder jwtDecoder =  context.getBean(JwtDecoder.class);
@@ -118,9 +146,7 @@ public class IapAuthenticationAutoConfigurationTests {
 	@Test
 	public void testCustomPropertyOverridesDefault() {
 		this.contextRunner
-				.withPropertyValues(
-						"spring.cloud.gcp.security.iap.enabled=true",
-						"spring.cloud.gcp.security.iap.header=some-other-header")
+				.withPropertyValues("spring.cloud.gcp.security.iap.header=some-other-header")
 				.run(context -> {
 					when(this.mockNonIapRequest.getHeader("some-other-header")).thenReturn("other header jwt");
 
@@ -128,6 +154,68 @@ public class IapAuthenticationAutoConfigurationTests {
 					assertThat(resolver).isNotNull();
 					assertThat(resolver.resolve(this.mockIapRequest)).isEqualTo(null);
 					assertThat(resolver.resolve(this.mockNonIapRequest)).isEqualTo("other header jwt");
+				});
+	}
+
+	@Test
+	public void testAudienceValidatorNotAddedWhenNotAvailable() throws Exception {
+		when(mockJwt.getExpiresAt()).thenReturn(Instant.now().plusSeconds(10));
+		when(mockJwt.getNotBefore()).thenReturn(Instant.now().minusSeconds(10));
+		when(mockJwt.getIssuer()).thenReturn(new URL("https://cloud.google.com/iap"));
+		verify(mockJwt, never()).getAudience();
+
+		this.contextRunner
+				.run(context -> {
+					DelegatingOAuth2TokenValidator validator
+							= context.getBean("iapJwtDelegatingValidator", DelegatingOAuth2TokenValidator.class);
+					assertFalse(validator.validate(mockJwt).hasErrors());
+				});
+	}
+
+	@Test
+	public void testFixedStringAudienceValidatorAddedWhenAvailable() throws Exception {
+		when(mockJwt.getExpiresAt()).thenReturn(Instant.now().plusSeconds(10));
+		when(mockJwt.getNotBefore()).thenReturn(Instant.now().minusSeconds(10));
+		when(mockJwt.getIssuer()).thenReturn(new URL("https://cloud.google.com/iap"));
+
+		this.contextRunner
+				.withUserConfiguration(FixedAudienceValidatorConfiguration.class)
+				.run(context -> {
+					DelegatingOAuth2TokenValidator validator
+							= context.getBean("iapJwtDelegatingValidator", DelegatingOAuth2TokenValidator.class);
+					OAuth2TokenValidatorResult result = validator.validate(mockJwt);
+					assertTrue(result.hasErrors());
+					assertThat(result.getErrors().size()).isEqualTo(1);
+					assertThat(
+							result.getErrors().stream().findAny().get().getDescription())
+								.startsWith("This aud claim is not equal");
+				});
+	}
+
+	@Test
+	public void testAppEngineAudienceValidatorAddedWhenAvailable() {
+		when(this.mockEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.APP_ENGINE_FLEXIBLE);
+
+		this.contextRunner
+				.withUserConfiguration(FixedAudienceValidatorConfiguration.class)
+				.run(context -> {
+					AudienceProvider audienceProvider = context.getBean(AudienceProvider.class);
+					assertThat(audienceProvider).isNotNull();
+					assertThat(audienceProvider).isInstanceOf(AppEngineAudienceProvider.class);
+				});
+	}
+
+
+	@Test
+	public void testComputeEngineAudienceValidatorAddedWhenAvailable() {
+		when(this.mockEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.COMPUTE_ENGINE);
+
+		this.contextRunner
+				.withUserConfiguration(FixedAudienceValidatorConfiguration.class)
+				.run(context -> {
+					AudienceProvider audienceProvider = context.getBean(AudienceProvider.class);
+					assertThat(audienceProvider).isNotNull();
+					assertThat(audienceProvider).isInstanceOf(ComputeEngineAudienceProvider.class);
 				});
 	}
 
@@ -145,6 +233,7 @@ public class IapAuthenticationAutoConfigurationTests {
 
 	@Configuration
 	static class UserConfiguration {
+
 		@Bean
 		public JwtDecoder jwtDecoder() {
 			return s -> mockJwt;
@@ -155,4 +244,30 @@ public class IapAuthenticationAutoConfigurationTests {
 			return httpServletRequest -> FAKE_USER_TOKEN;
 		}
 	}
+
+	@Configuration
+	@AutoConfigureBefore(IapAuthenticationAutoConfiguration.class)
+	static class TestConfiguration {
+
+		@Bean
+		static GcpProjectIdProvider mockProjectIdProvider() {
+			return mockProjectIdProvider;
+		}
+
+		@Bean
+		static GcpEnvironmentProvider mockEnvironmentProvider() {
+			return mockEnvironmentProvider;
+		}
+	}
+
+	@Configuration
+	@AutoConfigureBefore(IapAuthenticationAutoConfiguration.class)
+	static class FixedAudienceValidatorConfiguration {
+
+		@Bean
+		AudienceValidator audienceValidator() {
+			return new AudienceValidator(() -> "right audience");
+		}
+	}
+
 }

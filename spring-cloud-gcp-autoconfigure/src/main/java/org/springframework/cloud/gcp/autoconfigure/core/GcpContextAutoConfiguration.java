@@ -23,7 +23,9 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
+import org.springframework.cloud.gcp.core.DefaultGcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
+import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +38,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Elena Felder
  */
 @Configuration
 @EnableConfigurationProperties(GcpProperties.class)
@@ -71,5 +74,16 @@ public class GcpContextAutoConfiguration {
 		}
 
 		return projectIdProvider;
+	}
+
+	/**
+	 * Provides default implementation for determining GCP environment.
+	 * Can be overridden to avoid interacting with real environment.
+	 * @since 1.1
+	 */
+	@Bean
+	@ConditionalOnMissingBean
+	public static GcpEnvironmentProvider gcpEnvironmentProvider() {
+		return new DefaultGcpEnvironmentProvider();
 	}
 }
