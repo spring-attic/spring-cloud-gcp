@@ -46,7 +46,7 @@ public class CloudVisionTemplate {
 	private final ImageAnnotatorClient imageAnnotatorClient;
 
 	public CloudVisionTemplate(ImageAnnotatorClient imageAnnotatorClient) {
-		Assert.notNull(imageAnnotatorClient, "ImageAnnotatorClient must not be null.");
+		Assert.notNull(imageAnnotatorClient, "imageAnnotatorClient must not be null.");
 		this.imageAnnotatorClient = imageAnnotatorClient;
 	}
 
