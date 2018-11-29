@@ -24,7 +24,9 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Value;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
@@ -56,6 +58,9 @@ public class SpannerStatementQueryTests {
 	private SpannerMappingContext spannerMappingContext;
 
 	private PartTreeSpannerQuery partTreeSpannerQuery;
+
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Before
 	public void initMocks() {
@@ -175,8 +180,10 @@ public class SpannerStatementQueryTests {
 				any(), any());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void unspecifiedParametersTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("The number of tags does match the number of params.");
 		when(this.queryMethod.getName()).thenReturn(
 				"findTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
@@ -188,8 +195,11 @@ public class SpannerStatementQueryTests {
 		this.partTreeSpannerQuery.execute(params);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void unsupportedParamTypeTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("is not a supported type: class org.springframework." +
+				"cloud.gcp.data.spanner.repository.query.SpannerStatementQueryTests$Trade");
 		when(this.queryMethod.getName()).thenReturn(
 				"findTop3DistinctIdActionPriceByActionAndSymbolOrTraderIdAndPriceLessThanOrPriceGreater"
 						+ "ThanEqualAndIdIsNotNullAndTraderIdIsNullOrderByIdDesc");
@@ -201,8 +211,11 @@ public class SpannerStatementQueryTests {
 		this.partTreeSpannerQuery.execute(params);
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test
 	public void unSupportedPredicateTest() {
+		this.expectedEx.expect(UnsupportedOperationException.class);
+		this.expectedEx.expectMessage("The statement type: BETWEEN (2): [IsBetween, " +
+				"Between] is not supported.");
 		when(this.queryMethod.getName()).thenReturn("countByTraderIdBetween");
 		this.partTreeSpannerQuery = createQuery();
 		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);

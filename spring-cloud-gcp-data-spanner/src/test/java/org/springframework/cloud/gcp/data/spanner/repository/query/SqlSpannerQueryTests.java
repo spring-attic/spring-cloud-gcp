@@ -24,7 +24,9 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Value;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
@@ -81,6 +83,9 @@ public class SqlSpannerQueryTests {
 
 	private final SpannerEntityProcessor spannerEntityProcessor = mock(
 			SpannerEntityProcessor.class);
+
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Before
 	public void initMocks() {
@@ -192,8 +197,10 @@ public class SqlSpannerQueryTests {
 		verify(this.spannerTemplate, times(1)).executeQuery(any(), any());
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void multiplePageableSortTest() {
+		this.expectedEx.expect(SpannerDataException.class);
+		this.expectedEx.expectMessage("Only a single Pageable or Sort param is allowed.");
 		String sql = "SELECT * FROM table;";
 
 		Parameters parameters = mock(Parameters.class);
@@ -208,8 +215,10 @@ public class SqlSpannerQueryTests {
 		sqlSpannerQuery.execute(new Object[] { this.pageable, this.sort });
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void mutliplePageableTest() {
+		this.expectedEx.expect(SpannerDataException.class);
+		this.expectedEx.expectMessage("Only a single Pageable or Sort param is allowed.");
 		String sql = "SELECT * FROM table;";
 
 		Parameters parameters = mock(Parameters.class);
@@ -224,8 +233,10 @@ public class SqlSpannerQueryTests {
 		sqlSpannerQuery.execute(new Object[] { this.pageable, this.pageable });
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void mutlipleSortTest() {
+		this.expectedEx.expect(SpannerDataException.class);
+		this.expectedEx.expectMessage("Only a single Pageable or Sort param is allowed.");
 		String sql = "SELECT * FROM table;";
 
 		Parameters parameters = mock(Parameters.class);

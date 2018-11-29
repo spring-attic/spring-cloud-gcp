@@ -25,7 +25,9 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.common.collect.ImmutableList;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerPageableQueryOptions;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
@@ -58,6 +60,9 @@ public class SpannerRepositoryImplTests {
 
 	private static final Key A_KEY = Key.of("key");
 
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+
 	@Before
 	public void setup() {
 		this.template = mock(SpannerTemplate.class);
@@ -66,13 +71,17 @@ public class SpannerRepositoryImplTests {
 
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void constructorNullSpannerOperationsTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("A valid SpannerTemplate object is required.");
 		new SimpleSpannerRepository<Object, Key>(null, Object.class);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void constructorNullEntityTypeTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("A valid entity type is required.");
 		new SimpleSpannerRepository<Object, Key>(this.template, null);
 	}
 
@@ -83,43 +92,57 @@ public class SpannerRepositoryImplTests {
 						.getSpannerTemplate());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void saveNullObjectTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("A non-null entity is required for saving.");
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class).save(null);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void findNullIdTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("A non-null ID is required.");
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.findById(null);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void existsNullIdTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("A non-null ID is required.");
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.existsById(null);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void deleteNullIdTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("A non-null ID is required.");
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.deleteById(null);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void deleteNullEntityTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("A non-null entity is required.");
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.delete(null);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void deleteAllNullEntityTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("A non-null list of entities is required.");
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.deleteAll(null);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void saveAllNullEntityTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("A non-null list of entities is required for saving.");
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
 				.saveAll(null);
 	}
@@ -155,8 +178,9 @@ public class SpannerRepositoryImplTests {
 		verify(this.template, times(1)).read(eq(Object.class), eq(A_KEY));
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void findByIdKeyWritingThrowsAnException() {
+		this.expectedEx.expect(SpannerDataException.class);
 		when(this.entityProcessor.convertToKey(any())).thenThrow(SpannerDataException.class);
 		new SimpleSpannerRepository<Object, Object[]>(this.template, Object.class)
 				.findById(new Object[] {});

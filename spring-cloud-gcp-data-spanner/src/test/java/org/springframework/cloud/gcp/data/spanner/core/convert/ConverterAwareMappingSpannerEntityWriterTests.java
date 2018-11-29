@@ -32,7 +32,9 @@ import com.google.cloud.spanner.ValueBinder;
 import com.google.common.collect.ImmutableSet;
 import com.google.spanner.v1.TypeCode;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runners.Parameterized;
 
 import org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities.ChildTestEntity;
@@ -64,6 +66,9 @@ import static org.mockito.Mockito.when;
  * @author Balint Pato
  */
 public class ConverterAwareMappingSpannerEntityWriterTests {
+
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
 
 	private SpannerEntityWriter spannerEntityWriter;
 
@@ -302,24 +307,31 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		verifyZeroInteractions(booleanFieldBinder);
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void writeUnsupportedTypeIterableTest() {
+		this.expectedEx.expect(SpannerDataException.class);
+		this.expectedEx.expectMessage("Unsupported mapping for type: class java.util.ArrayList");
 		FaultyTestEntity2 ft = new FaultyTestEntity2();
 		ft.listWithUnsupportedInnerType = new ArrayList<TestEntity>();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table_2");
 		this.spannerEntityWriter.write(ft, writeBuilder::set);
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void writeIncompatibleTypeTest() {
+		this.expectedEx.expect(SpannerDataException.class);
+		this.expectedEx.expectMessage("Unsupported mapping for type: " +
+				"class org.springframework.cloud.gcp.data.spanner.core.convert.TestEntities$TestEntity");
 		FaultyTestEntity ft = new FaultyTestEntity();
 		ft.fieldWithUnsupportedType = new TestEntity();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
 		this.spannerEntityWriter.write(ft, writeBuilder::set);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void writingNullToKeyShouldThrowException() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("Key of an entity to be written cannot be null!");
 		this.spannerEntityWriter.convertToKey(null);
 	}
 
@@ -330,8 +342,10 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		assertThat(key, is(Key.of(true)));
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void testUserSetUnconvertableColumnType() {
+		this.expectedEx.expect(SpannerDataException.class);
+		this.expectedEx.expectMessage("Unsupported mapping for type: class java.lang.Boolean");
 		UserSetUnconvertableColumnType userSetUnconvertableColumnType = new UserSetUnconvertableColumnType();
 		WriteBuilder writeBuilder = Mutation.newInsertBuilder("faulty_test_table");
 		this.spannerEntityWriter.write(userSetUnconvertableColumnType, writeBuilder::set);
