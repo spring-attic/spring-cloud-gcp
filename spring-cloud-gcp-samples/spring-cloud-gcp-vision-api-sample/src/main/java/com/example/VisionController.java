@@ -36,8 +36,7 @@ import org.springframework.web.servlet.ModelAndView;
  * Code sample that shows how Spring Cloud GCP can be leveraged to use Google Cloud Client
  * Libraries.
  *
- * <p>
- * This uses the Cloud Vision API with the {@link ImageAnnotatorClient}, which is
+ * <p>This uses the Cloud Vision API with the {@link ImageAnnotatorClient}, which is
  * configured and provided by the spring-cloud-gcp-starter-vision module.
  *
  * @author João André Martins
