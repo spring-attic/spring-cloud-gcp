@@ -34,6 +34,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
+import org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.storage.GoogleStorageResource;
@@ -84,7 +85,8 @@ public class GcpStorageAutoConfigurationTests {
 			GcpContextAutoConfiguration.class,
 			GcpCloudSqlAutoConfiguration.class,
 			DataSourceAutoConfiguration.class,
-			SecurityAutoConfiguration.class
+			SecurityAutoConfiguration.class,
+			IapAuthenticationAutoConfiguration.class
 	})
 	@RestController
 	static class StorageApplication {

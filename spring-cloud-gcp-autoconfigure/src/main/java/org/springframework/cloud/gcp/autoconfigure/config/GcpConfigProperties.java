@@ -37,30 +37,30 @@ import org.springframework.core.env.Environment;
 public class GcpConfigProperties implements CredentialsSupplier {
 
 	/**
-	 *  Enables Spring Cloud GCP Config.
+	 * Enables Spring Cloud GCP Config.
 	 */
 	private boolean enabled;
 
 	/**
-	 *  Name of the application.
+	 * Name of the application.
 	 */
 	@Value("${spring.application.name:application}")
 	private String name;
 
 	/**
-	 *  Comma-delimited string of profiles under which the app is running.
-	 *  Gets its default value from the {@code spring.profiles.active} property, falling back on the
-	 *  {@code spring.profiles.default} property.
+	 * Comma-delimited string of profiles under which the app is running.
+	 * Gets its default value from the {@code spring.profiles.active} property, falling back on the
+	 * {@code spring.profiles.default} property.
 	 */
 	private String profile;
 
 	/**
-	 *  Timeout for Google Runtime Configuration API calls.
+	 * Timeout for Google Runtime Configuration API calls.
 	 */
 	private int timeoutMillis = 60000;
 
 	/**
-	 *  Overrides the GCP project ID specified in the Core module.
+	 * Overrides the GCP project ID specified in the Core module.
 	 */
 	private String projectId;
 

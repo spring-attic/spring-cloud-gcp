@@ -135,6 +135,18 @@ and append the additional scopes you need to add.
 spring.cloud.gcp.credentials.scopes=DEFAULT_SCOPES,https://www.googleapis.com/auth/cloud-vision
 ----
 
-==== Spring Initializr
+=== Environment
+
+`GcpEnvironmentProvider` is a functional interface, auto-configured by the Spring Cloud GCP starter, that returns a `GcpEnvironment` enum.
+The provider can help determine programmatically in which GCP environment (App Engine Flexible, App Engine Standard, Kubernetes Engine or Compute Engine) the application is deployed.
+
+[source,java]
+----
+public interface GcpEnvironmentProvider {
+	GcpEnvironment getCurrentEnvironment();
+}
+----
+
+== Spring Initializr
 
 This starter is available from http://start.spring.io/[Spring Initializr] through the `GCP Support` entry.

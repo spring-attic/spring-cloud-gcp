@@ -23,7 +23,7 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.util.StringUtils;
 
 /**
- * Determine whether this is running inside of an App Engine environment by looking into
+ * Determine whether this is running inside of an App Engine Standard environment by looking into
  * the System properties {@value APPENGINE_RUNTIME_PROPERTY}.
  *
  * @author Ray Tsang
