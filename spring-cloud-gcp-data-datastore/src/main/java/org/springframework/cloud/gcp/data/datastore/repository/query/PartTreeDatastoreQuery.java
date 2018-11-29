@@ -126,8 +126,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			ParameterAccessor paramAccessor =
 					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
 
-			return new SliceImpl(result == null ? Collections.emptyList() : Lists.newArrayList(result),
-					paramAccessor.getPageable(), result.exceedsLimit());
+			return new SliceImpl(Lists.newArrayList(result), paramAccessor.getPageable(), result.exceedsLimit());
 		}
 
 		return execute(parameters, returnedObjectType,
@@ -170,10 +169,9 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
 
 		if (isSliceQuery()) {
-			DatastoreTemplate.LimitedResult result = getDatastoreTemplate()
+			return getDatastoreTemplate()
 					.sliceQuery(applyQueryBody(parameters, structredQueryBuilder, total), this.entityType,
 							getLimit(parameters));
-			return result;
 		}
 
 		Iterable rawResults = getDatastoreTemplate()
