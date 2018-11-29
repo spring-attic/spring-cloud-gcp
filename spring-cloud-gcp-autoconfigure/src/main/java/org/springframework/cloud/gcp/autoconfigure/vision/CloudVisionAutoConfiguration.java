@@ -40,7 +40,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @EnableConfigurationProperties(CloudVisionProperties.class)
-@ConditionalOnClass(ImageAnnotatorClient.class)
+@ConditionalOnClass(CloudVisionTemplate.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.vision.enabled", matchIfMissing = true)
 public class CloudVisionAutoConfiguration {
 
@@ -86,4 +86,5 @@ public class CloudVisionAutoConfiguration {
 	public CloudVisionTemplate cloudVisionTemplate(ImageAnnotatorClient imageAnnotatorClient) {
 		return new CloudVisionTemplate(imageAnnotatorClient);
 	}
+
 }

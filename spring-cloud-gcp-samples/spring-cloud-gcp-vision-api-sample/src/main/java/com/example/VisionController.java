@@ -16,13 +16,14 @@
 
 package com.example;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.EntityAnnotation;
 import com.google.cloud.vision.v1.Feature.Type;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.vision.CloudVisionTemplate;
 import org.springframework.core.io.ResourceLoader;
@@ -60,8 +61,8 @@ public class VisionController {
 	 */
 	@GetMapping("/vision")
 	public ModelAndView uploadImage(String imageUrl, ModelMap map) throws Exception {
-		AnnotateImageResponse response = cloudVisionTemplate.analyzeImage(
-				resourceLoader.getResource(imageUrl), Type.LABEL_DETECTION);
+		AnnotateImageResponse response = this.cloudVisionTemplate.analyzeImage(
+				this.resourceLoader.getResource(imageUrl), Type.LABEL_DETECTION);
 
 		Map<String, Float> imageLabels =
 				response.getLabelAnnotationsList()
