@@ -48,6 +48,7 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
  * @author João André Martins
  * @author Doug Hoard
  * @author Mike Eltsufin
+ * @author Taylor Burke
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubInboundChannelAdapterTests {
