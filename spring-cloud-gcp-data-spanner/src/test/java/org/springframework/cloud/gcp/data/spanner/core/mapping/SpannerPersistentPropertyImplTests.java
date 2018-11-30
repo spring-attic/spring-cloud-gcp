@@ -59,8 +59,13 @@ public class SpannerPersistentPropertyImplTests {
 	@Test
 	public void testNullColumnName() {
 		this.expectedEx.expect(MappingException.class);
+		// The expectMessage calls below operate as `contains` and seperate calls are used
+		// because the printed order of some components can change randomly.
 		this.expectedEx.expectMessage("Invalid (null or empty) field name returned for " +
-				"property @org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey(keyOrder=1, value=1)" +
+				"property @org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey");
+		this.expectedEx.expectMessage("keyOrder=1");
+		this.expectedEx.expectMessage("value=1");
+		this.expectedEx.expectMessage(
 				"java.lang.String org.springframework.cloud.gcp.data.spanner.core.mapping." +
 				"SpannerPersistentPropertyImplTests$TestEntity.id by class " +
 				"org.springframework.data.mapping.model.FieldNamingStrategy$MockitoMock$");

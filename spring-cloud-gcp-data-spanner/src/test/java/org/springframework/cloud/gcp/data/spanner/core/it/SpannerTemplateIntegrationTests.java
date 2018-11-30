@@ -89,8 +89,13 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 	public void readOnlyTransactionTest() {
 
 		this.expectedEx.expect(SpannerDataException.class);
+		// The expectMessage calls below operate as `contains` and seperate calls are used
+		// because the printed order of some components can change randomly.
 		this.expectedEx.expectMessage("Invalid (null or empty) field name returned for property " +
-				"@org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey(value=1, keyOrder=1)" +
+				"@org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey");
+		this.expectedEx.expectMessage("value=1");
+		this.expectedEx.expectMessage("keyOrder=1");
+		this.expectedEx.expectMessage(
 				"java.lang.String org.springframework.cloud.gcp.data.spanner.core.mapping." +
 				"SpannerPersistentPropertyImplTests$TestEntity.id by class " +
 				"org.springframework.data.mapping.model.FieldNamingStrategy$MockitoMock$");
