@@ -31,7 +31,6 @@ import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
 import org.springframework.integration.endpoint.MessageProducerSupport;
 import org.springframework.integration.mapping.HeaderMapper;
-import org.springframework.integration.support.MessageBuilder;
 import org.springframework.util.Assert;
 
 /**
@@ -145,7 +144,10 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		}
 
 		try {
-			sendMessage(MessageBuilder.withPayload(message.getPayload()).copyHeaders(messageHeaders).build());
+			sendMessage(getMessageBuilderFactory()
+					.withPayload(message.getPayload())
+					.copyHeaders(messageHeaders)
+					.build());
 		}
 		catch (RuntimeException re) {
 			if (this.ackMode == AckMode.AUTO) {
