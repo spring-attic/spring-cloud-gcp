@@ -126,7 +126,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			ParameterAccessor paramAccessor =
 					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
 
-			return new SliceImpl(result.getResult(), paramAccessor.getPageable(), result.exceedsLimit());
+			return new SliceImpl(result.getResult(), paramAccessor.getPageable(), result.nextSliceExists());
 		}
 
 		return execute(parameters, returnedObjectType,
@@ -330,7 +330,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			return this.result;
 		}
 
-		boolean exceedsLimit() {
+		boolean nextSliceExists() {
 			return this.exceedsLimit;
 		}
 	}
