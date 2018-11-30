@@ -20,7 +20,9 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.KeyQuery;
@@ -28,6 +30,7 @@ import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.OrderBy;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
+import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -403,7 +406,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 2, Sort.Direction.DESC, "id") };
 
-		prepareSliceResults(2, 3, false);
+		prepareSliceResults(2, 3, 2);
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -413,7 +416,7 @@ public class PartTreeDatastoreQueryTests {
 
 
 		verify(this.datastoreTemplate, times(1))
-				.sliceQuery(isA(EntityQuery.class), any(), any());
+				.query(isA(EntityQuery.class), (Function) any());
 
 		verify(this.datastoreTemplate, times(0))
 				.queryKeysOrEntities(isA(KeyQuery.class), any());
@@ -429,7 +432,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33 };
 
-		prepareSliceResults(0, null, false);
+		prepareSliceResults(0, null, null);
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -438,7 +441,7 @@ public class PartTreeDatastoreQueryTests {
 
 
 		verify(this.datastoreTemplate, times(1))
-				.sliceQuery(isA(EntityQuery.class), any(), any());
+				.query(isA(EntityQuery.class), (Function) any());
 
 		verify(this.datastoreTemplate, times(0))
 				.queryKeysOrEntities(isA(KeyQuery.class), any());
@@ -455,7 +458,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(0, 2, Sort.Direction.DESC, "id") };
 
-		prepareSliceResults(0, 3, true);
+		prepareSliceResults(0, 3, 3);
 
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
@@ -465,7 +468,7 @@ public class PartTreeDatastoreQueryTests {
 
 
 		verify(this.datastoreTemplate, times(1))
-				.sliceQuery(isA(EntityQuery.class), any(), any());
+				.query(isA(EntityQuery.class), (Function) any());
 
 		verify(this.datastoreTemplate, times(0))
 				.queryKeysOrEntities(isA(KeyQuery.class), any());
@@ -504,9 +507,8 @@ public class PartTreeDatastoreQueryTests {
 		});
 	}
 
-
-	private void prepareSliceResults(int offset, Integer limit, boolean exceedsLimit) {
-		when(this.datastoreTemplate.sliceQuery(isA(EntityQuery.class), any(), any())).thenAnswer(invocation -> {
+	private void prepareSliceResults(int offset, Integer queryLimit, Integer resultLimit) {
+		when(this.datastoreTemplate.query(isA(EntityQuery.class), (Function) any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
@@ -516,11 +518,16 @@ public class PartTreeDatastoreQueryTests {
 							PropertyFilter.isNull("id")))
 					.setKind("trades")
 					.setOffset(offset)
-					.setOrderBy(OrderBy.desc("id")).setLimit(limit).build();
+					.setOrderBy(OrderBy.desc("id")).setLimit(queryLimit).build();
 
 			assertEquals(expected, statement);
-			return new DatastoreTemplate.LimitedResult(Arrays.asList(3, 4).iterator(), exceedsLimit);
+			List<Integer> results = Arrays.asList(3, 4, 5);
+			return resultLimit != null && resultLimit < results.size() ? results.subList(0, resultLimit)
+					: results;
 		});
+		when(this.datastoreTemplate.convertEntitiesForRead(any(), any())).then(
+				invocation -> Lists.newArrayList(invocation.<Iterator>getArgument(0))
+		);
 	}
 
 	@Test

@@ -811,6 +811,7 @@ Delete queries are executed as separate read and delete operations instead of as
 As a result, `removeBy` and `deleteBy` name-convention query methods cannot be used inside transactions via either `performInTransaction` or `@Transactional` annotation.
 
 Delete queries can have the following return types:
+
 * An integer type that is the number of entities deleted
 * A collection of entities that were deleted
 * 'void'
@@ -822,6 +823,9 @@ See https://docs.spring.io/spring-data/data-commons/docs/current/reference/html/
 For returning multiple items in a repository method, we support Java collections as well as `org.springframework.data.domain.Page` and `org.springframework.data.domain.Slice`.
 If a method's return type is `org.springframework.data.domain.Page`, the returned object will include current page,
 total number of results and total number of pages.
+
+NOTE: Methods that return `Page` execute an additional query to compute total number of pages.
+Methods that return `Slice`, on the other hand, don't execute any additional queries and therefore are much more efficient.
 
 ==== Custom GQL query methods
 

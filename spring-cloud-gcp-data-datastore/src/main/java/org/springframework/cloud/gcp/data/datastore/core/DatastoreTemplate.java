@@ -190,27 +190,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 		return convertEntitiesForRead(results, entityClass);
 	}
 
-
-	public <T> LimitedResult sliceQuery(Query query, Class<T> entityClass, Integer limit) {
-		QueryResults results = getDatastoreReadWriter().run(query);
-		Iterator resIter = results;
-		boolean exceedsLimit = false;
-
-		if (limit != null) {
-			Iterable iterable = () -> results;
-			List items = (List) StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
-			exceedsLimit = items.size() > limit;
-			if (exceedsLimit) {
-				items = items.subList(0, limit);
-			}
-			resIter = items.iterator();
-		}
-
-		return new LimitedResult(convertEntitiesForRead(resIter, entityClass).iterator(), exceedsLimit);
-	}
-
 	@Override
-	public <A, T> Iterable<T> query(Query<A> query, Function<A, T> entityFunc) {
+	public <A, T> List<T> query(Query<A> query, Function<A, T> entityFunc) {
 		List<T> results = new ArrayList<>();
 		getDatastoreReadWriter().run(query)
 				.forEachRemaining(x -> results.add(entityFunc.apply(x)));
@@ -398,7 +379,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 		throw new DatastoreDataException("Descendant object has a key without current ancestor");
 	}
 
-	private <T> Collection<T> convertEntitiesForRead(
+	public <T> List<T> convertEntitiesForRead(
 			Iterator<? extends BaseEntity> entities,
 			Class<T> entityClass) {
 		List<T> results = new ArrayList<>();
@@ -534,24 +515,5 @@ public class DatastoreTemplate implements DatastoreOperations {
 				? ((DatastoreTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
 						.currentTransactionStatus()).getTransaction()).getTransaction()
 				: this.datastore;
-	}
-
-	public static class LimitedResult<T> implements Iterable<T> {
-		Iterator<T> result;
-		boolean exceedsLimit;
-
-		public LimitedResult(Iterator<T> result, boolean exceedsLimit) {
-			this.result = result;
-			this.exceedsLimit = exceedsLimit;
-		}
-
-		@Override
-		public Iterator<T> iterator() {
-			return this.result;
-		}
-
-		public boolean exceedsLimit() {
-			return this.exceedsLimit;
-		}
 	}
 }
