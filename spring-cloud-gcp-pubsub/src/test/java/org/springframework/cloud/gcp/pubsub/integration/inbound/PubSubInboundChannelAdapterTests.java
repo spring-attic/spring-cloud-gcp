@@ -22,7 +22,9 @@ import java.util.function.Consumer;
 import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -49,6 +51,7 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
  * @author Doug Hoard
  * @author Mike Eltsufin
  * @author Taylor Burke
+ * @author Chengyuan Zhao
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubInboundChannelAdapterTests {
@@ -66,6 +69,9 @@ public class PubSubInboundChannelAdapterTests {
 	private MessageChannel messageChannel;
 
 	private String value;
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Before
 	public void setUp() throws UnsupportedEncodingException {
@@ -95,8 +101,10 @@ public class PubSubInboundChannelAdapterTests {
 		});
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testNonNullAckMode() {
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("The acknowledgement mode can't be null.");
 		PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(
 				this.pubSubOperations, "testSubscription");
 
