@@ -18,7 +18,9 @@ package org.springframework.cloud.gcp.autoconfigure.core.environment;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -44,6 +46,9 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class OnGcpEnvironmentConditionTests {
 
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
+
 	@Mock
 	AnnotatedTypeMetadata mockMetadata;
 
@@ -62,8 +67,12 @@ public class OnGcpEnvironmentConditionTests {
 		when(this.mockBeanFactory.getBean(GcpEnvironmentProvider.class)).thenReturn(this.mockGcpEnvironmentProvider);
 	}
 
-	@Test (expected = NoSuchBeanDefinitionException.class)
+	@Test
 	public void testNoEnvironmentsMatchWhenMissingEnvironmentProvider() {
+
+		this.expectedException.expect(NoSuchBeanDefinitionException.class);
+		this.expectedException.expectMessage("No bean named 'no environment' available");
+
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 
 		setUpAnnotationValue(new GcpEnvironment[] { GcpEnvironment.UNKNOWN });
@@ -72,8 +81,13 @@ public class OnGcpEnvironmentConditionTests {
 		onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 	}
 
-	@Test (expected = ClassCastException.class)
+	@Test
 	public void testExceptionThrownWhenWrongAttributeType() {
+
+		this.expectedException.expect(ClassCastException.class);
+		this.expectedException.expectMessage("java.lang.String cannot be cast to " +
+				"[Lorg.springframework.cloud.gcp.core.GcpEnvironment;");
+
 		setUpAnnotationValue("invalid type");
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
