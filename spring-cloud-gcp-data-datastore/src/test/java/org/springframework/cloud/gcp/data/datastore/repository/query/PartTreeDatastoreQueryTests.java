@@ -30,8 +30,10 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
+import org.springframework.cloud.gcp.data.datastore.core.convert.TwoStepsConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
@@ -76,7 +78,7 @@ public class PartTreeDatastoreQueryTests {
 		this.spannerTemplate = mock(DatastoreTemplate.class);
 		this.spannerMappingContext = new DatastoreMappingContext();
 		this.datastoreEntityConverter = mock(DatastoreEntityConverter.class);
-		this.readWriteConversions = mock(ReadWriteConversions.class);
+		this.readWriteConversions = new TwoStepsConversions(new DatastoreCustomConversions(), null);
 		when(this.spannerTemplate.getDatastoreEntityConverter())
 				.thenReturn(this.datastoreEntityConverter);
 		when(this.datastoreEntityConverter.getConversions())
@@ -95,7 +97,9 @@ public class PartTreeDatastoreQueryTests {
 						+ "ThanEqualAndIdIsNullOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
 
-		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33 };
+		Object[] params = new Object[] { "BUY", "abcd",
+				// this int param requires custom conversion
+				8, 3.33 };
 
 		when(this.spannerTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
 			EntityQuery statement = invocation.getArgument(0);
@@ -103,7 +107,7 @@ public class PartTreeDatastoreQueryTests {
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
 							PropertyFilter.eq("ticker", "abcd"),
-							PropertyFilter.lt("price", 8.88),
+							PropertyFilter.lt("price", 8L),
 							PropertyFilter.ge("price", 3.33),
 							PropertyFilter.isNull("id")))
 					.setKind("trades")

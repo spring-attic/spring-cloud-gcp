@@ -745,30 +745,8 @@ public class MyApplication {
 
 ----
 
-==== Transactions
-
-These transactions work very similarly to
-those of `DatastoreOperations`, but is specific to the repository's domain type and provides repository functions
-instead of template functions.
-
-For example, this is a read-write transaction:
-
-[source,java]
-----
-
-@Autowired
-DatastoreRepository myRepo;
-
-public String doWorkInsideTransaction() {
-  return myRepo.performTransaction(
-    transactionDatastoreRepo -> {
-      // work with the single-transaction transactionDatastoreRepo here. This is a DatastoreRepository object.
-
-      return "transaction completed";
-    }
-  );
-}
-----
+Repositories allow you to define custom Query Methods (detailed in the following sections) for retrieving, counting, and deleting based on filtering and paging parameters.
+Filtering parameters can be of types supported by your configured custom converters.
 
 ==== Query methods by convention
 
@@ -912,6 +890,31 @@ public interface TraderRepository extends CrudRepository<Trader, String> {
 	// This method uses the query from the properties file instead of one generated based on name.
 	List<Trader> fetchByName(@Param("tag0") String traderName);
 
+}
+----
+
+==== Transactions
+
+These transactions work very similarly to
+those of `DatastoreOperations`, but is specific to the repository's domain type and provides repository functions
+instead of template functions.
+
+For example, this is a read-write transaction:
+
+[source,java]
+----
+
+@Autowired
+DatastoreRepository myRepo;
+
+public String doWorkInsideTransaction() {
+  return myRepo.performTransaction(
+    transactionDatastoreRepo -> {
+      // work with the single-transaction transactionDatastoreRepo here. This is a DatastoreRepository object.
+
+      return "transaction completed";
+    }
+  );
 }
 ----
 

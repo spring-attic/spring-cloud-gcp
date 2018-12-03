@@ -40,6 +40,7 @@ import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNative
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
+import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
 import org.springframework.data.repository.query.Parameter;
 import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
@@ -221,7 +222,15 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 		for (int i = 0; i < tags.size(); i++) {
 			Object val = vals.get(i);
-			DatastoreNativeTypes.bindValueToGqlBuilder(builder, tags.get(i), val);
+			Object boundVal;
+			if (ValueUtil.isCollectionLike(val.getClass())) {
+				boundVal = convertCollectionParamToCompatibleArray((List) ValueUtil.toListIfArray(val));
+			}
+			else {
+				boundVal = this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
+						.convertOnWriteSingle(val).get();
+			}
+			DatastoreNativeTypes.bindValueToGqlBuilder(builder, tags.get(i), boundVal);
 		}
 		return builder.build();
 	}
