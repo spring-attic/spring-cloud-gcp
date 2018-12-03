@@ -42,4 +42,11 @@ public @interface Query {
 	 * @return the SQL Cloud Spanner query string.
 	 */
 	String value() default "";
+
+	/**
+	 * Indicates if the annotated Query Method is a DML statement or an SQL statement.
+	 * @return {@code false} if the query method is a read-only SQL query. {@code true} if the
+	 * query method is executed as a DML query.
+	 */
+	boolean dmlStatement() default false;
 }

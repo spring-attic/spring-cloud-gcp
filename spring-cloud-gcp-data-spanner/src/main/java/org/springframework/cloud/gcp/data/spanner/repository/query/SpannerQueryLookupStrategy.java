@@ -77,24 +77,25 @@ public class SpannerQueryLookupStrategy implements QueryLookupStrategy {
 			ProjectionFactory factory, NamedQueries namedQueries) {
 		SpannerQueryMethod queryMethod = createQueryMethod(method, metadata, factory);
 		Class<?> entityType = getEntityType(queryMethod);
+		boolean isDml = queryMethod.getQueryAnnotation() != null && queryMethod.getQueryAnnotation().dmlStatement();
 
 		if (queryMethod.hasAnnotatedQuery()) {
 			String sql = queryMethod.getQueryAnnotation().value();
-			return createSqlSpannerQuery(entityType, queryMethod, sql);
+			return createSqlSpannerQuery(entityType, queryMethod, sql, isDml);
 		}
 		else if (namedQueries.hasQuery(queryMethod.getNamedQueryName())) {
 			String sql = namedQueries.getQuery(queryMethod.getNamedQueryName());
-			return createSqlSpannerQuery(entityType, queryMethod, sql);
+			return createSqlSpannerQuery(entityType, queryMethod, sql, isDml);
 		}
 
 		return createPartTreeSpannerQuery(entityType, queryMethod);
 	}
 
 	<T> SqlSpannerQuery<T> createSqlSpannerQuery(Class<T> entityType,
-			SpannerQueryMethod queryMethod, String sql) {
+			SpannerQueryMethod queryMethod, String sql, boolean isDml) {
 		return new SqlSpannerQuery<T>(entityType, queryMethod, this.spannerTemplate, sql,
 				this.evaluationContextProvider, this.expressionParser,
-				this.spannerMappingContext);
+				this.spannerMappingContext, isDml);
 	}
 
 	<T> PartTreeSpannerQuery<T> createPartTreeSpannerQuery(Class<T> entityType,
