@@ -19,7 +19,9 @@ package org.springframework.cloud.gcp.data.datastore.core.mapping;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
@@ -37,6 +39,9 @@ import static org.junit.Assert.fail;
 public class DatastorePersistentPropertyImplTests {
 
 	private final DatastoreMappingContext datastoreMappingContext = new DatastoreMappingContext();
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Test
 	public void propertiesTest() {
@@ -92,20 +97,29 @@ public class DatastorePersistentPropertyImplTests {
 				});
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void referenceDescendantAnnotatedTest() {
+		this.expectedException.expect(DatastoreDataException.class);
+		this.expectedException.expectMessage("Property cannot be annotated both @Descendants and " +
+				"@Reference: subEntity");
 		this.datastoreMappingContext
 				.getPersistentEntity(DescendantReferenceAnnotatedEntity.class);
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void fieldDescendantAnnotatedTest() {
+		this.expectedException.expect(DatastoreDataException.class);
+		this.expectedException.expectMessage("Property cannot be annotated as @Field if it is " +
+				"annotated @Descendants or @Reference: name");
 		this.datastoreMappingContext
 				.getPersistentEntity(DescendantFieldAnnotatedEntity.class);
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void fieldReferenceAnnotatedTest() {
+		this.expectedException.expect(DatastoreDataException.class);
+		this.expectedException.expectMessage("Property cannot be annotated as @Field if it is " +
+				"annotated @Descendants or @Reference: name");
 		this.datastoreMappingContext
 				.getPersistentEntity(FieldReferenceAnnotatedEntity.class);
 	}

@@ -86,13 +86,13 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					"Cloud Datastore structured queries do not support the Distinct keyword.");
 		}
 
-		List parts = this.tree.getParts().get().collect(Collectors.toList());
+		List parts = this.tree.get().collect(Collectors.toList());
 		if (parts.size() > 0) {
-			if (parts.get(0) instanceof OrPart) {
+			if (parts.get(0) instanceof OrPart && parts.size() > 1) {
 				throw new DatastoreDataException(
 						"Cloud Datastore only supports multiple filters combined with AND.");
 			}
-			this.filterParts = parts;
+			this.filterParts = this.tree.getParts().get().collect(Collectors.toList());
 		}
 		else {
 			this.filterParts = Collections.emptyList();
