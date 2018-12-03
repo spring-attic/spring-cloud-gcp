@@ -26,7 +26,9 @@ import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.OrderBy;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
@@ -68,6 +70,9 @@ public class PartTreeDatastoreQueryTests {
 	private DatastoreEntityConverter datastoreEntityConverter;
 
 	private ReadWriteConversions readWriteConversions;
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Before
 	public void initMocks() {
@@ -121,8 +126,11 @@ public class PartTreeDatastoreQueryTests {
 				.queryKeysOrEntities(any(), any());
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void unspecifiedParametersTest() {
+		this.expectedException.expect(DatastoreDataException.class);
+		this.expectedException.expectMessage("Too few parameters are provided for query method: " +
+				"findByActionAndSymbolAndPriceLessThanAndPriceGreaterThanEqualAndIdIsNullOrderByIdDesc");
 		when(this.queryMethod.getName())
 				.thenReturn("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
 						+ "ThanEqualAndIdIsNullOrderByIdDesc");
@@ -134,8 +142,11 @@ public class PartTreeDatastoreQueryTests {
 		this.partTreeSpannerQuery.execute(params);
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void unsupportedParamTypeTest() {
+		this.expectedException.expect(DatastoreDataException.class);
+		this.expectedException.expectMessage("Unable to convert class java.util.ArrayList to " +
+				"Datastore supported type.");
 		when(this.queryMethod.getName())
 				.thenReturn("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
 						+ "ThanEqualAndIdIsNullOrderByIdDesc");
@@ -147,15 +158,20 @@ public class PartTreeDatastoreQueryTests {
 		this.partTreeSpannerQuery.execute(params);
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void unSupportedPredicateTest() {
+		this.expectedException.expect(DatastoreDataException.class);
+		this.expectedException.expectMessage("Unsupported predicate keyword: Trade.traderId");
 		when(this.queryMethod.getName()).thenReturn("countByTraderIdBetween");
 		this.partTreeSpannerQuery = createQuery();
 		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void unSupportedOrTest() {
+		this.expectedException.expect(DatastoreDataException.class);
+		this.expectedException.expectMessage("Cloud Datastore only supports multiple filters " +
+				"combined with AND.");
 		when(this.queryMethod.getName()).thenReturn("countByTraderIdOrPrice");
 		this.partTreeSpannerQuery = createQuery();
 		this.partTreeSpannerQuery.execute(EMPTY_PARAMETERS);
