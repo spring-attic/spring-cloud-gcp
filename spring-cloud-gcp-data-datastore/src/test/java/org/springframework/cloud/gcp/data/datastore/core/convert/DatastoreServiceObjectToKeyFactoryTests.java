@@ -76,8 +76,10 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 						"custom_test_kind"));
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void getKeyFromIdExceptionTest() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage("Keys can only be created using String or long values.");
 		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));
 		this.datastoreServiceObjectToKeyFactory.getKeyFromId(true, "custom_test_kind");
 	}
@@ -93,8 +95,12 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 								.getPersistentEntity(TestEntityWithId.class)));
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void getKeyNoIdTest() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage("An ID property was required but does not exist for the type: " +
+				"class org.springframework.cloud.gcp.data.datastore.core.convert." +
+				"DatastoreServiceObjectToKeyFactoryTests$TestEntityNoId");
 		this.datastoreServiceObjectToKeyFactory.getKeyFromObject(new TestEntityNoId(),
 				this.datastoreMappingContext.getPersistentEntity(TestEntityNoId.class));
 	}

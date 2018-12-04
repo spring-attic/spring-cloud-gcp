@@ -20,7 +20,9 @@ import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreException;
 import com.google.cloud.datastore.Transaction;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -49,6 +51,9 @@ public class DatastoreTransactionManagerTests {
 
 	@Mock
 	Transaction transaction;
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	private Tx tx = new Tx();
 
@@ -103,8 +108,11 @@ public class DatastoreTransactionManagerTests {
 		verify(this.transaction, times(1)).commit();
 	}
 
-	@Test(expected = TransactionSystemException.class)
+	@Test
 	public void testDoCommitFailure() {
+		this.expectedException.expect(TransactionSystemException.class);
+		this.expectedException.expectMessage("Cloud Datastore transaction failed to commit.; " +
+				"nested exception is com.google.cloud.datastore.DatastoreException: ");
 		when(this.transaction.isActive()).thenReturn(true);
 		this.tx.setTransaction(this.transaction);
 		when(this.transaction.commit()).thenThrow(new DatastoreException(0, "", ""));
@@ -127,8 +135,11 @@ public class DatastoreTransactionManagerTests {
 		verify(this.transaction, times(1)).rollback();
 	}
 
-	@Test(expected = TransactionSystemException.class)
+	@Test
 	public void testDoRollbackFailure() {
+		this.expectedException.expect(TransactionSystemException.class);
+		this.expectedException.expectMessage("Cloud Datastore transaction failed to rollback.; " +
+				"nested exception is com.google.cloud.datastore.DatastoreException: ");
 		when(this.transaction.isActive()).thenReturn(true);
 		this.tx.setTransaction(this.transaction);
 		doThrow(new DatastoreException(0, "", "")).when(this.transaction).rollback();

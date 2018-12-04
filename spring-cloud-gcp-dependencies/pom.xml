@@ -78,6 +78,11 @@
 				<artifactId>spring-cloud-gcp-security-iap</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-gcp-vision</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!--Starters-->
 			<dependency>

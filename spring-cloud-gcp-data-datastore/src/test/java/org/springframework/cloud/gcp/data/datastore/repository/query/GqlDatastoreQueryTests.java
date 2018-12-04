@@ -22,13 +22,17 @@ import java.util.Optional;
 
 import com.google.cloud.datastore.DoubleValue;
 import com.google.cloud.datastore.GqlQuery;
-import com.google.cloud.datastore.StringValue;
+import com.google.cloud.datastore.LongValue;
 import com.google.cloud.datastore.Value;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
+import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
+import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
+import org.springframework.cloud.gcp.data.datastore.core.convert.TwoStepsConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
@@ -58,6 +62,10 @@ public class GqlDatastoreQueryTests {
 
 	private DatastoreTemplate datastoreTemplate;
 
+	private DatastoreEntityConverter datastoreEntityConverter;
+
+	private ReadWriteConversions readWriteConversions;
+
 	private DatastoreQueryMethod queryMethod;
 
 	private QueryMethodEvaluationContextProvider evaluationContextProvider;
@@ -66,6 +74,10 @@ public class GqlDatastoreQueryTests {
 	public void initMocks() {
 		this.queryMethod = mock(DatastoreQueryMethod.class);
 		this.datastoreTemplate = mock(DatastoreTemplate.class);
+		this.datastoreEntityConverter = mock(DatastoreEntityConverter.class);
+		this.readWriteConversions = new TwoStepsConversions(new DatastoreCustomConversions(), null);
+		when(this.datastoreTemplate.getDatastoreEntityConverter()).thenReturn(this.datastoreEntityConverter);
+		when(this.datastoreEntityConverter.getConversions()).thenReturn(this.readWriteConversions);
 		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
 	}
 
@@ -94,7 +106,11 @@ public class GqlDatastoreQueryTests {
 				+ "price>@tag6 AND price<=@tag7 )ORDER BY id DESC LIMIT 3";
 
 		Object[] params = new Object[] { "BUY", "abcd",
-				new String[] { "abc123", "abc321" }, new double[] { 8.88, 9.99 }, 3.33,
+				// this is an array param of the non-natively supported type and will need conversion
+				new int[] { 1, 2 },
+				new double[] { 8.88, 9.99 },
+				3, // this parameter is a simple int, which is not a directly supported type and uses
+					// conversions
 				"blahblah", 1.11, 2.22 };
 
 		String[] paramNames = new String[] { "tag0", "tag1", "tag2", "tag3", "tag4",
@@ -134,17 +150,21 @@ public class GqlDatastoreQueryTests {
 
 			assertEquals(params[0], paramMap.get("tag0").get());
 			assertEquals(params[1], paramMap.get("tag1").get());
-			assertEquals(((String[]) params[2])[0],
-					((StringValue) (((List) paramMap.get("tag2").get()).get(0))).get());
-			assertEquals(((String[]) params[2])[1],
-					((StringValue) (((List) paramMap.get("tag2").get()).get(1))).get());
+
+			// custom conversion is expected to have been used in this param
+			assertEquals(1L,
+					(long) ((LongValue) (((List) paramMap.get("tag2").get()).get(0))).get());
+			assertEquals(2L,
+					(long) ((LongValue) (((List) paramMap.get("tag2").get()).get(1))).get());
+
 			assertEquals(((double[]) params[3])[0],
 					((DoubleValue) (((List) paramMap.get("tag3").get()).get(0))).get(),
 					0.00001);
 			assertEquals(((double[]) params[3])[1],
 					((DoubleValue) (((List) paramMap.get("tag3").get()).get(1))).get(),
 					0.00001);
-			assertEquals(params[4], paramMap.get("tag4").get());
+			// 3L is expected even though 3 int was the original param due to custom conversions
+			assertEquals(3L, paramMap.get("tag4").get());
 			assertEquals(params[5], paramMap.get("tag5").get());
 			assertEquals(params[6], paramMap.get("tag6").get());
 			assertEquals(params[7], paramMap.get("tag7").get());

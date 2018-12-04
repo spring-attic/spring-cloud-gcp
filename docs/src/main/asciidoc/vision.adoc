@@ -1,8 +1,11 @@
 == GCP Cloud Vision Support
 
-The https://cloud.google.com/vision/[Google Cloud Vision API] allows users to leverage powerful machine learning algorithms for images such as: image classification, face detection, and reading text within images.
+The https://cloud.google.com/vision/[Google Cloud Vision API] allows users to leverage powerful machine learning algorithms for images such as: image classification, face detection, reading text within images, and others.
 
-Spring Cloud GCP provides a convenience starter which automatically configures authentication settings and client objects needed to begin using the https://cloud.google.com/vision/[Google Cloud Vision API].
+Spring Cloud GCP provides:
+
+- A convenience starter which automatically configures authentication settings and client objects needed to begin using the https://cloud.google.com/vision/[Google Cloud Vision API].
+- A Cloud Vision Template which allows you to easily send images to the API as Spring Resources.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -23,4 +26,52 @@ dependencies {
 }
 ----
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[Sample Spring Boot Application] is provided to show how to use the Cloud Vision starter and Cloud Vision APIs.
+=== Cloud Vision Template
+
+The `CloudVisionTemplate` offers a simple way to use the Cloud Vision APIs with Spring Resources.
+
+After you add the `spring-cloud-gcp-starter-vision` dependency to your project, you may `@Autowire` an instance of `CloudVisionTemplate` to use in your code.
+
+The `CloudVisionTemplate` offers the following method for interfacing with Cloud Vision:
+
+`public AnnotateImageResponse analyzeImage(Resource imageResource, Feature.Type... featureTypes)`
+
+**Parameters:**
+
+- `Resource imageResource` refers to the Spring Resource of the image object you wish to analyze.
+The Google Cloud Vision documentation provides a https://cloud.google.com/vision/docs/supported-files[list of the image types that they support].
+
+- `Feature.Type... featureTypes` refers to a var-arg array of Cloud Vision Features to extract from the image.
+A feature refers to a kind of image analysis one wishes to perform on an image, such as label detection, OCR recognition, facial detection, etc.
+One may specify multiple features to analyze within one request.
+A full list of Cloud Vision Features is provided in the https://cloud.google.com/vision/docs/features[Cloud Vision Feature docs].
+
+**Returns:**
+
+- https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.AnnotateImageResponse[`AnnotateImageResponse`] contains the results of all the feature analyses that were specified in the request.
+For each feature type that you provide in the request, `AnnotateImageResponse` provides a getter method to get the result of that feature analysis.
+For example, if you analyzed an image using the `LABEL_DETECTION` feature, then you would retrieve the results from the response using `annotateImageResponse.getLabelAnnotationsList()`.
++
+`AnnotateImageResponse` is provided by the Google Cloud Vision libraries; you may consult the https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.AnnotateImageResponse[RPC reference] or http://googleapis.github.io/googleapis/java/all/latest/apidocs/com/google/cloud/vision/v1/AnnotateImageResponse.html[Javadoc] as a reference.
+Additionally, you may consult the https://cloud.google.com/vision/docs/[Cloud Vision docs] to familiarize yourself with the concepts and features of the API.
+
+=== Example Usage
+
+```
+@Autowired
+private ResourceLoader resourceLoader;
+
+@Autowired
+private CloudVisionTemplate cloudVisionTemplate;
+
+public void processImage() {
+  Resource imageResource = this.resourceLoader.getResource("my_image.jpg");
+  AnnotateImageResponse response = this.cloudVisionTemplate.analyzeImage(
+      imageResource, Type.LABEL_DETECTION);
+  System.out.println("Image Classification results: " + response.getLabelAnnotationsList());
+}
+```
+
+=== Sample
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-vision-api-sample[Sample Spring Boot Application] is provided to show how to use the Cloud Vision starter and template.
