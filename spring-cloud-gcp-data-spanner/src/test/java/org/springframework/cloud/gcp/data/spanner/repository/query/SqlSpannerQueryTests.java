@@ -56,6 +56,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -98,11 +99,11 @@ public class SqlSpannerQueryTests {
 		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
 	}
 
-	private SqlSpannerQuery<Trade> createQuery(String sql) {
+	private SqlSpannerQuery<Trade> createQuery(String sql, boolean isDml) {
 		return new SqlSpannerQuery<Trade>(Trade.class, this.queryMethod,
 				this.spannerTemplate,
 				sql, this.evaluationContextProvider, this.expressionParser,
-				new SpannerMappingContext());
+				new SpannerMappingContext(), isDml);
 	}
 
 	@Test
@@ -164,7 +165,7 @@ public class SqlSpannerQueryTests {
 		when(this.evaluationContextProvider.getEvaluationContext(any(), any()))
 				.thenReturn(evaluationContext);
 
-		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
+		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, false);
 
 		doAnswer(invocation -> {
 			Statement statement = invocation.getArgument(0);
@@ -210,7 +211,7 @@ public class SqlSpannerQueryTests {
 		// @formatter:on
 		when(parameters.getNumberOfParameters()).thenReturn(0);
 
-		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
+		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, false);
 
 		sqlSpannerQuery.execute(new Object[] { this.pageable, this.sort });
 	}
@@ -228,7 +229,7 @@ public class SqlSpannerQueryTests {
 		// @formatter:on
 		when(parameters.getNumberOfParameters()).thenReturn(0);
 
-		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
+		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, false);
 
 		sqlSpannerQuery.execute(new Object[] { this.pageable, this.pageable });
 	}
@@ -246,9 +247,32 @@ public class SqlSpannerQueryTests {
 		// @formatter:on
 		when(parameters.getNumberOfParameters()).thenReturn(0);
 
-		SqlSpannerQuery sqlSpannerQuery = createQuery(sql);
+		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, false);
 
 		sqlSpannerQuery.execute(new Object[] { this.sort, this.sort });
+	}
+
+	@Test
+	public void dmlTest() {
+		String sql = "dml statement here";
+
+		Parameters parameters = mock(Parameters.class);
+		// @formatter:off
+		Mockito.<Parameters>when(this.queryMethod.getParameters())
+				.thenReturn(parameters);
+		// @formatter:on
+		when(parameters.getNumberOfParameters()).thenReturn(0);
+
+		SqlSpannerQuery sqlSpannerQuery = spy(createQuery(sql, true));
+
+		doReturn(long.class).when(sqlSpannerQuery)
+				.getReturnedSimpleConvertableItemType();
+		doReturn(null).when(sqlSpannerQuery).convertToSimpleReturnType(any(),
+				any());
+
+		sqlSpannerQuery.execute(new Object[] {});
+
+		verify(this.spannerTemplate, times(1)).executeDmlStatement(any());
 	}
 
 	private static class SymbolAction {

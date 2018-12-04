@@ -433,7 +433,7 @@ public class EmbeddableTreeNode {
 
   Map<String, Set<EmbeddableTreeNode>> subNodeGroups;
 
-  public EmbeddableTreeNode(List<EmbeddableTreeNode> children;) {
+  public EmbeddableTreeNode(List<EmbeddableTreeNode> children) {
     this.children = children;
   }
 }

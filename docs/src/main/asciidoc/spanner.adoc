@@ -631,7 +631,7 @@ SpannerQueryOptions
 
 ==== SQL Query
 
-Spanner has SQL support for running read-only queries.
+Cloud Spanner has SQL support for running read-only queries.
 All the query related methods start with `query` on `SpannerTemplate`.
 Using `SpannerTemplate` you can execute SQL queries that map to POJOs:
 
@@ -639,7 +639,6 @@ Using `SpannerTemplate` you can execute SQL queries that map to POJOs:
 ----
 List<Trade> trades = this.spannerTemplate.query(Trade.class, Statement.of("SELECT * FROM trades"));
 ----
-
 
 ==== Read
 
@@ -1084,7 +1083,7 @@ Delete queries can have the following return types:
 * A collection of entities that were deleted
 * `void`
 
-==== Custom SQL query methods
+==== Custom SQL/DML query methods
 
 The example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the
 {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation
@@ -1134,6 +1133,15 @@ Your query method can also return non-entity types:
 
   	@Query("SELECT action FROM trades WHERE action = @action")
   	List<String> getFirstStringList(@Param("action") String action);
+----
+
+DML statements can also be executed by query methods, but the only possible return value is a `long` representing the number of affected rows.
+The `dmlStatement` boolean setting must be set on `@Query` to indicate that the query method is executed as a DML statement.
+
+[source, java]
+----
+  	@Query(value = "DELETE FROM trades WHERE action = @action", dmlStatement = true)
+  	long deleteByActionQuery(String action);
 ----
 
 ===== Query methods with named queries properties

@@ -79,6 +79,13 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		allTrades.addAll(trader1SellTrades);
 		allTrades.addAll(trader2Trades);
 
+		Trade buyTrade1 = trader1BuyTrades.get(0);
+		this.tradeRepository.updateActionTradeById(buyTrade1.getId(), "invalid action");
+		assertEquals("invalid action",
+				this.tradeRepository.findById(this.spannerSchemaUtils.getKey(buyTrade1)).get().getAction());
+		this.tradeRepository.updateActionTradeById(buyTrade1.getId(), "BUY");
+		assertEquals("BUY", this.tradeRepository.findById(this.spannerSchemaUtils.getKey(buyTrade1)).get().getAction());
+
 		assertThat(this.tradeRepository.count(), is(8L));
 
 		assertThat(this.tradeRepository.deleteByAction("BUY"), is(3));

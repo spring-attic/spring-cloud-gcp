@@ -149,15 +149,16 @@ public class PartTreeDatastoreQueryTests {
 	@Test
 	public void unsupportedParamTypeTest() {
 		this.expectedException.expect(DatastoreDataException.class);
-		this.expectedException.expectMessage("Unable to convert class java.util.ArrayList to " +
-				"class org.springframework.cloud.gcp.data.datastore.it.TestEntity");
+		this.expectedException.expectMessage("Unable to convert class " +
+				"org.springframework.cloud.gcp.data.datastore.repository.query.PartTreeDatastoreQueryTests$Trade " +
+				"to Datastore supported type.");
 		when(this.queryMethod.getName())
 				.thenReturn("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
 						+ "ThanEqualAndIdIsNullOrderByIdDesc");
 		this.partTreeSpannerQuery = createQuery();
 
-		// There are too few params specified, so the exception will occur.
-		Object[] params = new Object[] { "BUY", "abcd", 8.88, new ArrayList<>() };
+		// the fourth param is intentionally an non-convertible type
+		Object[] params = new Object[] { "BUY", "abcd", 8.88, new Trade() };
 
 		this.partTreeSpannerQuery.execute(params);
 	}

@@ -147,6 +147,6 @@ public interface GcpEnvironmentProvider {
 }
 ----
 
-== Spring Initializr
+=== Spring Initializr
 
 This starter is available from http://start.spring.io/[Spring Initializr] through the `GCP Support` entry.

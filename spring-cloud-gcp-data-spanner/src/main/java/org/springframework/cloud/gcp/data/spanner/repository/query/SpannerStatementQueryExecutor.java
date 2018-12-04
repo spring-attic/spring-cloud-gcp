@@ -91,6 +91,16 @@ public class SpannerStatementQueryExecutor {
 				sqlAndTags.getFirst(), sqlAndTags.getSecond(), null, params), null);
 	}
 
+	/**
+	 * Apply paging and sorting options to a query string.
+	 * @param entityClass The domain type whose table is being queried.
+	 * @param options query options containing the sorting and paging options
+	 * @param sql the sql that will be wrapped with sorting and paging options.
+	 * @param mappingContext a mapping context to convert between Cloud Spanner column names
+	 *     and underlying property names.
+	 * @param <T> the domain type.
+	 * @return the final SQL string with paging and sorting applied.
+	 */
 	public static <T> String applySortingPagingQueryOptions(Class<T> entityClass,
 			SpannerPageableQueryOptions options, String sql,
 			SpannerMappingContext mappingContext) {

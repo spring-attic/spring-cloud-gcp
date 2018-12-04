@@ -1,4 +1,4 @@
-== Stackdriver Logging Support
+== Stackdriver Logging
 
 Maven coordinates, using Spring Cloud GCP BOM:
 

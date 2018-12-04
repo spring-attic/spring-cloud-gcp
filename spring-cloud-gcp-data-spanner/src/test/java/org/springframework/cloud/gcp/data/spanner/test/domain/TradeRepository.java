@@ -43,6 +43,10 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
 	void deleteBySymbolAndAction(String symbol, String action);
 
+	@Query(dmlStatement = true, value = "UPDATE :org.springframework.cloud.gcp.data.spanner.test.domain.Trade:" +
+			" set action = @action WHERE id = @id")
+	long updateActionTradeById(@Param("id") String id, @Param("action") String act);
+
 	@Query(" select count(1) from :org.springframework.cloud.gcp.data.spanner.test.domain.Trade: "
 			+ "where action = @action")
 	int countByActionQuery(@Param("action") String action);
