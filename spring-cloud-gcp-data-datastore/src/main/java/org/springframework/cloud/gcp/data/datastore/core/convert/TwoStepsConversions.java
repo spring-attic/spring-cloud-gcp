@@ -144,7 +144,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 					"Unexpected property embedded type: " + embeddedType);
 		}
 
-		if ((val instanceof Iterable || val.getClass().isArray())
+		if (ValueUtil.isCollectionLike(val.getClass())
 				&& targetCollectionType != null && targetComponentType != null) {
 			try {
 				List elements = (val.getClass().isArray() ? (Arrays.asList(val))
@@ -263,7 +263,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			}
 		}
 
-		val = ValueUtil.toIterableIfArray(val);
+		val = ValueUtil.toListIfArray(val);
 
 		if (val instanceof Iterable) {
 			List<Value<?>> values = new ArrayList<>();
@@ -360,6 +360,9 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	@Override
 	public Optional<Class<?>> getDatastoreCompatibleType(Class inputType) {
+		if (DatastoreNativeTypes.DATASTORE_NATIVE_TYPES.contains(inputType)) {
+			return Optional.of(inputType);
+		}
 		return DatastoreNativeTypes.DATASTORE_NATIVE_TYPES.stream()
 				.filter(simpleType ->
 						this.internalConversionService.canConvert(inputType, simpleType)

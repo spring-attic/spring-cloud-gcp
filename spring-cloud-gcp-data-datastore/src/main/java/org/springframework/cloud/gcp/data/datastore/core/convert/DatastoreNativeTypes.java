@@ -16,10 +16,12 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.datastore.Blob;
@@ -41,6 +43,7 @@ import com.google.cloud.datastore.TimestampValue;
 import com.google.cloud.datastore.Value;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.primitives.Booleans;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
@@ -99,12 +102,18 @@ public abstract class DatastoreNativeTypes {
 				.put(String[].class,
 						builder -> (s, o) -> builder.setBinding(s, (String[]) o))
 				.put(Long.class, builder -> (s, o) -> builder.setBinding(s, (Long) o))
+				.put(Long[].class, builder -> (s, o) -> builder.setBinding(s, Stream.of((Long[]) o)
+						.mapToLong(Long::longValue).toArray()))
 				.put(long[].class, builder -> (s, o) -> builder.setBinding(s, (long[]) o))
 				.put(Double.class, builder -> (s, o) -> builder.setBinding(s, (Double) o))
+				.put(Double[].class, builder -> (s, o) -> builder.setBinding(s, Stream.of((Double[]) o)
+						.mapToDouble(Double::doubleValue).toArray()))
 				.put(double[].class,
 						builder -> (s, o) -> builder.setBinding(s, (double[]) o))
 				.put(Boolean.class,
 						builder -> (s, o) -> builder.setBinding(s, (Boolean) o))
+				.put(Boolean[].class, builder -> (s, o) -> builder.setBinding(s,
+						Booleans.toArray(Arrays.asList(((Boolean[]) o)))))
 				.put(boolean[].class,
 						builder -> (s, o) -> builder.setBinding(s, (boolean[]) o))
 				.put(Timestamp.class,

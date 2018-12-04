@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.query;
 
+import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,6 +67,23 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 		}
 		return rawResult.stream().map(this::processRawObjectForProjection)
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Convert collection-like param from the query method into an array of compatible types
+	 * for Datastore.
+	 * @param param the raw param
+	 * @return an array of a compatible type.
+	 */
+	protected Object[] convertCollectionParamToCompatibleArray(List<?> param) {
+		List converted = param.stream()
+				.map(x -> this.datastoreTemplate.getDatastoreEntityConverter().getConversions().convertOnWriteSingle(x)
+						.get())
+				.collect(Collectors.toList());
+		return converted.toArray(
+				(Object[]) Array.newInstance(converted.isEmpty()
+						? String.class // if there are no items in the param
+						: converted.get(0).getClass(), converted.size()));
 	}
 
 	@VisibleForTesting
