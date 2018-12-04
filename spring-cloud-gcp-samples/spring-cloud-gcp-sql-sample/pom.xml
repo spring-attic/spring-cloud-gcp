@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<artifactId>spring-cloud-gcp-samples</artifactId>
 		<groupId>org.springframework.cloud</groupId>
@@ -13,10 +13,20 @@
 	<name>Spring Cloud GCP SQL MySQL Starter Code Sample</name>
 
 	<dependencies>
+		<!-- You only need to include the starter dependency of your database engine. -->
+
+		<!-- Remove this if using Postgres. -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-gcp-starter-sql-mysql</artifactId>
 		</dependency>
+
+		<!-- Remove this if using MySQL. -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-gcp-starter-sql-postgresql</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>

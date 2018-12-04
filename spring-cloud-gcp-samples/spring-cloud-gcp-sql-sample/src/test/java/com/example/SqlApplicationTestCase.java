@@ -21,34 +21,27 @@ import java.util.List;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Simple integration test to verify the SQL sample application. This test will use the
- * properties set in resources/application.properties.
- *
- * Run with: mvn -Dit.cloudsql test
+ * The test case used to test the SQL application, independent of the database backend
+ * type. This class is to be extended by test cases which will provide their own
+ * database-specific configuration.
  *
  * @author Daniel Zou
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { SqlApplication.class })
-public class SqlApplicationTests {
+public abstract class SqlApplicationTestCase {
 
 	@LocalServerPort
 	private int port;
