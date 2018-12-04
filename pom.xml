@@ -36,6 +36,7 @@
 		<module>spring-cloud-gcp-data-spanner</module>
 		<module>spring-cloud-gcp-data-datastore</module>
 		<module>spring-cloud-gcp-security-iap</module>
+		<module>spring-cloud-gcp-vision</module>
 	</modules>
 
 	<properties>
