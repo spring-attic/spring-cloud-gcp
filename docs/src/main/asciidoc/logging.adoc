@@ -156,3 +156,7 @@ This is an example of such an Logback configuration:
   </appender>
 </configuration>
 ----
+
+=== Sample
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-logging-sample[Sample Spring Boot Application] is provided to show how to use the Cloud logging starter.

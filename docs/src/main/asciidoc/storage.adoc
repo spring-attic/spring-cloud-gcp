@@ -28,9 +28,6 @@ dependencies {
 
 This starter is also available from https://start.spring.io/[Spring Initializr] through the `GCP Storage` entry.
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample[sample application]
-and a https://codelabs.developers.google.com/codelabs/spring-cloud-gcp-gcs/index.html[codelab] are available.
-
 === Google Cloud Storage
 
 The Spring Resource Abstraction for Google Cloud Storage allows GCS objects to be accessed by their
@@ -95,3 +92,10 @@ Google Cloud Storage API, if different from the ones in the
 https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
 Storage credentials | No | https://www.googleapis.com/auth/devstorage.read_write
 |===
+
+
+=== Sample
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample[sample application]
+and a https://codelabs.developers.google.com/codelabs/spring-cloud-gcp-gcs/index.html[codelab] are available.
+

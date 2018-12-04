@@ -52,8 +52,6 @@ dependencies {
 This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Spanner libraries
 as well.
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[sample application] is available.
-
 Spring Data Cloud Spanner and the underlying Cloud Spanner Java Client Library are beta status.
 
 === Configuration
@@ -812,6 +810,12 @@ by an empty set, then no columns will be written.
 this.spannerTemplate.update(t, "symbol", "action");
 ----
 
+==== DML
+
+DML statements can be executed using `SpannerOperations.executeDmlStatement`.
+Inserts, updates, and deletions can affect any number of rows and entities.
+
+
 ==== Transactions
 
 `SpannerOperations` provides methods to run `java.util.Function` objects within a single transaction
@@ -1301,3 +1305,8 @@ public void createTable(SpannerPersistentEntity entity) {
 	}
 }
 ----
+
+=== Sample
+
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[sample application] is available.
