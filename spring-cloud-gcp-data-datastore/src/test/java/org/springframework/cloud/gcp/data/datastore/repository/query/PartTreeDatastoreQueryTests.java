@@ -150,7 +150,7 @@ public class PartTreeDatastoreQueryTests {
 	public void unsupportedParamTypeTest() {
 		this.expectedException.expect(DatastoreDataException.class);
 		this.expectedException.expectMessage("Unable to convert class java.util.ArrayList to " +
-				"Datastore supported type.");
+				"class org.springframework.cloud.gcp.data.datastore.it.TestEntity");
 		when(this.queryMethod.getName())
 				.thenReturn("findByActionAndSymbolAndPriceLessThanAndPriceGreater"
 						+ "ThanEqualAndIdIsNullOrderByIdDesc");
