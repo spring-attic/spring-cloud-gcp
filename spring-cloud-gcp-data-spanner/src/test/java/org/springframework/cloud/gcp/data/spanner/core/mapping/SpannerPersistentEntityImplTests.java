@@ -85,8 +85,12 @@ public class SpannerPersistentEntityImplTests {
 				.columns(), containsInAnyOrder("id", "custom_col"));
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void testExpressionResolutionWithoutApplicationContext() {
+		this.thrown.expect(SpannerDataException.class);
+		this.thrown.expectMessage("Error getting table name for EntityWithExpression; " +
+				"nested exception is org.springframework.expression.spel.SpelEvaluationException: " +
+				"EL1007E: Property or field 'tablePostfix' cannot be found on null");
 		SpannerPersistentEntityImpl<EntityWithExpression> entity = new SpannerPersistentEntityImpl<>(
 				ClassTypeInformation.from(EntityWithExpression.class));
 

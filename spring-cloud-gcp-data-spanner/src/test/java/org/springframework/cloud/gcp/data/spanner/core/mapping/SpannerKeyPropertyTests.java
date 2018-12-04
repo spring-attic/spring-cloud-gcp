@@ -18,7 +18,9 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import com.google.cloud.spanner.Key;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.data.util.ClassTypeInformation;
 
@@ -34,6 +36,9 @@ import static org.mockito.Mockito.mock;
  */
 public class SpannerKeyPropertyTests {
 
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+
 	private SpannerCompositeKeyProperty spannerKeyProperty;
 
 	private SpannerPersistentEntity spannerPersistentEntity;
@@ -45,13 +50,17 @@ public class SpannerKeyPropertyTests {
 				this.spannerPersistentEntity, new SpannerPersistentProperty[] {});
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void nullSpannerPersistentEntityTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("A valid Cloud Spanner persistent entity is required.");
 		new SpannerCompositeKeyProperty(null, new SpannerPersistentProperty[] {});
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void nullPropertiesTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("A valid array of primary key properties is required.");
 		new SpannerCompositeKeyProperty(this.spannerPersistentEntity, null);
 	}
 

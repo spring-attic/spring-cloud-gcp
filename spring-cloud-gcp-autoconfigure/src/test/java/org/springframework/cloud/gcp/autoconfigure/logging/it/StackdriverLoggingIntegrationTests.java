@@ -38,6 +38,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -115,7 +116,8 @@ public class StackdriverLoggingIntegrationTests {
 			GcpCloudSqlAutoConfiguration.class,
 			GcpStorageAutoConfiguration.class,
 			DataSourceAutoConfiguration.class,
-			SecurityAutoConfiguration.class
+			SecurityAutoConfiguration.class,
+			IapAuthenticationAutoConfiguration.class
 	})
 	static class LoggingApplication {
 

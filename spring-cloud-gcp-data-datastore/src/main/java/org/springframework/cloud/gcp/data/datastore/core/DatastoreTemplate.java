@@ -318,7 +318,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 			}
 			Value<?> value;
 			if (persistentProperty.isCollectionLike()) {
-				Iterable<?> iterableVal = (Iterable<?>) ValueUtil.toIterableIfArray(val);
+				Iterable<?> iterableVal = (Iterable<?>) ValueUtil.toListIfArray(val);
 				saveAll(iterableVal);
 				List<KeyValue> keyValues = StreamSupport.stream((iterableVal).spliterator(), false)
 						.map(o -> KeyValue.of(this.getKey(o, false)))
@@ -345,7 +345,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 					if (val != null) {
 						//we can be sure that the property is an array or an iterable,
 						//because we check it in isDescendant
-						saveAll((Iterable<?>) ValueUtil.toIterableIfArray(val), key);
+						saveAll((Iterable<?>) ValueUtil.toListIfArray(val), key);
 					}
 				});
 	}

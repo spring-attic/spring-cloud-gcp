@@ -27,7 +27,9 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.Op;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
@@ -48,6 +50,9 @@ import static org.mockito.Mockito.mock;
  * @author Chengyuan Zhao
  */
 public class SpannerMutationFactoryImplTests {
+
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
 
 	private SpannerMappingContext mappingContext;
 
@@ -102,8 +107,15 @@ public class SpannerMutationFactoryImplTests {
 		executeWriteTest(t -> this.spannerMutationFactory.insert(t), Op.INSERT);
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void insertChildrenMismatchIdTest() {
+
+		this.expectedEx.expect(SpannerDataException.class);
+		this.expectedEx.expectMessage("A child entity's common primary key parts with its parent must have " +
+				"the same values. Primary key component 1 does not match for entities: " +
+				"class org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImplTests$TestEntity " +
+				"class org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImplTests$ChildEntity");
+
 		TestEntity t = new TestEntity();
 		t.id = "a";
 		ChildEntity c1 = new ChildEntity();

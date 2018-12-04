@@ -21,7 +21,9 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.google.cloud.spanner.Options.QueryOption;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertNotNull;
@@ -34,8 +36,15 @@ import static org.mockito.Mockito.mock;
  */
 public class SpannerSortPageQueryOptionsTests {
 
-	@Test(expected = IllegalArgumentException.class)
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+
+	@Test
 	public void addNullQueryOptionTest() {
+
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("Valid query option is required!");
+
 		new SpannerQueryOptions().addQueryOption(null);
 	}
 

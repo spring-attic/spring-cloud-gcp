@@ -21,7 +21,9 @@ import com.google.cloud.datastore.FullEntity;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Transaction;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +73,9 @@ public class DatastoreTransactionTemplateTests {
 
 	@MockBean
 	ObjectToKeyFactory objectToKeyFactory;
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Before
 	public void setUp() {
@@ -125,23 +130,34 @@ public class DatastoreTransactionTemplateTests {
 		verify(this.datastore, never()).newTransaction();
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void unsupportedIsolationTest() {
+		this.expectedException.expect(IllegalStateException.class);
+		this.expectedException.expectMessage("DatastoreTransactionManager supports only " +
+				"isolation level TransactionDefinition.ISOLATION_DEFAULT or ISOLATION_SERIALIZABLE");
+
 		this.transactionalService.doNothingUnsupportedIsolation();
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test
 	public void unsupportedPropagationTest() {
+		this.expectedException.expect(IllegalStateException.class);
+		this.expectedException.expectMessage("DatastoreTransactionManager supports only " +
+				"propagation behavior TransactionDefinition.PROPAGATION_REQUIRED");
 		this.transactionalService.doNothingUnsupportedPropagation();
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test
 	public void readOnlySaveTest() {
+		this.expectedException.expect(UnsupportedOperationException.class);
+		this.expectedException.expectMessage("The Cloud Datastore transaction is in read-only mode.");
 		this.transactionalService.writingInReadOnly();
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test
 	public void readOnlyDeleteTest() {
+		this.expectedException.expect(UnsupportedOperationException.class);
+		this.expectedException.expectMessage("The Cloud Datastore transaction is in read-only mode.");
 		this.transactionalService.deleteInReadOnly();
 	}
 

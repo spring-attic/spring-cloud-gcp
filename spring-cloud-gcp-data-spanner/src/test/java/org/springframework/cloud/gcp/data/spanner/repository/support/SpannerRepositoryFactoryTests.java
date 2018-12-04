@@ -20,7 +20,9 @@ import java.util.Optional;
 
 import com.google.cloud.spanner.Key;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
@@ -49,6 +51,9 @@ public class SpannerRepositoryFactoryTests {
 
 	private SpannerTemplate spannerTemplate;
 
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+
 	@Before
 	public void setUp() {
 		SpannerMappingContext spannerMappingContext = new SpannerMappingContext();
@@ -71,8 +76,12 @@ public class SpannerRepositoryFactoryTests {
 				entityInformation.getId(t));
 	}
 
-	@Test(expected = MappingException.class)
+	@Test
 	public void getEntityInformationNotAvailableTest() {
+		this.expectedEx.expect(MappingException.class);
+		this.expectedEx.expectMessage("Could not lookup mapping metadata for domain " +
+				"class org.springframework.cloud.gcp.data.spanner.repository.support." +
+				"SpannerRepositoryFactoryTests$TestEntity!");
 		SpannerRepositoryFactory factory = new SpannerRepositoryFactory(
 				mock(SpannerMappingContext.class), this.spannerTemplate);
 		factory.getEntityInformation(TestEntity.class);

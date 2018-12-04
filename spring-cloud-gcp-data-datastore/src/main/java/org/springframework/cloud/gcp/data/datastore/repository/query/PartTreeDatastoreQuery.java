@@ -37,7 +37,7 @@ import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
-import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
+import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
@@ -86,13 +86,13 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					"Cloud Datastore structured queries do not support the Distinct keyword.");
 		}
 
-		List parts = this.tree.getParts().get().collect(Collectors.toList());
+		List parts = this.tree.get().collect(Collectors.toList());
 		if (parts.size() > 0) {
-			if (parts.get(0) instanceof OrPart) {
+			if (parts.get(0) instanceof OrPart && parts.size() > 1) {
 				throw new DatastoreDataException(
 						"Cloud Datastore only supports multiple filters combined with AND.");
 			}
-			this.filterParts = parts;
+			this.filterParts = this.tree.getParts().get().collect(Collectors.toList());
 		}
 		else {
 			this.filterParts = Collections.emptyList();
@@ -181,30 +181,33 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					.getPersistentProperty(part.getProperty().getSegment()))
 							.getFieldName();
 			try {
+
+				ReadWriteConversions converter = this.datastoreTemplate.getDatastoreEntityConverter().getConversions();
+
 				switch (part.getType()) {
 				case IS_NULL:
 					filter = PropertyFilter.isNull(fieldName);
 					break;
 				case SIMPLE_PROPERTY:
 					filter = PropertyFilter.eq(fieldName,
-							DatastoreNativeTypes.wrapValue(it.next()));
+							converter.convertOnWriteSingle(it.next()));
 					equalityComparedFields.add(fieldName);
 					break;
 				case GREATER_THAN_EQUAL:
 					filter = PropertyFilter.ge(fieldName,
-							DatastoreNativeTypes.wrapValue(it.next()));
+							converter.convertOnWriteSingle(it.next()));
 					break;
 				case GREATER_THAN:
 					filter = PropertyFilter.gt(fieldName,
-							DatastoreNativeTypes.wrapValue(it.next()));
+							converter.convertOnWriteSingle(it.next()));
 					break;
 				case LESS_THAN_EQUAL:
 					filter = PropertyFilter.le(fieldName,
-							DatastoreNativeTypes.wrapValue(it.next()));
+							converter.convertOnWriteSingle(it.next()));
 					break;
 				case LESS_THAN:
 					filter = PropertyFilter.lt(fieldName,
-							DatastoreNativeTypes.wrapValue(it.next()));
+							converter.convertOnWriteSingle(it.next()));
 					break;
 				default:
 					throw new DatastoreDataException(
