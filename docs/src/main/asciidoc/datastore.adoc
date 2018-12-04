@@ -92,7 +92,7 @@ It is not required to add it to any other class, unless there is a need to overr
 Our Spring Boot autoconfiguration creates the following beans available in the Spring application context:
 
 - an instance of `DatastoreTemplate`
-- an instance of all user defined repositories extending `CrudRepository` or `PagingAndSortingRepository`, when repositories are enabled
+- an instance of all user defined repositories extending `CrudRepository`, `PagingAndSortingRepository`, and `DatastoreRepository` (an extension of `PagingAndSortingRepository` with additional Cloud Datastore features) when repositories are enabled
 - an instance of `Datastore` from the Google Cloud Java Client for Datastore, for convenience and lower level API access
 
 
@@ -531,7 +531,7 @@ There are no requirements for relationships between the key of an entity and the
 The order of collection-like reference properties is not preserved when reading back from Cloud Datastore.
 
 
-=== Datastore Template
+=== Datastore Operations & Template
 
 `DatastoreOperations` and its implementation, `DatastoreTemplate`, provides the Template pattern familiar to Spring developers.
 
@@ -619,7 +619,7 @@ public class ExampleItem {
 
 ===== Read with offsets, limits, and sorting
 
-`DatastoreRepository` and custom-defined entitiy repositories implement the Spring Data `PagingAndSortingRepository`, which supports offsets and limits using page numbers and page sizes.
+`DatastoreRepository` and custom-defined entity repositories implement the Spring Data `PagingAndSortingRepository`, which supports offsets and limits using page numbers and page sizes.
 Paging and sorting options are also supported in `DatastoreTemplate` by supplying a `DatastoreQueryOptions` to `findAll`.
 
 ===== Partial read
@@ -678,7 +678,7 @@ an exception:
 
 This feature requires a bean of `DatastoreTransactionManager`, which is provided when using `spring-cloud-gcp-starter-data-datastore`.
 
-`DatastoreTemplate` and `DatastoreRepository` support running methods with the `@Transactional` [annotation](https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative) as transactions.
+`DatastoreTemplate` and `DatastoreRepository` support running methods with the `@Transactional` https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative[annotation] as transactions.
 If a method annotated with `@Transactional` calls another method also annotated, then both methods will work within the same transaction.
 `performTransaction` cannot be used in `@Transactional` annotated methods because Cloud Datastore does not support transactions within transactions.
 
@@ -713,13 +713,13 @@ For example:
 
 [source,java]
 ----
-public interface TraderRepository extends CrudRepository<Trader, String> {
+public interface TraderRepository extends DatastoreRepository<Trader, String> {
 }
 ----
 
 Spring Data generates a working implementation of the specified interface, which can be autowired into an application.
 
-The `Trader` type parameter to `CrudRepository` refers to the underlying domain type.
+The `Trader` type parameter to `DatastoreRepository` refers to the underlying domain type.
 The second type parameter, `String` in this case, refers to the type of the key of the domain type.
 
 [source,java]
@@ -731,13 +731,13 @@ public class MyApplication {
 
 	public void demo() {
 
-		this.traderRepository.deleteAll(); //defined on CrudRepository
+		this.traderRepository.deleteAll();
 		String traderId = "demo_trader";
 		Trader t = new Trader();
 		t.traderId = traderId;
-		this.tradeRepository.save(t); //defined on CrudRepository
+		this.tradeRepository.save(t);
 
-		Iterable<Trader> allTraders = this.traderRepository.findAll(); //defined on CrudRepository
+		Iterable<Trader> allTraders = this.traderRepository.findAll();
 
 		int count = this.traderRepository.count();
 	}
@@ -752,7 +752,7 @@ Filtering parameters can be of types supported by your configured custom convert
 
 [source, java]
 ----
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
     List<Trader> findByAction(String action);
 
   int countByAction(String action);
@@ -802,7 +802,7 @@ The names of the tags of the GQL correspond to the `@Param` annotated names of t
 
 [source, java]
 ----
-public interface TraderRepository extends CrudRepository<Trader, String> {
+public interface TraderRepository extends DatastoreRepository<Trader, String> {
 
   @Query("SELECT * FROM traders WHERE name = @trader_name")
   List<Trader> tradersByName(@Param("trader_name") String traderName);
@@ -885,7 +885,7 @@ Trader.fetchByName=SELECT * FROM traders WHERE name = @tag0
 
 [source, java]
 ----
-public interface TraderRepository extends CrudRepository<Trader, String> {
+public interface TraderRepository extends DatastoreRepository<Trader, String> {
 
 	// This method uses the query from the properties file instead of one generated based on name.
 	List<Trader> fetchByName(@Param("tag0") String traderName);
@@ -966,7 +966,7 @@ If you prefer to configure parameters (such as path), you can use `@RepositoryRe
 [source,java]
 ----
 @RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
 }
 ----
 

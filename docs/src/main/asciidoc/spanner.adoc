@@ -577,7 +577,7 @@ public class ConverterConfiguration {
 If a `Converter<Struct, A>` is provided, then properties of type `List<A>` can be used in your entity types.
 
 
-=== Spanner Template
+=== Spanner Operations & Template
 
 `SpannerOperations` and its implementation, `SpannerTemplate`, provides the Template pattern
 familiar to Spring developers.
@@ -913,14 +913,14 @@ For example:
 
 [source,java]
 ----
-public interface TraderRepository extends CrudRepository<Trader, String> {
+public interface TraderRepository extends SpannerRepository<Trader, String> {
 }
 ----
 
 Spring Data generates a working implementation of the specified interface, which can be conveniently
 autowired into an application.
 
-The `Trader` type parameter to `CrudRepository` refers to the underlying domain type.
+The `Trader` type parameter to `SpannerRepository` refers to the underlying domain type.
 The second type parameter, `String` in this case, refers to the type of the key of the domain
 type.
 
@@ -934,7 +934,7 @@ For example in case of Trades, that belong to a Trader, `TradeRepository` would 
 
 [source,java]
 ----
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
 
 }
 ----
@@ -944,14 +944,14 @@ public interface TradeRepository extends CrudRepository<Trade, String[]> {
 public class MyApplication {
 
 	@Autowired
-	SpannerOperations spannerTemplate;
+	SpannerTemplate spannerTemplate;
 
 	@Autowired
 	StudentRepository studentRepository;
 
 	public void demo() {
 
-		this.tradeRepository.deleteAll(); //defined on CrudRepository
+		this.tradeRepository.deleteAll();
 		String traderId = "demo_trader";
 		Trade t = new Trade();
 		t.symbol = stock;
@@ -959,9 +959,9 @@ public class MyApplication {
 		t.traderId = traderId;
 		t.price = 100.0;
 		t.shares = 12345.6;
-		this.spannerTemplate.insert(t); //defined on CrudRepository
+		this.spannerTemplate.insert(t);
 
-		Iterable<Trade> allTrades = this.tradeRepository.findAll(); //defined on CrudRepository
+		Iterable<Trade> allTrades = this.tradeRepository.findAll();
 
 		int count = this.tradeRepository.countByAction("BUY");
 
@@ -1006,11 +1006,13 @@ public String doWorkInsideTransaction() {
 }
 ----
 
+When creating custom repositories for your own domain types and query methods, you can extend `SpannerRepository` to access Cloud Spanner-specific features as well as all features from `PagingAndSortingRepository` and `CrudRepository`.
+
 ==== Query methods by convention
 
 [source, java]
 ----
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
     List<Trade> findByAction(String action);
 
 	int countByAction(String action);
@@ -1158,7 +1160,7 @@ Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0
 
 [source, java]
 ----
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
 	// This method uses the query from the properties file instead of one generated based on name.
 	List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
 }
@@ -1169,7 +1171,7 @@ Using the `@Query` annotation:
 
 [source, java]
 ----
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
     @Query("SELECT * FROM trades WHERE trades.action = @tag0")
     List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
 }
@@ -1250,7 +1252,7 @@ If you prefer to configure parameters (such as path), you can use `@RepositoryRe
 [source,java]
 ----
 @RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
 }
 ----
 
