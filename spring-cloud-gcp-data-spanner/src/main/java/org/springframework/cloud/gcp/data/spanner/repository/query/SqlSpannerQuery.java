@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.repository.query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Struct.Builder;
 
@@ -64,6 +66,8 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 	private final String sql;
 
+	private final boolean isDml;
+
 	private final Function<Object, Struct> paramStructConvertFunc = param -> {
 		Builder builder = Struct.newBuilder();
 		this.spannerTemplate.getSpannerEntityProcessor().write(param, builder::set);
@@ -78,11 +82,12 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 			SpannerTemplate spannerTemplate, String sql,
 			QueryMethodEvaluationContextProvider evaluationContextProvider,
 			SpelExpressionParser expressionParser,
-			SpannerMappingContext spannerMappingContext) {
+			SpannerMappingContext spannerMappingContext, boolean isDml) {
 		super(type, queryMethod, spannerTemplate, spannerMappingContext);
 		this.evaluationContextProvider = evaluationContextProvider;
 		this.expressionParser = expressionParser;
 		this.sql = StringUtils.trimTrailingCharacter(sql.trim(), ';');
+		this.isDml = isDml;
 	}
 
 	private boolean isPageableOrSort(Class type) {
@@ -208,6 +213,19 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 			}
 		}
 
+		QueryTagValue queryTagValue = new QueryTagValue(getParamTags(), parameters,
+				params.toArray(),
+				resolveEntityClassNames(this.sql));
+
+		resolveSpELTags(queryTagValue);
+
+		return this.isDml
+				? Collections.singletonList(
+						this.spannerTemplate.executeDmlStatement(buildStatementFromQueryAndTags(queryTagValue)))
+				: executeReadSql(pageable, sort, queryTagValue);
+	}
+
+	private List executeReadSql(Pageable pageable, Sort sort, QueryTagValue queryTagValue) {
 		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions()
 				.setAllowPartialRead(true);
 
@@ -221,34 +239,29 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 					.setOffset(pageable.getOffset()).setLimit(pageable.getPageSize());
 		}
 
-
-		QueryTagValue queryTagValue = new QueryTagValue(getParamTags(), parameters,
-				params.toArray(),
-				resolveEntityClassNames(this.sql));
-
-		resolveSpELTags(queryTagValue);
-
-		String sqlStringWithPagingSorting = SpannerStatementQueryExecutor
+		queryTagValue.sql = SpannerStatementQueryExecutor
 				.applySortingPagingQueryOptions(this.entityType, spannerQueryOptions,
 						resolveEntityClassNames(queryTagValue.sql),
 						this.spannerMappingContext);
 
 		Class simpleItemType = getReturnedSimpleConvertableItemType();
 
+		Statement statement = buildStatementFromQueryAndTags(queryTagValue);
+
 		return simpleItemType != null
 				? this.spannerTemplate.query(
-						struct -> new StructAccessor(struct).getSingleValue(0),
-						SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
-								sqlStringWithPagingSorting, queryTagValue.tags,
-								this.paramStructConvertFunc,
-								queryTagValue.params.toArray()),
+						struct -> new StructAccessor(struct).getSingleValue(0), statement,
 						spannerQueryOptions)
 				: this.spannerTemplate.query(this.entityType,
-						SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
-								sqlStringWithPagingSorting, queryTagValue.tags,
-								this.paramStructConvertFunc,
-								queryTagValue.params.toArray()),
+						statement,
 				spannerQueryOptions);
+	}
+
+	private Statement buildStatementFromQueryAndTags(QueryTagValue queryTagValue) {
+		return SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
+				queryTagValue.sql, queryTagValue.tags,
+				this.paramStructConvertFunc,
+				queryTagValue.params.toArray());
 	}
 
 	private Expression[] detectExpressions(String sql) {
