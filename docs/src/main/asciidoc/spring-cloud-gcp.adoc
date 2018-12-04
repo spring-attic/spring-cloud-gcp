@@ -49,10 +49,10 @@ include::spanner.adoc[]
 
 include::datastore.adoc[]
 
-include::cloudfoundry.adoc[]
-
 include::memorystore.adoc[]
 
 include::security-iap.adoc[]
 
 include::vision.adoc[]
+
+include::cloudfoundry.adoc[]

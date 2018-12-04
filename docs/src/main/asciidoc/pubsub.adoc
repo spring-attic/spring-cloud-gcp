@@ -1,4 +1,4 @@
-== Spring Cloud GCP for Pub/Sub
+== Google Cloud Pub/Sub
 
 Spring Cloud GCP provides an abstraction layer to publish to and subscribe from Google Cloud
 Pub/Sub topics and to create, list or delete Google Cloud Pub/Sub topics and subscriptions.
