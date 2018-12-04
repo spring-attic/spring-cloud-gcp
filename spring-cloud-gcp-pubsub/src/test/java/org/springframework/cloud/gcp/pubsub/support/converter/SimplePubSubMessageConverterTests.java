@@ -24,7 +24,9 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.core.convert.converter.Converter;
 
@@ -32,6 +34,7 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public class SimplePubSubMessageConverterTests {
 
@@ -40,6 +43,9 @@ public class SimplePubSubMessageConverterTests {
 	private final static Map<String, String> TEST_HEADERS = ImmutableMap.of(
 			"key1", "value1",
 			"key2", "value2");
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Test
 	public void testToString() {
@@ -82,14 +88,20 @@ public class SimplePubSubMessageConverterTests {
 	}
 
 
-	@Test(expected = PubSubMessageConversionException.class)
+	@Test
 	public void testToUnknown() {
+		this.expectedException.expect(PubSubMessageConversionException.class);
+		this.expectedException.expectMessage("Unable to convert Pub/Sub message to " +
+				"payload of type java.lang.Integer.");
 		doToTestForType(Integer.class, a -> toString());
 
 	}
 
-	@Test(expected = PubSubMessageConversionException.class)
+	@Test
 	public void testFromUnknown() {
+		this.expectedException.expect(PubSubMessageConversionException.class);
+		this.expectedException.expectMessage("Unable to convert payload of type java.lang.Class " +
+				"to byte[] for sending to Pub/Sub.");
 		doFromTest(Integer.class);
 	}
 

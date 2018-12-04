@@ -24,7 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 import com.google.cloud.resourcemanager.Project;
 import com.google.cloud.resourcemanager.ResourceManager;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -68,6 +70,9 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class IapAuthenticationAutoConfigurationTests {
 
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
+
 	static final String FAKE_USER_TOKEN = "lol cats forever";
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
@@ -108,8 +113,13 @@ public class IapAuthenticationAutoConfigurationTests {
 		this.contextRunner.run(this::verifyJwtBeans);
 	}
 
-	@Test (expected = NoSuchBeanDefinitionException.class)
+	@Test
 	public void testAutoconfiguredBeansMissingWhenGatingPropertyFalse() {
+
+		this.expectedException.expect(NoSuchBeanDefinitionException.class);
+		this.expectedException.expectMessage("No qualifying bean of type " +
+				"'org.springframework.security.oauth2.jwt.JwtDecoder' available");
+
 		this.contextRunner
 				.withPropertyValues("spring.cloud.gcp.security.iap.enabled=false")
 				.run(context ->	context.getBean(JwtDecoder.class));

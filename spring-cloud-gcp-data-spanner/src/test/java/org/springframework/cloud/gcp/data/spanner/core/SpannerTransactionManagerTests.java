@@ -26,7 +26,9 @@ import com.google.cloud.spanner.TransactionManager;
 import com.google.cloud.spanner.TransactionManager.TransactionState;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -41,8 +43,15 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
-/** @author Alexander Khimich */
+/**
+ * @author Alexander Khimich
+ * @author Chengyuan Zhao
+ *
+ */
 public class SpannerTransactionManagerTests {
+
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Mock
 	DatabaseClient databaseClient;
@@ -188,8 +197,12 @@ public class SpannerTransactionManagerTests {
 		Mockito.verify(transactionManager, never()).commit();
 	}
 
-	@Test(expected = UnexpectedRollbackException.class)
+	@Test
 	public void testDoCommitRollbackExceptions() {
+
+		this.expectedEx.expect(UnexpectedRollbackException.class);
+		this.expectedEx.expectMessage("Transaction Got Rolled Back; " +
+				"nested exception is com.google.cloud.spanner.AbortedException");
 
 		TransactionManager abortedTxManager = Mockito.mock(TransactionManager.class);
 		Mockito.when(abortedTxManager.getState()).thenReturn(TransactionState.STARTED);
@@ -209,8 +222,12 @@ public class SpannerTransactionManagerTests {
 		manager.doCommit(status);
 	}
 
-	@Test(expected = DuplicateKeyException.class)
+	@Test
 	public void testDoCommitDupeException() {
+
+		this.expectedEx.expect(DuplicateKeyException.class);
+		this.expectedEx.expectMessage("ALREADY_EXISTS; nested exception is " +
+				"com.google.cloud.spanner.SpannerException: ALREADY_EXISTS: this is from a test");
 
 		SpannerException exception = SpannerExceptionFactory.newSpannerException(
 				ErrorCode.ALREADY_EXISTS, "this is from a test");

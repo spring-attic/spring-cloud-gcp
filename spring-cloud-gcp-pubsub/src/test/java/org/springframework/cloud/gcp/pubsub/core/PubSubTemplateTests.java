@@ -30,7 +30,9 @@ import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -63,6 +65,9 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubTemplateTests {
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Mock
 	private PublisherFactory mockPublisherFactory;
@@ -170,8 +175,10 @@ public class PubSubTemplateTests {
 				message.getAttributesMap().get("remission").equals("elephant man")));
 	}
 
-	@Test(expected = PubSubException.class)
+	@Test
 	public void testSend_noPublisher() {
+		this.expectedException.expect(PubSubException.class);
+		this.expectedException.expectMessage("couldn't create the publisher.");
 		when(this.mockPublisherFactory.createPublisher("testTopic"))
 				.thenThrow(new PubSubException("couldn't create the publisher."));
 

@@ -18,7 +18,9 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
 import java.util.List;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.springframework.data.mapping.MappingException;
@@ -43,6 +45,9 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 public class SpannerPersistentPropertyImplTests {
 
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+
 	@Test
 	public void testGetColumn() {
 		assertThat(
@@ -51,8 +56,19 @@ public class SpannerPersistentPropertyImplTests {
 				containsInAnyOrder("id", "custom_col", "other", "doubleList"));
 	}
 
-	@Test(expected = MappingException.class)
+	@Test
 	public void testNullColumnName() {
+		this.expectedEx.expect(MappingException.class);
+		// The expectMessage calls below operate as `contains` and seperate calls are used
+		// because the printed order of some components can change randomly.
+		this.expectedEx.expectMessage("Invalid (null or empty) field name returned for " +
+				"property @org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey");
+		this.expectedEx.expectMessage("keyOrder=1");
+		this.expectedEx.expectMessage("value=1");
+		this.expectedEx.expectMessage(
+				"java.lang.String org.springframework.cloud.gcp.data.spanner.core.mapping." +
+				"SpannerPersistentPropertyImplTests$TestEntity.id by class " +
+				"org.springframework.data.mapping.model.FieldNamingStrategy$MockitoMock$");
 		SpannerMappingContext context = new SpannerMappingContext();
 		FieldNamingStrategy namingStrat = mock(FieldNamingStrategy.class);
 		when(namingStrat.getFieldName(any())).thenReturn(null);

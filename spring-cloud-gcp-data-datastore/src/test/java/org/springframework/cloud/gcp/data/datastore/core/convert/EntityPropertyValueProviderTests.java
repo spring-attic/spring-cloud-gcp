@@ -23,7 +23,9 @@ import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.LatLng;
 import com.google.cloud.datastore.testing.LocalDatastoreHelper;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -39,6 +41,8 @@ public class EntityPropertyValueProviderTests {
 
 	private TwoStepsConversions twoStepsConversion = new TwoStepsConversions(new DatastoreCustomConversions(), null);
 
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	private DatastorePersistentEntity<TestDatastoreItem> persistentEntity =
 			(DatastorePersistentEntity<TestDatastoreItem>)
@@ -81,8 +85,12 @@ public class EntityPropertyValueProviderTests {
 				.as("validate blob field").isEqualTo(Blob.copyFrom(bytes));
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void testException() {
+		this.expectedException.expect(DatastoreDataException.class);
+		this.expectedException.expectMessage("Unable to read property boolField; nested exception is " +
+				"org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException: " +
+				"Unable to convert class java.lang.Long to class java.lang.Boolean");
 		Entity entity = Entity.newBuilder(this.datastore.newKeyFactory().setKind("aKind").newKey("1"))
 				.set("boolField", 123L)
 				.build();

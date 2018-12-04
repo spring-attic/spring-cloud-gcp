@@ -19,14 +19,27 @@ package org.springframework.cloud.gcp.data.datastore.core.util;
 import org.springframework.util.CollectionUtils;
 
 /**
+ * Utility class containing functions for working with types related to Cloud Datastore.
+ *
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 public class ValueUtil {
-	public static Object toIterableIfArray(Object val) {
-		if (val != null && val.getClass().isArray() && val.getClass() != byte[].class) {
+	public static Object toListIfArray(Object val) {
+		if (val != null && isArrayOfItems(val.getClass())) {
 			//if a property is an array, convert it to list
 			return CollectionUtils.arrayToList(val);
 		}
 		return val;
+	}
+
+	public static boolean isCollectionLike(Class type) {
+		return Iterable.class.isAssignableFrom(type) || isArrayOfItems(type);
+	}
+
+	private static boolean isArrayOfItems(Class type) {
+		return type.isArray() && type != byte[].class;
 	}
 }

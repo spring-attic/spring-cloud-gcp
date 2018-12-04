@@ -39,7 +39,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
-import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
+import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
@@ -254,30 +254,33 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 					.getPersistentProperty(part.getProperty().getSegment()))
 							.getFieldName();
 			try {
+
+				ReadWriteConversions converter = this.datastoreTemplate.getDatastoreEntityConverter().getConversions();
+
 				switch (part.getType()) {
 				case IS_NULL:
 					filter = PropertyFilter.isNull(fieldName);
 					break;
 				case SIMPLE_PROPERTY:
 					filter = PropertyFilter.eq(fieldName,
-							DatastoreNativeTypes.wrapValue(it.next()));
+							converter.convertOnWriteSingle(it.next()));
 					equalityComparedFields.add(fieldName);
 					break;
 				case GREATER_THAN_EQUAL:
 					filter = PropertyFilter.ge(fieldName,
-							DatastoreNativeTypes.wrapValue(it.next()));
+							converter.convertOnWriteSingle(it.next()));
 					break;
 				case GREATER_THAN:
 					filter = PropertyFilter.gt(fieldName,
-							DatastoreNativeTypes.wrapValue(it.next()));
+							converter.convertOnWriteSingle(it.next()));
 					break;
 				case LESS_THAN_EQUAL:
 					filter = PropertyFilter.le(fieldName,
-							DatastoreNativeTypes.wrapValue(it.next()));
+							converter.convertOnWriteSingle(it.next()));
 					break;
 				case LESS_THAN:
 					filter = PropertyFilter.lt(fieldName,
-							DatastoreNativeTypes.wrapValue(it.next()));
+							converter.convertOnWriteSingle(it.next()));
 					break;
 				default:
 					throw new DatastoreDataException(

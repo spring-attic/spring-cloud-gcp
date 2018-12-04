@@ -18,16 +18,22 @@ package org.springframework.cloud.gcp.pubsub;
 
 import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubAdminTests {
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Mock
 	private TopicAdminClient mockTopicAdminClient;
@@ -35,18 +41,24 @@ public class PubSubAdminTests {
 	@Mock
 	private SubscriptionAdminClient mockSubscriptionAdminClient;
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testNewPubSubAdmin_nullProjectProvider() {
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("The project ID provider can't be null.");
 		new PubSubAdmin(null, this.mockTopicAdminClient, this.mockSubscriptionAdminClient);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testNewPubSubAdmin_nullTopicAdminClient() {
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("The topic administration client can't be null");
 		new PubSubAdmin(() -> "test-project", null, this.mockSubscriptionAdminClient);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testNewPubSubAdmin_nullSubscriptionAdminClient() {
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("The subscription administration client can't be null");
 		new PubSubAdmin(() -> "test-project", this.mockTopicAdminClient, null);
 	}
 }

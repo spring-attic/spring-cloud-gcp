@@ -181,26 +181,42 @@ public class SpannerTemplateTests {
 						.setTimestamp(Timestamp.ofTimeMicroseconds(333)));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void nullDatabaseClientTest() {
+
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("A valid database client for Spanner is required.");
+
 		new SpannerTemplate(null, this.mappingContext, this.objectMapper,
 				this.mutationFactory, this.schemaUtils);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void nullMappingContextTest() {
+
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("A valid mapping context for Spanner is required.");
+
 		new SpannerTemplate(this.databaseClient, null, this.objectMapper,
 				this.mutationFactory, this.schemaUtils);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void nullObjectMapperTest() {
+
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("A valid entity processor for Spanner is required.");
+
 		new SpannerTemplate(this.databaseClient, this.mappingContext, null,
 				this.mutationFactory, this.schemaUtils);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void nullMutationFactoryTest() {
+
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("A valid Spanner mutation factory is required.");
+
 		new SpannerTemplate(this.databaseClient, this.mappingContext, this.objectMapper,
 				null, this.schemaUtils);
 	}

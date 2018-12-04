@@ -18,7 +18,9 @@ package org.springframework.cloud.gcp.data.spanner.core.it;
 
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,9 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(SpringRunner.class)
 public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationTest {
+
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
 
 	@Autowired
 	TemplateTransactionalService transactionalService;
@@ -80,8 +85,12 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 		assertThat(this.spannerOperations.count(Trade.class), is(2L));
 	}
 
-	@Test(expected = SpannerDataException.class)
+	@Test
 	public void readOnlyTransactionTest() {
+
+		this.expectedEx.expect(SpannerDataException.class);
+		this.expectedEx.expectMessage("A read-only transaction template cannot perform mutations.");
+
 		Trade trade = Trade.aTrade();
 		this.spannerOperations.performReadOnlyTransaction(transactionOperations -> {
 			// cannot do mutate in a read-only transaction
