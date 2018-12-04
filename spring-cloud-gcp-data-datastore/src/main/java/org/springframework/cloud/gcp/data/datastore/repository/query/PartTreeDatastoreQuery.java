@@ -29,7 +29,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.google.cloud.datastore.Query;
+import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.Builder;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
@@ -45,6 +45,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.ParameterAccessor;
@@ -121,12 +123,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}
 
 		if (isSliceQuery()) {
-			LimitedResult result = (LimitedResult) execute(parameters, returnedObjectType, List.class, false);
-
-			ParameterAccessor paramAccessor =
-					new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
-
-			return new SliceImpl(result.getResult(), paramAccessor.getPageable(), result.nextSliceExists());
+			return executeSliceQuery(parameters);
 		}
 
 		return execute(parameters, returnedObjectType,
@@ -168,11 +165,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		StructuredQuery.Builder<?> structredQueryBuilder = queryBuilderSupplier.get();
 		structredQueryBuilder.setKind(this.datastorePersistentEntity.kindName());
 
-		if (isSliceQuery()) {
-			return sliceQuery(applyQueryBody(parameters, structredQueryBuilder, total), this.entityType,
-							getLimit(parameters));
-		}
-
 		Iterable rawResults = getDatastoreTemplate()
 				.queryKeysOrEntities(applyQueryBody(parameters, structredQueryBuilder, total), this.entityType);
 
@@ -186,13 +178,29 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				: convertResultCollection(result, collectionType);
 	}
 
-	private Integer getLimit(Object[] parameters) {
-		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
-		Integer limit = null;
-		if (paramAccessor.getPageable().isPaged()) {
-			limit = paramAccessor.getPageable().getPageSize();
+	private Slice executeSliceQuery(Object[] parameters) {
+		EntityQuery.Builder builder = StructuredQuery.newEntityQueryBuilder()
+				.setKind(this.datastorePersistentEntity.kindName());
+		StructuredQuery query = applyQueryBody(parameters, builder, false);
+		List items = this.datastoreTemplate.query(query, x -> x);
+		Integer limit = query.getLimit() == null ? null : query.getLimit() - 1;
+
+		boolean exceedsLimit = false;
+		if (limit != null) {
+			//for slice queries we retrieve one additional item to check if the next slice exists
+			//the additional item will not be converted on read
+			exceedsLimit = items.size() > limit;
+			if (exceedsLimit) {
+				items = items.subList(0, limit);
+			}
 		}
-		return limit;
+
+		ParameterAccessor paramAccessor = new ParametersParameterAccessor(getQueryMethod().getParameters(), parameters);
+		Pageable pageable = paramAccessor.getPageable();
+		List entities = (List) this.datastoreTemplate
+				.convertEntitiesForRead(items.iterator(), this.entityType).stream()
+				.map(o -> this.processRawObjectForProjection((T) o)).collect(Collectors.toList());
+		return new SliceImpl(entities, pageable, exceedsLimit);
 	}
 
 	@VisibleForTesting
@@ -301,40 +309,5 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				? CompositeFilter.and(filters[0],
 						Arrays.copyOfRange(filters, 1, filters.length))
 				: filters[0]);
-	}
-
-	private LimitedResult sliceQuery(Query query, Class<T> entityClass, Integer limit) {
-		List items = this.datastoreTemplate.query(query, x -> x);
-		boolean exceedsLimit = false;
-
-		if (limit != null) {
-			//for slice queries we retrieve one additional item to check if the next slice exists
-			//the additional item will not be converted on read
-			exceedsLimit = items.size() > limit;
-			if (exceedsLimit) {
-				items = items.subList(0, limit);
-			}
-		}
-
-		return new LimitedResult(
-				this.datastoreTemplate.convertEntitiesForRead(items.iterator(), entityClass), exceedsLimit);
-	}
-
-	public static class LimitedResult<T> {
-		List<T> result;
-		boolean exceedsLimit;
-
-		LimitedResult(List<T> result, boolean exceedsLimit) {
-			this.result = result;
-			this.exceedsLimit = exceedsLimit;
-		}
-
-		public List<T> getResult() {
-			return this.result;
-		}
-
-		boolean nextSliceExists() {
-			return this.exceedsLimit;
-		}
 	}
 }

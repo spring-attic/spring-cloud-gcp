@@ -379,9 +379,14 @@ public class DatastoreTemplate implements DatastoreOperations {
 		throw new DatastoreDataException("Descendant object has a key without current ancestor");
 	}
 
-	public <T> List<T> convertEntitiesForRead(
-			Iterator<? extends BaseEntity> entities,
-			Class<T> entityClass) {
+	/**
+	 * Convert Datastore entities to objects of a specified type
+	 * @param entities the Datastore entities
+	 * @param entityClass the type the entities should be converted to.
+	 * @param <T> the type the entities should be converted to.
+	 * @return a list of converted entities
+	 */
+	public <T> List<T> convertEntitiesForRead(Iterator<? extends BaseEntity> entities, Class<T> entityClass) {
 		List<T> results = new ArrayList<>();
 		if (entities == null) {
 			return results;
