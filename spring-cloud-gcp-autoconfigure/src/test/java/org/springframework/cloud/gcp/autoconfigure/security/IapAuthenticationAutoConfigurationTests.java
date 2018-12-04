@@ -177,7 +177,6 @@ public class IapAuthenticationAutoConfigurationTests {
 				.run(context -> {
 					DelegatingOAuth2TokenValidator validator
 							= context.getBean("iapJwtDelegatingValidator", DelegatingOAuth2TokenValidator.class);
-
 					assertFalse(validator.validate(mockJwt).hasErrors());
 				});
 	}
