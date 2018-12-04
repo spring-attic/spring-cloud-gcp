@@ -1,4 +1,6 @@
-== Caching using Cloud Memorystore for Redis
+== Cloud Memorystore for Redis
+
+=== Spring Caching
 
 https://cloud.google.com/memorystore/[Cloud Memorystore for Redis] provides a fully managed in-memory data store service.
 Cloud Memorystore is compatible with the Redis protocol, allowing easy integration with

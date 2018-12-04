@@ -1,4 +1,4 @@
-== GCP Cloud Vision Support
+== Google Cloud Vision
 
 The https://cloud.google.com/vision/[Google Cloud Vision API] allows users to leverage powerful machine learning algorithms for images such as: image classification, face detection, reading text within images, and others.
 
@@ -55,9 +55,10 @@ For example, if you analyzed an image using the `LABEL_DETECTION` feature, then 
 `AnnotateImageResponse` is provided by the Google Cloud Vision libraries; you may consult the https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.AnnotateImageResponse[RPC reference] or http://googleapis.github.io/googleapis/java/all/latest/apidocs/com/google/cloud/vision/v1/AnnotateImageResponse.html[Javadoc] as a reference.
 Additionally, you may consult the https://cloud.google.com/vision/docs/[Cloud Vision docs] to familiarize yourself with the concepts and features of the API.
 
-=== Example Usage
+=== Detect Image Labels Example
 
-```
+[source,java]
+----
 @Autowired
 private ResourceLoader resourceLoader;
 
@@ -70,7 +71,7 @@ public void processImage() {
       imageResource, Type.LABEL_DETECTION);
   System.out.println("Image Classification results: " + response.getLabelAnnotationsList());
 }
-```
+----
 
 === Sample
 
