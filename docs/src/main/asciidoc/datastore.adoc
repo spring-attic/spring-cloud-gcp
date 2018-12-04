@@ -761,6 +761,12 @@ public interface TradeRepository extends CrudRepository<Trade, String[]> {
 
   List<Trade> findTop3ByActionAndSymbolAndPriceGreaterThanAndPriceLessThanOrEqualOrderBySymbolDesc(
   			String action, String symbol, double priceFloor, double priceCeiling);
+
+  Page<TestEntity> findByAction(String action, Pageable pageable);
+
+  Slice<TestEntity> findBySymbol(String symbol, Pageable pageable);
+
+  List<TestEntity> findBySymbol(String symbol, Sort sort);
 }
 ----
 
@@ -783,9 +789,21 @@ Delete queries are executed as separate read and delete operations instead of as
 As a result, `removeBy` and `deleteBy` name-convention query methods cannot be used inside transactions via either `performInTransaction` or `@Transactional` annotation.
 
 Delete queries can have the following return types:
+
 * An integer type that is the number of entities deleted
 * A collection of entities that were deleted
 * 'void'
+
+Methods can have `org.springframework.data.domain.Pageable` parameter to control pagination and sorting,
+or `org.springframework.data.domain.Sort` parameter to control sorting only.
+See https://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories.query-methods[Spring Data documentation] for details.
+
+For returning multiple items in a repository method, we support Java collections as well as `org.springframework.data.domain.Page` and `org.springframework.data.domain.Slice`.
+If a method's return type is `org.springframework.data.domain.Page`, the returned object will include current page,
+total number of results and total number of pages.
+
+NOTE: Methods that return `Page` execute an additional query to compute total number of pages.
+Methods that return `Slice`, on the other hand, don't execute any additional queries and therefore are much more efficient.
 
 ==== Custom GQL query methods
 

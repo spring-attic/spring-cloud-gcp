@@ -90,4 +90,8 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 	Object processRawObjectForProjection(T object) {
 		return this.queryMethod.getResultProcessor().processResult(object);
 	}
+
+	public DatastoreTemplate getDatastoreTemplate() {
+		return this.datastoreTemplate;
+	}
 }
