@@ -16,22 +16,18 @@
 
 package com.example;
 
-import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-import com.google.cloud.vision.v1.AnnotateImageRequest;
 import com.google.cloud.vision.v1.AnnotateImageResponse;
-import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
 import com.google.cloud.vision.v1.EntityAnnotation;
-import com.google.cloud.vision.v1.Feature;
-import com.google.cloud.vision.v1.Image;
+import com.google.cloud.vision.v1.Feature.Type;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
-import com.google.common.collect.ImmutableMap;
-import com.google.protobuf.ByteString;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.vision.CloudVisionTemplate;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.ui.ModelMap;
-import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
@@ -40,8 +36,7 @@ import org.springframework.web.servlet.ModelAndView;
  * Code sample that shows how Spring Cloud GCP can be leveraged to use Google Cloud Client
  * Libraries.
  *
- * <p>
- * This uses the Cloud Vision API with the {@link ImageAnnotatorClient}, which is
+ * <p>This uses the Cloud Vision API with the {@link ImageAnnotatorClient}, which is
  * configured and provided by the spring-cloud-gcp-starter-vision module.
  *
  * @author João André Martins
@@ -54,7 +49,7 @@ public class VisionController {
 	private ResourceLoader resourceLoader;
 
 	@Autowired
-	private ImageAnnotatorClient imageAnnotatorClient;
+	private CloudVisionTemplate cloudVisionTemplate;
 
 	/**
 	 * This method downloads an image from a URL and sends its contents to the Vision API for label detection.
@@ -65,30 +60,16 @@ public class VisionController {
 	 */
 	@GetMapping("/vision")
 	public ModelAndView uploadImage(String imageUrl, ModelMap map) throws Exception {
-		// Copies the content of the image to memory.
-		byte[] imageBytes = StreamUtils.copyToByteArray(this.resourceLoader.getResource(imageUrl).getInputStream());
+		AnnotateImageResponse response = this.cloudVisionTemplate.analyzeImage(
+				this.resourceLoader.getResource(imageUrl), Type.LABEL_DETECTION);
 
-		BatchAnnotateImagesResponse responses;
+		Map<String, Float> imageLabels =
+				response.getLabelAnnotationsList()
+						.stream()
+						.collect(Collectors.toMap(
+								EntityAnnotation::getDescription, EntityAnnotation::getScore));
 
-		Image image = Image.newBuilder().setContent(ByteString.copyFrom(imageBytes)).build();
-
-		// Sets the type of request to label detection, to detect broad sets of categories in an image.
-		Feature feature = Feature.newBuilder().setType(Feature.Type.LABEL_DETECTION).build();
-		AnnotateImageRequest request =
-				AnnotateImageRequest.newBuilder().setImage(image).addFeatures(feature).build();
-		responses = this.imageAnnotatorClient.batchAnnotateImages(Collections.singletonList(request));
-
-		// We're only expecting one response.
-		if (responses.getResponsesCount() == 1) {
-			AnnotateImageResponse response = responses.getResponses(0);
-
-			ImmutableMap.Builder<String, Float> annotations = ImmutableMap.builder();
-			for (EntityAnnotation annotation : response.getLabelAnnotationsList()) {
-				annotations.put(annotation.getDescription(), annotation.getScore());
-			}
-			map.addAttribute("annotations", annotations.build());
-		}
-
+		map.addAttribute("annotations", imageLabels);
 		map.addAttribute("imageUrl", imageUrl);
 
 		return new ModelAndView("result", map);

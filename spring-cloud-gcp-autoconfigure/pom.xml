@@ -192,6 +192,12 @@
           <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gcp-vision</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- Config -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
