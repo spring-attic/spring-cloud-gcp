@@ -4,8 +4,7 @@ This code sample demonstrates how to connect to a MySQL Google Cloud SQL instanc
 
 You will create an instance, a database within the instance, populate the database and then query it.
 
-You can also explore the GCP MySQL Starter in the
-https://codelabs.developers.google.com/codelabs/cloud-spring-petclinic-cloudsql/index.html[Spring Pet Clinic using Cloud SQL] codelab.
+You can also explore the GCP MySQL Starter in the https://codelabs.developers.google.com/codelabs/cloud-spring-petclinic-cloudsql/index.html[Spring Pet Clinic using Cloud SQL] codelab.
 
 == Setup
 
