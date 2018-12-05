@@ -11,6 +11,10 @@
         <property name="headerFile" value="${checkstyle.header.file}"/>
         <property name="fileExtensions" value="java"/>
     </module>
+    <module name="SuppressionFilter">
+        <property name="file" value="src/checkstyle/checkstyle-suppressions.xml"/>
+        <property name="optional" value="true"/>
+    </module>
     <!--<module name="io.spring.javaformat.checkstyle.check.SpringHeaderCheck">
         <property name="fileExtensions" value="java" />
         <property name="headerType" value="${headerType}"/>
@@ -55,10 +59,8 @@
         <!-- Class Design -->
         <module name="com.puppycrawl.tools.checkstyle.checks.design.FinalClassCheck" />
         <module name="com.puppycrawl.tools.checkstyle.checks.design.InterfaceIsTypeCheck" />
-        <!-- TODO: re-enable when ready -->
-        <!--
         <module name="com.puppycrawl.tools.checkstyle.checks.design.HideUtilityClassConstructorCheck" />
-        -->
+
         <module name="com.puppycrawl.tools.checkstyle.checks.design.MutableExceptionCheck" />
         <module name="com.puppycrawl.tools.checkstyle.checks.design.InnerTypeLastCheck" />
         <!--<module name="com.puppycrawl.tools.checkstyle.checks.design.OneTopLevelClassCheck" />-->

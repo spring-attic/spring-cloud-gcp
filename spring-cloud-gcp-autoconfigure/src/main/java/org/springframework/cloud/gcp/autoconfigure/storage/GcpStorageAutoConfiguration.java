@@ -53,7 +53,7 @@ import org.springframework.context.annotation.Import;
 @ConditionalOnProperty(value = "spring.cloud.gcp.storage.enabled", matchIfMissing = true)
 @EnableConfigurationProperties({GcpProperties.class, GcpStorageProperties.class})
 @Import(GoogleStorageProtocolResolver.class)
-public class GcpStorageAutoConfiguration {
+public abstract class GcpStorageAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
