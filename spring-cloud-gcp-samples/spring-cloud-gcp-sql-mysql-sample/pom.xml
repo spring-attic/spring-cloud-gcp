@@ -9,7 +9,7 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-cloud-gcp-sql-sample</artifactId>
+	<artifactId>spring-cloud-gcp-sql-mysql-sample</artifactId>
 	<name>Spring Cloud GCP SQL MySQL Starter Code Sample</name>
 
 	<dependencies>
