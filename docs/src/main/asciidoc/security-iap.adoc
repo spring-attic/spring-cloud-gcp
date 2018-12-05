@@ -16,7 +16,8 @@ The following claims are validated automatically:
 Additionally, Audience (`"aud"`) validation is enabled when the application is running on AppEngine, or when a custom audience is provided through `spring.cloud.gcp.security.iap.audience` property.
 The custom property, if available, overrides the automatic AppEngine check.
 
-IMPORTANT: The audience check is *not* enabled by default on Compute Engine or Kubernetes Engine. To fully secure an application running on Compute Engine or Kubernetes Engine, find the Audience string per instructions the https://cloud.google.com/iap/docs/signed-headers-howto#verify_the_jwt_payload[Verify the JWT payload] guide, and specify it in `spring.cloud.gcp.security.iap.audience` property.
+IMPORTANT: The audience check is *not* enabled by default on Compute Engine or Kubernetes Engine.
+To fully secure an application running on Compute Engine or Kubernetes Engine, find the Audience string per instructions the https://cloud.google.com/iap/docs/signed-headers-howto#verify_the_jwt_payload[Verify the JWT payload] guide, and specify it in `spring.cloud.gcp.security.iap.audience` property.
 
 NOTE: If you create a custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`], enable extracting user identity by adding `.oauth2ResourceServer().jwt()` configuration to the {spring-security-javadoc}config/annotation/web/builders/HttpSecurity.html[`HttpSecurity`] object.
  If no custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`] is present, nothing needs to be done because Spring Boot will add this customization by default.
