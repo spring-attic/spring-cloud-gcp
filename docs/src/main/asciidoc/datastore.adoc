@@ -740,10 +740,8 @@ public String doWorkInsideTransaction() {
 }
 ----
 
-The `performTransaction` method accepts a `Function` that is provided an instance of a
-`DatastoreOperations` object. The final returned value and type of the function is determined by the user.
-You can use this object just as you would a regular `DatastoreOperations` with
-an exception:
+The `performTransaction` method accepts a `Function` that is provided an instance of a `DatastoreOperations` object. The final returned value and type of the function is determined by the user.
+You can use this object just as you would a regular `DatastoreOperations` with an exception:
 
 - It cannot perform sub-transactions.
 
@@ -970,9 +968,7 @@ public interface TraderRepository extends DatastoreRepository<Trader, String> {
 
 ==== Transactions
 
-These transactions work very similarly to
-those of `DatastoreOperations`, but is specific to the repository's domain type and provides repository functions
-instead of template functions.
+These transactions work very similarly to those of `DatastoreOperations`, but is specific to the repository's domain type and provides repository functions instead of template functions.
 
 For example, this is a read-write transaction:
 
@@ -1045,13 +1041,9 @@ public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
 }
 ----
 
-For example, you can retrieve all `Trade` objects in the repository by using
-`curl \http://<server>:<port>/trades`, or any specific trade via
-`curl \http://<server>:<port>/trades/<trader_id>`.
+For example, you can retrieve all `Trade` objects in the repository by using `curl \http://<server>:<port>/trades`, or any specific trade via `curl \http://<server>:<port>/trades/<trader_id>`.
 
-You can also write trades using
-`curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/`
-where the file `test.json` holds the JSON representation of a `Trade` object.
+You can also write trades using `curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/` where the file `test.json` holds the JSON representation of a `Trade` object.
 
 To delete trades, you can use `curl -XDELETE \http://<server>:<port>/trades/<trader_id>`
 

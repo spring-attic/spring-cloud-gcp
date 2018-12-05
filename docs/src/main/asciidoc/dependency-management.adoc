@@ -2,8 +2,7 @@
 
 The Spring Cloud GCP Bill of Materials (BOM) contains the versions of all the dependencies it uses.
 
-If you’re a Maven user, adding the following to your pom.xml file will allow you to not specify any
-Spring Cloud GCP dependency versions.
+If you’re a Maven user, adding the following to your pom.xml file will allow you to not specify any Spring Cloud GCP dependency versions.
 Instead, the version of the BOM you’re using determines the versions of the used dependencies.
 
 [source,xml,subs="normal"]
@@ -21,11 +20,7 @@ Instead, the version of the BOM you’re using determines the versions of the us
 </dependencyManagement>
 ----
 
-In the following sections, it will be assumed you are using the Spring Cloud GCP BOM and the
-dependency snippets will not contain versions.
+In the following sections, it will be assumed you are using the Spring Cloud GCP BOM and the dependency snippets will not contain versions.
 
-Gradle users can achieve the same kind of BOM experience using Spring's
-https://github.com/spring-gradle-plugins/dependency-management-plugin[dependency-management-plugin]
-Gradle plugin.
-For simplicity, the Gradle dependency snippets in the remainder of this document will also
-omit their versions.
+Gradle users can achieve the same kind of BOM experience using Spring's https://github.com/spring-gradle-plugins/dependency-management-plugin[dependency-management-plugin] Gradle plugin.
+For simplicity, the Gradle dependency snippets in the remainder of this document will also omit their versions.

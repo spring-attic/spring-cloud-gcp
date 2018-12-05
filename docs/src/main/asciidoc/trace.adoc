@@ -1,6 +1,7 @@
 == Spring Cloud Sleuth
 
-https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] is an instrumentation framework for Spring Boot applications. It captures trace informations and can forward traces to services like Zipkin for storage and analysis.
+https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] is an instrumentation framework for Spring Boot applications.
+It captures trace informations and can forward traces to services like Zipkin for storage and analysis.
 
 Google Cloud Platform provides its own managed distributed tracing service called https://cloud.google.com/trace/[Stackdriver Trace].
 Instead of running and maintaining your own Zipkin instance and storage, you can use Stackdriver Trace to store traces, view trace details, generate latency distributions graphs, and generate performance regression reports.
@@ -108,6 +109,5 @@ The trace logs can be viewed by going to the https://console.cloud.google.com/tr
 
 === Sample
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[sample application]
-and a https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html[codelab] are available.
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[sample application] and a https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html[codelab] are available.
 

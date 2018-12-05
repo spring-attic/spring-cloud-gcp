@@ -19,8 +19,7 @@ dependencies {
 }
 ----
 
-https://cloud.google.com/logging/[Stackdriver Logging] is the managed logging service provided by Google Cloud
-Platform.
+https://cloud.google.com/logging/[Stackdriver Logging] is the managed logging service provided by Google Cloud Platform.
 
 This module provides support for associating a web request trace ID with the corresponding log entries.
 It does so by retrieving the `X-B3-TraceId` value from the https://logback.qos.ch/manual/mdc.html[Mapped Diagnostic Context (MDC)], which is set by Spring Cloud Sleuth.
