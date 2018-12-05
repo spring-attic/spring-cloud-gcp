@@ -1,7 +1,6 @@
 == Google Cloud Pub/Sub
 
-Spring Cloud GCP provides an abstraction layer to publish to and subscribe from Google Cloud
-Pub/Sub topics and to create, list or delete Google Cloud Pub/Sub topics and subscriptions.
+Spring Cloud GCP provides an abstraction layer to publish to and subscribe from Google Cloud Pub/Sub topics and to create, list or delete Google Cloud Pub/Sub topics and subscriptions.
 
 A Spring Boot starter is provided to auto-configure the various required Pub/Sub components.
 
@@ -26,16 +25,12 @@ dependencies {
 
 This starter is also available from https://start.spring.io[Spring Initializr] through the `GCP Messaging` entry.
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample[sample application] is available.
 
-=== Pub/Sub operations abstraction
+=== Pub/Sub Operations & Template
 
-`PubSubOperations` is an abstraction that allows Spring users to use Google Cloud Pub/Sub without
-depending on any Google Cloud Pub/Sub API semantics.
+`PubSubOperations` is an abstraction that allows Spring users to use Google Cloud Pub/Sub without depending on any Google Cloud Pub/Sub API semantics.
 It provides the common set of operations needed to interact with Google Cloud Pub/Sub.
-`PubSubTemplate` is the default implementation of `PubSubOperations` and it uses the
-https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub[Google Cloud Java Client for Pub/Sub]
-to interact with Google Cloud Pub/Sub.
+`PubSubTemplate` is the default implementation of `PubSubOperations` and it uses the https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub[Google Cloud Java Client for Pub/Sub] to interact with Google Cloud Pub/Sub.
 
 `PubSubTemplate` depends on a `PublisherFactory` and a `SubscriberFactory`.
 The `PublisherFactory` provides a Google Cloud Java Client for Pub/Sub `Publisher`.
@@ -94,8 +89,7 @@ If Pub/Sub message payload conversion is desired, you can use the `subscribeAndC
 ==== Pulling messages from a subscription
 
 Google Cloud Pub/Sub supports synchronous pulling of messages from a subscription.
-This is different from subscribing to a subscription, in the sense that subscribing is an
-asynchronous task which polls the subscription on a set interval.
+This is different from subscribing to a subscription, in the sense that subscribing is an asynchronous task which polls the subscription on a set interval.
 
 The `pullNext()` method allows for a single message to be pulled and automatically acknowledged from a subscription.
 The `pull()` method pulls a number of messages from a subscription, allowing for the retry settings to be configured.
@@ -116,17 +110,12 @@ All `ack()`, `nack()`, and `modifyAckDeadline()` methods on messages as well as 
 
 === Pub/Sub management
 
-`PubSubAdmin` is the abstraction provided by Spring Cloud GCP to manage Google Cloud Pub/Sub
-resources.
+`PubSubAdmin` is the abstraction provided by Spring Cloud GCP to manage Google Cloud Pub/Sub resources.
 It allows for the creation, deletion and listing of topics and subscriptions.
 
-`PubSubAdmin` depends on `GcpProjectIdProvider` and either a `CredentialsProvider` or a
-`TopicAdminClient` and a `SubscriptionAdminClient`.
-If given a `CredentialsProvider`, it creates a `TopicAdminClient` and a `SubscriptionAdminClient`
-with the Google Cloud Java Library for Pub/Sub default settings.
-The Spring Boot starter for GCP Pub/Sub auto-configures a `PubSubAdmin` object using the
-`GcpProjectIdProvider` and the `CredentialsProvider` auto-configured by the Spring Boot GCP Core
-starter.
+`PubSubAdmin` depends on `GcpProjectIdProvider` and either a `CredentialsProvider` or a `TopicAdminClient` and a `SubscriptionAdminClient`.
+If given a `CredentialsProvider`, it creates a `TopicAdminClient` and a `SubscriptionAdminClient` with the Google Cloud Java Library for Pub/Sub default settings.
+The Spring Boot starter for GCP Pub/Sub auto-configures a `PubSubAdmin` object using the `GcpProjectIdProvider` and the `CredentialsProvider` auto-configured by the Spring Boot GCP Core starter.
 
 ==== Creating a topic
 
@@ -293,8 +282,8 @@ Pub/Sub credentials | No | https://www.googleapis.com/auth/pubsub
 | `spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period` | The maximum period a message ack deadline will be extended, in seconds | No | 0
 | `spring.cloud.gcp.pubsub.subscriber.pull-endpoint` | The endpoint for synchronous pulling messages | No | pubsub.googleapis.com:443
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.total-timeout-seconds`|
-TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely. The higher the total timeout, the more retries can be
-attempted. |No | 0
+TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely.
+The higher the total timeout, the more retries can be attempted. |No | 0
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.initial-retry-delay-second`|
 InitialRetryDelay controls the delay before the first retry. Subsequent retries will use this
 value adjusted according to the RetryDelayMultiplier.|No | 0
@@ -334,3 +323,7 @@ from the first element added), the elements will be wrapped up in a batch and se
 | `spring.cloud.gcp.pubsub.publisher.batching.enabled`|
 Enables batching.|No | false
 |===
+
+=== Sample
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-sample[sample application] is available.

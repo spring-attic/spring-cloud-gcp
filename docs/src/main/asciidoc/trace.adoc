@@ -1,6 +1,7 @@
 == Spring Cloud Sleuth
 
-https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] is an instrumentation framework for Spring Boot applications. It captures trace informations and can forward traces to services like Zipkin for storage and analysis.
+https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] is an instrumentation framework for Spring Boot applications.
+It captures trace informations and can forward traces to services like Zipkin for storage and analysis.
 
 Google Cloud Platform provides its own managed distributed tracing service called https://cloud.google.com/trace/[Stackdriver Trace].
 Instead of running and maintaining your own Zipkin instance and storage, you can use Stackdriver Trace to store traces, view trace details, generate latency distributions graphs, and generate performance regression reports.
@@ -29,9 +30,6 @@ dependencies {
 
 You must enable Stackdriver Trace API from the Google Cloud Console in order to capture traces.
 Navigate to the https://console.cloud.google.com/apis/api/cloudtrace.googleapis.com/overview[Stackdriver Trace API] for your project and make sure it’s enabled.
-
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[sample application]
-and a https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html[codelab] are available.
 
 [NOTE]
 ====
@@ -107,3 +105,9 @@ Spring Cloud GCP Trace does override some Sleuth configurations:
 Integration with Stackdriver Logging is available through the link:logging.adoc[Stackdriver Logging Support].
 If the Trace integration is used together with the Logging one, the request logs will be associated to the corresponding traces.
 The trace logs can be viewed by going to the https://console.cloud.google.com/traces/traces[Google Cloud Console Trace List], selecting a trace and pressing the `Logs -> View` link in the `Details` section.
+
+
+=== Sample
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-trace-sample[sample application] and a https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html[codelab] are available.
+

@@ -1,14 +1,10 @@
 == Spring JDBC
 
 Spring Cloud GCP adds integrations with
-https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html[Spring JDBC]
-so you can run your MySQL or PostgreSQL databases in Google Cloud SQL using Spring JDBC, or other
-libraries that depend on it like Spring Data JPA.
+https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html[Spring JDBC] so you can run your MySQL or PostgreSQL databases in Google Cloud SQL using Spring JDBC, or other libraries that depend on it like Spring Data JPA.
 
-The Cloud SQL support is provided by Spring Cloud GCP in the form of two Spring Boot starters, one
-for MySQL and another one for PostgreSQL.
-The role of the starters is to read configuration from properties and assume default settings so
-that user experience connecting to MySQL and PostgreSQL is as simple as possible.
+The Cloud SQL support is provided by Spring Cloud GCP in the form of two Spring Boot starters, one for MySQL and another one for PostgreSQL.
+The role of the starters is to read configuration from properties and assume default settings so that user experience connecting to MySQL and PostgreSQL is as simple as possible.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -37,29 +33,17 @@ dependencies {
 
 === Prerequisites
 
-In order to use the Spring Boot Starters for Google Cloud SQL, the Google Cloud SQL API must be
-enabled in your GCP project.
+In order to use the Spring Boot Starters for Google Cloud SQL, the Google Cloud SQL API must be enabled in your GCP project.
 
-To do that, go to the
-https://console.cloud.google.com/apis/library[API library page] of the Google Cloud Console, search
-for "Cloud SQL API", click the first result and enable the API.
+To do that, go to the https://console.cloud.google.com/apis/library[API library page] of the Google Cloud Console, search for "Cloud SQL API", click the first result and enable the API.
 
-NOTE: There are several similar "Cloud SQL" results. You must access the "Google Cloud SQL API" one
-and enable the API from there.
-
-Available sample applications and codelabs:
-
-- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-sql-sample[Spring Cloud GCP SQL]
-- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-jpa-sample[Spring Data JPA with Spring Cloud GCP SQL]
-- Codelab: https://codelabs.developers.google.com/codelabs/cloud-spring-petclinic-cloudsql/index.html[Spring Pet Clinic using Cloud SQL]
+NOTE: There are several similar "Cloud SQL" results. You must access the "Google Cloud SQL API" one and enable the API from there.
 
 === Spring Boot Starter for Google Cloud SQL
 
-The Spring Boot Starters for Google Cloud SQL provide an auto-configured
-https://docs.oracle.com/javase/7/docs/api/javax/sql/DataSource.html[`DataSource`] object.
+The Spring Boot Starters for Google Cloud SQL provide an auto-configured https://docs.oracle.com/javase/7/docs/api/javax/sql/DataSource.html[`DataSource`] object.
 Coupled with Spring JDBC, it provides a
-https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html#jdbc-JdbcTemplate[`JdbcTemplate`]
-object bean that allows for operations such as querying and modifying a database.
+https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html#jdbc-JdbcTemplate[`JdbcTemplate`] object bean that allows for operations such as querying and modifying a database.
 
 [source,java]
 ----
@@ -69,10 +53,8 @@ public List<Map<String, Object>> listUsers() {
 ----
 
 You can rely on
-https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html#boot-features-connect-to-production-database[Spring
-Boot data source auto-configuration] to configure a `DataSource` bean.
-In other words, properties like the SQL username, `spring.datasource.username`, and password,
-`spring.datasource.password` can be used.
+https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html#boot-features-connect-to-production-database[Spring Boot data source auto-configuration] to configure a `DataSource` bean.
+In other words, properties like the SQL username, `spring.datasource.username`, and password, `spring.datasource.password` can be used.
 There is also some configuration specific to Google Cloud SQL:
 
 |===
@@ -80,11 +62,10 @@ There is also some configuration specific to Google Cloud SQL:
 | `spring.cloud.gcp.sql.enabled` | Enables or disables Cloud SQL auto configuration | `true` |
 | `spring.cloud.gcp.sql.database-name` | Name of the database to connect to. | |
 `spring.datasource.url`
-| `spring.cloud.gcp.sql.instance-connection-name` | A string containing a Google Cloud SQL
-instance's project ID, region and name, each separated by a colon. For example,
-`my-project-id:my-region:my-instance-name`. | | `spring.datasource.url`
-| `spring.cloud.gcp.sql.credentials.location` | File system path to the Google OAuth2 credentials
-private key file. Used to authenticate and authorize new connections to a Google Cloud SQL instance.
+| `spring.cloud.gcp.sql.instance-connection-name` | A string containing a Google Cloud SQL instance's project ID, region and name, each separated by a colon.
+For example, `my-project-id:my-region:my-instance-name`. | | `spring.datasource.url`
+| `spring.cloud.gcp.sql.credentials.location` | File system path to the Google OAuth2 credentials private key file.
+Used to authenticate and authorize new connections to a Google Cloud SQL instance.
 | Default credentials provided by the Spring GCP Boot starter |
 | `spring.cloud.gcp.sql.credentials.encoded-key` | Base64-encoded contents of OAuth2 account private key in JSON format.
 Used to authenticate and authorize new connections to a Google Cloud SQL instance.
@@ -93,39 +74,27 @@ Used to authenticate and authorize new connections to a Google Cloud SQL instanc
 
 ==== `DataSource` creation flow
 
-Based on the previous properties, the Spring Boot starter for Google Cloud SQL creates a
-`CloudSqlJdbcInfoProvider` object which is used to obtain an instance's JDBC URL and driver class
-name.
-If you provide your own `CloudSqlJdbcInfoProvider` bean, it is used instead and the properties
-related to building the JDBC URL or driver class are ignored.
+Based on the previous properties, the Spring Boot starter for Google Cloud SQL creates a `CloudSqlJdbcInfoProvider` object which is used to obtain an instance's JDBC URL and driver class name.
+If you provide your own `CloudSqlJdbcInfoProvider` bean, it is used instead and the properties related to building the JDBC URL or driver class are ignored.
 
-The `DataSourceProperties` object provided by Spring Boot Autoconfigure is mutated in order to use
-the JDBC URL and driver class names provided by `CloudSqlJdbcInfoProvider`, unless those values were
-provided in the properties.
-It is in the `DataSourceProperties` mutation step that the credentials factory is registered
-in a system property to be `SqlCredentialFactory`.
+The `DataSourceProperties` object provided by Spring Boot Autoconfigure is mutated in order to use the JDBC URL and driver class names provided by `CloudSqlJdbcInfoProvider`, unless those values were provided in the properties.
+It is in the `DataSourceProperties` mutation step that the credentials factory is registered in a system property to be `SqlCredentialFactory`.
 
 `DataSource` creation is delegated to
 https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html[Spring Boot].
-You can select the type of connection pool (e.g., Tomcat, HikariCP, etc.) by
-https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html#boot-features-connect-to-production-database[adding
-their dependency to the classpath].
+You can select the type of connection pool (e.g., Tomcat, HikariCP, etc.) by https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-sql.html#boot-features-connect-to-production-database[adding their dependency to the classpath].
 
-Using the created `DataSource` in conjunction with Spring JDBC provides you with a fully configured
-and operational `JdbcTemplate` object that you can use to interact with your SQL database.
+Using the created `DataSource` in conjunction with Spring JDBC provides you with a fully configured and operational `JdbcTemplate` object that you can use to interact with your SQL database.
 You can connect to your database with as little as a database and instance names.
 
 ==== Troubleshooting tips
 
 [#connection-issues]
 ===== Connection issues
-If you're not able to connect to a database and see an endless loop of
-`Connecting to Cloud SQL instance [...] on IP [...]`, it's likely that exceptions are being thrown
-and logged at a level lower than your logger's level. This may be the case with HikariCP, if your
-logger is set to INFO or higher level.
+If you're not able to connect to a database and see an endless loop of `Connecting to Cloud SQL instance [...] on IP [...]`, it's likely that exceptions are being thrown and logged at a level lower than your logger's level.
+This may be the case with HikariCP, if your logger is set to INFO or higher level.
 
-To see what's going on in the background, you should add a `logback.xml` file to your application
-resources folder, that looks like this:
+To see what's going on in the background, you should add a `logback.xml` file to your application resources folder, that looks like this:
 
 [source, xml]
 ----
@@ -138,17 +107,14 @@ resources folder, that looks like this:
 
 =====  Errors like `c.g.cloud.sql.core.SslSocketFactory : Re-throwing cached exception due to attempt to refresh instance information too soon after error`
 
-If you see a lot of errors like this in a loop and can't connect to your database,
-this is usually a symptom that something isn't right with the permissions of your credentials or the Google Cloud SQL API is not enabled. Verify that the Google Cloud SQL API is enabled in the Cloud Console and that your service account has the
-https://cloud.google.com/sql/docs/mysql/project-access-control#roles[necessary IAM roles].
+If you see a lot of errors like this in a loop and can't connect to your database, this is usually a symptom that something isn't right with the permissions of your credentials or the Google Cloud SQL API is not enabled.
+Verify that the Google Cloud SQL API is enabled in the Cloud Console and that your service account has the https://cloud.google.com/sql/docs/mysql/project-access-control#roles[necessary IAM roles].
 
 To find out what's causing the issue, you can enable DEBUG logging level as mentioned link:#connection-issues[above].
 
 ===== PostgreSQL: `java.net.SocketException: already connected` issue
 
-We found this exception to be common if your Maven project's parent is `spring-boot` version
-`1.5.x`, or in any other circumstance that would cause the version of the
-`org.postgresql:postgresql` dependency to be an older one (e.g., `9.4.1212.jre7`).
+We found this exception to be common if your Maven project's parent is `spring-boot` version `1.5.x`, or in any other circumstance that would cause the version of the `org.postgresql:postgresql` dependency to be an older one (e.g., `9.4.1212.jre7`).
 
 To fix this, re-declare the dependency in its correct version. For example, in Maven:
 
@@ -160,3 +126,12 @@ To fix this, re-declare the dependency in its correct version. For example, in M
   <version>42.1.1</version>
 </dependency>
 ----
+
+
+=== Samples
+
+Available sample applications and codelabs:
+
+- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-sql-sample[Spring Cloud GCP SQL]
+- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-jpa-sample[Spring Data JPA with Spring Cloud GCP SQL]
+- Codelab: https://codelabs.developers.google.com/codelabs/cloud-spring-petclinic-cloudsql/index.html[Spring Pet Clinic using Cloud SQL]

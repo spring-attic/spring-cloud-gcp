@@ -48,15 +48,13 @@ https://googlecloudplatform.github.io/google-cloud-java/google-cloud-clients/api
 
 1. The project ID specified by the `GOOGLE_CLOUD_PROJECT` environment variable
 2. The Google App Engine project ID
-3. The project ID specified in the JSON credentials file pointed by the
-`GOOGLE_APPLICATION_CREDENTIALS` environment variable
+3. The project ID specified in the JSON credentials file pointed by the `GOOGLE_APPLICATION_CREDENTIALS` environment variable
 4. The Google Cloud SDK project ID
 5. The Google Compute Engine project ID, from the Google Compute Engine Metadata Server
 
 === Credentials
 
-`CredentialsProvider` is a functional interface that returns the credentials to authenticate and
-authorize calls to Google Cloud Client Libraries.
+`CredentialsProvider` is a functional interface that returns the credentials to authenticate and authorize calls to Google Cloud Client Libraries.
 
 [source,java]
 ----
@@ -86,21 +84,12 @@ If that credentials aren't specified through properties, the starter tries to di
 4. Google Cloud Shell built-in credentials
 5. Google Compute Engine built-in credentials
 
-If your app is running on Google App Engine or Google Compute Engine, in most cases, you should omit
-the `spring.cloud.gcp.credentials.location` property and, instead, let the Spring Cloud GCP
-Starter get the correct credentials for those environments.
-On App Engine Standard, the
-https://cloud.google.com/appengine/docs/standard/java/appidentity/[App Identity service account credentials]
-are used, on App Engine Flexible, the
-https://cloud.google.com/appengine/docs/flexible/java/service-account[Flexible service account credential]
-are used and on Google Compute Engine, the
-https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#using_the_compute_engine_default_service_account[Compute Engine Default Service Account]
-is used.
+If your app is running on Google App Engine or Google Compute Engine, in most cases, you should omit the `spring.cloud.gcp.credentials.location` property and, instead, let the Spring Cloud GCP Starter get the correct credentials for those environments.
+On App Engine Standard, the https://cloud.google.com/appengine/docs/standard/java/appidentity/[App Identity service account credentials] are used, on App Engine Flexible, the https://cloud.google.com/appengine/docs/flexible/java/service-account[Flexible service account credential] are used and on Google Compute Engine, the https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances#using_the_compute_engine_default_service_account[Compute Engine Default Service Account] is used.
 
 ==== Scopes
 
-By default, the credentials provided by the Spring Cloud GCP Starter contain scopes for every
-service supported by Spring Cloud GCP.
+By default, the credentials provided by the Spring Cloud GCP Starter contain scopes for every service supported by Spring Cloud GCP.
 
 |===
 | Service | Scope
@@ -113,22 +102,17 @@ service supported by Spring Cloud GCP.
 | Vision | https://www.googleapis.com/auth/cloud-vision
 |===
 
-The Spring Cloud GCP starter allows you to configure a custom scope list for the provided
-credentials.
-To do that, specify a comma-delimited list of https://developers.google.com/identity/protocols/googlescopes[Google OAuth2 scopes]
-in the `spring.cloud.gcp.credentials.scopes` property.
+The Spring Cloud GCP starter allows you to configure a custom scope list for the provided credentials.
+To do that, specify a comma-delimited list of https://developers.google.com/identity/protocols/googlescopes[Google OAuth2 scopes] in the `spring.cloud.gcp.credentials.scopes` property.
 
-`spring.cloud.gcp.credentials.scopes` is a comma-delimited list of
-https://developers.google.com/identity/protocols/googlescopes[Google OAuth2 scopes] for Google
-Cloud Platform services that the credentials returned by the provided `CredentialsProvider` support.
+`spring.cloud.gcp.credentials.scopes` is a comma-delimited list of https://developers.google.com/identity/protocols/googlescopes[Google OAuth2 scopes] for Google Cloud Platform services that the credentials returned by the provided `CredentialsProvider` support.
 
 [source,yaml]
 ----
 spring.cloud.gcp.credentials.scopes=https://www.googleapis.com/auth/pubsub,https://www.googleapis.com/auth/sqlservice.admin
 ----
 
-You can also use `DEFAULT_SCOPES` placeholder as a scope to represent the starters default scopes,
-and append the additional scopes you need to add.
+You can also use `DEFAULT_SCOPES` placeholder as a scope to represent the starters default scopes, and append the additional scopes you need to add.
 
 [source,yaml]
 ----
