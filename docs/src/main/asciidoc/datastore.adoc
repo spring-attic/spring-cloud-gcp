@@ -380,9 +380,7 @@ Here is an example of Cloud Datastore entity containing an embedded entity in JS
 {
   "name" : "Alexander",
   "age" : 50,
-  "children" : [ {
-    "name" : "Philip"
-  } ]
+  "child" : {"name" : "Philip"  }
 }
 
 ----
@@ -399,7 +397,7 @@ public class Parent {
   @Id
   String name;
 
-  List<Children> children;
+  Child child;
 }
 
 @Entity
@@ -409,7 +407,7 @@ public class Child {
 ----
 
 `Child` entities are not stored in their own kind.
-They are stored in their entirety in the `children` field of the `parents` kind.
+They are stored in their entirety in the `child` field of the `parents` kind.
 
 Multiple levels of embedded entities are supported.
 
@@ -529,6 +527,26 @@ The GQL key-literal representation for the parent `ShoppingOrder` would be:
 Key(orders, '12345')
 ----
 
+The Cloud Datastore entities exist separately in their own kinds:
+
+
+----
+{
+  "id" : 12345
+}
+
+{
+  "purchasedItemKey" : Key(orders, '12345', purchased_item, 'eggs'),
+  "name" : "eggs",
+  "timeAddedToOrder" : "2014-09-27 12:30:00.45-8:00"
+}
+
+{
+  "purchasedItemKey" : Key(orders, '12345', purchased_item, 'sausage'),
+  "name" : "sausage",
+  "timeAddedToOrder" : "2014-09-28 11:30:00.45-9:00"
+}
+----
 
 The parent-child relationship structure of objects is stored in Cloud Datastore using Datastore's https://cloud.google.com/datastore/docs/concepts/entities#ancestor_paths[ancestor relationships].
 Because the relationships are defined by the Ancestor mechanism, there is no extra column needed in either the parent or child entity to store this relationship.
