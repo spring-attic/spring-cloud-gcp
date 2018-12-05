@@ -128,7 +128,7 @@ To fix this, re-declare the dependency in its correct version. For example, in M
 ----
 
 
-=== Sample
+=== Samples
 
 Available sample applications and codelabs:
 

@@ -416,7 +416,7 @@ NOTE: Embedded entities don't need to have `@Id` field, it is only required for 
 Example:
 
 Entities can hold embedded entities that are their own type.
-We can store a trees in Cloud Datastore using this feature:
+We can store trees in Cloud Datastore using this feature:
 
 [source, java]
 ----
