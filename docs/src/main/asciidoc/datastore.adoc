@@ -527,14 +527,21 @@ The GQL key-literal representation for the parent `ShoppingOrder` would be:
 Key(orders, '12345')
 ----
 
-The Cloud Datastore entities exist separately in their own kinds:
+The Cloud Datastore entities exist separately in their own kinds.
 
+
+The `ShoppingOrder`:
 
 ----
 {
   "id" : 12345
 }
+----
 
+
+The two items inside that order:
+
+----
 {
   "purchasedItemKey" : Key(orders, '12345', purchased_item, 'eggs'),
   "name" : "eggs",
