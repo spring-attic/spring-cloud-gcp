@@ -967,7 +967,7 @@ When creating custom repositories for your own domain types and query methods, y
 === Query Methods
 
 `SpannerRepository` supports Query Methods.
-Described in the following sections, these are methods residing in your custom repository interfaces whose implementations are generated based on their names and annotations.
+Described in the following sections, these are methods residing in your custom repository interfaces of which implementations are generated based on their names and annotations.
 Query Methods can read, write, and delete entities in Cloud Spanner.
 Parameters to these methods can be any Cloud Spanner data type supported directly or via custom configured converters.
 Parameters can also be of type `Struct` or POJOs.

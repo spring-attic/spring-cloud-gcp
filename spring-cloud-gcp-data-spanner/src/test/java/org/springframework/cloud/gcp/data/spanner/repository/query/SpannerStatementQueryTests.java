@@ -162,7 +162,7 @@ public class SpannerStatementQueryTests {
 
 			Map<String, Value> paramMap = statement.getParameters();
 
-					assertEquals(params[0].toString(), paramMap.get("tag0").getString());
+			assertEquals(params[0].toString(), paramMap.get("tag0").getString());
 			assertEquals(params[1], paramMap.get("tag1").getString());
 			assertEquals(params[2], paramMap.get("tag2").getString());
 			assertEquals(params[3], paramMap.get("tag3").getFloat64());
