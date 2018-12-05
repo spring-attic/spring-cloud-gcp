@@ -372,19 +372,61 @@ There are three ways to represent relationships between entities that are descri
 ==== Embedded Entities
 
 Fields whose types are also annotated with `@Entity` are converted to `EntityValue` and stored inside the parent entity.
+
+Here is an example of Cloud Datastore entity containing an embedded entity in JSON:
+
+[source, json]
+----
+{
+  "name" : "Alexander",
+  "age" : 50,
+  "children" : [ {
+    "name" : "Philip"
+  } ]
+}
+
+----
+
+This corresponds to a simple pair of Java entities:
+
+[source, java]
+----
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import org.springframework.data.annotation.Id;
+
+@Entity("parents")
+public class Parent {
+  @Id
+  String name;
+
+  List<Children> children;
+}
+
+@Entity
+public class Child {
+  String name;
+}
+----
+
+`Child` entities are not stored in their own kind.
+They are stored in their entirety in the `children` field of the `parents` kind.
+
 Multiple levels of embedded entities are supported.
 
 NOTE: Embedded entities don't need to have `@Id` field, it is only required for top level entities.
 
 Example:
 
-We would like to store a binary tree in Cloud Datastore.
+Entities can hold embedded entities that are their own type.
+We can store a trees in Cloud Datastore using this feature:
 
 [source, java]
 ----
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
+@Entity
 public class EmbeddableTreeNode {
   @Id
   long value;
@@ -445,12 +487,17 @@ Collections of embedded objects can also be stored as the values of embedded Map
 
 Parent-child relationships are supported via the `@Descendants` annotation.
 
+Unlike embedded children, descendants are fully-formed entities residing in their own kinds.
+The parent entity does not have an extra field to hold the descendant entities.
+Instead, the relationship is captured in the descendants' keys, which refer to their parent entities:
+
 [source, java]
 ----
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
-@Entity
+@Entity("orders")
 public class ShoppingOrder {
   @Id
   long id;
@@ -459,7 +506,7 @@ public class ShoppingOrder {
   List<Item> items;
 }
 
-@Entity
+@Entity("purchased_item")
 public class Item {
   @Id
   Key purchasedItemKey;
@@ -469,6 +516,19 @@ public class Item {
   Timestamp timeAddedToOrder;
 }
 ----
+
+For example, an instance of a GQL key-literal representation for `Item` would also contain the parent `ShoppingOrder` ID value:
+
+----
+Key(orders, '12345', purchased_item, 'eggs')
+----
+
+The GQL key-literal representation for the parent `ShoppingOrder` would be:
+
+----
+Key(orders, '12345', purchased_item, 'eggs')
+----
+
 
 The parent-child relationship structure of objects is stored in Cloud Datastore using Datastore's https://cloud.google.com/datastore/docs/concepts/entities#ancestor_paths[ancestor relationships].
 Because the relationships are defined by the Ancestor mechanism, there is no extra column needed in either the parent or child entity to store this relationship.
@@ -517,6 +577,18 @@ public class Item {
 
   Timestamp timeAddedToOrder;
 }
+----
+
+`@Reference` relationships are between fully-formed entities residing in their own kinds.
+The relationship between `ShoppingOrder` and `Item` entities are stored as a Key field inside `ShoppingOrder`, which are resolved to the underlying Java entity type by Spring Data Cloud Datastore:
+
+----
+{
+  "id" : 12345,
+  "specialSingleItem" : Key(item, "milk"),
+  "items" : [ Key(item, "eggs"), Key(item, "sausage") ]
+}
+
 ----
 
 Reference properties can either be singular or collection-like.
@@ -615,6 +687,9 @@ public class ExampleItem {
 }
 ----
 
+When using queries directly or via Query Methods, Cloud Datastore requires https://cloud.google.com/datastore/docs/concepts/indexes[composite custom indexes] if the select statement is not `SELECT *` or if there is more than one filtering condition in the `WHERE` clause.
+
+
 ===== Read with offsets, limits, and sorting
 
 `DatastoreRepository` and custom-defined entity repositories implement the Spring Data `PagingAndSortingRepository`, which supports offsets and limits using page numbers and page sizes.
@@ -671,6 +746,8 @@ You can use this object just as you would a regular `DatastoreOperations` with
 an exception:
 
 - It cannot perform sub-transactions.
+
+Because of Cloud Datastore's consistency guarantees, there are https://cloud.google.com/datastore/docs/concepts/transactions#what_can_be_done_in_a_transaction[limitations] to the operations and relationships among entities used inside transactions.
 
 ===== Declarative Transactions with @Transactional Annotation
 
