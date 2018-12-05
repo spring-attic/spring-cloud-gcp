@@ -50,9 +50,6 @@ import static org.junit.Assume.assumeThat;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { SqlApplication.class })
 public class SqlApplicationTests {
 
-	@LocalServerPort
-	private int port;
-
 	@Autowired
 	private TestRestTemplate testRestTemplate;
 
@@ -74,9 +71,8 @@ public class SqlApplicationTests {
 
 	@Test
 	public void testSqlRowsAccess() {
-		String url = String.format("http://localhost:%s/getTuples", this.port);
 		ResponseEntity<List<String>> result = this.testRestTemplate.exchange(
-				url, HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
+				"/getTuples", HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
 				});
 
 		assertThat(result.getBody()).containsExactlyInAnyOrder(
