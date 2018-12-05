@@ -1,12 +1,13 @@
 = Spring Cloud GCP PostgreSQL Sample
 
 This code sample demonstrates how to connect to a Postgres Google Cloud SQL instance using the link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-postgresql[Spring Cloud GCP PostgreSQL Starter].
+If you are interested in MySQL as well, you may refer to the link:../spring-cloud-gcp-sql-mysql-sample[MySQL sample app].
 
 You will create an instance, a database within the instance, populate the database and then query it.
 
 == Setup
 
-1. Follow https://cloud.google.com/sql/docs/mysql/quickstart[these instructions] to set up a Google Cloud Project with billing enabled.
+1. Follow https://cloud.google.com/sql/docs/postgres/quickstart[these instructions] to set up a Google Cloud Project with billing enabled.
 
 2. Create a Google Cloud SQL instance from the https://console.cloud.google.com/sql/instances[Google Cloud Console Cloud SQL page].
 Choose "Postgres" as your database engine.
