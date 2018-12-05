@@ -192,7 +192,7 @@ public class SpannerStatementQueryExecutor {
 
 	private static void bindParameter(ValueBinder<Statement.Builder> bind,
 			Function<Object, Struct> paramStructConvertFunc, SpannerCustomConverter spannerCustomConverter,
-			Object originalParam, Statement.Builder builder) {
+			Object originalParam) {
 		Object param = originalParam;
 		BiFunction<ValueBinder, Object, ?> toMethod = (BiFunction<ValueBinder, Object, ?>) getValueBinderBiFunction(
 				param);
