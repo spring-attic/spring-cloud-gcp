@@ -185,7 +185,7 @@ public class SpannerStatementQueryExecutor {
 		Statement.Builder builder = Statement.newBuilder(sql);
 		for (int i = 0; i < tags.size(); i++) {
 			bindParameter(builder.bind(tags.get(i)), paramStructConvertFunc, spannerCustomConverter,
-					params[i], builder);
+					params[i]);
 		}
 		return builder.build();
 	}
