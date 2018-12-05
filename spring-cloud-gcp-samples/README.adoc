@@ -33,7 +33,7 @@ Uses the Spring Cloud GCP Pub/Sub abstraction to exchange messages.
 - link:spring-cloud-gcp-pubsub-binder-sample[Spring Cloud GCP Pub/Sub Stream binder]:
 Uses the Spring Cloud Stream Binder for Google Cloud Pub/Sub to exchange messages.
 
-- link:spring-cloud-gcp-sql-sample[Spring Cloud GCP SQL Sample]:
+- link:spring-cloud-gcp-sql-mysql-sample[Spring Cloud GCP MySQL Sample]:
 Connects to a https://cloud.google.com/sql/docs/[Google Cloud SQL] instance using best practices.
 Populates database with values and reads them.
 
