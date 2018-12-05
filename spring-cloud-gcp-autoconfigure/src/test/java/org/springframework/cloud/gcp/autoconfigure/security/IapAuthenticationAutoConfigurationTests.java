@@ -43,7 +43,6 @@ import org.springframework.cloud.gcp.core.MetadataProvider;
 import org.springframework.cloud.gcp.security.iap.AppEngineAudienceProvider;
 import org.springframework.cloud.gcp.security.iap.AudienceProvider;
 import org.springframework.cloud.gcp.security.iap.AudienceValidator;
-import org.springframework.cloud.gcp.security.iap.ComputeEngineAudienceProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
@@ -211,20 +210,6 @@ public class IapAuthenticationAutoConfigurationTests {
 					AudienceProvider audienceProvider = context.getBean(AudienceProvider.class);
 					assertThat(audienceProvider).isNotNull();
 					assertThat(audienceProvider).isInstanceOf(AppEngineAudienceProvider.class);
-				});
-	}
-
-
-	@Test
-	public void testComputeEngineAudienceValidatorAddedWhenAvailable() {
-		when(this.mockEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.COMPUTE_ENGINE);
-
-		this.contextRunner
-				.withUserConfiguration(FixedAudienceValidatorConfiguration.class)
-				.run(context -> {
-					AudienceProvider audienceProvider = context.getBean(AudienceProvider.class);
-					assertThat(audienceProvider).isNotNull();
-					assertThat(audienceProvider).isInstanceOf(ComputeEngineAudienceProvider.class);
 				});
 	}
 
