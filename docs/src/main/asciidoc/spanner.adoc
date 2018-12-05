@@ -971,7 +971,7 @@ Described in the following sections, these are methods residing in your custom r
 Query Methods can read, write, and delete entities in Cloud Spanner.
 Parameters to these methods can be any Cloud Spanner data type supported directly or via custom configured converters.
 Parameters can also be of type `Struct` or POJOs.
-If a POJO is given as a parameter, it will be converted to a Struct with the same type-conversion logic as used to create write mutations.
+If a POJO is given as a parameter, it will be converted to a `Struct` with the same type-conversion logic as used to create write mutations.
 Comparisons using Struct parameters are limited to https://cloud.google.com/spanner/docs/data-types#limited-comparisons-for-struct[what is available with Cloud Spanner].
 
 
