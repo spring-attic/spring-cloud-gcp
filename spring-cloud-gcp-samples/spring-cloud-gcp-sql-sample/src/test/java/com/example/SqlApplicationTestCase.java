@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -40,11 +39,10 @@ import static org.junit.Assume.assumeThat;
  * database-specific configuration.
  *
  * @author Daniel Zou
+ *
+ * @since 1.1
  */
 public abstract class SqlApplicationTestCase {
-
-	@LocalServerPort
-	private int port;
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;
@@ -67,9 +65,8 @@ public abstract class SqlApplicationTestCase {
 
 	@Test
 	public void testSqlRowsAccess() {
-		String url = String.format("http://localhost:%s/getTuples", this.port);
 		ResponseEntity<List<String>> result = this.testRestTemplate.exchange(
-				url, HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
+				"/getTuples", HttpMethod.GET, null, new ParameterizedTypeReference<List<String>>() {
 				});
 
 		assertThat(result.getBody()).containsExactlyInAnyOrder(

@@ -13,7 +13,10 @@
 	<name>Spring Cloud GCP SQL MySQL Starter Code Sample</name>
 
 	<dependencies>
-		<!-- You only need to include the starter dependency of your database engine. -->
+		<!--
+			You only need to include the starter dependency of your database engine.
+			If both are included, configuration defaults to using MySQL.
+		-->
 
 		<!-- Remove this if using Postgres. -->
 		<dependency>

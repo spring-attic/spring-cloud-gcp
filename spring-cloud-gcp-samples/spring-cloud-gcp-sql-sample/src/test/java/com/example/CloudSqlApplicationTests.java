@@ -33,6 +33,8 @@ import org.springframework.test.context.junit4.SpringRunner;
  * Runs the {@link SqlApplicationTestCase} on a Cloud SQL database backend.
  *
  * @author Daniel Zou
+ *
+ * @since 1.1
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(
@@ -52,6 +54,7 @@ public class CloudSqlApplicationTests extends SqlApplicationTestCase {
 		@Bean
 		public CloudSqlJdbcInfoProvider mySqlJdbcInfoProvider(
 				GcpCloudSqlProperties gcpCloudSqlProperties) {
+
 			CloudSqlJdbcInfoProvider provider = new DefaultCloudSqlJdbcInfoProvider(gcpCloudSqlProperties,
 					DatabaseType.MYSQL);
 			return provider;

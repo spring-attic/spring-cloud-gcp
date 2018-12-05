@@ -33,6 +33,8 @@ import org.springframework.test.context.junit4.SpringRunner;
  * Runs the {@link SqlApplicationTestCase} on a Postgres database backend.
  *
  * @author Daniel Zou
+ *
+ * @since 1.1
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(
