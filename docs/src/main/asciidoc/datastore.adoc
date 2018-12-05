@@ -526,7 +526,7 @@ Key(orders, '12345', purchased_item, 'eggs')
 The GQL key-literal representation for the parent `ShoppingOrder` would be:
 
 ----
-Key(orders, '12345', purchased_item, 'eggs')
+Key(orders, '12345')
 ----
 
 
