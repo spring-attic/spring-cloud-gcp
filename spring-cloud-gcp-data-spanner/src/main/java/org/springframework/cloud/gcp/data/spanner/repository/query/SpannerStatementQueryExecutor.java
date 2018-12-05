@@ -184,41 +184,47 @@ public class SpannerStatementQueryExecutor {
 		}
 		Statement.Builder builder = Statement.newBuilder(sql);
 		for (int i = 0; i < tags.size(); i++) {
-			final Object originalParam = params[i];
-			Object param = params[i];
-			BiFunction<ValueBinder, Object, ?> toMethod = (BiFunction<ValueBinder, Object, ?>)
-				getValueBinderBiFunction(param);
-			// the param is not a native Cloud Spanner type
-			if (toMethod == null && spannerCustomConverter != null) {
-				Class<?> compatible = ConverterAwareMappingSpannerEntityWriter
-						.findFirstCompatibleSpannerSingleItemNativeType(
-								type -> spannerCustomConverter.canConvert(originalParam.getClass(), type));
-				if (compatible != null) {
-					param = spannerCustomConverter.convert(originalParam, compatible);
-					toMethod = (BiFunction<ValueBinder, Object, ?>) getValueBinderBiFunction(param);
-				}
-			}
-			// could not be converted, attempting to use it as a struct
-			if (toMethod == null) {
-				if (paramStructConvertFunc == null) {
-					throw new IllegalArgumentException("Param: " + param.toString()
-							+ " is not a supported type: " + param.getClass());
-				}
-				try {
-					toMethod = (BiFunction<ValueBinder, Object, ?>)
-						ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
-							.get(Struct.class);
-					param = paramStructConvertFunc.apply(param);
-				}
-				catch (SpannerDataException e) {
-					throw new IllegalArgumentException("Param: " + param.toString()
-							+ " is not a supported type: " + param.getClass(), e);
-				}
-			}
-			builder = (Statement.Builder) toMethod.apply(builder.bind(tags.get(i)),
-					param);
+			bindParameter(builder.bind(tags.get(i)), paramStructConvertFunc, spannerCustomConverter,
+					params[i], builder);
 		}
 		return builder.build();
+	}
+
+	private static void bindParameter(ValueBinder<Statement.Builder> bind,
+			Function<Object, Struct> paramStructConvertFunc, SpannerCustomConverter spannerCustomConverter,
+			Object originalParam, Statement.Builder builder) {
+		Object param = originalParam;
+		BiFunction<ValueBinder, Object, ?> toMethod = (BiFunction<ValueBinder, Object, ?>) getValueBinderBiFunction(
+				param);
+		// the param is not a native Cloud Spanner type
+		if (toMethod == null && spannerCustomConverter != null) {
+			Class<?> compatible = ConverterAwareMappingSpannerEntityWriter
+					.findFirstCompatibleSpannerSingleItemNativeType(
+							type -> spannerCustomConverter.canConvert(originalParam.getClass(), type));
+			if (compatible != null) {
+				param = spannerCustomConverter.convert(originalParam, compatible);
+				toMethod = (BiFunction<ValueBinder, Object, ?>) getValueBinderBiFunction(param);
+			}
+		}
+		// could not be converted, attempting to use it as a struct
+		if (toMethod == null) {
+			if (paramStructConvertFunc == null) {
+				throw new IllegalArgumentException("Param: " + param.toString()
+						+ " is not a supported type: " + param.getClass());
+			}
+			try {
+				toMethod = (BiFunction<ValueBinder, Object, ?>)
+					ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
+						.get(Struct.class);
+				param = paramStructConvertFunc.apply(param);
+			}
+			catch (SpannerDataException e) {
+				throw new IllegalArgumentException("Param: " + param.toString()
+						+ " is not a supported type: " + param.getClass(), e);
+			}
+		}
+		// compiler rule requires this to be set
+		Object unused = toMethod.apply(bind, param);
 	}
 
 	public static String getColumnsStringForSelect(
@@ -232,7 +238,8 @@ public class SpannerStatementQueryExecutor {
 		}
 		else if (param.getClass().isEnum()) {
 			return (binder,
-					value) -> ((BiFunction<ValueBinder, String, ?>) ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
+					value) -> ((BiFunction<ValueBinder, String, ?>)
+						ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap
 							.get(String.class)).apply(binder, value.toString());
 		}
 		else {
