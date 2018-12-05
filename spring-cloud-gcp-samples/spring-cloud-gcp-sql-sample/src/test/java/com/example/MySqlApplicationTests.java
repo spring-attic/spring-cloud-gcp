@@ -16,7 +16,7 @@
 
 package com.example;
 
-import com.example.CloudSqlApplicationTests.CloudSqlApplicationTestConfiguration;
+import com.example.MySqlApplicationTests.CloudSqlApplicationTestConfiguration;
 import org.junit.runner.RunWith;
 
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,7 +47,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 				"spring.datasource.continue-on-error=true",
 				"spring.datasource.initialization-mode=always"
 		})
-public class CloudSqlApplicationTests extends SqlApplicationTestCase {
+public class MySqlApplicationTests extends SqlApplicationTestCase {
 
 	@Configuration
 	static class CloudSqlApplicationTestConfiguration {
