@@ -1,8 +1,6 @@
 == Spring Resources
 
-https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html[Spring Resources]
-are an abstraction for a number of low-level resources, such as file system files, classpath files,
-servlet context-relative files, etc.
+https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html[Spring Resources] are an abstraction for a number of low-level resources, such as file system files, classpath files, servlet context-relative files, etc.
 Spring Cloud GCP adds a new resource type: a Google Cloud Storage (GCS) object.
 
 A Spring Boot starter is provided to auto-configure the various Storage components.
@@ -28,13 +26,9 @@ dependencies {
 
 This starter is also available from https://start.spring.io/[Spring Initializr] through the `GCP Storage` entry.
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample[sample application]
-and a https://codelabs.developers.google.com/codelabs/spring-cloud-gcp-gcs/index.html[codelab] are available.
-
 === Google Cloud Storage
 
-The Spring Resource Abstraction for Google Cloud Storage allows GCS objects to be accessed by their
-GCS URL using the `@Value` annotation
+The Spring Resource Abstraction for Google Cloud Storage allows GCS objects to be accessed by their GCS URL using the `@Value` annotation:
 
 [source,java]
 ----
@@ -50,8 +44,7 @@ SpringApplication.run(...).getResource("gs://[YOUR_GCS_BUCKET]/[GCS_FILE_NAME]")
 ----
 
 
-This creates a `Resource` object that can be used to read the object, among
-https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-resource[other possible operations].
+This creates a `Resource` object that can be used to read the object, among https://docs.spring.io/spring/docs/current/spring-framework-reference/html/resources.html#resources-resource[other possible operations].
 
 It is also possible to write to a `Resource`, although a `WriteableResource` is required.
 
@@ -65,16 +58,12 @@ try (OutputStream os = ((WritableResource) gcsResource).getOutputStream()) {
 }
 ----
 
-If the resource path refers to an object on Google Cloud Storage (as opposed to a bucket), then the resource
-can be cast as a `GoogleStorageResourceObject` and the `getGoogleStorageObject` method can be called
-to obtain a https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-storage/src/main/java/com/google/cloud/storage/Blob.java[`Blob`].
+If the resource path refers to an object on Google Cloud Storage (as opposed to a bucket), then the resource can be cast as a `GoogleStorageResourceObject` and the `getGoogleStorageObject` method can be called to obtain a https://github.com/GoogleCloudPlatform/google-cloud-java/blob/master/google-cloud-storage/src/main/java/com/google/cloud/storage/Blob.java[`Blob`].
 This type represents a GCS file, which has associated https://cloud.google.com/storage/docs/gsutil/addlhelp/WorkingWithObjectMetadata[metadata], such as content-type, that can be set.
 The `createSignedUrl` method can also be used to obtain https://cloud.google.com/storage/docs/access-control/signed-urls[signed URLs] for GCS objects.
 However, creating signed URLs requires that the resource was created using service account credentials.
 
-The Spring Boot Starter for Google Cloud Storage auto-configures the `Storage` bean required by the
-`spring-cloud-gcp-storage` module, based on the `CredentialsProvider` provided by the Spring Boot
-GCP starter.
+The Spring Boot Starter for Google Cloud Storage auto-configures the `Storage` bean required by the `spring-cloud-gcp-storage` module, based on the `CredentialsProvider` provided by the Spring Boot GCP starter.
 
 === Configuration
 
@@ -83,15 +72,16 @@ The Spring Boot Starter for Google Cloud Storage provides the following configur
 |===
 | Name | Description | Required | Default value
 | `spring.cloud.gcp.storage.enabled` | Enables the GCP storage APIs. | No | `true`
-| `spring.cloud.gcp.storage.auto-create-files` | Creates files and buckets on Google Cloud Storage
-when writes are made to non-existent files | No | `true`
-| `spring.cloud.gcp.storage.credentials.location` | OAuth2 credentials for authenticating with the
-Google Cloud Storage API, if different from the ones in the
-<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
-| `spring.cloud.gcp.storage.credentials.encoded-key` | Base64-encoded contents of OAuth2 account private key for authenticating with the
-Google Cloud Storage API, if different from the ones in the
-<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.storage.auto-create-files` | Creates files and buckets on Google Cloud Storage when writes are made to non-existent files | No | `true`
+| `spring.cloud.gcp.storage.credentials.location` | OAuth2 credentials for authenticating with the Google Cloud Storage API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.storage.credentials.encoded-key` |
+Base64-encoded contents of OAuth2 account private key for authenticating with the Google Cloud Storage API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
 | `spring.cloud.gcp.storage.credentials.scopes` |
-https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
-Storage credentials | No | https://www.googleapis.com/auth/devstorage.read_write
+https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP Storage credentials | No | https://www.googleapis.com/auth/devstorage.read_write
 |===
+
+
+=== Sample
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample[sample application] and a https://codelabs.developers.google.com/codelabs/spring-cloud-gcp-gcs/index.html[codelab] are available.
+

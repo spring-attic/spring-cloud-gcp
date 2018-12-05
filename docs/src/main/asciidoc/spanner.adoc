@@ -2,10 +2,8 @@
 
 == Spring Data Cloud Spanner
 
-http://projects.spring.io/spring-data/[Spring Data]
-is an abstraction for storing and retrieving POJOs in numerous storage technologies.
-Spring Cloud GCP adds Spring Data support for http://cloud.google.com/spanner/[Google Cloud
-Spanner].
+http://projects.spring.io/spring-data/[Spring Data] is an abstraction for storing and retrieving POJOs in numerous storage technologies.
+Spring Cloud GCP adds Spring Data support for http://cloud.google.com/spanner/[Google Cloud Spanner].
 
 Maven coordinates for this module only, using Spring Cloud GCP BOM:
 
@@ -49,10 +47,7 @@ dependencies {
 }
 ----
 
-This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Spanner libraries
-as well.
-
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[sample application] is available.
+This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Spanner libraries as well.
 
 Spring Data Cloud Spanner and the underlying Cloud Spanner Java Client Library are beta status.
 
@@ -65,10 +60,8 @@ To setup Spring Data Cloud Spanner, you have to configure the following:
 
 ==== Cloud Spanner settings
 
-You can the use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot
-Starter for Spring Data Spanner] to autoconfigure Google Cloud Spanner in your Spring application.
-It contains all the necessary setup that makes it easy to authenticate with your Google Cloud
-project.
+You can the use link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner] to autoconfigure Google Cloud Spanner in your Spring application.
+It contains all the necessary setup that makes it easy to authenticate with your Google Cloud project.
 The following configuration options are available:
 
 |===
@@ -101,13 +94,9 @@ with interleaved parent-child relationships will be "ON DELETE CASCADE". The sch
 
 ==== Repository settings
 
-Spring Data Repositories can be configured via the `@EnableSpannerRepositories` annotation on your
-main `@Configuration` class.
-With our Spring Boot Starter for Spring Data Cloud Spanner, `@EnableSpannerRepositories` is automatically
-added.
-It is not required to add it to any other class, unless there is a need to override finer
-grain configuration parameters provided by
-https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-spanner/src/main/java/org/springframework/cloud/gcp/data/spanner/repository/config/EnableSpannerRepositories.java[`@EnableSpannerRepositories`].
+Spring Data Repositories can be configured via the `@EnableSpannerRepositories` annotation on your main `@Configuration` class.
+With our Spring Boot Starter for Spring Data Cloud Spanner, `@EnableSpannerRepositories` is automatically added.
+It is not required to add it to any other class, unless there is a need to override finer grain configuration parameters provided by https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-data-spanner/src/main/java/org/springframework/cloud/gcp/data/spanner/repository/config/EnableSpannerRepositories.java[`@EnableSpannerRepositories`].
 
 ==== Autoconfiguration
 
@@ -140,8 +129,8 @@ public class Trader {
 }
 ----
 
-Spring Data Cloud Spanner will ignore any property annotated with `@NotMapped`. These properties will
-not be written to or read from Spanner.
+Spring Data Cloud Spanner will ignore any property annotated with `@NotMapped`.
+These properties will not be written to or read from Spanner.
 
 ==== Constructors
 
@@ -181,9 +170,7 @@ This annotation is optional, and if not given, the name of the table is inferred
 ===== SpEL expressions for table names
 
 In some cases, you might want the `@Table` table name to be determined dynamically.
-To do that, you can use
-https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#expressions[Spring
-Expression Language].
+To do that, you can use https://docs.spring.io/spring/docs/current/spring-framework-reference/core.html#expressions[Spring Expression Language].
 
 For example:
 
@@ -196,8 +183,7 @@ public class Trade {
 }
 ----
 
-The table name will be resolved only if the `tableNameSuffix` value/bean in the Spring application
-context is defined.
+The table name will be resolved only if the `tableNameSuffix` value/bean in the Spring application context is defined.
 For example, if `tableNameSuffix` has the value "123", the table name will resolve to `trades_123`.
 
 ==== Primary Keys
@@ -265,11 +251,9 @@ The `@Column` annotation optionally provides a different column name than that o
 
 ==== Embedded Objects
 
-If an object of type `B` is embedded as a property of `A`, then the columns of `B` will be saved in
-the same Cloud Spanner table as those of `A`. If `B` has primary key columns, those columns will be
-included in the primary key of `A`. `B` can also have embedded properties. Embedding allows reuse
-of columns between multiple entities, and can be useful for implementing parent-child situations, because
-Cloud Spanner requires child tables to include the key columns of their parents.
+If an object of type `B` is embedded as a property of `A`, then the columns of `B` will be saved in the same Cloud Spanner table as those of `A`.
+If `B` has primary key columns, those columns will be included in the primary key of `A`. `B` can also have embedded properties.
+Embedding allows reuse of columns between multiple entities, and can be useful for implementing parent-child situations, because Cloud Spanner requires child tables to include the key columns of their parents.
 
 For example:
 
@@ -326,15 +310,13 @@ Note that embedded properties' column names must all be unique.
 
 ==== Relationships
 
-Spring Data Cloud Spanner supports parent-child relationships using the Cloud Spanner https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables[parent-child interleaved
-table mechanism]. Cloud Spanner interleaved tables enforce the one-to-many relationship and provide efficient queries and operations
-on entities of a single domain parent entity. These relationships can be up to 7 levels deep. Cloud Spanner also provides
-automatic cascading delete or enforces the deletion of child entities before parents.
+Spring Data Cloud Spanner supports parent-child relationships using the Cloud Spanner https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables[parent-child interleaved table mechanism].
+Cloud Spanner interleaved tables enforce the one-to-many relationship and provide efficient queries and operations on entities of a single domain parent entity.
+These relationships can be up to 7 levels deep.
+Cloud Spanner also provides automatic cascading delete or enforces the deletion of child entities before parents.
 
-While one-to-one and many-to-many relationships can be implemented in Cloud Spanner and Spring Data Cloud Spanner using constructs of
-interleaved parent-child tables, only the parent-child relationship is natively supported. Cloud Spanner does not
-support the foreign key constraint, though the parent-child key constraint enforces a similar requirement when used
-with interleaved tables.
+While one-to-one and many-to-many relationships can be implemented in Cloud Spanner and Spring Data Cloud Spanner using constructs of interleaved parent-child tables, only the parent-child relationship is natively supported.
+Cloud Spanner does not support the foreign key constraint, though the parent-child key constraint enforces a similar requirement when used with interleaved tables.
 
 For example, the following Java entities:
 
@@ -367,9 +349,8 @@ class Album {
 }
 ----
 
-These classes can correspond to an existing pair of interleaved tables. The `@Interleaved` annotation may be applied to
-`Collection` properties and the inner type is resolved as the child entity type. The schema needed to create them can
-also be generated using the `SpannerSchemaUtils` and executed using the `SpannerDatabaseAdminTemplate`:
+These classes can correspond to an existing pair of interleaved tables. The `@Interleaved` annotation may be applied to `Collection` properties and the inner type is resolved as the child entity type.
+The schema needed to create them can also be generated using the `SpannerSchemaUtils` and executed using the `SpannerDatabaseAdminTemplate`:
 
 [source,java]
 ----
@@ -388,8 +369,7 @@ List<String> createStrings = this.schemaUtils.getCreateTableDdlStringsForInterle
 this.databaseAdmin.executeDdlStrings(createStrings, true);
 ----
 
-The `createStrings` list contains table schema statements using column names and types compatible with the provided
-Java type and any resolved child relationship types contained within based on the configured custom converters.
+The `createStrings` list contains table schema statements using column names and types compatible with the provided Java type and any resolved child relationship types contained within based on the configured custom converters.
 
 [source,sql]
 ----
@@ -410,13 +390,11 @@ CREATE TABLE Albums (
 
 The `ON DELETE CASCADE` clause indicates that Cloud Spanner will delete all Albums of a singer if the Singer is deleted.
 The alternative is `ON DELETE NO ACTION`, where a Singer cannot be deleted until all of its Albums have already been deleted.
-When using `SpannerSchemaUtils` to generate the schema strings, the `spring.cloud.gcp.spanner.createInterleavedTableDdlOnDeleteCascade` boolean setting
-determines if these schema are generated as "ON DELETE CASCADE" for `true` and "ON DELETE NO ACTION" for `false`.
+When using `SpannerSchemaUtils` to generate the schema strings, the `spring.cloud.gcp.spanner.createInterleavedTableDdlOnDeleteCascade` boolean setting determines if these schema are generated as "ON DELETE CASCADE" for `true` and "ON DELETE NO ACTION" for `false`.
 
 Cloud Spanner restricts these relationships to 7 child layers. A table may have multiple child tables.
 
-On updating or inserting an object to Cloud Spanner, all of its referenced children objects are also updated or inserted
-in the same request, respectively. On read, all of the interleaved child rows are also all read.
+On updating or inserting an object to Cloud Spanner, all of its referenced children objects are also updated or inserted in the same request, respectively. On read, all of the interleaved child rows are also all read.
 
 ==== Supported Types
 
@@ -466,15 +444,12 @@ Spring Data Spanner supports the following inner types:
 
 ==== Lists of Structs
 
-Cloud Spanner queries can https://cloud.google.com/spanner/docs/query-syntax#using-structs-with-select[construct STRUCT values]
-that appear as columns in the result. Cloud Spanner requires STRUCT values appear in ARRAYs at the
+Cloud Spanner queries can https://cloud.google.com/spanner/docs/query-syntax#using-structs-with-select[construct STRUCT values] that appear as columns in the result. Cloud Spanner requires STRUCT values appear in ARRAYs at the
 root level: `SELECT ARRAY(SELECT STRUCT(1 as val1, 2 as val2)) as pair FROM Users`.
 
-Spring Data Cloud Spanner
-will attempt to read the column STRUCT values into a property that is an `Iterable`
-of an entity type compatible with the schema of the column STRUCT value. For example, the following
-property can be mapped with the constructed `ARRAY<STRUCT>` column: `List<TwoInts> pair;`
-where the `TwoInts` type is defined:
+Spring Data Cloud Spanner will attempt to read the column STRUCT values into a property that is an `Iterable` of an entity type compatible with the schema of the column STRUCT value.
+For example, the following property can be mapped with the constructed `ARRAY<STRUCT>` column: `List<TwoInts> pair;` where the `TwoInts` type is defined:
+
 [source, java]
 ----
 class TwoInts {
@@ -489,8 +464,7 @@ class TwoInts {
 
 Custom converters can be used extending the type support for user defined types.
 
-. Converters need to implement the `org.springframework.core.convert.converter.Converter` interface in
-both directions.
+. Converters need to implement the `org.springframework.core.convert.converter.Converter` interface in both directions.
 . The user defined type needs to be mapped to one of the basic types supported by Spanner:
 
 * `com.google.cloud.ByteArray`
@@ -504,8 +478,7 @@ both directions.
 * `long[]`
 * `boolean[]`
 
-. An instance of both Converters needs to be passed to a `ConverterAwareMappingSpannerEntityProcessor`, which then has
-to be made available as a `@Bean` for `SpannerEntityProcessor`.
+. An instance of both Converters needs to be passed to a `ConverterAwareMappingSpannerEntityProcessor`, which then has to be made available as a `@Bean` for `SpannerEntityProcessor`.
 
 For example:
 
@@ -577,19 +550,16 @@ public class ConverterConfiguration {
 If a `Converter<Struct, A>` is provided, then properties of type `List<A>` can be used in your entity types.
 
 
-=== Spanner Template
+=== Spanner Operations & Template
 
-`SpannerOperations` and its implementation, `SpannerTemplate`, provides the Template pattern
-familiar to Spring developers.
+`SpannerOperations` and its implementation, `SpannerTemplate`, provides the Template pattern familiar to Spring developers.
 It provides:
 
  - Resource management
  - One-stop-shop to Spanner operations with the Spring Data POJO mapping and conversion features
  - Exception conversion
 
-Using the `autoconfigure` provided by our Spring Boot Starter for Spanner, your Spring application
-context will contain a fully configured `SpannerTemplate` object that you can easily autowire in
-your application:
+Using the `autoconfigure` provided by our Spring Boot Starter for Spanner, your Spring application context will contain a fully configured `SpannerTemplate` object that you can easily autowire in your application:
 
 [source,java]
 ----
@@ -711,17 +681,16 @@ Note that the above is equivalent of executing `SELECT * FROM trades LIMIT 2 OFF
 
 ===== Sorting
 
-Reads don't support sorting.
-Queries on the Template API support sorting through standard SQL and also via Spring Data Sort API:
+Reads by keys do not support sorting.
+However, queries on the Template API support sorting through standard SQL and also via Spring Data Sort API:
 
 [source,java]
 ----
 List<Trade> trades = this.spannerTemplate.queryAll(Trade.class, Sort.by("action"));
 ----
 
-If the provided sorted field name is that of a property of the domain type, then the column name corresponding to that
-property will be used in the query. Otherwise, the given field name is assumed to be the name of the column in the
-Cloud Spanner table.
+If the provided sorted field name is that of a property of the domain type, then the column name corresponding to that property will be used in the query.
+Otherwise, the given field name is assumed to be the name of the column in the Cloud Spanner table.
 Sorting on columns of Cloud Spanner types STRING and BYTES can be done while ignoring case:
 
 [source,java]
@@ -729,10 +698,10 @@ Sorting on columns of Cloud Spanner types STRING and BYTES can be done while ign
 Sort.by(Order.desc("action").ignoreCase())
 ----
 
-
 ===== Partial read
 
-Partial read is only possible when using Queries. In case the rows returned by the query have fewer columns than the entity that it will be mapped to, Spring Data will map the returned columns only.
+Partial read is only possible when using Queries.
+In case the rows returned by the query have fewer columns than the entity that it will be mapped to, Spring Data will map the returned columns only.
 This setting also applies to nested structs and their corresponding nested POJO properties.
 
 [source,java]
@@ -761,14 +730,12 @@ If the setting is set to `false`, then an exception will be thrown if there are 
 The write methods of `SpannerOperations` accept a POJO and writes all of its properties to Spanner.
 The corresponding Spanner table and entity metadata is obtained from the given object's actual type.
 
-If a POJO was retrieved from Spanner and its primary key properties values were changed and then
-written or updated, the operation will occur as if against a row with the new primary key values. The row with the
-original primary key values will not be affected.
+If a POJO was retrieved from Spanner and its primary key properties values were changed and then written or updated, the operation will occur as if against a row with the new primary key values.
+The row with the original primary key values will not be affected.
 
 ===== Insert
 
-The `insert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner,
-which means the operation will fail if a row with the POJO's primary key already exists in the table.
+The `insert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner, which means the operation will fail if a row with the POJO's primary key already exists in the table.
 
 [source, java]
 ----
@@ -778,8 +745,7 @@ this.spannerTemplate.insert(t);
 
 ===== Update
 
-The `update` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner,
-which means the operation will fail if the POJO's primary key does not already exist in the table.
+The `update` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner, which means the operation will fail if the POJO's primary key does not already exist in the table.
 
 [source, java]
 ----
@@ -789,8 +755,7 @@ this.spannerTemplate.update(t);
 
 ===== Upsert
 
-The `upsert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner
-using update-or-insert.
+The `upsert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner using update-or-insert.
 
 [source, java]
 ----
@@ -800,10 +765,9 @@ this.spannerTemplate.upsert(t);
 
 ===== Partial Update
 
-The update methods of `SpannerOperations` operate by default on all properties within the given object,
-but also accept `String[]` and `Optional<Set<String>>` of column names. If the `Optional` of set of
-column names is empty, then all columns are written to Spanner. However, if the Optional is occupied
-by an empty set, then no columns will be written.
+The update methods of `SpannerOperations` operate by default on all properties within the given object, but also accept `String[]` and `Optional<Set<String>>` of column names.
+If the `Optional` of set of column names is empty, then all columns are written to Spanner.
+However, if the Optional is occupied by an empty set, then no columns will be written.
 
 
 [source, java]
@@ -812,10 +776,15 @@ by an empty set, then no columns will be written.
 this.spannerTemplate.update(t, "symbol", "action");
 ----
 
+==== DML
+
+DML statements can be executed using `SpannerOperations.executeDmlStatement`.
+Inserts, updates, and deletions can affect any number of rows and entities.
+
+
 ==== Transactions
 
-`SpannerOperations` provides methods to run `java.util.Function` objects within a single transaction
-while making available the read and write methods from `SpannerOperations`.
+`SpannerOperations` provides methods to run `java.util.Function` objects within a single transaction while making available the read and write methods from `SpannerOperations`.
 
 ===== Read/Write Transaction
 
@@ -838,17 +807,14 @@ public String doWorkInsideTransaction() {
 }
 ----
 
-The `performReadWriteTransaction` method accepts a `Function` that is provided an instance of a
-`SpannerOperations` object. The final returned value and type of the function is determined by the user.
-You can use this object just as you would a regular `SpannerOperations` with
-a few exceptions:
+The `performReadWriteTransaction` method accepts a `Function` that is provided an instance of a `SpannerOperations` object.
+The final returned value and type of the function is determined by the user.
+You can use this object just as you would a regular `SpannerOperations` with a few exceptions:
 
-- Its read functionality cannot perform stale reads, because all reads and writes happen at the single
-point in time of the transaction.
+- Its read functionality cannot perform stale reads, because all reads and writes happen at the single point in time of the transaction.
 - It cannot perform sub-transactions via `performReadWriteTransaction` or `performReadOnlyTransaction`.
 
-As these read-write transactions are locking, it is recommended that you use the `performReadOnlyTransaction`
-if your function does not perform any writes.
+As these read-write transactions are locking, it is recommended that you use the `performReadOnlyTransaction` if your function does not perform any writes.
 
 ===== Read-only Transaction
 
@@ -880,13 +846,11 @@ The final returned value and type of the function is determined by the user.
 You can use this object just as you would a regular `SpannerOperations` with
 a few exceptions:
 
-- Its read functionality cannot perform stale reads, because all reads happen at the single
-point in time of the transaction.
+- Its read functionality cannot perform stale reads, because all reads happen at the single point in time of the transaction.
 - It cannot perform sub-transactions via `performReadWriteTransaction` or `performReadOnlyTransaction`
 - It cannot perform any write operations.
 
-Because read-only transactions are non-locking and can be performed on points in time in the past, these
-are recommended for functions that do not perform write operations.
+Because read-only transactions are non-locking and can be performed on points in time in the past, these are recommended for functions that do not perform write operations.
 
 ===== Declarative Transactions with @Transactional Annotation
 
@@ -905,36 +869,30 @@ When DML statements are executed outside of transactions, they are executed in [
 
 === Repositories
 
-
-{spring-data-commons-ref}/#repositories[Spring Data Repositories] are a powerful abstraction that
-can save you a lot of boilerplate code.
+{spring-data-commons-ref}/#repositories[Spring Data Repositories] are a powerful abstraction that can save you a lot of boilerplate code.
 
 For example:
 
 [source,java]
 ----
-public interface TraderRepository extends CrudRepository<Trader, String> {
+public interface TraderRepository extends SpannerRepository<Trader, String> {
 }
 ----
 
-Spring Data generates a working implementation of the specified interface, which can be conveniently
-autowired into an application.
+Spring Data generates a working implementation of the specified interface, which can be conveniently autowired into an application.
 
-The `Trader` type parameter to `CrudRepository` refers to the underlying domain type.
-The second type parameter, `String` in this case, refers to the type of the key of the domain
-type.
+The `Trader` type parameter to `SpannerRepository` refers to the underlying domain type.
+The second type parameter, `String` in this case, refers to the type of the key of the domain type.
 
 
-For POJOs with a composite primary key, this ID type parameter can be any
-descendant of `Object[]` compatible with all primary key properties, any descendant of `Iterable`,
-or `com.google.cloud.spanner.Key`. If the domain POJO type only has a single primary key column,
-then the primary key property type can be used or the `Key` type.
+For POJOs with a composite primary key, this ID type parameter can be any descendant of `Object[]` compatible with all primary key properties, any descendant of `Iterable`, or `com.google.cloud.spanner.Key`.
+If the domain POJO type only has a single primary key column, then the primary key property type can be used or the `Key` type.
 
 For example in case of Trades, that belong to a Trader, `TradeRepository` would look like this:
 
 [source,java]
 ----
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
 
 }
 ----
@@ -944,14 +902,14 @@ public interface TradeRepository extends CrudRepository<Trade, String[]> {
 public class MyApplication {
 
 	@Autowired
-	SpannerOperations spannerTemplate;
+	SpannerTemplate spannerTemplate;
 
 	@Autowired
 	StudentRepository studentRepository;
 
 	public void demo() {
 
-		this.tradeRepository.deleteAll(); //defined on CrudRepository
+		this.tradeRepository.deleteAll();
 		String traderId = "demo_trader";
 		Trade t = new Trade();
 		t.symbol = stock;
@@ -959,9 +917,9 @@ public class MyApplication {
 		t.traderId = traderId;
 		t.price = 100.0;
 		t.shares = 12345.6;
-		this.spannerTemplate.insert(t); //defined on CrudRepository
+		this.spannerTemplate.insert(t);
 
-		Iterable<Trade> allTrades = this.tradeRepository.findAll(); //defined on CrudRepository
+		Iterable<Trade> allTrades = this.tradeRepository.findAll();
 
 		int count = this.tradeRepository.countByAction("BUY");
 
@@ -976,16 +934,13 @@ public class MyApplication {
 
 ==== Paging and Sorting Repository
 
-You can also use `PagingAndSortingRepository` with Spanner Spring Data. The sorting and pageable `findAll`
-methods available from this interface operate on the current state of the Spanner database. As a
-result, beware that the state of the database (and the results) might change when moving page to page.
+You can also use `PagingAndSortingRepository` with Spanner Spring Data. The sorting and pageable `findAll` methods available from this interface operate on the current state of the Spanner database.
+As a result, beware that the state of the database (and the results) might change when moving page to page.
 
 ==== Spanner Repository
 
-The `SpannerRepository` extends the `PagingAndSortingRepository`, but adds the read-only and the read-write
-transaction functionality provided by Spanner. These transactions work very similarly to
-those of `SpannerOperations`, but is specific to the repository's domain type and provides repository functions
-instead of template functions.
+The `SpannerRepository` extends the `PagingAndSortingRepository`, but adds the read-only and the read-write transaction functionality provided by Spanner.
+These transactions work very similarly to those of `SpannerOperations`, but is specific to the repository's domain type and provides repository functions instead of template functions.
 
 For example, this is a read-write transaction:
 
@@ -1006,11 +961,13 @@ public String doWorkInsideTransaction() {
 }
 ----
 
+When creating custom repositories for your own domain types and query methods, you can extend `SpannerRepository` to access Cloud Spanner-specific features as well as all features from `PagingAndSortingRepository` and `CrudRepository`.
+
 ==== Query methods by convention
 
 [source, java]
 ----
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
     List<Trade> findByAction(String action);
 
 	int countByAction(String action);
@@ -1021,10 +978,7 @@ public interface TradeRepository extends CrudRepository<Trade, String[]> {
 }
 ----
 
-In the example above, the {spring-data-commons-ref}/#repositories.query-methods[query methods]
-in `TradeRepository` are generated based on the name of the methods, using the
-{spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation
-naming convention].
+In the example above, the {spring-data-commons-ref}/#repositories.query-methods[query methods] in `TradeRepository` are generated based on the name of the methods, using the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
 
 `List<Trade> findByAction(String action)` would translate to a `SELECT * FROM trades WHERE action = ?`.
 
@@ -1054,9 +1008,7 @@ The following filter options are supported:
 * Contains a string
 * Not contains a string
 
-Note that the phrase `SymbolIgnoreCase` is translated to `LOWER(SYMBOL) = LOWER(?)` indicating
-a non-case-sensitive matching. The `IgnoreCase` phrase may only be appended to fields that correspond
-to columns of type STRING or BYTES.
+Note that the phrase `SymbolIgnoreCase` is translated to `LOWER(SYMBOL) = LOWER(?)` indicating a non-case-sensitive matching. The `IgnoreCase` phrase may only be appended to fields that correspond to columns of type STRING or BYTES.
 The Spring Data "AllIgnoreCase" phrase appended at the end of the method name is not supported.
 
 The `Like` or `NotLike` naming conventions:
@@ -1085,9 +1037,7 @@ Delete queries can have the following return types:
 
 ==== Custom SQL/DML query methods
 
-The example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the
-{spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation
-naming convention], so we have to map a parametrized Spanner SQL query to it.
+The example above for `List<Trade> fetchByActionNamedQuery(String action)` does not match the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention], so we have to map a parametrized Spanner SQL query to it.
 
 The SQL query for the method can be mapped to repository methods in one of two ways:
 
@@ -1096,8 +1046,7 @@ The SQL query for the method can be mapped to repository methods in one of two w
 
 The names of the tags of the SQL correspond to the `@Param` annotated names of the method parameters.
 
-Custom SQL query methods can accept a single `Sort` or `Pageable` parameter that is applied on top
-of any sorting or paging in the SQL:
+Custom SQL query methods can accept a single `Sort` or `Pageable` parameter that is applied on top of any sorting or paging in the SQL:
 
 [source, java]
 ----
@@ -1146,10 +1095,8 @@ The `dmlStatement` boolean setting must be set on `@Query` to indicate that the 
 
 ===== Query methods with named queries properties
 
-By default, the `namedQueriesLocation` attribute on `@EnableSpannerRepositories` points to the
-`META-INF/spanner-named-queries.properties` file.
-You can specify the query for a method in the properties file by providing the SQL as the value for
-the "interface.method" property:
+By default, the `namedQueriesLocation` attribute on `@EnableSpannerRepositories` points to the `META-INF/spanner-named-queries.properties` file.
+You can specify the query for a method in the properties file by providing the SQL as the value for the "interface.method" property:
 
 [source, properties]
 ----
@@ -1158,7 +1105,7 @@ Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0
 
 [source, java]
 ----
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
 	// This method uses the query from the properties file instead of one generated based on name.
 	List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
 }
@@ -1169,7 +1116,7 @@ Using the `@Query` annotation:
 
 [source, java]
 ----
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
     @Query("SELECT * FROM trades WHERE trades.action = @tag0")
     List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
 }
@@ -1204,8 +1151,8 @@ will be converted to a Struct with the same type-conversion logic as used to cre
 Comparisons using Struct parameters are limited to https://cloud.google.com/spanner/docs/data-types#limited-comparisons-for-struct[what is available with Cloud Spanner].
 
 ==== Projections
-Spring Data Spanner supports {spring-data-commons-ref}/#projections[projections]. You can define projection interfaces based
-on domain types and add query methods that return them in your repository:
+Spring Data Spanner supports {spring-data-commons-ref}/#projections[projections].
+You can define projection interfaces based on domain types and add query methods that return them in your repository:
 
 [source, java]
 ----
@@ -1229,11 +1176,9 @@ public interface TradeRepository extends SpannerRepository<Trade, Key> {
 ----
 
 Projections can be provided by name-convention-based query methods as well as by custom SQL queries.
-If using custom SQL queries, you can further restrict the columns retrieved from Spanner to just
-those required by the projection to improve performance.
+If using custom SQL queries, you can further restrict the columns retrieved from Spanner to just those required by the projection to improve performance.
 
-Properties of projection types defined using SpEL use the fixed name `target` for the underlying
-domain object. As a result accessing underlying properties take the form `target.<property-name>`.
+Properties of projection types defined using SpEL use the fixed name `target` for the underlying domain object. As a result accessing underlying properties take the form `target.<property-name>`.
 
 ==== REST Repositories
 
@@ -1250,17 +1195,13 @@ If you prefer to configure parameters (such as path), you can use `@RepositoryRe
 [source,java]
 ----
 @RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
 }
 ----
 
-For example, you can retrieve all `Trade` objects in the repository by using
-`curl \http://<server>:<port>/trades`, or any specific trade via
-`curl \http://<server>:<port>/trades/<trader_id>,<trade_id>`.
+For example, you can retrieve all `Trade` objects in the repository by using `curl \http://<server>:<port>/trades`, or any specific trade via `curl \http://<server>:<port>/trades/<trader_id>,<trade_id>`.
 
-The separator between your primary key components, `id` and `trader_id` in this case, is a comma
-by default, but can be configured to any string not found in your key values by extending the
-`SpannerKeyIdConverter` class:
+The separator between your primary key components, `id` and `trader_id` in this case, is a comma by default, but can be configured to any string not found in your key values by extending the `SpannerKeyIdConverter` class:
 
 [source,java]
 ----
@@ -1274,9 +1215,7 @@ class MySpecialIdConverter extends SpannerKeyIdConverter {
 }
 ----
 
-You can also write trades using
-`curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/`
-where the file `test.json` holds the JSON representation of a `Trade` object.
+You can also write trades using `curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/` where the file `test.json` holds the JSON representation of a `Trade` object.
 
 === Database and Schema Admin
 
@@ -1299,3 +1238,8 @@ public void createTable(SpannerPersistentEntity entity) {
 	}
 }
 ----
+
+=== Sample
+
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-spanner-sample[sample application] is available.

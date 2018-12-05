@@ -49,8 +49,6 @@ dependencies {
 
 This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Datastore libraries as well.
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[sample application] is available.
-
 === Configuration
 
 To setup Spring Data Cloud Datastore, you have to configure the following:
@@ -92,7 +90,7 @@ It is not required to add it to any other class, unless there is a need to overr
 Our Spring Boot autoconfiguration creates the following beans available in the Spring application context:
 
 - an instance of `DatastoreTemplate`
-- an instance of all user defined repositories extending `CrudRepository` or `PagingAndSortingRepository`, when repositories are enabled
+- an instance of all user defined repositories extending `CrudRepository`, `PagingAndSortingRepository`, and `DatastoreRepository` (an extension of `PagingAndSortingRepository` with additional Cloud Datastore features) when repositories are enabled
 - an instance of `Datastore` from the Google Cloud Java Client for Datastore, for convenience and lower level API access
 
 
@@ -374,19 +372,59 @@ There are three ways to represent relationships between entities that are descri
 ==== Embedded Entities
 
 Fields whose types are also annotated with `@Entity` are converted to `EntityValue` and stored inside the parent entity.
+
+Here is an example of Cloud Datastore entity containing an embedded entity in JSON:
+
+[source, json]
+----
+{
+  "name" : "Alexander",
+  "age" : 50,
+  "child" : {"name" : "Philip"  }
+}
+
+----
+
+This corresponds to a simple pair of Java entities:
+
+[source, java]
+----
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import org.springframework.data.annotation.Id;
+
+@Entity("parents")
+public class Parent {
+  @Id
+  String name;
+
+  Child child;
+}
+
+@Entity
+public class Child {
+  String name;
+}
+----
+
+`Child` entities are not stored in their own kind.
+They are stored in their entirety in the `child` field of the `parents` kind.
+
 Multiple levels of embedded entities are supported.
 
 NOTE: Embedded entities don't need to have `@Id` field, it is only required for top level entities.
 
 Example:
 
-We would like to store a binary tree in Cloud Datastore.
+Entities can hold embedded entities that are their own type.
+We can store trees in Cloud Datastore using this feature:
 
 [source, java]
 ----
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
+@Entity
 public class EmbeddableTreeNode {
   @Id
   long value;
@@ -447,12 +485,17 @@ Collections of embedded objects can also be stored as the values of embedded Map
 
 Parent-child relationships are supported via the `@Descendants` annotation.
 
+Unlike embedded children, descendants are fully-formed entities residing in their own kinds.
+The parent entity does not have an extra field to hold the descendant entities.
+Instead, the relationship is captured in the descendants' keys, which refer to their parent entities:
+
 [source, java]
 ----
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
-@Entity
+@Entity("orders")
 public class ShoppingOrder {
   @Id
   long id;
@@ -461,7 +504,7 @@ public class ShoppingOrder {
   List<Item> items;
 }
 
-@Entity
+@Entity("purchased_item")
 public class Item {
   @Id
   Key purchasedItemKey;
@@ -469,6 +512,46 @@ public class Item {
   String name;
 
   Timestamp timeAddedToOrder;
+}
+----
+
+For example, an instance of a GQL key-literal representation for `Item` would also contain the parent `ShoppingOrder` ID value:
+
+----
+Key(orders, '12345', purchased_item, 'eggs')
+----
+
+The GQL key-literal representation for the parent `ShoppingOrder` would be:
+
+----
+Key(orders, '12345')
+----
+
+The Cloud Datastore entities exist separately in their own kinds.
+
+
+The `ShoppingOrder`:
+
+----
+{
+  "id" : 12345
+}
+----
+
+
+The two items inside that order:
+
+----
+{
+  "purchasedItemKey" : Key(orders, '12345', purchased_item, 'eggs'),
+  "name" : "eggs",
+  "timeAddedToOrder" : "2014-09-27 12:30:00.45-8:00"
+}
+
+{
+  "purchasedItemKey" : Key(orders, '12345', purchased_item, 'sausage'),
+  "name" : "sausage",
+  "timeAddedToOrder" : "2014-09-28 11:30:00.45-9:00"
 }
 ----
 
@@ -521,6 +604,18 @@ public class Item {
 }
 ----
 
+`@Reference` relationships are between fully-formed entities residing in their own kinds.
+The relationship between `ShoppingOrder` and `Item` entities are stored as a Key field inside `ShoppingOrder`, which are resolved to the underlying Java entity type by Spring Data Cloud Datastore:
+
+----
+{
+  "id" : 12345,
+  "specialSingleItem" : Key(item, "milk"),
+  "items" : [ Key(item, "eggs"), Key(item, "sausage") ]
+}
+
+----
+
 Reference properties can either be singular or collection-like.
 These properties correspond to actual columns in the entity and Cloud Datastore Kind that hold the key values of the referenced entities.
 The referenced entities are full-fledged entities of other Kinds.
@@ -531,7 +626,7 @@ There are no requirements for relationships between the key of an entity and the
 The order of collection-like reference properties is not preserved when reading back from Cloud Datastore.
 
 
-=== Datastore Template
+=== Datastore Operations & Template
 
 `DatastoreOperations` and its implementation, `DatastoreTemplate`, provides the Template pattern familiar to Spring developers.
 
@@ -617,9 +712,12 @@ public class ExampleItem {
 }
 ----
 
+When using queries directly or via Query Methods, Cloud Datastore requires https://cloud.google.com/datastore/docs/concepts/indexes[composite custom indexes] if the select statement is not `SELECT *` or if there is more than one filtering condition in the `WHERE` clause.
+
+
 ===== Read with offsets, limits, and sorting
 
-`DatastoreRepository` and custom-defined entitiy repositories implement the Spring Data `PagingAndSortingRepository`, which supports offsets and limits using page numbers and page sizes.
+`DatastoreRepository` and custom-defined entity repositories implement the Spring Data `PagingAndSortingRepository`, which supports offsets and limits using page numbers and page sizes.
 Paging and sorting options are also supported in `DatastoreTemplate` by supplying a `DatastoreQueryOptions` to `findAll`.
 
 ===== Partial read
@@ -667,18 +765,18 @@ public String doWorkInsideTransaction() {
 }
 ----
 
-The `performTransaction` method accepts a `Function` that is provided an instance of a
-`DatastoreOperations` object. The final returned value and type of the function is determined by the user.
-You can use this object just as you would a regular `DatastoreOperations` with
-an exception:
+The `performTransaction` method accepts a `Function` that is provided an instance of a `DatastoreOperations` object. The final returned value and type of the function is determined by the user.
+You can use this object just as you would a regular `DatastoreOperations` with an exception:
 
 - It cannot perform sub-transactions.
+
+Because of Cloud Datastore's consistency guarantees, there are https://cloud.google.com/datastore/docs/concepts/transactions#what_can_be_done_in_a_transaction[limitations] to the operations and relationships among entities used inside transactions.
 
 ===== Declarative Transactions with @Transactional Annotation
 
 This feature requires a bean of `DatastoreTransactionManager`, which is provided when using `spring-cloud-gcp-starter-data-datastore`.
 
-`DatastoreTemplate` and `DatastoreRepository` support running methods with the `@Transactional` [annotation](https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative) as transactions.
+`DatastoreTemplate` and `DatastoreRepository` support running methods with the `@Transactional` https://docs.spring.io/spring/docs/current/spring-framework-reference/data-access.html#transaction-declarative[annotation] as transactions.
 If a method annotated with `@Transactional` calls another method also annotated, then both methods will work within the same transaction.
 `performTransaction` cannot be used in `@Transactional` annotated methods because Cloud Datastore does not support transactions within transactions.
 
@@ -713,13 +811,13 @@ For example:
 
 [source,java]
 ----
-public interface TraderRepository extends CrudRepository<Trader, String> {
+public interface TraderRepository extends DatastoreRepository<Trader, String> {
 }
 ----
 
 Spring Data generates a working implementation of the specified interface, which can be autowired into an application.
 
-The `Trader` type parameter to `CrudRepository` refers to the underlying domain type.
+The `Trader` type parameter to `DatastoreRepository` refers to the underlying domain type.
 The second type parameter, `String` in this case, refers to the type of the key of the domain type.
 
 [source,java]
@@ -731,13 +829,13 @@ public class MyApplication {
 
 	public void demo() {
 
-		this.traderRepository.deleteAll(); //defined on CrudRepository
+		this.traderRepository.deleteAll();
 		String traderId = "demo_trader";
 		Trader t = new Trader();
 		t.traderId = traderId;
-		this.tradeRepository.save(t); //defined on CrudRepository
+		this.tradeRepository.save(t);
 
-		Iterable<Trader> allTraders = this.traderRepository.findAll(); //defined on CrudRepository
+		Iterable<Trader> allTraders = this.traderRepository.findAll();
 
 		int count = this.traderRepository.count();
 	}
@@ -752,7 +850,7 @@ Filtering parameters can be of types supported by your configured custom convert
 
 [source, java]
 ----
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
     List<Trader> findByAction(String action);
 
   int countByAction(String action);
@@ -820,7 +918,7 @@ The names of the tags of the GQL correspond to the `@Param` annotated names of t
 
 [source, java]
 ----
-public interface TraderRepository extends CrudRepository<Trader, String> {
+public interface TraderRepository extends DatastoreRepository<Trader, String> {
 
   @Query("SELECT * FROM traders WHERE name = @trader_name")
   List<Trader> tradersByName(@Param("trader_name") String traderName);
@@ -903,7 +1001,7 @@ Trader.fetchByName=SELECT * FROM traders WHERE name = @tag0
 
 [source, java]
 ----
-public interface TraderRepository extends CrudRepository<Trader, String> {
+public interface TraderRepository extends DatastoreRepository<Trader, String> {
 
 	// This method uses the query from the properties file instead of one generated based on name.
 	List<Trader> fetchByName(@Param("tag0") String traderName);
@@ -913,9 +1011,7 @@ public interface TraderRepository extends CrudRepository<Trader, String> {
 
 ==== Transactions
 
-These transactions work very similarly to
-those of `DatastoreOperations`, but is specific to the repository's domain type and provides repository functions
-instead of template functions.
+These transactions work very similarly to those of `DatastoreOperations`, but is specific to the repository's domain type and provides repository functions instead of template functions.
 
 For example, this is a read-write transaction:
 
@@ -984,16 +1080,16 @@ If you prefer to configure parameters (such as path), you can use `@RepositoryRe
 [source,java]
 ----
 @RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
-public interface TradeRepository extends CrudRepository<Trade, String[]> {
+public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
 }
 ----
 
-For example, you can retrieve all `Trade` objects in the repository by using
-`curl \http://<server>:<port>/trades`, or any specific trade via
-`curl \http://<server>:<port>/trades/<trader_id>`.
+For example, you can retrieve all `Trade` objects in the repository by using `curl \http://<server>:<port>/trades`, or any specific trade via `curl \http://<server>:<port>/trades/<trader_id>`.
 
-You can also write trades using
-`curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/`
-where the file `test.json` holds the JSON representation of a `Trade` object.
+You can also write trades using `curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/` where the file `test.json` holds the JSON representation of a `Trade` object.
 
 To delete trades, you can use `curl -XDELETE \http://<server>:<port>/trades/<trader_id>`
+
+=== Sample
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[Sample Spring Boot Application] is provided to show how to use the Spring Data Cloud Datastore starter and template.
