@@ -260,7 +260,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 	private Statement buildStatementFromQueryAndTags(QueryTagValue queryTagValue) {
 		return SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 				queryTagValue.sql, queryTagValue.tags,
-				this.paramStructConvertFunc,
+				this.paramStructConvertFunc, null,
 				queryTagValue.params.toArray());
 	}
 

@@ -18,9 +18,11 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Date;
@@ -62,7 +64,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			.add(com.google.cloud.Date.class)
 			.build();
 
-	public static final Map<Class<?>, BiFunction<ValueBinder, ?, ?>> singleItemType2ToMethodMap;
+	public static final Map<Class<?>, BiFunction<ValueBinder, ?, ?>> singleItemTypeValueBinderMethodMap;
 
 	static final Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>>
 			iterablePropertyType2ToMethodMap = createIterableTypeMapping();
@@ -108,7 +110,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 				(BiFunction<ValueBinder, long[], ?>) ValueBinder::toInt64Array);
 		builder.put(Struct.class, (BiFunction<ValueBinder, Struct, ?>) ValueBinder::to);
 
-		singleItemType2ToMethodMap = builder.build();
+		singleItemTypeValueBinderMethodMap = builder.build();
 	}
 
 	private final SpannerMappingContext spannerMappingContext;
@@ -119,6 +121,17 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			SpannerWriteConverter writeConverter) {
 		this.spannerMappingContext = spannerMappingContext;
 		this.writeConverter = writeConverter;
+	}
+
+	public static Class<?> findFirstCompatibleSpannerSingleItemNativeType(Predicate<Class> testFunc) {
+		Optional<Class<?>> compatible = singleItemTypeValueBinderMethodMap.keySet().stream().filter(testFunc)
+				.findFirst();
+		return compatible.isPresent() ? compatible.get() : null;
+	}
+
+	public static Class<?> findFirstCompatibleSpannerMultupleItemNativeType(Predicate<Class> testFunc) {
+		Optional<Class<?>> compatible = iterablePropertyType2ToMethodMap.keySet().stream().filter(testFunc).findFirst();
+		return compatible.isPresent() ? compatible.get() : null;
 	}
 
 	@Override
@@ -196,17 +209,16 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		 * converter. For example, if a type can be converted to both String and Double, we want
 		 * both the this key conversion and the write converter to choose the same.
 		 */
-		for (Class<?> validKeyType : singleItemType2ToMethodMap.keySet()) {
-			if (!isValidSpannerKeyType(validKeyType)) {
-				continue;
-			}
-			if (this.writeConverter.canConvert(object.getClass(), validKeyType)) {
-				return this.writeConverter.convert(object, validKeyType);
-			}
+		Class<?> compatible = ConverterAwareMappingSpannerEntityWriter
+				.findFirstCompatibleSpannerSingleItemNativeType(spannerType -> isValidSpannerKeyType(spannerType)
+						&& this.writeConverter.canConvert(object.getClass(), spannerType));
+
+		if (compatible == null) {
+			throw new SpannerDataException(
+					"The given object type couldn't be built into a Cloud Spanner Key: "
+							+ object.getClass());
 		}
-		throw new SpannerDataException(
-				"The given object type couldn't be built into a Cloud Spanner Key: "
-						+ object.getClass());
+		return this.writeConverter.convert(object, compatible);
 	}
 
 	private boolean isValidSpannerKeyType(Class type) {
@@ -273,7 +285,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 
 				// Finally try and find any conversion that works
 				if (!valueSet) {
-					for (Class<?> targetType : singleItemType2ToMethodMap.keySet()) {
+					for (Class<?> targetType : singleItemTypeValueBinderMethodMap.keySet()) {
 						valueSet = attemptSetSingleItemValue(propertyValue, propertyType,
 								valueBinder, targetType);
 						if (valueSet) {
@@ -354,7 +366,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		}
 		Class innerType = ConversionUtils.boxIfNeeded(targetType);
 		BiFunction<ValueBinder, T, ?> toMethod = (BiFunction<ValueBinder, T, ?>)
-				singleItemType2ToMethodMap.get(innerType);
+		singleItemTypeValueBinderMethodMap.get(innerType);
 		if (toMethod == null) {
 			return false;
 		}
