@@ -67,7 +67,7 @@ import org.springframework.util.StringUtils;
 		JndiDataSourceAutoConfiguration.class,
 		XADataSourceAutoConfiguration.class })
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
-public abstract class GcpCloudSqlAutoConfiguration {
+public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR must be abstract for HidePublicConstructorCheck
 
 	public final static String INSTANCE_CONNECTION_NAME_HELP_URL =
 			"https://github.com/spring-cloud/spring-cloud-gcp/tree/master/"
