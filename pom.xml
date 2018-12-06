@@ -45,7 +45,7 @@
 		<spring-cloud-commons.version>2.1.0.BUILD-SNAPSHOT</spring-cloud-commons.version>
 		<spring-cloud-sleuth.version>2.1.0.BUILD-SNAPSHOT</spring-cloud-sleuth.version>
 		<spring-cloud-stream.version>Fishtown.BUILD-SNAPSHOT</spring-cloud-stream.version>
-		<zipkin-gcp.version>0.8.3</zipkin-gcp.version>
+		<zipkin-gcp.version>0.9.0</zipkin-gcp.version>
 		<app-engine-maven-plugin.version>1.3.2</app-engine-maven-plugin.version>
 	</properties>
 
