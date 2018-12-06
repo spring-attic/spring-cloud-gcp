@@ -19,7 +19,9 @@ package org.springframework.cloud.gcp.pubsub.support;
 import com.google.api.gax.core.CredentialsProvider;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.pubsub.v1.ProjectTopicName;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -28,9 +30,13 @@ import static org.junit.Assert.assertEquals;
 
 /**
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultPublisherFactoryTests {
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Mock
 	private CredentialsProvider credentialsProvider;
@@ -47,13 +53,17 @@ public class DefaultPublisherFactoryTests {
 		assertEquals("projectId", ((ProjectTopicName) publisher.getTopicName()).getProject());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testNewDefaultPublisherFactory_nullProjectIdProvider() {
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("The project ID provider can't be null.");
 		new DefaultPublisherFactory(null);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testNewDefaultPublisherFactory_nullProjectId() {
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("The project ID can't be null or empty.");
 		new DefaultPublisherFactory(() -> null);
 	}
 }

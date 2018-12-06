@@ -191,7 +191,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public <A, T> Iterable<T> query(Query<A> query, Function<A, T> entityFunc) {
+	public <A, T> List<T> query(Query<A> query, Function<A, T> entityFunc) {
 		List<T> results = new ArrayList<>();
 		getDatastoreReadWriter().run(query)
 				.forEachRemaining(x -> results.add(entityFunc.apply(x)));
@@ -286,6 +286,12 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	private static StructuredQuery.OrderBy createOrderBy(DatastorePersistentEntity<?> persistentEntity,
 			Sort.Order order) {
+		if (order.isIgnoreCase()) {
+			throw new DatastoreDataException("Datastore doesn't support sorting ignoring case");
+		}
+		if (!order.getNullHandling().equals(Sort.NullHandling.NATIVE)) {
+			throw new DatastoreDataException("Datastore supports only NullHandling.NATIVE null handling");
+		}
 		return new StructuredQuery.OrderBy(
 				persistentEntity.getPersistentProperty(order.getProperty()).getFieldName(),
 				order.getDirection() == Sort.Direction.DESC
@@ -318,7 +324,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 			}
 			Value<?> value;
 			if (persistentProperty.isCollectionLike()) {
-				Iterable<?> iterableVal = (Iterable<?>) ValueUtil.toIterableIfArray(val);
+				Iterable<?> iterableVal = (Iterable<?>) ValueUtil.toListIfArray(val);
 				saveAll(iterableVal);
 				List<KeyValue> keyValues = StreamSupport.stream((iterableVal).spliterator(), false)
 						.map(o -> KeyValue.of(this.getKey(o, false)))
@@ -345,7 +351,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 					if (val != null) {
 						//we can be sure that the property is an array or an iterable,
 						//because we check it in isDescendant
-						saveAll((Iterable<?>) ValueUtil.toIterableIfArray(val), key);
+						saveAll((Iterable<?>) ValueUtil.toListIfArray(val), key);
 					}
 				});
 	}
@@ -373,9 +379,14 @@ public class DatastoreTemplate implements DatastoreOperations {
 		throw new DatastoreDataException("Descendant object has a key without current ancestor");
 	}
 
-	private <T> Collection<T> convertEntitiesForRead(
-			Iterator<? extends BaseEntity> entities,
-			Class<T> entityClass) {
+	/**
+	 * Convert Datastore entities to objects of a specified type
+	 * @param entities the Datastore entities
+	 * @param entityClass the type the entities should be converted to.
+	 * @param <T> the type the entities should be converted to.
+	 * @return a list of converted entities
+	 */
+	public <T> List<T> convertEntitiesForRead(Iterator<? extends BaseEntity> entities, Class<T> entityClass) {
 		List<T> results = new ArrayList<>();
 		if (entities == null) {
 			return results;

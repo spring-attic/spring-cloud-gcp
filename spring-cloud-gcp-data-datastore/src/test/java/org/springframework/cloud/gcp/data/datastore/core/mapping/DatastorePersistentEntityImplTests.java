@@ -16,7 +16,9 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.annotation.Id;
@@ -38,6 +40,9 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  */
 public class DatastorePersistentEntityImplTests {
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Test
 	public void testTableName() {
@@ -63,8 +68,10 @@ public class DatastorePersistentEntityImplTests {
 		assertThat(entity.kindName(), is("entityEmptyCustomName"));
 	}
 
-	@Test(expected = SpelEvaluationException.class)
+	@Test
 	public void testExpressionResolutionWithoutApplicationContext() {
+		this.expectedException.expect(SpelEvaluationException.class);
+		this.expectedException.expectMessage("Property or field 'kindPostfix' cannot be found on null");
 		DatastorePersistentEntityImpl<EntityWithExpression> entity = new DatastorePersistentEntityImpl<>(
 				ClassTypeInformation.from(EntityWithExpression.class));
 
@@ -96,8 +103,12 @@ public class DatastorePersistentEntityImplTests {
 				.getPersistentEntity(EntityWithNoId.class).hasIdProperty());
 	}
 
-	@Test(expected = DatastoreDataException.class)
+	@Test
 	public void testGetIdPropertyOrFail() {
+		this.expectedException.expect(DatastoreDataException.class);
+		this.expectedException.expectMessage("An ID property was required but does not exist for the type: " +
+				"class org.springframework.cloud.gcp.data.datastore.core.mapping." +
+				"DatastorePersistentEntityImplTests$EntityWithNoId");
 		new DatastoreMappingContext().getPersistentEntity(EntityWithNoId.class)
 				.getIdPropertyOrFail();
 	}

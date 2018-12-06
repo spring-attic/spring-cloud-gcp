@@ -22,7 +22,9 @@ import java.util.function.Consumer;
 import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -30,13 +32,17 @@ import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
+import org.springframework.integration.support.MutableMessageBuilder;
+import org.springframework.integration.support.MutableMessageBuilderFactory;
 import org.springframework.messaging.MessageChannel;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 /**
  * {@link PubSubInboundChannelAdapter} unit tests.
@@ -44,6 +50,8 @@ import static org.mockito.Mockito.when;
  * @author João André Martins
  * @author Doug Hoard
  * @author Mike Eltsufin
+ * @author Taylor Burke
+ * @author Chengyuan Zhao
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubInboundChannelAdapterTests {
@@ -61,6 +69,9 @@ public class PubSubInboundChannelAdapterTests {
 	private MessageChannel messageChannel;
 
 	private String value;
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Before
 	public void setUp() throws UnsupportedEncodingException {
@@ -90,8 +101,10 @@ public class PubSubInboundChannelAdapterTests {
 		});
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testNonNullAckMode() {
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("The acknowledgement mode can't be null.");
 		PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(
 				this.pubSubOperations, "testSubscription");
 
@@ -116,6 +129,29 @@ public class PubSubInboundChannelAdapterTests {
 		}
 
 		Assert.assertEquals(NACK, this.value);
+	}
+
+	@Test
+	public void testMessageBuilder() {
+		PubSubInboundChannelAdapter adapter = new PubSubInboundChannelAdapter(
+				this.pubSubSubscriberOperations, "testSubscription");
+
+		MutableMessageBuilderFactory factory = mock(MutableMessageBuilderFactory.class);
+		when(factory.withPayload(any())).thenReturn(MutableMessageBuilder.withPayload("payload"));
+
+		adapter.setMessageBuilderFactory(factory);
+		adapter.setOutputChannel(this.messageChannel);
+
+		try {
+			adapter.start();
+
+			Assert.fail(EXPECTED_EXCEPTION);
+		}
+		catch (Throwable t) {
+			Assert.assertEquals(EXCEPTION_MESSAGE, t.getCause().getMessage());
+		}
+
+		verify(factory, times(1)).withPayload(any());
 	}
 
 	@Test

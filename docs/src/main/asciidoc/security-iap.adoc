@@ -1,7 +1,7 @@
 :spring-security-ref: https://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle/
 :spring-security-javadoc: https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/
 
-== Google Cloud IAP Authentication
+== Cloud Identity-Aware Proxy (IAP) Authentication
 
 https://cloud.google.com/iap/[Cloud Identity-Aware Proxy (IAP)] provides a security layer over applications deployed to Google Cloud.
 
@@ -18,8 +18,6 @@ The custom property overrides automatic environment-based checks.
 
 NOTE: If you create a custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`], enable extracting user identity by adding `.oauth2ResourceServer().jwt()` configuration to the {spring-security-javadoc}config/annotation/web/builders/HttpSecurity.html[`HttpSecurity`] object.
  If no custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`] is present, nothing needs to be done because Spring Boot will add this customization by default.
-
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample[sample application] is available.
 
 Starter Maven coordinates, using https://github.com/spring-cloud/spring-cloud-gcp/blob/master/spring-cloud-gcp-dependencies/pom.xml[Spring Cloud GCP BOM]:
 
@@ -40,7 +38,7 @@ dependencies {
 }
 ----
 
-== Configuration
+=== Configuration
 The following properties are available.
 
 CAUTION: Modifying registry, algorithm, and header properties might be useful for testing, but the defaults should not be changed in production.
@@ -75,3 +73,7 @@ Note that without this option, the audience is automatically determined for appl
 |
 
 |===
+
+=== Sample
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-security-iap-sample[sample application] is available.

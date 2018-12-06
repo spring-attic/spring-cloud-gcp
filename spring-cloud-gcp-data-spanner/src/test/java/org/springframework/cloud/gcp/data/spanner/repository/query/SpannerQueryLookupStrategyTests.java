@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.data.spanner.repository.query;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,6 +75,23 @@ public class SpannerQueryLookupStrategyTests {
 		this.evaluationContextProvider = mock(QueryMethodEvaluationContextProvider.class);
 		this.spelExpressionParser = new SpelExpressionParser();
 		this.spannerQueryLookupStrategy = getSpannerQueryLookupStrategy();
+
+		when(this.queryMethod.getQueryAnnotation()).thenReturn(new Query() {
+			@Override
+			public Class<? extends Annotation> annotationType() {
+				return Query.class;
+			}
+
+			@Override
+			public String value() {
+				return "";
+			}
+
+			@Override
+			public boolean dmlStatement() {
+				return false;
+			}
+		});
 	}
 
 	@Test
@@ -105,7 +123,7 @@ public class SpannerQueryLookupStrategyTests {
 		this.spannerQueryLookupStrategy.resolveQuery(null, null, null, namedQueries);
 
 		verify(this.spannerQueryLookupStrategy, times(1)).createSqlSpannerQuery(
-				eq(Object.class), same(this.queryMethod), eq(query));
+				eq(Object.class), same(this.queryMethod), eq(query), eq(false));
 	}
 
 	@Test

@@ -10,8 +10,7 @@ João André Martins; Jisha Abubaker; Ray Tsang; Mike Eltsufin; Artem Bilan; And
 
 == Introduction
 
-The Spring Cloud GCP project aims at making the Spring Framework a first-class citizen of Google
-Cloud Platform (GCP).
+The Spring Cloud GCP project aims at making the Spring Framework a first-class citizen of Google Cloud Platform (GCP).
 
 Currently, Spring Cloud GCP lets you leverage the power and simplicity of the Spring framework to:
 
@@ -49,10 +48,10 @@ include::spanner.adoc[]
 
 include::datastore.adoc[]
 
-include::cloudfoundry.adoc[]
-
 include::memorystore.adoc[]
 
 include::security-iap.adoc[]
 
 include::vision.adoc[]
+
+include::cloudfoundry.adoc[]

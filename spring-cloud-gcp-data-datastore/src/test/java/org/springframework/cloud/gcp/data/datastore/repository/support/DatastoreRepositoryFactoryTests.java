@@ -17,7 +17,9 @@
 package org.springframework.cloud.gcp.data.datastore.repository.support;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
@@ -36,6 +38,9 @@ import static org.mockito.Mockito.mock;
  * @author Chengyuan Zhao
  */
 public class DatastoreRepositoryFactoryTests {
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	private DatastoreRepositoryFactory datastoreRepositoryFactory;
 
@@ -61,8 +66,12 @@ public class DatastoreRepositoryFactoryTests {
 		assertEquals("a", entityInformation.getId(t));
 	}
 
-	@Test(expected = MappingException.class)
+	@Test
 	public void getEntityInformationNotAvailableTest() {
+		this.expectedException.expect(MappingException.class);
+		this.expectedException.expectMessage("Could not lookup mapping metadata for domain class: " +
+				"org.springframework.cloud.gcp.data.datastore.repository.support." +
+				"DatastoreRepositoryFactoryTests$TestEntity");
 		DatastoreRepositoryFactory factory = new DatastoreRepositoryFactory(
 				mock(DatastoreMappingContext.class), this.datastoreTemplate);
 		factory.getEntityInformation(TestEntity.class);

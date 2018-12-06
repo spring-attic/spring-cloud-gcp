@@ -28,6 +28,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
+import org.springframework.cloud.gcp.vision.CloudVisionTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -39,7 +40,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @EnableConfigurationProperties(CloudVisionProperties.class)
-@ConditionalOnClass(ImageAnnotatorClient.class)
+@ConditionalOnClass(CloudVisionTemplate.class)
 @ConditionalOnProperty(value = "spring.cloud.gcp.vision.enabled", matchIfMissing = true)
 public class CloudVisionAutoConfiguration {
 
@@ -65,7 +66,6 @@ public class CloudVisionAutoConfiguration {
 	 * honored by Spring bean lifecycle.
 	 * <p>Most of the Google Cloud API clients are thread-safe heavy objects. I.e., it's better
 	 * to produce a singleton and re-using the client object for multiple requests.
-	 *
 	 * @return A Cloud Vision API client
 	 * @throws IOException if an exception occurs creating the ImageAnnotatorClient
 	 */
@@ -79,4 +79,11 @@ public class CloudVisionAutoConfiguration {
 
 		return ImageAnnotatorClient.create(clientSettings);
 	}
+
+	@Bean
+	@ConditionalOnMissingBean
+	public CloudVisionTemplate cloudVisionTemplate(ImageAnnotatorClient imageAnnotatorClient) {
+		return new CloudVisionTemplate(imageAnnotatorClient);
+	}
+
 }
