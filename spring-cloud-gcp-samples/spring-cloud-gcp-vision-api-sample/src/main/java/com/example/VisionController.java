@@ -25,6 +25,7 @@ import com.google.cloud.vision.v1.Feature.Type;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.gcp.vision.CloudVisionFilesTemplate;
 import org.springframework.cloud.gcp.vision.CloudVisionTemplate;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.ui.ModelMap;
@@ -36,7 +37,8 @@ import org.springframework.web.servlet.ModelAndView;
  * Code sample that shows how Spring Cloud GCP can be leveraged to use Google Cloud Client
  * Libraries.
  *
- * <p>This uses the Cloud Vision API with the {@link ImageAnnotatorClient}, which is
+ * <p>
+ * This uses the Cloud Vision API with the {@link ImageAnnotatorClient}, which is
  * configured and provided by the spring-cloud-gcp-starter-vision module.
  *
  * @author João André Martins
@@ -51,8 +53,12 @@ public class VisionController {
 	@Autowired
 	private CloudVisionTemplate cloudVisionTemplate;
 
+	@Autowired
+	private CloudVisionFilesTemplate cloudVisionFilesTemplate;
+
 	/**
-	 * This method downloads an image from a URL and sends its contents to the Vision API for label detection.
+	 * This method downloads an image from a URL and sends its contents to the Vision API for
+	 * label detection.
 	 *
 	 * @param imageUrl the URL of the image
 	 * @return a string with the list of labels and percentage of certainty
@@ -63,15 +69,20 @@ public class VisionController {
 		AnnotateImageResponse response = this.cloudVisionTemplate.analyzeImage(
 				this.resourceLoader.getResource(imageUrl), Type.LABEL_DETECTION);
 
-		Map<String, Float> imageLabels =
-				response.getLabelAnnotationsList()
-						.stream()
-						.collect(Collectors.toMap(
-								EntityAnnotation::getDescription, EntityAnnotation::getScore));
+		Map<String, Float> imageLabels = response.getLabelAnnotationsList()
+				.stream()
+				.collect(Collectors.toMap(
+						EntityAnnotation::getDescription, EntityAnnotation::getScore));
 
 		map.addAttribute("annotations", imageLabels);
 		map.addAttribute("imageUrl", imageUrl);
 
 		return new ModelAndView("result", map);
+	}
+
+	@GetMapping("/batchfiles")
+	public String batchFiles() throws Exception {
+		this.cloudVisionFilesTemplate.asyncBatchAnalyzeFiles("gcp-vision-sample-input-bucket", "");
+		return "done";
 	}
 }
