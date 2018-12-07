@@ -223,7 +223,6 @@ public class SpannerStatementQueryExecutor {
 						+ " is not a supported type: " + param.getClass(), e);
 			}
 		}
-		// compiler rule requires this to be set
 		Object unused = toMethod.apply(bind, param);
 	}
 
