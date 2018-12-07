@@ -25,10 +25,14 @@ import com.google.cloud.datastore.Key;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.cloud.gcp.data.datastore.repository.query.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.repository.query.Param;
 
 /**
  * @author Chengyuan Zhao
+ * @author Dmitry Solomakha
  */
 public interface TestEntityRepository extends DatastoreRepository<TestEntity, Long> {
 
@@ -79,4 +83,9 @@ public interface TestEntityRepository extends DatastoreRepository<TestEntity, Lo
 
 	@Query("select * from  test_entities_ci where id = @id")
 	TestEntityProjection getById(@Param("id") long id);
+
+	Page<TestEntity> findByShape(Shape shape, Pageable pageable);
+
+	Slice<TestEntity> findByColor(String color, Pageable pageable);
+
 }

@@ -3,11 +3,9 @@
 === Spring Caching
 
 https://cloud.google.com/memorystore/[Cloud Memorystore for Redis] provides a fully managed in-memory data store service.
-Cloud Memorystore is compatible with the Redis protocol, allowing easy integration with
-https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-caching.html[Spring Caching].
+Cloud Memorystore is compatible with the Redis protocol, allowing easy integration with https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-caching.html[Spring Caching].
 
-All you have to do is create a Cloud Memorystore instance and use its IP address in `application.properties` file as
-`spring.redis.host` property value. Everything else is exactly the same as setting up redis-backed Spring caching.
+All you have to do is create a Cloud Memorystore instance and use its IP address in `application.properties` file as `spring.redis.host` property value. Everything else is exactly the same as setting up redis-backed Spring caching.
 
 [NOTE]
 ====
@@ -37,7 +35,6 @@ public String hello(@PathVariable String name) {
 }
 ----
 
-If you are interested in a detailed how-to guide, please check
-https://codelabs.developers.google.com/codelabs/cloud-spring-cache-memorystore/[Spring Boot Caching using Cloud Memorystore codelab].
+If you are interested in a detailed how-to guide, please check https://codelabs.developers.google.com/codelabs/cloud-spring-cache-memorystore/[Spring Boot Caching using Cloud Memorystore codelab].
 
 Cloud Memorystore documentation can be found https://cloud.google.com/memorystore/docs/redis/[here].

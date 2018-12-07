@@ -38,11 +38,14 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.junit.Assert.assertEquals;
@@ -124,6 +127,20 @@ public class DatastoreIntegrationTests {
 
 		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
 				.map(x -> x.getId()).collect(Collectors.toList()), contains(4L));
+
+		assertThat(this.testEntityRepository.findByColor("red",
+				PageRequest.of(0, 1)).hasNext(), is(true));
+		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(1, 1)).hasNext(),
+				is(true));
+		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(2, 1)).hasNext(),
+				is(false));
+
+		Page<TestEntity> circles = this.testEntityRepository.findByShape(Shape.CIRCLE, PageRequest.of(0, 2));
+		assertThat(circles.getTotalElements(), equalTo(3L));
+		assertThat(circles.getTotalPages(), equalTo(2));
+		assertThat(circles.get().count(), equalTo(2L));
+		assertThat(circles.get().allMatch(e -> e.getShape().equals(Shape.CIRCLE)), is(true));
+
 
 		assertThat(this.testEntityRepository.findByEnumQueryParam(Shape.SQUARE).stream()
 				.map(x -> x.getId()).collect(Collectors.toList()), contains(4L));
