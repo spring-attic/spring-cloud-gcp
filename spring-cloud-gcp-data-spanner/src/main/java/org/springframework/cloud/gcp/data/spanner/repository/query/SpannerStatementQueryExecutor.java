@@ -223,7 +223,7 @@ public class SpannerStatementQueryExecutor {
 						+ " is not a supported type: " + param.getClass(), e);
 			}
 		}
-		Object unused = toMethod.apply(bind, param);
+		Object unused = toMethod.apply(bind, param); //NOSONAR compiler rule requires this to be set
 	}
 
 	public static String getColumnsStringForSelect(
