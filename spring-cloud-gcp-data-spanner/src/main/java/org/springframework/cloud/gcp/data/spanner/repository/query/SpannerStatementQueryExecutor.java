@@ -52,7 +52,11 @@ import org.springframework.data.util.Pair;
  *
  * @since 1.1
  */
-public class SpannerStatementQueryExecutor {
+public final class SpannerStatementQueryExecutor {
+
+	private SpannerStatementQueryExecutor() {
+	}
+
 	/**
 	 * Executes a PartTree-based query.
 	 * @param type the type of the underlying entity
