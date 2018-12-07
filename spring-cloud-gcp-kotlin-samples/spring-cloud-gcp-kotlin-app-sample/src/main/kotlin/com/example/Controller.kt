@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 original author or authors.
+ * Copyright 2017-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
-fun main(args: Array<String>) {
-  println("hello world.")
+package com.example
+
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RestController
+
+@RestController
+class Controller {
+
+  @GetMapping("/")
+  fun homeGreeting() = "Hello World!"
 }
