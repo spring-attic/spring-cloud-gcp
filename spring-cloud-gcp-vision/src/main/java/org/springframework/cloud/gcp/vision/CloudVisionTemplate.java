@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.vision;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,8 +52,13 @@ public class CloudVisionTemplate {
 		this.imageAnnotatorClient = imageAnnotatorClient;
 	}
 
-	public String extractTextFromImage(Resource resource) throws IOException {
-		AnnotateImageResponse response = analyzeImage(resource, Type.TEXT_DETECTION);
+	/**
+	 * Extract the text out of an image and return the result as a String.
+	 * @param imageResource the image one wishes to analyze.
+	 * @return the text extracted from the image aggregated to a String.
+	 */
+	public String extractTextFromImage(Resource imageResource) {
+		AnnotateImageResponse response = analyzeImage(imageResource, Type.TEXT_DETECTION);
 		return response.getFullTextAnnotation().getText();
 	}
 
@@ -67,10 +73,14 @@ public class CloudVisionTemplate {
 	 * @param featureTypes the types of image analysis to perform on the image.
 	 * @return the results of image analyses
 	 */
-	public AnnotateImageResponse analyzeImage(Resource imageResource, Feature.Type... featureTypes)
-			throws IOException {
+	public AnnotateImageResponse analyzeImage(Resource imageResource, Feature.Type... featureTypes) {
+		ByteString imgBytes;
+		try {
+			imgBytes = ByteString.readFrom(imageResource.getInputStream());
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 
-		ByteString imgBytes = ByteString.readFrom(imageResource.getInputStream());
 		Image image = Image.newBuilder().setContent(imgBytes).build();
 
 		List<Feature> featureList = Arrays.stream(featureTypes)
