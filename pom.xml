@@ -37,6 +37,7 @@
 		<module>spring-cloud-gcp-data-datastore</module>
 		<module>spring-cloud-gcp-security-iap</module>
 		<module>spring-cloud-gcp-vision</module>
+		<module>spring-cloud-gcp-kotlin-samples</module>
 	</modules>
 
 	<properties>
@@ -47,6 +48,7 @@
 		<spring-cloud-stream.version>Fishtown.BUILD-SNAPSHOT</spring-cloud-stream.version>
 		<zipkin-gcp.version>0.9.0</zipkin-gcp.version>
 		<app-engine-maven-plugin.version>1.3.2</app-engine-maven-plugin.version>
+		<kotlin.version>1.3.10</kotlin.version>
 	</properties>
 
 	<dependencyManagement>
