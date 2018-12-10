@@ -75,7 +75,7 @@ public JacksonPubSubMessageConverter jacksonPubSubMessageConverter(ObjectMapper 
 Alternatively, you can set it directly by calling the `setMessageConverter()` method on the `PubSubTemplate`.
 Other implementations of the `PubSubMessageConverter` can also be configured in the same manner.
 
-Please refer to our link:../spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-json-sample/[Pub/Sub JSON Payload Sample App] as a reference for using this functionality.
+Please refer to our link:..spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-json-sample[Pub/Sub JSON Payload Sample App] as a reference for using this functionality.
 
 ==== Subscribing to a subscription
 
