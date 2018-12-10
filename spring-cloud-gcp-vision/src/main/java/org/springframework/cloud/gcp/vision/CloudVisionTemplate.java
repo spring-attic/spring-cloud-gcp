@@ -26,6 +26,7 @@ import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.BatchAnnotateImagesRequest;
 import com.google.cloud.vision.v1.BatchAnnotateImagesResponse;
 import com.google.cloud.vision.v1.Feature;
+import com.google.cloud.vision.v1.Feature.Type;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.protobuf.ByteString;
@@ -48,6 +49,11 @@ public class CloudVisionTemplate {
 	public CloudVisionTemplate(ImageAnnotatorClient imageAnnotatorClient) {
 		Assert.notNull(imageAnnotatorClient, "imageAnnotatorClient must not be null.");
 		this.imageAnnotatorClient = imageAnnotatorClient;
+	}
+
+	public String extractTextFromImage(Resource resource) throws IOException {
+		AnnotateImageResponse response = analyzeImage(resource, Type.TEXT_DETECTION);
+		return response.getFullTextAnnotation().getText();
 	}
 
 	/**
