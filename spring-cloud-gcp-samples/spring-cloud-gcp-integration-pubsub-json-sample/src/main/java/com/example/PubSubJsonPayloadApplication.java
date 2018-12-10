@@ -40,7 +40,7 @@ public class PubSubJsonPayloadApplication {
 	 * utilize JSON message payloads in Cloud Pub/Sub.
 	 */
 	@Bean
-	public JacksonPubSubMessageConverter jacksonPubSubMessageConverter() {
-		return new JacksonPubSubMessageConverter(new ObjectMapper());
+	public JacksonPubSubMessageConverter jacksonPubSubMessageConverter(ObjectMapper objectMapper) {
+		return new JacksonPubSubMessageConverter(objectMapper);
 	}
 }

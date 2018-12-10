@@ -64,14 +64,18 @@ For serialization and deserialization of POJOs using Jackson JSON, configure a `
 
 [source,java]
 ----
+// Note: The ObjectMapper is used to convert Java POJOs to and from JSON. You will have to configure
+// your own instance if you are unable to depend on the ObjectMapper provided by Spring Boot starters.
 @Bean
-public JacksonPubSubMessageConverter jacksonPubSubMessageConverter() {
-    return new JacksonPubSubMessageConverter(new ObjectMapper());
+public JacksonPubSubMessageConverter jacksonPubSubMessageConverter(ObjectMapper objectMapper) {
+    return new JacksonPubSubMessageConverter(objectMapper);
 }
 ----
 
 Alternatively, you can set it directly by calling the `setMessageConverter()` method on the `PubSubTemplate`.
 Other implementations of the `PubSubMessageConverter` can also be configured in the same manner.
+
+Please refer to our link:../spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-json-sample[Pub/Sub JSON Payload Sample App] as a reference for using this functionality.
 
 ==== Subscribing to a subscription
 
