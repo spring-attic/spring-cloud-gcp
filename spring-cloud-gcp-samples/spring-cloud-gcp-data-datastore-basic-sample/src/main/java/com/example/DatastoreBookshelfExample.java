@@ -33,10 +33,6 @@ import org.springframework.shell.standard.ShellMethod;
 @ShellComponent
 @SpringBootApplication
 public class DatastoreBookshelfExample {
-	public DatastoreBookshelfExample() {
-
-	}
-
 	@Autowired
 	BookRepository bookRepository;
 

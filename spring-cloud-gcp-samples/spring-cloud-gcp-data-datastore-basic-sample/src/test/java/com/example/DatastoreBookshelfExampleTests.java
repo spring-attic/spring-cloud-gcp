@@ -40,7 +40,7 @@ import static org.junit.Assume.assumeThat;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = DatastoreBookshelfExample.class,
 		properties = { InteractiveShellApplicationRunner.SPRING_SHELL_INTERACTIVE_ENABLED + "=" + false })
-public class DatastoreBookshelfExampleTest {
+public class DatastoreBookshelfExampleTests {
 
 	@Autowired
 	private Shell shell;

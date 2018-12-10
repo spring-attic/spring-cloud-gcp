@@ -25,7 +25,11 @@ import org.springframework.cloud.gcp.data.datastore.repository.DatastoreReposito
  */
 
 public interface BookRepository extends DatastoreRepository<Book, Long> {
+
 	List<Book> findByAuthor(String author);
+
 	List<Book> findByYear(int year);
+
 	List<Book> findByAuthorAndYear(String author, int year);
+
 }
