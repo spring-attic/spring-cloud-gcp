@@ -60,7 +60,7 @@ public class VisionController {
 	 * @throws Exception if the Vision API call produces an error
 	 */
 	@GetMapping("/extractLabels")
-	public ModelAndView extractLabels(String imageUrl, ModelMap map) throws Exception {
+	public ModelAndView extractLabels(String imageUrl, ModelMap map) throws IOException {
 		AnnotateImageResponse response = this.cloudVisionTemplate.analyzeImage(
 				this.resourceLoader.getResource(imageUrl), Type.LABEL_DETECTION);
 
