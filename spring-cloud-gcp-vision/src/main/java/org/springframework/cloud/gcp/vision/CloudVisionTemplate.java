@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.vision;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -77,8 +76,9 @@ public class CloudVisionTemplate {
 		ByteString imgBytes;
 		try {
 			imgBytes = ByteString.readFrom(imageResource.getInputStream());
-		} catch (IOException e) {
-			throw new UncheckedIOException(e);
+		}
+		catch (IOException e) {
+			throw new CloudVisionException(e);
 		}
 
 		Image image = Image.newBuilder().setContent(imgBytes).build();
