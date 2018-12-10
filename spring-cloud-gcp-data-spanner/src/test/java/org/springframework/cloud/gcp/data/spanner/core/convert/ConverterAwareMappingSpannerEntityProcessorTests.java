@@ -132,7 +132,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		Struct struct1 = Struct.newBuilder().set("id").to(Value.string("key1"))
 				.set("id2").to(Value.string("key2")).set("id3").to(Value.string("key3"))
 				.set("id4").to(Value.string("key4"))
-				.set("custom_col").to(Value.string("string1")).set("booleanField")
+				.set("custom_col").to(Value.string("WHITE")).set("booleanField")
 				.to(Value.bool(true)).set("intField").to(Value.int64(123L))
 				.set("intField2").to(Value.int64(333L))
 				.set("longField").to(Value.int64(3L)).set("doubleField")
@@ -153,7 +153,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		Struct struct2 = Struct.newBuilder().set("id").to(Value.string("key12"))
 				.set("id2").to(Value.string("key22")).set("id3").to(Value.string("key32"))
 				.set("id4").to(Value.string("key42"))
-				.set("custom_col").to(Value.string("string2")).set("booleanField")
+				.set("custom_col").to(Value.string("BLACK")).set("booleanField")
 				.to(Value.bool(true)).set("intField").to(Value.int64(222L))
 				.set("intField2").to(Value.int64(555L))
 				.set("longField").to(Value.int64(5L)).set("doubleField")
@@ -193,7 +193,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		assertEquals("key2", t1.testEmbeddedColumns.id2);
 		assertEquals("key3", t1.testEmbeddedColumns.id3);
 		assertEquals("key4", t1.id4);
-		assertEquals("string1", t1.stringField);
+		assertEquals(TestEntity.Color.WHITE, t1.enumField);
 		assertEquals(true, t1.booleanField);
 		assertEquals(123, t1.intField);
 		assertEquals(333, t1.testEmbeddedColumns.intField2);
@@ -208,7 +208,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		assertEquals("key22", t2.testEmbeddedColumns.id2);
 		assertEquals("key32", t2.testEmbeddedColumns.id3);
 		assertEquals("key42", t2.id4);
-		assertEquals("string2", t2.stringField);
+		assertEquals(TestEntity.Color.BLACK, t2.enumField);
 		assertEquals(true, t2.booleanField);
 		assertEquals(222, t2.intField);
 		assertEquals(555, t2.testEmbeddedColumns.intField2);
@@ -231,12 +231,12 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		stringList.add("string");
 
 		Struct struct1 = Struct.newBuilder().set("id").to(Value.string("key1"))
-				.set("custom_col").to(Value.string("string1")).set("doubleList")
+				.set("custom_col").to(Value.string("WHITE")).set("doubleList")
 				.to(Value.float64Array(doubleList)).set("stringList")
 				.to(Value.stringArray(stringList)).build();
 
 		Struct struct2 = Struct.newBuilder().set("id").to(Value.string("key2"))
-				.set("custom_col").to(Value.string("string2")).set("doubleList")
+				.set("custom_col").to(Value.string("BLACK")).set("doubleList")
 				.to(Value.float64Array(doubleList)).set("stringList")
 				.to(Value.stringArray(stringList)).build();
 
@@ -259,13 +259,13 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		TestEntity t2 = entities.get(1);
 
 		assertEquals("key1", t1.id);
-		assertEquals("string1", t1.stringField);
+		assertEquals(TestEntity.Color.WHITE, t1.enumField);
 
 		// This should not have been set
 		assertNull(t1.doubleList);
 
 		assertEquals("key2", t2.id);
-		assertEquals("string2", t2.stringField);
+		assertEquals(TestEntity.Color.BLACK, t2.enumField);
 
 		// This should not have been set
 		assertNull(t2.stringList);

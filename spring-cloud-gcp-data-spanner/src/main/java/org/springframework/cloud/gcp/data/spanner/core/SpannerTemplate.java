@@ -199,7 +199,7 @@ public class SpannerTemplate implements SpannerOperations {
 				SpannerStatementQueryExecutor.buildStatementFromSqlWithArgs(
 						SpannerStatementQueryExecutor.applySortingPagingQueryOptions(
 								entityClass, options, sql, this.mappingContext),
-						null, null, null),
+						null, null, null, null),
 				options);
 	}
 

@@ -86,7 +86,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 	public void writeTest() {
 		TestEntity t = new TestEntity();
 		t.id = "key1";
-		t.stringField = "string";
+		t.enumField = TestEntity.Color.WHITE;
 		t.booleanField = true;
 		t.intField = 123;
 		t.longField = 3L;
@@ -233,7 +233,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		verify(idBinder, times(1)).to(eq(t.id));
 		verify(id2Binder, times(1)).to(eq(t.testEmbeddedColumns.id2));
 		verify(id3Binder, times(1)).to(eq(t.testEmbeddedColumns.id3));
-		verify(stringFieldBinder, times(1)).to(eq(t.stringField));
+		verify(stringFieldBinder, times(1)).to(eq(t.enumField.toString()));
 		verify(booleanFieldBinder, times(1)).to(eq(Boolean.valueOf(t.booleanField)));
 		verify(intFieldBinder, times(1)).to(eq(Long.valueOf(t.intField)));
 		verify(intField2Binder, times(1)).to(eq(Long.valueOf(t.testEmbeddedColumns.intField2)));
@@ -283,7 +283,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 	public void writeSomeColumnsTest() throws ClassNotFoundException {
 		TestEntity t = new TestEntity();
 		t.id = "key1";
-		t.stringField = "string";
+		t.enumField = TestEntity.Color.BLACK;
 
 		WriteBuilder writeBuilder = mock(WriteBuilder.class);
 
@@ -303,7 +303,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 				new HashSet<>(Arrays.asList("id", "custom_col")));
 
 		verify(idBinder, times(1)).to(eq(t.id));
-		verify(stringFieldBinder, times(1)).to(eq(t.stringField));
+		verify(stringFieldBinder, times(1)).to(eq(t.enumField.toString()));
 		verifyZeroInteractions(booleanFieldBinder);
 	}
 
