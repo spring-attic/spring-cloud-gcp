@@ -30,6 +30,7 @@ import com.google.cloud.vision.v1.Feature.Type;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.protobuf.ByteString;
+import com.google.rpc.Code;
 
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
@@ -58,7 +59,13 @@ public class CloudVisionTemplate {
 	 */
 	public String extractTextFromImage(Resource imageResource) {
 		AnnotateImageResponse response = analyzeImage(imageResource, Type.TEXT_DETECTION);
-		return response.getFullTextAnnotation().getText();
+
+		String result = response.getFullTextAnnotation().getText();
+		if (result.isEmpty() && response.getError().getCode() != Code.OK.getNumber()) {
+			throw new CloudVisionException(response.getError().getMessage());
+		}
+
+		return result;
 	}
 
 	/**
@@ -78,7 +85,7 @@ public class CloudVisionTemplate {
 			imgBytes = ByteString.readFrom(imageResource.getInputStream());
 		}
 		catch (IOException e) {
-			throw new CloudVisionException(e);
+			throw new CloudVisionException("Failed to read image bytes from provided resource.", e);
 		}
 
 		Image image = Image.newBuilder().setContent(imgBytes).build();
@@ -97,7 +104,13 @@ public class CloudVisionTemplate {
 		BatchAnnotateImagesResponse batchResponse = this.imageAnnotatorClient.batchAnnotateImages(request);
 		List<AnnotateImageResponse> annotateImageResponses = batchResponse.getResponsesList();
 
-		return annotateImageResponses.get(0);
+		if (!annotateImageResponses.isEmpty()) {
+			return annotateImageResponses.get(0);
+		}
+		else {
+			throw new CloudVisionException(
+					"Failed to receive valid response Vision APIs; empty response received.");
+		}
 	}
 
 }

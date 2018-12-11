@@ -16,8 +16,7 @@
 
 package org.springframework.cloud.gcp.vision;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import org.springframework.core.NestedRuntimeException;
 
 /**
  * Describes error conditions that can occur when interfacing with Cloud Vision APIs.
@@ -26,8 +25,13 @@ import java.io.UncheckedIOException;
  *
  * @since 1.1
  */
-final class CloudVisionException extends UncheckedIOException {
-	CloudVisionException(IOException e) {
-		super(e);
+public final class CloudVisionException extends NestedRuntimeException {
+
+	CloudVisionException(String message, Exception errorCause) {
+		super(message, errorCause);
+	}
+
+	CloudVisionException(String message) {
+		super(message);
 	}
 }
