@@ -61,7 +61,7 @@ public class CloudVisionTemplateTests {
 	@Before
 	public void setupVisionTemplateMock() {
 		this.imageAnnotatorClient = Mockito.mock(ImageAnnotatorClient.class);
-		this.cloudVisionTemplate = new CloudVisionTemplate(imageAnnotatorClient);
+		this.cloudVisionTemplate = new CloudVisionTemplate(this.imageAnnotatorClient);
 	}
 
 	@Test
@@ -73,7 +73,7 @@ public class CloudVisionTemplateTests {
 		this.expectedException.expectMessage(
 				"Failed to receive valid response Vision APIs; empty response received.");
 
-		cloudVisionTemplate.analyzeImage(FAKE_IMAGE, Type.TEXT_DETECTION);
+		this.cloudVisionTemplate.analyzeImage(FAKE_IMAGE, Type.TEXT_DETECTION);
 	}
 
 	@Test
@@ -96,7 +96,7 @@ public class CloudVisionTemplateTests {
 		this.expectedException.expect(CloudVisionException.class);
 		this.expectedException.expectMessage("Error Message from Vision API.");
 
-		cloudVisionTemplate.extractTextFromImage(FAKE_IMAGE);
+		this.cloudVisionTemplate.extractTextFromImage(FAKE_IMAGE);
 	}
 
 	@Test
@@ -104,7 +104,7 @@ public class CloudVisionTemplateTests {
 		this.expectedException.expect(CloudVisionException.class);
 		this.expectedException.expectMessage("Failed to read image bytes from provided resource.");
 
-		cloudVisionTemplate.analyzeImage(new BadResource(), Type.LABEL_DETECTION);
+		this.cloudVisionTemplate.analyzeImage(new BadResource(), Type.LABEL_DETECTION);
 	}
 
 	private static final class BadResource extends AbstractResource {
