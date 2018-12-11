@@ -76,6 +76,9 @@ public class DatastoreBookshelfExampleTests {
 		assertEquals("[Book{id=" + bookId2 + ", title='book2', author='author2', year=2000}]",
 				this.shell.evaluate(() -> "find-by-author-year author2 2000"));
 
+		assertEquals("[Book{id=" + bookId2 + ", title='book2', author='author2', year=2000}]",
+				this.shell.evaluate(() -> "find-by-year 2000"));
+
 		this.shell.evaluate(() -> "remove-all-books");
 
 		assertEquals(
