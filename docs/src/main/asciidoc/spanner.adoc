@@ -477,6 +477,7 @@ Custom converters can be used extending the type support for user defined types.
 * `double[]`
 * `long[]`
 * `boolean[]`
+* `enum` types
 
 . An instance of both Converters needs to be passed to a `ConverterAwareMappingSpannerEntityProcessor`, which then has to be made available as a `@Bean` for `SpannerEntityProcessor`.
 
@@ -963,6 +964,17 @@ public String doWorkInsideTransaction() {
 
 When creating custom repositories for your own domain types and query methods, you can extend `SpannerRepository` to access Cloud Spanner-specific features as well as all features from `PagingAndSortingRepository` and `CrudRepository`.
 
+=== Query Methods
+
+`SpannerRepository` supports Query Methods.
+Described in the following sections, these are methods residing in your custom repository interfaces of which implementations are generated based on their names and annotations.
+Query Methods can read, write, and delete entities in Cloud Spanner.
+Parameters to these methods can be any Cloud Spanner data type supported directly or via custom configured converters.
+Parameters can also be of type `Struct` or POJOs.
+If a POJO is given as a parameter, it will be converted to a `Struct` with the same type-conversion logic as used to create write mutations.
+Comparisons using Struct parameters are limited to https://cloud.google.com/spanner/docs/data-types#limited-comparisons-for-struct[what is available with Cloud Spanner].
+
+
 ==== Query methods by convention
 
 [source, java]
@@ -1145,10 +1157,6 @@ SpEL can also be used to provide SQL parameters:
   AND price > #{#priceRadius * -1} AND price < #{#priceRadius * 2}")
 List<Trade> fetchByActionNamedQuery(String action, Double priceRadius);
 ----
-
-Parameters can also be of type `Struct` or POJO type. If a POJO is given as a parameter, it
-will be converted to a Struct with the same type-conversion logic as used to create write mutations.
-Comparisons using Struct parameters are limited to https://cloud.google.com/spanner/docs/data-types#limited-comparisons-for-struct[what is available with Cloud Spanner].
 
 ==== Projections
 Spring Data Spanner supports {spring-data-commons-ref}/#projections[projections].

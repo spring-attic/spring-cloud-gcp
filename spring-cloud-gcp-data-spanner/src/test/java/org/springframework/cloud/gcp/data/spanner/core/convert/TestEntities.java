@@ -50,7 +50,7 @@ public class TestEntities {
 		TestEmbeddedColumns testEmbeddedColumns;
 
 		@Column(name = "custom_col")
-		String stringField;
+		Color enumField;
 
 		@Column(name = "")
 		boolean booleanField;
@@ -94,6 +94,11 @@ public class TestEntities {
 
 		@Interleaved
 		List<ChildTestEntity> childTestEntities;
+
+		enum Color {
+			WHITE,
+			BLACK
+		}
 	}
 
 	static class ChildTestEntity {

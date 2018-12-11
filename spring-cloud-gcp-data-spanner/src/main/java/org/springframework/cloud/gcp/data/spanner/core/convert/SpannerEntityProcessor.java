@@ -79,7 +79,7 @@ public interface SpannerEntityProcessor extends SpannerEntityReader, SpannerEnti
 	 * array elements.
 	 * @return the Java type that works directly with Spanner.
 	 */
-	Class getCorrespondingSpannerJavaType(Class originalType, boolean isIterableInnerType);
+	Class<?> getCorrespondingSpannerJavaType(Class originalType, boolean isIterableInnerType);
 
 	/**
 	 * Get the write converter used by this processor.
