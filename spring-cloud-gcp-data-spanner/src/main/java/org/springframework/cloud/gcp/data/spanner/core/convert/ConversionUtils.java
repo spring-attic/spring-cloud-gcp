@@ -28,7 +28,10 @@ import com.google.cloud.ByteArray;
  *
  * @since 1.1
  */
-public class ConversionUtils {
+public final class ConversionUtils {
+
+	private ConversionUtils() {
+	}
 
 	static Class boxIfNeeded(Class propertyType) {
 		if (propertyType == null) {

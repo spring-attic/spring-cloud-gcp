@@ -1,5 +1,6 @@
 
-Spring Cloud for Google Cloud Platform is a part of the Spring Cloud project and it makes integration with Google Cloud Platform (GCP) easy. It offers a convenient way to interact with GCP services using well-known Spring idioms and APIs.
+Spring Cloud for Google Cloud Platform is a part of the Spring Cloud project and it makes integration with Google Cloud Platform (GCP) easy.
+It offers a convenient way to interact with GCP services using well-known Spring idioms and APIs.
 
 == Features
 

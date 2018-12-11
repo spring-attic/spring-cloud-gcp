@@ -23,8 +23,6 @@ dependencies {
 }
 ----
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[sample application] is available.
-
 === Overview
 
 This binder binds producers to Google Cloud Pub/Sub topics and consumers to subscriptions.
@@ -75,3 +73,7 @@ spring.cloud.stream.gcp.pubsub.bindings.events.consumer.auto-create-resources=tr
 # specify consumer group, and avoid anonymous consumer group generation
 spring.cloud.stream.bindings.events.group=consumerGroup1
 ----
+
+=== Sample
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[sample application] is available.

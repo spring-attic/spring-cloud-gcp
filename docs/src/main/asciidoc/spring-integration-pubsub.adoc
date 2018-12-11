@@ -1,13 +1,9 @@
 === Channel Adapters for Cloud Pub/Sub
 
-The channel adapters for Google Cloud Pub/Sub connect your Spring
-https://docs.spring.io/spring-integration/reference/html/messaging-channels-section.html#channel[`MessageChannels`]
-to Google Cloud Pub/Sub topics and subscriptions.
-This enables messaging between different processes, applications or micro-services backed up by
-Google Cloud Pub/Sub.
+The channel adapters for Google Cloud Pub/Sub connect your Spring https://docs.spring.io/spring-integration/reference/html/messaging-channels-section.html#channel[`MessageChannels`] to Google Cloud Pub/Sub topics and subscriptions.
+This enables messaging between different processes, applications or micro-services backed up by Google Cloud Pub/Sub.
 
-The Spring Integration Channel Adapters for Google Cloud Pub/Sub are included in the
-`spring-cloud-gcp-pubsub` module.
+The Spring Integration Channel Adapters for Google Cloud Pub/Sub are included in the `spring-cloud-gcp-pubsub` module.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -33,18 +29,11 @@ dependencies {
 }
 ----
 
-Available examples:
-
-- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-sample[sender and receiver sample application]
-- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-json-sample[JSON payloads sample application]
-- https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-pubsub-integration/index.html[codelab]
 
 ==== Inbound channel adapter
 
-`PubSubInboundChannelAdapter` is the inbound channel adapter for GCP Pub/Sub that listens to a GCP
-Pub/Sub subscription for new messages.
-It converts new messages to an internal Spring
-https://docs.spring.io/spring-integration/reference/html/messaging-construction-chapter.html#message[`Message`]
+`PubSubInboundChannelAdapter` is the inbound channel adapter for GCP Pub/Sub that listens to a GCP Pub/Sub subscription for new messages.
+It converts new messages to an internal Spring https://docs.spring.io/spring-integration/reference/html/messaging-construction-chapter.html#message[`Message`]
 and then sends it to the bound output channel.
 
 Google Pub/Sub treats message payloads as byte arrays.
@@ -53,8 +42,7 @@ However, you can change the desired payload type by setting the `payloadType` pr
 The `PubSubInboundChannelAdapter` delegates the conversion to the desired payload type to the `PubSubMessageConverter` configured in the `PubSubTemplate`.
 
 
-To use the inbound channel adapter, a `PubSubInboundChannelAdapter` must be provided and configured
-on the user application side.
+To use the inbound channel adapter, a `PubSubInboundChannelAdapter` must be provided and configured on the user application side.
 
 [source,java]
 ----
@@ -127,8 +115,7 @@ To construct a Pub/Sub representation of the message, the outbound channel adapt
 It delegates this conversion to the `PubSubTemplate`.
 To customize the conversion, you can specify a `PubSubMessageConverter` in the `PubSubTemplate` that should convert the `Object` payload and headers of the Spring `Message` to a `PubsubMessage`.
 
-To use the outbound channel adapter, a `PubSubMessageHandler` bean must be provided and configured
-on the user application side.
+To use the outbound channel adapter, a `PubSubMessageHandler` bean must be provided and configured on the user application side.
 
 [source,java]
 ----
@@ -139,15 +126,13 @@ public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
 }
 ----
 
-The provided `PubSubTemplate` contains all the necessary configuration to publish messages to a
-GCP Pub/Sub topic.
+The provided `PubSubTemplate` contains all the necessary configuration to publish messages to a GCP Pub/Sub topic.
 
 `PubSubMessageHandler` publishes messages asynchronously by default.
-A publish timeout can be configured for synchronous publishing. If none is provided, the adapter
-waits indefinitely for a response.
+A publish timeout can be configured for synchronous publishing.
+If none is provided, the adapter waits indefinitely for a response.
 
-It is possible to set user-defined callbacks for the `publish()` call in `PubSubMessageHandler`
-through the `setPublishFutureCallback()` method.
+It is possible to set user-defined callbacks for the `publish()` call in `PubSubMessageHandler` through the `setPublishFutureCallback()` method.
 These are useful to process the message ID, in case of success, or the error if any was thrown.
 
 To override the default destination you can use the `GcpPubSubHeaders.DESTINATION` header.
@@ -193,3 +178,11 @@ The first patterns have precedence over the following ones.
 
 In the previous example, the `"*"` pattern means every header is mapped.
 However, because it comes last in the list, https://docs.spring.io/spring-integration/api/org/springframework/integration/util/PatternMatchUtils.html#smartMatch-java.lang.String-java.lang.String...-[the previous patterns take precedence].
+
+=== Sample
+
+Available examples:
+
+- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-sample[sender and receiver sample application]
+- https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-json-sample[JSON payloads sample application]
+- https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-pubsub-integration/index.html[codelab]

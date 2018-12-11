@@ -66,7 +66,7 @@ public class SpannerWriteMethodCoverageTests {
 			}
 			else {
 				assertThat(
-						ConverterAwareMappingSpannerEntityWriter.singleItemType2ToMethodMap.keySet(),
+						ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap.keySet(),
 						hasItem(paramType));
 			}
 		}
