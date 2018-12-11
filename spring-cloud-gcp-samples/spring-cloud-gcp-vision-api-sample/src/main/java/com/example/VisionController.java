@@ -56,7 +56,7 @@ public class VisionController {
 	 *
 	 * @param imageUrl the URL of the image
 	 * @return a string with the list of labels and percentage of certainty
-	 * @throws {@link CloudVisionTemplate} if the Vision API call produces an error
+	 * @throws CloudVisionTemplate if the Vision API call produces an error
 	 */
 	@GetMapping("/extractLabels")
 	public ModelAndView extractLabels(String imageUrl, ModelMap map) {
