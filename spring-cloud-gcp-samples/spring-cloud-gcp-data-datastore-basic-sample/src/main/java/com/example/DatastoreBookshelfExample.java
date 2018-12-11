@@ -27,9 +27,10 @@ import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 
 /**
+ * This class contains the main method and performs common operations with books
+ *
  * @author Dmitry Solomakha
  */
-
 @ShellComponent
 @SpringBootApplication
 public class DatastoreBookshelfExample {
@@ -40,7 +41,7 @@ public class DatastoreBookshelfExample {
 		SpringApplication.run(DatastoreBookshelfExample.class, args);
 	}
 
-	@ShellMethod("Saves a book to Cloud Datastore")
+	@ShellMethod("Saves a book to Cloud Datastore: save-book <author> <title> <year>")
 	public long saveBook(String title, String author, int year) {
 		Book savedBook = this.bookRepository.save(new Book(title, author, year));
 		return savedBook.getId();
@@ -52,19 +53,19 @@ public class DatastoreBookshelfExample {
 		return Lists.newArrayList(books).toString();
 	}
 
-	@ShellMethod("Loads books by author")
+	@ShellMethod("Loads books by author: find-by-author <author>")
 	public String findByAuthor(String author) {
 		List<Book> books = this.bookRepository.findByAuthor(author);
 		return books.toString();
 	}
 
-	@ShellMethod("Loads books by year")
+	@ShellMethod("Loads books by year: find-by-year <year>")
 	public String findByYear(int year) {
 		List<Book> books = this.bookRepository.findByYear(year);
 		return books.toString();
 	}
 
-	@ShellMethod("Loads books by author and year")
+	@ShellMethod("Loads books by author and year: find-by-author-year <author> <year>")
 	public String findByAuthorYear(String author, int year) {
 		List<Book> books = this.bookRepository.findByAuthorAndYear(author, year);
 		return books.toString();

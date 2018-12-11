@@ -16,21 +16,20 @@
 
 package com.example;
 
-import java.util.List;
+import org.jline.utils.AttributedString;
+import org.jline.utils.AttributedStyle;
 
-import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
+import org.springframework.shell.jline.PromptProvider;
+import org.springframework.stereotype.Component;
 
 /**
- * This interface contains custom-defined query methods of which implementations are generated for you
- *
  * @author Dmitry Solomakha
  */
-public interface BookRepository extends DatastoreRepository<Book, Long> {
-
-	List<Book> findByAuthor(String author);
-
-	List<Book> findByYear(int year);
-
-	List<Book> findByAuthorAndYear(String author, int year);
-
+@Component
+public class CustomPromptProvider implements PromptProvider {
+	@Override
+	public AttributedString getPrompt() {
+		return new AttributedString("enter a command or type 'help' for info :>",
+				AttributedStyle.DEFAULT.foreground(AttributedStyle.YELLOW));
+	}
 }

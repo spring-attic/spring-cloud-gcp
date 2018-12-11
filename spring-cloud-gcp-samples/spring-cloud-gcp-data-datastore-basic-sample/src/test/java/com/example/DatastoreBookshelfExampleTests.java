@@ -36,7 +36,6 @@ import static org.junit.Assume.assumeThat;
 /**
  * @author Dmitry Solomakha
  */
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = DatastoreBookshelfExample.class,
 		properties = { InteractiveShellApplicationRunner.SPRING_SHELL_INTERACTIVE_ENABLED + "=" + false })
