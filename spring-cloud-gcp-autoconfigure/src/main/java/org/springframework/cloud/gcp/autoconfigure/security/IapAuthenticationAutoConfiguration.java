@@ -121,7 +121,7 @@ public class IapAuthenticationAutoConfiguration {
 		validators.add(audienceValidator);
 
 		if (LOGGER.isInfoEnabled()) {
-			LOGGER.info("IAP JWT Audience validation enabled for audience: " + audienceValidator.getAudience());
+			LOGGER.info("Audience configured for IAP JWT validation: " + audienceValidator.getAudience());
 		}
 
 		return new DelegatingOAuth2TokenValidator<>(validators);
