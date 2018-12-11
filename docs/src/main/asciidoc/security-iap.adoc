@@ -14,7 +14,7 @@ The following claims are validated automatically:
  * Issuer
  * Audience
 
-The audience (`"aud"`) validation is automatically configured when the application is running on AppEngine.
+The audience (`"aud"`) validation is automatically configured when the application is running on App Engine Standard or App Engine Flexible.
 For other runtime environments, a custom audience must be provided through `spring.cloud.gcp.security.iap.audience` property.
 The custom property, if available, overrides the automatic AppEngine check.
 
