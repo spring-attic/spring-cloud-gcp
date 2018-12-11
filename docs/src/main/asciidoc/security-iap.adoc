@@ -74,7 +74,7 @@ CAUTION: Modifying registry, algorithm, and header properties might be useful fo
 
 |`spring.cloud.gcp.security.iap.audience`
 |Custom JWK audience to verify.
-|false on AppEngine; true on GCE/GKE
+|false on App Engine; true on GCE/GKE
 |
 
 |===
