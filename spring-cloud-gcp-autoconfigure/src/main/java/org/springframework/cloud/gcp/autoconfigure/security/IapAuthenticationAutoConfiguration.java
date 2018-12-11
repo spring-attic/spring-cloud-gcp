@@ -22,11 +22,9 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -39,7 +37,6 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 import org.springframework.cloud.gcp.security.iap.AppEngineAudienceProvider;
 import org.springframework.cloud.gcp.security.iap.AudienceProvider;
 import org.springframework.cloud.gcp.security.iap.AudienceValidator;
-import org.springframework.cloud.gcp.security.iap.ComputeEngineAudienceProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -64,7 +61,7 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
  *         <li>Issue time
  *         <li>Expiration time
  *         <li>Issuer
- *         <li>Audience (this validation is only enabled if running on AppEngine or ComputeEngine, or if a custom
+ *         <li>Audience (this validation is only enabled if running on AppEngine, or if a custom
  *         audience is provided through {@code spring.cloud.gcp.security.iap.audience} property)
  *     </ul>
  * </ul>
@@ -96,8 +93,8 @@ public class IapAuthenticationAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	@ConditionalOnProperty("spring.cloud.gcp.security.iap.audience")
-	public AudienceValidator propertyBasedAudienceValidator(IapAuthenticationProperties properties) {
-		return new AudienceValidator(properties::getAudience);
+	public AudienceProvider propertyBasedAudienceProvider(IapAuthenticationProperties properties) {
+		return properties::getAudience;
 	}
 
 	@Bean
@@ -109,33 +106,24 @@ public class IapAuthenticationAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	@ConditionalOnGcpEnvironment({GcpEnvironment.COMPUTE_ENGINE, GcpEnvironment.KUBERNETES_ENGINE})
-	public AudienceProvider computeEngineBasedAudienceProvider(GcpProjectIdProvider projectIdProvider) {
-		return new ComputeEngineAudienceProvider(projectIdProvider);
-	}
-
-	@Bean
-	@ConditionalOnBean(AudienceProvider.class)
-	@ConditionalOnMissingBean
-	public AudienceValidator environmentBasedAudienceValidator(AudienceProvider audienceProvider) {
+	public AudienceValidator audienceValidator(AudienceProvider audienceProvider) {
 		return new AudienceValidator(audienceProvider);
 	}
 
 	@Bean
 	@ConditionalOnMissingBean(name = "iapJwtDelegatingValidator")
 	public DelegatingOAuth2TokenValidator<Jwt> iapJwtDelegatingValidator(IapAuthenticationProperties properties,
-			ObjectProvider<AudienceValidator> audienceVerifier) {
+			AudienceValidator audienceValidator) {
 
 		List<OAuth2TokenValidator<Jwt>> validators = new ArrayList<>();
 		validators.add(new JwtTimestampValidator());
 		validators.add(new JwtIssuerValidator(properties.getIssuer()));
+		validators.add(audienceValidator);
 
-		audienceVerifier.ifAvailable(audienceValidator -> {
-			validators.add(audienceValidator);
-			if (LOGGER.isInfoEnabled()) {
-				LOGGER.info("IAP JWT Audience validation enabled for audience: " + audienceValidator.getAudience());
-			}
-		});
+		if (LOGGER.isInfoEnabled()) {
+			LOGGER.info("Audience configured for IAP JWT validation: " + audienceValidator.getAudience());
+		}
+
 		return new DelegatingOAuth2TokenValidator<>(validators);
 	}
 
