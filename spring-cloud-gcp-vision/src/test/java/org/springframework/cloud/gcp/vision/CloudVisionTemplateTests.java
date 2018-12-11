@@ -39,6 +39,13 @@ import org.springframework.core.io.Resource;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+/**
+ * Unit tests for the {@link CloudVisionTemplate}.
+ *
+ * @author Daniel Zou
+ *
+ * @since 1.1
+ */
 public class CloudVisionTemplateTests {
 
 	@Rule

@@ -54,8 +54,9 @@ public class CloudVisionTemplate {
 
 	/**
 	 * Extract the text out of an image and return the result as a String.
-	 * @param imageResource the image one wishes to analyze.
-	 * @return the text extracted from the image aggregated to a String.
+	 * @param imageResource the image one wishes to analyze
+	 * @return the text extracted from the image aggregated to a String
+	 * @throws CloudVisionException if the image could not be read or if text extraction failed
 	 */
 	public String extractTextFromImage(Resource imageResource) {
 		AnnotateImageResponse response = analyzeImage(imageResource, Type.TEXT_DETECTION);
@@ -76,8 +77,10 @@ public class CloudVisionTemplate {
 	 * feature types can be found in {@link Feature.Type}.
 	 * @param imageResource the image one wishes to analyze. The Cloud Vision APIs support
 	 *     image formats described here: https://cloud.google.com/vision/docs/supported-files
-	 * @param featureTypes the types of image analysis to perform on the image.
+	 * @param featureTypes the types of image analysis to perform on the image
 	 * @return the results of image analyses
+	 * @throws CloudVisionException if the image could not be read or if a malformed response
+	 * 		 is received from the Cloud Vision APIs
 	 */
 	public AnnotateImageResponse analyzeImage(Resource imageResource, Feature.Type... featureTypes) {
 		ByteString imgBytes;
