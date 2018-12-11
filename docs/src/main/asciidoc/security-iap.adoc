@@ -16,7 +16,7 @@ The following claims are validated automatically:
 
 The audience (`"aud"`) validation is automatically configured when the application is running on App Engine Standard or App Engine Flexible.
 For other runtime environments, a custom audience must be provided through `spring.cloud.gcp.security.iap.audience` property.
-The custom property, if available, overrides the automatic AppEngine check.
+The custom property, if specified, overrides the automatic App Engine audience detection.
 
 IMPORTANT: There is no automatic audience string configuration for Compute Engine or Kubernetes Engine.
 To use the IAP starter on GCE/GKE, find the Audience string per instructions in the https://cloud.google.com/iap/docs/signed-headers-howto#verify_the_jwt_payload[Verify the JWT payload] guide, and specify it in the `spring.cloud.gcp.security.iap.audience` property.
