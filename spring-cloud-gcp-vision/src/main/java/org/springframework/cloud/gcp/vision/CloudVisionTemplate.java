@@ -80,7 +80,7 @@ public class CloudVisionTemplate {
 	 * @param featureTypes the types of image analysis to perform on the image
 	 * @return the results of image analyses
 	 * @throws CloudVisionException if the image could not be read or if a malformed response
-	 * 		 is received from the Cloud Vision APIs
+	 *     is received from the Cloud Vision APIs
 	 */
 	public AnnotateImageResponse analyzeImage(Resource imageResource, Feature.Type... featureTypes) {
 		ByteString imgBytes;
