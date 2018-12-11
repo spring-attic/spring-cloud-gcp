@@ -19,7 +19,7 @@ For other runtime environments, a custom audience must be provided through `spri
 The custom property, if available, overrides the automatic AppEngine check.
 
 IMPORTANT: There is no automatic audience string configuration for Compute Engine or Kubernetes Engine.
-To use the IAP starter on GCE/GKE, find the Audience string per instructions the https://cloud.google.com/iap/docs/signed-headers-howto#verify_the_jwt_payload[Verify the JWT payload] guide, and specify it in `spring.cloud.gcp.security.iap.audience` property.
+To use the IAP starter on GCE/GKE, find the Audience string per instructions in the https://cloud.google.com/iap/docs/signed-headers-howto#verify_the_jwt_payload[Verify the JWT payload] guide, and specify it in the `spring.cloud.gcp.security.iap.audience` property.
 Otherwise, the application will fail to start with `No qualifying bean of type 'org.springframework.cloud.gcp.security.iap.AudienceProvider' available` message.
 
 NOTE: If you create a custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`], enable extracting user identity by adding `.oauth2ResourceServer().jwt()` configuration to the {spring-security-javadoc}config/annotation/web/builders/HttpSecurity.html[`HttpSecurity`] object.
