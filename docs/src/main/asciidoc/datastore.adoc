@@ -1093,4 +1093,4 @@ To delete trades, you can use `curl -XDELETE \http://<server>:<port>/trades/<tra
 
 === Sample
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[Sample Spring Boot Application] is provided to show how to use the Spring Data Cloud Datastore starter and template.
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-basic-sample[Simple Spring Boot Application] and more advanced https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample[Sample Spring Boot Application] are provided to show how to use the Spring Data Cloud Datastore starter and template.
