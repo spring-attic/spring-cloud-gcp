@@ -36,6 +36,8 @@ import org.springframework.util.StringUtils;
  * This class provides a JSON layout for a Logback appender compatible to the Stackdriver
  * log format.
  *
+ * Reference: https://cloud.google.com/logging/docs/agent/configuration#process-payload
+ *
  * @author Andreas Berger
  */
 public class StackdriverJsonLayout extends JsonLayout {

@@ -108,6 +108,7 @@ public class StackdriverLoggingIntegrationTests {
 			LogEntry entry = logEntries.get(0);
 			assertThat(entry.getTrace()).matches(
 					"projects/" + this.projectIdProvider.getProjectId() + "/traces/([a-z0-9]){32}");
+			assertThat(entry.getSpanId()).matches("([a-z0-9]){16}");
 		});
 	}
 
