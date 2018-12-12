@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author João André Martins
+ * @author Eric Goetschalckx
  */
 public class PubSubHeaderMapperTests {
 
@@ -68,5 +69,35 @@ public class PubSubHeaderMapperTests {
 
 		Map<String, Object> internalHeaders = mapper.toHeaders(originalHeaders);
 		assertThat(internalHeaders.size()).isEqualTo(3);
+	}
+
+	@Test()
+	public void testSetInboundHeaderPatterns() {
+		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
+
+		mapper.setInboundHeaderPatterns("x-*");
+
+		Map<String, String> originalHeaders = new HashMap<>();
+		String headerValue = "the moon is down";
+		originalHeaders.put("x-" + MessageHeaders.TIMESTAMP, headerValue);
+		originalHeaders.put("my header", "don't touch it");
+
+		Map<String, Object> internalHeaders = mapper.toHeaders(originalHeaders);
+
+		assertThat(internalHeaders.size()).isEqualTo(1);
+		assertThat(internalHeaders.get("x-" + MessageHeaders.TIMESTAMP)).isEqualTo(headerValue);
+		assertThat(internalHeaders.containsKey("my header")).isEqualTo(false);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testSetInboundHeaderPatternsNullPatterns() {
+		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
+		mapper.setInboundHeaderPatterns(null);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testSetInboundHeaderPatternsNullPatternElements() {
+		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
+		mapper.setInboundHeaderPatterns(new String[1]);
 	}
 }
