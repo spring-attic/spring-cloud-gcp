@@ -11,6 +11,11 @@
         <property name="headerFile" value="${checkstyle.header.file}"/>
         <property name="fileExtensions" value="java"/>
     </module>
+
+    <module name="SuppressionFilter">
+        <property name="file" value="${checkstyle.suppressions.file}"/>
+        <property name="optional" value="true"/>
+    </module>
     <!--<module name="io.spring.javaformat.checkstyle.check.SpringHeaderCheck">
         <property name="fileExtensions" value="java" />
         <property name="headerType" value="${headerType}"/>
