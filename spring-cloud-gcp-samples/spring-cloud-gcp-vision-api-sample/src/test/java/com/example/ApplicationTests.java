@@ -46,7 +46,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @AutoConfigureMockMvc
 public class ApplicationTests {
 
-	private static final String VISION_SAMPLE_ENDPOINT = "/vision?imageUrl=classpath:static/boston-terrier.jpg";
+	private static final String LABEL_IMAGE_URL = "/extractLabels?imageUrl=classpath:static/boston-terrier.jpg";
+
+	private static final String TEXT_IMAGE_URL = "/extractText?imageUrl=classpath:static/stop-sign.jpg";
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -60,8 +62,17 @@ public class ApplicationTests {
 	}
 
 	@Test
-	public void shouldCorrectlyClassifyImage() throws Exception {
-		this.mockMvc.perform(get(VISION_SAMPLE_ENDPOINT))
+	public void testExtractTextFromImage() throws Exception {
+		this.mockMvc.perform(get(TEXT_IMAGE_URL))
+				.andDo(response -> {
+					String textImageResponse = response.getResponse().getContentAsString();
+					assertThat(textImageResponse).isEqualTo("Text from image: STOP\n");
+				});
+	}
+
+	@Test
+	public void testClassifyImageLabels() throws Exception {
+		this.mockMvc.perform(get(LABEL_IMAGE_URL))
 				.andDo(response -> {
 					ModelAndView result = response.getModelAndView();
 					Map<String, Float> annotations = (Map<String, Float>) result.getModelMap().get("annotations");
