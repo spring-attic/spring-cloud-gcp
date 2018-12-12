@@ -57,6 +57,7 @@ import static org.awaitility.Awaitility.await;
 /**
  * @author João André Martins
  * @author Daniel Zou
+ * @author Mike Eltsufin
  */
 @SpringBootTest(
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,

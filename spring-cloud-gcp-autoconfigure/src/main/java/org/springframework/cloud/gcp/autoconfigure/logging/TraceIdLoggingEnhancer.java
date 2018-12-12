@@ -27,7 +27,7 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
  * displayed in the Logs viewer.
  *
  * @author João André Martins
- * @author Mike Eltusfin
+ * @author Mike Eltsufin
  */
 public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 
