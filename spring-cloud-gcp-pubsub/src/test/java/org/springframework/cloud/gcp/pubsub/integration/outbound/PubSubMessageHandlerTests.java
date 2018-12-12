@@ -202,16 +202,4 @@ public class PubSubMessageHandlerTests {
 	public void testSetHeaderMapperWithNull() {
 		this.adapter.setHeaderMapper(null);
 	}
-
-	// could add getHeaderMapper() to make this test more useful?
-	@Test
-	public void testSetHeaderMapper() {
-		this.adapter.setHeaderMapper(new PubSubHeaderMapper());
-	}
-
-	// this only tests that no exceptions were thrown, not very useful...
-	@Test
-	public void testOnInit() throws Exception {
-		this.adapter.onInit();
-	}
 }
