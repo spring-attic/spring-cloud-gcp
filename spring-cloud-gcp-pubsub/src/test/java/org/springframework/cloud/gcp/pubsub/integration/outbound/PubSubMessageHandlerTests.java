@@ -210,7 +210,7 @@ public class PubSubMessageHandlerTests {
 
 	@Test
 	public void testSetHeaderMapperWithNull() {
-        this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expect(IllegalArgumentException.class);
 		this.expectedException.expectMessage("The header mapper can't be null.");
 
 		this.adapter.setHeaderMapper(null);
