@@ -19,8 +19,10 @@ package org.springframework.cloud.gcp.pubsub.integration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Rule;
 import org.junit.Test;
 
+import org.junit.rules.ExpectedException;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.NativeMessageHeaderAccessor;
 
@@ -31,6 +33,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Eric Goetschalckx
  */
 public class PubSubHeaderMapperTests {
+
+    @Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Test
 	public void testFilterHeaders() {
@@ -89,14 +94,20 @@ public class PubSubHeaderMapperTests {
 		assertThat(internalHeaders.containsKey("my header")).isEqualTo(false);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testSetInboundHeaderPatternsNullPatterns() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Header patterns can't be null.");
+
 		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
 		mapper.setInboundHeaderPatterns(null);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testSetInboundHeaderPatternsNullPatternElements() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("No header pattern can be null.");
+
 		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
 		mapper.setInboundHeaderPatterns(new String[1]);
 	}

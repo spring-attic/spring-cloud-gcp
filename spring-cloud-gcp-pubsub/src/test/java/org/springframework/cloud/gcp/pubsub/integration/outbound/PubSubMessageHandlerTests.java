@@ -20,7 +20,9 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -57,6 +59,9 @@ public class PubSubMessageHandlerTests {
 	private PubSubMessageHandler adapter;
 
 	private Message<?> message;
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
 	@Before
 	public void setUp() {
@@ -122,8 +127,11 @@ public class PubSubMessageHandlerTests {
 		verify(callbackSpy, times(1)).onSuccess(eq("benfica"));
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testSetPublishTimeoutExpressionStringWithNull() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("Publish timeout expression can't be null.");
+
 		this.adapter.setPublishTimeoutExpressionString(null);
 	}
 
@@ -160,8 +168,11 @@ public class PubSubMessageHandlerTests {
 		assertThat(this.adapter.isSync()).isFalse();
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testTopicWithNull() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("The topic can't be null or empty");
+
 		this.adapter.setTopic(null);
 	}
 
@@ -197,8 +208,11 @@ public class PubSubMessageHandlerTests {
 		assertThat(exp.getClass()).isEqualTo(SpelExpression.class);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testSetHeaderMapperWithNull() {
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage("The header mapper can't be null.");
+
 		this.adapter.setHeaderMapper(null);
 	}
 }
