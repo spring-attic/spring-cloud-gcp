@@ -122,7 +122,7 @@ public class PubSubMessageHandlerTests {
 
 		this.adapter.handleMessage(this.message);
 
-		assertThat(this.adapter.getPublishCallback()).isEqualTo(callbackSpy);
+		assertThat(this.adapter.getPublishCallback()).isSameAs(callbackSpy);
 
 		verify(callbackSpy, times(1)).onSuccess(eq("benfica"));
 	}
