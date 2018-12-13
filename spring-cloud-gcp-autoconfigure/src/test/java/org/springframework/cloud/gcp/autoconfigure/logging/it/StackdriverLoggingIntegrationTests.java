@@ -57,6 +57,7 @@ import static org.awaitility.Awaitility.await;
 /**
  * @author João André Martins
  * @author Daniel Zou
+ * @author Mike Eltsufin
  */
 @SpringBootTest(
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -108,6 +109,7 @@ public class StackdriverLoggingIntegrationTests {
 			LogEntry entry = logEntries.get(0);
 			assertThat(entry.getTrace()).matches(
 					"projects/" + this.projectIdProvider.getProjectId() + "/traces/([a-z0-9]){32}");
+			assertThat(entry.getSpanId()).matches("([a-z0-9]){16}");
 		});
 	}
 

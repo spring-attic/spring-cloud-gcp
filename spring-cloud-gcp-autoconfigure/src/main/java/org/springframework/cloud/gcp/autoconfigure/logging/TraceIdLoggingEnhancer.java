@@ -23,9 +23,11 @@ import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 
 /**
- * Adds the trace ID to the logging entry, in its correct format to be displayed in the Logs viewer.
+ * Adds the trace ID and span ID to the logging entry, in its correct format to be
+ * displayed in the Logs viewer.
  *
  * @author João André Martins
+ * @author Mike Eltsufin
  */
 public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 
@@ -54,10 +56,11 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 	}
 
 	/**
-	 * Set the trace field of the log entry to the current trace ID.
+	 * Set the trace and span ID fields of the log entry to the current one.
 	 * <p>The current trace ID is either the trace ID stored in the Mapped Diagnostic Context (MDC)
 	 * under the "X-B3-TraceId" key or, if none set, the current trace ID set by
-	 * {@link #setCurrentTraceId(String)}.
+	 * {@link #setCurrentTraceId(String)}. The current span ID is retrieved from the MDC
+	 * under the "X-B3-SpanId" key, if set.
 	 * <p>The trace ID is set in the log entry in the "projects/[GCP_PROJECT_ID]/traces/[TRACE_ID]"
 	 * format, in order to be associated to traces by the Google Cloud Console.
 	 * <p>If an application is running on Google App Engine, the trace ID is also stored in the
@@ -71,6 +74,7 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 		// the trace ID from the MDC there, we're doing it here.
 		// This requires a call to the org.slf4j package.
 		String traceId = org.slf4j.MDC.get(StackdriverTraceConstants.MDC_FIELD_TRACE_ID);
+		String spanId = org.slf4j.MDC.get(StackdriverTraceConstants.MDC_FIELD_SPAN_ID);
 		if (traceId == null) {
 			traceId = getCurrentTraceId();
 		}
@@ -81,6 +85,9 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 			if (this.runningOnAppEngine) {
 				builder.addLabel(APP_ENGINE_LABEL_NAME, traceId);
 			}
+		}
+		if (spanId != null) {
+			builder.setSpanId(spanId);
 		}
 	}
 }
