@@ -60,8 +60,8 @@ public class PubSubMessageHandlerTests {
 
 	private Message<?> message;
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Before
 	public void setUp() {
@@ -129,8 +129,8 @@ public class PubSubMessageHandlerTests {
 
 	@Test
 	public void testSetPublishTimeoutExpressionStringWithNull() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Publish timeout expression can't be null.");
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("Publish timeout expression can't be null.");
 
 		this.adapter.setPublishTimeoutExpressionString(null);
 	}
@@ -170,8 +170,8 @@ public class PubSubMessageHandlerTests {
 
 	@Test
 	public void testTopicWithNull() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The topic can't be null or empty");
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("The topic can't be null or empty");
 
 		this.adapter.setTopic(null);
 	}
@@ -210,8 +210,8 @@ public class PubSubMessageHandlerTests {
 
 	@Test
 	public void testSetHeaderMapperWithNull() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The header mapper can't be null.");
+        this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("The header mapper can't be null.");
 
 		this.adapter.setHeaderMapper(null);
 	}
