@@ -71,7 +71,7 @@ public class PubSubHeaderMapperTests {
 		assertThat(internalHeaders.size()).isEqualTo(3);
 	}
 
-	@Test()
+	@Test
 	public void testSetInboundHeaderPatterns() {
 		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
 
