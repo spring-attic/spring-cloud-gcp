@@ -14,14 +14,27 @@
  * limitations under the License.
  */
 
-package com.example
+package com.example.app
 
+import com.example.data.Person
+import com.example.data.PersonRepository
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.domain.EntityScan
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories
 
-@SpringBootApplication
-open class Application
+/**
+ * Starts the Kotlin Spring Boot sample application.
+ *
+ * @author Daniel Zou
+ *
+ * @since 1.1
+ */
+@SpringBootApplication()
+@EnableJpaRepositories(basePackageClasses = [PersonRepository::class])
+@EntityScan(basePackageClasses = [Person::class])
+class Application
 
 fun main(args: Array<String>) {
-  SpringApplication.run(Application::class.java, *args)
+	SpringApplication.run(Application::class.java, *args)
 }

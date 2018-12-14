@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Registration Sample Application</title>
+</head>
+<body>
+
+<h1>Registration</h1>
+
+<div>
+  <nav>
+    <a href="/">Home</a><br>
+    <a href="/registrants">Registered People</a><br>
+  </nav>
+
+  <p>
+    This is a demo registration application which sends user information to a Pub/Sub topic and
+    persists it into a MySQL database.
+  </p>
+
+  <h2>Register Person</h2>
+  <div>
+    <form action="/registerPerson" method="post">
+      First Name: <input type="text" name="firstName" />
+      Last Name: <input type="text" name="lastName" />
+      Email: <input type="text" name="email" />
+      <input type="submit" value="Submit"/>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>
