@@ -23,7 +23,11 @@ addons:
       secure: "eTxYYXrExigaf4ELiNf87NjK//bu49tss5k8+l1+kKgyhsfGTP5aOE24ICJ9K7waBK5MV+P520s7oPhhMPjLJDxququDyTxoPV5xO9TAwVSqSSZwYfwRCPsGvlylP9NE/MCc211l6CihFrpJDb5pfJjndG64n3MBG691snTY5HXoWoZ0HarIAJc4KwhovFwqImL2+u5HOXogb+0y/kJsI/6qV+K16rC5Z5tNY3gIR9mrHvJvRgFzeZsZffCxJD1tJjNVsLoFBcTa2blpDlXd66dfCghGUlU30h7zm4WxD5J3R4hhrOvDzXdk4FFt2TPFz3TNbSf/MOEs/AMVSZH1SMH9ZXiBeBS86dGGWv+dFO5cxbP9Cg/lcL5JPupGYh0KSuZ4B2j6nbr65x9owD2+bBhi6qcP1Es01YVEa3WqsQI+/dbvOi6IChBDrrc9J6CL1RVBTzQVKeVlIEDkx7Mw/ivkL6DKKOeFRklz6bbYNAw4Z5gDkPZ3LezYW1gfpbUs5sUAcm/QYLDAFN37GhYMedCqeMbbxyMm9aTWob2qWShOCuytvHbseLP7r3VrvPfoUucDNF6T9oNLdSQ3OpyUl12LD7TgPikOqd3OqoRmb1/p/mCNmf8vX5USAp4L7G9edK4TzjZSwBcbRGZGqLrNvinwtCECP4wHJWPIzV33K90="
 script:
   # run unit tests
-  - ./mvnw test sonar:sonar -B -P codecov -Dit.pubsub-emulator -Dsonar.projectKey=SC-GCP
+  - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
+      ./mvnw test sonar:sonar -B -P codecov -Dit.pubsub-emulator -Dsonar.projectKey=SC-GCP;
+    else
+      ./mvnw test -B -P codecov -Dit.pubsub-emulator;
+    fi;
   - bash <(curl -s https://codecov.io/bash) -F unittests
   # run GCP integration tests
   - if [ "$INTEGRATION_TEST_FLAGS" != "" ]; then

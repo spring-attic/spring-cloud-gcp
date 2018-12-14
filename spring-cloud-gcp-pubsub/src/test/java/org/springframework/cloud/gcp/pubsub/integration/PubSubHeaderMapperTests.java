@@ -19,7 +19,9 @@ package org.springframework.cloud.gcp.pubsub.integration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.support.NativeMessageHeaderAccessor;
@@ -28,8 +30,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author João André Martins
+ * @author Eric Goetschalckx
  */
 public class PubSubHeaderMapperTests {
+
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Test
 	public void testFilterHeaders() {
@@ -68,5 +74,41 @@ public class PubSubHeaderMapperTests {
 
 		Map<String, Object> internalHeaders = mapper.toHeaders(originalHeaders);
 		assertThat(internalHeaders.size()).isEqualTo(3);
+	}
+
+	@Test
+	public void testSetInboundHeaderPatterns() {
+		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
+
+		mapper.setInboundHeaderPatterns("x-*");
+
+		Map<String, String> originalHeaders = new HashMap<>();
+		String headerValue = "the moon is down";
+		originalHeaders.put("x-" + MessageHeaders.TIMESTAMP, headerValue);
+		originalHeaders.put("my header", "don't touch it");
+
+		Map<String, Object> internalHeaders = mapper.toHeaders(originalHeaders);
+
+		assertThat(internalHeaders.size()).isEqualTo(1);
+		assertThat(internalHeaders.get("x-" + MessageHeaders.TIMESTAMP)).isEqualTo(headerValue);
+		assertThat(internalHeaders.containsKey("my header")).isEqualTo(false);
+	}
+
+	@Test
+	public void testSetInboundHeaderPatternsNullPatterns() {
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("Header patterns can't be null.");
+
+		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
+		mapper.setInboundHeaderPatterns(null);
+	}
+
+	@Test
+	public void testSetInboundHeaderPatternsNullPatternElements() {
+		this.expectedException.expect(IllegalArgumentException.class);
+		this.expectedException.expectMessage("No header pattern can be null.");
+
+		PubSubHeaderMapper mapper = new PubSubHeaderMapper();
+		mapper.setInboundHeaderPatterns(new String[1]);
 	}
 }
