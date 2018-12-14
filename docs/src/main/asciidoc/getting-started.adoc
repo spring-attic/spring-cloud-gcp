@@ -40,6 +40,9 @@ Most of the autoconfiguration code is only enabled if other dependencies are add
 |Vision
 |org.springframework.cloud:spring-cloud-gcp-starter-vision
 
+|Security - IAP
+|org.springframework.cloud:spring-cloud-gcp-starter-security-iap
+
 |===
 
 The GCP Messaging entry adds the GCP Support entry and all the required dependencies so that the Google Cloud Pub/Sub integrations work out of the box.
