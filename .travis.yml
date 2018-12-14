@@ -24,9 +24,9 @@ addons:
 script:
   # run unit tests
   - if [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]; then
-      ./mvnw test sonar:sonar -B -P codecov -Dit.pubsub-emulator -Dsonar.projectKey=SC-GCP
+      ./mvnw test sonar:sonar -B -P codecov -Dit.pubsub-emulator -Dsonar.projectKey=SC-GCP;
     else
-      ./mvnw test -B -P codecov -Dit.pubsub-emulator
+      ./mvnw test -B -P codecov -Dit.pubsub-emulator;
     fi;
   - bash <(curl -s https://codecov.io/bash) -F unittests
   # run GCP integration tests
