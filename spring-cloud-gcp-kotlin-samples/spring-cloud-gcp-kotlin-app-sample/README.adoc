@@ -17,12 +17,12 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 2. Create a Google Cloud MySQL instance and a database within the instance.
 
 - You may create a Google Cloud MySQL instance on the https://console.cloud.google.com/sql/instances[Google Cloud Console Cloud SQL page].
-- In the same page, you may create a database within your Cloud SQL instance. Name your database `registrants`.
+- In the same page, you may create a database within your Cloud SQL instance.
+Name your database `registrants`.
 
 3. Create a Pub/Sub topic called `registrations` and a subscription for the topic called `registrations-sub`.
 
-- Go to the https://console.cloud.google.com/cloudpubsub/topicList[Google Cloud Console Pub/Sub topics page]
-and create a topic called `registrations`.
+- Go to the https://console.cloud.google.com/cloudpubsub/topicList[Google Cloud Console Pub/Sub topics page] and create a topic called `registrations`.
 
 - Still in the same page, locate the newly created topic, click the button with the three vertical dots at the end of the topic's line and click "New subscription".
 Create a new subscription called `registrations-sub` with all default parameters.

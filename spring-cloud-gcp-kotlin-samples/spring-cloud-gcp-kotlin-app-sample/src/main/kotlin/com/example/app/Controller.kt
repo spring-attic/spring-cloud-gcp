@@ -48,7 +48,7 @@ class Controller(val pubSubTemplate: PubSubTemplate, val personRepository: Perso
 	}
 
 	@GetMapping("/registrants")
-	fun registerPerson(): ModelAndView {
+	fun getRegistrants(): ModelAndView {
 		val personsList = personRepository.findAll().toList()
 
 		return ModelAndView("registrants", mapOf("personsList" to personsList))
