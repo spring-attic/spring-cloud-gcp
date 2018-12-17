@@ -109,6 +109,7 @@ public class ReceiverApplication {
 	@Configuration
 	@EnableAutoConfiguration
 	static class SyncPull {
+
 		@Bean
 		@InboundChannelAdapter(channel = "pubsubInputChannel", poller = @Poller(fixedDelay = "100"))
 		public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
@@ -130,4 +131,5 @@ public class ReceiverApplication {
 			message.ack();
 		}
 	}
+
 }
