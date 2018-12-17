@@ -50,7 +50,8 @@ import java.util.concurrent.TimeUnit
 		properties = [
 			"spring.datasource.password=test",
 			"spring.cloud.gcp.sql.instance-connection-name=spring-cloud-gcp-ci:us-central1:testmysql",
-			"spring.cloud.gcp.sql.database-name=code_samples_test_db"
+			"spring.cloud.gcp.sql.database-name=code_samples_test_db",
+			"spring.test.mockmvc.print=none"
 		]
 )
 class RegistrationApplicationTests {
