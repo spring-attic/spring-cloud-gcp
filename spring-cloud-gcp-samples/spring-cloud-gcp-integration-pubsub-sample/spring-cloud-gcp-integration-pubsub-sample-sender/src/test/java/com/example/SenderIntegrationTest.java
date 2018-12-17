@@ -69,6 +69,7 @@ public class SenderIntegrationTest {
 		String message = "test message " + UUID.randomUUID();
 
 		map.add("message", message);
+		map.add("times", 1);
 
 		this.restTemplate.postForObject("/postMessage", map, String.class);
 
@@ -80,7 +81,7 @@ public class SenderIntegrationTest {
 			messages.forEach(BasicAcknowledgeablePubsubMessage::ack);
 
 			if (messages.stream()
-					.anyMatch(m -> m.getPubsubMessage().getData().toStringUtf8().equals(message))) {
+					.anyMatch(m -> m.getPubsubMessage().getData().toStringUtf8().startsWith(message))) {
 				messageReceived = true;
 				break;
 			}

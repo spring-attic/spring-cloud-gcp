@@ -77,13 +77,14 @@ public class SampleAppIntegrationTest {
 				.properties("server.port=8082");
 		sender.run();
 
-		SpringApplicationBuilder receiver = new SpringApplicationBuilder(ReceiverApplication.class)
+		SpringApplicationBuilder receiver = new SpringApplicationBuilder(ReceiverApplication.StreamingPull.class)
 				.properties("server.port=8081");
 		receiver.run();
 
 		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 		String message = "test message " + UUID.randomUUID();
 		map.add("message", message);
+		map.add("times", 1);
 
 		this.restTemplate.postForObject("http://localhost:8082/postMessage", map, String.class);
 

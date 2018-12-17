@@ -40,8 +40,10 @@ public class WebController {
 	 * @param message the message posted to the Pub/Sub topic
 	 */
 	@PostMapping("/postMessage")
-	public RedirectView postMessage(@RequestParam("message") String message) {
-		this.messagingGateway.sendToPubSub(message);
+	public RedirectView postMessage(@RequestParam("message") String message, @RequestParam("times") int numTimes) {
+		for (int i = 0; i < numTimes; i++) {
+			this.messagingGateway.sendToPubSub(message + "(" + i + ")");
+		}
 		return new RedirectView("/");
 	}
 }
