@@ -18,10 +18,41 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 3. Still in the same page, locate the newly created topic, click the button with the three vertical dots at the end of the topic's line and click "New subscription".
 Create a new subscription called `exampleSubscription` with all default parameters.
 
-3. In separate terminal windows, start the `spring-cloud-gcp-spring-integration-pubsub-sample-sender` and `spring-cloud-gcp-spring-integration-pubsub-sample-receiver` applications with the `$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
+4. In separate terminal windows, start the `spring-cloud-gcp-spring-integration-pubsub-sample-sender` and `spring-cloud-gcp-spring-integration-pubsub-sample-receiver` applications with the `$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
 
-4. Go to http://localhost:8080, write a message in the text box and hit the `Submit` button.
+5. Go to http://localhost:8080, write a message in the text box and hit the `Submit` button.
 
-5. Verify that the receiver logged the message you wrote.
+6. Verify that the receiver logged the message you wrote.
 +
 `Message arrived! Payload: [message-entered]`
+
+
+=== Synchronous Pull Based Subscription.
+
+While `PubSubInboundChannelAdapter`, through the underlying Asynchronous Pull Pub/Sub mechanism, provides the best performance for high-volume applications that receive a steady flow of messages, it can create load balancing anomalies due to message caching.
+
+You can reproduce this behavior by starting up multiple instances of the Receiver sample app, and introducing a processing delay.
+
+The sample application accepts two command-line arguments to help demonstrate this behavior: `--delay` makes processing of each message take up an extra second, and `--syncpull` uses the pollable `PubSubMessageSource` implementation instead of the stream-based `PubSubInboundChannelAdapter`.
+
+1. Start the `spring-cloud-gcp-spring-integration-pubsub-sample-receiver` sample app.
+
+1. Open http://localhost:8080, write a message in the text box,  update the "times" text box to 40, and hit send. The messages will then be queued up, with no subscribers available to drain them yet.
+
+1. In two separate terminal windows, start the `spring-cloud-gcp-integration-pubsub-sample-receiver` sample application twice, both times introducing a delay:
+
+  mvn spring-boot:run -Dspring-boot.run.arguments=--delay
+
+1. Observe that only one receiver app greedily retrieved all 40 messages, while the second application is idle.
+
+1. Now stop both receiver apps, and then publish another 40 messages to the topic.
+
+1. Start the two receiver apps again, this time with the `PubSubMessageSource` implementation:
+
+  mvn spring-boot:run -Dspring-boot.run.arguments=--delay,--syncpull
+
+1. Observe that each receiver now gets about half of the messages, and complete the total work faster.
+
+For a more detailed explanation of this scenario, see https://cloud.google.com/pubsub/docs/pull#dealing-with-large-backlogs-of-small-messages[GCP Pub/Sub documentation].
+
+
