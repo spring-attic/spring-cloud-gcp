@@ -43,7 +43,6 @@ import org.springframework.cloud.gcp.core.MetadataProvider;
 import org.springframework.cloud.gcp.security.iap.AppEngineAudienceProvider;
 import org.springframework.cloud.gcp.security.iap.AudienceProvider;
 import org.springframework.cloud.gcp.security.iap.AudienceValidator;
-import org.springframework.cloud.gcp.security.iap.ComputeEngineAudienceProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
@@ -56,8 +55,6 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenResolv
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
@@ -109,7 +106,9 @@ public class IapAuthenticationAutoConfigurationTests {
 
 	@Test
 	public void testIapAutoconfiguredBeansExistInContext() {
-		this.contextRunner.run(this::verifyJwtBeans);
+		this.contextRunner
+				.withPropertyValues("spring.cloud.gcp.security.iap.audience=unused")
+				.run(this::verifyJwtBeans);
 	}
 
 	@Test
@@ -127,6 +126,7 @@ public class IapAuthenticationAutoConfigurationTests {
 	@Test
 	public void testIapBeansReturnedWhenBothIapAndSpringSecurityConfigPresent() {
 		new ApplicationContextRunner()
+				.withPropertyValues("spring.cloud.gcp.security.iap.audience=unused")
 				.withConfiguration(
 						AutoConfigurations.of(
 								IapAuthenticationAutoConfiguration.class,
@@ -139,6 +139,7 @@ public class IapAuthenticationAutoConfigurationTests {
 	public void testUserBeansReturnedUserConfigPresent() {
 		this.contextRunner
 				.withUserConfiguration(UserConfiguration.class)
+				.withPropertyValues("spring.cloud.gcp.security.iap.audience=unused")
 				.run(context -> {
 					JwtDecoder jwtDecoder =  context.getBean(JwtDecoder.class);
 					assertThat(jwtDecoder).isNotNull();
@@ -156,6 +157,7 @@ public class IapAuthenticationAutoConfigurationTests {
 	public void testCustomPropertyOverridesDefault() {
 		this.contextRunner
 				.withPropertyValues("spring.cloud.gcp.security.iap.header=some-other-header")
+				.withPropertyValues("spring.cloud.gcp.security.iap.audience=unused")
 				.run(context -> {
 					when(this.mockNonIapRequest.getHeader("some-other-header")).thenReturn("other header jwt");
 
@@ -167,17 +169,13 @@ public class IapAuthenticationAutoConfigurationTests {
 	}
 
 	@Test
-	public void testAudienceValidatorNotAddedWhenNotAvailable() throws Exception {
-		when(mockJwt.getExpiresAt()).thenReturn(Instant.now().plusSeconds(10));
-		when(mockJwt.getNotBefore()).thenReturn(Instant.now().minusSeconds(10));
-		when(mockJwt.getClaimAsString("iss")).thenReturn("https://cloud.google.com/iap");
-		verify(mockJwt, never()).getAudience();
+	public void testContextFailsWhenAudienceValidatorNotAvailable() throws Exception {
 
 		this.contextRunner
 				.run(context -> {
-					DelegatingOAuth2TokenValidator validator
-							= context.getBean("iapJwtDelegatingValidator", DelegatingOAuth2TokenValidator.class);
-					assertFalse(validator.validate(mockJwt).hasErrors());
+					assertThat(context).getFailure()
+							.hasCauseInstanceOf(NoSuchBeanDefinitionException.class)
+							.hasMessageContaining("No qualifying bean of type 'org.springframework.cloud.gcp.security.iap.AudienceProvider'");
 				});
 	}
 
@@ -211,20 +209,6 @@ public class IapAuthenticationAutoConfigurationTests {
 					AudienceProvider audienceProvider = context.getBean(AudienceProvider.class);
 					assertThat(audienceProvider).isNotNull();
 					assertThat(audienceProvider).isInstanceOf(AppEngineAudienceProvider.class);
-				});
-	}
-
-
-	@Test
-	public void testComputeEngineAudienceValidatorAddedWhenAvailable() {
-		when(this.mockEnvironmentProvider.getCurrentEnvironment()).thenReturn(GcpEnvironment.COMPUTE_ENGINE);
-
-		this.contextRunner
-				.withUserConfiguration(FixedAudienceValidatorConfiguration.class)
-				.run(context -> {
-					AudienceProvider audienceProvider = context.getBean(AudienceProvider.class);
-					assertThat(audienceProvider).isNotNull();
-					assertThat(audienceProvider).isInstanceOf(ComputeEngineAudienceProvider.class);
 				});
 	}
 

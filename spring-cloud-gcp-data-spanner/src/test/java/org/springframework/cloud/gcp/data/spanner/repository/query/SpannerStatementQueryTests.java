@@ -29,6 +29,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerTemplate;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
+import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerWriteConverter;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Column;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
@@ -66,6 +68,9 @@ public class SpannerStatementQueryTests {
 	public void initMocks() {
 		this.queryMethod = mock(SpannerQueryMethod.class);
 		this.spannerTemplate = mock(SpannerTemplate.class);
+		SpannerEntityProcessor spannerEntityProcessor = mock(SpannerEntityProcessor.class);
+		when(this.spannerTemplate.getSpannerEntityProcessor()).thenReturn(spannerEntityProcessor);
+		when(spannerEntityProcessor.getWriteConverter()).thenReturn(new SpannerWriteConverter());
 		this.spannerMappingContext = new SpannerMappingContext();
 	}
 
@@ -82,7 +87,10 @@ public class SpannerStatementQueryTests {
 						+ "AndPriceGreaterThanAndPriceLessThanEqualOrderByIdDesc");
 		this.partTreeSpannerQuery = spy(createQuery());
 
-		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, "ignored",
+		Object[] params = new Object[] { Trade.Action.BUY, "abcd", "abc123",
+				8, // an int is not a natively supported type, and is intentionally used to use custom
+					// converters
+				3.33, "ignored",
 				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
 
 		when(this.spannerTemplate.query((Class<Object>) any(), any(), any()))
@@ -100,10 +108,10 @@ public class SpannerStatementQueryTests {
 
 					Map<String, Value> paramMap = statement.getParameters();
 
-					assertEquals(params[0], paramMap.get("tag0").getString());
+					assertEquals(params[0].toString(), paramMap.get("tag0").getString());
 					assertEquals(params[1], paramMap.get("tag1").getString());
 					assertEquals(params[2], paramMap.get("tag2").getString());
-					assertEquals(params[3], paramMap.get("tag3").getFloat64());
+					assertEquals(8L, paramMap.get("tag3").getInt64());
 					assertEquals(params[4], paramMap.get("tag4").getFloat64());
 					assertEquals(params[5], paramMap.get("tag5").getString());
 					assertEquals(params[6], paramMap.get("tag6").getString());
@@ -136,7 +144,7 @@ public class SpannerStatementQueryTests {
 		when(this.spannerTemplate.query((Function<Struct, Object>) any(), any(), any()))
 				.thenReturn(Collections.singletonList(1L));
 
-		Object[] params = new Object[] { "BUY", "abcd", "abc123", 8.88, 3.33, "ignored",
+		Object[] params = new Object[] { Trade.Action.BUY, "abcd", "abc123", 8.88, 3.33, "ignored",
 				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
 
 		when(this.spannerTemplate.query((Function<Struct, Object>) any(), any(), any()))
@@ -154,7 +162,7 @@ public class SpannerStatementQueryTests {
 
 			Map<String, Value> paramMap = statement.getParameters();
 
-			assertEquals(params[0], paramMap.get("tag0").getString());
+			assertEquals(params[0].toString(), paramMap.get("tag0").getString());
 			assertEquals(params[1], paramMap.get("tag1").getString());
 			assertEquals(params[2], paramMap.get("tag2").getString());
 			assertEquals(params[3], paramMap.get("tag3").getFloat64());
@@ -226,7 +234,7 @@ public class SpannerStatementQueryTests {
 		@PrimaryKey
 		String id;
 
-		String action;
+		Action action;
 
 		Double price;
 
@@ -237,5 +245,10 @@ public class SpannerStatementQueryTests {
 
 		@Column(name = "trader_id")
 		String traderId;
+
+		enum Action {
+			BUY,
+			SELL
+		}
 	}
 }

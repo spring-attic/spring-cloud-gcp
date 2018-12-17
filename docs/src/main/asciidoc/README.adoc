@@ -1,18 +1,98 @@
+= Spring Framework on Google Cloud Platform
 
-Spring Cloud for Google Cloud Platform is a part of the Spring Cloud project and it makes integration with Google Cloud Platform (GCP) easy.
-It offers a convenient way to interact with GCP services using well-known Spring idioms and APIs.
+This project makes it easy for Spring users to run their applications on Google Cloud Platform.
+You can check our project website http://cloud.spring.io/spring-cloud-gcp[here].
 
-== Features
+For a deep dive into the project, refer to the https://docs.spring.io/spring-cloud-gcp/docs/1.0.0.RELEASE/reference/htmlsingle/[Spring Cloud GCP 1.0 Reference Document].
 
-* PubSub
-* Storage
-* SQL
-* Trace
-* Logging
-* Cloud Config
-* Cloud Spanner
-* Cloud Datastore
-* Cloud Foundry
-* MemoryStore
-* Security IAP
-* Vision
+If you prefer to learn by doing, try https://codelabs.developers.google.com/spring[Spring on GCP codelabs].
+
+Currently, this repository provides support for:
+
+* link:spring-cloud-gcp-pubsub[Spring Cloud GCP Pub/Sub, including Spring Integration Channel Adapters]
+* link:spring-cloud-gcp-pubsub-stream-binder[Spring Cloud GCP Pub/Sub Stream Binder]
+* link:spring-cloud-gcp-storage[Spring Resource Abstraction for Google Cloud Storage, including Spring Integration Channel Adapters]
+* link:spring-cloud-gcp-data-spanner[Spring Data Cloud Spanner]
+* link:spring-cloud-gcp-data-datastore[Spring Data Cloud Datastore]
+* Spring Boot starters
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter[GCP Support]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Google Cloud Config] (v1.1)
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Google Cloud Spanner] (v1.1)
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Google Cloud Datastore] (v1.1)
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[Google Cloud Logging]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-pubsub[Google Cloud Pub/Sub]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-mysql[Google Cloud SQL MySQL]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-postgres[Google Cloud SQL PostgreSQL]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-storage[Google Cloud Storage]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-trace[Stackdriver Trace with Spring Cloud Sleuth]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-iap[Google Cloud IAP Authentication]
+
+If you have any other ideas, suggestions or bug reports, please use our https://github.com/spring-cloud/spring-cloud-gcp/issues[GitHub issue tracker] and let us know!
+We would love to hear from you.
+
+If you want to collaborate in the project, we would also love to get your Pull Requests.
+Before you start working on one, please take a look at our link:CONTRIBUTING.adoc[collaboration manual].
+
+== Spring Initializr
+
+Spring Initializr contains Spring Cloud GCP auto-configuration support through the `GCP Support` entry.
+
+`GCP Messaging` contains the Spring Cloud GCP messaging support with Google Cloud Pub/Sub working out of the box.
+
+Similarly to `GCP Messaging`, `GCP Storage` contains the Google Cloud Storage support with no other dependencies needed.
+
+== Spring Cloud GCP Bill of Materials (BOM)
+
+If you're a Maven user, add our BOM to your pom.xml `<dependencyManagement>` section.
+This will allow you to not specify versions for any of the Maven dependencies and instead delegate versioning to the BOM.
+
+[source,xml]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-gcp-dependencies</artifactId>
+            <version>1.0.0.RELEASE</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+
+== Spring Milestones Maven Repository
+
+The latest non-GA Maven artifacts for the project are only available in the Spring Milestones repository.
+You will want to make sure that the repository is added to your `pom.xml` file or globally in your https://maven.apache.org/settings.html[`settings.xml`] file.
+
+[source,xml]
+----
+<repositories>
+    <repository>
+        <id>spring-milestones</id>
+        <name>Spring Milestones</name>
+        <url>https://repo.spring.io/milestone</url>
+    </repository>
+</repositories>
+----
+
+== Spring Boot Starters
+
+Spring Boot greatly simplifies the Spring Cloud GCP experience.
+Our starters handle the object instantiation and configuration logic so you don't have to.
+
+Every starter depends on the GCP starter to provide critical bits of configuration, like the GCP project ID or OAuth2 credentials location.
+You can configure these as properties in, for example, a properties file:
+
+[source, yaml]
+----
+spring.cloud.gcp.project-id=[YOUR_GCP_PROJECT_ID]
+spring.cloud.gcp.credentials.location=file:[LOCAL_PRIVATE_KEY_FILE]
+spring.cloud.gcp.credentials.scopes=[SCOPE_1],[SCOPE_2],[SCOPE_3]
+----
+
+These properties are optional and, if not specified, Spring Boot will attempt to automatically find them for you.
+For details on how Spring Boot finds these properties, refer to the http://cloud.spring.io/spring-cloud-gcp[documentation].
+
+NOTE: If your app is running on Google App Engine or Google Compute Engine, in most cases, you should omit the `spring.cloud.gcp.credentials.location` property and, instead, let the Spring Cloud GCP Core Starter find the correct credentials for those environments.

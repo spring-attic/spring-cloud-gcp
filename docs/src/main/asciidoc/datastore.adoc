@@ -181,8 +181,9 @@ public class Trade {
 ----
 
 
-Datastore has automatic ID allocation. If a POJO instance is written to Cloud Datastore with `null` as the ID value, then Spring Data Cloud Datastore will obtain a newly allocated ID value from Cloud Datastore and set that in the POJO for saving.
-
+Datastore has automatic ID allocation.
+If a POJO instance is written to Cloud Datastore with `null` as the ID value, then Spring Data Cloud Datastore will obtain a newly allocated ID value from Cloud Datastore and set that in the POJO for saving.
+Because primitive `long` ID properties cannot be `null` and default to `0`, keys will not be allocated.
 
 ==== Fields
 

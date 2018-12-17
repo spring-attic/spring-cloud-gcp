@@ -12,9 +12,15 @@ The following claims are validated automatically:
  * Issue time
  * Expiration time
  * Issuer
+ * Audience
 
-Additionally, Audience (`"aud"`) validation is enabled when the application is running on AppEngine/ComputeEngine/Kubernetes, or when a custom audience is provided through `spring.cloud.gcp.security.iap.audience` property.
-The custom property overrides automatic environment-based checks.
+The audience (`"aud"`) validation is automatically configured when the application is running on App Engine Standard or App Engine Flexible.
+For other runtime environments, a custom audience must be provided through `spring.cloud.gcp.security.iap.audience` property.
+The custom property, if specified, overrides the automatic App Engine audience detection.
+
+IMPORTANT: There is no automatic audience string configuration for Compute Engine or Kubernetes Engine.
+To use the IAP starter on GCE/GKE, find the Audience string per instructions in the https://cloud.google.com/iap/docs/signed-headers-howto#verify_the_jwt_payload[Verify the JWT payload] guide, and specify it in the `spring.cloud.gcp.security.iap.audience` property.
+Otherwise, the application will fail to start with `No qualifying bean of type 'org.springframework.cloud.gcp.security.iap.AudienceProvider' available` message.
 
 NOTE: If you create a custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`], enable extracting user identity by adding `.oauth2ResourceServer().jwt()` configuration to the {spring-security-javadoc}config/annotation/web/builders/HttpSecurity.html[`HttpSecurity`] object.
  If no custom {spring-security-javadoc}config/annotation/web/configuration/WebSecurityConfigurerAdapter.html[`WebSecurityConfigurerAdapter`] is present, nothing needs to be done because Spring Boot will add this customization by default.
@@ -68,8 +74,7 @@ CAUTION: Modifying registry, algorithm, and header properties might be useful fo
 
 |`spring.cloud.gcp.security.iap.audience`
 |Custom JWK audience to verify.
-Note that without this option, the audience is automatically determined for applications deployed to App Engine/Compute Engine/Kubernetes Engine.
-|false
+|false on App Engine; true on GCE/GKE
 |
 
 |===

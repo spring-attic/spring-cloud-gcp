@@ -26,7 +26,11 @@ import org.springframework.util.CollectionUtils;
  *
  * @since 1.1
  */
-public class ValueUtil {
+public final class ValueUtil {
+
+	private ValueUtil() {
+	}
+
 	public static Object toListIfArray(Object val) {
 		if (val != null && isArrayOfItems(val.getClass())) {
 			//if a property is an array, convert it to list

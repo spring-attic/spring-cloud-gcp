@@ -205,7 +205,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 		Struct struct = Struct.newBuilder().set("id").to(Value.string("key1")).set("id2")
 				.to(Value.string("key2")).set("id3").to(Value.string("key3")).set("id4")
 				.to(Value.string("key4")).set("intField2").to(Value.int64(333L))
-				.set("custom_col").to(Value.string("string1")).set("booleanField")
+				.set("custom_col").to(Value.string("WHITE")).set("booleanField")
 				.to(Value.bool(true)).set("longField").to(Value.int64(3L))
 				.set("doubleField").to(Value.string("UNCONVERTABLE VALUE"))
 				.set("doubleArray")
