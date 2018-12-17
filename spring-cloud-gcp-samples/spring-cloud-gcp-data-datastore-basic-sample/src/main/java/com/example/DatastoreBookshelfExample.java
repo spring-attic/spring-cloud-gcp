@@ -59,7 +59,7 @@ public class DatastoreBookshelfExample {
 		return books.toString();
 	}
 
-	@ShellMethod("Loads books by year: find-by-year-greater-than <year>")
+	@ShellMethod("Loads books released after a specified year: find-by-year-greater-than <year>")
 	public String findByYearGreaterThan(int year) {
 		List<Book> books = this.bookRepository.findByYearGreaterThan(year);
 		return books.toString();
