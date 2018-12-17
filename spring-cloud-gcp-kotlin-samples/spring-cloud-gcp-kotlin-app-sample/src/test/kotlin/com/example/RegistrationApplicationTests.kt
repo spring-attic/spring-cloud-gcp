@@ -23,6 +23,7 @@ import org.awaitility.Awaitility.await
 import org.hamcrest.Matchers.`is`
 import org.junit.Assume.assumeThat
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -61,12 +62,17 @@ class RegistrationApplicationTests {
 	@Autowired
 	private lateinit var mockMvc: MockMvc
 
-	@Before
-	fun prepare() {
-		assumeThat<String>(
-				"Kotlin Sample app tests are disabled. Please use '-Dit.kotlin=true' to enable them.",
-				System.getProperty("it.kotlin"), `is`("true"))
+	companion object {
+
+		@BeforeClass
+		@JvmStatic
+		fun prepare() {
+			assumeThat<String>(
+					"Kotlin Sample app tests are disabled. Please use '-Dit.kotlin=true' to enable them.",
+					System.getProperty("it.kotlin"), `is`("true"))
+		}
 	}
+
 	@Test
 	fun testRegisterPersonSuccessful() {
 		this.mockMvc.perform(post(REGISTER_USER_URL))
