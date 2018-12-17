@@ -5,8 +5,8 @@ It sets up a registration service in which a someone publishes registrant names 
 
 This application demonstrates the following Spring Cloud GCP integrations:
 
-- Cloud Pub/Sub
-- Cloud SQL
+- Cloud Pub/Sub (with Spring Integration)
+- Cloud SQL (with Spring Data JPA)
 
 == Setup
 
