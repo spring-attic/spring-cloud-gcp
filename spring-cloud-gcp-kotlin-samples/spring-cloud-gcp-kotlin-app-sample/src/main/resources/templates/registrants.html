@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Registrants List</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+</head>
+<body>
+<h1>Registrants List</h1>
+<p>
+  This page displays all the people who were registered through the Pub/Sub topic.
+  All results are retrieved from the MySQL database.
+</p>
+<table border="1">
+  <tr>
+    <th>First Name</th>
+    <th>Last Name</th>
+    <th>Email</th>
+  </tr>
+  <tr th:each="person : ${personsList}">
+    <td>[[${person.firstName}]]</td>
+    <td>[[${person.lastName}]]</td>
+    <td>[[${person.email}]]</td>
+  </tr>
+</table>
+
+</body>
+</html>
