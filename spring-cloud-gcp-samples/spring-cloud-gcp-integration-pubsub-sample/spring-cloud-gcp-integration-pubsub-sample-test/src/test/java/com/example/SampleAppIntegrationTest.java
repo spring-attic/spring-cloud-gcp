@@ -74,7 +74,7 @@ public class SampleAppIntegrationTest {
 				.properties("server.port=8082");
 		sender.run();
 
-		SpringApplicationBuilder receiver = new SpringApplicationBuilder(ReceiverApplication.StreamingPull.class)
+		SpringApplicationBuilder receiver = new SpringApplicationBuilder(ReceiverApplication.class)
 				.properties("server.port=8081");
 		receiver.run();
 
