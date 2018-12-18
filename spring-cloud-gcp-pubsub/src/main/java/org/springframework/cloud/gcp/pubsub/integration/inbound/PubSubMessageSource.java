@@ -81,7 +81,7 @@ public class PubSubMessageSource extends AbstractMessageSource<Object> {
 			return null;
 		}
 
-		Assert.isTrue(messages.size() == 1, "Only one Pub/Sub message expected.");
+		Assert.state(messages.size() == 1, "Only one Pub/Sub message expected.");
 		ConvertedAcknowledgeablePubsubMessage message = messages.get(0);
 
 		Map<String, Object> messageHeaders =
