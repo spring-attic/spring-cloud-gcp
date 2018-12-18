@@ -19,9 +19,6 @@ package org.springframework.cloud.gcp.pubsub.integration.inbound;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOperations;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
@@ -43,8 +40,6 @@ import org.springframework.util.Assert;
  */
 public class PubSubMessageSource extends AbstractMessageSource<Object> {
 
-	private static final Log LOGGER = LogFactory.getLog(PubSubMessageSource.class);
-
 	private final String subscriptionName;
 
 	private final PubSubSubscriberOperations pubSubSubscriberOperations;
@@ -62,27 +57,18 @@ public class PubSubMessageSource extends AbstractMessageSource<Object> {
 		this.subscriptionName = subscriptionName;
 	}
 
-	public AckMode getAckMode() {
-		return this.ackMode;
-	}
-
 	public void setAckMode(AckMode ackMode) {
+		Assert.notNull(ackMode, "The acknowledgement mode can't be null.");
 		this.ackMode = ackMode;
 	}
 
-	public Class getPayloadType() {
-		return this.payloadType;
-	}
-
 	public void setPayloadType(Class payloadType) {
+		Assert.notNull(payloadType, "The payload type cannot be null.");
 		this.payloadType = payloadType;
 	}
 
-	public HeaderMapper<Map<String, String>> getHeaderMapper() {
-		return this.headerMapper;
-	}
-
 	public void setHeaderMapper(HeaderMapper<Map<String, String>> headerMapper) {
+		Assert.notNull(headerMapper, "The header mapper can't be null.");
 		this.headerMapper = headerMapper;
 	}
 
@@ -91,14 +77,11 @@ public class PubSubMessageSource extends AbstractMessageSource<Object> {
 		List<ConvertedAcknowledgeablePubsubMessage> messages
 				= this.pubSubSubscriberOperations.pullAndConvert(this.subscriptionName, 1, true, this.payloadType);
 
-		if (messages.size() < 1) {
+		if (messages.isEmpty()) {
 			return null;
 		}
 
-		if (messages.size() > 1) {
-			LOGGER.warn("One message expected; " + messages.size() + " received. Returning the first one.");
-		}
-
+		Assert.isTrue(messages.size() == 1, "Only one Pub/Sub message expected.");
 		ConvertedAcknowledgeablePubsubMessage message = messages.get(0);
 
 		Map<String, Object> messageHeaders =
@@ -122,4 +105,5 @@ public class PubSubMessageSource extends AbstractMessageSource<Object> {
 	public String getComponentType() {
 		return "gcp-pubsub:message-source";
 	}
+
 }

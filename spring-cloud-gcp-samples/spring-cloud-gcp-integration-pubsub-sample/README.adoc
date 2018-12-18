@@ -27,7 +27,7 @@ Create a new subscription called `exampleSubscription` with all default paramete
 `Message arrived! Payload: [message-entered]`
 
 
-=== Synchronous Pull Based Subscription.
+=== Synchronous Pull Based Subscription
 
 While `PubSubInboundChannelAdapter`, through the underlying Asynchronous Pull Pub/Sub mechanism, provides the best performance for high-volume applications that receive a steady flow of messages, it can create load balancing anomalies due to message caching.
 
