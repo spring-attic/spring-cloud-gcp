@@ -50,7 +50,6 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Dmitry Solomakha
@@ -601,19 +600,17 @@ public class DefaultDatastoreEntityConverterTests {
 
 		assertThat(((BaseEntity) embeddedMapValuesEmbeddedEntityA.get(0).get())
 				.getString("stringField")).isEqualTo("item 0");
-		assertEquals(1, embeddedMapValuesEmbeddedEntityA.size());
+		assertThat(embeddedMapValuesEmbeddedEntityA.size()).isEqualTo(1);
 
 		assertThat(((BaseEntity) embeddedMapValuesEmbeddedEntityB.get(0).get())
 				.getString("stringField")).isEqualTo("item 1");
-		assertEquals(1, embeddedMapValuesEmbeddedEntityB.size());
+		assertThat(embeddedMapValuesEmbeddedEntityB.size()).isEqualTo(1);
 
 		TestItemWithEmbeddedEntity read = entityConverter
 				.read(TestItemWithEmbeddedEntity.class, entity);
 
-		assertEquals("valueA",
-				read.getNestedEmbeddedMaps().get("outer1").get(1L).get("a"));
-		assertEquals("valueB",
-				read.getNestedEmbeddedMaps().get("outer1").get(1L).get("b"));
+		assertThat(read.getNestedEmbeddedMaps().get("outer1").get(1L).get("a")).isEqualTo("valueA");
+		assertThat(read.getNestedEmbeddedMaps().get("outer1").get(1L).get("b")).isEqualTo("valueB");
 
 		assertThat(read).as("read objects equals the original one").isEqualTo(item);
 	}

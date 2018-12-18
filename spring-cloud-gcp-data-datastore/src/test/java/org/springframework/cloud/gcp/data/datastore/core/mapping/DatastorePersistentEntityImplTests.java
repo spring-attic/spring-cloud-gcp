@@ -28,11 +28,7 @@ import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.expression.spel.SpelEvaluationException;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -48,8 +44,7 @@ public class DatastorePersistentEntityImplTests {
 	public void testTableName() {
 		DatastorePersistentEntityImpl<TestEntity> entity = new DatastorePersistentEntityImpl<>(
 				ClassTypeInformation.from(TestEntity.class));
-
-		assertThat(entity.kindName(), is("custom_test_kind"));
+		assertThat(entity.kindName()).isEqualTo("custom_test_kind");
 	}
 
 	@Test
@@ -57,7 +52,7 @@ public class DatastorePersistentEntityImplTests {
 		DatastorePersistentEntityImpl<EntityNoCustomName> entity = new DatastorePersistentEntityImpl<>(
 				ClassTypeInformation.from(EntityNoCustomName.class));
 
-		assertThat(entity.kindName(), is("entityNoCustomName"));
+		assertThat(entity.kindName()).isEqualTo("entityNoCustomName");
 	}
 
 	@Test
@@ -65,7 +60,7 @@ public class DatastorePersistentEntityImplTests {
 		DatastorePersistentEntityImpl<EntityEmptyCustomName> entity = new DatastorePersistentEntityImpl<>(
 				ClassTypeInformation.from(EntityEmptyCustomName.class));
 
-		assertThat(entity.kindName(), is("entityEmptyCustomName"));
+		assertThat(entity.kindName()).isEqualTo("entityEmptyCustomName");
 	}
 
 	@Test
@@ -88,19 +83,18 @@ public class DatastorePersistentEntityImplTests {
 		when(applicationContext.containsBean("kindPostfix")).thenReturn(true);
 
 		entity.setApplicationContext(applicationContext);
-		assertThat(entity.kindName(), is("kind_something"));
+		assertThat(entity.kindName()).isEqualTo("kind_something");
 	}
 
 	@Test
 	public void testHasIdProperty() {
-		assertTrue(new DatastoreMappingContext().getPersistentEntity(TestEntity.class)
-				.hasIdProperty());
+		assertThat(new DatastoreMappingContext().getPersistentEntity(TestEntity.class)
+				.hasIdProperty()).isTrue();
 	}
 
 	@Test
 	public void testHasNoIdProperty() {
-		assertFalse(new DatastoreMappingContext()
-				.getPersistentEntity(EntityWithNoId.class).hasIdProperty());
+		assertThat(new DatastoreMappingContext().getPersistentEntity(EntityWithNoId.class).hasIdProperty()).isFalse();
 	}
 
 	@Test
@@ -122,8 +116,9 @@ public class DatastorePersistentEntityImplTests {
 		DatastorePersistentEntity p = new DatastoreMappingContext()
 				.getPersistentEntity(TestEntity.class);
 		PersistentPropertyAccessor accessor = p.getPropertyAccessor(t);
-		p.doWithProperties((SimplePropertyHandler) property -> assertNotEquals("b",
-				accessor.getProperty(property)));
+
+		p.doWithProperties(
+				(SimplePropertyHandler) property -> assertThat(accessor.getProperty(property)).isNotEqualTo("b"));
 	}
 
 	@Entity(name = "custom_test_kind")
