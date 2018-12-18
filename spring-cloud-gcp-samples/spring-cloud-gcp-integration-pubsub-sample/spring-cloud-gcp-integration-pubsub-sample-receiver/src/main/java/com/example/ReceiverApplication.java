@@ -25,7 +25,8 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundChannelAdapter;
@@ -33,7 +34,6 @@ import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubMessageSou
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.annotation.InboundChannelAdapter;
 import org.springframework.integration.annotation.Poller;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -59,6 +59,7 @@ import org.springframework.messaging.handler.annotation.Header;
  *
  * @since 1.1
  */
+@SpringBootApplication
 public class ReceiverApplication {
 
 	private static final Log LOGGER = LogFactory.getLog(ReceiverApplication.class);
@@ -67,15 +68,13 @@ public class ReceiverApplication {
 
 	public static void main(String[] args) {
 		Set<String> argSet = Arrays.stream(args).map(String::toLowerCase).collect(Collectors.toSet());
-		Class configClass = argSet.contains("--syncpull") ? SyncPull.class : StreamingPull.class;
 		delayAcknoledgement = argSet.contains("--delay");
 
-		LOGGER.info("Starting receiver with " + configClass + "with " + (delayAcknoledgement ? "delay" : "no delay"));
-		SpringApplication.run(configClass, args);
+		LOGGER.info("Starting receiver with " + (delayAcknoledgement ? "delay" : "no delay"));
+		SpringApplication.run(ReceiverApplication.class, args);
 	}
 
-	@Configuration
-	@EnableAutoConfiguration
+	@ConditionalOnProperty(value = "syncpull", havingValue = "false", matchIfMissing = true)
 	static class StreamingPull {
 		@Bean
 		public MessageChannel pubsubInputChannel() {
@@ -106,8 +105,7 @@ public class ReceiverApplication {
 		}
 	}
 
-	@Configuration
-	@EnableAutoConfiguration
+	@ConditionalOnProperty("syncpull")
 	static class SyncPull {
 
 		@Bean
