@@ -76,7 +76,7 @@ public class SpannerMutationFactoryImplTests {
 		List<Mutation> mutations = writeFunc.apply(t);
 		t.id = "a";
 		Mutation parentMutation = mutations.get(0);
-		assertThat(mutations.size()).isEqualTo(1);
+		assertThat(mutations).hasSize(1);
 		assertThat(parentMutation.getTable()).isEqualTo("custom_test_table");
 		assertThat(parentMutation.getOperation()).isEqualTo(writeMethod);
 		ChildEntity c1 = new ChildEntity();
@@ -90,7 +90,7 @@ public class SpannerMutationFactoryImplTests {
 		t.childEntities = Arrays.asList(c1, c2);
 		mutations = writeFunc.apply(t);
 		parentMutation = mutations.get(0);
-		assertThat(mutations.size()).isEqualTo(3);
+		assertThat(mutations).hasSize(3);
 		List<Mutation> childMutations = mutations.subList(1, mutations.size());
 		assertThat(parentMutation.getTable()).isEqualTo("custom_test_table");
 		assertThat(parentMutation.getOperation()).isEqualTo(writeMethod);

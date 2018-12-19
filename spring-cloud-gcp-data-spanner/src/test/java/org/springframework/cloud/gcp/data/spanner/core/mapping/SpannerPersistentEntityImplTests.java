@@ -136,7 +136,7 @@ public class SpannerPersistentEntityImplTests {
 	@Test
 	public void testGetIdProperty() {
 		assertThat(new SpannerMappingContext().getPersistentEntity(TestEntity.class)
-				.getIdProperty() instanceof SpannerCompositeKeyProperty).isTrue();
+				.getIdProperty()).isInstanceOf(SpannerCompositeKeyProperty.class);
 	}
 
 	@Test

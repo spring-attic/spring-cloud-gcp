@@ -183,7 +183,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 
 		verify(results, times(1)).close();
 
-		assertThat(entities.size()).isEqualTo(2);
+		assertThat(entities).hasSize(2);
 
 		TestEntity t1 = entities.get(0);
 		TestEntity t2 = entities.get(1);
@@ -215,7 +215,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		assertThat(t2.doubleField).isEqualTo(5.55, DELTA);
 		assertThat(t2.doubleArray.length).isEqualTo(2);
 		assertThat(t2.dateField.getYear()).isEqualTo(2019);
-		assertThat(t2.doubleList.size()).isEqualTo(1);
+		assertThat(t2.doubleList).hasSize(1);
 		assertThat(t2.doubleList.get(0)).isEqualTo(3.33, DELTA);
 		assertThat(t2.momentsInTime).isEqualTo(instants);
 		assertThat(t2.stringList).contains("string");
@@ -252,7 +252,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 
 		verify(results, times(1)).close();
 
-		assertThat(entities.size()).isEqualTo(2);
+		assertThat(entities).hasSize(2);
 
 		TestEntity t1 = entities.get(0);
 		TestEntity t2 = entities.get(1);

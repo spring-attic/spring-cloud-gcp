@@ -89,7 +89,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		List<Trade> deletedBySymbol = this.tradeRepository.deleteBySymbol("ABCD");
 
-		assertThat(deletedBySymbol.size()).isEqualTo(5);
+		assertThat(deletedBySymbol).hasSize(5);
 
 		assertThat(this.tradeRepository.count()).isEqualTo(0L);
 
@@ -122,7 +122,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		List<TradeProjection> tradeProjectionsRetrieved = this.tradeRepository
 				.findByActionIgnoreCase("bUy");
-		assertThat(tradeProjectionsRetrieved.size()).isEqualTo(3);
+		assertThat(tradeProjectionsRetrieved).hasSize(3);
 		for (TradeProjection tradeProjection : tradeProjectionsRetrieved) {
 			assertThat(tradeProjection.getAction()).isEqualTo("BUY");
 			assertThat(tradeProjection.getSymbolAndAction()).isEqualTo("ABCD BUY");
@@ -131,7 +131,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		List<Trade> tradesReceivedPage0 = this.tradeRepository
 				.findAll(PageRequest.of(0, 3, Sort.by(Order.asc("id"))))
 				.getContent();
-		assertThat(tradesReceivedPage0.size()).isEqualTo(3);
+		assertThat(tradesReceivedPage0).hasSize(3);
 		assertThat(tradesReceivedPage0.get(0).getId()
 				.compareTo(tradesReceivedPage0.get(1).getId()) < 0).isTrue();
 		assertThat(tradesReceivedPage0.get(1).getId()
@@ -140,7 +140,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		List<Trade> tradesReceivedPage1 = this.tradeRepository
 				.findAll(PageRequest.of(1, 3, Sort.by(Order.asc("id"))))
 				.getContent();
-		assertThat(tradesReceivedPage1.size()).isEqualTo(3);
+		assertThat(tradesReceivedPage1).hasSize(3);
 		assertThat(tradesReceivedPage0.get(2).getId()
 				.compareTo(tradesReceivedPage1.get(0).getId()) < 0).isTrue();
 		assertThat(tradesReceivedPage1.get(0).getId()
@@ -151,7 +151,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		List<Trade> tradesReceivedPage2 = this.tradeRepository
 				.findAll(PageRequest.of(2, 3, Sort.by(Order.asc("id"))))
 				.getContent();
-		assertThat(tradesReceivedPage2.size()).isEqualTo(2);
+		assertThat(tradesReceivedPage2).hasSize(2);
 		assertThat(tradesReceivedPage1.get(2).getId()
 				.compareTo(tradesReceivedPage2.get(0).getId()) < 0).isTrue();
 		assertThat(tradesReceivedPage2.get(0).getId()
@@ -164,7 +164,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		List<Trade> customSortedTrades = this.tradeRepository.sortedTrades(PageRequest
 				.of(2, 2, org.springframework.data.domain.Sort.by(Order.asc("id"))));
 
-		assertThat(customSortedTrades.size()).isEqualTo(2);
+		assertThat(customSortedTrades).hasSize(2);
 		assertThat(customSortedTrades.get(0).getId()
 				.compareTo(customSortedTrades.get(1).getId()) < 0).isTrue();
 
@@ -180,7 +180,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				.findBySymbolAndActionPojo(new SymbolAction("ABCD", "BUY"))).hasSize(3);
 		assertThat(this.tradeRepository.findBySymbolAndActionStruct(Struct.newBuilder()
 						.set("symbol").to("ABCD").set("action").to("BUY").build())
-				.size()).isEqualTo(3);
+				).hasSize(3);
 
 		// testing setting some columns to null.
 		Trade someTrade = this.tradeRepository.findBySymbolContains("ABCD").get(0);
@@ -194,7 +194,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		assertThat(someTrade.getSymbol()).isNull();
 
 		// testing parent-child relationships
-		assertThat(someTrade.getSubTrades().size()).isEqualTo(0);
+		assertThat(someTrade.getSubTrades()).hasSize(0);
 		SubTrade subTrade1 = new SubTrade(someTrade.getTradeDetail().getId(),
 				someTrade.getTraderId(), "subTrade1");
 		SubTrade subTrade2 = new SubTrade(someTrade.getTradeDetail().getId(),
@@ -224,9 +224,9 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		someTrade = this.tradeRepository
 				.findById(this.spannerSchemaUtils.getKey(someTrade)).get();
-		assertThat(someTrade.getSubTrades().size()).isEqualTo(1);
+		assertThat(someTrade.getSubTrades()).hasSize(1);
 		assertThat(someTrade.getSubTrades().get(0).getSubTradeId()).isEqualTo("subTrade2");
-		assertThat(someTrade.getSubTrades().get(0).getSubTradeComponentList().size()).isEqualTo(2);
+		assertThat(someTrade.getSubTrades().get(0).getSubTradeComponentList()).hasSize(2);
 
 		this.tradeRepository.delete(someTrade);
 

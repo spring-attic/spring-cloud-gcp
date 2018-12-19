@@ -108,7 +108,7 @@ public class SpannerRepositoryFactoryTests {
 	public void getQueryLookupStrategyTest() {
 		Optional<QueryLookupStrategy> qls = this.spannerRepositoryFactory
 				.getQueryLookupStrategy(null, mock(QueryMethodEvaluationContextProvider.class));
-		assertThat(qls.get() instanceof SpannerQueryLookupStrategy).isTrue();
+		assertThat(qls.get()).isInstanceOf(SpannerQueryLookupStrategy.class);
 	}
 
 	@Table(name = "custom_test_table")

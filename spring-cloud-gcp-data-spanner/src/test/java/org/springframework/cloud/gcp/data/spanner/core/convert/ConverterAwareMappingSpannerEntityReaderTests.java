@@ -83,7 +83,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 		OuterTestEntity result = this.spannerEntityReader.read(OuterTestEntity.class,
 				outerStruct, null, true);
 		assertThat(result.id).isEqualTo("key1");
-		assertThat(result.innerTestEntities.size()).isEqualTo(1);
+		assertThat(result.innerTestEntities).hasSize(1);
 		assertThat(result.innerTestEntities.get(0).value).isEqualTo("inner-value");
 		assertThat(result.innerTestEntities.get(0).missingColumnValue).isNull();
 	}
@@ -101,7 +101,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 		OuterTestHoldingStructsEntity result = this.spannerEntityReader
 				.read(OuterTestHoldingStructsEntity.class, outerStruct);
 		assertThat(result.id).isEqualTo("key1");
-		assertThat(result.innerStructs.size()).isEqualTo(1);
+		assertThat(result.innerStructs).hasSize(1);
 		assertThat(result.innerStructs.get(0).getString("value")).isEqualTo("inner-value");
 	}
 
@@ -172,7 +172,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 					}
 				}))).read(OuterTestEntityFlat.class, rowStruct);
 		assertThat(result.id).isEqualTo("key1");
-		assertThat(result.innerLengths.size()).isEqualTo(1);
+		assertThat(result.innerLengths).hasSize(1);
 		assertThat(result.innerLengths.get(0)).isEqualTo(5);
 	}
 
