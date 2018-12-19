@@ -22,8 +22,7 @@ import java.util.List;
 import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author João André Martins
@@ -34,23 +33,23 @@ public class DefaultCredentialsProviderTests {
 	@Test
 	public void testResolveScopesDefaultScopes() throws IOException {
 		List<String> scopes = DefaultCredentialsProvider.resolveScopes(null);
-		assertTrue(scopes.size() > 1);
-		assertTrue(scopes.contains(GcpScope.PUBSUB.getUrl()));
+		assertThat(scopes.size()).isGreaterThan(1);
+		assertThat(scopes).contains(GcpScope.PUBSUB.getUrl());
 	}
 
 	@Test
 	public void testResolveScopesOverrideScopes() throws IOException {
 		List<String> scopes = DefaultCredentialsProvider.resolveScopes(ImmutableList.of("myscope"));
-		assertEquals(scopes.size(), 1);
-		assertTrue(scopes.contains("myscope"));
+		assertThat(scopes).hasSize(1);
+		assertThat(scopes).contains("myscope");
 	}
 
 	@Test
 	public void testResolveScopesStarterScopesPlaceholder() {
 		List<String> scopes = DefaultCredentialsProvider.resolveScopes(ImmutableList.of("DEFAULT_SCOPES", "myscope"));
-		assertTrue(scopes.size() == GcpScope.values().length + 1);
-		assertTrue(scopes.contains(GcpScope.PUBSUB.getUrl()));
-		assertTrue(scopes.contains("myscope"));
+		assertThat(scopes).hasSize(GcpScope.values().length + 1);
+		assertThat(scopes).contains(GcpScope.PUBSUB.getUrl());
+		assertThat(scopes).contains("myscope");
 	}
 
 }

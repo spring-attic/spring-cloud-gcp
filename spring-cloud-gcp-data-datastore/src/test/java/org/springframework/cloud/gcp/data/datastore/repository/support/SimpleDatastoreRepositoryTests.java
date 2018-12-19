@@ -28,7 +28,7 @@ import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
@@ -123,13 +123,14 @@ public class SimpleDatastoreRepositoryTests {
 
 	@Test
 	public void runTransactionCallableTest() {
-		when(this.datastoreTemplate.performTransaction(any())).thenAnswer((invocation) -> {
+		when(this.datastoreTemplate.performTransaction(any())).thenAnswer(invocation -> {
 			Function<DatastoreOperations, String> f = invocation.getArgument(0);
 			return f.apply(this.datastoreTemplate);
 		});
-		assertEquals("test",
-				new SimpleDatastoreRepository<Object, String>(this.datastoreTemplate,
-						Object.class).performTransaction((repo) -> "test"));
+
+		String result = new SimpleDatastoreRepository<Object, String>(this.datastoreTemplate, Object.class)
+				.performTransaction(repo -> "test");
+		assertThat(result).isEqualTo("test");
 	}
 
 	@Test

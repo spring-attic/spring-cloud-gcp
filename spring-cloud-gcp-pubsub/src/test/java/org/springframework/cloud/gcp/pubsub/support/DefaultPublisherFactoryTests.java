@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author João André Martins
@@ -47,10 +47,10 @@ public class DefaultPublisherFactoryTests {
 		factory.setCredentialsProvider(this.credentialsProvider);
 		Publisher publisher = factory.createPublisher("testTopic");
 
-		assertEquals(factory.getCache().size(), 1);
-		assertEquals(publisher, factory.getCache().get("testTopic"));
-		assertEquals("testTopic", ((ProjectTopicName) publisher.getTopicName()).getTopic());
-		assertEquals("projectId", ((ProjectTopicName) publisher.getTopicName()).getProject());
+		assertThat(factory.getCache().size()).isEqualTo(1);
+		assertThat(publisher).isEqualTo(factory.getCache().get("testTopic"));
+		assertThat(((ProjectTopicName) publisher.getTopicName()).getTopic()).isEqualTo("testTopic");
+		assertThat(((ProjectTopicName) publisher.getTopicName()).getProject()).isEqualTo("projectId");
 	}
 
 	@Test

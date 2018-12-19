@@ -62,12 +62,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.ClassTypeInformation;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
@@ -318,32 +313,30 @@ public class DatastoreTemplateTests {
 					return "all done";
 				});
 
-		assertEquals("all done", finalResult);
+		assertThat(finalResult).isEqualTo("all done");
 		verify(transactionContext, times(1)).put((FullEntity<?>) any());
 		verify(transactionContext, times(3)).get((Key[]) any());
 	}
 
 	@Test
 	public void findAllByIdTestNotNull() {
-		assertTrue(this.datastoreTemplate
-				.findAllById(Collections.singletonList(this.badKey), TestEntity.class)
-				.isEmpty());
+		assertThat(
+				this.datastoreTemplate.findAllById(Collections.singletonList(this.badKey), TestEntity.class)).isEmpty();
 	}
 
 	@Test
 	public void findByIdTest() {
 		TestEntity result = this.datastoreTemplate.findById(this.key1, TestEntity.class);
-		assertEquals(this.ob1, result);
-		assertThat(result.childEntities, contains(this.childEntity1));
-		assertEquals(result.singularReference, this.childEntity1);
-		assertThat(result.multipleReference, contains(this.childEntity1));
+		assertThat(result).isEqualTo(this.ob1);
+		assertThat(result.childEntities).contains(this.childEntity1);
+		assertThat(this.childEntity1).isEqualTo(result.singularReference);
+		assertThat(result.multipleReference).contains(this.childEntity1);
 	}
 
 	@Test
 	public void findByIdNotFoundTest() {
 		when(this.datastore.get(ArgumentMatchers.<Key[]>any())).thenReturn(null);
-		assertNull(
-				this.datastoreTemplate.findById(createFakeKey("key0"), TestEntity.class));
+		assertThat(this.datastoreTemplate.findById(createFakeKey("key0"), TestEntity.class)).isNull();
 	}
 
 	@Test
@@ -351,14 +344,13 @@ public class DatastoreTemplateTests {
 		when(this.datastore.get(eq(this.key1), eq(this.key2)))
 				.thenReturn(ImmutableList.of(this.e1, this.e2).iterator());
 		List<Key> keys = ImmutableList.of(this.key1, this.key2);
-		assertThat(this.datastoreTemplate.findAllById(keys, TestEntity.class),
-				contains(this.ob1, this.ob2));
+		assertThat(this.datastoreTemplate.findAllById(keys, TestEntity.class)).containsExactly(this.ob1, this.ob2);
 	}
 
 	@Test
 	public void saveTest() {
 		when(this.datastore.put((FullEntity<?>) any())).thenReturn(this.e1);
-		assertTrue(this.datastoreTemplate.save(this.ob1) instanceof TestEntity);
+		assertThat(this.datastoreTemplate.save(this.ob1) instanceof TestEntity).isTrue();
 
 		Entity writtenEntity = Entity.newBuilder(this.key1)
 				.set("singularReference", this.childKey4)
@@ -396,9 +388,9 @@ public class DatastoreTemplateTests {
 	@Test
 	public void saveTestNullDescendantsAndReferences() {
 		//making sure save works when descendants are null
-		assertNull(this.ob2.childEntities);
-		assertNull(this.ob2.singularReference);
-		assertNull(this.ob2.multipleReference);
+		assertThat(this.ob2.childEntities).isNull();
+		assertThat(this.ob2.singularReference).isNull();
+		assertThat(this.ob2.multipleReference).isNull();
 
 		this.datastoreTemplate.save(this.ob2);
 	}
@@ -431,7 +423,7 @@ public class DatastoreTemplateTests {
 		when(this.objectToKeyFactory.allocateKeyForObject(same(this.ob1), any()))
 				.thenReturn(this.key1);
 		when(this.datastore.put((FullEntity<?>) any())).thenReturn(this.e1);
-		assertTrue(this.datastoreTemplate.save(this.ob1) instanceof TestEntity);
+		assertThat(this.datastoreTemplate.save(this.ob1) instanceof TestEntity).isTrue();
 		Entity writtenEntity1 = Entity.newBuilder(this.key1)
 				.set("singularReference", this.childKey4)
 				.set("multipleReference", Arrays.asList(KeyValue.of(this.childKey5), KeyValue.of(this.childKey6)))
@@ -483,14 +475,13 @@ public class DatastoreTemplateTests {
 	@Test
 	public void findAllTest() {
 		this.datastoreTemplate.findAll(TestEntity.class);
-		assertThat(this.datastoreTemplate.findAll(TestEntity.class),
-				contains(this.ob1, this.ob2));
+		assertThat(this.datastoreTemplate.findAll(TestEntity.class)).contains(this.ob1, this.ob2);
 	}
 
 	@Test
 	public void queryTest() {
-		assertThat(this.datastoreTemplate.query((Query<Entity>) this.testEntityQuery,
-				TestEntity.class), contains(this.ob1, this.ob2));
+		assertThat(this.datastoreTemplate.query((Query<Entity>) this.testEntityQuery, TestEntity.class))
+				.contains(this.ob1, this.ob2);
 	}
 
 	@Test
@@ -512,13 +503,13 @@ public class DatastoreTemplateTests {
 		when(this.datastore
 				.run(eq(Query.newKeyQueryBuilder().setKind("custom_test_kind").build())))
 						.thenReturn(queryResults);
-		assertEquals(2, this.datastoreTemplate.count(TestEntity.class));
+		assertThat(this.datastoreTemplate.count(TestEntity.class)).isEqualTo(2);
 	}
 
 	@Test
 	public void existsByIdTest() {
-		assertTrue(this.datastoreTemplate.existsById(this.key1, TestEntity.class));
-		assertFalse(this.datastoreTemplate.existsById(this.badKey, TestEntity.class));
+		assertThat(this.datastoreTemplate.existsById(this.key1, TestEntity.class)).isTrue();
+		assertThat(this.datastoreTemplate.existsById(this.badKey, TestEntity.class)).isFalse();
 	}
 
 	@Test
@@ -564,7 +555,7 @@ public class DatastoreTemplateTests {
 		when(this.datastore
 				.run(eq(Query.newKeyQueryBuilder().setKind("custom_test_kind").build())))
 						.thenReturn(queryResults);
-		assertEquals(2, this.datastoreTemplate.deleteAll(TestEntity.class));
+		assertThat(this.datastoreTemplate.deleteAll(TestEntity.class)).isEqualTo(2);
 		verify(this.datastore, times(1)).delete(same(this.key1), same(this.key2));
 	}
 
