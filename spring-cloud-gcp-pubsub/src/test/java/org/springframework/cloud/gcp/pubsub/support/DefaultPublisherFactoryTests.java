@@ -16,7 +16,18 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import java.io.IOException;
+import java.util.concurrent.ScheduledExecutorService;
+
+import com.google.api.gax.batching.BatchingSettings;
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.ApiCallContext;
+import com.google.api.gax.rpc.HeaderProvider;
+import com.google.api.gax.rpc.TransportChannel;
+import com.google.api.gax.rpc.TransportChannelProvider;
+import com.google.auth.Credentials;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.pubsub.v1.ProjectTopicName;
 import org.junit.Rule;
@@ -25,15 +36,26 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.threeten.bp.Duration;
+
+import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author João André Martins
  * @author Chengyuan Zhao
+ * @author Eric Goetschalckx
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultPublisherFactoryTests {
+
+	private DefaultPublisherFactory factory = new DefaultPublisherFactory(() -> PROJECT_ID);
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
@@ -41,16 +63,70 @@ public class DefaultPublisherFactoryTests {
 	@Mock
 	private CredentialsProvider credentialsProvider;
 
-	@Test
-	public void testGetPublisher() {
-		DefaultPublisherFactory factory = new DefaultPublisherFactory(() -> "projectId");
-		factory.setCredentialsProvider(this.credentialsProvider);
-		Publisher publisher = factory.createPublisher("testTopic");
+	@Mock
+	private Credentials credentials;
 
-		assertEquals(factory.getCache().size(), 1);
-		assertEquals(publisher, factory.getCache().get("testTopic"));
-		assertEquals("testTopic", ((ProjectTopicName) publisher.getTopicName()).getTopic());
-		assertEquals("projectId", ((ProjectTopicName) publisher.getTopicName()).getProject());
+	private static final String TEST_TOPIC = "testTopic";
+	private static final String PROJECT_ID = "projectId";
+
+	@Test
+	public void testCreatePublisher() throws IOException {
+		when(this.credentialsProvider.getCredentials()).thenReturn(this.credentials);
+		this.factory.setCredentialsProvider(this.credentialsProvider);
+
+		ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
+		ExecutorProvider executorProvider = mock(ExecutorProvider.class);
+		when(executorProvider.getExecutor()).thenReturn(executor);
+		this.factory.setExecutorProvider(executorProvider);
+
+		ApiCallContext apiCallContext = mock(ApiCallContext.class);
+		when(apiCallContext.withCredentials(any())).thenReturn(apiCallContext);
+		when(apiCallContext.withTransportChannel(any())).thenReturn(apiCallContext);
+
+		TransportChannel transportChannel = mock(TransportChannel.class);
+		when(transportChannel.getEmptyCallContext()).thenReturn(apiCallContext);
+
+		TransportChannelProvider channelProvider = mock(TransportChannelProvider.class);
+		when(channelProvider.getTransportChannel()).thenReturn(transportChannel);
+		this.factory.setChannelProvider(channelProvider);
+
+		HeaderProvider headerProvider = mock(HeaderProvider.class);
+		this.factory.setHeaderProvider(headerProvider);
+
+		RetrySettings retrySettings = mock(RetrySettings.class);
+		when(retrySettings.getTotalTimeout()).thenReturn(Duration.ofSeconds(10L));
+		when(retrySettings.getInitialRpcTimeout()).thenReturn(Duration.ofMillis(10L));
+		when(retrySettings.getMaxAttempts()).thenReturn(1);
+		this.factory.setRetrySettings(retrySettings);
+
+		BatchingSettings batchingSettings = mock(BatchingSettings.class);
+		when(batchingSettings.getElementCountThreshold()).thenReturn(1L);
+		when(batchingSettings.getRequestByteThreshold()).thenReturn(1L);
+		when(batchingSettings.getDelayThreshold()).thenReturn(Duration.ofSeconds(1L));
+		this.factory.setBatchingSettings(batchingSettings);
+
+		Publisher publisher = this.factory.createPublisher(TEST_TOPIC);
+
+		assertEquals(this.factory.getCache().size(), 1);
+		assertEquals(publisher, this.factory.getCache().get(TEST_TOPIC));
+		assertEquals(TEST_TOPIC, ((ProjectTopicName) publisher.getTopicName()).getTopic());
+		assertEquals(PROJECT_ID, ((ProjectTopicName) publisher.getTopicName()).getProject());
+
+		verify(this.credentialsProvider, times(1)).getCredentials();
+		verify(executorProvider, times(1)).getExecutor();
+		verify(channelProvider, times(1)).getTransportChannel();
+	}
+
+	@Test
+	public void testGetPublisher_ioException() throws IOException {
+		when(this.credentialsProvider.getCredentials()).thenThrow(IOException.class);
+		this.factory.setCredentialsProvider(this.credentialsProvider);
+
+		this.expectedException.expect(PubSubException.class);
+		this.expectedException.expectMessage(
+				"An error creating the Google Cloud Pub/Sub publisher occurred.; nested exception is java.io.IOException");
+
+		this.factory.createPublisher(TEST_TOPIC);
 	}
 
 	@Test

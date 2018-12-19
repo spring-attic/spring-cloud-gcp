@@ -16,20 +16,36 @@
 
 package org.springframework.cloud.gcp.pubsub.support;
 
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+
+import com.google.api.core.ApiClock;
+import com.google.api.gax.batching.FlowControlSettings;
+import com.google.api.gax.batching.FlowController;
 import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.ExecutorProvider;
+import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.HeaderProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Subscriber;
+import com.google.pubsub.v1.PullRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.threeten.bp.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author João André Martins
  * @author Chengyuan Zhao
+ * @author Eric Goetschalckx
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultSubscriberFactoryTests {
@@ -40,15 +56,51 @@ public class DefaultSubscriberFactoryTests {
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
+	private DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> PROJECT_ID);
+
+	private static final String PROJECT_ID = UUID.randomUUID().toString();
+	private static final String TOPIC = UUID.randomUUID().toString();
+	private static final String SUBSCRIPTION = String.format("projects/%s/subscriptions/%s", PROJECT_ID, TOPIC);
+
 	@Test
-	public void testNewSubscriber() {
-		DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> "angeldust");
-		factory.setCredentialsProvider(this.credentialsProvider);
+	public void testCreateSubscriber() {
+		this.factory.setCredentialsProvider(this.credentialsProvider);
+		this.factory.setChannelProvider(mock(TransportChannelProvider.class));
+		this.factory.setExecutorProvider(mock(ExecutorProvider.class));
+		this.factory.setHeaderProvider(mock(HeaderProvider.class));
+		this.factory.setSystemExecutorProvider(mock(ExecutorProvider.class));
+		this.factory.setPullEndpoint(UUID.randomUUID().toString());
+		this.factory.setApiClock(mock(ApiClock.class));
+		this.factory.setSubscriberStubRetrySettings(mock(RetrySettings.class));
 
-		Subscriber subscriber = factory.createSubscriber("midnight cowboy", (message, consumer) -> { });
+		FlowControlSettings flowControlSettings = mock(FlowControlSettings.class);
+		FlowControlSettings.Builder flowControlSettingsBuilder = mock(FlowControlSettings.Builder.class);
+		when(flowControlSettingsBuilder.setLimitExceededBehavior(any())).thenReturn(flowControlSettingsBuilder);
+		when(flowControlSettingsBuilder.build()).thenReturn(flowControlSettings);
+		when(flowControlSettings.toBuilder()).thenReturn(flowControlSettingsBuilder);
+		when(flowControlSettings.getLimitExceededBehavior()).thenReturn(FlowController.LimitExceededBehavior.Ignore);
+		this.factory.setFlowControlSettings(flowControlSettings);
 
-		assertThat(subscriber.getSubscriptionNameString())
-				.isEqualTo("projects/angeldust/subscriptions/midnight cowboy");
+		this.factory.setMaxAckExtensionPeriod(Duration.ZERO);
+		this.factory.setParallelPullCount(42);
+
+		Subscriber subscriber = this.factory.createSubscriber(TOPIC, (message, consumer) -> { });
+
+		assertThat(this.factory.getProjectId()).isEqualTo(PROJECT_ID);
+		assertThat(subscriber.getSubscriptionNameString()).isEqualTo(SUBSCRIPTION);
+		assertThat(subscriber.getFlowControlSettings()).isSameAs(flowControlSettings);
+	}
+
+	@Test
+	public void testCreatePullRequest() {
+		boolean returnImmediately = ThreadLocalRandom.current().nextBoolean();
+		int maxMessages = ThreadLocalRandom.current().nextInt(16);
+
+		PullRequest pullRequest = this.factory.createPullRequest(TOPIC, maxMessages, returnImmediately);
+
+		assertThat(pullRequest.getSubscription()).isEqualTo(SUBSCRIPTION);
+		assertThat(pullRequest.getReturnImmediately()).isEqualTo(returnImmediately);
+		assertThat(pullRequest.getMaxMessages()).isEqualTo(maxMessages);
 	}
 
 	@Test
