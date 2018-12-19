@@ -114,7 +114,7 @@ public class SpannerRepositoryTests {
 		assertThat(actualTrades).hasSize(8);
 
 		Set<String> tradeSpannerKeys = actualTrades.stream()
-				.map(t -> this.spannerSchemaUtils.getKey(t).toString())
+				.map((t) -> this.spannerSchemaUtils.getKey(t).toString())
 				.collect(Collectors.toSet());
 		assertThat(tradeSpannerKeys).containsExactlyInAnyOrder(
 				"[demo_trader1,1]",

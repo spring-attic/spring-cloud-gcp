@@ -222,7 +222,7 @@ public class PubSubApplicationTests {
 
 		PullResponse pullResponse = subscriptionAdminClient.getStub().pullCallable().call(pullRequest);
 		return pullResponse.getReceivedMessagesList().stream()
-				.map(message -> message.getMessage().getData().toStringUtf8())
+				.map((message) -> message.getMessage().getData().toStringUtf8())
 				.collect(Collectors.toList());
 	}
 
