@@ -61,7 +61,8 @@ import static org.mockito.Mockito.when;
  */
 public class GqlDatastoreQueryTests {
 
-	private static final Offset<Double> COMPARE_OFFSET = Offset.offset(0.00001);
+	/** Constant for which if two doubles are within DELTA, they are considered equal. */
+	private static final Offset<Double> DELTA = Offset.offset(0.00001);
 
 	private DatastoreTemplate datastoreTemplate;
 
@@ -159,10 +160,10 @@ public class GqlDatastoreQueryTests {
 			assertThat((long) ((LongValue) (((List) paramMap.get("tag2").get()).get(1))).get()).isEqualTo(2L);
 
 			double actual = ((DoubleValue) (((List) paramMap.get("tag3").get()).get(0))).get();
-			assertThat(actual).isEqualTo(((double[]) params[3])[0], COMPARE_OFFSET);
+			assertThat(actual).isEqualTo(((double[]) params[3])[0], DELTA);
 
 			actual = ((DoubleValue) (((List) paramMap.get("tag3").get()).get(1))).get();
-			assertThat(actual).isEqualTo(((double[]) params[3])[1], COMPARE_OFFSET);
+			assertThat(actual).isEqualTo(((double[]) params[3])[1], DELTA);
 
 			// 3L is expected even though 3 int was the original param due to custom conversions
 			assertThat(paramMap.get("tag4").get()).isEqualTo(3L);
@@ -170,9 +171,12 @@ public class GqlDatastoreQueryTests {
 			assertThat(paramMap.get("tag6").get()).isEqualTo(params[6]);
 			assertThat(paramMap.get("tag7").get()).isEqualTo(params[7]);
 
-			assertThat((double) paramMap.get("SpELtag1").get()).isEqualTo(-1 * (double) params[6], COMPARE_OFFSET);
-			assertThat((double) paramMap.get("SpELtag2").get()).isEqualTo(-1 * (double) params[6], COMPARE_OFFSET);
-			assertThat((double) paramMap.get("SpELtag3").get()).isEqualTo(-1 * (double) params[7], COMPARE_OFFSET);
+			assertThat((double) paramMap.get("SpELtag1").get()).isEqualTo(-1 * (double) params[6],
+					DELTA);
+			assertThat((double) paramMap.get("SpELtag2").get()).isEqualTo(-1 * (double) params[6],
+					DELTA);
+			assertThat((double) paramMap.get("SpELtag3").get()).isEqualTo(-1 * (double) params[7],
+					DELTA);
 
 			return null;
 		}).when(this.datastoreTemplate).queryKeysOrEntities(any(), eq(Trade.class));

@@ -143,7 +143,7 @@ public class DatastoreIntegrationTests {
 		assertThat(
 				this.testEntityRepository.removeByColor("red").stream()
 						.map(TestEntity::getId).collect(Collectors.toList()))
-								.contains(1L, 3L, 4L);
+								.containsExactlyInAnyOrder(1L, 3L, 4L);
 
 		this.testEntityRepository.saveAll(allTestEntities);
 
@@ -170,10 +170,10 @@ public class DatastoreIntegrationTests {
 		assertThat(
 				this.testEntityRepository.findTop3BySizeAndColor(1, "red").stream()
 						.map(TestEntity::getId).collect(Collectors.toList()))
-								.contains(1L, 3L, 4L);
+								.containsExactlyInAnyOrder(1L, 3L, 4L);
 
 		assertThat(this.testEntityRepository.getKeys().stream().map(Key::getId).collect(Collectors.toList()))
-				.contains(1L, 2L, 3L, 4L);
+				.containsExactlyInAnyOrder(1L, 2L, 3L, 4L);
 
 		assertThat(foundByCustomQuery.size()).isEqualTo(1);
 		assertThat(this.testEntityRepository.countEntitiesWithCustomQuery(1L)).isEqualTo(4);

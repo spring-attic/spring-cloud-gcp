@@ -107,7 +107,7 @@ public class GoogleStorageIntegrationTests {
 		assertThat(this.resource.exists()).isTrue();
 
 		try (InputStream is = this.resource.getInputStream()) {
-			assertThat(message).isEqualTo(StreamUtils.copyToString(is, Charset.defaultCharset()));
+			assertThat(StreamUtils.copyToString(is, Charset.defaultCharset())).isEqualTo(message);
 		}
 
 		GoogleStorageResource childResource = getChildResource();
@@ -121,7 +121,7 @@ public class GoogleStorageIntegrationTests {
 		assertThat(childResource.exists()).isTrue();
 
 		try (InputStream is = childResource.getInputStream()) {
-			assertThat(message).isEqualTo(StreamUtils.copyToString(is, Charset.defaultCharset()));
+			assertThat(StreamUtils.copyToString(is, Charset.defaultCharset())).isEqualTo(message);
 		}
 	}
 

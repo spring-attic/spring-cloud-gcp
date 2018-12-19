@@ -54,7 +54,7 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 	public void getKeyFromIdKeyTest() {
 		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));
 		Key key = new KeyFactory("project").setKind("kind").newKey("key");
-		assertThat(this.datastoreServiceObjectToKeyFactory.getKeyFromId(key, "kind")).isEqualTo(key);
+		assertThat(this.datastoreServiceObjectToKeyFactory.getKeyFromId(key, "kind")).isSameAs(key);
 	}
 
 	@Test

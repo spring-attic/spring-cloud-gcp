@@ -344,7 +344,7 @@ public class DatastoreTemplateTests {
 		when(this.datastore.get(eq(this.key1), eq(this.key2)))
 				.thenReturn(ImmutableList.of(this.e1, this.e2).iterator());
 		List<Key> keys = ImmutableList.of(this.key1, this.key2);
-		assertThat(this.datastoreTemplate.findAllById(keys, TestEntity.class)).contains(this.ob1, this.ob2);
+		assertThat(this.datastoreTemplate.findAllById(keys, TestEntity.class)).containsExactly(this.ob1, this.ob2);
 	}
 
 	@Test
