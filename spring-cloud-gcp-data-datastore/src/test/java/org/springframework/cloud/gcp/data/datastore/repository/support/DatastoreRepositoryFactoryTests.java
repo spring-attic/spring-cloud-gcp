@@ -31,7 +31,7 @@ import org.springframework.data.mapping.MappingException;
 import org.springframework.data.repository.core.EntityInformation;
 import org.springframework.data.repository.core.RepositoryInformation;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -58,12 +58,12 @@ public class DatastoreRepositoryFactoryTests {
 	public void getEntityInformationTest() {
 		EntityInformation<TestEntity, String> entityInformation = this.datastoreRepositoryFactory
 				.getEntityInformation(TestEntity.class);
-		assertEquals(TestEntity.class, entityInformation.getJavaType());
-		assertEquals(String.class, entityInformation.getIdType());
+		assertThat(entityInformation.getJavaType()).isEqualTo(TestEntity.class);
+		assertThat(entityInformation.getIdType()).isEqualTo(String.class);
 
 		TestEntity t = new TestEntity();
 		t.id = "a";
-		assertEquals("a", entityInformation.getId(t));
+		assertThat(entityInformation.getId(t)).isEqualTo("a");
 	}
 
 	@Test
@@ -84,13 +84,13 @@ public class DatastoreRepositoryFactoryTests {
 				.thenReturn(SimpleDatastoreRepository.class);
 		Mockito.<Class<?>>when(repoInfo.getDomainType()).thenReturn(TestEntity.class);
 		Object repo = this.datastoreRepositoryFactory.getTargetRepository(repoInfo);
-		assertEquals(SimpleDatastoreRepository.class, repo.getClass());
+		assertThat(repo.getClass()).isEqualTo(SimpleDatastoreRepository.class);
 	}
 
 	@Test
 	public void getRepositoryBaseClassTest() {
 		Class baseClass = this.datastoreRepositoryFactory.getRepositoryBaseClass(null);
-		assertEquals(SimpleDatastoreRepository.class, baseClass);
+		assertThat(baseClass).isEqualTo(SimpleDatastoreRepository.class);
 	}
 
 	@Entity(name = "custom_test_kind")

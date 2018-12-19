@@ -30,7 +30,7 @@ import org.junit.rules.ExpectedException;
 
 import org.springframework.core.convert.converter.Converter;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Mike Eltsufin
@@ -110,16 +110,24 @@ public class SimplePubSubMessageConverterTests {
 		SimplePubSubMessageConverter converter = new SimplePubSubMessageConverter();
 		PubsubMessage pubsubMessage = converter.toPubSubMessage(TEST_STRING, null);
 
-		assertEquals(TEST_STRING, pubsubMessage.getData().toString(Charset.defaultCharset()));
-		assertEquals(new HashMap<>(), pubsubMessage.getAttributesMap());
+		assertThat(pubsubMessage.getData().toString(Charset.defaultCharset())).isEqualTo(TEST_STRING);
+		assertThat(pubsubMessage.getAttributesMap()).isEqualTo(new HashMap<>());
 	}
 
 	private <T> void doToTestForType(Class<T> type, Converter<T, String> toString) {
 		SimplePubSubMessageConverter converter = new SimplePubSubMessageConverter();
 
 		// test extraction from PubsubMessage to T
-		assertEquals(TEST_STRING, toString.convert((T) converter.fromPubSubMessage(PubsubMessage.newBuilder()
-				.setData(ByteString.copyFrom(TEST_STRING.getBytes())).putAllAttributes(TEST_HEADERS).build(), type)));
+
+		String extractedMessage = toString.convert(
+				(T) converter.fromPubSubMessage(
+						PubsubMessage.newBuilder()
+								.setData(ByteString.copyFrom(TEST_STRING.getBytes()))
+								.putAllAttributes(TEST_HEADERS)
+								.build(),
+						type));
+
+		assertThat(extractedMessage).isEqualTo(TEST_STRING);
 	}
 
 	private <T> void doFromTest(T value) {
@@ -127,7 +135,7 @@ public class SimplePubSubMessageConverterTests {
 
 		// test conversion of T to PubsubMessage
 		PubsubMessage convertedPubSubMessage = converter.toPubSubMessage(value, TEST_HEADERS);
-		assertEquals(TEST_STRING, new String(convertedPubSubMessage.getData().toByteArray()));
-		assertEquals(TEST_HEADERS, convertedPubSubMessage.getAttributesMap());
+		assertThat(new String(convertedPubSubMessage.getData().toByteArray())).isEqualTo(TEST_STRING);
+		assertThat(convertedPubSubMessage.getAttributesMap()).isEqualTo(TEST_HEADERS);
 	}
 }

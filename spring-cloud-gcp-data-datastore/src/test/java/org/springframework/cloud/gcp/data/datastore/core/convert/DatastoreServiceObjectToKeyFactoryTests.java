@@ -29,9 +29,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataEx
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
 import org.springframework.data.annotation.Id;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -56,24 +54,21 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 	public void getKeyFromIdKeyTest() {
 		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));
 		Key key = new KeyFactory("project").setKind("kind").newKey("key");
-		assertSame(key,
-				this.datastoreServiceObjectToKeyFactory.getKeyFromId(key, "kind"));
+		assertThat(this.datastoreServiceObjectToKeyFactory.getKeyFromId(key, "kind")).isSameAs(key);
 	}
 
 	@Test
 	public void getKeyFromIdStringTest() {
 		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));
-		assertEquals(new KeyFactory("p").setKind("custom_test_kind").newKey("key"),
-				this.datastoreServiceObjectToKeyFactory.getKeyFromId("key",
-						"custom_test_kind"));
+		assertThat(this.datastoreServiceObjectToKeyFactory.getKeyFromId("key", "custom_test_kind"))
+				.isEqualTo(new KeyFactory("p").setKind("custom_test_kind").newKey("key"));
 	}
 
 	@Test
 	public void getKeyFromIdLongTest() {
 		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));
-		assertEquals(new KeyFactory("p").setKind("custom_test_kind").newKey(3L),
-				this.datastoreServiceObjectToKeyFactory.getKeyFromId(3L,
-						"custom_test_kind"));
+		assertThat(new KeyFactory("p").setKind("custom_test_kind").newKey(3L))
+				.isEqualTo(this.datastoreServiceObjectToKeyFactory.getKeyFromId(3L, "custom_test_kind"));
 	}
 
 	@Test
@@ -89,10 +84,12 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));
 		TestEntityWithId testEntity = new TestEntityWithId();
 		testEntity.id = "testkey";
-		assertEquals(new KeyFactory("p").setKind("custom_test_kind").newKey("testkey"),
-				this.datastoreServiceObjectToKeyFactory.getKeyFromObject(testEntity,
-						this.datastoreMappingContext
-								.getPersistentEntity(TestEntityWithId.class)));
+
+		Key actual = this.datastoreServiceObjectToKeyFactory.getKeyFromObject(
+				testEntity, this.datastoreMappingContext.getPersistentEntity(TestEntityWithId.class));
+		Key expectedKey = new KeyFactory("p").setKind("custom_test_kind").newKey("testkey");
+
+		assertThat(actual).isEqualTo(expectedKey);
 	}
 
 	@Test
@@ -107,9 +104,9 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 
 	@Test
 	public void nullIdTest() {
-		assertNull(this.datastoreServiceObjectToKeyFactory
+		assertThat(this.datastoreServiceObjectToKeyFactory
 				.getKeyFromObject(new TestEntityWithId(), this.datastoreMappingContext
-						.getPersistentEntity(TestEntityWithId.class)));
+						.getPersistentEntity(TestEntityWithId.class))).isNull();
 	}
 
 	@Test
@@ -130,8 +127,8 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 				.allocateKeyForObject(testEntityWithKeyId, this.datastoreMappingContext
 						.getPersistentEntity(testEntityWithKeyId.getClass()));
 		Key key = new KeyFactory("project").setKind("custom_test_kind").newKey(123L);
-		assertEquals(key, allocatedKey);
-		assertEquals(key, testEntityWithKeyId.id);
+		assertThat(allocatedKey).isEqualTo(key);
+		assertThat(testEntityWithKeyId.id).isEqualTo(key);
 
 		Key allocatedKeyWithAncestor = this.datastoreServiceObjectToKeyFactory
 				.allocateKeyForObject(testEntityWithKeyId, this.datastoreMappingContext
@@ -139,8 +136,8 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 		Key keyWithAncestor = new KeyFactory("project").setKind("custom_test_kind")
 				.addAncestor(PathElement.of(key.getKind(), key.getId()))
 				.newKey(456L);
-		assertEquals(keyWithAncestor, allocatedKeyWithAncestor);
-		assertEquals(keyWithAncestor, testEntityWithKeyId.id);
+		assertThat(allocatedKeyWithAncestor).isEqualTo(keyWithAncestor);
+		assertThat(testEntityWithKeyId.id).isEqualTo(keyWithAncestor);
 	}
 
 	@Test

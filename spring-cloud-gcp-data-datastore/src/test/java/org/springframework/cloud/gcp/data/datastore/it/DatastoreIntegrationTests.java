@@ -43,17 +43,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -126,26 +117,23 @@ public class DatastoreIntegrationTests {
 				() -> this.testEntityRepository.countBySize(1L) == 4);
 
 		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
-				.map(x -> x.getId()).collect(Collectors.toList()), contains(4L));
+				.map(x -> x.getId()).collect(Collectors.toList())).contains(4L);
 
-		assertThat(this.testEntityRepository.findByColor("red",
-				PageRequest.of(0, 1)).hasNext(), is(true));
-		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(1, 1)).hasNext(),
-				is(true));
-		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(2, 1)).hasNext(),
-				is(false));
+		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(0, 1)).hasNext()).isTrue();
+		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(1, 1)).hasNext()).isTrue();
+		assertThat(
+				this.testEntityRepository.findByColor("red", PageRequest.of(2, 1)).hasNext()).isFalse();
 
 		Page<TestEntity> circles = this.testEntityRepository.findByShape(Shape.CIRCLE, PageRequest.of(0, 2));
-		assertThat(circles.getTotalElements(), equalTo(3L));
-		assertThat(circles.getTotalPages(), equalTo(2));
-		assertThat(circles.get().count(), equalTo(2L));
-		assertThat(circles.get().allMatch(e -> e.getShape().equals(Shape.CIRCLE)), is(true));
-
+		assertThat(circles.getTotalElements()).isEqualTo(3L);
+		assertThat(circles.getTotalPages()).isEqualTo(2);
+		assertThat(circles.get().count()).isEqualTo(2L);
+		assertThat(circles.get().allMatch(e -> e.getShape().equals(Shape.CIRCLE))).isTrue();
 
 		assertThat(this.testEntityRepository.findByEnumQueryParam(Shape.SQUARE).stream()
-				.map(x -> x.getId()).collect(Collectors.toList()), contains(4L));
+				.map(x -> x.getId()).collect(Collectors.toList())).contains(4L);
 
-		assertEquals(4, this.testEntityRepository.deleteBySize(1L));
+		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(4);
 
 		this.testEntityRepository.saveAll(allTestEntities);
 
@@ -154,19 +142,19 @@ public class DatastoreIntegrationTests {
 
 		assertThat(
 				this.testEntityRepository.removeByColor("red").stream()
-						.map(TestEntity::getId).collect(Collectors.toList()),
-				containsInAnyOrder(1L, 3L, 4L));
+						.map(TestEntity::getId).collect(Collectors.toList()))
+								.containsExactlyInAnyOrder(1L, 3L, 4L);
 
 		this.testEntityRepository.saveAll(allTestEntities);
 
-		assertNull(this.testEntityRepository.findById(1L).get().getBlobField());
+		assertThat(this.testEntityRepository.findById(1L).get().getBlobField()).isNull();
 
 		testEntityA.setBlobField(Blob.copyFrom("testValueA".getBytes()));
 
 		this.testEntityRepository.save(testEntityA);
 
-		assertEquals(Blob.copyFrom("testValueA".getBytes()),
-				this.testEntityRepository.findById(1L).get().getBlobField());
+		assertThat(this.testEntityRepository.findById(1L).get().getBlobField())
+				.isEqualTo(Blob.copyFrom("testValueA".getBytes()));
 
 		millisWaited = Math.max(millisWaited, waitUntilTrue(
 				() -> this.testEntityRepository.countBySizeAndColor(1L, "red") == 3));
@@ -176,45 +164,42 @@ public class DatastoreIntegrationTests {
 		TestEntity[] foundByCustomProjectionQuery = this.testEntityRepository
 				.findEntitiesWithCustomProjectionQuery(1L);
 
-		assertEquals(1, this.testEntityRepository.countBySizeAndColor(1, "blue"));
-		assertEquals("blue", this.testEntityRepository.getById(2L).getColor());
-		assertEquals(3,
-				this.testEntityRepository.countBySizeAndColor(1, "red"));
+		assertThat(this.testEntityRepository.countBySizeAndColor(1, "blue")).isEqualTo(1);
+		assertThat(this.testEntityRepository.getById(2L).getColor()).isEqualTo("blue");
+		assertThat(this.testEntityRepository.countBySizeAndColor(1, "red")).isEqualTo(3);
 		assertThat(
 				this.testEntityRepository.findTop3BySizeAndColor(1, "red").stream()
-						.map(TestEntity::getId).collect(Collectors.toList()),
-				containsInAnyOrder(1L, 3L, 4L));
+						.map(TestEntity::getId).collect(Collectors.toList()))
+								.containsExactlyInAnyOrder(1L, 3L, 4L);
 
-		assertThat(this.testEntityRepository.getKeys().stream().map(Key::getId)
-				.collect(Collectors.toList()), containsInAnyOrder(1L, 2L, 3L, 4L));
+		assertThat(this.testEntityRepository.getKeys().stream().map(Key::getId).collect(Collectors.toList()))
+				.containsExactlyInAnyOrder(1L, 2L, 3L, 4L);
 
-		assertEquals(1, foundByCustomQuery.size());
-		assertEquals(4, this.testEntityRepository.countEntitiesWithCustomQuery(1L));
-		assertTrue(this.testEntityRepository.existsByEntitiesWithCustomQuery(1L));
-		assertEquals(Blob.copyFrom("testValueA".getBytes()),
-				foundByCustomQuery.get(0).getBlobField());
+		assertThat(foundByCustomQuery.size()).isEqualTo(1);
+		assertThat(this.testEntityRepository.countEntitiesWithCustomQuery(1L)).isEqualTo(4);
+		assertThat(this.testEntityRepository.existsByEntitiesWithCustomQuery(1L)).isTrue();
+		assertThat(foundByCustomQuery.get(0).getBlobField()).isEqualTo(Blob.copyFrom("testValueA".getBytes()));
 
-		assertEquals(1, foundByCustomProjectionQuery.length);
-		assertNull(foundByCustomProjectionQuery[0].getBlobField());
-		assertEquals((Long) 1L, foundByCustomProjectionQuery[0].getId());
+		assertThat(foundByCustomProjectionQuery.length).isEqualTo(1);
+		assertThat(foundByCustomProjectionQuery[0].getBlobField()).isNull();
+		assertThat(foundByCustomProjectionQuery[0].getId()).isEqualTo((Long) 1L);
 
 		testEntityA.setBlobField(null);
 
-		assertEquals((Long) 1L, this.testEntityRepository.getKey().getId());
-		assertEquals(1, this.testEntityRepository.getIds(1L).length);
-		assertEquals(1, this.testEntityRepository.getOneId(1L));
-		assertNotNull(this.testEntityRepository.getOneTestEntity(1L));
+		assertThat(this.testEntityRepository.getKey().getId()).isEqualTo((Long) 1L);
+		assertThat(this.testEntityRepository.getIds(1L).length).isEqualTo(1);
+		assertThat(this.testEntityRepository.getOneId(1L)).isEqualTo(1);
+		assertThat(this.testEntityRepository.getOneTestEntity(1L)).isNotNull();
 
 		this.testEntityRepository.save(testEntityA);
 
-		assertNull(this.testEntityRepository.findById(1L).get().getBlobField());
+		assertThat(this.testEntityRepository.findById(1L).get().getBlobField()).isNull();
 
-		assertThat(this.testEntityRepository.findAllById(ImmutableList.of(1L, 2L)),
-				iterableWithSize(2));
+		assertThat(this.testEntityRepository.findAllById(ImmutableList.of(1L, 2L))).hasSize(2);
 
 		this.testEntityRepository.delete(testEntityA);
 
-		assertFalse(this.testEntityRepository.findById(1L).isPresent());
+		assertThat(this.testEntityRepository.findById(1L).isPresent()).isFalse();
 
 		this.testEntityRepository.deleteAll();
 
@@ -238,10 +223,9 @@ public class DatastoreIntegrationTests {
 		// show up if it is unexpectedly successful and committed.
 		Thread.sleep(millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
 
-		assertEquals(0, this.testEntityRepository.count());
+		assertThat(this.testEntityRepository.count()).isEqualTo(0);
 
-		assertFalse(this.testEntityRepository.findAllById(ImmutableList.of(1L, 2L))
-				.iterator().hasNext());
+		assertThat(this.testEntityRepository.findAllById(ImmutableList.of(1L, 2L)).iterator().hasNext()).isFalse();
 	}
 
 	@Test
@@ -256,7 +240,7 @@ public class DatastoreIntegrationTests {
 
 		EmbeddableTreeNode loaded = this.datastoreTemplate.findById(7L, EmbeddableTreeNode.class);
 
-		assertEquals(treeNode7, loaded);
+		assertThat(loaded).isEqualTo(treeNode7);
 	}
 
 	@Test
@@ -273,7 +257,7 @@ public class DatastoreIntegrationTests {
 
 		TreeCollection loaded = this.datastoreTemplate.findById(1L, TreeCollection.class);
 
-		assertEquals(treeCollection, loaded);
+		assertThat(loaded).isEqualTo(treeCollection);
 	}
 
 	@Test
@@ -292,7 +276,7 @@ public class DatastoreIntegrationTests {
 		});
 
 		AncestorEntity loadedEntity = this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
-		assertEquals(ancestorEntity, loadedEntity);
+		assertThat(loadedEntity).isEqualTo(ancestorEntity);
 
 		ancestorEntity.descendants.forEach(descendatEntry -> descendatEntry.name = descendatEntry.name + " updated");
 		this.datastoreTemplate.save(ancestorEntity);
@@ -302,7 +286,7 @@ public class DatastoreIntegrationTests {
 
 		AncestorEntity loadedEntityAfterUpdate =
 				this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
-		assertEquals(ancestorEntity, loadedEntityAfterUpdate);
+		assertThat(loadedEntityAfterUpdate).isEqualTo(ancestorEntity);
 	}
 
 	@Test
@@ -316,7 +300,7 @@ public class DatastoreIntegrationTests {
 		waitUntilTrue(() -> this.datastoreTemplate.findAll(ReferenceEntry.class).size() == 4);
 
 		ReferenceEntry loadedParent = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
-		assertEquals(parent, loadedParent);
+		assertThat(loadedParent).isEqualTo(parent);
 
 		parent.name = "parent updated";
 		parent.childeren.forEach(child -> child.name = child.name + " updated");
@@ -329,7 +313,7 @@ public class DatastoreIntegrationTests {
 						.stream().allMatch(entry -> entry.name.contains("updated")));
 
 		ReferenceEntry loadedParentAfterUpdate = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
-		assertEquals(parent, loadedParentAfterUpdate);
+		assertThat(loadedParentAfterUpdate).isEqualTo(parent);
 	}
 
 	@Test
@@ -344,7 +328,7 @@ public class DatastoreIntegrationTests {
 		this.datastoreTemplate.writeMap(this.keyForMap, map);
 		Map<String, Long> loadedMap = this.datastoreTemplate.findByIdAsMap(this.keyForMap, Long.class);
 
-		assertEquals(map, loadedMap);
+		assertThat(loadedMap).isEqualTo(map);
 	}
 
 	private long waitUntilTrue(Supplier<Boolean> condition) {

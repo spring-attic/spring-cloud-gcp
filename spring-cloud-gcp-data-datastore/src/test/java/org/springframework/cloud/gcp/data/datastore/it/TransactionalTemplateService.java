@@ -22,7 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * A transactional service used for integration tests.
@@ -39,8 +39,7 @@ public class TransactionalTemplateService {
 			throws InterruptedException {
 
 		for (TestEntity testEntity : testEntities) {
-			assertNull(this.datastoreTemplate.findById(testEntity.getId(),
-					TestEntity.class));
+			assertThat(this.datastoreTemplate.findById(testEntity.getId(), TestEntity.class)).isNull();
 		}
 
 		this.datastoreTemplate.saveAll(testEntities);
@@ -52,8 +51,7 @@ public class TransactionalTemplateService {
 		// Datastore transactions always see the state at the start of the transaction. Even
 		// after waiting these entities should not be found.
 		for (TestEntity testEntity : testEntities) {
-			assertNull(this.datastoreTemplate.findById(testEntity.getId(),
-					TestEntity.class));
+			assertThat(this.datastoreTemplate.findById(testEntity.getId(), TestEntity.class)).isNull();
 		}
 	}
 

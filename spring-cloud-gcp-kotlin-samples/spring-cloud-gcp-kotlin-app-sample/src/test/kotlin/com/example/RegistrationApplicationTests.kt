@@ -22,7 +22,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.awaitility.Awaitility.await
 import org.hamcrest.Matchers.`is`
 import org.junit.Assume.assumeThat
-import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import org.junit.runner.RunWith
