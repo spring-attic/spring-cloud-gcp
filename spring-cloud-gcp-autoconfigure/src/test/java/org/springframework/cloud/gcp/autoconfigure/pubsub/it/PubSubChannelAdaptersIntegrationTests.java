@@ -106,7 +106,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 	@Test
 	public void sendAndReceiveMessageAsString() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			try {
 				Map<String, Object> headers = new HashMap<>();
 				// Only String values for now..
@@ -140,7 +140,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 	@Test
 	public void sendAndReceiveMessage() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			try {
 				context.getBean("inputChannel", MessageChannel.class).send(
 						MessageBuilder.withPayload("I am a message.".getBytes()).build());
@@ -162,7 +162,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 	@Test
 	public void sendAndReceiveMessageManualAck() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			try {
 				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.MANUAL);
 				context.getBean("inputChannel", MessageChannel.class).send(
@@ -198,7 +198,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 	@Test
 	@SuppressWarnings("deprecation")
 	public void sendAndReceiveMessageManualAckThroughAcknowledgementHeader() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			try {
 				context.getBean(PubSubInboundChannelAdapter.class).setAckMode(AckMode.MANUAL);
 				context.getBean("inputChannel", MessageChannel.class).send(
@@ -244,7 +244,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 	@Test
 	public void sendAndReceiveMessagePublishCallback() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			try {
 				ListenableFutureCallback<String> callbackSpy = Mockito.spy(
 						new ListenableFutureCallback<String>() {

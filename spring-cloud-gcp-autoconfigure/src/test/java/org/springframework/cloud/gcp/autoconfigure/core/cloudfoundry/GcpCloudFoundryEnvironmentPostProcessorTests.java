@@ -44,7 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class GcpCloudFoundryEnvironmentPostProcessorTests {
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-			.withInitializer(context ->
+			.withInitializer((context) ->
 					new GcpCloudFoundryEnvironmentPostProcessor()
 							.postProcessEnvironment(context.getEnvironment(), null))
 			.withSystemProperties(new String[] {
@@ -59,7 +59,7 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 		String vcapFileContents = new String(Files.readAllBytes(
 				new ClassPathResource("VCAP_SERVICES").getFile().toPath()));
 		this.contextRunner.withSystemProperties("VCAP_SERVICES=" + vcapFileContents)
-				.run(context -> {
+				.run((context) -> {
 					GcpPubSubProperties pubSubProperties =
 							context.getBean(GcpPubSubProperties.class);
 					assertThat(pubSubProperties.getProjectId())
@@ -114,7 +114,7 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 		String vcapFileContents = new String(Files.readAllBytes(
 				new ClassPathResource("VCAP_SERVICES_2_SQL").getFile().toPath()));
 		this.contextRunner.withSystemProperties("VCAP_SERVICES=" + vcapFileContents)
-				.run(context -> {
+				.run((context) -> {
 					GcpCloudSqlProperties sqlProperties =
 							context.getBean(GcpCloudSqlProperties.class);
 

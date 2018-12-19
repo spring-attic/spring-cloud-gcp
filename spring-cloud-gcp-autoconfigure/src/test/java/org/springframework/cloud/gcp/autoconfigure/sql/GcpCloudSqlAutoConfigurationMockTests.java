@@ -48,7 +48,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 		this.contextRunner.withPropertyValues(
 				"spring.cloud.gcp.sql.instanceConnectionName=tubular-bells:singapore:test-instance",
 				"spring.datasource.password=")
-				.run(context -> {
+				.run((context) -> {
 					HikariDataSource dataSource =
 							(HikariDataSource) context.getBean(DataSource.class);
 					CloudSqlJdbcInfoProvider urlProvider =
@@ -73,7 +73,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 				"spring.datasource.password=")
 				.withSystemProperties(
 						"com.google.appengine.runtime.version=Google App Engine/Some Server")
-				.run(context -> {
+				.run((context) -> {
 					HikariDataSource dataSource =
 							(HikariDataSource) context.getBean(DataSource.class);
 					CloudSqlJdbcInfoProvider urlProvider =
@@ -94,7 +94,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 		this.contextRunner.withPropertyValues("spring.datasource.username=watchmaker",
 				"spring.datasource.password=pass",
 				"spring.cloud.gcp.sql.instanceConnectionName=proj:reg:test-instance")
-				.run(context -> {
+				.run((context) -> {
 					HikariDataSource dataSource =
 							(HikariDataSource) context.getBean(DataSource.class);
 					CloudSqlJdbcInfoProvider urlProvider =
@@ -116,7 +116,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 				"spring.cloud.gcp.sql.instanceConnectionName=proj:reg:test-instance",
 				"spring.datasource.hikari.connectionTestQuery=select 1",
 				"spring.datasource.hikari.maximum-pool-size=19")
-				.run(context -> {
+				.run((context) -> {
 					HikariDataSource dataSource =
 							(HikariDataSource) context.getBean(DataSource.class);
 					CloudSqlJdbcInfoProvider urlProvider =
@@ -136,7 +136,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 	public void testInstanceConnectionName() {
 		this.contextRunner.withPropertyValues(
 				"spring.cloud.gcp.sql.instanceConnectionName=world:asia:japan")
-				.run(context -> {
+				.run((context) -> {
 					CloudSqlJdbcInfoProvider urlProvider =
 							context.getBean(CloudSqlJdbcInfoProvider.class);
 					assertThat(urlProvider.getJdbcUrl()).isEqualTo(
@@ -154,7 +154,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 				"spring.cloud.gcp.sql.instanceConnectionName=tubular-bells:singapore:test-instance")
 				.withClassLoader(
 						new FilteredClassLoader("com.google.cloud.sql.mysql"))
-				.run(context -> {
+				.run((context) -> {
 					CloudSqlJdbcInfoProvider urlProvider =
 							context.getBean(CloudSqlJdbcInfoProvider.class);
 					assertThat(urlProvider.getJdbcUrl()).isEqualTo(
@@ -172,7 +172,7 @@ public class GcpCloudSqlAutoConfigurationMockTests {
 				"spring.cloud.gcp.sql.instanceConnectionName=tubular-bells:singapore:test-instance")
 				.withClassLoader(
 						new FilteredClassLoader(EmbeddedDatabaseType.class, DataSource.class))
-				.run(context -> {
+				.run((context) -> {
 					assertThat(context.getBeanNamesForType(DataSource.class)).isEmpty();
 					assertThat(context.getBeanNamesForType(DataSourceProperties.class)).isEmpty();
 					assertThat(context.getBeanNamesForType(GcpCloudSqlProperties.class)).isEmpty();

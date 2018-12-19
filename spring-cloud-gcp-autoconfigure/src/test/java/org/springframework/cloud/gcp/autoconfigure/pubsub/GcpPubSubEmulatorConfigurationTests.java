@@ -80,7 +80,7 @@ public class GcpPubSubEmulatorConfigurationTests {
 
 	@Test
 	public void testEmulatorConfig() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			CredentialsProvider defaultCredentialsProvider = context.getBean(CredentialsProvider.class);
 			Assert.assertFalse("CredentialsProvider is not correct",
 					defaultCredentialsProvider instanceof NoCredentialsProvider);
@@ -98,7 +98,7 @@ public class GcpPubSubEmulatorConfigurationTests {
 
 	@Test
 	public void testSubscriberPullConfig() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			GcpPubSubProperties gcpPubSubProperties = context
 					.getBean(GcpPubSubProperties.class);
 			Assert.assertEquals("fake-endpoint",
@@ -112,7 +112,7 @@ public class GcpPubSubEmulatorConfigurationTests {
 
 	@Test
 	public void testSubscriberRetrySettings() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			RetrySettings settings = context.getBean("subscriberRetrySettings",
 					RetrySettings.class);
 			Assert.assertEquals(Duration.ofSeconds(1), settings.getTotalTimeout());
@@ -129,7 +129,7 @@ public class GcpPubSubEmulatorConfigurationTests {
 
 	@Test
 	public void testPublisherRetrySettings() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			RetrySettings settings = context.getBean("publisherRetrySettings",
 					RetrySettings.class);
 			Assert.assertEquals(Duration.ofSeconds(9), settings.getTotalTimeout());
@@ -146,7 +146,7 @@ public class GcpPubSubEmulatorConfigurationTests {
 
 	@Test
 	public void testSubscriberFlowControlSettings() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			FlowControlSettings settings = context
 					.getBean("subscriberFlowControlSettings", FlowControlSettings.class);
 			Assert.assertEquals(17, (long) settings.getMaxOutstandingElementCount());
@@ -158,7 +158,7 @@ public class GcpPubSubEmulatorConfigurationTests {
 
 	@Test
 	public void testPublisherBatchingSettings() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			BatchingSettings settings = context.getBean("publisherBatchSettings",
 					BatchingSettings.class);
 			Assert.assertEquals(19, (long) settings.getFlowControlSettings()
