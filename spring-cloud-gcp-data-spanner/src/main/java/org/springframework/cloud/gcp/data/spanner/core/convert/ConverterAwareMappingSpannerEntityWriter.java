@@ -153,7 +153,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		PersistentPropertyAccessor accessor = persistentEntity
 				.getPropertyAccessor(source);
 		persistentEntity.doWithColumnBackedProperties(
-				spannerPersistentProperty -> {
+				(spannerPersistentProperty) -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						Object embeddedObject = accessor
 								.getProperty(spannerPersistentProperty);
@@ -210,7 +210,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		 * both the this key conversion and the write converter to choose the same.
 		 */
 		Class<?> compatible = ConverterAwareMappingSpannerEntityWriter
-				.findFirstCompatibleSpannerSingleItemNativeType(spannerType -> isValidSpannerKeyType(spannerType)
+				.findFirstCompatibleSpannerSingleItemNativeType((spannerType) -> isValidSpannerKeyType(spannerType)
 						&& this.writeConverter.canConvert(object.getClass(), spannerType));
 
 		if (compatible == null) {

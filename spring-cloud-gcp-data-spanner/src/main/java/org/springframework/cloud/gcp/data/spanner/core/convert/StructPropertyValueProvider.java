@@ -126,7 +126,7 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 	private <T> Iterable<T> convertOrReadIterable(Iterable<?> source,
 			Class<T> targetType) {
 		List<T> result = new ArrayList<>();
-		source.forEach(item -> result.add(convertOrRead(targetType, item)));
+		source.forEach((item) -> result.add(convertOrRead(targetType, item)));
 		return result;
 	}
 }

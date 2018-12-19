@@ -77,9 +77,9 @@ public class SpannerDatabaseAdminTemplateTests {
 		MockResults mockResults = new MockResults();
 		mockResults.structs = Arrays.asList(s1, s2, s3, s4);
 		ResultSet results = mock(ResultSet.class);
-		when(results.next()).thenAnswer(invocation -> mockResults.next());
+		when(results.next()).thenAnswer((invocation) -> mockResults.next());
 		when(results.getCurrentRowAsStruct())
-				.thenAnswer(invocation -> mockResults.getCurrent());
+				.thenAnswer((invocation) -> mockResults.getCurrent());
 		when(this.databaseClient.singleUse()).thenReturn(readContext);
 		when(readContext.executeQuery(any())).thenReturn(results);
 
