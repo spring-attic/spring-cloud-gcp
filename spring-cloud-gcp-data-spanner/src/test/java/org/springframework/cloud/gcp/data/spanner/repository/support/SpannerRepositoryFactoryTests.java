@@ -95,7 +95,7 @@ public class SpannerRepositoryFactoryTests {
 		Mockito.<Class<?>>when(repoInfo.getDomainType()).thenReturn(TestEntity.class);
 		// @formatter:on
 		Object repo = this.spannerRepositoryFactory.getTargetRepository(repoInfo);
-		assertThat(repo.getClass()).isEqualTo(SimpleSpannerRepository.class);
+		assertThat(repo).isInstanceOf(SimpleSpannerRepository.class);
 	}
 
 	@Test

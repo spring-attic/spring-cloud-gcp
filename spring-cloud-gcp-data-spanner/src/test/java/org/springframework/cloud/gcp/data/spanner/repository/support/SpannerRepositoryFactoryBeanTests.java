@@ -56,6 +56,6 @@ public class SpannerRepositoryFactoryBeanTests {
 	public void createRepositoryFactoryTest() {
 		RepositoryFactorySupport factory = this.spannerRepositoryFactoryBean
 				.createRepositoryFactory();
-		assertThat(factory.getClass()).isEqualTo(SpannerRepositoryFactory.class);
+		assertThat(factory).isInstanceOf(SpannerRepositoryFactory.class);
 	}
 }
