@@ -32,8 +32,7 @@ import org.springframework.cloud.gcp.data.spanner.test.domain.Trade;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Balint Pato
@@ -53,18 +52,18 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 
 		this.spannerOperations.delete(Trade.class, KeySet.all());
 
-		assertThat(this.spannerOperations.count(Trade.class), is(0L));
+		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(0L);
 
 		Trade trade = Trade.aTrade();
 		this.spannerOperations.insert(trade);
-		assertThat(this.spannerOperations.count(Trade.class), is(1L));
+		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(1L);
 
 		Trade retrievedTrade = this.spannerOperations.read(Trade.class,
 				Key.of(trade.getId(), trade.getTraderId()));
-		assertThat(retrievedTrade, is(trade));
+		assertThat(retrievedTrade).isEqualTo(trade);
 
 		this.spannerOperations.delete(trade);
-		assertThat(this.spannerOperations.count(Trade.class), is(0L));
+		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(0L);
 	}
 
 	@Test
@@ -75,14 +74,14 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 
 			// because the insert happens within the same transaction, this count is still
 			// 0
-			assertThat(transactionOperations.count(Trade.class), is(0L));
+			assertThat(transactionOperations.count(Trade.class)).isEqualTo(0L);
 			return null;
 		});
 
 		// now that the transaction has completed, the count should be 1
-		assertThat(this.spannerOperations.count(Trade.class), is(1L));
+		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(1L);
 		this.transactionalService.testTransactionalAnnotation();
-		assertThat(this.spannerOperations.count(Trade.class), is(2L));
+		assertThat(this.spannerOperations.count(Trade.class)).isEqualTo(2L);
 	}
 
 	@Test
@@ -111,7 +110,7 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 
 			// because the insert happens within the same transaction, this count is still
 			// 1
-			assertThat(this.spannerTemplate.count(Trade.class), is(1L));
+			assertThat(this.spannerTemplate.count(Trade.class)).isEqualTo(1L);
 		}
 	}
 }

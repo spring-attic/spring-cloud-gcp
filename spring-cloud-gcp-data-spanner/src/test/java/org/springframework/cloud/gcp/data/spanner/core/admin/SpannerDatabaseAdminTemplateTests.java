@@ -32,9 +32,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -86,10 +83,9 @@ public class SpannerDatabaseAdminTemplateTests {
 		Map<String, Set<String>> relationships = this.spannerDatabaseAdminTemplate
 				.getParentChildTablesMap();
 
-		assertEquals(2, relationships.size());
-		assertThat(relationships.get("grandpa"),
-				containsInAnyOrder("parent_a", "parent_b"));
-		assertThat(relationships.get("parent_a"), containsInAnyOrder("child"));
+		assertThat(relationships).hasSize(2);
+		assertThat(relationships.get("grandpa")).containsExactlyInAnyOrder("parent_a", "parent_b");
+		assertThat(relationships.get("parent_a")).containsExactlyInAnyOrder("child");
 
 		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("grandpa", "child"))
 				.as("verify grand-child relationship").isTrue();

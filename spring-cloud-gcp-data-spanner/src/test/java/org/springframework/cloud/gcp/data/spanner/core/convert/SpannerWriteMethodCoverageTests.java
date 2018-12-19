@@ -25,8 +25,7 @@ import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.ValueBinder;
 import org.junit.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Chengyuan Zhao
@@ -61,13 +60,14 @@ public class SpannerWriteMethodCoverageTests {
 			else if (ConversionUtils.isIterableNonByteArrayType(paramType)) {
 				Class<?> innerParamType = (Class) ((ParameterizedType) method
 						.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
-				assertThat(ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap
-						.keySet(), hasItem(innerParamType));
+				assertThat(
+						ConverterAwareMappingSpannerEntityWriter.iterablePropertyType2ToMethodMap.keySet())
+								.contains(innerParamType);
 			}
 			else {
 				assertThat(
-						ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap.keySet(),
-						hasItem(paramType));
+						ConverterAwareMappingSpannerEntityWriter.singleItemTypeValueBinderMethodMap.keySet())
+								.contains(paramType);
 			}
 		}
 	}
