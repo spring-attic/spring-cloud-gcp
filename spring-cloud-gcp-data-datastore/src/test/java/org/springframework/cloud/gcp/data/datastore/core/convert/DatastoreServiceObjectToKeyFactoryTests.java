@@ -116,7 +116,7 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 	public void allocateIdForObjectTest() {
 		TestEntityWithKeyId testEntityWithKeyId = new TestEntityWithKeyId();
 
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			IncompleteKey incompleteKey = (IncompleteKey) invocation.getArguments()[0];
 			long id = 123L;
 			if (incompleteKey.getAncestors().size() > 0) {

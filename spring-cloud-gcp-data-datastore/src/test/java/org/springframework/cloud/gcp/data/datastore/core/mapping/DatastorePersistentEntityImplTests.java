@@ -122,7 +122,7 @@ public class DatastorePersistentEntityImplTests {
 		DatastorePersistentEntity p = new DatastoreMappingContext()
 				.getPersistentEntity(TestEntity.class);
 		PersistentPropertyAccessor accessor = p.getPropertyAccessor(t);
-		p.doWithProperties((SimplePropertyHandler) property -> assertNotEquals("b",
+		p.doWithProperties((SimplePropertyHandler) (property) -> assertNotEquals("b",
 				accessor.getProperty(property)));
 	}
 
