@@ -90,9 +90,9 @@ public class KeyConversionTests {
 			Key key = this.spannerEntityWriter.convertToKey(this.objectToTest);
 			assertThat(key, is(this.expectedResult));
 		}
-		catch (Exception e) {
-			assertTrue("Unexpected exception: " + e + "\nexpected: " + this.expectedResult,
-					e.getClass().equals(this.expectedResult));
+		catch (Exception ex) {
+			assertTrue("Unexpected exception: " + ex + "\nexpected: " + this.expectedResult,
+					ex.getClass().equals(this.expectedResult));
 		}
 	}
 

@@ -447,7 +447,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 			}
 			return referenced;
 		}
-		catch (ClassCastException e) {
+		catch (ClassCastException ex) {
 				throw new DatastoreDataException(
 					"Error loading reference property " + fieldName + "."
 							+ "Reference properties must be stored as Keys or lists of Keys"

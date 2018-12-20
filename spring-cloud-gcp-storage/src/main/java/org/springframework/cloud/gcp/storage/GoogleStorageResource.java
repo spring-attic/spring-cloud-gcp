@@ -101,8 +101,8 @@ public class GoogleStorageResource implements WritableResource {
 
 			this.location = locationUri;
 		}
-		catch (URISyntaxException e) {
-			throw new IllegalArgumentException("Invalid location: " + location, e);
+		catch (URISyntaxException ex) {
+			throw new IllegalArgumentException("Invalid location: " + location, ex);
 		}
 	}
 
@@ -123,7 +123,7 @@ public class GoogleStorageResource implements WritableResource {
 		try {
 			return isBucket() ? getBucket() != null : getBlob() != null;
 		}
-		catch (IOException e) {
+		catch (IOException ex) {
 			return false;
 		}
 	}

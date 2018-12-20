@@ -148,8 +148,8 @@ public class GoogleStorageIntegrationTests {
 			try {
 				return new DefaultCredentialsProvider(Credentials::new);
 			}
-			catch (IOException e) {
-				throw new RuntimeException(e);
+			catch (IOException ex) {
+				throw new RuntimeException(ex);
 			}
 		}
 	}

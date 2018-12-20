@@ -92,8 +92,8 @@ public class WebController {
 			ackFuture.get();
 			returnView = buildStatusView(String.format("Pulled and acked %s message(s)", messages.size()));
 		}
-		catch (Exception e) {
-			LOGGER.warn("Acking failed.", e);
+		catch (Exception ex) {
+			LOGGER.warn("Acking failed.", ex);
 			returnView = buildStatusView("Acking failed");
 		}
 
@@ -120,8 +120,8 @@ public class WebController {
 			returnView = buildStatusView(
 					String.format("Pulled and acked %s message(s)", mixedSubscriptionMessages.size()));
 		}
-		catch (Exception e) {
-			LOGGER.warn("Acking failed.", e);
+		catch (Exception ex) {
+			LOGGER.warn("Acking failed.", ex);
 			returnView = buildStatusView("Acking failed");
 		}
 

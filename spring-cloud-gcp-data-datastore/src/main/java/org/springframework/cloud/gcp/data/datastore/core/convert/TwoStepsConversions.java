@@ -157,8 +157,8 @@ public class TwoStepsConversions implements ReadWriteConversions {
 				return (T) convertCollection(elements, targetCollectionType);
 
 			}
-			catch (ConversionException | DatastoreDataException e) {
-				throw new DatastoreDataException("Unable process elements of a collection", e);
+			catch (ConversionException | DatastoreDataException ex) {
+				throw new DatastoreDataException("Unable process elements of a collection", ex);
 			}
 		}
 		return (T) readConverter.apply(val, targetComponentType);

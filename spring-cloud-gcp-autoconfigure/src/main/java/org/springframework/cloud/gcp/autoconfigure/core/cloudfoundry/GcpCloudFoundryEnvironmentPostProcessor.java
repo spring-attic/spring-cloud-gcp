@@ -209,8 +209,8 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 							prefix + gcpPropKey,
 							credentialsMap.get(cfPropKey)));
 		}
-		catch (ClassCastException e) {
-			LOGGER.warn("Unexpected format of CF (VCAP) properties", e);
+		catch (ClassCastException ex) {
+			LOGGER.warn("Unexpected format of CF (VCAP) properties", ex);
 		}
 
 		return properties;
