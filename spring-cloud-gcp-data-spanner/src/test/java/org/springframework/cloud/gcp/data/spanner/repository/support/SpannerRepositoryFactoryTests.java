@@ -37,8 +37,7 @@ import org.springframework.data.repository.core.RepositoryInformation;
 import org.springframework.data.repository.query.QueryLookupStrategy;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -66,14 +65,14 @@ public class SpannerRepositoryFactoryTests {
 	public void getEntityInformationTest() {
 		EntityInformation<TestEntity, Key> entityInformation = this.spannerRepositoryFactory
 				.getEntityInformation(TestEntity.class);
-		assertEquals(TestEntity.class, entityInformation.getJavaType());
-		assertEquals(Key.class, entityInformation.getIdType());
+		assertThat(entityInformation.getJavaType()).isEqualTo(TestEntity.class);
+		assertThat(entityInformation.getIdType()).isEqualTo(Key.class);
 
 		TestEntity t = new TestEntity();
 		t.id = "a";
 		t.id2 = 3L;
-		assertEquals(Key.newBuilder().append(t.id).append(t.id2).build(),
-				entityInformation.getId(t));
+		assertThat(entityInformation.getId(t))
+				.isEqualTo(Key.newBuilder().append(t.id).append(t.id2).build());
 	}
 
 	@Test
@@ -96,20 +95,20 @@ public class SpannerRepositoryFactoryTests {
 		Mockito.<Class<?>>when(repoInfo.getDomainType()).thenReturn(TestEntity.class);
 		// @formatter:on
 		Object repo = this.spannerRepositoryFactory.getTargetRepository(repoInfo);
-		assertEquals(SimpleSpannerRepository.class, repo.getClass());
+		assertThat(repo).isInstanceOf(SimpleSpannerRepository.class);
 	}
 
 	@Test
 	public void getRepositoryBaseClassTest() {
 		Class baseClass = this.spannerRepositoryFactory.getRepositoryBaseClass(null);
-		assertEquals(SimpleSpannerRepository.class, baseClass);
+		assertThat(baseClass).isEqualTo(SimpleSpannerRepository.class);
 	}
 
 	@Test
 	public void getQueryLookupStrategyTest() {
 		Optional<QueryLookupStrategy> qls = this.spannerRepositoryFactory
 				.getQueryLookupStrategy(null, mock(QueryMethodEvaluationContextProvider.class));
-		assertTrue(qls.get() instanceof SpannerQueryLookupStrategy);
+		assertThat(qls.get()).isInstanceOf(SpannerQueryLookupStrategy.class);
 	}
 
 	@Table(name = "custom_test_table")

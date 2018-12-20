@@ -54,9 +54,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -136,7 +134,7 @@ public class SpannerTemplateTests {
 					return "all done";
 				});
 
-		assertEquals("all done", finalResult);
+		assertThat(finalResult).isEqualTo("all done");
 		verify(transactionContext, times(1)).buffer((List<Mutation>) any());
 		verify(transactionContext, times(1)).read(eq("custom_test_table"), any(), any());
 		verify(transactionContext, times(1)).executeUpdate(eq(DML));
@@ -159,7 +157,7 @@ public class SpannerTemplateTests {
 				}, new SpannerReadOptions()
 						.setTimestamp(Timestamp.ofTimeMicroseconds(333)));
 
-		assertEquals("all done", finalResult);
+		assertThat(finalResult).isEqualTo("all done");
 		verify(readOnlyTransaction, times(2)).read(eq("custom_test_table"), any(), any());
 	}
 
@@ -223,13 +221,13 @@ public class SpannerTemplateTests {
 
 	@Test
 	public void getMappingContextTest() {
-		assertSame(this.mappingContext, this.spannerTemplate.getMappingContext());
+		assertThat(this.spannerTemplate.getMappingContext()).isSameAs(this.mappingContext);
 	}
 
 	@Test
 	public void findSingleKeyNullTest() {
 		when(this.readContext.read(any(), any(), any())).thenReturn(null);
-		assertNull(this.spannerTemplate.read(TestEntity.class, Key.of("key")));
+		assertThat(this.spannerTemplate.read(TestEntity.class, Key.of("key"))).isNull();
 	}
 
 	@Test
@@ -498,9 +496,9 @@ public class SpannerTemplateTests {
 
 		List results = spyTemplate.queryAll(TestEntity.class,
 				queryOption.setSort(pageable.getSort()));
-		assertEquals("a", ((TestEntity) results.get(0)).id);
-		assertEquals("b", ((TestEntity) results.get(1)).id);
-		assertEquals("c", ((TestEntity) results.get(2)).id);
+		assertThat(((TestEntity) results.get(0)).id).isEqualTo("a");
+		assertThat(((TestEntity) results.get(1)).id).isEqualTo("b");
+		assertThat(((TestEntity) results.get(2)).id).isEqualTo("c");
 	}
 
 	@Test
@@ -531,13 +529,13 @@ public class SpannerTemplateTests {
 						new SpannerReadOptions()
 								.setIncludeProperties(Collections.singleton("id")))
 				.get(0);
-		assertNull(resultWithoutChildren.childEntities);
+		assertThat(resultWithoutChildren.childEntities).isNull();
 
 		ParentEntity result = this.spannerTemplate.readAll(ParentEntity.class).get(0);
-		assertEquals(1, result.childEntities.size());
-		assertSame(c, result.childEntities.get(0));
-		assertEquals(1, result.childEntities.get(0).childEntities.size());
-		assertSame(gc, result.childEntities.get(0).childEntities.get(0));
+		assertThat(result.childEntities).hasSize(1);
+		assertThat(result.childEntities.get(0)).isSameAs(c);
+		assertThat(result.childEntities.get(0).childEntities).hasSize(1);
+		assertThat(result.childEntities.get(0).childEntities.get(0)).isSameAs(gc);
 	}
 
 	@Table(name = "custom_test_table")

@@ -37,8 +37,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -124,8 +124,8 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	@Test
 	public void tableCreatedTest() {
-		assertTrue(this.spannerDatabaseAdminTemplate.tableExists(
-				this.spannerMappingContext.getPersistentEntity(Trade.class).tableName()));
+		assertThat(this.spannerDatabaseAdminTemplate.tableExists(
+				this.spannerMappingContext.getPersistentEntity(Trade.class).tableName())).isTrue();
 	}
 
 	protected void createDatabaseWithSchema() {

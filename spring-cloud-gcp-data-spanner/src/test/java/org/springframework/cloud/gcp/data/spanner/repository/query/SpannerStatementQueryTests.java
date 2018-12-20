@@ -36,7 +36,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -97,29 +97,30 @@ public class SpannerStatementQueryTests {
 				.thenAnswer((invocation) -> {
 					Statement statement = invocation.getArgument(1);
 
-					assertEquals(
+					String expectedQuery =
 							"SELECT DISTINCT shares , trader_id , ticker , price , action , id "
 									+ "FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
 									+ "AND ticker=@tag1 ) OR "
 									+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
 									+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "
-									+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 3",
-							statement.getSql());
+									+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 3";
+
+					assertThat(statement.getSql()).isEqualTo(expectedQuery);
 
 					Map<String, Value> paramMap = statement.getParameters();
 
-					assertEquals(params[0].toString(), paramMap.get("tag0").getString());
-					assertEquals(params[1], paramMap.get("tag1").getString());
-					assertEquals(params[2], paramMap.get("tag2").getString());
-					assertEquals(8L, paramMap.get("tag3").getInt64());
-					assertEquals(params[4], paramMap.get("tag4").getFloat64());
-					assertEquals(params[5], paramMap.get("tag5").getString());
-					assertEquals(params[6], paramMap.get("tag6").getString());
-					assertEquals(params[7], paramMap.get("tag7").getString());
-					assertEquals(params[8], paramMap.get("tag8").getString());
-					assertEquals(params[9], paramMap.get("tag9").getString());
-					assertEquals(params[10], paramMap.get("tag10").getFloat64());
-					assertEquals(params[11], paramMap.get("tag11").getFloat64());
+					assertThat(paramMap.get("tag0").getString()).isEqualTo(params[0].toString());
+					assertThat(paramMap.get("tag1").getString()).isEqualTo(params[1]);
+					assertThat(paramMap.get("tag2").getString()).isEqualTo(params[2]);
+					assertThat(paramMap.get("tag3").getInt64()).isEqualTo(8L);
+					assertThat(paramMap.get("tag4").getFloat64()).isEqualTo(params[4]);
+					assertThat(paramMap.get("tag5").getString()).isEqualTo(params[5]);
+					assertThat(paramMap.get("tag6").getString()).isEqualTo(params[6]);
+					assertThat(paramMap.get("tag7").getString()).isEqualTo(params[7]);
+					assertThat(paramMap.get("tag8").getString()).isEqualTo(params[8]);
+					assertThat(paramMap.get("tag9").getString()).isEqualTo(params[9]);
+					assertThat(paramMap.get("tag10").getFloat64()).isEqualTo(params[10]);
+					assertThat(paramMap.get("tag11").getFloat64()).isEqualTo(params[11]);
 
 					return null;
 				});
@@ -151,32 +152,32 @@ public class SpannerStatementQueryTests {
 				.thenAnswer((invocation) -> {
 					Statement statement = invocation.getArgument(1);
 
-					assertEquals("SELECT EXISTS"
+					String expectedSql = "SELECT EXISTS"
 							+ "(SELECT DISTINCT shares , trader_id , ticker , price , action , id "
-					+ "FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
-					+ "AND ticker=@tag1 ) OR "
-					+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
-					+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "
-					+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 1)",
-					statement.getSql());
+							+ "FROM trades WHERE ( LOWER(action)=LOWER(@tag0) "
+							+ "AND ticker=@tag1 ) OR "
+							+ "( trader_id=@tag2 AND price<@tag3 ) OR ( price>=@tag4 AND id<>NULL AND "
+							+ "trader_id=NULL AND trader_id LIKE @tag7 AND price=TRUE AND price=FALSE AND "
+							+ "price>@tag10 AND price<=@tag11 ) ORDER BY id DESC LIMIT 1)";
+					assertThat(statement.getSql()).isEqualTo(expectedSql);
 
-			Map<String, Value> paramMap = statement.getParameters();
+					Map<String, Value> paramMap = statement.getParameters();
 
-			assertEquals(params[0].toString(), paramMap.get("tag0").getString());
-			assertEquals(params[1], paramMap.get("tag1").getString());
-			assertEquals(params[2], paramMap.get("tag2").getString());
-			assertEquals(params[3], paramMap.get("tag3").getFloat64());
-			assertEquals(params[4], paramMap.get("tag4").getFloat64());
-			assertEquals(params[5], paramMap.get("tag5").getString());
-			assertEquals(params[6], paramMap.get("tag6").getString());
-			assertEquals(params[7], paramMap.get("tag7").getString());
-			assertEquals(params[8], paramMap.get("tag8").getString());
-			assertEquals(params[9], paramMap.get("tag9").getString());
-			assertEquals(params[10], paramMap.get("tag10").getFloat64());
-			assertEquals(params[11], paramMap.get("tag11").getFloat64());
+					assertThat(paramMap.get("tag0").getString()).isEqualTo(params[0].toString());
+					assertThat(paramMap.get("tag1").getString()).isEqualTo(params[1]);
+					assertThat(paramMap.get("tag2").getString()).isEqualTo(params[2]);
+					assertThat(paramMap.get("tag3").getFloat64()).isEqualTo(params[3]);
+					assertThat(paramMap.get("tag4").getFloat64()).isEqualTo(params[4]);
+					assertThat(paramMap.get("tag5").getString()).isEqualTo(params[5]);
+					assertThat(paramMap.get("tag6").getString()).isEqualTo(params[6]);
+					assertThat(paramMap.get("tag7").getString()).isEqualTo(params[7]);
+					assertThat(paramMap.get("tag8").getString()).isEqualTo(params[8]);
+					assertThat(paramMap.get("tag9").getString()).isEqualTo(params[9]);
+					assertThat(paramMap.get("tag10").getFloat64()).isEqualTo(params[10]);
+					assertThat(paramMap.get("tag11").getFloat64()).isEqualTo(params[11]);
 
-			return null;
-		});
+					return null;
+				});
 
 		doReturn(Object.class).when(this.partTreeSpannerQuery)
 				.getReturnedSimpleConvertableItemType();
