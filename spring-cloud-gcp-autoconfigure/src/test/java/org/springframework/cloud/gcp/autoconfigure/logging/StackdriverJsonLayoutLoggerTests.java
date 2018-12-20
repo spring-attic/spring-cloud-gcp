@@ -25,11 +25,9 @@ import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.logging.slf4j.MDCContextMap;
-import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Andreas Berger
@@ -63,12 +61,12 @@ public class StackdriverJsonLayoutLoggerTests {
 					"projects/test-project/traces/12345678901234561234567890123456", data);
 			checkData(StackdriverTraceConstants.SPAN_ID_ATTRIBUTE, "span123", data);
 			checkData("foo", "bar", data);
-			assertFalse(data.containsKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID));
-			assertFalse(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID));
-			assertFalse(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT));
-			assertFalse(data.containsKey(JsonLayout.TIMESTAMP_ATTR_NAME));
-			assertTrue(data.containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE));
-			assertTrue(data.containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE));
+			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_TRACE_ID)).isFalse();
+			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_ID)).isFalse();
+			assertThat(data.containsKey(StackdriverTraceConstants.MDC_FIELD_SPAN_EXPORT)).isFalse();
+			assertThat(data.containsKey(JsonLayout.TIMESTAMP_ATTR_NAME)).isFalse();
+			assertThat(data.containsKey(StackdriverTraceConstants.TIMESTAMP_SECONDS_ATTRIBUTE)).isTrue();
+			assertThat(data.containsKey(StackdriverTraceConstants.TIMESTAMP_NANOS_ATTRIBUTE)).isTrue();
 		}
 		finally {
 			System.setOut(oldOut);
@@ -126,7 +124,7 @@ public class StackdriverJsonLayoutLoggerTests {
 
 	private void checkData(String attribute, Object value, Map data) {
 		Object actual = data.get(attribute);
-		Assert.assertNotNull(actual);
-		Assert.assertEquals(value, actual);
+		assertThat(actual).isNotNull();
+		assertThat(actual).isEqualTo(value);
 	}
 }
