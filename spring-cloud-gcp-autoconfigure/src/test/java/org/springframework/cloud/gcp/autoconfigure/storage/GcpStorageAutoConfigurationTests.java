@@ -71,7 +71,7 @@ public class GcpStorageAutoConfigurationTests {
 	public void testValidObject() throws Exception {
 		TestRestTemplate testRestTemplate = new TestRestTemplate();
 		Long actual = testRestTemplate.getForObject("http://localhost:" + this.port + "/resource", Long.class);
-		assertThat(actual).isEqualTo(new Long(4096L));
+		assertThat(actual).isEqualTo(4096);
 	}
 
 	@Test

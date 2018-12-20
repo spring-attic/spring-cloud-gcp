@@ -82,7 +82,7 @@ public class GoogleConfigPropertySourceLocatorTest {
 		assertThat(propertySource.getName()).isEqualTo("spring-cloud-gcp");
 		assertThat(propertySource.getProperty("property-int")).isEqualTo(10);
 		assertThat(propertySource.getProperty("property-bool")).isEqualTo(true);
-		assertThat("projectid").isEqualTo(this.googleConfigPropertySourceLocator.getProjectId());
+		assertThat(this.googleConfigPropertySourceLocator.getProjectId()).isEqualTo("projectid");
 	}
 
 	@Test
