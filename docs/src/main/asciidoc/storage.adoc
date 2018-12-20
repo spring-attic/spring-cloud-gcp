@@ -65,6 +65,16 @@ However, creating signed URLs requires that the resource was created using servi
 
 The Spring Boot Starter for Google Cloud Storage auto-configures the `Storage` bean required by the `spring-cloud-gcp-storage` module, based on the `CredentialsProvider` provided by the Spring Boot GCP starter.
 
+==== Setting the Content Type
+
+You can set the content-type of Google Cloud Storage files from their corresponding `Resource` objects:
+
+[source,java]
+----
+((GoogleStorageResource)gcsResource).getBlob().toBuilder().setContentType("text/html").build().update();
+----
+
+
 === Configuration
 
 The Spring Boot Starter for Google Cloud Storage provides the following configuration options:
