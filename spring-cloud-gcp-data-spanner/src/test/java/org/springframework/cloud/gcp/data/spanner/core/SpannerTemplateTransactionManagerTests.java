@@ -155,8 +155,8 @@ public class SpannerTemplateTransactionManagerTests {
 		try {
 			this.transactionalService.doInTransactionWithException(entity1, entity2);
 		}
-		catch (Exception e) {
-			exception = e;
+		catch (Exception ex) {
+			exception = ex;
 		}
 		assertNotNull(exception);
 

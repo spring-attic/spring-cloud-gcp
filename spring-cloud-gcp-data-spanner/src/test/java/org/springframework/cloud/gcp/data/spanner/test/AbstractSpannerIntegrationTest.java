@@ -116,9 +116,9 @@ public abstract class AbstractSpannerIntegrationTest {
 			createDatabaseWithSchema();
 			tablesInitialized = true;
 		}
-		catch (Exception e) {
+		catch (Exception ex) {
 			setupFailed = true;
-			throw e;
+			throw ex;
 		}
 	}
 

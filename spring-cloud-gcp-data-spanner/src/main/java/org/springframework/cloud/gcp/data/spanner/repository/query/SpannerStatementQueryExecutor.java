@@ -222,9 +222,9 @@ public final class SpannerStatementQueryExecutor {
 						.get(Struct.class);
 				param = paramStructConvertFunc.apply(param);
 			}
-			catch (SpannerDataException e) {
+			catch (SpannerDataException ex) {
 				throw new IllegalArgumentException("Param: " + param.toString()
-						+ " is not a supported type: " + param.getClass(), e);
+						+ " is not a supported type: " + param.getClass(), ex);
 			}
 		}
 		Object unused = toMethod.apply(bind, param); //NOSONAR compiler rule requires this to be set

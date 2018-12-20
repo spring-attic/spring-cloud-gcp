@@ -124,8 +124,8 @@ public class PubSubInboundChannelAdapterTests {
 
 			Assert.fail(EXPECTED_EXCEPTION);
 		}
-		catch (Throwable t) {
-			Assert.assertEquals(EXCEPTION_MESSAGE, t.getCause().getMessage());
+		catch (Throwable ex) {
+			Assert.assertEquals(EXCEPTION_MESSAGE, ex.getCause().getMessage());
 		}
 
 		Assert.assertEquals(NACK, this.value);
@@ -147,8 +147,8 @@ public class PubSubInboundChannelAdapterTests {
 
 			Assert.fail(EXPECTED_EXCEPTION);
 		}
-		catch (Throwable t) {
-			Assert.assertEquals(EXCEPTION_MESSAGE, t.getCause().getMessage());
+		catch (Throwable ex) {
+			Assert.assertEquals(EXCEPTION_MESSAGE, ex.getCause().getMessage());
 		}
 
 		verify(factory, times(1)).withPayload(any());
@@ -167,8 +167,8 @@ public class PubSubInboundChannelAdapterTests {
 
 			Assert.fail(EXPECTED_EXCEPTION);
 		}
-		catch (Throwable t) {
-			Assert.assertEquals(EXCEPTION_MESSAGE, t.getCause().getMessage());
+		catch (Throwable ex) {
+			Assert.assertEquals(EXCEPTION_MESSAGE, ex.getCause().getMessage());
 		}
 
 		Assert.assertNull(this.value);

@@ -140,8 +140,8 @@ public class PubSubTemplateIntegrationTests {
 				try {
 					f.get(5, TimeUnit.SECONDS);
 				}
-				catch (InterruptedException | ExecutionException | TimeoutException e) {
-					e.printStackTrace();
+				catch (InterruptedException | ExecutionException | TimeoutException ex) {
+					ex.printStackTrace();
 				}
 			});
 

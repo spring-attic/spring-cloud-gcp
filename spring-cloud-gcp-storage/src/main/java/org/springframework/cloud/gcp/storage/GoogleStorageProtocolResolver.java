@@ -90,7 +90,7 @@ public class GoogleStorageProtocolResolver
 		try {
 			return getGoogleStorageProtocolResolverSettings();
 		}
-		catch (NoSuchBeanDefinitionException e) {
+		catch (NoSuchBeanDefinitionException ex) {
 			return GoogleStorageProtocolResolverSettings
 					.DEFAULT_GOOGLE_STORAGE_PROTOCOL_RESOLVER_SETTINGS;
 		}

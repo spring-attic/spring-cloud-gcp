@@ -223,10 +223,9 @@
         <module name="io.spring.javaformat.checkstyle.check.SpringLambdaCheck" />
 
         <!--<module name="io.spring.javaformat.checkstyle.check.SpringTernaryCheck" />-->
-        <!-- TODO: re-enable when ready -->
-        <!--
+
         <module name="io.spring.javaformat.checkstyle.check.SpringCatchCheck" />
-        -->
+
         <!-- TODO: re-enable when ready -->
         <!--
         <module name="io.spring.javaformat.checkstyle.check.SpringJavadocCheck" />
