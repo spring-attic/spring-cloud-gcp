@@ -26,7 +26,6 @@ import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
 import org.assertj.core.data.Offset;
-import org.junit.Assert;
 import org.junit.Test;
 import org.threeten.bp.Duration;
 
@@ -87,17 +86,14 @@ public class GcpPubSubEmulatorConfigurationTests {
 	public void testEmulatorConfig() {
 		this.contextRunner.run((context) -> {
 			CredentialsProvider defaultCredentialsProvider = context.getBean(CredentialsProvider.class);
-			Assert.assertFalse("CredentialsProvider is not correct",
-					defaultCredentialsProvider instanceof NoCredentialsProvider);
+			assertThat(defaultCredentialsProvider).isNotInstanceOf(NoCredentialsProvider.class);
 
 			TopicAdminSettings topicAdminSettings = context.getBean(TopicAdminSettings.class);
 			CredentialsProvider credentialsProvider = topicAdminSettings.getCredentialsProvider();
-			Assert.assertTrue("CredentialsProvider for emulator is not correct",
-					credentialsProvider instanceof NoCredentialsProvider);
+			assertThat(credentialsProvider).isInstanceOf(NoCredentialsProvider.class);
 
 			TransportChannelProvider transportChannelProvider = context.getBean(TransportChannelProvider.class);
-			Assert.assertTrue("TransportChannelProvider is not correct",
-					transportChannelProvider instanceof FixedTransportChannelProvider);
+			assertThat(transportChannelProvider).isInstanceOf(FixedTransportChannelProvider.class);
 		});
 	}
 
@@ -153,8 +149,8 @@ public class GcpPubSubEmulatorConfigurationTests {
 		this.contextRunner.run((context) -> {
 			FlowControlSettings settings = context
 					.getBean("subscriberFlowControlSettings", FlowControlSettings.class);
-			assertThat((long) settings.getMaxOutstandingElementCount()).isEqualTo(17);
-			assertThat((long) settings.getMaxOutstandingRequestBytes()).isEqualTo(18);
+			assertThat(settings.getMaxOutstandingElementCount()).isEqualTo(17);
+			assertThat(settings.getMaxOutstandingRequestBytes()).isEqualTo(18);
 			assertThat(settings.getLimitExceededBehavior()).isEqualTo(LimitExceededBehavior.Ignore);
 		});
 	}
@@ -164,14 +160,12 @@ public class GcpPubSubEmulatorConfigurationTests {
 		this.contextRunner.run((context) -> {
 			BatchingSettings settings = context.getBean("publisherBatchSettings",
 					BatchingSettings.class);
-			Assert.assertEquals(19, (long) settings.getFlowControlSettings()
-					.getMaxOutstandingElementCount());
-			Assert.assertEquals(20, (long) settings.getFlowControlSettings()
-					.getMaxOutstandingRequestBytes());
+			assertThat(settings.getFlowControlSettings().getMaxOutstandingElementCount()).isEqualTo(19);
+			assertThat(settings.getFlowControlSettings().getMaxOutstandingRequestBytes()).isEqualTo(20);
 			assertThat(settings.getFlowControlSettings().getLimitExceededBehavior())
 					.isEqualTo(LimitExceededBehavior.Ignore);
-			assertThat((long) settings.getElementCountThreshold()).isEqualTo(21);
-			assertThat((long) settings.getRequestByteThreshold()).isEqualTo(22);
+			assertThat(settings.getElementCountThreshold()).isEqualTo(21);
+			assertThat(settings.getRequestByteThreshold()).isEqualTo(22);
 			assertThat(settings.getDelayThreshold()).isEqualTo(Duration.ofSeconds(23));
 			assertThat(settings.getIsEnabled()).isTrue();
 		});
