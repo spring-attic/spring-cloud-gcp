@@ -58,11 +58,11 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  */
 public abstract class DatastoreNativeTypes {
 
-	public final static Set<Class<?>> DATASTORE_NATIVE_TYPES;
+	public static final Set<Class<?>> DATASTORE_NATIVE_TYPES;
 
-	public final static Set<Class<?>> ID_TYPES;
+	public static final Set<Class<?>> ID_TYPES;
 
-	private final static Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
+	private static final Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
 
 	private static final Map<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>
 			GQL_PARAM_BINDING_FUNC_MAP;
@@ -127,7 +127,7 @@ public abstract class DatastoreNativeTypes {
 				.build();
 	}
 
-	public final static SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_NATIVE_TYPES, true);
+	public static final SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_NATIVE_TYPES, true);
 
 
 	public static boolean isNativeType(Class aClass) {

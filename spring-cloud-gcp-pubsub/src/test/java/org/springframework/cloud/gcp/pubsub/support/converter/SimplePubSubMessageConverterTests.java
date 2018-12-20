@@ -38,9 +38,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class SimplePubSubMessageConverterTests {
 
-	private final static String TEST_STRING = "test";
+	private static final String TEST_STRING = "test";
 
-	private final static Map<String, String> TEST_HEADERS = ImmutableMap.of(
+	private static final Map<String, String> TEST_HEADERS = ImmutableMap.of(
 			"key1", "value1",
 			"key2", "value2");
 
