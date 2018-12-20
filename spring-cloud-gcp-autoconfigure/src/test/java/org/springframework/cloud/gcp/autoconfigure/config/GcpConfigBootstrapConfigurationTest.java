@@ -34,7 +34,7 @@ public class GcpConfigBootstrapConfigurationTest {
 
 	@Test
 	public void testConfigurationValueDefaultsAreAsExpected() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			GcpConfigProperties config = context.getBean(GcpConfigProperties.class);
 			assertThat(config.getName()).isEqualTo("application");
 			assertThat(config.getProfile()).isEqualTo("default");
@@ -50,7 +50,7 @@ public class GcpConfigBootstrapConfigurationTest {
 				"spring.cloud.gcp.config.timeoutMillis=120000",
 				"spring.cloud.gcp.config.enabled=false",
 				"spring.cloud.gcp.config.project-id=pariah")
-				.run(context -> {
+				.run((context) -> {
 					GcpConfigProperties config = context.getBean(GcpConfigProperties.class);
 					assertThat(config.getName()).isEqualTo("myapp");
 					assertThat(config.getProfile()).isEqualTo("prod");

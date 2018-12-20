@@ -121,7 +121,7 @@ public class SpannerTemplateTests {
 
 		TransactionContext transactionContext = mock(TransactionContext.class);
 
-		when(transactionRunner.run(any())).thenAnswer(invocation -> {
+		when(transactionRunner.run(any())).thenAnswer((invocation) -> {
 			TransactionCallable transactionCallable = invocation.getArgument(0);
 			return transactionCallable.run(transactionContext);
 		});
@@ -129,7 +129,7 @@ public class SpannerTemplateTests {
 		TestEntity t = new TestEntity();
 
 		String finalResult = this.spannerTemplate
-				.performReadWriteTransaction(spannerTemplate -> {
+				.performReadWriteTransaction((spannerTemplate) -> {
 					List<TestEntity> items = spannerTemplate.readAll(TestEntity.class);
 					spannerTemplate.update(t);
 					spannerTemplate.executeDmlStatement(DML);
@@ -151,7 +151,7 @@ public class SpannerTemplateTests {
 						.thenReturn(readOnlyTransaction);
 
 		String finalResult = this.spannerTemplate
-				.performReadOnlyTransaction(spannerOperations -> {
+				.performReadOnlyTransaction((spannerOperations) -> {
 					List<TestEntity> items = spannerOperations.readAll(TestEntity.class);
 					TestEntity item = spannerOperations.read(TestEntity.class,
 							Key.of("key"));
@@ -174,7 +174,7 @@ public class SpannerTemplateTests {
 						.thenReturn(readOnlyTransaction);
 
 		this.spannerTemplate
-				.performReadOnlyTransaction(spannerOperations -> {
+				.performReadOnlyTransaction((spannerOperations) -> {
 					spannerOperations.executeDmlStatement(Statement.of("fail"));
 					return null;
 				}, new SpannerReadOptions()

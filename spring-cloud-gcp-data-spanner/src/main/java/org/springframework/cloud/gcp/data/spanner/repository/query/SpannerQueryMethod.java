@@ -77,7 +77,7 @@ public class SpannerQueryMethod extends QueryMethod {
 
 		return Optional.ofNullable(getQueryAnnotation()) //
 				.map(AnnotationUtils::getValue) //
-				.map(it -> (String) it) //
+				.map((it) -> (String) it) //
 				.filter(StringUtils::hasText);
 	}
 

@@ -213,7 +213,7 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void findAllSortTest() {
 		Sort sort = mock(Sort.class);
-		when(this.template.queryAll(eq(Object.class), any())).thenAnswer(invocation -> {
+		when(this.template.queryAll(eq(Object.class), any())).thenAnswer((invocation) -> {
 			SpannerPageableQueryOptions spannerQueryOptions = invocation.getArgument(1);
 			assertSame(sort, spannerQueryOptions.getSort());
 			return null;
@@ -230,7 +230,7 @@ public class SpannerRepositoryImplTests {
 		when(pageable.getSort()).thenReturn(sort);
 		when(pageable.getOffset()).thenReturn(3L);
 		when(pageable.getPageSize()).thenReturn(5);
-		when(this.template.queryAll(eq(Object.class), any())).thenAnswer(invocation -> {
+		when(this.template.queryAll(eq(Object.class), any())).thenAnswer((invocation) -> {
 			SpannerPageableQueryOptions spannerQueryOptions = invocation.getArgument(1);
 			assertSame(sort, spannerQueryOptions.getSort());
 			assertEquals(new Long(3), spannerQueryOptions.getOffset());
@@ -248,7 +248,7 @@ public class SpannerRepositoryImplTests {
 
 		when(this.entityProcessor.convertToKey(eq(Key.of("key1")))).thenReturn(Key.of("key1"));
 		when(this.entityProcessor.convertToKey(eq(Key.of("key2")))).thenReturn(Key.of("key2"));
-		when(this.template.read(eq(Object.class), (KeySet) any())).thenAnswer(invocation -> {
+		when(this.template.read(eq(Object.class), (KeySet) any())).thenAnswer((invocation) -> {
 			KeySet keys = invocation.getArgument(1);
 			assertThat(keys.getKeys(),
 					containsInAnyOrder(Key.of("key2"), Key.of("key1")));
@@ -290,23 +290,23 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void readOnlyTransactionTest() {
 		when(this.template.performReadOnlyTransaction(any(), any()))
-				.thenAnswer(invocation -> {
+				.thenAnswer((invocation) -> {
 					Function<SpannerTemplate, String> f = invocation.getArgument(0);
 					return f.apply(this.template);
 				});
 		assertEquals("test",
 				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
-				.performReadOnlyTransaction(repo -> "test"));
+				.performReadOnlyTransaction((repo) -> "test"));
 	}
 
 	@Test
 	public void readWriteTransactionTest() {
-		when(this.template.performReadWriteTransaction(any())).thenAnswer(invocation -> {
+		when(this.template.performReadWriteTransaction(any())).thenAnswer((invocation) -> {
 			Function<SpannerTemplate, String> f = invocation.getArgument(0);
 			return f.apply(this.template);
 		});
 		assertEquals("test",
 				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
-				.performReadWriteTransaction(repo -> "test"));
+				.performReadWriteTransaction((repo) -> "test"));
 	}
 }

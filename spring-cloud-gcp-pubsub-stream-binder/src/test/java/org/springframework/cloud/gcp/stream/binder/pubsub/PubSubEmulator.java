@@ -136,9 +136,9 @@ public class PubSubEmulator extends ExternalResource {
 
 				try (BufferedReader br = new BufferedReader(new InputStreamReader(psProcess.getInputStream()))) {
 					br.lines()
-							.filter(psLine -> psLine.contains(hostPortParams))
-							.map(psLine -> new StringTokenizer(psLine).nextToken())
-							.forEach(p -> {
+							.filter((psLine) -> psLine.contains(hostPortParams))
+							.map((psLine) -> new StringTokenizer(psLine).nextToken())
+							.forEach((p) -> {
 								LOGGER.info("Found emulator process to kill: " + p);
 								this.killProcess(p);
 								foundEmulatorProcess.set(true);
@@ -235,8 +235,8 @@ public class PubSubEmulator extends ExternalResource {
 
 			if (key != null) {
 				Optional<Path> configFilePath = key.pollEvents().stream()
-						.map(event -> (Path) event.context())
-						.filter(path -> ENV_FILE_NAME.equals(path.toString()))
+						.map((event) -> (Path) event.context())
+						.filter((path) -> ENV_FILE_NAME.equals(path.toString()))
 						.findAny();
 				if (configFilePath.isPresent()) {
 					return;

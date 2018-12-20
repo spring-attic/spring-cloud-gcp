@@ -149,7 +149,7 @@ public class PubSubTemplateTests {
 		allowedPayload.value = 12345;
 		PubSubPublisherTemplate pubSubPublisherTemplate = spy(createPublisherTemplate());
 
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			PubsubMessage message = invocation.getArgument(1);
 			assertThat(message.getData().toStringUtf8())
 					.isEqualTo("{\"@class\":"
@@ -170,7 +170,7 @@ public class PubSubTemplateTests {
 
 		this.pubSubTemplate.publish("testTopic", "jaguar god", headers);
 
-		verify(this.mockPublisher).publish(argThat(message ->
+		verify(this.mockPublisher).publish(argThat((message) ->
 				message.getAttributesMap().get("emperor of sand").equals("sultan's curse") &&
 				message.getAttributesMap().get("remission").equals("elephant man")));
 	}

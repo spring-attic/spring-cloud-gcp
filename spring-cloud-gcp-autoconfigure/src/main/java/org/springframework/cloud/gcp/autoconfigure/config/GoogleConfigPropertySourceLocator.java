@@ -103,7 +103,7 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		Map<String, List<String>> credentialHeaders = this.credentials.getRequestMetadata();
 		Assert.notNull(credentialHeaders, "No valid credential header(s) found");
 
-		credentialHeaders.forEach((key, values) -> values.forEach(value -> headers.add(key, value)));
+		credentialHeaders.forEach((key, values) -> values.forEach((value) -> headers.add(key, value)));
 
 		Assert.isTrue(headers.containsKey(AUTHORIZATION_HEADER), "Authorization header required");
 

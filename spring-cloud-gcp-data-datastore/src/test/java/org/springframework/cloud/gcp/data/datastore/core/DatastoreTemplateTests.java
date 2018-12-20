@@ -163,7 +163,7 @@ public class DatastoreTemplateTests {
 		// The readWriteConversions are only mocked for purposes of collection-conversion
 		// for
 		// descendants. no other conversions take place in the template.
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			LinkedList linkedList = new LinkedList();
 			for (Object object : (List) invocation.getArgument(0)) {
 				linkedList.add(object);
@@ -205,13 +205,13 @@ public class DatastoreTemplateTests {
 
 		// mocked query results for entities and child entities.
 		QueryResults childTestEntityQueryResults = mock(QueryResults.class);
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			ImmutableList.of(ce1).iterator().forEachRemaining(invocation.getArgument(0));
 			return null;
 		}).when(childTestEntityQueryResults).forEachRemaining(any());
 
 		QueryResults testEntityQueryResults = mock(QueryResults.class);
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			ImmutableList.of(this.e1, this.e2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
 			return null;
@@ -241,7 +241,7 @@ public class DatastoreTemplateTests {
 
 		// Because get() takes varags, there is difficulty in matching the single param
 		// case using just thenReturn.
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			Object key = invocation.getArgument(0);
 			Iterator<Entity> result = null;
 			if (key instanceof Key) {
@@ -296,7 +296,7 @@ public class DatastoreTemplateTests {
 
 		DatastoreReaderWriter transactionContext = mock(DatastoreReaderWriter.class);
 
-		when(this.datastore.runInTransaction(any())).thenAnswer(invocation -> {
+		when(this.datastore.runInTransaction(any())).thenAnswer((invocation) -> {
 			TransactionCallable<String> callable = invocation.getArgument(0);
 			return callable.run(transactionContext);
 		});
@@ -307,7 +307,7 @@ public class DatastoreTemplateTests {
 		when(transactionContext.get(ArgumentMatchers.<Key[]>any())).thenReturn(e1);
 
 		String finalResult = this.datastoreTemplate
-				.performTransaction(datastoreOperations -> {
+				.performTransaction((datastoreOperations) -> {
 					datastoreOperations.save(this.ob2);
 					datastoreOperations.findById("ignored", TestEntity.class);
 					return "all done";
@@ -495,7 +495,7 @@ public class DatastoreTemplateTests {
 	public void countTest() {
 		QueryResults<Key> queryResults = mock(QueryResults.class);
 		when(queryResults.getResultClass()).thenReturn((Class) Key.class);
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			ImmutableList.of(this.key1, this.key2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
 			return null;
@@ -547,7 +547,7 @@ public class DatastoreTemplateTests {
 	public void deleteAllTest() {
 		QueryResults<Key> queryResults = mock(QueryResults.class);
 		when(queryResults.getResultClass()).thenReturn((Class) Key.class);
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			ImmutableList.of(this.key1, this.key2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
 			return null;

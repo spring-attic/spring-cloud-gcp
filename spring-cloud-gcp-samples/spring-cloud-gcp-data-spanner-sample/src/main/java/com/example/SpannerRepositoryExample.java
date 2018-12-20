@@ -100,7 +100,7 @@ public class SpannerRepositoryExample {
 
 		LOGGER.info("A query method can also select properties in entities:");
 		this.tradeRepository.getTradeIds("BUY").stream()
-				.forEach(x -> LOGGER.info(x));
+				.forEach((x) -> LOGGER.info(x));
 
 		LOGGER.info("Try http://localhost:8080/trades in the browser to see all trades.");
 	}

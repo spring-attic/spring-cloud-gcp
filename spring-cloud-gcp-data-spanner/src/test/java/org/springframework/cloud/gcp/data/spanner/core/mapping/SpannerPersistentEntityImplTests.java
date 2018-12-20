@@ -175,7 +175,7 @@ public class SpannerPersistentEntityImplTests {
 		SpannerPersistentEntity p = new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class);
 		PersistentPropertyAccessor accessor = p.getPropertyAccessor(t);
-		p.doWithProperties((SimplePropertyHandler) property -> assertNotEquals("b",
+		p.doWithProperties((SimplePropertyHandler) (property) -> assertNotEquals("b",
 				accessor.getProperty(property)));
 	}
 
@@ -273,7 +273,7 @@ public class SpannerPersistentEntityImplTests {
 		PropertyHandler<SpannerPersistentProperty> mockHandler = mock(PropertyHandler.class);
 		SpannerPersistentEntity spannerPersistentEntity =
 				this.spannerMappingContext.getPersistentEntity(ParentInRelationship.class);
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			String colName = ((SpannerPersistentProperty) invocation.getArgument(0))
 					.getName();
 			assertTrue(colName.equals("childrenA") || colName.equals("childrenB"));

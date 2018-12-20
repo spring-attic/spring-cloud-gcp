@@ -57,7 +57,7 @@ public class StackdriverTraceAutoConfigurationTests {
 
 	@Test
 	public void test() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			SleuthProperties sleuthProperties = context.getBean(SleuthProperties.class);
 			assertThat(sleuthProperties.isTraceId128()).isTrue();
 			assertThat(sleuthProperties.isSupportsJoin()).isFalse();

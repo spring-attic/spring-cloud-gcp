@@ -123,13 +123,13 @@ public class SimpleDatastoreRepositoryTests {
 
 	@Test
 	public void runTransactionCallableTest() {
-		when(this.datastoreTemplate.performTransaction(any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.performTransaction(any())).thenAnswer((invocation) -> {
 			Function<DatastoreOperations, String> f = invocation.getArgument(0);
 			return f.apply(this.datastoreTemplate);
 		});
 
 		String result = new SimpleDatastoreRepository<Object, String>(this.datastoreTemplate, Object.class)
-				.performTransaction(repo -> "test");
+				.performTransaction((repo) -> "test");
 		assertThat(result).isEqualTo("test");
 	}
 

@@ -93,7 +93,7 @@ public class SpannerTemplateTransactionManagerTests {
 		Mockito.when(this.databaseClient.singleUse()).thenReturn(this.readContext);
 		this.transactionManager = Mockito.spy(TransactionManager.class);
 		Mockito.doAnswer(
-				invocation -> {
+				(invocation) -> {
 					this.transactionState.set(TransactionManager.TransactionState.STARTED);
 					return this.transactionContext;
 				})
@@ -101,7 +101,7 @@ public class SpannerTemplateTransactionManagerTests {
 				.begin();
 
 		Mockito.doAnswer(
-				invocation -> {
+				(invocation) -> {
 					this.transactionState.set(
 							TransactionManager.TransactionState.ROLLED_BACK);
 					return null;
@@ -109,14 +109,14 @@ public class SpannerTemplateTransactionManagerTests {
 				.when(this.transactionManager)
 				.rollback();
 		Mockito.doAnswer(
-				invocation -> {
+				(invocation) -> {
 					this.transactionState.set(
 							TransactionManager.TransactionState.COMMITTED);
 					return null;
 				})
 				.when(this.transactionManager)
 				.commit();
-		Mockito.doAnswer(invocation -> this.transactionState.get())
+		Mockito.doAnswer((invocation) -> this.transactionState.get())
 				.when(this.transactionManager)
 				.getState();
 

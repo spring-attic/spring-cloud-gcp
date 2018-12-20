@@ -187,11 +187,11 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				.compareTo(customSortedTrades.get(1).getId()) < 0);
 
 		this.tradeRepository.findBySymbolLike("%BCD")
-				.forEach(x -> assertEquals("ABCD", x.getSymbol()));
+				.forEach((x) -> assertEquals("ABCD", x.getSymbol()));
 		assertTrue(this.tradeRepository.findBySymbolNotLike("%BCD").isEmpty());
 
 		this.tradeRepository.findBySymbolContains("BCD")
-				.forEach(x -> assertEquals("ABCD", x.getSymbol()));
+				.forEach((x) -> assertEquals("ABCD", x.getSymbol()));
 		assertTrue(this.tradeRepository.findBySymbolNotContains("BCD").isEmpty());
 
 		assertEquals(3, this.tradeRepository

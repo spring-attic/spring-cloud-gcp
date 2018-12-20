@@ -222,10 +222,9 @@
         <module name="com.puppycrawl.tools.checkstyle.checks.whitespace.WhitespaceAroundCheck" />
 
         <!-- Spring Conventions -->
-        <!-- TODO: re-enable when ready -->
-        <!--
+
         <module name="io.spring.javaformat.checkstyle.check.SpringLambdaCheck" />
-        -->
+
         <!--<module name="io.spring.javaformat.checkstyle.check.SpringTernaryCheck" />-->
         <!-- TODO: re-enable when ready -->
         <!--

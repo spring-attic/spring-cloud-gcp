@@ -134,7 +134,7 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 	static List<String> resolveScopes(List<String> scopes) {
 		if (!ObjectUtils.isEmpty(scopes)) {
 			Set<String> resolvedScopes = new HashSet<>();
-			scopes.forEach(scope -> {
+			scopes.forEach((scope) -> {
 				if (DEFAULT_SCOPES_PLACEHOLDER.equals(scope)) {
 					resolvedScopes.addAll(CREDENTIALS_SCOPES_LIST);
 				}

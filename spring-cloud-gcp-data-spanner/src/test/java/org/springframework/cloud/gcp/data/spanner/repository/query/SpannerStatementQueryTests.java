@@ -94,7 +94,7 @@ public class SpannerStatementQueryTests {
 				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
 
 		when(this.spannerTemplate.query((Class<Object>) any(), any(), any()))
-				.thenAnswer(invocation -> {
+				.thenAnswer((invocation) -> {
 					Statement statement = invocation.getArgument(1);
 
 					assertEquals(
@@ -148,7 +148,7 @@ public class SpannerStatementQueryTests {
 				"ignored", "blahblah", "ignored", "ignored", 1.11, 2.22, };
 
 		when(this.spannerTemplate.query((Function<Struct, Object>) any(), any(), any()))
-				.thenAnswer(invocation -> {
+				.thenAnswer((invocation) -> {
 					Statement statement = invocation.getArgument(1);
 
 					assertEquals("SELECT EXISTS"

@@ -81,7 +81,7 @@ public class PubSubInboundChannelAdapterTests {
 		this.value = null;
 		ConvertedBasicAcknowledgeablePubsubMessage message = mock(ConvertedBasicAcknowledgeablePubsubMessage.class);
 
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			this.value = NACK;
 			return null;
 		}).when(message).nack();
@@ -93,7 +93,7 @@ public class PubSubInboundChannelAdapterTests {
 				new RuntimeException(EXCEPTION_MESSAGE));
 
 		when(this.pubSubSubscriberOperations.subscribeAndConvert(
-				anyString(), any(Consumer.class), any(Class.class))).then(invocationOnMock -> {
+				anyString(), any(Consumer.class), any(Class.class))).then((invocationOnMock) -> {
 					Consumer<ConvertedBasicAcknowledgeablePubsubMessage> messageConsumer =
 							invocationOnMock.getArgument(1);
 					messageConsumer.accept(message);

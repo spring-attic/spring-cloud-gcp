@@ -49,7 +49,7 @@ public class SimplePubSubMessageConverterTests {
 
 	@Test
 	public void testToString() {
-		doToTestForType(String.class, a -> a);
+		doToTestForType(String.class, (a) -> a);
 	}
 
 	@Test
@@ -59,7 +59,7 @@ public class SimplePubSubMessageConverterTests {
 
 	@Test
 	public void testToByteString() {
-		doToTestForType(ByteString.class, a -> new String(a.toByteArray()));
+		doToTestForType(ByteString.class, (a) -> new String(a.toByteArray()));
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class SimplePubSubMessageConverterTests {
 
 	@Test
 	public void testToByteArray() {
-		doToTestForType(byte[].class, a -> new String(a));
+		doToTestForType(byte[].class, (a) -> new String(a));
 	}
 
 	@Test
@@ -79,7 +79,7 @@ public class SimplePubSubMessageConverterTests {
 
 	@Test
 	public void testToByteBuffer() {
-		doToTestForType(ByteBuffer.class, a -> new String(a.array()));
+		doToTestForType(ByteBuffer.class, (a) -> new String(a.array()));
 	}
 
 	@Test
@@ -93,7 +93,7 @@ public class SimplePubSubMessageConverterTests {
 		this.expectedException.expect(PubSubMessageConversionException.class);
 		this.expectedException.expectMessage("Unable to convert Pub/Sub message to " +
 				"payload of type java.lang.Integer.");
-		doToTestForType(Integer.class, a -> toString());
+		doToTestForType(Integer.class, (a) -> toString());
 
 	}
 

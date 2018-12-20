@@ -146,7 +146,7 @@ public class SqlSpannerQueryTests {
 		// @formatter:on
 
 		when(parameters.getNumberOfParameters()).thenReturn(paramNames.length);
-		when(parameters.getParameter(anyInt())).thenAnswer(invocation -> {
+		when(parameters.getParameter(anyInt())).thenAnswer((invocation) -> {
 			int index = invocation.getArgument(0);
 			Parameter param = mock(Parameter.class);
 			when(param.getName()).thenReturn(Optional.of(paramNames[index]));
@@ -167,7 +167,7 @@ public class SqlSpannerQueryTests {
 
 		SqlSpannerQuery sqlSpannerQuery = createQuery(sql, false);
 
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			Statement statement = invocation.getArgument(0);
 			SpannerQueryOptions queryOptions = invocation.getArgument(1);
 			assertTrue(queryOptions.isAllowPartialRead());

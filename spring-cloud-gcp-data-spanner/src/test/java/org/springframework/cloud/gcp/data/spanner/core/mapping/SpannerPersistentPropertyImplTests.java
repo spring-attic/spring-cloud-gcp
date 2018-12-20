@@ -88,7 +88,7 @@ public class SpannerPersistentPropertyImplTests {
 	@Test
 	public void testAssociations() {
 		new SpannerMappingContext().getPersistentEntity(TestEntity.class)
-				.doWithProperties((PropertyHandler<SpannerPersistentProperty>) prop -> {
+				.doWithProperties((PropertyHandler<SpannerPersistentProperty>) (prop) -> {
 			assertSame(prop, ((SpannerPersistentPropertyImpl) prop).createAssociation()
 					.getInverse());
 			assertNull(((SpannerPersistentPropertyImpl) prop).createAssociation()
@@ -108,7 +108,7 @@ public class SpannerPersistentPropertyImplTests {
 	public void testNoPojoIdProperties() {
 		new SpannerMappingContext().getPersistentEntity(TestEntity.class)
 				.doWithProperties(
-						(PropertyHandler<SpannerPersistentProperty>) prop -> assertFalse(
+						(PropertyHandler<SpannerPersistentProperty>) (prop) -> assertFalse(
 								prop.isIdProperty()));
 	}
 
@@ -116,7 +116,7 @@ public class SpannerPersistentPropertyImplTests {
 	public void testIgnoredProperty() {
 		new SpannerMappingContext().getPersistentEntity(TestEntity.class)
 				.doWithProperties(
-						(PropertyHandler<SpannerPersistentProperty>) prop -> assertNotEquals(
+						(PropertyHandler<SpannerPersistentProperty>) (prop) -> assertNotEquals(
 								"not_mapped", prop.getColumnName()));
 	}
 

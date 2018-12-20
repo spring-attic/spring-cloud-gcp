@@ -155,7 +155,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 
 		PullResponse pullResponse = this.subscriberStub.pullCallable().call(pullRequest);
 		return pullResponse.getReceivedMessagesList().stream()
-						.map(message -> new PulledAcknowledgeablePubsubMessage(
+						.map((message) -> new PulledAcknowledgeablePubsubMessage(
 								ProjectSubscriptionName.of(
 										this.subscriberFactory.getProjectId(), pullRequest.getSubscription()),
 								message.getMessage(),
@@ -176,7 +176,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		List<AcknowledgeablePubsubMessage> ackableMessages = this.pull(subscription, maxMessages, returnImmediately);
 
 		return ackableMessages.stream().map(
-				m -> new ConvertedPulledAcknowledgeablePubsubMessage<>(m,
+				(m) -> new ConvertedPulledAcknowledgeablePubsubMessage<>(m,
 						this.pubSubMessageConverter.fromPubSubMessage(m.getPubsubMessage(), payloadType))
 		).collect(Collectors.toList());
 	}

@@ -98,7 +98,7 @@ public class GcsSpringIntegrationApplication {
 	@Bean
 	@ServiceActivator(inputChannel = "new-file-channel")
 	public MessageHandler handleNewFileFromSynchronizer() {
-		return message -> {
+		return (message) -> {
 			File file = (File) message.getPayload();
 			LOGGER.info("File " + file.getName() + " received by the non-streaming inbound "
 					+ "channel adapter.");
@@ -129,7 +129,7 @@ public class GcsSpringIntegrationApplication {
 		outboundChannelAdapter.setRemoteDirectoryExpression(
 				new ValueExpression<>(this.gcsWriteBucket));
 		outboundChannelAdapter
-				.setFileNameGenerator(message -> message.getHeaders().get(FileHeaders.REMOTE_FILE, String.class));
+				.setFileNameGenerator((message) -> message.getHeaders().get(FileHeaders.REMOTE_FILE, String.class));
 
 		return outboundChannelAdapter;
 	}
