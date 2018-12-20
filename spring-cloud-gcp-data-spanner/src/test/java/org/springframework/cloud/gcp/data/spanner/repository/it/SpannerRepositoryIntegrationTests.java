@@ -40,13 +40,7 @@ import org.springframework.data.domain.Sort.Order;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Balint Pato
@@ -81,139 +75,126 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		Trade buyTrade1 = trader1BuyTrades.get(0);
 		this.tradeRepository.updateActionTradeById(buyTrade1.getId(), "invalid action");
-		assertEquals("invalid action",
-				this.tradeRepository.findById(this.spannerSchemaUtils.getKey(buyTrade1)).get().getAction());
+		assertThat(this.tradeRepository.findById(this.spannerSchemaUtils.getKey(buyTrade1)).get().getAction())
+				.isEqualTo("invalid action");
 		this.tradeRepository.updateActionTradeById(buyTrade1.getId(), "BUY");
-		assertEquals("BUY", this.tradeRepository.findById(this.spannerSchemaUtils.getKey(buyTrade1)).get().getAction());
+		assertThat(this.tradeRepository.findById(this.spannerSchemaUtils.getKey(buyTrade1)).get().getAction())
+				.isEqualTo("BUY");
 
-		assertThat(this.tradeRepository.count(), is(8L));
+		assertThat(this.tradeRepository.count()).isEqualTo(8L);
 
-		assertThat(this.tradeRepository.deleteByAction("BUY"), is(3));
+		assertThat(this.tradeRepository.deleteByAction("BUY")).isEqualTo(3);
 
-		assertThat(this.tradeRepository.count(), is(5L));
+		assertThat(this.tradeRepository.count()).isEqualTo(5L);
 
 		List<Trade> deletedBySymbol = this.tradeRepository.deleteBySymbol("ABCD");
 
-		assertThat(deletedBySymbol.size(), is(5));
+		assertThat(deletedBySymbol).hasSize(5);
 
-		assertThat(this.tradeRepository.count(), is(0L));
+		assertThat(this.tradeRepository.count()).isEqualTo(0L);
 
 		this.tradeRepository.saveAll(deletedBySymbol);
 
-		assertThat(this.tradeRepository.count(), is(5L));
+		assertThat(this.tradeRepository.count()).isEqualTo(5L);
 
 		this.tradeRepository.deleteBySymbolAndAction("ABCD", "SELL");
 
-		assertThat(this.tradeRepository.count(), is(0L));
+		assertThat(this.tradeRepository.count()).isEqualTo(0L);
 
 		this.tradeRepository.saveAll(allTrades);
 
 		List<Trade> allTradesRetrieved = this.spannerOperations.readAll(Trade.class);
-		assertThat(
-				"size is not " + allTrades.size() + " in received records: \n"
-						+ allTradesRetrieved,
-				allTradesRetrieved.size(), is(allTrades.size()));
-		assertThat(allTradesRetrieved, containsInAnyOrder(allTrades.toArray()));
+		assertThat(allTradesRetrieved).containsExactlyInAnyOrderElementsOf(allTrades);
 
-		assertThat(this.tradeRepository.countByAction("BUY"), is(3));
-		assertThat(this.tradeRepository.countByActionQuery("BUY"), is(3));
-		assertTrue(this.tradeRepository.existsByActionQuery("BUY"));
+		assertThat(this.tradeRepository.countByAction("BUY")).isEqualTo(3);
+		assertThat(this.tradeRepository.countByActionQuery("BUY")).isEqualTo(3);
+		assertThat(this.tradeRepository.existsByActionQuery("BUY")).isTrue();
 
-		assertNotNull(this.tradeRepository.getOneTrade("BUY"));
+		assertThat(this.tradeRepository.getOneTrade("BUY")).isNotNull();
 
-		assertEquals("BUY", this.tradeRepository.getFirstString("BUY"));
-		assertThat(this.tradeRepository.getFirstStringList("BUY"),
-				containsInAnyOrder("BUY", "BUY", "BUY"));
+		assertThat(this.tradeRepository.getFirstString("BUY")).isEqualTo("BUY");
+		assertThat(this.tradeRepository.getFirstStringList("BUY"))
+				.containsExactlyInAnyOrder("BUY", "BUY", "BUY");
 
 		List<Trade> trader2TradesRetrieved = this.tradeRepository
 				.findByTraderId("trader2");
-		assertThat(
-				"size is not " + allTrades.size() + " in received records: \n"
-						+ trader2TradesRetrieved,
-				trader2TradesRetrieved.size(), is(trader2Trades.size()));
-		assertThat(trader2TradesRetrieved, containsInAnyOrder(trader2Trades.toArray()));
+		assertThat(trader2TradesRetrieved).containsExactlyInAnyOrderElementsOf(trader2Trades);
 
 		List<TradeProjection> tradeProjectionsRetrieved = this.tradeRepository
 				.findByActionIgnoreCase("bUy");
-		assertEquals(3, tradeProjectionsRetrieved.size());
+		assertThat(tradeProjectionsRetrieved).hasSize(3);
 		for (TradeProjection tradeProjection : tradeProjectionsRetrieved) {
-			assertEquals("BUY", tradeProjection.getAction());
-			assertEquals("ABCD BUY", tradeProjection.getSymbolAndAction());
+			assertThat(tradeProjection.getAction()).isEqualTo("BUY");
+			assertThat(tradeProjection.getSymbolAndAction()).isEqualTo("ABCD BUY");
 		}
 
 		List<Trade> tradesReceivedPage0 = this.tradeRepository
 				.findAll(PageRequest.of(0, 3, Sort.by(Order.asc("id"))))
 				.getContent();
-		assertEquals(3, tradesReceivedPage0.size());
-		assertTrue(tradesReceivedPage0.get(0).getId()
-				.compareTo(tradesReceivedPage0.get(1).getId()) < 0);
-		assertTrue(tradesReceivedPage0.get(1).getId()
-				.compareTo(tradesReceivedPage0.get(2).getId()) < 0);
+		assertThat(tradesReceivedPage0).hasSize(3);
+		assertThat(tradesReceivedPage0.get(0).getId()
+				.compareTo(tradesReceivedPage0.get(1).getId())).isNegative();
+		assertThat(tradesReceivedPage0.get(1).getId()
+				.compareTo(tradesReceivedPage0.get(2).getId())).isNegative();
 
 		List<Trade> tradesReceivedPage1 = this.tradeRepository
 				.findAll(PageRequest.of(1, 3, Sort.by(Order.asc("id"))))
 				.getContent();
-		assertEquals(3, tradesReceivedPage1.size());
-		assertTrue(tradesReceivedPage0.get(2).getId()
-				.compareTo(tradesReceivedPage1.get(0).getId()) < 0);
-		assertTrue(tradesReceivedPage1.get(0).getId()
-				.compareTo(tradesReceivedPage1.get(1).getId()) < 0);
-		assertTrue(tradesReceivedPage1.get(1).getId()
-				.compareTo(tradesReceivedPage1.get(2).getId()) < 0);
+		assertThat(tradesReceivedPage1).hasSize(3);
+		assertThat(tradesReceivedPage0.get(2).getId()
+				.compareTo(tradesReceivedPage1.get(0).getId())).isNegative();
+		assertThat(tradesReceivedPage1.get(0).getId()
+				.compareTo(tradesReceivedPage1.get(1).getId())).isNegative();
+		assertThat(tradesReceivedPage1.get(1).getId()
+				.compareTo(tradesReceivedPage1.get(2).getId())).isNegative();
 
 		List<Trade> tradesReceivedPage2 = this.tradeRepository
 				.findAll(PageRequest.of(2, 3, Sort.by(Order.asc("id"))))
 				.getContent();
-		assertEquals(2, tradesReceivedPage2.size());
-		assertTrue(tradesReceivedPage1.get(2).getId()
-				.compareTo(tradesReceivedPage2.get(0).getId()) < 0);
-		assertTrue(tradesReceivedPage2.get(0).getId()
-				.compareTo(tradesReceivedPage2.get(1).getId()) < 0);
+		assertThat(tradesReceivedPage2).hasSize(2);
+		assertThat(tradesReceivedPage1.get(2).getId()
+				.compareTo(tradesReceivedPage2.get(0).getId())).isNegative();
+		assertThat(tradesReceivedPage2.get(0).getId()
+				.compareTo(tradesReceivedPage2.get(1).getId())).isNegative();
 
 		List<Trade> buyTradesRetrieved = this.tradeRepository
 				.annotatedTradesByAction("BUY");
-		assertThat(
-				"size is not " + buyTradesRetrieved.size() + " in received records: \n"
-						+ buyTradesRetrieved,
-				buyTradesRetrieved.size(), is(trader1BuyTrades.size()));
-		assertThat(buyTradesRetrieved,
-				containsInAnyOrder(trader1BuyTrades.toArray()));
+		assertThat(buyTradesRetrieved).containsExactlyInAnyOrderElementsOf(trader1BuyTrades);
 
 		List<Trade> customSortedTrades = this.tradeRepository.sortedTrades(PageRequest
 				.of(2, 2, org.springframework.data.domain.Sort.by(Order.asc("id"))));
 
-		assertEquals(2, customSortedTrades.size());
-		assertTrue(customSortedTrades.get(0).getId()
-				.compareTo(customSortedTrades.get(1).getId()) < 0);
+		assertThat(customSortedTrades).hasSize(2);
+		assertThat(customSortedTrades.get(0).getId()
+				.compareTo(customSortedTrades.get(1).getId())).isNegative();
 
 		this.tradeRepository.findBySymbolLike("%BCD")
-				.forEach((x) -> assertEquals("ABCD", x.getSymbol()));
-		assertTrue(this.tradeRepository.findBySymbolNotLike("%BCD").isEmpty());
+				.forEach((x) -> assertThat(x.getSymbol()).isEqualTo("ABCD"));
+		assertThat(this.tradeRepository.findBySymbolNotLike("%BCD")).isEmpty();
 
 		this.tradeRepository.findBySymbolContains("BCD")
-				.forEach((x) -> assertEquals("ABCD", x.getSymbol()));
-		assertTrue(this.tradeRepository.findBySymbolNotContains("BCD").isEmpty());
+				.forEach((x) -> assertThat(x.getSymbol()).isEqualTo("ABCD"));
+		assertThat(this.tradeRepository.findBySymbolNotContains("BCD")).isEmpty();
 
-		assertEquals(3, this.tradeRepository
-				.findBySymbolAndActionPojo(new SymbolAction("ABCD", "BUY")).size());
-		assertEquals(3,
-				this.tradeRepository.findBySymbolAndActionStruct(Struct.newBuilder()
+		assertThat(this.tradeRepository
+				.findBySymbolAndActionPojo(new SymbolAction("ABCD", "BUY"))).hasSize(3);
+		assertThat(this.tradeRepository.findBySymbolAndActionStruct(Struct.newBuilder()
 						.set("symbol").to("ABCD").set("action").to("BUY").build())
-						.size());
+				).hasSize(3);
 
 		// testing setting some columns to null.
 		Trade someTrade = this.tradeRepository.findBySymbolContains("ABCD").get(0);
-		assertNotNull(someTrade.getExecutionTimes());
-		assertNotNull(someTrade.getSymbol());
+		assertThat(someTrade.getExecutionTimes()).isNotNull();
+		assertThat(someTrade.getSymbol()).isNotNull();
 		someTrade.setExecutionTimes(null);
 		someTrade.setSymbol(null);
 		this.tradeRepository.save(someTrade);
 		someTrade = this.tradeRepository.findById(this.spannerSchemaUtils.getKey(someTrade)).get();
-		assertNull(someTrade.getExecutionTimes());
-		assertNull(someTrade.getSymbol());
+		assertThat(someTrade.getExecutionTimes()).isNull();
+		assertThat(someTrade.getSymbol()).isNull();
 
 		// testing parent-child relationships
-		assertEquals(0, someTrade.getSubTrades().size());
+		assertThat(someTrade.getSubTrades()).hasSize(0);
 		SubTrade subTrade1 = new SubTrade(someTrade.getTradeDetail().getId(),
 				someTrade.getTraderId(), "subTrade1");
 		SubTrade subTrade2 = new SubTrade(someTrade.getTradeDetail().getId(),
@@ -235,23 +216,22 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		this.tradeRepository.save(someTrade);
 
-		assertEquals(2, this.subTradeRepository.count());
-		assertEquals(3, this.subTradeComponentRepository.count());
+		assertThat(this.subTradeRepository.count()).isEqualTo(2);
+		assertThat(this.subTradeComponentRepository.count()).isEqualTo(3);
 
 		this.subTradeRepository.deleteById(this.spannerSchemaUtils.getKey(subTrade1));
-		assertEquals(2, this.subTradeComponentRepository.count());
+		assertThat(this.subTradeComponentRepository.count()).isEqualTo(2);
 
 		someTrade = this.tradeRepository
 				.findById(this.spannerSchemaUtils.getKey(someTrade)).get();
-		assertEquals(1, someTrade.getSubTrades().size());
-		assertEquals("subTrade2", someTrade.getSubTrades().get(0).getSubTradeId());
-		assertEquals(2,
-				someTrade.getSubTrades().get(0).getSubTradeComponentList().size());
+		assertThat(someTrade.getSubTrades()).hasSize(1);
+		assertThat(someTrade.getSubTrades().get(0).getSubTradeId()).isEqualTo("subTrade2");
+		assertThat(someTrade.getSubTrades().get(0).getSubTradeComponentList()).hasSize(2);
 
 		this.tradeRepository.delete(someTrade);
 
-		assertEquals(0, this.subTradeComponentRepository.count());
-		assertEquals(0, this.subTradeRepository.count());
+		assertThat(this.subTradeComponentRepository.count()).isEqualTo(0);
+		assertThat(this.subTradeRepository.count()).isEqualTo(0);
 
 		this.tradeRepository.deleteAll();
 		this.tradeRepositoryTransactionalService.testTransactionalAnnotation();
@@ -282,7 +262,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 			// because the insert happens within the same transaction, this count is still
 			// 1
-			assertThat(this.tradeRepository.count(), is(0L));
+			assertThat(this.tradeRepository.count()).isEqualTo(0L);
 		}
 	}
 }

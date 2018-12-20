@@ -44,10 +44,7 @@ import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -85,10 +82,10 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 
 		OuterTestEntity result = this.spannerEntityReader.read(OuterTestEntity.class,
 				outerStruct, null, true);
-		assertEquals("key1", result.id);
-		assertEquals(1, result.innerTestEntities.size());
-		assertEquals("inner-value", result.innerTestEntities.get(0).value);
-		assertNull(result.innerTestEntities.get(0).missingColumnValue);
+		assertThat(result.id).isEqualTo("key1");
+		assertThat(result.innerTestEntities).hasSize(1);
+		assertThat(result.innerTestEntities.get(0).value).isEqualTo("inner-value");
+		assertThat(result.innerTestEntities.get(0).missingColumnValue).isNull();
 	}
 
 	@Test
@@ -103,9 +100,9 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 
 		OuterTestHoldingStructsEntity result = this.spannerEntityReader
 				.read(OuterTestHoldingStructsEntity.class, outerStruct);
-		assertEquals("key1", result.id);
-		assertEquals(1, result.innerStructs.size());
-		assertEquals("inner-value", result.innerStructs.get(0).getString("value"));
+		assertThat(result.id).isEqualTo("key1");
+		assertThat(result.innerStructs).hasSize(1);
+		assertThat(result.innerStructs.get(0).getString("value")).isEqualTo("inner-value");
 	}
 
 	@Test
@@ -117,8 +114,8 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 
 		OuterTestHoldingStructEntity result = this.spannerEntityReader
 				.read(OuterTestHoldingStructEntity.class, outerStruct);
-		assertEquals("key1", result.id);
-		assertEquals("inner-value", result.innerStruct.getString("value"));
+		assertThat(result.id).isEqualTo("key1");
+		assertThat(result.innerStruct.getString("value")).isEqualTo("inner-value");
 	}
 
 	@Test
@@ -174,9 +171,9 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 						return source.getString("string_col").length();
 					}
 				}))).read(OuterTestEntityFlat.class, rowStruct);
-		assertEquals("key1", result.id);
-		assertEquals(1, result.innerLengths.size());
-		assertEquals((Integer) 5, result.innerLengths.get(0));
+		assertThat(result.id).isEqualTo("key1");
+		assertThat(result.innerLengths).hasSize(1);
+		assertThat(result.innerLengths.get(0)).isEqualTo(5);
 	}
 
 	@Test
@@ -233,7 +230,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 		TestEntities.SimpleConstructorTester result = this.spannerEntityReader
 				.read(TestEntities.SimpleConstructorTester.class, row);
 
-		assertThat(result.id, is("1234"));
+		assertThat(result.id).isEqualTo("1234");
 	}
 
 	@Test
@@ -248,9 +245,9 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 
 		TestEntities.OuterTestEntityWithConstructor result = this.spannerEntityReader
 				.read(TestEntities.OuterTestEntityWithConstructor.class, outerStruct, null, true);
-		assertEquals("key1", result.id);
-		assertEquals(1, result.innerTestEntities.size());
-		assertEquals("value", result.innerTestEntities.get(0).value);
+		assertThat(result.id).isEqualTo("key1");
+		assertThat(result.innerTestEntities).hasSize(1);
+		assertThat(result.innerTestEntities.get(0).value).isEqualTo("value");
 	}
 
 	@Test
@@ -274,7 +271,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 		TestEntities.SimpleConstructorTester result = this.spannerEntityReader
 				.read(TestEntities.SimpleConstructorTester.class, row);
 
-		assertThat(result.id, is("1234"));
+		assertThat(result.id).isEqualTo("1234");
 		verify(row, times(1)).getString("id");
 	}
 

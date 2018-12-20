@@ -25,7 +25,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -56,6 +56,6 @@ public class SpannerRepositoryFactoryBeanTests {
 	public void createRepositoryFactoryTest() {
 		RepositoryFactorySupport factory = this.spannerRepositoryFactoryBean
 				.createRepositoryFactory();
-		assertEquals(SpannerRepositoryFactory.class, factory.getClass());
+		assertThat(factory).isInstanceOf(SpannerRepositoryFactory.class);
 	}
 }

@@ -149,8 +149,8 @@ public class PubSubEmulator extends ExternalResource {
 					LOGGER.warn("Did not find the emualtor process to kill based on: " + hostPortParams);
 				}
 			}
-			catch (IOException e) {
-				LOGGER.warn("Failed to cleanup: ", e);
+			catch (IOException ex) {
+				LOGGER.warn("Failed to cleanup: ", ex);
 			}
 		}
 	}
@@ -177,7 +177,7 @@ public class PubSubEmulator extends ExternalResource {
 			this.emulatorProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "start")
 					.start();
 		}
-		catch (IOException e) {
+		catch (IOException ex) {
 			fail("Gcloud not found; leaving host/port uninitialized.");
 		}
 
@@ -256,7 +256,7 @@ public class PubSubEmulator extends ExternalResource {
 		try {
 			new ProcessBuilder("kill", pid).start();
 		}
-		catch (IOException e) {
+		catch (IOException ex) {
 			LOGGER.warn("Failed to clean up PID " + pid);
 		}
 	}

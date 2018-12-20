@@ -87,8 +87,8 @@ public class CloudVisionTemplate {
 		try {
 			imgBytes = ByteString.readFrom(imageResource.getInputStream());
 		}
-		catch (IOException e) {
-			throw new CloudVisionException("Failed to read image bytes from provided resource.", e);
+		catch (IOException ex) {
+			throw new CloudVisionException("Failed to read image bytes from provided resource.", ex);
 		}
 
 		Image image = Image.newBuilder().setContent(imgBytes).build();

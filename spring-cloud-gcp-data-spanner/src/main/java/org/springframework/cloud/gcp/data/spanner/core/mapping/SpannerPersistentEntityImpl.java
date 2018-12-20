@@ -334,10 +334,10 @@ public class SpannerPersistentEntityImpl<T>
 									: this.tableNameExpression.getValue(this.context,
 											String.class));
 				}
-				catch (RuntimeException e) {
+				catch (RuntimeException ex) {
 					throw new SpannerDataException(
 							"Error getting table name for " + getType().getSimpleName(),
-							e);
+							ex);
 				}
 			}
 			else {

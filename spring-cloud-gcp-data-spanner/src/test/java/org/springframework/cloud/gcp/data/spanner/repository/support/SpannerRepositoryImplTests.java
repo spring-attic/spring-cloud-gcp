@@ -36,12 +36,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -87,9 +82,8 @@ public class SpannerRepositoryImplTests {
 
 	@Test
 	public void getSpannerOperationsTest() {
-		assertSame(this.template,
-				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
-						.getSpannerTemplate());
+		assertThat(this.template).isSameAs(
+				new SimpleSpannerRepository<Object, Key>(this.template, Object.class).getSpannerTemplate());
 	}
 
 	@Test
@@ -150,9 +144,7 @@ public class SpannerRepositoryImplTests {
 	@Test
 	public void saveTest() {
 		Object ob = new Object();
-		assertEquals(ob,
-				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
-						.save(ob));
+		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class).save(ob)).isEqualTo(ob);
 		verify(this.template, times(1)).upsert(eq(ob));
 	}
 
@@ -163,7 +155,7 @@ public class SpannerRepositoryImplTests {
 		Iterable<Object> ret = new SimpleSpannerRepository<Object, Key>(this.template,
 				Object.class)
 				.saveAll(Arrays.asList(ob, ob2));
-		assertThat(ret, containsInAnyOrder(ob, ob2));
+		assertThat(ret).containsExactlyInAnyOrder(ob, ob2);
 		verify(this.template, times(1)).upsertAll(eq(ImmutableList.of(ob, ob2)));
 	}
 
@@ -172,9 +164,8 @@ public class SpannerRepositoryImplTests {
 		Object ret = new Object();
 		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
 		when(this.template.read(eq(Object.class), eq(A_KEY))).thenReturn(ret);
-		assertEquals(ret,
-				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
-						.findById(A_KEY).get());
+		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class).findById(A_KEY).get())
+				.isEqualTo(ret);
 		verify(this.template, times(1)).read(eq(Object.class), eq(A_KEY));
 	}
 
@@ -191,17 +182,15 @@ public class SpannerRepositoryImplTests {
 		Object ret = new Object();
 		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
 		when(this.template.read(eq(Object.class), eq(A_KEY))).thenReturn(ret);
-		assertTrue(new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
-				.existsById(A_KEY));
+		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
+				.existsById(A_KEY)).isTrue();
 	}
 
 	@Test
 	public void existsByIdTestNotFound() {
 		when(this.entityProcessor.convertToKey(eq(A_KEY))).thenReturn(A_KEY);
 		when(this.template.read(eq(Object.class), (Key) any())).thenReturn(null);
-		assertFalse(
-				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
-						.existsById(A_KEY));
+		assertThat(new SimpleSpannerRepository<Object, Key>(this.template, Object.class).existsById(A_KEY)).isFalse();
 	}
 
 	@Test
@@ -215,7 +204,7 @@ public class SpannerRepositoryImplTests {
 		Sort sort = mock(Sort.class);
 		when(this.template.queryAll(eq(Object.class), any())).thenAnswer((invocation) -> {
 			SpannerPageableQueryOptions spannerQueryOptions = invocation.getArgument(1);
-			assertSame(sort, spannerQueryOptions.getSort());
+			assertThat(spannerQueryOptions.getSort()).isSameAs(sort);
 			return null;
 		});
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
@@ -232,9 +221,9 @@ public class SpannerRepositoryImplTests {
 		when(pageable.getPageSize()).thenReturn(5);
 		when(this.template.queryAll(eq(Object.class), any())).thenAnswer((invocation) -> {
 			SpannerPageableQueryOptions spannerQueryOptions = invocation.getArgument(1);
-			assertSame(sort, spannerQueryOptions.getSort());
-			assertEquals(new Long(3), spannerQueryOptions.getOffset());
-			assertEquals(new Integer(5), spannerQueryOptions.getLimit());
+			assertThat(spannerQueryOptions.getSort()).isSameAs(sort);
+			assertThat(spannerQueryOptions.getOffset()).isEqualTo(3);
+			assertThat(spannerQueryOptions.getLimit()).isEqualTo(5);
 			return new ArrayList<>();
 		});
 		new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
@@ -250,8 +239,7 @@ public class SpannerRepositoryImplTests {
 		when(this.entityProcessor.convertToKey(eq(Key.of("key2")))).thenReturn(Key.of("key2"));
 		when(this.template.read(eq(Object.class), (KeySet) any())).thenAnswer((invocation) -> {
 			KeySet keys = invocation.getArgument(1);
-			assertThat(keys.getKeys(),
-					containsInAnyOrder(Key.of("key2"), Key.of("key1")));
+			assertThat(keys.getKeys()).containsExactlyInAnyOrder(Key.of("key2"), Key.of("key1"));
 			return null;
 		});
 
@@ -294,9 +282,11 @@ public class SpannerRepositoryImplTests {
 					Function<SpannerTemplate, String> f = invocation.getArgument(0);
 					return f.apply(this.template);
 				});
-		assertEquals("test",
+
+		Object object =
 				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
-				.performReadOnlyTransaction((repo) -> "test"));
+						.performReadOnlyTransaction((repo) -> "test");
+		assertThat(object).isEqualTo("test");
 	}
 
 	@Test
@@ -305,8 +295,10 @@ public class SpannerRepositoryImplTests {
 			Function<SpannerTemplate, String> f = invocation.getArgument(0);
 			return f.apply(this.template);
 		});
-		assertEquals("test",
+
+		Object object =
 				new SimpleSpannerRepository<Object, Key>(this.template, Object.class)
-				.performReadWriteTransaction((repo) -> "test"));
+						.performReadWriteTransaction((repo) -> "test");
+		assertThat(object).isEqualTo("test");
 	}
 }

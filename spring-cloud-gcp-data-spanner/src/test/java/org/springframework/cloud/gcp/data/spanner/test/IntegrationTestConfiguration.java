@@ -83,8 +83,8 @@ public class IntegrationTestConfiguration {
 		try {
 			return new DefaultCredentialsProvider(Credentials::new).getCredentials();
 		}
-		catch (IOException e) {
-			throw new RuntimeException(e);
+		catch (IOException ex) {
+			throw new RuntimeException(ex);
 		}
 	}
 

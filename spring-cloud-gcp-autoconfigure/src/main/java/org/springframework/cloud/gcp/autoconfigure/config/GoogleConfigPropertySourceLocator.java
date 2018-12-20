@@ -140,10 +140,10 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 			Assert.notNull(googleConfigEnvironment, "Configuration not in expected format.");
 			config = googleConfigEnvironment.getConfig();
 		}
-		catch (Exception e) {
+		catch (Exception ex) {
 			String message = String.format("Error loading configuration for %s/%s_%s", this.projectId,
 					this.name, this.profile);
-			throw new RuntimeException(message, e);
+			throw new RuntimeException(message, ex);
 		}
 		return new MapPropertySource(PROPERTY_SOURCE_NAME, config);
 	}

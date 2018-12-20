@@ -51,7 +51,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 
@@ -155,10 +155,10 @@ public class SpannerTemplateTransactionManagerTests {
 		try {
 			this.transactionalService.doInTransactionWithException(entity1, entity2);
 		}
-		catch (Exception e) {
-			exception = e;
+		catch (Exception ex) {
+			exception = ex;
 		}
-		assertNotNull(exception);
+		assertThat(exception).isNotNull();
 
 		Mockito.verify(this.transactionManager, times(1)).begin();
 		Mockito.verify(this.transactionManager, times(0)).commit();

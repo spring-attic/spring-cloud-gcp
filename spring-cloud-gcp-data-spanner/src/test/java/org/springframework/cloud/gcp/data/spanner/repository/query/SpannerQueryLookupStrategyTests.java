@@ -38,7 +38,7 @@ import org.springframework.data.repository.query.Parameters;
 import org.springframework.data.repository.query.QueryMethodEvaluationContextProvider;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -160,12 +160,11 @@ public class SpannerQueryLookupStrategyTests {
 		Statement statement = SpannerStatementQueryExecutor.getChildrenRowsQuery(
 				Key.newBuilder().append(t.id).append(t.id2).build(),
 				this.spannerMappingContext.getPersistentEntity(ChildEntity.class));
-		assertEquals("SELECT id3 , id , id_2 "
-						+ "FROM child_test_table WHERE id = @tag0 and id_2 = @tag1",
-				statement.getSql());
-		assertEquals(2, statement.getParameters().size());
-		assertEquals("key", statement.getParameters().get("tag0").getString());
-		assertEquals("key2", statement.getParameters().get("tag1").getString());
+		assertThat(statement.getSql())
+				.isEqualTo("SELECT id3 , id , id_2 FROM child_test_table WHERE id = @tag0 and id_2 = @tag1");
+		assertThat(statement.getParameters()).hasSize(2);
+		assertThat(statement.getParameters().get("tag0").getString()).isEqualTo("key");
+		assertThat(statement.getParameters().get("tag1").getString()).isEqualTo("key2");
 	}
 
 	@Table(name = "custom_test_table")

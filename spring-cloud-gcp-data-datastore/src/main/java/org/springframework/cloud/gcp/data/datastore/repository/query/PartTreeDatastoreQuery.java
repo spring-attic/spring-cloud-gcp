@@ -297,7 +297,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				}
 				return filter;
 			}
-			catch (NoSuchElementException e) {
+			catch (NoSuchElementException ex) {
 				throw new DatastoreDataException(
 						"Too few parameters are provided for query method: "
 								+ getQueryMethod().getName());
