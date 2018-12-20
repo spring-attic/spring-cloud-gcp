@@ -218,7 +218,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		assertThat(t2.doubleList).hasSize(1);
 		assertThat(t2.doubleList.get(0)).isEqualTo(3.33, DELTA);
 		assertThat(t2.momentsInTime).isEqualTo(instants);
-		assertThat(t2.stringList).contains("string");
+		assertThat(t2.stringList).containsExactly("string");
 		assertThat(t2.bytes).isEqualTo(ByteArray.copyFrom("string2"));
 	}
 

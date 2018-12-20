@@ -133,29 +133,29 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				.getContent();
 		assertThat(tradesReceivedPage0).hasSize(3);
 		assertThat(tradesReceivedPage0.get(0).getId()
-				.compareTo(tradesReceivedPage0.get(1).getId()) < 0).isTrue();
+				.compareTo(tradesReceivedPage0.get(1).getId())).isNegative();
 		assertThat(tradesReceivedPage0.get(1).getId()
-				.compareTo(tradesReceivedPage0.get(2).getId()) < 0).isTrue();
+				.compareTo(tradesReceivedPage0.get(2).getId())).isNegative();
 
 		List<Trade> tradesReceivedPage1 = this.tradeRepository
 				.findAll(PageRequest.of(1, 3, Sort.by(Order.asc("id"))))
 				.getContent();
 		assertThat(tradesReceivedPage1).hasSize(3);
 		assertThat(tradesReceivedPage0.get(2).getId()
-				.compareTo(tradesReceivedPage1.get(0).getId()) < 0).isTrue();
+				.compareTo(tradesReceivedPage1.get(0).getId())).isNegative();
 		assertThat(tradesReceivedPage1.get(0).getId()
-				.compareTo(tradesReceivedPage1.get(1).getId()) < 0).isTrue();
+				.compareTo(tradesReceivedPage1.get(1).getId())).isNegative();
 		assertThat(tradesReceivedPage1.get(1).getId()
-				.compareTo(tradesReceivedPage1.get(2).getId()) < 0).isTrue();
+				.compareTo(tradesReceivedPage1.get(2).getId())).isNegative();
 
 		List<Trade> tradesReceivedPage2 = this.tradeRepository
 				.findAll(PageRequest.of(2, 3, Sort.by(Order.asc("id"))))
 				.getContent();
 		assertThat(tradesReceivedPage2).hasSize(2);
 		assertThat(tradesReceivedPage1.get(2).getId()
-				.compareTo(tradesReceivedPage2.get(0).getId()) < 0).isTrue();
+				.compareTo(tradesReceivedPage2.get(0).getId())).isNegative();
 		assertThat(tradesReceivedPage2.get(0).getId()
-				.compareTo(tradesReceivedPage2.get(1).getId()) < 0).isTrue();
+				.compareTo(tradesReceivedPage2.get(1).getId())).isNegative();
 
 		List<Trade> buyTradesRetrieved = this.tradeRepository
 				.annotatedTradesByAction("BUY");
@@ -166,7 +166,7 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 
 		assertThat(customSortedTrades).hasSize(2);
 		assertThat(customSortedTrades.get(0).getId()
-				.compareTo(customSortedTrades.get(1).getId()) < 0).isTrue();
+				.compareTo(customSortedTrades.get(1).getId())).isNegative();
 
 		this.tradeRepository.findBySymbolLike("%BCD")
 				.forEach(x -> assertThat(x.getSymbol()).isEqualTo("ABCD"));
