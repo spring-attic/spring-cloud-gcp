@@ -18,7 +18,6 @@ package com.example;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,11 +44,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -104,11 +100,14 @@ public class ApplicationTests {
 		Singer frodoBaggins = new Singer(null, "Frodo", "Baggins", null);
 
 		List<Singer> singersAsc = getSingers("/singers?sort=lastName,ASC");
-		assertEquals("Verify ASC order", Arrays.asList(johnDoe, maryJane, scottSmith),
-				singersAsc);
+		assertThat(singersAsc)
+				.as("Verify ASC order")
+				.containsExactly(johnDoe, maryJane, scottSmith);
+
 		List<Singer> singersDesc = getSingers("/singers?sort=lastName,DESC");
-		assertEquals("Verify DESC order", Arrays.asList(scottSmith, maryJane, johnDoe),
-				singersDesc);
+		assertThat(singersDesc)
+				.as("Verify DESC order")
+				.containsExactly(scottSmith, maryJane, johnDoe);
 
 		sendRequest("/singers", "{\"firstName\": \"Frodo\", \"lastName\": \"Baggins\"}",
 				HttpMethod.POST);
@@ -117,9 +116,9 @@ public class ApplicationTests {
 				.until(() -> getSingers("/singers?sort=lastName,ASC").size() == 4);
 
 		List<Singer> singersAfterInsertion = getSingers("/singers?sort=lastName,ASC");
-		assertEquals("Verify post",
-				Arrays.asList(frodoBaggins, johnDoe, maryJane, scottSmith),
-				singersAfterInsertion);
+		assertThat(singersAfterInsertion)
+				.as("Verify post")
+				.containsExactly(frodoBaggins, johnDoe, maryJane, scottSmith);
 
 		sendRequest("/singers/singer1", null, HttpMethod.DELETE);
 
@@ -127,39 +126,40 @@ public class ApplicationTests {
 				.until(() -> getSingers("/singers?sort=lastName,ASC").size() == 3);
 
 		List<Singer> singersAfterDeletion = getSingers("/singers?sort=lastName,ASC");
-		assertEquals("Verify delete", Arrays.asList(frodoBaggins, maryJane, scottSmith),
-				singersAfterDeletion);
+		assertThat(singersAfterDeletion)
+				.as("Verify Delete")
+				.containsExactly(frodoBaggins, maryJane, scottSmith);
 
-		assertTrue("Verify relationships saved in transaction",
-				baos.toString().contains("Relationship links "
+		assertThat(baos.toString())
+				.as("Verify relationships saved in transaction")
+				.contains("Relationship links "
 						+ "were saved between a singer, bands, and instruments in a single transaction: "
 						+ "Singer{singerId='singer2', firstName='Mary', lastName='Jane', "
 						+ "albums=[Album{albumName='a', date=2012-01-20}, Album{albumName='b', "
 						+ "date=2018-02-12}], firstBand=band1, bands=band1,band2, "
-						+ "personalInstruments=recorder,cow bell}"));
+						+ "personalInstruments=recorder,cow bell}");
 
 		assertThat(
 				this.singerRepository.findById("singer2").get().getPersonalInstruments()
-						.stream().map(Instrument::getType).collect(Collectors.toList()),
-				containsInAnyOrder("recorder", "cow bell"));
+						.stream().map(Instrument::getType).collect(Collectors.toList()))
+								.containsExactlyInAnyOrder("recorder", "cow bell");
 
 		assertThat(
 				this.singerRepository.findById("singer2").get().getBands().stream()
-						.map(Band::getName).collect(Collectors.toList()),
-				containsInAnyOrder("band1", "band2"));
+						.map(Band::getName).collect(Collectors.toList()))
+								.containsExactlyInAnyOrder("band1", "band2");
 
 		assertThat(
 				this.singerRepository.findById("singer3").get().getPersonalInstruments()
-						.stream().map(Instrument::getType).collect(Collectors.toList()),
-				containsInAnyOrder("triangle", "marimba"));
+						.stream().map(Instrument::getType).collect(Collectors.toList()))
+								.containsExactlyInAnyOrder("triangle", "marimba");
 
 		assertThat(
 				this.singerRepository.findById("singer3").get().getBands().stream()
-						.map(Band::getName).collect(Collectors.toList()),
-				containsInAnyOrder("band3", "band2"));
+						.map(Band::getName).collect(Collectors.toList()))
+								.containsExactlyInAnyOrder("band3", "band2");
 
-		assertTrue("Verify successful run",
-				baos.toString().contains("This concludes the sample."));
+		assertThat(baos.toString()).contains("This concludes the sample.");
 	}
 
 	private String sendRequest(String url, String json, HttpMethod method) {
