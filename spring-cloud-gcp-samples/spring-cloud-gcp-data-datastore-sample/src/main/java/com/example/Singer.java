@@ -148,11 +148,11 @@ public class Singer {
 		return "Singer{" + "singerId='" + this.singerId + '\'' + ", firstName='"
 				+ this.firstName + '\'' + ", lastName='" + this.lastName + '\''
 				+ ", albums=" + this.albums + ", firstBand=" + this.firstBand + ", bands="
-				+ (this.bands == null ? ""
+				+ ((this.bands == null) ? ""
 						: Strings.join(this.bands.stream().map((x) -> x.getName())
 								.collect(Collectors.toList()), ','))
 				+ ", personalInstruments="
-				+ (this.personalInstruments == null ? ""
+				+ ((this.personalInstruments == null) ? ""
 						: Strings.join(this.personalInstruments.stream()
 								.map((x) -> x.getType()).collect(Collectors.toList()), ','))
 				+ '}';

@@ -294,7 +294,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 		}
 		return new StructuredQuery.OrderBy(
 				persistentEntity.getPersistentProperty(order.getProperty()).getFieldName(),
-				order.getDirection() == Sort.Direction.DESC
+				(order.getDirection() == Sort.Direction.DESC)
 						? StructuredQuery.OrderBy.Direction.DESCENDING
 						: StructuredQuery.OrderBy.Direction.ASCENDING);
 	}
@@ -358,7 +358,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	public static PathElement keyToPathElement(Key key) {
 		Assert.notNull(key, "A non-null key is required");
-		return key.getName() != null
+		return (key.getName() != null)
 				? PathElement.of(key.getKind(), key.getName())
 				: PathElement.of(key.getKind(), key.getId());
 	}

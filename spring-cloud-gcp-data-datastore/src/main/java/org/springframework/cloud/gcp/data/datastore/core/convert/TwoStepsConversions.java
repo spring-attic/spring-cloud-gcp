@@ -151,7 +151,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 						: ((List<?>) val))
 						.stream()
 								.map((v) -> readConverter.apply(
-										v instanceof Value ? ((Value) v).get() : v,
+										(v instanceof Value) ? ((Value) v).get() : v,
 										targetComponentType))
 						.collect(Collectors.toList());
 				return (T) convertCollection(elements, targetCollectionType);
@@ -331,7 +331,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			}
 
 			Class<?> effectiveFirstStepTarget =
-					firstStepTarget == null ? firstStepSource : firstStepTarget;
+					(firstStepTarget != null) ? firstStepTarget : firstStepSource;
 
 			Optional<Class<?>> datastoreBasicType = getCustomWriteTarget(effectiveFirstStepTarget);
 

@@ -43,9 +43,7 @@ public abstract class SpannerCustomConverter {
 	SpannerCustomConverter(CustomConversions customConversions,
 																GenericConversionService conversionService) {
 		Assert.notNull(customConversions, "Valid custom conversions are required!");
-		this.conversionService = conversionService == null
-				? new DefaultConversionService()
-				: conversionService;
+		this.conversionService = (conversionService != null) ? conversionService : new DefaultConversionService();
 
 		customConversions.registerConvertersIn(this.conversionService);
 	}

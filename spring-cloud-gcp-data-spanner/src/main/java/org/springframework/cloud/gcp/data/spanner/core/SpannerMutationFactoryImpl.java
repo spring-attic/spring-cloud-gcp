@@ -78,14 +78,12 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
 	@Override
 	public List<Mutation> upsert(Object object, Set<String> includeProperties) {
-		return saveObject(Op.INSERT_OR_UPDATE, object,
-				includeProperties == null ? null : includeProperties);
+		return saveObject(Op.INSERT_OR_UPDATE, object, includeProperties);
 	}
 
 	@Override
 	public List<Mutation> update(Object object, Set<String> includeProperties) {
-		return saveObject(Op.UPDATE, object,
-				includeProperties == null ? null : includeProperties);
+		return saveObject(Op.UPDATE, object, includeProperties);
 	}
 
 	@Override

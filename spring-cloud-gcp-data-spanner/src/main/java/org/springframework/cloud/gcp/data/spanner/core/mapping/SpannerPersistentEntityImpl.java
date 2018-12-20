@@ -135,7 +135,7 @@ public class SpannerPersistentEntityImpl<T>
 		Expression expression = PARSER.parseExpression(this.table.name(),
 				ParserContext.TEMPLATE_EXPRESSION);
 
-		return expression instanceof LiteralExpression ? null : expression;
+		return (expression instanceof LiteralExpression) ? null : expression;
 	}
 
 	@Override
@@ -330,9 +330,9 @@ public class SpannerPersistentEntityImpl<T>
 			if (this.hasAnnotatedTableName()) {
 				try {
 					this.tableName = validateTableName(
-							this.tableNameExpression == null ? this.table.name()
-									: this.tableNameExpression.getValue(this.context,
-											String.class));
+							(this.tableNameExpression != null)
+									? this.tableNameExpression.getValue(this.context, String.class)
+									: this.table.name());
 				}
 				catch (RuntimeException ex) {
 					throw new SpannerDataException(

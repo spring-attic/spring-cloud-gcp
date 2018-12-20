@@ -78,7 +78,7 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 		while (resultSet.next()) {
 			result.add(this.entityReader.read(entityClass,
 					resultSet.getCurrentRowAsStruct(),
-					includeColumns == null ? null : includeColumns,
+					includeColumns,
 					allowMissingColumns));
 		}
 		resultSet.close();
@@ -89,7 +89,7 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 	public <T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
 			String... includeColumns) {
 		return mapToList(resultSet, entityClass,
-				includeColumns.length == 0 ? null
+				(includeColumns.length == 0) ? null
 						: new HashSet<>(Arrays.asList(includeColumns)),
 				false);
 	}

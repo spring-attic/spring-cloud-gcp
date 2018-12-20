@@ -64,9 +64,9 @@ public class SpannerPersistentPropertyImpl
 			PersistentEntity<?, SpannerPersistentProperty> owner,
 			SimpleTypeHolder simpleTypeHolder, FieldNamingStrategy fieldNamingStrategy) {
 		super(property, owner, simpleTypeHolder);
-		this.fieldNamingStrategy = fieldNamingStrategy == null
-				? PropertyNameFieldNamingStrategy.INSTANCE
-				: fieldNamingStrategy;
+		this.fieldNamingStrategy = (fieldNamingStrategy != null)
+				? fieldNamingStrategy
+				: PropertyNameFieldNamingStrategy.INSTANCE;
 	}
 
 	/**

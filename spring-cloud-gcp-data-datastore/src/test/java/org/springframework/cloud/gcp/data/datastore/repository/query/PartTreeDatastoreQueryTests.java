@@ -524,7 +524,7 @@ public class PartTreeDatastoreQueryTests {
 
 			assertThat(statement).isEqualTo(expected);
 			List<Integer> results = Arrays.asList(3, 4, 5);
-			return resultLimit != null && resultLimit < results.size() ? results.subList(0, resultLimit)
+			return (resultLimit != null && resultLimit < results.size()) ? results.subList(0, resultLimit)
 					: results;
 		});
 		when(this.datastoreTemplate.convertEntitiesForRead(any(), any())).then(

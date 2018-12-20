@@ -248,7 +248,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 		Statement statement = buildStatementFromQueryAndTags(queryTagValue);
 
-		return simpleItemType != null
+		return (simpleItemType != null)
 				? this.spannerTemplate.query(
 						(struct) -> new StructAccessor(struct).getSingleValue(0), statement,
 						spannerQueryOptions)

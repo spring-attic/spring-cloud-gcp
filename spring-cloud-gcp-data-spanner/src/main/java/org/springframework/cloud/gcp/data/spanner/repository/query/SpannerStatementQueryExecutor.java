@@ -117,7 +117,7 @@ public final class SpannerStatementQueryExecutor {
 				new StringBuilder("SELECT * FROM (").append(sql).append(")"), (o) -> {
 					SpannerPersistentProperty property = persistentEntity
 							.getPersistentProperty(o.getProperty());
-					return property == null ? o.getProperty() : property.getColumnName();
+					return (property != null) ? property.getColumnName() : o.getProperty();
 				});
 		if (options.getLimit() != null) {
 			sb.append(" LIMIT ").append(options.getLimit());

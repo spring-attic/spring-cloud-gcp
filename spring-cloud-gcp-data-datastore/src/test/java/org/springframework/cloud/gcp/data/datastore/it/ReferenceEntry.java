@@ -57,8 +57,8 @@ class ReferenceEntry {
 		return Objects.equals(this.id, that.id) &&
 				Objects.equals(this.name, that.name) &&
 				Objects.equals(this.sibling, that.sibling) &&
-				new HashSet<>(this.childeren != null ? this.childeren : Collections.emptyList())
-						.equals(new HashSet<>(that.childeren != null ? that.childeren : Collections.emptyList()));
+				new HashSet<>((this.childeren != null) ? this.childeren : Collections.emptyList())
+						.equals(new HashSet<>((that.childeren != null) ? that.childeren : Collections.emptyList()));
 	}
 
 	@Override
