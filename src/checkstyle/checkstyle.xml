@@ -174,10 +174,7 @@
 
         <!-- Modifiers -->
         <module name="com.puppycrawl.tools.checkstyle.checks.modifier.RedundantModifierCheck" />
-        <!-- TODO: re-enable when ready -->
-        <!--
         <module name="com.puppycrawl.tools.checkstyle.checks.modifier.ModifierOrderCheck"/>
-        -->
 
         <!-- Regexp -->
         <module name="com.puppycrawl.tools.checkstyle.checks.regexp.RegexpSinglelineJavaCheck">
