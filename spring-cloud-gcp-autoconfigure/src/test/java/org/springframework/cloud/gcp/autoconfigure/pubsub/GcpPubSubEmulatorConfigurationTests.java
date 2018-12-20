@@ -25,6 +25,7 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
+import org.assertj.core.data.Offset;
 import org.junit.Assert;
 import org.junit.Test;
 import org.threeten.bp.Duration;
@@ -33,12 +34,16 @@ import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * @author Andreas Berger
  * @author João André Martins
  * @author Chengyuan Zhao
  */
 public class GcpPubSubEmulatorConfigurationTests {
+
+	private static final Offset<Double> DELTA = Offset.offset(0.0001);
 
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withPropertyValues("spring.cloud.gcp.pubsub.emulator-host=localhost:8085",
@@ -101,12 +106,11 @@ public class GcpPubSubEmulatorConfigurationTests {
 		this.contextRunner.run((context) -> {
 			GcpPubSubProperties gcpPubSubProperties = context
 					.getBean(GcpPubSubProperties.class);
-			Assert.assertEquals("fake-endpoint",
-					gcpPubSubProperties.getSubscriber().getPullEndpoint());
-			Assert.assertEquals(333,
-					(int) gcpPubSubProperties.getSubscriber().getParallelPullCount());
-			Assert.assertEquals("max-ack-extension-period should be set to 1", new Long(1),
-					gcpPubSubProperties.getSubscriber().getMaxAckExtensionPeriod());
+			assertThat(gcpPubSubProperties.getSubscriber().getPullEndpoint()).isEqualTo("fake-endpoint");
+			assertThat((int) gcpPubSubProperties.getSubscriber().getParallelPullCount()).isEqualTo(333);
+			assertThat(gcpPubSubProperties.getSubscriber().getMaxAckExtensionPeriod())
+					.as("max-ack-extension-period should be set to 1")
+					.isEqualTo(1);
 		});
 	}
 
@@ -115,15 +119,15 @@ public class GcpPubSubEmulatorConfigurationTests {
 		this.contextRunner.run((context) -> {
 			RetrySettings settings = context.getBean("subscriberRetrySettings",
 					RetrySettings.class);
-			Assert.assertEquals(Duration.ofSeconds(1), settings.getTotalTimeout());
-			Assert.assertEquals(Duration.ofSeconds(2), settings.getInitialRetryDelay());
-			Assert.assertEquals(3, settings.getRetryDelayMultiplier(), 0.0001);
-			Assert.assertEquals(Duration.ofSeconds(4), settings.getMaxRetryDelay());
-			Assert.assertEquals(5, settings.getMaxAttempts());
-			Assert.assertTrue(settings.isJittered());
-			Assert.assertEquals(Duration.ofSeconds(6), settings.getInitialRpcTimeout());
-			Assert.assertEquals(7, settings.getRpcTimeoutMultiplier(), 0.0001);
-			Assert.assertEquals(Duration.ofSeconds(8), settings.getMaxRpcTimeout());
+			assertThat(settings.getTotalTimeout()).isEqualTo(Duration.ofSeconds(1));
+			assertThat(settings.getInitialRetryDelay()).isEqualTo(Duration.ofSeconds(2));
+			assertThat(settings.getRetryDelayMultiplier()).isEqualTo(3, DELTA);
+			assertThat(settings.getMaxRetryDelay()).isEqualTo(Duration.ofSeconds(4));
+			assertThat(settings.getMaxAttempts()).isEqualTo(5);
+			assertThat(settings.isJittered()).isTrue();
+			assertThat(settings.getInitialRpcTimeout()).isEqualTo(Duration.ofSeconds(6));
+			assertThat(settings.getRpcTimeoutMultiplier()).isEqualTo(7, DELTA);
+			assertThat(settings.getMaxRpcTimeout()).isEqualTo(Duration.ofSeconds(8));
 		});
 	}
 
@@ -132,15 +136,15 @@ public class GcpPubSubEmulatorConfigurationTests {
 		this.contextRunner.run((context) -> {
 			RetrySettings settings = context.getBean("publisherRetrySettings",
 					RetrySettings.class);
-			Assert.assertEquals(Duration.ofSeconds(9), settings.getTotalTimeout());
-			Assert.assertEquals(Duration.ofSeconds(10), settings.getInitialRetryDelay());
-			Assert.assertEquals(11, settings.getRetryDelayMultiplier(), 0.0001);
-			Assert.assertEquals(Duration.ofSeconds(12), settings.getMaxRetryDelay());
-			Assert.assertEquals(13, settings.getMaxAttempts());
-			Assert.assertTrue(settings.isJittered());
-			Assert.assertEquals(Duration.ofSeconds(14), settings.getInitialRpcTimeout());
-			Assert.assertEquals(15, settings.getRpcTimeoutMultiplier(), 0.0001);
-			Assert.assertEquals(Duration.ofSeconds(16), settings.getMaxRpcTimeout());
+			assertThat(settings.getTotalTimeout()).isEqualTo(Duration.ofSeconds(9));
+			assertThat(settings.getInitialRetryDelay()).isEqualTo(Duration.ofSeconds(10));
+			assertThat(settings.getRetryDelayMultiplier()).isEqualTo(11, DELTA);
+			assertThat(settings.getMaxRetryDelay()).isEqualTo(Duration.ofSeconds(12));
+			assertThat(settings.getMaxAttempts()).isEqualTo(13);
+			assertThat(settings.isJittered()).isTrue();
+			assertThat(settings.getInitialRpcTimeout()).isEqualTo(Duration.ofSeconds(14));
+			assertThat(settings.getRpcTimeoutMultiplier()).isEqualTo(15, DELTA);
+			assertThat(settings.getMaxRpcTimeout()).isEqualTo(Duration.ofSeconds(16));
 		});
 	}
 
@@ -149,10 +153,9 @@ public class GcpPubSubEmulatorConfigurationTests {
 		this.contextRunner.run((context) -> {
 			FlowControlSettings settings = context
 					.getBean("subscriberFlowControlSettings", FlowControlSettings.class);
-			Assert.assertEquals(17, (long) settings.getMaxOutstandingElementCount());
-			Assert.assertEquals(18, (long) settings.getMaxOutstandingRequestBytes());
-			Assert.assertEquals(LimitExceededBehavior.Ignore,
-					settings.getLimitExceededBehavior());
+			assertThat((long) settings.getMaxOutstandingElementCount()).isEqualTo(17);
+			assertThat((long) settings.getMaxOutstandingRequestBytes()).isEqualTo(18);
+			assertThat(settings.getLimitExceededBehavior()).isEqualTo(LimitExceededBehavior.Ignore);
 		});
 	}
 
@@ -165,12 +168,12 @@ public class GcpPubSubEmulatorConfigurationTests {
 					.getMaxOutstandingElementCount());
 			Assert.assertEquals(20, (long) settings.getFlowControlSettings()
 					.getMaxOutstandingRequestBytes());
-			Assert.assertEquals(LimitExceededBehavior.Ignore,
-					settings.getFlowControlSettings().getLimitExceededBehavior());
-			Assert.assertEquals(21, (long) settings.getElementCountThreshold());
-			Assert.assertEquals(22, (long) settings.getRequestByteThreshold());
-			Assert.assertEquals(Duration.ofSeconds(23), settings.getDelayThreshold());
-			Assert.assertTrue(settings.getIsEnabled());
+			assertThat(settings.getFlowControlSettings().getLimitExceededBehavior())
+					.isEqualTo(LimitExceededBehavior.Ignore);
+			assertThat((long) settings.getElementCountThreshold()).isEqualTo(21);
+			assertThat((long) settings.getRequestByteThreshold()).isEqualTo(22);
+			assertThat(settings.getDelayThreshold()).isEqualTo(Duration.ofSeconds(23));
+			assertThat(settings.getIsEnabled()).isTrue();
 		});
 	}
 }

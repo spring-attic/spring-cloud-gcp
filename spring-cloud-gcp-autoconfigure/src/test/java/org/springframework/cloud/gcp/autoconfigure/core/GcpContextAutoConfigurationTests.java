@@ -26,7 +26,6 @@ import org.springframework.cloud.gcp.core.GcpEnvironmentProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author João André Martins
@@ -42,7 +41,7 @@ public class GcpContextAutoConfigurationTests {
 				.run((context) -> {
 					GcpProjectIdProvider projectIdProvider =
 							context.getBean(GcpProjectIdProvider.class);
-					assertEquals("tonberry", projectIdProvider.getProjectId());
+					assertThat(projectIdProvider.getProjectId()).isEqualTo("tonberry");
 				});
 	}
 

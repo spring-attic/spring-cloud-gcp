@@ -53,8 +53,6 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 
@@ -143,7 +141,7 @@ public class IapAuthenticationAutoConfigurationTests {
 				.run((context) -> {
 					JwtDecoder jwtDecoder =  context.getBean(JwtDecoder.class);
 					assertThat(jwtDecoder).isNotNull();
-					assertFalse(jwtDecoder instanceof NimbusJwtDecoderJwkSupport);
+					assertThat(jwtDecoder).isNotInstanceOf(NimbusJwtDecoderJwkSupport.class);
 					assertThat(jwtDecoder.decode("Ceci n'est pas un Jwt")).isSameAs(mockJwt);
 
 					BearerTokenResolver resolver = context.getBean(BearerTokenResolver.class);
@@ -191,7 +189,7 @@ public class IapAuthenticationAutoConfigurationTests {
 					DelegatingOAuth2TokenValidator validator
 							= context.getBean("iapJwtDelegatingValidator", DelegatingOAuth2TokenValidator.class);
 					OAuth2TokenValidatorResult result = validator.validate(mockJwt);
-					assertTrue(result.hasErrors());
+					assertThat(result.hasErrors()).isTrue();
 					assertThat(result.getErrors().size()).isEqualTo(1);
 					assertThat(
 							result.getErrors().stream().findAny().get().getDescription())
@@ -215,7 +213,7 @@ public class IapAuthenticationAutoConfigurationTests {
 	private void verifyJwtBeans(AssertableApplicationContext context) {
 		JwtDecoder jwtDecoder =  context.getBean(JwtDecoder.class);
 		assertThat(jwtDecoder).isNotNull();
-		assertTrue(jwtDecoder instanceof NimbusJwtDecoderJwkSupport);
+		assertThat(jwtDecoder).isInstanceOf(NimbusJwtDecoderJwkSupport.class);
 
 		BearerTokenResolver resolver = context.getBean(BearerTokenResolver.class);
 		assertThat(resolver).isNotNull();
