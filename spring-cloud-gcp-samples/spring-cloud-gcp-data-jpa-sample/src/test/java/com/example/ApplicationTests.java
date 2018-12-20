@@ -27,8 +27,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.rule.OutputCapture;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -64,7 +64,7 @@ public class ApplicationTests {
 		// we need to run the command line runner again to capture output
 		this.commandLineRunner.run();
 
-		assertTrue(this.outputCapture.toString().contains("Number of houses is 4"));
-		assertTrue(this.outputCapture.toString().contains("636 Avenue of the Americas, NYC"));
+		assertThat(this.outputCapture.toString()).contains("Number of houses is 4");
+		assertThat(this.outputCapture.toString()).contains("636 Avenue of the Americas, NYC");
 	}
 }
