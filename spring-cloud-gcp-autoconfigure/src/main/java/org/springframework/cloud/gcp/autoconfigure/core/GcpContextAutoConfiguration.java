@@ -65,7 +65,7 @@ public class GcpContextAutoConfiguration {
 	@ConditionalOnMissingBean
 	public GcpProjectIdProvider gcpProjectIdProvider() {
 		GcpProjectIdProvider projectIdProvider =
-				this.gcpProperties.getProjectId() != null
+				(this.gcpProperties.getProjectId() != null)
 						? () -> this.gcpProperties.getProjectId()
 						: new DefaultGcpProjectIdProvider();
 

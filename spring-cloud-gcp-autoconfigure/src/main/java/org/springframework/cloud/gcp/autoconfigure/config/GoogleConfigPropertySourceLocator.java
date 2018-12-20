@@ -82,7 +82,7 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 			this.credentials = gcpConfigProperties.getCredentials().hasKey()
 					? new DefaultCredentialsProvider(gcpConfigProperties).getCredentials()
 					: credentialsProvider.getCredentials();
-			this.projectId = gcpConfigProperties.getProjectId() != null
+			this.projectId = (gcpConfigProperties.getProjectId() != null)
 					? gcpConfigProperties.getProjectId()
 					: projectIdProvider.getProjectId();
 			Assert.notNull(this.credentials, "Credentials must not be null");

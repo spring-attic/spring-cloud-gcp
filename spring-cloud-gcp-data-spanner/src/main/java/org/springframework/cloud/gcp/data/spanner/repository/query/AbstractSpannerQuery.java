@@ -68,7 +68,7 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 		if (this.queryMethod.isCollectionQuery()) {
 			return applyProjection(results);
 		}
-		return results == null || results.isEmpty() ? null
+		return (results == null || results.isEmpty()) ? null
 				: this.queryMethod.getResultProcessor().processResult(results.get(0));
 	}
 
@@ -93,7 +93,7 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 		// If the user has configured converters that can handle the item type, then it is
 		// assumed
 		// to not be an entity type.
-		return itemType == void.class ? null
+		return (itemType == void.class) ? null
 				: this.spannerTemplate.getSpannerEntityProcessor()
 				.getCorrespondingSpannerJavaType(itemType, false);
 	}

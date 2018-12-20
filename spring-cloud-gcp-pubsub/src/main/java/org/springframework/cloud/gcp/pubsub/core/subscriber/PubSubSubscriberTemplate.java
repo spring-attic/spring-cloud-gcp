@@ -207,7 +207,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 	public PubsubMessage pullNext(String subscription) {
 		List<PubsubMessage> receivedMessageList = pullAndAck(subscription, 1, true);
 
-		return receivedMessageList.size() > 0 ? receivedMessageList.get(0) : null;
+		return (receivedMessageList.size() > 0) ? receivedMessageList.get(0) : null;
 	}
 
 	public SubscriberFactory getSubscriberFactory() {

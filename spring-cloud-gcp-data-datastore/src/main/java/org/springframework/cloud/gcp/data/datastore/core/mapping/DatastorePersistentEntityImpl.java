@@ -82,12 +82,12 @@ public class DatastorePersistentEntityImpl<T>
 		Expression expression = PARSER.parseExpression(this.kind.name(),
 				ParserContext.TEMPLATE_EXPRESSION);
 
-		return expression instanceof LiteralExpression ? null : expression;
+		return (expression instanceof LiteralExpression) ? null : expression;
 	}
 
 	@Override
 	public String kindName() {
-		return this.kindNameExpression == null ? this.kindName
+		return (this.kindNameExpression == null) ? this.kindName
 				: this.kindNameExpression.getValue(this.context, String.class);
 	}
 

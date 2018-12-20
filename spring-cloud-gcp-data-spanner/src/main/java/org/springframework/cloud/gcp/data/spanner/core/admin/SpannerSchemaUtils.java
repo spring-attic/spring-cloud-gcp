@@ -248,11 +248,9 @@ public class SpannerSchemaUtils {
 			Class entityClass, List<String> ddlStrings, Set<Class> seenClasses) {
 		getDdlStringForInterleavedHierarchy(parentTable, entityClass, ddlStrings,
 				seenClasses,
-				(type, parent) -> getCreateTableDdlString(type) + (parent == null ? ""
-						: ", INTERLEAVE IN PARENT " + parent + " ON DELETE "
-								+ (this.createInterleavedTableDdlOnDeleteCascade
-										? "CASCADE"
-										: "NO ACTION")),
+				(type, parent) -> getCreateTableDdlString(type) + (
+						(parent != null) ? ", INTERLEAVE IN PARENT " + parent + " ON DELETE "
+						+ ((this.createInterleavedTableDdlOnDeleteCascade) ? "CASCADE" : "NO ACTION") : ""),
 				false);
 	}
 
@@ -294,7 +292,7 @@ public class SpannerSchemaUtils {
 		if (isArray) {
 			return "ARRAY<" + getTypeDdlStringWithLength(type, false, dataLength) + ">";
 		}
-		return type.toString() + (type == Type.Code.STRING || type == Type.Code.BYTES
+		return type.toString() + ((type == Type.Code.STRING || type == Type.Code.BYTES)
 				? "(" + (dataLength.isPresent() ? dataLength.getAsLong() : "MAX") + ")"
 				: "");
 	}

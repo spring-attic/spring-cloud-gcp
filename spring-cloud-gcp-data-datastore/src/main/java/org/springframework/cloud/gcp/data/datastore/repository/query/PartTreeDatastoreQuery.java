@@ -174,7 +174,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			deleteFoundEntities(returnedTypeIsNumber, rawResults);
 		}
 
-		return this.tree.isExistsProjection() || isCountingQuery ? result
+		return (this.tree.isExistsProjection() || isCountingQuery) ? result
 				: convertResultCollection(result, collectionType);
 	}
 
@@ -183,7 +183,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				.setKind(this.datastorePersistentEntity.kindName());
 		StructuredQuery query = applyQueryBody(parameters, builder, false);
 		List items = this.datastoreTemplate.query((query), (x) -> x);
-		Integer limit = query.getLimit() == null ? null : query.getLimit() - 1;
+		Integer limit = (query.getLimit() == null) ? null : query.getLimit() - 1;
 
 		boolean exceedsLimit = false;
 		if (limit != null) {
@@ -305,7 +305,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}).toArray(Filter[]::new);
 
 		builder.setFilter(
-				filters.length > 1
+				(filters.length > 1)
 				? CompositeFilter.and(filters[0],
 						Arrays.copyOfRange(filters, 1, filters.length))
 				: filters[0]);

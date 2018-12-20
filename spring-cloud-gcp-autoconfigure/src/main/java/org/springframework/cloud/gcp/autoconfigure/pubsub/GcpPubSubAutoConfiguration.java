@@ -88,7 +88,7 @@ public class GcpPubSubAutoConfiguration {
 			GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
 		this.gcpPubSubProperties = gcpPubSubProperties;
-		this.finalProjectIdProvider = gcpPubSubProperties.getProjectId() != null
+		this.finalProjectIdProvider = (gcpPubSubProperties.getProjectId() != null)
 				? gcpPubSubProperties::getProjectId
 				: gcpProjectIdProvider;
 

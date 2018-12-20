@@ -63,7 +63,7 @@ public class GcsSession implements Session<BlobInfo> {
 		Assert.state(tokens.length == 1 || tokens.length == 2,
 				"Path must be in the form of [bucket] or [bucket]/[blob name]");
 
-		return tokens.length == 1
+		return (tokens.length == 1)
 				? this.gcs.delete(tokens[0])
 				: this.gcs.delete(tokens[0], tokens[1]);
 	}
@@ -158,7 +158,7 @@ public class GcsSession implements Session<BlobInfo> {
 	public boolean exists(String path) throws IOException {
 		String[] tokens = getBucketAndObjectFromPath(path);
 
-		return tokens.length == 1
+		return (tokens.length == 1)
 				? this.gcs.get(path) != null
 				: this.gcs.get(tokens[0], tokens[1]) != null;
 	}

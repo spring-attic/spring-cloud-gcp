@@ -154,7 +154,7 @@ public class SpannerTemplate implements SpannerOperations {
 				.getPersistentEntity(entityClass);
 		return mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
 				persistentEntity.columns(), options), entityClass,
-				options == null ? null : options.getIncludeProperties(),
+				(options != null) ? options.getIncludeProperties() : null,
 				options != null && options.isAllowPartialRead());
 	}
 
@@ -174,7 +174,7 @@ public class SpannerTemplate implements SpannerOperations {
 	public <T> List<T> query(Class<T> entityClass, Statement statement,
 			SpannerQueryOptions options) {
 		return mapToListAndResolveChildren(executeQuery(statement, options), entityClass,
-				options == null ? null : options.getIncludeProperties(),
+				(options != null) ? options.getIncludeProperties() : null,
 				options != null && options.isAllowPartialRead());
 	}
 
@@ -230,7 +230,7 @@ public class SpannerTemplate implements SpannerOperations {
 	public void update(Object object, String... includeProperties) {
 		applyMutations(
 				this.mutationFactory.update(object,
-						includeProperties.length == 0 ? null
+						(includeProperties.length == 0) ? null
 								: new HashSet<>(Arrays.asList(includeProperties))));
 	}
 
@@ -255,7 +255,7 @@ public class SpannerTemplate implements SpannerOperations {
 	public void upsert(Object object, String... includeProperties) {
 		applyMutations(
 				this.mutationFactory.upsert(object,
-						includeProperties.length == 0 ? null
+						(includeProperties.length == 0) ? null
 								: new HashSet<>(Arrays.asList(includeProperties))));
 	}
 
@@ -332,9 +332,8 @@ public class SpannerTemplate implements SpannerOperations {
 					"Spanner does not support nested transactions");
 		}, () -> {
 
-			SpannerReadOptions options = readOptions == null ? new SpannerReadOptions()
-					: readOptions;
-			try (ReadOnlyTransaction readOnlyTransaction = options.getTimestamp() != null
+			SpannerReadOptions options = (readOptions != null) ? readOptions : new SpannerReadOptions();
+			try (ReadOnlyTransaction readOnlyTransaction = (options.getTimestamp() != null)
 					? this.databaseClient.readOnlyTransaction(
 							TimestampBound.ofReadTimestamp(options.getTimestamp()))
 					: this.databaseClient.readOnlyTransaction()) {
@@ -377,7 +376,7 @@ public class SpannerTemplate implements SpannerOperations {
 	private String getQueryLogMessageWithOptions(Statement statement, SpannerQueryOptions options) {
 		String message;
 		StringBuilder logSb = new StringBuilder("Executing query").append(
-				options.getTimestamp() != null ? " at timestamp" + options.getTimestamp()
+				(options.getTimestamp() != null) ? " at timestamp" + options.getTimestamp()
 						: "");
 		for (QueryOption queryOption : options.getQueryOptions()) {
 			logSb.append(" with option: " + queryOption);
@@ -393,7 +392,7 @@ public class SpannerTemplate implements SpannerOperations {
 			resultSet = getReadContext().executeQuery(statement);
 		}
 		else {
-			resultSet = (options.getTimestamp() != null ? getReadContext(options.getTimestamp())
+			resultSet = ((options.getTimestamp() != null) ? getReadContext(options.getTimestamp())
 					: getReadContext()).executeQuery(statement,
 							options.getQueryOptions());
 		}
@@ -410,7 +409,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 		ResultSet resultSet;
 
-		ReadContext readContext = options != null && options.getTimestamp() != null
+		ReadContext readContext = (options != null && options.getTimestamp() != null)
 				? getReadContext(options.getTimestamp())
 				: getReadContext();
 
@@ -530,6 +529,6 @@ public class SpannerTemplate implements SpannerOperations {
 	private <A> A doWithOrWithoutTransactionContext(Function<TransactionContext, A> funcWithTransactionContext,
 			Supplier<A> funcWithoutTransactionContext) {
 		TransactionContext txContext = getTransactionContext();
-		return txContext == null ? funcWithoutTransactionContext.get() : funcWithTransactionContext.apply(txContext);
+		return (txContext != null) ? funcWithTransactionContext.apply(txContext) : funcWithoutTransactionContext.get();
 	}
 }
