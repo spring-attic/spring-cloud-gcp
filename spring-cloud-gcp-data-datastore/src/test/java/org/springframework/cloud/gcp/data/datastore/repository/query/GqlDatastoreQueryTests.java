@@ -126,7 +126,7 @@ public class GqlDatastoreQueryTests {
 				.thenReturn(parameters);
 
 		when(parameters.getNumberOfParameters()).thenReturn(paramNames.length);
-		when(parameters.getParameter(anyInt())).thenAnswer(invocation -> {
+		when(parameters.getParameter(anyInt())).thenAnswer((invocation) -> {
 			int index = invocation.getArgument(0);
 			Parameter param = mock(Parameter.class);
 			when(param.getName()).thenReturn(Optional.of(paramNames[index]));
@@ -145,7 +145,7 @@ public class GqlDatastoreQueryTests {
 
 		GqlDatastoreQuery gqlDatastoreQuery = spy(createQuery(gql));
 
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			GqlQuery statement = invocation.getArgument(0);
 
 			assertThat(statement.getQueryString()).isEqualTo(entityResolvedGql);

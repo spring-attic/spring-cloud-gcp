@@ -44,7 +44,7 @@ public class DatastorePersistentPropertyImplTests {
 	public void propertiesTest() {
 		this.datastoreMappingContext.getPersistentEntity(TestEntity.class)
 				.doWithProperties(
-						(PropertyHandler<DatastorePersistentProperty>) property -> {
+						(PropertyHandler<DatastorePersistentProperty>) (property) -> {
 							if (property.isIdProperty()) {
 								assertThat(property.getFieldName()).isEqualTo("id");
 							}
@@ -82,7 +82,7 @@ public class DatastorePersistentPropertyImplTests {
 	@Test
 	public void testAssociations() {
 		this.datastoreMappingContext.getPersistentEntity(TestEntity.class)
-				.doWithProperties((PropertyHandler<DatastorePersistentProperty>) prop -> {
+				.doWithProperties((PropertyHandler<DatastorePersistentProperty>) (prop) -> {
 					assertThat(prop).isSameAs(
 							((DatastorePersistentPropertyImpl) prop).createAssociation().getInverse());
 					assertThat(((DatastorePersistentPropertyImpl) prop).createAssociation().getObverse()).isNull();

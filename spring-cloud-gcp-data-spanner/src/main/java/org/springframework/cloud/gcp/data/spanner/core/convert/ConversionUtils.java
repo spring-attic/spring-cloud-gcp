@@ -49,7 +49,7 @@ public final class ConversionUtils {
 	static <T> Iterable<T> convertIterable(
 			Iterable<Object> source, Class<T> targetType, SpannerCustomConverter converter) {
 		List<T> result = new ArrayList<>();
-		source.forEach(item -> result.add(converter.convert(item, targetType)));
+		source.forEach((item) -> result.add(converter.convert(item, targetType)));
 		return result;
 	}
 }

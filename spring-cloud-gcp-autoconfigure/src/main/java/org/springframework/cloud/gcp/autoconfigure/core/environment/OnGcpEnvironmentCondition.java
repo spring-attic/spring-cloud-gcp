@@ -54,7 +54,7 @@ public class OnGcpEnvironmentCondition extends SpringBootCondition {
 		GcpEnvironmentProvider environmentProvider = context.getBeanFactory().getBean(GcpEnvironmentProvider.class);
 		GcpEnvironment currentEnvironment = environmentProvider.getCurrentEnvironment();
 
-		if (Arrays.stream(targetEnvironments).noneMatch(env -> env == currentEnvironment)) {
+		if (Arrays.stream(targetEnvironments).noneMatch((env) -> env == currentEnvironment)) {
 			return new ConditionOutcome(false, "Application is not running on any of "
 					+ Arrays.stream(targetEnvironments)
 					.map(GcpEnvironment::toString)

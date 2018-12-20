@@ -93,10 +93,10 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	public void fromHeaders(MessageHeaders messageHeaders,
 			final Map<String, String> pubsubMessageHeaders) {
 		messageHeaders.entrySet().stream()
-				.filter(entry -> Boolean.TRUE.equals(
+				.filter((entry) -> Boolean.TRUE.equals(
 						PatternMatchUtils.smartMatch(entry.getKey(),
 								this.outboundHeaderPatterns)))
-				.forEach(entry -> pubsubMessageHeaders.put(
+				.forEach((entry) -> pubsubMessageHeaders.put(
 						entry.getKey(), entry.getValue().toString()));
 	}
 
@@ -110,7 +110,7 @@ public class PubSubHeaderMapper implements HeaderMapper<Map<String, String>> {
 	@Override
 	public Map<String, Object> toHeaders(Map<String, String> pubsubMessageHeaders) {
 		return pubsubMessageHeaders.entrySet().stream()
-				.filter(entry -> Boolean.TRUE.equals(
+				.filter((entry) -> Boolean.TRUE.equals(
 						PatternMatchUtils.smartMatch(entry.getKey(),
 								this.inboundHeaderPatterns)))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

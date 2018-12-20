@@ -103,7 +103,7 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 				return originalType;
 			}
 			compatible = ConverterAwareMappingSpannerEntityWriter.findFirstCompatibleSpannerMultupleItemNativeType(
-					spannerType -> canHandlePropertyTypeForArrayRead(originalType, spannerType)
+					(spannerType) -> canHandlePropertyTypeForArrayRead(originalType, spannerType)
 							&& this.writeConverter.canConvert(originalType, spannerType));
 		}
 		else {
@@ -113,7 +113,7 @@ public class ConverterAwareMappingSpannerEntityProcessor implements SpannerEntit
 			}
 			compatible = ConverterAwareMappingSpannerEntityWriter
 					.findFirstCompatibleSpannerSingleItemNativeType(
-							spannerType -> canHandlePropertyTypeForSingularRead(originalType, spannerType)
+							(spannerType) -> canHandlePropertyTypeForSingularRead(originalType, spannerType)
 									&& this.writeConverter.canConvert(originalType, spannerType));
 		}
 		return compatible;

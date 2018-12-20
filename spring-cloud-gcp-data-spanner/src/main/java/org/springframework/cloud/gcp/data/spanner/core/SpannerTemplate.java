@@ -109,11 +109,11 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	protected ReadContext getReadContext() {
-		return doWithOrWithoutTransactionContext(x -> x, this.databaseClient::singleUse);
+		return doWithOrWithoutTransactionContext((x) -> x, this.databaseClient::singleUse);
 	}
 
 	protected ReadContext getReadContext(Timestamp timestamp) {
-		return doWithOrWithoutTransactionContext(x -> x,
+		return doWithOrWithoutTransactionContext((x) -> x,
 				() -> this.databaseClient.singleUse(TimestampBound.ofReadTimestamp(timestamp)));
 	}
 
@@ -127,7 +127,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public long executeDmlStatement(Statement statement) {
-		return doWithOrWithoutTransactionContext(x -> x.executeUpdate(statement),
+		return doWithOrWithoutTransactionContext((x) -> x.executeUpdate(statement),
 				() -> this.databaseClient.executePartitionedUpdate(statement));
 	}
 
@@ -223,7 +223,7 @@ public class SpannerTemplate implements SpannerOperations {
 	public void updateAll(Iterable objects) {
 		applyMutations(
 				getMutationsForMultipleObjects(objects,
-						x -> this.mutationFactory.update(x, null)));
+						(x) -> this.mutationFactory.update(x, null)));
 	}
 
 	@Override
@@ -248,7 +248,7 @@ public class SpannerTemplate implements SpannerOperations {
 	public void upsertAll(Iterable objects) {
 		applyMutations(
 				getMutationsForMultipleObjects(objects,
-						x -> this.mutationFactory.upsert(x, null)));
+						(x) -> this.mutationFactory.upsert(x, null)));
 	}
 
 	@Override
@@ -302,7 +302,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> T performReadWriteTransaction(Function<SpannerTemplate, T> operations) {
-		return doWithOrWithoutTransactionContext(x -> {
+		return doWithOrWithoutTransactionContext((x) -> {
 			throw new IllegalStateException("There is already declarative transaction open. " +
 					"Spanner does not support nested transactions");
 		}, () -> this.databaseClient.readWriteTransaction()
@@ -327,7 +327,7 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public <T> T performReadOnlyTransaction(Function<SpannerTemplate, T> operations,
 			SpannerReadOptions readOptions) {
-		return doWithOrWithoutTransactionContext(x -> {
+		return doWithOrWithoutTransactionContext((x) -> {
 			throw new IllegalStateException("There is already declarative transaction open. " +
 					"Spanner does not support nested transactions");
 		}, () -> {
@@ -459,14 +459,14 @@ public class SpannerTemplate implements SpannerOperations {
 		StringBuilder logSb = new StringBuilder("Executing read on table " + tableName
 				+ " with keys: " + keys + " and columns: ");
 		StringJoiner sj = new StringJoiner(",");
-		columns.forEach(col -> sj.add(col));
+		columns.forEach((col) -> sj.add(col));
 		logSb.append(sj.toString());
 		return logSb;
 	}
 
 	protected void applyMutations(Collection<Mutation> mutations) {
 		LOGGER.debug("Applying Mutation: " + mutations);
-		doWithOrWithoutTransactionContext(x -> {
+		doWithOrWithoutTransactionContext((x) -> {
 			x.buffer(mutations);
 			return null;
 		}, () -> {
@@ -496,7 +496,7 @@ public class SpannerTemplate implements SpannerOperations {
 		PersistentPropertyAccessor accessor = spannerPersistentEntity
 				.getPropertyAccessor(entity);
 		spannerPersistentEntity.doWithInterleavedProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) -> {
 					if (includeProperties != null && !includeProperties
 							.contains(spannerPersistentEntity.getName())) {
 						return;
@@ -516,7 +516,7 @@ public class SpannerTemplate implements SpannerOperations {
 	private Collection<Mutation> getMutationsForMultipleObjects(Iterable it,
 			Function<Object, Collection<Mutation>> individualEntityMutationFunc) {
 		return (Collection<Mutation>) StreamSupport.stream(it.spliterator(), false)
-				.flatMap(x -> individualEntityMutationFunc.apply(x).stream())
+				.flatMap((x) -> individualEntityMutationFunc.apply(x).stream())
 				.collect(Collectors.toList());
 	}
 

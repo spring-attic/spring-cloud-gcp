@@ -77,7 +77,7 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 	 */
 	protected Object[] convertCollectionParamToCompatibleArray(List<?> param) {
 		List converted = param.stream()
-				.map(x -> this.datastoreTemplate.getDatastoreEntityConverter().getConversions().convertOnWriteSingle(x)
+				.map((x) -> this.datastoreTemplate.getDatastoreEntityConverter().getConversions().convertOnWriteSingle(x)
 						.get())
 				.collect(Collectors.toList());
 		return converted.toArray(

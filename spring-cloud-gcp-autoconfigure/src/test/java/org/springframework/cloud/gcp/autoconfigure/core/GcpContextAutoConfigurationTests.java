@@ -39,7 +39,7 @@ public class GcpContextAutoConfigurationTests {
 	@Test
 	public void testGetProjectIdProvider_withGcpProperties() {
 		this.contextRunner.withPropertyValues("spring.cloud.gcp.projectId=tonberry")
-				.run(context -> {
+				.run((context) -> {
 					GcpProjectIdProvider projectIdProvider =
 							context.getBean(GcpProjectIdProvider.class);
 					assertEquals("tonberry", projectIdProvider.getProjectId());
@@ -48,7 +48,7 @@ public class GcpContextAutoConfigurationTests {
 
 	@Test
 	public void testGetProjectIdProvider_withoutGcpProperties() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			GcpProjectIdProvider projectIdProvider =
 					context.getBean(GcpProjectIdProvider.class);
 			assertThat(projectIdProvider).isInstanceOf(DefaultGcpProjectIdProvider.class);
@@ -58,7 +58,7 @@ public class GcpContextAutoConfigurationTests {
 	@Test
 	public void testEnvironmentProvider() {
 		this.contextRunner
-				.run(context -> {
+				.run((context) -> {
 					GcpEnvironmentProvider environmentProvider = context.getBean(GcpEnvironmentProvider.class);
 					assertThat(environmentProvider).isNotNull();
 					assertThat(environmentProvider).isInstanceOf(DefaultGcpEnvironmentProvider.class);

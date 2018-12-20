@@ -114,7 +114,7 @@ public final class SpannerStatementQueryExecutor {
 		SpannerPersistentEntity<?> persistentEntity = mappingContext
 				.getPersistentEntity(entityClass);
 		StringBuilder sb = SpannerStatementQueryExecutor.applySort(options.getSort(),
-				new StringBuilder("SELECT * FROM (").append(sql).append(")"), o -> {
+				new StringBuilder("SELECT * FROM (").append(sql).append(")"), (o) -> {
 					SpannerPersistentProperty property = persistentEntity
 							.getPersistentProperty(o.getProperty());
 					return property == null ? o.getProperty() : property.getColumnName();
@@ -204,7 +204,7 @@ public final class SpannerStatementQueryExecutor {
 		if (toMethod == null && spannerCustomConverter != null) {
 			Class<?> compatible = ConverterAwareMappingSpannerEntityWriter
 					.findFirstCompatibleSpannerSingleItemNativeType(
-							type -> spannerCustomConverter.canConvert(originalParam.getClass(), type));
+							(type) -> spannerCustomConverter.canConvert(originalParam.getClass(), type));
 			if (compatible != null) {
 				param = spannerCustomConverter.convert(originalParam, compatible);
 				toMethod = (BiFunction<ValueBinder, Object, ?>) getValueBinderBiFunction(param);
@@ -261,7 +261,7 @@ public final class SpannerStatementQueryExecutor {
 		buildSelect(persistentEntity, tree, stringBuilder);
 		buildFrom(persistentEntity, stringBuilder);
 		buildWhere(tree, persistentEntity, tags, stringBuilder);
-		applySort(tree.getSort(), stringBuilder, o -> persistentEntity
+		applySort(tree.getSort(), stringBuilder, (o) -> persistentEntity
 				.getPersistentProperty(o.getProperty()).getColumnName());
 		buildLimit(tree, stringBuilder);
 
@@ -298,7 +298,7 @@ public final class SpannerStatementQueryExecutor {
 		}
 		sql.append(" ORDER BY ");
 		StringJoiner sj = new StringJoiner(" , ");
-		sort.iterator().forEachRemaining(o -> {
+		sort.iterator().forEachRemaining((o) -> {
 			String sortedPropertyName = sortedPropertyNameFunction.apply(o);
 			String sortedProperty = o.isIgnoreCase() ? "LOWER(" + sortedPropertyName + ")"
 					: sortedPropertyName;
@@ -315,12 +315,12 @@ public final class SpannerStatementQueryExecutor {
 
 			StringJoiner orStrings = new StringJoiner(" OR ");
 
-			tree.iterator().forEachRemaining(orPart -> {
+			tree.iterator().forEachRemaining((orPart) -> {
 				String orString = "( ";
 
 				StringJoiner andStrings = new StringJoiner(" AND ");
 
-				orPart.forEach(part -> {
+				orPart.forEach((part) -> {
 					String segment = part.getProperty().getSegment();
 					String tag = "tag" + tags.size();
 					tags.add(tag);

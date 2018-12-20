@@ -132,7 +132,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 		this.spannerEntityProcessor.write(object, writeBuilder::set, includeProperties);
 		mutations.add(writeBuilder.build());
 
-		persistentEntity.doWithInterleavedProperties(spannerPersistentProperty -> {
+		persistentEntity.doWithInterleavedProperties((spannerPersistentProperty) -> {
 			if (includeProperties == null
 					|| includeProperties.contains(spannerPersistentProperty.getName())) {
 

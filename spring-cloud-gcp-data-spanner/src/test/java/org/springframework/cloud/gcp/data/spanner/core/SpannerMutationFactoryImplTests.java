@@ -102,7 +102,7 @@ public class SpannerMutationFactoryImplTests {
 
 	@Test
 	public void insertTest() {
-		executeWriteTest(t -> this.spannerMutationFactory.insert(t), Op.INSERT);
+		executeWriteTest((t) -> this.spannerMutationFactory.insert(t), Op.INSERT);
 	}
 
 	@Test
@@ -128,12 +128,12 @@ public class SpannerMutationFactoryImplTests {
 
 	@Test
 	public void updateTest() {
-		executeWriteTest(t -> this.spannerMutationFactory.update(t, null), Op.UPDATE);
+		executeWriteTest((t) -> this.spannerMutationFactory.update(t, null), Op.UPDATE);
 	}
 
 	@Test
 	public void upsertTest() {
-		executeWriteTest(t -> this.spannerMutationFactory.upsert(t, null),
+		executeWriteTest((t) -> this.spannerMutationFactory.upsert(t, null),
 				Op.INSERT_OR_UPDATE);
 	}
 

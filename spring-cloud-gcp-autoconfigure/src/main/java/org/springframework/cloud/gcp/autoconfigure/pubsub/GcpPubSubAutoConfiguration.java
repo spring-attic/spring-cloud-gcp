@@ -220,7 +220,7 @@ public class GcpPubSubAutoConfiguration {
 		}
 
 		return ifNotNull(batching.getDelayThresholdSeconds(),
-					x -> builder.setDelayThreshold(Duration.ofSeconds(x)))
+					(x) -> builder.setDelayThreshold(Duration.ofSeconds(x)))
 				.apply(ifNotNull(batching.getElementCountThreshold(), builder::setElementCountThreshold)
 				.apply(ifNotNull(batching.getEnabled(), builder::setIsEnabled)
 				.apply(ifNotNull(batching.getRequestByteThreshold(), builder::setRequestByteThreshold)
@@ -237,18 +237,18 @@ public class GcpPubSubAutoConfiguration {
 		Builder builder = RetrySettings.newBuilder();
 
 		return ifNotNull(retryProperties.getInitialRetryDelaySeconds(),
-				x -> builder.setInitialRetryDelay(Duration.ofSeconds(x)))
+				(x) -> builder.setInitialRetryDelay(Duration.ofSeconds(x)))
 				.apply(ifNotNull(retryProperties.getInitialRpcTimeoutSeconds(),
-						x -> builder.setInitialRpcTimeout(Duration.ofSeconds(x)))
+						(x) -> builder.setInitialRpcTimeout(Duration.ofSeconds(x)))
 				.apply(ifNotNull(retryProperties.getJittered(), builder::setJittered)
 				.apply(ifNotNull(retryProperties.getMaxAttempts(), builder::setMaxAttempts)
 				.apply(ifNotNull(retryProperties.getMaxRetryDelaySeconds(),
-						x -> builder.setMaxRetryDelay(Duration.ofSeconds(x)))
+						(x) -> builder.setMaxRetryDelay(Duration.ofSeconds(x)))
 				.apply(ifNotNull(retryProperties.getMaxRpcTimeoutSeconds(),
-						x -> builder.setMaxRpcTimeout(Duration.ofSeconds(x)))
+						(x) -> builder.setMaxRpcTimeout(Duration.ofSeconds(x)))
 				.apply(ifNotNull(retryProperties.getRetryDelayMultiplier(), builder::setRetryDelayMultiplier)
 				.apply(ifNotNull(retryProperties.getTotalTimeoutSeconds(),
-						x -> builder.setTotalTimeout(Duration.ofSeconds(x)))
+						(x) -> builder.setTotalTimeout(Duration.ofSeconds(x)))
 				.apply(ifNotNull(retryProperties.getRpcTimeoutMultiplier(), builder::setRpcTimeoutMultiplier)
 				.apply(false))))))))) ? builder.build() : null;
 	}
@@ -258,7 +258,7 @@ public class GcpPubSubAutoConfiguration {
 	 * one setting was set.
 	 */
 	private <T> Function<Boolean, Boolean> ifNotNull(T prop, Consumer<T> consumer) {
-		return next -> {
+		return (next) -> {
 			boolean wasSet = next;
 			if (prop != null) {
 				consumer.accept(prop);

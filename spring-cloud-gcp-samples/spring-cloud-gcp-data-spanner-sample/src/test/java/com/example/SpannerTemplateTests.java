@@ -76,7 +76,7 @@ public class SpannerTemplateTests {
 
 		Set<String> tradeSpannerKeys = this.spannerOperations.readAll(Trade.class)
 				.stream()
-				.map(t -> this.spannerSchemaUtils.getKey(t).toString())
+				.map((t) -> this.spannerSchemaUtils.getKey(t).toString())
 				.collect(Collectors.toSet());
 
 		assertThat(tradeSpannerKeys).containsExactlyInAnyOrder(

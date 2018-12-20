@@ -117,7 +117,7 @@ public class DatastoreIntegrationTests {
 				() -> this.testEntityRepository.countBySize(1L) == 4);
 
 		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
-				.map(x -> x.getId()).collect(Collectors.toList())).contains(4L);
+				.map((x) -> x.getId()).collect(Collectors.toList())).contains(4L);
 
 		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(0, 1)).hasNext()).isTrue();
 		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(1, 1)).hasNext()).isTrue();
@@ -128,10 +128,10 @@ public class DatastoreIntegrationTests {
 		assertThat(circles.getTotalElements()).isEqualTo(3L);
 		assertThat(circles.getTotalPages()).isEqualTo(2);
 		assertThat(circles.get().count()).isEqualTo(2L);
-		assertThat(circles.get().allMatch(e -> e.getShape().equals(Shape.CIRCLE))).isTrue();
+		assertThat(circles.get().allMatch((e) -> e.getShape().equals(Shape.CIRCLE))).isTrue();
 
 		assertThat(this.testEntityRepository.findByEnumQueryParam(Shape.SQUARE).stream()
-				.map(x -> x.getId()).collect(Collectors.toList())).contains(4L);
+				.map((x) -> x.getId()).collect(Collectors.toList())).contains(4L);
 
 		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(4);
 
@@ -278,11 +278,11 @@ public class DatastoreIntegrationTests {
 		AncestorEntity loadedEntity = this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
 		assertThat(loadedEntity).isEqualTo(ancestorEntity);
 
-		ancestorEntity.descendants.forEach(descendatEntry -> descendatEntry.name = descendatEntry.name + " updated");
+		ancestorEntity.descendants.forEach((descendatEntry) -> descendatEntry.name = descendatEntry.name + " updated");
 		this.datastoreTemplate.save(ancestorEntity);
 		waitUntilTrue(() ->
 				this.datastoreTemplate.findAll(AncestorEntity.DescendantEntry.class)
-						.stream().allMatch(descendatEntry -> descendatEntry.name.contains("updated")));
+						.stream().allMatch((descendatEntry) -> descendatEntry.name.contains("updated")));
 
 		AncestorEntity loadedEntityAfterUpdate =
 				this.datastoreTemplate.findById(ancestorEntity.id, AncestorEntity.class);
@@ -303,14 +303,14 @@ public class DatastoreIntegrationTests {
 		assertThat(loadedParent).isEqualTo(parent);
 
 		parent.name = "parent updated";
-		parent.childeren.forEach(child -> child.name = child.name + " updated");
+		parent.childeren.forEach((child) -> child.name = child.name + " updated");
 		parent.sibling.name = "sibling updated";
 
 		this.datastoreTemplate.save(parent);
 
 		waitUntilTrue(() ->
 				this.datastoreTemplate.findAll(ReferenceEntry.class)
-						.stream().allMatch(entry -> entry.name.contains("updated")));
+						.stream().allMatch((entry) -> entry.name.contains("updated")));
 
 		ReferenceEntry loadedParentAfterUpdate = this.datastoreTemplate.findById(parent.id, ReferenceEntry.class);
 		assertThat(loadedParentAfterUpdate).isEqualTo(parent);

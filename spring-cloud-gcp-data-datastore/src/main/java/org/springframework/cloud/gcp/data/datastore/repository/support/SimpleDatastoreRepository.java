@@ -52,7 +52,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 
 	@Override
 	public <A> A performTransaction(Function<DatastoreRepository<T, ID>, A> operations) {
-		return this.datastoreTemplate.performTransaction(template -> operations
+		return this.datastoreTemplate.performTransaction((template) -> operations
 				.apply(new SimpleDatastoreRepository<>(template, this.entityType)));
 	}
 
