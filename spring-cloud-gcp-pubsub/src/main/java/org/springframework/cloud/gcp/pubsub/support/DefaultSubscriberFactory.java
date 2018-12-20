@@ -264,8 +264,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 		try {
 			return GrpcSubscriberStub.create(subscriberStubSettings.build());
 		}
-		catch (IOException e) {
-			throw new RuntimeException("Error creating the SubscriberStub", e);
+		catch (IOException ex) {
+			throw new RuntimeException("Error creating the SubscriberStub", ex);
 		}
 	}
 

@@ -109,8 +109,8 @@ public class DatastoreTransactionTemplateTests {
 			this.transactionalService.doInTransactionWithException(new TestEntity(),
 					new TestEntity());
 		}
-		catch (Exception e) {
-			exception = e;
+		catch (Exception ex) {
+			exception = ex;
 		}
 		assertThat(exception).isNotNull();
 		verify(this.transaction, times(0)).commit();

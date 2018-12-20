@@ -285,7 +285,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 						}
 						result = result.replace(matched, datastorePersistentEntity.kindName());
 					}
-					catch (ClassNotFoundException e) {
+					catch (ClassNotFoundException ex) {
 						throw new DatastoreDataException(
 								"The class name does not refer to an available entity type: "
 										+ className);

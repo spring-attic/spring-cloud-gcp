@@ -139,7 +139,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 				}
 				result = result.replace(matched, spannerPersistentEntity.tableName());
 			}
-			catch (ClassNotFoundException e) {
+			catch (ClassNotFoundException ex) {
 				throw new SpannerDataException(
 						"The class name does not refer to an available entity type: "
 								+ className);
