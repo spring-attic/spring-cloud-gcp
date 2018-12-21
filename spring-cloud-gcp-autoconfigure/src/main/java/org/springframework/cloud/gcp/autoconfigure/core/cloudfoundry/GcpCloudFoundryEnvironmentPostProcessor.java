@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.autoconfigure.core.cloudfoundry;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +33,7 @@ import org.springframework.boot.context.config.ConfigFileApplicationListener;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -49,7 +49,8 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 	public static final String VCAP_SERVICES_ENVVAR = "VCAP_SERVICES";
 
-	private static final Log LOGGER = LogFactory.getLog(GcpCloudFoundryEnvironmentPostProcessor.class);
+	private static final Log LOGGER =
+			LogFactory.getLog(GcpCloudFoundryEnvironmentPostProcessor.class);
 
 	private static final String SPRING_CLOUD_GCP_PROPERTY_PREFIX = "spring.cloud.gcp.";
 
@@ -72,37 +73,27 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 	private enum GcpCfService {
 
-		PUBSUB("google-pubsub", "pubsub", new HashMap<String, String>() {
-			{
-				put("ProjectId", "project-id");
-				put("PrivateKeyData", "credentials.encoded-key");
-			}
-		}),
-		STORAGE("google-storage", "storage", new HashMap<String, String>() {
-			{
-				put("ProjectId", "project-id");
-				put("PrivateKeyData", "credentials.encoded-key");
-			}
-		}),
-		SPANNER("google-spanner", "spanner", new HashMap<String, String>() {
-			{
-				put("ProjectId", "project-id");
-				put("PrivateKeyData", "credentials.encoded-key");
-				put("instance_id", "instance-id");
-			}
-		}),
-		DATASTORE("google-datastore", "datastore", new HashMap<String, String>() {
-			{
-				put("ProjectId", "project-id");
-				put("PrivateKeyData", "credentials.encoded-key");
-			}
-		}),
-		TRACE("google-stackdriver-trace", "trace", new HashMap<String, String>() {
-			{
-				put("ProjectId", "project-id");
-				put("PrivateKeyData", "credentials.encoded-key");
-			}
-		}),
+		PUBSUB("google-pubsub", "pubsub", new MapBuilder<String, String>()
+				.put("ProjectId", "project-id")
+				.put("PrivateKeyData", "credentials.encoded-key")
+				.build()),
+		STORAGE("google-storage", "storage", new MapBuilder<String, String>()
+				.put("ProjectId", "project-id")
+				.put("PrivateKeyData", "credentials.encoded-key")
+				.build()),
+		SPANNER("google-spanner", "spanner", new MapBuilder<String, String>()
+				.put("ProjectId", "project-id")
+				.put("PrivateKeyData", "credentials.encoded-key")
+				.put("instance_id", "instance-id")
+				.build()),
+		DATASTORE("google-datastore", "datastore", new MapBuilder<String, String>()
+				.put("ProjectId", "project-id")
+				.put("PrivateKeyData", "credentials.encoded-key")
+				.build()),
+		TRACE("google-stackdriver-trace", "trace", new MapBuilder<String, String>()
+				.put("ProjectId", "project-id")
+				.put("PrivateKeyData", "credentials.encoded-key")
+				.build()),
 		MYSQL("google-cloudsql-mysql", "sql", sqlPropertyMap),
 		POSTGRES("google-cloudsql-postgres", "sql", sqlPropertyMap);
 
@@ -177,8 +168,7 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 			// The instance connection name must be built from three fields.
 			if (gcpCfServiceProperties.containsKey("spring.cloud.gcp.sql.instance-name")) {
 				String instanceConnectionName =
-						gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.project-id")
-						+ ":"
+						gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.project-id") + ":"
 						+ gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.region") + ":"
 						+ gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.instance-name");
 				gcpCfServiceProperties.put("spring.cloud.gcp.sql.instance-connection-name",
