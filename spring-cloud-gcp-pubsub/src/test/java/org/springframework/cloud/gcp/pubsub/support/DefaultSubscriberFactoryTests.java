@@ -58,8 +58,8 @@ public class DefaultSubscriberFactoryTests {
 
 	private DefaultSubscriberFactory factory = new DefaultSubscriberFactory(() -> PROJECT_ID);
 
-	private static final String PROJECT_ID = UUID.randomUUID().toString();
-	private static final String TOPIC = UUID.randomUUID().toString();
+	private static final String PROJECT_ID = "projectId";
+	private static final String TOPIC = "topic";
 	private static final String SUBSCRIPTION = String.format("projects/%s/subscriptions/%s", PROJECT_ID, TOPIC);
 
 	@Test
@@ -93,14 +93,11 @@ public class DefaultSubscriberFactoryTests {
 
 	@Test
 	public void testCreatePullRequest() {
-		boolean returnImmediately = ThreadLocalRandom.current().nextBoolean();
-		int maxMessages = ThreadLocalRandom.current().nextInt(16);
-
-		PullRequest pullRequest = this.factory.createPullRequest(TOPIC, maxMessages, returnImmediately);
+		PullRequest pullRequest = this.factory.createPullRequest(TOPIC, 42, true);
 
 		assertThat(pullRequest.getSubscription()).isEqualTo(SUBSCRIPTION);
-		assertThat(pullRequest.getReturnImmediately()).isEqualTo(returnImmediately);
-		assertThat(pullRequest.getMaxMessages()).isEqualTo(maxMessages);
+		assertThat(pullRequest.getReturnImmediately()).isTrue();
+		assertThat(pullRequest.getMaxMessages()).isEqualTo(42);
 	}
 
 	@Test
