@@ -16,7 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.core.environment;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -142,7 +143,7 @@ public class OnGcpEnvironmentConditionTests {
 
 	private void setUpAnnotationValue(Object environments) {
 		when(this.mockMetadata.getAnnotationAttributes(ConditionalOnGcpEnvironment.class.getName())).thenReturn(
-				ImmutableMap.of("value", environments)
+				Collections.singletonMap("value", environments)
 		);
 	}
 }

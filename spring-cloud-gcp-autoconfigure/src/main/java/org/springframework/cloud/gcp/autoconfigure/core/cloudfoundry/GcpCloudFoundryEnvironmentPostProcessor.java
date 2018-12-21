@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.autoconfigure.core.cloudfoundry;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +26,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import com.google.api.client.util.ArrayMap;
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -48,8 +49,7 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 	public static final String VCAP_SERVICES_ENVVAR = "VCAP_SERVICES";
 
-	private static final Log LOGGER =
-			LogFactory.getLog(GcpCloudFoundryEnvironmentPostProcessor.class);
+	private static final Log LOGGER = LogFactory.getLog(GcpCloudFoundryEnvironmentPostProcessor.class);
 
 	private static final String SPRING_CLOUD_GCP_PROPERTY_PREFIX = "spring.cloud.gcp.";
 
@@ -72,22 +72,34 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 	private enum GcpCfService {
 
-		PUBSUB("google-pubsub", "pubsub",
-				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encoded-key")),
-		STORAGE("google-storage", "storage",
-				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encoded-key")),
-		SPANNER("google-spanner", "spanner",
-				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encoded-key",
-						"instance_id", "instance-id")),
-		DATASTORE("google-datastore", "datastore",
-				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encoded-key")),
-		TRACE("google-stackdriver-trace", "trace",
-				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encoded-key")),
+		PUBSUB("google-pubsub", "pubsub", new HashMap<String, String>() {
+					{
+						put("ProjectId", "project-id");
+						put("PrivateKeyData", "credentials.encoded-key");
+					}
+				}),
+		STORAGE("google-storage", "storage", new HashMap<String, String>() {
+			{
+				put("ProjectId", "project-id");
+				put("PrivateKeyData", "credentials.encoded-key");
+			}
+		}),
+		SPANNER("google-spanner", "spanner", new HashMap<String, String>() {
+			{
+				put("ProjectId", "project-id");
+				put("PrivateKeyData", "credentials.encoded-key");
+				put("instance_id", "instance-id");
+			}}),
+		DATASTORE("google-datastore", "datastore", new HashMap<String, String>() {
+			{
+				put("ProjectId", "project-id");
+				put("PrivateKeyData", "credentials.encoded-key");
+			}}),
+		TRACE("google-stackdriver-trace", "trace", new HashMap<String, String>() {
+			{
+				put("ProjectId", "project-id");
+				put("PrivateKeyData", "credentials.encoded-key");
+			}}),
 		MYSQL("google-cloudsql-mysql", "sql", sqlPropertyMap),
 		POSTGRES("google-cloudsql-postgres", "sql", sqlPropertyMap);
 
@@ -103,11 +115,13 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 		/**
 		 * Direct mapping of GCP service broker field names in VCAP_SERVICES JSON to Spring Cloud
-		 * GCP property names. {@link #retrieveCfProperties(Map, String, String, Map)} uses this map
-		 * to perform the actual transformation.
+		 * GCP property names. {@link #retrieveCfProperties(Map, String, String, Map)} uses this
+		 * map to perform the actual transformation.
 		 *
-		 * <p>For instance, "ProjectId" for the "google-storage" service will map to
-		 * "spring.cloud.gcp.storage.project-id" field.</p>
+		 * <p>
+		 * For instance, "ProjectId" for the "google-storage" service will map to
+		 * "spring.cloud.gcp.storage.project-id" field.
+		 * </p>
 		 */
 		private Map<String, String> cfPropNameToGcp;
 
@@ -116,7 +130,7 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 				Map<String, String> cfPropNameToGcp) {
 			this.cfServiceName = cfServiceName;
 			this.gcpServiceName = gcpServiceName;
-			this.cfPropNameToGcp = cfPropNameToGcp;
+			this.cfPropNameToGcp = Collections.unmodifiableMap(cfPropNameToGcp);
 		}
 
 		public String getCfServiceName() {
@@ -136,8 +150,7 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 	public void postProcessEnvironment(ConfigurableEnvironment environment,
 			SpringApplication application) {
 		if (!StringUtils.isEmpty(environment.getProperty(VCAP_SERVICES_ENVVAR))) {
-			Map<String, Object> vcapMap =
-					this.parser.parseMap(environment.getProperty(VCAP_SERVICES_ENVVAR));
+			Map<String, Object> vcapMap = this.parser.parseMap(environment.getProperty(VCAP_SERVICES_ENVVAR));
 
 			Properties gcpCfServiceProperties = new Properties();
 
@@ -161,8 +174,8 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 			// For Cloud SQL, there are some exceptions to the rule.
 			// The instance connection name must be built from three fields.
 			if (gcpCfServiceProperties.containsKey("spring.cloud.gcp.sql.instance-name")) {
-				String instanceConnectionName =
-						gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.project-id") + ":"
+				String instanceConnectionName = gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.project-id")
+						+ ":"
 						+ gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.region") + ":"
 						+ gcpCfServiceProperties.getProperty("spring.cloud.gcp.sql.instance-name");
 				gcpCfServiceProperties.put("spring.cloud.gcp.sql.instance-connection-name",

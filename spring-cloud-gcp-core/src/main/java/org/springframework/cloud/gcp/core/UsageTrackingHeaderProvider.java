@@ -16,10 +16,10 @@
 
 package org.springframework.cloud.gcp.core;
 
+import java.util.Collections;
 import java.util.Map;
 
 import com.google.api.gax.rpc.HeaderProvider;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Provides the User-Agent header to signal to the Google Cloud Client Libraries that requests originate from a Spring
@@ -39,7 +39,7 @@ public class UsageTrackingHeaderProvider implements HeaderProvider {
 
 	public UsageTrackingHeaderProvider(Class clazz) {
 		this.userAgent = computeUserAgent(clazz);
-		this.headers = ImmutableMap.of("User-Agent", this.userAgent);
+		this.headers = Collections.singletonMap("User-Agent", this.userAgent);
 	}
 
 	/**
