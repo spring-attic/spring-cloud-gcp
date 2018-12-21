@@ -62,7 +62,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 					.currentTransactionStatus())
 							.getTransaction();
 		}
-		catch (NoTransactionException e) {
+		catch (NoTransactionException ex) {
 			return null;
 		}
 	}
@@ -186,11 +186,11 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 				logger.debug(tx + " afterCommit; state = " + tx.transactionManager.getState());
 			}
 		}
-		catch (AbortedException e) {
-			throw new UnexpectedRollbackException("Transaction Got Rolled Back", e);
+		catch (AbortedException ex) {
+			throw new UnexpectedRollbackException("Transaction Got Rolled Back", ex);
 		}
-		catch (SpannerException e) {
-			throw makeDataIntegrityViolationException(e);
+		catch (SpannerException ex) {
+			throw makeDataIntegrityViolationException(ex);
 		}
 	}
 

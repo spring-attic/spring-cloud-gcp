@@ -28,8 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 /**
@@ -60,9 +59,9 @@ public class AudienceValidatorTests {
 		Jwt mockJwt = Mockito.mock(Jwt.class);
 		when(mockJwt.getAudience()).thenReturn(ImmutableList.of("cats"));
 
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			AudienceValidator validator = context.getBean(AudienceValidator.class);
-			assertFalse(validator.validate(mockJwt).hasErrors());
+			assertThat(validator.validate(mockJwt).hasErrors()).isFalse();
 		});
 	}
 
@@ -71,9 +70,9 @@ public class AudienceValidatorTests {
 		Jwt mockJwt = Mockito.mock(Jwt.class);
 		when(mockJwt.getAudience()).thenReturn(ImmutableList.of("dogs"));
 
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			AudienceValidator validator = context.getBean(AudienceValidator.class);
-			assertTrue(validator.validate(mockJwt).hasErrors());
+			assertThat(validator.validate(mockJwt).hasErrors()).isTrue();
 		});
 	}
 

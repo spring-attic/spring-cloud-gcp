@@ -79,7 +79,7 @@ public class DatastoreQueryLookupStrategyTests {
 				.thenReturn(parameters);
 
 		when(parameters.getNumberOfParameters()).thenReturn(1);
-		when(parameters.getParameter(anyInt())).thenAnswer(invocation -> {
+		when(parameters.getParameter(anyInt())).thenAnswer((invocation) -> {
 			Parameter param = mock(Parameter.class);
 			when(param.getName()).thenReturn(Optional.of("tag"));
 			Mockito.<Class>when(param.getType()).thenReturn(Object.class);

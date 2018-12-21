@@ -150,15 +150,15 @@ public class TwoStepsConversions implements ReadWriteConversions {
 				List elements = (val.getClass().isArray() ? (Arrays.asList(val))
 						: ((List<?>) val))
 						.stream()
-								.map(v -> readConverter.apply(
-										v instanceof Value ? ((Value) v).get() : v,
+								.map((v) -> readConverter.apply(
+										(v instanceof Value) ? ((Value) v).get() : v,
 										targetComponentType))
 						.collect(Collectors.toList());
 				return (T) convertCollection(elements, targetCollectionType);
 
 			}
-			catch (ConversionException | DatastoreDataException e) {
-				throw new DatastoreDataException("Unable process elements of a collection", e);
+			catch (ConversionException | DatastoreDataException ex) {
+				throw new DatastoreDataException("Unable process elements of a collection", ex);
 			}
 		}
 		return (T) readConverter.apply(val, targetComponentType);
@@ -248,11 +248,11 @@ public class TwoStepsConversions implements ReadWriteConversions {
 		if (proppertyVal != null) {
 			switch (embeddedType) {
 			case EMBEDDED_MAP:
-				writeConverter = x -> convertOnWriteSingleEmbeddedMap(x, fieldName,
+				writeConverter = (x) -> convertOnWriteSingleEmbeddedMap(x, fieldName,
 						(TypeInformation) typeInformation.getTypeArguments().get(1));
 				break;
 			case EMBEDDED_ENTITY:
-				writeConverter = x -> convertOnWriteSingleEmbedded(x, fieldName);
+				writeConverter = (x) -> convertOnWriteSingleEmbedded(x, fieldName);
 				break;
 			case NOT_EMBEDDED:
 				writeConverter = this::convertOnWriteSingle;
@@ -285,7 +285,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	private EntityValue convertOnWriteSingleEmbeddedMap(Object val, String kindName,
 			TypeInformation valueTypeInformation) {
-		return applyEntityValueBuilder(kindName, builder -> {
+		return applyEntityValueBuilder(kindName, (builder) -> {
 			Map map = (Map) val;
 			for (Object key : map.keySet()) {
 				String field = convertOnReadSingle(key,
@@ -300,7 +300,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 
 	private EntityValue convertOnWriteSingleEmbedded(Object val, String kindName) {
 		return applyEntityValueBuilder(kindName,
-				builder -> this.datastoreEntityConverter.write(val, builder));
+				(builder) -> this.datastoreEntityConverter.write(val, builder));
 	}
 
 	@Override
@@ -331,7 +331,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			}
 
 			Class<?> effectiveFirstStepTarget =
-					firstStepTarget == null ? firstStepSource : firstStepTarget;
+					(firstStepTarget != null) ? firstStepTarget : firstStepSource;
 
 			Optional<Class<?>> datastoreBasicType = getCustomWriteTarget(effectiveFirstStepTarget);
 
@@ -364,7 +364,7 @@ public class TwoStepsConversions implements ReadWriteConversions {
 			return Optional.of(inputType);
 		}
 		return DatastoreNativeTypes.DATASTORE_NATIVE_TYPES.stream()
-				.filter(simpleType ->
+				.filter((simpleType) ->
 						this.internalConversionService.canConvert(inputType, simpleType)
 								&& this.internalConversionService.canConvert(simpleType, inputType))
 				.findAny();

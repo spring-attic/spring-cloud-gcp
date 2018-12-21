@@ -71,7 +71,7 @@ public class GcpDatastoreAutoConfiguration {
 		this.credentials = (gcpDatastoreProperties.getCredentials().hasKey()
 				? new DefaultCredentialsProvider(gcpDatastoreProperties)
 				: credentialsProvider).getCredentials();
-		this.projectId = gcpDatastoreProperties.getProjectId() != null
+		this.projectId = (gcpDatastoreProperties.getProjectId() != null)
 				? gcpDatastoreProperties.getProjectId()
 				: projectIdProvider.getProjectId();
 		this.namespace = gcpDatastoreProperties.getNamespace();

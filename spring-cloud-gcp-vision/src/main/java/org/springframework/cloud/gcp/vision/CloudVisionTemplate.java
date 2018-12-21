@@ -87,14 +87,14 @@ public class CloudVisionTemplate {
 		try {
 			imgBytes = ByteString.readFrom(imageResource.getInputStream());
 		}
-		catch (IOException e) {
-			throw new CloudVisionException("Failed to read image bytes from provided resource.", e);
+		catch (IOException ex) {
+			throw new CloudVisionException("Failed to read image bytes from provided resource.", ex);
 		}
 
 		Image image = Image.newBuilder().setContent(imgBytes).build();
 
 		List<Feature> featureList = Arrays.stream(featureTypes)
-				.map(featureType -> Feature.newBuilder().setType(featureType).build())
+				.map((featureType) -> Feature.newBuilder().setType(featureType).build())
 				.collect(Collectors.toList());
 
 		BatchAnnotateImagesRequest request = BatchAnnotateImagesRequest.newBuilder()

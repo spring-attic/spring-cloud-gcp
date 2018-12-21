@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping;
 
+import java.lang.annotation.Annotation;
+
 import com.google.cloud.spanner.Key;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,11 +26,7 @@ import org.junit.rules.ExpectedException;
 
 import org.springframework.data.util.ClassTypeInformation;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -66,154 +64,156 @@ public class SpannerKeyPropertyTests {
 
 	@Test
 	public void getColumnNameTest() {
-		assertNull(this.spannerKeyProperty.getColumnName());
+		assertThat(this.spannerKeyProperty.getColumnName()).isNull();
 	}
 
 	@Test
 	public void getColumnInnerTypeTest() {
-		assertNull(this.spannerKeyProperty.getColumnInnerType());
+		assertThat(this.spannerKeyProperty.getColumnInnerType()).isNull();
 	}
 
 	@Test
 	public void getPrimaryKeyOrderTest() {
-		assertNull(this.spannerKeyProperty.getPrimaryKeyOrder());
+		assertThat(this.spannerKeyProperty.getPrimaryKeyOrder()).isNull();
 	}
 
 	@Test
 	public void getOwnerTest() {
-		assertSame(this.spannerPersistentEntity, this.spannerKeyProperty.getOwner());
+		assertThat(this.spannerKeyProperty.getOwner()).isSameAs(this.spannerPersistentEntity);
 	}
 
 	@Test
 	public void getNameTest() {
-		assertNull(this.spannerKeyProperty.getName());
+		assertThat(this.spannerKeyProperty.getName()).isNull();
 	}
 
 	@Test
 	public void getTypeTest() {
-		assertEquals(Key.class, this.spannerKeyProperty.getType());
+		assertThat(this.spannerKeyProperty.getType()).isEqualTo(Key.class);
 	}
 
 	@Test
 	public void getTypeInformationTest() {
-		assertEquals(ClassTypeInformation.from(Key.class),
-				this.spannerKeyProperty.getTypeInformation());
+		assertThat(this.spannerKeyProperty.getTypeInformation())
+				.isEqualTo(ClassTypeInformation.from(Key.class));
 	}
 
 	@Test
 	@SuppressWarnings("deprecation")
 	public void getPersistentEntityTypeTest() {
-		assertFalse(
-				this.spannerKeyProperty.getPersistentEntityTypes().iterator().hasNext());
+		assertThat(
+				this.spannerKeyProperty.getPersistentEntityTypes().iterator().hasNext()).isFalse();
 	}
 
 	@Test
 	public void getGetterTest() {
-		assertNull(this.spannerKeyProperty.getGetter());
+		assertThat(this.spannerKeyProperty.getGetter()).isNull();
 	}
 
 	@Test
 	public void getSetterTest() {
-		assertNull(this.spannerKeyProperty.getSetter());
+		assertThat(this.spannerKeyProperty.getSetter()).isNull();
 	}
 
 	@Test
 	public void getFieldTest() {
-		assertNull(this.spannerKeyProperty.getField());
+		assertThat(this.spannerKeyProperty.getField()).isNull();
 	}
 
 	@Test
 	public void getSpelExpressionTest() {
-		assertNull(this.spannerKeyProperty.getSpelExpression());
+		assertThat(this.spannerKeyProperty.getSpelExpression()).isNull();
 	}
 
 	@Test
 	public void getAssociationTest() {
-		assertNull(this.spannerKeyProperty.getAssociation());
+		assertThat(this.spannerKeyProperty.getAssociation()).isNull();
 	}
 
 	@Test
 	public void isEntityTest() {
-		assertFalse(this.spannerKeyProperty.isEntity());
+		assertThat(this.spannerKeyProperty.isEntity()).isFalse();
 	}
 
 	@Test
 	public void isIdPropertyTest() {
-		assertTrue(this.spannerKeyProperty.isIdProperty());
+		assertThat(this.spannerKeyProperty.isIdProperty()).isTrue();
 	}
 
 	@Test
 	public void isVersionPropertyTest() {
-		assertFalse(this.spannerKeyProperty.isVersionProperty());
+		assertThat(this.spannerKeyProperty.isVersionProperty()).isFalse();
 	}
 
 	@Test
 	public void isCollectionLikeTest() {
-		assertFalse(this.spannerKeyProperty.isCollectionLike());
+		assertThat(this.spannerKeyProperty.isCollectionLike()).isFalse();
 	}
 
 	@Test
 	public void isMapTest() {
-		assertFalse(this.spannerKeyProperty.isMap());
+		assertThat(this.spannerKeyProperty.isMap()).isFalse();
 	}
 
 	@Test
 	public void isArrayTest() {
-		assertFalse(this.spannerKeyProperty.isArray());
+		assertThat(this.spannerKeyProperty.isArray()).isFalse();
 	}
 
 	@Test
 	public void isTransientTest() {
-		assertFalse(this.spannerKeyProperty.isTransient());
+		assertThat(this.spannerKeyProperty.isTransient()).isFalse();
 	}
 
 	@Test
 	public void isWritableTest() {
-		assertFalse(this.spannerKeyProperty.isWritable());
+		assertThat(this.spannerKeyProperty.isWritable()).isFalse();
 	}
 
 	@Test
 	public void isAssociationTest() {
-		assertFalse(this.spannerKeyProperty.isAssociation());
+		assertThat(this.spannerKeyProperty.isAssociation()).isFalse();
 	}
 
 	@Test
 	public void getComponentTypeTest() {
-		assertNull(this.spannerKeyProperty.getComponentType());
+		assertThat(this.spannerKeyProperty.getComponentType()).isNull();
 	}
 
 	@Test
 	public void getRawTypeTest() {
-		assertEquals(Key.class, this.spannerKeyProperty.getRawType());
+		assertThat(this.spannerKeyProperty.getRawType()).isEqualTo(Key.class);
 	}
 
 	@Test
 	public void getMapValueTypeTest() {
-		assertNull(this.spannerKeyProperty.getMapValueType());
+		assertThat(this.spannerKeyProperty.getMapValueType()).isNull();
 	}
 
 	@Test
 	public void getActualTypeTest() {
-		assertEquals(Key.class, this.spannerKeyProperty.getActualType());
+		assertThat(this.spannerKeyProperty.getActualType()).isEqualTo(Key.class);
 	}
 
 	@Test
 	public void findAnnotationTest() {
-		assertNull(this.spannerKeyProperty.findAnnotation(null));
+		Annotation annotation = this.spannerKeyProperty.findAnnotation(null);
+		assertThat(annotation).isNull();
 	}
 
 	@Test
 	public void findPropertyOrOwnerAnnotationTest() {
-		assertNull(this.spannerKeyProperty.findPropertyOrOwnerAnnotation(null));
+		Annotation annotation = this.spannerKeyProperty.findPropertyOrOwnerAnnotation(null);
+		assertThat(annotation).isNull();
 	}
 
 	@Test
 	public void isAnnotationPresentTest() {
-		assertFalse(this.spannerKeyProperty.isAnnotationPresent(null));
+		assertThat(this.spannerKeyProperty.isAnnotationPresent(null)).isFalse();
 	}
 
 	@Test
 	public void usePropertyAccessTest() {
-		assertFalse(this.spannerKeyProperty.usePropertyAccess());
+		assertThat(this.spannerKeyProperty.usePropertyAccess()).isFalse();
 	}
 }

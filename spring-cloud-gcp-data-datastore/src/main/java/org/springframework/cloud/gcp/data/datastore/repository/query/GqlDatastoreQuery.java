@@ -126,9 +126,9 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 						GqlDatastoreQuery::getNonEntityObjectFromRow)
 				: this.datastoreTemplate.queryKeysOrEntities(query, this.entityType);
 
-		List rawResult = found == null ? Collections.emptyList()
-				: (List) StreamSupport.stream(found.spliterator(), false)
-						.collect(Collectors.toList());
+		List rawResult = (found != null)
+				? (List) StreamSupport.stream(found.spliterator(), false).collect(Collectors.toList())
+				: Collections.emptyList();
 
 		Object result;
 
@@ -285,7 +285,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 						}
 						result = result.replace(matched, datastorePersistentEntity.kindName());
 					}
-					catch (ClassNotFoundException e) {
+					catch (ClassNotFoundException ex) {
 						throw new DatastoreDataException(
 								"The class name does not refer to an available entity type: "
 										+ className);

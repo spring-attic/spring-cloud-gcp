@@ -46,6 +46,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author João André Martins
@@ -117,6 +118,10 @@ public class DefaultPublisherFactoryTests {
 		verify(channelProvider, times(1)).getTransportChannel();
 	}
 
+		assertThat(factory.getCache().size()).isEqualTo(1);
+		assertThat(publisher).isEqualTo(factory.getCache().get("testTopic"));
+		assertThat(((ProjectTopicName) publisher.getTopicName()).getTopic()).isEqualTo("testTopic");
+		assertThat(((ProjectTopicName) publisher.getTopicName()).getProject()).isEqualTo("projectId");
 	@Test
 	public void testGetPublisher_ioException() throws IOException {
 		when(this.credentialsProvider.getCredentials()).thenThrow(IOException.class);

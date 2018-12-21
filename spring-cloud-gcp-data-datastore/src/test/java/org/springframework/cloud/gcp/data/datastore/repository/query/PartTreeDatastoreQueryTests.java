@@ -54,9 +54,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.DefaultParameters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doAnswer;
@@ -112,8 +110,8 @@ public class PartTreeDatastoreQueryTests {
 		PartTreeDatastoreQuery<Trade> spy = spy(tradePartTreeDatastoreQuery);
 		doReturn(isPageQuery).when(spy).isPageQuery();
 		doReturn(isSliceQuery).when(spy).isSliceQuery();
-		doAnswer(invocation -> invocation.getArguments()[0]).when(spy).processRawObjectForProjection(any());
-		doAnswer(invocation -> invocation.getArguments()[0]).when(spy).convertResultCollection(any(), any());
+		doAnswer((invocation) -> invocation.getArguments()[0]).when(spy).processRawObjectForProjection(any());
+		doAnswer((invocation) -> invocation.getArguments()[0]).when(spy).convertResultCollection(any(), any());
 
 		return spy;
 	}
@@ -128,7 +126,7 @@ public class PartTreeDatastoreQueryTests {
 				// this int param requires custom conversion
 				8, 3.33 };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -140,7 +138,7 @@ public class PartTreeDatastoreQueryTests {
 					.setKind("trades")
 					.setOrderBy(OrderBy.desc("id")).setLimit(333).build();
 
-			assertEquals(expected, statement);
+			assertThat(statement).isEqualTo(expected);
 
 			return Collections.emptyList();
 		});
@@ -161,7 +159,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 444, Sort.Direction.ASC, "price") };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -175,7 +173,7 @@ public class PartTreeDatastoreQueryTests {
 					.setLimit(444)
 					.setOrderBy(OrderBy.desc("id"), OrderBy.asc("price")).build();
 
-			assertEquals(expected, statement);
+			assertThat(statement).isEqualTo(expected);
 
 			return Collections.emptyList();
 		});
@@ -196,7 +194,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, null};
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -209,7 +207,7 @@ public class PartTreeDatastoreQueryTests {
 					.setLimit(333)
 					.setOrderBy(OrderBy.desc("id")).build();
 
-			assertEquals(expected, statement);
+			assertThat(statement).isEqualTo(expected);
 
 			return Collections.emptyList();
 		});
@@ -230,7 +228,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, Sort.by(Sort.Direction.ASC, "price") };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -242,7 +240,7 @@ public class PartTreeDatastoreQueryTests {
 					.setKind("trades")
 					.setOrderBy(OrderBy.desc("id"), OrderBy.asc("price")).build();
 
-			assertEquals(expected, statement);
+			assertThat(statement).isEqualTo(expected);
 
 			return Collections.emptyList();
 		});
@@ -263,7 +261,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, null };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -275,7 +273,7 @@ public class PartTreeDatastoreQueryTests {
 					.setKind("trades")
 					.setOrderBy(OrderBy.desc("id")).build();
 
-			assertEquals(expected, statement);
+			assertThat(statement).isEqualTo(expected);
 
 			return Collections.emptyList();
 		});
@@ -322,7 +320,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 444, Sort.Direction.DESC, "id") };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -335,7 +333,7 @@ public class PartTreeDatastoreQueryTests {
 					.setOffset(444)
 					.setOrderBy(OrderBy.desc("id")).setLimit(444).build();
 
-			assertEquals(expected, statement);
+			assertThat(statement).isEqualTo(expected);
 
 			return Collections.emptyList();
 		});
@@ -363,9 +361,9 @@ public class PartTreeDatastoreQueryTests {
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
 		Page result = (Page) this.partTreeDatastoreQuery.execute(params);
-		assertEquals(4, result.getTotalElements());
-		assertEquals(2, result.getTotalPages());
-		assertEquals(2, result.getNumberOfElements());
+		assertThat(result.getTotalElements()).isEqualTo(4);
+		assertThat(result.getTotalPages()).isEqualTo(2);
+		assertThat(result.getNumberOfElements()).isEqualTo(2);
 
 		verify(this.datastoreTemplate, times(1))
 				.queryKeysOrEntities(isA(EntityQuery.class), any());
@@ -389,8 +387,8 @@ public class PartTreeDatastoreQueryTests {
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
 		Page result = (Page) this.partTreeDatastoreQuery.execute(params);
-		assertEquals(4, result.getTotalElements());
-		assertEquals(1, result.getTotalPages());
+		assertThat(result.getTotalElements()).isEqualTo(4);
+		assertThat(result.getTotalPages()).isEqualTo(1);
 
 		verify(this.datastoreTemplate, times(1))
 				.queryKeysOrEntities(isA(EntityQuery.class), any());
@@ -415,8 +413,8 @@ public class PartTreeDatastoreQueryTests {
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
 		Slice result = (Slice) this.partTreeDatastoreQuery.execute(params);
-		assertEquals(false, result.hasNext());
-		assertEquals(2, result.getNumberOfElements());
+		assertThat(result.hasNext()).isEqualTo(false);
+		assertThat(result.getNumberOfElements()).isEqualTo(2);
 
 
 		verify(this.datastoreTemplate, times(1))
@@ -441,7 +439,7 @@ public class PartTreeDatastoreQueryTests {
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
 		Slice result = (Slice) this.partTreeDatastoreQuery.execute(params);
-		assertEquals(false, result.hasNext());
+		assertThat(result.hasNext()).isEqualTo(false);
 
 
 		verify(this.datastoreTemplate, times(1))
@@ -467,8 +465,8 @@ public class PartTreeDatastoreQueryTests {
 		when(this.queryMethod.getCollectionReturnType()).thenReturn(List.class);
 
 		Slice result = (Slice) this.partTreeDatastoreQuery.execute(params);
-		assertEquals(true, result.hasNext());
-		assertEquals(2, result.getNumberOfElements());
+		assertThat(result.hasNext()).isEqualTo(true);
+		assertThat(result.getNumberOfElements()).isEqualTo(2);
 
 
 		verify(this.datastoreTemplate, times(1))
@@ -479,7 +477,7 @@ public class PartTreeDatastoreQueryTests {
 	}
 
 	private void preparePageResults(int offset, Integer limit) {
-		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
@@ -491,11 +489,11 @@ public class PartTreeDatastoreQueryTests {
 					.setOffset(offset)
 					.setOrderBy(OrderBy.desc("id")).setLimit(limit).build();
 
-			assertEquals(expected, statement);
+			assertThat(statement).isEqualTo(expected);
 			return Arrays.asList(3, 4);
 		});
 
-		when(this.datastoreTemplate.queryKeysOrEntities(isA(KeyQuery.class), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(isA(KeyQuery.class), any())).thenAnswer((invocation) -> {
 			KeyQuery statement = invocation.getArgument(0);
 			KeyQuery expected = StructuredQuery.newKeyQueryBuilder()
 					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
@@ -506,13 +504,13 @@ public class PartTreeDatastoreQueryTests {
 					.setKind("trades")
 					.setOrderBy(OrderBy.desc("id")).build();
 
-			assertEquals(expected, statement);
+			assertThat(statement).isEqualTo(expected);
 			return Arrays.asList(1, 2, 3, 4);
 		});
 	}
 
 	private void prepareSliceResults(int offset, Integer queryLimit, Integer resultLimit) {
-		when(this.datastoreTemplate.query(isA(EntityQuery.class), (Function) any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.query(isA(EntityQuery.class), (Function) any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
@@ -524,13 +522,13 @@ public class PartTreeDatastoreQueryTests {
 					.setOffset(offset)
 					.setOrderBy(OrderBy.desc("id")).setLimit(queryLimit).build();
 
-			assertEquals(expected, statement);
+			assertThat(statement).isEqualTo(expected);
 			List<Integer> results = Arrays.asList(3, 4, 5);
-			return resultLimit != null && resultLimit < results.size() ? results.subList(0, resultLimit)
+			return (resultLimit != null && resultLimit < results.size()) ? results.subList(0, resultLimit)
 					: results;
 		});
 		when(this.datastoreTemplate.convertEntitiesForRead(any(), any())).then(
-				invocation -> Lists.newArrayList(invocation.<Iterator>getArgument(0))
+				(invocation) -> Lists.newArrayList(invocation.<Iterator>getArgument(0))
 		);
 	}
 
@@ -598,7 +596,7 @@ public class PartTreeDatastoreQueryTests {
 		PartTreeDatastoreQuery spyQuery = this.partTreeDatastoreQuery;
 
 		Object[] params = new Object[] { "BUY", };
-		assertEquals(1L, spyQuery.execute(params));
+		assertThat(spyQuery.execute(params)).isEqualTo(1L);
 	}
 
 	@Test
@@ -610,11 +608,11 @@ public class PartTreeDatastoreQueryTests {
 
 		PartTreeDatastoreQuery spyQuery = this.partTreeDatastoreQuery;
 
-		doAnswer(invocation -> invocation.getArgument(0)).when(spyQuery)
+		doAnswer((invocation) -> invocation.getArgument(0)).when(spyQuery)
 				.processRawObjectForProjection(any());
 
 		Object[] params = new Object[] { "BUY", };
-		assertTrue((boolean) spyQuery.execute(params));
+		assertThat((boolean) spyQuery.execute(params)).isTrue();
 	}
 
 	@Test
@@ -624,11 +622,11 @@ public class PartTreeDatastoreQueryTests {
 
 		PartTreeDatastoreQuery spyQuery = this.partTreeDatastoreQuery;
 
-		doAnswer(invocation -> invocation.getArgument(0)).when(spyQuery)
+		doAnswer((invocation) -> invocation.getArgument(0)).when(spyQuery)
 				.processRawObjectForProjection(any());
 
 		Object[] params = new Object[] { "BUY", };
-		assertFalse((boolean) spyQuery.execute(params));
+		assertThat((boolean) spyQuery.execute(params)).isFalse();
 	}
 
 	private void queryWithMockResult(String queryName, List results, Method m) {

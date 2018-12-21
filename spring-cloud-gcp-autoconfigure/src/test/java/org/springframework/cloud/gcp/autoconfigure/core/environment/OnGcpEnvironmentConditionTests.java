@@ -34,8 +34,6 @@ import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
@@ -101,7 +99,7 @@ public class OnGcpEnvironmentConditionTests {
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 
-		assertFalse(outcome.isMatch());
+		assertThat(outcome.isMatch()).isFalse();
 		assertThat(outcome.getMessage()).isEqualTo("Application is not running on any of COMPUTE_ENGINE");
 	}
 
@@ -113,7 +111,7 @@ public class OnGcpEnvironmentConditionTests {
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 
-		assertFalse(outcome.isMatch());
+		assertThat(outcome.isMatch()).isFalse();
 		assertThat(outcome.getMessage())
 				.isEqualTo("Application is not running on any of COMPUTE_ENGINE, KUBERNETES_ENGINE");
 	}
@@ -126,7 +124,7 @@ public class OnGcpEnvironmentConditionTests {
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 
-		assertTrue(outcome.isMatch());
+		assertThat(outcome.isMatch()).isTrue();
 		assertThat(outcome.getMessage()).isEqualTo("Application is running on KUBERNETES_ENGINE");
 	}
 
@@ -138,7 +136,7 @@ public class OnGcpEnvironmentConditionTests {
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 
-		assertTrue(outcome.isMatch());
+		assertThat(outcome.isMatch()).isTrue();
 		assertThat(outcome.getMessage()).isEqualTo("Application is running on COMPUTE_ENGINE");
 	}
 

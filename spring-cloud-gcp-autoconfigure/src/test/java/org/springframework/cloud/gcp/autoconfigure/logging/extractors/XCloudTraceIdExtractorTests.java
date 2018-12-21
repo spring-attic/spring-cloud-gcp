@@ -20,9 +20,7 @@ import org.junit.Test;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Mike Eltsufin
@@ -46,7 +44,7 @@ public class XCloudTraceIdExtractorTests {
 
 		String traceId = this.extractor.extractTraceIdFromRequest(request);
 
-		assertThat(traceId, is(TEST_TRACE_ID));
+		assertThat(traceId).isEqualTo(TEST_TRACE_ID);
 	}
 
 	@Test
@@ -55,7 +53,7 @@ public class XCloudTraceIdExtractorTests {
 
 		String traceId = this.extractor.extractTraceIdFromRequest(request);
 
-		assertThat(traceId, nullValue());
+		assertThat(traceId).isNull();
 	}
 
 	@Test
@@ -65,7 +63,7 @@ public class XCloudTraceIdExtractorTests {
 
 		String traceId = this.extractor.extractTraceIdFromRequest(request);
 
-		assertThat(traceId, is(TEST_TRACE_ID));
+		assertThat(traceId).isEqualTo(TEST_TRACE_ID);
 	}
 
 }

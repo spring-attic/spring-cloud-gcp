@@ -28,9 +28,8 @@ import org.springframework.shell.Shell;
 import org.springframework.shell.jline.InteractiveShellApplicationRunner;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 /**
@@ -66,23 +65,18 @@ public class DatastoreBookshelfExampleTests {
 		String book2 = (String) this.shell.evaluate(() -> "save-book book2 author2 2000");
 
 		String allBooks = (String) this.shell.evaluate(() -> "find-all-books");
-		assertTrue(allBooks.contains(book1));
-		assertTrue(allBooks.contains(book2));
+		assertThat(allBooks).containsSequence(book1);
+		assertThat(allBooks).containsSequence(book2);
 
-		assertEquals("[" + book1 + "]",
-				this.shell.evaluate(() -> "find-by-author author1"));
+		assertThat(this.shell.evaluate(() -> "find-by-author author1")).isEqualTo("[" + book1 + "]");
 
-		assertEquals("[" + book2 + "]",
-				this.shell.evaluate(() -> "find-by-author-year author2 2000"));
+		assertThat(this.shell.evaluate(() -> "find-by-author-year author2 2000")).isEqualTo("[" + book2 + "]");
 
-		assertEquals("[" + book2 + "]",
-				this.shell.evaluate(() -> "find-by-year-greater-than 1985"));
+		assertThat(this.shell.evaluate(() -> "find-by-year-greater-than 1985")).isEqualTo("[" + book2 + "]");
 
 		this.shell.evaluate(() -> "remove-all-books");
 
-		assertEquals(
-				"[]",
-				this.shell.evaluate(() -> "find-all-books"));
+		assertThat(this.shell.evaluate(() -> "find-all-books")).isEqualTo("[]");
 	}
 
 }

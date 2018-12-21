@@ -67,8 +67,8 @@ public class EntityPropertyValueProvider implements PropertyValueProvider<Datast
 			return this.conversion.convertOnRead(this.entity.getValue(fieldName).get(),
 					embeddedType, targetTypeInformation);
 		}
-		catch (ConversionException | DatastoreDataException e) {
-			throw new DatastoreDataException("Unable to read property " + fieldName, e);
+		catch (ConversionException | DatastoreDataException ex) {
+			throw new DatastoreDataException("Unable to read property " + fieldName, ex);
 		}
 	}
 }

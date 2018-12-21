@@ -102,13 +102,13 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 			SpannerPersistentProperty spannerPersistentProperty) {
 		String colName = spannerPersistentProperty.getColumnName();
 		Object value = this.structAccessor.getSingleValue(colName);
-		return value == null ? null : convertOrRead((Class<T>) spannerPersistentProperty.getType(), value);
+		return (value != null) ? convertOrRead((Class<T>) spannerPersistentProperty.getType(), value) : null;
 	}
 
 	private <T> T convertOrRead(Class<T> targetType, Object sourceValue) {
 		Class<?> sourceClass = sourceValue.getClass();
-		return Struct.class.isAssignableFrom(sourceClass)
-				&& !this.readConverter.canConvert(sourceClass, targetType)
+		return (Struct.class.isAssignableFrom(sourceClass)
+				&& !this.readConverter.canConvert(sourceClass, targetType))
 						? this.entityReader.read(targetType, (Struct) sourceValue, null,
 								this.allowMissingColumns)
 				: this.readConverter.convert(sourceValue, targetType);
@@ -126,7 +126,7 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 	private <T> Iterable<T> convertOrReadIterable(Iterable<?> source,
 			Class<T> targetType) {
 		List<T> result = new ArrayList<>();
-		source.forEach(item -> result.add(convertOrRead(targetType, item)));
+		source.forEach((item) -> result.add(convertOrRead(targetType, item)));
 		return result;
 	}
 }

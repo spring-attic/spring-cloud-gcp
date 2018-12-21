@@ -153,7 +153,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		PersistentPropertyAccessor accessor = persistentEntity
 				.getPropertyAccessor(source);
 		persistentEntity.doWithColumnBackedProperties(
-				spannerPersistentProperty -> {
+				(spannerPersistentProperty) -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						Object embeddedObject = accessor
 								.getProperty(spannerPersistentProperty);
@@ -210,7 +210,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		 * both the this key conversion and the write converter to choose the same.
 		 */
 		Class<?> compatible = ConverterAwareMappingSpannerEntityWriter
-				.findFirstCompatibleSpannerSingleItemNativeType(spannerType -> isValidSpannerKeyType(spannerType)
+				.findFirstCompatibleSpannerSingleItemNativeType((spannerType) -> isValidSpannerKeyType(spannerType)
 						&& this.writeConverter.canConvert(object.getClass(), spannerType));
 
 		if (compatible == null) {
@@ -350,9 +350,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			BiConsumer<ValueBinder<?>, Iterable> toMethod = iterablePropertyType2ToMethodMap
 					.get(targetType);
 			toMethod.accept(valueBinder,
-					value == null ? null
-							: ConversionUtils.convertIterable(value, targetType,
-									this.writeConverter));
+					(value != null) ? ConversionUtils.convertIterable(value, targetType, this.writeConverter) : null);
 			return true;
 		}
 		return false;
@@ -373,7 +371,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		// We're just checking for the bind to have succeeded, we don't need to chain the result.
 		// Spanner allows binding of null values.
 		Object ignored = toMethod.apply(valueBinder,
-				value == null ? null : this.writeConverter.convert(value, targetType));
+				(value != null) ? this.writeConverter.convert(value, targetType) : null);
 		return true;
 	}
 }

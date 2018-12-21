@@ -134,19 +134,19 @@ public class PubSubSubscriberTemplateTests {
 
 		// for subscribe with MessageReceiver
 		when(this.subscriberFactory.createSubscriber(any(String.class), any(MessageReceiver.class)))
-				.then(invocation -> {
+				.then((invocation) -> {
 					this.messageReceiver = invocation.getArgument(1);
 					return this.subscriber;
 				});
 
-		when(this.subscriber.startAsync()).then(invocation -> {
+		when(this.subscriber.startAsync()).then((invocation) -> {
 			this.messageReceiver.receiveMessage(this.pubsubMessage, this.ackReplyConsumer);
 			return null;
 		});
 
 		// for pull
 		when(this.subscriberFactory.createPullRequest(any(String.class), any(Integer.class), any(Boolean.class)))
-				.then(invocation -> PullRequest.newBuilder().setSubscription(invocation.getArgument(0)).build());
+				.then((invocation) -> PullRequest.newBuilder().setSubscription(invocation.getArgument(0)).build());
 
 		when(this.subscriberFactory.createSubscriberStub()).thenReturn(this.subscriberStub);
 
@@ -158,7 +158,7 @@ public class PubSubSubscriberTemplateTests {
 
 		when(this.modifyAckDeadlineCallable.futureCall(any(ModifyAckDeadlineRequest.class))).thenReturn(this.apiFuture);
 
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			Runnable runnable = invocation.getArgument(0);
 			runnable.run();
 			return null;

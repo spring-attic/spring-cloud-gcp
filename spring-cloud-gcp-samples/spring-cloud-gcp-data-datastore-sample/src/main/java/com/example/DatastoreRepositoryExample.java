@@ -49,7 +49,7 @@ public class DatastoreRepositoryExample {
 
 	@Bean
 	public CommandLineRunner commandLineRunner() {
-		return args -> {
+		return (args) -> {
 			System.out.println("Remove all records from 'singers' kind");
 			this.singerRepository.deleteAll();
 
@@ -90,7 +90,7 @@ public class DatastoreRepositoryExample {
 		// / family is strongly consistent.
 		this.singerRepository
 				.findAllById(ImmutableList.of("singer1", "singer2", "singer3"))
-				.forEach(x -> System.out.println("retrieved singer: " + x));
+				.forEach((x) -> System.out.println("retrieved singer: " + x));
 	}
 
 	private void createRelationshipsInTransaction(Singer maryJane, Singer scottSmith) {
@@ -108,7 +108,7 @@ public class DatastoreRepositoryExample {
 		// SingerRepository.
 		// The following call also performs the creation and saving of relationships
 		// in a single transaction.
-		this.singerRepository.performTransaction(transactionRepository -> {
+		this.singerRepository.performTransaction((transactionRepository) -> {
 			scottSmith.setFirstBand(band3);
 			scottSmith.setBands(Arrays.asList(band3, band2));
 			scottSmith.setPersonalInstruments(new HashSet<>(Arrays

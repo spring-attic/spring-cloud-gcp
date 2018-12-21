@@ -82,7 +82,7 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 			this.credentials = gcpConfigProperties.getCredentials().hasKey()
 					? new DefaultCredentialsProvider(gcpConfigProperties).getCredentials()
 					: credentialsProvider.getCredentials();
-			this.projectId = gcpConfigProperties.getProjectId() != null
+			this.projectId = (gcpConfigProperties.getProjectId() != null)
 					? gcpConfigProperties.getProjectId()
 					: projectIdProvider.getProjectId();
 			Assert.notNull(this.credentials, "Credentials must not be null");
@@ -103,7 +103,7 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 		Map<String, List<String>> credentialHeaders = this.credentials.getRequestMetadata();
 		Assert.notNull(credentialHeaders, "No valid credential header(s) found");
 
-		credentialHeaders.forEach((key, values) -> values.forEach(value -> headers.add(key, value)));
+		credentialHeaders.forEach((key, values) -> values.forEach((value) -> headers.add(key, value)));
 
 		Assert.isTrue(headers.containsKey(AUTHORIZATION_HEADER), "Authorization header required");
 
@@ -140,10 +140,10 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 			Assert.notNull(googleConfigEnvironment, "Configuration not in expected format.");
 			config = googleConfigEnvironment.getConfig();
 		}
-		catch (Exception e) {
+		catch (Exception ex) {
 			String message = String.format("Error loading configuration for %s/%s_%s", this.projectId,
 					this.name, this.profile);
-			throw new RuntimeException(message, e);
+			throw new RuntimeException(message, ex);
 		}
 		return new MapPropertySource(PROPERTY_SOURCE_NAME, config);
 	}
