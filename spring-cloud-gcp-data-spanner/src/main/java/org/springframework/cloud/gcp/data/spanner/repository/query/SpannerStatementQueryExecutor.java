@@ -65,7 +65,7 @@ public final class SpannerStatementQueryExecutor {
 	 * @param params the parameters of this specific query
 	 * @param spannerTemplate used to execute the query
 	 * @param spannerMappingContext used to get metadata about the entity type
-	 * @return List of entities.
+	 * @return list of entities.
 	 */
 	public static <T> List<T> executeQuery(Class<T> type, PartTree tree, Object[] params,
 			SpannerTemplate spannerTemplate,
@@ -86,7 +86,7 @@ public final class SpannerStatementQueryExecutor {
 	 * @param params the parameters of this specific query
 	 * @param spannerTemplate used to execute the query
 	 * @param spannerMappingContext used to get metadata about the entity type
-	 * @return List of objects mapped using the given function.
+	 * @return list of objects mapped using the given function.
 	 */
 	public static <A, T> List<A> executeQuery(Function<Struct, A> rowFunc, Class<T> type,
 			PartTree tree, Object[] params, SpannerTemplate spannerTemplate,
@@ -100,7 +100,7 @@ public final class SpannerStatementQueryExecutor {
 
 	/**
 	 * Apply paging and sorting options to a query string.
-	 * @param entityClass The domain type whose table is being queried.
+	 * @param entityClass the domain type whose table is being queried.
 	 * @param options query options containing the sorting and paging options
 	 * @param sql the sql that will be wrapped with sorting and paging options.
 	 * @param mappingContext a mapping context to convert between Cloud Spanner column names

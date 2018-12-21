@@ -174,7 +174,7 @@ public class PubSubAdmin implements AutoCloseable {
 	 *
 	 * @param subscriptionName the name of the new subscription
 	 * @param topicName the name of the topic being subscribed to
-	 * @param pushEndpoint URL of the service receiving the push messages. If not provided, uses
+	 * @param pushEndpoint the URL of the service receiving the push messages. If not provided, uses
 	 *                     message pulling by default
 	 * @return the created subscription
 	 */
@@ -190,7 +190,7 @@ public class PubSubAdmin implements AutoCloseable {
 	 * @param topicName the name of the topic being subscribed to
 	 * @param ackDeadline deadline in seconds before a message is resent, must be between 10 and 600 seconds.
 	 *                    If not provided, set to default of 10 seconds
-	 * @param pushEndpoint URL of the service receiving the push messages. If not provided, uses
+	 * @param pushEndpoint the URL of the service receiving the push messages. If not provided, uses
 	 *                     message pulling by default
 	 * @return the created subscription
 	 */
