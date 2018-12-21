@@ -40,13 +40,12 @@ import org.threeten.bp.Duration;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author João André Martins
@@ -108,20 +107,16 @@ public class DefaultPublisherFactoryTests {
 
 		Publisher publisher = this.factory.createPublisher(TEST_TOPIC);
 
-		assertEquals(this.factory.getCache().size(), 1);
-		assertEquals(publisher, this.factory.getCache().get(TEST_TOPIC));
-		assertEquals(TEST_TOPIC, ((ProjectTopicName) publisher.getTopicName()).getTopic());
-		assertEquals(PROJECT_ID, ((ProjectTopicName) publisher.getTopicName()).getProject());
+		assertThat(this.factory.getCache().size()).isEqualTo(1);
+		assertThat(publisher).isEqualTo(this.factory.getCache().get(TEST_TOPIC));
+		assertThat(((ProjectTopicName) publisher.getTopicName()).getTopic()).isEqualTo(TEST_TOPIC);
+		assertThat(((ProjectTopicName) publisher.getTopicName()).getProject()).isEqualTo(PROJECT_ID);
 
 		verify(this.credentialsProvider, times(1)).getCredentials();
 		verify(executorProvider, times(1)).getExecutor();
 		verify(channelProvider, times(1)).getTransportChannel();
 	}
 
-		assertThat(factory.getCache().size()).isEqualTo(1);
-		assertThat(publisher).isEqualTo(factory.getCache().get("testTopic"));
-		assertThat(((ProjectTopicName) publisher.getTopicName()).getTopic()).isEqualTo("testTopic");
-		assertThat(((ProjectTopicName) publisher.getTopicName()).getProject()).isEqualTo("projectId");
 	@Test
 	public void testGetPublisher_ioException() throws IOException {
 		when(this.credentialsProvider.getCredentials()).thenThrow(IOException.class);
