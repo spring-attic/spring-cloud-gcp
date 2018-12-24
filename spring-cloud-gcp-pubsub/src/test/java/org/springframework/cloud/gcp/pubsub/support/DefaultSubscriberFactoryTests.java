@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.pubsub.support;
 
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
 import com.google.api.core.ApiClock;
 import com.google.api.gax.batching.FlowControlSettings;
