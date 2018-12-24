@@ -100,7 +100,7 @@ public class LoggingSampleApplicationTests {
 					ImmutableList<LogEntry> logEntries = ImmutableList.copyOf(logEntryPage.iterateAll());
 
 					List<String> logContents = logEntries.stream()
-							.map(logEntry -> ((StringPayload) logEntry.getPayload()).getData())
+							.map((logEntry) -> ((StringPayload) logEntry.getPayload()).getData())
 							.collect(Collectors.toList());
 
 					assertThat(logContents).containsExactlyInAnyOrder(

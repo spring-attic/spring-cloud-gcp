@@ -18,10 +18,11 @@ package org.springframework.cloud.gcp.autoconfigure.config;
 
 import java.util.Base64;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.autoconfigure.config.GoogleConfigEnvironment.Variable;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Dmitry Solomakha
@@ -34,6 +35,6 @@ public class GoogleConfigEnvironmentTest {
 		String value = "v a l u e";
 		String encodedString = Base64.getEncoder().encodeToString(value.getBytes());
 		var.setValue(encodedString);
-		Assert.assertEquals(value, var.getValue());
+		assertThat(var.getValue()).isEqualTo(value);
 	}
 }

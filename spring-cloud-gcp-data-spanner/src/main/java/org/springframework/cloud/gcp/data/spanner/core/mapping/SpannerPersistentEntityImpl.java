@@ -135,7 +135,7 @@ public class SpannerPersistentEntityImpl<T>
 		Expression expression = PARSER.parseExpression(this.table.name(),
 				ParserContext.TEMPLATE_EXPRESSION);
 
-		return expression instanceof LiteralExpression ? null : expression;
+		return (expression instanceof LiteralExpression) ? null : expression;
 	}
 
 	@Override
@@ -181,7 +181,7 @@ public class SpannerPersistentEntityImpl<T>
 	public void doWithInterleavedProperties(
 			PropertyHandler<SpannerPersistentProperty> handler) {
 		doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) -> {
 					if (spannerPersistentProperty.isInterleaved()) {
 						handler.doWithPersistentProperty(spannerPersistentProperty);
 					}
@@ -192,7 +192,7 @@ public class SpannerPersistentEntityImpl<T>
 	public void doWithColumnBackedProperties(
 			PropertyHandler<SpannerPersistentProperty> handler) {
 		doWithProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) -> {
 					if (!spannerPersistentProperty.isInterleaved()) {
 						handler.doWithPersistentProperty(spannerPersistentProperty);
 					}
@@ -213,7 +213,7 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	private void verifyInterleavedProperties() {
-		doWithInterleavedProperties(spannerPersistentProperty -> {
+		doWithInterleavedProperties((spannerPersistentProperty) -> {
 			// getting the inner type will throw an exception if the property isn't a
 			// collection.
 			Class childType = spannerPersistentProperty.getColumnInnerType();
@@ -250,7 +250,7 @@ public class SpannerPersistentEntityImpl<T>
 	private void verifyEmbeddedColumnNameOverlap(Set<String> seen,
 			SpannerPersistentEntity spannerPersistentEntity) {
 		spannerPersistentEntity.doWithColumnBackedProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						if (ConversionUtils.isIterableNonByteArrayType(
 								spannerPersistentProperty.getType())) {
@@ -330,14 +330,14 @@ public class SpannerPersistentEntityImpl<T>
 			if (this.hasAnnotatedTableName()) {
 				try {
 					this.tableName = validateTableName(
-							this.tableNameExpression == null ? this.table.name()
-									: this.tableNameExpression.getValue(this.context,
-											String.class));
+							(this.tableNameExpression != null)
+									? this.tableNameExpression.getValue(this.context, String.class)
+									: this.table.name());
 				}
-				catch (RuntimeException e) {
+				catch (RuntimeException ex) {
 					throw new SpannerDataException(
 							"Error getting table name for " + getType().getSimpleName(),
-							e);
+							ex);
 				}
 			}
 			else {

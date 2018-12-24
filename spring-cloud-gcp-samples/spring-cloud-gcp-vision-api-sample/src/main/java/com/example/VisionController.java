@@ -56,10 +56,10 @@ public class VisionController {
 	 *
 	 * @param imageUrl the URL of the image
 	 * @return a string with the list of labels and percentage of certainty
-	 * @throws Exception if the Vision API call produces an error
+	 * @throws CloudVisionTemplate if the Vision API call produces an error
 	 */
-	@GetMapping("/vision")
-	public ModelAndView uploadImage(String imageUrl, ModelMap map) throws Exception {
+	@GetMapping("/extractLabels")
+	public ModelAndView extractLabels(String imageUrl, ModelMap map) {
 		AnnotateImageResponse response = this.cloudVisionTemplate.analyzeImage(
 				this.resourceLoader.getResource(imageUrl), Type.LABEL_DETECTION);
 
@@ -74,4 +74,12 @@ public class VisionController {
 
 		return new ModelAndView("result", map);
 	}
+
+	@GetMapping("/extractText")
+	public String extractText(String imageUrl) {
+		String textFromImage = this.cloudVisionTemplate.extractTextFromImage(
+				this.resourceLoader.getResource(imageUrl));
+		return "Text from image: " + textFromImage;
+	}
+
 }

@@ -81,7 +81,7 @@ public class PubSubInboundChannelAdapterTests {
 		this.value = null;
 		ConvertedBasicAcknowledgeablePubsubMessage message = mock(ConvertedBasicAcknowledgeablePubsubMessage.class);
 
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			this.value = NACK;
 			return null;
 		}).when(message).nack();
@@ -93,7 +93,7 @@ public class PubSubInboundChannelAdapterTests {
 				new RuntimeException(EXCEPTION_MESSAGE));
 
 		when(this.pubSubSubscriberOperations.subscribeAndConvert(
-				anyString(), any(Consumer.class), any(Class.class))).then(invocationOnMock -> {
+				anyString(), any(Consumer.class), any(Class.class))).then((invocationOnMock) -> {
 					Consumer<ConvertedBasicAcknowledgeablePubsubMessage> messageConsumer =
 							invocationOnMock.getArgument(1);
 					messageConsumer.accept(message);
@@ -124,8 +124,8 @@ public class PubSubInboundChannelAdapterTests {
 
 			Assert.fail(EXPECTED_EXCEPTION);
 		}
-		catch (Throwable t) {
-			Assert.assertEquals(EXCEPTION_MESSAGE, t.getCause().getMessage());
+		catch (Throwable ex) {
+			Assert.assertEquals(EXCEPTION_MESSAGE, ex.getCause().getMessage());
 		}
 
 		Assert.assertEquals(NACK, this.value);
@@ -147,8 +147,8 @@ public class PubSubInboundChannelAdapterTests {
 
 			Assert.fail(EXPECTED_EXCEPTION);
 		}
-		catch (Throwable t) {
-			Assert.assertEquals(EXCEPTION_MESSAGE, t.getCause().getMessage());
+		catch (Throwable ex) {
+			Assert.assertEquals(EXCEPTION_MESSAGE, ex.getCause().getMessage());
 		}
 
 		verify(factory, times(1)).withPayload(any());
@@ -167,8 +167,8 @@ public class PubSubInboundChannelAdapterTests {
 
 			Assert.fail(EXPECTED_EXCEPTION);
 		}
-		catch (Throwable t) {
-			Assert.assertEquals(EXCEPTION_MESSAGE, t.getCause().getMessage());
+		catch (Throwable ex) {
+			Assert.assertEquals(EXCEPTION_MESSAGE, ex.getCause().getMessage());
 		}
 
 		Assert.assertNull(this.value);

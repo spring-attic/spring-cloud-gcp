@@ -11,10 +11,7 @@
         <property name="headerFile" value="${checkstyle.header.file}"/>
         <property name="fileExtensions" value="java"/>
     </module>
-    <module name="SuppressionFilter">
-        <property name="file" value="src/checkstyle/checkstyle-suppressions.xml"/>
-        <property name="optional" value="true"/>
-    </module>
+
     <!--<module name="io.spring.javaformat.checkstyle.check.SpringHeaderCheck">
         <property name="fileExtensions" value="java" />
         <property name="headerType" value="${headerType}"/>
@@ -177,10 +174,7 @@
 
         <!-- Modifiers -->
         <module name="com.puppycrawl.tools.checkstyle.checks.modifier.RedundantModifierCheck" />
-        <!-- TODO: re-enable when ready -->
-        <!--
         <module name="com.puppycrawl.tools.checkstyle.checks.modifier.ModifierOrderCheck"/>
-        -->
 
         <!-- Regexp -->
         <module name="com.puppycrawl.tools.checkstyle.checks.regexp.RegexpSinglelineJavaCheck">
@@ -196,8 +190,7 @@
                       value="Please use BDDMockito imports." />
             <property name="ignoreComments" value="true" />
         </module>-->
-        <!-- TODO: re-enable when ready -->
-        <!--
+
         <module name="com.puppycrawl.tools.checkstyle.checks.regexp.RegexpSinglelineJavaCheck">
             <property name="maximum" value="0"/>
             <property name="format" value="org\.junit\.(Assert|jupiter\.api\.Assertions)\.assert" />
@@ -205,7 +198,7 @@
                       value="Please use AssertJ imports." />
             <property name="ignoreComments" value="true" />
         </module>
-        -->
+
         <module name="com.puppycrawl.tools.checkstyle.checks.regexp.RegexpCheck">
             <property name="format" value="[ \t]+$" />
             <property name="illegalPattern" value="true" />
@@ -225,15 +218,13 @@
         <module name="com.puppycrawl.tools.checkstyle.checks.whitespace.WhitespaceAroundCheck" />
 
         <!-- Spring Conventions -->
-        <!-- TODO: re-enable when ready -->
-        <!--
+
         <module name="io.spring.javaformat.checkstyle.check.SpringLambdaCheck" />
-        -->
-        <!--<module name="io.spring.javaformat.checkstyle.check.SpringTernaryCheck" />-->
-        <!-- TODO: re-enable when ready -->
-        <!--
+
+        <module name="io.spring.javaformat.checkstyle.check.SpringTernaryCheck" />
+
         <module name="io.spring.javaformat.checkstyle.check.SpringCatchCheck" />
-        -->
+
         <!-- TODO: re-enable when ready -->
         <!--
         <module name="io.spring.javaformat.checkstyle.check.SpringJavadocCheck" />

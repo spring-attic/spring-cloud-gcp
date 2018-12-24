@@ -47,8 +47,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -339,7 +338,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 	@Parameterized.Parameters
 	public void writeValidColumnToKey() {
 		Key key = this.spannerEntityWriter.convertToKey(true);
-		assertThat(key, is(Key.of(true)));
+		assertThat(key).isEqualTo(Key.of(true));
 	}
 
 	@Test

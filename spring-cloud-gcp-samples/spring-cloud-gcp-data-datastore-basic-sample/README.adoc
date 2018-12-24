@@ -22,7 +22,7 @@ Then, uncomment the `spring.cloud.gcp.datastore.credentials.location` property i
 save-book <title> <author> <year>
 find-all-books
 find-by-author <author>
-find-by-year <year>
+find-by-year-greater-than <year>
 find-by-author-year <author> <year>
 remove-all-books
 ----
@@ -35,8 +35,8 @@ shell:>save-book "Stranger in a Strange Land" "Robert A. Heinlein" 1961
 shell:>save-book "The Crack in Space" "Philip K. Dick" 1966
 shell:>save-book "Ubik" "Philip K. Dick" 1969
 
-shell:>find-by-year 1966
-[Book{id=5674053578784768, title='The Moon Is a Harsh Mistress', author='Robert A. Heinlein', year=1966}, Book{id=5762929605476352, title='The Crack in Space', author='Philip K. Dick', year=1966}]
+shell:>find-by-year-greater-than 1967
+[Book{id=5734055144325120, title='Ubik', author='Philip K. Dick', year=1969}]
 
 shell:>find-by-author-year "Robert A. Heinlein" 1966
 [Book{id=5652161459388416, title='The Moon Is a Harsh Mistress', author='Robert A. Heinlein', year=1966}]

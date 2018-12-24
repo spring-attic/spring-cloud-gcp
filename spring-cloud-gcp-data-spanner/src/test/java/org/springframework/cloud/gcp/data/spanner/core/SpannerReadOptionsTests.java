@@ -25,10 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -54,17 +51,17 @@ public class SpannerReadOptionsTests {
 		ReadOption r1 = mock(ReadOption.class);
 		ReadOption r2 = mock(ReadOption.class);
 		spannerReadOptions.addReadOption(r1).addReadOption(r2);
-		assertThat(Arrays.asList(spannerReadOptions.getReadOptions()),
-				containsInAnyOrder(r1, r2));
+		assertThat(Arrays.asList(spannerReadOptions.getReadOptions()))
+				.containsExactlyInAnyOrder(r1, r2);
 	}
 
 	@Test
 	public void includePropertiesTest() {
 		SpannerReadOptions spannerReadOptions = new SpannerReadOptions();
 		Set<String> includeProperties = Collections.emptySet();
-		assertNull(spannerReadOptions.getIncludeProperties());
+		assertThat(spannerReadOptions.getIncludeProperties()).isNull();
 		spannerReadOptions.setIncludeProperties(includeProperties);
-		assertNotNull(spannerReadOptions.getIncludeProperties());
+		assertThat(spannerReadOptions.getIncludeProperties()).isNotNull();
 	}
 
 }

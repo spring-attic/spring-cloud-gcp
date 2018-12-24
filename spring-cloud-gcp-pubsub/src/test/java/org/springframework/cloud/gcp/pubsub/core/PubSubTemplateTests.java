@@ -44,8 +44,8 @@ import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessageConverter;
 import org.springframework.util.concurrent.ListenableFuture;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -123,7 +123,7 @@ public class PubSubTemplateTests {
 		ListenableFuture<String> future = this.pubSubTemplate.publish("testTopic",
 				this.pubsubMessage);
 
-		assertEquals("result", future.get());
+		assertThat(future.get()).isEqualTo("result");
 	}
 
 	@Test
@@ -149,12 +149,12 @@ public class PubSubTemplateTests {
 		allowedPayload.value = 12345;
 		PubSubPublisherTemplate pubSubPublisherTemplate = spy(createPublisherTemplate());
 
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			PubsubMessage message = invocation.getArgument(1);
-			assertEquals("{\"@class\":"
+			assertThat(message.getData().toStringUtf8())
+					.isEqualTo("{\"@class\":"
 					+ "\"org.springframework.cloud.gcp.pubsub.core.test.allowed.AllowedPayload\""
-					+ ",\"name\":\"allowed\",\"value\":12345}",
-					message.getData().toStringUtf8());
+							+ ",\"name\":\"allowed\",\"value\":12345}");
 			return null;
 		}).when(pubSubPublisherTemplate).publish(eq("test"), any());
 
@@ -170,7 +170,7 @@ public class PubSubTemplateTests {
 
 		this.pubSubTemplate.publish("testTopic", "jaguar god", headers);
 
-		verify(this.mockPublisher).publish(argThat(message ->
+		verify(this.mockPublisher).publish(argThat((message) ->
 				message.getAttributesMap().get("emperor of sand").equals("sultan's curse") &&
 				message.getAttributesMap().get("remission").equals("elephant man")));
 	}
@@ -191,23 +191,16 @@ public class PubSubTemplateTests {
 				this.pubSubTemplate.publish("testTopic", this.pubsubMessage);
 		this.settableApiFuture.setException(new Exception("future failed."));
 
-		try {
-			future.get();
-			fail("Test should fail.");
-		}
-		catch (InterruptedException ie) {
-			fail("get() should fail with an ExecutionException.");
-		}
-		catch (ExecutionException ee) {
-			assertEquals("future failed.", ee.getCause().getMessage());
-		}
+		assertThatThrownBy(() -> future.get())
+				.isInstanceOf(ExecutionException.class)
+				.hasMessageContaining("future failed.");
 	}
 
 	@Test
 	public void testSubscribe() {
 		Subscriber subscriber = this.pubSubTemplate.subscribe("testSubscription",
 				(message) -> { });
-		assertEquals(this.mockSubscriber, subscriber);
+		assertThat(subscriber).isEqualTo(this.mockSubscriber);
 		verify(this.mockSubscriber, times(1)).startAsync();
 	}
 }

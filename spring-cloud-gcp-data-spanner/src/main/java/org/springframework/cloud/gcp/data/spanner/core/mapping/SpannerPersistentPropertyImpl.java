@@ -64,9 +64,9 @@ public class SpannerPersistentPropertyImpl
 			PersistentEntity<?, SpannerPersistentProperty> owner,
 			SimpleTypeHolder simpleTypeHolder, FieldNamingStrategy fieldNamingStrategy) {
 		super(property, owner, simpleTypeHolder);
-		this.fieldNamingStrategy = fieldNamingStrategy == null
-				? PropertyNameFieldNamingStrategy.INSTANCE
-				: fieldNamingStrategy;
+		this.fieldNamingStrategy = (fieldNamingStrategy != null)
+				? fieldNamingStrategy
+				: PropertyNameFieldNamingStrategy.INSTANCE;
 	}
 
 	/**
@@ -76,7 +76,7 @@ public class SpannerPersistentPropertyImpl
 	public Iterable<? extends TypeInformation<?>> getPersistentEntityTypes() {
 		return StreamUtils
 				.createStreamFromIterator(super.getPersistentEntityTypes().iterator())
-				.filter(typeInfo -> typeInfo.getType().isAnnotationPresent(Table.class))
+				.filter((typeInfo) -> typeInfo.getType().isAnnotationPresent(Table.class))
 				.collect(Collectors.toList());
 	}
 

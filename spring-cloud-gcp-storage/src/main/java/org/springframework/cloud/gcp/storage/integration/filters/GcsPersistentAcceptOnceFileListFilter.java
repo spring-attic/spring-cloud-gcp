@@ -33,11 +33,11 @@ public class GcsPersistentAcceptOnceFileListFilter
 
 	@Override
 	protected long modified(BlobInfo blobInfo) {
-		return blobInfo != null ? blobInfo.getUpdateTime() : -1;
+		return (blobInfo != null) ? blobInfo.getUpdateTime() : -1;
 	}
 
 	@Override
 	protected String fileName(BlobInfo blobInfo) {
-		return blobInfo != null ? blobInfo.getName() : null;
+		return (blobInfo != null) ? blobInfo.getName() : null;
 	}
 }

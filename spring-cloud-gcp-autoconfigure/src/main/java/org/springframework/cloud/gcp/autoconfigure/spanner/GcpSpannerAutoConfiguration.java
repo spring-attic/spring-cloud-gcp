@@ -94,7 +94,7 @@ public class GcpSpannerAutoConfiguration {
 			this.credentials = (gcpSpannerProperties.getCredentials().hasKey()
 					? new DefaultCredentialsProvider(gcpSpannerProperties)
 					: credentialsProvider).getCredentials();
-			this.projectId = gcpSpannerProperties.getProjectId() != null
+			this.projectId = (gcpSpannerProperties.getProjectId() != null)
 					? gcpSpannerProperties.getProjectId()
 					: projectIdProvider.getProjectId();
 			this.instanceId = gcpSpannerProperties.getInstanceId();

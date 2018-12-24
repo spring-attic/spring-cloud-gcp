@@ -14,14 +14,27 @@
  * limitations under the License.
  */
 
-package com.example
+package com.example.data
 
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RestController
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
 
-@RestController
-class Controller {
+/**
+ * Data object representing a registered person.
+ *
+ * @author Daniel Zou
+ *
+ * @since 1.1
+ */
+@Entity
+data class Person(
+		val firstName: String,
 
-  @GetMapping("/")
-  fun homeGreeting() = "Hello World!"
-}
+		val lastName: String,
+
+		val email: String,
+
+		@Id @GeneratedValue
+		var id: Long? = 0
+)

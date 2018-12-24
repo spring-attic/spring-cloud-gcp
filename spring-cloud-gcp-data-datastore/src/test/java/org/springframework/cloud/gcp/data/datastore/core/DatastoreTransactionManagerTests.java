@@ -32,8 +32,7 @@ import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -78,19 +77,19 @@ public class DatastoreTransactionManagerTests {
 	public void testDoGetTransactionActive() {
 		when(this.transaction.isActive()).thenReturn(true);
 		this.tx.setTransaction(this.transaction);
-		assertSame(this.manager.doGetTransaction(), this.tx);
+		assertThat(this.manager.doGetTransaction()).isSameAs(this.tx);
 	}
 
 	@Test
 	public void testDoGetTransactionNotActive() {
 		when(this.transaction.isActive()).thenReturn(false);
 		this.tx.setTransaction(this.transaction);
-		assertNotSame(this.tx, this.manager.doGetTransaction());
+		assertThat(this.manager.doGetTransaction()).isNotSameAs(this.tx);
 	}
 
 	@Test
 	public void testDoGetTransactionNoTransaction() {
-		assertNotSame(this.tx, this.manager.doGetTransaction());
+		assertThat(this.manager.doGetTransaction()).isNotSameAs(this.tx);
 	}
 
 	@Test

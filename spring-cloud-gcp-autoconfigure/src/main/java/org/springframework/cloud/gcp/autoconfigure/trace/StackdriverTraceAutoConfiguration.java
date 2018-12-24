@@ -83,7 +83,7 @@ public class StackdriverTraceAutoConfiguration {
 	public StackdriverTraceAutoConfiguration(GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider,
 			GcpTraceProperties gcpTraceProperties) throws IOException {
-		this.finalProjectIdProvider = gcpTraceProperties.getProjectId() != null
+		this.finalProjectIdProvider = (gcpTraceProperties.getProjectId() != null)
 				? gcpTraceProperties::getProjectId
 				: gcpProjectIdProvider;
 		this.finalCredentialsProvider =

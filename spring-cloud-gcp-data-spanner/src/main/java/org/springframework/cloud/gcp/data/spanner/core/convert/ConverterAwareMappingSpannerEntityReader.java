@@ -91,7 +91,7 @@ class ConverterAwareMappingSpannerEntityReader implements SpannerEntityReader {
 		PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
 
 		persistentEntity.doWithColumnBackedProperties(
-				spannerPersistentProperty -> {
+				(spannerPersistentProperty) -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						accessor.setProperty(spannerPersistentProperty,
 								read(spannerPersistentProperty.getType(), source,

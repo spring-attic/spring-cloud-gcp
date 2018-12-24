@@ -58,11 +58,11 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  */
 public abstract class DatastoreNativeTypes {
 
-	public final static Set<Class<?>> DATASTORE_NATIVE_TYPES;
+	public static final Set<Class<?>> DATASTORE_NATIVE_TYPES;
 
-	public final static Set<Class<?>> ID_TYPES;
+	public static final Set<Class<?>> ID_TYPES;
 
-	private final static Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
+	private static final Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
 
 	private static final Map<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>
 			GQL_PARAM_BINDING_FUNC_MAP;
@@ -77,7 +77,7 @@ public abstract class DatastoreNativeTypes {
 				.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of)
 				.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of)
 				.put(String.class, (Function<String, Value<?>>) StringValue::of)
-				.put(Enum.class, (Function<Enum, Value<?>>) x -> StringValue.of(x.name()))
+				.put(Enum.class, (Function<Enum, Value<?>>) (x) -> StringValue.of(x.name()))
 				.put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of)
 				.put(Key.class, (Function<Key, Value<?>>) KeyValue::of)
 				.build();
@@ -95,39 +95,39 @@ public abstract class DatastoreNativeTypes {
 
 		GQL_PARAM_BINDING_FUNC_MAP = ImmutableMap
 				.<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>builder()
-				.put(Cursor.class, builder -> (s, o) -> builder.setBinding(s, (Cursor) o))
-				.put(String.class, builder -> (s, o) -> builder.setBinding(s, (String) o))
+				.put(Cursor.class, (builder) -> (s, o) -> builder.setBinding(s, (Cursor) o))
+				.put(String.class, (builder) -> (s, o) -> builder.setBinding(s, (String) o))
 				.put(Enum.class,
-						builder -> (s, o) -> builder.setBinding(s, ((Enum) o).name()))
+						(builder) -> (s, o) -> builder.setBinding(s, ((Enum) o).name()))
 				.put(String[].class,
-						builder -> (s, o) -> builder.setBinding(s, (String[]) o))
-				.put(Long.class, builder -> (s, o) -> builder.setBinding(s, (Long) o))
-				.put(Long[].class, builder -> (s, o) -> builder.setBinding(s, Stream.of((Long[]) o)
+						(builder) -> (s, o) -> builder.setBinding(s, (String[]) o))
+				.put(Long.class, (builder) -> (s, o) -> builder.setBinding(s, (Long) o))
+				.put(Long[].class, (builder) -> (s, o) -> builder.setBinding(s, Stream.of((Long[]) o)
 						.mapToLong(Long::longValue).toArray()))
-				.put(long[].class, builder -> (s, o) -> builder.setBinding(s, (long[]) o))
-				.put(Double.class, builder -> (s, o) -> builder.setBinding(s, (Double) o))
-				.put(Double[].class, builder -> (s, o) -> builder.setBinding(s, Stream.of((Double[]) o)
+				.put(long[].class, (builder) -> (s, o) -> builder.setBinding(s, (long[]) o))
+				.put(Double.class, (builder) -> (s, o) -> builder.setBinding(s, (Double) o))
+				.put(Double[].class, (builder) -> (s, o) -> builder.setBinding(s, Stream.of((Double[]) o)
 						.mapToDouble(Double::doubleValue).toArray()))
 				.put(double[].class,
-						builder -> (s, o) -> builder.setBinding(s, (double[]) o))
+						(builder) -> (s, o) -> builder.setBinding(s, (double[]) o))
 				.put(Boolean.class,
-						builder -> (s, o) -> builder.setBinding(s, (Boolean) o))
-				.put(Boolean[].class, builder -> (s, o) -> builder.setBinding(s,
+						(builder) -> (s, o) -> builder.setBinding(s, (Boolean) o))
+				.put(Boolean[].class, (builder) -> (s, o) -> builder.setBinding(s,
 						Booleans.toArray(Arrays.asList(((Boolean[]) o)))))
 				.put(boolean[].class,
-						builder -> (s, o) -> builder.setBinding(s, (boolean[]) o))
+						(builder) -> (s, o) -> builder.setBinding(s, (boolean[]) o))
 				.put(Timestamp.class,
-						builder -> (s, o) -> builder.setBinding(s, (Timestamp) o))
+						(builder) -> (s, o) -> builder.setBinding(s, (Timestamp) o))
 				.put(Timestamp[].class,
-						builder -> (s, o) -> builder.setBinding(s, (Timestamp[]) o))
-				.put(Key.class, builder -> (s, o) -> builder.setBinding(s, (Key) o))
-				.put(Key[].class, builder -> (s, o) -> builder.setBinding(s, (Key[]) o))
-				.put(Blob.class, builder -> (s, o) -> builder.setBinding(s, (Blob) o))
-				.put(Blob[].class, builder -> (s, o) -> builder.setBinding(s, (Blob[]) o))
+						(builder) -> (s, o) -> builder.setBinding(s, (Timestamp[]) o))
+				.put(Key.class, (builder) -> (s, o) -> builder.setBinding(s, (Key) o))
+				.put(Key[].class, (builder) -> (s, o) -> builder.setBinding(s, (Key[]) o))
+				.put(Blob.class, (builder) -> (s, o) -> builder.setBinding(s, (Blob) o))
+				.put(Blob[].class, (builder) -> (s, o) -> builder.setBinding(s, (Blob[]) o))
 				.build();
 	}
 
-	public final static SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_NATIVE_TYPES, true);
+	public static final SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_NATIVE_TYPES, true);
 
 
 	public static boolean isNativeType(Class aClass) {

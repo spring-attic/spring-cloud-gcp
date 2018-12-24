@@ -68,7 +68,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 	private final boolean isDml;
 
-	private final Function<Object, Struct> paramStructConvertFunc = param -> {
+	private final Function<Object, Struct> paramStructConvertFunc = (param) -> {
 		Builder builder = Struct.newBuilder();
 		this.spannerTemplate.getSpannerEntityProcessor().write(param, builder::set);
 		return builder.build();
@@ -139,7 +139,7 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 				}
 				result = result.replace(matched, spannerPersistentEntity.tableName());
 			}
-			catch (ClassNotFoundException e) {
+			catch (ClassNotFoundException ex) {
 				throw new SpannerDataException(
 						"The class name does not refer to an available entity type: "
 								+ className);
@@ -248,9 +248,9 @@ public class SqlSpannerQuery<T> extends AbstractSpannerQuery<T> {
 
 		Statement statement = buildStatementFromQueryAndTags(queryTagValue);
 
-		return simpleItemType != null
+		return (simpleItemType != null)
 				? this.spannerTemplate.query(
-						struct -> new StructAccessor(struct).getSingleValue(0), statement,
+						(struct) -> new StructAccessor(struct).getSingleValue(0), statement,
 						spannerQueryOptions)
 				: this.spannerTemplate.query(this.entityType,
 						statement,

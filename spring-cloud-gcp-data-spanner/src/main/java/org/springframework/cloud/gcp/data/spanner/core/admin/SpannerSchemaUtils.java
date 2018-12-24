@@ -230,7 +230,7 @@ public class SpannerSchemaUtils {
 			SpannerPersistentEntity<T> spannerPersistentEntity,
 			StringJoiner stringJoiner) {
 		spannerPersistentEntity.doWithColumnBackedProperties(
-				spannerPersistentProperty -> {
+				(spannerPersistentProperty) -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						addColumnDdlStrings(
 								this.mappingContext.getPersistentEntity(
@@ -248,11 +248,9 @@ public class SpannerSchemaUtils {
 			Class entityClass, List<String> ddlStrings, Set<Class> seenClasses) {
 		getDdlStringForInterleavedHierarchy(parentTable, entityClass, ddlStrings,
 				seenClasses,
-				(type, parent) -> getCreateTableDdlString(type) + (parent == null ? ""
-						: ", INTERLEAVE IN PARENT " + parent + " ON DELETE "
-								+ (this.createInterleavedTableDdlOnDeleteCascade
-										? "CASCADE"
-										: "NO ACTION")),
+				(type, parent) -> getCreateTableDdlString(type) + (
+						(parent != null) ? ", INTERLEAVE IN PARENT " + parent + " ON DELETE "
+						+ ((this.createInterleavedTableDdlOnDeleteCascade) ? "CASCADE" : "NO ACTION") : ""),
 				false);
 	}
 
@@ -275,7 +273,7 @@ public class SpannerSchemaUtils {
 		SpannerPersistentEntity spannerPersistentEntity = this.mappingContext
 				.getPersistentEntity(entityClass);
 		spannerPersistentEntity.doWithInterleavedProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty ->
+				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) ->
 						getDdlStringForInterleavedHierarchy(
 						spannerPersistentEntity.tableName(),
 						spannerPersistentProperty.getColumnInnerType(), ddlStrings,
@@ -294,7 +292,7 @@ public class SpannerSchemaUtils {
 		if (isArray) {
 			return "ARRAY<" + getTypeDdlStringWithLength(type, false, dataLength) + ">";
 		}
-		return type.toString() + (type == Type.Code.STRING || type == Type.Code.BYTES
+		return type.toString() + ((type == Type.Code.STRING || type == Type.Code.BYTES)
 				? "(" + (dataLength.isPresent() ? dataLength.getAsLong() : "MAX") + ")"
 				: "");
 	}

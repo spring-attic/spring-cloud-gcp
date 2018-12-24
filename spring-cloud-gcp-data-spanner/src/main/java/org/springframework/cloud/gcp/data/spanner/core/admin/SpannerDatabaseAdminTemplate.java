@@ -100,12 +100,12 @@ public class SpannerDatabaseAdminTemplate {
 						ddlStrings, null).get();
 			}
 		}
-		catch (InterruptedException e) {
+		catch (InterruptedException ex) {
 			Thread.currentThread().interrupt();
-			throw new SpannerDataException("DDL execution was interrupted", e);
+			throw new SpannerDataException("DDL execution was interrupted", ex);
 		}
-		catch (ExecutionException e) {
-			throw new SpannerDataException("DDL could not be executed", e);
+		catch (ExecutionException ex) {
+			throw new SpannerDataException("DDL could not be executed", ex);
 		}
 	}
 

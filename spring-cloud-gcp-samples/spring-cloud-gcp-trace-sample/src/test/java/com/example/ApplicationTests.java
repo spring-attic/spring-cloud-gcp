@@ -143,7 +143,7 @@ public class ApplicationTests {
 					this.logClient.listLogEntries(Logging.EntryListOption.filter(logFilter)).iterateAll());
 
 			List<String> logContents = logEntries.stream()
-					.map(logEntry -> ((StringPayload) logEntry.getPayload()).getData())
+					.map((logEntry) -> ((StringPayload) logEntry.getPayload()).getData())
 					.collect(Collectors.toList());
 
 			assertThat(logContents).contains("starting busy work");

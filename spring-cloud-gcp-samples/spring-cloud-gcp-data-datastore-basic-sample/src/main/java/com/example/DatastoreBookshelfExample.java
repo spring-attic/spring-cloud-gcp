@@ -42,9 +42,9 @@ public class DatastoreBookshelfExample {
 	}
 
 	@ShellMethod("Saves a book to Cloud Datastore: save-book <author> <title> <year>")
-	public long saveBook(String title, String author, int year) {
+	public String saveBook(String title, String author, int year) {
 		Book savedBook = this.bookRepository.save(new Book(title, author, year));
-		return savedBook.getId();
+		return savedBook.toString();
 	}
 
 	@ShellMethod("Loads all books")
@@ -59,9 +59,9 @@ public class DatastoreBookshelfExample {
 		return books.toString();
 	}
 
-	@ShellMethod("Loads books by year: find-by-year <year>")
-	public String findByYear(int year) {
-		List<Book> books = this.bookRepository.findByYear(year);
+	@ShellMethod("Loads books released after a specified year: find-by-year-greater-than <year>")
+	public String findByYearGreaterThan(int year) {
+		List<Book> books = this.bookRepository.findByYearGreaterThan(year);
 		return books.toString();
 	}
 

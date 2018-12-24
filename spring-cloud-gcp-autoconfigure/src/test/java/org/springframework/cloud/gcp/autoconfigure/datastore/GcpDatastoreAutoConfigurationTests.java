@@ -46,17 +46,17 @@ public class GcpDatastoreAutoConfigurationTests {
 
 	@Test
 	public void testDatastoreOperationsCreated() {
-		this.contextRunner.run(context -> assertThat(context.getBean(DatastoreOperations.class)).isNotNull());
+		this.contextRunner.run((context) -> assertThat(context.getBean(DatastoreOperations.class)).isNotNull());
 	}
 
 	@Test
 	public void testTestRepositoryCreated() {
-		this.contextRunner.run(context -> assertThat(context.getBean(TestRepository.class)).isNotNull());
+		this.contextRunner.run((context) -> assertThat(context.getBean(TestRepository.class)).isNotNull());
 	}
 
 	@Test
 	public void datastoreTransactionManagerCreated() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			DatastoreTransactionManager transactionManager = context
 					.getBean(DatastoreTransactionManager.class);
 			assertThat(transactionManager).isNotNull();

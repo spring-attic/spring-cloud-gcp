@@ -87,7 +87,7 @@ public class IapAuthenticationAutoConfiguration {
 	@Bean
 	@ConditionalOnMissingBean
 	public BearerTokenResolver iatTokenResolver(IapAuthenticationProperties properties) {
-		return r -> r.getHeader(properties.getHeader());
+		return (r) -> r.getHeader(properties.getHeader());
 	}
 
 	@Bean

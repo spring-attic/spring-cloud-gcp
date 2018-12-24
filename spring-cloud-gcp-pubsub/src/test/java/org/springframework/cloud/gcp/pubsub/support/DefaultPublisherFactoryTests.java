@@ -47,9 +47,12 @@ import static org.mockito.Mockito.when;
 /**
  * @author João André Martins
  * @author Chengyuan Zhao
+ * @author Eric Goetschalckx
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultPublisherFactoryTests {
+
+	private DefaultPublisherFactory factory = new DefaultPublisherFactory(() -> PROJECT_ID);
 
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();

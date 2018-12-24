@@ -109,11 +109,11 @@ public class SpannerTemplate implements SpannerOperations {
 	}
 
 	protected ReadContext getReadContext() {
-		return doWithOrWithoutTransactionContext(x -> x, this.databaseClient::singleUse);
+		return doWithOrWithoutTransactionContext((x) -> x, this.databaseClient::singleUse);
 	}
 
 	protected ReadContext getReadContext(Timestamp timestamp) {
-		return doWithOrWithoutTransactionContext(x -> x,
+		return doWithOrWithoutTransactionContext((x) -> x,
 				() -> this.databaseClient.singleUse(TimestampBound.ofReadTimestamp(timestamp)));
 	}
 
@@ -127,7 +127,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public long executeDmlStatement(Statement statement) {
-		return doWithOrWithoutTransactionContext(x -> x.executeUpdate(statement),
+		return doWithOrWithoutTransactionContext((x) -> x.executeUpdate(statement),
 				() -> this.databaseClient.executePartitionedUpdate(statement));
 	}
 
@@ -154,7 +154,7 @@ public class SpannerTemplate implements SpannerOperations {
 				.getPersistentEntity(entityClass);
 		return mapToListAndResolveChildren(executeRead(persistentEntity.tableName(), keys,
 				persistentEntity.columns(), options), entityClass,
-				options == null ? null : options.getIncludeProperties(),
+				(options != null) ? options.getIncludeProperties() : null,
 				options != null && options.isAllowPartialRead());
 	}
 
@@ -174,7 +174,7 @@ public class SpannerTemplate implements SpannerOperations {
 	public <T> List<T> query(Class<T> entityClass, Statement statement,
 			SpannerQueryOptions options) {
 		return mapToListAndResolveChildren(executeQuery(statement, options), entityClass,
-				options == null ? null : options.getIncludeProperties(),
+				(options != null) ? options.getIncludeProperties() : null,
 				options != null && options.isAllowPartialRead());
 	}
 
@@ -223,14 +223,14 @@ public class SpannerTemplate implements SpannerOperations {
 	public void updateAll(Iterable objects) {
 		applyMutations(
 				getMutationsForMultipleObjects(objects,
-						x -> this.mutationFactory.update(x, null)));
+						(x) -> this.mutationFactory.update(x, null)));
 	}
 
 	@Override
 	public void update(Object object, String... includeProperties) {
 		applyMutations(
 				this.mutationFactory.update(object,
-						includeProperties.length == 0 ? null
+						(includeProperties.length == 0) ? null
 								: new HashSet<>(Arrays.asList(includeProperties))));
 	}
 
@@ -248,14 +248,14 @@ public class SpannerTemplate implements SpannerOperations {
 	public void upsertAll(Iterable objects) {
 		applyMutations(
 				getMutationsForMultipleObjects(objects,
-						x -> this.mutationFactory.upsert(x, null)));
+						(x) -> this.mutationFactory.upsert(x, null)));
 	}
 
 	@Override
 	public void upsert(Object object, String... includeProperties) {
 		applyMutations(
 				this.mutationFactory.upsert(object,
-						includeProperties.length == 0 ? null
+						(includeProperties.length == 0) ? null
 								: new HashSet<>(Arrays.asList(includeProperties))));
 	}
 
@@ -302,7 +302,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public <T> T performReadWriteTransaction(Function<SpannerTemplate, T> operations) {
-		return doWithOrWithoutTransactionContext(x -> {
+		return doWithOrWithoutTransactionContext((x) -> {
 			throw new IllegalStateException("There is already declarative transaction open. " +
 					"Spanner does not support nested transactions");
 		}, () -> this.databaseClient.readWriteTransaction()
@@ -327,14 +327,13 @@ public class SpannerTemplate implements SpannerOperations {
 	@Override
 	public <T> T performReadOnlyTransaction(Function<SpannerTemplate, T> operations,
 			SpannerReadOptions readOptions) {
-		return doWithOrWithoutTransactionContext(x -> {
+		return doWithOrWithoutTransactionContext((x) -> {
 			throw new IllegalStateException("There is already declarative transaction open. " +
 					"Spanner does not support nested transactions");
 		}, () -> {
 
-			SpannerReadOptions options = readOptions == null ? new SpannerReadOptions()
-					: readOptions;
-			try (ReadOnlyTransaction readOnlyTransaction = options.getTimestamp() != null
+			SpannerReadOptions options = (readOptions != null) ? readOptions : new SpannerReadOptions();
+			try (ReadOnlyTransaction readOnlyTransaction = (options.getTimestamp() != null)
 					? this.databaseClient.readOnlyTransaction(
 							TimestampBound.ofReadTimestamp(options.getTimestamp()))
 					: this.databaseClient.readOnlyTransaction()) {
@@ -377,7 +376,7 @@ public class SpannerTemplate implements SpannerOperations {
 	private String getQueryLogMessageWithOptions(Statement statement, SpannerQueryOptions options) {
 		String message;
 		StringBuilder logSb = new StringBuilder("Executing query").append(
-				options.getTimestamp() != null ? " at timestamp" + options.getTimestamp()
+				(options.getTimestamp() != null) ? " at timestamp" + options.getTimestamp()
 						: "");
 		for (QueryOption queryOption : options.getQueryOptions()) {
 			logSb.append(" with option: " + queryOption);
@@ -393,7 +392,7 @@ public class SpannerTemplate implements SpannerOperations {
 			resultSet = getReadContext().executeQuery(statement);
 		}
 		else {
-			resultSet = (options.getTimestamp() != null ? getReadContext(options.getTimestamp())
+			resultSet = ((options.getTimestamp() != null) ? getReadContext(options.getTimestamp())
 					: getReadContext()).executeQuery(statement,
 							options.getQueryOptions());
 		}
@@ -410,7 +409,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 		ResultSet resultSet;
 
-		ReadContext readContext = options != null && options.getTimestamp() != null
+		ReadContext readContext = (options != null && options.getTimestamp() != null)
 				? getReadContext(options.getTimestamp())
 				: getReadContext();
 
@@ -459,14 +458,14 @@ public class SpannerTemplate implements SpannerOperations {
 		StringBuilder logSb = new StringBuilder("Executing read on table " + tableName
 				+ " with keys: " + keys + " and columns: ");
 		StringJoiner sj = new StringJoiner(",");
-		columns.forEach(col -> sj.add(col));
+		columns.forEach((col) -> sj.add(col));
 		logSb.append(sj.toString());
 		return logSb;
 	}
 
 	protected void applyMutations(Collection<Mutation> mutations) {
 		LOGGER.debug("Applying Mutation: " + mutations);
-		doWithOrWithoutTransactionContext(x -> {
+		doWithOrWithoutTransactionContext((x) -> {
 			x.buffer(mutations);
 			return null;
 		}, () -> {
@@ -496,7 +495,7 @@ public class SpannerTemplate implements SpannerOperations {
 		PersistentPropertyAccessor accessor = spannerPersistentEntity
 				.getPropertyAccessor(entity);
 		spannerPersistentEntity.doWithInterleavedProperties(
-				(PropertyHandler<SpannerPersistentProperty>) spannerPersistentProperty -> {
+				(PropertyHandler<SpannerPersistentProperty>) (spannerPersistentProperty) -> {
 					if (includeProperties != null && !includeProperties
 							.contains(spannerPersistentEntity.getName())) {
 						return;
@@ -516,7 +515,7 @@ public class SpannerTemplate implements SpannerOperations {
 	private Collection<Mutation> getMutationsForMultipleObjects(Iterable it,
 			Function<Object, Collection<Mutation>> individualEntityMutationFunc) {
 		return (Collection<Mutation>) StreamSupport.stream(it.spliterator(), false)
-				.flatMap(x -> individualEntityMutationFunc.apply(x).stream())
+				.flatMap((x) -> individualEntityMutationFunc.apply(x).stream())
 				.collect(Collectors.toList());
 	}
 
@@ -530,6 +529,6 @@ public class SpannerTemplate implements SpannerOperations {
 	private <A> A doWithOrWithoutTransactionContext(Function<TransactionContext, A> funcWithTransactionContext,
 			Supplier<A> funcWithoutTransactionContext) {
 		TransactionContext txContext = getTransactionContext();
-		return txContext == null ? funcWithoutTransactionContext.get() : funcWithTransactionContext.apply(txContext);
+		return (txContext != null) ? funcWithTransactionContext.apply(txContext) : funcWithoutTransactionContext.get();
 	}
 }
