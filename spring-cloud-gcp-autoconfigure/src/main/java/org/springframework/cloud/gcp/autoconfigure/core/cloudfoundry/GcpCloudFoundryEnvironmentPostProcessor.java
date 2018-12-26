@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.autoconfigure.core.cloudfoundry;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -122,7 +121,7 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 				Map<String, String> cfPropNameToGcp) {
 			this.cfServiceName = cfServiceName;
 			this.gcpServiceName = gcpServiceName;
-			this.cfPropNameToGcp = Collections.unmodifiableMap(cfPropNameToGcp);
+			this.cfPropNameToGcp = cfPropNameToGcp;
 		}
 
 		public String getCfServiceName() {
