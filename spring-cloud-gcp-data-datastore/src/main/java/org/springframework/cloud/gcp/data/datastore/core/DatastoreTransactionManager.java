@@ -27,7 +27,6 @@ import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
 import com.google.cloud.datastore.Transaction;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 
 import org.springframework.transaction.TransactionDefinition;
@@ -52,8 +51,7 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 		this.datastore = datastore;
 	}
 
-	@VisibleForTesting
-	Tx getCurrentTX() {
+		Tx getCurrentTX() {
 		return TransactionSynchronizationManager.isActualTransactionActive()
 				? (Tx) ((DefaultTransactionStatus) TransactionAspectSupport
 						.currentTransactionStatus()).getTransaction()
@@ -147,8 +145,7 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 			return this.transaction;
 		}
 
-		@VisibleForTesting
-		void setTransaction(Transaction transaction) {
+				void setTransaction(Transaction transaction) {
 			this.transaction = transaction;
 		}
 	}

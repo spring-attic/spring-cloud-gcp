@@ -43,7 +43,6 @@ import com.google.cloud.datastore.Query.ResultType;
 import com.google.cloud.datastore.QueryResults;
 import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
-import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -163,7 +162,7 @@ public class DatastoreTemplateTests {
 		// The readWriteConversions are only mocked for purposes of collection-conversion
 		// for
 		// descendants. no other conversions take place in the template.
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			LinkedList linkedList = new LinkedList();
 			for (Object object : (List) invocation.getArgument(0)) {
 				linkedList.add(object);
@@ -205,14 +204,14 @@ public class DatastoreTemplateTests {
 
 		// mocked query results for entities and child entities.
 		QueryResults childTestEntityQueryResults = mock(QueryResults.class);
-		doAnswer((invocation) -> {
-			ImmutableList.of(ce1).iterator().forEachRemaining(invocation.getArgument(0));
+		doAnswer(invocation -> {
+			Arrays.asList(ce1).iterator().forEachRemaining(invocation.getArgument(0));
 			return null;
 		}).when(childTestEntityQueryResults).forEachRemaining(any());
 
 		QueryResults testEntityQueryResults = mock(QueryResults.class);
-		doAnswer((invocation) -> {
-			ImmutableList.of(this.e1, this.e2).iterator()
+		doAnswer(invocation -> {
+			Arrays.asList(this.e1, this.e2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
 			return null;
 		}).when(testEntityQueryResults).forEachRemaining(any());
@@ -241,15 +240,15 @@ public class DatastoreTemplateTests {
 
 		// Because get() takes varags, there is difficulty in matching the single param
 		// case using just thenReturn.
-		doAnswer((invocation) -> {
+		doAnswer(invocation -> {
 			Object key = invocation.getArgument(0);
 			Iterator<Entity> result = null;
 			if (key instanceof Key) {
 				if (key == this.key1) {
-					result = ImmutableList.of(this.e1).iterator();
+					result = Arrays.asList(this.e1).iterator();
 				}
 				else if (key == this.keyChild1) {
-					result = ImmutableList.of(ce1).iterator();
+					result = Arrays.asList(ce1).iterator();
 				}
 			}
 			return result;
@@ -296,7 +295,7 @@ public class DatastoreTemplateTests {
 
 		DatastoreReaderWriter transactionContext = mock(DatastoreReaderWriter.class);
 
-		when(this.datastore.runInTransaction(any())).thenAnswer((invocation) -> {
+		when(this.datastore.runInTransaction(any())).thenAnswer(invocation -> {
 			TransactionCallable<String> callable = invocation.getArgument(0);
 			return callable.run(transactionContext);
 		});
@@ -307,7 +306,7 @@ public class DatastoreTemplateTests {
 		when(transactionContext.get(ArgumentMatchers.<Key[]>any())).thenReturn(e1);
 
 		String finalResult = this.datastoreTemplate
-				.performTransaction((datastoreOperations) -> {
+				.performTransaction(datastoreOperations -> {
 					datastoreOperations.save(this.ob2);
 					datastoreOperations.findById("ignored", TestEntity.class);
 					return "all done";
@@ -342,8 +341,8 @@ public class DatastoreTemplateTests {
 	@Test
 	public void findAllByIdTest() {
 		when(this.datastore.get(eq(this.key1), eq(this.key2)))
-				.thenReturn(ImmutableList.of(this.e1, this.e2).iterator());
-		List<Key> keys = ImmutableList.of(this.key1, this.key2);
+				.thenReturn(Arrays.asList(this.e1, this.e2).iterator());
+		List<Key> keys = Arrays.asList(this.key1, this.key2);
 		assertThat(this.datastoreTemplate.findAllById(keys, TestEntity.class)).containsExactly(this.ob1, this.ob2);
 	}
 
@@ -440,9 +439,9 @@ public class DatastoreTemplateTests {
 				.thenReturn(this.key2);
 
 		when(this.datastore.put(any(), any()))
-				.thenReturn(ImmutableList.of(this.e1, this.e2));
+				.thenReturn(Arrays.asList(this.e1, this.e2));
 
-		this.datastoreTemplate.saveAll(ImmutableList.of(this.ob1, this.ob2));
+		this.datastoreTemplate.saveAll(Arrays.asList(this.ob1, this.ob2));
 		Entity writtenEntity1 = Entity.newBuilder(this.key1)
 				.set("singularReference", this.childKey4)
 				.set("multipleReference", Arrays.asList(KeyValue.of(this.childKey5), KeyValue.of(this.childKey6)))
@@ -495,8 +494,8 @@ public class DatastoreTemplateTests {
 	public void countTest() {
 		QueryResults<Key> queryResults = mock(QueryResults.class);
 		when(queryResults.getResultClass()).thenReturn((Class) Key.class);
-		doAnswer((invocation) -> {
-			ImmutableList.of(this.key1, this.key2).iterator()
+		doAnswer(invocation -> {
+			Arrays.asList(this.key1, this.key2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
 			return null;
 		}).when(queryResults).forEachRemaining(any());
@@ -526,7 +525,7 @@ public class DatastoreTemplateTests {
 				.thenReturn(this.key1);
 		when(this.objectToKeyFactory.getKeyFromId(same(this.key2), any()))
 				.thenReturn(this.key2);
-		this.datastoreTemplate.deleteAllById(ImmutableList.of(this.key1, this.key2),
+		this.datastoreTemplate.deleteAllById(Arrays.asList(this.key1, this.key2),
 				TestEntity.class);
 		verify(this.datastore, times(1)).delete(same(this.key1), same(this.key2));
 	}
@@ -539,7 +538,7 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void deleteMultipleObjectsTest() {
-		this.datastoreTemplate.deleteAll(ImmutableList.of(this.ob1, this.ob2));
+		this.datastoreTemplate.deleteAll(Arrays.asList(this.ob1, this.ob2));
 		verify(this.datastore, times(1)).delete(eq(this.key1), eq(this.key2));
 	}
 
@@ -547,8 +546,8 @@ public class DatastoreTemplateTests {
 	public void deleteAllTest() {
 		QueryResults<Key> queryResults = mock(QueryResults.class);
 		when(queryResults.getResultClass()).thenReturn((Class) Key.class);
-		doAnswer((invocation) -> {
-			ImmutableList.of(this.key1, this.key2).iterator()
+		doAnswer(invocation -> {
+			Arrays.asList(this.key1, this.key2).iterator()
 					.forEachRemaining(invocation.getArgument(0));
 			return null;
 		}).when(queryResults).forEachRemaining(any());

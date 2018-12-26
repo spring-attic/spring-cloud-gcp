@@ -20,8 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 import org.springframework.util.CollectionUtils;
 
@@ -31,7 +30,7 @@ import org.springframework.util.CollectionUtils;
 public class TestDatastoreItemCollections {
 	private List<Integer> intList;
 
-	private ImmutableSet<Double> doubleSet;
+	private Set<Double> doubleSet;
 
 	private String[] stringArray;
 
@@ -41,7 +40,7 @@ public class TestDatastoreItemCollections {
 
 	private List<byte[]> listByteArray;
 
-	public TestDatastoreItemCollections(List<Integer> intList, ImmutableSet<Double> doubleSet, String[] stringArray,
+	public TestDatastoreItemCollections(List<Integer> intList, Set<Double> doubleSet, String[] stringArray,
 			boolean[] boolArray, byte[][] bytes, List<byte[]> listByteArray) {
 		this.intList = intList;
 		this.doubleSet = doubleSet;
@@ -55,7 +54,7 @@ public class TestDatastoreItemCollections {
 		return this.intList;
 	}
 
-	public ImmutableSet<Double> getDoubleSet() {
+	public Set<Double> getDoubleSet() {
 		return this.doubleSet;
 	}
 

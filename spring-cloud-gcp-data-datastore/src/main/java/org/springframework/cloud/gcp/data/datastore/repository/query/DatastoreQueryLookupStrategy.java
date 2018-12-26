@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.datastore.repository.query;
 
 import java.lang.reflect.Method;
 
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -79,21 +78,18 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 				this.datastoreMappingContext, entityType);
 	}
 
-	@VisibleForTesting
-	<T> GqlDatastoreQuery<T> createGqlDatastoreQuery(Class<T> entityType,
+		<T> GqlDatastoreQuery<T> createGqlDatastoreQuery(Class<T> entityType,
 			DatastoreQueryMethod queryMethod, String gql) {
 		return new GqlDatastoreQuery<>(entityType, queryMethod, this.datastoreTemplate,
 				gql, this.evaluationContextProvider,
 				this.datastoreMappingContext);
 	}
 
-	@VisibleForTesting
-	Class<?> getEntityType(QueryMethod queryMethod) {
+		Class<?> getEntityType(QueryMethod queryMethod) {
 		return queryMethod.getResultProcessor().getReturnedType().getDomainType();
 	}
 
-	@VisibleForTesting
-	DatastoreQueryMethod createQueryMethod(Method method, RepositoryMetadata metadata,
+		DatastoreQueryMethod createQueryMethod(Method method, RepositoryMetadata metadata,
 			ProjectionFactory factory) {
 		return new DatastoreQueryMethod(method, metadata, factory);
 	}

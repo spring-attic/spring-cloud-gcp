@@ -35,7 +35,6 @@ import com.google.cloud.datastore.StructuredQuery.Builder;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.Filter;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
@@ -130,13 +129,11 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				((DatastoreQueryMethod) getQueryMethod()).getCollectionReturnType(), false);
 	}
 
-	@VisibleForTesting
-	protected boolean isPageQuery() {
+		protected boolean isPageQuery() {
 		return getQueryMethod().isPageQuery();
 	}
 
-	@VisibleForTesting
-	protected boolean isSliceQuery() {
+		protected boolean isSliceQuery() {
 		return getQueryMethod().isSliceQuery();
 	}
 
@@ -203,8 +200,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return new SliceImpl(entities, pageable, exceedsLimit);
 	}
 
-	@VisibleForTesting
-	protected Object convertResultCollection(Object result, Class<?> collectionType) {
+		protected Object convertResultCollection(Object result, Class<?> collectionType) {
 		return getDatastoreTemplate().getDatastoreEntityConverter().getConversions()
 				.convertOnRead(result, collectionType, getQueryMethod().getReturnedObjectType());
 	}

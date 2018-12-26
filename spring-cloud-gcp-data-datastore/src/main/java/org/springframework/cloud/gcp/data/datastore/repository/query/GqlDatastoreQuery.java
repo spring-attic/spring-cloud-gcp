@@ -33,7 +33,6 @@ import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.GqlQuery.Builder;
 import com.google.cloud.datastore.Key;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
@@ -179,8 +178,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				: this.queryMethod.getResultProcessor().processResult(rawResult.get(0));
 	}
 
-	@VisibleForTesting
-	boolean isNonEntityReturnedType(Class returnedType) {
+		boolean isNonEntityReturnedType(Class returnedType) {
 		return this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
 				.getDatastoreCompatibleType(returnedType).isPresent();
 	}

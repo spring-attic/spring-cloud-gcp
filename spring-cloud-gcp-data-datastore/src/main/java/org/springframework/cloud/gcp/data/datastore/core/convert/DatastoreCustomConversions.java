@@ -16,10 +16,9 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import com.google.common.collect.ImmutableList;
 
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.JodaTimeConverters;
@@ -40,11 +39,11 @@ public class DatastoreCustomConversions extends CustomConversions {
 	private static final List<Object> STORE_CONVERTERS;
 
 	static {
-		STORE_CONVERTERS = ImmutableList.builder()
-				.addAll(JodaTimeConverters.getConvertersToRegister())
-				.addAll(Jsr310Converters.getConvertersToRegister())
-				.addAll(ThreeTenBackPortConverters.getConvertersToRegister())
-				.build();
+		STORE_CONVERTERS = Collections.unmodifiableList(new ArrayList() {{
+			addAll(JodaTimeConverters.getConvertersToRegister());
+			addAll(Jsr310Converters.getConvertersToRegister());
+			addAll(ThreeTenBackPortConverters.getConvertersToRegister());
+		}});
 
 		STORE_CONVERSIONS =
 				StoreConversions.of(DatastoreNativeTypes.HOLDER, STORE_CONVERTERS);

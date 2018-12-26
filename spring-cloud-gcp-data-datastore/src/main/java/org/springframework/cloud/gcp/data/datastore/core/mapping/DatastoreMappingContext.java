@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.mapping;
 
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -56,8 +55,7 @@ public class DatastoreMappingContext extends
 		this.applicationContext = applicationContext;
 	}
 
-	@VisibleForTesting
-	protected <T> DatastorePersistentEntityImpl<T> constructPersistentEntity(
+		protected <T> DatastorePersistentEntityImpl<T> constructPersistentEntity(
 			TypeInformation<T> typeInformation) {
 		return new DatastorePersistentEntityImpl<>(typeInformation);
 	}

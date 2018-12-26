@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.cloud.Timestamp;
@@ -37,7 +38,6 @@ import com.google.cloud.datastore.NullValue;
 import com.google.cloud.datastore.StringValue;
 import com.google.cloud.datastore.Value;
 import com.google.cloud.datastore.testing.LocalDatastoreHelper;
-import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -166,6 +166,7 @@ public class DefaultDatastoreEntityConverterTests {
 		ENTITY_CONVERTER.read(Object.class, entity);
 	}
 
+	// TODO: Elena this will break
 	@Test
 	public void testWrongTypeReadExceptionList() {
 		this.thrown.expect(DatastoreDataException.class);
@@ -306,7 +307,7 @@ public class DefaultDatastoreEntityConverterTests {
 
 		TestDatastoreItemCollections item = new TestDatastoreItemCollections(
 				Arrays.asList(1, 2),
-				ImmutableSet.of(3.14, 2.71),
+				Collections.unmodifiableSet(new HashSet<Double>(Arrays.asList(3.14, 2.71))),
 				new String[] { "abc", "def" }, new boolean[] {true, false}, null, null);
 
 		Entity.Builder builder = getEntityBuilder();
@@ -323,7 +324,7 @@ public class DefaultDatastoreEntityConverterTests {
 		TestDatastoreItemCollections item =
 				new TestDatastoreItemCollections(
 						Arrays.asList(1, 2),
-						ImmutableSet.of(3.14, 2.71),
+						Collections.unmodifiableSet(new HashSet<Double>(Arrays.asList(3.14, 2.71))),
 						new String[]{"abc", "def"}, new boolean[] {true, false}, bytes, listByteArray);
 
 		DatastoreEntityConverter entityConverter =
@@ -331,10 +332,10 @@ public class DefaultDatastoreEntityConverterTests {
 						new DatastoreMappingContext(),
 						new TwoStepsConversions(new DatastoreCustomConversions(
 								Collections.singletonList(
-										new Converter<List<?>, ImmutableSet<?>>() {
+										new Converter<List<?>, Set<?>>() {
 											@Override
-											public ImmutableSet<?> convert(List<?> source) {
-												return ImmutableSet.copyOf(source);
+											public Set<?> convert(List<?> source) {
+												return Collections.unmodifiableSet(new HashSet(source));
 											}
 										})), null));
 

@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -86,8 +85,7 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 						: converted.get(0).getClass(), converted.size()));
 	}
 
-	@VisibleForTesting
-	Object processRawObjectForProjection(T object) {
+		Object processRawObjectForProjection(T object) {
 		return this.queryMethod.getResultProcessor().processResult(object);
 	}
 
