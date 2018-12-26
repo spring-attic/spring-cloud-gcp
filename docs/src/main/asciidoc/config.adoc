@@ -17,11 +17,11 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source,subs="normal"]
+[source,subs="normal",indent=0]
 ----
-dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-config'
-}
+ dependencies {
+     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-config'
+ }
 ----
 
 The Google Cloud Runtime Configuration service is in beta status.
@@ -53,36 +53,38 @@ NOTE: Also note that core properties as described in <<spring-cloud-gcp-core,Spr
 In other words, if `spring.application.name` is `myapp` and `spring.profiles.active` is `prod`, the configuration should be called `myapp_prod`.
 +
 In order to do that, you should have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, own a Google Cloud Project and run the following command:
-+
+[source, indent=0]
 ----
-gcloud init # if this is your first Google Cloud SDK run.
-gcloud beta runtime-config configs create myapp_prod
-gcloud beta runtime-config configs variables set myapp.queue-size 25 --config-name myapp_prod
+ gcloud init # if this is your first Google Cloud SDK run.
+ gcloud beta runtime-config configs create myapp_prod
+ gcloud beta runtime-config configs variables set myapp.queue-size 25 --config-name myapp_prod
 ----
 
 2. Configure your `bootstrap.properties` file with your application's configuration data:
 +
+[source, indent=0]
 ----
-spring.application.name=myapp
-spring.profiles.active=prod
+ spring.application.name=myapp
+ spring.profiles.active=prod
 ----
 3. Add the `@ConfigurationProperties` annotation to a Spring-managed bean:
 +
+[source, indent=0]
 ----
-@Component
-@ConfigurationProperties("myapp")
-public class SampleConfig {
+ @Component
+ @ConfigurationProperties("myapp")
+ public class SampleConfig {
 
-  private int queueSize;
+   private int queueSize;
 
-  public int getQueueSize() {
-    return this.queueSize;
-  }
+   public int getQueueSize() {
+     return this.queueSize;
+   }
 
-  public void setQueueSize(int queueSize) {
-    this.queueSize = queueSize;
-  }
-}
+   public void setQueueSize(int queueSize) {
+     this.queueSize = queueSize;
+   }
+ }
 ----
 
 When your Spring application starts, the `queueSize` field value will be set to 25 for the above `SampleConfig` bean.
@@ -102,11 +104,11 @@ Maven coordinates:
 ----
 
 Gradle coordinates:
-[source,subs="normal"]
+[source,subs="normal",indent=0]
 ----
-dependencies {
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
-}
+ dependencies {
+     compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
+ }
 ----
 
 2.  Add `@RefreshScope` to your Spring configuration class to have parameters be reloadable at runtime.

@@ -196,6 +196,22 @@
 							<violationSeverity>warning</violationSeverity>
 						</configuration>
 					</execution>
+					<execution>
+						<id>checkstyle-adoc-validation</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<configLocation>src/checkstyle/adoc-checkstyle.xml</configLocation>
+							<consoleOutput>true</consoleOutput>
+							<failsOnError>true</failsOnError>
+							<failOnViolation>true</failOnViolation>
+							<violationSeverity>warning</violationSeverity>
+							<sourceDirectories>${basedir}</sourceDirectories>
+							<includes>**\/*.adoc</includes>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>

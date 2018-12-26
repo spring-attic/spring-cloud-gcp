@@ -18,9 +18,9 @@ Gradle coordinates:
 
 [source,subs="normal"]
 ----
-dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub-stream-binder'
-}
+ dependencies {
+     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub-stream-binder'
+ }
 ----
 
 === Overview
@@ -47,9 +47,10 @@ If automatic resource creation is turned ON and the topic corresponding to the d
 For example, for the following configuration, a topic called `myEvents` would be created.
 
 .application.properties
+[source,indent=0]
 ----
-spring.cloud.stream.bindings.events.destination=myEvents
-spring.cloud.stream.gcp.pubsub.bindings.events.producer.auto-create-resources=true
+ spring.cloud.stream.bindings.events.destination=myEvents
+ spring.cloud.stream.gcp.pubsub.bindings.events.producer.auto-create-resources=true
 ----
 
 ==== Consumer Destination Configuration
@@ -66,12 +67,13 @@ If the consumer group is not specified, a subscription called `anonymous.myEvent
 IMPORTANT: If you are manually creating Pub/Sub subscriptions for consumers, make sure that they follow the naming convention of `<destinationName>.<consumerGroup>`.
 
 .application.properties
+[source,indent=0]
 ----
-spring.cloud.stream.bindings.events.destination=myEvents
-spring.cloud.stream.gcp.pubsub.bindings.events.consumer.auto-create-resources=true
+ spring.cloud.stream.bindings.events.destination=myEvents
+ spring.cloud.stream.gcp.pubsub.bindings.events.consumer.auto-create-resources=true
 
-# specify consumer group, and avoid anonymous consumer group generation
-spring.cloud.stream.bindings.events.group=consumerGroup1
+ # specify consumer group, and avoid anonymous consumer group generation
+ spring.cloud.stream.bindings.events.group=consumerGroup1
 ----
 
 === Sample

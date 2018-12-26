@@ -23,18 +23,17 @@ Gradle coordinates:
 
 [source,subs="normal"]
 ----
-dependencies {
+ dependencies {
     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub'
     compile group: 'org.springframework.integration', name: 'spring-integration-core'
-}
+ }
 ----
 
 
 ==== Inbound channel adapter
 
 `PubSubInboundChannelAdapter` is the inbound channel adapter for GCP Pub/Sub that listens to a GCP Pub/Sub subscription for new messages.
-It converts new messages to an internal Spring https://docs.spring.io/spring-integration/reference/html/messaging-construction-chapter.html#message[`Message`]
-and then sends it to the bound output channel.
+It converts new messages to an internal Spring https://docs.spring.io/spring-integration/reference/html/messaging-construction-chapter.html#message[`Message`] and then sends it to the bound output channel.
 
 Google Pub/Sub treats message payloads as byte arrays.
 So, by default, the inbound channel adapter will construct the Spring `Message` with `byte[]` as the payload.
@@ -46,13 +45,13 @@ To use the inbound channel adapter, a `PubSubInboundChannelAdapter` must be prov
 
 [source,java]
 ----
-@Bean
-public MessageChannel pubsubInputChannel() {
+ @Bean
+ public MessageChannel pubsubInputChannel() {
     return new PublishSubscribeChannel();
-}
+ }
 
-@Bean
-public PubSubInboundChannelAdapter messageChannelAdapter(
+ @Bean
+ public PubSubInboundChannelAdapter messageChannelAdapter(
     @Qualifier("pubsubInputChannel") MessageChannel inputChannel,
     SubscriberFactory subscriberFactory) {
     PubSubInboundChannelAdapter adapter =
@@ -61,7 +60,7 @@ public PubSubInboundChannelAdapter messageChannelAdapter(
     adapter.setAckMode(AckMode.MANUAL);
 
     return adapter;
-}
+ }
 ----
 
 In the example, we first specify the `MessageChannel` where the adapter is going to write incoming messages to.
@@ -93,22 +92,21 @@ Users can extract the `BasicAcknowledgeablePubsubMessage` using the `GcpPubSubHe
 
 [source,java]
 ----
-@Bean
-@ServiceActivator(inputChannel = "pubsubInputChannel")
-public MessageHandler messageReceiver() {
+ @Bean
+ @ServiceActivator(inputChannel = "pubsubInputChannel")
+ public MessageHandler messageReceiver() {
     return message -> {
         LOGGER.info("Message arrived! Payload: " + new String((byte[]) message.getPayload()));
         BasicAcknowledgeablePubsubMessage originalMessage =
               message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
         originalMessage.ack();
     };
-}
+ }
 ----
 
 ==== Outbound channel adapter
 
-`PubSubMessageHandler` is the outbound channel adapter for GCP Pub/Sub that listens for new messages
-on a Spring `MessageChannel`.
+`PubSubMessageHandler` is the outbound channel adapter for GCP Pub/Sub that listens for new messages on a Spring `MessageChannel`.
 It uses `PubSubTemplate` to post them to a GCP Pub/Sub topic.
 
 To construct a Pub/Sub representation of the message, the outbound channel adapter needs to convert the Spring `Message` payload to a byte array representation expected by Pub/Sub.
@@ -117,13 +115,13 @@ To customize the conversion, you can specify a `PubSubMessageConverter` in the `
 
 To use the outbound channel adapter, a `PubSubMessageHandler` bean must be provided and configured on the user application side.
 
-[source,java]
+[source,java,indent=0]
 ----
-@Bean
-@ServiceActivator(inputChannel = "pubsubOutputChannel")
-public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
+ @Bean
+ @ServiceActivator(inputChannel = "pubsubOutputChannel")
+ public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
     return new PubSubMessageHandler(pubsubTemplate, "topicName");
-}
+ }
 ----
 
 The provided `PubSubTemplate` contains all the necessary configuration to publish messages to a GCP Pub/Sub topic.
@@ -137,18 +135,18 @@ These are useful to process the message ID, in case of success, or the error if 
 
 To override the default destination you can use the `GcpPubSubHeaders.DESTINATION` header.
 
-[source,java]
+[source,java,indent=0]
 ----
 
-@Autowired
-private MessageChannel pubsubOutputChannel;
+ @Autowired
+ private MessageChannel pubsubOutputChannel;
 
-public void handleMessage(Message<?> msg) throws MessagingException {
-    final Message<?> message = MessageBuilder
-        .withPayload(msg.getPayload())
-        .setHeader(GcpPubSubHeaders.TOPIC, "customTopic").build();
-    pubsubOutputChannel.send(message);
-}
+ public void handleMessage(Message<?> msg) throws MessagingException {
+     final Message<?> message = MessageBuilder
+         .withPayload(msg.getPayload())
+         .setHeader(GcpPubSubHeaders.TOPIC, "customTopic").build();
+     pubsubOutputChannel.send(message);
+ }
 ----
 
 It is also possible to set an SpEL expression for the topic with the `setTopicExpression()` or `setTopicExpressionString()` methods.
@@ -164,13 +162,13 @@ Each adapter declares a `setHeaderMapper()` method to let you further customize 
 
 For example, to filter out headers `"foo"`, `"bar"` and all headers starting with the prefix "prefix_", you can use `setHeaderMapper()` along with the `PubSubHeaderMapper` implementation provided by this module.
 
-[source,java]
+[source,java, indent=0]
 ----
-PubSubMessageHandler adapter = ...
-...
-PubSubHeaderMapper headerMapper = new PubSubHeaderMapper();
-headerMapper.setOutboundHeaderPatterns("!foo", "!bar", "!prefix_*", "*");
-adapter.setHeaderMapper(headerMapper);
+ PubSubMessageHandler adapter = ...
+ ...
+ PubSubHeaderMapper headerMapper = new PubSubHeaderMapper();
+ headerMapper.setOutboundHeaderPatterns("!foo", "!bar", "!prefix_*", "*");
+ adapter.setHeaderMapper(headerMapper);
 ----
 
 NOTE: The order in which the patterns are declared in `PubSubHeaderMapper.setOutboundHeaderPatterns()` and `PubSubHeaderMapper.setInboundHeaderPatterns()` matters.

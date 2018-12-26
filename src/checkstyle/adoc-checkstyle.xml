@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Puppy Crawl//DTD Check Configuration 1.3//EN"
+        "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+<module name="com.puppycrawl.tools.checkstyle.Checker">
+
+    <module name="RegexpSingleline">
+        <!-- Any word of at least 2 characters, followed by period, space and an uppercase letter signaling a new
+        sentence. -->
+        <property name="format" value="[a-zA-Z]{2,}\. [A-Z]"/>
+        <property name="message" value="Only one sentence allowed per line in ascii docs."/>
+        <property name="fileExtensions" value="adoc"/>
+    </module>
+
+    <module name="RegexpSingleline">
+        <!-- Line starts with lowercase but ends with a period and optional space. This works in combination with the
+        previous rule, which ensures that sentences end at the end of line. -->
+        <property name="format" value="^[a-z]{2,}[ \.]"/>
+        <property name="message" value="A sentence should not be broken up into multiple lines."/>
+        <property name="fileExtensions" value="adoc"/>
+    </module>
+
+</module>

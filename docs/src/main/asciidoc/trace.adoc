@@ -21,11 +21,11 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source,subs="normal"]
+[source,subs="normal",indent=0]
 ----
-dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-trace'
-}
+ dependencies {
+     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-trace'
+ }
 ----
 
 You must enable Stackdriver Trace API from the Google Cloud Console in order to capture traces.
@@ -88,16 +88,19 @@ Read https://cloud.spring.io/spring-cloud-sleuth/[Sleuth documentation] for more
 
 For example, when you are testing to see the traces are going through, you can set the sampling rate to 100%.
 
-[source]
+[source,indent=0]
 ----
-spring.sleuth.sampler.probability=1                     # Send 100% of the request traces to Stackdriver.
-spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.
+ spring.sleuth.sampler.probability=1                     # Send 100% of the request traces to Stackdriver.
+ spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.
 ----
 
 Spring Cloud GCP Trace does override some Sleuth configurations:
 
-- Always uses 128-bit Trace IDs. This is required by Stackdriver Trace.
-- Does not use Span joins. Span joins will share the span ID between the client and server Spans. Stackdriver requires that every Span ID within a Trace to be unique, so Span joins are not supported.
+- Always uses 128-bit Trace IDs.
+This is required by Stackdriver Trace.
+- Does not use Span joins
+ Span joins will share the span ID between the client and server Spans.
+ Stackdriver requires that every Span ID within a Trace to be unique, so Span joins are not supported.
 - Uses `StackdriverHttpClientParser` and `StackdriverHttpServerParser` by default to populate Stackdriver related fields.
 
 === Integration with Logging

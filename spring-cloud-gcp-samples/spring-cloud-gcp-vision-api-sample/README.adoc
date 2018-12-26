@@ -4,14 +4,11 @@ This code sample shows how the Spring Cloud GCP integrations can simplify the us
 Cloud Platform Java Client Libraries.
 
 It uses the https://cloud.google.com/vision/[Google Cloud Vision API] to extract information about a picture.
-We take advantage of the link:/spring-cloud-gcp-starters/spring-cloud-gcp-starter[GCP Support starter] to retrieve
-the GCP credentials that we will use to authenticate with the API.
+We take advantage of the link:/spring-cloud-gcp-starters/spring-cloud-gcp-starter[GCP Support starter] to retrieve the GCP credentials that we will use to authenticate with the API.
 
 == Running the sample
 
-1. Create a Google Cloud Platform project with
-https://cloud.google.com/billing/docs/how-to/modify-project#enable-billing[billing enabled], if you
-don't have one already.
+1. Create a Google Cloud Platform project with https://cloud.google.com/billing/docs/how-to/modify-project#enable-billing[billing enabled], if you don't have one already.
 
 2. Enable the Google Cloud Vision API from the "APIs & Services" menu of the Google Cloud Console.
 
@@ -30,9 +27,7 @@ don't have one already.
 
 5. Go to http://localhost:8080 in your browser, paste a URL to an image and press the `Submit` button.
 
-6. You will see a readable version of the Google Cloud Vision API response, which contains the words
-that Google Cloud Vision attributed to your image, as well as a percentage of certainty.
+6. You will see a readable version of the Google Cloud Vision API response, which contains the words that Google Cloud Vision attributed to your image, as well as a percentage of certainty.
 
-In this case, by using the Spring Cloud GCP Core Boot starter, you can inject a `CredentialsProvider` object which you
-can pass to our API to provide the correct Google credentials.
+In this case, by using the Spring Cloud GCP Core Boot starter, you can inject a `CredentialsProvider` object which you can pass to our API to provide the correct Google credentials.
 You don't need to set any environment variables for authentication to work.
