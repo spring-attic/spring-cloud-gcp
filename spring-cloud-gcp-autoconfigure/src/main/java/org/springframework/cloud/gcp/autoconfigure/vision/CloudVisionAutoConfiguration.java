@@ -66,7 +66,7 @@ public class CloudVisionAutoConfiguration {
 	 * honored by Spring bean lifecycle.
 	 * <p>Most of the Google Cloud API clients are thread-safe heavy objects. I.e., it's better
 	 * to produce a singleton and re-using the client object for multiple requests.
-	 * @return A Cloud Vision API client
+	 * @return a Cloud Vision API client
 	 * @throws IOException if an exception occurs creating the ImageAnnotatorClient
 	 */
 	@Bean

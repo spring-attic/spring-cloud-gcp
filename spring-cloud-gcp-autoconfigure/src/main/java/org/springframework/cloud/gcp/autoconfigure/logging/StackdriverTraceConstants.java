@@ -68,8 +68,8 @@ public final class StackdriverTraceConstants {
 	/**
 	 * Composes the full trace name as expected by the Google Developers Console log viewer, to
 	 * enable trace correlation with log entries.
-	 * @param projectId The GCP project ID
-	 * @param traceId The trace ID
+	 * @param projectId the GCP project ID
+	 * @param traceId the trace ID
 	 * @return the trace name in the "projects/[GCP_PROJECT_ID]/trace/[TRACE_ID]" format
 	 */
 	public static String composeFullTraceName(String projectId, String traceId) {
