@@ -141,7 +141,7 @@ public class GoogleStorageResource implements WritableResource {
 	/**
 	 * Since the gs: protocol will normally not have a URL stream handler registered,
 	 * this method will always throw a {@link java.net.MalformedURLException}.
-	 * @return The URL for the GCS resource, if a URL stream handler is registered for the gs protocol.
+	 * @return the URL for the GCS resource, if a URL stream handler is registered for the gs protocol.
 	 */
 	@Override
 	public URL getURL() throws IOException {
@@ -155,7 +155,7 @@ public class GoogleStorageResource implements WritableResource {
 
 	/**
 	 * Gets the underlying storage object in Google Cloud Storage.
-	 * @return The storage object, will be null if it does not exist in Google Cloud Storage.
+	 * @return the storage object, will be null if it does not exist in Google Cloud Storage.
 	 * @throws IOException if an issue occurs getting the Blob
 	 * @throws IllegalStateException if the resource reference is to a bucket, and not a blob.
 	 */

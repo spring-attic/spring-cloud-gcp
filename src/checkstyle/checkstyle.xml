@@ -225,10 +225,8 @@
 
         <module name="io.spring.javaformat.checkstyle.check.SpringCatchCheck" />
 
-        <!-- TODO: re-enable when ready -->
-        <!--
         <module name="io.spring.javaformat.checkstyle.check.SpringJavadocCheck" />
-        -->
+
         <!-- TODO: re-enable when ready -->
         <!--
         <module name="io.spring.javaformat.checkstyle.check.SpringMethodOrderCheck" />

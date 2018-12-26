@@ -67,7 +67,7 @@ public class SpannerQueryMethod extends QueryMethod {
 	/**
 	 * Returns whether the method has an annotated query.
 	 *
-	 * @return True this query method has annotation that holds the query string.
+	 * @return true this query method has annotation that holds the query string.
 	 */
 	public boolean hasAnnotatedQuery() {
 		return findAnnotatedQuery().isPresent();

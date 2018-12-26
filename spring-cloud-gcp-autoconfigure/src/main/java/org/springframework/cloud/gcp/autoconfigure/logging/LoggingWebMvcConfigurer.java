@@ -37,7 +37,7 @@ public class LoggingWebMvcConfigurer implements WebMvcConfigurer {
 	/**
 	 * Constructor that accepts an {@link TraceIdLoggingWebMvcInterceptor}. If the given
 	 * interceptor is null, then a default {@link XCloudTraceIdExtractor} is used.
-	 * @param interceptor The interceptor to use with this configurer. If not provided a
+	 * @param interceptor the interceptor to use with this configurer. If not provided a
 	 * {@link TraceIdLoggingWebMvcInterceptor} is used with the trace ID extractor
 	 * described above.
 	 */

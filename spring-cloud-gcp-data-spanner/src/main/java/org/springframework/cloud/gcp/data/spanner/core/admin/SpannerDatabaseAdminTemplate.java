@@ -184,7 +184,7 @@ public class SpannerDatabaseAdminTemplate {
 	/**
 	 * Return a map of parent and child table relationships in the database at the
 	 * moment.
-	 * @return A map where the keys are parent table names, and the value is a set of that
+	 * @return a map where the keys are parent table names, and the value is a set of that
 	 * parent's children.
 	 */
 	public Map<String, Set<String>> getParentChildTablesMap() {
@@ -207,7 +207,7 @@ public class SpannerDatabaseAdminTemplate {
 
 	/**
 	 * Return a set of the tables that currently exist in the database.
-	 * @return A set of table names.
+	 * @return a set of table names.
 	 */
 	public Set<String> getTables() {
 		return getChildParentTablesMap().keySet();

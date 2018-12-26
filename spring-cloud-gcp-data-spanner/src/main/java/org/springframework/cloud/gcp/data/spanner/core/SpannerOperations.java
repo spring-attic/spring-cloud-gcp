@@ -57,7 +57,7 @@ public interface SpannerOperations {
 	 * Finds a single stored object using a key.
 	 * @param entityClass the type of the object to retrieve.
 	 * @param key the key of the object.
-	 * @param options Cloud Spanner read options with which to conduct the read operation.
+	 * @param options the Cloud Spanner read options with which to conduct the read operation.
 	 * @param <T> the type of the object to retrieve.
 	 * @return an object of the requested type. Returns null if no object could be found
 	 * stored with the given key.
@@ -68,7 +68,7 @@ public interface SpannerOperations {
 	 * Finds objects stored from their keys.
 	 * @param entityClass the type of the object to retrieve.
 	 * @param keys the keys of the objects to retrieve.
-	 * @param options Cloud Spanner read options with which to conduct the read operation.
+	 * @param options the Cloud Spanner read options with which to conduct the read operation.
 	 * @param <T> the type of the object to retrieve.
 	 * @return a list of objects that could be found using the given keys. If no keys could be
 	 * found the list will be empty.
@@ -100,7 +100,7 @@ public interface SpannerOperations {
 	 * Finds objects by using an SQL statement.
 	 * @param entityClass the type of object to retrieve.
 	 * @param statement the SQL statement used to select the objects.
-	 * @param options Cloud Spanner read options with which to conduct the read operation.
+	 * @param options the Cloud Spanner read options with which to conduct the read operation.
 	 * @param <T> the type of object to retrieve.
 	 * @return a list of the objects found. If no keys could be found the list will be empty.
 	 */
@@ -110,7 +110,7 @@ public interface SpannerOperations {
 	/**
 	 * Finds all objects of the given type.
 	 * @param entityClass the type of the object to retrieve.
-	 * @param options Cloud Spanner read options with which to conduct the read operation.
+	 * @param options the Cloud Spanner read options with which to conduct the read operation.
 	 * @param <T> the type of the object to retrieve.
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.
@@ -129,7 +129,7 @@ public interface SpannerOperations {
 	/**
 	 * Finds all objects of the given type.
 	 * @param entityClass the type of the object to retrieve.
-	 * @param options Cloud Spanner query options with which to conduct the query operation.
+	 * @param options the Cloud Spanner query options with which to conduct the query operation.
 	 * @param <T> the type of the object to retrieve.
 	 * @return a list of all objects stored of the given type. If there are no objects an
 	 * empty list is returned.

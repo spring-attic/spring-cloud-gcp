@@ -52,7 +52,7 @@ public class DatastoreQueryMethod extends QueryMethod {
 	/**
 	 * Returns whether the method has an annotated query.
 	 *
-	 * @return True if this query method has annotation that holds the query string.
+	 * @return true if this query method has annotation that holds the query string.
 	 */
 	boolean hasAnnotatedQuery() {
 		return getQueryAnnotation() != null;
@@ -70,7 +70,7 @@ public class DatastoreQueryMethod extends QueryMethod {
 	/**
 	 * Return whether this method is an exists query.
 	 *
-	 * @return True if this query method is an exists query, and false otherwise.
+	 * @return true if this query method is an exists query, and false otherwise.
 	 */
 	boolean isExistsQuery() {
 		Query annotation = getQueryAnnotation();
@@ -80,7 +80,7 @@ public class DatastoreQueryMethod extends QueryMethod {
 	/**
 	 * Return whether this method is a count query.
 	 *
-	 * @return True if this query method is a count query, and false otherwise.
+	 * @return true if this query method is a count query, and false otherwise.
 	 */
 	boolean isCountQuery() {
 		Query annotation = getQueryAnnotation();

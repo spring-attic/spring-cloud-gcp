@@ -158,7 +158,7 @@ public class PubSubEmulator extends ExternalResource {
 	/**
 	 * Return the already-started emulator's host/port combination when called from within a
 	 * JUnit method.
-	 * @return Emulator host/port string or null if emulator setup failed.
+	 * @return emulator host/port string or null if emulator setup failed.
 	 */
 	public String getEmulatorHostPort() {
 		return this.emulatorHostPort;
@@ -250,7 +250,7 @@ public class PubSubEmulator extends ExternalResource {
 	/**
 	 * Attempt to kill a process on best effort basis.
 	 * Failure is logged and ignored, as it is not critical to the tests' functionality.
-	 * @param pid Presumably a valid PID. No checking done to validate.
+	 * @param pid presumably a valid PID. No checking done to validate.
 	 */
 	private void killProcess(String pid) {
 		try {

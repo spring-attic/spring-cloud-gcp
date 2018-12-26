@@ -51,14 +51,14 @@ public interface SpannerPersistentEntity<T> extends
 	/**
 	 * Gets the primary key properties in order. Embedded object properties containing key
 	 * parts are represented as a single property.
-	 * @return An array of the properties comprising the primary key in order.
+	 * @return an array of the properties comprising the primary key in order.
 	 */
 	SpannerPersistentProperty[] getPrimaryKeyProperties();
 
 	/**
 	 * Gets the primary key properties in order. Embedded object properties containing key
 	 * parts are flattened into their multiple primary key properties.
-	 * @return An array of the properties comprising the primary key in order.
+	 * @return an array of the properties comprising the primary key in order.
 	 */
 	List<SpannerPersistentProperty> getFlattenedPrimaryKeyProperties();
 
