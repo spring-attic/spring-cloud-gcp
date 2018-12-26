@@ -10,10 +10,13 @@ João André Martins; Jisha Abubaker; Ray Tsang; Mike Eltsufin; Artem Bilan; And
 
 == Introduction
 
-The Spring Cloud GCP project aims at making the Spring Framework a first-class citizen of Google Cloud Platform (GCP).
+The Spring Cloud GCP project makes the Spring Framework a first-class citizen of Google Cloud Platform (GCP).
 
-Currently, Spring Cloud GCP lets you leverage the power and simplicity of the Spring framework to:
+Spring Cloud GCP lets you leverage the power and simplicity of the Spring Framework to:
 
+. Analyze your images for text, objects, and other content with Google Cloud Vision
+. Use Spring Security via Google Cloud IAP
+. Map objects, relationships, and collections with Spring Data Cloud Spanner and Spring Data Cloud Datastore
 . Publish and subscribe to Google Cloud Pub/Sub topics
 . Configure Spring JDBC with a few properties to use Google Cloud SQL
 . Write and read from Spring Resources backed up by Google Cloud Storage
