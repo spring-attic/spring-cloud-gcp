@@ -40,14 +40,6 @@ public class Person {
 	}
 
 	@Override
-	public String toString() {
-		return "Person{" +
-				"name='" + name + '\'' +
-				", age=" + age +
-				'}';
-	}
-
-	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
 			return true;
@@ -63,5 +55,13 @@ public class Person {
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.name, this.age);
+	}
+
+	@Override
+	public String toString() {
+		return "Person{" +
+				"name='" + this.name + '\'' +
+				", age=" + this.age +
+				'}';
 	}
 }
