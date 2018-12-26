@@ -15,8 +15,7 @@ Then navigate to `Settings > Other Settings` (this might be under `Preferences` 
 Select the `eclipse-code-formatter.xml` file for the field `Eclipse Java Formatter config file` and the file `eclipse.importorder` for the field `Import order`.
 Enable the `Eclipse code formatter` by clicking `Use the Eclipse code formatter` radio button at the top of the page, then click the *OK* button.
 
-* NOTE: If you configure the `Eclipse Code Formatter` from `File > Other Settings > Default
-Settings`, it will set this policy across all of your IDEA projects.
+* NOTE: If you configure the `Eclipse Code Formatter` from `File > Other Settings > Default Settings`, it will set this policy across all of your IDEA projects.
 
 * IDEA's "Optimize imports on the fly" option turned on interferes with the Eclipse code formatter import optimization.
 Consider disabling the option if optimization does not yield the expected results.

@@ -13,8 +13,8 @@
     </module>
 
     <module name="RegexpSingleline">
-        <!-- Line starts with lowercase but ends with a period and optional space. This works in combination with the
-        previous rule, which ensures that sentences end at the end of line. -->
+        <!-- Line starts with a non-uppercased word. Use a single space if a false positive is flagged in code
+        samples -->
         <property name="format" value="^[a-z]{2,}[ \.]"/>
         <property name="message" value="A sentence should not be broken up into multiple lines."/>
         <property name="fileExtensions" value="adoc"/>
