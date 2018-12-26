@@ -16,11 +16,11 @@
 
 package org.springframework.cloud.gcp.core.util;
 
-import org.springframework.util.Assert;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.util.Assert;
 
 /**
  * Utility for building an immutable, type-safe {@link Map}.
