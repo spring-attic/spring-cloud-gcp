@@ -40,15 +40,6 @@ public class EmbeddableTreeNode {
 	}
 
 	@Override
-	public String toString() {
-		return "EmbeddableTreeNode{" +
-				"value=" + this.value +
-				", left=" + this.left +
-				", right=" + this.right +
-				'}';
-	}
-
-	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
 			return true;
@@ -66,5 +57,14 @@ public class EmbeddableTreeNode {
 	public int hashCode() {
 
 		return Objects.hash(this.value, this.left, this.right);
+	}
+
+	@Override
+	public String toString() {
+		return "EmbeddableTreeNode{" +
+				"value=" + this.value +
+				", left=" + this.left +
+				", right=" + this.right +
+				'}';
 	}
 }
