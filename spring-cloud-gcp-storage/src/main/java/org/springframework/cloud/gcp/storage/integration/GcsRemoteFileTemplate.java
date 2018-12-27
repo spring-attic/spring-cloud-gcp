@@ -23,7 +23,10 @@ import org.springframework.integration.file.remote.RemoteFileTemplate;
 import org.springframework.integration.file.remote.session.SessionFactory;
 
 /**
+ * A remote file template for Google Cloud Storage.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class GcsRemoteFileTemplate extends RemoteFileTemplate<BlobInfo> {
 

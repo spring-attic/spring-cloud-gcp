@@ -109,6 +109,9 @@ public class GoogleStorageResource implements WritableResource {
 	/**
 	 * Constructor that defaults autoCreateFiles to true.
 	 * @see #GoogleStorageResource(Storage, String, boolean)
+	 *
+	 * @param location the cloud storage address
+	 * @param storage the storage client
 	 */
 	public GoogleStorageResource(Storage storage, String location) {
 		this(storage, location, true);
@@ -171,6 +174,7 @@ public class GoogleStorageResource implements WritableResource {
 	 * @param options specifies additional options for signing URLs
 	 * @return the URL if the object exists, and null if it does not.
 	 * @throws IllegalStateException if the resource reference is to a bucket, and not a blob.
+	 * @throws IOException if there are errors in accessing Google Storage
 	 */
 	public URL createSignedUrl(TimeUnit timeUnit, long timePeriods,
 			Storage.SignUrlOption... options) throws IOException {

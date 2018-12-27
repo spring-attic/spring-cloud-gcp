@@ -55,14 +55,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tess for Google Cloud Storage.
+ *
  * @author Vinicius Carvalho
  * @author Artem Bilan
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 @SpringBootTest(properties = "spring.main.banner-mode=off")
 @RunWith(SpringRunner.class)
 public class GoogleStorageTests {
 
+	/**
+	 * Used to test exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
