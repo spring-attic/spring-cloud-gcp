@@ -77,7 +77,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, Dis
 
 	private PubSubMessageConverter pubSubMessageConverter = new SimplePubSubMessageConverter();
 
-	private ExecutorService ackExecutor = Executors.newCachedThreadPool();
+	private ExecutorService ackExecutor = Executors.newSingleThreadExecutor();
 
 	/**
 	 * Default {@link PubSubSubscriberTemplate} constructor

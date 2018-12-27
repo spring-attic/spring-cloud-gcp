@@ -129,6 +129,11 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		private int executorThreads = 4;
 
 		/**
+		 * Number of threads used for batch acknowledgement.
+		 */
+		private int acknowledgementThreads = 4;
+
+		/**
 		 * The optional pull endpoint setting for the subscriber factory.
 		 */
 		private String pullEndpoint;
@@ -191,6 +196,15 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 
 		public void setExecutorThreads(int executorThreads) {
 			this.executorThreads = executorThreads;
+		}
+
+
+		public int getAcknowledgementThreads() {
+			return this.acknowledgementThreads;
+		}
+
+		public void setAcknowledgementThreads(int acknowledgementThreads) {
+			this.acknowledgementThreads = acknowledgementThreads;
 		}
 	}
 

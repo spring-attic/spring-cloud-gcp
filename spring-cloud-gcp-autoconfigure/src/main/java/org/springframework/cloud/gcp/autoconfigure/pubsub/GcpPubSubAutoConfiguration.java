@@ -135,6 +135,8 @@ public class GcpPubSubAutoConfiguration {
 			ObjectProvider<PubSubMessageConverter> pubSubMessageConverter) {
 		PubSubSubscriberTemplate pubSubSubscriberTemplate = new PubSubSubscriberTemplate(subscriberFactory);
 		pubSubMessageConverter.ifUnique(pubSubSubscriberTemplate::setMessageConverter);
+		pubSubSubscriberTemplate.setAckExecutor(
+				Executors.newFixedThreadPool(this.gcpPubSubProperties.getSubscriber().getAcknowledgementThreads()));
 		return pubSubSubscriberTemplate;
 	}
 
