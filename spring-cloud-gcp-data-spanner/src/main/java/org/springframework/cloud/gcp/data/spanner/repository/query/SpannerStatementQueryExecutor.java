@@ -65,6 +65,7 @@ public final class SpannerStatementQueryExecutor {
 	 * @param params the parameters of this specific query
 	 * @param spannerTemplate used to execute the query
 	 * @param spannerMappingContext used to get metadata about the entity type
+	 * @param <T> the type of the underlying entity
 	 * @return list of entities.
 	 */
 	public static <T> List<T> executeQuery(Class<T> type, PartTree tree, Object[] params,

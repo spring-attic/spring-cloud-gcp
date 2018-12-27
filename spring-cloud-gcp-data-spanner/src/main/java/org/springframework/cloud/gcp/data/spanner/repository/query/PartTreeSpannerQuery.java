@@ -26,7 +26,7 @@ import org.springframework.data.repository.query.parser.PartTree;
 
 /**
  * Implementation of a Spanner Query Method that handles all Part-tree / name-convention query methods.
- *
+ * @param <T> the return type of the Query Method
  * @author Balint Pato
  * @author Chengyuan Zhao
  *
@@ -37,7 +37,7 @@ public class PartTreeSpannerQuery<T> extends AbstractSpannerQuery<T> {
 	private final PartTree tree;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * @param type the underlying entity type
 	 * @param queryMethod the underlying query method to support.
 	 * @param spannerTemplate used for executing queries.

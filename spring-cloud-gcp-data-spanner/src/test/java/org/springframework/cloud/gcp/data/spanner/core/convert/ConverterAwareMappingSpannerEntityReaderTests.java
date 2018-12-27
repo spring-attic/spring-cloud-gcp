@@ -58,6 +58,9 @@ import static org.mockito.Mockito.when;
  */
 public class ConverterAwareMappingSpannerEntityReaderTests {
 
+	/**
+	 * used for checking exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

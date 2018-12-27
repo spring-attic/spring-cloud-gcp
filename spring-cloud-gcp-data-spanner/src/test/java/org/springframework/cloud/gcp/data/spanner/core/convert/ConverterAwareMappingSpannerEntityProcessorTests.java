@@ -278,6 +278,9 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 	private interface JavaType {
 	}
 
+	/**
+	 * A mock results class for mocked queries.
+	 */
 	static class MockResults {
 		List<Struct> structs;
 

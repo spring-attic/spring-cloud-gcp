@@ -51,6 +51,9 @@ import static org.mockito.Mockito.times;
  */
 public class SpannerTransactionManagerTests {
 
+	/**
+	 * checks the exception for messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

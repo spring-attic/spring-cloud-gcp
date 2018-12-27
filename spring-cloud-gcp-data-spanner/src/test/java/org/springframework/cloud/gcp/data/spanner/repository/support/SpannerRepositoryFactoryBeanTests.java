@@ -29,6 +29,8 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests Spanner repository factory bean.
+ *
  * @author Chengyuan Zhao
  */
 public class SpannerRepositoryFactoryBeanTests {

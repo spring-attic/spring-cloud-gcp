@@ -43,6 +43,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RunWith(SpringRunner.class)
 public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationTest {
 
+	/**
+	 * used for checking exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
@@ -100,6 +103,9 @@ public class SpannerTemplateIntegrationTests extends AbstractSpannerIntegrationT
 		}, new SpannerReadOptions());
 	}
 
+	/**
+	 * a transactional service for testing annotated transaction methods.
+	 */
 	public static class TemplateTransactionalService {
 
 		@Autowired

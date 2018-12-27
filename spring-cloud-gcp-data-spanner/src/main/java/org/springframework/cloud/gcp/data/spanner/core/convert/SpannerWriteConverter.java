@@ -27,6 +27,8 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.CustomConversions;
 
 /**
+ * A custom converter for writing values from entities to types for Spanner.
+ *
  * @author Balint Pato
  * @author Chengyuan Zhao
  *

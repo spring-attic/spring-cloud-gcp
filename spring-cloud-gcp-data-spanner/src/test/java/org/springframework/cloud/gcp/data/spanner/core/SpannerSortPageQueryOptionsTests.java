@@ -35,6 +35,9 @@ import static org.mockito.Mockito.mock;
  */
 public class SpannerSortPageQueryOptionsTests {
 
+	/**
+	 * checks the exception for messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

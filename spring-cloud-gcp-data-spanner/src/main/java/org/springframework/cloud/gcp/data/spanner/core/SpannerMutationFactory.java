@@ -80,6 +80,7 @@ public interface SpannerMutationFactory {
 	/**
 	 * Deletes a single object from Spanner.
 	 * @param object the object to delete.
+	 * @param <T> the type of the object to delete.
 	 * @return the delete mutation.
 	 */
 	<T> Mutation delete(T object);

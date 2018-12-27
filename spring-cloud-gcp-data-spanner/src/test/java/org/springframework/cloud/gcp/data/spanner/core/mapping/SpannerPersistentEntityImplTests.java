@@ -47,6 +47,9 @@ import static org.mockito.Mockito.when;
  */
 public class SpannerPersistentEntityImplTests {
 
+	/**
+	 * tests the messages and types of exceptions.
+	 */
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

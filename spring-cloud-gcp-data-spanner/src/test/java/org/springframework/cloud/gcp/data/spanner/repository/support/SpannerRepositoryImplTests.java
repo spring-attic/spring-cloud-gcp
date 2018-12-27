@@ -57,6 +57,9 @@ public class SpannerRepositoryImplTests {
 
 	private static final Key A_KEY = Key.of("key");
 
+	/**
+	 * checks exceptions for messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

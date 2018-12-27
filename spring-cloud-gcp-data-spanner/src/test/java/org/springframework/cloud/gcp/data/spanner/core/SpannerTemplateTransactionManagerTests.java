@@ -220,6 +220,9 @@ public class SpannerTemplateTransactionManagerTests {
 		this.transactionalService.dmlInReadOnly();
 	}
 
+	/**
+	 * Spring config for the tests.
+	 */
 	@Configuration
 	@EnableTransactionManagement
 	static class Config {
@@ -250,6 +253,9 @@ public class SpannerTemplateTransactionManagerTests {
 		}
 	}
 
+	/**
+	 * A mock transactional service to execute methods annotated as transactional.
+	 */
 	public static class TransactionalService {
 		@Autowired
 		SpannerTemplate spannerTemplate;

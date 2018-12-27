@@ -114,6 +114,9 @@ public class TestItemWithEmbeddedEntity {
 		this.nestedEmbeddedMaps = nestedEmbeddedMaps;
 	}
 
+	/**
+	 * an embedded entity class.
+	 */
 	@Entity
 	public static class EmbeddedEntity {
 		String stringField;

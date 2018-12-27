@@ -32,6 +32,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
+ * A Query Method for Spanner.
+ *
  * @author Balint Pato
  * @author Chengyuan Zhao
  *

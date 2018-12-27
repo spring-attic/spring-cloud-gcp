@@ -53,11 +53,12 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	private final SpannerSchemaUtils spannerSchemaUtils;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * @param spannerEntityProcessor the object mapper used to convert between objects and Spanner
 	 * data types.
 	 * @param spannerMappingContext the mapping context used to get metadata from entity
 	 * types.
+	 * @param spannerSchemaUtils the schema utility to use
 	 */
 	public SpannerMutationFactoryImpl(SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMappingContext spannerMappingContext,

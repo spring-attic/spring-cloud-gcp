@@ -252,6 +252,9 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		return trades;
 	}
 
+	/**
+	 * A service that executes methods annotated as transactional.
+	 */
 	public static class TradeRepositoryTransactionalService {
 
 		@Autowired
