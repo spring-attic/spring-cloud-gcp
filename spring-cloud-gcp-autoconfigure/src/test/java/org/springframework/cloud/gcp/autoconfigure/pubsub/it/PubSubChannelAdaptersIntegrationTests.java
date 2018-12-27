@@ -277,6 +277,9 @@ public class PubSubChannelAdaptersIntegrationTests {
 		});
 	}
 
+	/**
+	 * Spring Boot config for tests.
+	 */
 	@Configuration
 	@EnableIntegration
 	static class IntegrationConfiguration {

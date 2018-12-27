@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for Spanner auto-config.
  * @author Chengyuan Zhao
  * @author João André Martins
  */
@@ -108,6 +109,9 @@ public class GcpSpannerAutoConfigurationTests {
 					});
 	}
 
+	/**
+	 * Mock bean for credentials provider.
+	 */
 	@AutoConfigurationPackage
 	static class TestConfiguration {
 
