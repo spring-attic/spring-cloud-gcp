@@ -48,6 +48,8 @@ public interface PubSubSubscriberOperations {
 	 *
 	 * @deprecated as of 1.1, use {@link #subscribe(String, Consumer)} instead.
 	 *
+	 * @param messageReceiver the message receiver with which to subscribe
+	 * @param subscription the subscription to subscribe to
 	 * @return the subscriber
 	 */
 	@Deprecated

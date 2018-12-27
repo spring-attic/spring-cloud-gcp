@@ -133,15 +133,22 @@ public abstract class DatastoreNativeTypes {
 				.build();
 	}
 
+	/**
+	 * A simple type holder that only contains the Cloud Datastore native data types.
+	 */
 	public static final SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_NATIVE_TYPES, true);
 
-
+	/**
+	 * Checks if a given type is a native type for Cloud Datastore.
+	 * @param aClass the class type to check
+	 * @return `true` if the type is a native type, which includes `null`. `false` otherwise.
+	 */
 	public static boolean isNativeType(Class aClass) {
 		return aClass == null || DATASTORE_NATIVE_TYPES.contains(aClass);
 	}
 
-	/*
-	* Wraps datastore native type to datastore value type
+	/**
+	* Wraps Datastore native type to Datastore value type.
 	*/
 	@SuppressWarnings("unchecked")
 	public static Value wrapValue(Object propertyVal) {

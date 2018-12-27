@@ -56,10 +56,19 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubInboundChannelAdapterTests {
 
+	/**
+	 * The NACK string.
+	 */
 	public static final String NACK = "NACK";
 
+	/**
+	 * The canned exception message when sending a message.
+	 */
 	public static final String EXCEPTION_MESSAGE = "Forced exception sending message";
 
+	/**
+	 * A canned exception message.
+	 */
 	public static final String EXPECTED_EXCEPTION = "Expected exception";
 
 	private PubSubOperations pubSubOperations;
@@ -70,6 +79,9 @@ public class PubSubInboundChannelAdapterTests {
 
 	private String value;
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

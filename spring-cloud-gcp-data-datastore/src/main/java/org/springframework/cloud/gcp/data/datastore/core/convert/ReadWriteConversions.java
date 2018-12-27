@@ -41,7 +41,7 @@ public interface ReadWriteConversions {
 	 * {@code null} if the property is a singular object.
 	 * @param targetComponentType the type of the property to convert. For collection-like
 	 * properties this refers to the individual items' type.
-	 * @param <T> The type of the object that is produced by reading
+	 * @param <T> the type of the object that is produced by reading
 	 * @return an object of a target type.
 	 */
 	<T> T convertOnRead(Object val, Class targetCollectionType,
@@ -68,7 +68,7 @@ public interface ReadWriteConversions {
 	Value convertOnWrite(Object obj, DatastorePersistentProperty persistentProperty);
 
 	/**
-	 * Converts an object to a Cloud Datastore {@link Value}, for non-collection objects
+	 * Converts an object to a Cloud Datastore {@link Value}, for non-collection objects.
 	 * @param obj the object to convert.
 	 * @return a Cloud Datastore value.
 	 */
@@ -83,7 +83,7 @@ public interface ReadWriteConversions {
 	Optional<Class<?>> getDatastoreCompatibleType(Class inputType);
 
 	/**
-	 * Registers {@link DatastoreEntityConverter} to be used for embedded entities
+	 * Registers {@link DatastoreEntityConverter} to be used for embedded entities.
 	 * @param datastoreEntityConverter the DatastoreEntityConverter.
 	 */
 	void registerEntityConverter(DatastoreEntityConverter datastoreEntityConverter);

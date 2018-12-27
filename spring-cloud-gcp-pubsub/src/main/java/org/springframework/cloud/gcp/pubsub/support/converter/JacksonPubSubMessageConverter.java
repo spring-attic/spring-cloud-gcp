@@ -37,7 +37,7 @@ public class JacksonPubSubMessageConverter implements PubSubMessageConverter {
 	private final ObjectMapper objectMapper;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * @param objectMapper the object mapper used to create and read JSON.
 	 */
 	public JacksonPubSubMessageConverter(ObjectMapper objectMapper) {

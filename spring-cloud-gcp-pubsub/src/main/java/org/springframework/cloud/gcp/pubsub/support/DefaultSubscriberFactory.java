@@ -164,6 +164,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	/**
 	 * Set the endpoint for synchronous pulling messages.
+	 *
+	 * @param pullEndpoint the pull endpoint to set
 	 */
 	public void setPullEndpoint(String pullEndpoint) {
 		this.pullEndpoint = pullEndpoint;
@@ -171,6 +173,8 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	/**
 	 * Set the clock to use for the retry logic in synchronous pulling.
+	 *
+	 * @param apiClock the api clock to set
 	 */
 	public void setApiClock(ApiClock apiClock) {
 		this.apiClock = apiClock;

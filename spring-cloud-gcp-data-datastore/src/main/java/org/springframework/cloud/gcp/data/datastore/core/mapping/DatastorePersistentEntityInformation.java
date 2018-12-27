@@ -22,7 +22,8 @@ import org.springframework.data.repository.core.support.AbstractEntityInformatio
  * Holds ID type information about a Datastore persistent entity.
  *
  * @author Chengyuan Zhao
- *
+ * @param <T> the type of the persistent entity
+ * @param <ID> the ID type of the persistent entity
  * @since 1.1
  */
 public class DatastorePersistentEntityInformation<T, ID>

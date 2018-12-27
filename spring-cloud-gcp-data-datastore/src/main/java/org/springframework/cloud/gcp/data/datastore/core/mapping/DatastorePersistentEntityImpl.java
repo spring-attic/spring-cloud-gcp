@@ -36,7 +36,7 @@ import org.springframework.util.StringUtils;
  * Metadata class for entities stored in Datastore.
  *
  * @author Chengyuan Zhao
- *
+ * @param <T> the type of the persistent entity
  * @since 1.1
  */
 public class DatastorePersistentEntityImpl<T>
@@ -54,7 +54,7 @@ public class DatastorePersistentEntityImpl<T>
 	private StandardEvaluationContext context;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * @param information type information about the underlying entity type.
 	 */
 	public DatastorePersistentEntityImpl(TypeInformation<T> information) {
