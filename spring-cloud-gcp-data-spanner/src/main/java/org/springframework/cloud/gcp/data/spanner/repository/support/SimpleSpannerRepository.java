@@ -33,6 +33,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
 /**
+ * The default implementation of a SpannerRepository.
+ *
  * @author Chengyuan Zhao
  *
  * @since 1.1

@@ -43,6 +43,8 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Integration tests for Spanner Repository that uses many features.
+ *
  * @author Balint Pato
  * @author Chengyuan Zhao
  */

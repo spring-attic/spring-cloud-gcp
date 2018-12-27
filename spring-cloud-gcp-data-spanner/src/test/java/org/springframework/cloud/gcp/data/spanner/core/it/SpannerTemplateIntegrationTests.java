@@ -35,6 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Integration tests that use many features of the Spanner Template.
+ *
  * @author Balint Pato
  * @author Chengyuan Zhao
  */

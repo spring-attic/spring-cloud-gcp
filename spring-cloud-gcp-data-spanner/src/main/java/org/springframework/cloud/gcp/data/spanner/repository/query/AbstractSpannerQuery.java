@@ -28,6 +28,8 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 
 /**
+ * Base abstract class for Spanner Query Methods.
+ *
  * @author Chengyuan Zhao
  *
  * @since 1.1

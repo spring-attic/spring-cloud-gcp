@@ -279,6 +279,8 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	/**
+	 * Returns null.
+	 *
 	 * @since 1.1
 	 */
 	@Override
@@ -287,6 +289,8 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	/**
+	 * Returns false.
+	 *
 	 * @since 1.1
 	 */
 	@Override
@@ -295,6 +299,8 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	/**
+	 * Returns null.
+	 *
 	 * @since 1.1
 	 */
 	@Override

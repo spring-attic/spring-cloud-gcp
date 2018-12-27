@@ -45,6 +45,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the standard Spanner repository implementation.
+ *
  * @author Chengyuan Zhao
  */
 public class SpannerRepositoryImplTests {

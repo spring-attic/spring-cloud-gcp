@@ -44,9 +44,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
 /**
+ * Tests for the Spanner transaction manager.
+ *
  * @author Alexander Khimich
  * @author Chengyuan Zhao
- *
  */
 public class SpannerTransactionManagerTests {
 

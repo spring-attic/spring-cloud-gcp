@@ -42,7 +42,7 @@ import org.springframework.transaction.support.AbstractPlatformTransactionManage
 import org.springframework.transaction.support.DefaultTransactionStatus;
 
 /**
- * Spanner transaction manager
+ * Spanner transaction manager.
  *
  * @author Alexander Khimich
  * @author Chengyuan Zhao

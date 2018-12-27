@@ -32,6 +32,8 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 /**
+ * Test entities for Spanner tests that hit many features and situations.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
