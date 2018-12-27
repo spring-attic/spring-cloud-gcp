@@ -28,6 +28,8 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for the subscriber factory.
+ *
  * @author João André Martins
  * @author Chengyuan Zhao
  */
@@ -37,6 +39,9 @@ public class DefaultSubscriberFactoryTests {
 	@Mock
 	private CredentialsProvider credentialsProvider;
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

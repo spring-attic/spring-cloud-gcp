@@ -70,6 +70,9 @@ public class GcsMessageHandlerTests {
 	@Qualifier("siGcsTestChannel")
 	private MessageChannel channel;
 
+	/**
+	 * the temporary folder used for the tests.
+	 */
 	@Rule
 	public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
