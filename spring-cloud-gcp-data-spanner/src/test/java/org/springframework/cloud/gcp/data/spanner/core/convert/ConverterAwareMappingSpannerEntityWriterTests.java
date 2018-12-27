@@ -355,6 +355,9 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		this.spannerEntityWriter.write(userSetUnconvertableColumnType, writeBuilder::set);
 	}
 
+	/**
+	 * A test type that cannot be converted.
+	 */
 	static class UserSetUnconvertableColumnType {
 		@PrimaryKey
 		@Column(spannerType = TypeCode.DATE)
