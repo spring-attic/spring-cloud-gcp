@@ -71,6 +71,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
+ * Tests for Pub/Sub channel adapters.
+ *
  * @author João André Martins
  * @author Mike Eltsufin
  */

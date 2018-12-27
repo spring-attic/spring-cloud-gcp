@@ -24,8 +24,11 @@ import org.springframework.cloud.gcp.core.GcpScope;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolverSettings;
 
 /**
+ * Settings for Storage.
+ *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 @ConfigurationProperties("spring.cloud.gcp.storage")
 public class GcpStorageProperties extends GoogleStorageProtocolResolverSettings implements
