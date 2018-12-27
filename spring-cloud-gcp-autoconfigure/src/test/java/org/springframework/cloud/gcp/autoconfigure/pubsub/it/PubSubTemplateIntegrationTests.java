@@ -56,6 +56,8 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.awaitility.Awaitility.await;
 
 /**
+ * Integration tests for Pub/Sub template.
+ *
  * @author João André Martins
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha

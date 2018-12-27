@@ -38,9 +38,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for auto-config.
+ *
  * @author Ray Tsang
  * @author João André Martins
- * @auther Mike Eltsufin
+ * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public class StackdriverTraceAutoConfigurationTests {
 
@@ -69,6 +72,9 @@ public class StackdriverTraceAutoConfigurationTests {
 		});
 	}
 
+	/**
+	 * Spring config for tests.
+	 */
 	static class MockConfiguration {
 		@Bean
 		public static CredentialsProvider googleCredentials() {

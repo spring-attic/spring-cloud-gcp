@@ -25,6 +25,8 @@ import org.springframework.cloud.gcp.autoconfigure.config.GoogleConfigEnvironmen
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Test for the environment config.
+ *
  * @author Dmitry Solomakha
  */
 public class GoogleConfigEnvironmentTest {

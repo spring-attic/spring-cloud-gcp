@@ -210,6 +210,9 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		}
 	}
 
+	/**
+	 * Retry settings.
+	 */
 	public static class Retry {
 
 		/**
@@ -345,6 +348,9 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		}
 	}
 
+	/**
+	 * flow control settings.
+	 */
 	public static class FlowControl {
 
 		/**
@@ -390,6 +396,9 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		}
 	}
 
+	/**
+	 * Batching settings.
+	 */
 	public static class Batching {
 
 		/**
