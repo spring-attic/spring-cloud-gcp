@@ -247,9 +247,9 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	 * }
 	 * </pre>
 	 *
-	 * @param accessor The accessor used to get the value to write
-	 * @param property The property that will be written
-	 * @param sink The object that will accept the value to be written
+	 * @param accessor the accessor used to get the value to write
+	 * @param property the property that will be written
+	 * @param sink the object that will accept the value to be written
 	 */
 	// @formatter:on
 	@SuppressWarnings("unchecked")

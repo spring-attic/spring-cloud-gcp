@@ -41,6 +41,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for the Spanner repository factory.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
@@ -50,6 +52,9 @@ public class SpannerRepositoryFactoryTests {
 
 	private SpannerTemplate spannerTemplate;
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

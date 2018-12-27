@@ -38,6 +38,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
+/**
+ * Tests for the Spanner template usage.
+ */
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
 @TestPropertySource("classpath:application.properties")

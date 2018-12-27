@@ -100,6 +100,9 @@ public class TestEntities {
 		@Interleaved
 		List<ChildTestEntity> childTestEntities;
 
+		/**
+		 * A enum used to test conversion and storage.
+		 */
 		enum Color {
 			WHITE,
 			BLACK

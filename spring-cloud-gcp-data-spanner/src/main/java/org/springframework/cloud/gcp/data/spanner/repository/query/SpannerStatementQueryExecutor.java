@@ -86,6 +86,8 @@ public final class SpannerStatementQueryExecutor {
 	 * @param params the parameters of this specific query
 	 * @param spannerTemplate used to execute the query
 	 * @param spannerMappingContext used to get metadata about the entity type
+	 * @param <A> the type to which to convert Struct params
+	 * @param <T> the type of the underlying entity on which to query
 	 * @return list of objects mapped using the given function.
 	 */
 	public static <A, T> List<A> executeQuery(Function<Struct, A> rowFunc, Class<T> type,
@@ -134,6 +136,7 @@ public final class SpannerStatementQueryExecutor {
 	 * of all child rows having the parent's key values is efficient.
 	 * @param parentKey the parent key whose children to get.
 	 * @param childPersistentEntity the persistent entity of the child table.
+	 * @param <T> the type of the child persistent entity
 	 * @return the Spanner statement to perform the retrieval.
 	 */
 	public static <T> Statement getChildrenRowsQuery(Key parentKey,

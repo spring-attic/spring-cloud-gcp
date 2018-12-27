@@ -108,10 +108,10 @@ public class GoogleStorageResource implements WritableResource {
 
 	/**
 	 * Constructor that defaults autoCreateFiles to true.
-	 * @see #GoogleStorageResource(Storage, String, boolean)
 	 *
 	 * @param location the cloud storage address
 	 * @param storage the storage client
+	 * @see #GoogleStorageResource(Storage, String, boolean)
 	 */
 	public GoogleStorageResource(Storage storage, String location) {
 		this(storage, location, true);

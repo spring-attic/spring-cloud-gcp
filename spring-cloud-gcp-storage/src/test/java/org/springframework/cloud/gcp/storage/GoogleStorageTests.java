@@ -350,6 +350,9 @@ public class GoogleStorageTests {
 		Assert.assertFalse(resource.exists());
 	}
 
+	/**
+	 * Configuration for the tests.
+	 */
 	@Configuration
 	@Import(GoogleStorageProtocolResolver.class)
 	static class StorageApplication {
