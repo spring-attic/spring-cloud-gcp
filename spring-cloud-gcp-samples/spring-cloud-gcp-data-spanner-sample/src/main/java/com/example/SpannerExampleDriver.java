@@ -28,6 +28,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
+/**
+ * Application to execute the sample app for Spanner.
+ */
 @SpringBootApplication
 public class SpannerExampleDriver {
 

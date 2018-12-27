@@ -33,6 +33,9 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.handler.annotation.Header;
 
+/**
+ * A sample receiver application.
+ */
 @SpringBootApplication
 public class ReceiverApplication {
 

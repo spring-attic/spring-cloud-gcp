@@ -38,6 +38,9 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assume.assumeThat;
 
+/**
+ * Tests the Pub/Sub Json payload app.
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubJsonPayloadApplication.class })
 public class PubSubJsonPayloadApplicationTests {
