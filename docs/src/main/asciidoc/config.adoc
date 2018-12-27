@@ -45,7 +45,7 @@ Timeout in milliseconds for connecting to the Google Runtime Configuration API |
 
 NOTE: These properties should be specified in a http://cloud.spring.io/spring-cloud-static/spring-cloud.html#_the_bootstrap_application_context[`bootstrap.yml`/`bootstrap.properties`] file, rather than the usual `applications.yml`/`application.properties`.
 
-NOTE: Core properties as described in <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> do not apply to Spring Cloud GCP Config.
+NOTE: Core properties, as described in <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>, do not apply to Spring Cloud GCP Config.
 
 === Quick start
 
