@@ -126,31 +126,19 @@
         </module>
 
         <!-- Javadoc Comments -->
-        <!-- TODO: re-enable when ready -->
-        <!--
         <module name="com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocTypeCheck">
             <property name="scope" value="package"/>
             <property name="authorFormat" value=".+\s.+"/>
         </module>
-        -->
-        <!-- TODO: re-enable when ready -->
-        <!--
         <module name="com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocMethodCheck">
             <property name="allowMissingJavadoc" value="true" />
         </module>
-        -->
-        <!-- TODO: re-enable when ready -->
-        <!--
         <module name="com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocVariableCheck">
             <property name="scope" value="public"/>
         </module>
-        -->
-        <!-- TODO: re-enable when ready -->
-        <!--
         <module name="com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocStyleCheck">
             <property name="checkEmptyJavadoc" value="true"/>
         </module>
-        -->
         <module name="com.puppycrawl.tools.checkstyle.checks.javadoc.NonEmptyAtclauseDescriptionCheck" />
         <module name="com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocTagContinuationIndentationCheck">
             <property name="offset" value="0"/>

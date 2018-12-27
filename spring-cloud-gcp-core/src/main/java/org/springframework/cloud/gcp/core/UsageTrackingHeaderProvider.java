@@ -31,6 +31,9 @@ import com.google.common.collect.ImmutableMap;
  */
 public class UsageTrackingHeaderProvider implements HeaderProvider {
 
+	/**
+	 * The hard-coded version string reported with usage info.
+	 */
 	public static final String TRACKING_HEADER_PROJECT_VERSION = "1.1.0.BUILD-SNAPSHOT";
 
 	private String userAgent;
@@ -54,6 +57,8 @@ public class UsageTrackingHeaderProvider implements HeaderProvider {
 	/**
 	 * Returns the "User-Agent" header value which should be added to the google-cloud-java REST API calls.
 	 * e.g., {@code Spring/1.0.0.RELEASE spring-cloud-gcp-pubsub/1.0.0.RELEASE}.
+	 *
+	 * @return the user agent string.
 	 */
 	public String getUserAgent() {
 		return this.userAgent;
