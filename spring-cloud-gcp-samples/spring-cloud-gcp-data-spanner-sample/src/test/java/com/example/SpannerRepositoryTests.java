@@ -47,6 +47,7 @@ import static org.junit.Assume.assumeThat;
 
 /**
  * Tests the Spanner repository example.
+ * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")

@@ -22,6 +22,7 @@ import java.util.Objects;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 
 /**
+ * Sample entity.
  * @author Dmitry Solomakha
  */
 @Entity

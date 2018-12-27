@@ -35,6 +35,10 @@ import org.springframework.messaging.handler.annotation.Header;
 
 /**
  * A sample receiver application.
+ *
+ * @author Joao Andre Martins
+ * @author Elena Felder
+ * @author Chengyuan Zhao
  */
 @SpringBootApplication
 public class ReceiverApplication {
