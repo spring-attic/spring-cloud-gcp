@@ -21,7 +21,9 @@ import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.model.MutablePersistentEntity;
 
 /**
- * Persistent entity for Google Cloud Datastore
+ * Persistent entity for Google Cloud Datastore.
+ *
+ * @param <T> the type of the property described by this persistent property
  *
  * @author Chengyuan Zhao
  *

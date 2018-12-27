@@ -58,8 +58,14 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  */
 public abstract class DatastoreNativeTypes {
 
+	/**
+	 * The set of natively-supported Datastore types.
+	 */
 	public static final Set<Class<?>> DATASTORE_NATIVE_TYPES;
 
+	/**
+	 * The set of native ID types that Datastore supports.
+	 */
 	public static final Set<Class<?>> ID_TYPES;
 
 	private static final Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;

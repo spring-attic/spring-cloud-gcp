@@ -51,6 +51,7 @@ public interface DatastoreOperations {
 	 * Ancestors can be added only to entries with Key ids.
 	 * @param instance the instance to save.
 	 * @param ancestors ancestors that should be added to the entry
+	 * @param <T> the type of the object to save
 	 * @return the instance that was saved.
 	 */
 	<T> T save(T instance, Key... ancestors);
@@ -61,6 +62,7 @@ public interface DatastoreOperations {
 	 * Ancestors can be added only to entries with Key ids.
 	 * @param entities the objects to save.
 	 * @param ancestors ancestors that should be added to each entry
+	 * @param <T> the type of entities to save
 	 * @return the entities that were saved.
 	 */
 	<T> Iterable<T> saveAll(Iterable<T> entities, Key... ancestors);

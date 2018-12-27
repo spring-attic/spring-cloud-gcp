@@ -58,6 +58,8 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
 /**
  * Name-based query method for Cloud Datastore.
  *
+ * @param <T> the return type of this Query Method
+ *
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
  *

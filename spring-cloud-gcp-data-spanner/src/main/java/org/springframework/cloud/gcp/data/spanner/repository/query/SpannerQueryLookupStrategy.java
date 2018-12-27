@@ -31,6 +31,8 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
 
 /**
+ * Determines the type of the user's custom-defined Query Methods and instantiates their implementations.
+ *
  * @author Balint Pato
  * @author Chengyuan Zhao
  *

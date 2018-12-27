@@ -25,7 +25,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.EmbeddedType;
 import org.springframework.data.util.TypeInformation;
 
 /**
- * An interface for type conversions on read and on write
+ * An interface for type conversions on read and on write.
  *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
@@ -41,6 +41,7 @@ public interface ReadWriteConversions {
 	 * {@code null} if the property is a singular object.
 	 * @param targetComponentType the type of the property to convert. For collection-like
 	 * properties this refers to the individual items' type.
+	 * @param <T> The type of the object that is produced by reading
 	 * @return an object of a target type.
 	 */
 	<T> T convertOnRead(Object val, Class targetCollectionType,
@@ -52,6 +53,7 @@ public interface ReadWriteConversions {
 	 * @param val the value to convert.
 	 * @param embeddedType contains the type of embedded entity conversion should produce.
 	 * @param targetTypeInformation type metadata information for the desired type.
+	 * @param <T> the type of the object that is produced by reading
 	 * @return an object of a target type.
 	 */
 	<T> T convertOnRead(Object val, EmbeddedType embeddedType,
