@@ -51,6 +51,7 @@ import static org.junit.Assume.assumeThat;
 
 /**
  * Tests for the logging sample app.
+ * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { Application.class })
