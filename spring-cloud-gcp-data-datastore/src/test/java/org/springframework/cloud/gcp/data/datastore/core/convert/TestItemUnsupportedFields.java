@@ -66,6 +66,9 @@ class TestItemUnsupportedFields {
 		return Objects.hash(getStringField(), getUnsupportedField());
 	}
 
+	/**
+	 * A test new type.
+	 */
 	static class NewType {
 		boolean val;
 
@@ -96,6 +99,9 @@ class TestItemUnsupportedFields {
 		}
 	}
 
+	/**
+	 * A test type of collection of unsupported types.
+	 */
 	static class CollectionOfUnsupportedTypes {
 		List<NewType> unsupportedElts = new ArrayList<>();
 

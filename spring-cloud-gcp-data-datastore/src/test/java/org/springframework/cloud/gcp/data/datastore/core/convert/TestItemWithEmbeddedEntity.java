@@ -24,6 +24,8 @@ import java.util.Objects;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 
 /**
+ * A test entity focused on holding embedded entities.
+ *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
  */

@@ -149,6 +149,8 @@ public abstract class DatastoreNativeTypes {
 
 	/**
 	* Wraps Datastore native type to Datastore value type.
+	 * @param propertyVal the property value to wrap
+	 * @return the wrapped value
 	*/
 	@SuppressWarnings("unchecked")
 	public static Value wrapValue(Object propertyVal) {

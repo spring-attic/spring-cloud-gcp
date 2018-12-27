@@ -34,9 +34,9 @@ import org.springframework.util.StringUtils;
 
 /**
  * Metadata class for entities stored in Datastore.
+ * @param <T> the type of the persistent entity
  *
  * @author Chengyuan Zhao
- * @param <T> the type of the persistent entity
  * @since 1.1
  */
 public class DatastorePersistentEntityImpl<T>

@@ -74,7 +74,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private List<Part> filterParts;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * @param queryMethod the metadata for this query method.
 	 * @param datastoreTemplate used to execute the given query.
 	 * @param datastoreMappingContext used to provide metadata for mapping results to

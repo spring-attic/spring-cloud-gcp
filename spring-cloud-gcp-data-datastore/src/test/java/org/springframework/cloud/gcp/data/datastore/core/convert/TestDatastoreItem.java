@@ -151,6 +151,9 @@ class TestDatastoreItem {
 		this.byteArrayField = byteArrayField;
 	}
 
+	/**
+	 * An enum used to test conversion and storage.
+	 */
 	enum Color {
 		WHITE, BLACK
 	}
