@@ -57,6 +57,8 @@ import static org.mockito.Mockito.when;
 
 
 /**
+ * Tests for IAP auth config.
+ *
  * @author Elena Felder
  *
  * @since 1.1
@@ -64,6 +66,9 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class IapAuthenticationAutoConfigurationTests {
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
@@ -222,6 +227,9 @@ public class IapAuthenticationAutoConfigurationTests {
 		assertThat(resolver.resolve(this.mockNonIapRequest)).isNull();
 	}
 
+	/**
+	 * Spring config for tests.
+	 */
 	@Configuration
 	static class UserConfiguration {
 
@@ -236,6 +244,9 @@ public class IapAuthenticationAutoConfigurationTests {
 		}
 	}
 
+	/**
+	 * Spring config for tests.
+	 */
 	@Configuration
 	@AutoConfigureBefore(IapAuthenticationAutoConfiguration.class)
 	static class TestConfiguration {
@@ -251,6 +262,9 @@ public class IapAuthenticationAutoConfigurationTests {
 		}
 	}
 
+	/**
+	 * Spring config for tests.
+	 */
 	@Configuration
 	@AutoConfigureBefore(IapAuthenticationAutoConfiguration.class)
 	static class FixedAudienceValidatorConfiguration {

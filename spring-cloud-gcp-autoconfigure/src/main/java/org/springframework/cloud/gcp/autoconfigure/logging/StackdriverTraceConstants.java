@@ -19,49 +19,52 @@ package org.springframework.cloud.gcp.autoconfigure.logging;
 import org.springframework.util.Assert;
 
 /**
+ * Constants for Stackdriver Trace.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public final class StackdriverTraceConstants {
 
 	private StackdriverTraceConstants() { }
 
 	/**
-	 * The JSON field name for the log level (severity)
+	 * The JSON field name for the log level (severity).
 	 */
 	public static final String SEVERITY_ATTRIBUTE = "severity";
 
 	/**
-	 * The JSON field name for the seconds of the timestamp
+	 * The JSON field name for the seconds of the timestamp.
 	 */
 	public static final String TIMESTAMP_SECONDS_ATTRIBUTE = "timestampSeconds";
 
 	/**
-	 * The JSON field name for the nanos of the timestamp
+	 * The JSON field name for the nanos of the timestamp.
 	 */
 	public static final String TIMESTAMP_NANOS_ATTRIBUTE = "timestampNanos";
 
 	/**
-	 * The JSON field name for the span-id
+	 * The JSON field name for the span-id.
 	 */
 	public static final String SPAN_ID_ATTRIBUTE = "logging.googleapis.com/spanId";
 
 	/**
-	 * The JSON field name for the trace-id
+	 * The JSON field name for the trace-id.
 	 */
 	public static final String TRACE_ID_ATTRIBUTE = "logging.googleapis.com/trace";
 
 	/**
-	 * The name of the MDC parameter, Spring Sleuth is storing the trace id at
+	 * The name of the MDC parameter, Spring Sleuth is storing the trace id at.
 	 */
 	public static final String MDC_FIELD_TRACE_ID = "X-B3-TraceId";
 
 	/**
-	 * The name of the MDC parameter, Spring Sleuth is storing the span id at
+	 * The name of the MDC parameter, Spring Sleuth is storing the span id at.
 	 */
 	public static final String MDC_FIELD_SPAN_ID = "X-B3-SpanId";
 
 	/**
-	 * The name of the MDC parameter, Spring Sleuth is storing the span export information at
+	 * The name of the MDC parameter, Spring Sleuth is storing the span export information at.
 	 */
 	public static final String MDC_FIELD_SPAN_EXPORT = "X-Span-Export";
 

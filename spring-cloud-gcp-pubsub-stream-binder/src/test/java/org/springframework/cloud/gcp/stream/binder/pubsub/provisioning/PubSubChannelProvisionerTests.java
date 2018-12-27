@@ -61,6 +61,9 @@ public class PubSubChannelProvisionerTests {
 	// class under test
 	PubSubChannelProvisioner pubSubChannelProvisioner;
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

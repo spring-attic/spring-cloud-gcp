@@ -42,10 +42,14 @@ import org.springframework.util.StringUtils;
  * Converts GCP service broker metadata into Spring Cloud GCP configuration properties.
  *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class GcpCloudFoundryEnvironmentPostProcessor
 		implements EnvironmentPostProcessor, Ordered {
 
+	/**
+	 * Environment variable for VCAP services.
+	 */
 	public static final String VCAP_SERVICES_ENVVAR = "VCAP_SERVICES";
 
 	private static final Log LOGGER =
