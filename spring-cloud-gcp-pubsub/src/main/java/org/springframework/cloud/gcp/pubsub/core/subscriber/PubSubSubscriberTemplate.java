@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -32,7 +34,6 @@ import com.google.cloud.pubsub.v1.AckReplyConsumer;
 import com.google.cloud.pubsub.v1.MessageReceiver;
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.pubsub.v1.stub.SubscriberStub;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.Empty;
 import com.google.pubsub.v1.AcknowledgeRequest;
 import com.google.pubsub.v1.ModifyAckDeadlineRequest;
@@ -41,6 +42,7 @@ import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.PullRequest;
 import com.google.pubsub.v1.PullResponse;
 
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
@@ -67,13 +69,15 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  *
  * @since 1.1
  */
-public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
+public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, DisposableBean {
 
 	private final SubscriberFactory subscriberFactory;
 
 	private final SubscriberStub subscriberStub;
 
 	private PubSubMessageConverter pubSubMessageConverter = new SimplePubSubMessageConverter();
+
+	private ExecutorService ackExecutor = Executors.newCachedThreadPool();
 
 	/**
 	 * Default {@link PubSubSubscriberTemplate} constructor
@@ -96,6 +100,10 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 		Assert.notNull(pubSubMessageConverter, "The pubSubMessageConverter can't be null.");
 
 		this.pubSubMessageConverter = pubSubMessageConverter;
+	}
+
+	public void setAckExecutor(ExecutorService ackExecutor) {
+		this.ackExecutor = ackExecutor;
 	}
 
 	@Override
@@ -261,6 +269,11 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 						modifyAckDeadline(subscriptionName, ackIds, ackDeadlineSeconds));
 	}
 
+	@Override
+	public void destroy() throws Exception {
+		this.ackExecutor.shutdown();
+	}
+
 	private ApiFuture<Empty> ack(String subscriptionName, Collection<String> ackIds) {
 		AcknowledgeRequest acknowledgeRequest = AcknowledgeRequest.newBuilder()
 				.addAllAckIds(ackIds)
@@ -333,7 +346,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations {
 						settableListenableFuture.set(null);
 					}
 				}
-			}, MoreExecutors.directExecutor());
+			}, this.ackExecutor);
 		});
 
 		return settableListenableFuture;

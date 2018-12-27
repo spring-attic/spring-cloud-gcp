@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
@@ -45,14 +46,17 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
+import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
@@ -72,6 +76,7 @@ import static org.mockito.Mockito.when;
  *
  * @author Mike Eltsufin
  * @author Doug Hoard
+ * @author Elena Felder
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubSubscriberTemplateTests {
@@ -399,6 +404,20 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
 		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
 		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub2");
+	}
+
+	@Test
+	public void threadPoolClosedWhenObjectDestroyed() throws Exception {
+		ExecutorService mockExecutor = Mockito.mock(ExecutorService.class);
+		StaticApplicationContext ctx = new StaticApplicationContext();
+		this.pubSubSubscriberTemplate.setAckExecutor(mockExecutor);
+		ctx.registerBeanDefinition("subscriberTemplate",	new RootBeanDefinition(
+						PubSubSubscriberTemplate.class,	() -> this.pubSubSubscriberTemplate));
+		ctx.refresh();
+		ctx.close();
+
+		verify(this.pubSubSubscriberTemplate, times(1)).destroy();
+		verify(mockExecutor).shutdown();
 	}
 
 	private class TestListenableFutureCallback implements ListenableFutureCallback<Void> {
