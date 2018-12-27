@@ -31,12 +31,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 /**
+ * Tests for the Datastore persistent property.
+ *
  * @author Chengyuan Zhao
  */
 public class DatastorePersistentPropertyImplTests {
 
 	private final DatastoreMappingContext datastoreMappingContext = new DatastoreMappingContext();
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

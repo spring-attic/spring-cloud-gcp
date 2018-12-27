@@ -47,6 +47,9 @@ public class EntityPropertyValueProviderTests {
 
 	private TwoStepsConversions twoStepsConversion = new TwoStepsConversions(new DatastoreCustomConversions(), null);
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

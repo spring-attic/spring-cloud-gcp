@@ -31,6 +31,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.repository.query.Param;
 
 /**
+ * A repository for testing Query Methods that uses many advanced features.
+ *
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
  */

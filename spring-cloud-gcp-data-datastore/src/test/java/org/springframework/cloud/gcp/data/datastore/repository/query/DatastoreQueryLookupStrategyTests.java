@@ -41,6 +41,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the Query Method lookup class.
+ *
  * @author Chengyuan Zhao
  */
 public class DatastoreQueryLookupStrategyTests {

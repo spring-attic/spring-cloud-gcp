@@ -35,10 +35,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for the Datastore Repository factory.
+ *
  * @author Chengyuan Zhao
  */
 public class DatastoreRepositoryFactoryTests {
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

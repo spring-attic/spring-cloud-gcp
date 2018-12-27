@@ -33,10 +33,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the Datastore Persistent Entity.
+ *
  * @author Chengyuan Zhao
  */
 public class DatastorePersistentEntityImplTests {
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

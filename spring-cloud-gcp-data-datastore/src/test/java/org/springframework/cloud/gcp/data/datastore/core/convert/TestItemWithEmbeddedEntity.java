@@ -105,6 +105,10 @@ public class TestItemWithEmbeddedEntity {
 		return this.nestedEmbeddedMaps;
 	}
 
+	/**
+	 * set the nested embedded maps.
+	 * @param nestedEmbeddedMaps the maps to set.
+	 */
 	public void setNestedEmbeddedMaps(
 			Map<String, Map<Long, Map<String, String>>> nestedEmbeddedMaps) {
 		this.nestedEmbeddedMaps = nestedEmbeddedMaps;
