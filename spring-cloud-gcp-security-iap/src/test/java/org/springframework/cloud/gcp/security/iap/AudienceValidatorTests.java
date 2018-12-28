@@ -80,7 +80,7 @@ public class AudienceValidatorTests {
 	}
 
 	/**
-	 * Configuration for the  tests.
+	 * Configuration for the tests.
 	 */
 	@Configuration
 	static class TestConfiguration {

@@ -47,7 +47,7 @@ public interface PubSubPublisherOperations {
 
 	/**
 	 * Send a message to Pub/Sub.
-	 * @param topic   the name of an existing topic
+	 * @param topic the name of an existing topic
 	 * @param payload an object that will be serialized and sent
 	 * @param <T> the type of the payload to publish
 	 * @return the listenable future of the call
