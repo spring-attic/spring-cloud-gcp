@@ -29,7 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
- * Test for the Spanner read options.
+ * Tests for the Spanner read options.
  *
  * @author Chengyuan Zhao
  */

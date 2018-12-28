@@ -57,7 +57,7 @@ public class ApplicationTests {
 	private CommandLineRunner commandLineRunner;
 
 	/**
-	 * used to check exception messages and types.
+	 * Used to check exception messages and types.
 	 */
 	@Rule
 	public OutputCapture outputCapture = new OutputCapture();

@@ -58,6 +58,7 @@ import static org.junit.Assume.assumeThat;
 
 /**
  * Tests for the Pub/Sub sample application.
+ *
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)

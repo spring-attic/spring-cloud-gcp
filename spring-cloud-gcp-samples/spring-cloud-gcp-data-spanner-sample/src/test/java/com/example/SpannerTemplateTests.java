@@ -40,6 +40,7 @@ import static org.junit.Assume.assumeThat;
 
 /**
  * Tests for the Spanner template usage.
+ *
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)

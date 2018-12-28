@@ -82,7 +82,7 @@ public class GcpContextAutoConfiguration {
 	 * Provides default implementation for determining GCP environment.
 	 * Can be overridden to avoid interacting with real environment.
 	 * @since 1.1
-	 * @return a GCP envornment provider
+	 * @return a GCP environment provider
 	 */
 	@Bean
 	@ConditionalOnMissingBean

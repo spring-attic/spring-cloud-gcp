@@ -24,7 +24,8 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Test for Config bootstrap configuration.
+ * Tests for Config bootstrap configuration.
+ *
  * @author Jisha Abubaker
  * @author João André Martins
  * @author Chengyuan Zhao

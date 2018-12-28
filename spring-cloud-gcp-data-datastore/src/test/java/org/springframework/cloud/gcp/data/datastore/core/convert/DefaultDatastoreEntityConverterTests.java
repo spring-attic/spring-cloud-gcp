@@ -75,7 +75,7 @@ public class DefaultDatastoreEntityConverterTests {
 							})), null));
 
 	/**
-	 * used to check exception messages and types.
+	 * Used to check exception messages and types.
 	 */
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();

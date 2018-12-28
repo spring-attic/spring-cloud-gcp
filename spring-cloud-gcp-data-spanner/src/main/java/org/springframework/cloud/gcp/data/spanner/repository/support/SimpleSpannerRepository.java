@@ -34,6 +34,7 @@ import org.springframework.util.Assert;
 
 /**
  * The default implementation of a SpannerRepository.
+ *
  * @param <T> the entity type of the repository
  * @param <ID> the id type of the entity
  * @author Chengyuan Zhao

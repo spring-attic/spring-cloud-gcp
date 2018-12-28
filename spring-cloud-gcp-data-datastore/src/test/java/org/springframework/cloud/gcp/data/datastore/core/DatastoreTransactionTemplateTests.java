@@ -75,7 +75,7 @@ public class DatastoreTransactionTemplateTests {
 	ObjectToKeyFactory objectToKeyFactory;
 
 	/**
-	 * used to check exception messages and types.
+	 * Used to check exception messages and types.
 	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();

@@ -47,6 +47,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * Tests Spanner statement queries.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
@@ -63,7 +64,7 @@ public class SpannerStatementQueryTests {
 	private PartTreeSpannerQuery partTreeSpannerQuery;
 
 	/**
-	 * checks exceptions for messages and types.
+	 * Checks exceptions for messages and types.
 	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();

@@ -41,8 +41,9 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  */
 public class DatastoreServiceObjectToKeyFactoryTests {
+
 	/**
-	 * used to check exception types and messages.
+	 * Used to check exception types and messages.
 	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();

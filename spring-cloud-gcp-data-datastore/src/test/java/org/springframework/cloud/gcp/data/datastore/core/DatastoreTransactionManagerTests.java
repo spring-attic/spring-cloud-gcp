@@ -54,7 +54,7 @@ public class DatastoreTransactionManagerTests {
 	Transaction transaction;
 
 	/**
-	 * used to check exception types and messages.
+	 * Used to check exception types and messages.
 	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();

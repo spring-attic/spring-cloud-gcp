@@ -50,6 +50,7 @@ import org.springframework.util.StringUtils;
 /**
  * Represents a Cloud Spanner table and its columns' mapping to fields within an entity
  * type.
+ *
  * @param <T> the type of the persistent entity
  * @author Ray Tsang
  * @author Chengyuan Zhao

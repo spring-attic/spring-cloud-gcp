@@ -42,8 +42,7 @@ import static org.mockito.Mockito.when;
 public class SpannerPersistentPropertyImplTests {
 
 	/**
-	 * checks the exceptions' messages and types.
-	 *
+	 * Checks the exceptions' messages and types.
 	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();

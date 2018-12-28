@@ -33,6 +33,7 @@ import static org.mockito.Mockito.mock;
 
 /**
  * Tests for Datastore auto-config.
+ *
  * @author Chengyuan Zhao
  */
 public class GcpDatastoreAutoConfigurationTests {

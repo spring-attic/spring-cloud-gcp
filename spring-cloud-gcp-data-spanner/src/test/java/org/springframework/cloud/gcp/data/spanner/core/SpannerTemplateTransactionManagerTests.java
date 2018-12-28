@@ -77,7 +77,7 @@ public class SpannerTemplateTransactionManagerTests {
 	private final AtomicReference<TransactionManager.TransactionState> transactionState = new AtomicReference<>();
 
 	/**
-	 * used to test for exception messages and types.
+	 * Used to test for exception messages and types.
 	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();

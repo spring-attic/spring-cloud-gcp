@@ -29,6 +29,7 @@ import static org.mockito.Mockito.mock;
 
 /**
  * Tests for the Datastore Repository factory bean.
+ *
  * @author Chengyuan Zhao
  */
 public class DatastoreRepositoryFactoryBeanTests {

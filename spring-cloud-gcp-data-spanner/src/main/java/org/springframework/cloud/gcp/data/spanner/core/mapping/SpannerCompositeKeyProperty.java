@@ -279,7 +279,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	/**
-	 * Returns null.
+	 * Returns {@code null}.
 	 *
 	 * @since 1.1
 	 */
@@ -289,7 +289,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	/**
-	 * Returns false.
+	 * Returns {@code false}.
 	 *
 	 * @since 1.1
 	 */
@@ -299,7 +299,7 @@ public class SpannerCompositeKeyProperty implements SpannerPersistentProperty {
 	}
 
 	/**
-	 * Returns null.
+	 * Returns {@code null}.
 	 *
 	 * @since 1.1
 	 */

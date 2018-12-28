@@ -29,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for the top-level context auto-configuration.
+ *
  * @author João André Martins
  * @author Chengyuan Zhao
  */

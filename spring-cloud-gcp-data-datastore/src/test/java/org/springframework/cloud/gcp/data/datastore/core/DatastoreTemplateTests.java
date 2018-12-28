@@ -75,6 +75,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * Tests for the Datastore Template.
+ *
  * @author Chengyuan Zhao
  */
 public class DatastoreTemplateTests {

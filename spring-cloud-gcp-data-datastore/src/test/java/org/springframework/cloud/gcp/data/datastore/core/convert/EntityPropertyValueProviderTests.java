@@ -35,9 +35,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for the entity value provider.
+ *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
- *
  */
 public class EntityPropertyValueProviderTests {
 
