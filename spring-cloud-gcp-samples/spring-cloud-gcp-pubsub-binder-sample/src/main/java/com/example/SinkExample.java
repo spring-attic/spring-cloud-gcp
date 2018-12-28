@@ -24,6 +24,7 @@ import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.cloud.stream.messaging.Sink;
 
 /**
+ * Example of a sink for the sample app.
  * @author João André Martins
  */
 @EnableBinding(Sink.class)
