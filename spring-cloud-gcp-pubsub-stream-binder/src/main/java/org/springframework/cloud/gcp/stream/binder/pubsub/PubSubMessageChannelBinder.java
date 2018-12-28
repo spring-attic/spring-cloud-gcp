@@ -36,6 +36,7 @@ import org.springframework.messaging.MessageHandler;
 
 /**
  * Message channel binder for Pub/Sub.
+ *
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Artem Bilan
