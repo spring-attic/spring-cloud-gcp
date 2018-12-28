@@ -193,8 +193,8 @@ public class PubSubEmulator extends ExternalResource {
 
 	/**
 	 * Extract host/port from output of env-init command: "export PUBSUB_EMULATOR_HOST=localhost:8085".
-	 * @throws IOException
-	 * @throws InterruptedException
+	 * @throws IOException for IO errors
+	 * @throws InterruptedException for interruption errors
 	 */
 	private void determineHostPort() throws IOException, InterruptedException {
 		Process envInitProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "env-init").start();
