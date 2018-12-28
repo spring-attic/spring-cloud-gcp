@@ -36,7 +36,7 @@ import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfigurat
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Tests the Pub/Sub emulator config.
+ * Tests for the Pub/Sub emulator config.
  *
  * @author Andreas Berger
  * @author João André Martins
