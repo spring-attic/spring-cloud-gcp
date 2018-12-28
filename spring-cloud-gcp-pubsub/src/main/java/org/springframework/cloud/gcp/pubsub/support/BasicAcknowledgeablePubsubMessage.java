@@ -27,7 +27,7 @@ import org.springframework.util.concurrent.ListenableFuture;
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Doug Hoard
- *
+ * @author Chengyuan Zhao
  * @since 1.1
  */
 public interface BasicAcknowledgeablePubsubMessage {
@@ -45,13 +45,13 @@ public interface BasicAcknowledgeablePubsubMessage {
 	PubsubMessage getPubsubMessage();
 
 	/**
-	 * Acknowledge (ack) the message asynchronously
+	 * Acknowledge (ack) the message asynchronously.
 	 * @return {@code ListenableFuture<Void>}}
 	 */
 	ListenableFuture<Void> ack();
 
 	/**
-	 * Negatatively achnowledge (nack) the message asynchronously
+	 * Negatatively achnowledge (nack) the message asynchronously.
 	 * @return {@code ListenableFuture<Void>}}
 	 */
 	ListenableFuture<Void> nack();

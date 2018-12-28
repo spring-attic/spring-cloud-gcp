@@ -67,6 +67,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the Spanner Template.
+ *
  * @author Chengyuan Zhao
  */
 public class SpannerTemplateTests {
@@ -87,6 +89,9 @@ public class SpannerTemplateTests {
 
 	private SpannerSchemaUtils schemaUtils;
 
+	/**
+	 * used for checking exception messages and tests.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

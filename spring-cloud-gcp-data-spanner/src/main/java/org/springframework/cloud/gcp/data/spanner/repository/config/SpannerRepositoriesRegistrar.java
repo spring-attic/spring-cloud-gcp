@@ -22,6 +22,8 @@ import org.springframework.data.repository.config.RepositoryBeanDefinitionRegist
 import org.springframework.data.repository.config.RepositoryConfigurationExtension;
 
 /**
+ * A boilerplate class to register Spanner repositories.
+ *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  *

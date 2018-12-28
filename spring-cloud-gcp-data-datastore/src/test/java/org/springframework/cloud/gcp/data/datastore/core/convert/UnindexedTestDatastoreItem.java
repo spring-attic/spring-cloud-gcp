@@ -19,6 +19,8 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
 
 /**
+ * A test entity with an unindexed property.
+ *
  * @author Dmitry Solomakha
  */
 public class UnindexedTestDatastoreItem {

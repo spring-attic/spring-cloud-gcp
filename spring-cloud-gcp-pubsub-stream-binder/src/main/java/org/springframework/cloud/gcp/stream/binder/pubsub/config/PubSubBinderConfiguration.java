@@ -32,6 +32,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * Pub/Sub binder configuration.
+ *
  * @author João André Martins
  * @author Daniel Zou
  */

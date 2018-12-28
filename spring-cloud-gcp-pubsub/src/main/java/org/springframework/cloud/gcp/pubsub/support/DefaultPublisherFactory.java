@@ -40,6 +40,7 @@ import org.springframework.util.Assert;
  * <p>Creates {@link Publisher}s for topics once, caches and reuses them.
  *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class DefaultPublisherFactory implements PublisherFactory {
 
@@ -64,7 +65,6 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 	/**
 	 * Create {@link DefaultPublisherFactory} instance based on the provided {@link GcpProjectIdProvider}.
-	 *
 	 * <p>The {@link GcpProjectIdProvider} must not be null, neither provide an empty {@code projectId}.
 	 * @param projectIdProvider provides the GCP project ID
 	 */
@@ -78,6 +78,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	/**
 	 * Set the provider for the executor that will be used by the publisher. Useful to specify the number of threads to
 	 * be used by each executor.
+	 * @param executorProvider the executor provider to set
 	 */
 	public void setExecutorProvider(ExecutorProvider executorProvider) {
 		this.executorProvider = executorProvider;
@@ -86,6 +87,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 	/**
 	 * Set the provider for the channel to be used by the publisher. Useful to specify HTTP headers for the REST API
 	 * calls.
+	 * @param channelProvider the channel provider to set
 	 */
 	public void setChannelProvider(TransportChannelProvider channelProvider) {
 		this.channelProvider = channelProvider;
@@ -93,6 +95,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 	/**
 	 * Set the provider for the GCP credentials to be used by the publisher on every API calls it makes.
+	 * @param credentialsProvider the credentials provider to set
 	 */
 	public void setCredentialsProvider(CredentialsProvider credentialsProvider) {
 		this.credentialsProvider = credentialsProvider;
@@ -100,6 +103,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 	/**
 	 * Set the provider for the HTTP headers to be used in the Pub/Sub REST API requests.
+	 * @param headerProvider the header provider to set
 	 */
 	public void setHeaderProvider(HeaderProvider headerProvider) {
 		this.headerProvider = headerProvider;
@@ -107,6 +111,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 	/**
 	 * Set the API call retry configuration.
+	 * @param retrySettings the retry settings to set
 	 */
 	public void setRetrySettings(RetrySettings retrySettings) {
 		this.retrySettings = retrySettings;
@@ -114,6 +119,7 @@ public class DefaultPublisherFactory implements PublisherFactory {
 
 	/**
 	 * Set the API call batching configuration.
+	 * @param batchingSettings the batching settings to set
 	 */
 	public void setBatchingSettings(BatchingSettings batchingSettings) {
 		this.batchingSettings = batchingSettings;

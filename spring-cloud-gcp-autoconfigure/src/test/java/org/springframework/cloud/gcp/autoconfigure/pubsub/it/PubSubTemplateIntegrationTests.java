@@ -56,6 +56,8 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.awaitility.Awaitility.await;
 
 /**
+ * Integration tests for Pub/Sub template.
+ *
  * @author João André Martins
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
@@ -216,6 +218,9 @@ public class PubSubTemplateIntegrationTests {
 				});
 	}
 
+	/**
+	 * Beans for test.
+	 */
 	@Configuration
 	static class JsonPayloadTestConfiguration {
 
@@ -225,6 +230,9 @@ public class PubSubTemplateIntegrationTests {
 		}
 	}
 
+	/**
+	 * A test JSON payload.
+	 */
 	static class TestUser {
 
 		public final String username;

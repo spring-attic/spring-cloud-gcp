@@ -50,6 +50,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
+ * Config for Storage auto config tests.
+ *
  * @author Artem Bilan
  */
 @RunWith(SpringRunner.class)
@@ -80,6 +82,9 @@ public class GcpStorageAutoConfigurationTests {
 				.isAutoCreateFiles()).isFalse();
 	}
 
+	/**
+	 * The web app for the test.
+	 */
 	@SpringBootApplication(exclude = {
 			GcpContextAutoConfiguration.class,
 			GcpCloudSqlAutoConfiguration.class,

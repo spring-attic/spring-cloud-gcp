@@ -51,6 +51,7 @@ public interface DatastoreOperations {
 	 * Ancestors can be added only to entries with Key ids.
 	 * @param instance the instance to save.
 	 * @param ancestors ancestors that should be added to the entry
+	 * @param <T> the type of the object to save
 	 * @return the instance that was saved.
 	 */
 	<T> T save(T instance, Key... ancestors);
@@ -61,6 +62,7 @@ public interface DatastoreOperations {
 	 * Ancestors can be added only to entries with Key ids.
 	 * @param entities the objects to save.
 	 * @param ancestors ancestors that should be added to each entry
+	 * @param <T> the type of entities to save
 	 * @return the entities that were saved.
 	 */
 	<T> Iterable<T> saveAll(Iterable<T> entities, Key... ancestors);
@@ -168,7 +170,7 @@ public interface DatastoreOperations {
 	<T> Iterable<T> findAll(Class<T> entityClass);
 
 	/**
-	 * Get all the entities of the given domain type applying limit, offset and sort
+	 * Get all the entities of the given domain type applying limit, offset and sort.
 	 * @param entityClass the domain type to get.
 	 * @param queryOptions query options
 	 * @param <T> the type param of the domain type.
@@ -201,14 +203,16 @@ public interface DatastoreOperations {
 	 * Get a Datastore entity based on a id and convert it to a map.
 	 * @param key the key of the entity
 	 * @param valueType type values should be converted to
+	 * @param <T> the value type of the map
 	 * @return if an entity for a given key exists, returns the map representation of it,
 	 * {@code null} otherwise
 	 */
 	<T> Map<String, T> findByIdAsMap(Key key, Class<T> valueType);
 
 	/**
-	 * Save a map as a Datastore entity, using map keys as field names
+	 * Save a map as a Datastore entity, using map keys as field names.
 	 * @param key the key for the entity
+	 * @param <V> the value type of the map to write
 	 * @param map a map
 	 */
 	<V> void writeMap(Key key, Map<String, V> map);

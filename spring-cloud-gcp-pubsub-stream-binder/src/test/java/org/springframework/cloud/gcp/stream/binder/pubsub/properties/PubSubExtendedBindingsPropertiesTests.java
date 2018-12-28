@@ -52,6 +52,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+/**
+ * Tests for extended binding properties.
+ *
+ * @author Daniel Zou
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
 		classes = {
@@ -77,6 +82,9 @@ public class PubSubExtendedBindingsPropertiesTests {
 		assertThat(binder.getExtendedConsumerProperties("input").isAutoCreateResources()).isTrue();
 	}
 
+	/**
+	 * Spring Boot config for tests.
+	 */
 	@Configuration
 	@EnableBinding(PubSubBindingsTestConfiguration.CustomTestSink.class)
 	static class PubSubBindingsTestConfiguration {
@@ -119,6 +127,9 @@ public class PubSubExtendedBindingsPropertiesTests {
 			System.out.println(payload);
 		}
 
+		/**
+		 * interface for testing.
+		 */
 		interface CustomTestSink extends Sink {
 			@Input("custom-in")
 			SubscribableChannel customIn();

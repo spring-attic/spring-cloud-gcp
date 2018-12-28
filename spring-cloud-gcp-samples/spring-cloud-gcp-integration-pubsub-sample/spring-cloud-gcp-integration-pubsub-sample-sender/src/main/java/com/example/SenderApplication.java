@@ -63,6 +63,9 @@ public class SenderApplication {
 		return adapter;
 	}
 
+	/**
+	 * interface for sending a message to Pub/Sub.
+	 */
 	@MessagingGateway(defaultRequestChannel = "pubSubOutputChannel")
 	public interface PubSubOutboundGateway {
 

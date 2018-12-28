@@ -22,7 +22,10 @@ import org.springframework.integration.file.filters.AbstractPersistentAcceptOnce
 import org.springframework.integration.metadata.ConcurrentMetadataStore;
 
 /**
+ * A filter for Google Cloud Storage.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class GcsPersistentAcceptOnceFileListFilter
 		extends AbstractPersistentAcceptOnceFileListFilter<BlobInfo> {

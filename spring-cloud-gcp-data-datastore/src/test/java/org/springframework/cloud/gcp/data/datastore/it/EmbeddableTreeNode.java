@@ -22,6 +22,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
 /**
+ * A test class that uses embedded relationships to represent a tree.
+ *
  * @author Dmitry Solomakha
  */
 @Entity

@@ -33,6 +33,8 @@ import org.springframework.core.convert.converter.Converter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for the simple message converter.
+ *
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */
@@ -44,6 +46,9 @@ public class SimplePubSubMessageConverterTests {
 			"key1", "value1",
 			"key2", "value2");
 
+	/**
+	 * used to test exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

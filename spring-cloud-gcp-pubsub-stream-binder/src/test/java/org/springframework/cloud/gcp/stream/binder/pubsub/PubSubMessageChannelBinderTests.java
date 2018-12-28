@@ -32,6 +32,8 @@ import org.springframework.cloud.stream.provisioning.ConsumerDestination;
 import static org.mockito.Mockito.verify;
 
 /**
+ * Tests for channel binder.
+ *
  * @author Mike Eltsufin
  *
  * @since 1.1

@@ -43,6 +43,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for Spanner mapping and converting.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
@@ -276,6 +278,9 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 	private interface JavaType {
 	}
 
+	/**
+	 * A mock results class for mocked queries.
+	 */
 	static class MockResults {
 		List<Struct> structs;
 

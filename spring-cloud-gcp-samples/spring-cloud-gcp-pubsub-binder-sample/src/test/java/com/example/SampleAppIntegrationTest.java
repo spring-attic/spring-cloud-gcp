@@ -39,15 +39,12 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
+ * These tests verifies that the pubsub-binder-sample works.
+ *
  * @author Dmitry Solomakha
  *
  * @since 1.1
  */
-
-/*
- * This tests verifies that the pubsub-binder-sample works.
- */
-
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
 		"spring.cloud.stream.bindings.input.destination=sub1",

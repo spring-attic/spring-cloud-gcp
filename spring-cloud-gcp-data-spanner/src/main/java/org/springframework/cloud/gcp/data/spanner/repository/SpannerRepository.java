@@ -22,6 +22,11 @@ import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
+ * A Spring Data repository for Cloud Spanner with specific features.
+ *
+ * @param <T> the entity type of the repository
+ * @param <ID> the id type of the entity
+ *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  *

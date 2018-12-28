@@ -28,6 +28,7 @@ import org.springframework.data.mapping.model.MutablePersistentEntity;
  * Cloud Spanner specific interface for a {@link MutablePersistentEntity} stored in a Cloud
  * Spanner table.
  *
+ * @param <T> the underlying persistent entity type
  * @author Ray Tsang
  * @author Chengyuan Zhao
  *

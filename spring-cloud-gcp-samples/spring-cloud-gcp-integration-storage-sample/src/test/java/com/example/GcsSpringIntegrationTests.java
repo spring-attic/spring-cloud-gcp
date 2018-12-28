@@ -54,6 +54,8 @@ import static org.junit.Assume.assumeThat;
  *
  * To run this test locally, first specify the buckets and local directory used by sample in
  * java/com/example/resources/application.properties. Then, run: mvn -Dit.storage=true test.
+ *
+ * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)
 @PropertySource("classpath:application.properties")

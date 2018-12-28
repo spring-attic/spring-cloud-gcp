@@ -29,8 +29,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Person {
 
+	/**
+	 * the name of the person.
+	 */
 	public final String name;
 
+	/**
+	 * the age of the person.
+	 */
 	public final int age;
 
 	@JsonCreator

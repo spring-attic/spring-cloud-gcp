@@ -55,9 +55,12 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.awaitility.Awaitility.await;
 
 /**
+ * Tests for Stackdriver Logging.
+ *
  * @author João André Martins
  * @author Daniel Zou
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 @SpringBootTest(
 		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -113,6 +116,9 @@ public class StackdriverLoggingIntegrationTests {
 		});
 	}
 
+	/**
+	 * web-app used for integration tests.
+	 */
 	@RestController
 	@SpringBootApplication(exclude = {
 			GcpCloudSqlAutoConfiguration.class,

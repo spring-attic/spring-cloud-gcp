@@ -20,6 +20,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+/**
+ * A house entity for the sample application.
+ *
+ * @author Joao Andre Martins
+ */
 @Entity
 public class House {
 

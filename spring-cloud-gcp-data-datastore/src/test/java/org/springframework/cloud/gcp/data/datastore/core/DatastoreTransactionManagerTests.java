@@ -41,6 +41,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the Datastore transactional annotation manager.
+ *
  * @author Chengyuan Zhao
  */
 public class DatastoreTransactionManagerTests {
@@ -51,6 +53,9 @@ public class DatastoreTransactionManagerTests {
 	@Mock
 	Transaction transaction;
 
+	/**
+	 * Used to check exception types and messages.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

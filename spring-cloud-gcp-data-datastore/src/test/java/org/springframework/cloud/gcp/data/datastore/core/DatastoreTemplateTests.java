@@ -74,10 +74,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the Datastore Template.
+ *
  * @author Chengyuan Zhao
  */
 public class DatastoreTemplateTests {
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

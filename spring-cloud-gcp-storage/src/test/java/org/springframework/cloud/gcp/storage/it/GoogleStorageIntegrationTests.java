@@ -51,6 +51,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
+ * Integration for Google Cloud Storage.
+ *
  * @author Chengyuan Zhao
  */
 @RunWith(SpringRunner.class)
@@ -125,6 +127,9 @@ public class GoogleStorageIntegrationTests {
 		}
 	}
 
+	/**
+	 * Spring config for the tests.
+	 */
 	@Configuration
 	@PropertySource("application-test.properties")
 	@Import(GoogleStorageProtocolResolver.class)

@@ -17,8 +17,11 @@
 package org.springframework.cloud.gcp.stream.binder.pubsub.properties;
 
 /**
+ * Producer properties for Pub/Sub.
+ *
  * @author João André Martins
  * @author Daniel Zou
+ * @author Chengyuan Zhao
  */
 public class PubSubProducerProperties extends PubSubCommonProperties {
 }

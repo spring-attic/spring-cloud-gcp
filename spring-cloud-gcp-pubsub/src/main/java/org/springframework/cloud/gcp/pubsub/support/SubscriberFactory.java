@@ -29,11 +29,12 @@ import com.google.pubsub.v1.PullRequest;
  * @author Mike Eltsufin
  * @author Artem Bilan
  * @author Doug Hoard
+ * @author Chengyuan Zhao
  */
 public interface SubscriberFactory {
 
 	/**
-	 * Method to get the project id
+	 * Method to get the project id.
 	 * @return the project id
 	 * @since 1.1
 	 */
