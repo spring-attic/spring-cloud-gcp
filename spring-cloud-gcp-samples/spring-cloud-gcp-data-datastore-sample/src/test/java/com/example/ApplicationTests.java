@@ -49,10 +49,11 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assume.assumeThat;
 
 /**
- * This tests verifies that the datastore-sample works. In order to run it, use the
+ * These tests verifies that the datastore-sample works. In order to run it, use the
  *
  * -Dit.datastore=true -Dspring.cloud.gcp.sql.database-name=[...]
  * -Dspring.cloud.gcp.datastore.namespace=[...]
+ *
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
  */

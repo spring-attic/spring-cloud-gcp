@@ -37,6 +37,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 /**
  * Web app for Pub/Sub sample application.
+ *
  * @author Joao Andre Martins
  */
 @RestController

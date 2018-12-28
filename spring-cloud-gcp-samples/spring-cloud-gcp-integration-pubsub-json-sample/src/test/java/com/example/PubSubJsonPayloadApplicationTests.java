@@ -40,6 +40,7 @@ import static org.junit.Assume.assumeThat;
 
 /**
  * Tests the Pub/Sub Json payload app.
+ *
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)

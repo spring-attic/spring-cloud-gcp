@@ -23,6 +23,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 /**
  * Web app for sample app.
+ *
  * @author João André Martins
  * @author Chengyuan Zhao
  */

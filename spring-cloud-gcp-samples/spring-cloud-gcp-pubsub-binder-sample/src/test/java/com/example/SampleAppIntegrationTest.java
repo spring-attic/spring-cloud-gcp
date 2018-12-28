@@ -39,7 +39,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
- * This tests verifies that the pubsub-binder-sample works.
+ * These tests verifies that the pubsub-binder-sample works.
+ *
  * @author Dmitry Solomakha
  *
  * @since 1.1

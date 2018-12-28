@@ -46,7 +46,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Tests the Spanner repository example.
+ * Tests for the Spanner repository example.
+ *
  * @author Daniel Zou
  */
 @RunWith(SpringRunner.class)

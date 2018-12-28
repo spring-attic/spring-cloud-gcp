@@ -31,6 +31,7 @@ import org.springframework.data.annotation.Id;
 
 /**
  * Sample entity.
+ *
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
  */

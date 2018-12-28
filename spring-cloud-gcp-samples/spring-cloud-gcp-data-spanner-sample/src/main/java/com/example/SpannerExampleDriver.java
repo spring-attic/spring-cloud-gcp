@@ -30,6 +30,7 @@ import org.springframework.context.annotation.Profile;
 
 /**
  * Application to execute the sample app for Spanner.
+ *
  * @author Daniel Zou
  */
 @SpringBootApplication

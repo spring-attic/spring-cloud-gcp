@@ -31,6 +31,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Example usage of the Spanner Template.
+ *
  * @author Balint Pato
  * @author Mike Eltsufin
  * @author Chengyuan Zhao

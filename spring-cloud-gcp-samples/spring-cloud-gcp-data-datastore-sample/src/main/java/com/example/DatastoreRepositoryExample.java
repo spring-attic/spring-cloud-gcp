@@ -33,6 +33,7 @@ import org.springframework.context.annotation.Bean;
 
 /**
  * Sample app for Datastore repository.
+ *
  * @author Chengyuan Zhao
  */
 @SpringBootApplication

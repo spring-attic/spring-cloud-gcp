@@ -22,6 +22,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 /**
  * A sample entity.
+ *
  * @author Mike Eltsufin
  */
 @Table(name = "traders")
