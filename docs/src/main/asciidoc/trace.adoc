@@ -1,7 +1,7 @@
 == Spring Cloud Sleuth
 
 https://cloud.spring.io/spring-cloud-sleuth/[Spring Cloud Sleuth] is an instrumentation framework for Spring Boot applications.
-It captures trace informations and can forward traces to services like Zipkin for storage and analysis.
+It captures trace information and can forward traces to services like Zipkin for storage and analysis.
 
 Google Cloud Platform provides its own managed distributed tracing service called https://cloud.google.com/trace/[Stackdriver Trace].
 Instead of running and maintaining your own Zipkin instance and storage, you can use Stackdriver Trace to store traces, view trace details, generate latency distributions graphs, and generate performance regression reports.
@@ -9,7 +9,6 @@ Instead of running and maintaining your own Zipkin instance and storage, you can
 This Spring Cloud GCP starter can forward Spring Cloud Sleuth traces to Stackdriver Trace without an intermediary Zipkin server.
 
 Maven coordinates, using Spring Cloud GCP BOM:
-
 
 [source,xml]
 ----
@@ -33,7 +32,7 @@ Navigate to the https://console.cloud.google.com/apis/api/cloudtrace.googleapis.
 
 [NOTE]
 ====
-If you are already using a Zipkin server capturing trace information from multiple platform/frameworks, you also use a https://cloud.google.com/trace/docs/zipkin[Stackdriver Zipkin proxy] to forward those traces to Stackdriver Trace without modifying existing applications.
+If you are already using a Zipkin server capturing trace information from multiple platform/frameworks, you can also use a https://cloud.google.com/trace/docs/zipkin[Stackdriver Zipkin proxy] to forward those traces to Stackdriver Trace without modifying existing applications.
 ====
 
 === Tracing
@@ -41,7 +40,7 @@ If you are already using a Zipkin server capturing trace information from multip
 Spring Cloud Sleuth uses the https://github.com/openzipkin/brave[Brave tracer] to generate traces.
 This integration enables Brave to use the https://github.com/openzipkin/zipkin-gcp/tree/master/propagation-stackdriver[`StackdriverTracePropagation`] propagation.
 
-A propagation is responsible for extracting trace context from an entity (e.g., an HTTP servlet request) and for injecting trace context into an entity.
+A propagation is responsible for extracting trace context from an entity (e.g., an HTTP servlet request) and injecting trace context into an entity.
 A canonical example of the propagation usage is a web server that receives an HTTP request, which triggers other HTTP requests from the server before returning an HTTP response to the original caller.
 In the case of `StackdriverTracePropagation`, first it looks for trace context in the `x-cloud-trace-context` key (e.g., an HTTP request header).
 The value of the `x-cloud-trace-context` key can be formatted in three different ways:
@@ -56,8 +55,7 @@ The value of the `x-cloud-trace-context` key can be formatted in three different
 Since Stackdriver Trace doesn't support span joins, a new span ID is always generated, regardless of the one specified in `x-cloud-trace-context`.
 
 `TRACE_TRUE` can either be `0` if the entity should be untraced, or `1` if it should be traced.
-However, at the moment, if `TRACE_TRUE` is set to `1`, the entity isn't necessarily traced.
-Currently, to make sure a request is traced, the Sleuth property `spring.sleuth.sampler.probability=1` should be used, to trace every entity.
+This field forces the decision of whether or not to trace the request; if omitted then the decision is deferred to the sampler.
 
 If a `x-cloud-trace-context` key isn't found, `StackdriverTracePropagation` falls back to tracing with the https://github.com/openzipkin/b3-propagation[X-B3 headers].
 
@@ -97,7 +95,9 @@ spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.
 Spring Cloud GCP Trace does override some Sleuth configurations:
 
 - Always uses 128-bit Trace IDs. This is required by Stackdriver Trace.
-- Does not use Span joins. Span joins will share the span ID between the client and server Spans. Stackdriver requires that every Span ID within a Trace to be unique, so Span joins are not supported.
+- Does not use Span joins.
+Span joins will share the span ID between the client and server Spans.
+Stackdriver requires that every Span ID within a Trace to be unique, so Span joins are not supported.
 - Uses `StackdriverHttpClientParser` and `StackdriverHttpServerParser` by default to populate Stackdriver related fields.
 
 === Integration with Logging
@@ -105,7 +105,6 @@ Spring Cloud GCP Trace does override some Sleuth configurations:
 Integration with Stackdriver Logging is available through the link:logging.adoc[Stackdriver Logging Support].
 If the Trace integration is used together with the Logging one, the request logs will be associated to the corresponding traces.
 The trace logs can be viewed by going to the https://console.cloud.google.com/traces/traces[Google Cloud Console Trace List], selecting a trace and pressing the `Logs -> View` link in the `Details` section.
-
 
 === Sample
 
