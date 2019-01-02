@@ -23,6 +23,11 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+/**
+ * Tests for {@link MapBuilder}.
+ *
+ * @author Elena Felder
+ */
 public class MapBuilderTests {
 
 	@Test
