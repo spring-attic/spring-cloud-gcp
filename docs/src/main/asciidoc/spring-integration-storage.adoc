@@ -49,7 +49,7 @@ public MessageSource<File> synchronizerAdapter(Storage gcs) {
   synchronizer.setRemoteDirectory("your-gcs-bucket");
 
   GcsInboundFileSynchronizingMessageSource synchAdapter =
-         new GcsInboundFileSynchronizingMessageSource(synchronizer);
+          new GcsInboundFileSynchronizingMessageSource(synchronizer);
   synchAdapter.setLocalDirectory(new File("local-directory"));
 
   return synchAdapter;
@@ -68,7 +68,7 @@ Here is an example of how to configure a Google Cloud Storage inbound streaming 
 @InboundChannelAdapter(channel = "streaming-channel", poller = @Poller(fixedDelay = "5000"))
 public MessageSource<InputStream> streamingAdapter(Storage gcs) {
   GcsStreamingMessageSource adapter =
-         new GcsStreamingMessageSource(new GcsRemoteFileTemplate(new GcsSessionFactory(gcs)));
+          new GcsStreamingMessageSource(new GcsRemoteFileTemplate(new GcsSessionFactory(gcs)));
   adapter.setRemoteDirectory("your-gcs-bucket");
   return adapter;
 }

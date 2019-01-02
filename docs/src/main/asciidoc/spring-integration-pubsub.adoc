@@ -23,10 +23,10 @@ Gradle coordinates:
 
 [source,subs="normal"]
 ----
- dependencies {
-    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub'
-    compile group: 'org.springframework.integration', name: 'spring-integration-core'
- }
+dependencies {
+   compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub'
+   compile group: 'org.springframework.integration', name: 'spring-integration-core'
+}
 ----
 
 
@@ -45,13 +45,13 @@ To use the inbound channel adapter, a `PubSubInboundChannelAdapter` must be prov
 
 [source,java]
 ----
- @Bean
- public MessageChannel pubsubInputChannel() {
-    return new PublishSubscribeChannel();
- }
+@Bean
+public MessageChannel pubsubInputChannel() {
+   return new PublishSubscribeChannel();
+}
 
- @Bean
- public PubSubInboundChannelAdapter messageChannelAdapter(
+@Bean
+public PubSubInboundChannelAdapter messageChannelAdapter(
     @Qualifier("pubsubInputChannel") MessageChannel inputChannel,
     SubscriberFactory subscriberFactory) {
     PubSubInboundChannelAdapter adapter =
@@ -60,7 +60,7 @@ To use the inbound channel adapter, a `PubSubInboundChannelAdapter` must be prov
     adapter.setAckMode(AckMode.MANUAL);
 
     return adapter;
- }
+}
 ----
 
 In the example, we first specify the `MessageChannel` where the adapter is going to write incoming messages to.
@@ -92,16 +92,16 @@ Users can extract the `BasicAcknowledgeablePubsubMessage` using the `GcpPubSubHe
 
 [source,java]
 ----
- @Bean
- @ServiceActivator(inputChannel = "pubsubInputChannel")
- public MessageHandler messageReceiver() {
-    return message -> {
-        LOGGER.info("Message arrived! Payload: " + new String((byte[]) message.getPayload()));
-        BasicAcknowledgeablePubsubMessage originalMessage =
-              message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
-        originalMessage.ack();
-    };
- }
+@Bean
+@ServiceActivator(inputChannel = "pubsubInputChannel")
+public MessageHandler messageReceiver() {
+   return message -> {
+       LOGGER.info("Message arrived! Payload: " + new String((byte[]) message.getPayload()));
+       BasicAcknowledgeablePubsubMessage originalMessage =
+             message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
+       originalMessage.ack();
+   };
+}
 ----
 
 ==== Outbound channel adapter
@@ -120,7 +120,7 @@ To use the outbound channel adapter, a `PubSubMessageHandler` bean must be provi
 @Bean
 @ServiceActivator(inputChannel = "pubsubOutputChannel")
 public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
-   return new PubSubMessageHandler(pubsubTemplate, "topicName");
+  return new PubSubMessageHandler(pubsubTemplate, "topicName");
 }
 ----
 

@@ -636,8 +636,8 @@ Using the auto-configuration provided by Spring Boot Starter for Datastore, your
 
 [source,java]
 ----
- @SpringBootApplication
- public class DatastoreTemplateExample {
+@SpringBootApplication
+public class DatastoreTemplateExample {
 
 	@Autowired
 	DatastoreTemplate datastoreTemplate;
@@ -867,7 +867,7 @@ public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
   boolean existsByAction(String action);
 
   List<Trade> findTop3ByActionAndSymbolAndPriceGreaterThanAndPriceLessThanOrEqualOrderBySymbolDesc(
-			String action, String symbol, double priceFloor, double priceCeiling);
+			    String action, String symbol, double priceFloor, double priceCeiling);
 
   Page<TestEntity> findByAction(String action, Pageable pageable);
 

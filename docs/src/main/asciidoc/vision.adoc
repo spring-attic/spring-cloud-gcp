@@ -68,7 +68,7 @@ private CloudVisionTemplate cloudVisionTemplate;
 public void processImage() {
   Resource imageResource = this.resourceLoader.getResource("my_image.jpg");
   AnnotateImageResponse response = this.cloudVisionTemplate.analyzeImage(
-     imageResource, Type.LABEL_DETECTION);
+       imageResource, Type.LABEL_DETECTION);
   System.out.println("Image Classification results: " + response.getLabelAnnotationsList());
 }
 ----

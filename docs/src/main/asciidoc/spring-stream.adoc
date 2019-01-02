@@ -18,9 +18,9 @@ Gradle coordinates:
 
 [source,subs="normal"]
 ----
- dependencies {
-     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub-stream-binder'
- }
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub-stream-binder'
+}
 ----
 
 === Overview

@@ -156,7 +156,7 @@ public class Trader {
 
 	public Trader(String traderId, String firstName) {
 	    this.traderId = traderId;
- 	    this.firstName = firstName;
+	    this.firstName = firstName;
 	}
 }
 ----
@@ -1246,7 +1246,7 @@ public void createTable(SpannerPersistentEntity entity) {
 
 	  // The boolean parameter indicates that the database will be created if it does not exist.
 	  spannerDatabaseAdminTemplate.executeDdlStrings(Arrays.asList(
-           spannerSchemaUtils.getCreateTableDDLString(entity.getType())), true);
+            spannerSchemaUtils.getCreateTableDDLString(entity.getType())), true);
 	}
 }
 ----

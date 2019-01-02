@@ -28,18 +28,18 @@ $ gcloud beta runtime-config configs variables set \
 4.  Update link:src/main/resources/bootstrap.properties[]:
 +
 ....
- spring.cloud.gcp.config.enabled=true
- spring.cloud.gcp.config.name=myapp
+spring.cloud.gcp.config.enabled=true
+spring.cloud.gcp.config.name=myapp
 
- #default profile = default
- spring.cloud.gcp.config.profile=prod
+#default profile = default
+spring.cloud.gcp.config.profile=prod
 ....
 5.  Notice that link:src/main/java/com/example/MyAppProperties.java[MyAppProperties.java] uses `@ConfigurationProperties` to bind the `myapp` namespace from the environment.
 
 6. Note that in order to expose /actuator/refresh endpoint, link:src/resources/application.properties[application.properties] file includes the following property:
 +
 ....
- management.endpoints.web.exposure.include=refresh
+management.endpoints.web.exposure.include=refresh
 ....
 7.  Run the application using the `$ mvn spring-boot:run` command and verify the values are set appropriately at http://localhost:8080/
 8.  Update a property with `gcloud`:
