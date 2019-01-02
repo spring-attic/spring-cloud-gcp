@@ -85,11 +85,11 @@ Our starters handle the object instantiation and configuration logic so you don'
 Every starter depends on the GCP starter to provide critical bits of configuration, like the GCP project ID or OAuth2 credentials location.
 You can configure these as properties in, for example, a properties file:
 
-[source,indent=0]
+[source]
 ----
- spring.cloud.gcp.project-id=[YOUR_GCP_PROJECT_ID]
- spring.cloud.gcp.credentials.location=file:[LOCAL_PRIVATE_KEY_FILE]
- spring.cloud.gcp.credentials.scopes=[SCOPE_1],[SCOPE_2],[SCOPE_3]
+spring.cloud.gcp.project-id=[YOUR_GCP_PROJECT_ID]
+spring.cloud.gcp.credentials.location=file:[LOCAL_PRIVATE_KEY_FILE]
+spring.cloud.gcp.credentials.scopes=[SCOPE_1],[SCOPE_2],[SCOPE_3]
 ----
 
 These properties are optional and, if not specified, Spring Boot will attempt to automatically find them for you.

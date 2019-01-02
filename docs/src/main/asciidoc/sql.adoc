@@ -22,12 +22,12 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source,subs="normal",indent=0]
+[source,subs="normal"]
 ----
- dependencies {
-     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql-mysql'
-     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql-postgresql'
- }
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql-mysql'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-sql-postgresql'
+}
 ----
 
 
@@ -46,11 +46,11 @@ The Spring Boot Starters for Google Cloud SQL provide an auto-configured https:/
 Coupled with Spring JDBC, it provides a
 https://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html#jdbc-JdbcTemplate[`JdbcTemplate`] object bean that allows for operations such as querying and modifying a database.
 
-[source,java,indent=0]
+[source,java]
 ----
- public List<Map<String, Object>> listUsers() {
-     return jdbcTemplate.queryForList("SELECT * FROM user;");
- }
+public List<Map<String, Object>> listUsers() {
+    return jdbcTemplate.queryForList("SELECT * FROM user;");
+}
 ----
 
 You can rely on

@@ -37,11 +37,11 @@ Starter Maven coordinates, using https://github.com/spring-cloud/spring-cloud-gc
 
 Starter Gradle coordinates:
 
-[source, indent=0]
+[source]
 ----
- dependencies {
-     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-security-iap'
- }
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-security-iap'
+}
 ----
 
 === Configuration

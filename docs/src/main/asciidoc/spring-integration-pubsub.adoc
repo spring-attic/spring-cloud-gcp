@@ -115,13 +115,13 @@ To customize the conversion, you can specify a `PubSubMessageConverter` in the `
 
 To use the outbound channel adapter, a `PubSubMessageHandler` bean must be provided and configured on the user application side.
 
-[source,java,indent=0]
+[source,java]
 ----
- @Bean
- @ServiceActivator(inputChannel = "pubsubOutputChannel")
- public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
-    return new PubSubMessageHandler(pubsubTemplate, "topicName");
- }
+@Bean
+@ServiceActivator(inputChannel = "pubsubOutputChannel")
+public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
+   return new PubSubMessageHandler(pubsubTemplate, "topicName");
+}
 ----
 
 The provided `PubSubTemplate` contains all the necessary configuration to publish messages to a GCP Pub/Sub topic.
@@ -135,18 +135,18 @@ These are useful to process the message ID, in case of success, or the error if 
 
 To override the default destination you can use the `GcpPubSubHeaders.DESTINATION` header.
 
-[source,java,indent=0]
+[source,java]
 ----
 
- @Autowired
- private MessageChannel pubsubOutputChannel;
+@Autowired
+private MessageChannel pubsubOutputChannel;
 
- public void handleMessage(Message<?> msg) throws MessagingException {
-     final Message<?> message = MessageBuilder
-         .withPayload(msg.getPayload())
-         .setHeader(GcpPubSubHeaders.TOPIC, "customTopic").build();
-     pubsubOutputChannel.send(message);
- }
+public void handleMessage(Message<?> msg) throws MessagingException {
+    final Message<?> message = MessageBuilder
+        .withPayload(msg.getPayload())
+        .setHeader(GcpPubSubHeaders.TOPIC, "customTopic").build();
+    pubsubOutputChannel.send(message);
+}
 ----
 
 It is also possible to set an SpEL expression for the topic with the `setTopicExpression()` or `setTopicExpressionString()` methods.
@@ -162,13 +162,13 @@ Each adapter declares a `setHeaderMapper()` method to let you further customize 
 
 For example, to filter out headers `"foo"`, `"bar"` and all headers starting with the prefix "prefix_", you can use `setHeaderMapper()` along with the `PubSubHeaderMapper` implementation provided by this module.
 
-[source,java, indent=0]
+[source,java]
 ----
- PubSubMessageHandler adapter = ...
- ...
- PubSubHeaderMapper headerMapper = new PubSubHeaderMapper();
- headerMapper.setOutboundHeaderPatterns("!foo", "!bar", "!prefix_*", "*");
- adapter.setHeaderMapper(headerMapper);
+PubSubMessageHandler adapter = ...
+...
+PubSubHeaderMapper headerMapper = new PubSubHeaderMapper();
+headerMapper.setOutboundHeaderPatterns("!foo", "!bar", "!prefix_*", "*");
+adapter.setHeaderMapper(headerMapper);
 ----
 
 NOTE: The order in which the patterns are declared in `PubSubHeaderMapper.setOutboundHeaderPatterns()` and `PubSubHeaderMapper.setInboundHeaderPatterns()` matters.

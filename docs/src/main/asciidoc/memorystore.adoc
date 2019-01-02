@@ -28,12 +28,12 @@ In short, the following dependencies are needed:
 ----
 
 And then you can use `org.springframework.cache.annotation.Cacheable` annotation for methods you'd like to be cached.
-[source,java,indent=0]
+[source,java]
 ----
- @Cacheable("cache1")
- public String hello(@PathVariable String name) {
-     ....
- }
+@Cacheable("cache1")
+public String hello(@PathVariable String name) {
+    ....
+}
 ----
 
 If you are interested in a detailed how-to guide, please check https://codelabs.developers.google.com/codelabs/cloud-spring-cache-memorystore/[Spring Boot Caching using Cloud Memorystore codelab].

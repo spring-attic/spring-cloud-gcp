@@ -12,11 +12,11 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source, indent=0]
+[source]
 ----
- dependencies {
-     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-logging'
- }
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-logging'
+}
 ----
 
 https://cloud.google.com/logging/[Stackdriver Logging] is the managed logging service provided by Google Cloud Platform.

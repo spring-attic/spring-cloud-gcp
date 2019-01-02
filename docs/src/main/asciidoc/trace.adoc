@@ -21,11 +21,11 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source,subs="normal",indent=0]
+[source,subs="normal"]
 ----
- dependencies {
-     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-trace'
- }
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-trace'
+}
 ----
 
 You must enable Stackdriver Trace API from the Google Cloud Console in order to capture traces.
@@ -88,10 +88,10 @@ Read https://cloud.spring.io/spring-cloud-sleuth/[Sleuth documentation] for more
 
 For example, when you are testing to see the traces are going through, you can set the sampling rate to 100%.
 
-[source,indent=0]
+[source]
 ----
- spring.sleuth.sampler.probability=1                     # Send 100% of the request traces to Stackdriver.
- spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.
+spring.sleuth.sampler.probability=1                     # Send 100% of the request traces to Stackdriver.
+spring.sleuth.web.skipPattern=(^cleanup.*|.+favicon.*)  # Ignore some URL paths.
 ----
 
 Spring Cloud GCP Trace does override some Sleuth configurations:

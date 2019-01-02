@@ -19,11 +19,11 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source, indent=0]
+[source]
 ----
- dependencies {
-   compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-vision'
- }
+dependencies {
+  compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-vision'
+}
 ----
 
 === Cloud Vision Template
@@ -57,20 +57,20 @@ Additionally, you may consult the https://cloud.google.com/vision/docs/[Cloud Vi
 
 === Detect Image Labels Example
 
-[source,java,indent=0]
+[source,java]
 ----
- @Autowired
- private ResourceLoader resourceLoader;
+@Autowired
+private ResourceLoader resourceLoader;
 
- @Autowired
- private CloudVisionTemplate cloudVisionTemplate;
+@Autowired
+private CloudVisionTemplate cloudVisionTemplate;
 
- public void processImage() {
-   Resource imageResource = this.resourceLoader.getResource("my_image.jpg");
-   AnnotateImageResponse response = this.cloudVisionTemplate.analyzeImage(
-      imageResource, Type.LABEL_DETECTION);
-   System.out.println("Image Classification results: " + response.getLabelAnnotationsList());
- }
+public void processImage() {
+  Resource imageResource = this.resourceLoader.getResource("my_image.jpg");
+  AnnotateImageResponse response = this.cloudVisionTemplate.analyzeImage(
+     imageResource, Type.LABEL_DETECTION);
+  System.out.println("Image Classification results: " + response.getLabelAnnotationsList());
+}
 ----
 
 === Sample

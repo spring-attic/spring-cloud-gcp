@@ -16,11 +16,11 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source,subs="normal",indent=0]
+[source,subs="normal"]
 ----
- dependencies {
-     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-pubsub'
- }
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-pubsub'
+}
 ----
 
 This starter is also available from https://start.spring.io[Spring Initializr] through the `GCP Messaging` entry.
@@ -49,11 +49,11 @@ The `publish()` method takes in a topic name to post the message to, a payload o
 
 Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 
-[source,java,indent=0]
+[source,java]
 ----
- public void publishMessage() {
-     this.pubSubTemplate.publish("topic", "your message payload", ImmutableMap.of("key1", "val1"));
- }
+public void publishMessage() {
+    this.pubSubTemplate.publish("topic", "your message payload", ImmutableMap.of("key1", "val1"));
+}
 ----
 
 By default, the `SimplePubSubMessageConverter` is used to convert payloads of type `byte[]`, `ByteString`, `ByteBuffer`, and `String` to Pub/Sub messages.
@@ -62,15 +62,15 @@ By default, the `SimplePubSubMessageConverter` is used to convert payloads of ty
 
 For serialization and deserialization of POJOs using Jackson JSON, configure a `JacksonPubSubMessageConverter` bean, and the Spring Boot starter for GCP Pub/Sub will automatically wire it into the `PubSubTemplate`.
 
-[source,java,indent=0]
+[source,java]
 ----
- // Note: The ObjectMapper is used to convert Java POJOs to and from JSON.
- // You will have to configure your own instance if you are unable to depend
- // on the ObjectMapper provided by Spring Boot starters.
- @Bean
- public JacksonPubSubMessageConverter jacksonPubSubMessageConverter(ObjectMapper objectMapper) {
-     return new JacksonPubSubMessageConverter(objectMapper);
- }
+// Note: The ObjectMapper is used to convert Java POJOs to and from JSON.
+// You will have to configure your own instance if you are unable to depend
+// on the ObjectMapper provided by Spring Boot starters.
+@Bean
+public JacksonPubSubMessageConverter jacksonPubSubMessageConverter(ObjectMapper objectMapper) {
+    return new JacksonPubSubMessageConverter(objectMapper);
+}
 ----
 
 Alternatively, you can set it directly by calling the `setMessageConverter()` method on the `PubSubTemplate`.
@@ -126,137 +126,137 @@ The Spring Boot starter for GCP Pub/Sub auto-configures a `PubSubAdmin` object u
 
 `PubSubAdmin` implements a method to create topics:
 
-[source,java,indent=0]
+[source,java]
 ----
- public Topic createTopic(String topicName)
+public Topic createTopic(String topicName)
 ----
 
 Here is an example of how to create a Google Cloud Pub/Sub topic:
 
-[source,java,indent=0]
+[source,java]
 ----
- public void newTopic() {
-     pubSubAdmin.createTopic("topicName");
- }
+public void newTopic() {
+    pubSubAdmin.createTopic("topicName");
+}
 ----
 
 ==== Deleting a topic
 
 `PubSubAdmin` implements a method to delete topics:
 
-[source,java,indent=0]
+[source,java]
 ----
- public void deleteTopic(String topicName)
+public void deleteTopic(String topicName)
 ----
 
 Here is an example of how to delete a Google Cloud Pub/Sub topic:
 
-[source,java,indent=0]
+[source,java]
 ----
- public void deleteTopic() {
-     pubSubAdmin.deleteTopic("topicName");
- }
+public void deleteTopic() {
+    pubSubAdmin.deleteTopic("topicName");
+}
 ----
 
 ==== Listing topics
 
 `PubSubAdmin` implements a method to list topics:
 
-[source,java,indent=0]
+[source,java]
 ----
- public List<Topic> listTopics
+public List<Topic> listTopics
 ----
 
 Here is an example of how to list every Google Cloud Pub/Sub topic name in a project:
 
-[source,java,indent=0]
+[source,java]
 ----
- public List<String> listTopics() {
-     return pubSubAdmin
-         .listTopics()
-         .stream()
-         .map(Topic::getNameAsTopicName)
-         .map(TopicName::getTopic)
-         .collect(Collectors.toList());
- }
+public List<String> listTopics() {
+    return pubSubAdmin
+        .listTopics()
+        .stream()
+        .map(Topic::getNameAsTopicName)
+        .map(TopicName::getTopic)
+        .collect(Collectors.toList());
+}
 ----
 
 ==== Creating a subscription
 
 `PubSubAdmin` implements a method to create subscriptions to existing topics:
 
-[source,java,indent=0]
+[source,java]
 ----
- public Subscription createSubscription(String subscriptionName, String topicName, Integer ackDeadline, String pushEndpoint)
+public Subscription createSubscription(String subscriptionName, String topicName, Integer ackDeadline, String pushEndpoint)
 ----
 
 Here is an example of how to create a Google Cloud Pub/Sub subscription:
 
-[source,java,indent=0]
+[source,java]
 ----
- public void newSubscription() {
-     pubSubAdmin.createSubscription("subscriptionName", "topicName", 10, “http://my.endpoint/push”);
- }
+public void newSubscription() {
+    pubSubAdmin.createSubscription("subscriptionName", "topicName", 10, “http://my.endpoint/push”);
+}
 ----
 
 Alternative methods with default settings are provided for ease of use.
 The default value for `ackDeadline` is 10 seconds.
 If `pushEndpoint` isn’t specified, the subscription uses message pulling, instead.
 
-[source,java,indent=0]
+[source,java]
 ----
- public Subscription createSubscription(String subscriptionName, String topicName)
-----
-
-[source,java,indent=0]
-----
- public Subscription createSubscription(String subscriptionName, String topicName, Integer ackDeadline)
+public Subscription createSubscription(String subscriptionName, String topicName)
 ----
 
-[source,java,indent=0]
+[source,java]
 ----
- public Subscription createSubscription(String subscriptionName, String topicName, String pushEndpoint)
+public Subscription createSubscription(String subscriptionName, String topicName, Integer ackDeadline)
+----
+
+[source,java]
+----
+public Subscription createSubscription(String subscriptionName, String topicName, String pushEndpoint)
 ----
 
 ==== Deleting a subscription
 
 `PubSubAdmin` implements a method to delete subscriptions:
 
-[source,java,indent=0]
+[source,java]
 ----
- public void deleteSubscription(String subscriptionName)
+public void deleteSubscription(String subscriptionName)
 ----
 
 Here is an example of how to delete a Google Cloud Pub/Sub subscription:
 
-[source,java,indent=0]
+[source,java]
 ----
- public void deleteSubscription() {
-     pubSubAdmin.deleteSubscription("subscriptionName");
- }
+public void deleteSubscription() {
+    pubSubAdmin.deleteSubscription("subscriptionName");
+}
 ----
 
 ==== Listing subscriptions
 
 `PubSubAdmin` implements a method to list subscriptions:
 
-[source,java,indent=0]
+[source,java]
 ----
- public List<Subscription> listSubscriptions()
+public List<Subscription> listSubscriptions()
 ----
 
 Here is an example of how to list every subscription name in a project:
 
-[source,java,indent=0]
+[source,java]
 ----
- public List<String> listSubscriptions() {
-     return pubSubAdmin
-         .listSubscriptions()
-         .stream()
-         .map(Subscription::getNameAsSubscriptionName)
-         .map(SubscriptionName::getSubscription)
-         .collect(Collectors.toList());
- }
+public List<String> listSubscriptions() {
+    return pubSubAdmin
+        .listSubscriptions()
+        .stream()
+        .map(Subscription::getNameAsSubscriptionName)
+        .map(SubscriptionName::getSubscription)
+        .collect(Collectors.toList());
+}
 ----
 
 [#pubsub-configuration]

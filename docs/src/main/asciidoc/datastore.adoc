@@ -17,11 +17,11 @@ Maven coordinates for this module only, using https://github.com/spring-cloud/sp
 
 Gradle coordinates:
 
-[source,indent=0]
+[source]
 ----
- dependencies {
-     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-datastore'
- }
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-datastore'
+}
 ----
 
 We provide a link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Boot Starter for Spring Data Datastore], with which you can use our recommended auto-configuration setup.
@@ -40,11 +40,11 @@ Maven:
 
 Gradle:
 
-[source,subs="normal",indent=0]
+[source,subs="normal"]
 ----
- dependencies {
-     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-datastore'
- }
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-datastore'
+}
 ----
 
 This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Datastore libraries as well.
@@ -97,22 +97,22 @@ Our Spring Boot autoconfiguration creates the following beans available in the S
 
 Spring Data Cloud Datastore allows you to map domain POJOs to Cloud Datastore kinds and entities via annotations:
 
-[source,java,indent=0]
+[source,java]
 ----
- @Entity(name = "traders")
- public class Trader {
+@Entity(name = "traders")
+public class Trader {
 
- 	@Id
- 	@Field(name = "trader_id")
- 	String traderId;
+	@Id
+	@Field(name = "trader_id")
+	String traderId;
 
- 	String firstName;
+	String firstName;
 
- 	String lastName;
+	String lastName;
 
- 	@Transient
- 	Double temporaryNumber;
- }
+	@Transient
+	Double temporaryNumber;
+}
 ----
 
 Spring Data Cloud Datastore will ignore any property annotated with `@Transient`.
@@ -125,27 +125,27 @@ The constructor arguments can be a subset of the persistent properties.
 Every constructor argument needs to have the same name and type as a persistent property on the entity and the constructor should set the property from the given argument.
 Arguments that are not directly set to properties are not supported.
 
-[source,java,indent=0]
+[source,java]
 ----
- @Entity(name = "traders")
- public class Trader {
+@Entity(name = "traders")
+public class Trader {
 
- 	@Id
- 	@Field(name = "trader_id")
- 	String traderId;
+	@Id
+	@Field(name = "trader_id")
+	String traderId;
 
- 	String firstName;
+	String firstName;
 
- 	String lastName;
+	String lastName;
 
- 	@Transient
- 	Double temporaryNumber;
+	@Transient
+	Double temporaryNumber;
 
- 	public Trader(String traderId, String firstName) {
- 	    this.traderId = traderId;
- 	    this.firstName = firstName;
- 	}
- }
+	public Trader(String traderId, String firstName) {
+	    this.traderId = traderId;
+	    this.firstName = firstName;
+	}
+}
 ----
 
 
@@ -159,25 +159,25 @@ The `@Entity` annotation can provide the name of the Cloud Datastore kind that s
 
 You must annotate one of your POJO's fields as the ID value, because every entity in Cloud Datastore requires a single ID value:
 
-[source,java,indent=0]
+[source,java]
 ----
- @Entity(name = "trades")
- public class Trade {
- 	@Id
- 	@Field(name = "trade_id")
- 	String tradeId;
+@Entity(name = "trades")
+public class Trade {
+	@Id
+	@Field(name = "trade_id")
+	String tradeId;
 
- 	@Field(name = "trader_id")
- 	String traderId;
+	@Field(name = "trader_id")
+	String traderId;
 
- 	String action;
+	String action;
 
- 	Double price;
+	Double price;
 
- 	Double shares;
+	Double shares;
 
- 	String symbol;
- }
+	String symbol;
+}
 ----
 
 
@@ -229,29 +229,29 @@ Custom converters can be used extending the type support for user defined types.
 For example:
 
 We would like to have a field of type  `Album` on our `Singer` POJO and want it to be stored as a string property:
-[source, java, indent=0]
+[source, java]
 ----
- @Entity
- public class Singer {
+@Entity
+public class Singer {
 
- 	@Id
- 	String singerId;
+	@Id
+	String singerId;
 
- 	String name;
+	String name;
 
- 	Album album;
- }
+	Album album;
+}
 ----
 
 Where Album is a simple class:
 
-[source, java, indent=0]
+[source, java]
 ----
- public class Album {
- 	String albumName;
+public class Album {
+	String albumName;
 
- 	LocalDate date;
- }
+	LocalDate date;
+}
 ----
 
 We have to define the two converters:
@@ -280,18 +280,18 @@ We have to define the two converters:
 
 That will be configured in our `@Configuration` file:
 
-[source, java, indent=0]
+[source, java]
 ----
- @Configuration
- public class ConverterConfiguration {
- 	@Bean
- 	public DatastoreCustomConversions datastoreCustomConversions() {
- 		return new DatastoreCustomConversions(
- 				Arrays.asList(
- 						ALBUM_STRING_CONVERTER,
- 						STRING_ALBUM_CONVERTER));
- 	}
- }
+@Configuration
+public class ConverterConfiguration {
+	@Bean
+	public DatastoreCustomConversions datastoreCustomConversions() {
+		return new DatastoreCustomConversions(
+				Arrays.asList(
+						ALBUM_STRING_CONVERTER,
+						STRING_ALBUM_CONVERTER));
+	}
+}
 ----
 
 ==== Collections and arrays
@@ -314,47 +314,47 @@ Example:
 Let's improve the Singer class from the previous example.
 Instead of a field of type `Album`, we would like to have a field of type `ImmutableSet<Album>`:
 
-[source, java, indent=0]
+[source, java]
 ----
- @Entity
- public class Singer {
+@Entity
+public class Singer {
 
- 	@Id
- 	String singerId;
+	@Id
+	String singerId;
 
- 	String name;
+	String name;
 
- 	ImmutableSet<Album> albums;
- }
+	ImmutableSet<Album> albums;
+}
 ----
 
 We have to define a read converter only:
-[source, java, indent=0]
+[source, java]
 ----
- static final Converter<List<?>, ImmutableSet<?>> LIST_IMMUTABLE_SET_CONVERTER =
- 			new Converter<List<?>, ImmutableSet<?>>() {
- 				@Override
- 				public ImmutableSet<?> convert(List<?> source) {
- 					return ImmutableSet.copyOf(source);
- 				}
- 			};
+static final Converter<List<?>, ImmutableSet<?>> LIST_IMMUTABLE_SET_CONVERTER =
+			new Converter<List<?>, ImmutableSet<?>>() {
+				@Override
+				public ImmutableSet<?> convert(List<?> source) {
+					return ImmutableSet.copyOf(source);
+				}
+			};
 ----
 
 And add it to the list of custom converters:
-[source, java, indent=0]
+[source, java]
 ----
- @Configuration
- public class ConverterConfiguration {
- 	@Bean
- 	public DatastoreCustomConversions datastoreCustomConversions() {
- 		return new DatastoreCustomConversions(
- 				Arrays.asList(
- 						LIST_IMMUTABLE_SET_CONVERTER,
+@Configuration
+public class ConverterConfiguration {
+	@Bean
+	public DatastoreCustomConversions datastoreCustomConversions() {
+		return new DatastoreCustomConversions(
+				Arrays.asList(
+						LIST_IMMUTABLE_SET_CONVERTER,
 
- 						ALBUM_STRING_CONVERTER,
- 						STRING_ALBUM_CONVERTER));
- 	}
- }
+						ALBUM_STRING_CONVERTER,
+						STRING_ALBUM_CONVERTER));
+	}
+}
 ----
 
 
@@ -384,23 +384,23 @@ Here is an example of Cloud Datastore entity containing an embedded entity in JS
 
 This corresponds to a simple pair of Java entities:
 
-[source, java, indent=0]
+[source, java]
 ----
- import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
- import org.springframework.data.annotation.Id;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import org.springframework.data.annotation.Id;
 
- @Entity("parents")
- public class Parent {
-   @Id
-   String name;
+@Entity("parents")
+public class Parent {
+  @Id
+  String name;
 
-   Child child;
- }
+  Child child;
+}
 
- @Entity
- public class Child {
-   String name;
- }
+@Entity
+public class Child {
+  String name;
+}
 ----
 
 `Child` entities are not stored in their own kind.
@@ -415,31 +415,31 @@ Example:
 Entities can hold embedded entities that are their own type.
 We can store trees in Cloud Datastore using this feature:
 
-[source, java, indent=0]
+[source, java]
 ----
- import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
- import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
- import org.springframework.data.annotation.Id;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import org.springframework.data.annotation.Id;
 
- @Entity
- public class EmbeddableTreeNode {
-   @Id
-   long value;
+@Entity
+public class EmbeddableTreeNode {
+  @Id
+  long value;
 
-   EmbeddableTreeNode left;
+  EmbeddableTreeNode left;
 
-   EmbeddableTreeNode right;
+  EmbeddableTreeNode right;
 
-   Map<String, Long> longValues;
+  Map<String, Long> longValues;
 
-   Map<String, List<Timestamp>> listTimestamps;
+  Map<String, List<Timestamp>> listTimestamps;
 
-   public EmbeddableTreeNode(long value, EmbeddableTreeNode left, EmbeddableTreeNode right) {
-     this.value = value;
-     this.left = left;
-     this.right = right;
-   }
- }
+  public EmbeddableTreeNode(long value, EmbeddableTreeNode left, EmbeddableTreeNode right) {
+    this.value = value;
+    this.left = left;
+    this.right = right;
+  }
+}
 ----
 
 ===== Maps
@@ -455,25 +455,25 @@ Instead of a binary tree from the previous example, we would like to store a gen
 (each node can have an arbitrary number of children) in Cloud Datastore.
 To do that, we need to create a field of type `List<EmbeddableTreeNode>`:
 
-[source, java, indent=0]
+[source, java]
 ----
- import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
- import org.springframework.data.annotation.Id;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Embedded;
+import org.springframework.data.annotation.Id;
 
- public class EmbeddableTreeNode {
-   @Id
-   long value;
+public class EmbeddableTreeNode {
+  @Id
+  long value;
 
-   List<EmbeddableTreeNode> children;
+  List<EmbeddableTreeNode> children;
 
-   Map<String, EmbeddableTreeNode> siblingNodes;
+  Map<String, EmbeddableTreeNode> siblingNodes;
 
-   Map<String, Set<EmbeddableTreeNode>> subNodeGroups;
+  Map<String, Set<EmbeddableTreeNode>> subNodeGroups;
 
-   public EmbeddableTreeNode(List<EmbeddableTreeNode> children) {
-     this.children = children;
-   }
- }
+  public EmbeddableTreeNode(List<EmbeddableTreeNode> children) {
+    this.children = children;
+  }
+}
 ----
 
 Because Maps are stored as entities, they can further hold embedded entities:
@@ -491,30 +491,30 @@ Unlike embedded children, descendants are fully-formed entities residing in thei
 The parent entity does not have an extra field to hold the descendant entities.
 Instead, the relationship is captured in the descendants' keys, which refer to their parent entities:
 
-[source, java, indent=0]
+[source, java]
 ----
- import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
- import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
- import org.springframework.data.annotation.Id;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
+import org.springframework.data.annotation.Id;
 
- @Entity("orders")
- public class ShoppingOrder {
-   @Id
-   long id;
+@Entity("orders")
+public class ShoppingOrder {
+  @Id
+  long id;
 
-   @Descendants
-   List<Item> items;
- }
+  @Descendants
+  List<Item> items;
+}
 
- @Entity("purchased_item")
- public class Item {
-   @Id
-   Key purchasedItemKey;
+@Entity("purchased_item")
+public class Item {
+  @Id
+  Key purchasedItemKey;
 
-   String name;
+  String name;
 
-   Timestamp timeAddedToOrder;
- }
+  Timestamp timeAddedToOrder;
+}
 ----
 
 For example, an instance of a GQL key-literal representation for `Item` would also contain the parent `ShoppingOrder` ID value:
@@ -578,32 +578,32 @@ Because entity keys are immutable in Cloud Datastore, to change the key of a chi
 
 General relationships can be stored using the `@Reference` annotation.
 
-[source, java, indent=0]
+[source, java]
 ----
- import org.springframework.cloud.gcp.data.datastore.core.mapping.Reference;
- import org.springframework.data.annotation.Id;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Reference;
+import org.springframework.data.annotation.Id;
 
- @Entity
- public class ShoppingOrder {
-   @Id
-   long id;
+@Entity
+public class ShoppingOrder {
+  @Id
+  long id;
 
-   @Reference
-   List<Item> items;
+  @Reference
+  List<Item> items;
 
-   @Reference
-   Item specialSingleItem;
- }
+  @Reference
+  Item specialSingleItem;
+}
 
- @Entity
- public class Item {
-   @Id
-   Key purchasedItemKey;
+@Entity
+public class Item {
+  @Id
+  Key purchasedItemKey;
 
-   String name;
+  String name;
 
-   Timestamp timeAddedToOrder;
- }
+  Timestamp timeAddedToOrder;
+}
 ----
 
 `@Reference` relationships are between fully-formed entities residing in their own kinds.
@@ -634,25 +634,25 @@ The order of collection-like reference properties is not preserved when reading 
 
 Using the auto-configuration provided by Spring Boot Starter for Datastore, your Spring application context will contain a fully configured `DatastoreTemplate` object that you can autowire in your application:
 
-[source,java,indent=0]
+[source,java]
 ----
  @SpringBootApplication
  public class DatastoreTemplateExample {
 
- 	@Autowired
- 	DatastoreTemplate datastoreTemplate;
+	@Autowired
+	DatastoreTemplate datastoreTemplate;
 
- 	public void doSomething() {
- 		this.datastoreTemplate.deleteAll(Trader.class);
- 		//...
- 		Trader t = new Trader();
- 		//...
- 		this.datastoreTemplate.save(t);
- 		//...
- 		List<Trader> traders = datastoreTemplate.findAll(Trader.class);
- 		//...
- 	}
- }
+	public void doSomething() {
+		this.datastoreTemplate.deleteAll(Trader.class);
+		//...
+		Trader t = new Trader();
+		//...
+		this.datastoreTemplate.save(t);
+		//...
+		List<Trader> traders = datastoreTemplate.findAll(Trader.class);
+		//...
+	}
+}
 ----
 
 The Template API provides convenience methods for:
@@ -703,16 +703,16 @@ By default, all fields are indexed.
 To disable indexing on a particular field, `@Unindexed` annotation can be used.
 
 Example:
-[source, java, indent=0]
+[source, java]
 ----
- import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Unindexed;
 
- public class ExampleItem {
- 	long indexedField;
+public class ExampleItem {
+	long indexedField;
 
-	 @Unindexed
-	 long unindexedField;
- }
+	@Unindexed
+	long unindexedField;
+}
 ----
 
 When using queries directly or via Query Methods, Cloud Datastore requires https://cloud.google.com/datastore/docs/concepts/indexes[composite custom indexes] if the select statement is not `SELECT *` or if there is more than one filtering condition in the `WHERE` clause.
@@ -735,10 +735,10 @@ The required Datastore kind and entity metadata is obtained from the given objec
 If a POJO was retrieved from Datastore and its ID value was changed and then written or updated, the operation will occur as if against a row with the new ID value.
 The entity with the original ID value will not be affected.
 
-[source, java, indent=0]
+[source, java]
 ----
- Trader t = new Trader();
- this.datastoreTemplate.save(t);
+Trader t = new Trader();
+this.datastoreTemplate.save(t);
 ----
 
 The `save` method behaves as update-or-insert.
@@ -751,22 +751,22 @@ This feature is not supported yet.
 
 Read and write transactions are provided by `DatastoreOperations` via the `performTransaction` method:
 
-[source,java,indent=0]
+[source,java]
 ----
 
- @Autowired
- DatastoreOperations myDatastoreOperations;
+@Autowired
+DatastoreOperations myDatastoreOperations;
 
- public String doWorkInsideTransaction() {
-   return myDatastoreOperations.performTransaction(
-     transactionDatastoreOperations -> {
-       // Work with transactionDatastoreOperations here.
-       // It is also a DatastoreOperations object.
+public String doWorkInsideTransaction() {
+  return myDatastoreOperations.performTransaction(
+    transactionDatastoreOperations -> {
+      // Work with transactionDatastoreOperations here.
+      // It is also a DatastoreOperations object.
 
-       return "transaction completed";
-     }
-   );
- }
+      return "transaction completed";
+    }
+  );
+}
 ----
 
 The `performTransaction` method accepts a `Function` that is provided an instance of a `DatastoreOperations` object.
@@ -796,20 +796,20 @@ Only simple types are supported (i.e. collections are not supported).
 Converters for custom value types can be added (see <<Custom types>> section).
 
 Example:
-[source,java, indent=0]
+[source,java]
 ----
- Map<String, Long> map = new HashMap<>();
- map.put("field1", 1L);
- map.put("field2", 2L);
- map.put("field3", 3L);
+Map<String, Long> map = new HashMap<>();
+map.put("field1", 1L);
+map.put("field2", 2L);
+map.put("field3", 3L);
 
- keyForMap = datastoreTemplate.createKey("kindName", "id");
+keyForMap = datastoreTemplate.createKey("kindName", "id");
 
- //write a map
- datastoreTemplate.writeMap(keyForMap, map);
+//write a map
+datastoreTemplate.writeMap(keyForMap, map);
 
- //read a map
- Map<String, Long> loadedMap = datastoreTemplate.findByIdAsMap(keyForMap, Long.class);
+//read a map
+Map<String, Long> loadedMap = datastoreTemplate.findByIdAsMap(keyForMap, Long.class);
 ----
 
 === Repositories
@@ -818,10 +818,10 @@ Example:
 
 For example:
 
-[source,java,indent=0]
+[source,java]
 ----
- public interface TraderRepository extends DatastoreRepository<Trader, String> {
- }
+public interface TraderRepository extends DatastoreRepository<Trader, String> {
+}
 ----
 
 Spring Data generates a working implementation of the specified interface, which can be autowired into an application.
@@ -829,26 +829,26 @@ Spring Data generates a working implementation of the specified interface, which
 The `Trader` type parameter to `DatastoreRepository` refers to the underlying domain type.
 The second type parameter, `String` in this case, refers to the type of the key of the domain type.
 
-[source,java,indent=0]
+[source,java]
 ----
- public class MyApplication {
+public class MyApplication {
 
-	 @Autowired
-	 TraderRepository traderRepository;
+	@Autowired
+	TraderRepository traderRepository;
 
-	 public void demo() {
+	public void demo() {
 
-	 	this.traderRepository.deleteAll();
-	 	String traderId = "demo_trader";
-	 	Trader t = new Trader();
-	 	t.traderId = traderId;
-	 	this.tradeRepository.save(t);
+		this.traderRepository.deleteAll();
+		String traderId = "demo_trader";
+		Trader t = new Trader();
+		t.traderId = traderId;
+		this.tradeRepository.save(t);
 
- 		Iterable<Trader> allTraders = this.traderRepository.findAll();
+		Iterable<Trader> allTraders = this.traderRepository.findAll();
 
- 		int count = this.traderRepository.count();
- 	}
- }
+		int count = this.traderRepository.count();
+	}
+}
 
 ----
 
@@ -857,24 +857,24 @@ Filtering parameters can be of types supported by your configured custom convert
 
 ==== Query methods by convention
 
-[source, java, indent=0]
+[source, java]
 ----
- public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
-     List<Trader> findByAction(String action);
+public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
+  List<Trader> findByAction(String action);
 
-   int countByAction(String action);
+  int countByAction(String action);
 
-   boolean existsByAction(String action);
+  boolean existsByAction(String action);
 
-   List<Trade> findTop3ByActionAndSymbolAndPriceGreaterThanAndPriceLessThanOrEqualOrderBySymbolDesc(
-  			String action, String symbol, double priceFloor, double priceCeiling);
+  List<Trade> findTop3ByActionAndSymbolAndPriceGreaterThanAndPriceLessThanOrEqualOrderBySymbolDesc(
+			String action, String symbol, double priceFloor, double priceCeiling);
 
-   Page<TestEntity> findByAction(String action, Pageable pageable);
+  Page<TestEntity> findByAction(String action, Pageable pageable);
 
-   Slice<TestEntity> findBySymbol(String symbol, Pageable pageable);
+  Slice<TestEntity> findBySymbol(String symbol, Pageable pageable);
 
-   List<TestEntity> findBySymbol(String symbol, Sort sort);
- }
+  List<TestEntity> findBySymbol(String symbol, Sort sort);
+}
 ----
 
 In the example above the {spring-data-commons-ref}/#repositories.query-methods[query methods] in `TradeRepository` are generated based on the name of the methods using the{spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
@@ -924,16 +924,16 @@ Using the `@Query` annotation:
 
 The names of the tags of the GQL correspond to the `@Param` annotated names of the method parameters.
 
-[source, java, indent=0]
+[source, java]
 ----
- public interface TraderRepository extends DatastoreRepository<Trader, String> {
+public interface TraderRepository extends DatastoreRepository<Trader, String> {
 
-   @Query("SELECT * FROM traders WHERE name = @trader_name")
-   List<Trader> tradersByName(@Param("trader_name") String traderName);
+  @Query("SELECT * FROM traders WHERE name = @trader_name")
+  List<Trader> tradersByName(@Param("trader_name") String traderName);
 
-   @Query("SELECT * FROM  test_entities_ci WHERE id = @id_val")
-   TestEntity getOneTestEntity(@Param("id_val") long id);
- }
+  @Query("SELECT * FROM  test_entities_ci WHERE id = @id_val")
+  TestEntity getOneTestEntity(@Param("id_val") long id);
+}
 ----
 
 The following parameter types are supported:
@@ -1009,14 +1009,14 @@ You can specify the query for a method in the properties file by providing the G
 Trader.fetchByName=SELECT * FROM traders WHERE name = @tag0
 ----
 
-[source, java, indent=0]
+[source, java]
 ----
- public interface TraderRepository extends DatastoreRepository<Trader, String> {
+public interface TraderRepository extends DatastoreRepository<Trader, String> {
 
- 	// This method uses the query from the properties file instead of one generated based on name.
- 	List<Trader> fetchByName(@Param("tag0") String traderName);
+	// This method uses the query from the properties file instead of one generated based on name.
+	List<Trader> fetchByName(@Param("tag0") String traderName);
 
- }
+}
 ----
 
 ==== Transactions
@@ -1025,22 +1025,22 @@ These transactions work very similarly to those of `DatastoreOperations`, but is
 
 For example, this is a read-write transaction:
 
-[source,java,indent=0]
+[source,java]
 ----
 
- @Autowired
- DatastoreRepository myRepo;
+@Autowired
+DatastoreRepository myRepo;
 
- public String doWorkInsideTransaction() {
-   return myRepo.performTransaction(
-     transactionDatastoreRepo -> {
-       // Work with the single-transaction transactionDatastoreRepo here.
-       // This is a DatastoreRepository object.
+public String doWorkInsideTransaction() {
+  return myRepo.performTransaction(
+    transactionDatastoreRepo -> {
+      // Work with the single-transaction transactionDatastoreRepo here.
+      // This is a DatastoreRepository object.
 
-       return "transaction completed";
-     }
-   );
- }
+      return "transaction completed";
+    }
+  );
+}
 ----
 
 ==== Projections
@@ -1048,25 +1048,25 @@ For example, this is a read-write transaction:
 Spring Data Cloud Datastore supports {spring-data-commons-ref}/#projections[projections].
 You can define projection interfaces based on domain types and add query methods that return them in your repository:
 
-[source, java, indent=0]
+[source, java]
 ----
- public interface TradeProjection {
+public interface TradeProjection {
 
- 	String getAction();
+	String getAction();
 
- 	@Value("#{target.symbol + ' ' + target.action}")
- 	String getSymbolAndAction();
- }
+	@Value("#{target.symbol + ' ' + target.action}")
+	String getSymbolAndAction();
+}
 
- public interface TradeRepository extends DatastoreRepository<Trade, Key> {
+public interface TradeRepository extends DatastoreRepository<Trade, Key> {
 
- 	List<Trade> findByTraderId(String traderId);
+	List<Trade> findByTraderId(String traderId);
 
- 	List<TradeProjection> findByAction(String action);
+	List<TradeProjection> findByAction(String action);
 
- 	@Query("SELECT action, symbol FROM trades WHERE action = @action")
- 	List<TradeProjection> findByQuery(String action);
- }
+	@Query("SELECT action, symbol FROM trades WHERE action = @action")
+	List<TradeProjection> findByQuery(String action);
+}
 ----
 
 Projections can be provided by name-convention-based query methods as well as by custom GQL queries.
@@ -1089,11 +1089,11 @@ When running with Spring Boot, repositories can be exposed as REST services by s
 ----
 
 If you prefer to configure parameters (such as path), you can use `@RepositoryRestResource` annotation:
-[source,java, indent=0]
+[source,java]
 ----
- @RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
- public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
- }
+@RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
+public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
+}
 ----
 
 For example, you can retrieve all `Trade` objects in the repository by using `curl \http://<server>:<port>/trades`, or any specific trade via `curl \http://<server>:<port>/trades/<trader_id>`.

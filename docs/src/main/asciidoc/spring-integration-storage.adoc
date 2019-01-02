@@ -24,12 +24,12 @@ Maven coordinates, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source,subs="normal",indent=0]
+[source,subs="normal"]
 ----
- dependencies {
-     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-storage'
-     compile group: 'org.springframework.integration', name: 'spring-integration-file'
- }
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-storage'
+    compile group: 'org.springframework.integration', name: 'spring-integration-file'
+}
 ----
 
 
@@ -40,20 +40,20 @@ The files are temporarily stored in a folder in the local file system.
 
 Here is an example of how to configure a Google Cloud Storage inbound channel adapter.
 
-[source,java, indent=0]
+[source,java]
 ----
- @Bean
- @InboundChannelAdapter(channel = "new-file-channel", poller = @Poller(fixedDelay = "5000"))
- public MessageSource<File> synchronizerAdapter(Storage gcs) {
-   GcsInboundFileSynchronizer synchronizer = new GcsInboundFileSynchronizer(gcs);
-   synchronizer.setRemoteDirectory("your-gcs-bucket");
+@Bean
+@InboundChannelAdapter(channel = "new-file-channel", poller = @Poller(fixedDelay = "5000"))
+public MessageSource<File> synchronizerAdapter(Storage gcs) {
+  GcsInboundFileSynchronizer synchronizer = new GcsInboundFileSynchronizer(gcs);
+  synchronizer.setRemoteDirectory("your-gcs-bucket");
 
-   GcsInboundFileSynchronizingMessageSource synchAdapter =
-          new GcsInboundFileSynchronizingMessageSource(synchronizer);
-   synchAdapter.setLocalDirectory(new File("local-directory"));
+  GcsInboundFileSynchronizingMessageSource synchAdapter =
+         new GcsInboundFileSynchronizingMessageSource(synchronizer);
+  synchAdapter.setLocalDirectory(new File("local-directory"));
 
-   return synchAdapter;
- }
+  return synchAdapter;
+}
 ----
 
 ==== Inbound streaming channel adapter
@@ -62,16 +62,16 @@ The inbound streaming channel adapter is similar to the normal inbound channel a
 
 Here is an example of how to configure a Google Cloud Storage inbound streaming channel adapter.
 
-[source,java,indent=0]
+[source,java]
 ----
- @Bean
- @InboundChannelAdapter(channel = "streaming-channel", poller = @Poller(fixedDelay = "5000"))
- public MessageSource<InputStream> streamingAdapter(Storage gcs) {
-   GcsStreamingMessageSource adapter =
-          new GcsStreamingMessageSource(new GcsRemoteFileTemplate(new GcsSessionFactory(gcs)));
-   adapter.setRemoteDirectory("your-gcs-bucket");
-   return adapter;
- }
+@Bean
+@InboundChannelAdapter(channel = "streaming-channel", poller = @Poller(fixedDelay = "5000"))
+public MessageSource<InputStream> streamingAdapter(Storage gcs) {
+  GcsStreamingMessageSource adapter =
+         new GcsStreamingMessageSource(new GcsRemoteFileTemplate(new GcsSessionFactory(gcs)));
+  adapter.setRemoteDirectory("your-gcs-bucket");
+  return adapter;
+}
 ----
 
 ==== Outbound channel adapter
@@ -81,16 +81,16 @@ When it receives a `Message` containing a payload of type `File`, it writes that
 
 Here is an example of how to configure a Google Cloud Storage outbound channel adapter.
 
-[source,java,indent=0]
+[source,java]
 ----
- @Bean
- @ServiceActivator(inputChannel = "writeFiles")
- public MessageHandler outboundChannelAdapter(Storage gcs) {
-   GcsMessageHandler outboundChannelAdapter = new GcsMessageHandler(new GcsSessionFactory(gcs));
-   outboundChannelAdapter.setRemoteDirectoryExpression(new ValueExpression<>("your-gcs-bucket"));
+@Bean
+@ServiceActivator(inputChannel = "writeFiles")
+public MessageHandler outboundChannelAdapter(Storage gcs) {
+  GcsMessageHandler outboundChannelAdapter = new GcsMessageHandler(new GcsSessionFactory(gcs));
+  outboundChannelAdapter.setRemoteDirectoryExpression(new ValueExpression<>("your-gcs-bucket"));
 
-   return outboundChannelAdapter;
- }
+  return outboundChannelAdapter;
+}
 ----
 
 === Sample

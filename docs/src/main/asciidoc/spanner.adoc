@@ -17,11 +17,11 @@ Maven coordinates for this module only, using Spring Cloud GCP BOM:
 
 Gradle coordinates:
 
-[source,indent=0]
+[source]
 ----
- dependencies {
-     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-spanner'
- }
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-data-spanner'
+}
 ----
 
 We provide a link:../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Boot Starter for Spring Data Spanner], with which you can leverage our recommended auto-configuration setup.
@@ -40,11 +40,11 @@ Maven:
 
 Gradle:
 
-[source,subs="normal",indent=0]
+[source,subs="normal"]
 ----
- dependencies {
-     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-spanner'
- }
+dependencies {
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-data-spanner'
+}
 ----
 
 This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Spanner libraries as well.
@@ -111,22 +111,22 @@ Our Spring Boot autoconfiguration creates the following beans available in the S
 
 Spring Data Cloud Spanner allows you to map domain POJOs to Cloud Spanner tables via annotations:
 
-[source,java,indent=0]
+[source,java]
 ----
- @Table(name = "traders")
- public class Trader {
+@Table(name = "traders")
+public class Trader {
 
- 	@PrimaryKey
- 	@Column(name = "trader_id")
- 	String traderId;
+	@PrimaryKey
+	@Column(name = "trader_id")
+	String traderId;
 
- 	String firstName;
+	String firstName;
 
- 	String lastName;
+	String lastName;
 
- 	@NotMapped
- 	Double temporaryNumber;
- }
+	@NotMapped
+	Double temporaryNumber;
+}
 ----
 
 Spring Data Cloud Spanner will ignore any property annotated with `@NotMapped`.
@@ -139,26 +139,26 @@ The constructor arguments can be a subset of the persistent properties.
 Every constructor argument needs to have the same name and type as a persistent property on the entity and the constructor should set the property from the given argument.
 Arguments that are not directly set to properties are not supported.
 
-[source,java,indent=0]
+[source,java]
 ----
- @Table(name = "traders")
- public class Trader {
- 	@PrimaryKey
- 	@Column(name = "trader_id")
- 	String traderId;
+@Table(name = "traders")
+public class Trader {
+	@PrimaryKey
+	@Column(name = "trader_id")
+	String traderId;
 
- 	String firstName;
+	String firstName;
 
- 	String lastName;
+	String lastName;
 
- 	@NotMapped
- 	Double temporaryNumber;
+	@NotMapped
+	Double temporaryNumber;
 
- 	public Trader(String traderId, String firstName) {
- 	    this.traderId = traderId;
-  	    this.firstName = firstName;
- 	}
- }
+	public Trader(String traderId, String firstName) {
+	    this.traderId = traderId;
+ 	    this.firstName = firstName;
+	}
+}
 ----
 
 
@@ -174,13 +174,13 @@ To do that, you can use https://docs.spring.io/spring/docs/current/spring-framew
 
 For example:
 
-[source, java,indent=0]
+[source, java]
 ----
 
- @Table(name = "trades_#{tableNameSuffix}")
- public class Trade {
+@Table(name = "trades_#{tableNameSuffix}")
+public class Trade {
 	// ...
- }
+}
 ----
 
 The table name will be resolved only if the `tableNameSuffix` value/bean in the Spring application context is defined.
@@ -195,26 +195,26 @@ Even in that case, the `@PrimaryKey` annotation is required.
 Spanner has first class support for composite primary keys of multiple columns.
 You have to annotate all of your POJO's fields that the primary key consists of with `@PrimaryKey` as below:
 
-[source,java,indent=0]
+[source,java]
 ----
- @Table(name = "trades")
- public class Trade {
- 	@PrimaryKey(keyOrder = 2)
- 	@Column(name = "trade_id")
- 	private String tradeId;
+@Table(name = "trades")
+public class Trade {
+	@PrimaryKey(keyOrder = 2)
+	@Column(name = "trade_id")
+	private String tradeId;
 
- 	@PrimaryKey(keyOrder = 1)
- 	@Column(name = "trader_id")
- 	private String traderId;
+	@PrimaryKey(keyOrder = 1)
+	@Column(name = "trader_id")
+	private String traderId;
 
- 	private String action;
+	private String action;
 
- 	private Double price;
+	private Double price;
 
- 	private Double shares;
+	private Double shares;
 
- 	private String symbol;
- }
+	private String symbol;
+}
 ----
 
 The `keyOrder` parameter of `@PrimaryKey` identifies the properties corresponding to the primary key columns in order, starting with 1 and increasing consecutively.
@@ -262,38 +262,38 @@ Embedding allows reuse of columns between multiple entities, and can be useful f
 
 For example:
 
-[source,java,indent=0]
+[source,java]
 ----
- class X {
-   @PrimaryKey
-   String grandParentId;
+class X {
+  @PrimaryKey
+  String grandParentId;
 
-   long age;
- }
+  long age;
+}
 
- class A {
-   @PrimaryKey
-   @Embedded
-   X grandParent;
+class A {
+  @PrimaryKey
+  @Embedded
+  X grandParent;
 
-   @PrimaryKey(keyOrder = 2)
-   String parentId;
+  @PrimaryKey(keyOrder = 2)
+  String parentId;
 
-   String value;
- }
+  String value;
+}
 
- @Table(name = "items")
- class B {
-   @PrimaryKey
-   @Embedded
-   A parent;
+@Table(name = "items")
+class B {
+  @PrimaryKey
+  @Embedded
+  A parent;
 
-   @PrimaryKey(keyOrder = 2)
-   String id;
+  @PrimaryKey(keyOrder = 2)
+  String id;
 
-   @Column(name = "child_value")
-   String value;
- }
+  @Column(name = "child_value")
+  String value;
+}
 ----
 
 Entities of `B` can be stored in a table defined as:
@@ -325,54 +325,54 @@ Cloud Spanner does not support the foreign key constraint, though the parent-chi
 
 For example, the following Java entities:
 
-[source,java,indent=0]
+[source,java]
 ----
- @Table(name = "Singers")
- class Singer {
-   @PrimaryKey
-   long SingerId;
+@Table(name = "Singers")
+class Singer {
+  @PrimaryKey
+  long SingerId;
 
-   String FirstName;
+  String FirstName;
 
-   String LastName;
+  String LastName;
 
-   byte[] SingerInfo;
+  byte[] SingerInfo;
 
-   @Interleaved
-   List<Album> albums;
- }
+  @Interleaved
+  List<Album> albums;
+}
 
- @Table(name = "Albums")
- class Album {
-   @PrimaryKey
-   long SingerId;
+@Table(name = "Albums")
+class Album {
+  @PrimaryKey
+  long SingerId;
 
-   @PrimaryKey(keyOrder = 2)
-   long AlbumId;
+  @PrimaryKey(keyOrder = 2)
+  long AlbumId;
 
-   String AlbumTitle;
- }
+  String AlbumTitle;
+}
 ----
 
 These classes can correspond to an existing pair of interleaved tables.
 The `@Interleaved` annotation may be applied to `Collection` properties and the inner type is resolved as the child entity type.
 The schema needed to create them can also be generated using the `SpannerSchemaUtils` and executed using the `SpannerDatabaseAdminTemplate`:
 
-[source,java,indent=0]
+[source,java]
 ----
 
- @Autowired
- SpannerSchemaUtils schemaUtils;
+@Autowired
+SpannerSchemaUtils schemaUtils;
 
- @Autowired
- SpannerDatabaseAdminTemplate databaseAdmin;
- ...
+@Autowired
+SpannerDatabaseAdminTemplate databaseAdmin;
+...
 
- // Get the create statmenets for all tables in the table structure rooted at Singer
- List<String> createStrings = this.schemaUtils.getCreateTableDdlStringsForInterleavedHierarchy(Singer.class);
+// Get the create statmenets for all tables in the table structure rooted at Singer
+List<String> createStrings = this.schemaUtils.getCreateTableDdlStringsForInterleavedHierarchy(Singer.class);
 
- // Create the tables and also create the database if necessary
- this.databaseAdmin.executeDdlStrings(createStrings, true);
+// Create the tables and also create the database if necessary
+this.databaseAdmin.executeDdlStrings(createStrings, true);
 ----
 
 The `createStrings` list contains table schema statements using column names and types compatible with the provided Java type and any resolved child relationship types contained within based on the configured custom converters.
@@ -450,14 +450,14 @@ Spring Data Cloud Spanner will attempt to read the column STRUCT values into a p
 
 For the previous array-select example, the following property can be mapped with the constructed `ARRAY<STRUCT>` column: `List<TwoInts> pair;` where the `TwoInts` type is defined:
 
-[source, java, indent=0]
+[source, java]
 ----
- class TwoInts {
+class TwoInts {
 
-   int val1;
+  int val1;
 
-   int val2;
- }
+  int val2;
+}
 ----
 
 ==== Custom types
@@ -484,27 +484,27 @@ Custom converters can be used to extend the type support for user defined types.
 For example:
 
 We would like to have a field of type `Person` on our `Trade` POJO:
-[source, java,indent=0]
+[source, java]
 ----
 
- @Table(name = "trades")
- public class Trade {
-   //...
-   Person person;
-   //...
- }
+@Table(name = "trades")
+public class Trade {
+  //...
+  Person person;
+  //...
+}
 ----
 
 Where Person is a simple class:
 
-[source, java, indent=0]
+[source, java]
 ----
- public class Person {
+public class Person {
 
-   public String firstName;
-   public String lastName;
+  public String firstName;
+  public String lastName;
 
- }
+}
 ----
 
 We have to define the two converters:
@@ -533,18 +533,18 @@ We have to define the two converters:
 
 That will be configured in our `@Configuration` file:
 
-[source, java, indent=0]
+[source, java]
 ----
- @Configuration
- public class ConverterConfiguration {
+@Configuration
+public class ConverterConfiguration {
 
- 	@Bean
- 	public SpannerEntityProcessor spannerEntityProcessor(SpannerMappingContext spannerMappingContext) {
-	 	return new ConverterAwareMappingSpannerEntityProcessor(spannerMappingContext,
-	 			Arrays.asList(new PersonWriteConverter()),
-	 			Arrays.asList(new PersonReadConverter()));
-	 }
- }
+	@Bean
+	public SpannerEntityProcessor spannerEntityProcessor(SpannerMappingContext spannerMappingContext) {
+		return new ConverterAwareMappingSpannerEntityProcessor(spannerMappingContext,
+				Arrays.asList(new PersonWriteConverter()),
+				Arrays.asList(new PersonReadConverter()));
+	}
+}
 ----
 
 ==== Custom Converter for Struct Array Columns
@@ -562,25 +562,25 @@ It provides:
 
 Using the `autoconfigure` provided by our Spring Boot Starter for Spanner, your Spring application context will contain a fully configured `SpannerTemplate` object that you can easily autowire in your application:
 
-[source,java,indent=0]
+[source,java]
 ----
- @SpringBootApplication
- public class SpannerTemplateExample {
+@SpringBootApplication
+public class SpannerTemplateExample {
 
 	@Autowired
- 	SpannerTemplate spannerTemplate;
+	SpannerTemplate spannerTemplate;
 
- 	public void doSomething() {
- 		this.spannerTemplate.delete(Trade.class, KeySet.all());
- 		//...
- 		Trade t = new Trade();
- 		//...
- 		this.spannerTemplate.insert(t);
- 		//...
- 		List<Trade> tradesByAction = spannerTemplate.findAll(Trade.class);
- 		//...
- 	}
- }
+	public void doSomething() {
+		this.spannerTemplate.delete(Trade.class, KeySet.all());
+		//...
+		Trade t = new Trade();
+		//...
+		this.spannerTemplate.insert(t);
+		//...
+		List<Trade> tradesByAction = spannerTemplate.findAll(Trade.class);
+		//...
+	}
+}
 ----
 
 The Template API provides convenience methods for:
@@ -738,30 +738,30 @@ The row with the original primary key values will not be affected.
 
 The `insert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner, which means the operation will fail if a row with the POJO's primary key already exists in the table.
 
-[source, java, indent=0]
+[source, java]
 ----
- Trade t = new Trade();
- this.spannerTemplate.insert(t);
+Trade t = new Trade();
+this.spannerTemplate.insert(t);
 ----
 
 ===== Update
 
 The `update` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner, which means the operation will fail if the POJO's primary key does not already exist in the table.
 
-[source, java, indent=0]
+[source, java]
 ----
- // t was retrieved from a previous operation
- this.spannerTemplate.update(t);
+// t was retrieved from a previous operation
+this.spannerTemplate.update(t);
 ----
 
 ===== Upsert
 
 The `upsert` method of `SpannerOperations` accepts a POJO and writes all of its properties to Spanner using update-or-insert.
 
-[source, java, indent=0]
+[source, java]
 ----
- // t was retrieved from a previous operation or it's new
- this.spannerTemplate.upsert(t);
+// t was retrieved from a previous operation or it's new
+this.spannerTemplate.upsert(t);
 ----
 
 ===== Partial Update
@@ -771,10 +771,10 @@ If the `Optional` of set of column names is empty, then all columns are written 
 However, if the Optional is occupied by an empty set, then no columns will be written.
 
 
-[source, java, indent=0]
+[source, java]
 ----
- // t was retrieved from a previous operation or it's new
- this.spannerTemplate.update(t, "symbol", "action");
+// t was retrieved from a previous operation or it's new
+this.spannerTemplate.update(t, "symbol", "action");
 ----
 
 ==== DML
@@ -791,22 +791,22 @@ Inserts, updates, and deletions can affect any number of rows and entities.
 
 Read and write transactions are provided by `SpannerOperations` via the `performReadWriteTransaction` method:
 
-[source,java,indent=0]
+[source,java]
 ----
 
- @Autowired
- SpannerOperations mySpannerOperations;
+@Autowired
+SpannerOperations mySpannerOperations;
 
- public String doWorkInsideTransaction() {
-   return mySpannerOperations.performReadWriteTransaction(
-     transActionSpannerOperations -> {
-       // Work with transActionSpannerOperations here.
-       // It is also a SpannerOperations object.
+public String doWorkInsideTransaction() {
+  return mySpannerOperations.performReadWriteTransaction(
+    transActionSpannerOperations -> {
+      // Work with transActionSpannerOperations here.
+      // It is also a SpannerOperations object.
 
-       return "transaction completed";
-     }
-   );
- }
+      return "transaction completed";
+    }
+  );
+}
 ----
 
 The `performReadWriteTransaction` method accepts a `Function` that is provided an instance of a `SpannerOperations` object.
@@ -822,22 +822,22 @@ As these read-write transactions are locking, it is recommended that you use the
 
 The `performReadOnlyTransaction` method is used to perform read-only transactions using a `SpannerOperations`:
 
-[source,java, indent=0]
+[source,java]
 ----
 
- @Autowired
- SpannerOperations mySpannerOperations;
+@Autowired
+SpannerOperations mySpannerOperations;
 
- public String doWorkInsideTransaction() {
-   return mySpannerOperations.performReadOnlyTransaction(
-     transActionSpannerOperations -> {
-       // Work with transActionSpannerOperations here.
-       // It is also a SpannerOperations object.
+public String doWorkInsideTransaction() {
+  return mySpannerOperations.performReadOnlyTransaction(
+    transActionSpannerOperations -> {
+      // Work with transActionSpannerOperations here.
+      // It is also a SpannerOperations object.
 
-       return "transaction completed";
-     }
-   );
- }
+      return "transaction completed";
+    }
+  );
+}
 ----
 
 The `performReadOnlyTransaction` method accepts a `Function` that is provided an instance of a
@@ -875,10 +875,10 @@ When DML statements are executed outside of transactions, they are executed in [
 
 For example:
 
-[source,java,indent=0]
+[source,java]
 ----
- public interface TraderRepository extends SpannerRepository<Trader, String> {
- }
+public interface TraderRepository extends SpannerRepository<Trader, String> {
+}
 ----
 
 Spring Data generates a working implementation of the specified interface, which can be conveniently autowired into an application.
@@ -892,41 +892,41 @@ If the domain POJO type only has a single primary key column, then the primary k
 
 For example in case of Trades, that belong to a Trader, `TradeRepository` would look like this:
 
-[source,java,indent=0]
+[source,java]
 ----
- public interface TradeRepository extends SpannerRepository<Trade, String[]> {
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
 
- }
+}
 ----
 
-[source,java,indent=0]
+[source,java]
 ----
- public class MyApplication {
+public class MyApplication {
 
- 	@Autowired
- 	SpannerTemplate spannerTemplate;
+	@Autowired
+	SpannerTemplate spannerTemplate;
 
- 	@Autowired
- 	StudentRepository studentRepository;
+	@Autowired
+	StudentRepository studentRepository;
 
- 	public void demo() {
+	public void demo() {
 
- 		this.tradeRepository.deleteAll();
- 		String traderId = "demo_trader";
- 		Trade t = new Trade();
- 		t.symbol = stock;
- 		t.action = action;
- 		t.traderId = traderId;
- 		t.price = 100.0;
- 		t.shares = 12345.6;
- 		this.spannerTemplate.insert(t);
+		this.tradeRepository.deleteAll();
+		String traderId = "demo_trader";
+		Trade t = new Trade();
+		t.symbol = stock;
+		t.action = action;
+		t.traderId = traderId;
+		t.price = 100.0;
+		t.shares = 12345.6;
+		this.spannerTemplate.insert(t);
 
- 		Iterable<Trade> allTrades = this.tradeRepository.findAll();
+		Iterable<Trade> allTrades = this.tradeRepository.findAll();
 
- 		int count = this.tradeRepository.countByAction("BUY");
+		int count = this.tradeRepository.countByAction("BUY");
 
- 	}
- }
+	}
+}
 
 ----
 
@@ -947,22 +947,22 @@ These transactions work very similarly to those of `SpannerOperations`, but is s
 
 For example, this is a read-write transaction:
 
-[source,java,indent=0]
+[source,java]
 ----
 
- @Autowired
- SpannerRepository myRepo;
+@Autowired
+SpannerRepository myRepo;
 
- public String doWorkInsideTransaction() {
-   return myRepo.performReadOnlyTransaction(
-     transactionSpannerRepo -> {
-       // Work with the single-transaction transactionSpannerRepo here.
-       // This is a SpannerRepository object.
+public String doWorkInsideTransaction() {
+  return myRepo.performReadOnlyTransaction(
+    transactionSpannerRepo -> {
+      // Work with the single-transaction transactionSpannerRepo here.
+      // This is a SpannerRepository object.
 
-       return "transaction completed";
-     }
-   );
- }
+      return "transaction completed";
+    }
+  );
+}
 ----
 
 When creating custom repositories for your own domain types and query methods, you can extend `SpannerRepository` to access Cloud Spanner-specific features as well as all features from `PagingAndSortingRepository` and `CrudRepository`.
@@ -980,17 +980,17 @@ Comparisons using Struct parameters are limited to https://cloud.google.com/span
 
 ==== Query methods by convention
 
-[source, java, indent=0]
+[source, java]
 ----
- public interface TradeRepository extends SpannerRepository<Trade, String[]> {
-     List<Trade> findByAction(String action);
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
+    List<Trade> findByAction(String action);
 
-	 int countByAction(String action);
+	int countByAction(String action);
 
- 	// Named methods are powerful, but can get unwieldy
- 	List<Trade> findTop3DistinctByActionAndSymbolIgnoreCaseOrTraderIdOrderBySymbolDesc(
-   			String action, String symbol, String traderId);
- }
+	// Named methods are powerful, but can get unwieldy
+	List<Trade> findTop3DistinctByActionAndSymbolIgnoreCaseOrTraderIdOrderBySymbolDesc(
+  			String action, String symbol, String traderId);
+}
 ----
 
 In the example above, the {spring-data-commons-ref}/#repositories.query-methods[query methods] in `TradeRepository` are generated based on the name of the methods, using the {spring-data-commons-ref}#repositories.query-methods.query-creation[Spring Data Query creation naming convention].
@@ -1118,23 +1118,23 @@ You can specify the query for a method in the properties file by providing the S
 Trade.fetchByActionNamedQuery=SELECT * FROM trades WHERE trades.action = @tag0
 ----
 
-[source, java, indent=0]
+[source, java]
 ----
- public interface TradeRepository extends SpannerRepository<Trade, String[]> {
- 	// This method uses the query from the properties file instead of one generated based on name.
- 	List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
- }
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
+	// This method uses the query from the properties file instead of one generated based on name.
+	List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
+}
 ----
 ===== Query methods with annotation
 
 Using the `@Query` annotation:
 
-[source, java, indent=0]
+[source, java]
 ----
- public interface TradeRepository extends SpannerRepository<Trade, String[]> {
-     @Query("SELECT * FROM trades WHERE trades.action = @tag0")
-     List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
- }
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
+    @Query("SELECT * FROM trades WHERE trades.action = @tag0")
+    List<Trade> fetchByActionNamedQuery(@Param("tag0") String action);
+}
 ----
 
 Table names can be used directly.
@@ -1165,25 +1165,25 @@ List<Trade> fetchByActionNamedQuery(String action, Double priceRadius);
 Spring Data Spanner supports {spring-data-commons-ref}/#projections[projections].
 You can define projection interfaces based on domain types and add query methods that return them in your repository:
 
-[source, java, indent=0]
+[source, java]
 ----
- public interface TradeProjection {
+public interface TradeProjection {
 
- 	String getAction();
+	String getAction();
 
- 	@Value("#{target.symbol + ' ' + target.action}")
- 	String getSymbolAndAction();
- }
+	@Value("#{target.symbol + ' ' + target.action}")
+	String getSymbolAndAction();
+}
 
- public interface TradeRepository extends SpannerRepository<Trade, Key> {
+public interface TradeRepository extends SpannerRepository<Trade, Key> {
 
- 	List<Trade> findByTraderId(String traderId);
+	List<Trade> findByTraderId(String traderId);
 
- 	List<TradeProjection> findByAction(String action);
+	List<TradeProjection> findByAction(String action);
 
- 	@Query("SELECT action, symbol FROM trades WHERE action = @action")
- 	List<TradeProjection> findByQuery(String action);
- }
+	@Query("SELECT action, symbol FROM trades WHERE action = @action")
+	List<TradeProjection> findByQuery(String action);
+}
 ----
 
 Projections can be provided by name-convention-based query methods as well as by custom SQL queries.
@@ -1204,27 +1204,27 @@ When running with Spring Boot, repositories can be exposed as REST services by s
 ----
 
 If you prefer to configure parameters (such as path), you can use `@RepositoryRestResource` annotation:
-[source,java,indent=0]
+[source,java]
 ----
- @RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
- public interface TradeRepository extends SpannerRepository<Trade, String[]> {
- }
+@RepositoryRestResource(collectionResourceRel = "trades", path = "trades")
+public interface TradeRepository extends SpannerRepository<Trade, String[]> {
+}
 ----
 
 For example, you can retrieve all `Trade` objects in the repository by using `curl \http://<server>:<port>/trades`, or any specific trade via `curl \http://<server>:<port>/trades/<trader_id>,<trade_id>`.
 
 The separator between your primary key components, `id` and `trader_id` in this case, is a comma by default, but can be configured to any string not found in your key values by extending the `SpannerKeyIdConverter` class:
 
-[source,java,indent=0]
+[source,java]
 ----
- @Component
- class MySpecialIdConverter extends SpannerKeyIdConverter {
+@Component
+class MySpecialIdConverter extends SpannerKeyIdConverter {
 
-     @Override
-     protected String getUrlIdSeparator() {
-         return ":";
-     }
- }
+    @Override
+    protected String getUrlIdSeparator() {
+        return ":";
+    }
+}
 ----
 
 You can also write trades using `curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/` where the file `test.json` holds the JSON representation of a `Trade` object.
@@ -1233,22 +1233,22 @@ You can also write trades using `curl -XPOST -H"Content-Type: application/json" 
 
 Databases and tables inside Spanner instances can be created automatically from `SpannerPersistentEntity` objects:
 
-[source,java,indent=0]
+[source,java]
 ----
- @Autowired
- private SpannerSchemaUtils spannerSchemaUtils;
+@Autowired
+private SpannerSchemaUtils spannerSchemaUtils;
 
- @Autowired
- private SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
+@Autowired
+private SpannerDatabaseAdminTemplate spannerDatabaseAdminTemplate;
 
- public void createTable(SpannerPersistentEntity entity) {
- 	if(!spannerDatabaseAdminTemplate.tableExists(entity.tableName()){
+public void createTable(SpannerPersistentEntity entity) {
+	if(!spannerDatabaseAdminTemplate.tableExists(entity.tableName()){
 
- 	  // The boolean parameter indicates that the database will be created if it does not exist.
- 	  spannerDatabaseAdminTemplate.executeDdlStrings(Arrays.asList(
-            spannerSchemaUtils.getCreateTableDDLString(entity.getType())), true);
- 	}
- }
+	  // The boolean parameter indicates that the database will be created if it does not exist.
+	  spannerDatabaseAdminTemplate.executeDdlStrings(Arrays.asList(
+           spannerSchemaUtils.getCreateTableDDLString(entity.getType())), true);
+	}
+}
 ----
 
 Schemas can be generated for entire object hierarchies with interleaved relationships and composite keys.
