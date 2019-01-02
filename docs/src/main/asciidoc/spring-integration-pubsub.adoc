@@ -24,8 +24,8 @@ Gradle coordinates:
 [source,subs="normal"]
 ----
 dependencies {
-   compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub'
-   compile group: 'org.springframework.integration', name: 'spring-integration-core'
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-pubsub'
+    compile group: 'org.springframework.integration', name: 'spring-integration-core'
 }
 ----
 
@@ -47,7 +47,7 @@ To use the inbound channel adapter, a `PubSubInboundChannelAdapter` must be prov
 ----
 @Bean
 public MessageChannel pubsubInputChannel() {
-   return new PublishSubscribeChannel();
+    return new PublishSubscribeChannel();
 }
 
 @Bean
@@ -95,12 +95,12 @@ Users can extract the `BasicAcknowledgeablePubsubMessage` using the `GcpPubSubHe
 @Bean
 @ServiceActivator(inputChannel = "pubsubInputChannel")
 public MessageHandler messageReceiver() {
-   return message -> {
-       LOGGER.info("Message arrived! Payload: " + new String((byte[]) message.getPayload()));
-       BasicAcknowledgeablePubsubMessage originalMessage =
-             message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
-       originalMessage.ack();
-   };
+    return message -> {
+        LOGGER.info("Message arrived! Payload: " + new String((byte[]) message.getPayload()));
+        BasicAcknowledgeablePubsubMessage originalMessage =
+              message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
+        originalMessage.ack();
+    };
 }
 ----
 
@@ -120,7 +120,7 @@ To use the outbound channel adapter, a `PubSubMessageHandler` bean must be provi
 @Bean
 @ServiceActivator(inputChannel = "pubsubOutputChannel")
 public MessageHandler messageSender(PubSubTemplate pubsubTemplate) {
-  return new PubSubMessageHandler(pubsubTemplate, "topicName");
+    return new PubSubMessageHandler(pubsubTemplate, "topicName");
 }
 ----
 
