@@ -22,7 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
 /**
+ * Web app for sample app.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 @RestController
 public class WebController {
@@ -38,6 +41,7 @@ public class WebController {
 	 * redirects the user to the home page.
 	 *
 	 * @param message the message posted to the Pub/Sub topic
+	 * @return the redirected view for the request
 	 */
 	@PostMapping("/postMessage")
 	public RedirectView postMessage(@RequestParam("message") String message) {

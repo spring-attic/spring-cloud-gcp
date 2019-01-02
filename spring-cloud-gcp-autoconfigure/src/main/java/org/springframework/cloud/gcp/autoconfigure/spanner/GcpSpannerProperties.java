@@ -23,6 +23,7 @@ import org.springframework.cloud.gcp.core.CredentialsSupplier;
 import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
+ * Settings for Spring Data Cloud Spanner.
  * @author Chengyuan Zhao
  * @author Ray Tsang
  */

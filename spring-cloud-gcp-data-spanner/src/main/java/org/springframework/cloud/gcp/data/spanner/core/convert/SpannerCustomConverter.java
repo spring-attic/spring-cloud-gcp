@@ -26,6 +26,8 @@ import org.springframework.data.convert.CustomConversions;
 import org.springframework.util.Assert;
 
 /**
+ * A custom type converter.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  *
@@ -36,7 +38,7 @@ public abstract class SpannerCustomConverter {
 	private final ConfigurableConversionService conversionService;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * @param customConversions must not be null.
 	 * @param conversionService if null, then {@link DefaultConversionService} is used.
 	 */

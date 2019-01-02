@@ -24,7 +24,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * MVC Adapter that adds the {@link TraceIdLoggingWebMvcInterceptor}
+ * MVC Adapter that adds the {@link TraceIdLoggingWebMvcInterceptor}.
  *
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
@@ -37,9 +37,10 @@ public class LoggingWebMvcConfigurer implements WebMvcConfigurer {
 	/**
 	 * Constructor that accepts an {@link TraceIdLoggingWebMvcInterceptor}. If the given
 	 * interceptor is null, then a default {@link XCloudTraceIdExtractor} is used.
-	 * @param interceptor The interceptor to use with this configurer. If not provided a
+	 * @param interceptor the interceptor to use with this configurer. If not provided a
 	 * {@link TraceIdLoggingWebMvcInterceptor} is used with the trace ID extractor
 	 * described above.
+	 * @param projectIdProvider the project ID provider to use
 	 */
 	public LoggingWebMvcConfigurer(
 			@Autowired(required = false) TraceIdLoggingWebMvcInterceptor interceptor,

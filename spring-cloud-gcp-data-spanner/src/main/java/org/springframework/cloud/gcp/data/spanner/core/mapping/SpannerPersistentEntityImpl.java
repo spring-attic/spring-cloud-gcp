@@ -51,6 +51,7 @@ import org.springframework.util.StringUtils;
  * Represents a Cloud Spanner table and its columns' mapping to fields within an entity
  * type.
  *
+ * @param <T> the type of the persistent entity
  * @author Ray Tsang
  * @author Chengyuan Zhao
  *
@@ -86,7 +87,7 @@ public class SpannerPersistentEntityImpl<T>
 	private String tableName;
 
 	/**
-	 * Creates a {@link SpannerPersistentEntityImpl}
+	 * Creates a {@link SpannerPersistentEntityImpl}.
 	 * @param information type information about the underlying entity type.
 	 */
 	public SpannerPersistentEntityImpl(TypeInformation<T> information) {
@@ -95,7 +96,7 @@ public class SpannerPersistentEntityImpl<T>
 	}
 
 	/**
-	 * Creates a {@link SpannerPersistentEntityImpl}
+	 * Creates a {@link SpannerPersistentEntityImpl}.
 	 * @param information type information about the underlying entity type.
 	 * @param spannerMappingContext a mapping context that can be used to create persistent
 	 *     entities from properties of this entity

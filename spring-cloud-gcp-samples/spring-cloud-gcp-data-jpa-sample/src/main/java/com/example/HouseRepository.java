@@ -18,6 +18,11 @@ package com.example;
 
 import org.springframework.data.repository.CrudRepository;
 
+/**
+ * A sample repository for House entities.
+ *
+ * @author Joao Andre Martins
+ */
 public interface HouseRepository extends CrudRepository<House, Long> {
 
 }

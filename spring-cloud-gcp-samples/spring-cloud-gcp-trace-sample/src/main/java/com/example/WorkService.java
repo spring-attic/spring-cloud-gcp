@@ -23,6 +23,11 @@ import org.springframework.cloud.sleuth.annotation.NewSpan;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * The busy-work service for the sample application.
+ *
+ * @author Ray Tsang
+ */
 @Service
 public class WorkService {
 	private static final Log LOGGER = LogFactory.getLog(WorkService.class);

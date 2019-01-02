@@ -26,8 +26,11 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for the Jackson message converter.
+ *
  * @author Dmitry Solomakha
  * @author Doug Hoard
+ * @author Chengyuan Zhao
  *
  * @since  1.1
  */
@@ -74,6 +77,9 @@ public class JacksonPubSubMessageConverterTests {
 		Assert.assertNotNull(pubsubMessage);
 	}
 
+	/**
+	 * A test class containing data to test conversions.
+	 */
 	static class Contact {
 		String firstName;
 

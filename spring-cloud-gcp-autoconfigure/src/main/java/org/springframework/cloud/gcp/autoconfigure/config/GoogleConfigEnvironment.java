@@ -26,6 +26,7 @@ import java.util.Map;
  * Expected response format for Google Runtime Configurator API response.
  *
  * @author Jisha Abubaker
+ * @author Chengyuan Zhao
  *
  * @since 1.1
  */
@@ -53,6 +54,9 @@ class GoogleConfigEnvironment {
 		return config;
 	}
 
+	/**
+	 * A data object for a configuration.
+	 */
 	static class Variable {
 
 		private String name;

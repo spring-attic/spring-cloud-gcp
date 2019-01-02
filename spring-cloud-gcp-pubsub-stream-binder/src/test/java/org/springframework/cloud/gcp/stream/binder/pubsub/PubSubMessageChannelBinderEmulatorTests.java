@@ -35,6 +35,9 @@ public class PubSubMessageChannelBinderEmulatorTests extends
 		AbstractBinderTests<PubSubTestBinder, ExtendedConsumerProperties<PubSubConsumerProperties>,
 				ExtendedProducerProperties<PubSubProducerProperties>> {
 
+	/**
+	 * The emulator instance, shared across tests.
+	 */
 	@ClassRule
 	public static PubSubEmulator emulator = new PubSubEmulator();
 

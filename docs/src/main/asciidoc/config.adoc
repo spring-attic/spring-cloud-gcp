@@ -5,6 +5,8 @@ Spring Cloud GCP makes it possible to use the https://cloud.google.com/deploymen
 The Spring Cloud GCP Config support is provided via its own Spring Boot starter.
 It enables the use of the Google Runtime Configuration API as a source for Spring Boot configuration properties.
 
+NOTE: The Google Cloud Runtime Configuration service is in beta status.
+
 Maven coordinates, using Spring Cloud GCP BOM:
 
 [source,xml]
@@ -23,8 +25,6 @@ dependencies {
     compile group: 'org.springframework.cloud', name: 'spring-cloud-gcp-starter-config'
 }
 ----
-
-The Google Cloud Runtime Configuration service is in beta status.
 
 === Configuration
 
@@ -45,7 +45,7 @@ Timeout in milliseconds for connecting to the Google Runtime Configuration API |
 
 NOTE: These properties should be specified in a http://cloud.spring.io/spring-cloud-static/spring-cloud.html#_the_bootstrap_application_context[`bootstrap.yml`/`bootstrap.properties`] file, rather than the usual `applications.yml`/`application.properties`.
 
-NOTE: Also note that core properties as described in <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> do not apply to Spring Cloud GCP Config.
+NOTE: Core properties, as described in <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>, do not apply to Spring Cloud GCP Config.
 
 === Quick start
 

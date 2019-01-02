@@ -380,7 +380,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	/**
-	 * Convert Datastore entities to objects of a specified type
+	 * Convert Datastore entities to objects of a specified type.
 	 * @param entities the Datastore entities
 	 * @param entityClass the type the entities should be converted to.
 	 * @param <T> the type the entities should be converted to.

@@ -59,7 +59,7 @@ public class DatastoreRepositoryFactory extends RepositoryFactorySupport
 	private ApplicationContext applicationContext;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * @param datastoreMappingContext the mapping context used to get mapping metadata for
 	 * entity types.
 	 * @param datastoreTemplate the Datastore operations object used by Datastore

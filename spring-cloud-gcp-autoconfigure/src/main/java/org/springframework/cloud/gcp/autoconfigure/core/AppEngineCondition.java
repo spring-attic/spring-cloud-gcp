@@ -28,10 +28,17 @@ import org.springframework.util.StringUtils;
  *
  * @author Ray Tsang
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class AppEngineCondition extends SpringBootCondition {
+	/**
+	 * Name of the AppEngine runtime version property.
+	 */
 	public static final String APPENGINE_RUNTIME_PROPERTY = "com.google.appengine.runtime.version";
 
+	/**
+	 * Prefix for AppEngine runtimes.
+	 */
 	public static final String APPENGINE_RUNTIME_PREFIX = "Google App Engine/";
 
 	@Override

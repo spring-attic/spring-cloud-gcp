@@ -43,6 +43,7 @@ import org.springframework.util.Assert;
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Doug Hoard
+ * @author Chengyuan Zhao
  */
 public class DefaultSubscriberFactory implements SubscriberFactory {
 
@@ -72,7 +73,6 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	/**
 	 * Default {@link DefaultSubscriberFactory} constructor.
-	 *
 	 * @param projectIdProvider provides the GCP project ID
 	 */
 	public DefaultSubscriberFactory(GcpProjectIdProvider projectIdProvider) {
@@ -90,6 +90,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	/**
 	 * Set the provider for the subscribers' executor. Useful to specify the number of threads to be
 	 * used by each executor.
+	 * @param executorProvider the executor provider to set
 	 */
 	public void setExecutorProvider(ExecutorProvider executorProvider) {
 		this.executorProvider = executorProvider;
@@ -97,6 +98,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	/**
 	 * Set the provider for the subscribers' transport channel.
+	 * @param channelProvider the channel provider to set
 	 */
 	public void setChannelProvider(TransportChannelProvider channelProvider) {
 		this.channelProvider = channelProvider;
@@ -104,6 +106,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	/**
 	 * Set the provider for the GCP credentials to be used by the subscribers' API calls.
+	 * @param credentialsProvider the credentials provider to set
 	 */
 	public void setCredentialsProvider(CredentialsProvider credentialsProvider) {
 		this.credentialsProvider = credentialsProvider;
@@ -111,6 +114,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	/**
 	 * Set the provider for the HTTP headers to be added to the subscribers' REST API calls.
+	 * @param headerProvider the header provider to set
 	 */
 	public void setHeaderProvider(HeaderProvider headerProvider) {
 		this.headerProvider = headerProvider;
@@ -118,6 +122,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	/**
 	 * Set the provider for the system executor, to poll and manage lease extensions.
+	 * @param systemExecutorProvider the system executor provider to set
 	 */
 	public void setSystemExecutorProvider(ExecutorProvider systemExecutorProvider) {
 		this.systemExecutorProvider = systemExecutorProvider;
@@ -126,6 +131,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 	/**
 	 * Set the flow control for the subscribers, including the behaviour for when the flow limits
 	 * are hit.
+	 * @param flowControlSettings the flow control settings to set
 	 */
 	public void setFlowControlSettings(FlowControlSettings flowControlSettings) {
 		this.flowControlSettings = flowControlSettings;
@@ -133,6 +139,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	/**
 	 * Set the maximum period the ack timeout is extended by.
+	 * @param maxAckExtensionPeriod the max ack extension period to set
 	 */
 	public void setMaxAckExtensionPeriod(Duration maxAckExtensionPeriod) {
 		this.maxAckExtensionPeriod = maxAckExtensionPeriod;
@@ -140,6 +147,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	/**
 	 * Set the number of pull workers.
+	 * @param parallelPullCount the parallel pull count to set
 	 */
 	public void setParallelPullCount(Integer parallelPullCount) {
 		this.parallelPullCount = parallelPullCount;
@@ -147,6 +155,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	/**
 	 * Set the endpoint for synchronous pulling messages.
+	 * @param pullEndpoint the pull endpoint to set
 	 */
 	public void setPullEndpoint(String pullEndpoint) {
 		this.pullEndpoint = pullEndpoint;
@@ -154,6 +163,7 @@ public class DefaultSubscriberFactory implements SubscriberFactory {
 
 	/**
 	 * Set the clock to use for the retry logic in synchronous pulling.
+	 * @param apiClock the api clock to set
 	 */
 	public void setApiClock(ApiClock apiClock) {
 		this.apiClock = apiClock;

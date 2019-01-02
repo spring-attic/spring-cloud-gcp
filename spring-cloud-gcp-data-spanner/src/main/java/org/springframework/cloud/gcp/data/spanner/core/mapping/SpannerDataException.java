@@ -19,6 +19,8 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping;
 import org.springframework.dao.DataAccessException;
 
 /**
+ * Exceptions for Spring Data Cloud Spanner.
+ *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  * @author Balint Pato

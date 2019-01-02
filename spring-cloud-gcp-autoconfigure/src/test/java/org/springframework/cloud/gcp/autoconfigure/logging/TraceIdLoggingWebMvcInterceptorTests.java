@@ -25,6 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 /**
+ * Tests the trace id logging web mvc interceptor.
+ *
  * @author Mike Eltsufin
  */
 

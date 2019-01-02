@@ -29,22 +29,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Person {
 
+	/**
+	 * the name of the person.
+	 */
 	public final String name;
 
+	/**
+	 * the age of the person.
+	 */
 	public final int age;
 
 	@JsonCreator
 	public Person(@JsonProperty("name") String name, @JsonProperty("age") int age) {
 		this.name = name;
 		this.age = age;
-	}
-
-	@Override
-	public String toString() {
-		return "Person{" +
-				"name='" + name + '\'' +
-				", age=" + age +
-				'}';
 	}
 
 	@Override
@@ -63,5 +61,13 @@ public class Person {
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.name, this.age);
+	}
+
+	@Override
+	public String toString() {
+		return "Person{" +
+				"name='" + this.name + '\'' +
+				", age=" + this.age +
+				'}';
 	}
 }

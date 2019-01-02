@@ -39,7 +39,7 @@ public class DatastorePersistentPropertyImpl
 	private final FieldNamingStrategy fieldNamingStrategy;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 *
 	 * @param property the property to store
 	 * @param owner the entity to which this property belongs

@@ -64,6 +64,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests Spanner SQL Query Methods.
+ *
  * @author Chengyuan Zhao
  */
 public class SqlSpannerQueryTests {
@@ -87,6 +89,9 @@ public class SqlSpannerQueryTests {
 	private final SpannerEntityProcessor spannerEntityProcessor = mock(
 			SpannerEntityProcessor.class);
 
+	/**
+	 * checks messages and types for exceptions.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

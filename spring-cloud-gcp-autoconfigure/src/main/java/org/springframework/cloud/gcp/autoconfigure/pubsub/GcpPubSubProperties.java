@@ -25,6 +25,8 @@ import org.springframework.cloud.gcp.core.CredentialsSupplier;
 import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
+ * Properties for Pub/Sub.
+ *
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
@@ -83,10 +85,17 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		return this.emulatorHost;
 	}
 
+	/**
+	 * Set the emulator host.
+	 * @param emulatorHost the emulator host.
+	 */
 	public void setEmulatorHost(String emulatorHost) {
 		this.emulatorHost = emulatorHost;
 	}
 
+	/**
+	 * Publisher settings.
+	 */
 	public static class Publisher {
 
 		/**
@@ -121,6 +130,9 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		}
 	}
 
+	/**
+	 * Subscriber settings.
+	 */
 	public static class Subscriber {
 
 		/**
@@ -189,11 +201,18 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 			return this.executorThreads;
 		}
 
+		/**
+		 * Set the number of executor threads.
+		 * @param executorThreads the number of threads
+		 */
 		public void setExecutorThreads(int executorThreads) {
 			this.executorThreads = executorThreads;
 		}
 	}
 
+	/**
+	 * Retry settings.
+	 */
 	public static class Retry {
 
 		/**
@@ -316,6 +335,10 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 			this.rpcTimeoutMultiplier = rpcTimeoutMultiplier;
 		}
 
+		/**
+		 * get the max RPC timeout seconds.
+		 * @return the number of seconds of the RPC timeout
+		 */
 		public Long getMaxRpcTimeoutSeconds() {
 			return this.maxRpcTimeoutSeconds;
 		}
@@ -325,6 +348,9 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		}
 	}
 
+	/**
+	 * flow control settings.
+	 */
 	public static class FlowControl {
 
 		/**
@@ -370,6 +396,9 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		}
 	}
 
+	/**
+	 * Batching settings.
+	 */
 	public static class Batching {
 
 		/**

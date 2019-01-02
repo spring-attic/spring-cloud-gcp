@@ -78,7 +78,7 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 	 * </ul>
 	 *
 	 * <p>If credentials are provided by one source, the next sources are discarded.
-	 * @param credentialsSupplier Provides properties that can override OAuth2
+	 * @param credentialsSupplier provides properties that can override OAuth2
 	 * scopes list used by the credentials, and the location of the OAuth2 credentials private
 	 * key.
 	 * @throws IOException if an issue occurs creating the DefaultCredentialsProvider

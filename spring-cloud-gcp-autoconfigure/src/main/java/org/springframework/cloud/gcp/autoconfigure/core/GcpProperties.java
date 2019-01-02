@@ -22,9 +22,12 @@ import org.springframework.cloud.gcp.core.Credentials;
 import org.springframework.cloud.gcp.core.CredentialsSupplier;
 
 /**
+ * Top-level auto-config settings.
+ *
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 @ConfigurationProperties("spring.cloud.gcp")
 public class GcpProperties implements CredentialsSupplier {

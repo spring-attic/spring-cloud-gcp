@@ -39,7 +39,10 @@ import org.springframework.core.io.ClassPathResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for the Cloud Foundry environment post-processor.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class GcpCloudFoundryEnvironmentPostProcessorTests {
 
@@ -133,6 +136,9 @@ public class GcpCloudFoundryEnvironmentPostProcessorTests {
 				.get("credentials")).get("PrivateKeyData");
 	}
 
+	/**
+	 * Config class for the tests.
+	 */
 	@EnableConfigurationProperties({ GcpPubSubProperties.class, GcpStorageProperties.class,
 			GcpSpannerProperties.class, GcpDatastoreProperties.class, GcpTraceProperties.class,
 			GcpCloudSqlProperties.class, DataSourceProperties.class })

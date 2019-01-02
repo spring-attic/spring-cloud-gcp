@@ -29,11 +29,17 @@ import org.springframework.messaging.support.NativeMessageHeaderAccessor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for the Pub/Sub message header.
+ *
  * @author João André Martins
  * @author Eric Goetschalckx
+ * @author Chengyuan Zhao
  */
 public class PubSubHeaderMapperTests {
 
+	/**
+	 * used to check for exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

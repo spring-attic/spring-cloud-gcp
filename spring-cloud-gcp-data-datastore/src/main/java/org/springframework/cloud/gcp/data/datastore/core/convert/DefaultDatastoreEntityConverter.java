@@ -37,7 +37,7 @@ import org.springframework.data.mapping.model.PersistentEntityParameterValueProv
 import org.springframework.data.util.TypeInformation;
 
 /**
- * A class for object to entity and entity to object conversions
+ * A class for object to entity and entity to object conversions.
  *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao

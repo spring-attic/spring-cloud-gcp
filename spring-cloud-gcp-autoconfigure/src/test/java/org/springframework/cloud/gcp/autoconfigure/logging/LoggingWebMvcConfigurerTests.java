@@ -28,6 +28,8 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for the logging-web-mvc configurer.
+ *
  * @author Mike Eltsufin
  */
 @RunWith(MockitoJUnitRunner.class)

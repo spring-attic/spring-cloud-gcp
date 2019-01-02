@@ -36,10 +36,14 @@ import org.springframework.core.io.ResourceLoader;
  * @author Vinicius Carvalho
  * @author Artem Bilan
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public class GoogleStorageProtocolResolver
 		implements ProtocolResolver, BeanFactoryPostProcessor, ResourceLoaderAware {
 
+	/**
+	 * The prefix of all storage locations.
+	 */
 	public static final String PROTOCOL = "gs://";
 
 	private static final Log logger = LogFactory
