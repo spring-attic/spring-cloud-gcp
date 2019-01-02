@@ -1,11 +1,13 @@
 == Google Cloud Vision
 
-The https://cloud.google.com/vision/[Google Cloud Vision API] allows users to leverage powerful machine learning algorithms for images such as: image classification, face detection, reading text within images, and others.
+The https://cloud.google.com/vision/[Google Cloud Vision API] allows users to leverage machine learning algorithms for processing images including: image classification, face detection, text extraction, and others.
 
 Spring Cloud GCP provides:
 
-- A convenience starter which automatically configures authentication settings and client objects needed to begin using the https://cloud.google.com/vision/[Google Cloud Vision API].
-- A Cloud Vision Template which allows you to easily send images to the API as Spring Resources.
+* A convenience starter which automatically configures authentication settings and client objects needed to begin using the https://cloud.google.com/vision/[Google Cloud Vision API].
+* A Cloud Vision Template which simplifies interactions with the Cloud Vision API.
+** Allows you to easily send images to the API as Spring Resources.
+** Offers convenience methods for common operations, such as extracting the text from an image.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 
@@ -50,12 +52,15 @@ A full list of Cloud Vision Features is provided in the https://cloud.google.com
 
 - https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.AnnotateImageResponse[`AnnotateImageResponse`] contains the results of all the feature analyses that were specified in the request.
 For each feature type that you provide in the request, `AnnotateImageResponse` provides a getter method to get the result of that feature analysis.
-For example, if you analyzed an image using the `LABEL_DETECTION` feature, then you would retrieve the results from the response using `annotateImageResponse.getLabelAnnotationsList()`.
+For example, if you analyzed an image using the `LABEL_DETECTION` feature, you would retrieve the results from the response using `annotateImageResponse.getLabelAnnotationsList()`.
 +
-`AnnotateImageResponse` is provided by the Google Cloud Vision libraries; you may consult the https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.AnnotateImageResponse[RPC reference] or http://googleapis.github.io/googleapis/java/all/latest/apidocs/com/google/cloud/vision/v1/AnnotateImageResponse.html[Javadoc] as a reference.
+`AnnotateImageResponse` is provided by the Google Cloud Vision libraries; please consult the https://cloud.google.com/vision/docs/reference/rpc/google.cloud.vision.v1#google.cloud.vision.v1.AnnotateImageResponse[RPC reference] or http://googleapis.github.io/googleapis/java/all/latest/apidocs/com/google/cloud/vision/v1/AnnotateImageResponse.html[Javadoc] for more details.
 Additionally, you may consult the https://cloud.google.com/vision/docs/[Cloud Vision docs] to familiarize yourself with the concepts and features of the API.
 
 === Detect Image Labels Example
+
+https://cloud.google.com/vision/docs/detecting-labels[Image labeling] refers to producing labels that describe the contents of an image.
+Below is a code sample of how this is done using the Cloud Vision Spring Template.
 
 [source,java]
 ----
