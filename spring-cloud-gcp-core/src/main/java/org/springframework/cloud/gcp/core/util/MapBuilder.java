@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,13 @@ import org.springframework.util.Assert;
  *
  * @param <K> map key type
  * @param <V> map value type
+ *
  * @author Elena Felder
+ *
  * @since 1.1
  */
 public final class MapBuilder<K, V> {
+
 	private final Map<K, V> map = new HashMap<>();
 
 	public MapBuilder<K, V> put(K key, V value) {
