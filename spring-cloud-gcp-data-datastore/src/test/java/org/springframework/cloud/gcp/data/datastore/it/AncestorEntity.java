@@ -26,6 +26,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.data.annotation.Id;
 
 /**
+ * An ancestor entity for integration tests.
+ *
  * @author Dmitry Solomakha
  */
 public class AncestorEntity {
@@ -61,6 +63,9 @@ public class AncestorEntity {
 		return Objects.hash(this.name, this.descendants);
 	}
 
+	/**
+	 * A descendant entity.
+	 */
 	public static class DescendantEntry {
 		@Id
 		Key id;

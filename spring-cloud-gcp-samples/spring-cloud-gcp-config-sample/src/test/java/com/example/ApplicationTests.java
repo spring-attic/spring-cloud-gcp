@@ -33,6 +33,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
+ * Tests for config sample.
+ *
  * @author Mike Eltsufin
  */
 @RunWith(SpringRunner.class)

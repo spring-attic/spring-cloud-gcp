@@ -30,7 +30,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
+ * Integration tests for config auto-configuration.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class GcpConfigIntegrationTests {
 

@@ -64,6 +64,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * Auto-config for Pub/Sub.
+ *
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
@@ -256,6 +258,11 @@ public class GcpPubSubAutoConfiguration {
 	/**
 	 * A helper method for applying properties to settings builders for purpose of seeing if at least
 	 * one setting was set.
+	 * @param prop the property on which to operate
+	 * @param consumer the function to give the property
+	 * @param <T> the type of the property
+	 * @return a function that accepts a boolean of if there is a next property and returns a boolean indicating if the
+	 * propety was set
 	 */
 	private <T> Function<Boolean, Boolean> ifNotNull(T prop, Consumer<T> consumer) {
 		return (next) -> {

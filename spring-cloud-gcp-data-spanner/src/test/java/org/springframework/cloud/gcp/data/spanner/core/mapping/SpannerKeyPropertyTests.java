@@ -30,10 +30,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for the Spanner custom key property.
+ *
  * @author Chengyuan Zhao
  */
 public class SpannerKeyPropertyTests {
 
+	/**
+	 * checks the messages and types of exceptions.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

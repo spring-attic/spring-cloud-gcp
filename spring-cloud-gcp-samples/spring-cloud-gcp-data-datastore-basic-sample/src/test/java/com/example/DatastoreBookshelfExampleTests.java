@@ -33,6 +33,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
+ * Tests for the Book Shelf sample app.
+ *
  * @author Dmitry Solomakha
  */
 @RunWith(SpringRunner.class)

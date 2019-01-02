@@ -37,6 +37,8 @@ import org.springframework.cloud.stream.provisioning.ProvisioningProvider;
 import org.springframework.util.StringUtils;
 
 /**
+ * Provisioning provider for Pub/Sub.
+ *
  * @author João André Martins
  * @author Mike Eltsufin
  */

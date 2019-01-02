@@ -27,6 +27,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 
 /**
+ * A repository for integration tests that holds many complex use cases.
+ *
  * @author Chengyuan Zhao
  */
 public interface TradeRepository extends SpannerRepository<Trade, Key> {

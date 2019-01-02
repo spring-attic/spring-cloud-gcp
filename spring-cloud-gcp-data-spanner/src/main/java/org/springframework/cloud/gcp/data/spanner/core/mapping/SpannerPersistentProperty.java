@@ -52,13 +52,13 @@ public interface SpannerPersistentProperty
 	/**
 	 * Gets the order of this column if it is part of the table's primary key. Will be
 	 * empty or null if this column is not part of the primary key.
-	 * @return An optional that is empty if no primary key order exists for the property.
+	 * @return an optional that is empty if no primary key order exists for the property.
 	 */
 	OptionalInt getPrimaryKeyOrder();
 
 	/**
 	 * Gets the maximum data length of the column if provided.
-	 * @return An optional that is empty if no maximum length was provided.
+	 * @return an optional that is empty if no maximum length was provided.
 	 */
 	OptionalLong getMaxColumnLength();
 
@@ -66,7 +66,7 @@ public interface SpannerPersistentProperty
 	 * True if property corresponds to a column a Cloud Spanner
 	 * table or child entities stored in Cloud Spanner.
 	 * False otherwise.
-	 * @return True if this property will be mapped to and from Cloud Spanner. False otherwise.
+	 * @return true if this property will be mapped to and from Cloud Spanner. False otherwise.
 	 */
 	boolean isMapped();
 
@@ -78,7 +78,7 @@ public interface SpannerPersistentProperty
 
 	/**
 	 * True if property is a collection of child entities. False otherwise.
-	 * @return True if property is a collection of child entities corresponding to an interleaved
+	 * @return true if property is a collection of child entities corresponding to an interleaved
 	 * child table. False otherwise.
 	 */
 	boolean isInterleaved();
@@ -95,7 +95,7 @@ public interface SpannerPersistentProperty
 	 * Optionally directly specify the column type in Cloud Spanner. For ARRAY columns
 	 * this refers to type of the item the array holds. If this is not specified then it
 	 * is inferred.
-	 * @return The user-specified column item type.
+	 * @return the user-specified column item type.
 	 */
 	Code getAnnotatedColumnItemType();
 }

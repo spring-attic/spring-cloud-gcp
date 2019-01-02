@@ -26,6 +26,8 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerConverters
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for common Spanner custom converters.
+ *
  * @author Chengyuan Zhao
  */
 public class SpannerConvertersTest {

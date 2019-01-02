@@ -19,6 +19,8 @@ package org.springframework.cloud.gcp.data.datastore.core.mapping;
 import org.springframework.dao.DataAccessException;
 
 /**
+ * Exceptions that are created by Spring Data Cloud Datastore.
+ *
  * @author Chengyuan Zhao
  *
  * @since 1.1

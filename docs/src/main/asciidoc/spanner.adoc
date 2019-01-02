@@ -49,8 +49,6 @@ dependencies {
 
 This setup takes care of bringing in the latest compatible version of Cloud Java Cloud Spanner libraries as well.
 
-Spring Data Cloud Spanner and the underlying Cloud Spanner Java Client Library are beta status.
-
 === Configuration
 
 To setup Spring Data Cloud Spanner, you have to configure the following:

@@ -50,7 +50,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * Query Method for GQL queries.
- *
+ * @param <T> the return type of the Query Method
  * @author Chengyuan Zhao
  *
  * @since 1.1
@@ -74,10 +74,12 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private SpelQueryContext.EvaluatingSpelQueryContext evaluatingSpelQueryContext;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * @param type the underlying entity type
 	 * @param queryMethod the underlying query method to support.
 	 * @param datastoreTemplate used for executing queries.
+	 * @param gql the query text.
+	 * @param evaluationContextProvider the provider used to evaluate SpEL expressions in queries.
 	 * @param datastoreMappingContext used for getting metadata about entities.
 	 */
 	public GqlDatastoreQuery(Class<T> type, DatastoreQueryMethod queryMethod,

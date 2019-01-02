@@ -74,6 +74,9 @@ public class DatastoreTransactionTemplateTests {
 	@MockBean
 	ObjectToKeyFactory objectToKeyFactory;
 
+	/**
+	 * Used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
@@ -161,6 +164,9 @@ public class DatastoreTransactionTemplateTests {
 		this.transactionalService.deleteInReadOnly();
 	}
 
+	/**
+	 * Spring config for the tests.
+	 */
 	@Configuration
 	@EnableTransactionManagement
 	static class Config {
@@ -193,6 +199,9 @@ public class DatastoreTransactionTemplateTests {
 		}
 	}
 
+	/**
+	 * A service object used in the test that performs the transactions.
+	 */
 	public static class TransactionalService {
 		@Autowired
 		DatastoreTemplate datastoreTemplate;

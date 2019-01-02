@@ -19,7 +19,7 @@ package org.springframework.cloud.gcp.data.datastore.core.mapping;
 import org.springframework.data.mapping.PersistentProperty;
 
 /**
- * Persistent property for Google Cloud Datastore
+ * Persistent property for Google Cloud Datastore.
  *
  * @author Chengyuan Zhao
  *
@@ -50,7 +50,7 @@ public interface DatastorePersistentProperty
 	boolean isDescendants();
 
 	/**
-	 * True if the property should be excluded from indexes
+	 * True if the property should be excluded from indexes.
 	 * @return true if the property should be indexed
 	 */
 	boolean isUnindexed();
@@ -63,7 +63,7 @@ public interface DatastorePersistentProperty
 	EmbeddedType getEmbeddedType();
 
 	/**
-	 * True if the property is stored within Datastore entity
+	 * True if the property is stored within Datastore entity.
 	 * @return true if the property is stored within Datastore entity
 	 */
 	boolean isColumnBacked();

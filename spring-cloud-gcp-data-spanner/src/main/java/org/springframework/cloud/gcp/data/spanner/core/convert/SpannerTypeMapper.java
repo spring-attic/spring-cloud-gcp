@@ -26,6 +26,8 @@ import com.google.cloud.spanner.Type.Code;
 import com.google.common.collect.ImmutableMap;
 
 /**
+ * A utility class to map between common Java types and types to use with Spanner.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  *

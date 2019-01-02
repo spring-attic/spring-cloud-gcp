@@ -44,12 +44,16 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
 /**
+ * Tests for the Spanner transaction manager.
+ *
  * @author Alexander Khimich
  * @author Chengyuan Zhao
- *
  */
 public class SpannerTransactionManagerTests {
 
+	/**
+	 * checks the exception for messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

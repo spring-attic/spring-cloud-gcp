@@ -19,6 +19,8 @@ package org.springframework.cloud.gcp.autoconfigure.datastore;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 
 /**
+ * A repository for testing instantiation.
+ *
  * @author Chengyuan Zhao
  */
 public interface TestRepository extends DatastoreRepository {

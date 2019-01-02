@@ -38,12 +38,19 @@ import org.springframework.cloud.gcp.core.GcpScope;
  * arguments, the credential location must be in a place that this class knows without any context.
  *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class SqlCredentialFactory implements CredentialFactory {
 
+	/**
+	 * the system property name for the location of the credentials.
+	 */
 	public static final String CREDENTIAL_LOCATION_PROPERTY_NAME =
 			"GOOGLE_CLOUD_SQL_CREDS_LOCATION";
 
+	/**
+	 * the system property name for the key name.
+	 */
 	public static final String CREDENTIAL_ENCODED_KEY_PROPERTY_NAME =
 			"GOOGLE_CLOUD_SQL_ENCODED_KEY";
 

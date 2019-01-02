@@ -45,6 +45,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the standard Spanner repository implementation.
+ *
  * @author Chengyuan Zhao
  */
 public class SpannerRepositoryImplTests {
@@ -55,6 +57,9 @@ public class SpannerRepositoryImplTests {
 
 	private static final Key A_KEY = Key.of("key");
 
+	/**
+	 * checks exceptions for messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

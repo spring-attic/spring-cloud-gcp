@@ -43,8 +43,10 @@ import org.springframework.integration.file.FileHeaders;
 import org.springframework.messaging.MessageHandler;
 
 /**
+ * Storage Spring Integration sample app.
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 @SpringBootApplication
 public class GcsSpringIntegrationApplication {
@@ -67,6 +69,8 @@ public class GcsSpringIntegrationApplication {
 	/**
 	 * A file synchronizer that knows how to connect to the remote file system (GCS) and scan
 	 * it for new files and then download the files.
+	 * @param gcs a storage client to use
+	 * @return an inbound file synchronizer
 	 */
 	@Bean
 	public GcsInboundFileSynchronizer gcsInboundFileSynchronizer(Storage gcs) {
@@ -80,6 +84,8 @@ public class GcsSpringIntegrationApplication {
 	 * An inbound channel adapter that polls the GCS bucket for new files and copies them to
 	 * the local filesystem. The resulting message source produces messages containing handles
 	 * to local files.
+	 * @param synchronizer an inbound file synchronizer
+	 * @return a message source
 	 */
 	@Bean
 	@InboundChannelAdapter(channel = "new-file-channel", poller = @Poller(fixedDelay = "5000"))
@@ -94,6 +100,7 @@ public class GcsSpringIntegrationApplication {
 	/**
 	 * A service activator that receives messages produced by the {@code synchronizerAdapter}
 	 * and simply outputs the file name of each to the console.
+	 * @return a message handler
 	 */
 	@Bean
 	@ServiceActivator(inputChannel = "new-file-channel")
@@ -108,6 +115,8 @@ public class GcsSpringIntegrationApplication {
 	/**
 	 * An inbound channel adapter that polls the remote directory and produces messages with
 	 * {@code InputStream} payload that can be used to read the data from remote files.
+	 * @param gcs a storage client to use
+	 * @return a message source
 	 */
 	@Bean
 	@InboundChannelAdapter(channel = "copy-channel", poller = @Poller(fixedDelay = "5000"))
@@ -121,6 +130,8 @@ public class GcsSpringIntegrationApplication {
 	/**
 	 * A service activator that connects to a channel with messages containing
 	 * {@code InputStream} payloads and copies the file data to a remote directory on GCS.
+	 * @param gcs a storage client to use
+	 * @return a message handler
 	 */
 	@Bean
 	@ServiceActivator(inputChannel = "copy-channel")

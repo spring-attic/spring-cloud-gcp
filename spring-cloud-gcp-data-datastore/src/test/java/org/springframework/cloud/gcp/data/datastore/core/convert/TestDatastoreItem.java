@@ -25,6 +25,8 @@ import com.google.cloud.datastore.LatLng;
 
 
 /**
+ * A test entity object that has fields of many different types to test features.
+ *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
  */
@@ -149,6 +151,9 @@ class TestDatastoreItem {
 		this.byteArrayField = byteArrayField;
 	}
 
+	/**
+	 * An enum used to test conversion and storage.
+	 */
 	enum Color {
 		WHITE, BLACK
 	}

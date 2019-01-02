@@ -19,6 +19,11 @@ package com.example;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * Pub/Sub sample application.
+ *
+ * @author Joao Andre Martins
+ */
 @SpringBootApplication
 public class PubSubApplication {
 

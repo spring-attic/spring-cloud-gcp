@@ -50,7 +50,10 @@ import static org.mockito.BDDMockito.willAnswer;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for inbound file synchronizer.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -112,6 +115,9 @@ public class GcsInboundFileSynchronizerTests {
 		assertThat(message).isNull();
 	}
 
+	/**
+	 * Spring config for the tests.
+	 */
 	@Configuration
 	@EnableIntegration
 	public static class Config {

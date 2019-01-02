@@ -28,6 +28,10 @@ import org.springframework.data.repository.query.QueryMethod;
 import org.springframework.data.repository.query.RepositoryQuery;
 
 /**
+ * Base abstract class for Spanner Query Methods.
+ *
+ * @param <T> the return type of the Query Method
+ *
  * @author Chengyuan Zhao
  *
  * @since 1.1
@@ -43,7 +47,7 @@ abstract class AbstractSpannerQuery<T> implements RepositoryQuery {
 	protected final Class<T> entityType;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * @param type the underlying entity type
 	 * @param queryMethod the underlying query method to support.
 	 * @param spannerTemplate used for executing queries.

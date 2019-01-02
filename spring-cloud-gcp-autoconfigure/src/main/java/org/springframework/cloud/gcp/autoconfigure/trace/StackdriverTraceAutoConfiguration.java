@@ -62,9 +62,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 /**
+ * Config for Stackdriver Trace.
+ *
  * @author Ray Tsang
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 @Configuration
 @EnableConfigurationProperties(
@@ -174,6 +177,9 @@ public class StackdriverTraceAutoConfiguration {
 		return StackdriverTracePropagation.FACTORY;
 	}
 
+	/**
+	 * Configuration for refresh scope probability based sampler.
+	 */
 	@Configuration
 	@ConditionalOnClass(RefreshScope.class)
 	protected static class RefreshScopedProbabilityBasedSamplerConfiguration {
@@ -185,6 +191,9 @@ public class StackdriverTraceAutoConfiguration {
 		}
 	}
 
+	/**
+	 * Configuration for non-refresh scope probability based sampler.
+	 */
 	@Configuration
 	@ConditionalOnMissingClass("org.springframework.cloud.context.config.annotation.RefreshScope")
 	protected static class NonRefreshScopeProbabilityBasedSamplerConfiguration {
@@ -195,6 +204,9 @@ public class StackdriverTraceAutoConfiguration {
 		}
 	}
 
+	/**
+	 * Configuration for Sleuth.
+	 */
 	@Configuration
 	@ConditionalOnProperty(name = "spring.sleuth.http.enabled",
 			havingValue = "true", matchIfMissing = true)

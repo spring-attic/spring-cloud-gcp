@@ -21,6 +21,8 @@ import com.google.cloud.spanner.Key;
 import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 
 /**
+ * Repository for a child class for integration tests.
+ *
  * @author Chengyuan Zhao
  */
 public interface SubTradeRepository extends SpannerRepository<SubTrade, Key> {

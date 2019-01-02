@@ -42,6 +42,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for Pub/Sub provisioner.
+ *
  * @author Mike Eltsufin
  *
  * @since 1.1
@@ -61,6 +63,9 @@ public class PubSubChannelProvisionerTests {
 	// class under test
 	PubSubChannelProvisioner pubSubChannelProvisioner;
 
+	/**
+	 * Used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

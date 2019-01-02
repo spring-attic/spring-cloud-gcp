@@ -54,6 +54,9 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.StringUtils;
 
 /**
+ * A Query Method for Spanner using SQL strings.
+ *
+ * @param <T> the return type of the Query Method
  * @author Balint Pato
  * @author Chengyuan Zhao
  *

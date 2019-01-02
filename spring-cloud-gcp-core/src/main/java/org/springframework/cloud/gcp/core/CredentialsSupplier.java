@@ -27,7 +27,7 @@ public interface CredentialsSupplier {
 	/**
 	 * Supplies credentials configuration.
 	 *
-	 * @return POJO containing Google Cloud credentials location and scopes
+	 * @return a POJO containing Google Cloud credentials location and scopes
 	 */
 	Credentials getCredentials();
 
