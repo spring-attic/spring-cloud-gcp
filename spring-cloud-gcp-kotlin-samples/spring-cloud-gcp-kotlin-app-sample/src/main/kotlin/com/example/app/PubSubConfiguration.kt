@@ -32,6 +32,10 @@ import org.springframework.integration.annotation.ServiceActivator
 import org.springframework.integration.channel.DirectChannel
 import org.springframework.messaging.MessageChannel
 import org.springframework.messaging.handler.annotation.Header
+import org.springframework.cloud.gcp.pubsub.support.converter.JacksonPubSubMessageConverter
+import com.fasterxml.jackson.databind.ObjectMapper
+
+
 
 /**
  * Configuration to listen to Pub/Sub topic and register users to the database.
@@ -53,6 +57,17 @@ class PubSubConfiguration {
 	@Bean
 	fun pubsubInputChannel() = DirectChannel()
 
+	/**
+	 * This bean enables serialization/deserialization of Java objects to JSON allowing you
+	 * utilize JSON message payloads in Cloud Pub/Sub.
+	 * @param objectMapper the object mapper to use
+	 * @return a Jackson message converter
+	 */
+	@Bean
+	fun jacksonPubSubMessageConverter(objectMapper: ObjectMapper): JacksonPubSubMessageConverter {
+		return JacksonPubSubMessageConverter(objectMapper)
+	}
+
 	@Bean
 	fun messageChannelAdapter(
 			@Qualifier("pubsubInputChannel") inputChannel: MessageChannel,
@@ -61,17 +76,16 @@ class PubSubConfiguration {
 		val adapter = PubSubInboundChannelAdapter(pubSubTemplate, REGISTRANT_SUBSCRIPTION)
 		adapter.outputChannel = inputChannel
 		adapter.ackMode = AckMode.MANUAL
-		adapter.payloadType = String::class.java
+		adapter.payloadType = Person::class.java
 		return adapter
 	}
 
 	@ServiceActivator(inputChannel = "pubsubInputChannel")
 	fun messageReceiver(
-			payload: String,
+			payload: Person,
 			@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) message: BasicAcknowledgeablePubsubMessage) {
 
-		val tokens = payload.split(":")
-		personRepository.save(Person(tokens[0], tokens[1], tokens[2]))
+		personRepository.save(payload)
 
 		LOGGER.info("Message arrived! Payload: $payload")
 		message.ack()
