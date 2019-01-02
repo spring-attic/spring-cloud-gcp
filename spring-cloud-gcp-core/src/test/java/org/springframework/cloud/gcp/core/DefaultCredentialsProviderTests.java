@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
 package org.springframework.cloud.gcp.core;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,14 +42,14 @@ public class DefaultCredentialsProviderTests {
 
 	@Test
 	public void testResolveScopesOverrideScopes() throws IOException {
-		List<String> scopes = DefaultCredentialsProvider.resolveScopes(ImmutableList.of("myscope"));
+		List<String> scopes = DefaultCredentialsProvider.resolveScopes(Arrays.asList("myscope"));
 		assertThat(scopes).hasSize(1);
 		assertThat(scopes).contains("myscope");
 	}
 
 	@Test
 	public void testResolveScopesStarterScopesPlaceholder() {
-		List<String> scopes = DefaultCredentialsProvider.resolveScopes(ImmutableList.of("DEFAULT_SCOPES", "myscope"));
+		List<String> scopes = DefaultCredentialsProvider.resolveScopes(Arrays.asList("DEFAULT_SCOPES", "myscope"));
 		assertThat(scopes).hasSize(GcpScope.values().length + 1);
 		assertThat(scopes).contains(GcpScope.PUBSUB.getUrl());
 		assertThat(scopes).contains("myscope");

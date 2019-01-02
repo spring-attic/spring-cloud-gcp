@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import com.google.api.gax.paging.Page;
 import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.LoggingOptions;
-import com.google.common.collect.ImmutableList;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.BeforeClass;
@@ -106,10 +105,9 @@ public class StackdriverLoggingIntegrationTests {
 							+ " logName=\"projects/" + this.projectIdProvider.getProjectId()
 							+ "/logs/spring.log\""));
 
-			ImmutableList<LogEntry> logEntries = ImmutableList.copyOf(page.getValues());
-			assertThat(logEntries).hasSize(1);
+			assertThat(page.getValues()).hasSize(1);
 
-			LogEntry entry = logEntries.get(0);
+			LogEntry entry = page.getValues().iterator().next();
 			assertThat(entry.getTrace()).matches(
 					"projects/" + this.projectIdProvider.getProjectId() + "/traces/([a-z0-9]){32}");
 			assertThat(entry.getSpanId()).matches("([a-z0-9]){16}");
