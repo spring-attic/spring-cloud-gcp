@@ -64,6 +64,9 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			.add(com.google.cloud.Date.class)
 			.build();
 
+	/**
+	 * A map of types to functions that binds them to `ValueBinder` objects.
+	 */
 	public static final Map<Class<?>, BiFunction<ValueBinder, ?, ?>> singleItemTypeValueBinderMethodMap;
 
 	static final Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>>
@@ -230,7 +233,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	/**
 	 * <p>
 	 * For each property this method "set"s the column name and finds the corresponding "to"
-	 * method on the {@link ValueBinder} interface
+	 * method on the {@link ValueBinder} interface.
 	 * </p>
 	 * <pre>
 	 * {
@@ -246,6 +249,10 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	 * 			.to("Joel");
 	 * }
 	 * </pre>
+	 *
+	 * @param accessor the accessor used to get the value to write
+	 * @param property the property that will be written
+	 * @param sink the object that will accept the value to be written
 	 */
 	// @formatter:on
 	@SuppressWarnings("unchecked")

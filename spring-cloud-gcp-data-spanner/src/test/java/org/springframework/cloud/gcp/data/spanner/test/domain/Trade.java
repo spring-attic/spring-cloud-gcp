@@ -32,6 +32,8 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 
 /**
+ * A test domain object using many features.
+ *
  * @author Ray Tsang
  * @author Balint Pato
  * @author Chengyuan Zhao

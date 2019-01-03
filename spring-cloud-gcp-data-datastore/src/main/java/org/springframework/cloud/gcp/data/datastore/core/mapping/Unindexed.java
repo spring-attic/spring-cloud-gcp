@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for Datastore property that indicates it should be excluded from indexes
+ * Annotation for Datastore property that indicates it should be excluded from indexes.
  *
  * @author Dmytro Solomakha
  *

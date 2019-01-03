@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.core.environment;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,6 +38,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for on-GCP environment conditions.
+ *
  * @author Elena Felder
  *
  * @since 1.1
@@ -44,6 +47,9 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class OnGcpEnvironmentConditionTests {
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
@@ -142,7 +148,7 @@ public class OnGcpEnvironmentConditionTests {
 
 	private void setUpAnnotationValue(Object environments) {
 		when(this.mockMetadata.getAnnotationAttributes(ConditionalOnGcpEnvironment.class.getName())).thenReturn(
-				ImmutableMap.of("value", environments)
+				Collections.singletonMap("value", environments)
 		);
 	}
 }

@@ -34,11 +34,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the Spanner persistent property.
+ *
  * @author Chengyuan Zhao
  */
 @RunWith(SpringRunner.class)
 public class SpannerPersistentPropertyImplTests {
 
+	/**
+	 * Checks the exceptions' messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

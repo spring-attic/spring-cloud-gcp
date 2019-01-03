@@ -58,8 +58,14 @@ import org.springframework.data.mapping.model.SimpleTypeHolder;
  */
 public abstract class DatastoreNativeTypes {
 
+	/**
+	 * The set of natively-supported Datastore types.
+	 */
 	public static final Set<Class<?>> DATASTORE_NATIVE_TYPES;
 
+	/**
+	 * The set of native ID types that Datastore supports.
+	 */
 	public static final Set<Class<?>> ID_TYPES;
 
 	private static final Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
@@ -127,15 +133,24 @@ public abstract class DatastoreNativeTypes {
 				.build();
 	}
 
+	/**
+	 * A simple type holder that only contains the Cloud Datastore native data types.
+	 */
 	public static final SimpleTypeHolder HOLDER = new SimpleTypeHolder(DATASTORE_NATIVE_TYPES, true);
 
-
+	/**
+	 * Checks if a given type is a native type for Cloud Datastore.
+	 * @param aClass the class type to check
+	 * @return `true` if the type is a native type, which includes `null`. `false` otherwise.
+	 */
 	public static boolean isNativeType(Class aClass) {
 		return aClass == null || DATASTORE_NATIVE_TYPES.contains(aClass);
 	}
 
-	/*
-	* Wraps datastore native type to datastore value type
+	/**
+	 * Wraps Datastore native type to Datastore value type.
+	 * @param propertyVal the property value to wrap
+	 * @return the wrapped value
 	*/
 	@SuppressWarnings("unchecked")
 	public static Value wrapValue(Object propertyVal) {

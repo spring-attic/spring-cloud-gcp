@@ -24,7 +24,10 @@ import com.google.cloud.storage.BlobInfo;
 import org.springframework.integration.file.remote.synchronizer.AbstractInboundFileSynchronizingMessageSource;
 
 /**
+ * An inbound file sync message source for Google Cloud Storage.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class GcsInboundFileSynchronizingMessageSource extends AbstractInboundFileSynchronizingMessageSource<BlobInfo> {
 

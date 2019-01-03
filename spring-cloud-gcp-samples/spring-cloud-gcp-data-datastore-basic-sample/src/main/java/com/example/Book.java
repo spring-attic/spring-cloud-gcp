@@ -20,7 +20,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
 /**
- * This class represents a single book stored in Datastore
+ * This class represents a single book stored in Datastore.
  *
  * @author Dmitry Solomakha
  */

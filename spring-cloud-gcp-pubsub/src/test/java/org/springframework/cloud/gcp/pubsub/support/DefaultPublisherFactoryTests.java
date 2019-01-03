@@ -29,12 +29,17 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for the publisher factory.
+ *
  * @author João André Martins
  * @author Chengyuan Zhao
  */
 @RunWith(MockitoJUnitRunner.class)
 public class DefaultPublisherFactoryTests {
 
+	/**
+	 * used to test exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

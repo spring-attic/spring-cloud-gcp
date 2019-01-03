@@ -28,7 +28,7 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
 /**
  * A {@link PropertyValueProvider} based on a Struct that uses the
  * {@link ConverterAwareMappingSpannerEntityReader} to convert resulting values from the
- * {@link StructAccessor}
+ * {@link StructAccessor}.
  *
  * @author Balint Pato
  * @author Chengyuan Zhao
@@ -59,7 +59,7 @@ class StructPropertyValueProvider implements PropertyValueProvider<SpannerPersis
 	}
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * @param structAccessor an accessor used to obtain column values from the struct.
 	 * @param readConverter a converter used to convert between struct column types and the required
 	 * java types.

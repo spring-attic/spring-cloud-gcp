@@ -25,7 +25,10 @@ import org.springframework.integration.file.remote.session.SharedSessionCapable;
 import org.springframework.util.Assert;
 
 /**
+ * A session factory implementation for Google Cloud Storage.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class GcsSessionFactory implements SessionFactory<BlobInfo>, SharedSessionCapable {
 

@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.data.datastore.it;
 
 /**
+ * A projection interface for the integration tests.
+ *
  * @author Chengyuan Zhao
  */
 public interface TestEntityProjection {

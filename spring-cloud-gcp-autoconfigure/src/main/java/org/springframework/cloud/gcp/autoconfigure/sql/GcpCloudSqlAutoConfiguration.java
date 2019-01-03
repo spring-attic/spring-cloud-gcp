@@ -56,6 +56,7 @@ import org.springframework.util.StringUtils;
  * @author João André Martins
  * @author Artem Bilan
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 @Configuration
 @ConditionalOnClass({ DataSource.class, EmbeddedDatabaseType.class, CredentialFactory.class })
@@ -69,6 +70,9 @@ import org.springframework.util.StringUtils;
 @AutoConfigureAfter(GcpContextAutoConfiguration.class)
 public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must be a class for Spring
 
+	/**
+	 * URL for help instructions.
+	 */
 	public static final String INSTANCE_CONNECTION_NAME_HELP_URL =
 			"https://github.com/spring-cloud/spring-cloud-gcp/tree/master/"
 					+ "spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql"
@@ -223,6 +227,8 @@ public abstract class GcpCloudSqlAutoConfiguration { //NOSONAR squid:S1610 must 
 		 *
 		 * <p>If user didn't specify credentials, the socket factory already does the right thing by
 		 * using the application default credentials by default. So we don't need to do anything.
+		 * @param gcpCloudSqlProperties the Cloud SQL properties to use
+		 * @param gcpProperties the GCP properties to use
 		 */
 		private void setCredentialsFileProperty(GcpCloudSqlProperties gcpCloudSqlProperties,
 				GcpProperties gcpProperties) {

@@ -23,10 +23,11 @@ import java.util.List;
 import org.springframework.core.io.Resource;
 
 /**
- * Credentials configuration
+ * Credentials configuration.
  *
  * @author João André Martins
  * @author Stéphane Nicoll
+ * @author Chengyuan Zhao
  */
 public class Credentials {
 

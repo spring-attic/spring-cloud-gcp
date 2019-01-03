@@ -41,6 +41,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 @AutoConfigureBefore(TransactionAutoConfiguration.class)
 public class DatastoreTransactionManagerAutoConfiguration {
 
+	/**
+	 * Configuration class.
+	 */
 	@Configuration
 	static class DatastoreTransactionManagerConfiguration {
 

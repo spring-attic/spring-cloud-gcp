@@ -32,6 +32,8 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 /**
+ * A Query Method for Spanner.
+ *
  * @author Balint Pato
  * @author Chengyuan Zhao
  *
@@ -51,6 +53,7 @@ public class SpannerQueryMethod extends QueryMethod {
 	 * @param method must not be {@literal null}.
 	 * @param metadata must not be {@literal null}.
 	 * @param factory must not be {@literal null}.
+	 * @param mappingContext the mapping context to use.
 	 */
 	public SpannerQueryMethod(Method method, RepositoryMetadata metadata,
 			ProjectionFactory factory,

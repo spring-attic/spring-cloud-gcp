@@ -33,6 +33,12 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersis
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Tests for the entity value provider.
+ *
+ * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
+ */
 public class EntityPropertyValueProviderTests {
 
 	private static final LocalDatastoreHelper HELPER = LocalDatastoreHelper.create(1.0);
@@ -41,6 +47,9 @@ public class EntityPropertyValueProviderTests {
 
 	private TwoStepsConversions twoStepsConversion = new TwoStepsConversions(new DatastoreCustomConversions(), null);
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

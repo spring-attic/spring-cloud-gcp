@@ -62,6 +62,9 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 @EnableConfigurationProperties(GcpSpannerProperties.class)
 public class GcpSpannerAutoConfiguration {
 
+	/**
+	 * Core settings.
+	 */
 	static class CoreSpannerAutoConfiguration {
 
 		private final String projectId;
@@ -222,6 +225,9 @@ public class GcpSpannerAutoConfiguration {
 		}
 	}
 
+	/**
+	 * REST settings.
+	 */
 	@ConditionalOnClass({BackendIdConverter.class, SpannerMappingContext.class})
 	static class SpannerKeyRestSupportAutoConfiguration {
 		@Bean

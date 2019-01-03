@@ -105,6 +105,7 @@ public class SpannerSchemaUtils {
 	 * is determined by the configured property type converters used by the read and write
 	 * methods in this SpannerOperations and will be compatible with those methods.
 	 * @param entityClass the entity type.
+	 * @param <T> the type of the entity class
 	 * @return the DDL string.
 	 */
 	@SuppressWarnings("unchecked")

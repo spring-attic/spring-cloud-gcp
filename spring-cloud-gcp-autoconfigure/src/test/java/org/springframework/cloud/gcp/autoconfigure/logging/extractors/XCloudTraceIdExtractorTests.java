@@ -23,6 +23,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for the x-cloud trace ID extractor.
+ *
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
  */

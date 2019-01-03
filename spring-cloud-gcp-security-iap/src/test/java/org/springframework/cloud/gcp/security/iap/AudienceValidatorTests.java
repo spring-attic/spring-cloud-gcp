@@ -43,6 +43,9 @@ public class AudienceValidatorTests {
 	private ApplicationContextRunner contextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(TestConfiguration.class));
 
+	/**
+	 * used to test for exception messages and types.
+	 */
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
@@ -76,6 +79,9 @@ public class AudienceValidatorTests {
 		});
 	}
 
+	/**
+	 * Configuration for the tests.
+	 */
 	@Configuration
 	static class TestConfiguration {
 		@Bean

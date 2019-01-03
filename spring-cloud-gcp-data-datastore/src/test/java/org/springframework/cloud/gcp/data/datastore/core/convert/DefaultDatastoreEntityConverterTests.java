@@ -52,6 +52,8 @@ import org.springframework.lang.Nullable;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for the entity converter.
+ *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
  *
@@ -72,6 +74,9 @@ public class DefaultDatastoreEntityConverterTests {
 								}
 							})), null));
 
+	/**
+	 * Used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

@@ -55,7 +55,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 
-/** @author Alexander Khimich */
+/**
+ * Tests for Spanner Template when using transactional annotation.
+ *
+ * @author Alexander Khimich
+ * @author Chengyuan Zhao
+ */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
 public class SpannerTemplateTransactionManagerTests {
@@ -71,6 +76,9 @@ public class SpannerTemplateTransactionManagerTests {
 
 	private final AtomicReference<TransactionManager.TransactionState> transactionState = new AtomicReference<>();
 
+	/**
+	 * Used to test for exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
@@ -212,6 +220,9 @@ public class SpannerTemplateTransactionManagerTests {
 		this.transactionalService.dmlInReadOnly();
 	}
 
+	/**
+	 * Spring config for the tests.
+	 */
 	@Configuration
 	@EnableTransactionManagement
 	static class Config {
@@ -242,6 +253,9 @@ public class SpannerTemplateTransactionManagerTests {
 		}
 	}
 
+	/**
+	 * A mock transactional service to execute methods annotated as transactional.
+	 */
 	public static class TransactionalService {
 		@Autowired
 		SpannerTemplate spannerTemplate;

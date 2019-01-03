@@ -61,11 +61,16 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the conversion and mapping of entities for write.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
 public class ConverterAwareMappingSpannerEntityWriterTests {
 
+	/**
+	 * used for checking exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
@@ -350,6 +355,9 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		this.spannerEntityWriter.write(userSetUnconvertableColumnType, writeBuilder::set);
 	}
 
+	/**
+	 * A test type that cannot be converted.
+	 */
 	static class UserSetUnconvertableColumnType {
 		@PrimaryKey
 		@Column(spannerType = TypeCode.DATE)

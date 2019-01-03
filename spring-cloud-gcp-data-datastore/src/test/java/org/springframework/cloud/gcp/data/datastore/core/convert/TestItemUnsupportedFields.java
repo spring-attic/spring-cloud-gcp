@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * A test item with fields that are of unsupported types.
+ *
  * @author Dmitry Solomakha
  */
 class TestItemUnsupportedFields {
@@ -64,6 +66,9 @@ class TestItemUnsupportedFields {
 		return Objects.hash(getStringField(), getUnsupportedField());
 	}
 
+	/**
+	 * A test new type.
+	 */
 	static class NewType {
 		boolean val;
 
@@ -94,6 +99,9 @@ class TestItemUnsupportedFields {
 		}
 	}
 
+	/**
+	 * A test type of collection of unsupported types.
+	 */
 	static class CollectionOfUnsupportedTypes {
 		List<NewType> unsupportedElts = new ArrayList<>();
 

@@ -42,6 +42,7 @@ import org.springframework.util.Assert;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public class PubSubAdmin implements AutoCloseable {
 
@@ -61,6 +62,9 @@ public class PubSubAdmin implements AutoCloseable {
 	/**
 	 * This constructor instantiates TopicAdminClient and SubscriptionAdminClient with all their
 	 * defaults and the provided credentials provider.
+	 * @param projectIdProvider the project id provider to use
+	 * @param credentialsProvider the credentials provider to use
+	 * @throws IOException thrown when there are errors in contacting Google Cloud Pub/Sub
 	 */
 	public PubSubAdmin(GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
@@ -134,8 +138,8 @@ public class PubSubAdmin implements AutoCloseable {
 
 	/**
 	 * Return every topic in a project.
-	 *
 	 * <p>If there are multiple pages, they will all be merged into the same result.
+	 * @return a list of topics
 	 */
 	public List<Topic> listTopics() {
 		TopicAdminClient.ListTopicsPagedResponse topicListPage =
@@ -253,8 +257,8 @@ public class PubSubAdmin implements AutoCloseable {
 
 	/**
 	 * Return every subscription in a project.
-	 *
 	 * <p>If there are multiple pages, they will all be merged into the same result.
+	 * @return a list of subscriptions
 	 */
 	public List<Subscription> listSubscriptions() {
 		SubscriptionAdminClient.ListSubscriptionsPagedResponse subscriptionsPage =
@@ -264,6 +268,7 @@ public class PubSubAdmin implements AutoCloseable {
 	}
 
 	/**
+	 * Get the default ack deadline.
 	 * @return the default acknowledgement deadline value in seconds
 	 */
 	public int getDefaultAckDeadline() {

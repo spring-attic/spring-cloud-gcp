@@ -26,7 +26,7 @@ import org.springframework.data.mapping.model.PropertyValueProvider;
 import org.springframework.data.util.TypeInformation;
 
 /**
- * A {@link PropertyValueProvider} for Datastore entities
+ * A {@link PropertyValueProvider} for Datastore entities.
  *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao

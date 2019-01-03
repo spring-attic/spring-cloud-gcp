@@ -26,7 +26,10 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 
 /**
+ * Settings for key converter used in REST repositories.
+ *
  * @author Balint Pato
+ * @author Chengyuan Zhao
  */
 public class SpannerKeyIdConverter implements BackendIdConverter {
 

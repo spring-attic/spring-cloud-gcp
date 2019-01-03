@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
  *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 
@@ -49,6 +50,7 @@ public class TraceIdLoggingEnhancer implements LoggingEnhancer {
 	}
 
 	/**
+	 * Get the current trace id.
 	 * @return the trace ID stored through {@link #setCurrentTraceId(String)}
 	 */
 	public static String getCurrentTraceId() {

@@ -42,7 +42,7 @@ import org.springframework.transaction.support.AbstractPlatformTransactionManage
 import org.springframework.transaction.support.DefaultTransactionStatus;
 
 /**
- * Spanner transaction manager
+ * Spanner transaction manager.
  *
  * @author Alexander Khimich
  * @author Chengyuan Zhao
@@ -218,6 +218,9 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		return transaction == getCurrentTX();
 	}
 
+	/**
+	 * A transaction object that holds the transaction context.
+	 */
 	public static class Tx {
 		private TransactionManager transactionManager;
 

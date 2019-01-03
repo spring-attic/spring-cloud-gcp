@@ -28,6 +28,8 @@ import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.stereotype.Component;
 
 /**
+ * Example repository usage.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  * @author Mike Eltsufin

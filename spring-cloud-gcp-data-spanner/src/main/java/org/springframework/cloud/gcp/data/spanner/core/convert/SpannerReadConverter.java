@@ -27,6 +27,8 @@ import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.data.convert.CustomConversions;
 
 /**
+ * A custom converter used for reading from Spanner data types.
+ *
  * @author Balint Pato
  * @author Chengyuan Zhao
  *

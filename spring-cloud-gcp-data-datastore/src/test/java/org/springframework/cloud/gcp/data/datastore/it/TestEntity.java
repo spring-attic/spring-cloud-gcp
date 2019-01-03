@@ -22,6 +22,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
 /**
+ * A test entity for Datastore integration tests.
+ *
  * @author Chengyuan Zhao
  */
 @Entity(name = "test_entities_#{\"ci\"}")
@@ -86,6 +88,9 @@ public class TestEntity {
 		this.size = size;
 	}
 
+	/**
+	 * An enum that tests conversion and storage.
+	 */
 	enum Shape {
 		CIRCLE, SQUARE;
 	}

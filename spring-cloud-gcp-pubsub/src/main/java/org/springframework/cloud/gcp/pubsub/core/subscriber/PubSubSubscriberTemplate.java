@@ -80,7 +80,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, Dis
 	private ExecutorService ackExecutor = Executors.newSingleThreadExecutor();
 
 	/**
-	 * Default {@link PubSubSubscriberTemplate} constructor
+	 * Default {@link PubSubSubscriberTemplate} constructor.
 	 *
 	 * @param subscriberFactory the {@link Subscriber} factory
 	 *                          to subscribe to subscriptions or pull messages.

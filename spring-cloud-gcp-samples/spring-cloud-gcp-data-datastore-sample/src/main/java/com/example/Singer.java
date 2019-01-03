@@ -30,6 +30,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Reference;
 import org.springframework.data.annotation.Id;
 
 /**
+ * Sample entity.
+ *
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
  */

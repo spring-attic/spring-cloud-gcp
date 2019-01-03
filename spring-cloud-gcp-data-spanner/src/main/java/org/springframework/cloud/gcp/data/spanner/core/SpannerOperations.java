@@ -91,6 +91,7 @@ public interface SpannerOperations {
 	 * @param rowFunc the function to apply to each row of the result.
 	 * @param statement the SQL statement used to select the objects.
 	 * @param options the options with which to run this query.
+	 * @param <A> the type to convert each row Struct into.
 	 * @return a list of the rows each transformed with the given function.
 	 */
 	<A> List<A> query(Function<Struct, A> rowFunc, Statement statement,

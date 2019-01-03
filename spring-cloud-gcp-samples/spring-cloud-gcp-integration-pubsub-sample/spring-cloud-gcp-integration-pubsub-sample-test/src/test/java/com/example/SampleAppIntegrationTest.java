@@ -35,15 +35,12 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
+ * These tests verifies that the pubsub-integration-sample works.
+ *
  * @author Dmitry Solomakha
  *
  * @since 1.1
  */
-
-/*
- * This tests verifies that the pubsub-integration-sample works.
- */
-
 public class SampleAppIntegrationTest {
 
 	private RestTemplate restTemplate = new RestTemplate();

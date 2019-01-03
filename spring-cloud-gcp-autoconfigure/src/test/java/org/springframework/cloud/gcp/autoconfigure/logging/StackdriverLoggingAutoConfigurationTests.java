@@ -32,6 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for auto-config.
+ *
  * @author Mike Eltsufin
  * @author João André Martins
  * @author Chengyuan Zhao

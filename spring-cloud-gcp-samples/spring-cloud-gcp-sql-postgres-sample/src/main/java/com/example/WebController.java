@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
+ * Web app controller for sample app.
+ *
  * @author João André Martins
  */
 @RestController

@@ -26,12 +26,17 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
+ * Tests for the Pub/Sub admin operations.
+ *
  * @author João André Martins
  * @author Chengyuan Zhao
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubAdminTests {
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

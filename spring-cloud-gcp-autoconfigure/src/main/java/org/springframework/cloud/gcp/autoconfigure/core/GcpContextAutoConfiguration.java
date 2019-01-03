@@ -39,6 +39,7 @@ import org.springframework.context.annotation.Configuration;
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Elena Felder
+ * @author Chengyuan Zhao
  */
 @Configuration
 @EnableConfigurationProperties(GcpProperties.class)
@@ -58,6 +59,7 @@ public class GcpContextAutoConfiguration {
 	}
 
 	/**
+	 * Get a GCP project ID provider.
 	 * @return a {@link GcpProjectIdProvider} that returns the project ID in the properties or, if
 	 * none, the project ID from the GOOGLE_CLOUD_PROJECT envvar and Metadata Server
 	 */
@@ -80,6 +82,7 @@ public class GcpContextAutoConfiguration {
 	 * Provides default implementation for determining GCP environment.
 	 * Can be overridden to avoid interacting with real environment.
 	 * @since 1.1
+	 * @return a GCP environment provider
 	 */
 	@Bean
 	@ConditionalOnMissingBean

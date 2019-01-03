@@ -29,10 +29,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for the Spanner read options.
+ *
  * @author Chengyuan Zhao
  */
 public class SpannerReadOptionsTests {
 
+	/**
+	 * checks the exception for messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 

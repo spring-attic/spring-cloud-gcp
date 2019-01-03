@@ -71,6 +71,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
+ * Tests for Pub/Sub channel adapters.
+ *
  * @author João André Martins
  * @author Mike Eltsufin
  */
@@ -275,6 +277,9 @@ public class PubSubChannelAdaptersIntegrationTests {
 		});
 	}
 
+	/**
+	 * Spring Boot config for tests.
+	 */
 	@Configuration
 	@EnableIntegration
 	static class IntegrationConfiguration {

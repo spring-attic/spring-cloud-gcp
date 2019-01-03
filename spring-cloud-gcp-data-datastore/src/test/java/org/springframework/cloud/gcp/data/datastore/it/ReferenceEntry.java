@@ -25,6 +25,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Reference;
 import org.springframework.data.annotation.Id;
 
 /**
+ * A test class that holds references as relationships.
+ *
  * @author Dmitry Solomakha
  */
 class ReferenceEntry {

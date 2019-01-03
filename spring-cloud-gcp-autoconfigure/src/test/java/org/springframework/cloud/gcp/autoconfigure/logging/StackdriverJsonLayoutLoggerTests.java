@@ -30,6 +30,8 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests the Stackdriver Json Layout Logger.
+ *
  * @author Andreas Berger
  * @author Mike Eltsufin
  */

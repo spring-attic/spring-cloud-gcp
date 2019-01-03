@@ -66,6 +66,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for Part-Tree Datastore Query Methods.
+ *
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
  */
@@ -85,6 +87,9 @@ public class PartTreeDatastoreQueryTests {
 
 	private ReadWriteConversions readWriteConversions;
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

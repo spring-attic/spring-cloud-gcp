@@ -38,6 +38,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the default Datastore Repository implementation.
+ *
  * @author Chengyuan Zhao
  */
 public class SimpleDatastoreRepositoryTests {

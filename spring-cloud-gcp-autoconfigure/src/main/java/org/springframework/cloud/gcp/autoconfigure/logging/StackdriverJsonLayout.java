@@ -39,6 +39,7 @@ import org.springframework.util.StringUtils;
  * Reference: https://cloud.google.com/logging/docs/agent/configuration#process-payload
  *
  * @author Andreas Berger
+ * @author Chengyuan Zhao
  */
 public class StackdriverJsonLayout extends JsonLayout {
 
@@ -56,7 +57,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	private boolean includeExceptionInMessage;
 
 	/**
-	 * creates a layout for a Logback appender compatible to the Stackdriver log format
+	 * creates a layout for a Logback appender compatible to the Stackdriver log format.
 	 */
 	public StackdriverJsonLayout() {
 		this.appendLineSeparator = true;
@@ -69,6 +70,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	}
 
 	/**
+	 * Get the project id.
 	 * @return the Google Cloud project id relevant for logging the traceId
 	 */
 	public String getProjectId() {
@@ -76,6 +78,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	}
 
 	/**
+	 * set the project id.
 	 * @param projectId the Google Cloud project id relevant for logging the traceId
 	 */
 	public void setProjectId(String projectId) {
@@ -83,7 +86,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	}
 
 	/**
-	 *
+	 * check if the trace id is included.
 	 * @return true if the traceId should be included into the JSON
 	 */
 	public boolean isIncludeTraceId() {
@@ -91,6 +94,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	}
 
 	/**
+	 * set whether the trace id is included.
 	 * @param includeTraceId true if the traceId should be included into the JSON
 	 */
 	public void setIncludeTraceId(boolean includeTraceId) {
@@ -98,6 +102,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	}
 
 	/**
+	 * check if the span id is included.
 	 * @return true if the spanId should be included into the JSON
 	 */
 	public boolean isIncludeSpanId() {
@@ -105,6 +110,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	}
 
 	/**
+	 * set whether the span id is included.
 	 * @param includeSpanId true if the spanId should be included into the JSON
 	 */
 	public void setIncludeSpanId(boolean includeSpanId) {
@@ -112,7 +118,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	}
 
 	/**
-	 *
+	 * check if there is an included exception in the message.
 	 * @return true if the exception should be added to the message
 	 */
 	public boolean isIncludeExceptionInMessage() {
@@ -120,6 +126,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	}
 
 	/**
+	 * set whether the exception is included in the message.
 	 * @param includeExceptionInMessage true if the exception should be added to the message
 	 */
 	public void setIncludeExceptionInMessage(boolean includeExceptionInMessage) {
@@ -138,6 +145,7 @@ public class StackdriverJsonLayout extends JsonLayout {
 	}
 
 	/**
+	 * Convert a logging event into a Map.
 	 * @param event the logging event
 	 * @return the map which should get rendered as JSON
 	 */

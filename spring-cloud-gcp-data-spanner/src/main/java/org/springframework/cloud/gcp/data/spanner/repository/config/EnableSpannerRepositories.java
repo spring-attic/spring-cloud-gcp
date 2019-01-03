@@ -29,6 +29,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.repository.config.DefaultRepositoryBaseClass;
 
 /**
+ * Annotation that enables Spanner's Query Method functionality.
+ *
  * @author Chengyuan Zhao
  * @author Ray Tsang
  *
@@ -45,6 +47,8 @@ public @interface EnableSpannerRepositories {
 	 * Alias for the {@link #basePackages()} attribute. Allows for more concise annotation
 	 * declarations e.g.: {@code @EnableSpannerRepositories("org.my.pkg")} instead of
 	 * {@code @EnableSpannerRepositories(basePackages="org.my.pkg")}.
+	 *
+	 * @return an empty array
 	 */
 	String[] value() default {};
 
@@ -52,11 +56,13 @@ public @interface EnableSpannerRepositories {
 	 * Specifies which types are eligible for component scanning. Further narrows the set
 	 * of candidate components from everything in {@link #basePackages()} to everything in
 	 * the base packages that matches the given filter or filters.
+	 * @return an empty array.
 	 */
 	Filter[] includeFilters() default {};
 
 	/**
 	 * Specifies which types are not eligible for component scanning.
+	 * @return an empty array
 	 */
 	Filter[] excludeFilters() default {};
 
@@ -64,6 +70,7 @@ public @interface EnableSpannerRepositories {
 	 * Base packages to scan for annotated components. {@link #value()} is an alias for
 	 * (and mutually exclusive with) this attribute. Use {@link #basePackageClasses()} for
 	 * a type-safe alternative to String-based package names.
+	 * @return an empty array
 	 */
 	String[] basePackages() default {};
 
@@ -72,6 +79,7 @@ public @interface EnableSpannerRepositories {
 	 * scan for annotated components. The package of each class specified will be scanned.
 	 * Consider creating a special no-op marker class or interface in each package that
 	 * serves no purpose other than being referenced by this attribute.
+	 * @return an empty array
 	 */
 	Class[] basePackageClasses() default {};
 
@@ -86,6 +94,7 @@ public @interface EnableSpannerRepositories {
 	/**
 	 * Configures whether nested repository-interfaces (e.g. defined as inner classes)
 	 * should be discovered by the repositories infrastructure.
+	 * @return false
 	 */
 	boolean considerNestedRepositories() default false;
 
