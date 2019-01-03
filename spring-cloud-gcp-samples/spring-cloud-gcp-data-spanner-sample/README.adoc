@@ -17,7 +17,7 @@ Alternatively, http://console.cloud.google.com/iam-admin/serviceaccounts[create 
 Then, uncomment the `spring.cloud.gcp.spanner.credentials.location` property in the link:src/main/resources/application.properties[application.properties] file and fill its value with the path to your service account private key on your local file system, prepended with `file:`.
 
 . Run the `SpannerRepositoryExample` or the `SpannerTemplateExample` Spring Boot console apps.
-This causes the app to generate sample `Trade` ƒobjects filled with some demo data and persists them to the Cloud Spanner table created earlier.
+This causes the app to generate sample `Trade` objects filled with some demo data and persists them to the Cloud Spanner table created earlier.
 These POJOs are then retrieved and their contents are printed in the browser.
 
 .. To run the SpannerRepositoryExample:
