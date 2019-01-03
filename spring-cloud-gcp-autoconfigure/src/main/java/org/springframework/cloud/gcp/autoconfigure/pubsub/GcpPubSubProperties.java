@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -141,6 +141,11 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		private int executorThreads = 4;
 
 		/**
+		 * Number of threads used for batch acknowledgement.
+		 */
+		private int maxAcknowledgementThreads = 4;
+
+		/**
 		 * The optional pull endpoint setting for the subscriber factory.
 		 */
 		private String pullEndpoint;
@@ -207,6 +212,15 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		 */
 		public void setExecutorThreads(int executorThreads) {
 			this.executorThreads = executorThreads;
+		}
+
+
+		public int getMaxAcknowledgementThreads() {
+			return this.maxAcknowledgementThreads;
+		}
+
+		public void setMaxAcknowledgementThreads(int maxAcknowledgementThreads) {
+			this.maxAcknowledgementThreads = maxAcknowledgementThreads;
 		}
 	}
 
