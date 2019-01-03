@@ -22,7 +22,8 @@ Run the example from Maven:
 $ mvn spring-boot:run
 ----
 
-Browse to `http://localhost:8080`. This will trigger the `ExampleController.work()` method, which in turn will call other services, and also a remote RESTful call to `ExampleController.meet()` method.
+Browse to `http://localhost:8080`.
+This will trigger the `ExampleController.work()` method, which in turn will call other services, and also a remote RESTful call to `ExampleController.meet()` method.
 
 To see the traces, navigate to Stackdriver Trace console's https://console.cloud.google.com/traces/traces[Trace List] view.
 You should see the trace information in detail.

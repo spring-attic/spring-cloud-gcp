@@ -17,7 +17,8 @@ The sample uses the `PubSubAdmin` class to perform administrative tasks like cre
 To run this code sample, you must have a Google Cloud Platform project with billing and the Google
 Cloud Pub/Sub API enabled.
 
-Install and initialize the https://cloud.google.com/sdk/[Google Cloud SDK]. Log in with application default credentials using the following command:
+Install and initialize the https://cloud.google.com/sdk/[Google Cloud SDK].
+Log in with application default credentials using the following command:
 
 ----
 $ gcloud auth application-default login

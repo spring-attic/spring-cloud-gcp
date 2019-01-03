@@ -27,8 +27,7 @@ Select the `Global` resource and look under the `spring.log` channel to see the 
 
 If your application is deployed to Google App Engine (GAE) or Google Kubernetes Engine (GKE), you will instead find the logs under the deployment's resource in the Stackdriver UI under the `spring.log` channel.
 You can further narrow down the log by request by using the following filtering text that takes advantage of the trace ID label in each logged line.
-For example, if deployed to App Engine
-(by using `mvn appengine:deploy` in this sample) you can use the following to filter by the trace ID:
+For example, if deployed to App Engine (by using `mvn appengine:deploy` in this sample) you can use the following to filter by the trace ID:
 
 ----
  resource.type="gae_app"
