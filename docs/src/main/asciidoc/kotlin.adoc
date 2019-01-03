@@ -1,0 +1,23 @@
+== Kotlin Support
+
+Spring Cloud GCP libraries work out-of-the-box and are fully interoperable with Kotlin Spring boot applications.
+
+=== Prerequisites
+
+Ensure that your Kotlin Spring Boot application is properly set up.
+Based on your build system, you will need to include the correct Kotlin build plugin in your project:
+
+* https://kotlinlang.org/docs/reference/using-maven.html[Kotlin Maven Plugin]
+* https://kotlinlang.org/docs/reference/using-gradle.html[Kotlin Gradle Plugin]
+
+Depending on your application's needs, you may need to augment your build configuration with compiler plugins:
+
+* https://kotlinlang.org/docs/reference/compiler-plugins.html#spring-support[Spring Kotlin Plugin]: Makes your Spring configuration classes/members non-final for convenience.
+* https://kotlinlang.org/docs/reference/compiler-plugins.html#jpa-support[Kotlin Spring JPA Plugin]: Enables using JPA in Kotlin Spring applications.
+
+Once your Kotlin project is properly configured, the Spring Cloud GCP libraries will work within a Kotlin application without any additional setup.
+
+== Sample
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-kotlin-samples/spring-cloud-gcp-kotlin-app-sample[Kotlin sample application] is provided to demonstrate a working Maven setup and various Spring Cloud GCP integrations from within Kotlin.
+
