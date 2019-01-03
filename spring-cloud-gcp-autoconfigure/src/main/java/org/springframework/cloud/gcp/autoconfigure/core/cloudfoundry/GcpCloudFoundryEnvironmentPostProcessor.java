@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import com.google.api.client.util.ArrayMap;
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -33,6 +32,7 @@ import org.springframework.boot.context.config.ConfigFileApplicationListener;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertiesPropertySource;
@@ -76,22 +76,27 @@ public class GcpCloudFoundryEnvironmentPostProcessor
 
 	private enum GcpCfService {
 
-		PUBSUB("google-pubsub", "pubsub",
-				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encoded-key")),
-		STORAGE("google-storage", "storage",
-				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encoded-key")),
-		SPANNER("google-spanner", "spanner",
-				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encoded-key",
-						"instance_id", "instance-id")),
-		DATASTORE("google-datastore", "datastore",
-				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encoded-key")),
-		TRACE("google-stackdriver-trace", "trace",
-				ImmutableMap.of("ProjectId", "project-id",
-						"PrivateKeyData", "credentials.encoded-key")),
+		PUBSUB("google-pubsub", "pubsub", new MapBuilder<String, String>()
+				.put("ProjectId", "project-id")
+				.put("PrivateKeyData", "credentials.encoded-key")
+				.build()),
+		STORAGE("google-storage", "storage", new MapBuilder<String, String>()
+				.put("ProjectId", "project-id")
+				.put("PrivateKeyData", "credentials.encoded-key")
+				.build()),
+		SPANNER("google-spanner", "spanner", new MapBuilder<String, String>()
+				.put("ProjectId", "project-id")
+				.put("PrivateKeyData", "credentials.encoded-key")
+				.put("instance_id", "instance-id")
+				.build()),
+		DATASTORE("google-datastore", "datastore", new MapBuilder<String, String>()
+				.put("ProjectId", "project-id")
+				.put("PrivateKeyData", "credentials.encoded-key")
+				.build()),
+		TRACE("google-stackdriver-trace", "trace", new MapBuilder<String, String>()
+				.put("ProjectId", "project-id")
+				.put("PrivateKeyData", "credentials.encoded-key")
+				.build()),
 		MYSQL("google-cloudsql-mysql", "sql", sqlPropertyMap),
 		POSTGRES("google-cloudsql-postgres", "sql", sqlPropertyMap);
 
