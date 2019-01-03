@@ -1,0 +1,5 @@
+org.springframework.cloud.gcp.storage
+org.springframework.cloud.gcp.storage.integration
+org.springframework.cloud.gcp.storage.integration.filters
+org.springframework.cloud.gcp.storage.integration.inbound
+org.springframework.cloud.gcp.storage.integration.outbound

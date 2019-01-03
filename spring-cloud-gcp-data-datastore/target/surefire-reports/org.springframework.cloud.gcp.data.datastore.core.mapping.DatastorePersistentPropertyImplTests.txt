@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentPropertyImplTests
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.138 s - in org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentPropertyImplTests

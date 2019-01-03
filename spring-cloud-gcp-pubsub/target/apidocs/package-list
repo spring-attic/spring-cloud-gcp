@@ -1,0 +1,9 @@
+org.springframework.cloud.gcp.pubsub
+org.springframework.cloud.gcp.pubsub.core
+org.springframework.cloud.gcp.pubsub.core.publisher
+org.springframework.cloud.gcp.pubsub.core.subscriber
+org.springframework.cloud.gcp.pubsub.integration
+org.springframework.cloud.gcp.pubsub.integration.inbound
+org.springframework.cloud.gcp.pubsub.integration.outbound
+org.springframework.cloud.gcp.pubsub.support
+org.springframework.cloud.gcp.pubsub.support.converter

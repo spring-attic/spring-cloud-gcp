@@ -1,0 +1,15 @@
+#Thu Jan 03 17:51:26 UTC 2019
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/src/main/java/com/example/Instrument.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/src/main/java/com/example/TransactionalServiceConfiguration.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/src/main/java/com/example/DatastoreRepositoryExample.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/src/test/java/com/example/ApplicationTests.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/src/main/java/com/example/Singer.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/src/main/resources/application.properties=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/src/main/java/com/example/Band.java=1546537755000
+module-resource*?\:file\:/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/target/checkstyle-header.txt=5406B79542A0F0AF68419F6CECE454DED3F9D2BB
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/src/main/java/com/example/TransactionalRepositoryService.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/src/main/java/com/example/ConvertersExample.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/src/test/resources/application-test.properties=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/src/main/java/com/example/SingerRepository.java=1546537755000
+configuration*?=074EB16145DE76B31E8FE72D9221E002B159385D
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-data-datastore-sample/src/main/java/com/example/Album.java=1546537755000

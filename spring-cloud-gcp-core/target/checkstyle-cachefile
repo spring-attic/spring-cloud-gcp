@@ -1,0 +1,19 @@
+#Thu Jan 03 17:49:23 UTC 2019
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/util/MapBuilder.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/MetadataProvider.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/GcpEnvironmentProvider.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/UsageTrackingHeaderProvider.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/Credentials.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/GcpProjectIdProvider.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/GcpScope.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/test/java/org/springframework/cloud/gcp/core/util/MapBuilderTests.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/DefaultCredentialsProvider.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/GcpEnvironment.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/DefaultGcpProjectIdProvider.java=1546537755000
+configuration*?=16421EAB84543889E3B3FA7B3ED971EF488B611E
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/CredentialsSupplier.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/test/java/org/springframework/cloud/gcp/core/UsageTrackingHeaderProviderIT.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/DefaultGcpMetadataProvider.java=1546537755000
+module-resource*?\:file\:/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/target/checkstyle-header.txt=5406B79542A0F0AF68419F6CECE454DED3F9D2BB
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/main/java/org/springframework/cloud/gcp/core/DefaultGcpEnvironmentProvider.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-core/src/test/java/org/springframework/cloud/gcp/core/DefaultCredentialsProviderTests.java=1546537755000

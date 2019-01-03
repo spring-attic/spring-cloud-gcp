@@ -1,0 +1,3 @@
+org/springframework/cloud/gcp/core/UsageTrackingHeaderProviderIT.class
+org/springframework/cloud/gcp/core/DefaultCredentialsProviderTests.class
+org/springframework/cloud/gcp/core/util/MapBuilderTests.class

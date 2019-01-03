@@ -1,0 +1,5 @@
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/test/java/org/springframework/cloud/gcp/storage/integration/inbound/GcsInboundFileSynchronizerTests.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/test/java/org/springframework/cloud/gcp/storage/integration/outbound/GcsMessageHandlerTests.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/test/java/org/springframework/cloud/gcp/storage/GoogleStorageTests.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/test/java/org/springframework/cloud/gcp/storage/integration/inbound/GcsStreamingMessageSourceTests.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/test/java/org/springframework/cloud/gcp/storage/it/GoogleStorageIntegrationTests.java

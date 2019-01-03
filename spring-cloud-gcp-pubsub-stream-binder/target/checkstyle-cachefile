@@ -1,0 +1,19 @@
+#Thu Jan 03 17:50:27 UTC 2019
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/main/java/org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubProducerProperties.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/main/java/org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubExtendedBindingProperties.java=1546537755000
+module-resource*?\:file\:/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/target/checkstyle-header.txt=5406B79542A0F0AF68419F6CECE454DED3F9D2BB
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/main/java/org/springframework/cloud/gcp/stream/binder/pubsub/config/PubSubBinderConfiguration.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/test/java/org/springframework/cloud/gcp/stream/binder/pubsub/PubSubMessageChannelBinderTests.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/main/java/org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubConsumerProperties.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/main/java/org/springframework/cloud/gcp/stream/binder/pubsub/provisioning/PubSubProducerDestination.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/test/java/org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubExtendedBindingsPropertiesTests.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/test/java/org/springframework/cloud/gcp/stream/binder/pubsub/PubSubTestBinder.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/test/java/org/springframework/cloud/gcp/stream/binder/pubsub/PubSubEmulator.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/main/java/org/springframework/cloud/gcp/stream/binder/pubsub/provisioning/PubSubConsumerDestination.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/main/java/org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubCommonProperties.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/main/java/org/springframework/cloud/gcp/stream/binder/pubsub/PubSubMessageChannelBinder.java=1546537755000
+configuration*?=FFC9D892AF29177C699FFF007F5D64157AA3FA76
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/main/java/org/springframework/cloud/gcp/stream/binder/pubsub/provisioning/PubSubChannelProvisioner.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/main/java/org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubBindingProperties.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/test/java/org/springframework/cloud/gcp/stream/binder/pubsub/provisioning/PubSubChannelProvisionerTests.java=1546537755000
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/test/java/org/springframework/cloud/gcp/stream/binder/pubsub/PubSubMessageChannelBinderEmulatorTests.java=1546537755000

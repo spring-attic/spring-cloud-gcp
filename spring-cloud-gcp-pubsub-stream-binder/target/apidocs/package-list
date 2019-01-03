@@ -1,0 +1,4 @@
+org.springframework.cloud.gcp.stream.binder.pubsub
+org.springframework.cloud.gcp.stream.binder.pubsub.config
+org.springframework.cloud.gcp.stream.binder.pubsub.properties
+org.springframework.cloud.gcp.stream.binder.pubsub.provisioning

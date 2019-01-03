@@ -1,0 +1,8 @@
+org/springframework/cloud/gcp/stream/binder/pubsub/provisioning/PubSubChannelProvisionerTests.class
+org/springframework/cloud/gcp/stream/binder/pubsub/PubSubMessageChannelBinderTests.class
+org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubExtendedBindingsPropertiesTests$PubSubBindingsTestConfiguration$CustomTestSink.class
+org/springframework/cloud/gcp/stream/binder/pubsub/PubSubTestBinder.class
+org/springframework/cloud/gcp/stream/binder/pubsub/PubSubEmulator.class
+org/springframework/cloud/gcp/stream/binder/pubsub/PubSubMessageChannelBinderEmulatorTests.class
+org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubExtendedBindingsPropertiesTests.class
+org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubExtendedBindingsPropertiesTests$PubSubBindingsTestConfiguration.class

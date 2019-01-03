@@ -1,0 +1,11 @@
+org/springframework/cloud/gcp/stream/binder/pubsub/provisioning/PubSubChannelProvisioner.class
+org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubProducerProperties.class
+META-INF/spring-configuration-metadata.json
+org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubBindingProperties.class
+org/springframework/cloud/gcp/stream/binder/pubsub/provisioning/PubSubProducerDestination.class
+org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubExtendedBindingProperties.class
+org/springframework/cloud/gcp/stream/binder/pubsub/config/PubSubBinderConfiguration.class
+org/springframework/cloud/gcp/stream/binder/pubsub/provisioning/PubSubConsumerDestination.class
+org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubCommonProperties.class
+org/springframework/cloud/gcp/stream/binder/pubsub/PubSubMessageChannelBinder.class
+org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubConsumerProperties.class

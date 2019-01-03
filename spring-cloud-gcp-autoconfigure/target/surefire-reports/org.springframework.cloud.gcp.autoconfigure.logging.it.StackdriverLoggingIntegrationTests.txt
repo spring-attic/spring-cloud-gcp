@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: org.springframework.cloud.gcp.autoconfigure.logging.it.StackdriverLoggingIntegrationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.072 s - in org.springframework.cloud.gcp.autoconfigure.logging.it.StackdriverLoggingIntegrationTests

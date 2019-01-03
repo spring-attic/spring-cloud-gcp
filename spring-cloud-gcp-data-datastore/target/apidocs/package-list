@@ -1,0 +1,8 @@
+org.springframework.cloud.gcp.data.datastore.core
+org.springframework.cloud.gcp.data.datastore.core.convert
+org.springframework.cloud.gcp.data.datastore.core.mapping
+org.springframework.cloud.gcp.data.datastore.core.util
+org.springframework.cloud.gcp.data.datastore.repository
+org.springframework.cloud.gcp.data.datastore.repository.config
+org.springframework.cloud.gcp.data.datastore.repository.query
+org.springframework.cloud.gcp.data.datastore.repository.support
