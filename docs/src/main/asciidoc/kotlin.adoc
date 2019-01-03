@@ -1,6 +1,9 @@
 == Kotlin Support
 
-Spring Cloud GCP libraries work out-of-the-box and are fully interoperable with Kotlin Spring boot applications.
+The latest version of the Spring Framework provides first-class support for Kotlin.
+For Kotlin users of Spring, the Spring Cloud GCP libraries work out-of-the-box and are fully interoperable with Kotlin applications.
+
+For more information on building a Spring Boot application in Kotlin, please consult the https://docs.spring.io/spring/docs/current/spring-framework-reference/languages.html#kotlin[Spring Kotlin documentation].
 
 === Prerequisites
 
