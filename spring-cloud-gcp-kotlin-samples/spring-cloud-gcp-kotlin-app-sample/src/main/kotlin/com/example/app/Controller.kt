@@ -16,6 +16,7 @@
 
 package com.example.app
 
+import com.example.data.Person
 import com.example.data.PersonRepository
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate
 import org.springframework.web.bind.annotation.GetMapping
@@ -43,7 +44,7 @@ class Controller(val pubSubTemplate: PubSubTemplate, val personRepository: Perso
 			@RequestParam("lastName") lastName: String,
 			@RequestParam("email") email: String): RedirectView {
 
-		pubSubTemplate.publish(REGISTRATION_TOPIC, "$firstName:$lastName:$email")
+		pubSubTemplate.publish(REGISTRATION_TOPIC, Person(firstName, lastName, email))
 		return RedirectView("/")
 	}
 
