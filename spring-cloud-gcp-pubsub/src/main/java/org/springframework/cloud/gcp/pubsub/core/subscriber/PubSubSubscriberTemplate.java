@@ -82,9 +82,9 @@ public class PubSubSubscriberTemplate
 
 	private PubSubMessageConverter pubSubMessageConverter = new SimplePubSubMessageConverter();
 
-	private ExecutorService defaultAckExecutor = Executors.newSingleThreadExecutor();
+	private final ExecutorService defaultAckExecutor = Executors.newSingleThreadExecutor();
 
-	private Executor customAckExecutor;
+	private Executor ackExecutor = this.defaultAckExecutor;
 
 	/**
 	 * Default {@link PubSubSubscriberTemplate} constructor.
@@ -111,7 +111,7 @@ public class PubSubSubscriberTemplate
 
 	public void setAckExecutor(Executor ackExecutor) {
 		Assert.notNull(ackExecutor, "ackExecutor can't be null.");
-		this.customAckExecutor = ackExecutor;
+		this.ackExecutor = ackExecutor;
 	}
 
 	@Override
@@ -333,7 +333,6 @@ public class PubSubSubscriberTemplate
 		SettableListenableFuture<Void> settableListenableFuture	= new SettableListenableFuture<>();
 		int numExpectedFutures = groupedMessages.size();
 		AtomicInteger numCompletedFutures = new AtomicInteger();
-		Executor ackExecutor = (this.customAckExecutor != null) ? this.customAckExecutor : this.defaultAckExecutor;
 
 		groupedMessages.forEach((ProjectSubscriptionName psName, List<String> ackIds) -> {
 
@@ -358,7 +357,7 @@ public class PubSubSubscriberTemplate
 						settableListenableFuture.set(null);
 					}
 				}
-			}, ackExecutor);
+			}, this.ackExecutor);
 		});
 
 		return settableListenableFuture;
