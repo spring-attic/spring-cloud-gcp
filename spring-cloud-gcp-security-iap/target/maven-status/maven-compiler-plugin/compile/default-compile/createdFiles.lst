@@ -1,0 +1,3 @@
+org/springframework/cloud/gcp/security/iap/AppEngineAudienceProvider.class
+org/springframework/cloud/gcp/security/iap/AudienceValidator.class
+org/springframework/cloud/gcp/security/iap/AudienceProvider.class

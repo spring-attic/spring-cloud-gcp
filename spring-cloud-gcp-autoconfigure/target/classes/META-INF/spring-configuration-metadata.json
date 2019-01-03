@@ -1,0 +1,739 @@
+{
+  "groups": [
+    {
+      "name": "spring.cloud.gcp",
+      "type": "org.springframework.cloud.gcp.autoconfigure.core.GcpProperties",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.core.GcpProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.config",
+      "type": "org.springframework.cloud.gcp.autoconfigure.config.GcpConfigProperties",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.config.GcpConfigProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.config.credentials",
+      "type": "org.springframework.cloud.gcp.core.Credentials",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.config.GcpConfigProperties",
+      "sourceMethod": "getCredentials()"
+    },
+    {
+      "name": "spring.cloud.gcp.credentials",
+      "type": "org.springframework.cloud.gcp.core.Credentials",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.core.GcpProperties",
+      "sourceMethod": "getCredentials()"
+    },
+    {
+      "name": "spring.cloud.gcp.datastore",
+      "type": "org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreProperties",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.datastore.credentials",
+      "type": "org.springframework.cloud.gcp.core.Credentials",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreProperties",
+      "sourceMethod": "getCredentials()"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub",
+      "type": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.credentials",
+      "type": "org.springframework.cloud.gcp.core.Credentials",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties",
+      "sourceMethod": "getCredentials()"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher",
+      "type": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Publisher",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties",
+      "sourceMethod": "getPublisher()"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.batching",
+      "type": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Batching",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Publisher",
+      "sourceMethod": "getBatching()"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.batching.flow-control",
+      "type": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$FlowControl",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Batching",
+      "sourceMethod": "getFlowControl()"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.retry",
+      "type": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Publisher",
+      "sourceMethod": "getRetry()"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber",
+      "type": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Subscriber",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties",
+      "sourceMethod": "getSubscriber()"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.flow-control",
+      "type": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$FlowControl",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Subscriber",
+      "sourceMethod": "getFlowControl()"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.retry",
+      "type": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Subscriber",
+      "sourceMethod": "getRetry()"
+    },
+    {
+      "name": "spring.cloud.gcp.security.iap",
+      "type": "org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationProperties",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.spanner",
+      "type": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.credentials",
+      "type": "org.springframework.cloud.gcp.core.Credentials",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties",
+      "sourceMethod": "getCredentials()"
+    },
+    {
+      "name": "spring.cloud.gcp.sql",
+      "type": "org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlProperties",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.storage",
+      "type": "org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageProperties",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.storage.credentials",
+      "type": "org.springframework.cloud.gcp.core.Credentials",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageProperties",
+      "sourceMethod": "getCredentials()"
+    },
+    {
+      "name": "spring.cloud.gcp.trace",
+      "type": "org.springframework.cloud.gcp.autoconfigure.trace.GcpTraceProperties",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.trace.GcpTraceProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.trace.credentials",
+      "type": "org.springframework.cloud.gcp.core.Credentials",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.trace.GcpTraceProperties",
+      "sourceMethod": "getCredentials()"
+    },
+    {
+      "name": "spring.cloud.gcp.vision",
+      "type": "org.springframework.cloud.gcp.autoconfigure.vision.CloudVisionProperties",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.vision.CloudVisionProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.vision.credentials",
+      "type": "org.springframework.cloud.gcp.core.Credentials",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.vision.CloudVisionProperties",
+      "sourceMethod": "getCredentials()"
+    }
+  ],
+  "properties": [
+    {
+      "name": "spring.cloud.gcp.config.credentials.encoded-key",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.config.credentials.location",
+      "type": "org.springframework.core.io.Resource",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.config.credentials.scopes",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.config.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enables Spring Cloud GCP Config.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.config.GcpConfigProperties",
+      "defaultValue": false
+    },
+    {
+      "name": "spring.cloud.gcp.config.name",
+      "type": "java.lang.String",
+      "description": "Name of the application.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.config.GcpConfigProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.config.profile",
+      "type": "java.lang.String",
+      "description": "Comma-delimited string of profiles under which the app is running. Gets its default value from the {@code spring.profiles.active} property, falling back on the {@code spring.profiles.default} property.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.config.GcpConfigProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.config.project-id",
+      "type": "java.lang.String",
+      "description": "Overrides the GCP project ID specified in the Core module.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.config.GcpConfigProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.config.timeout-millis",
+      "type": "java.lang.Integer",
+      "description": "Timeout for Google Runtime Configuration API calls.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.config.GcpConfigProperties",
+      "defaultValue": 60000
+    },
+    {
+      "name": "spring.cloud.gcp.credentials.encoded-key",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.credentials.location",
+      "type": "org.springframework.core.io.Resource",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.credentials.scopes",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.datastore.credentials.encoded-key",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.datastore.credentials.location",
+      "type": "org.springframework.core.io.Resource",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.datastore.credentials.scopes",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.datastore.namespace",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.datastore.project-id",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.datastore.GcpDatastoreProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.logging.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Stackdriver logging for Spring MVC.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.project-id",
+      "type": "java.lang.String",
+      "description": "GCP project ID where services are running.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.core.GcpProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.credentials.encoded-key",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.credentials.location",
+      "type": "org.springframework.core.io.Resource",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.credentials.scopes",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.emulator-host",
+      "type": "java.lang.String",
+      "description": "The host and port of the local running emulator. If provided, this will setup the client to connect against a running pub\/sub emulator.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Pub\/Sub components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.project-id",
+      "type": "java.lang.String",
+      "description": "Overrides the GCP project ID specified in the Core module.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.batching.delay-threshold-seconds",
+      "type": "java.lang.Long",
+      "description": "The delay threshold to use for batching. After this amount of time has elapsed (counting from the first element added), the elements will be wrapped up in a batch and sent.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Batching"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.batching.element-count-threshold",
+      "type": "java.lang.Long",
+      "description": "The element count threshold to use for batching.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Batching"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.batching.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enables batching if true.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Batching"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.batching.flow-control.limit-exceeded-behavior",
+      "type": "com.google.api.gax.batching.FlowController$LimitExceededBehavior",
+      "description": "The behavior when the specified limits are exceeded.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$FlowControl"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.batching.flow-control.max-outstanding-element-count",
+      "type": "java.lang.Long",
+      "description": "Maximum number of outstanding elements to keep in memory before enforcing flow control.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$FlowControl"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.batching.flow-control.max-outstanding-request-bytes",
+      "type": "java.lang.Long",
+      "description": "Maximum number of outstanding bytes to keep in memory before enforcing flow control.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$FlowControl"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.batching.request-byte-threshold",
+      "type": "java.lang.Long",
+      "description": "The request byte threshold to use for batching.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Batching"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.executor-threads",
+      "type": "java.lang.Integer",
+      "description": "Number of threads used by every publisher.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Publisher",
+      "defaultValue": 4
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.retry.initial-retry-delay-seconds",
+      "type": "java.lang.Long",
+      "description": "InitialRetryDelay controls the delay before the first retry. Subsequent retries will use this value adjusted according to the RetryDelayMultiplier.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.retry.initial-rpc-timeout-seconds",
+      "type": "java.lang.Long",
+      "description": "InitialRpcTimeout controls the timeout for the initial RPC. Subsequent calls will use this value adjusted according to the RpcTimeoutMultiplier.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.retry.jittered",
+      "type": "java.lang.Boolean",
+      "description": "Jitter determines if the delay time should be randomized.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.retry.max-attempts",
+      "type": "java.lang.Integer",
+      "description": "MaxAttempts defines the maximum number of attempts to perform. If this value is greater than 0, and the number of attempts reaches this limit, the logic will give up retrying even if the total retry time is still lower than TotalTimeout.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.retry.max-retry-delay-seconds",
+      "type": "java.lang.Long",
+      "description": "MaxRetryDelay puts a limit on the value of the retry delay, so that the RetryDelayMultiplier can't increase the retry delay higher than this amount.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.retry.max-rpc-timeout-seconds",
+      "type": "java.lang.Long",
+      "description": "MaxRpcTimeout puts a limit on the value of the RPC timeout, so that the RpcTimeoutMultiplier can't increase the RPC timeout higher than this amount.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.retry.retry-delay-multiplier",
+      "type": "java.lang.Double",
+      "description": "RetryDelayMultiplier controls the change in retry delay. The retry delay of the previous call is multiplied by the RetryDelayMultiplier to calculate the retry delay for the next call.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.retry.rpc-timeout-multiplier",
+      "type": "java.lang.Double",
+      "description": "RpcTimeoutMultiplier controls the change in RPC timeout. The timeout of the previous call is multiplied by the RpcTimeoutMultiplier to calculate the timeout for the next call.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.publisher.retry.total-timeout-seconds",
+      "type": "java.lang.Long",
+      "description": "TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely. The higher the total timeout, the more retries can be attempted.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.executor-threads",
+      "type": "java.lang.Integer",
+      "description": "Number of threads used by every subscriber.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Subscriber",
+      "defaultValue": 4
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.flow-control.limit-exceeded-behavior",
+      "type": "com.google.api.gax.batching.FlowController$LimitExceededBehavior",
+      "description": "The behavior when the specified limits are exceeded.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$FlowControl"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.flow-control.max-outstanding-element-count",
+      "type": "java.lang.Long",
+      "description": "Maximum number of outstanding elements to keep in memory before enforcing flow control.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$FlowControl"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.flow-control.max-outstanding-request-bytes",
+      "type": "java.lang.Long",
+      "description": "Maximum number of outstanding bytes to keep in memory before enforcing flow control.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$FlowControl"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.max-ack-extension-period",
+      "type": "java.lang.Long",
+      "description": "The optional max ack extension period in seconds for the subscriber factory.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Subscriber",
+      "defaultValue": 0
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.parallel-pull-count",
+      "type": "java.lang.Integer",
+      "description": "The optional parallel pull count setting for the subscriber factory.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Subscriber"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.pull-endpoint",
+      "type": "java.lang.String",
+      "description": "The optional pull endpoint setting for the subscriber factory.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Subscriber"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.retry.initial-retry-delay-seconds",
+      "type": "java.lang.Long",
+      "description": "InitialRetryDelay controls the delay before the first retry. Subsequent retries will use this value adjusted according to the RetryDelayMultiplier.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.retry.initial-rpc-timeout-seconds",
+      "type": "java.lang.Long",
+      "description": "InitialRpcTimeout controls the timeout for the initial RPC. Subsequent calls will use this value adjusted according to the RpcTimeoutMultiplier.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.retry.jittered",
+      "type": "java.lang.Boolean",
+      "description": "Jitter determines if the delay time should be randomized.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.retry.max-attempts",
+      "type": "java.lang.Integer",
+      "description": "MaxAttempts defines the maximum number of attempts to perform. If this value is greater than 0, and the number of attempts reaches this limit, the logic will give up retrying even if the total retry time is still lower than TotalTimeout.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.retry.max-retry-delay-seconds",
+      "type": "java.lang.Long",
+      "description": "MaxRetryDelay puts a limit on the value of the retry delay, so that the RetryDelayMultiplier can't increase the retry delay higher than this amount.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.retry.max-rpc-timeout-seconds",
+      "type": "java.lang.Long",
+      "description": "MaxRpcTimeout puts a limit on the value of the RPC timeout, so that the RpcTimeoutMultiplier can't increase the RPC timeout higher than this amount.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.retry.retry-delay-multiplier",
+      "type": "java.lang.Double",
+      "description": "RetryDelayMultiplier controls the change in retry delay. The retry delay of the previous call is multiplied by the RetryDelayMultiplier to calculate the retry delay for the next call.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.retry.rpc-timeout-multiplier",
+      "type": "java.lang.Double",
+      "description": "RpcTimeoutMultiplier controls the change in RPC timeout. The timeout of the previous call is multiplied by the RpcTimeoutMultiplier to calculate the timeout for the next call.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.pubsub.subscriber.retry.total-timeout-seconds",
+      "type": "java.lang.Long",
+      "description": "TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely. The higher the total timeout, the more retries can be attempted.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubProperties$Retry"
+    },
+    {
+      "name": "spring.cloud.gcp.security.iap.algorithm",
+      "type": "java.lang.String",
+      "description": "Encryption algorithm used to sign the JWK token.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationProperties",
+      "defaultValue": "ES256"
+    },
+    {
+      "name": "spring.cloud.gcp.security.iap.audience",
+      "type": "java.lang.String",
+      "description": "Non-dynamic audience string to validate.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.security.iap.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud IAP identity extraction components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.security.iap.header",
+      "type": "java.lang.String",
+      "description": "Header from which to extract the JWK key.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationProperties",
+      "defaultValue": "x-goog-iap-jwt-assertion"
+    },
+    {
+      "name": "spring.cloud.gcp.security.iap.issuer",
+      "type": "java.lang.String",
+      "description": "JWK issuer to verify.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationProperties",
+      "defaultValue": "https:\/\/cloud.google.com\/iap"
+    },
+    {
+      "name": "spring.cloud.gcp.security.iap.registry",
+      "type": "java.lang.String",
+      "description": "Link to JWK public key registry.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationProperties",
+      "defaultValue": "https:\/\/www.gstatic.com\/iap\/verify\/public_key-jwk"
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.create-interleaved-table-ddl-on-delete-cascade",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.credentials.encoded-key",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.credentials.location",
+      "type": "org.springframework.core.io.Resource",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.credentials.scopes",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.database",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.instance-id",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.keep-alive-interval-minutes",
+      "type": "java.lang.Integer",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties",
+      "defaultValue": -1
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.max-idle-sessions",
+      "type": "java.lang.Integer",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties",
+      "defaultValue": -1
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.max-sessions",
+      "type": "java.lang.Integer",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties",
+      "defaultValue": -1
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.min-sessions",
+      "type": "java.lang.Integer",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties",
+      "defaultValue": -1
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.num-rpc-channels",
+      "type": "java.lang.Integer",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties",
+      "defaultValue": -1
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.prefetch-chunks",
+      "type": "java.lang.Integer",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties",
+      "defaultValue": -1
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.project-id",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.spanner.write-sessions-fraction",
+      "type": "java.lang.Float",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.spanner.GcpSpannerProperties",
+      "defaultValue": -1
+    },
+    {
+      "name": "spring.cloud.gcp.sql.credentials",
+      "type": "org.springframework.cloud.gcp.core.Credentials",
+      "description": "Overrides the GCP OAuth2 credentials specified in the Core module.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.sql.database-name",
+      "type": "java.lang.String",
+      "description": "Name of the database in the Cloud SQL instance.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.sql.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud SQL support components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.sql.instance-connection-name",
+      "type": "java.lang.String",
+      "description": "Cloud SQL instance connection name. [GCP_PROJECT_ID]:[INSTANCE_REGION]:[INSTANCE_NAME].",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.sql.GcpCloudSqlProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.storage.auto-create-files",
+      "type": "java.lang.Boolean",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.storage.GcpStorageProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.storage.credentials.encoded-key",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.storage.credentials.location",
+      "type": "org.springframework.core.io.Resource",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.storage.credentials.scopes",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.storage.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Storage components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.trace.authority",
+      "type": "java.lang.String",
+      "description": "HTTP\/2 authority the channel claims to be connecting to.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.trace.GcpTraceProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.trace.compression",
+      "type": "java.lang.String",
+      "description": "Compression to use for the call.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.trace.GcpTraceProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.trace.credentials.encoded-key",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.trace.credentials.location",
+      "type": "org.springframework.core.io.Resource",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.trace.credentials.scopes",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.trace.deadline-ms",
+      "type": "java.lang.Long",
+      "description": "Call deadline.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.trace.GcpTraceProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.trace.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Stackdriver tracing components.",
+      "defaultValue": true
+    },
+    {
+      "name": "spring.cloud.gcp.trace.max-inbound-size",
+      "type": "java.lang.Integer",
+      "description": "Maximum size for an inbound message.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.trace.GcpTraceProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.trace.max-outbound-size",
+      "type": "java.lang.Integer",
+      "description": "Maximum size for an outbound message.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.trace.GcpTraceProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.trace.num-executor-threads",
+      "type": "java.lang.Integer",
+      "description": "Number of threads to be used by the Trace executor.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.trace.GcpTraceProperties",
+      "defaultValue": 4
+    },
+    {
+      "name": "spring.cloud.gcp.trace.project-id",
+      "type": "java.lang.String",
+      "description": "Overrides the GCP project ID specified in the Core module.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.trace.GcpTraceProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.trace.wait-for-ready",
+      "type": "java.lang.Boolean",
+      "description": "Waits for the channel to be ready in case of a transient failure. Defaults to failing fast in that case.",
+      "sourceType": "org.springframework.cloud.gcp.autoconfigure.trace.GcpTraceProperties"
+    },
+    {
+      "name": "spring.cloud.gcp.vision.credentials.encoded-key",
+      "type": "java.lang.String",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.vision.credentials.location",
+      "type": "org.springframework.core.io.Resource",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.vision.credentials.scopes",
+      "type": "java.util.List<java.lang.String>",
+      "sourceType": "org.springframework.cloud.gcp.core.Credentials"
+    },
+    {
+      "name": "spring.cloud.gcp.vision.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Auto-configure Google Cloud Vision components.",
+      "defaultValue": true
+    }
+  ],
+  "hints": []
+}

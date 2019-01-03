@@ -1,0 +1,7 @@
+com/example/SpannerExampleDriver.class
+com/example/Trade.class
+com/example/TradeRepository.class
+com/example/SpannerRepositoryExample.class
+com/example/TraderRepository.class
+com/example/SpannerTemplateExample.class
+com/example/Trader.class

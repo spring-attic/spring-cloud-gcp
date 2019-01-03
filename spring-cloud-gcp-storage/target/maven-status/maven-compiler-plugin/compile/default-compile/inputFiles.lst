@@ -1,0 +1,14 @@
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/integration/filters/GcsRegexPatternFileListFilter.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/integration/inbound/GcsStreamingMessageSource.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/integration/filters/GcsPersistentAcceptOnceFileListFilter.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/integration/GcsSession.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/integration/GcsFileInfo.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/integration/inbound/GcsInboundFileSynchronizer.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/integration/inbound/GcsInboundFileSynchronizingMessageSource.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/integration/GcsSessionFactory.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/GoogleStorageProtocolResolver.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/GoogleStorageProtocolResolverSettings.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/GoogleStorageResource.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/integration/filters/GcsSimplePatternFileListFilter.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/integration/GcsRemoteFileTemplate.java
+/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-storage/src/main/java/org/springframework/cloud/gcp/storage/integration/outbound/GcsMessageHandler.java

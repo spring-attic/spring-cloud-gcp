@@ -1,0 +1,3 @@
+org/springframework/cloud/gcp/security/iap/AudienceValidatorTests$TestConfiguration.class
+org/springframework/cloud/gcp/security/iap/AppEngineAudienceProviderTests.class
+org/springframework/cloud/gcp/security/iap/AudienceValidatorTests.class

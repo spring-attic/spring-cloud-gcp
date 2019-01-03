@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="8.12">
+<file name="/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-sample/spring-cloud-gcp-integration-pubsub-sample-sender/src/main/java/com/example/WebController.java">
+</file>
+<file name="/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-sample/spring-cloud-gcp-integration-pubsub-sample-sender/src/main/java/com/example/SenderApplication.java">
+</file>
+<file name="/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-sample/spring-cloud-gcp-integration-pubsub-sample-receiver/src/main/java/com/example/ReceiverApplication.java">
+</file>
+<file name="/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-sample/spring-cloud-gcp-integration-pubsub-sample-test/../spring-cloud-gcp-integration-pubsub-sample-sender/src/main/resources/application.properties">
+</file>
+<file name="/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-integration-pubsub-sample/spring-cloud-gcp-integration-pubsub-sample-test/../spring-cloud-gcp-integration-pubsub-sample-receiver/src/main/resources/application.properties">
+</file>
+</checkstyle>

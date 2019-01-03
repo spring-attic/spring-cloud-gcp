@@ -1,0 +1,10 @@
+org/springframework/cloud/gcp/storage/integration/inbound/GcsStreamingMessageSourceTests$Config.class
+org/springframework/cloud/gcp/storage/integration/inbound/GcsInboundFileSynchronizerTests.class
+org/springframework/cloud/gcp/storage/it/GoogleStorageIntegrationTests.class
+org/springframework/cloud/gcp/storage/integration/outbound/GcsMessageHandlerTests$Config.class
+org/springframework/cloud/gcp/storage/integration/inbound/GcsInboundFileSynchronizerTests$Config.class
+org/springframework/cloud/gcp/storage/it/GoogleStorageIntegrationTests$GoogleStorageIntegrationTestsConfiguration.class
+org/springframework/cloud/gcp/storage/integration/outbound/GcsMessageHandlerTests.class
+org/springframework/cloud/gcp/storage/GoogleStorageTests$StorageApplication.class
+org/springframework/cloud/gcp/storage/GoogleStorageTests.class
+org/springframework/cloud/gcp/storage/integration/inbound/GcsStreamingMessageSourceTests.class

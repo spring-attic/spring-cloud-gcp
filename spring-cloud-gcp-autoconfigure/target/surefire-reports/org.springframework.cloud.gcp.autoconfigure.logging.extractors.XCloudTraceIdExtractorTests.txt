@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractorTests
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.01 s - in org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractorTests
