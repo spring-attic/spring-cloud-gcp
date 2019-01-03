@@ -1,16 +1,13 @@
 = Spring Cloud GCP Config Client Starter Code Sample
 
-This sample application demonstrates using the
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Spring Cloud GCP Config Client Starter] in your code.
+This sample application demonstrates using the link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Spring Cloud GCP Config Client Starter] in your code.
 
-The same content is also available in the
-https://codelabs.developers.google.com/codelabs/cloud-spring-runtime-config/index.html[Dynamic configuration for Spring Boot applications] codelab.
+The same content is also available in the https://codelabs.developers.google.com/codelabs/cloud-spring-runtime-config/index.html[Dynamic configuration for Spring Boot applications] codelab.
 
 == Setup & Configuration
 1. Checkout the code of this sample.
 2. Enable the Google https://console.cloud.google.com/apis/api/runtimeconfig.googleapis.com/overview[Runtime Configuration API].
-3. Create a configuration using the
-https://cloud.google.com/sdk/[Google Cloud SDK].
+3. Create a configuration using the https://cloud.google.com/sdk/[Google Cloud SDK].
 +
 ....
 $ gcloud beta runtime-config configs create myapp_prod
@@ -37,18 +34,14 @@ spring.cloud.gcp.config.name=myapp
 #default profile = default
 spring.cloud.gcp.config.profile=prod
 ....
-5.  Notice that link:src/main/java/com/example/MyAppProperties.java[MyAppProperties.java]
-uses `@ConfigurationProperties` to bind the `myapp` namespace from the environment.
+5.  Notice that link:src/main/java/com/example/MyAppProperties.java[MyAppProperties.java] uses `@ConfigurationProperties` to bind the `myapp` namespace from the environment.
 
-6. Note that in order to expose /actuator/refresh endpoint,
-link:src/resources/application.properties[application.properties] file
-includes the following property:
+6. Note that in order to expose /actuator/refresh endpoint, link:src/resources/application.properties[application.properties] file includes the following property:
 +
 ....
 management.endpoints.web.exposure.include=refresh
 ....
-7.  Run the application using the `$ mvn spring-boot:run` command and
-verify the values are set appropriately at http://localhost:8080/
+7.  Run the application using the `$ mvn spring-boot:run` command and verify the values are set appropriately at http://localhost:8080/
 8.  Update a property with `gcloud`:
 +
 ....

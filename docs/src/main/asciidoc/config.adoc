@@ -53,7 +53,7 @@ NOTE: Core properties, as described in <<spring-cloud-gcp-core,Spring Cloud GCP 
 In other words, if `spring.application.name` is `myapp` and `spring.profiles.active` is `prod`, the configuration should be called `myapp_prod`.
 +
 In order to do that, you should have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, own a Google Cloud Project and run the following command:
-+
+[source]
 ----
 gcloud init # if this is your first Google Cloud SDK run.
 gcloud beta runtime-config configs create myapp_prod
@@ -62,12 +62,14 @@ gcloud beta runtime-config configs variables set myapp.queue-size 25 --config-na
 
 2. Configure your `bootstrap.properties` file with your application's configuration data:
 +
+[source]
 ----
 spring.application.name=myapp
 spring.profiles.active=prod
 ----
 3. Add the `@ConfigurationProperties` annotation to a Spring-managed bean:
 +
+[source]
 ----
 @Component
 @ConfigurationProperties("myapp")

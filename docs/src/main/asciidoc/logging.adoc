@@ -38,16 +38,14 @@ For use in Web MVC-based applications, `TraceIdLoggingWebMvcInterceptor` is prov
 
 WARNING: If Spring Cloud GCP Trace is enabled, the logging module disables itself and delegates log correlation to Spring Cloud Sleuth.
 
-`LoggingWebMvcConfigurer` configuration class is also provided to help register the `TraceIdLoggingWebMvcInterceptor`
-in Spring MVC applications.
+`LoggingWebMvcConfigurer` configuration class is also provided to help register the `TraceIdLoggingWebMvcInterceptor` in Spring MVC applications.
 
 Applications hosted on the Google Cloud Platform include trace IDs under the `x-cloud-trace-context` header, which will be included in log entries.
 However, if Sleuth is used the trace ID will be picked up from the MDC.
 
 === Logback Support
 
-Currently, only Logback is supported and there are 2 possibilities to log to Stackdriver via this library with Logback:
-via direct API calls and through JSON-formatted console logs.
+Currently, only Logback is supported and there are 2 possibilities to log to Stackdriver via this library with Logback: via direct API calls and through JSON-formatted console logs.
 
 ==== Log via API
 A Stackdriver appender is available using `org/springframework/cloud/gcp/autoconfigure/logging/logback-appender.xml`.
@@ -73,8 +71,10 @@ The following properties are available:
 [options="header",]
 |=======================================================================
 | Property | Default Value | Description
-| `log` | `spring.log` | The Stackdriver Log name. This can also be set via the `STACKDRIVER_LOG_NAME` environmental variable.
-| `flushLevel` | `WARN` | If a log entry with this level is encountered, trigger a flush of locally buffered log to Stackdriver Logging. This can also be set via the `STACKDRIVER_LOG_FLUSH_LEVEL` environmental variable.
+| `log` | `spring.log` | The Stackdriver Log name.
+This can also be set via the `STACKDRIVER_LOG_NAME` environmental variable.
+| `flushLevel` | `WARN` | If a log entry with this level is encountered, trigger a flush of locally buffered log to Stackdriver Logging.
+This can also be set via the `STACKDRIVER_LOG_FLUSH_LEVEL` environmental variable.
 |=======================================================================
 
 
@@ -118,10 +118,12 @@ If `projectId` is not set and cannot be determined, then it'll log `traceId` wit
 | `includeSpanId` | `true` | Should the `spanId` be included
 | `includeLevel` | `true` | Should the severity be included
 | `includeThreadName` | `true` | Should the thread name be included
-| `includeMDC` | `true` | Should all MDC properties be included. The MDC properties `X-B3-TraceId`, `X-B3-SpanId` and `X-Span-Export` provided by Spring Sleuth will get excluded as they get handled separately
+| `includeMDC` | `true` | Should all MDC properties be included.
+The MDC properties `X-B3-TraceId`, `X-B3-SpanId` and `X-Span-Export` provided by Spring Sleuth will get excluded as they get handled separately
 | `includeLoggerName` | `true` | Should the name of the logger be included
 | `includeFormattedMessage` | `true` | Should the formatted log message be included.
-| `includeExceptionInMessage` | `true` | Should the stacktrace be appended to the formatted log message. This setting is only evaluated if `includeFormattedMessage` is `true`
+| `includeExceptionInMessage` | `true` | Should the stacktrace be appended to the formatted log message.
+This setting is only evaluated if `includeFormattedMessage` is `true`
 | `includeContextName` | `true` | Should the logging context be included
 | `includeMessage` | `false` | Should the log message with blank placeholders be included
 | `includeException` | `false` | Should the stacktrace be included as a own field

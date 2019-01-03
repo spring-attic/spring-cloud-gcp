@@ -37,7 +37,8 @@ In order to use the Spring Boot Starters for Google Cloud SQL, the Google Cloud 
 
 To do that, go to the https://console.cloud.google.com/apis/library[API library page] of the Google Cloud Console, search for "Cloud SQL API", click the first result and enable the API.
 
-NOTE: There are several similar "Cloud SQL" results. You must access the "Google Cloud SQL API" one and enable the API from there.
+NOTE: There are several similar "Cloud SQL" results.
+You must access the "Google Cloud SQL API" one and enable the API from there.
 
 === Spring Boot Starter for Google Cloud SQL
 
@@ -116,7 +117,8 @@ To find out what's causing the issue, you can enable DEBUG logging level as ment
 
 We found this exception to be common if your Maven project's parent is `spring-boot` version `1.5.x`, or in any other circumstance that would cause the version of the `org.postgresql:postgresql` dependency to be an older one (e.g., `9.4.1212.jre7`).
 
-To fix this, re-declare the dependency in its correct version. For example, in Maven:
+To fix this, re-declare the dependency in its correct version.
+For example, in Maven:
 
 [source,xml]
 ----

@@ -33,8 +33,7 @@ dependencies {
 ==== Inbound channel adapter
 
 `PubSubInboundChannelAdapter` is the inbound channel adapter for GCP Pub/Sub that listens to a GCP Pub/Sub subscription for new messages.
-It converts new messages to an internal Spring https://docs.spring.io/spring-integration/reference/html/messaging-construction-chapter.html#message[`Message`]
-and then sends it to the bound output channel.
+It converts new messages to an internal Spring https://docs.spring.io/spring-integration/reference/html/messaging-construction-chapter.html#message[`Message`] and then sends it to the bound output channel.
 
 Google Pub/Sub treats message payloads as byte arrays.
 So, by default, the inbound channel adapter will construct the Spring `Message` with `byte[]` as the payload.
@@ -107,8 +106,7 @@ public MessageHandler messageReceiver() {
 
 ==== Outbound channel adapter
 
-`PubSubMessageHandler` is the outbound channel adapter for GCP Pub/Sub that listens for new messages
-on a Spring `MessageChannel`.
+`PubSubMessageHandler` is the outbound channel adapter for GCP Pub/Sub that listens for new messages on a Spring `MessageChannel`.
 It uses `PubSubTemplate` to post them to a GCP Pub/Sub topic.
 
 To construct a Pub/Sub representation of the message, the outbound channel adapter needs to convert the Spring `Message` payload to a byte array representation expected by Pub/Sub.

@@ -136,7 +136,7 @@ public class WebController {
 	@GetMapping("/subscribe")
 	public RedirectView subscribe(@RequestParam("subscription") String subscriptionName) {
 		Subscriber subscriber = this.pubSubTemplate.subscribe(subscriptionName, (message) -> {
-			LOGGER.info("Message received from " + subscriptionName + " subscription. "
+			LOGGER.info("Message received from " + subscriptionName + " subscription: "
 					+ message.getPubsubMessage().getData().toStringUtf8());
 			message.ack();
 		});

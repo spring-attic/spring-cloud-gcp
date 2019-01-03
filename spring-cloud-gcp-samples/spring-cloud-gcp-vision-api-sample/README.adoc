@@ -22,9 +22,7 @@ Such as: `spring.cloud.gcp.credentials.location=file:/path/to/creds.json`
 
 5. Go to http://localhost:8080 in your browser, paste a URL to an image and press the `Submit` button.
 
-6. You will see a readable version of the Google Cloud Vision API response, which contains the words
-that Google Cloud Vision attributed to your image, as well as a percentage of certainty.
+6. You will see a readable version of the Google Cloud Vision API response, which contains the words that Google Cloud Vision attributed to your image, as well as a percentage of certainty.
 
-In this case, by using the Spring Cloud GCP Core Boot starter, you can inject a `CredentialsProvider` object which you
-can pass to our API to provide the correct Google credentials.
+In this case, by using the Spring Cloud GCP Core Boot starter, you can inject a `CredentialsProvider` object which you can pass to our API to provide the correct Google credentials.
 You don't need to set any environment variables for authentication to work.

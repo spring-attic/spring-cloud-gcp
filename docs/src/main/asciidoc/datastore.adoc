@@ -64,8 +64,7 @@ The following configuration options are available:
 |===
 | Name | Description | Required | Default value
 | `spring.cloud.gcp.datastore.enabled` | Enables the Cloud Datastore client | No | `true`
-| `spring.cloud.gcp.datastore.project-id` | GCP project ID where the Google Cloud Datastore API
-is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
+| `spring.cloud.gcp.datastore.project-id` | GCP project ID where the Google Cloud Datastore API is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
 | No |
 | `spring.cloud.gcp.datastore.credentials.location` | OAuth2 credentials for authenticating with the
 Google Cloud Datastore API, if different from the ones in the
@@ -116,7 +115,8 @@ public class Trader {
 }
 ----
 
-Spring Data Cloud Datastore will ignore any property annotated with `@Transient`. These properties will not be written to or read from Cloud Datastore.
+Spring Data Cloud Datastore will ignore any property annotated with `@Transient`.
+These properties will not be written to or read from Cloud Datastore.
 
 ==== Constructors
 
@@ -220,13 +220,11 @@ In addition, all types that can be converted to the ones listed in the table by
 
 Custom converters can be used extending the type support for user defined types.
 
-. Converters need to implement the `org.springframework.core.convert.converter.Converter` interface in
-both directions.
+. Converters need to implement the `org.springframework.core.convert.converter.Converter` interface in both directions.
 
 . The user defined type needs to be mapped to one of the basic types supported by Cloud Datastore.
 
-. An instance of both Converters (read and write) needs to be passed to the `DatastoreCustomConversions` constructor,
-which then has to be made available as a `@Bean` for `DatastoreCustomConversions`.
+. An instance of both Converters (read and write) needs to be passed to the `DatastoreCustomConversions` constructor, which then has to be made available as a `@Bean` for `DatastoreCustomConversions`.
 
 For example:
 
@@ -306,8 +304,7 @@ Elements are converted to Cloud Datastore supported types individually. `byte[]`
 
 ==== Custom Converter for collections
 Users can provide converters from  `List<?>` to the custom collection type.
-Only read converter is necessary, the Collection API is used on the write side to convert a collection to
-the internal list type.
+Only read converter is necessary, the Collection API is used on the write side to convert a collection to the internal list type.
 
 Collection converters need to implement the `org.springframework.core.convert.converter.Converter` interface.
 
@@ -315,8 +312,7 @@ Collection converters need to implement the `org.springframework.core.convert.co
 Example:
 
 Let's improve the Singer class from the previous example.
-Instead of a field of type `Album`,
-we would like to have a field of type `ImmutableSet<Album>`:
+Instead of a field of type `Album`, we would like to have a field of type `ImmutableSet<Album>`:
 
 [source, java]
 ----
@@ -703,7 +699,8 @@ In the example above the first two reads utilize keys, while the third is execut
 
 ===== Indexes
 
-By default, all fields are indexed. To disable indexing on a particular field, `@Unindexed` annotation can be used.
+By default, all fields are indexed.
+To disable indexing on a particular field, `@Unindexed` annotation can be used.
 
 Example:
 [source, java]
@@ -763,7 +760,8 @@ DatastoreOperations myDatastoreOperations;
 public String doWorkInsideTransaction() {
   return myDatastoreOperations.performTransaction(
     transactionDatastoreOperations -> {
-      // work with transactionDatastoreOperations here. It is also a DatastoreOperations object.
+      // Work with transactionDatastoreOperations here.
+      // It is also a DatastoreOperations object.
 
       return "transaction completed";
     }
@@ -771,7 +769,8 @@ public String doWorkInsideTransaction() {
 }
 ----
 
-The `performTransaction` method accepts a `Function` that is provided an instance of a `DatastoreOperations` object. The final returned value and type of the function is determined by the user.
+The `performTransaction` method accepts a `Function` that is provided an instance of a `DatastoreOperations` object.
+The final returned value and type of the function is determined by the user.
 You can use this object just as you would a regular `DatastoreOperations` with an exception:
 
 - It cannot perform sub-transactions.
@@ -861,7 +860,7 @@ Filtering parameters can be of types supported by your configured custom convert
 [source, java]
 ----
 public interface TradeRepository extends DatastoreRepository<Trade, String[]> {
-    List<Trader> findByAction(String action);
+  List<Trader> findByAction(String action);
 
   int countByAction(String action);
 
@@ -892,7 +891,8 @@ Cloud Datastore only supports filter components joined by AND, and the following
 After writing a custom repository interface specifying just the signatures of these methods, implementations are generated for you and can be used with an auto-wired instance of the repository.
 Because of Cloud Datastore's requirement that explicitly selected fields must all appear in a composite index together, `find` name-based query methods are run as `SELECT *`.
 
-Delete queries are also supported. For example, query methods such as `deleteByAction` or `removeByAction` delete entities found by `findByAction`.
+Delete queries are also supported.
+For example, query methods such as `deleteByAction` or `removeByAction` delete entities found by `findByAction`.
 Delete queries are executed as separate read and delete operations instead of as a single transaction because Cloud Datastore cannot query in transactions unless ancestors for queries are specified.
 As a result, `removeBy` and `deleteBy` name-convention query methods cannot be used inside transactions via either `performInTransaction` or `@Transactional` annotation.
 
@@ -902,13 +902,11 @@ Delete queries can have the following return types:
 * A collection of entities that were deleted
 * 'void'
 
-Methods can have `org.springframework.data.domain.Pageable` parameter to control pagination and sorting,
-or `org.springframework.data.domain.Sort` parameter to control sorting only.
+Methods can have `org.springframework.data.domain.Pageable` parameter to control pagination and sorting, or `org.springframework.data.domain.Sort` parameter to control sorting only.
 See https://docs.spring.io/spring-data/data-commons/docs/current/reference/html/#repositories.query-methods[Spring Data documentation] for details.
 
 For returning multiple items in a repository method, we support Java collections as well as `org.springframework.data.domain.Page` and `org.springframework.data.domain.Slice`.
-If a method's return type is `org.springframework.data.domain.Page`, the returned object will include current page,
-total number of results and total number of pages.
+If a method's return type is `org.springframework.data.domain.Page`, the returned object will include current page, total number of results and total number of pages.
 
 NOTE: Methods that return `Page` execute an additional query to compute total number of pages.
 Methods that return `Slice`, on the other hand, don't execute any additional queries and therefore are much more efficient.
@@ -948,14 +946,16 @@ The following parameter types are supported:
 * `java.lang.Double`
 * `java.lang.Long`
 * `java.lang.String`
-* `enum` values. These are queried as `String` values.
+* `enum` values.
+These are queried as `String` values.
 
 With the exception of `Cursor`, array forms of each of the types are also supported.
 
 If you would like to obtain the count of items of a query or if there are any items returned by the query, set the `count = true` or `exists = true` properties of the `@Query` annotation, respectively.
 The return type of the query method in these cases should be an integer type or a boolean type.
 
-Cloud Datastore provides provides the `SELECT __key__ FROM ...` special column for all kinds that retrieves the `Key`s of each row. Selecting this special `__key__` column is especially useful and efficient for `count` and `exists` queries.
+Cloud Datastore provides provides the `SELECT __key__ FROM ...` special column for all kinds that retrieves the `Key`s of each row.
+Selecting this special `__key__` column is especially useful and efficient for `count` and `exists` queries.
 
 You can also query for non-entity types:
 
@@ -1034,7 +1034,8 @@ DatastoreRepository myRepo;
 public String doWorkInsideTransaction() {
   return myRepo.performTransaction(
     transactionDatastoreRepo -> {
-      // work with the single-transaction transactionDatastoreRepo here. This is a DatastoreRepository object.
+      // Work with the single-transaction transactionDatastoreRepo here.
+      // This is a DatastoreRepository object.
 
       return "transaction completed";
     }
@@ -1044,7 +1045,8 @@ public String doWorkInsideTransaction() {
 
 ==== Projections
 
-Spring Data Cloud Datastore supports {spring-data-commons-ref}/#projections[projections]. You can define projection interfaces based on domain types and add query methods that return them in your repository:
+Spring Data Cloud Datastore supports {spring-data-commons-ref}/#projections[projections].
+You can define projection interfaces based on domain types and add query methods that return them in your repository:
 
 [source, java]
 ----

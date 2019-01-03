@@ -36,7 +36,7 @@ The Spring Resource Abstraction for Google Cloud Storage allows GCS objects to b
 private Resource gcsResource;
 ----
 
-or the Spring application context
+...or the Spring application context
 
 [source,java]
 ----

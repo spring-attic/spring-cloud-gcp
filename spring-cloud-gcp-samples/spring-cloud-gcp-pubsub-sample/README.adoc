@@ -1,7 +1,6 @@
 = Spring Cloud GCP Pub/Sub Code Sample
 
-This is an example application that demonstrates how to use the Spring Cloud GCP Pub/Sub abstraction
-to do things like:
+This is an example application that demonstrates how to use the Spring Cloud GCP Pub/Sub abstraction to do things like:
 
 * Create a topic
 * Create a subscription for a topic
@@ -18,25 +17,20 @@ The sample uses the `PubSubAdmin` class to perform administrative tasks like cre
 To run this code sample, you must have a Google Cloud Platform project with billing and the Google
 Cloud Pub/Sub API enabled.
 
-Install and initialize the https://cloud.google.com/sdk/[Google Cloud SDK]. Log in with
-application default credentials using the following command:
+Install and initialize the https://cloud.google.com/sdk/[Google Cloud SDK].
+Log in with application default credentials using the following command:
 
 ----
-gcloud auth application-default login
+$ gcloud auth application-default login
 ----
 
-Alternatively, create a new service account from the
-https://console.cloud.google.com/iam-admin/serviceaccounts/project[Google Cloud Console IAM Service
-Accounts] page, with the `Pub/Sub Editor` role.
+Alternatively, create a new service account from the https://console.cloud.google.com/iam-admin/serviceaccounts/project[Google Cloud Console IAM Service Accounts] page, with the `Pub/Sub Editor` role.
 Download the service account private key.
-In the `src/main/resources/application.properties` file, set the `spring.cloud.gcp.project-id` value
-to your project ID and `spring.cloud.gcp.credentials.location` to the local file system path of
-the private key you downloaded.
+In the `src/main/resources/application.properties` file, set the `spring.cloud.gcp.project-id` value to your project ID and `spring.cloud.gcp.credentials.location` to the local file system path of the private key you downloaded.
 
 == Running the code
 
-Open a terminal window and change directories to the root of the app, where the `pom.xml` file is
-located.
+Open a terminal window and change directories to the root of the app, where the `pom.xml` file is located.
 
 Run the following command from that directory:
 
@@ -62,7 +56,7 @@ Any new messages in the subscription are logged.
 You should see the following message logged:
 +
 ----
-Message received from exampleSubscription subscription. Hello world!
+Message received from exampleSubscription subscription: Hello world!
 ----
 
 5. Delete topic `exampleTopic`.
