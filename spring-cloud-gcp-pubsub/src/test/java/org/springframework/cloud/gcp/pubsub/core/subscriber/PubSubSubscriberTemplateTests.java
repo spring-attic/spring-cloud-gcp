@@ -49,19 +49,18 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedBasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
-import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -291,6 +290,7 @@ public class PubSubSubscriberTemplateTests {
 
 	@Test
 	public void testPull_AndManualAck() throws InterruptedException, ExecutionException, TimeoutException {
+
 		List<AcknowledgeablePubsubMessage> result = this.pubSubSubscriberTemplate.pull(
 				"sub2", 1, true);
 
@@ -346,6 +346,9 @@ public class PubSubSubscriberTemplateTests {
 	@Test
 	public void testPull_AndManualMultiSubscriptionAck()
 			throws InterruptedException, ExecutionException, TimeoutException {
+		ExecutorService mockExecutor = Mockito.mock(ExecutorService.class);
+		this.pubSubSubscriberTemplate.setAckExecutor(mockExecutor);
+
 		List<AcknowledgeablePubsubMessage> result1 = this.pubSubSubscriberTemplate.pull(
 				"sub1", 1, true);
 		List<AcknowledgeablePubsubMessage> result2 = this.pubSubSubscriberTemplate.pull(
@@ -366,6 +369,7 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(listenableFuture.isDone()).isTrue();
 		assertThat(testListenableFutureCallback.getThrowable()).isNull();
 		verify(this.ackCallable, times(2)).futureCall(any(AcknowledgeRequest.class));
+		verify(this.apiFuture, times(2)).addListener(any(), same(mockExecutor));
 	}
 
 	@Test
@@ -404,20 +408,6 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(result.get(0).getPubsubMessage()).isSameAs(this.pubsubMessage);
 		assertThat(result.get(0).getProjectSubscriptionName().getProject()).isEqualTo("testProject");
 		assertThat(result.get(0).getProjectSubscriptionName().getSubscription()).isEqualTo("sub2");
-	}
-
-	@Test
-	public void threadPoolClosedWhenObjectDestroyed() throws Exception {
-		ExecutorService mockExecutor = Mockito.mock(ExecutorService.class);
-		StaticApplicationContext ctx = new StaticApplicationContext();
-		this.pubSubSubscriberTemplate.setAckExecutor(mockExecutor);
-		ctx.registerBeanDefinition("subscriberTemplate",	new RootBeanDefinition(
-						PubSubSubscriberTemplate.class,	() -> this.pubSubSubscriberTemplate));
-		ctx.refresh();
-		ctx.close();
-
-		verify(this.pubSubSubscriberTemplate, times(1)).destroy();
-		verify(mockExecutor).shutdown();
 	}
 
 	private class TestListenableFutureCallback implements ListenableFutureCallback<Void> {

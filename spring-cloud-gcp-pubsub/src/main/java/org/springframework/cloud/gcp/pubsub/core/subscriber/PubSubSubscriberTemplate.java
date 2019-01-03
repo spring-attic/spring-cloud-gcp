@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,6 +61,9 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  * <p>The main Google Cloud Pub/Sub integration component for consuming
  * messages from subscriptions asynchronously or by pulling.
  *
+ * A custom {@link Executor} can be injected to control per-subscription batch
+ * parallelization in acknowledgement and deadline operations.
+ *
  * @author Vinicius Carvalho
  * @author João André Martins
  * @author Mike Eltsufin
@@ -69,7 +73,8 @@ import org.springframework.util.concurrent.SettableListenableFuture;
  *
  * @since 1.1
  */
-public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, DisposableBean {
+public class PubSubSubscriberTemplate
+		implements PubSubSubscriberOperations, DisposableBean {
 
 	private final SubscriberFactory subscriberFactory;
 
@@ -77,7 +82,9 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, Dis
 
 	private PubSubMessageConverter pubSubMessageConverter = new SimplePubSubMessageConverter();
 
-	private ExecutorService ackExecutor = Executors.newSingleThreadExecutor();
+	private ExecutorService defaultAckExecutor = Executors.newSingleThreadExecutor();
+
+	private Executor customAckExecutor;
 
 	/**
 	 * Default {@link PubSubSubscriberTemplate} constructor.
@@ -102,8 +109,9 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, Dis
 		this.pubSubMessageConverter = pubSubMessageConverter;
 	}
 
-	public void setAckExecutor(ExecutorService ackExecutor) {
-		this.ackExecutor = ackExecutor;
+	public void setAckExecutor(Executor ackExecutor) {
+		Assert.notNull(ackExecutor, "ackExecutor can't be null.");
+		this.customAckExecutor = ackExecutor;
 	}
 
 	@Override
@@ -269,9 +277,12 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, Dis
 						modifyAckDeadline(subscriptionName, ackIds, ackDeadlineSeconds));
 	}
 
+	/**
+	 * Destroys the default executor, regardless of whether it was used.
+	 */
 	@Override
-	public void destroy() throws Exception {
-		this.ackExecutor.shutdown();
+	public void destroy() {
+		this.defaultAckExecutor.shutdown();
 	}
 
 	private ApiFuture<Empty> ack(String subscriptionName, Collection<String> ackIds) {
@@ -322,6 +333,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, Dis
 		SettableListenableFuture<Void> settableListenableFuture	= new SettableListenableFuture<>();
 		int numExpectedFutures = groupedMessages.size();
 		AtomicInteger numCompletedFutures = new AtomicInteger();
+		Executor ackExecutor = (this.customAckExecutor != null) ? this.customAckExecutor : this.defaultAckExecutor;
 
 		groupedMessages.forEach((ProjectSubscriptionName psName, List<String> ackIds) -> {
 
@@ -346,7 +358,7 @@ public class PubSubSubscriberTemplate implements PubSubSubscriberOperations, Dis
 						settableListenableFuture.set(null);
 					}
 				}
-			}, this.ackExecutor);
+			}, ackExecutor);
 		});
 
 		return settableListenableFuture;
