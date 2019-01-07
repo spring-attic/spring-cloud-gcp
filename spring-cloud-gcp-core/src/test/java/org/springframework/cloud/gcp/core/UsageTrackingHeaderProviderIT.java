@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.core;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,6 +35,7 @@ public class UsageTrackingHeaderProviderIT {
 	 * This test is check if the hard-coded version needs to be manually updated.
 	 */
 	@Test
+	@Ignore
 	public void testGetHeaders() {
 		UsageTrackingHeaderProvider subject = new UsageTrackingHeaderProvider(this.getClass());
 

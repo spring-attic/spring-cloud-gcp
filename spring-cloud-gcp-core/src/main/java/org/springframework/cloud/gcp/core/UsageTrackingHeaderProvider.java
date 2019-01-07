@@ -34,7 +34,7 @@ public class UsageTrackingHeaderProvider implements HeaderProvider {
 	/**
 	 * The hard-coded version string reported with usage info.
 	 */
-	public static final String TRACKING_HEADER_PROJECT_VERSION = "1.1.0.BUILD-SNAPSHOT";
+	public static final String TRACKING_HEADER_PROJECT_VERSION = "1.1.0.RELEASE";
 
 	private String userAgent;
 
