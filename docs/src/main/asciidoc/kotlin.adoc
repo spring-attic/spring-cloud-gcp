@@ -3,11 +3,11 @@
 The latest version of the Spring Framework provides first-class support for Kotlin.
 For Kotlin users of Spring, the Spring Cloud GCP libraries work out-of-the-box and are fully interoperable with Kotlin applications.
 
-For more information on building a Spring Boot application in Kotlin, please consult the https://docs.spring.io/spring/docs/current/spring-framework-reference/languages.html#kotlin[Spring Kotlin documentation].
+For more information on building a Spring application in Kotlin, please consult the https://docs.spring.io/spring/docs/current/spring-framework-reference/languages.html#kotlin[Spring Kotlin documentation].
 
 === Prerequisites
 
-Ensure that your Kotlin Spring Boot application is properly set up.
+Ensure that your Kotlin application is properly set up.
 Based on your build system, you will need to include the correct Kotlin build plugin in your project:
 
 * https://kotlinlang.org/docs/reference/using-maven.html[Kotlin Maven Plugin]
@@ -15,10 +15,10 @@ Based on your build system, you will need to include the correct Kotlin build pl
 
 Depending on your application's needs, you may need to augment your build configuration with compiler plugins:
 
-* https://kotlinlang.org/docs/reference/compiler-plugins.html#spring-support[Spring Kotlin Plugin]: Makes your Spring configuration classes/members non-final for convenience.
-* https://kotlinlang.org/docs/reference/compiler-plugins.html#jpa-support[Kotlin Spring JPA Plugin]: Enables using JPA in Kotlin Spring applications.
+* https://kotlinlang.org/docs/reference/compiler-plugins.html#spring-support[Kotlin Spring Plugin]: Makes your Spring configuration classes/members non-final for convenience.
+* https://kotlinlang.org/docs/reference/compiler-plugins.html#jpa-support[Kotlin JPA Plugin]: Enables using JPA in Kotlin applications.
 
-Once your Kotlin project is properly configured, the Spring Cloud GCP libraries will work within a Kotlin application without any additional setup.
+Once your Kotlin project is properly configured, the Spring Cloud GCP libraries will work within your application without any additional setup.
 
 == Sample
 
