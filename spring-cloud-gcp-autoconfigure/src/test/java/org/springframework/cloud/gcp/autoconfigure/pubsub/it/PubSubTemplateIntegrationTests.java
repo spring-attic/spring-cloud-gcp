@@ -34,6 +34,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
+import org.awaitility.Awaitility;
 import org.awaitility.Duration;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -52,8 +53,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assumptions.assumeThat;
-import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 
 /**
  * Integration tests for Pub/Sub template.
@@ -72,7 +73,7 @@ public class PubSubTemplateIntegrationTests {
 
 	@BeforeClass
 	public static void enableTests() {
-			assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
+		assumeThat(System.getProperty("it.pubsub"), is("true"));
 	}
 
 	@Test
@@ -202,7 +203,7 @@ public class PubSubTemplateIntegrationTests {
 					TestUser user = new TestUser("John", "password");
 					pubSubTemplate.publish(topicName, user);
 
-					await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
+					Awaitility.await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
 						List<ConvertedAcknowledgeablePubsubMessage<TestUser>> messages =
 								pubSubTemplate.pullAndConvert(
 										subscriptionName, 1, true, TestUser.class);

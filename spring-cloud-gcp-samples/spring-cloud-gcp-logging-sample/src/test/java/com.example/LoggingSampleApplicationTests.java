@@ -27,6 +27,7 @@ import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.LoggingOptions;
 import com.google.cloud.logging.Payload.StringPayload;
 import com.google.common.collect.ImmutableList;
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,7 +46,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
@@ -97,7 +97,7 @@ public class LoggingSampleApplicationTests {
 
 		String logFilter = String.format(LOG_FILTER_FORMAT, traceHeader);
 
-		await().atMost(60, TimeUnit.SECONDS)
+		Awaitility.await().atMost(60, TimeUnit.SECONDS)
 				.pollInterval(2, TimeUnit.SECONDS)
 				.untilAsserted(() -> {
 					Page<LogEntry> logEntryPage = this.logClient.listLogEntries(

@@ -27,7 +27,8 @@ import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfigurat
 import org.springframework.context.ConfigurableApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assumptions.assumeThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 
 /**
  * Integration tests for config auto-configuration.
@@ -41,7 +42,7 @@ public class GcpConfigIntegrationTests {
 
 	@BeforeClass
 	public static void enableTests() {
-		assumeThat(System.getProperty("it.config")).isEqualTo("true");
+		assumeThat(System.getProperty("it.config"), is("true"));
 	}
 
 	@After

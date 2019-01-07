@@ -19,6 +19,7 @@ package com.example;
 import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
+import org.awaitility.Awaitility;
 import org.awaitility.Duration;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -34,7 +35,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assume.assumeThat;
 
@@ -66,7 +66,7 @@ public class PubSubJsonPayloadApplicationTests {
 		this.testRestTemplate.postForObject(
 				"/createPerson?name={name}&age={age}", null, String.class, params);
 
-		await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
+		Awaitility.await().atMost(Duration.TEN_SECONDS).untilAsserted(() -> {
 			ResponseEntity<List<Person>> response = this.testRestTemplate.exchange(
 					"/listPersons",
 					HttpMethod.GET,

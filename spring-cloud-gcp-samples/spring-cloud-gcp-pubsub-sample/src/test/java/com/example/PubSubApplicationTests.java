@@ -36,6 +36,7 @@ import com.google.pubsub.v1.PullResponse;
 import com.google.pubsub.v1.PushConfig;
 import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.Topic;
+import org.awaitility.Awaitility;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -52,7 +53,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
@@ -183,20 +183,20 @@ public class PubSubApplicationTests {
 	@Test
 	public void testReceiveMessage() {
 		postMessage("HelloWorld-Pull", SAMPLE_TEST_TOPIC);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+		Awaitility.await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
 				() -> assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1))
 						.containsExactly("HelloWorld-Pull"));
 
 		// After subscribing, the message will be acked by the application and no longer be present.
 		subscribe(SAMPLE_TEST_SUBSCRIPTION1);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+		Awaitility.await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
 				() -> assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION1)).isEmpty());
 	}
 
 	@Test
 	public void testMultiPull() {
 		postMessage("HelloWorld-MultiPull", SAMPLE_TEST_TOPIC2);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+		Awaitility.await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
 				.untilAsserted(
 						() -> {
 							assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION2))
@@ -207,7 +207,7 @@ public class PubSubApplicationTests {
 
 		// After multi pull, the message will be acked by both subscriptions and no longer be present.
 		multiPull(SAMPLE_TEST_SUBSCRIPTION2, SAMPLE_TEST_SUBSCRIPTION3);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+		Awaitility.await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
 				.untilAsserted(
 						() -> {
 							assertThat(getMessagesFromSubscription(SAMPLE_TEST_SUBSCRIPTION2)).isEmpty();
@@ -238,7 +238,7 @@ public class PubSubApplicationTests {
 		ResponseEntity<String> response = this.testRestTemplate.postForEntity(url, null, String.class);
 
 		String projectTopicName = ProjectTopicName.format(projectName, topicName);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+		Awaitility.await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
 				() -> {
 					List<String> projectTopics = getTopicNamesFromProject();
 					assertThat(projectTopics).contains(projectTopicName);
@@ -252,7 +252,7 @@ public class PubSubApplicationTests {
 		this.testRestTemplate.postForEntity(url, null, String.class);
 
 		String projectTopicName = ProjectTopicName.format(projectName, topicName);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+		Awaitility.await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
 				() -> {
 					List<String> projectTopics = getTopicNamesFromProject();
 					assertThat(projectTopics).doesNotContain(projectTopicName);
@@ -267,7 +267,7 @@ public class PubSubApplicationTests {
 		this.testRestTemplate.postForEntity(url, null, String.class);
 
 		String projectSubscriptionName = ProjectSubscriptionName.format(projectName, subscriptionName);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+		Awaitility.await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
 				() -> {
 					List<String> subscriptions = getSubscriptionNamesFromProject();
 					assertThat(subscriptions).contains(projectSubscriptionName);
@@ -281,7 +281,7 @@ public class PubSubApplicationTests {
 		this.testRestTemplate.postForEntity(url, null, String.class);
 
 		String projectSubscriptionName = ProjectSubscriptionName.format(projectName, subscriptionName);
-		await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
+		Awaitility.await().atMost(PUBSUB_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS).untilAsserted(
 				() -> {
 					List<String> subscriptions = getSubscriptionNamesFromProject();
 					assertThat(subscriptions).doesNotContain(projectSubscriptionName);

@@ -27,6 +27,7 @@ import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.LoggingOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.awaitility.Awaitility;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,8 +51,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assumptions.assumeThat;
-import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assume.assumeThat;
 
 /**
  * Tests for Stackdriver Logging.
@@ -83,7 +84,7 @@ public class StackdriverLoggingIntegrationTests {
 
 	@BeforeClass
 	public static void enableTests() {
-		assumeThat(System.getProperty("it.logging")).isEqualTo("true");
+		assumeThat(System.getProperty("it.logging"), is("true"));
 	}
 
 	@Test
@@ -99,7 +100,7 @@ public class StackdriverLoggingIntegrationTests {
 				.setCredentials(credentialsProvider.getCredentials())
 				.build().getService();
 
-		await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
+		Awaitility.await().atMost(60, TimeUnit.SECONDS).untilAsserted(() -> {
 			Page<LogEntry> page = logClient.listLogEntries(
 					Logging.EntryListOption.filter("textPayload:\"#$%^&" + NOW + "\" AND"
 							+ " logName=\"projects/" + this.projectIdProvider.getProjectId()

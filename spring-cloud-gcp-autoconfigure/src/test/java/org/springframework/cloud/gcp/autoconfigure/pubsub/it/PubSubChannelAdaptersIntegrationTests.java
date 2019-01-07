@@ -64,8 +64,9 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assumptions.assumeThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -90,7 +91,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 
 	@BeforeClass
 	public static void enableTests() {
-		assumeThat(System.getProperty("it.pubsub")).isEqualTo("true");
+		assumeThat(System.getProperty("it.pubsub"), is("true"));
 	}
 
 	@BeforeClass
