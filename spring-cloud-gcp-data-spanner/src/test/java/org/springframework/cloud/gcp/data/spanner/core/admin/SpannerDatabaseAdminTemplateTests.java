@@ -16,24 +16,33 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.admin;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.api.gax.longrunning.OperationFuture;
+import com.google.api.gax.paging.Page;
+import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseAdminClient;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.DatabaseInfo.State;
 import com.google.cloud.spanner.ReadContext;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Value;
+import com.google.spanner.admin.database.v1.CreateDatabaseMetadata;
+import com.google.spanner.admin.database.v1.UpdateDatabaseDdlMetadata;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -51,13 +60,22 @@ public class SpannerDatabaseAdminTemplateTests {
 
 	private DatabaseId databaseId;
 
+	private Page<Database> mockDatabasePage;
+
+	private List<String> ddlList;
+
 	@Before
 	public void setup() {
 		this.databaseAdminClient = mock(DatabaseAdminClient.class);
 		this.databaseClient = mock(DatabaseClient.class);
+		this.mockDatabasePage = mock(Page.class);
 		this.databaseId = DatabaseId.of("fakeproject", "fakeinstance", "fakedb");
 		this.spannerDatabaseAdminTemplate = new SpannerDatabaseAdminTemplate(
 				this.databaseAdminClient, this.databaseClient, this.databaseId);
+		this.ddlList = new ArrayList<>();
+		this.ddlList.add("describe Something");
+
+		when(this.databaseAdminClient.listDatabases("fakeinstance")).thenReturn(this.mockDatabasePage);
 	}
 
 	@Test
@@ -102,6 +120,36 @@ public class SpannerDatabaseAdminTemplateTests {
 		assertThat(this.spannerDatabaseAdminTemplate.isInterleaved("parent_b", "child"))
 				.as("verify not parent-child relationship").isFalse();
 	}
+
+	@Test
+	public void executeDdlStrings_createsDatabaseIfMissing() throws Exception {
+		when(this.mockDatabasePage.getValues()).thenReturn(Arrays.asList(
+				new Database(this.databaseId, State.READY, this.databaseAdminClient)));
+
+		OperationFuture<Void, UpdateDatabaseDdlMetadata> mockFuture = mock(OperationFuture.class);
+		when(this.databaseAdminClient.updateDatabaseDdl("fakeinstance", "fakedb", this.ddlList, null)).thenReturn(mockFuture);
+		when(mockFuture.get()).thenReturn(null);
+
+		this.spannerDatabaseAdminTemplate.executeDdlStrings(this.ddlList, true);
+
+		verify(this.databaseAdminClient, times(0)).createDatabase("fakeinstance", "fakedb", Arrays.asList("describe Something"));
+		verify(this.databaseAdminClient).updateDatabaseDdl("fakeinstance", "fakedb", this.ddlList, null);
+	}
+
+	@Test
+	public void executeDdlStrings_doesNotCreateDatabaseIfAlreadyPresent() throws Exception {
+		when(this.mockDatabasePage.getValues()).thenReturn(Arrays.asList());
+
+		OperationFuture<Database, CreateDatabaseMetadata> mockFuture = mock(OperationFuture.class);
+		when(this.databaseAdminClient.createDatabase("fakeinstance", "fakedb", this.ddlList)).thenReturn(mockFuture);
+		when(mockFuture.get()).thenReturn(null);
+
+		this.spannerDatabaseAdminTemplate.executeDdlStrings(this.ddlList, true);
+
+		verify(this.databaseAdminClient).createDatabase("fakeinstance", "fakedb", Arrays.asList("describe Something"));
+		verify(this.databaseAdminClient, times(0)).updateDatabaseDdl("fakeinstance", "fakedb", this.ddlList, null);
+	}
+
 
 	private static class MockResults {
 		List<Struct> structs;

@@ -93,7 +93,7 @@ public class SpannerDatabaseAdminTemplate {
 	public void executeDdlStrings(Iterable<String> ddlStrings,
 			boolean createDatabase) {
 		try {
-			if (createDatabase) {
+			if (createDatabase && !this.databaseExists()) {
 				this.databaseAdminClient
 						.createDatabase(getInstanceId(), getDatabase(), ddlStrings)
 						.get();
