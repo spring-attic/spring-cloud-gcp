@@ -15,6 +15,6 @@
  */
 
 /**
- * Outbound support classes for Spring Integration support in Spring Cloud GCP Pub/Sub.
+ * Google Cloud Storage outbound integration classes for Spring Integration.
  */
 package org.springframework.cloud.gcp.pubsub.integration.outbound;
