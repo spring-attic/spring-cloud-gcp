@@ -53,12 +53,12 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoderJwkSupport;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 
 /**
+ * Tests for IAP auth config.
+ *
  * @author Elena Felder
  *
  * @since 1.1
@@ -66,6 +66,9 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class IapAuthenticationAutoConfigurationTests {
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
@@ -120,7 +123,7 @@ public class IapAuthenticationAutoConfigurationTests {
 
 		this.contextRunner
 				.withPropertyValues("spring.cloud.gcp.security.iap.enabled=false")
-				.run(context ->	context.getBean(JwtDecoder.class));
+				.run((context) ->	context.getBean(JwtDecoder.class));
 	}
 
 	@Test
@@ -140,10 +143,10 @@ public class IapAuthenticationAutoConfigurationTests {
 		this.contextRunner
 				.withUserConfiguration(UserConfiguration.class)
 				.withPropertyValues("spring.cloud.gcp.security.iap.audience=unused")
-				.run(context -> {
+				.run((context) -> {
 					JwtDecoder jwtDecoder =  context.getBean(JwtDecoder.class);
 					assertThat(jwtDecoder).isNotNull();
-					assertFalse(jwtDecoder instanceof NimbusJwtDecoderJwkSupport);
+					assertThat(jwtDecoder).isNotInstanceOf(NimbusJwtDecoderJwkSupport.class);
 					assertThat(jwtDecoder.decode("Ceci n'est pas un Jwt")).isSameAs(mockJwt);
 
 					BearerTokenResolver resolver = context.getBean(BearerTokenResolver.class);
@@ -158,7 +161,7 @@ public class IapAuthenticationAutoConfigurationTests {
 		this.contextRunner
 				.withPropertyValues("spring.cloud.gcp.security.iap.header=some-other-header")
 				.withPropertyValues("spring.cloud.gcp.security.iap.audience=unused")
-				.run(context -> {
+				.run((context) -> {
 					when(this.mockNonIapRequest.getHeader("some-other-header")).thenReturn("other header jwt");
 
 					BearerTokenResolver resolver = context.getBean(BearerTokenResolver.class);
@@ -172,7 +175,7 @@ public class IapAuthenticationAutoConfigurationTests {
 	public void testContextFailsWhenAudienceValidatorNotAvailable() throws Exception {
 
 		this.contextRunner
-				.run(context -> {
+				.run((context) -> {
 					assertThat(context).getFailure()
 							.hasCauseInstanceOf(NoSuchBeanDefinitionException.class)
 							.hasMessageContaining("No qualifying bean of type 'org.springframework.cloud.gcp.security.iap.AudienceProvider'");
@@ -187,11 +190,11 @@ public class IapAuthenticationAutoConfigurationTests {
 
 		this.contextRunner
 				.withUserConfiguration(FixedAudienceValidatorConfiguration.class)
-				.run(context -> {
+				.run((context) -> {
 					DelegatingOAuth2TokenValidator validator
 							= context.getBean("iapJwtDelegatingValidator", DelegatingOAuth2TokenValidator.class);
 					OAuth2TokenValidatorResult result = validator.validate(mockJwt);
-					assertTrue(result.hasErrors());
+					assertThat(result.hasErrors()).isTrue();
 					assertThat(result.getErrors().size()).isEqualTo(1);
 					assertThat(
 							result.getErrors().stream().findAny().get().getDescription())
@@ -205,7 +208,7 @@ public class IapAuthenticationAutoConfigurationTests {
 
 		this.contextRunner
 				.withUserConfiguration(FixedAudienceValidatorConfiguration.class)
-				.run(context -> {
+				.run((context) -> {
 					AudienceProvider audienceProvider = context.getBean(AudienceProvider.class);
 					assertThat(audienceProvider).isNotNull();
 					assertThat(audienceProvider).isInstanceOf(AppEngineAudienceProvider.class);
@@ -215,7 +218,7 @@ public class IapAuthenticationAutoConfigurationTests {
 	private void verifyJwtBeans(AssertableApplicationContext context) {
 		JwtDecoder jwtDecoder =  context.getBean(JwtDecoder.class);
 		assertThat(jwtDecoder).isNotNull();
-		assertTrue(jwtDecoder instanceof NimbusJwtDecoderJwkSupport);
+		assertThat(jwtDecoder).isInstanceOf(NimbusJwtDecoderJwkSupport.class);
 
 		BearerTokenResolver resolver = context.getBean(BearerTokenResolver.class);
 		assertThat(resolver).isNotNull();
@@ -224,20 +227,26 @@ public class IapAuthenticationAutoConfigurationTests {
 		assertThat(resolver.resolve(this.mockNonIapRequest)).isNull();
 	}
 
+	/**
+	 * Spring config for tests.
+	 */
 	@Configuration
 	static class UserConfiguration {
 
 		@Bean
 		public JwtDecoder jwtDecoder() {
-			return s -> mockJwt;
+			return (s) -> mockJwt;
 		}
 
 		@Bean
 		public BearerTokenResolver bearerTokenResolver() {
-			return httpServletRequest -> FAKE_USER_TOKEN;
+			return (httpServletRequest) -> FAKE_USER_TOKEN;
 		}
 	}
 
+	/**
+	 * Spring config for tests.
+	 */
 	@Configuration
 	@AutoConfigureBefore(IapAuthenticationAutoConfiguration.class)
 	static class TestConfiguration {
@@ -253,6 +262,9 @@ public class IapAuthenticationAutoConfigurationTests {
 		}
 	}
 
+	/**
+	 * Spring config for tests.
+	 */
 	@Configuration
 	@AutoConfigureBefore(IapAuthenticationAutoConfiguration.class)
 	static class FixedAudienceValidatorConfiguration {

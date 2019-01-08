@@ -25,10 +25,11 @@ import com.google.cloud.spanner.Struct;
 import com.google.common.collect.ImmutableSet;
 import org.junit.Test;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests to check for new mapping methods that appear in the Spanner client lib.
+ *
  * @author Chengyuan Zhao
  */
 public class SpannerStructReadMethodCoverageTests {
@@ -56,13 +57,10 @@ public class SpannerStructReadMethodCoverageTests {
 			if (ConversionUtils.isIterableNonByteArrayType(returnType)) {
 				Class innerReturnType = (Class) ((ParameterizedType) method
 						.getGenericReturnType()).getActualTypeArguments()[0];
-				assertThat(StructAccessor.readIterableMapping.keySet(),
-						hasItem(innerReturnType));
+				assertThat(StructAccessor.readIterableMapping.keySet()).contains(innerReturnType);
 			}
 			else {
-				assertThat(
-						StructAccessor.singleItemReadMethodMapping.keySet(),
-						hasItem(returnType));
+				assertThat(StructAccessor.singleItemReadMethodMapping.keySet()).contains(returnType);
 			}
 		}
 	}

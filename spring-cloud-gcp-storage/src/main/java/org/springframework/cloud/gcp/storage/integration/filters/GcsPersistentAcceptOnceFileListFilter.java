@@ -22,7 +22,10 @@ import org.springframework.integration.file.filters.AbstractPersistentAcceptOnce
 import org.springframework.integration.metadata.ConcurrentMetadataStore;
 
 /**
+ * A filter for Google Cloud Storage.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class GcsPersistentAcceptOnceFileListFilter
 		extends AbstractPersistentAcceptOnceFileListFilter<BlobInfo> {
@@ -33,11 +36,11 @@ public class GcsPersistentAcceptOnceFileListFilter
 
 	@Override
 	protected long modified(BlobInfo blobInfo) {
-		return blobInfo != null ? blobInfo.getUpdateTime() : -1;
+		return (blobInfo != null) ? blobInfo.getUpdateTime() : -1;
 	}
 
 	@Override
 	protected String fileName(BlobInfo blobInfo) {
-		return blobInfo != null ? blobInfo.getName() : null;
+		return (blobInfo != null) ? blobInfo.getName() : null;
 	}
 }

@@ -1,0 +1,48 @@
+= Spring Cloud GCP Kotlin Sample App
+
+This is a simple Kotlin Spring Boot application which demonstrates how to integrate with Spring Cloud GCP libraries from Kotlin.
+It sets up a registration service in which a someone publishes registrant names to a Cloud Pub/Sub topic; these names are then persisted to a Cloud SQL database.
+
+This application demonstrates the following Spring Cloud GCP integrations:
+
+- Cloud Pub/Sub (with Spring Integration)
+- Cloud SQL (with Spring Data JPA)
+
+== Setup
+
+1. Configure your credentials and project ID by following link:../../docs/src/main/asciidoc/core.adoc#project-id[these instructions].
++
+Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized, and are logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials], Spring will auto-discover those parameters for you.
+
+2. Create a Google Cloud MySQL instance and a database within the instance.
+
+- You may create a Google Cloud MySQL instance on the https://console.cloud.google.com/sql/instances[Google Cloud Console Cloud SQL page].
+- In the same page, you may create a database within your Cloud SQL instance.
+Name your database `registrants`.
+
+3. Create a Pub/Sub topic called `registrations` and a subscription for the topic called `registrations-sub`.
+
+- Go to the https://console.cloud.google.com/cloudpubsub/topicList[Google Cloud Console Pub/Sub topics page] and create a topic called `registrations`.
+
+- Still in the same page, locate the newly created topic, click the button with the three vertical dots at the end of the topic's line and click "New subscription".
+Create a new subscription called `registrations-sub` with all default parameters.
+
+4. Configure the link:src/main/resources/application.properties[application.properties] file.
+Set the property `spring.cloud.gcp.sql.instance-connection-name` to the name of the Cloud SQL instance you created in the previous step.
+Note that the instance-connection-name should be in the form: `[gcp-project-id]:[region]:[instance-name]`.
+
+== Running the Application
+
+You may run this application using the following command in this directory:
+
+`$ mvn spring-boot:run`
+
+When the application initializes, navigate to http://localhost:8080/ to begin interacting with the application.
+
+- The home page of the application displays a simple input UI in which you may submit names of registrants.
+These names are sent to a Pub/Sub topic and which is then read from and persisted to your Cloud SQL database.
+- The `/registrants` endpoint displays all the registered individuals in the Cloud SQL database.
+
+
+
+

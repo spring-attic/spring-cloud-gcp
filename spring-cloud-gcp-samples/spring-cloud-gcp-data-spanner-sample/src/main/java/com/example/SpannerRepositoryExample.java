@@ -28,6 +28,8 @@ import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.stereotype.Component;
 
 /**
+ * Example repository usage.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  * @author Mike Eltsufin
@@ -100,7 +102,7 @@ public class SpannerRepositoryExample {
 
 		LOGGER.info("A query method can also select properties in entities:");
 		this.tradeRepository.getTradeIds("BUY").stream()
-				.forEach(x -> LOGGER.info(x));
+				.forEach((x) -> LOGGER.info(x));
 
 		LOGGER.info("Try http://localhost:8080/trades in the browser to see all trades.");
 	}

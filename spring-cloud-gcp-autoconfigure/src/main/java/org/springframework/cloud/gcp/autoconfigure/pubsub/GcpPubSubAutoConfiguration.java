@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.autoconfigure.pubsub;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -62,8 +63,11 @@ import org.springframework.cloud.gcp.pubsub.support.SubscriberFactory;
 import org.springframework.cloud.gcp.pubsub.support.converter.PubSubMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
+ * Auto-config for Pub/Sub.
+ *
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
@@ -88,7 +92,7 @@ public class GcpPubSubAutoConfiguration {
 			GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
 		this.gcpPubSubProperties = gcpPubSubProperties;
-		this.finalProjectIdProvider = gcpPubSubProperties.getProjectId() != null
+		this.finalProjectIdProvider = (gcpPubSubProperties.getProjectId() != null)
 				? gcpPubSubProperties::getProjectId
 				: gcpProjectIdProvider;
 
@@ -130,11 +134,21 @@ public class GcpPubSubAutoConfiguration {
 	}
 
 	@Bean
+	@ConditionalOnMissingBean(name = "pubSubAcknowledgementExecutor")
+	public Executor pubSubAcknowledgementExecutor() {
+		ThreadPoolTaskExecutor ackExecutor = new ThreadPoolTaskExecutor();
+		ackExecutor.setMaxPoolSize(this.gcpPubSubProperties.getSubscriber().getMaxAcknowledgementThreads());
+		return ackExecutor;
+	}
+
+	@Bean
 	@ConditionalOnMissingBean
 	public PubSubSubscriberTemplate pubSubSubscriberTemplate(SubscriberFactory subscriberFactory,
-			ObjectProvider<PubSubMessageConverter> pubSubMessageConverter) {
+			ObjectProvider<PubSubMessageConverter> pubSubMessageConverter,
+			@Qualifier("pubSubAcknowledgementExecutor") Executor executor) {
 		PubSubSubscriberTemplate pubSubSubscriberTemplate = new PubSubSubscriberTemplate(subscriberFactory);
 		pubSubMessageConverter.ifUnique(pubSubSubscriberTemplate::setMessageConverter);
+		pubSubSubscriberTemplate.setAckExecutor(executor);
 		return pubSubSubscriberTemplate;
 	}
 
@@ -220,7 +234,7 @@ public class GcpPubSubAutoConfiguration {
 		}
 
 		return ifNotNull(batching.getDelayThresholdSeconds(),
-					x -> builder.setDelayThreshold(Duration.ofSeconds(x)))
+					(x) -> builder.setDelayThreshold(Duration.ofSeconds(x)))
 				.apply(ifNotNull(batching.getElementCountThreshold(), builder::setElementCountThreshold)
 				.apply(ifNotNull(batching.getEnabled(), builder::setIsEnabled)
 				.apply(ifNotNull(batching.getRequestByteThreshold(), builder::setRequestByteThreshold)
@@ -237,18 +251,18 @@ public class GcpPubSubAutoConfiguration {
 		Builder builder = RetrySettings.newBuilder();
 
 		return ifNotNull(retryProperties.getInitialRetryDelaySeconds(),
-				x -> builder.setInitialRetryDelay(Duration.ofSeconds(x)))
+				(x) -> builder.setInitialRetryDelay(Duration.ofSeconds(x)))
 				.apply(ifNotNull(retryProperties.getInitialRpcTimeoutSeconds(),
-						x -> builder.setInitialRpcTimeout(Duration.ofSeconds(x)))
+						(x) -> builder.setInitialRpcTimeout(Duration.ofSeconds(x)))
 				.apply(ifNotNull(retryProperties.getJittered(), builder::setJittered)
 				.apply(ifNotNull(retryProperties.getMaxAttempts(), builder::setMaxAttempts)
 				.apply(ifNotNull(retryProperties.getMaxRetryDelaySeconds(),
-						x -> builder.setMaxRetryDelay(Duration.ofSeconds(x)))
+						(x) -> builder.setMaxRetryDelay(Duration.ofSeconds(x)))
 				.apply(ifNotNull(retryProperties.getMaxRpcTimeoutSeconds(),
-						x -> builder.setMaxRpcTimeout(Duration.ofSeconds(x)))
+						(x) -> builder.setMaxRpcTimeout(Duration.ofSeconds(x)))
 				.apply(ifNotNull(retryProperties.getRetryDelayMultiplier(), builder::setRetryDelayMultiplier)
 				.apply(ifNotNull(retryProperties.getTotalTimeoutSeconds(),
-						x -> builder.setTotalTimeout(Duration.ofSeconds(x)))
+						(x) -> builder.setTotalTimeout(Duration.ofSeconds(x)))
 				.apply(ifNotNull(retryProperties.getRpcTimeoutMultiplier(), builder::setRpcTimeoutMultiplier)
 				.apply(false))))))))) ? builder.build() : null;
 	}
@@ -256,9 +270,14 @@ public class GcpPubSubAutoConfiguration {
 	/**
 	 * A helper method for applying properties to settings builders for purpose of seeing if at least
 	 * one setting was set.
+	 * @param prop the property on which to operate
+	 * @param consumer the function to give the property
+	 * @param <T> the type of the property
+	 * @return a function that accepts a boolean of if there is a next property and returns a boolean indicating if the
+	 * propety was set
 	 */
 	private <T> Function<Boolean, Boolean> ifNotNull(T prop, Consumer<T> consumer) {
-		return next -> {
+		return (next) -> {
 			boolean wasSet = next;
 			if (prop != null) {
 				consumer.accept(prop);
@@ -343,5 +362,4 @@ public class GcpPubSubAutoConfiguration {
 	public TransportChannelProvider transportChannelProvider() {
 		return InstantiatingGrpcChannelProvider.newBuilder().build();
 	}
-
 }

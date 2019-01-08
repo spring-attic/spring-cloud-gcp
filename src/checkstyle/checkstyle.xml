@@ -126,31 +126,19 @@
         </module>
 
         <!-- Javadoc Comments -->
-        <!-- TODO: re-enable when ready -->
-        <!--
         <module name="com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocTypeCheck">
             <property name="scope" value="package"/>
             <property name="authorFormat" value=".+\s.+"/>
         </module>
-        -->
-        <!-- TODO: re-enable when ready -->
-        <!--
         <module name="com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocMethodCheck">
             <property name="allowMissingJavadoc" value="true" />
         </module>
-        -->
-        <!-- TODO: re-enable when ready -->
-        <!--
         <module name="com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocVariableCheck">
             <property name="scope" value="public"/>
         </module>
-        -->
-        <!-- TODO: re-enable when ready -->
-        <!--
         <module name="com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocStyleCheck">
             <property name="checkEmptyJavadoc" value="true"/>
         </module>
-        -->
         <module name="com.puppycrawl.tools.checkstyle.checks.javadoc.NonEmptyAtclauseDescriptionCheck" />
         <module name="com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocTagContinuationIndentationCheck">
             <property name="offset" value="0"/>
@@ -174,10 +162,7 @@
 
         <!-- Modifiers -->
         <module name="com.puppycrawl.tools.checkstyle.checks.modifier.RedundantModifierCheck" />
-        <!-- TODO: re-enable when ready -->
-        <!--
         <module name="com.puppycrawl.tools.checkstyle.checks.modifier.ModifierOrderCheck"/>
-        -->
 
         <!-- Regexp -->
         <module name="com.puppycrawl.tools.checkstyle.checks.regexp.RegexpSinglelineJavaCheck">
@@ -193,8 +178,7 @@
                       value="Please use BDDMockito imports." />
             <property name="ignoreComments" value="true" />
         </module>-->
-        <!-- TODO: re-enable when ready -->
-        <!--
+
         <module name="com.puppycrawl.tools.checkstyle.checks.regexp.RegexpSinglelineJavaCheck">
             <property name="maximum" value="0"/>
             <property name="format" value="org\.junit\.(Assert|jupiter\.api\.Assertions)\.assert" />
@@ -202,7 +186,7 @@
                       value="Please use AssertJ imports." />
             <property name="ignoreComments" value="true" />
         </module>
-        -->
+
         <module name="com.puppycrawl.tools.checkstyle.checks.regexp.RegexpCheck">
             <property name="format" value="[ \t]+$" />
             <property name="illegalPattern" value="true" />
@@ -222,22 +206,16 @@
         <module name="com.puppycrawl.tools.checkstyle.checks.whitespace.WhitespaceAroundCheck" />
 
         <!-- Spring Conventions -->
-        <!-- TODO: re-enable when ready -->
-        <!--
+
         <module name="io.spring.javaformat.checkstyle.check.SpringLambdaCheck" />
-        -->
-        <!--<module name="io.spring.javaformat.checkstyle.check.SpringTernaryCheck" />-->
-        <!-- TODO: re-enable when ready -->
-        <!--
+
+        <module name="io.spring.javaformat.checkstyle.check.SpringTernaryCheck" />
+
         <module name="io.spring.javaformat.checkstyle.check.SpringCatchCheck" />
-        -->
-        <!-- TODO: re-enable when ready -->
-        <!--
+
         <module name="io.spring.javaformat.checkstyle.check.SpringJavadocCheck" />
-        -->
-        <!-- TODO: re-enable when ready -->
-        <!--
+
         <module name="io.spring.javaformat.checkstyle.check.SpringMethodOrderCheck" />
-        -->
+
     </module>
 </module>

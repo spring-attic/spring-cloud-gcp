@@ -25,10 +25,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for the logging-web-mvc configurer.
+ *
  * @author Mike Eltsufin
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -45,8 +46,8 @@ public class LoggingWebMvcConfigurerTests {
 
 		adapter.addInterceptors(registry);
 
-		assertThat(registry.doGetInterceptors().size(), is(1));
-		assertThat(registry.doGetInterceptors().get(0), is(this.interceptor));
+		assertThat(registry.doGetInterceptors()).hasSize(1);
+		assertThat(registry.doGetInterceptors().get(0)).isEqualTo(this.interceptor);
 	}
 
 	/**

@@ -35,6 +35,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
+/**
+ * Web app for Pub/Sub sample application.
+ *
+ * @author Joao Andre Martins
+ */
 @RestController
 public class WebController {
 
@@ -92,8 +97,8 @@ public class WebController {
 			ackFuture.get();
 			returnView = buildStatusView(String.format("Pulled and acked %s message(s)", messages.size()));
 		}
-		catch (Exception e) {
-			LOGGER.warn("Acking failed.", e);
+		catch (Exception ex) {
+			LOGGER.warn("Acking failed.", ex);
 			returnView = buildStatusView("Acking failed");
 		}
 
@@ -120,8 +125,8 @@ public class WebController {
 			returnView = buildStatusView(
 					String.format("Pulled and acked %s message(s)", mixedSubscriptionMessages.size()));
 		}
-		catch (Exception e) {
-			LOGGER.warn("Acking failed.", e);
+		catch (Exception ex) {
+			LOGGER.warn("Acking failed.", ex);
 			returnView = buildStatusView("Acking failed");
 		}
 
@@ -131,7 +136,7 @@ public class WebController {
 	@GetMapping("/subscribe")
 	public RedirectView subscribe(@RequestParam("subscription") String subscriptionName) {
 		Subscriber subscriber = this.pubSubTemplate.subscribe(subscriptionName, (message) -> {
-			LOGGER.info("Message received from " + subscriptionName + " subscription. "
+			LOGGER.info("Message received from " + subscriptionName + " subscription: "
 					+ message.getPubsubMessage().getData().toStringUtf8());
 			message.ack();
 		});

@@ -50,7 +50,10 @@ import static org.mockito.BDDMockito.willAnswer;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for the streaming message source.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
@@ -75,6 +78,9 @@ public class GcsStreamingMessageSourceTests {
 		assertThat(message).isNull();
 	}
 
+	/**
+	 * Spring config for the tests.
+	 */
 	@Configuration
 	@EnableIntegration
 	public static class Config {
@@ -84,14 +90,14 @@ public class GcsStreamingMessageSourceTests {
 			Blob blob1 = mock(Blob.class);
 			Blob blob2 = mock(Blob.class);
 
-			willAnswer(invocationOnMock -> "gcsbucket").given(blob1).getBucket();
-			willAnswer(invocationOnMock -> "folder1/gcsfilename").given(blob1).getName();
-			willAnswer(invocationOnMock -> "gcsbucket").given(blob2).getBucket();
-			willAnswer(invocationOnMock -> "secondfilename").given(blob2).getName();
+			willAnswer((invocationOnMock) -> "gcsbucket").given(blob1).getBucket();
+			willAnswer((invocationOnMock) -> "folder1/gcsfilename").given(blob1).getName();
+			willAnswer((invocationOnMock) -> "gcsbucket").given(blob2).getBucket();
+			willAnswer((invocationOnMock) -> "secondfilename").given(blob2).getName();
 
 			Storage gcs = mock(Storage.class);
 
-			willAnswer(invocationOnMock ->
+			willAnswer((invocationOnMock) ->
 				new PageImpl<>(null, null,
 						Stream.of(blob1, blob2)
 								.collect(Collectors.toList())))
@@ -99,9 +105,9 @@ public class GcsStreamingMessageSourceTests {
 
 			ReadChannel channel1 = mock(ReadChannel.class);
 			ReadChannel channel2 = mock(ReadChannel.class);
-			willAnswer(invocationOnMock -> channel1)
+			willAnswer((invocationOnMock) -> channel1)
 					.given(gcs).reader(eq("gcsbucket"), eq("folder1/gcsfilename"));
-			willAnswer(invocationOnMock -> channel2)
+			willAnswer((invocationOnMock) -> channel2)
 					.given(gcs).reader(eq("gcsbucket"), eq("secondfilename"));
 
 			return gcs;

@@ -28,8 +28,8 @@ public interface TraceIdExtractor {
 	/**
 	 * Extract trace ID from the HTTP request.
 	 *
-	 * @param req The HTTP servlet request.
-	 * @return The trace ID or null, if none found.
+	 * @param req the HTTP servlet request.
+	 * @return the trace ID or null, if none found.
 	 */
 	String extractTraceIdFromRequest(HttpServletRequest req);
 }

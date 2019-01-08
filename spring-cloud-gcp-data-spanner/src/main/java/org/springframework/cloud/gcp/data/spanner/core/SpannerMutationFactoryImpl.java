@@ -38,6 +38,8 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.util.Assert;
 
 /**
+ * Factory that generates mutations for writing to Spanner.
+ *
  * @author Chengyuan Zhao
  *
  * @since 1.1
@@ -51,11 +53,12 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	private final SpannerSchemaUtils spannerSchemaUtils;
 
 	/**
-	 * Constructor
-	 * @param spannerEntityProcessor The object mapper used to convert between objects and Spanner
+	 * Constructor.
+	 * @param spannerEntityProcessor the object mapper used to convert between objects and Spanner
 	 * data types.
-	 * @param spannerMappingContext The mapping context used to get metadata from entity
+	 * @param spannerMappingContext the mapping context used to get metadata from entity
 	 * types.
+	 * @param spannerSchemaUtils the schema utility to use
 	 */
 	public SpannerMutationFactoryImpl(SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMappingContext spannerMappingContext,
@@ -78,14 +81,12 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 
 	@Override
 	public List<Mutation> upsert(Object object, Set<String> includeProperties) {
-		return saveObject(Op.INSERT_OR_UPDATE, object,
-				includeProperties == null ? null : includeProperties);
+		return saveObject(Op.INSERT_OR_UPDATE, object, includeProperties);
 	}
 
 	@Override
 	public List<Mutation> update(Object object, Set<String> includeProperties) {
-		return saveObject(Op.UPDATE, object,
-				includeProperties == null ? null : includeProperties);
+		return saveObject(Op.UPDATE, object, includeProperties);
 	}
 
 	@Override
@@ -132,7 +133,7 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 		this.spannerEntityProcessor.write(object, writeBuilder::set, includeProperties);
 		mutations.add(writeBuilder.build());
 
-		persistentEntity.doWithInterleavedProperties(spannerPersistentProperty -> {
+		persistentEntity.doWithInterleavedProperties((spannerPersistentProperty) -> {
 			if (includeProperties == null
 					|| includeProperties.contains(spannerPersistentProperty.getName())) {
 

@@ -25,17 +25,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for the Spanner sort and page query options.
+ *
  * @author Chengyuan Zhao
  */
 public class SpannerSortPageQueryOptionsTests {
 
+	/**
+	 * checks the exception for messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
@@ -52,9 +54,9 @@ public class SpannerSortPageQueryOptionsTests {
 	public void includePropertiesTest() {
 		SpannerPageableQueryOptions spannerQueryOptions = new SpannerPageableQueryOptions();
 		Set<String> includeProperties = Collections.emptySet();
-		assertNull(spannerQueryOptions.getIncludeProperties());
+		assertThat(spannerQueryOptions.getIncludeProperties()).isNull();
 		spannerQueryOptions.setIncludeProperties(includeProperties);
-		assertNotNull(spannerQueryOptions.getIncludeProperties());
+		assertThat(spannerQueryOptions.getIncludeProperties()).isNotNull();
 	}
 
 	@Test
@@ -63,7 +65,7 @@ public class SpannerSortPageQueryOptionsTests {
 		QueryOption r1 = mock(QueryOption.class);
 		QueryOption r2 = mock(QueryOption.class);
 		spannerQueryOptions.addQueryOption(r1).addQueryOption(r2);
-		assertThat(Arrays.asList(spannerQueryOptions.getQueryOptions()),
-				containsInAnyOrder(r1, r2));
+		assertThat(Arrays.asList(spannerQueryOptions.getQueryOptions()))
+				.containsExactlyInAnyOrder(r1, r2);
 	}
 }

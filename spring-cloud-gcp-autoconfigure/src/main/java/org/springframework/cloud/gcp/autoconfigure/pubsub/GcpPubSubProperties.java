@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import org.springframework.cloud.gcp.core.CredentialsSupplier;
 import org.springframework.cloud.gcp.core.GcpScope;
 
 /**
+ * Properties for Pub/Sub.
+ *
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
@@ -83,10 +85,17 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		return this.emulatorHost;
 	}
 
+	/**
+	 * Set the emulator host.
+	 * @param emulatorHost the emulator host.
+	 */
 	public void setEmulatorHost(String emulatorHost) {
 		this.emulatorHost = emulatorHost;
 	}
 
+	/**
+	 * Publisher settings.
+	 */
 	public static class Publisher {
 
 		/**
@@ -121,12 +130,20 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		}
 	}
 
+	/**
+	 * Subscriber settings.
+	 */
 	public static class Subscriber {
 
 		/**
 		 * Number of threads used by every subscriber.
 		 */
 		private int executorThreads = 4;
+
+		/**
+		 * Number of threads used for batch acknowledgement.
+		 */
+		private int maxAcknowledgementThreads = 4;
 
 		/**
 		 * The optional pull endpoint setting for the subscriber factory.
@@ -189,11 +206,27 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 			return this.executorThreads;
 		}
 
+		/**
+		 * Set the number of executor threads.
+		 * @param executorThreads the number of threads
+		 */
 		public void setExecutorThreads(int executorThreads) {
 			this.executorThreads = executorThreads;
 		}
+
+
+		public int getMaxAcknowledgementThreads() {
+			return this.maxAcknowledgementThreads;
+		}
+
+		public void setMaxAcknowledgementThreads(int maxAcknowledgementThreads) {
+			this.maxAcknowledgementThreads = maxAcknowledgementThreads;
+		}
 	}
 
+	/**
+	 * Retry settings.
+	 */
 	public static class Retry {
 
 		/**
@@ -316,6 +349,10 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 			this.rpcTimeoutMultiplier = rpcTimeoutMultiplier;
 		}
 
+		/**
+		 * get the max RPC timeout seconds.
+		 * @return the number of seconds of the RPC timeout
+		 */
 		public Long getMaxRpcTimeoutSeconds() {
 			return this.maxRpcTimeoutSeconds;
 		}
@@ -325,6 +362,9 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		}
 	}
 
+	/**
+	 * flow control settings.
+	 */
 	public static class FlowControl {
 
 		/**
@@ -370,6 +410,9 @@ public class GcpPubSubProperties implements CredentialsSupplier {
 		}
 	}
 
+	/**
+	 * Batching settings.
+	 */
 	public static class Batching {
 
 		/**

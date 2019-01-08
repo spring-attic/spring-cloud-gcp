@@ -11,7 +11,8 @@ If you run the sample locally, the following pages will be available:
 |Unsecured  page.
 
 |`http://localhost:8080/topsecret`
-|Secured page requiring non-anonymous authentication. Prints IAP identity details if authentication passes.
+|Secured page requiring non-anonymous authentication.
+Prints IAP identity details if authentication passes.
 
 |`http://localhost:8080/headers`
 |Unsecured page that can be used for troubleshooting or capturing IAP tokens from a deployed application for local testing (please don't give anyone else access to your IAP token or add this functionality to a real production application).
@@ -27,7 +28,7 @@ If you run the sample locally, the following pages will be available:
 Run with Maven from the root of this code sample:
 
 ----
-mvn clean spring-boot:run
+$ mvn clean spring-boot:run
 ----
 
 You can then try using `curl` against the paths made available in the sample.
@@ -35,20 +36,20 @@ You can then try using `curl` against the paths made available in the sample.
 This will work, and pring "No secrets here":
 
 ----
-curl localhost:8080/
+$ curl localhost:8080/
 ----
 
 This will not work, returning Access Denied:
 
 ----
-curl localhost:8080/topsecret
+$ curl localhost:8080/topsecret
 ----
 
 It is possible, in principle, to grab a recent JWK token from a deployed application's `/headers` path, and to test locally.
 Please take care with your token if you do this.
 
 ----
-curl -H "x-goog-iap-jwt-assertion: [JWK TOKEN]" localhost:8080/topsecret
+$ curl -H "x-goog-iap-jwt-assertion: [JWK TOKEN]" localhost:8080/topsecret
 ----
 
 
@@ -56,6 +57,6 @@ curl -H "x-goog-iap-jwt-assertion: [JWK TOKEN]" localhost:8080/topsecret
 
 The following Maven target will deploy this application to the root of your AppEngine Flexible instance:
 ----
-mvn appengine:deploy
+$ mvn appengine:deploy
 ----
 

@@ -26,8 +26,7 @@ import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.data.util.TypeInformation;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -35,6 +34,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
 /**
+ * Tests for the Spanner mapping context.
+ *
  * @author Chengyuan Zhao
  */
 @RunWith(SpringRunner.class)
@@ -45,8 +46,8 @@ public class SpannerMappingContextTests {
 		SpannerMappingContext context = new SpannerMappingContext();
 
 		context.setFieldNamingStrategy(null);
-		assertEquals(PropertyNameFieldNamingStrategy.INSTANCE,
-				context.getFieldNamingStrategy());
+		assertThat(context.getFieldNamingStrategy())
+				.isEqualTo(PropertyNameFieldNamingStrategy.INSTANCE);
 	}
 
 	@Test
@@ -54,7 +55,7 @@ public class SpannerMappingContextTests {
 		SpannerMappingContext context = new SpannerMappingContext();
 		FieldNamingStrategy strat = mock(FieldNamingStrategy.class);
 		context.setFieldNamingStrategy(strat);
-		assertSame(strat, context.getFieldNamingStrategy());
+		assertThat(context.getFieldNamingStrategy()).isSameAs(strat);
 	}
 
 	@Test

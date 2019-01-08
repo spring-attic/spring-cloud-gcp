@@ -136,9 +136,9 @@ public class PubSubEmulator extends ExternalResource {
 
 				try (BufferedReader br = new BufferedReader(new InputStreamReader(psProcess.getInputStream()))) {
 					br.lines()
-							.filter(psLine -> psLine.contains(hostPortParams))
-							.map(psLine -> new StringTokenizer(psLine).nextToken())
-							.forEach(p -> {
+							.filter((psLine) -> psLine.contains(hostPortParams))
+							.map((psLine) -> new StringTokenizer(psLine).nextToken())
+							.forEach((p) -> {
 								LOGGER.info("Found emulator process to kill: " + p);
 								this.killProcess(p);
 								foundEmulatorProcess.set(true);
@@ -149,8 +149,8 @@ public class PubSubEmulator extends ExternalResource {
 					LOGGER.warn("Did not find the emualtor process to kill based on: " + hostPortParams);
 				}
 			}
-			catch (IOException e) {
-				LOGGER.warn("Failed to cleanup: ", e);
+			catch (IOException ex) {
+				LOGGER.warn("Failed to cleanup: ", ex);
 			}
 		}
 	}
@@ -158,7 +158,7 @@ public class PubSubEmulator extends ExternalResource {
 	/**
 	 * Return the already-started emulator's host/port combination when called from within a
 	 * JUnit method.
-	 * @return Emulator host/port string or null if emulator setup failed.
+	 * @return emulator host/port string or null if emulator setup failed.
 	 */
 	public String getEmulatorHostPort() {
 		return this.emulatorHostPort;
@@ -177,7 +177,7 @@ public class PubSubEmulator extends ExternalResource {
 			this.emulatorProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "start")
 					.start();
 		}
-		catch (IOException e) {
+		catch (IOException ex) {
 			fail("Gcloud not found; leaving host/port uninitialized.");
 		}
 
@@ -193,6 +193,8 @@ public class PubSubEmulator extends ExternalResource {
 
 	/**
 	 * Extract host/port from output of env-init command: "export PUBSUB_EMULATOR_HOST=localhost:8085".
+	 * @throws IOException for IO errors
+	 * @throws InterruptedException for interruption errors
 	 */
 	private void determineHostPort() throws IOException, InterruptedException {
 		Process envInitProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "env-init").start();
@@ -225,6 +227,7 @@ public class PubSubEmulator extends ExternalResource {
 	/**
 	 * Wait until a PubSub emulator configuration file is updated.
 	 * Fail if the file does not update after 1 second.
+	 * @param watchService the watch-service to poll
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
 	 */
@@ -235,8 +238,8 @@ public class PubSubEmulator extends ExternalResource {
 
 			if (key != null) {
 				Optional<Path> configFilePath = key.pollEvents().stream()
-						.map(event -> (Path) event.context())
-						.filter(path -> ENV_FILE_NAME.equals(path.toString()))
+						.map((event) -> (Path) event.context())
+						.filter((path) -> ENV_FILE_NAME.equals(path.toString()))
 						.findAny();
 				if (configFilePath.isPresent()) {
 					return;
@@ -250,13 +253,13 @@ public class PubSubEmulator extends ExternalResource {
 	/**
 	 * Attempt to kill a process on best effort basis.
 	 * Failure is logged and ignored, as it is not critical to the tests' functionality.
-	 * @param pid Presumably a valid PID. No checking done to validate.
+	 * @param pid presumably a valid PID. No checking done to validate.
 	 */
 	private void killProcess(String pid) {
 		try {
 			new ProcessBuilder("kill", pid).start();
 		}
-		catch (IOException e) {
+		catch (IOException ex) {
 			LOGGER.warn("Failed to clean up PID " + pid);
 		}
 	}

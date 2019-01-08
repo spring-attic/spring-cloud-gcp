@@ -44,6 +44,8 @@ import org.springframework.cloud.stream.binder.ExtendedProducerProperties;
 import org.springframework.context.support.GenericApplicationContext;
 
 /**
+ * Tests the binder for Pub/Sub.
+ *
  * @author João André Martins
  * @author Daniel Zou
  */

@@ -28,6 +28,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
+/**
+ * Application to execute the sample app for Spanner.
+ *
+ * @author Daniel Zou
+ */
 @SpringBootApplication
 public class SpannerExampleDriver {
 
@@ -47,7 +52,7 @@ public class SpannerExampleDriver {
 	@Bean
 	@Profile("!test")
 	ApplicationRunner applicationRunner() {
-		return args -> {
+		return (args) -> {
 			if (!args.containsOption("spanner_repository") && !args.containsOption("spanner_template")) {
 				throw new IllegalArgumentException("To run the Spanner example, please specify "
 						+ " -Dspring-boot.run.arguments=--spanner_repository to run the Spanner repository"

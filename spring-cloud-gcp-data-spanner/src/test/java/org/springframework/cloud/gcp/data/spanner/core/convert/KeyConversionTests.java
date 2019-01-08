@@ -32,12 +32,13 @@ import org.junit.runners.Parameterized;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for converting Spanner keys.
+ *
  * @author Balint Pato
+ * @author Chengyuan Zhao
  */
 @RunWith(Parameterized.class)
 public class KeyConversionTests {
@@ -88,11 +89,12 @@ public class KeyConversionTests {
 	public void keyWritingTestCase() {
 		try {
 			Key key = this.spannerEntityWriter.convertToKey(this.objectToTest);
-			assertThat(key, is(this.expectedResult));
+			assertThat(key).isEqualTo(this.expectedResult);
 		}
-		catch (Exception e) {
-			assertTrue("Unexpected exception: " + e + "\nexpected: " + this.expectedResult,
-					e.getClass().equals(this.expectedResult));
+		catch (Exception ex) {
+			assertThat(ex.getClass())
+					.as("Unexpected exception: " + ex + "\nexpected: " + this.expectedResult)
+					.isEqualTo(this.expectedResult);
 		}
 	}
 

@@ -64,6 +64,9 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			.add(com.google.cloud.Date.class)
 			.build();
 
+	/**
+	 * A map of types to functions that binds them to `ValueBinder` objects.
+	 */
 	public static final Map<Class<?>, BiFunction<ValueBinder, ?, ?>> singleItemTypeValueBinderMethodMap;
 
 	static final Map<Class<?>, BiConsumer<ValueBinder<?>, Iterable>>
@@ -153,7 +156,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		PersistentPropertyAccessor accessor = persistentEntity
 				.getPropertyAccessor(source);
 		persistentEntity.doWithColumnBackedProperties(
-				spannerPersistentProperty -> {
+				(spannerPersistentProperty) -> {
 					if (spannerPersistentProperty.isEmbedded()) {
 						Object embeddedObject = accessor
 								.getProperty(spannerPersistentProperty);
@@ -210,7 +213,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		 * both the this key conversion and the write converter to choose the same.
 		 */
 		Class<?> compatible = ConverterAwareMappingSpannerEntityWriter
-				.findFirstCompatibleSpannerSingleItemNativeType(spannerType -> isValidSpannerKeyType(spannerType)
+				.findFirstCompatibleSpannerSingleItemNativeType((spannerType) -> isValidSpannerKeyType(spannerType)
 						&& this.writeConverter.canConvert(object.getClass(), spannerType));
 
 		if (compatible == null) {
@@ -230,7 +233,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	/**
 	 * <p>
 	 * For each property this method "set"s the column name and finds the corresponding "to"
-	 * method on the {@link ValueBinder} interface
+	 * method on the {@link ValueBinder} interface.
 	 * </p>
 	 * <pre>
 	 * {
@@ -246,6 +249,10 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 	 * 			.to("Joel");
 	 * }
 	 * </pre>
+	 *
+	 * @param accessor the accessor used to get the value to write
+	 * @param property the property that will be written
+	 * @param sink the object that will accept the value to be written
 	 */
 	// @formatter:on
 	@SuppressWarnings("unchecked")
@@ -350,9 +357,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 			BiConsumer<ValueBinder<?>, Iterable> toMethod = iterablePropertyType2ToMethodMap
 					.get(targetType);
 			toMethod.accept(valueBinder,
-					value == null ? null
-							: ConversionUtils.convertIterable(value, targetType,
-									this.writeConverter));
+					(value != null) ? ConversionUtils.convertIterable(value, targetType, this.writeConverter) : null);
 			return true;
 		}
 		return false;
@@ -373,7 +378,7 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		// We're just checking for the bind to have succeeded, we don't need to chain the result.
 		// Spanner allows binding of null values.
 		Object ignored = toMethod.apply(valueBinder,
-				value == null ? null : this.writeConverter.convert(value, targetType));
+				(value != null) ? this.writeConverter.convert(value, targetType) : null);
 		return true;
 	}
 }

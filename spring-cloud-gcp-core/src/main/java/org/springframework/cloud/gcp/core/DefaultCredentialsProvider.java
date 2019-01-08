@@ -78,7 +78,7 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 	 * </ul>
 	 *
 	 * <p>If credentials are provided by one source, the next sources are discarded.
-	 * @param credentialsSupplier Provides properties that can override OAuth2
+	 * @param credentialsSupplier provides properties that can override OAuth2
 	 * scopes list used by the credentials, and the location of the OAuth2 credentials private
 	 * key.
 	 * @throws IOException if an issue occurs creating the DefaultCredentialsProvider
@@ -134,7 +134,7 @@ public class DefaultCredentialsProvider implements CredentialsProvider {
 	static List<String> resolveScopes(List<String> scopes) {
 		if (!ObjectUtils.isEmpty(scopes)) {
 			Set<String> resolvedScopes = new HashSet<>();
-			scopes.forEach(scope -> {
+			scopes.forEach((scope) -> {
 				if (DEFAULT_SCOPES_PLACEHOLDER.equals(scope)) {
 					resolvedScopes.addAll(CREDENTIALS_SCOPES_LIST);
 				}

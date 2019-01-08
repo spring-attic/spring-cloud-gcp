@@ -1,8 +1,6 @@
 = Code formatting guidelines
 
-The directory src/eclipse has two files for use with code formatting, `eclipse-code-formatter.xml`
-for the majority of the code formatting rules and `eclipse.importorder` to order the import
-statements.
+The directory src/eclipse has two files for use with code formatting, `eclipse-code-formatter.xml` for the majority of the code formatting rules and `eclipse.importorder` to order the import statements.
 
 == Eclipse
 Import these files by navigating `Windows -> Preferences` and then the menu items
@@ -10,23 +8,17 @@ Import these files by navigating `Windows -> Preferences` and then the menu item
 Organize Imports` respectively.
 
 == IntelliJ IDEA
-Install the plugin `Eclipse Code Formatter`. You can find it by searching in "Browse Repositories",
-under `Settings > Plugins` within IDEA (Once installed, you will need to reboot IDEA for it to take
-effect).
+Install the plugin `Eclipse Code Formatter`.
+You can find it by searching in "Browse Repositories", under `Settings > Plugins` within IDEA (Once installed, you will need to reboot IDEA for it to take effect).
 
-Then navigate to `Settings > Other Settings` (this might be under `Preferences` on Mac) and select
-the Eclipse Code Formatter.
-Select the `eclipse-code-formatter.xml` file for the field `Eclipse Java Formatter config file` and
-the file `eclipse.importorder` for the field `Import order`.
-Enable the `Eclipse code formatter` by clicking `Use the Eclipse code formatter` radio button at the
-top of the page, then click the *OK* button.
+Then navigate to `Settings > Other Settings` (this might be under `Preferences` on Mac) and select the Eclipse Code Formatter.
+Select the `eclipse-code-formatter.xml` file for the field `Eclipse Java Formatter config file` and the file `eclipse.importorder` for the field `Import order`.
+Enable the `Eclipse code formatter` by clicking `Use the Eclipse code formatter` radio button at the top of the page, then click the *OK* button.
 
-* NOTE: If you configure the `Eclipse Code Formatter` from `File > Other Settings > Default
-Settings`, it will set this policy across all of your IDEA projects.
+* NOTE: If you configure the `Eclipse Code Formatter` from `File > Other Settings > Default Settings`, it will set this policy across all of your IDEA projects.
 
-* IDEA's "Optimize imports on the fly" option turned on interferes with the Eclipse code formatter
-import optimization. Consider disabling the option if optimization does not yield the expected
-results.
+* IDEA's "Optimize imports on the fly" option turned on interferes with the Eclipse code formatter import optimization.
+Consider disabling the option if optimization does not yield the expected results.
 
 = Contributing a patch
 
@@ -45,4 +37,5 @@ Guide]
 
 6. Ensure your code has an appropriate set of unit tests which all pass
 
-7. Submit a pull request. It will be approved and merged by a committer
+7. Submit a pull request.
+It will be approved and merged by a committer

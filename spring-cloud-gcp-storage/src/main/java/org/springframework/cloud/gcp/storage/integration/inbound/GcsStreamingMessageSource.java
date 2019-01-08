@@ -30,8 +30,11 @@ import org.springframework.integration.file.remote.RemoteFileTemplate;
 import org.springframework.integration.metadata.SimpleMetadataStore;
 
 /**
+ * A streaming message source for Google Cloud Storage.
+ *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public class GcsStreamingMessageSource extends AbstractRemoteFileStreamingMessageSource<BlobInfo> {
 

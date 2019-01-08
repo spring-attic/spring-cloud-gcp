@@ -24,8 +24,11 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for Config bootstrap configuration.
+ *
  * @author Jisha Abubaker
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class GcpConfigBootstrapConfigurationTest {
 
@@ -34,7 +37,7 @@ public class GcpConfigBootstrapConfigurationTest {
 
 	@Test
 	public void testConfigurationValueDefaultsAreAsExpected() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			GcpConfigProperties config = context.getBean(GcpConfigProperties.class);
 			assertThat(config.getName()).isEqualTo("application");
 			assertThat(config.getProfile()).isEqualTo("default");
@@ -50,7 +53,7 @@ public class GcpConfigBootstrapConfigurationTest {
 				"spring.cloud.gcp.config.timeoutMillis=120000",
 				"spring.cloud.gcp.config.enabled=false",
 				"spring.cloud.gcp.config.project-id=pariah")
-				.run(context -> {
+				.run((context) -> {
 					GcpConfigProperties config = context.getBean(GcpConfigProperties.class);
 					assertThat(config.getName()).isEqualTo("myapp");
 					assertThat(config.getProfile()).isEqualTo("prod");

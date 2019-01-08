@@ -33,6 +33,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.util.Assert;
 
 /**
+ * The default implementation of a SpannerRepository.
+ *
+ * @param <T> the entity type of the repository
+ * @param <ID> the id type of the entity
  * @author Chengyuan Zhao
  *
  * @since 1.1
@@ -60,7 +64,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 			Function<SpannerRepository<T, ID>, A> operations) {
 		return this.spannerTemplate
 				.performReadOnlyTransaction(
-						transactionSpannerOperations -> operations
+						(transactionSpannerOperations) -> operations
 								.apply(new SimpleSpannerRepository<T, ID>(
 										transactionSpannerOperations, this.entityType)),
 						null);
@@ -70,7 +74,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	public <A> A performReadWriteTransaction(
 			Function<SpannerRepository<T, ID>, A> operations) {
 		return this.spannerTemplate
-				.performReadWriteTransaction(transactionSpannerOperations -> operations
+				.performReadWriteTransaction((transactionSpannerOperations) -> operations
 						.apply(new SimpleSpannerRepository<T, ID>(transactionSpannerOperations,
 								this.entityType)));
 	}
@@ -92,7 +96,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	@Override
 	public Optional<T> findById(ID key) {
 		Assert.notNull(key, "A non-null ID is required.");
-		return doIfKey(key, k -> {
+		return doIfKey(key, (k) -> {
 			T result = this.spannerTemplate.read(this.entityType, k);
 			return Optional.<T>ofNullable(result);
 		});
@@ -126,7 +130,7 @@ public class SimpleSpannerRepository<T, ID> implements SpannerRepository<T, ID> 
 	@Override
 	public void deleteById(Object key) {
 		Assert.notNull(key, "A non-null ID is required.");
-		doIfKey(key, k -> {
+		doIfKey(key, (k) -> {
 			this.spannerTemplate.delete(this.entityType, k);
 			return null;
 		});

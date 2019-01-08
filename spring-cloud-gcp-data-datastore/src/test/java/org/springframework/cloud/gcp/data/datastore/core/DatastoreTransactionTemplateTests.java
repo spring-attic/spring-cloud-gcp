@@ -42,7 +42,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -74,6 +74,9 @@ public class DatastoreTransactionTemplateTests {
 	@MockBean
 	ObjectToKeyFactory objectToKeyFactory;
 
+	/**
+	 * Used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
@@ -109,10 +112,10 @@ public class DatastoreTransactionTemplateTests {
 			this.transactionalService.doInTransactionWithException(new TestEntity(),
 					new TestEntity());
 		}
-		catch (Exception e) {
-			exception = e;
+		catch (Exception ex) {
+			exception = ex;
 		}
-		assertNotNull(exception);
+		assertThat(exception).isNotNull();
 		verify(this.transaction, times(0)).commit();
 		verify(this.transaction, times(1)).rollback();
 		verify(this.datastore, times(1)).newTransaction();
@@ -161,6 +164,9 @@ public class DatastoreTransactionTemplateTests {
 		this.transactionalService.deleteInReadOnly();
 	}
 
+	/**
+	 * Spring config for the tests.
+	 */
 	@Configuration
 	@EnableTransactionManagement
 	static class Config {
@@ -193,6 +199,9 @@ public class DatastoreTransactionTemplateTests {
 		}
 	}
 
+	/**
+	 * A service object used in the test that performs the transactions.
+	 */
 	public static class TransactionalService {
 		@Autowired
 		DatastoreTemplate datastoreTemplate;

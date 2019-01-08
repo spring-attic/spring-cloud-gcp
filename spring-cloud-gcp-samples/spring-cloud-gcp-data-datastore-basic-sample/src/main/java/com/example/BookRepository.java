@@ -21,7 +21,7 @@ import java.util.List;
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 
 /**
- * This interface contains custom-defined query methods of which implementations are generated for you
+ * This interface contains custom-defined query methods of which implementations are generated for you.
  *
  * @author Dmitry Solomakha
  */
@@ -29,7 +29,7 @@ public interface BookRepository extends DatastoreRepository<Book, Long> {
 
 	List<Book> findByAuthor(String author);
 
-	List<Book> findByYear(int year);
+	List<Book> findByYearGreaterThan(int year);
 
 	List<Book> findByAuthorAndYear(String author, int year);
 

@@ -26,6 +26,11 @@ import org.springframework.data.repository.core.support.RepositoryFactoryBeanSup
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
 /**
+ * Spanner Repository Factory Bean used to create factories that ultimately create repository implementations.
+ *
+ * @param <S> the entity type of the repository
+ * @param <ID> the id type of the entity
+ * @param <T> the repository type
  * @author Ray Tsang
  * @author Chengyuan Zhao
  *

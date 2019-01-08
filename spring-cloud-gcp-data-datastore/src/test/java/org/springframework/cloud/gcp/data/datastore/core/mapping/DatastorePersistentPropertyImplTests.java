@@ -27,19 +27,21 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.PropertyHandler;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 /**
+ * Tests for the Datastore persistent property.
+ *
  * @author Chengyuan Zhao
  */
 public class DatastorePersistentPropertyImplTests {
 
 	private final DatastoreMappingContext datastoreMappingContext = new DatastoreMappingContext();
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
@@ -47,37 +49,33 @@ public class DatastorePersistentPropertyImplTests {
 	public void propertiesTest() {
 		this.datastoreMappingContext.getPersistentEntity(TestEntity.class)
 				.doWithProperties(
-						(PropertyHandler<DatastorePersistentProperty>) property -> {
+						(PropertyHandler<DatastorePersistentProperty>) (property) -> {
 							if (property.isIdProperty()) {
-								assertEquals("id", property.getFieldName());
+								assertThat(property.getFieldName()).isEqualTo("id");
 							}
 							else if (property.getFieldName().equals("custom_field")) {
-								assertEquals(String.class, property.getType());
+								assertThat(property.getType()).isEqualTo(String.class);
 							}
 							else if (property.getFieldName().equals("other")) {
-								assertEquals(String.class, property.getType());
+								assertThat(property.getType()).isEqualTo(String.class);
 							}
 							else if (property.getFieldName().equals("doubleList")) {
-								assertEquals(Double.class,
-										property.getComponentType());
-								assertTrue(property.isCollectionLike());
+								assertThat(property.getComponentType()).isEqualTo(Double.class);
+								assertThat(property.isCollectionLike()).isTrue();
 							}
 							else if (property.getFieldName().equals("embeddedEntity")) {
-								assertTrue(property
-										.getEmbeddedType() == EmbeddedType.EMBEDDED_ENTITY);
+								assertThat(property.getEmbeddedType()).isEqualTo(EmbeddedType.EMBEDDED_ENTITY);
 							}
 							else if (property.getFieldName().equals("embeddedMap")) {
-								assertTrue(property
-										.getEmbeddedType() == EmbeddedType.EMBEDDED_MAP);
-								assertEquals(String.class,
-										property.getTypeInformation().getTypeArguments()
-												.get(1).getType());
+								assertThat(property.getEmbeddedType()).isEqualTo(EmbeddedType.EMBEDDED_MAP);
+								assertThat(property.getTypeInformation().getTypeArguments().get(1).getType())
+										.isEqualTo(String.class);
 							}
 							else if (property.getFieldName().equals("linkedEntity")) {
-								assertTrue(property.isDescendants());
+								assertThat(property.isDescendants()).isTrue();
 							}
 							else if (property.getFieldName().equals("linkedEntityRef")) {
-								assertTrue(property.isReference());
+								assertThat(property.isReference()).isTrue();
 							}
 							else {
 								fail("All properties of the test entity are expected to match a checked"
@@ -89,11 +87,10 @@ public class DatastorePersistentPropertyImplTests {
 	@Test
 	public void testAssociations() {
 		this.datastoreMappingContext.getPersistentEntity(TestEntity.class)
-				.doWithProperties((PropertyHandler<DatastorePersistentProperty>) prop -> {
-					assertSame(prop, ((DatastorePersistentPropertyImpl) prop)
-							.createAssociation().getInverse());
-					assertNull(((DatastorePersistentPropertyImpl) prop)
-							.createAssociation().getObverse());
+				.doWithProperties((PropertyHandler<DatastorePersistentProperty>) (prop) -> {
+					assertThat(prop).isSameAs(
+							((DatastorePersistentPropertyImpl) prop).createAssociation().getInverse());
+					assertThat(((DatastorePersistentPropertyImpl) prop).createAssociation().getObverse()).isNull();
 				});
 	}
 

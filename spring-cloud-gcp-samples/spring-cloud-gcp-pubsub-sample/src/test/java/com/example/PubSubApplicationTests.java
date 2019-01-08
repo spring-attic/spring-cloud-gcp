@@ -56,6 +56,11 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
+/**
+ * Tests for the Pub/Sub sample application.
+ *
+ * @author Daniel Zou
+ */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, classes = { PubSubApplication.class })
 public class PubSubApplicationTests {
@@ -222,7 +227,7 @@ public class PubSubApplicationTests {
 
 		PullResponse pullResponse = subscriptionAdminClient.getStub().pullCallable().call(pullRequest);
 		return pullResponse.getReceivedMessagesList().stream()
-				.map(message -> message.getMessage().getData().toStringUtf8())
+				.map((message) -> message.getMessage().getData().toStringUtf8())
 				.collect(Collectors.toList());
 	}
 

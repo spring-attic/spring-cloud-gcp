@@ -65,7 +65,8 @@ public final class SpannerStatementQueryExecutor {
 	 * @param params the parameters of this specific query
 	 * @param spannerTemplate used to execute the query
 	 * @param spannerMappingContext used to get metadata about the entity type
-	 * @return List of entities.
+	 * @param <T> the type of the underlying entity
+	 * @return list of entities.
 	 */
 	public static <T> List<T> executeQuery(Class<T> type, PartTree tree, Object[] params,
 			SpannerTemplate spannerTemplate,
@@ -86,7 +87,9 @@ public final class SpannerStatementQueryExecutor {
 	 * @param params the parameters of this specific query
 	 * @param spannerTemplate used to execute the query
 	 * @param spannerMappingContext used to get metadata about the entity type
-	 * @return List of objects mapped using the given function.
+	 * @param <A> the type to which to convert Struct params
+	 * @param <T> the type of the underlying entity on which to query
+	 * @return list of objects mapped using the given function.
 	 */
 	public static <A, T> List<A> executeQuery(Function<Struct, A> rowFunc, Class<T> type,
 			PartTree tree, Object[] params, SpannerTemplate spannerTemplate,
@@ -100,7 +103,7 @@ public final class SpannerStatementQueryExecutor {
 
 	/**
 	 * Apply paging and sorting options to a query string.
-	 * @param entityClass The domain type whose table is being queried.
+	 * @param entityClass the domain type whose table is being queried.
 	 * @param options query options containing the sorting and paging options
 	 * @param sql the sql that will be wrapped with sorting and paging options.
 	 * @param mappingContext a mapping context to convert between Cloud Spanner column names
@@ -114,10 +117,10 @@ public final class SpannerStatementQueryExecutor {
 		SpannerPersistentEntity<?> persistentEntity = mappingContext
 				.getPersistentEntity(entityClass);
 		StringBuilder sb = SpannerStatementQueryExecutor.applySort(options.getSort(),
-				new StringBuilder("SELECT * FROM (").append(sql).append(")"), o -> {
+				new StringBuilder("SELECT * FROM (").append(sql).append(")"), (o) -> {
 					SpannerPersistentProperty property = persistentEntity
 							.getPersistentProperty(o.getProperty());
-					return property == null ? o.getProperty() : property.getColumnName();
+					return (property != null) ? property.getColumnName() : o.getProperty();
 				});
 		if (options.getLimit() != null) {
 			sb.append(" LIMIT ").append(options.getLimit());
@@ -134,6 +137,7 @@ public final class SpannerStatementQueryExecutor {
 	 * of all child rows having the parent's key values is efficient.
 	 * @param parentKey the parent key whose children to get.
 	 * @param childPersistentEntity the persistent entity of the child table.
+	 * @param <T> the type of the child persistent entity
 	 * @return the Spanner statement to perform the retrieval.
 	 */
 	public static <T> Statement getChildrenRowsQuery(Key parentKey,
@@ -204,7 +208,7 @@ public final class SpannerStatementQueryExecutor {
 		if (toMethod == null && spannerCustomConverter != null) {
 			Class<?> compatible = ConverterAwareMappingSpannerEntityWriter
 					.findFirstCompatibleSpannerSingleItemNativeType(
-							type -> spannerCustomConverter.canConvert(originalParam.getClass(), type));
+							(type) -> spannerCustomConverter.canConvert(originalParam.getClass(), type));
 			if (compatible != null) {
 				param = spannerCustomConverter.convert(originalParam, compatible);
 				toMethod = (BiFunction<ValueBinder, Object, ?>) getValueBinderBiFunction(param);
@@ -222,9 +226,9 @@ public final class SpannerStatementQueryExecutor {
 						.get(Struct.class);
 				param = paramStructConvertFunc.apply(param);
 			}
-			catch (SpannerDataException e) {
+			catch (SpannerDataException ex) {
 				throw new IllegalArgumentException("Param: " + param.toString()
-						+ " is not a supported type: " + param.getClass(), e);
+						+ " is not a supported type: " + param.getClass(), ex);
 			}
 		}
 		Object unused = toMethod.apply(bind, param); //NOSONAR compiler rule requires this to be set
@@ -261,7 +265,7 @@ public final class SpannerStatementQueryExecutor {
 		buildSelect(persistentEntity, tree, stringBuilder);
 		buildFrom(persistentEntity, stringBuilder);
 		buildWhere(tree, persistentEntity, tags, stringBuilder);
-		applySort(tree.getSort(), stringBuilder, o -> persistentEntity
+		applySort(tree.getSort(), stringBuilder, (o) -> persistentEntity
 				.getPersistentProperty(o.getProperty()).getColumnName());
 		buildLimit(tree, stringBuilder);
 
@@ -298,7 +302,7 @@ public final class SpannerStatementQueryExecutor {
 		}
 		sql.append(" ORDER BY ");
 		StringJoiner sj = new StringJoiner(" , ");
-		sort.iterator().forEachRemaining(o -> {
+		sort.iterator().forEachRemaining((o) -> {
 			String sortedPropertyName = sortedPropertyNameFunction.apply(o);
 			String sortedProperty = o.isIgnoreCase() ? "LOWER(" + sortedPropertyName + ")"
 					: sortedPropertyName;
@@ -315,12 +319,12 @@ public final class SpannerStatementQueryExecutor {
 
 			StringJoiner orStrings = new StringJoiner(" OR ");
 
-			tree.iterator().forEachRemaining(orPart -> {
+			tree.iterator().forEachRemaining((orPart) -> {
 				String orString = "( ";
 
 				StringJoiner andStrings = new StringJoiner(" AND ");
 
-				orPart.forEach(part -> {
+				orPart.forEach((part) -> {
 					String segment = part.getProperty().getSegment();
 					String tag = "tag" + tags.size();
 					tags.add(tag);

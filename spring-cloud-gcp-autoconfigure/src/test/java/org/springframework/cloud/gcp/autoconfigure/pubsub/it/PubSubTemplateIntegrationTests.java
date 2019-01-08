@@ -56,6 +56,8 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.awaitility.Awaitility.await;
 
 /**
+ * Integration tests for Pub/Sub template.
+ *
  * @author João André Martins
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
@@ -75,7 +77,7 @@ public class PubSubTemplateIntegrationTests {
 
 	@Test
 	public void testCreatePublishPullNextAndDelete() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
 			PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
 
@@ -102,27 +104,27 @@ public class PubSubTemplateIntegrationTests {
 			assertThat(pubSubAdmin.getTopic(topicName)).isNotNull();
 			assertThat(pubSubAdmin.getSubscription(subscriptionName)).isNotNull();
 			assertThat(pubSubAdmin.listTopics().stream()
-					.filter(topic -> topic.getName().endsWith(topicName)).toArray().length)
+					.filter((topic) -> topic.getName().endsWith(topicName)).toArray().length)
 							.isEqualTo(1);
 			assertThat(pubSubAdmin.listSubscriptions().stream().filter(
-					subscription -> subscription.getName().endsWith(subscriptionName))
+					(subscription) -> subscription.getName().endsWith(subscriptionName))
 					.toArray().length).isEqualTo(1);
 			pubSubAdmin.deleteSubscription(subscriptionName);
 			pubSubAdmin.deleteTopic(topicName);
 			assertThat(pubSubAdmin.getTopic(topicName)).isNull();
 			assertThat(pubSubAdmin.getSubscription(subscriptionName)).isNull();
 			assertThat(pubSubAdmin.listTopics().stream()
-					.filter(topic -> topic.getName().endsWith(topicName)).toArray().length)
+					.filter((topic) -> topic.getName().endsWith(topicName)).toArray().length)
 					.isEqualTo(0);
 			assertThat(pubSubAdmin.listSubscriptions().stream().filter(
-					subscription -> subscription.getName().endsWith(subscriptionName))
+					(subscription) -> subscription.getName().endsWith(subscriptionName))
 					.toArray().length).isEqualTo(0);
 		});
 	}
 
 	@Test
 	public void testPullAndAck() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
 			String topicName = "peel-the-paint" + UUID.randomUUID();
 			String subscriptionName = "i-lost-my-head" + UUID.randomUUID();
@@ -136,12 +138,12 @@ public class PubSubTemplateIntegrationTests {
 			futures.add(pubSubTemplate.publish(topicName, "message2"));
 			futures.add(pubSubTemplate.publish(topicName, "message3"));
 
-			futures.parallelStream().forEach(f -> {
+			futures.parallelStream().forEach((f) -> {
 				try {
 					f.get(5, TimeUnit.SECONDS);
 				}
-				catch (InterruptedException | ExecutionException | TimeoutException e) {
-					e.printStackTrace();
+				catch (InterruptedException | ExecutionException | TimeoutException ex) {
+					ex.printStackTrace();
 				}
 			});
 
@@ -151,13 +153,13 @@ public class PubSubTemplateIntegrationTests {
 				List<AcknowledgeablePubsubMessage> newMessages = pubSubTemplate.pull(subscriptionName, 4, false);
 				ackableMessages.addAll(newMessages);
 				messagesSet.addAll(newMessages.stream()
-						.map(message -> message.getPubsubMessage().getData().toStringUtf8())
+						.map((message) -> message.getPubsubMessage().getData().toStringUtf8())
 						.collect(Collectors.toList()));
 			}
 
 			assertThat(messagesSet.size()).as("check that we received all the messages").isEqualTo(3);
 
-			ackableMessages.forEach(message -> {
+			ackableMessages.forEach((message) -> {
 				if (message.getPubsubMessage().getData().toStringUtf8().equals("message1")) {
 					message.ack(); //sync call
 				}
@@ -173,7 +175,7 @@ public class PubSubTemplateIntegrationTests {
 			while (messagesCount < 2 && tries > 0) {
 				Thread.sleep(100);
 				ackableMessages = pubSubTemplate.pull(subscriptionName, 4, true);
-				ackableMessages.forEach(m -> m.ack());
+				ackableMessages.forEach((m) -> m.ack());
 				messagesCount += ackableMessages.size();
 				tries--;
 			}
@@ -188,7 +190,7 @@ public class PubSubTemplateIntegrationTests {
 	public void testPubSubTemplateLoadsMessageConverter() {
 		this.contextRunner
 				.withUserConfiguration(JsonPayloadTestConfiguration.class)
-				.run(context -> {
+				.run((context) -> {
 					PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);
 					PubSubTemplate pubSubTemplate = context.getBean(PubSubTemplate.class);
 
@@ -216,6 +218,9 @@ public class PubSubTemplateIntegrationTests {
 				});
 	}
 
+	/**
+	 * Beans for test.
+	 */
 	@Configuration
 	static class JsonPayloadTestConfiguration {
 
@@ -225,6 +230,9 @@ public class PubSubTemplateIntegrationTests {
 		}
 	}
 
+	/**
+	 * A test JSON payload.
+	 */
 	static class TestUser {
 
 		public final String username;

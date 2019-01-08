@@ -32,10 +32,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the AppEngine Audience Provider.
+ *
  * @author Elena Felder
  */
 @RunWith(MockitoJUnitRunner.class)
 public class AppEngineAudienceProviderTests {
+
+	/**
+	 * Used to test for exception messages and types.
+	 */
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 

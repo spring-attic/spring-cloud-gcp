@@ -48,6 +48,7 @@ import static org.mockito.Mockito.when;
  */
 public class CloudVisionTemplateTests {
 
+	/** Used to test exception messages and types. **/
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

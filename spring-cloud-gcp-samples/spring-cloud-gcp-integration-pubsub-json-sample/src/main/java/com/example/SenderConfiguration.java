@@ -65,6 +65,9 @@ public class SenderConfiguration {
 		return adapter;
 	}
 
+	/**
+	 * an interface that allows sending a person to Pub/Sub.
+	 */
 	@MessagingGateway(defaultRequestChannel = "pubSubOutputChannel")
 	public interface PubSubPersonGateway {
 		void sendPersonToPubSub(Person person);

@@ -31,7 +31,8 @@ import org.springframework.util.Assert;
 
 /**
  * Implementation of {@link DatastoreRepository}.
- *
+ * @param <T> the type of the entities
+ * @param <ID> the id type of the entities
  * @author Chengyuan Zhao
  *
  * @since 1.1
@@ -52,7 +53,7 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 
 	@Override
 	public <A> A performTransaction(Function<DatastoreRepository<T, ID>, A> operations) {
-		return this.datastoreTemplate.performTransaction(template -> operations
+		return this.datastoreTemplate.performTransaction((template) -> operations
 				.apply(new SimpleDatastoreRepository<>(template, this.entityType)));
 	}
 

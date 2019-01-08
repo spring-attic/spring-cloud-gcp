@@ -64,8 +64,9 @@ For serialization and deserialization of POJOs using Jackson JSON, configure a `
 
 [source,java]
 ----
-// Note: The ObjectMapper is used to convert Java POJOs to and from JSON. You will have to configure
-// your own instance if you are unable to depend on the ObjectMapper provided by Spring Boot starters.
+// Note: The ObjectMapper is used to convert Java POJOs to and from JSON.
+// You will have to configure your own instance if you are unable to depend
+// on the ObjectMapper provided by Spring Boot starters.
 @Bean
 public JacksonPubSubMessageConverter jacksonPubSubMessageConverter(ObjectMapper objectMapper) {
     return new JacksonPubSubMessageConverter(objectMapper);
@@ -266,12 +267,9 @@ The Spring Boot starter for Google Cloud Pub/Sub provides the following configur
 |===
 | Name | Description | Required | Default value
 | `spring.cloud.gcp.pubsub.enabled` | Enables or disables Pub/Sub auto-configuration | No | `true`
-| `spring.cloud.gcp.pubsub.subscriber.executor-threads` | Number of threads used by `Subscriber`
-instances created by `SubscriberFactory` | No | 4
-| `spring.cloud.gcp.pubsub.publisher.executor-threads` | Number of threads used by `Publisher`
-instances created by `PublisherFactory` | No | 4
-| `spring.cloud.gcp.pubsub.project-id` | GCP project ID where the Google Cloud Pub/Sub API
-is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
+| `spring.cloud.gcp.pubsub.subscriber.executor-threads` | Number of threads used by `Subscriber` instances created by `SubscriberFactory` | No | 4
+| `spring.cloud.gcp.pubsub.publisher.executor-threads` | Number of threads used by `Publisher` instances created by `PublisherFactory` | No | 4
+| `spring.cloud.gcp.pubsub.project-id` | GCP project ID where the Google Cloud Pub/Sub API is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
 | No |
 | `spring.cloud.gcp.pubsub.credentials.location` | OAuth2 credentials for authenticating with the
 Google Cloud Pub/Sub API, if different from the ones in the
@@ -289,25 +287,24 @@ Pub/Sub credentials | No | https://www.googleapis.com/auth/pubsub
 TotalTimeout has ultimate control over how long the logic should keep trying the remote call until it gives up completely.
 The higher the total timeout, the more retries can be attempted. |No | 0
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.initial-retry-delay-second`|
-InitialRetryDelay controls the delay before the first retry. Subsequent retries will use this
-value adjusted according to the RetryDelayMultiplier.|No | 0
+InitialRetryDelay controls the delay before the first retry.
+Subsequent retries will use this value adjusted according to the RetryDelayMultiplier.|No | 0
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.retry-delay-multiplier`|
-RetryDelayMultiplier controls the change in retry delay. The retry delay of the previous call
-is multiplied by the RetryDelayMultiplier to calculate the retry delay for the next call.|No | 1
+RetryDelayMultiplier controls the change in retry delay.
+The retry delay of the previous call is multiplied by the RetryDelayMultiplier to calculate the retry delay for the next call.|No | 1
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-retry-delay-seconds`|
 MaxRetryDelay puts a limit on the value of the retry delay, so that the RetryDelayMultiplier
 can't increase the retry delay higher than this amount.|No | 0
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-attempts`|
 MaxAttempts defines the maximum number of attempts to perform.
-If this value is greater than 0, and the number of attempts reaches this limit, the logic will
-give up retrying even if the total retry time is still lower than TotalTimeout.|No | 0
+If this value is greater than 0, and the number of attempts reaches this limit, the logic will give up retrying even if the total retry time is still lower than TotalTimeout.|No | 0
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.jittered`|Jitter determines if the delay time should be randomized.|No | true
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.initial-rpc-timeout-seconds`|
-InitialRpcTimeout controls the timeout for the initial RPC. Subsequent calls will use this
-value adjusted according to the RpcTimeoutMultiplier.|No |0
+InitialRpcTimeout controls the timeout for the initial RPC.
+Subsequent calls will use this value adjusted according to the RpcTimeoutMultiplier.|No |0
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.rpc-timeout-multiplier`|
-RpcTimeoutMultiplier controls the change in RPC timeout. The timeout of the previous call is
-multiplied by the RpcTimeoutMultiplier to calculate the timeout for the next call. |No | 1
+RpcTimeoutMultiplier controls the change in RPC timeout.
+The timeout of the previous call is multiplied by the RpcTimeoutMultiplier to calculate the timeout for the next call. |No | 1
 | `spring.cloud.gcp.pubsub.[subscriber,publisher].retry.max-rpc-timeout-seconds`|
 MaxRpcTimeout puts a limit on the value of the RPC timeout, so that the RpcTimeoutMultiplier
 can't increase the RPC timeout higher than this amount.|No | 0
@@ -322,8 +319,8 @@ The element count threshold to use for batching.|No | unset (threshold does not 
 | `spring.cloud.gcp.pubsub.publisher.batching.request-byte-threshold`|
 The request byte threshold to use for batching.|No | unset (threshold does not apply)
 | `spring.cloud.gcp.pubsub.publisher.batching.delay-threshold-seconds`|
-The delay threshold to use for batching. After this amount of time has elapsed (counting
-from the first element added), the elements will be wrapped up in a batch and sent.|No | unset (threshold does not apply)
+The delay threshold to use for batching.
+After this amount of time has elapsed (counting from the first element added), the elements will be wrapped up in a batch and sent.|No | unset (threshold does not apply)
 | `spring.cloud.gcp.pubsub.publisher.batching.enabled`|
 Enables batching.|No | false
 |===

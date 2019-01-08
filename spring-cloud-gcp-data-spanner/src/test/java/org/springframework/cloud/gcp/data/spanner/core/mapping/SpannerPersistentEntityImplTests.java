@@ -31,12 +31,7 @@ import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.mapping.SimplePropertyHandler;
 import org.springframework.data.util.ClassTypeInformation;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -45,11 +40,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the Spanner persistent entity.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
 public class SpannerPersistentEntityImplTests {
 
+	/**
+	 * tests the messages and types of exceptions.
+	 */
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
@@ -60,7 +60,7 @@ public class SpannerPersistentEntityImplTests {
 		SpannerPersistentEntityImpl<TestEntity> entity = new SpannerPersistentEntityImpl<>(
 				ClassTypeInformation.from(TestEntity.class));
 
-		assertThat(entity.tableName(), is("custom_test_table"));
+		assertThat(entity.tableName()).isEqualTo("custom_test_table");
 	}
 
 	@Test
@@ -68,7 +68,7 @@ public class SpannerPersistentEntityImplTests {
 		SpannerPersistentEntityImpl<EntityNoCustomName> entity = new SpannerPersistentEntityImpl<>(
 				ClassTypeInformation.from(EntityNoCustomName.class));
 
-		assertThat(entity.tableName(), is("entityNoCustomName"));
+		assertThat(entity.tableName()).isEqualTo("entityNoCustomName");
 	}
 
 	@Test
@@ -76,13 +76,13 @@ public class SpannerPersistentEntityImplTests {
 		SpannerPersistentEntityImpl<EntityEmptyCustomName> entity = new SpannerPersistentEntityImpl<>(
 				ClassTypeInformation.from(EntityEmptyCustomName.class));
 
-		assertThat(entity.tableName(), is("entityEmptyCustomName"));
+		assertThat(entity.tableName()).isEqualTo("entityEmptyCustomName");
 	}
 
 	@Test
 	public void testColumns() {
 		assertThat(new SpannerMappingContext().getPersistentEntity(TestEntity.class)
-				.columns(), containsInAnyOrder("id", "custom_col"));
+				.columns()).containsExactlyInAnyOrder("id", "custom_col");
 	}
 
 	@Test
@@ -107,7 +107,7 @@ public class SpannerPersistentEntityImplTests {
 		when(applicationContext.containsBean("tablePostfix")).thenReturn(true);
 
 		entity.setApplicationContext(applicationContext);
-		assertThat(entity.tableName(), is("table_something"));
+		assertThat(entity.tableName()).isEqualTo("table_something");
 	}
 
 	@Test
@@ -140,14 +140,14 @@ public class SpannerPersistentEntityImplTests {
 
 	@Test
 	public void testGetIdProperty() {
-		assertTrue(new SpannerMappingContext().getPersistentEntity(TestEntity.class)
-				.getIdProperty() instanceof SpannerCompositeKeyProperty);
+		assertThat(new SpannerMappingContext().getPersistentEntity(TestEntity.class)
+				.getIdProperty()).isInstanceOf(SpannerCompositeKeyProperty.class);
 	}
 
 	@Test
 	public void testHasIdProperty() {
-		assertTrue(new SpannerMappingContext().getPersistentEntity(TestEntity.class)
-				.hasIdProperty());
+		assertThat(new SpannerMappingContext().getPersistentEntity(TestEntity.class)
+				.hasIdProperty()).isTrue();
 	}
 
 	@Test
@@ -175,8 +175,8 @@ public class SpannerPersistentEntityImplTests {
 		SpannerPersistentEntity p = new SpannerMappingContext()
 				.getPersistentEntity(TestEntity.class);
 		PersistentPropertyAccessor accessor = p.getPropertyAccessor(t);
-		p.doWithProperties((SimplePropertyHandler) property -> assertNotEquals("b",
-				accessor.getProperty(property)));
+		p.doWithProperties(
+				(SimplePropertyHandler) (property) -> assertThat(accessor.getProperty(property)).isNotEqualTo("b"));
 	}
 
 	@Test
@@ -244,9 +244,15 @@ public class SpannerPersistentEntityImplTests {
 		Key key = (Key) this.spannerMappingContext
 				.getPersistentEntity(ChildEmbedded.class)
 				.getIdentifierAccessor(childEmbedded).getIdentifier();
-		assertEquals(
-				Key.newBuilder().append("1").append("2").append("3").append("4").appendObject(null).build(),
-				key);
+
+		assertThat(key).isEqualTo(
+				Key.newBuilder()
+						.append("1")
+						.append("2")
+						.append("3")
+						.append("4")
+						.appendObject(null)
+						.build());
 	}
 
 	@Test
@@ -265,7 +271,7 @@ public class SpannerPersistentEntityImplTests {
 	@Test
 	public void testExcludeEmbeddedColumnNames() {
 		assertThat(this.spannerMappingContext.getPersistentEntity(ChildEmbedded.class)
-				.columns(), containsInAnyOrder("id", "id2", "id3", "id4", "id5"));
+				.columns()).containsExactlyInAnyOrder("id", "id2", "id3", "id4", "id5");
 	}
 
 	@Test
@@ -273,10 +279,10 @@ public class SpannerPersistentEntityImplTests {
 		PropertyHandler<SpannerPersistentProperty> mockHandler = mock(PropertyHandler.class);
 		SpannerPersistentEntity spannerPersistentEntity =
 				this.spannerMappingContext.getPersistentEntity(ParentInRelationship.class);
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			String colName = ((SpannerPersistentProperty) invocation.getArgument(0))
 					.getName();
-			assertTrue(colName.equals("childrenA") || colName.equals("childrenB"));
+			assertThat(colName.equals("childrenA") || colName.equals("childrenB")).isTrue();
 			return null;
 		}).when(mockHandler).doWithPersistentProperty(any());
 		spannerPersistentEntity.doWithInterleavedProperties(mockHandler);

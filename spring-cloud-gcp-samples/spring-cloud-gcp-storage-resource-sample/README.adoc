@@ -1,18 +1,16 @@
 = Spring Cloud GCP Storage Starter Example
 
 This code sample demonstrates how to read and write files with the Spring Resource abstraction for
-Google Cloud Storage using the
-link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-storage[Spring Cloud GCP Storage Starter].
+Google Cloud Storage using the link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-storage[Spring Cloud GCP Storage Starter].
 
-This content is also available in the
-https://codelabs.developers.google.com/codelabs/spring-cloud-gcp-gcs/index.html[Reading and Writing Files with Spring Resource Abstraction] codelab.
+This content is also available in the https://codelabs.developers.google.com/codelabs/spring-cloud-gcp-gcs/index.html[Reading and Writing Files with Spring Resource Abstraction] codelab.
 
 = Running the example
 
 1. Make sure that you have the Cloud SDK configured by following https://cloud.google.com/sdk/docs/[these instructions].
 
-2. Create a new bucket in Google Cloud Storage. You can use the `gsutil` command that comes with the
-Cloud SDK.
+2. Create a new bucket in Google Cloud Storage.
+You can use the `gsutil` command that comes with the Cloud SDK.
 +
 ```
 $ BUCKET=spring-bucket-$USER

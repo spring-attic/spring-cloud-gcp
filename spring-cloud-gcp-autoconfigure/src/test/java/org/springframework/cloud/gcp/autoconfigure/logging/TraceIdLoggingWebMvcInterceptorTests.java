@@ -21,11 +21,12 @@ import org.junit.Test;
 import org.springframework.cloud.gcp.autoconfigure.logging.extractors.XCloudTraceIdExtractor;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 /**
+ * Tests the trace id logging web mvc interceptor.
+ *
  * @author Mike Eltsufin
  */
 
@@ -49,7 +50,7 @@ public class TraceIdLoggingWebMvcInterceptorTests {
 
 		this.interceptor.preHandle(request, null, null);
 
-		assertThat(TraceIdLoggingEnhancer.getCurrentTraceId(), is(TEST_TRACE_ID));
+		assertThat(TraceIdLoggingEnhancer.getCurrentTraceId()).isEqualTo(TEST_TRACE_ID);
 	}
 
 	@Test
@@ -58,6 +59,6 @@ public class TraceIdLoggingWebMvcInterceptorTests {
 
 		this.interceptor.afterCompletion(null, null, null, null);
 
-		assertThat(TraceIdLoggingEnhancer.getCurrentTraceId(), nullValue());
+		assertThat(TraceIdLoggingEnhancer.getCurrentTraceId()).isNull();
 	}
 }

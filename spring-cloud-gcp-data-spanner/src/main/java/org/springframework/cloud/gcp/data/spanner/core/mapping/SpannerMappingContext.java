@@ -58,8 +58,7 @@ public class SpannerMappingContext extends
 	 * properties get column names.
 	 */
 	public void setFieldNamingStrategy(FieldNamingStrategy fieldNamingStrategy) {
-		this.fieldNamingStrategy = fieldNamingStrategy == null ? DEFAULT_NAMING_STRATEGY
-				: fieldNamingStrategy;
+		this.fieldNamingStrategy = (fieldNamingStrategy != null) ? fieldNamingStrategy : DEFAULT_NAMING_STRATEGY;
 	}
 
 	/**

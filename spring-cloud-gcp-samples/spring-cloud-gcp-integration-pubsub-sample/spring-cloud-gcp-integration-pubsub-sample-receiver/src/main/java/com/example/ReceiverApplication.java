@@ -43,7 +43,6 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.handler.annotation.Header;
 
 /**
- *
  * Spring Boot Application demonstrating two ways to receive PubSub messages.
  *
  * <p>Accepts the following arguments:
@@ -56,6 +55,7 @@ import org.springframework.messaging.handler.annotation.Header;
  * @author Mike Eltsufin
  * @author Dmitry Solomakha
  * @author Elena Felder
+ * @author Chengyuan Zhao
  *
  * @since 1.1
  */

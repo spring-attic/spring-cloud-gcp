@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 
 package org.springframework.cloud.gcp.autoconfigure.core.environment;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,11 +35,11 @@ import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for on-GCP environment conditions.
+ *
  * @author Elena Felder
  *
  * @since 1.1
@@ -46,6 +47,9 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class OnGcpEnvironmentConditionTests {
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
@@ -101,7 +105,7 @@ public class OnGcpEnvironmentConditionTests {
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 
-		assertFalse(outcome.isMatch());
+		assertThat(outcome.isMatch()).isFalse();
 		assertThat(outcome.getMessage()).isEqualTo("Application is not running on any of COMPUTE_ENGINE");
 	}
 
@@ -113,7 +117,7 @@ public class OnGcpEnvironmentConditionTests {
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 
-		assertFalse(outcome.isMatch());
+		assertThat(outcome.isMatch()).isFalse();
 		assertThat(outcome.getMessage())
 				.isEqualTo("Application is not running on any of COMPUTE_ENGINE, KUBERNETES_ENGINE");
 	}
@@ -126,7 +130,7 @@ public class OnGcpEnvironmentConditionTests {
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 
-		assertTrue(outcome.isMatch());
+		assertThat(outcome.isMatch()).isTrue();
 		assertThat(outcome.getMessage()).isEqualTo("Application is running on KUBERNETES_ENGINE");
 	}
 
@@ -138,13 +142,13 @@ public class OnGcpEnvironmentConditionTests {
 		OnGcpEnvironmentCondition onGcpEnvironmentCondition = new OnGcpEnvironmentCondition();
 		ConditionOutcome outcome = onGcpEnvironmentCondition.getMatchOutcome(this.mockContext, this.mockMetadata);
 
-		assertTrue(outcome.isMatch());
+		assertThat(outcome.isMatch()).isTrue();
 		assertThat(outcome.getMessage()).isEqualTo("Application is running on COMPUTE_ENGINE");
 	}
 
 	private void setUpAnnotationValue(Object environments) {
 		when(this.mockMetadata.getAnnotationAttributes(ConditionalOnGcpEnvironment.class.getName())).thenReturn(
-				ImmutableMap.of("value", environments)
+				Collections.singletonMap("value", environments)
 		);
 	}
 }

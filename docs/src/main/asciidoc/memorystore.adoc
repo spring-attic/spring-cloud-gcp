@@ -5,7 +5,8 @@
 https://cloud.google.com/memorystore/[Cloud Memorystore for Redis] provides a fully managed in-memory data store service.
 Cloud Memorystore is compatible with the Redis protocol, allowing easy integration with https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-caching.html[Spring Caching].
 
-All you have to do is create a Cloud Memorystore instance and use its IP address in `application.properties` file as `spring.redis.host` property value. Everything else is exactly the same as setting up redis-backed Spring caching.
+All you have to do is create a Cloud Memorystore instance and use its IP address in `application.properties` file as `spring.redis.host` property value.
+Everything else is exactly the same as setting up redis-backed Spring caching.
 
 [NOTE]
 ====

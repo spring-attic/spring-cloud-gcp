@@ -42,7 +42,7 @@ import org.springframework.transaction.support.AbstractPlatformTransactionManage
 import org.springframework.transaction.support.DefaultTransactionStatus;
 
 /**
- * Spanner transaction manager
+ * Spanner transaction manager.
  *
  * @author Alexander Khimich
  * @author Chengyuan Zhao
@@ -62,7 +62,7 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 					.currentTransactionStatus())
 							.getTransaction();
 		}
-		catch (NoTransactionException e) {
+		catch (NoTransactionException ex) {
 			return null;
 		}
 	}
@@ -186,11 +186,11 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 				logger.debug(tx + " afterCommit; state = " + tx.transactionManager.getState());
 			}
 		}
-		catch (AbortedException e) {
-			throw new UnexpectedRollbackException("Transaction Got Rolled Back", e);
+		catch (AbortedException ex) {
+			throw new UnexpectedRollbackException("Transaction Got Rolled Back", ex);
 		}
-		catch (SpannerException e) {
-			throw makeDataIntegrityViolationException(e);
+		catch (SpannerException ex) {
+			throw makeDataIntegrityViolationException(ex);
 		}
 	}
 
@@ -218,6 +218,9 @@ public class SpannerTransactionManager extends AbstractPlatformTransactionManage
 		return transaction == getCurrentTX();
 	}
 
+	/**
+	 * A transaction object that holds the transaction context.
+	 */
 	public static class Tx {
 		private TransactionManager transactionManager;
 

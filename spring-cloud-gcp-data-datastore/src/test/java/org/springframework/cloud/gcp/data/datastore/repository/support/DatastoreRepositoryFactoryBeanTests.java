@@ -24,10 +24,12 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.repository.DatastoreRepository;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for the Datastore Repository factory bean.
+ *
  * @author Chengyuan Zhao
  */
 public class DatastoreRepositoryFactoryBeanTests {
@@ -51,6 +53,6 @@ public class DatastoreRepositoryFactoryBeanTests {
 	public void createRepositoryFactoryTest() {
 		RepositoryFactorySupport factory = this.datastoreRepositoryFactoryBean
 				.createRepositoryFactory();
-		assertEquals(DatastoreRepositoryFactory.class, factory.getClass());
+		assertThat(factory.getClass()).isEqualTo(DatastoreRepositoryFactory.class);
 	}
 }

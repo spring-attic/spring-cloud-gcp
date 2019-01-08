@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,40 +17,42 @@
 package org.springframework.cloud.gcp.core;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for the {@link DefaultCredentialsProvider}.
+ *
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 public class DefaultCredentialsProviderTests {
 
 	@Test
 	public void testResolveScopesDefaultScopes() throws IOException {
 		List<String> scopes = DefaultCredentialsProvider.resolveScopes(null);
-		assertTrue(scopes.size() > 1);
-		assertTrue(scopes.contains(GcpScope.PUBSUB.getUrl()));
+		assertThat(scopes.size()).isGreaterThan(1);
+		assertThat(scopes).contains(GcpScope.PUBSUB.getUrl());
 	}
 
 	@Test
 	public void testResolveScopesOverrideScopes() throws IOException {
-		List<String> scopes = DefaultCredentialsProvider.resolveScopes(ImmutableList.of("myscope"));
-		assertEquals(scopes.size(), 1);
-		assertTrue(scopes.contains("myscope"));
+		List<String> scopes = DefaultCredentialsProvider.resolveScopes(Arrays.asList("myscope"));
+		assertThat(scopes).hasSize(1);
+		assertThat(scopes).contains("myscope");
 	}
 
 	@Test
 	public void testResolveScopesStarterScopesPlaceholder() {
-		List<String> scopes = DefaultCredentialsProvider.resolveScopes(ImmutableList.of("DEFAULT_SCOPES", "myscope"));
-		assertTrue(scopes.size() == GcpScope.values().length + 1);
-		assertTrue(scopes.contains(GcpScope.PUBSUB.getUrl()));
-		assertTrue(scopes.contains("myscope"));
+		List<String> scopes = DefaultCredentialsProvider.resolveScopes(Arrays.asList("DEFAULT_SCOPES", "myscope"));
+		assertThat(scopes).hasSize(GcpScope.values().length + 1);
+		assertThat(scopes).contains(GcpScope.PUBSUB.getUrl());
+		assertThat(scopes).contains("myscope");
 	}
 
 }

@@ -55,9 +55,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
+ * Tests for the message handler.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class GcsMessageHandlerTests {
@@ -68,6 +70,9 @@ public class GcsMessageHandlerTests {
 	@Qualifier("siGcsTestChannel")
 	private MessageChannel channel;
 
+	/**
+	 * the temporary folder used for the tests.
+	 */
 	@Rule
 	public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -78,15 +83,15 @@ public class GcsMessageHandlerTests {
 		BlobInfo expectedCreateBlobInfo =
 				BlobInfo.newBuilder(BlobId.of("testGcsBucket", "benfica.writing")).build();
 		WriteChannel writeChannel = mock(WriteChannel.class);
-		willAnswer(invocationOnMock -> writeChannel).given(GCS)
+		willAnswer((invocationOnMock) -> writeChannel).given(GCS)
 				.writer(eq(expectedCreateBlobInfo));
-		willAnswer(invocationOnMock -> 10).given(writeChannel).write(isA(ByteBuffer.class));
+		willAnswer((invocationOnMock) -> 10).given(writeChannel).write(isA(ByteBuffer.class));
 
 		CopyWriter copyWriter = mock(CopyWriter.class);
 		ArgumentCaptor<Storage.CopyRequest> copyRequestCaptor = ArgumentCaptor.forClass(Storage.CopyRequest.class);
-		willAnswer(invocationOnMock -> copyWriter).given(GCS).copy(isA(Storage.CopyRequest.class));
+		willAnswer((invocationOnMock) -> copyWriter).given(GCS).copy(isA(Storage.CopyRequest.class));
 
-		willAnswer(invocationOnMock -> true).given(GCS)
+		willAnswer((invocationOnMock) -> true).given(GCS)
 				.delete(eq(BlobId.of("testGcsBucket", "benfica.writing")));
 
 		this.channel.send(new GenericMessage<Object>(testFile));
@@ -100,6 +105,9 @@ public class GcsMessageHandlerTests {
 		assertThat(expectedCopyRequest.getTarget().getBlobId()).isEqualTo(BlobId.of("testGcsBucket", "benfica"));
 	}
 
+	/**
+	 * Spring config for the tests.
+	 */
 	@Configuration
 	@EnableIntegration
 	public static class Config {

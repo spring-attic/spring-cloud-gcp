@@ -25,6 +25,8 @@ import java.lang.annotation.Target;
 import org.springframework.data.annotation.QueryAnnotation;
 
 /**
+ * Annotation used in user-defined repositories to provide SQL for custom Query Methods.
+ *
  * @author Balint Pato
  * @author Chengyuan Zhao
  *

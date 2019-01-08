@@ -19,6 +19,8 @@ package com.example;
 import java.time.LocalDateTime;
 
 /**
+ * A user message for the sample app.
+ *
  * @author João André Martins
  */
 public class UserMessage {

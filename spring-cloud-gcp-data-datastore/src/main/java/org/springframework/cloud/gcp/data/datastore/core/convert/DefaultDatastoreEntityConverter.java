@@ -37,7 +37,7 @@ import org.springframework.data.mapping.model.PersistentEntityParameterValueProv
 import org.springframework.data.util.TypeInformation;
 
 /**
- * A class for object to entity and entity to object conversions
+ * A class for object to entity and entity to object conversions.
  *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
@@ -110,7 +110,7 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 		try {
 			instance = instantiator.createInstance(persistentEntity, parameterValueProvider);
 			PersistentPropertyAccessor accessor = persistentEntity.getPropertyAccessor(instance);
-			persistentEntity.doWithColumnBackedProperties(datastorePersistentProperty -> {
+			persistentEntity.doWithColumnBackedProperties((datastorePersistentProperty) -> {
 						// if a property is a constructor argument, it was already computed on instantiation
 						if (!persistentEntity.isConstructorArgument(datastorePersistentProperty)) {
 							Object value = propertyValueProvider.getPropertyValue(datastorePersistentProperty);
@@ -118,8 +118,8 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 						}
 					});
 		}
-		catch (DatastoreDataException e) {
-			throw new DatastoreDataException("Unable to read " + persistentEntity.getName() + " entity", e);
+		catch (DatastoreDataException ex) {
+			throw new DatastoreDataException("Unable to read " + persistentEntity.getName() + " entity", ex);
 		}
 
 		return instance;
@@ -143,11 +143,11 @@ public class DefaultDatastoreEntityConverter implements DatastoreEntityConverter
 						}
 						sink.set(persistentProperty.getFieldName(), convertedVal);
 					}
-					catch (DatastoreDataException e) {
+					catch (DatastoreDataException ex) {
 						throw new DatastoreDataException(
 								"Unable to write "
 										+ persistentEntity.kindName() + "." + persistentProperty.getFieldName(),
-								e);
+								ex);
 					}
 				});
 	}

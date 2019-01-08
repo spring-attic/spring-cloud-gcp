@@ -45,6 +45,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
+/**
+ * Tests for the Spanner repository example.
+ *
+ * @author Daniel Zou
+ */
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
 @TestPropertySource("classpath:application.properties")
@@ -114,7 +119,7 @@ public class SpannerRepositoryTests {
 		assertThat(actualTrades).hasSize(8);
 
 		Set<String> tradeSpannerKeys = actualTrades.stream()
-				.map(t -> this.spannerSchemaUtils.getKey(t).toString())
+				.map((t) -> this.spannerSchemaUtils.getKey(t).toString())
 				.collect(Collectors.toSet());
 		assertThat(tradeSpannerKeys).containsExactlyInAnyOrder(
 				"[demo_trader1,1]",

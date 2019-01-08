@@ -58,6 +58,8 @@ import org.springframework.data.repository.query.parser.PartTree.OrPart;
 /**
  * Name-based query method for Cloud Datastore.
  *
+ * @param <T> the return type of this Query Method
+ *
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
  *
@@ -72,7 +74,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private List<Part> filterParts;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * @param queryMethod the metadata for this query method.
 	 * @param datastoreTemplate used to execute the given query.
 	 * @param datastoreMappingContext used to provide metadata for mapping results to
@@ -155,7 +157,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			collector = Collectors.counting();
 		}
 		else if (this.tree.isExistsProjection()) {
-			collector = Collectors.collectingAndThen(Collectors.counting(), count -> count > 0);
+			collector = Collectors.collectingAndThen(Collectors.counting(), (count) -> count > 0);
 		}
 		else if (!returnedTypeIsNumber) {
 			queryBuilderSupplier = StructuredQuery::newEntityQueryBuilder;
@@ -174,7 +176,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 			deleteFoundEntities(returnedTypeIsNumber, rawResults);
 		}
 
-		return this.tree.isExistsProjection() || isCountingQuery ? result
+		return (this.tree.isExistsProjection() || isCountingQuery) ? result
 				: convertResultCollection(result, collectionType);
 	}
 
@@ -182,8 +184,8 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		EntityQuery.Builder builder = StructuredQuery.newEntityQueryBuilder()
 				.setKind(this.datastorePersistentEntity.kindName());
 		StructuredQuery query = applyQueryBody(parameters, builder, false);
-		List items = this.datastoreTemplate.query(query, x -> x);
-		Integer limit = query.getLimit() == null ? null : query.getLimit() - 1;
+		List items = this.datastoreTemplate.query((query), (x) -> x);
+		Integer limit = (query.getLimit() == null) ? null : query.getLimit() - 1;
 
 		boolean exceedsLimit = false;
 		if (limit != null) {
@@ -199,7 +201,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		Pageable pageable = paramAccessor.getPageable();
 		List entities = (List) this.datastoreTemplate
 				.convertEntitiesForRead(items.iterator(), this.entityType).stream()
-				.map(o -> this.processRawObjectForProjection((T) o)).collect(Collectors.toList());
+				.map((o) -> this.processRawObjectForProjection((T) o)).collect(Collectors.toList());
 		return new SliceImpl(entities, pageable, exceedsLimit);
 	}
 
@@ -256,7 +258,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 	private void applySelectWithFilter(Object[] parameters, Builder builder) {
 		Iterator it = Arrays.asList(parameters).iterator();
 		Set<String> equalityComparedFields = new HashSet<>();
-		Filter[] filters = this.filterParts.stream().map(part -> {
+		Filter[] filters = this.filterParts.stream().map((part) -> {
 			Filter filter;
 			String fieldName = ((DatastorePersistentProperty) this.datastorePersistentEntity
 					.getPersistentProperty(part.getProperty().getSegment()))
@@ -297,7 +299,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				}
 				return filter;
 			}
-			catch (NoSuchElementException e) {
+			catch (NoSuchElementException ex) {
 				throw new DatastoreDataException(
 						"Too few parameters are provided for query method: "
 								+ getQueryMethod().getName());
@@ -305,7 +307,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		}).toArray(Filter[]::new);
 
 		builder.setFilter(
-				filters.length > 1
+				(filters.length > 1)
 				? CompositeFilter.and(filters[0],
 						Arrays.copyOfRange(filters, 1, filters.length))
 				: filters[0]);

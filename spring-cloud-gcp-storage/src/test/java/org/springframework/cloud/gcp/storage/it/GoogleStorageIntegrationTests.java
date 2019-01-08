@@ -46,13 +46,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.StreamUtils;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 /**
+ * Integration for Google Cloud Storage.
+ *
  * @author Chengyuan Zhao
  */
 @RunWith(SpringRunner.class)
@@ -106,27 +106,30 @@ public class GoogleStorageIntegrationTests {
 			os.write(message.getBytes());
 		}
 
-		assertTrue(this.resource.exists());
+		assertThat(this.resource.exists()).isTrue();
 
 		try (InputStream is = this.resource.getInputStream()) {
-			assertEquals(message, StreamUtils.copyToString(is, Charset.defaultCharset()));
+			assertThat(StreamUtils.copyToString(is, Charset.defaultCharset())).isEqualTo(message);
 		}
 
 		GoogleStorageResource childResource = getChildResource();
 
-		assertFalse(childResource.exists());
+		assertThat(childResource.exists()).isFalse();
 
 		try (OutputStream os = childResource.getOutputStream()) {
 			os.write(message.getBytes());
 		}
 
-		assertTrue(childResource.exists());
+		assertThat(childResource.exists()).isTrue();
 
 		try (InputStream is = childResource.getInputStream()) {
-			assertEquals(message, StreamUtils.copyToString(is, Charset.defaultCharset()));
+			assertThat(StreamUtils.copyToString(is, Charset.defaultCharset())).isEqualTo(message);
 		}
 	}
 
+	/**
+	 * Spring config for the tests.
+	 */
 	@Configuration
 	@PropertySource("application-test.properties")
 	@Import(GoogleStorageProtocolResolver.class)
@@ -150,8 +153,8 @@ public class GoogleStorageIntegrationTests {
 			try {
 				return new DefaultCredentialsProvider(Credentials::new);
 			}
-			catch (IOException e) {
-				throw new RuntimeException(e);
+			catch (IOException ex) {
+				throw new RuntimeException(ex);
 			}
 		}
 	}

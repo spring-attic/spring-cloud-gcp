@@ -28,12 +28,13 @@ import org.springframework.shell.Shell;
 import org.springframework.shell.jline.InteractiveShellApplicationRunner;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeThat;
 
 /**
+ * Tests for the Book Shelf sample app.
+ *
  * @author Dmitry Solomakha
  */
 @RunWith(SpringRunner.class)
@@ -62,28 +63,22 @@ public class DatastoreBookshelfExampleTests {
 
 	@Test
 	public void testSaveBook() {
-		long bookId1 = (long) this.shell.evaluate(() -> "save-book book1 author1 1984");
-		long bookId2 = (long) this.shell.evaluate(() -> "save-book book2 author2 2000");
+		String book1 = (String) this.shell.evaluate(() -> "save-book book1 author1 1984");
+		String book2 = (String) this.shell.evaluate(() -> "save-book book2 author2 2000");
 
-		assertTrue(bookId1 > 0L);
 		String allBooks = (String) this.shell.evaluate(() -> "find-all-books");
-		assertTrue(allBooks.contains("Book{id=" + bookId1 + ", title='book1', author='author1', year=1984}"));
-		assertTrue(allBooks.contains("Book{id=" + bookId2 + ", title='book2', author='author2', year=2000}"));
+		assertThat(allBooks).containsSequence(book1);
+		assertThat(allBooks).containsSequence(book2);
 
-		assertEquals("[Book{id=" + bookId1 + ", title='book1', author='author1', year=1984}]",
-				this.shell.evaluate(() -> "find-by-author author1"));
+		assertThat(this.shell.evaluate(() -> "find-by-author author1")).isEqualTo("[" + book1 + "]");
 
-		assertEquals("[Book{id=" + bookId2 + ", title='book2', author='author2', year=2000}]",
-				this.shell.evaluate(() -> "find-by-author-year author2 2000"));
+		assertThat(this.shell.evaluate(() -> "find-by-author-year author2 2000")).isEqualTo("[" + book2 + "]");
 
-		assertEquals("[Book{id=" + bookId2 + ", title='book2', author='author2', year=2000}]",
-				this.shell.evaluate(() -> "find-by-year 2000"));
+		assertThat(this.shell.evaluate(() -> "find-by-year-greater-than 1985")).isEqualTo("[" + book2 + "]");
 
 		this.shell.evaluate(() -> "remove-all-books");
 
-		assertEquals(
-				"[]",
-				this.shell.evaluate(() -> "find-all-books"));
+		assertThat(this.shell.evaluate(() -> "find-all-books")).isEqualTo("[]");
 	}
 
 }

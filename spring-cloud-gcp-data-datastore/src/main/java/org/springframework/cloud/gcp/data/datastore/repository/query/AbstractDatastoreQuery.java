@@ -31,7 +31,7 @@ import org.springframework.data.repository.query.RepositoryQuery;
 /**
  * Abstract class for implementing Cloud Datastore query methods.
  *
- * @param <T> The domain type of the repository class containing this query method.
+ * @param <T> the domain type of the repository class containing this query method.
  *
  * @author Chengyuan Zhao
  *
@@ -77,7 +77,7 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 	 */
 	protected Object[] convertCollectionParamToCompatibleArray(List<?> param) {
 		List converted = param.stream()
-				.map(x -> this.datastoreTemplate.getDatastoreEntityConverter().getConversions().convertOnWriteSingle(x)
+				.map((x) -> this.datastoreTemplate.getDatastoreEntityConverter().getConversions().convertOnWriteSingle(x)
 						.get())
 				.collect(Collectors.toList());
 		return converted.toArray(

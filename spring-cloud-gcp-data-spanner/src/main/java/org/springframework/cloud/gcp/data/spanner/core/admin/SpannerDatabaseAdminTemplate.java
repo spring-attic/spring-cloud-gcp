@@ -34,6 +34,9 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataExcept
 import org.springframework.util.Assert;
 
 /**
+ * Template for performing many operations to a Spanner database including generating hierarchy schemas and creating
+ * and deleting tables.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  *
@@ -90,7 +93,7 @@ public class SpannerDatabaseAdminTemplate {
 	public void executeDdlStrings(Iterable<String> ddlStrings,
 			boolean createDatabase) {
 		try {
-			if (createDatabase) {
+			if (createDatabase && !this.databaseExists()) {
 				this.databaseAdminClient
 						.createDatabase(getInstanceId(), getDatabase(), ddlStrings)
 						.get();
@@ -100,12 +103,12 @@ public class SpannerDatabaseAdminTemplate {
 						ddlStrings, null).get();
 			}
 		}
-		catch (InterruptedException e) {
+		catch (InterruptedException ex) {
 			Thread.currentThread().interrupt();
-			throw new SpannerDataException("DDL execution was interrupted", e);
+			throw new SpannerDataException("DDL execution was interrupted", ex);
 		}
-		catch (ExecutionException e) {
-			throw new SpannerDataException("DDL could not be executed", e);
+		catch (ExecutionException ex) {
+			throw new SpannerDataException("DDL could not be executed", ex);
 		}
 	}
 
@@ -184,7 +187,7 @@ public class SpannerDatabaseAdminTemplate {
 	/**
 	 * Return a map of parent and child table relationships in the database at the
 	 * moment.
-	 * @return A map where the keys are parent table names, and the value is a set of that
+	 * @return a map where the keys are parent table names, and the value is a set of that
 	 * parent's children.
 	 */
 	public Map<String, Set<String>> getParentChildTablesMap() {
@@ -207,7 +210,7 @@ public class SpannerDatabaseAdminTemplate {
 
 	/**
 	 * Return a set of the tables that currently exist in the database.
-	 * @return A set of table names.
+	 * @return a set of table names.
 	 */
 	public Set<String> getTables() {
 		return getChildParentTablesMap().keySet();

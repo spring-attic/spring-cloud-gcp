@@ -36,6 +36,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for Spanner auto-config.
+ *
  * @author Chengyuan Zhao
  * @author João André Martins
  */
@@ -52,35 +54,35 @@ public class GcpSpannerAutoConfigurationTests {
 
 	@Test
 	public void testSpannerOperationsCreated() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			assertThat(context.getBean(SpannerOperations.class)).isNotNull();
 		});
 	}
 
 	@Test
 	public void testTestRepositoryCreated() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			assertThat(context.getBean(TestRepository.class)).isNotNull();
 		});
 	}
 
 	@Test
 	public void testDatabaseAdminClientCreated() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			assertThat(context.getBean(SpannerDatabaseAdminTemplate.class)).isNotNull();
 		});
 	}
 
 	@Test
 	public void testSchemaUtilsCreated() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			assertThat(context.getBean(SpannerSchemaUtils.class)).isNotNull();
 		});
 	}
 
 	@Test
 	public void testIdConverterCreated() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			BackendIdConverter idConverter = context.getBean(BackendIdConverter.class);
 			assertThat(idConverter).isNotNull();
 			assertThat(idConverter).isInstanceOf(SpannerKeyIdConverter.class);
@@ -89,7 +91,7 @@ public class GcpSpannerAutoConfigurationTests {
 
 	@Test
 	public void spannerTransactionManagerCreated() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			SpannerTransactionManager transactionManager = context
 					.getBean(SpannerTransactionManager.class);
 			assertThat(transactionManager).isNotNull();
@@ -102,12 +104,15 @@ public class GcpSpannerAutoConfigurationTests {
 		this.contextRunner
 				.withClassLoader(
 						new FilteredClassLoader("org.springframework.data.rest.webmvc.spi"))
-				.run(context -> {
+				.run((context) -> {
 					assertThat(
 							context.getBeansOfType(BackendIdConverter.class).size()).isEqualTo(0);
 					});
 	}
 
+	/**
+	 * Mock bean for credentials provider.
+	 */
 	@AutoConfigurationPackage
 	static class TestConfiguration {
 

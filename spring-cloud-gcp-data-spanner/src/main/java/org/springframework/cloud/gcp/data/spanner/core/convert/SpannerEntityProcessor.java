@@ -35,38 +35,38 @@ public interface SpannerEntityProcessor extends SpannerEntityReader, SpannerEnti
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted and
+	 * @param resultSet the Spanner results to convert. The ResultSet will be exhausted and
 	 * closed.
-	 * @param entityClass The type of the objects the Spanner results represent.
-	 * @param <T> The type of the objects the Spanner results represent.
-	 * @return A list of objects.
+	 * @param entityClass the type of the objects the Spanner results represent.
+	 * @param <T> the type of the objects the Spanner results represent.
+	 * @return a list of objects.
 	 */
 	<T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass);
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted
+	 * @param resultSet the Spanner results to convert. The ResultSet will be exhausted
 	 * and closed.
-	 * @param entityClass The type of the objects the Spanner results represent.
-	 * @param <T> The type of the objects the Spanner results represent.
+	 * @param entityClass the type of the objects the Spanner results represent.
+	 * @param <T> the type of the objects the Spanner results represent.
 	 * @param includeColumns the Set of columns to read. If this param is null then all
 	 * columns will be read.
 	 * @param allowMissingColumns if true, then properties with no corresponding column
 	 * are not mapped. If false, then an exception is thrown.
-	 * @return A list of objects.
+	 * @return a list of objects.
 	 */
 	<T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
 			Set<String> includeColumns, boolean allowMissingColumns);
 
 	/**
 	 * Converts a set of Spanner {@link ResultSet} into a list of objects.
-	 * @param resultSet The Spanner results to convert. The ResultSet will be exhausted and
+	 * @param resultSet the Spanner results to convert. The ResultSet will be exhausted and
 	 * closed.
-	 * @param entityClass The type of the objects the Spanner results represent.
-	 * @param <T> The type of the objects the Spanner results represent.
+	 * @param entityClass the type of the objects the Spanner results represent.
+	 * @param <T> the type of the objects the Spanner results represent.
 	 * @param includeColumns the columns to read. If none are provided then all columns are
 	 * read.
-	 * @return A list of objects.
+	 * @return a list of objects.
 	 */
 	<T> List<T> mapToList(ResultSet resultSet, Class<T> entityClass,
 			String... includeColumns);

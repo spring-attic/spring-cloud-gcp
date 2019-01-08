@@ -26,6 +26,8 @@ import com.google.cloud.spanner.Type.Code;
 import com.google.common.collect.ImmutableMap;
 
 /**
+ * A utility class to map between common Java types and types to use with Spanner.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  *
@@ -74,7 +76,7 @@ public final class SpannerTypeMapper {
 				.keySet()
 				.stream()
 				.forEach(
-						type -> builder.put(SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
+						(type) -> builder.put(SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
 		builder.put(double.class, Code.FLOAT64);
 		builder.put(long.class, Code.INT64);
 		JAVA_TYPE_TO_SPANNER_SIMPLE_COLUMN_TYPE_MAPPING = builder.build();
@@ -86,7 +88,7 @@ public final class SpannerTypeMapper {
 				.keySet()
 				.stream()
 				.forEach(
-						type -> builder.put(SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
+						(type) -> builder.put(SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
 		JAVA_TYPE_TO_SPANNER_ARRAY_COLUMN_TYPE_MAPPING = builder.build();
 	}
 

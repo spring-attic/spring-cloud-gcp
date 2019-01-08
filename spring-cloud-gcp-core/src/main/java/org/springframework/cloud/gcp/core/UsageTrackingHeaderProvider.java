@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package org.springframework.cloud.gcp.core;
 
+import java.util.Collections;
 import java.util.Map;
 
 import com.google.api.gax.rpc.HeaderProvider;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Provides the User-Agent header to signal to the Google Cloud Client Libraries that requests originate from a Spring
@@ -31,6 +31,9 @@ import com.google.common.collect.ImmutableMap;
  */
 public class UsageTrackingHeaderProvider implements HeaderProvider {
 
+	/**
+	 * The hard-coded version string reported with usage info.
+	 */
 	public static final String TRACKING_HEADER_PROJECT_VERSION = "1.1.0.BUILD-SNAPSHOT";
 
 	private String userAgent;
@@ -39,7 +42,7 @@ public class UsageTrackingHeaderProvider implements HeaderProvider {
 
 	public UsageTrackingHeaderProvider(Class clazz) {
 		this.userAgent = computeUserAgent(clazz);
-		this.headers = ImmutableMap.of("User-Agent", this.userAgent);
+		this.headers = Collections.singletonMap("User-Agent", this.userAgent);
 	}
 
 	/**
@@ -54,6 +57,8 @@ public class UsageTrackingHeaderProvider implements HeaderProvider {
 	/**
 	 * Returns the "User-Agent" header value which should be added to the google-cloud-java REST API calls.
 	 * e.g., {@code Spring/1.0.0.RELEASE spring-cloud-gcp-pubsub/1.0.0.RELEASE}.
+	 *
+	 * @return the user agent string.
 	 */
 	public String getUserAgent() {
 		return this.userAgent;

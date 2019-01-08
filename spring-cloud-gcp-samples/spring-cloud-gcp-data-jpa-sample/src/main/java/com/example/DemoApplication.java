@@ -26,6 +26,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+/**
+ * Sample application.
+ *
+ * @author Joao Andre Martins
+ */
 @SpringBootApplication
 public class DemoApplication {
 
@@ -37,7 +42,7 @@ public class DemoApplication {
 
 	@Bean
 	public CommandLineRunner houses(HouseRepository houseRepository) {
-		return args -> {
+		return (args) -> {
 			houseRepository.deleteAll();
 
 			Stream.of(new House("111 8th Av., NYC"),
@@ -47,7 +52,7 @@ public class DemoApplication {
 					.forEach(houseRepository::save);
 
 			LOGGER.info("Number of houses is " + houseRepository.count());
-			houseRepository.findAll().forEach(house -> LOGGER.info(house.getAddress()));
+			houseRepository.findAll().forEach((house) -> LOGGER.info(house.getAddress()));
 		};
 	}
 }

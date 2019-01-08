@@ -47,8 +47,7 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -62,11 +61,16 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the conversion and mapping of entities for write.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  */
 public class ConverterAwareMappingSpannerEntityWriterTests {
 
+	/**
+	 * used for checking exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
@@ -339,7 +343,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 	@Parameterized.Parameters
 	public void writeValidColumnToKey() {
 		Key key = this.spannerEntityWriter.convertToKey(true);
-		assertThat(key, is(Key.of(true)));
+		assertThat(key).isEqualTo(Key.of(true));
 	}
 
 	@Test
@@ -351,6 +355,9 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		this.spannerEntityWriter.write(userSetUnconvertableColumnType, writeBuilder::set);
 	}
 
+	/**
+	 * A test type that cannot be converted.
+	 */
 	static class UserSetUnconvertableColumnType {
 		@PrimaryKey
 		@Column(spannerType = TypeCode.DATE)

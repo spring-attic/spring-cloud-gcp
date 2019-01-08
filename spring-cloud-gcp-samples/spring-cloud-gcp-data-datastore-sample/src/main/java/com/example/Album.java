@@ -22,13 +22,15 @@ import java.util.Objects;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 
 /**
+ * Sample entity.
+ *
  * @author Dmitry Solomakha
  */
 @Entity
 public class Album {
-	final private String albumName;
+	private final String albumName;
 
-	final private LocalDate date;
+	private final LocalDate date;
 
 	Album(String albumName, LocalDate date) {
 		this.albumName = albumName;

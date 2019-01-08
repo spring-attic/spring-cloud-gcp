@@ -39,7 +39,7 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
- * Cloud Datastore transaction manager
+ * Cloud Datastore transaction manager.
  *
  * @author Chengyuan Zhao
  *
@@ -110,9 +110,9 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 						"Transaction was not committed because it is no longer active.");
 			}
 		}
-		catch (DatastoreException e) {
+		catch (DatastoreException ex) {
 			throw new TransactionSystemException(
-					"Cloud Datastore transaction failed to commit.", e);
+					"Cloud Datastore transaction failed to commit.", ex);
 		}
 	}
 
@@ -129,9 +129,9 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 						"Transaction was not rolled back because it is no longer active.");
 			}
 		}
-		catch (DatastoreException e) {
+		catch (DatastoreException ex) {
 			throw new TransactionSystemException(
-					"Cloud Datastore transaction failed to rollback.", e);
+					"Cloud Datastore transaction failed to rollback.", ex);
 		}
 	}
 
@@ -140,6 +140,9 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 		return transaction == getCurrentTX();
 	}
 
+	/**
+	 * A class to contain the transaction context.
+	 */
 	public static class Tx {
 		private Transaction transaction;
 

@@ -56,10 +56,19 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubInboundChannelAdapterTests {
 
+	/**
+	 * The NACK string.
+	 */
 	public static final String NACK = "NACK";
 
+	/**
+	 * The canned exception message when sending a message.
+	 */
 	public static final String EXCEPTION_MESSAGE = "Forced exception sending message";
 
+	/**
+	 * A canned exception message.
+	 */
 	public static final String EXPECTED_EXCEPTION = "Expected exception";
 
 	private PubSubOperations pubSubOperations;
@@ -70,6 +79,9 @@ public class PubSubInboundChannelAdapterTests {
 
 	private String value;
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
@@ -81,7 +93,7 @@ public class PubSubInboundChannelAdapterTests {
 		this.value = null;
 		ConvertedBasicAcknowledgeablePubsubMessage message = mock(ConvertedBasicAcknowledgeablePubsubMessage.class);
 
-		doAnswer(invocation -> {
+		doAnswer((invocation) -> {
 			this.value = NACK;
 			return null;
 		}).when(message).nack();
@@ -93,7 +105,7 @@ public class PubSubInboundChannelAdapterTests {
 				new RuntimeException(EXCEPTION_MESSAGE));
 
 		when(this.pubSubSubscriberOperations.subscribeAndConvert(
-				anyString(), any(Consumer.class), any(Class.class))).then(invocationOnMock -> {
+				anyString(), any(Consumer.class), any(Class.class))).then((invocationOnMock) -> {
 					Consumer<ConvertedBasicAcknowledgeablePubsubMessage> messageConsumer =
 							invocationOnMock.getArgument(1);
 					messageConsumer.accept(message);
@@ -124,8 +136,8 @@ public class PubSubInboundChannelAdapterTests {
 
 			Assert.fail(EXPECTED_EXCEPTION);
 		}
-		catch (Throwable t) {
-			Assert.assertEquals(EXCEPTION_MESSAGE, t.getCause().getMessage());
+		catch (Throwable ex) {
+			Assert.assertEquals(EXCEPTION_MESSAGE, ex.getCause().getMessage());
 		}
 
 		Assert.assertEquals(NACK, this.value);
@@ -147,8 +159,8 @@ public class PubSubInboundChannelAdapterTests {
 
 			Assert.fail(EXPECTED_EXCEPTION);
 		}
-		catch (Throwable t) {
-			Assert.assertEquals(EXCEPTION_MESSAGE, t.getCause().getMessage());
+		catch (Throwable ex) {
+			Assert.assertEquals(EXCEPTION_MESSAGE, ex.getCause().getMessage());
 		}
 
 		verify(factory, times(1)).withPayload(any());
@@ -167,8 +179,8 @@ public class PubSubInboundChannelAdapterTests {
 
 			Assert.fail(EXPECTED_EXCEPTION);
 		}
-		catch (Throwable t) {
-			Assert.assertEquals(EXCEPTION_MESSAGE, t.getCause().getMessage());
+		catch (Throwable ex) {
+			Assert.assertEquals(EXCEPTION_MESSAGE, ex.getCause().getMessage());
 		}
 
 		Assert.assertNull(this.value);

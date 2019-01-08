@@ -32,6 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for auto-config.
+ *
  * @author Mike Eltsufin
  * @author João André Martins
  * @author Chengyuan Zhao
@@ -48,7 +50,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 	@Test
 	public void testDisabledConfiguration() {
 		this.contextRunner.withPropertyValues("spring.cloud.gcp.logging.enabled=false")
-				.run(context -> assertThat(context
+				.run((context) -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
 								.isEqualTo(0));
 	}
@@ -59,7 +61,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 				AutoConfigurations.of(
 						StackdriverLoggingAutoConfiguration.class,
 						GcpContextAutoConfiguration.class))
-				.run(context -> assertThat(context
+				.run((context) -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
 								.isEqualTo(0));
 	}
@@ -70,14 +72,14 @@ public class StackdriverLoggingAutoConfigurationTests {
 				AutoConfigurations.of(
 						StackdriverLoggingAutoConfiguration.class,
 						GcpContextAutoConfiguration.class))
-				.run(context -> assertThat(context
+				.run((context) -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
 						.isEqualTo(0));
 	}
 
 	@Test
 	public void testRegularConfiguration() {
-		this.contextRunner.run(context -> assertThat(
+		this.contextRunner.run((context) -> assertThat(
 				context.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
 						.isEqualTo(1));
 	}
@@ -88,7 +90,7 @@ public class StackdriverLoggingAutoConfigurationTests {
 				.withConfiguration(AutoConfigurations.of(Configuration.class,
 						StackdriverTraceAutoConfiguration.class))
 				.withPropertyValues("spring.cloud.gcp.project-id=pop-1")
-				.run(context -> assertThat(context
+				.run((context) -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
 								.isEqualTo(0));
 	}

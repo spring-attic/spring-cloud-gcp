@@ -32,6 +32,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 /**
+ * Tests for Datastore auto-config.
+ *
  * @author Chengyuan Zhao
  */
 public class GcpDatastoreAutoConfigurationTests {
@@ -46,17 +48,17 @@ public class GcpDatastoreAutoConfigurationTests {
 
 	@Test
 	public void testDatastoreOperationsCreated() {
-		this.contextRunner.run(context -> assertThat(context.getBean(DatastoreOperations.class)).isNotNull());
+		this.contextRunner.run((context) -> assertThat(context.getBean(DatastoreOperations.class)).isNotNull());
 	}
 
 	@Test
 	public void testTestRepositoryCreated() {
-		this.contextRunner.run(context -> assertThat(context.getBean(TestRepository.class)).isNotNull());
+		this.contextRunner.run((context) -> assertThat(context.getBean(TestRepository.class)).isNotNull());
 	}
 
 	@Test
 	public void datastoreTransactionManagerCreated() {
-		this.contextRunner.run(context -> {
+		this.contextRunner.run((context) -> {
 			DatastoreTransactionManager transactionManager = context
 					.getBean(DatastoreTransactionManager.class);
 			assertThat(transactionManager).isNotNull();
@@ -65,6 +67,9 @@ public class GcpDatastoreAutoConfigurationTests {
 		});
 	}
 
+	/**
+	 * Spring Boot config for tests.
+	 */
 	@AutoConfigurationPackage
 	static class TestConfiguration {
 

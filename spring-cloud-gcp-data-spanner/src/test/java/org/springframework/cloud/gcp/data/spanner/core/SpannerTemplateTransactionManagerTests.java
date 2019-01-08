@@ -51,11 +51,16 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 
-/** @author Alexander Khimich */
+/**
+ * Tests for Spanner Template when using transactional annotation.
+ *
+ * @author Alexander Khimich
+ * @author Chengyuan Zhao
+ */
 @RunWith(SpringRunner.class)
 @ContextConfiguration
 public class SpannerTemplateTransactionManagerTests {
@@ -71,6 +76,9 @@ public class SpannerTemplateTransactionManagerTests {
 
 	private final AtomicReference<TransactionManager.TransactionState> transactionState = new AtomicReference<>();
 
+	/**
+	 * Used to test for exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 
@@ -93,7 +101,7 @@ public class SpannerTemplateTransactionManagerTests {
 		Mockito.when(this.databaseClient.singleUse()).thenReturn(this.readContext);
 		this.transactionManager = Mockito.spy(TransactionManager.class);
 		Mockito.doAnswer(
-				invocation -> {
+				(invocation) -> {
 					this.transactionState.set(TransactionManager.TransactionState.STARTED);
 					return this.transactionContext;
 				})
@@ -101,7 +109,7 @@ public class SpannerTemplateTransactionManagerTests {
 				.begin();
 
 		Mockito.doAnswer(
-				invocation -> {
+				(invocation) -> {
 					this.transactionState.set(
 							TransactionManager.TransactionState.ROLLED_BACK);
 					return null;
@@ -109,14 +117,14 @@ public class SpannerTemplateTransactionManagerTests {
 				.when(this.transactionManager)
 				.rollback();
 		Mockito.doAnswer(
-				invocation -> {
+				(invocation) -> {
 					this.transactionState.set(
 							TransactionManager.TransactionState.COMMITTED);
 					return null;
 				})
 				.when(this.transactionManager)
 				.commit();
-		Mockito.doAnswer(invocation -> this.transactionState.get())
+		Mockito.doAnswer((invocation) -> this.transactionState.get())
 				.when(this.transactionManager)
 				.getState();
 
@@ -155,10 +163,10 @@ public class SpannerTemplateTransactionManagerTests {
 		try {
 			this.transactionalService.doInTransactionWithException(entity1, entity2);
 		}
-		catch (Exception e) {
-			exception = e;
+		catch (Exception ex) {
+			exception = ex;
 		}
-		assertNotNull(exception);
+		assertThat(exception).isNotNull();
 
 		Mockito.verify(this.transactionManager, times(1)).begin();
 		Mockito.verify(this.transactionManager, times(0)).commit();
@@ -212,6 +220,9 @@ public class SpannerTemplateTransactionManagerTests {
 		this.transactionalService.dmlInReadOnly();
 	}
 
+	/**
+	 * Spring config for the tests.
+	 */
 	@Configuration
 	@EnableTransactionManagement
 	static class Config {
@@ -242,6 +253,9 @@ public class SpannerTemplateTransactionManagerTests {
 		}
 	}
 
+	/**
+	 * A mock transactional service to execute methods annotated as transactional.
+	 */
 	public static class TransactionalService {
 		@Autowired
 		SpannerTemplate spannerTemplate;
