@@ -74,6 +74,9 @@ public class ReceiverApplication {
 		SpringApplication.run(ReceiverApplication.class, args);
 	}
 
+	/**
+	 * obsolete.
+	 */
 	@ConditionalOnProperty(value = "syncpull", havingValue = "false", matchIfMissing = true)
 	static class StreamingPull {
 		@Bean
@@ -105,13 +108,16 @@ public class ReceiverApplication {
 		}
 	}
 
+	/**
+	 * obsolete.
+	 */
 	@ConditionalOnProperty("syncpull")
 	static class SyncPull {
 
 		@Bean
 		@InboundChannelAdapter(channel = "pubsubInputChannel", poller = @Poller(fixedDelay = "100"))
 		public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
-			PubSubMessageSource messageSource = new PubSubMessageSource(pubSubTemplate,  "exampleSubscription");
+			PubSubMessageSource messageSource = new PubSubMessageSource(pubSubTemplate,  "exampleSubscription", 5);
 			messageSource.setAckMode(AckMode.MANUAL);
 			messageSource.setPayloadType(String.class);
 			return messageSource;
