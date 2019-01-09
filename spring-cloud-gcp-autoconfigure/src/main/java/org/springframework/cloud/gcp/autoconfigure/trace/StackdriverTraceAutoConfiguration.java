@@ -50,7 +50,7 @@ import org.springframework.cloud.gcp.autoconfigure.trace.sleuth.StackdriverHttpC
 import org.springframework.cloud.gcp.autoconfigure.trace.sleuth.StackdriverHttpServerParser;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
+import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
@@ -81,7 +81,7 @@ public class StackdriverTraceAutoConfiguration {
 
 	private CredentialsProvider finalCredentialsProvider;
 
-	private UsageTrackingHeaderProvider headerProvider = new UsageTrackingHeaderProvider(this.getClass());
+	private UserAgentHeaderProvider headerProvider = new UserAgentHeaderProvider(this.getClass());
 
 	public StackdriverTraceAutoConfiguration(GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider,
