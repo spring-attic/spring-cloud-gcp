@@ -196,4 +196,17 @@ public class PubSubMessageSourceTests {
 
 		verify(this.msg1, times(0)).nack();
 	}
+
+	@Test
+	public void blockOnPullSetsReturnImmediatelyToFalse() {
+
+		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
+				this.mockPubSubSubscriberOperations, "sub1", 1);
+		pubSubMessageSource.blockOnPull();
+
+		Object message = pubSubMessageSource.doReceive(1);
+
+		verify(this.mockPubSubSubscriberOperations)
+				.pullAndConvert("sub1", 1, false, byte[].class);
+	}
 }
