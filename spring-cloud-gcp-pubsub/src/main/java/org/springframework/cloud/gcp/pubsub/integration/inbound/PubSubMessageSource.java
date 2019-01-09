@@ -16,6 +16,7 @@
 
 package org.springframework.cloud.gcp.pubsub.integration.inbound;
 
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Map;
 
@@ -24,21 +25,25 @@ import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
+import org.springframework.integration.endpoint.AbstractFetchLimitingMessageSource;
 import org.springframework.integration.endpoint.AbstractMessageSource;
 import org.springframework.integration.mapping.HeaderMapper;
+import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
 /**
  * A <a href="https://cloud.google.com/pubsub/docs/pull#pubsub-pull-messages-sync-java">PubSub Synchronous pull</a>
  * implementation of {@link AbstractMessageSource}.
  *
- * Enables more even load balancing with polling adapters, at the cost of efficiency gained from batched pulls.
+ * <p>Enables more even load balancing with polling adapters, at the cost of efficiency gained from streaming pull.
+ *
+ * <p>Messages are automatically acked right before being sent to the outbound channel.
  *
  * @author Elena Felder
  *
  * @since 1.1
  */
-public class PubSubMessageSource extends AbstractMessageSource<Object> {
+public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Object> {
 
 	private final String subscriptionName;
 
@@ -50,11 +55,16 @@ public class PubSubMessageSource extends AbstractMessageSource<Object> {
 
 	private Class payloadType = byte[].class;
 
-	public PubSubMessageSource(PubSubSubscriberOperations pubSubSubscriberOperations, String subscriptionName) {
+	private ArrayDeque<ConvertedAcknowledgeablePubsubMessage> cachedMessages = new ArrayDeque<>();
+
+	public PubSubMessageSource(PubSubSubscriberOperations pubSubSubscriberOperations,
+			String subscriptionName, int maxFetchSize) {
 		Assert.notNull(pubSubSubscriberOperations, "Pub/Sub subscriber template can't be null.");
 		Assert.notNull(subscriptionName, "Pub/Sub subscription name can't be null.");
+		Assert.isTrue(maxFetchSize > 0, "maxFetchSize has to be a positive integer.");
 		this.pubSubSubscriberOperations = pubSubSubscriberOperations;
 		this.subscriptionName = subscriptionName;
+		super.setMaxFetchSize(maxFetchSize);
 	}
 
 	public void setAckMode(AckMode ackMode) {
@@ -72,17 +82,46 @@ public class PubSubMessageSource extends AbstractMessageSource<Object> {
 		this.headerMapper = headerMapper;
 	}
 
+	/**
+	 * Provides a single polled message.
+	 * <p>Messages are received from Pub/Sub by synchronous pull, in batches determined
+	 * by {@code fetchSize}.
+	 * <p>Cached messages in {@link AckMode#AUTO_ACK} or {@link AckMode#AUTO} are not
+	 * automatically acked until they are taken out of cache.
+	 * @param fetchSize number of messages to fetch from Pub/Sub.
+	 * @return {@link Message} wrapper containing the original message.
+	 */
 	@Override
-	protected Object doReceive() {
-		List<ConvertedAcknowledgeablePubsubMessage> messages
-				= this.pubSubSubscriberOperations.pullAndConvert(this.subscriptionName, 1, true, this.payloadType);
-
-		if (messages.isEmpty()) {
-			return null;
+	protected Object doReceive(int fetchSize) {
+		if (this.cachedMessages.isEmpty()) {
+			List<ConvertedAcknowledgeablePubsubMessage> messages
+					= this.pubSubSubscriberOperations.pullAndConvert(this.subscriptionName, fetchSize, true, this.payloadType);
+			if (messages.isEmpty()) {
+				return null;
+			}
+			else if (messages.size() == 1) {
+				// don't bother storing.
+				return processMessage(messages.get(0));
+			}
+			else {
+				this.cachedMessages.addAll(messages);
+			}
 		}
 
-		Assert.state(messages.size() == 1, "Only one Pub/Sub message expected.");
-		ConvertedAcknowledgeablePubsubMessage message = messages.get(0);
+		return processMessage(this.cachedMessages.pollFirst());
+	}
+
+	@Override
+	public String getComponentType() {
+		return "gcp-pubsub:message-source";
+	}
+
+	/**
+	 * Applies header customizations and acknowledges the message, if necessary.
+	 * @param message source Pub/Sub message.
+	 * @return {@link Message} wrapper containing the original message.
+	 */
+	private Message<Object> processMessage(ConvertedAcknowledgeablePubsubMessage message) {
 
 		Map<String, Object> messageHeaders =
 				this.headerMapper.toHeaders(message.getPubsubMessage().getAttributesMap());
@@ -99,11 +138,6 @@ public class PubSubMessageSource extends AbstractMessageSource<Object> {
 				.withPayload(message.getPayload())
 				.copyHeaders(messageHeaders)
 				.build();
-	}
-
-	@Override
-	public String getComponentType() {
-		return "gcp-pubsub:message-source";
 	}
 
 }

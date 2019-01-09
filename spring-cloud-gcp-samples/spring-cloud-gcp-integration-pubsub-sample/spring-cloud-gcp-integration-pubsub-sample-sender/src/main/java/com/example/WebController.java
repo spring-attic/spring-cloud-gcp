@@ -40,7 +40,9 @@ public class WebController {
 	 * Posts a message to a Google Cloud Pub/Sub topic, through Spring's messaging gateway, and
 	 * redirects the user to the home page.
 	 *
-	 * @param message the message posted to the Pub/Sub topic
+	 * @param message the message that will be posted to the Pub/Sub topic, with a
+	 *                parenthesized position suffix
+	 * @param numTimes how many copies of the message to send
 	 * @return the redirected view for the request
 	 */
 	@PostMapping("/postMessage")
