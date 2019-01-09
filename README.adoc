@@ -12,11 +12,12 @@ Currently, this repository provides support for:
 * link:spring-cloud-gcp-pubsub[Spring Cloud GCP Pub/Sub, including Spring Integration Channel Adapters]
 * link:spring-cloud-gcp-pubsub-stream-binder[Spring Cloud GCP Pub/Sub Stream Binder]
 * link:spring-cloud-gcp-storage[Spring Resource Abstraction for Google Cloud Storage, including Spring Integration Channel Adapters]
-* link:spring-cloud-gcp-data-spanner[Spring Data Cloud Spanner]
-* link:spring-cloud-gcp-data-datastore[Spring Data Cloud Datastore]
+* link:spring-cloud-gcp-data-spanner[Spring Data Cloud Spanner] (v1.1)
+* link:spring-cloud-gcp-data-datastore[Spring Data Cloud Datastore] (v1.1)
+* link:spring-cloud-gcp-vision[Google Cloud Vision API Template] (v1.1)
 * Spring Boot starters
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter[GCP Support]
-** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Google Cloud Config] (v1.1)
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Google Cloud Config] (Beta)
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Google Cloud Spanner] (v1.1)
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Google Cloud Datastore] (v1.1)
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[Google Cloud Logging]
@@ -25,7 +26,8 @@ Currently, this repository provides support for:
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-postgresql[Google Cloud SQL PostgreSQL]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-storage[Google Cloud Storage]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-trace[Stackdriver Trace with Spring Cloud Sleuth]
-** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-iap[Google Cloud IAP Authentication]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-iap[Google Cloud IAP Authentication] (v1.1)
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-vision[Google Cloud Vision API] (v1.1)
 
 If you have any other ideas, suggestions or bug reports, please use our https://github.com/spring-cloud/spring-cloud-gcp/issues[GitHub issue tracker] and let us know!
 We would love to hear from you.
