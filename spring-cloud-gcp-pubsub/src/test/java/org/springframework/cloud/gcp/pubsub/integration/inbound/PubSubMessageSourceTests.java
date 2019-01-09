@@ -26,9 +26,12 @@ import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOper
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
+import org.springframework.integration.endpoint.MessageSourcePollingTemplate;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -65,6 +68,8 @@ public class PubSubMessageSourceTests {
 		when(this.msg1.getPubsubMessage()).thenReturn(PubsubMessage.newBuilder().build());
 		when(this.msg2.getPubsubMessage()).thenReturn(PubsubMessage.newBuilder().build());
 		when(this.msg3.getPubsubMessage()).thenReturn(PubsubMessage.newBuilder().build());
+
+		when(this.mockPubSubSubscriberOperations.pullAndConvert("sub1", 1, true, String.class)).thenReturn(Arrays.asList(this.msg1));
 	}
 
 	@Test
@@ -106,7 +111,7 @@ public class PubSubMessageSourceTests {
 
 	@Test
 	public void doReceive_manualAckModeAppliesOriginalMessageHeaderAndDoesNotAck() {
-		when(this.mockPubSubSubscriberOperations.pullAndConvert("sub1", 1, true, String.class)).thenReturn(Arrays.asList(this.msg1));
+
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
 				this.mockPubSubSubscriberOperations, "sub1", 1);
 		pubSubMessageSource.setPayloadType(String.class);
@@ -122,20 +127,73 @@ public class PubSubMessageSourceTests {
 	}
 
 	@Test
-	public void doReceive_autoAckModeAcksWithoutAddingHeader() {
-		when(this.mockPubSubSubscriberOperations.pullAndConvert("sub1", 1, true, String.class)).thenReturn(Arrays.asList(this.msg1));
+	public void doReceive_autoModeAcksWithoutAddingOriginalMessageHeader() {
+
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
 				this.mockPubSubSubscriberOperations, "sub1", 1);
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setAckMode(AckMode.AUTO);
+		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
+		poller.poll((message) -> {
+			assertThat(message).isNotNull();
 
-		Message<String> message1 = (Message<String>) pubSubMessageSource.doReceive(1);
+			assertThat(message.getPayload()).isEqualTo("msg1");
+			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isNull();
+		});
 
-		assertThat(message1).isNotNull();
-
-		assertThat(message1.getPayload()).isEqualTo("msg1");
-		assertThat(message1.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isNull();
 		verify(this.msg1).ack();
 	}
 
+	@Test
+	public void doReceive_autoAckModeAcksWithoutAddingOriginalMessageHeader() {
+
+		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
+				this.mockPubSubSubscriberOperations, "sub1", 1);
+		pubSubMessageSource.setPayloadType(String.class);
+		pubSubMessageSource.setAckMode(AckMode.AUTO_ACK);
+		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
+		poller.poll((message) -> {
+			assertThat(message).isNotNull();
+
+			assertThat(message.getPayload()).isEqualTo("msg1");
+			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isNull();
+		});
+
+		verify(this.msg1).ack();
+	}
+
+
+	@Test
+	public void doReceive_autoModeNacksAutomatically() {
+
+		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
+				this.mockPubSubSubscriberOperations, "sub1", 1);
+		pubSubMessageSource.setPayloadType(String.class);
+		pubSubMessageSource.setAckMode(AckMode.AUTO);
+		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
+		assertThatThrownBy(() -> {
+			poller.poll((message) -> {
+				throw new RuntimeException("Nope.");
+			});
+		}).isInstanceOf(MessageHandlingException.class).hasMessageContaining("Nope.");
+
+		verify(this.msg1).nack();
+	}
+
+	@Test
+	public void doReceive_autoAckModeDoesNotNackAutomatically() {
+
+		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
+				this.mockPubSubSubscriberOperations, "sub1", 1);
+		pubSubMessageSource.setPayloadType(String.class);
+		pubSubMessageSource.setAckMode(AckMode.AUTO_ACK);
+		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
+		assertThatThrownBy(() -> {
+			poller.poll((message) -> {
+				throw new RuntimeException("Nope.");
+			});
+		}).isInstanceOf(MessageHandlingException.class).hasMessageContaining("Nope.");
+
+		verify(this.msg1, times(0)).nack();
+	}
 }
