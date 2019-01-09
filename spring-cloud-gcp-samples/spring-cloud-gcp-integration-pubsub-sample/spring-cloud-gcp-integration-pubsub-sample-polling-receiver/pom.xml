@@ -5,12 +5,12 @@
 	<parent>
 		<artifactId>spring-cloud-gcp-integration-pubsub-sample</artifactId>
 		<groupId>com.example</groupId>
-		<version>1.2.0.BUILD-SNAPSHOT</version>
+		<version>1.1.0.BUILD-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-cloud-gcp-integration-pubsub-sample-polling-receiver</artifactId>
-	<name>Spring Cloud GCP Integration Pub/Sub Polling Receiver Code Sample</name>
+	<artifactId>spring-cloud-gcp-integration-pubsub-sample-receiver</artifactId>
+	<name>Spring Cloud GCP Integration Pub/Sub Receiver Code Sample</name>
 
 	<dependencies>
 		<dependency>

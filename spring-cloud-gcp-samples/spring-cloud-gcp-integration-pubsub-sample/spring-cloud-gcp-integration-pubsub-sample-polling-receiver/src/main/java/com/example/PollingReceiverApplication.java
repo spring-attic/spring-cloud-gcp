@@ -16,6 +16,10 @@
 
 package com.example;
 
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -24,7 +28,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubMessageSource;
-import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.InboundChannelAdapter;
@@ -36,34 +40,47 @@ import org.springframework.messaging.handler.annotation.Header;
 /**
  * Spring Boot Application demonstrating receiving PubSub messages via synchronous pull.
  *
+ * Accepts an argument {@code --delay} to slow down acknowledgement of each message by a
+ * second, allowing better demonstration of load balancing behavior.
+ * <p>Example: mvn spring-boot:run -Dspring-boot.run.arguments=--delay
+ *
  * @author Elena Felder
  *
- * @since 1.2
+ * @since 1.1
  */
 @SpringBootApplication
 public class PollingReceiverApplication {
 
 	private static final Log LOGGER = LogFactory.getLog(PollingReceiverApplication.class);
 
+	private static boolean delayAcknoledgement;
 
 	public static void main(String[] args) {
+		Set<String> argSet = Arrays.stream(args).map(String::toLowerCase).collect(Collectors.toSet());
+		delayAcknoledgement = argSet.contains("--delay");
+
+		LOGGER.info("Starting receiver with " + (delayAcknoledgement ? "delay" : "no delay"));
 		SpringApplication.run(PollingReceiverApplication.class, args);
 	}
 
 	@Bean
 	@InboundChannelAdapter(channel = "pubsubInputChannel", poller = @Poller(fixedDelay = "100"))
 	public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
-		PubSubMessageSource messageSource = new PubSubMessageSource(pubSubTemplate,  "exampleSubscription");
-		messageSource.setMaxFetchSize(5);
+		PubSubMessageSource messageSource = new PubSubMessageSource(pubSubTemplate,  "exampleSubscription", 5);
 		messageSource.setAckMode(AckMode.MANUAL);
 		messageSource.setPayloadType(String.class);
 		return messageSource;
 	}
 
+
 	@ServiceActivator(inputChannel = "pubsubInputChannel")
 	public void messageReceiver(String payload,
-			@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) AcknowledgeablePubsubMessage message) {
+			@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) BasicAcknowledgeablePubsubMessage message)
+				throws InterruptedException {
 		LOGGER.info("Message arrived by Synchronous Pull! Payload: " + payload);
+		if (delayAcknoledgement) {
+			Thread.sleep(1000);
+		}
 		message.ack();
 	}
 

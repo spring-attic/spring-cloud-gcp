@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,37 +26,29 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundChannelAdapter;
-import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubMessageSource;
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.context.annotation.Bean;
-import org.springframework.integration.annotation.InboundChannelAdapter;
-import org.springframework.integration.annotation.Poller;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
-import org.springframework.integration.core.MessageSource;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.handler.annotation.Header;
 
 /**
+ * Spring Boot Application demonstrating receiving PubSub messages via streaming pull.
  *
- * Spring Boot Application demonstrating two ways to receive PubSub messages.
- *
- * <p>Accepts the following arguments:
- * <p>--syncPull: Enables synchronous, one-message-at-a-time message retrieval. Default behavior is asynchronous
- * <p>--delay: Slows down acknowledgement of each message by a second, allowing better demonstration of load
- *     balancing behavior of Pull vs. Asynchronous Pull strategies.
- * <p>Example: mvn spring-boot:run -Dspring-boot.run.arguments=--delay,--syncPull
+ * <p>Accepts an argument {@code --delay} to slow down acknowledgement of each message by
+ * a second, allowing better demonstration of load balancing behavior.
+ * <p>Example: mvn spring-boot:run -Dspring-boot.run.arguments=--delay
  *
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Dmitry Solomakha
+ * @author Chengyuan Zhao
  * @author Elena Felder
- *
  * @since 1.1
  */
 @SpringBootApplication
@@ -74,66 +66,32 @@ public class ReceiverApplication {
 		SpringApplication.run(ReceiverApplication.class, args);
 	}
 
-	/**
-	 * obsolete.
-	 */
-	@ConditionalOnProperty(value = "syncpull", havingValue = "false", matchIfMissing = true)
-	static class StreamingPull {
-		@Bean
-		public MessageChannel pubsubInputChannel() {
-			return new DirectChannel();
-		}
-
-		@Bean
-		public PubSubInboundChannelAdapter messageChannelAdapter(
-				@Qualifier("pubsubInputChannel") MessageChannel inputChannel,
-				PubSubTemplate pubSubTemplate) {
-			PubSubInboundChannelAdapter adapter =
-					new PubSubInboundChannelAdapter(pubSubTemplate, "exampleSubscription");
-			adapter.setOutputChannel(inputChannel);
-			adapter.setAckMode(AckMode.MANUAL);
-			adapter.setPayloadType(String.class);
-			return adapter;
-		}
-
-		@ServiceActivator(inputChannel = "pubsubInputChannel")
-		public void messageReceiver(String payload,
-				@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) BasicAcknowledgeablePubsubMessage message)
-					throws InterruptedException {
-			LOGGER.info("Message arrived! Payload: " + payload);
-			if (delayAcknoledgement) {
-				Thread.sleep(1000);
-			}
-			message.ack();
-		}
+	@Bean
+	public MessageChannel pubsubInputChannel() {
+		return new DirectChannel();
 	}
 
-	/**
-	 * obsolete.
-	 */
-	@ConditionalOnProperty("syncpull")
-	static class SyncPull {
+	@Bean
+	public PubSubInboundChannelAdapter messageChannelAdapter(
+			@Qualifier("pubsubInputChannel") MessageChannel inputChannel,
+			PubSubTemplate pubSubTemplate) {
+		PubSubInboundChannelAdapter adapter =
+				new PubSubInboundChannelAdapter(pubSubTemplate, "exampleSubscription");
+		adapter.setOutputChannel(inputChannel);
+		adapter.setAckMode(AckMode.MANUAL);
+		adapter.setPayloadType(String.class);
+		return adapter;
+	}
 
-		@Bean
-		@InboundChannelAdapter(channel = "pubsubInputChannel", poller = @Poller(fixedDelay = "100"))
-		public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
-			PubSubMessageSource messageSource = new PubSubMessageSource(pubSubTemplate,  "exampleSubscription", 5);
-			messageSource.setAckMode(AckMode.MANUAL);
-			messageSource.setPayloadType(String.class);
-			return messageSource;
+	@ServiceActivator(inputChannel = "pubsubInputChannel")
+	public void messageReceiver(String payload,
+			@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) BasicAcknowledgeablePubsubMessage message)
+				throws InterruptedException {
+		LOGGER.info("Message arrived! Payload: " + payload);
+		if (delayAcknoledgement) {
+			Thread.sleep(1000);
 		}
-
-
-		@ServiceActivator(inputChannel = "pubsubInputChannel")
-		public void messageReceiver(String payload,
-				@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) BasicAcknowledgeablePubsubMessage message)
-					throws InterruptedException {
-			LOGGER.info("Message arrived by Synchronous Pull! Payload: " + payload);
-			if (delayAcknoledgement) {
-				Thread.sleep(1000);
-			}
-			message.ack();
-		}
+		message.ack();
 	}
 
 }

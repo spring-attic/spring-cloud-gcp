@@ -19,10 +19,8 @@ package com.example;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.output.TeeOutputStream;
-import org.awaitility.Awaitility;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -43,7 +41,7 @@ import static org.junit.Assume.assumeThat;
  *
  * @author Dmitry Solomakha
  *
- * @since 1.2
+ * @since 1.1
  */
 
 @RunWith(SpringRunner.class)
@@ -78,13 +76,17 @@ public class PollingReceiverTest {
 	@Test
 	public void testSample() throws Exception {
 		String message = "test message " + UUID.randomUUID();
-		String expectedString = "Message arrived by Synchronous Pull! Payload: " + message;
 
 		this.pubSubTemplate.publish("exampleTopic", message);
 
-		Awaitility.await()
-				.atMost(10, TimeUnit.SECONDS)
-				.until(() -> baos.toString().contains(expectedString));
-		assertThat(baos.toString()).contains(expectedString);
+		boolean messageReceived = false;
+		for (int i = 0; i < 100; i++) {
+			if (baos.toString().contains("Message arrived by Synchronous Pull! Payload: " + message)) {
+				messageReceived = true;
+				break;
+			}
+			Thread.sleep(100);
+		}
+		assertThat(messageReceived).isTrue();
 	}
 }
