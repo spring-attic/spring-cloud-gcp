@@ -16,30 +16,28 @@
 
 package com.example;
 
-import java.util.List;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.UUID;
 
+import org.apache.commons.io.output.TeeOutputStream;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
-import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
- * Integration test for the sender sample app.
+ * Tests for the receiver application.
  *
  * @author Dmitry Solomakha
  *
@@ -47,12 +45,12 @@ import static org.junit.Assume.assumeThat;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @DirtiesContext
-public class SenderIntegrationTest {
+public class PollingReceiverTest {
+	private static PrintStream systemOut;
 
-	@Autowired
-	private TestRestTemplate restTemplate;
+	private static ByteArrayOutputStream baos;
 
 	@Autowired
 	private PubSubTemplate pubSubTemplate;
@@ -63,33 +61,32 @@ public class SenderIntegrationTest {
 				"PUB/SUB-sample integration tests are disabled. Please use '-Dit.pubsub=true' "
 						+ "to enable them. ",
 				System.getProperty("it.pubsub"), is("true"));
+
+		systemOut = System.out;
+		baos = new ByteArrayOutputStream();
+		TeeOutputStream out = new TeeOutputStream(systemOut, baos);
+		System.setOut(new PrintStream(out));
+	}
+
+	@AfterClass
+	public static void bringBack() {
+		System.setOut(systemOut);
 	}
 
 	@Test
 	public void testSample() throws Exception {
-		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 		String message = "test message " + UUID.randomUUID();
 
-		map.add("message", message);
-		map.add("times", 1);
-
-		this.restTemplate.postForObject("/postMessage", map, String.class);
-
-		List<AcknowledgeablePubsubMessage> messages;
+		this.pubSubTemplate.publish("exampleTopic", message);
 
 		boolean messageReceived = false;
 		for (int i = 0; i < 100; i++) {
-			messages = this.pubSubTemplate.pull("exampleSubscription", 10, true);
-			messages.forEach(BasicAcknowledgeablePubsubMessage::ack);
-
-			if (messages.stream()
-					.anyMatch((m) -> m.getPubsubMessage().getData().toStringUtf8().startsWith(message))) {
+			if (baos.toString().contains("Message arrived by Synchronous Pull! Payload: " + message)) {
 				messageReceived = true;
 				break;
 			}
 			Thread.sleep(100);
 		}
 		assertThat(messageReceived).isTrue();
-
 	}
 }

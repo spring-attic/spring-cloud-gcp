@@ -45,7 +45,7 @@ import static org.junit.Assume.assumeThat;
  */
 
 @RunWith(SpringRunner.class)
-@SpringBootTest (classes = ReceiverApplication.class)
+@SpringBootTest
 @DirtiesContext
 public class ReceiverTest {
 	private static PrintStream systemOut;

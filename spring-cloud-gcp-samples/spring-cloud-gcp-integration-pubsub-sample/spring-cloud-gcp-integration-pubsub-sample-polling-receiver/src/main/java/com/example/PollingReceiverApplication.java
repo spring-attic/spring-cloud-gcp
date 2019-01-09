@@ -23,38 +23,35 @@ import java.util.stream.Collectors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
-import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundChannelAdapter;
+import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubMessageSource;
 import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.context.annotation.Bean;
+import org.springframework.integration.annotation.InboundChannelAdapter;
+import org.springframework.integration.annotation.Poller;
 import org.springframework.integration.annotation.ServiceActivator;
-import org.springframework.integration.channel.DirectChannel;
-import org.springframework.messaging.MessageChannel;
+import org.springframework.integration.core.MessageSource;
 import org.springframework.messaging.handler.annotation.Header;
 
 /**
- * Spring Boot Application demonstrating receiving PubSub messages via streaming pull.
+ * Spring Boot Application demonstrating receiving PubSub messages via synchronous pull.
  *
- * <p>Accepts an argument {@code --delay} to slow down acknowledgement of each message by
- * a second, allowing better demonstration of load balancing behavior.
+ * Accepts an argument {@code --delay} to slow down acknowledgement of each message by a
+ * second, allowing better demonstration of load balancing behavior.
  * <p>Example: mvn spring-boot:run -Dspring-boot.run.arguments=--delay
  *
- * @author João André Martins
- * @author Mike Eltsufin
- * @author Dmitry Solomakha
- * @author Chengyuan Zhao
  * @author Elena Felder
+ *
  * @since 1.1
  */
 @SpringBootApplication
-public class ReceiverApplication {
+public class PollingReceiverApplication {
 
-	private static final Log LOGGER = LogFactory.getLog(ReceiverApplication.class);
+	private static final Log LOGGER = LogFactory.getLog(PollingReceiverApplication.class);
 
 	private static boolean delayAcknoledgement;
 
@@ -63,31 +60,24 @@ public class ReceiverApplication {
 		delayAcknoledgement = argSet.contains("--delay");
 
 		LOGGER.info("Starting receiver with " + (delayAcknoledgement ? "delay" : "no delay"));
-		SpringApplication.run(ReceiverApplication.class, args);
+		SpringApplication.run(PollingReceiverApplication.class, args);
 	}
 
 	@Bean
-	public MessageChannel pubsubInputChannel() {
-		return new DirectChannel();
+	@InboundChannelAdapter(channel = "pubsubInputChannel", poller = @Poller(fixedDelay = "100"))
+	public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
+		PubSubMessageSource messageSource = new PubSubMessageSource(pubSubTemplate,  "exampleSubscription", 5);
+		messageSource.setAckMode(AckMode.MANUAL);
+		messageSource.setPayloadType(String.class);
+		return messageSource;
 	}
 
-	@Bean
-	public PubSubInboundChannelAdapter messageChannelAdapter(
-			@Qualifier("pubsubInputChannel") MessageChannel inputChannel,
-			PubSubTemplate pubSubTemplate) {
-		PubSubInboundChannelAdapter adapter =
-				new PubSubInboundChannelAdapter(pubSubTemplate, "exampleSubscription");
-		adapter.setOutputChannel(inputChannel);
-		adapter.setAckMode(AckMode.MANUAL);
-		adapter.setPayloadType(String.class);
-		return adapter;
-	}
 
 	@ServiceActivator(inputChannel = "pubsubInputChannel")
 	public void messageReceiver(String payload,
 			@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) BasicAcknowledgeablePubsubMessage message)
 				throws InterruptedException {
-		LOGGER.info("Message arrived! Payload: " + payload);
+		LOGGER.info("Message arrived by Synchronous Pull! Payload: " + payload);
 		if (delayAcknoledgement) {
 			Thread.sleep(1000);
 		}
