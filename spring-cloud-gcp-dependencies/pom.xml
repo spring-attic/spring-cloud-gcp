@@ -16,7 +16,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<google-cloud-bom.version>0.72.0-alpha</google-cloud-bom.version>
+		<google-cloud-bom.version>0.76.0-alpha</google-cloud-bom.version>
 		<google-auth-library-oauth2-http.version>0.12.0</google-auth-library-oauth2-http.version>
 		<mysql-socket-factory.version>1.0.11</mysql-socket-factory.version>
 	</properties>
