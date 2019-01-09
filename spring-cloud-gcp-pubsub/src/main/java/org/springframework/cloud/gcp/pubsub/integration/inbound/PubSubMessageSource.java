@@ -57,6 +57,8 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 
 	private Class payloadType = byte[].class;
 
+	private boolean blockOnPull;
+
 	private ArrayDeque<ConvertedAcknowledgeablePubsubMessage> cachedMessages = new ArrayDeque<>();
 
 	public PubSubMessageSource(PubSubSubscriberOperations pubSubSubscriberOperations,
@@ -85,6 +87,13 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 	}
 
 	/**
+	 * Instructs synchronous pull to wait until at least one message is available.
+	 */
+	public void blockOnPull() {
+		this.blockOnPull = true;
+	}
+
+	/**
 	 * Provides a single polled message.
 	 * <p>Messages are received from Pub/Sub by synchronous pull, in batches determined
 	 * by {@code fetchSize}.
@@ -97,7 +106,7 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 	protected Object doReceive(int fetchSize) {
 		if (this.cachedMessages.isEmpty()) {
 			List<ConvertedAcknowledgeablePubsubMessage> messages
-					= this.pubSubSubscriberOperations.pullAndConvert(this.subscriptionName, fetchSize, true, this.payloadType);
+					= this.pubSubSubscriberOperations.pullAndConvert(this.subscriptionName, fetchSize, !this.blockOnPull, this.payloadType);
 			if (messages.isEmpty()) {
 				return null;
 			}
