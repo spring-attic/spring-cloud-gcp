@@ -27,7 +27,7 @@ import com.google.auth.Credentials;
 import org.springframework.cloud.bootstrap.config.PropertySourceLocator;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
+import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
@@ -107,8 +107,8 @@ public class GoogleConfigPropertySourceLocator implements PropertySourceLocator 
 
 		Assert.isTrue(headers.containsKey(AUTHORIZATION_HEADER), "Authorization header required");
 
-		// Adds usage tracking header.
-		new UsageTrackingHeaderProvider(this.getClass()).getHeaders().forEach(headers::add);
+		// Adds product version header for usage metrics
+		new UserAgentHeaderProvider(this.getClass()).getHeaders().forEach(headers::add);
 
 		return new HttpEntity<>(headers);
 	}

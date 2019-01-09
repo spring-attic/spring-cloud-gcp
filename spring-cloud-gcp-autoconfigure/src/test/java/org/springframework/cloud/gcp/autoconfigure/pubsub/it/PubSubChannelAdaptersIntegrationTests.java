@@ -39,7 +39,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.pubsub.GcpPubSubAutoConfiguration;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
+import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
@@ -327,7 +327,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 			factory.setExecutorProvider(executorProvider);
 			factory.setCredentialsProvider(credentialsProvider);
 			factory.setHeaderProvider(
-					new UsageTrackingHeaderProvider(GcpPubSubAutoConfiguration.class));
+					new UserAgentHeaderProvider(GcpPubSubAutoConfiguration.class));
 			factory.setChannelProvider(transportChannelProvider);
 
 			return factory;
@@ -348,7 +348,7 @@ public class PubSubChannelAdaptersIntegrationTests {
 			factory.setExecutorProvider(executorProvider);
 			factory.setCredentialsProvider(credentialsProvider);
 			factory.setHeaderProvider(
-					new UsageTrackingHeaderProvider(GcpPubSubAutoConfiguration.class));
+					new UserAgentHeaderProvider(GcpPubSubAutoConfiguration.class));
 			factory.setChannelProvider(transportChannelProvider);
 			return factory;
 		}

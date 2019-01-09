@@ -29,18 +29,13 @@ import com.google.api.gax.rpc.HeaderProvider;
  * @author Chengyuan Zhao
  * @author Mike Eltsufin
  */
-public class UsageTrackingHeaderProvider implements HeaderProvider {
-
-	/**
-	 * The hard-coded version string reported with usage info.
-	 */
-	public static final String TRACKING_HEADER_PROJECT_VERSION = "1.1.0.BUILD-SNAPSHOT";
+public class UserAgentHeaderProvider implements HeaderProvider {
 
 	private String userAgent;
 
 	private final Map<String, String> headers;
 
-	public UsageTrackingHeaderProvider(Class clazz) {
+	public UserAgentHeaderProvider(Class clazz) {
 		this.userAgent = computeUserAgent(clazz);
 		this.headers = Collections.singletonMap("User-Agent", this.userAgent);
 	}
@@ -67,9 +62,9 @@ public class UsageTrackingHeaderProvider implements HeaderProvider {
 	private String computeUserAgent(Class clazz) {
 		String[] packageTokens = clazz.getPackage().getName().split("\\.");
 		String springLibrary = "spring-cloud-gcp-" + packageTokens[packageTokens.length - 1];
+		String version = this.getClass().getPackage().getImplementationVersion();
 
-		return "Spring/" + TRACKING_HEADER_PROJECT_VERSION
-				+ " " + springLibrary + "/" + TRACKING_HEADER_PROJECT_VERSION;
+		return "Spring/" + version + " " + springLibrary + "/" + version;
 
 	}
 
