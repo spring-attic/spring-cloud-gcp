@@ -6,10 +6,7 @@ Starter] to store and group logs by trace ID, with the Google Stackdriver Loggin
 
 == Setup & Configuration
 1. Create a Google Cloud Platform Project
-1. Have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, initialized and logged in with
-https://developers.google.com/identity/protocols/application-default-credentials[application
-default credentials].
-
+1. Have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, initialized and logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials].
 1. Check that the https://console.cloud.google.com/apis/library/logging.googleapis.com/?q=logging[Stackdriver Logging API is enabled].
 
 == Running the Example
@@ -19,8 +16,7 @@ Run the sample application from Maven:
 $ mvn spring-boot:run
 ----
 
-Then, issue a request containing the `x-cloud-trace-context` header to
-the `localhost:8080/log` endpoint and verify that a label appears in Stackdriver:
+Then, issue a request containing the `x-cloud-trace-context` header to the `localhost:8080/log` endpoint and verify that a label appears in Stackdriver:
 
 ----
 $ curl --header "x-cloud-trace-context: [Some-Trace-ID]" localhost:8080/log
@@ -29,21 +25,17 @@ $ curl --header "x-cloud-trace-context: [Some-Trace-ID]" localhost:8080/log
 To see the logged lines, navigate to the https://console.cloud.google.com/logs/viewer[Logging section of the Cloud Console].
 Select the `Global` resource and look under the `spring.log` channel to see the logged text.
 
-If your application is deployed to Google App Engine (GAE) or Google Kubernetes Engine (GKE),
-you will instead find the logs under the deployment's resource in the Stackdriver UI under the `spring.log` channel.
-You can further narrow down the log by request by using the following filtering text
-that takes advantage of the trace ID label in each logged line. For example, if deployed to App Engine
-(by using `mvn appengine:deploy` in this sample) you can use the following to filter by the trace ID:
+If your application is deployed to Google App Engine (GAE) or Google Kubernetes Engine (GKE), you will instead find the logs under the deployment's resource in the Stackdriver UI under the `spring.log` channel.
+You can further narrow down the log by request by using the following filtering text that takes advantage of the trace ID label in each logged line.
+For example, if deployed to App Engine (by using `mvn appengine:deploy` in this sample) you can use the following to filter by the trace ID:
 
 ----
-resource.type="gae_app"
-logName="projects/[Your-Project-ID]/logs/spring.log"
-labels."appengine.googleapis.com/trace_id"="[Trace-ID-Of-Request]"
+ resource.type="gae_app"
+ logName="projects/[Your-Project-ID]/logs/spring.log"
+ labels."appengine.googleapis.com/trace_id"="[Trace-ID-Of-Request]"
 ----
 
-Expand the log entry labels and note that `appengine.googleapis.com/trace_id` label is set to the
-same value for both log messages. The trace ID header `x-cloud-trace-context` is set automatically when deployed to App Engine.
+Expand the log entry labels and note that `appengine.googleapis.com/trace_id` label is set to the same value for both log messages.
+The trace ID header `x-cloud-trace-context` is set automatically when deployed to App Engine.
 
-NOTE: When running on GAE or GKE, also remember to remove the `CONSOLE` appender, otherwise logs
-will appear on Cloud Logging in duplicate: once in the `spring.log` stream and once in the `stdout`
-stream.
+NOTE: When running on GAE or GKE, also remember to remove the `CONSOLE` appender, otherwise logs will appear on Cloud Logging in duplicate: once in the `spring.log` stream and once in the `stdout` stream.

@@ -24,6 +24,8 @@ import java.util.Objects;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 
 /**
+ * A test entity focused on holding embedded entities.
+ *
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
  */
@@ -103,11 +105,18 @@ public class TestItemWithEmbeddedEntity {
 		return this.nestedEmbeddedMaps;
 	}
 
+	/**
+	 * set the nested embedded maps.
+	 * @param nestedEmbeddedMaps the maps to set.
+	 */
 	public void setNestedEmbeddedMaps(
 			Map<String, Map<Long, Map<String, String>>> nestedEmbeddedMaps) {
 		this.nestedEmbeddedMaps = nestedEmbeddedMaps;
 	}
 
+	/**
+	 * an embedded entity class.
+	 */
 	@Entity
 	public static class EmbeddedEntity {
 		String stringField;

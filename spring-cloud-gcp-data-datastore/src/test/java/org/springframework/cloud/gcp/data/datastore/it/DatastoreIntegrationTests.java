@@ -46,6 +46,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
+ * Integration tests for Datastore that use many features.
+ *
  * @author Chengyuan Zhao
  * @author Dmitry Solomakha
  */

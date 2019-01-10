@@ -23,6 +23,8 @@ import com.google.cloud.spanner.Key;
 import org.springframework.data.convert.EntityWriter;
 
 /**
+ * An entity writer that writes values from an entity to a sink.
+ *
  * @author Chengyuan Zhao
  * @author Balint Pato
  *

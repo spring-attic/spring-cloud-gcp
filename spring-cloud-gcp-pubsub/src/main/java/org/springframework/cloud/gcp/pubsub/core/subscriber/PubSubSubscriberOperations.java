@@ -44,7 +44,12 @@ import org.springframework.util.concurrent.ListenableFuture;
 public interface PubSubSubscriberOperations {
 
 	/**
+	 * Subscribe to a subscription with a given message receiver.
+	 *
 	 * @deprecated as of 1.1, use {@link #subscribe(String, Consumer)} instead.
+	 * @param messageReceiver the message receiver with which to subscribe
+	 * @param subscription the subscription to subscribe to
+	 * @return the subscriber
 	 */
 	@Deprecated
 	Subscriber subscribe(String subscription, MessageReceiver messageReceiver);
@@ -66,6 +71,7 @@ public interface PubSubSubscriberOperations {
 	 * @param subscription the name of an existing subscription
 	 * @param messageConsumer the callback method triggered when new messages arrive
 	 * @param payloadType the type to which the payload of the Pub/Sub message should be converted
+	 * @param <T> the type of the payload
 	 * @return subscriber listening to new messages
 	 * @since 1.1
 	 */
@@ -100,6 +106,7 @@ public interface PubSubSubscriberOperations {
 	 * @param returnImmediately returns immediately even if subscription doesn't contain enough
 	 * messages to satisfy {@code maxMessages}
 	 * @param payloadType the type to which the payload of the Pub/Sub messages should be converted
+	 * @param <T> the type of the payload
 	 * @return the list of received acknowledgeable messages
 	 * @since 1.1
 	 */

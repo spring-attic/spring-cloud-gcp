@@ -32,6 +32,8 @@ import org.springframework.data.mapping.model.ParameterValueProvider;
 import org.springframework.data.mapping.model.PersistentEntityParameterValueProvider;
 
 /**
+ * A reading converter for Spanner that uses custom converters.
+ *
  * @author Balint Pato
  * @author Chengyuan Zhao
  *

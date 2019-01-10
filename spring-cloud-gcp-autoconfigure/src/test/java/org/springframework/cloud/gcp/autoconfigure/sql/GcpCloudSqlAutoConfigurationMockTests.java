@@ -32,6 +32,8 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Tests for Cloud SQL auto config.
+ *
  * @author João André Martins
  * @author Artem Bilan
  */

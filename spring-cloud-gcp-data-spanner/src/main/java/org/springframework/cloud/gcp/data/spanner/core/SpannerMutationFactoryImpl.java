@@ -38,6 +38,8 @@ import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.util.Assert;
 
 /**
+ * Factory that generates mutations for writing to Spanner.
+ *
  * @author Chengyuan Zhao
  *
  * @since 1.1
@@ -51,11 +53,12 @@ public class SpannerMutationFactoryImpl implements SpannerMutationFactory {
 	private final SpannerSchemaUtils spannerSchemaUtils;
 
 	/**
-	 * Constructor
-	 * @param spannerEntityProcessor The object mapper used to convert between objects and Spanner
+	 * Constructor.
+	 * @param spannerEntityProcessor the object mapper used to convert between objects and Spanner
 	 * data types.
-	 * @param spannerMappingContext The mapping context used to get metadata from entity
+	 * @param spannerMappingContext the mapping context used to get metadata from entity
 	 * types.
+	 * @param spannerSchemaUtils the schema utility to use
 	 */
 	public SpannerMutationFactoryImpl(SpannerEntityProcessor spannerEntityProcessor,
 			SpannerMappingContext spannerMappingContext,

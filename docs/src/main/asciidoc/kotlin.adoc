@@ -1,0 +1,26 @@
+== Kotlin Support
+
+The latest version of the Spring Framework provides first-class support for Kotlin.
+For Kotlin users of Spring, the Spring Cloud GCP libraries work out-of-the-box and are fully interoperable with Kotlin applications.
+
+For more information on building a Spring application in Kotlin, please consult the https://docs.spring.io/spring/docs/current/spring-framework-reference/languages.html#kotlin[Spring Kotlin documentation].
+
+=== Prerequisites
+
+Ensure that your Kotlin application is properly set up.
+Based on your build system, you will need to include the correct Kotlin build plugin in your project:
+
+* https://kotlinlang.org/docs/reference/using-maven.html[Kotlin Maven Plugin]
+* https://kotlinlang.org/docs/reference/using-gradle.html[Kotlin Gradle Plugin]
+
+Depending on your application's needs, you may need to augment your build configuration with compiler plugins:
+
+* https://kotlinlang.org/docs/reference/compiler-plugins.html#spring-support[Kotlin Spring Plugin]: Makes your Spring configuration classes/members non-final for convenience.
+* https://kotlinlang.org/docs/reference/compiler-plugins.html#jpa-support[Kotlin JPA Plugin]: Enables using JPA in Kotlin applications.
+
+Once your Kotlin project is properly configured, the Spring Cloud GCP libraries will work within your application without any additional setup.
+
+== Sample
+
+A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-kotlin-samples/spring-cloud-gcp-kotlin-app-sample[Kotlin sample application] is provided to demonstrate a working Maven setup and various Spring Cloud GCP integrations from within Kotlin.
+

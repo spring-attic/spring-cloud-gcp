@@ -22,6 +22,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.data.annotation.Id;
 
 /**
+ * A test class that uses embedded relationships to represent a tree.
+ *
  * @author Dmitry Solomakha
  */
 @Entity
@@ -37,15 +39,6 @@ public class EmbeddableTreeNode {
 		this.value = value;
 		this.left = left;
 		this.right = right;
-	}
-
-	@Override
-	public String toString() {
-		return "EmbeddableTreeNode{" +
-				"value=" + this.value +
-				", left=" + this.left +
-				", right=" + this.right +
-				'}';
 	}
 
 	@Override
@@ -66,5 +59,14 @@ public class EmbeddableTreeNode {
 	public int hashCode() {
 
 		return Objects.hash(this.value, this.left, this.right);
+	}
+
+	@Override
+	public String toString() {
+		return "EmbeddableTreeNode{" +
+				"value=" + this.value +
+				", left=" + this.left +
+				", right=" + this.right +
+				'}';
 	}
 }

@@ -42,6 +42,7 @@ public @interface ConditionalOnGcpEnvironment {
 
 	/**
 	 * Configures which environment to match.
+	 * @return an array of GCP Environments.
 	 */
 	GcpEnvironment[] value();
 }

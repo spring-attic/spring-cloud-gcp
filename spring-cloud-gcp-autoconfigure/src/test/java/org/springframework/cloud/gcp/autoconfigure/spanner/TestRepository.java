@@ -20,6 +20,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 /**
+ * A repository for testing instantiation.
+ *
  * @author Chengyuan Zhao
  */
 @Repository

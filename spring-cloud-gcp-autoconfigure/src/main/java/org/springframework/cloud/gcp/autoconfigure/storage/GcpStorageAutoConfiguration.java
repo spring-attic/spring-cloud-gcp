@@ -29,7 +29,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.autoconfigure.core.GcpProperties;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
+import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolver;
 import org.springframework.cloud.gcp.storage.GoogleStorageProtocolResolverSettings;
 import org.springframework.context.annotation.Bean;
@@ -65,7 +65,7 @@ public abstract class GcpStorageAutoConfiguration { //NOSONAR squid:S1610 must b
 						? new DefaultCredentialsProvider(gcpStorageProperties).getCredentials()
 						: credentialsProvider.getCredentials())
 				.setHeaderProvider(
-						new UsageTrackingHeaderProvider(GcpStorageAutoConfiguration.class))
+						new UserAgentHeaderProvider(GcpStorageAutoConfiguration.class))
 				.setProjectId(projectIdProvider.getProjectId())
 				.build().getService();
 	}

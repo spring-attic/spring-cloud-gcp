@@ -55,9 +55,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 /**
+ * Tests for the message handler.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class GcsMessageHandlerTests {
@@ -68,6 +70,9 @@ public class GcsMessageHandlerTests {
 	@Qualifier("siGcsTestChannel")
 	private MessageChannel channel;
 
+	/**
+	 * the temporary folder used for the tests.
+	 */
 	@Rule
 	public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -100,6 +105,9 @@ public class GcsMessageHandlerTests {
 		assertThat(expectedCopyRequest.getTarget().getBlobId()).isEqualTo(BlobId.of("testGcsBucket", "benfica"));
 	}
 
+	/**
+	 * Spring config for the tests.
+	 */
 	@Configuration
 	@EnableIntegration
 	public static class Config {

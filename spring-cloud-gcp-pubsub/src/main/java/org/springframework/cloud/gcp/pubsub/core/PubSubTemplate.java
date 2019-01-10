@@ -78,7 +78,7 @@ public class PubSubTemplate implements PubSubOperations, InitializingBean {
 
 	/**
 	 * Default {@link PubSubTemplate} constructor that uses a {@link PubSubPublisherTemplate}
-	 * and a {@link PubSubSubscriberTemplate}
+	 * and a {@link PubSubSubscriberTemplate}.
 	 * @param pubSubPublisherTemplate the {@link PubSubPublisherTemplate} to
 	 * publish to topics.
 	 * @param pubSubSubscriberTemplate the {@link PubSubSubscriberTemplate} to

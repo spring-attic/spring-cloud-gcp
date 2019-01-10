@@ -21,6 +21,9 @@ import com.google.cloud.spanner.Key;
 import org.springframework.data.repository.core.support.AbstractEntityInformation;
 
 /**
+ * Holds a Spanner persistent entity and its key type.
+ *
+ * @param <T> the type of the underlying entity
  * @author Chengyuan Zhao
  *
  * @since 1.1

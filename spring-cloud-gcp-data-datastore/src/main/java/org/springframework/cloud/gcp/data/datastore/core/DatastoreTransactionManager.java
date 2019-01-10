@@ -38,7 +38,7 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
- * Cloud Datastore transaction manager
+ * Cloud Datastore transaction manager.
  *
  * @author Chengyuan Zhao
  *
@@ -138,6 +138,9 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 		return transaction == getCurrentTX();
 	}
 
+	/**
+	 * A class to contain the transaction context.
+	 */
 	public static class Tx {
 		private Transaction transaction;
 

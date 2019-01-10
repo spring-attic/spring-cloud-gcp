@@ -35,7 +35,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
+import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactory;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerMutationFactoryImpl;
 import org.springframework.cloud.gcp.data.spanner.core.SpannerOperations;
@@ -62,6 +62,9 @@ import org.springframework.data.rest.webmvc.spi.BackendIdConverter;
 @EnableConfigurationProperties(GcpSpannerProperties.class)
 public class GcpSpannerAutoConfiguration {
 
+	/**
+	 * Core settings.
+	 */
 	static class CoreSpannerAutoConfiguration {
 
 		private final String projectId;
@@ -116,7 +119,7 @@ public class GcpSpannerAutoConfiguration {
 		public SpannerOptions spannerOptions(SessionPoolOptions sessionPoolOptions) {
 			Builder builder = SpannerOptions.newBuilder()
 					.setProjectId(this.projectId)
-					.setHeaderProvider(new UsageTrackingHeaderProvider(this.getClass()))
+					.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
 					.setCredentials(this.credentials);
 			if (this.numRpcChannels >= 0) {
 				builder.setNumChannels(this.numRpcChannels);
@@ -222,6 +225,9 @@ public class GcpSpannerAutoConfiguration {
 		}
 	}
 
+	/**
+	 * REST settings.
+	 */
 	@ConditionalOnClass({BackendIdConverter.class, SpannerMappingContext.class})
 	static class SpannerKeyRestSupportAutoConfiguration {
 		@Bean

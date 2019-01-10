@@ -20,6 +20,8 @@ import org.springframework.cloud.gcp.data.spanner.repository.SpannerRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 /**
+ * A sample repository.
+ *
  * @author Ray Tsang
  * @author Chengyuan Zhao
  */

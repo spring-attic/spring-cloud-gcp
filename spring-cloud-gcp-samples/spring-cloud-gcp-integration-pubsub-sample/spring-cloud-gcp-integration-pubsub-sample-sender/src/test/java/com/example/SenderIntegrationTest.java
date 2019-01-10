@@ -39,6 +39,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
+ * Integration test for the sender sample app.
+ *
  * @author Dmitry Solomakha
  *
  * @since 1.1

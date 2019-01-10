@@ -44,6 +44,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
 /**
+ * A factory for instantiating Spanner repositories.
+ *
  * @author Chengyuan Zhao
  * @author Ray Tsang
  *
@@ -61,7 +63,7 @@ public class SpannerRepositoryFactory extends RepositoryFactorySupport
 	private ApplicationContext applicationContext;
 
 	/**
-	 * Constructor
+	 * Constructor.
 	 * @param spannerMappingContext the mapping context used to get mapping metadata for
 	 * entity types.
 	 * @param spannerTemplate the Cloud Spanner operations object used by Cloud Spanner repositories.

@@ -47,8 +47,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the Pub/Sub message handler.
+ *
  * @author João André Martins
  * @author Eric Goetschalckx
+ * @author Chengyuan Zhao
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubMessageHandlerTests {
@@ -60,6 +63,9 @@ public class PubSubMessageHandlerTests {
 
 	private Message<?> message;
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

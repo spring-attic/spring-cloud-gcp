@@ -52,7 +52,7 @@ public class SpannerPersistentPropertyImpl
 	private FieldNamingStrategy fieldNamingStrategy;
 
 	/**
-	 * Creates a new {@link SpannerPersistentPropertyImpl}
+	 * Creates a new {@link SpannerPersistentPropertyImpl}.
 	 *
 	 * @param property the property to store
 	 * @param owner the entity to which this property belongs

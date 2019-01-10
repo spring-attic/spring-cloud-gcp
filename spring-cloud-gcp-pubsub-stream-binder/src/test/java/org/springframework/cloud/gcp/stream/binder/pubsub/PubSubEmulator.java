@@ -158,7 +158,7 @@ public class PubSubEmulator extends ExternalResource {
 	/**
 	 * Return the already-started emulator's host/port combination when called from within a
 	 * JUnit method.
-	 * @return Emulator host/port string or null if emulator setup failed.
+	 * @return emulator host/port string or null if emulator setup failed.
 	 */
 	public String getEmulatorHostPort() {
 		return this.emulatorHostPort;
@@ -193,6 +193,8 @@ public class PubSubEmulator extends ExternalResource {
 
 	/**
 	 * Extract host/port from output of env-init command: "export PUBSUB_EMULATOR_HOST=localhost:8085".
+	 * @throws IOException for IO errors
+	 * @throws InterruptedException for interruption errors
 	 */
 	private void determineHostPort() throws IOException, InterruptedException {
 		Process envInitProcess = new ProcessBuilder("gcloud", "beta", "emulators", "pubsub", "env-init").start();
@@ -225,6 +227,7 @@ public class PubSubEmulator extends ExternalResource {
 	/**
 	 * Wait until a PubSub emulator configuration file is updated.
 	 * Fail if the file does not update after 1 second.
+	 * @param watchService the watch-service to poll
 	 * @throws InterruptedException which should interrupt the peaceful slumber and bubble up
 	 * to fail the test.
 	 */
@@ -250,7 +253,7 @@ public class PubSubEmulator extends ExternalResource {
 	/**
 	 * Attempt to kill a process on best effort basis.
 	 * Failure is logged and ignored, as it is not critical to the tests' functionality.
-	 * @param pid Presumably a valid PID. No checking done to validate.
+	 * @param pid presumably a valid PID. No checking done to validate.
 	 */
 	private void killProcess(String pid) {
 		try {

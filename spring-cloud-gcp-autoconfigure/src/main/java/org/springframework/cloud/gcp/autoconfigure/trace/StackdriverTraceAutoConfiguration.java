@@ -50,7 +50,7 @@ import org.springframework.cloud.gcp.autoconfigure.trace.sleuth.StackdriverHttpC
 import org.springframework.cloud.gcp.autoconfigure.trace.sleuth.StackdriverHttpServerParser;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
+import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.instrument.web.TraceHttpAutoConfiguration;
@@ -62,9 +62,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 /**
+ * Config for Stackdriver Trace.
+ *
  * @author Ray Tsang
  * @author João André Martins
  * @author Mike Eltsufin
+ * @author Chengyuan Zhao
  */
 @Configuration
 @EnableConfigurationProperties(
@@ -78,7 +81,7 @@ public class StackdriverTraceAutoConfiguration {
 
 	private CredentialsProvider finalCredentialsProvider;
 
-	private UsageTrackingHeaderProvider headerProvider = new UsageTrackingHeaderProvider(this.getClass());
+	private UserAgentHeaderProvider headerProvider = new UserAgentHeaderProvider(this.getClass());
 
 	public StackdriverTraceAutoConfiguration(GcpProjectIdProvider gcpProjectIdProvider,
 			CredentialsProvider credentialsProvider,
@@ -174,6 +177,9 @@ public class StackdriverTraceAutoConfiguration {
 		return StackdriverTracePropagation.FACTORY;
 	}
 
+	/**
+	 * Configuration for refresh scope probability based sampler.
+	 */
 	@Configuration
 	@ConditionalOnClass(RefreshScope.class)
 	protected static class RefreshScopedProbabilityBasedSamplerConfiguration {
@@ -185,6 +191,9 @@ public class StackdriverTraceAutoConfiguration {
 		}
 	}
 
+	/**
+	 * Configuration for non-refresh scope probability based sampler.
+	 */
 	@Configuration
 	@ConditionalOnMissingClass("org.springframework.cloud.context.config.annotation.RefreshScope")
 	protected static class NonRefreshScopeProbabilityBasedSamplerConfiguration {
@@ -195,6 +204,9 @@ public class StackdriverTraceAutoConfiguration {
 		}
 	}
 
+	/**
+	 * Configuration for Sleuth.
+	 */
 	@Configuration
 	@ConditionalOnProperty(name = "spring.sleuth.http.enabled",
 			havingValue = "true", matchIfMissing = true)

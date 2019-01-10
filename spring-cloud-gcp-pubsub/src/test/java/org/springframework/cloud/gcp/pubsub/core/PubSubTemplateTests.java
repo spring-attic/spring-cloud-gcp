@@ -58,6 +58,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for the Pub/Sub template.
+ *
  * @author João André Martins
  * @author Chengyuan Zhao
  * @author Doug Hoard
@@ -66,6 +68,9 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubTemplateTests {
 
+	/**
+	 * used to check exception messages and types.
+	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
 

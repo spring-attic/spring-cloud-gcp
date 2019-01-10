@@ -23,8 +23,8 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 /**
  * A {@link PagingAndSortingRepository} that provides Datastore-specific functionality.
  *
- * @param <T> The type of the domain object
- * @param <ID> The type of the ID property in the domain object
+ * @param <T> the type of the domain object
+ * @param <ID> the type of the ID property in the domain object
  *
  * @author Chengyuan Zhao
  *

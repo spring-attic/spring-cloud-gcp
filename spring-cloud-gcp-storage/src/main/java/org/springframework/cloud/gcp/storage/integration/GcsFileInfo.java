@@ -24,7 +24,10 @@ import org.springframework.integration.file.remote.AbstractFileInfo;
 import org.springframework.util.Assert;
 
 /**
+ * An object that holds metadata information for a Cloud Storage file.
+ *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public class GcsFileInfo extends AbstractFileInfo<BlobInfo> {
 

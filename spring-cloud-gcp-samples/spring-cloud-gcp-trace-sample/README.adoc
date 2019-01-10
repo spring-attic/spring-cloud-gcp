@@ -4,12 +4,12 @@ This sample application demonstrates using the link:../../spring-cloud-gcp-start
 
 You can read about the Spring Boot Starter for Stackdriver Trace in more detail at the link:../../docs/src/main/asciidoc/trace.adoc[Spring Cloud GCP Reference Document Stackdriver Trace section].
 
-Similar content is also available in the
-https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html[Distributed tracing with Spring Cloud Sleuth] codelab.
+Similar content is also available in the https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-trace/index.html[Distributed tracing with Spring Cloud Sleuth] codelab.
 
 == Setup & Configuration
 1. Create a Google Cloud Platform Project
-2. https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account] with Trace Append permission. Furnish a new JSON key and then set the credentials using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable or link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter/README.adoc[using GCP Starter Core properties].
+2. https://cloud.google.com/docs/authentication/getting-started#creating_the_service_account[Create a service account] with Trace Append permission.
+Furnish a new JSON key and then set the credentials using the `GOOGLE_APPLICATION_CREDENTIALS` environment variable or link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter/README.adoc[using GCP Starter Core properties].
 +
 Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] installed and initialized and are logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials], you can skip this step since Spring Cloud GCP will auto-discover those settings for you.
 
@@ -22,8 +22,8 @@ Run the example from Maven:
 $ mvn spring-boot:run
 ----
 
-Browse to `http://localhost:8080`. This will trigger the `ExampleController.work()` method,
-which in turn will call other services, and also a remote RESTful call to `ExampleController.meet()` method.
+Browse to `http://localhost:8080`.
+This will trigger the `ExampleController.work()` method, which in turn will call other services, and also a remote RESTful call to `ExampleController.meet()` method.
 
 To see the traces, navigate to Stackdriver Trace console's https://console.cloud.google.com/traces/traces[Trace List] view.
 You should see the trace information in detail.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
@@ -45,6 +46,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
@@ -58,6 +60,7 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -72,6 +75,7 @@ import static org.mockito.Mockito.when;
  *
  * @author Mike Eltsufin
  * @author Doug Hoard
+ * @author Elena Felder
  */
 @RunWith(MockitoJUnitRunner.class)
 public class PubSubSubscriberTemplateTests {
@@ -286,6 +290,7 @@ public class PubSubSubscriberTemplateTests {
 
 	@Test
 	public void testPull_AndManualAck() throws InterruptedException, ExecutionException, TimeoutException {
+
 		List<AcknowledgeablePubsubMessage> result = this.pubSubSubscriberTemplate.pull(
 				"sub2", 1, true);
 
@@ -341,6 +346,9 @@ public class PubSubSubscriberTemplateTests {
 	@Test
 	public void testPull_AndManualMultiSubscriptionAck()
 			throws InterruptedException, ExecutionException, TimeoutException {
+		ExecutorService mockExecutor = Mockito.mock(ExecutorService.class);
+		this.pubSubSubscriberTemplate.setAckExecutor(mockExecutor);
+
 		List<AcknowledgeablePubsubMessage> result1 = this.pubSubSubscriberTemplate.pull(
 				"sub1", 1, true);
 		List<AcknowledgeablePubsubMessage> result2 = this.pubSubSubscriberTemplate.pull(
@@ -361,6 +369,7 @@ public class PubSubSubscriberTemplateTests {
 		assertThat(listenableFuture.isDone()).isTrue();
 		assertThat(testListenableFutureCallback.getThrowable()).isNull();
 		verify(this.ackCallable, times(2)).futureCall(any(AcknowledgeRequest.class));
+		verify(this.apiFuture, times(2)).addListener(any(), same(mockExecutor));
 	}
 
 	@Test

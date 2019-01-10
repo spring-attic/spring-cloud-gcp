@@ -25,6 +25,9 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class XCloudTraceIdExtractor implements TraceIdExtractor {
 
+	/**
+	 * The name of the header that contains the trace id.
+	 */
 	public static final String X_CLOUD_TRACE_HEADER = "x-cloud-trace-context";
 
 	@Override

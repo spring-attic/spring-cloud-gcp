@@ -6,7 +6,7 @@ Spring Cloud GCP provides two inbound adapters, `GcsInboundFileSynchronizingMess
 
 The Spring Integration Channel Adapters for Google Cloud Storage are included in the `spring-cloud-gcp-storage` module.
 
-To use the Storage portion of Spring Integration for Spring Cloud GCP, you must also provide the `spring-integration-file` dependency, since they aren't pulled transitively.
+To use the Storage portion of Spring Integration for Spring Cloud GCP, you must also provide the `spring-integration-file` dependency, since it isn't pulled transitively.
 
 Maven coordinates, using Spring Cloud GCP BOM:
 

@@ -23,6 +23,8 @@ import java.util.List;
 import com.google.cloud.ByteArray;
 
 /**
+ * Utility functions used in conversion operations.
+ *
  * @author Balint Pato
  * @author Chengyuan Zhao
  *

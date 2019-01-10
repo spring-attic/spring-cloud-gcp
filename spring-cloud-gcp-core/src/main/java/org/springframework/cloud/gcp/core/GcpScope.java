@@ -20,18 +20,40 @@ package org.springframework.cloud.gcp.core;
  * OAuth2 scopes for Google Cloud Platform services integrated by Spring Cloud GCP.
  *
  * @author João André Martins
+ * @author Chengyuan Zhao
  */
 public enum GcpScope {
+	/** scope for Pub/Sub. **/
 	PUBSUB("https://www.googleapis.com/auth/pubsub"),
+
+	/** scope for Spanner database admin functions. **/
 	SPANNER_ADMIN("https://www.googleapis.com/auth/spanner.admin"),
+
+	/** scope for Spanner data read and write. **/
 	SPANNER_DATA("https://www.googleapis.com/auth/spanner.data"),
+
+	/** scope for Datastore. **/
 	DATASTORE("https://www.googleapis.com/auth/datastore"),
+
+	/** scope for SQL Admin. **/
 	SQLADMIN("https://www.googleapis.com/auth/sqlservice.admin"),
+
+	/** scope for Storage read-only. **/
 	STORAGE_READ_ONLY("https://www.googleapis.com/auth/devstorage.read_only"),
+
+	/** scope for Storage read-write. **/
 	STORAGE_READ_WRITE("https://www.googleapis.com/auth/devstorage.read_write"),
+
+	/** scope for Runtime Configurator. **/
 	RUNTIME_CONFIG_SCOPE("https://www.googleapis.com/auth/cloudruntimeconfig"),
+
+	/** scope for Trace. **/
 	TRACE_APPEND("https://www.googleapis.com/auth/trace.append"),
+
+	/** scope for GCP general operations. **/
 	CLOUD_PLATFORM("https://www.googleapis.com/auth/cloud-platform"),
+
+	/** scope for Vision. **/
 	CLOUD_VISION("https://www.googleapis.com/auth/cloud-vision");
 
 	private String url;

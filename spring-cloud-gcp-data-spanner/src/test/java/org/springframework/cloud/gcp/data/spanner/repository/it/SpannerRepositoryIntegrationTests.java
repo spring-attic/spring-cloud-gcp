@@ -43,6 +43,8 @@ import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
+ * Integration tests for Spanner Repository that uses many features.
+ *
  * @author Balint Pato
  * @author Chengyuan Zhao
  */
@@ -250,6 +252,9 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		return trades;
 	}
 
+	/**
+	 * A service that executes methods annotated as transactional.
+	 */
 	public static class TradeRepositoryTransactionalService {
 
 		@Autowired

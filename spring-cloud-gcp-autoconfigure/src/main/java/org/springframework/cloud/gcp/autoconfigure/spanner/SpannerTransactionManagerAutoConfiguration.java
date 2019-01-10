@@ -42,6 +42,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 @AutoConfigureBefore(TransactionAutoConfiguration.class)
 public class SpannerTransactionManagerAutoConfiguration {
 
+	/**
+	 * Config settings.
+	 */
 	@Configuration
 	@ConditionalOnSingleCandidate(DatabaseClient.class)
 	static class DatabaseClientTransactionManagerConfiguration {

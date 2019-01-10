@@ -16,7 +16,8 @@ Then, uncomment the `spring.cloud.gcp.datastore.credentials.location` property i
 +
 `mvn spring-boot:run`
 
-. Use shell to create, find and remove books. Available commands:
+. Use shell to create, find and remove books.
+Available commands:
 +
 ----
 save-book <title> <author> <year>
