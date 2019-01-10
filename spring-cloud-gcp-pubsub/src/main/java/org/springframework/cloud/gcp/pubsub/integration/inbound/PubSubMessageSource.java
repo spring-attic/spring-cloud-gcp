@@ -39,8 +39,6 @@ import org.springframework.util.Assert;
  *
  * <p>Enables more even load balancing with polling adapters, at the cost of efficiency gained from streaming pull.
  *
- * <p>Messages are automatically acked right before being sent to the outbound channel.
- *
  * @author Elena Felder
  *
  * @since 1.1
