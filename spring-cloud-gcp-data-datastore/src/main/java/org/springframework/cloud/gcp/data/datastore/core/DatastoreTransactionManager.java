@@ -51,7 +51,7 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 		this.datastore = datastore;
 	}
 
-		Tx getCurrentTX() {
+	Tx getCurrentTX() {
 		return TransactionSynchronizationManager.isActualTransactionActive()
 				? (Tx) ((DefaultTransactionStatus) TransactionAspectSupport
 						.currentTransactionStatus()).getTransaction()
@@ -148,7 +148,7 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 			return this.transaction;
 		}
 
-				void setTransaction(Transaction transaction) {
+		void setTransaction(Transaction transaction) {
 			this.transaction = transaction;
 		}
 	}

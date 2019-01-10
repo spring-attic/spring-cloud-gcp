@@ -180,7 +180,7 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				: this.queryMethod.getResultProcessor().processResult(rawResult.get(0));
 	}
 
-		boolean isNonEntityReturnedType(Class returnedType) {
+	boolean isNonEntityReturnedType(Class returnedType) {
 		return this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
 				.getDatastoreCompatibleType(returnedType).isPresent();
 	}

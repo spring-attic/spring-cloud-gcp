@@ -78,18 +78,18 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 				this.datastoreMappingContext, entityType);
 	}
 
-		<T> GqlDatastoreQuery<T> createGqlDatastoreQuery(Class<T> entityType,
+	<T> GqlDatastoreQuery<T> createGqlDatastoreQuery(Class<T> entityType,
 			DatastoreQueryMethod queryMethod, String gql) {
 		return new GqlDatastoreQuery<>(entityType, queryMethod, this.datastoreTemplate,
 				gql, this.evaluationContextProvider,
 				this.datastoreMappingContext);
 	}
 
-		Class<?> getEntityType(QueryMethod queryMethod) {
+	Class<?> getEntityType(QueryMethod queryMethod) {
 		return queryMethod.getResultProcessor().getReturnedType().getDomainType();
 	}
 
-		DatastoreQueryMethod createQueryMethod(Method method, RepositoryMetadata metadata,
+	DatastoreQueryMethod createQueryMethod(Method method, RepositoryMetadata metadata,
 			ProjectionFactory factory) {
 		return new DatastoreQueryMethod(method, metadata, factory);
 	}

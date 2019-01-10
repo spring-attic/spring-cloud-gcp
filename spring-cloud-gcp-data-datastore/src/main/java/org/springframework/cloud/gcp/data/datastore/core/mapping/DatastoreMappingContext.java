@@ -55,7 +55,7 @@ public class DatastoreMappingContext extends
 		this.applicationContext = applicationContext;
 	}
 
-		protected <T> DatastorePersistentEntityImpl<T> constructPersistentEntity(
+	protected <T> DatastorePersistentEntityImpl<T> constructPersistentEntity(
 			TypeInformation<T> typeInformation) {
 		return new DatastorePersistentEntityImpl<>(typeInformation);
 	}

@@ -131,11 +131,11 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				((DatastoreQueryMethod) getQueryMethod()).getCollectionReturnType(), false);
 	}
 
-		protected boolean isPageQuery() {
+	protected boolean isPageQuery() {
 		return getQueryMethod().isPageQuery();
 	}
 
-		protected boolean isSliceQuery() {
+	protected boolean isSliceQuery() {
 		return getQueryMethod().isSliceQuery();
 	}
 
@@ -202,7 +202,7 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return new SliceImpl(entities, pageable, exceedsLimit);
 	}
 
-		protected Object convertResultCollection(Object result, Class<?> collectionType) {
+	protected Object convertResultCollection(Object result, Class<?> collectionType) {
 		return getDatastoreTemplate().getDatastoreEntityConverter().getConversions()
 				.convertOnRead(result, collectionType, getQueryMethod().getReturnedObjectType());
 	}
