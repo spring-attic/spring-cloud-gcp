@@ -230,7 +230,7 @@ public interface DatastoreOperations {
 	Key createKey(String kind, Object id);
 
 	/**
-	 * Run query by examle
+	 * Run query by examle.
 	 * @param <T> the type of probe and resulted entities
 	 * @param example the example
 	 * @param queryOptions the query options
@@ -239,7 +239,7 @@ public interface DatastoreOperations {
 	<T> Iterable<T> queryByExample(Example<T> example, DatastoreQueryOptions queryOptions);
 
 	/**
-	 * Run key query by examle
+	 * Run key query by examle.
 	 * @param <T> the type of probe
 	 * @param example the example
 	 * @param queryOptions the query options
