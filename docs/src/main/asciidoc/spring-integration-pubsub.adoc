@@ -112,7 +112,9 @@ For a more detailed explanation of this scenario, see https://cloud.google.com/p
 
 In such a scenario, `PubSubMessageSource`, combined with a pollable channel, help spread the load between different subscribers more evenly.
 
-As with the Inbound Channel Adapter, the message source has a configurable Acknowledgement Mode, payload type, and header mapping.
+As with the Inbound Channel Adapter, the message source has a configurable acknowledgement mode, payload type, and header mapping.
+The default behavior is to return from the synchronous pull operation immediately if no messages are present.
+This can be overridden by using `blockOnPull()` method to wait for at least one message to arrive.
 
 [source,java]
 ----
@@ -122,6 +124,7 @@ public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
 	PubSubMessageSource messageSource = new PubSubMessageSource(pubSubTemplate,  "exampleSubscription");
 	messageSource.setAckMode(AckMode.MANUAL);
 	messageSource.setPayloadType(String.class);
+	messageSource.blockOnPull();
 	return messageSource;
 }
 ----
