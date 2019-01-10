@@ -114,8 +114,8 @@ public class PartTreeDatastoreQueryTests {
 		PartTreeDatastoreQuery<Trade> spy = spy(tradePartTreeDatastoreQuery);
 		doReturn(isPageQuery).when(spy).isPageQuery();
 		doReturn(isSliceQuery).when(spy).isSliceQuery();
-		doAnswer(invocation -> invocation.getArguments()[0]).when(spy).processRawObjectForProjection(any());
-		doAnswer(invocation -> invocation.getArguments()[0]).when(spy).convertResultCollection(any(), any());
+		doAnswer((invocation) -> invocation.getArguments()[0]).when(spy).processRawObjectForProjection(any());
+		doAnswer((invocation) -> invocation.getArguments()[0]).when(spy).convertResultCollection(any(), any());
 
 		return spy;
 	}
@@ -130,7 +130,7 @@ public class PartTreeDatastoreQueryTests {
 				// this int param requires custom conversion
 				8, 3.33 };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -163,7 +163,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 444, Sort.Direction.ASC, "price") };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -198,7 +198,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, null};
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -232,7 +232,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, Sort.by(Sort.Direction.ASC, "price") };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -265,7 +265,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, null };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -324,7 +324,7 @@ public class PartTreeDatastoreQueryTests {
 
 		Object[] params = new Object[] { "BUY", "abcd", 8.88, 3.33, PageRequest.of(1, 444, Sort.Direction.DESC, "id") };
 
-		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(any(), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
@@ -481,7 +481,7 @@ public class PartTreeDatastoreQueryTests {
 	}
 
 	private void preparePageResults(int offset, Integer limit) {
-		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(isA(EntityQuery.class), any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
@@ -497,7 +497,7 @@ public class PartTreeDatastoreQueryTests {
 			return Arrays.asList(3, 4);
 		});
 
-		when(this.datastoreTemplate.queryKeysOrEntities(isA(KeyQuery.class), any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.queryKeysOrEntities(isA(KeyQuery.class), any())).thenAnswer((invocation) -> {
 			KeyQuery statement = invocation.getArgument(0);
 			KeyQuery expected = StructuredQuery.newKeyQueryBuilder()
 					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
@@ -514,7 +514,7 @@ public class PartTreeDatastoreQueryTests {
 	}
 
 	private void prepareSliceResults(int offset, Integer queryLimit, Integer resultLimit) {
-		when(this.datastoreTemplate.query(isA(EntityQuery.class), (Function) any())).thenAnswer(invocation -> {
+		when(this.datastoreTemplate.query(isA(EntityQuery.class), (Function) any())).thenAnswer((invocation) -> {
 			EntityQuery statement = invocation.getArgument(0);
 			EntityQuery expected = StructuredQuery.newEntityQueryBuilder()
 					.setFilter(CompositeFilter.and(PropertyFilter.eq("action", "BUY"),
@@ -528,11 +528,11 @@ public class PartTreeDatastoreQueryTests {
 
 			assertThat(statement).isEqualTo(expected);
 			List<Integer> results = Arrays.asList(3, 4, 5);
-			return resultLimit != null && resultLimit < results.size() ? results.subList(0, resultLimit)
+			return (resultLimit != null && resultLimit < results.size()) ? results.subList(0, resultLimit)
 					: results;
 		});
 		when(this.datastoreTemplate.convertEntitiesForRead(any(), any())).then(
-				invocation -> Collections.singleton(invocation.<Iterator>getArgument(0))
+				(invocation) -> Collections.singleton(invocation.<Iterator>getArgument(0))
 		);
 	}
 
@@ -612,7 +612,7 @@ public class PartTreeDatastoreQueryTests {
 
 		PartTreeDatastoreQuery spyQuery = this.partTreeDatastoreQuery;
 
-		doAnswer(invocation -> invocation.getArgument(0)).when(spyQuery)
+		doAnswer((invocation) -> invocation.getArgument(0)).when(spyQuery)
 				.processRawObjectForProjection(any());
 
 		Object[] params = new Object[] { "BUY", };
@@ -626,7 +626,7 @@ public class PartTreeDatastoreQueryTests {
 
 		PartTreeDatastoreQuery spyQuery = this.partTreeDatastoreQuery;
 
-		doAnswer(invocation -> invocation.getArgument(0)).when(spyQuery)
+		doAnswer((invocation) -> invocation.getArgument(0)).when(spyQuery)
 				.processRawObjectForProjection(any());
 
 		Object[] params = new Object[] { "BUY", };

@@ -331,7 +331,7 @@ public class Singer {
 We have to define a read converter only:
 [source, java]
 ----
-static final Converter<List<?>, Set<?>> LIST__SET_CONVERTER =
+static final Converter<List<?>, Set<?>> LIST_SET_CONVERTER =
 			new Converter<List<?>, Set<?>>() {
 				@Override
 				public Set<?> convert(List<?> source) {

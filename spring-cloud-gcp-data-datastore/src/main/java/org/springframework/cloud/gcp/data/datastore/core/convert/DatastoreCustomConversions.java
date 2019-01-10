@@ -39,11 +39,11 @@ public class DatastoreCustomConversions extends CustomConversions {
 	private static final List<Object> STORE_CONVERTERS;
 
 	static {
-		STORE_CONVERTERS = Collections.unmodifiableList(new ArrayList() {{
-			addAll(JodaTimeConverters.getConvertersToRegister());
-			addAll(Jsr310Converters.getConvertersToRegister());
-			addAll(ThreeTenBackPortConverters.getConvertersToRegister());
-		}});
+		ArrayList<Object> converters = new ArrayList<>();
+		converters.addAll(JodaTimeConverters.getConvertersToRegister());
+		converters.addAll(Jsr310Converters.getConvertersToRegister());
+		converters.addAll(ThreeTenBackPortConverters.getConvertersToRegister());
+		STORE_CONVERTERS = Collections.unmodifiableList(converters);
 
 		STORE_CONVERSIONS =
 				StoreConversions.of(DatastoreNativeTypes.HOLDER, STORE_CONVERTERS);

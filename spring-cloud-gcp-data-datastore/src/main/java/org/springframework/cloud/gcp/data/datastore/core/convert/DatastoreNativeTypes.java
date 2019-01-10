@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +44,7 @@ import com.google.cloud.datastore.StringValue;
 import com.google.cloud.datastore.TimestampValue;
 import com.google.cloud.datastore.Value;
 
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 
@@ -68,65 +68,62 @@ public abstract class DatastoreNativeTypes {
 	 */
 	public static final Set<Class<?>> ID_TYPES;
 
-	private final static Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
+	private static final Map<Class<?>, Function<?, Value<?>>> DATASTORE_TYPE_WRAPPERS;
 
 	private static final Map<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>
 			GQL_PARAM_BINDING_FUNC_MAP;
 
 	static {
 		//keys are used for type resolution, in order of insertion
-		DATASTORE_TYPE_WRAPPERS = Collections.unmodifiableMap(new HashMap<Class<?>, Function<?, Value<?>>>() {
-			{
-				put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of);
-				put(Boolean.class, (Function<Boolean, Value<?>>) BooleanValue::of);
-				put(Long.class, (Function<Long, Value<?>>) LongValue::of);
-				put(Double.class, (Function<Double, Value<?>>) DoubleValue::of);
-				put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of);
-				put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of);
-				put(String.class, (Function<String, Value<?>>) StringValue::of);
-				put(Enum.class, (Function<Enum, Value<?>>) x -> StringValue.of(x.name()));
-				put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of);
-				put(Key.class, (Function<Key, Value<?>>) KeyValue::of);
-			}});
+		DATASTORE_TYPE_WRAPPERS = new MapBuilder<Class<?>, Function<?, Value<?>>>()
+				.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of)
+				.put(Boolean.class, (Function<Boolean, Value<?>>) BooleanValue::of)
+				.put(Long.class, (Function<Long, Value<?>>) LongValue::of)
+				.put(Double.class, (Function<Double, Value<?>>) DoubleValue::of)
+				.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of)
+				.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of)
+				.put(String.class, (Function<String, Value<?>>) StringValue::of)
+				.put(Enum.class, (Function<Enum, Value<?>>) (x) -> StringValue.of(x.name()))
+				.put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of)
+				.put(Key.class, (Function<Key, Value<?>>) KeyValue::of)
+				.build();
 
 		//entries are used for type resolution, in order of insertion
 		DATASTORE_NATIVE_TYPES = Collections.unmodifiableSet(DATASTORE_TYPE_WRAPPERS.keySet());
 
 		ID_TYPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(String.class, Long.class)));
 
-		GQL_PARAM_BINDING_FUNC_MAP = Collections.unmodifiableMap(
-				new HashMap<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>() {
-					{
-						put(Cursor.class, builder -> (s, o) -> builder.setBinding(s, (Cursor) o));
-						put(String.class, builder -> (s, o) -> builder.setBinding(s, (String) o));
-						put(Enum.class,
-							builder -> (s, o) -> builder.setBinding(s, ((Enum) o).name()));
-						put(String[].class,
-							builder -> (s, o) -> builder.setBinding(s, (String[]) o));
-						put(Long.class, builder -> (s, o) -> builder.setBinding(s, (Long) o));
-						put(Long[].class, builder -> (s, o) -> builder.setBinding(s, Stream.of((Long[]) o)
-							.mapToLong(Long::longValue).toArray()));
-						put(long[].class, builder -> (s, o) -> builder.setBinding(s, (long[]) o));
-						put(Double.class, builder -> (s, o) -> builder.setBinding(s, (Double) o));
-						put(Double[].class, builder -> (s, o) -> builder.setBinding(s, Stream.of((Double[]) o)
-							.mapToDouble(Double::doubleValue).toArray()));
-						put(double[].class,
-							builder -> (s, o) -> builder.setBinding(s, (double[]) o));
-						put(Boolean.class,
-							builder -> (s, o) -> builder.setBinding(s, (Boolean) o));
-						put(Boolean[].class, builder -> (s, o) -> builder.setBinding(s,
-								wrapperToBooleanArray((Boolean[]) o)));
-						put(boolean[].class,
-							builder -> (s, o) -> builder.setBinding(s, (boolean[]) o));
-						put(Timestamp.class,
-							builder -> (s, o) -> builder.setBinding(s, (Timestamp) o));
-						put(Timestamp[].class,
-							builder -> (s, o) -> builder.setBinding(s, (Timestamp[]) o));
-						put(Key.class, builder -> (s, o) -> builder.setBinding(s, (Key) o));
-						put(Key[].class, builder -> (s, o) -> builder.setBinding(s, (Key[]) o));
-						put(Blob.class, builder -> (s, o) -> builder.setBinding(s, (Blob) o));
-						put(Blob[].class, builder -> (s, o) -> builder.setBinding(s, (Blob[]) o));
-					}});
+		GQL_PARAM_BINDING_FUNC_MAP = new MapBuilder<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>()
+				.put(Cursor.class, (builder) -> (s, o) -> builder.setBinding(s, (Cursor) o))
+				.put(String.class, (builder) -> (s, o) -> builder.setBinding(s, (String) o))
+				.put(Enum.class,
+					(builder) -> (s, o) -> builder.setBinding(s, ((Enum) o).name()))
+				.put(String[].class,
+					(builder) -> (s, o) -> builder.setBinding(s, (String[]) o))
+				.put(Long.class, (builder) -> (s, o) -> builder.setBinding(s, (Long) o))
+				.put(Long[].class, (builder) -> (s, o) -> builder.setBinding(s, Stream.of((Long[]) o)
+					.mapToLong(Long::longValue).toArray()))
+				.put(long[].class, (builder) -> (s, o) -> builder.setBinding(s, (long[]) o))
+				.put(Double.class, (builder) -> (s, o) -> builder.setBinding(s, (Double) o))
+				.put(Double[].class, (builder) -> (s, o) -> builder.setBinding(s, Stream.of((Double[]) o)
+					.mapToDouble(Double::doubleValue).toArray()))
+				.put(double[].class,
+					(builder) -> (s, o) -> builder.setBinding(s, (double[]) o))
+				.put(Boolean.class,
+					(builder) -> (s, o) -> builder.setBinding(s, (Boolean) o))
+				.put(Boolean[].class, (builder) -> (s, o) -> builder.setBinding(s,
+						wrapperToBooleanArray((Boolean[]) o)))
+				.put(boolean[].class,
+					(builder) -> (s, o) -> builder.setBinding(s, (boolean[]) o))
+				.put(Timestamp.class,
+					(builder) -> (s, o) -> builder.setBinding(s, (Timestamp) o))
+				.put(Timestamp[].class,
+					(builder) -> (s, o) -> builder.setBinding(s, (Timestamp[]) o))
+				.put(Key.class, (builder) -> (s, o) -> builder.setBinding(s, (Key) o))
+				.put(Key[].class, (builder) -> (s, o) -> builder.setBinding(s, (Key[]) o))
+				.put(Blob.class, (builder) -> (s, o) -> builder.setBinding(s, (Blob) o))
+				.put(Blob[].class, (builder) -> (s, o) -> builder.setBinding(s, (Blob[]) o))
+				.build();
 	}
 
 	/**
