@@ -38,8 +38,11 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -142,13 +145,47 @@ public class DatastoreIntegrationTests {
 		millisWaited = Math.max(millisWaited,
 				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4));
 
+		assertThat(this.testEntityRepository
+				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
+						ExampleMatcher.matching().withIgnorePaths("id", "size", "blobField"))))
+								.containsExactlyInAnyOrder(testEntityA, testEntityC);
+
+		Page<TestEntity> result = this.testEntityRepository
+				.findAll(
+						Example.of(new TestEntity(null, null, null, null, null),
+								ExampleMatcher.matching().withIgnorePaths("id", "color", "size", "shape")),
+						PageRequest.of(1, 2));
+		assertThat(result.getTotalElements()).isEqualTo(4);
+		assertThat(result.getNumberOfElements()).isEqualTo(2);
+		assertThat(result.getTotalPages()).isEqualTo(2);
+
+		assertThat(this.testEntityRepository
+				.findAll(
+						Example.of(new TestEntity(null, null, null, null, null),
+								ExampleMatcher.matching().withIgnorePaths("id", "color", "size", "shape", "blobField")),
+						Sort.by(Sort.Direction.ASC, "id")))
+								.containsExactly(testEntityA, testEntityB, testEntityC, testEntityD);
+
+		assertThat(this.testEntityRepository
+				.count(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
+						ExampleMatcher.matching().withIgnorePaths("id", "size", "blobField"))))
+								.isEqualTo(2);
+
+		assertThat(this.testEntityRepository
+				.exists(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
+						ExampleMatcher.matching().withIgnorePaths("id", "size", "blobField"))))
+								.isEqualTo(true);
+
+		assertThat(this.testEntityRepository
+				.exists(Example.of(new TestEntity(null, "black", null, Shape.CIRCLE, null))))
+						.isEqualTo(false);
+
 		assertThat(
 				this.testEntityRepository.removeByColor("red").stream()
 						.map(TestEntity::getId).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder(1L, 3L, 4L);
 
 		this.testEntityRepository.saveAll(allTestEntities);
-
 		assertThat(this.testEntityRepository.findById(1L).get().getBlobField()).isNull();
 
 		testEntityA.setBlobField(Blob.copyFrom("testValueA".getBytes()));

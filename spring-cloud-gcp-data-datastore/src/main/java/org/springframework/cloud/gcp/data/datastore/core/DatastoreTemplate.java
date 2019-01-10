@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -33,6 +35,8 @@ import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Entity;
 import com.google.cloud.datastore.Entity.Builder;
 import com.google.cloud.datastore.EntityQuery;
+import com.google.cloud.datastore.FullEntity;
+import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.ListValue;
@@ -50,10 +54,13 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappin
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentEntity;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastorePersistentProperty;
 import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
+import org.springframework.data.support.ExampleMatcherAccessor;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.support.DefaultTransactionStatus;
@@ -207,6 +214,17 @@ public class DatastoreTemplate implements DatastoreOperations {
 	public <T> Collection<T> findAll(Class<T> entityClass) {
 		return findAll(entityClass, null);
 	}
+
+	@Override
+	public <T> Iterable<T> queryByExample(Example<T> example, DatastoreQueryOptions queryOptions) {
+				return query(exampleToQuery(example, queryOptions, false), example.getProbeType());
+	}
+
+	@Override
+	public <T> Iterator<Key> keyQueryByExample(Example<T> example, DatastoreQueryOptions queryOptions) {
+		return this.datastore.run(exampleToQuery(example, queryOptions, true));
+	}
+
 
 	@Override
 	public <T> Collection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions) {
@@ -520,5 +538,68 @@ public class DatastoreTemplate implements DatastoreOperations {
 				? ((DatastoreTransactionManager.Tx) ((DefaultTransactionStatus) TransactionAspectSupport
 						.currentTransactionStatus()).getTransaction()).getTransaction()
 				: this.datastore;
+	}
+
+	private <T> StructuredQuery exampleToQuery(Example<T> example, DatastoreQueryOptions queryOptions, boolean keyQuery) {
+		validateExample(example);
+
+		T probe = example.getProbe();
+		FullEntity.Builder<IncompleteKey> probeEntityBuilder = Entity.newBuilder();
+		this.datastoreEntityConverter.write(probe, probeEntityBuilder);
+
+		FullEntity<IncompleteKey> probeEntity = probeEntityBuilder.build();
+		DatastorePersistentEntity<?> persistentEntity =
+				this.datastoreMappingContext.getPersistentEntity(example.getProbeType());
+
+		StructuredQuery.Builder builder = keyQuery ? Query.newKeyQueryBuilder() : Query.newEntityQueryBuilder();
+		builder.setKind(persistentEntity.kindName());
+
+		ExampleMatcherAccessor matcherAccessor = new ExampleMatcherAccessor(example.getMatcher());
+		matcherAccessor.getPropertySpecifiers();
+		LinkedList<StructuredQuery.Filter> filters = new LinkedList<>();
+		persistentEntity.doWithColumnBackedProperties((persistentProperty) -> {
+			String name = persistentProperty.getName();
+			if (!example.getMatcher().isIgnoredPath(name)) {
+				Value<?> value = probeEntity.getValue(persistentProperty.getFieldName());
+				filters.add(StructuredQuery.PropertyFilter.eq(name, value));
+			}
+		});
+
+
+		if (!filters.isEmpty()) {
+			builder.setFilter(
+					StructuredQuery.CompositeFilter.and(filters.pop(), filters.toArray(new StructuredQuery.Filter[0])));
+		}
+
+		applyQueryOptions(builder, queryOptions, persistentEntity);
+		return builder.build();
+	}
+
+	private <T> void validateExample(Example<T> example) {
+		Assert.notNull(example, "A non-null example is expected");
+
+		ExampleMatcher matcher = example.getMatcher();
+		if (!matcher.isAllMatching()) {
+			throw new DatastoreDataException("Unsupported MatchMode. Only MatchMode.ALL is supported");
+		}
+		if (matcher.isIgnoreCaseEnabled()) {
+			throw new DatastoreDataException("Ignore case matching is not supported");
+		}
+		if (!(matcher.getDefaultStringMatcher() == ExampleMatcher.StringMatcher.EXACT
+				|| matcher.getDefaultStringMatcher() == ExampleMatcher.StringMatcher.DEFAULT)) {
+			throw new DatastoreDataException("Unsupported StringMatcher. Only EXACT and DEFAULT are supported");
+		}
+		if (matcher.getNullHandler() == ExampleMatcher.NullHandler.INCLUDE) {
+			throw new DatastoreDataException("NullHandler.INCLUDE is not supported");
+		}
+
+		Optional<String> path =
+				example.getMatcher().getIgnoredPaths().stream().filter((s) -> s.contains(".")).findFirst();
+		if (path.isPresent()) {
+			throw new DatastoreDataException("Ignored paths deeper than 1 are not supported");
+		}
+		if (matcher.getPropertySpecifiers().hasValues()) {
+			throw new DatastoreDataException("Property matchers are not supported");
+		}
 	}
 }
