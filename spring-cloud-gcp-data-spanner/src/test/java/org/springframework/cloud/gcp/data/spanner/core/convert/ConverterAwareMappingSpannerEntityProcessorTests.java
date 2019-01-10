@@ -149,7 +149,8 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 				.to(Value.date(Date.fromYearMonthDay(2018, 11, 22))).set("timestampField")
 				.to(Value.timestamp(Timestamp.ofTimeMicroseconds(333))).set("bytes")
 				.to(Value.bytes(ByteArray.copyFrom("string1"))).set("momentsInTime")
-				.to(Value.timestampArray(timestamps)).build();
+				.to(Value.timestampArray(timestamps))
+				.set("commitTimestamp").to(Value.timestamp(Timestamp.ofTimeMicroseconds(1))).build();
 
 		Struct struct2 = Struct.newBuilder().set("id").to(Value.string("key12"))
 				.set("id2").to(Value.string("key22")).set("id3").to(Value.string("key32"))
@@ -170,7 +171,8 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 				.to(Value.date(Date.fromYearMonthDay(2019, 11, 22))).set("timestampField")
 				.to(Value.timestamp(Timestamp.ofTimeMicroseconds(555)))
 				.set("momentsInTime").to(Value.timestampArray(timestamps)).set("bytes")
-				.to(Value.bytes(ByteArray.copyFrom("string2"))).build();
+				.to(Value.bytes(ByteArray.copyFrom("string2")))
+				.set("commitTimestamp").to(Value.timestamp(Timestamp.ofTimeMicroseconds(1))).build();
 
 		MockResults mockResults = new MockResults();
 		mockResults.structs = Arrays.asList(struct1, struct2);
@@ -204,6 +206,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		assertThat(t1.dateField.getYear()).isEqualTo(2018);
 		assertThat(t1.momentsInTime).isEqualTo(instants);
 		assertThat(t1.bytes).isEqualTo(ByteArray.copyFrom("string1"));
+		assertThat(t1.commitTimestamp).isEqualTo(Timestamp.ofTimeMicroseconds(1));
 
 		assertThat(t2.id).isEqualTo("key12");
 		assertThat(t2.testEmbeddedColumns.id2).isEqualTo("key22");
@@ -222,6 +225,7 @@ public class ConverterAwareMappingSpannerEntityProcessorTests {
 		assertThat(t2.momentsInTime).isEqualTo(instants);
 		assertThat(t2.stringList).containsExactly("string");
 		assertThat(t2.bytes).isEqualTo(ByteArray.copyFrom("string2"));
+		assertThat(t2.commitTimestamp).isEqualTo(Timestamp.ofTimeMicroseconds(1));
 	}
 
 	@Test
