@@ -116,14 +116,8 @@ public class SpannerRepositoryTests {
 		assertThat(this.tradeRepository.findAll()).hasSize(8);
 
 		Set<String> tradeSpannerKeys = new HashSet<>();
-		this.traderRepository.findAll().forEach(t -> tradeSpannerKeys.add(this.spannerSchemaUtils.getKey(t).toString()));
+		this.traderRepository.findAll().forEach((t) -> tradeSpannerKeys.add(this.spannerSchemaUtils.getKey(t).toString()));
 
-<<<<<<< Updated upstream
-		Set<String> tradeSpannerKeys = actualTrades.stream()
-				.map((t) -> this.spannerSchemaUtils.getKey(t).toString())
-				.collect(Collectors.toSet());
-=======
->>>>>>> Stashed changes
 		assertThat(tradeSpannerKeys).containsExactlyInAnyOrder(
 				"[demo_trader1,1]",
 				"[demo_trader1,2]",
