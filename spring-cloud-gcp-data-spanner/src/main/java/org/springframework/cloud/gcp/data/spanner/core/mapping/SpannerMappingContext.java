@@ -78,7 +78,7 @@ public class SpannerMappingContext extends
 		return persistentEntity;
 	}
 
-		protected <T> SpannerPersistentEntityImpl<T> constructPersistentEntity(
+	protected <T> SpannerPersistentEntityImpl<T> constructPersistentEntity(
 			TypeInformation<T> typeInformation) {
 		return new SpannerPersistentEntityImpl<>(typeInformation);
 	}

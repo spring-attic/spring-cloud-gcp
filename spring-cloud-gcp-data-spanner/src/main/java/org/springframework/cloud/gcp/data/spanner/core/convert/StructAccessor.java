@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,7 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.Code;
 
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerDataException;
 
 /**
@@ -46,69 +46,70 @@ public class StructAccessor {
 
 	// @formatter:off
 	static final Map<Class, BiFunction<Struct, String, List>> readIterableMapping =
-			new HashMap<Class, BiFunction<Struct, String, List>>() {{
-				put(Boolean.class, AbstractStructReader::getBooleanList);
-				put(Long.class, AbstractStructReader::getLongList);
-				put(String.class, AbstractStructReader::getStringList);
-				put(Double.class, AbstractStructReader::getDoubleList);
-				put(Timestamp.class, AbstractStructReader::getTimestampList);
-				put(Date.class, AbstractStructReader::getDateList);
-				put(ByteArray.class, AbstractStructReader::getBytesList);
-				put(Struct.class, AbstractStructReader::getStructList);
-			}};
+			new MapBuilder<Class, BiFunction<Struct, String, List>>()
+				.put(Boolean.class, AbstractStructReader::getBooleanList)
+				.put(Long.class, AbstractStructReader::getLongList)
+				.put(String.class, AbstractStructReader::getStringList)
+				.put(Double.class, AbstractStructReader::getDoubleList)
+				.put(Timestamp.class, AbstractStructReader::getTimestampList)
+				.put(Date.class, AbstractStructReader::getDateList)
+				.put(ByteArray.class, AbstractStructReader::getBytesList)
+				.put(Struct.class, AbstractStructReader::getStructList)
+				.build();
 
 	static final Map<Class, BiFunction<Struct, String, ?>> singleItemReadMethodMapping =
-			new HashMap<Class, BiFunction<Struct, String, ?>>() {{
-				put(Boolean.class, AbstractStructReader::getBoolean);
-				put(Long.class, AbstractStructReader::getLong);
-				put(long.class, AbstractStructReader::getLong);
-				put(String.class, AbstractStructReader::getString);
-				put(Double.class, AbstractStructReader::getDouble);
-				put(double.class, AbstractStructReader::getDouble);
-				put(Timestamp.class, AbstractStructReader::getTimestamp);
-				put(Date.class, AbstractStructReader::getDate);
-				put(ByteArray.class, AbstractStructReader::getBytes);
-				put(double[].class, AbstractStructReader::getDoubleArray);
-				put(long[].class, AbstractStructReader::getLongArray);
-				put(boolean[].class, AbstractStructReader::getBooleanArray);
+			new MapBuilder<Class, BiFunction<Struct, String, ?>>()
+				.put(Boolean.class, AbstractStructReader::getBoolean)
+				.put(Long.class, AbstractStructReader::getLong)
+				.put(long.class, AbstractStructReader::getLong)
+				.put(String.class, AbstractStructReader::getString)
+				.put(Double.class, AbstractStructReader::getDouble)
+				.put(double.class, AbstractStructReader::getDouble)
+				.put(Timestamp.class, AbstractStructReader::getTimestamp)
+				.put(Date.class, AbstractStructReader::getDate)
+				.put(ByteArray.class, AbstractStructReader::getBytes)
+				.put(double[].class, AbstractStructReader::getDoubleArray)
+				.put(long[].class, AbstractStructReader::getLongArray)
+				.put(boolean[].class, AbstractStructReader::getBooleanArray)
 				// Note that Struct.class appears in this map. While we support
 				// converting structs into POJO fields of POJOs, the value in this map is for
 				// the case where the field within the POJO is Struct.
-				put(Struct.class, Struct::getStruct);
-			}};
+				.put(Struct.class, Struct::getStruct)
+				.build();
 
+	// TODO: Why is this unused?
 	static final Map<Class, BiFunction<Struct, Integer, List>> readIterableMappingIntCol =
-			new HashMap<Class, BiFunction<Struct, Integer, List>>() {{
-				put(Boolean.class, AbstractStructReader::getBooleanList);
-				put(Long.class, AbstractStructReader::getLongList);
-				put(String.class, AbstractStructReader::getStringList);
-				put(Double.class, AbstractStructReader::getDoubleList);
-				put(Timestamp.class, AbstractStructReader::getTimestampList);
-				put(Date.class, AbstractStructReader::getDateList);
-				put(ByteArray.class, AbstractStructReader::getBytesList);
-				put(Struct.class, AbstractStructReader::getStructList);
-			}};
+			new MapBuilder<Class, BiFunction<Struct, Integer, List>>()
+				.put(Boolean.class, AbstractStructReader::getBooleanList)
+				.put(Long.class, AbstractStructReader::getLongList)
+				.put(String.class, AbstractStructReader::getStringList)
+				.put(Double.class, AbstractStructReader::getDoubleList)
+				.put(Timestamp.class, AbstractStructReader::getTimestampList)
+				.put(Date.class, AbstractStructReader::getDateList)
+				.put(ByteArray.class, AbstractStructReader::getBytesList)
+				.put(Struct.class, AbstractStructReader::getStructList)
+				.build();
 
 	static final Map<Class, BiFunction<Struct, Integer, ?>> singleItemReadMethodMappingIntCol =
-			new HashMap<Class, BiFunction<Struct, Integer, ?>>() {{
-				put(Boolean.class, AbstractStructReader::getBoolean);
-				put(Long.class, AbstractStructReader::getLong);
-				put(long.class, AbstractStructReader::getLong);
-				put(String.class, AbstractStructReader::getString);
-				put(Double.class, AbstractStructReader::getDouble);
-				put(double.class, AbstractStructReader::getDouble);
-				put(Timestamp.class, AbstractStructReader::getTimestamp);
-				put(Date.class, AbstractStructReader::getDate);
-				put(ByteArray.class, AbstractStructReader::getBytes);
-				put(double[].class, AbstractStructReader::getDoubleArray);
-				put(long[].class, AbstractStructReader::getLongArray);
-				put(boolean[].class, AbstractStructReader::getBooleanArray);
+			new MapBuilder<Class, BiFunction<Struct, Integer, ?>>()
+				.put(Boolean.class, AbstractStructReader::getBoolean)
+				.put(Long.class, AbstractStructReader::getLong)
+				.put(long.class, AbstractStructReader::getLong)
+				.put(String.class, AbstractStructReader::getString)
+				.put(Double.class, AbstractStructReader::getDouble)
+				.put(double.class, AbstractStructReader::getDouble)
+				.put(Timestamp.class, AbstractStructReader::getTimestamp)
+				.put(Date.class, AbstractStructReader::getDate)
+				.put(ByteArray.class, AbstractStructReader::getBytes)
+				.put(double[].class, AbstractStructReader::getDoubleArray)
+				.put(long[].class, AbstractStructReader::getLongArray)
+				.put(boolean[].class, AbstractStructReader::getBooleanArray)
 				// Note that Struct.class appears in this map. While we support
 				// converting structs into POJO fields of POJOs, the value in this map
 				// is for
 				// the case where the field within the POJO is Struct.
-				put(Struct.class, Struct::getStruct);
-			}};
+				.put(Struct.class, Struct::getStruct)
+				.build();
 
 	// @formatter:on
 

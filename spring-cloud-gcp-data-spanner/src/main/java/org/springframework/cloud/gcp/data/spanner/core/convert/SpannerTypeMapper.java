@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.google.cloud.ByteArray;
@@ -26,6 +25,8 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.Code;
+
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 
 /**
  * A utility class to map between common Java types and types to use with Spanner.
@@ -44,32 +45,30 @@ public final class SpannerTypeMapper {
 
 	private static final Map<Class, Type.Code> JAVA_TYPE_TO_SPANNER_ARRAY_COLUMN_TYPE_MAPPING;
 
-	private static final Map<Type.Code, Class> SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING = Collections
-			.unmodifiableMap(new HashMap<Code, Class>() {{
-				put(Type.Code.BOOL, Boolean.class);
-				put(Type.Code.BYTES, ByteArray.class);
-				put(Type.Code.DATE, com.google.cloud.Date.class);
-				put(Type.Code.FLOAT64, Double.class);
-				put(Type.Code.INT64, Long.class);
-				put(Type.Code.STRING, String.class);
-				put(Type.Code.STRUCT, Struct.class);
-				put(Type.Code.TIMESTAMP, Timestamp.class);
-			}});
+	private static final Map<Type.Code, Class> SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING = new MapBuilder<Code, Class>()
+			.put(Type.Code.BOOL, Boolean.class)
+			.put(Type.Code.BYTES, ByteArray.class)
+			.put(Type.Code.DATE, com.google.cloud.Date.class)
+			.put(Type.Code.FLOAT64, Double.class)
+			.put(Type.Code.INT64, Long.class)
+			.put(Type.Code.STRING, String.class)
+			.put(Type.Code.STRUCT, Struct.class)
+			.put(Type.Code.TIMESTAMP, Timestamp.class)
+			.build();
 
-	private static final Map<Type.Code, Class> SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING = Collections
-			.unmodifiableMap(new HashMap<Type.Code, Class>() {{
-				put(Type.Code.BOOL, boolean[].class);
-				put(Type.Code.BYTES, ByteArray[].class);
-				put(Type.Code.DATE, com.google.cloud.Date[].class);
-				put(Type.Code.FLOAT64, double[].class);
-				put(Type.Code.INT64, long[].class);
-				put(Type.Code.STRING, String[].class);
-				put(Type.Code.STRUCT, Struct[].class);
-				put(Type.Code.TIMESTAMP, Timestamp[].class);
-		}});
+	private static final Map<Type.Code, Class> SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING = new MapBuilder<Type.Code, Class>()
+			.put(Type.Code.BOOL, boolean[].class)
+			.put(Type.Code.BYTES, ByteArray[].class)
+			.put(Type.Code.DATE, com.google.cloud.Date[].class)
+			.put(Type.Code.FLOAT64, double[].class)
+			.put(Type.Code.INT64, long[].class)
+			.put(Type.Code.STRING, String[].class)
+			.put(Type.Code.STRUCT, Struct[].class)
+			.put(Type.Code.TIMESTAMP, Timestamp[].class)
+			.build();
 
 	static {
-		Map<Class, Type.Code> builderMap = new LinkedHashMap<>();
+		Map<Class, Type.Code> builderMap = new HashMap<>();
 		SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING
 				.keySet()
 				.stream()

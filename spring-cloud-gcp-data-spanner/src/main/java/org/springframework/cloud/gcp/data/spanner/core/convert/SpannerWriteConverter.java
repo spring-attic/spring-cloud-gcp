@@ -16,10 +16,11 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -40,13 +41,10 @@ public class SpannerWriteConverter extends SpannerCustomConverter {
 	}
 
 	public SpannerWriteConverter(Collection<Converter> readConverters) {
-		this(
-				getCustomConversions(Collections.unmodifiableCollection(new ArrayList<Converter>() {
-					{
-						addAll(SpannerConverters.DEFAULT_SPANNER_WRITE_CONVERTERS);
-						addAll(Optional.ofNullable(readConverters).orElse(Collections.emptyList()));
-					}
-				})));
+		this(getCustomConversions(Stream.concat(
+					SpannerConverters.DEFAULT_SPANNER_WRITE_CONVERTERS.stream(),
+					Optional.ofNullable(readConverters).orElse(Collections.emptyList()).stream())
+						.collect(Collectors.toList())));
 	}
 
 	public SpannerWriteConverter(CustomConversions customConversions) {
