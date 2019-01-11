@@ -30,6 +30,7 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
 import com.google.cloud.spanner.Struct;
+import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.ValueBinder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -277,8 +278,15 @@ public class ConverterAwareMappingSpannerEntityWriter implements SpannerEntityWr
 		}
 		else {
 
+			// if the property is a commit timestamp, then its Spanner column type is always TIMESTAMP
+			// and only the dummy value needs to be written to trigger auto-population of the commit
+			// time
+			if (property.isCommitTimestamp()) {
+				valueSet = attemptSetSingleItemValue(Value.COMMIT_TIMESTAMP, Timestamp.class, valueBinder,
+						Timestamp.class);
+			}
 			// use the user's annotated column type if possible
-			if (property.getAnnotatedColumnItemType() != null) {
+			else if (property.getAnnotatedColumnItemType() != null) {
 				valueSet = attemptSetSingleItemValue(propertyValue, propertyType,
 						valueBinder,
 						SpannerTypeMapper.getSimpleJavaClassFor(property.getAnnotatedColumnItemType()));
