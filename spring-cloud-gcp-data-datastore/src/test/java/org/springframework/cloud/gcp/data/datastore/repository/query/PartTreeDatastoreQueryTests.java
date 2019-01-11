@@ -22,7 +22,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.google.cloud.datastore.EntityQuery;
 import com.google.cloud.datastore.KeyQuery;
@@ -532,7 +536,9 @@ public class PartTreeDatastoreQueryTests {
 					: results;
 		});
 		when(this.datastoreTemplate.convertEntitiesForRead(any(), any())).then(
-				(invocation) -> Collections.singleton(invocation.<Iterator>getArgument(0))
+				(invocation) -> StreamSupport.stream(Spliterators.spliteratorUnknownSize(
+						invocation.<Iterator>getArgument(0), Spliterator.ORDERED), false)
+						.collect(Collectors.toList())
 		);
 	}
 

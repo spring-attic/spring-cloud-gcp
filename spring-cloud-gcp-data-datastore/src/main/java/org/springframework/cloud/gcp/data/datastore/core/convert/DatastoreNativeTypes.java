@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.datastore.core.convert;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -75,21 +76,22 @@ public abstract class DatastoreNativeTypes {
 
 	static {
 		//keys are used for type resolution, in order of insertion
-		DATASTORE_TYPE_WRAPPERS = new MapBuilder<Class<?>, Function<?, Value<?>>>()
-				.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of)
-				.put(Boolean.class, (Function<Boolean, Value<?>>) BooleanValue::of)
-				.put(Long.class, (Function<Long, Value<?>>) LongValue::of)
-				.put(Double.class, (Function<Double, Value<?>>) DoubleValue::of)
-				.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of)
-				.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of)
-				.put(String.class, (Function<String, Value<?>>) StringValue::of)
-				.put(Enum.class, (Function<Enum, Value<?>>) (x) -> StringValue.of(x.name()))
-				.put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of)
-				.put(Key.class, (Function<Key, Value<?>>) KeyValue::of)
-				.build();
+		Map<Class<?>, Function<?, Value<?>>> wrappers = new LinkedHashMap<>();
+		wrappers.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of);
+		wrappers.put(Boolean.class, (Function<Boolean, Value<?>>) BooleanValue::of);
+		wrappers.put(Long.class, (Function<Long, Value<?>>) LongValue::of);
+		wrappers.put(Double.class, (Function<Double, Value<?>>) DoubleValue::of);
+		wrappers.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of);
+		wrappers.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of);
+		wrappers.put(String.class, (Function<String, Value<?>>) StringValue::of);
+		wrappers.put(Enum.class, (Function<Enum, Value<?>>) (x) -> StringValue.of(x.name()));
+		wrappers.put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of);
+		wrappers.put(Key.class, (Function<Key, Value<?>>) KeyValue::of);
 
-		//entries are used for type resolution, in order of insertion ????????????
-		DATASTORE_NATIVE_TYPES = Collections.unmodifiableSet(DATASTORE_TYPE_WRAPPERS.keySet());
+		DATASTORE_TYPE_WRAPPERS = Collections.unmodifiableMap(wrappers);
+
+		//entries are used for type resolution, in order of insertion
+		DATASTORE_NATIVE_TYPES = Collections.unmodifiableSet(wrappers.keySet());
 
 		ID_TYPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(String.class, Long.class)));
 
