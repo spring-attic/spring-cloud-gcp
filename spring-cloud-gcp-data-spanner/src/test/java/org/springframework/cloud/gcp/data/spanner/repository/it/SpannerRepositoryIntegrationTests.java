@@ -17,10 +17,10 @@
 package org.springframework.cloud.gcp.data.spanner.repository.it;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.cloud.spanner.Struct;
-import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -211,10 +211,10 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				someTrade.getTradeDetail().getId(), someTrade.getTraderId(), "subTrade2",
 				"22a", "22b");
 
-		subTrade1.setSubTradeComponentList(ImmutableList.of(subTradeComponent11));
+		subTrade1.setSubTradeComponentList(Arrays.asList(subTradeComponent11));
 		subTrade2.setSubTradeComponentList(
-				ImmutableList.of(subTradeComponent21, subTradeComponent22));
-		someTrade.setSubTrades(ImmutableList.of(subTrade1, subTrade2));
+				Arrays.asList(subTradeComponent21, subTradeComponent22));
+		someTrade.setSubTrades(Arrays.asList(subTrade1, subTrade2));
 
 		this.tradeRepository.save(someTrade);
 
