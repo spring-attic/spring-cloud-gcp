@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.google.cloud.ByteArray;
@@ -38,8 +39,6 @@ public final class SpannerTypeMapper {
 
 	private SpannerTypeMapper() {
 	}
-
-	// @formatter:off
 
 	private static final Map<Class, Type.Code> JAVA_TYPE_TO_SPANNER_SIMPLE_COLUMN_TYPE_MAPPING;
 
@@ -69,25 +68,16 @@ public final class SpannerTypeMapper {
 				put(Type.Code.TIMESTAMP, Timestamp[].class);
 		}});
 
-	// @formatter:on
-
 	static {
-		HashMap<Class, Type.Code> builderMap = new HashMap<>();
+		Map<Class, Type.Code> builderMap = new LinkedHashMap<>();
 		SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING
 				.keySet()
 				.stream()
 				.forEach(
-<<<<<<< Updated upstream
-						(type) -> builder.put(SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
-		builder.put(double.class, Code.FLOAT64);
-		builder.put(long.class, Code.INT64);
-		JAVA_TYPE_TO_SPANNER_SIMPLE_COLUMN_TYPE_MAPPING = builder.build();
-=======
-						type -> builderMap.put(SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
+						(type) -> builderMap.put(SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
 		builderMap.put(double.class, Code.FLOAT64);
 		builderMap.put(long.class, Code.INT64);
 		JAVA_TYPE_TO_SPANNER_SIMPLE_COLUMN_TYPE_MAPPING = Collections.unmodifiableMap(builderMap);
->>>>>>> Stashed changes
 	}
 
 	static {
@@ -96,13 +86,8 @@ public final class SpannerTypeMapper {
 				.keySet()
 				.stream()
 				.forEach(
-<<<<<<< Updated upstream
-						(type) -> builder.put(SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
-		JAVA_TYPE_TO_SPANNER_ARRAY_COLUMN_TYPE_MAPPING = builder.build();
-=======
-						type -> builderMap.put(SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
+						(type) -> builderMap.put(SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
 		JAVA_TYPE_TO_SPANNER_ARRAY_COLUMN_TYPE_MAPPING = Collections.unmodifiableMap(builderMap);
->>>>>>> Stashed changes
 	}
 
 	public static Class getSimpleJavaClassFor(Type.Code code) {

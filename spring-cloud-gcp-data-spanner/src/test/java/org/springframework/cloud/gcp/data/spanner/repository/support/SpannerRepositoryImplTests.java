@@ -159,13 +159,8 @@ public class SpannerRepositoryImplTests {
 		Iterable<Object> ret = new SimpleSpannerRepository<Object, Key>(this.template,
 				Object.class)
 				.saveAll(Arrays.asList(ob, ob2));
-<<<<<<< Updated upstream
 		assertThat(ret).containsExactlyInAnyOrder(ob, ob2);
-		verify(this.template, times(1)).upsertAll(eq(ImmutableList.of(ob, ob2)));
-=======
-		assertThat(ret, containsInAnyOrder(ob, ob2));
 		verify(this.template, times(1)).upsertAll(eq(Arrays.asList(ob, ob2)));
->>>>>>> Stashed changes
 	}
 
 	@Test
