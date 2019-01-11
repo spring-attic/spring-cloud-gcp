@@ -622,7 +622,7 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void queryByExample() {
+	public void queryByExampleSimpleEntityTest() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
 		this.datastoreTemplate.queryByExample(Example.of(new SimpleTestEntity()), null);
 
@@ -633,7 +633,7 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void queryByExample2() {
+	public void queryByExampleIgnoreFieldTest() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
 		this.datastoreTemplate.queryByExample(
 				Example.of(new SimpleTestEntity(), ExampleMatcher.matching().withIgnorePaths("intField")), null);
@@ -644,7 +644,7 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void queryByExample3() {
+	public void queryByExampleDeepPathTest() {
 		this.expectedEx.expect(DatastoreDataException.class);
 		this.expectedEx.expectMessage("Ignored paths deeper than 1 are not supported");
 
@@ -654,7 +654,7 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void queryByExample4() {
+	public void queryByExampleIncludeTest() {
 		this.expectedEx.expect(DatastoreDataException.class);
 		this.expectedEx.expectMessage("NullHandler.INCLUDE is not supported");
 
@@ -664,7 +664,7 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void queryByExample5() {
+	public void queryByExampleExactMatchTest() {
 		this.expectedEx.expect(DatastoreDataException.class);
 		this.expectedEx.expectMessage("Unsupported StringMatcher. Only EXACT and DEFAULT are supported");
 
@@ -674,7 +674,7 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void queryByExample6() {
+	public void queryByExampleIgnoreCaseTest() {
 		this.expectedEx.expect(DatastoreDataException.class);
 		this.expectedEx.expectMessage("Ignore case matching is not supported");
 
@@ -685,7 +685,7 @@ public class DatastoreTemplateTests {
 
 
 	@Test
-	public void queryByExample7() {
+	public void queryByExampleAllMatchTest() {
 		this.expectedEx.expect(DatastoreDataException.class);
 		this.expectedEx.expectMessage("Unsupported MatchMode. Only MatchMode.ALL is supported");
 
@@ -696,7 +696,7 @@ public class DatastoreTemplateTests {
 
 
 	@Test
-	public void queryByExample8() {
+	public void queryByExamplePropertyMatchersTest() {
 		this.expectedEx.expect(DatastoreDataException.class);
 		this.expectedEx.expectMessage("Property matchers are not supported");
 
@@ -707,7 +707,7 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void queryByExample9() {
+	public void queryByExampleCaseSensitiveTest() {
 		this.expectedEx.expect(DatastoreDataException.class);
 		this.expectedEx.expectMessage("Property matchers are not supported");
 
@@ -718,7 +718,7 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void queryByExample10() {
+	public void queryByExampleNullTest() {
 		this.expectedEx.expect(IllegalArgumentException.class);
 		this.expectedEx.expectMessage("A non-null example is expected");
 
