@@ -77,19 +77,6 @@ public class StructAccessor {
 				.put(Struct.class, Struct::getStruct)
 				.build();
 
-	// TODO: Why is this unused?
-	static final Map<Class, BiFunction<Struct, Integer, List>> readIterableMappingIntCol =
-			new MapBuilder<Class, BiFunction<Struct, Integer, List>>()
-				.put(Boolean.class, AbstractStructReader::getBooleanList)
-				.put(Long.class, AbstractStructReader::getLongList)
-				.put(String.class, AbstractStructReader::getStringList)
-				.put(Double.class, AbstractStructReader::getDoubleList)
-				.put(Timestamp.class, AbstractStructReader::getTimestampList)
-				.put(Date.class, AbstractStructReader::getDateList)
-				.put(ByteArray.class, AbstractStructReader::getBytesList)
-				.put(Struct.class, AbstractStructReader::getStructList)
-				.build();
-
 	static final Map<Class, BiFunction<Struct, Integer, ?>> singleItemReadMethodMappingIntCol =
 			new MapBuilder<Class, BiFunction<Struct, Integer, ?>>()
 				.put(Boolean.class, AbstractStructReader::getBoolean)
