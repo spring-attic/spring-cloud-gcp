@@ -24,10 +24,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.google.cloud</groupId>
-			<artifactId>google-cloud-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.cloud</groupId>
 			<artifactId>google-cloud-resourcemanager</artifactId>
 		</dependency>
 		<dependency>

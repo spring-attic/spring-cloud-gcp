@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.core.convert.converter.Converter;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,9 +42,10 @@ public class SimplePubSubMessageConverterTests {
 
 	private static final String TEST_STRING = "test";
 
-	private static final Map<String, String> TEST_HEADERS = ImmutableMap.of(
-			"key1", "value1",
-			"key2", "value2");
+	private static final Map<String, String> TEST_HEADERS = new MapBuilder<String, String>()
+			.put("key1", "value1")
+			.put("key2", "value2")
+			.build();
 
 	/**
 	 * used to test exception messages and types.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.pubsub;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.api.gax.core.CredentialsProvider;
@@ -26,7 +28,6 @@ import com.google.cloud.pubsub.v1.SubscriptionAdminClient;
 import com.google.cloud.pubsub.v1.SubscriptionAdminSettings;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
-import com.google.common.collect.Lists;
 import com.google.pubsub.v1.ProjectName;
 import com.google.pubsub.v1.ProjectSubscriptionName;
 import com.google.pubsub.v1.ProjectTopicName;
@@ -145,7 +146,9 @@ public class PubSubAdmin implements AutoCloseable {
 		TopicAdminClient.ListTopicsPagedResponse topicListPage =
 				this.topicAdminClient.listTopics(ProjectName.of(this.projectId));
 
-		return Lists.newArrayList(topicListPage.iterateAll());
+		List<Topic> topics = new ArrayList<>();
+		topicListPage.iterateAll().forEach(topics::add);
+		return Collections.unmodifiableList(topics);
 	}
 
 	/**
@@ -264,7 +267,9 @@ public class PubSubAdmin implements AutoCloseable {
 		SubscriptionAdminClient.ListSubscriptionsPagedResponse subscriptionsPage =
 				this.subscriptionAdminClient.listSubscriptions(ProjectName.of(this.projectId));
 
-		return Lists.newArrayList(subscriptionsPage.iterateAll());
+		List<Subscription> subscriptions = new ArrayList<>();
+		subscriptionsPage.iterateAll().forEach(subscriptions::add);
+		return Collections.unmodifiableList(subscriptions);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.rpc.HeaderProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.pubsub.v1.ProjectTopicName;
 
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
@@ -165,7 +164,6 @@ public class DefaultPublisherFactory implements PublisherFactory {
 		});
 	}
 
-	@VisibleForTesting
 	Map<String, Publisher> getCache() {
 		return this.publishers;
 	}
