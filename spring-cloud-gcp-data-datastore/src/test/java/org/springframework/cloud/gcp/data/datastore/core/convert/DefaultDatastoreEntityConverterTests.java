@@ -313,13 +313,13 @@ public class DefaultDatastoreEntityConverterTests {
 				"Failed to convert from type [java.util.ArrayList<?>] " +
 						"to type [org.springframework.cloud.gcp.data.datastore.core.convert.TestDatastoreItemCollections$ComparableBeanContextSupport]");
 
-		ComparableBeanContextSupport ComparableBeanContextSupport = new ComparableBeanContextSupport();
-		ComparableBeanContextSupport.add("this implementation of Collection");
-		ComparableBeanContextSupport.add("is unsupported out of the box!");
+		ComparableBeanContextSupport comparableBeanContextSupport = new ComparableBeanContextSupport();
+		comparableBeanContextSupport.add("this implementation of Collection");
+		comparableBeanContextSupport.add("is unsupported out of the box!");
 
 		TestDatastoreItemCollections item = new TestDatastoreItemCollections(
 				Arrays.asList(1, 2),
-				ComparableBeanContextSupport,
+				comparableBeanContextSupport,
 				new String[] { "abc", "def" }, new boolean[] {true, false}, null, null);
 
 		Entity.Builder builder = getEntityBuilder();
