@@ -184,7 +184,8 @@ public class SpannerSchemaUtils {
 			}
 			return columnName + getTypeDdlString(spannerColumnType, true,
 					spannerPersistentProperty.getMaxColumnLength(),
-					spannerPersistentProperty.isGenerateSchemaNotNull());
+					spannerPersistentProperty.isGenerateSchemaNotNull(),
+					spannerPersistentProperty.isCommitTimestamp());
 		}
 		spannerJavaType = spannerEntityProcessor
 					.getCorrespondingSpannerJavaType(columnType, false);
@@ -209,7 +210,8 @@ public class SpannerSchemaUtils {
 
 		return columnName + getTypeDdlString(spannerColumnType, spannerJavaType.isArray(),
 				spannerPersistentProperty.getMaxColumnLength(),
-				spannerPersistentProperty.isGenerateSchemaNotNull());
+				spannerPersistentProperty.isGenerateSchemaNotNull(),
+				spannerPersistentProperty.isCommitTimestamp());
 	}
 
 	private <T> void addPrimaryKeyColumnNames(
@@ -282,9 +284,11 @@ public class SpannerSchemaUtils {
 	}
 
 	private String getTypeDdlString(Type.Code type, boolean isArray,
-			OptionalLong dataLength, boolean isNotNull) {
-		return getTypeDdlStringWithLength(type, isArray, dataLength)
-				+ (isNotNull ? " NOT NULL" : "");
+			OptionalLong dataLength, boolean isNotNull, boolean isCommitTimestamp) {
+		return (isCommitTimestamp ? Type.Code.TIMESTAMP.toString()
+				: getTypeDdlStringWithLength(type, isArray, dataLength))
+				+ (isNotNull ? " NOT NULL" : "")
+				+ (isCommitTimestamp ? " OPTIONS (allow_commit_timestamp=true)" : "");
 	}
 
 	private String getTypeDdlStringWithLength(Type.Code type, boolean isArray,
