@@ -133,18 +133,18 @@ public class StackdriverTraceAutoConfiguration {
 	}
 
 	@Bean(REPORTER_BEAN_NAME)
+	@ConditionalOnMissingBean(name = REPORTER_BEAN_NAME)
 	public Reporter<Span> stackdriverReporter(ReporterMetrics reporterMetrics,
 			GcpTraceProperties trace, @Qualifier(SENDER_BEAN_NAME) Sender sender) {
-		return AsyncReporter.builder(sender).queuedMaxSpans(1000) // historical
-																	// constraint. Note:
-																	// AsyncReporter
-																	// supports memory
-																	// bounds
+		return AsyncReporter.builder(sender)
+				// historical constraint. Note: AsyncReporter supports memory bounds
+				.queuedMaxSpans(1000)
 				.messageTimeout(trace.getMessageTimeout(), TimeUnit.SECONDS)
 				.metrics(reporterMetrics).build(StackdriverEncoder.V1);
 	}
 
 	@Bean(SENDER_BEAN_NAME)
+	@ConditionalOnMissingBean(name = SENDER_BEAN_NAME)
 	public Sender stackdriverSender(GcpTraceProperties traceProperties,
 			@Qualifier("traceExecutorProvider") ExecutorProvider executorProvider,
 			@Qualifier("stackdriverSenderChannel") ManagedChannel channel)
