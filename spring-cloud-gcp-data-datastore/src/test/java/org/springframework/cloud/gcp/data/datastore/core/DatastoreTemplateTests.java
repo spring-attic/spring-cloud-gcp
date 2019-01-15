@@ -247,7 +247,7 @@ public class DatastoreTemplateTests {
 		doAnswer((invocation) -> {
 			FullEntity.Builder builder = invocation.getArgument(1);
 			builder.set("id", "simple_test_entity");
-			builder.set("intField", 1);
+			builder.set("int_field", 1);
 			return null;
 		}).when(this.datastoreEntityConverter).write(argThat((o) -> o instanceof SimpleTestEntity), any());
 
@@ -628,7 +628,7 @@ public class DatastoreTemplateTests {
 
 		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
 				.and(PropertyFilter.eq("id", "simple_test_entity"),
-						PropertyFilter.eq("intField", 1));
+						PropertyFilter.eq("int_field", 1));
 		verify(this.datastore, times(1)).run(builder.setFilter(filter).build());
 	}
 
@@ -733,9 +733,9 @@ public class DatastoreTemplateTests {
 
 		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
 				.and(PropertyFilter.eq("id", "simple_test_entity"),
-						PropertyFilter.eq("intField", 1));
+						PropertyFilter.eq("int_field", 1));
 		verify(this.datastore, times(1)).run(builder.setFilter(filter)
-				.addOrderBy(StructuredQuery.OrderBy.asc("intField")).setLimit(10).setOffset(1).build());
+				.addOrderBy(StructuredQuery.OrderBy.asc("int_field")).setLimit(10).setOffset(1).build());
 	}
 
 	@Test
@@ -833,6 +833,7 @@ public class DatastoreTemplateTests {
 		@Id
 		String id;
 
+		@Field(name = "int_field")
 		int intField;
 	}
 }

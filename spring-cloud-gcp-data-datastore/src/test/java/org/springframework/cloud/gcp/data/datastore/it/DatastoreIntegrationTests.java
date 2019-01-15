@@ -31,6 +31,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import org.awaitility.Awaitility;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -80,6 +81,21 @@ public class DatastoreIntegrationTests {
 	private DatastoreReaderWriter datastore;
 
 	private Key keyForMap;
+	private long millisWaited;
+
+	private final TestEntity testEntityA = new TestEntity(1L, "red", 1L, Shape.CIRCLE, null);
+
+	private final TestEntity testEntityB = new TestEntity(2L, "blue", 1L, Shape.CIRCLE, null);
+
+	private final TestEntity testEntityC = new TestEntity(3L, "red", 1L, Shape.CIRCLE, null);
+
+	private final TestEntity testEntityD = new TestEntity(4L, "red", 1L, Shape.SQUARE, null);
+
+	private final List<TestEntity> allTestEntities;
+
+	{
+		this.allTestEntities = ImmutableList.of(this.testEntityA, this.testEntityB, this.testEntityC, this.testEntityD);
+	}
 
 	@BeforeClass
 	public static void checkToRun() {
@@ -102,53 +118,21 @@ public class DatastoreIntegrationTests {
 		}
 	}
 
-	@Test
-	public void testSaveAndDeleteRepository() throws InterruptedException {
+	@Before
+	public void saveEntities() {
+		this.testEntityRepository.saveAll(this.allTestEntities);
 
-		TestEntity testEntityA = new TestEntity(1L, "red", 1L, Shape.CIRCLE, null);
-
-		TestEntity testEntityB = new TestEntity(2L, "blue", 1L, Shape.CIRCLE, null);
-
-		TestEntity testEntityC = new TestEntity(3L, "red", 1L, Shape.CIRCLE, null);
-
-		TestEntity testEntityD = new TestEntity(4L, "red", 1L, Shape.SQUARE, null);
-
-		List<TestEntity> allTestEntities = ImmutableList.of(testEntityA, testEntityB,
-				testEntityC, testEntityD);
-
-		this.testEntityRepository.saveAll(allTestEntities);
-
-		long millisWaited = waitUntilTrue(
+		this.millisWaited = waitUntilTrue(
 				() -> this.testEntityRepository.countBySize(1L) == 4);
 
-		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
-				.map((x) -> x.getId()).collect(Collectors.toList())).contains(4L);
+	}
 
-		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(0, 1)).hasNext()).isTrue();
-		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(1, 1)).hasNext()).isTrue();
-		assertThat(
-				this.testEntityRepository.findByColor("red", PageRequest.of(2, 1)).hasNext()).isFalse();
-
-		Page<TestEntity> circles = this.testEntityRepository.findByShape(Shape.CIRCLE, PageRequest.of(0, 2));
-		assertThat(circles.getTotalElements()).isEqualTo(3L);
-		assertThat(circles.getTotalPages()).isEqualTo(2);
-		assertThat(circles.get().count()).isEqualTo(2L);
-		assertThat(circles.get().allMatch((e) -> e.getShape().equals(Shape.CIRCLE))).isTrue();
-
-		assertThat(this.testEntityRepository.findByEnumQueryParam(Shape.SQUARE).stream()
-				.map((x) -> x.getId()).collect(Collectors.toList())).contains(4L);
-
-		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(4);
-
-		this.testEntityRepository.saveAll(allTestEntities);
-
-		millisWaited = Math.max(millisWaited,
-				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4));
-
+	@Test
+	public void testFindByExample() {
 		assertThat(this.testEntityRepository
 				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
 						ExampleMatcher.matching().withIgnorePaths("id", "size", "blobField"))))
-								.containsExactlyInAnyOrder(testEntityA, testEntityC);
+				.containsExactlyInAnyOrder(this.testEntityA, this.testEntityC);
 
 		Page<TestEntity> result = this.testEntityRepository
 				.findAll(
@@ -164,38 +148,66 @@ public class DatastoreIntegrationTests {
 						Example.of(new TestEntity(null, null, null, null, null),
 								ExampleMatcher.matching().withIgnorePaths("id", "color", "size", "shape", "blobField")),
 						Sort.by(Sort.Direction.ASC, "id")))
-								.containsExactly(testEntityA, testEntityB, testEntityC, testEntityD);
+				.containsExactly(this.testEntityA, this.testEntityB, this.testEntityC, this.testEntityD);
 
 		assertThat(this.testEntityRepository
 				.count(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
 						ExampleMatcher.matching().withIgnorePaths("id", "size", "blobField"))))
-								.isEqualTo(2);
+				.isEqualTo(2);
 
 		assertThat(this.testEntityRepository
 				.exists(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
 						ExampleMatcher.matching().withIgnorePaths("id", "size", "blobField"))))
-								.isEqualTo(true);
+				.isEqualTo(true);
 
 		assertThat(this.testEntityRepository
 				.exists(Example.of(new TestEntity(null, "black", null, Shape.CIRCLE, null))))
-						.isEqualTo(false);
+				.isEqualTo(false);
+	}
+
+	@Test
+	public void testSaveAndDeleteRepository() throws InterruptedException {
+
+		assertThat(this.testEntityRepository.findByShape(Shape.SQUARE).stream()
+				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
+
+		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(0, 1)).hasNext()).isTrue();
+		assertThat(this.testEntityRepository.findByColor("red", PageRequest.of(1, 1)).hasNext()).isTrue();
+		assertThat(
+				this.testEntityRepository.findByColor("red", PageRequest.of(2, 1)).hasNext()).isFalse();
+
+		Page<TestEntity> circles = this.testEntityRepository.findByShape(Shape.CIRCLE, PageRequest.of(0, 2));
+		assertThat(circles.getTotalElements()).isEqualTo(3L);
+		assertThat(circles.getTotalPages()).isEqualTo(2);
+		assertThat(circles.get().count()).isEqualTo(2L);
+		assertThat(circles.get().allMatch((e) -> e.getShape().equals(Shape.CIRCLE))).isTrue();
+
+		assertThat(this.testEntityRepository.findByEnumQueryParam(Shape.SQUARE).stream()
+				.map(TestEntity::getId).collect(Collectors.toList())).contains(4L);
+
+		assertThat(this.testEntityRepository.deleteBySize(1L)).isEqualTo(4);
+
+		this.testEntityRepository.saveAll(this.allTestEntities);
+
+		this.millisWaited = Math.max(this.millisWaited,
+				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4));
 
 		assertThat(
 				this.testEntityRepository.removeByColor("red").stream()
 						.map(TestEntity::getId).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder(1L, 3L, 4L);
 
-		this.testEntityRepository.saveAll(allTestEntities);
+		this.testEntityRepository.saveAll(this.allTestEntities);
 		assertThat(this.testEntityRepository.findById(1L).get().getBlobField()).isNull();
 
-		testEntityA.setBlobField(Blob.copyFrom("testValueA".getBytes()));
+		this.testEntityA.setBlobField(Blob.copyFrom("testValueA".getBytes()));
 
-		this.testEntityRepository.save(testEntityA);
+		this.testEntityRepository.save(this.testEntityA);
 
 		assertThat(this.testEntityRepository.findById(1L).get().getBlobField())
 				.isEqualTo(Blob.copyFrom("testValueA".getBytes()));
 
-		millisWaited = Math.max(millisWaited, waitUntilTrue(
+		this.millisWaited = Math.max(this.millisWaited, waitUntilTrue(
 				() -> this.testEntityRepository.countBySizeAndColor(1L, "red") == 3));
 
 		List<TestEntity> foundByCustomQuery = this.testEntityRepository
@@ -223,44 +235,44 @@ public class DatastoreIntegrationTests {
 		assertThat(foundByCustomProjectionQuery[0].getBlobField()).isNull();
 		assertThat(foundByCustomProjectionQuery[0].getId()).isEqualTo((Long) 1L);
 
-		testEntityA.setBlobField(null);
+		this.testEntityA.setBlobField(null);
 
 		assertThat(this.testEntityRepository.getKey().getId()).isEqualTo((Long) 1L);
 		assertThat(this.testEntityRepository.getIds(1L).length).isEqualTo(1);
 		assertThat(this.testEntityRepository.getOneId(1L)).isEqualTo(1);
 		assertThat(this.testEntityRepository.getOneTestEntity(1L)).isNotNull();
 
-		this.testEntityRepository.save(testEntityA);
+		this.testEntityRepository.save(this.testEntityA);
 
 		assertThat(this.testEntityRepository.findById(1L).get().getBlobField()).isNull();
 
 		assertThat(this.testEntityRepository.findAllById(ImmutableList.of(1L, 2L))).hasSize(2);
 
-		this.testEntityRepository.delete(testEntityA);
+		this.testEntityRepository.delete(this.testEntityA);
 
 		assertThat(this.testEntityRepository.findById(1L).isPresent()).isFalse();
 
 		this.testEntityRepository.deleteAll();
 
 		this.transactionalTemplateService.testSaveAndStateConstantInTransaction(
-				allTestEntities,
-				millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
+				this.allTestEntities,
+				this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
 
-		millisWaited = Math.max(millisWaited,
+		this.millisWaited = Math.max(this.millisWaited,
 				waitUntilTrue(() -> this.testEntityRepository.countBySize(1L) == 4));
 
 		this.testEntityRepository.deleteAll();
 
 		try {
 			this.transactionalTemplateService
-					.testSaveInTransactionFailed(allTestEntities);
+					.testSaveInTransactionFailed(this.allTestEntities);
 		}
 		catch (Exception ignored) {
 		}
 
 		// we wait a period long enough that the previously attempted failed save would
 		// show up if it is unexpectedly successful and committed.
-		Thread.sleep(millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
+		Thread.sleep(this.millisWaited * WAIT_FOR_EVENTUAL_CONSISTENCY_SAFETY_MULTIPLE);
 
 		assertThat(this.testEntityRepository.count()).isEqualTo(0);
 

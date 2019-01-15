@@ -558,10 +558,10 @@ public class DatastoreTemplate implements DatastoreOperations {
 		matcherAccessor.getPropertySpecifiers();
 		LinkedList<StructuredQuery.Filter> filters = new LinkedList<>();
 		persistentEntity.doWithColumnBackedProperties((persistentProperty) -> {
-			String name = persistentProperty.getName();
-			if (!example.getMatcher().isIgnoredPath(name)) {
-				Value<?> value = probeEntity.getValue(persistentProperty.getFieldName());
-				filters.add(StructuredQuery.PropertyFilter.eq(name, value));
+			if (!example.getMatcher().isIgnoredPath(persistentProperty.getName())) {
+				String fieldName = persistentProperty.getFieldName();
+				Value<?> value = probeEntity.getValue(fieldName);
+				filters.add(StructuredQuery.PropertyFilter.eq(fieldName, value));
 			}
 		});
 
