@@ -110,7 +110,7 @@ While `PubSubInboundChannelAdapter`, through the underlying Asynchronous Pull Pu
 This behavior is most obvious when publishing a large batch of small messages that take a long time to process individually. It manifests as one subscriber taking up most messages, even if multiple subscribers are available to take on the work.
 For a more detailed explanation of this scenario, see https://cloud.google.com/pubsub/docs/pull#dealing-with-large-backlogs-of-small-messages[GCP Pub/Sub documentation].
 
-In such a scenario, `PubSubMessageSource`, combined with a pollable channel, help spread the load between different subscribers more evenly.
+In such a scenario, a `PubSubMessageSource` can help spread the load between different subscribers more evenly.
 
 As with the Inbound Channel Adapter, the message source has a configurable acknowledgement mode, payload type, and header mapping.
 The default behavior is to return from the synchronous pull operation immediately if no messages are present.
