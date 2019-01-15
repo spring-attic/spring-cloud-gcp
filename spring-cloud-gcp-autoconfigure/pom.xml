@@ -174,12 +174,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-sleuth-zipkin</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
             <groupId>io.zipkin.gcp</groupId>
             <artifactId>brave-propagation-stackdriver</artifactId>
             <optional>true</optional>
@@ -231,6 +225,13 @@
             <version>2.5</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-testing</artifactId>
+            <version>1.16.1</version>
+            <scope>test</scope>
+        </dependency>
+
 
         <dependency>
             <!-- Needed for making conditional expressions in logback files. -->

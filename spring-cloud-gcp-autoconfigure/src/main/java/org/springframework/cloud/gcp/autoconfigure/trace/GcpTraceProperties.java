@@ -28,6 +28,7 @@ import org.springframework.cloud.gcp.core.GcpScope;
  * @author Ray Tsang
  * @author Mike Eltsufin
  * @author João André Martins
+ * @author Tim Ysewyn
  */
 @ConfigurationProperties("spring.cloud.gcp.trace")
 public class GcpTraceProperties implements CredentialsSupplier {
@@ -78,6 +79,11 @@ public class GcpTraceProperties implements CredentialsSupplier {
 	 * in that case.
 	 */
 	private Boolean waitForReady;
+
+	/**
+	 * Timeout in seconds before pending spans will be sent in batches to GCP Stackdriver Trace.
+	 */
+	private int messageTimeout = 1;
 
 	public String getProjectId() {
 		return this.projectId;
@@ -145,5 +151,13 @@ public class GcpTraceProperties implements CredentialsSupplier {
 
 	public void setWaitForReady(boolean waitForReady) {
 		this.waitForReady = waitForReady;
+	}
+
+	public int getMessageTimeout() {
+		return this.messageTimeout;
+	}
+
+	public void setMessageTimeout(int messageTimeout) {
+		this.messageTimeout = messageTimeout;
 	}
 }

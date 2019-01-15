@@ -26,6 +26,7 @@ import org.springframework.boot.test.context.runner.ReactiveWebApplicationContex
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.autoconfigure.trace.StackdriverTraceAutoConfiguration;
+import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -88,7 +89,8 @@ public class StackdriverLoggingAutoConfigurationTests {
 	public void testWithSleuth() {
 		this.contextRunner
 				.withConfiguration(AutoConfigurations.of(Configuration.class,
-						StackdriverTraceAutoConfiguration.class))
+						StackdriverTraceAutoConfiguration.class,
+						TraceAutoConfiguration.class))
 				.withPropertyValues("spring.cloud.gcp.project-id=pop-1")
 				.run((context) -> assertThat(context
 						.getBeansOfType(TraceIdLoggingWebMvcInterceptor.class).size())
