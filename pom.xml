@@ -217,16 +217,17 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
+				<inherited>false</inherited>
 				<executions>
 					<execution>
-						<id>custom-git-hooks</id>
+						<id>update-license-year</id>
 						<phase>validate</phase>
 						<goals>
 							<goal>exec</goal>
 						</goals>
 						<configuration>
 							<executable>bash</executable>
-							<arguments>./util/update-license-year</arguments>
+							<arguments>util/update-license-year.sh</arguments>
 						</configuration>
 					</execution>
 				</executions>
