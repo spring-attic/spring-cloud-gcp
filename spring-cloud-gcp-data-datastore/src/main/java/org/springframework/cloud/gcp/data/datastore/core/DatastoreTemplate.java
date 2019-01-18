@@ -225,7 +225,6 @@ public class DatastoreTemplate implements DatastoreOperations {
 		return this.datastore.run(exampleToQuery(example, queryOptions, true));
 	}
 
-
 	@Override
 	public <T> Collection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions) {
 		DatastorePersistentEntity<?> persistentEntity = this.datastoreMappingContext.getPersistentEntity(entityClass);
