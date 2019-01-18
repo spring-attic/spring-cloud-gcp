@@ -218,7 +218,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> Iterable<T> queryByExample(Example<T> example, DatastoreQueryOptions queryOptions) {
-				return query(exampleToQuery(example, queryOptions, false), example.getProbeType());
+		return query(exampleToQuery(example, queryOptions, false), example.getProbeType());
 	}
 
 	@Override
@@ -226,7 +226,6 @@ public class DatastoreTemplate implements DatastoreOperations {
 		QueryResults results = this.datastore.run(exampleToQuery(example, queryOptions, true));
 		return () -> results;
 	}
-
 
 	@Override
 	public <T> Collection<T> findAll(Class<T> entityClass, DatastoreQueryOptions queryOptions) {
