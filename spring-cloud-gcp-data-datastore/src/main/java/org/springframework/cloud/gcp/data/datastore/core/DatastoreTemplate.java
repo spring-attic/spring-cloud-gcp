@@ -40,6 +40,7 @@ import com.google.cloud.datastore.IncompleteKey;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.ListValue;
+import com.google.cloud.datastore.NullValue;
 import com.google.cloud.datastore.PathElement;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
@@ -221,8 +222,9 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	@Override
-	public <T> Iterator<Key> keyQueryByExample(Example<T> example, DatastoreQueryOptions queryOptions) {
-		return this.datastore.run(exampleToQuery(example, queryOptions, true));
+	public <T> Iterable<Key> keyQueryByExample(Example<T> example, DatastoreQueryOptions queryOptions) {
+		QueryResults results = this.datastore.run(exampleToQuery(example, queryOptions, true));
+		return () -> results;
 	}
 
 
@@ -561,6 +563,11 @@ public class DatastoreTemplate implements DatastoreOperations {
 			if (!example.getMatcher().isIgnoredPath(persistentProperty.getName())) {
 				String fieldName = persistentProperty.getFieldName();
 				Value<?> value = probeEntity.getValue(fieldName);
+				if (value instanceof NullValue
+						&& example.getMatcher().getNullHandler() != ExampleMatcher.NullHandler.INCLUDE) {
+					//skip null value
+					return;
+				}
 				filters.add(StructuredQuery.PropertyFilter.eq(fieldName, value));
 			}
 		});
@@ -588,9 +595,6 @@ public class DatastoreTemplate implements DatastoreOperations {
 		if (!(matcher.getDefaultStringMatcher() == ExampleMatcher.StringMatcher.EXACT
 				|| matcher.getDefaultStringMatcher() == ExampleMatcher.StringMatcher.DEFAULT)) {
 			throw new DatastoreDataException("Unsupported StringMatcher. Only EXACT and DEFAULT are supported");
-		}
-		if (matcher.getNullHandler() == ExampleMatcher.NullHandler.INCLUDE) {
-			throw new DatastoreDataException("NullHandler.INCLUDE is not supported");
 		}
 
 		Optional<String> path =

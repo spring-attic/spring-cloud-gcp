@@ -167,19 +167,14 @@ public class SimpleDatastoreRepository<T, ID> implements DatastoreRepository<T, 
 
 	@Override
 	public <S extends T> long count(Example<S> example) {
-		Iterator<Key> keyIterator = this.datastoreTemplate.keyQueryByExample(example, null);
+		Iterable<Key> keys = this.datastoreTemplate.keyQueryByExample(example, null);
 
-		int count = 0;
-		while (keyIterator.hasNext()) {
-			count++;
-			keyIterator.next();
-		}
-		return count;
+		return StreamSupport.stream(keys.spliterator(), false).count();
 	}
 
 	@Override
 	public <S extends T> boolean exists(Example<S> example) {
-		Iterator<Key> keyIterator = this.datastoreTemplate.keyQueryByExample(example, new DatastoreQueryOptions(1, null, null));
-		return keyIterator.hasNext();
+		Iterable<Key> keys = this.datastoreTemplate.keyQueryByExample(example, new DatastoreQueryOptions(1, null, null));
+		return StreamSupport.stream(keys.spliterator(), false).findAny().isPresent();
 	}
 }

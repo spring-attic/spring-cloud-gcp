@@ -913,27 +913,24 @@ Methods that return `Slice`, on the other hand, don't execute any additional que
 
 ==== Query by example
 Query by Example is an alternative querying technique.
-It uses a user-provided object as an example and generates query based on it and allows users to choose which fields should be excluded from filter. See https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example[Spring Data Documeentation] for details.
+It enables dynamic query generation based on user-provided object. See https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example[Spring Data Documentation] for details.
 
-NOTE: Currently, only equality queries are supported (no ignore-case matching, regexp matching, etc.).
-NullHandler.INCLUDE is not supported.
-Per-field matchers are not supported.
-Embedded entities matching is not supported.
+===== Unsupported features:
+. Currently, only equality queries are supported (no ignore-case matching, regexp matching, etc.).
+. Per-field matchers are not supported.
+. Embedded entities matching is not supported.
 
-For example, this call will match all fields, except `id` and `firstName` (assuming there are only `id`, `firstName` and `lastName`, it will find all users with the last name equal to "Smith"):
+For example, if you want to find all users with the last name "Smith", you would use the following code:
 [source, java]
 ----
 userRepository.findAll(
-    Example.of(
-        new User(null, null, "Smith"),
-        ExampleMatcher.matching().withIgnorePaths("id", "firstName"))))
+    Example.of(new User(null, null, "Smith"))
 ----
-
-
-This one will match all fields from object (basically validating that such object has been saved to Cloud Datastore):
+`null` fields are not used in the filter by default. If you want to include them, you would use following code:
 [source, java]
 ----
-userRepository.findAll(Example.of(new User(1, "John", "Smith")));
+userRepository.findAll(
+    Example.of(new User(null, null, "Smith"), ExampleMatcher.matching().withIncludeNullValues())
 ----
 
 ==== Custom GQL query methods

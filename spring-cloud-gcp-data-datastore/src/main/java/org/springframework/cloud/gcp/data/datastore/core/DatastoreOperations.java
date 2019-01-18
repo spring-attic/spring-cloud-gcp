@@ -245,5 +245,5 @@ public interface DatastoreOperations {
 	 * @param queryOptions the query options
 	 * @return result keys
 	 */
-	<T> Iterator<Key> keyQueryByExample(Example<T> example, DatastoreQueryOptions queryOptions);
+	<T> Iterable<Key> keyQueryByExample(Example<T> example, DatastoreQueryOptions queryOptions);
 }

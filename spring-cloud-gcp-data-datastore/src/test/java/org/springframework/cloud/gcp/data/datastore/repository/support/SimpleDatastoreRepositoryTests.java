@@ -192,7 +192,7 @@ public class SimpleDatastoreRepositoryTests {
 				.when(this.datastoreTemplate).queryByExample(same(example),
 						eq(new DatastoreQueryOptions(2, 2, sort)));
 
-		doAnswer((invocationOnMock) -> Arrays.asList(1, 2, 3, 4, 5).iterator())
+		doAnswer((invocationOnMock) -> Arrays.asList(1, 2, 3, 4, 5))
 				.when(this.datastoreTemplate).keyQueryByExample(same(example), isNull());
 
 
@@ -233,7 +233,7 @@ public class SimpleDatastoreRepositoryTests {
 	public void existsByExampleTrue() {
 		Example<Object> example2 = Example.of(new Object());
 
-		doAnswer((invocationOnMock) -> Arrays.asList(1).iterator())
+		doAnswer((invocationOnMock) -> Arrays.asList(1))
 				.when(this.datastoreTemplate).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
 
 		assertThat(this.simpleDatastoreRepository.exists(example2)).isEqualTo(true);
@@ -245,7 +245,7 @@ public class SimpleDatastoreRepositoryTests {
 	public void existsByExampleFalse() {
 		Example<Object> example2 = Example.of(new Object());
 
-		doAnswer((invocationOnMock) -> Arrays.asList().iterator())
+		doAnswer((invocationOnMock) -> Arrays.asList())
 				.when(this.datastoreTemplate).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
 
 		assertThat(this.simpleDatastoreRepository.exists(example2)).isEqualTo(false);
@@ -257,7 +257,7 @@ public class SimpleDatastoreRepositoryTests {
 	public void countByExample() {
 		Example<Object> example2 = Example.of(new Object());
 
-		doAnswer((invocationOnMock) -> Arrays.asList(1, 2, 3).iterator())
+		doAnswer((invocationOnMock) -> Arrays.asList(1, 2, 3))
 				.when(this.datastoreTemplate).keyQueryByExample(same(example2), isNull());
 
 		assertThat(this.simpleDatastoreRepository.count(example2)).isEqualTo(3);
@@ -269,7 +269,7 @@ public class SimpleDatastoreRepositoryTests {
 	public void countByExampleZero() {
 		Example<Object> example1 = Example.of(new Object());
 
-		doAnswer((invocationOnMock) -> new ArrayList<>().iterator())
+		doAnswer((invocationOnMock) -> new ArrayList<>())
 				.when(this.datastoreTemplate).keyQueryByExample(same(example1), isNull());
 
 		assertThat(this.simpleDatastoreRepository.count(example1)).isEqualTo(0);

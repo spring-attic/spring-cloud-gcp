@@ -130,8 +130,7 @@ public class DatastoreIntegrationTests {
 	@Test
 	public void testFindByExample() {
 		assertThat(this.testEntityRepository
-				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null),
-						ExampleMatcher.matching().withIgnorePaths("id", "size", "blobField"))))
+				.findAll(Example.of(new TestEntity(null, "red", null, Shape.CIRCLE, null))))
 				.containsExactlyInAnyOrder(this.testEntityA, this.testEntityC);
 
 		Page<TestEntity> result = this.testEntityRepository
@@ -161,8 +160,13 @@ public class DatastoreIntegrationTests {
 				.isEqualTo(true);
 
 		assertThat(this.testEntityRepository
-				.exists(Example.of(new TestEntity(null, "black", null, Shape.CIRCLE, null))))
+				.exists(Example.of(new TestEntity(null, "red", null, null, null),
+						ExampleMatcher.matching().withIncludeNullValues())))
 				.isEqualTo(false);
+
+		assertThat(this.testEntityRepository
+				.exists(Example.of(new TestEntity(null, "red", null, null, null))))
+				.isEqualTo(true);
 	}
 
 	@Test

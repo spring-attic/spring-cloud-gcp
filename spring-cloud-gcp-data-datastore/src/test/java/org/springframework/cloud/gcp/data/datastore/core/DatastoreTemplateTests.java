@@ -37,6 +37,7 @@ import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.LongValue;
+import com.google.cloud.datastore.NullValue;
 import com.google.cloud.datastore.PathElement;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.Query.ResultType;
@@ -117,6 +118,9 @@ public class DatastoreTemplateTests {
 	private Key childKey5;
 
 	private Key childKey6;
+
+	private SimpleTestEntity simpleTestEntity = new SimpleTestEntity();
+	private SimpleTestEntity simpleTestEntityNullVallues = new SimpleTestEntity();
 
 	private final ReadWriteConversions readWriteConversions = mock(ReadWriteConversions.class);
 
@@ -249,7 +253,14 @@ public class DatastoreTemplateTests {
 			builder.set("id", "simple_test_entity");
 			builder.set("int_field", 1);
 			return null;
-		}).when(this.datastoreEntityConverter).write(argThat((o) -> o instanceof SimpleTestEntity), any());
+		}).when(this.datastoreEntityConverter).write(same(this.simpleTestEntity), any());
+
+		doAnswer((invocation) -> {
+			FullEntity.Builder builder = invocation.getArgument(1);
+			builder.set("id", NullValue.of());
+			builder.set("int_field", NullValue.of());
+			return null;
+		}).when(this.datastoreEntityConverter).write(same(this.simpleTestEntityNullVallues), any());
 
 		when(this.datastore.run(eq(this.testEntityQuery)))
 				.thenReturn(testEntityQueryResults);
@@ -648,27 +659,35 @@ public class DatastoreTemplateTests {
 		this.expectedEx.expect(DatastoreDataException.class);
 		this.expectedEx.expectMessage("Ignored paths deeper than 1 are not supported");
 
-		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
 		this.datastoreTemplate.queryByExample(
 				Example.of(new SimpleTestEntity(), ExampleMatcher.matching().withIgnorePaths("intField.a")), null);
 	}
 
 	@Test
-	public void queryByExampleIncludeTest() {
-		this.expectedEx.expect(DatastoreDataException.class);
-		this.expectedEx.expectMessage("NullHandler.INCLUDE is not supported");
-
+	public void queryByExampleIncludeNullValuesTest() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
 		this.datastoreTemplate.queryByExample(
-				Example.of(new SimpleTestEntity(), ExampleMatcher.matching().withIncludeNullValues()), null);
+				Example.of(this.simpleTestEntityNullVallues, ExampleMatcher.matching().withIncludeNullValues()), null);
+
+		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
+				.and(PropertyFilter.eq("id", NullValue.of()),
+						PropertyFilter.eq("int_field", NullValue.of()));
+		verify(this.datastore, times(1)).run(builder.setFilter(filter).build());
 	}
 
+	@Test
+	public void queryByExampleNoNullValuesTest() {
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
+		this.datastoreTemplate.queryByExample(
+				Example.of(this.simpleTestEntityNullVallues), null);
+
+		verify(this.datastore, times(1)).run(builder.build());
+	}
 	@Test
 	public void queryByExampleExactMatchTest() {
 		this.expectedEx.expect(DatastoreDataException.class);
 		this.expectedEx.expectMessage("Unsupported StringMatcher. Only EXACT and DEFAULT are supported");
 
-		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
 		this.datastoreTemplate.queryByExample(
 				Example.of(new SimpleTestEntity(), ExampleMatcher.matching().withStringMatcher(ExampleMatcher.StringMatcher.REGEX)), null);
 	}
@@ -678,7 +697,6 @@ public class DatastoreTemplateTests {
 		this.expectedEx.expect(DatastoreDataException.class);
 		this.expectedEx.expectMessage("Ignore case matching is not supported");
 
-		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
 		this.datastoreTemplate.queryByExample(
 				Example.of(new SimpleTestEntity(), ExampleMatcher.matching().withIgnoreCase()), null);
 	}
@@ -689,7 +707,6 @@ public class DatastoreTemplateTests {
 		this.expectedEx.expect(DatastoreDataException.class);
 		this.expectedEx.expectMessage("Unsupported MatchMode. Only MatchMode.ALL is supported");
 
-		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
 		this.datastoreTemplate.queryByExample(
 				Example.of(new SimpleTestEntity(), ExampleMatcher.matchingAny()), null);
 	}
