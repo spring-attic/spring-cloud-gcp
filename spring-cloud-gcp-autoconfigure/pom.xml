@@ -225,12 +225,12 @@
             <version>2.5</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-testing</artifactId>
-            <version>1.16.1</version>
-            <scope>test</scope>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>io.grpc</groupId>-->
+            <!--<artifactId>grpc-testing</artifactId>-->
+            <!--<version>1.16.1</version>-->
+            <!--<scope>test</scope>-->
+        <!--</dependency>-->
 
 
         <dependency>
