@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.google.auth.Credentials;
 import io.grpc.ManagedChannel;
 import org.junit.Test;
 import zipkin2.codec.BytesEncoder;
+import zipkin2.reporter.Reporter;
 import zipkin2.reporter.Sender;
 
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -32,6 +33,8 @@ import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfigurat
 import org.springframework.cloud.sleuth.autoconfig.SleuthProperties;
 import org.springframework.cloud.sleuth.autoconfig.TraceAutoConfiguration;
 import org.springframework.cloud.sleuth.log.SleuthLogAutoConfiguration;
+import org.springframework.cloud.sleuth.zipkin2.ZipkinAutoConfiguration;
+import org.springframework.cloud.sleuth.zipkin2.ZipkinBackwardsCompatibilityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,6 +47,7 @@ import static org.mockito.Mockito.mock;
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Chengyuan Zhao
+ * @author Tim Ysewyn
  */
 public class StackdriverTraceAutoConfigurationTests {
 
@@ -52,6 +56,8 @@ public class StackdriverTraceAutoConfigurationTests {
 					StackdriverTraceAutoConfigurationTests.MockConfiguration.class,
 					StackdriverTraceAutoConfiguration.class,
 					GcpContextAutoConfiguration.class,
+					ZipkinBackwardsCompatibilityAutoConfiguration.class,
+					ZipkinAutoConfiguration.class,
 					TraceAutoConfiguration.class,
 					SleuthLogAutoConfiguration.class,
 					RefreshAutoConfiguration.class))
@@ -67,8 +73,15 @@ public class StackdriverTraceAutoConfigurationTests {
 			assertThat(context.getBean(HttpClientParser.class)).isNotNull();
 			assertThat(context.getBean(HttpServerParser.class)).isNotNull();
 			assertThat(context.getBean(BytesEncoder.class)).isNotNull();
-			assertThat(context.getBean(Sender.class)).isNotNull();
 			assertThat(context.getBean(ManagedChannel.class)).isNotNull();
+
+			assertThat(context.getBeansOfType(Sender.class)).hasSize(2);
+			assertThat(context.getBeansOfType(Sender.class))
+					.containsKeys(ZipkinAutoConfiguration.SENDER_BEAN_NAME, "stackdriverSender");
+
+			assertThat(context.getBeansOfType(Reporter.class)).hasSize(2);
+			assertThat(context.getBeansOfType(Reporter.class))
+					.containsKeys(ZipkinAutoConfiguration.REPORTER_BEAN_NAME, "reporter");
 		});
 	}
 
