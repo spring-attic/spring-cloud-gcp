@@ -53,7 +53,7 @@ public class AfterExecuteDmlEvent extends ExecuteDmlEvent {
 		if (this == o) {
 			return true;
 		}
-		if (o == null || !getClass().isAssignableFrom(o.getClass())) {
+		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
 		AfterExecuteDmlEvent that = (AfterExecuteDmlEvent) o;

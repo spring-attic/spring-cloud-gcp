@@ -48,7 +48,7 @@ public class ExecuteDmlEvent extends ApplicationEvent {
 		if (this == o) {
 			return true;
 		}
-		if (o == null || !getClass().isAssignableFrom(o.getClass())) {
+		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
 		ExecuteDmlEvent that = (ExecuteDmlEvent) o;
