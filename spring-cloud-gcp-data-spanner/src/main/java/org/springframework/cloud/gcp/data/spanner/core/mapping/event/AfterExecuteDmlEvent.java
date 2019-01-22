@@ -16,34 +16,52 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.mapping.event;
 
+import java.util.Objects;
+
 import com.google.cloud.spanner.Statement;
-import org.springframework.context.ApplicationEvent;
 
 /**
- * This event is published immediately after a DML statement is executed. It contains the DML statement as well
- * as the number of rows affected.
+ * This event is published immediately after a DML statement is executed. It contains the
+ * DML statement as well as the number of rows affected.
  *
  * @author Chengyuan Zhao
  */
-public class AfterExecuteDmlEvent extends ExecuteDmlEvent{
+public class AfterExecuteDmlEvent extends ExecuteDmlEvent {
 
-    private final long numberRowsAffected;
+	private final long numberRowsAffected;
 
-    /**
-     * Constructor.
-     * @param statement the DML statement that was executed.
-     * @param numberRowsAffected the number of rows affected.
-     */
-    public AfterExecuteDmlEvent(Statement statement, long numberRowsAffected) {
-        super(statement);
-        this.numberRowsAffected = numberRowsAffected;
-    }
+	/**
+	 * Constructor.
+	 * @param statement the DML statement that was executed.
+	 * @param numberRowsAffected the number of rows affected.
+	 */
+	public AfterExecuteDmlEvent(Statement statement, long numberRowsAffected) {
+		super(statement);
+		this.numberRowsAffected = numberRowsAffected;
+	}
 
-    /**
-     * Get the number of rows affected by the DML.
-     * @return the number of rows affected.
-     */
-    public long getNumberRowsAffected() {
-        return this.numberRowsAffected;
-    }
+	/**
+	 * Get the number of rows affected by the DML.
+	 * @return the number of rows affected.
+	 */
+	public long getNumberRowsAffected() {
+		return this.numberRowsAffected;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || !getClass().isAssignableFrom(o.getClass())) {
+			return false;
+		}
+		AfterExecuteDmlEvent that = (AfterExecuteDmlEvent) o;
+		return getStatement().equals(that.getStatement()) && getNumberRowsAffected() == that.getNumberRowsAffected();
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getStatement().hashCode(), getNumberRowsAffected());
+	}
 }

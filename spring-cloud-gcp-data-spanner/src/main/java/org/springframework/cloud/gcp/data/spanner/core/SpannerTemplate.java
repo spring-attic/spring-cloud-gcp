@@ -548,8 +548,8 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	}
 
 	private void maybeEmitEvent(ApplicationEvent event) {
-		if (eventPublisher != null) {
-			eventPublisher.publishEvent(event);
+		if (this.eventPublisher != null) {
+			this.eventPublisher.publishEvent(event);
 		}
 	}
 }
