@@ -89,11 +89,11 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 	public void getKeyTest() {
 		when(this.datastore.newKeyFactory()).thenReturn(new KeyFactory("p").setKind("k"));
 		TestEntityWithId testEntity = new TestEntityWithId();
-		testEntity.id = "testkey";
+		testEntity.id = 1L;
 
 		Key actual = this.datastoreServiceObjectToKeyFactory.getKeyFromObject(
 				testEntity, this.datastoreMappingContext.getPersistentEntity(TestEntityWithId.class));
-		Key expectedKey = new KeyFactory("p").setKind("custom_test_kind").newKey("testkey");
+		Key expectedKey = new KeyFactory("p").setKind("custom_test_kind").newKey(1L);
 
 		assertThat(actual).isEqualTo(expectedKey);
 	}
@@ -160,8 +160,29 @@ public class DatastoreServiceObjectToKeyFactoryTests {
 						keyFactory.newKey("ancestor"));
 	}
 
+	@Test
+	public void allocateIdForObjectUnsupportedKeyTypeIdTest() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage("Cloud Datastore can only allocate IDs for Long and Key properties. " +
+				"Cannot allocate for type: class java.lang.String");
+
+		TestEntityWithStringId testEntityWithStringId = new TestEntityWithStringId();
+		KeyFactory keyFactory = new KeyFactory("project").setKind("kind");
+		when(this.datastore.newKeyFactory()).thenReturn(keyFactory);
+		this.datastoreServiceObjectToKeyFactory
+				.allocateKeyForObject(testEntityWithStringId, this.datastoreMappingContext
+						.getPersistentEntity(testEntityWithStringId.getClass()),
+						keyFactory.newKey("key"));
+	}
+
 	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "custom_test_kind")
 	private static class TestEntityWithId {
+		@Id
+		Long id;
+	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "custom_test_kind")
+	private static class TestEntityWithStringId {
 		@Id
 		String id;
 	}

@@ -95,8 +95,14 @@ public class DatastoreServiceObjectToKeyFactory implements ObjectToKeyFactory {
 		Assert.notNull(datastorePersistentEntity, "Persistent entity must not be null.");
 		PersistentProperty idProp = datastorePersistentEntity.getIdPropertyOrFail();
 
-		KeyFactory keyFactory = getKeyFactory().setKind(datastorePersistentEntity.kindName());
 		Class idPropType = idProp.getType();
+
+		if (!idPropType.equals(Key.class) && !idPropType.equals(Long.class)) {
+			throw new DatastoreDataException("Cloud Datastore can only allocate IDs for Long and Key properties. " +
+					"Cannot allocate for type: " + idPropType);
+		}
+
+		KeyFactory keyFactory = getKeyFactory().setKind(datastorePersistentEntity.kindName());
 		if (ancestors != null && ancestors.length > 0) {
 			if (!idPropType.equals(Key.class)) {
 				throw new DatastoreDataException("Only Key types are allowed for descendants id");
