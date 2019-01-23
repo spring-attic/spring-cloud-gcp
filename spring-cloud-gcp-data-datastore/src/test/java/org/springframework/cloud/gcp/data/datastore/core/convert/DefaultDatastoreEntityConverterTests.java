@@ -172,7 +172,6 @@ public class DefaultDatastoreEntityConverterTests {
 		ENTITY_CONVERTER.read(Object.class, entity);
 	}
 
-	// TODO: Elena this will break
 	@Test
 	public void testWrongTypeReadExceptionList() {
 		this.thrown.expect(DatastoreDataException.class);
