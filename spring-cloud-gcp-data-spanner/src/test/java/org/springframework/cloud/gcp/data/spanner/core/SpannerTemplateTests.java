@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
-import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -309,9 +308,9 @@ public class SpannerTemplateTests {
 		TestEntity entity = new TestEntity();
 		when(this.mutationFactory.insert(same(entity)))
 				.thenReturn(Collections.singletonList(mutation));
-		this.spannerTemplate.insertAll(ImmutableList.of(entity, entity, entity));
+		this.spannerTemplate.insertAll(Arrays.asList(entity, entity, entity));
 		verify(this.databaseClient, times(1))
-				.write(eq(ImmutableList.of(mutation, mutation, mutation)));
+				.write(eq(Arrays.asList(mutation, mutation, mutation)));
 	}
 
 	@Test
@@ -332,9 +331,9 @@ public class SpannerTemplateTests {
 		TestEntity entity = new TestEntity();
 		when(this.mutationFactory.update(same(entity), isNull()))
 				.thenReturn(Collections.singletonList(mutation));
-		this.spannerTemplate.updateAll(ImmutableList.of(entity, entity, entity));
+		this.spannerTemplate.updateAll(Arrays.asList(entity, entity, entity));
 		verify(this.databaseClient, times(1))
-				.write(eq(ImmutableList.of(mutation, mutation, mutation)));
+				.write(eq(Arrays.asList(mutation, mutation, mutation)));
 	}
 
 	@Test
@@ -382,9 +381,9 @@ public class SpannerTemplateTests {
 		TestEntity entity = new TestEntity();
 		when(this.mutationFactory.upsert(same(entity), isNull()))
 				.thenReturn(Collections.singletonList(mutation));
-		this.spannerTemplate.upsertAll(ImmutableList.of(entity, entity, entity));
+		this.spannerTemplate.upsertAll(Arrays.asList(entity, entity, entity));
 		verify(this.databaseClient, times(1))
-				.write(eq(ImmutableList.of(mutation, mutation, mutation)));
+				.write(eq(Arrays.asList(mutation, mutation, mutation)));
 	}
 
 	@Test
@@ -439,9 +438,9 @@ public class SpannerTemplateTests {
 		Mutation mutation = Mutation.delete("custom_test_table", Key.of("key"));
 		TestEntity entity = new TestEntity();
 		when(this.mutationFactory.delete(entity)).thenReturn(mutation);
-		this.spannerTemplate.deleteAll(ImmutableList.of(entity, entity, entity));
+		this.spannerTemplate.deleteAll(Arrays.asList(entity, entity, entity));
 		verify(this.databaseClient, times(1))
-				.write(eq(ImmutableList.of(mutation, mutation, mutation)));
+				.write(eq(Arrays.asList(mutation, mutation, mutation)));
 	}
 
 	@Test
@@ -521,13 +520,13 @@ public class SpannerTemplateTests {
 		gc.id3 = "key3";
 		gc.id4 = "key4";
 		when(this.objectMapper.mapToList(any(), eq(ParentEntity.class)))
-				.thenReturn(ImmutableList.of(p));
+				.thenReturn(Arrays.asList(p));
 		when(this.objectMapper.mapToList(any(), eq(ParentEntity.class), any(), eq(false)))
-				.thenReturn(ImmutableList.of(p));
+				.thenReturn(Arrays.asList(p));
 		when(this.objectMapper.mapToList(any(), eq(ChildEntity.class), any(), eq(false)))
-				.thenReturn(ImmutableList.of(c));
+				.thenReturn(Arrays.asList(c));
 		when(this.objectMapper.mapToList(any(), eq(GrandChildEntity.class), any(),
-				eq(false))).thenReturn(ImmutableList.of(gc));
+				eq(false))).thenReturn(Arrays.asList(gc));
 
 		ParentEntity resultWithoutChildren = this.spannerTemplate
 				.readAll(ParentEntity.class,
