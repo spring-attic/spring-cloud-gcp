@@ -912,7 +912,7 @@ Methods that return `Slice`, on the other hand, don't execute any additional que
 
 ==== Query by example
 Query by Example is an alternative querying technique.
-It enables dynamic query generation based on user-provided object. See https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example[Spring Data Documentation] for details.
+It enables dynamic query generation based on a user-provided object. See https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example[Spring Data Documentation] for details.
 
 ===== Unsupported features:
 . Currently, only equality queries are supported (no ignore-case matching, regexp matching, etc.).
@@ -925,7 +925,7 @@ For example, if you want to find all users with the last name "Smith", you would
 userRepository.findAll(
     Example.of(new User(null, null, "Smith"))
 ----
-`null` fields are not used in the filter by default. If you want to include them, you would use following code:
+`null` fields are not used in the filter by default. If you want to include them, you would use the following code:
 [source, java]
 ----
 userRepository.findAll(
