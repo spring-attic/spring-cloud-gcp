@@ -28,21 +28,21 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class BeforeExecuteDmlEventTest {
 
-    @Test
-    public void equalsHashcodeTest() {
-        BeforeExecuteDmlEvent beforeExecuteDmlEvent = new BeforeExecuteDmlEvent(Statement.of("a"));
-        BeforeExecuteDmlEvent beforeExecuteDmlEvent1 = new BeforeExecuteDmlEvent(Statement.of("a"));
+	@Test
+	public void equalsHashcodeTest() {
+		BeforeExecuteDmlEvent beforeExecuteDmlEvent = new BeforeExecuteDmlEvent(Statement.of("a"));
+		BeforeExecuteDmlEvent beforeExecuteDmlEvent1 = new BeforeExecuteDmlEvent(Statement.of("a"));
 
-        BeforeExecuteDmlEvent beforeExecuteDmlEvent2 = new BeforeExecuteDmlEvent(Statement.of("b"));
+		BeforeExecuteDmlEvent beforeExecuteDmlEvent2 = new BeforeExecuteDmlEvent(Statement.of("b"));
 
-        assertThat(beforeExecuteDmlEvent).isEqualTo(beforeExecuteDmlEvent);
-        assertThat(beforeExecuteDmlEvent).isEqualTo(beforeExecuteDmlEvent1);
-        assertThat(beforeExecuteDmlEvent2).isNotEqualTo(beforeExecuteDmlEvent);
-        assertThat(beforeExecuteDmlEvent).isNotEqualTo(null);
-        assertThat(beforeExecuteDmlEvent).isNotEqualTo(new Object());
+		assertThat(beforeExecuteDmlEvent).isEqualTo(beforeExecuteDmlEvent);
+		assertThat(beforeExecuteDmlEvent).isEqualTo(beforeExecuteDmlEvent1);
+		assertThat(beforeExecuteDmlEvent2).isNotEqualTo(beforeExecuteDmlEvent);
+		assertThat(beforeExecuteDmlEvent).isNotEqualTo(null);
+		assertThat(beforeExecuteDmlEvent).isNotEqualTo(new Object());
 
-        assertThat(beforeExecuteDmlEvent.hashCode()).isEqualTo(beforeExecuteDmlEvent.hashCode());
-        assertThat(beforeExecuteDmlEvent.hashCode()).isEqualTo(beforeExecuteDmlEvent1.hashCode());
-        assertThat(beforeExecuteDmlEvent2.hashCode()).isNotEqualTo(beforeExecuteDmlEvent.hashCode());
-    }
+		assertThat(beforeExecuteDmlEvent.hashCode()).isEqualTo(beforeExecuteDmlEvent.hashCode());
+		assertThat(beforeExecuteDmlEvent.hashCode()).isEqualTo(beforeExecuteDmlEvent1.hashCode());
+		assertThat(beforeExecuteDmlEvent2.hashCode()).isNotEqualTo(beforeExecuteDmlEvent.hashCode());
+	}
 }
