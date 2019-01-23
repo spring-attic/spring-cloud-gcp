@@ -347,7 +347,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 	public ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
 
-		long startTime = System.currentTimeMillis();
+		long startTime = LOGGER.isDebugEnabled() ? System.currentTimeMillis() : 0;
 
 		ResultSet resultSet = performQuery(statement, options);
 		if (LOGGER.isDebugEnabled()) {
@@ -393,7 +393,7 @@ public class SpannerTemplate implements SpannerOperations {
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
 			SpannerReadOptions options) {
 
-		long startTime = System.currentTimeMillis();
+		long startTime = LOGGER.isDebugEnabled() ? System.currentTimeMillis() : 0;
 
 		ResultSet resultSet;
 
