@@ -45,8 +45,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assume.assumeThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * These tests verifies that the datastore-sample works. In order to run it, use the
@@ -80,10 +79,10 @@ public class ApplicationTests {
 
 	@BeforeClass
 	public static void checkToRun() {
-		assumeThat(
-				"Datastore-sample integration tests are disabled. Please use '-Dit.datastore=true' "
-						+ "to enable them. ",
-				System.getProperty("it.datastore"), is("true"));
+		assumeThat(System.getProperty("it.datastore"))
+				.as("Datastore sample integration tests are disabled. "
+						+ "Please use '-Dit.datastore=true' to enable them.")
+				.isEqualTo("true");
 		systemOut = System.out;
 		baos = new ByteArrayOutputStream();
 		TeeOutputStream out = new TeeOutputStream(systemOut, baos);
