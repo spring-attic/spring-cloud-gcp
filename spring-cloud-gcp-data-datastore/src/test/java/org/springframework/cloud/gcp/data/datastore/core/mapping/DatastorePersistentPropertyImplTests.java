@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mapping.PropertyHandler;
 
@@ -75,7 +76,7 @@ public class DatastorePersistentPropertyImplTests {
 								assertThat(property.isDescendants()).isTrue();
 							}
 							else if (property.getFieldName().equals("linkedEntityRef")) {
-								assertThat(property.isReference()).isTrue();
+								assertThat(property.isAssociation()).isTrue();
 							}
 							else {
 								fail("All properties of the test entity are expected to match a checked"
