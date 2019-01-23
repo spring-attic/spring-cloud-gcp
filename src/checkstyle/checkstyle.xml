@@ -22,13 +22,11 @@
     </module>
 
     <module name="com.puppycrawl.tools.checkstyle.TreeWalker">
-        <!-- TODO: re-enable when ready -->
         <!-- NOTE: previously we also had org.slf4j as illegal -->
-        <!--
+
         <module name="com.puppycrawl.tools.checkstyle.checks.imports.IllegalImportCheck" >
             <property name="illegalPkgs" value="com.google.common"/>
         </module>
-        -->
 
         <!-- TAKEN FROM SPRING BOOT -->
         <!-- Annotations -->
