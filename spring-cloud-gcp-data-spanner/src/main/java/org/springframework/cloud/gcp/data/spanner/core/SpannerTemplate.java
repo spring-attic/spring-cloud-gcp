@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -47,7 +46,6 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.TimestampBound;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
-import com.google.common.base.Stopwatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -349,10 +347,7 @@ public class SpannerTemplate implements SpannerOperations {
 
 	public ResultSet executeQuery(Statement statement, SpannerQueryOptions options) {
 
-		Stopwatch stopwatch = null;
-		if (LOGGER.isDebugEnabled()) {
-			stopwatch = Stopwatch.createStarted();
-		}
+		long startTime = LOGGER.isDebugEnabled() ? System.currentTimeMillis() : 0;
 
 		ResultSet resultSet = performQuery(statement, options);
 		if (LOGGER.isDebugEnabled()) {
@@ -364,11 +359,7 @@ public class SpannerTemplate implements SpannerOperations {
 				message = getQueryLogMessageWithOptions(statement, options);
 			}
 			LOGGER.debug(message);
-
-			if (stopwatch != null) {
-				stopwatch.stop();
-				LOGGER.debug("Query elapsed milliseconds: " + stopwatch.elapsed(TimeUnit.MILLISECONDS));
-			}
+			LOGGER.debug("Query elapsed milliseconds: " + (System.currentTimeMillis() - startTime));
 		}
 		return resultSet;
 	}
@@ -402,10 +393,7 @@ public class SpannerTemplate implements SpannerOperations {
 	private ResultSet executeRead(String tableName, KeySet keys, Iterable<String> columns,
 			SpannerReadOptions options) {
 
-		Stopwatch stopwatch = null;
-		if (LOGGER.isDebugEnabled()) {
-			stopwatch = Stopwatch.createStarted();
-		}
+		long startTime = LOGGER.isDebugEnabled() ? System.currentTimeMillis() : 0;
 
 		ResultSet resultSet;
 
@@ -429,10 +417,7 @@ public class SpannerTemplate implements SpannerOperations {
 			logReadOptions(options, logs);
 			LOGGER.debug(logs.toString());
 
-			if (stopwatch != null) {
-				stopwatch.stop();
-				LOGGER.debug("Read elapsed milliseconds: " + stopwatch.elapsed(TimeUnit.MILLISECONDS));
-			}
+			LOGGER.debug("Read elapsed milliseconds: " + (System.currentTimeMillis() - startTime));
 		}
 
 		return resultSet;

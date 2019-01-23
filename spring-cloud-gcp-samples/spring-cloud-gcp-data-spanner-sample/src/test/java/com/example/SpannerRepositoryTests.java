@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 
 package com.example;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -109,18 +109,15 @@ public class SpannerRepositoryTests {
 		assertThat(this.tradeRepository.count()).isEqualTo(0);
 
 		this.spannerRepositoryExample.runExample();
-		List<String> traderIds = ImmutableList.copyOf(this.traderRepository.findAll())
-				.stream()
-				.map(Trader::getTraderId)
-				.collect(Collectors.toList());
+		List<String> traderIds = new ArrayList<>();
+		this.traderRepository.findAll().forEach((t) -> traderIds.add(t.getTraderId()));
 		assertThat(traderIds).containsExactlyInAnyOrder("demo_trader1", "demo_trader2", "demo_trader3");
 
-		List<Trade> actualTrades = ImmutableList.copyOf(this.tradeRepository.findAll());
-		assertThat(actualTrades).hasSize(8);
+		assertThat(this.tradeRepository.findAll()).hasSize(8);
 
-		Set<String> tradeSpannerKeys = actualTrades.stream()
-				.map((t) -> this.spannerSchemaUtils.getKey(t).toString())
-				.collect(Collectors.toSet());
+		Set<String> tradeSpannerKeys = new HashSet<>();
+		this.traderRepository.findAll().forEach((t) -> tradeSpannerKeys.add(this.spannerSchemaUtils.getKey(t).toString()));
+
 		assertThat(tradeSpannerKeys).containsExactlyInAnyOrder(
 				"[demo_trader1,1]",
 				"[demo_trader1,2]",

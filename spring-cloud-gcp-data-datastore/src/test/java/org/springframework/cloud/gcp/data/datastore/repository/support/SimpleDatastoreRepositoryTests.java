@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.support;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
@@ -58,7 +58,7 @@ public class SimpleDatastoreRepositoryTests {
 
 	@Test
 	public void saveAllTest() {
-		Iterable entities = ImmutableList.of();
+		Iterable entities = Arrays.asList();
 		this.simpleDatastoreRepository.saveAll(entities);
 		verify(this.datastoreTemplate, times(1)).saveAll(same(entities));
 	}
@@ -85,7 +85,7 @@ public class SimpleDatastoreRepositoryTests {
 
 	@Test
 	public void findAllByIdTest() {
-		List<String> keys = ImmutableList.of("1", "2");
+		List<String> keys = Arrays.asList("1", "2");
 		this.simpleDatastoreRepository.findAllById(keys);
 		verify(this.datastoreTemplate, times(1)).findAllById(eq(keys), eq(Object.class));
 	}
@@ -112,7 +112,7 @@ public class SimpleDatastoreRepositoryTests {
 
 	@Test
 	public void deleteAllTest() {
-		Iterable entities = ImmutableList.of();
+		Iterable entities = Arrays.asList();
 		this.simpleDatastoreRepository.deleteAll(entities);
 		verify(this.datastoreTemplate, times(1)).deleteAll(same(entities));
 	}
