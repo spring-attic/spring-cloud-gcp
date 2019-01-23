@@ -79,7 +79,10 @@ public class ApplicationTests {
 
 	@BeforeClass
 	public static void checkToRun() {
-		assumeThat(System.getProperty("it.datastore")).isEqualTo("true");
+		assumeThat(System.getProperty("it.datastore"))
+				.as("Datastore sample integration tests are disabled. "
+						+ "Please use '-Dit.datastore=true' to enable them.")
+				.isEqualTo("true");
 		systemOut = System.out;
 		baos = new ByteArrayOutputStream();
 		TeeOutputStream out = new TeeOutputStream(systemOut, baos);

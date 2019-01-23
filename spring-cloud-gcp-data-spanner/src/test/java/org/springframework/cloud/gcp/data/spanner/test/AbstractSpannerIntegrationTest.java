@@ -99,7 +99,10 @@ public abstract class AbstractSpannerIntegrationTest {
 
 	@BeforeClass
 	public static void checkToRun() {
-		assumeThat(System.getProperty("it.spanner")).isEqualTo("true");
+		assumeThat(System.getProperty("it.spanner"))
+				.as("Spanner integration tests are disabled. "
+						+ "Please use '-Dit.spanner=true' to enable them. ")
+				.isEqualTo("true");
 	}
 
 	@Before
