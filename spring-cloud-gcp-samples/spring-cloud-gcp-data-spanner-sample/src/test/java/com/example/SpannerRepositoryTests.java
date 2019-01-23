@@ -116,7 +116,7 @@ public class SpannerRepositoryTests {
 		assertThat(this.tradeRepository.findAll()).hasSize(8);
 
 		Set<String> tradeSpannerKeys = new HashSet<>();
-		this.traderRepository.findAll().forEach((t) -> tradeSpannerKeys.add(this.spannerSchemaUtils.getKey(t).toString()));
+		this.tradeRepository.findAll().forEach((t) -> tradeSpannerKeys.add(this.spannerSchemaUtils.getKey(t).toString()));
 
 		assertThat(tradeSpannerKeys).containsExactlyInAnyOrder(
 				"[demo_trader1,1]",
