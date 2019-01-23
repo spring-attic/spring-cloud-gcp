@@ -43,11 +43,6 @@
 			<groupId>io.zipkin.gcp</groupId>
 			<artifactId>brave-propagation-stackdriver</artifactId>
 		</dependency>
-		<!-- Reporter auto-configuration -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-sleuth-zipkin</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>com.google.cloud</groupId>
 			<artifactId>google-cloud-core-grpc</artifactId>
