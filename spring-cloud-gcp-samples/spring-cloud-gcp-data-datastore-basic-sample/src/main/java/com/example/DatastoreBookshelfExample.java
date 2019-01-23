@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 package com.example;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.collect.Lists;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -50,7 +49,9 @@ public class DatastoreBookshelfExample {
 	@ShellMethod("Loads all books")
 	public String findAllBooks() {
 		Iterable<Book> books = this.bookRepository.findAll();
-		return Lists.newArrayList(books).toString();
+		List<Book> bookList = new ArrayList<>();
+		books.forEach(bookList::add);
+		return books.toString();
 	}
 
 	@ShellMethod("Loads books by author: find-by-author <author>")
