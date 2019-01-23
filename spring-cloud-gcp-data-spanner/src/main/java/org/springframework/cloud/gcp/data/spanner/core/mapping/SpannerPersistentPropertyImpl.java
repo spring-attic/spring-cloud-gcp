@@ -170,6 +170,12 @@ public class SpannerPersistentPropertyImpl
 	}
 
 	@Override
+	public boolean isCommitTimestamp() {
+		Column annotation = findAnnotation(Column.class);
+		return annotation != null && annotation.spannerCommitTimestamp();
+	}
+
+	@Override
 	public Code getAnnotatedColumnItemType() {
 		Column annotation = findAnnotation(Column.class);
 		if (annotation == null

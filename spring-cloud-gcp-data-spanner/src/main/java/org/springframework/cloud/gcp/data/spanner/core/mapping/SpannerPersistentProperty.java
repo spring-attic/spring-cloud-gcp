@@ -92,6 +92,15 @@ public interface SpannerPersistentProperty
 	boolean isGenerateSchemaNotNull();
 
 	/**
+	 * If the column is a Cloud Spanner commit timestamp auto-populating column. This property
+	 * is always stored in Cloud Spanner as a Timestamp, and will update based on the latest
+	 * commit.
+	 * @return {@code true} if the property is an auto-populated commit timestamp.
+	 * {@code false} otherwise.
+	 */
+	boolean isCommitTimestamp();
+
+	/**
 	 * Optionally directly specify the column type in Cloud Spanner. For ARRAY columns
 	 * this refers to type of the item the array holds. If this is not specified then it
 	 * is inferred.
