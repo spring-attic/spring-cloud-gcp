@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.beans.beancontext.BeanContextSupport;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 import org.springframework.util.CollectionUtils;
 
@@ -33,7 +34,7 @@ import org.springframework.util.CollectionUtils;
 public class TestDatastoreItemCollections {
 	private List<Integer> intList;
 
-	private ImmutableSet<Double> doubleSet;
+	private ComparableBeanContextSupport beanContext;
 
 	private String[] stringArray;
 
@@ -43,10 +44,10 @@ public class TestDatastoreItemCollections {
 
 	private List<byte[]> listByteArray;
 
-	public TestDatastoreItemCollections(List<Integer> intList, ImmutableSet<Double> doubleSet, String[] stringArray,
+	public TestDatastoreItemCollections(List<Integer> intList, ComparableBeanContextSupport beanContext, String[] stringArray,
 			boolean[] boolArray, byte[][] bytes, List<byte[]> listByteArray) {
 		this.intList = intList;
-		this.doubleSet = doubleSet;
+		this.beanContext = beanContext;
 		this.stringArray = stringArray;
 		this.boolArray = boolArray;
 		this.bytes = bytes;
@@ -57,8 +58,8 @@ public class TestDatastoreItemCollections {
 		return this.intList;
 	}
 
-	public ImmutableSet<Double> getDoubleSet() {
-		return this.doubleSet;
+	public BeanContextSupport getBeanContext() {
+		return this.beanContext;
 	}
 
 	public String[] getStringArray() {
@@ -87,7 +88,7 @@ public class TestDatastoreItemCollections {
 		}
 		TestDatastoreItemCollections that = (TestDatastoreItemCollections) o;
 		return Objects.equals(getIntList(), that.getIntList()) &&
-				Objects.equals(getDoubleSet(), that.getDoubleSet()) &&
+				Objects.equals(getBeanContext(), that.getBeanContext()) &&
 				Arrays.equals(getStringArray(), that.getStringArray()) &&
 				Arrays.equals(getBoolArray(), that.getBoolArray()) &&
 				equal(getBytes(), that.getBytes()) &&
@@ -96,7 +97,7 @@ public class TestDatastoreItemCollections {
 
 	@Override
 	public int hashCode() {
-		int result = Objects.hash(getIntList(), getDoubleSet(), getListByteArray());
+		int result = Objects.hash(getIntList(), getBeanContext(), getListByteArray());
 		result = 31 * result + Arrays.hashCode(getStringArray());
 		result = 31 * result + Arrays.hashCode(getBoolArray());
 		result = 31 * result + Arrays.hashCode(getBytes());
@@ -126,5 +127,35 @@ public class TestDatastoreItemCollections {
 			valB = ((List<byte[]>) b).toArray();
 		}
 		return arraysToLists((Object[]) valA).equals(arraysToLists((Object[]) valB));
+	}
+
+	/**
+	 * BeanContextSupport does not provide an equals() implementation.
+	 * This subclass overrides {@code equals/hashCode} and keeps a simple list of values
+	 * to enable test verification.
+	 */
+	static class ComparableBeanContextSupport extends BeanContextSupport {
+		private Set<Object> values = new HashSet<>();
+
+		@Override
+		public boolean add(Object o) {
+			this.values.add(o);
+			return super.add(o);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof ComparableBeanContextSupport)) {
+				return false;
+			}
+			ComparableBeanContextSupport cbcs = (ComparableBeanContextSupport) o;
+			return cbcs.values.equals(this.values);
+		}
+
+		@Override
+		public int hashCode() {
+			// Abides by hashCode contract, while being perfectly useless.
+			return 1;
+		}
 	}
 }

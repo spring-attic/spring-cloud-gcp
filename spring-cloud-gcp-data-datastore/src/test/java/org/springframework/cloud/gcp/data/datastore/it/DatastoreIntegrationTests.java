@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import java.util.stream.Collectors;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Key;
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -110,7 +108,7 @@ public class DatastoreIntegrationTests {
 
 		TestEntity testEntityD = new TestEntity(4L, "red", 1L, Shape.SQUARE, null);
 
-		List<TestEntity> allTestEntities = ImmutableList.of(testEntityA, testEntityB,
+		List<TestEntity> allTestEntities = Arrays.asList(testEntityA, testEntityB,
 				testEntityC, testEntityD);
 
 		this.testEntityRepository.saveAll(allTestEntities);
@@ -197,7 +195,7 @@ public class DatastoreIntegrationTests {
 
 		assertThat(this.testEntityRepository.findById(1L).get().getBlobField()).isNull();
 
-		assertThat(this.testEntityRepository.findAllById(ImmutableList.of(1L, 2L))).hasSize(2);
+		assertThat(this.testEntityRepository.findAllById(Arrays.asList(1L, 2L))).hasSize(2);
 
 		this.testEntityRepository.delete(testEntityA);
 
@@ -227,7 +225,7 @@ public class DatastoreIntegrationTests {
 
 		assertThat(this.testEntityRepository.count()).isEqualTo(0);
 
-		assertThat(this.testEntityRepository.findAllById(ImmutableList.of(1L, 2L)).iterator().hasNext()).isFalse();
+		assertThat(this.testEntityRepository.findAllById(Arrays.asList(1L, 2L)).iterator().hasNext()).isFalse();
 	}
 
 	@Test
@@ -344,9 +342,9 @@ public class DatastoreIntegrationTests {
 	}
 
 	private long waitUntilTrue(Supplier<Boolean> condition) {
-		Stopwatch stopwatch = Stopwatch.createStarted();
+		long startTime = System.currentTimeMillis();
 		Awaitility.await().atMost(QUERY_WAIT_INTERVAL_SECONDS, TimeUnit.SECONDS).until(condition::get);
-		stopwatch.stop();
-		return stopwatch.elapsed(TimeUnit.MILLISECONDS);
+
+		return System.currentTimeMillis() - startTime;
 	}
 }

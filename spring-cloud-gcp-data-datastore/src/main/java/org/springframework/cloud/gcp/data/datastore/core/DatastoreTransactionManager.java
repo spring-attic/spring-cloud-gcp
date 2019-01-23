@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
 import com.google.cloud.datastore.Transaction;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 
 import org.springframework.transaction.TransactionDefinition;
@@ -52,7 +51,6 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 		this.datastore = datastore;
 	}
 
-	@VisibleForTesting
 	Tx getCurrentTX() {
 		return TransactionSynchronizationManager.isActualTransactionActive()
 				? (Tx) ((DefaultTransactionStatus) TransactionAspectSupport
@@ -150,7 +148,6 @@ public class DatastoreTransactionManager extends AbstractPlatformTransactionMana
 			return this.transaction;
 		}
 
-		@VisibleForTesting
 		void setTransaction(Transaction transaction) {
 			this.transaction = transaction;
 		}
