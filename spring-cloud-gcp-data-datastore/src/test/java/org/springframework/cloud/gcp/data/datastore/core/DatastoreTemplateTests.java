@@ -634,7 +634,7 @@ public class DatastoreTemplateTests {
 	@Test
 	public void queryByExampleSimpleEntityTest() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
-		this.datastoreTemplate.queryByExample(Example.of(new SimpleTestEntity()), null);
+		this.datastoreTemplate.queryByExample(Example.of(this.simpleTestEntity), null);
 
 		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
 				.and(PropertyFilter.eq("id", "simple_test_entity"),
@@ -646,7 +646,7 @@ public class DatastoreTemplateTests {
 	public void queryByExampleIgnoreFieldTest() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
 		this.datastoreTemplate.queryByExample(
-				Example.of(new SimpleTestEntity(), ExampleMatcher.matching().withIgnorePaths("intField")), null);
+				Example.of(this.simpleTestEntity, ExampleMatcher.matching().withIgnorePaths("intField")), null);
 
 		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
 				.and(PropertyFilter.eq("id", "simple_test_entity"));
@@ -744,7 +744,7 @@ public class DatastoreTemplateTests {
 	@Test
 	public void queryByExampleOptions() {
 		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
-		this.datastoreTemplate.queryByExample(Example.of(new SimpleTestEntity()),
+		this.datastoreTemplate.queryByExample(Example.of(this.simpleTestEntity),
 				new DatastoreQueryOptions(10, 1, Sort.by("intField")));
 
 		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
