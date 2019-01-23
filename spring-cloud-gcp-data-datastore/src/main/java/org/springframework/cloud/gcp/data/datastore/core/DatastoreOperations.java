@@ -17,7 +17,6 @@
 package org.springframework.cloud.gcp.data.datastore.core;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Function;
 
