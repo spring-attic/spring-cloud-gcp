@@ -249,6 +249,8 @@ This setting is only used when generating DDL schema statements based on domain 
 This setting is only used when generating DDL schema statements based on domain types.
 - `spannerType` is the Cloud Spanner column type you can optionally specify.
 If this is not specified then a compatible column type is inferred from the Java property type.
+- `spannerCommitTimestamp` is a boolean specifying if this property corresponds to an auto-populated commit timestamp column.
+Any value set in this property will be ignored when writing to Cloud Spanner.
 
 
 ==== Embedded Objects

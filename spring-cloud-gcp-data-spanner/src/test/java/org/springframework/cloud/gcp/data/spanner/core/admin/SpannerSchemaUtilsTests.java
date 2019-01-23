@@ -76,7 +76,8 @@ public class SpannerSchemaUtilsTests {
 				+ "primitiveDoubleField FLOAT64 , bigDoubleField FLOAT64 , bigLongField INT64 , "
 				+ "primitiveIntField INT64 , bigIntField INT64 , bytes BYTES(MAX) , "
 				+ "bytesList ARRAY<BYTES(111)> , integerList ARRAY<INT64> , "
-				+ "doubles ARRAY<FLOAT64> ) PRIMARY KEY ( id , id_2 , id3 )";
+				+ "doubles ARRAY<FLOAT64> , commitTimestamp TIMESTAMP OPTIONS (allow_commit_timestamp=true) ) " +
+				"PRIMARY KEY ( id , id_2 , id3 )";
 
 		assertThat(this.spannerSchemaUtils.getCreateTableDdlString(TestEntity.class))
 				.isEqualTo(ddlResult);
@@ -236,6 +237,11 @@ public class SpannerSchemaUtilsTests {
 		List<Integer> integerList;
 
 		double[] doubles;
+
+		// this is intentionally a double to test that it is forced to be TIMESTAMP on Spanner
+		// anyway
+		@Column(spannerCommitTimestamp = true)
+		double commitTimestamp;
 	}
 
 	private static class EmbeddedColumns {

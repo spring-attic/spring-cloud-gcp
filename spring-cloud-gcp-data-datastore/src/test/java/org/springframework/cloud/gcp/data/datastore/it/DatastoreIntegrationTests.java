@@ -319,6 +319,16 @@ public class DatastoreIntegrationTests {
 	}
 
 	@Test
+	public void allocateIdTest() {
+		// intentionally null ID value
+		TestEntity testEntity = new TestEntity(null, "red", 1L, Shape.CIRCLE, null);
+		assertThat(testEntity.getId()).isNull();
+		this.testEntityRepository.save(testEntity);
+		assertThat(testEntity.getId()).isNotNull();
+		assertThat(this.testEntityRepository.findById(testEntity.getId())).isPresent();
+	}
+
+	@Test
 	public void mapTest() {
 		Map<String, Long> map = new HashMap<>();
 		map.put("field1", 1L);
