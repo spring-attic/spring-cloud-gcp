@@ -23,6 +23,6 @@ import org.springframework.cloud.gcp.data.datastore.repository.DatastoreReposito
  *
  * @author Chengyuan Zhao
  */
-public interface SingerRepository extends DatastoreRepository<Singer, String> {
+public interface SingerRepository extends DatastoreRepository<Singer, Long> {
 
 }

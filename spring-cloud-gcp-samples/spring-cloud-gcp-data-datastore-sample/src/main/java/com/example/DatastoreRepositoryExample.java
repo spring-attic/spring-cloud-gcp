@@ -56,12 +56,12 @@ public class DatastoreRepositoryExample {
 			this.singerRepository.deleteAll();
 
 			this.singerRepository
-					.save(new Singer("singer1", "John", "Doe", ImmutableSet.of()));
+					.save(new Singer(1L, "John", "Doe", ImmutableSet.of()));
 
-			Singer maryJane = new Singer("singer2", "Mary", "Jane",
+			Singer maryJane = new Singer(2L, "Mary", "Jane",
 					ImmutableSet.of(new Album("a", LocalDate.of(2012, Month.JANUARY, 20)),
 							new Album("b", LocalDate.of(2018, Month.FEBRUARY, 12))));
-			Singer scottSmith = new Singer("singer3", "Scott", "Smith", ImmutableSet
+			Singer scottSmith = new Singer(3L, "Scott", "Smith", ImmutableSet
 					.of(new Album("c", LocalDate.of(2000, Month.AUGUST, 31))));
 
 			this.singerRepository.saveAll(ImmutableList.of(maryJane, scottSmith));
@@ -91,7 +91,7 @@ public class DatastoreRepositoryExample {
 		// Retrieving by keys or querying with a restriction to a single entity group
 		// / family is strongly consistent.
 		this.singerRepository
-				.findAllById(ImmutableList.of("singer1", "singer2", "singer3"))
+				.findAllById(ImmutableList.of(1L, 2L, 3L))
 				.forEach((x) -> System.out.println("retrieved singer: " + x));
 	}
 

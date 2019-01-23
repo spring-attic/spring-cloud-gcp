@@ -118,7 +118,7 @@ public class ApplicationTests {
 				.as("Verify post")
 				.containsExactly(frodoBaggins, johnDoe, maryJane, scottSmith);
 
-		sendRequest("/singers/singer1", null, HttpMethod.DELETE);
+		sendRequest("/singers/1", null, HttpMethod.DELETE);
 
 		Awaitility.await().atMost(15, TimeUnit.SECONDS)
 				.until(() -> getSingers("/singers?sort=lastName,ASC").size() == 3);
@@ -132,28 +132,28 @@ public class ApplicationTests {
 				.as("Verify relationships saved in transaction")
 				.contains("Relationship links "
 						+ "were saved between a singer, bands, and instruments in a single transaction: "
-						+ "Singer{singerId='singer2', firstName='Mary', lastName='Jane', "
+						+ "Singer{singerId='2', firstName='Mary', lastName='Jane', "
 						+ "albums=[Album{albumName='a', date=2012-01-20}, Album{albumName='b', "
 						+ "date=2018-02-12}], firstBand=band1, bands=band1,band2, "
 						+ "personalInstruments=recorder,cow bell}");
 
 		assertThat(
-				this.singerRepository.findById("singer2").get().getPersonalInstruments()
+				this.singerRepository.findById(2L).get().getPersonalInstruments()
 						.stream().map(Instrument::getType).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder("recorder", "cow bell");
 
 		assertThat(
-				this.singerRepository.findById("singer2").get().getBands().stream()
+				this.singerRepository.findById(2L).get().getBands().stream()
 						.map(Band::getName).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder("band1", "band2");
 
 		assertThat(
-				this.singerRepository.findById("singer3").get().getPersonalInstruments()
+				this.singerRepository.findById(3L).get().getPersonalInstruments()
 						.stream().map(Instrument::getType).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder("triangle", "marimba");
 
 		assertThat(
-				this.singerRepository.findById("singer3").get().getBands().stream()
+				this.singerRepository.findById(3L).get().getBands().stream()
 						.map(Band::getName).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder("band3", "band2");
 

@@ -40,7 +40,7 @@ public class Singer {
 
 	@Id
 	@Field(name = "singer_id")
-	private String singerId;
+	private Long singerId;
 
 	@Field(name = "first_name")
 	private String firstName;
@@ -62,18 +62,18 @@ public class Singer {
 	public Singer() {
 	}
 
-	public Singer(String id, String firstName, String lastName, Set<Album> albums) {
+	public Singer(Long id, String firstName, String lastName, Set<Album> albums) {
 		this.singerId = id;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.albums = albums;
 	}
 
-	public String getSingerId() {
+	public Long getSingerId() {
 		return this.singerId;
 	}
 
-	public void setSingerId(String singerId) {
+	public void setSingerId(Long singerId) {
 		this.singerId = singerId;
 	}
 
