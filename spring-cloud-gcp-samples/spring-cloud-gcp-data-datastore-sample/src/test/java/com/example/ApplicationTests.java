@@ -157,6 +157,10 @@ public class ApplicationTests {
 						.map(Band::getName).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder("band3", "band2");
 
+		assertThat(baos.toString()).contains("Query by example\n" +
+				"Singer{singerId='singer1', firstName='John', lastName='Doe', " +
+				"albums=[], firstBand=null, bands=, personalInstrument");
+
 		assertThat(baos.toString()).contains("This concludes the sample.");
 	}
 

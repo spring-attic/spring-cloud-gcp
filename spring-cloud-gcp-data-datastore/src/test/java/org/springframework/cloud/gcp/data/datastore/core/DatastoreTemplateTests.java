@@ -37,6 +37,7 @@ import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.KeyQuery;
 import com.google.cloud.datastore.KeyValue;
 import com.google.cloud.datastore.LongValue;
+import com.google.cloud.datastore.NullValue;
 import com.google.cloud.datastore.PathElement;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.Query.ResultType;
@@ -58,6 +59,8 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Field;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Reference;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.util.ClassTypeInformation;
 
@@ -113,6 +116,9 @@ public class DatastoreTemplateTests {
 	private Key childKey5;
 
 	private Key childKey6;
+
+	private SimpleTestEntity simpleTestEntity = new SimpleTestEntity();
+	private SimpleTestEntity simpleTestEntityNullVallues = new SimpleTestEntity();
 
 	private final ReadWriteConversions readWriteConversions = mock(ReadWriteConversions.class);
 
@@ -235,6 +241,24 @@ public class DatastoreTemplateTests {
 				.thenReturn(this.ob2);
 		when(this.datastoreEntityConverter.read(eq(ChildEntity.class), same(ce1)))
 				.thenReturn(this.childEntity1);
+
+		when(this.datastoreEntityConverter.read(eq(ChildEntity.class), same(ce1)))
+				.thenReturn(this.childEntity1);
+
+
+		doAnswer((invocation) -> {
+			FullEntity.Builder builder = invocation.getArgument(1);
+			builder.set("id", "simple_test_entity");
+			builder.set("int_field", 1);
+			return null;
+		}).when(this.datastoreEntityConverter).write(same(this.simpleTestEntity), any());
+
+		doAnswer((invocation) -> {
+			FullEntity.Builder builder = invocation.getArgument(1);
+			builder.set("id", NullValue.of());
+			builder.set("int_field", NullValue.of());
+			return null;
+		}).when(this.datastoreEntityConverter).write(same(this.simpleTestEntityNullVallues), any());
 
 		when(this.datastore.run(eq(this.testEntityQuery)))
 				.thenReturn(testEntityQueryResults);
@@ -607,6 +631,129 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
+	public void queryByExampleSimpleEntityTest() {
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
+		this.datastoreTemplate.queryByExample(Example.of(this.simpleTestEntity), null);
+
+		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
+				.and(PropertyFilter.eq("id", "simple_test_entity"),
+						PropertyFilter.eq("int_field", 1));
+		verify(this.datastore, times(1)).run(builder.setFilter(filter).build());
+	}
+
+	@Test
+	public void queryByExampleIgnoreFieldTest() {
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
+		this.datastoreTemplate.queryByExample(
+				Example.of(this.simpleTestEntity, ExampleMatcher.matching().withIgnorePaths("intField")), null);
+
+		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
+				.and(PropertyFilter.eq("id", "simple_test_entity"));
+		verify(this.datastore, times(1)).run(builder.setFilter(filter).build());
+	}
+
+	@Test
+	public void queryByExampleDeepPathTest() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage("Ignored paths deeper than 1 are not supported");
+
+		this.datastoreTemplate.queryByExample(
+				Example.of(new SimpleTestEntity(), ExampleMatcher.matching().withIgnorePaths("intField.a")), null);
+	}
+
+	@Test
+	public void queryByExampleIncludeNullValuesTest() {
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
+		this.datastoreTemplate.queryByExample(
+				Example.of(this.simpleTestEntityNullVallues, ExampleMatcher.matching().withIncludeNullValues()), null);
+
+		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
+				.and(PropertyFilter.eq("id", NullValue.of()),
+						PropertyFilter.eq("int_field", NullValue.of()));
+		verify(this.datastore, times(1)).run(builder.setFilter(filter).build());
+	}
+
+	@Test
+	public void queryByExampleNoNullValuesTest() {
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
+		this.datastoreTemplate.queryByExample(
+				Example.of(this.simpleTestEntityNullVallues), null);
+
+		verify(this.datastore, times(1)).run(builder.build());
+	}
+	@Test
+	public void queryByExampleExactMatchTest() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage("Unsupported StringMatcher. Only EXACT and DEFAULT are supported");
+
+		this.datastoreTemplate.queryByExample(
+				Example.of(new SimpleTestEntity(), ExampleMatcher.matching().withStringMatcher(ExampleMatcher.StringMatcher.REGEX)), null);
+	}
+
+	@Test
+	public void queryByExampleIgnoreCaseTest() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage("Ignore case matching is not supported");
+
+		this.datastoreTemplate.queryByExample(
+				Example.of(new SimpleTestEntity(), ExampleMatcher.matching().withIgnoreCase()), null);
+	}
+
+
+	@Test
+	public void queryByExampleAllMatchTest() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage("Unsupported MatchMode. Only MatchMode.ALL is supported");
+
+		this.datastoreTemplate.queryByExample(
+				Example.of(new SimpleTestEntity(), ExampleMatcher.matchingAny()), null);
+	}
+
+
+	@Test
+	public void queryByExamplePropertyMatchersTest() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage("Property matchers are not supported");
+
+		this.datastoreTemplate.queryByExample(
+				Example.of(new SimpleTestEntity(), ExampleMatcher.matching().withMatcher("id",
+						ExampleMatcher.GenericPropertyMatcher.of(ExampleMatcher.StringMatcher.REGEX))),
+				null);
+	}
+
+	@Test
+	public void queryByExampleCaseSensitiveTest() {
+		this.expectedEx.expect(DatastoreDataException.class);
+		this.expectedEx.expectMessage("Property matchers are not supported");
+
+		this.datastoreTemplate.queryByExample(
+				Example.of(new SimpleTestEntity(), ExampleMatcher.matching().withMatcher("id",
+						ExampleMatcher.GenericPropertyMatcher::caseSensitive)),
+				null);
+	}
+
+	@Test
+	public void queryByExampleNullTest() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("A non-null example is expected");
+
+		this.datastoreTemplate.queryByExample(null, null);
+	}
+
+	@Test
+	public void queryByExampleOptions() {
+		EntityQuery.Builder builder = Query.newEntityQueryBuilder().setKind("test_kind");
+		this.datastoreTemplate.queryByExample(Example.of(this.simpleTestEntity),
+				new DatastoreQueryOptions(10, 1, Sort.by("intField")));
+
+		StructuredQuery.CompositeFilter filter = StructuredQuery.CompositeFilter
+				.and(PropertyFilter.eq("id", "simple_test_entity"),
+						PropertyFilter.eq("int_field", 1));
+		verify(this.datastore, times(1)).run(builder.setFilter(filter)
+				.addOrderBy(StructuredQuery.OrderBy.asc("int_field")).setLimit(10).setOffset(1).build());
+	}
+
+	@Test
 	public void writeMapTest() {
 		Map<String, Long> map = new HashMap<>();
 		map.put("field1", 1L);
@@ -694,5 +841,14 @@ public class DatastoreTemplateTests {
 		public int hashCode() {
 			return Objects.hash(this.id);
 		}
+	}
+
+	@org.springframework.cloud.gcp.data.datastore.core.mapping.Entity(name = "test_kind")
+	private static class SimpleTestEntity {
+		@Id
+		String id;
+
+		@Field(name = "int_field")
+		int intField;
 	}
 }

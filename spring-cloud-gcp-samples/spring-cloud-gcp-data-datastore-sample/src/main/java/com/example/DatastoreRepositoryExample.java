@@ -27,6 +27,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.Example;
 
 /**
  * Sample app for Datastore repository.
@@ -91,6 +92,11 @@ public class DatastoreRepositoryExample {
 		this.singerRepository
 				.findAllById(Arrays.asList("singer1", "singer2", "singer3"))
 				.forEach((x) -> System.out.println("retrieved singer: " + x));
+
+		//Query by example: find all singers with the last name "Doe"
+		Iterable<Singer> singers = this.singerRepository.findAll(Example.of(new Singer(null, null, "Doe", null)));
+		System.out.println("Query by example");
+		singers.forEach(System.out::println);
 	}
 
 	private void createRelationshipsInTransaction(Singer maryJane, Singer scottSmith) {

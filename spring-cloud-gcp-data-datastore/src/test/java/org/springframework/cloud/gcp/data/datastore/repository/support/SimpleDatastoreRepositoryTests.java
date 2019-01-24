@@ -16,22 +16,30 @@
 
 package org.springframework.cloud.gcp.data.datastore.repository.support;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreOperations;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -43,6 +51,11 @@ import static org.mockito.Mockito.when;
  * @author Chengyuan Zhao
  */
 public class SimpleDatastoreRepositoryTests {
+	/**
+	 * used to check exception messages and types.
+	 */
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
 
 	private final DatastoreTemplate datastoreTemplate = mock(DatastoreTemplate.class);
 
@@ -151,6 +164,116 @@ public class SimpleDatastoreRepositoryTests {
 						Sort.by(
 								new Sort.Order(Sort.Direction.DESC, "property1"),
 								new Sort.Order(Sort.Direction.DESC, "property2")))));
+	}
+
+	@Test
+	public void findAllByExample() {
+		Example<Object> example = Example.of(new Object());
+		this.simpleDatastoreRepository.findAll(example);
+		verify(this.datastoreTemplate, times(1)).queryByExample(same(example), isNull());
+	}
+
+	@Test
+	public void findAllByExampleSort() {
+		Example<Object> example = Example.of(new Object());
+		Sort sort = Sort.by("id");
+		this.simpleDatastoreRepository.findAll(example, sort);
+		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
+				eq(new DatastoreQueryOptions(null, null, sort)));
+	}
+
+	@Test
+	public void findAllByExamplePage() {
+		Example<Object> example = Example.of(new Object());
+		Sort sort = Sort.by("id");
+
+		doAnswer((invocationOnMock) -> Arrays.asList(1, 2))
+				.when(this.datastoreTemplate).queryByExample(same(example),
+						eq(new DatastoreQueryOptions(2, 2, sort)));
+
+		doAnswer((invocationOnMock) -> Arrays.asList(1, 2, 3, 4, 5))
+				.when(this.datastoreTemplate).keyQueryByExample(same(example), isNull());
+
+
+		Page<Object> result = this.simpleDatastoreRepository.findAll(example, PageRequest.of(1, 2, sort));
+		assertThat(result).containsExactly(1, 2);
+		assertThat(result.getTotalElements()).isEqualTo(5);
+		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
+				eq(new DatastoreQueryOptions(2, 2, sort)));
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example), isNull());
+	}
+
+
+	@Test
+	public void findAllByExamplePageNull() {
+		this.expectedEx.expect(IllegalArgumentException.class);
+		this.expectedEx.expectMessage("A non-null pageable is required.");
+
+		this.simpleDatastoreRepository.findAll(Example.of(new Object()), (Pageable) null);
+	}
+
+	@Test
+	public void findOneByExample() {
+		Example<Object> example = Example.of(new Object());
+		Sort sort = Sort.by("id");
+
+		doAnswer((invocationOnMock) -> Arrays.asList(1))
+				.when(this.datastoreTemplate).queryByExample(same(example),
+				eq(new DatastoreQueryOptions(1, null, null)));
+
+
+		assertThat(this.simpleDatastoreRepository.findOne(example).get()).isEqualTo(1);
+
+		verify(this.datastoreTemplate, times(1)).queryByExample(same(example),
+				eq(new DatastoreQueryOptions(1, null, null)));
+	}
+
+	@Test
+	public void existsByExampleTrue() {
+		Example<Object> example2 = Example.of(new Object());
+
+		doAnswer((invocationOnMock) -> Arrays.asList(1))
+				.when(this.datastoreTemplate).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
+
+		assertThat(this.simpleDatastoreRepository.exists(example2)).isEqualTo(true);
+
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
+	}
+
+	@Test
+	public void existsByExampleFalse() {
+		Example<Object> example2 = Example.of(new Object());
+
+		doAnswer((invocationOnMock) -> Arrays.asList())
+				.when(this.datastoreTemplate).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
+
+		assertThat(this.simpleDatastoreRepository.exists(example2)).isEqualTo(false);
+
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2), eq(new DatastoreQueryOptions(1, null, null)));
+	}
+
+	@Test
+	public void countByExample() {
+		Example<Object> example2 = Example.of(new Object());
+
+		doAnswer((invocationOnMock) -> Arrays.asList(1, 2, 3))
+				.when(this.datastoreTemplate).keyQueryByExample(same(example2), isNull());
+
+		assertThat(this.simpleDatastoreRepository.count(example2)).isEqualTo(3);
+
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example2), isNull());
+	}
+
+	@Test
+	public void countByExampleZero() {
+		Example<Object> example1 = Example.of(new Object());
+
+		doAnswer((invocationOnMock) -> new ArrayList<>())
+				.when(this.datastoreTemplate).keyQueryByExample(same(example1), isNull());
+
+		assertThat(this.simpleDatastoreRepository.count(example1)).isEqualTo(0);
+
+		verify(this.datastoreTemplate, times(1)).keyQueryByExample(same(example1), isNull());
 	}
 
 	@Test

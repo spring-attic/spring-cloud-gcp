@@ -910,6 +910,28 @@ If a method's return type is `org.springframework.data.domain.Page`, the returne
 NOTE: Methods that return `Page` execute an additional query to compute total number of pages.
 Methods that return `Slice`, on the other hand, don't execute any additional queries and therefore are much more efficient.
 
+==== Query by example
+Query by Example is an alternative querying technique.
+It enables dynamic query generation based on a user-provided object. See https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example[Spring Data Documentation] for details.
+
+===== Unsupported features:
+. Currently, only equality queries are supported (no ignore-case matching, regexp matching, etc.).
+. Per-field matchers are not supported.
+. Embedded entities matching is not supported.
+
+For example, if you want to find all users with the last name "Smith", you would use the following code:
+[source, java]
+----
+userRepository.findAll(
+    Example.of(new User(null, null, "Smith"))
+----
+`null` fields are not used in the filter by default. If you want to include them, you would use the following code:
+[source, java]
+----
+userRepository.findAll(
+    Example.of(new User(null, null, "Smith"), ExampleMatcher.matching().withIncludeNullValues())
+----
+
 ==== Custom GQL query methods
 
 Custom GQL queries can be mapped to repository methods in one of two ways:
