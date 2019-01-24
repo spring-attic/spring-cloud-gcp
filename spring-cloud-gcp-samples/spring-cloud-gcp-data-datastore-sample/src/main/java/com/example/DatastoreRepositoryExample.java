@@ -97,8 +97,7 @@ public class DatastoreRepositoryExample {
 				.forEach((x) -> System.out.println("retrieved singer: " + x));
 
 		//Query by example: find all singers with the last name "Doe"
-		Iterable<Singer> singers = this.singerRepository.findAll(Example.of(new Singer(null, null, "Doe", null),
-				ExampleMatcher.matching().withIgnorePaths("singerId", "firstName", "albums")));
+		Iterable<Singer> singers = this.singerRepository.findAll(Example.of(new Singer(null, null, "Doe", null)));
 		System.out.println("Query by example");
 		singers.forEach(System.out::println);
 	}

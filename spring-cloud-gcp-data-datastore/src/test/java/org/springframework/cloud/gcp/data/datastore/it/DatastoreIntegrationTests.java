@@ -133,8 +133,7 @@ public class DatastoreIntegrationTests {
 
 		Page<TestEntity> result = this.testEntityRepository
 				.findAll(
-						Example.of(new TestEntity(null, null, null, null, null),
-								ExampleMatcher.matching().withIgnorePaths("id", "color", "size", "shape")),
+						Example.of(new TestEntity(null, null, null, null, null)),
 						PageRequest.of(1, 2));
 		assertThat(result.getTotalElements()).isEqualTo(4);
 		assertThat(result.getNumberOfElements()).isEqualTo(2);
@@ -142,8 +141,7 @@ public class DatastoreIntegrationTests {
 
 		assertThat(this.testEntityRepository
 				.findAll(
-						Example.of(new TestEntity(null, null, null, null, null),
-								ExampleMatcher.matching().withIgnorePaths("id", "color", "size", "shape", "blobField")),
+						Example.of(new TestEntity(null, null, null, null, null)),
 						Sort.by(Sort.Direction.ASC, "id")))
 				.containsExactly(this.testEntityA, this.testEntityB, this.testEntityC, this.testEntityD);
 
