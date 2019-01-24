@@ -28,24 +28,24 @@ import com.google.cloud.spanner.Statement;
  */
 public class AfterExecuteDmlEvent extends ExecuteDmlEvent {
 
-	private final long numberRowsAffected;
+	private final long numberOfRowsAffected;
 
 	/**
 	 * Constructor.
 	 * @param statement the DML statement that was executed.
-	 * @param numberRowsAffected the number of rows affected.
+	 * @param numberOfRowsAffected the number of rows affected.
 	 */
-	public AfterExecuteDmlEvent(Statement statement, long numberRowsAffected) {
+	public AfterExecuteDmlEvent(Statement statement, long numberOfRowsAffected) {
 		super(statement);
-		this.numberRowsAffected = numberRowsAffected;
+		this.numberOfRowsAffected = numberOfRowsAffected;
 	}
 
 	/**
 	 * Get the number of rows affected by the DML.
 	 * @return the number of rows affected.
 	 */
-	public long getNumberRowsAffected() {
-		return this.numberRowsAffected;
+	public long getNumberOfRowsAffected() {
+		return this.numberOfRowsAffected;
 	}
 
 	@Override
@@ -57,11 +57,11 @@ public class AfterExecuteDmlEvent extends ExecuteDmlEvent {
 			return false;
 		}
 		AfterExecuteDmlEvent that = (AfterExecuteDmlEvent) o;
-		return getStatement().equals(that.getStatement()) && getNumberRowsAffected() == that.getNumberRowsAffected();
+		return getStatement().equals(that.getStatement()) && getNumberOfRowsAffected() == that.getNumberOfRowsAffected();
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getStatement().hashCode(), getNumberRowsAffected());
+		return Objects.hash(getStatement().hashCode(), getNumberOfRowsAffected());
 	}
 }
