@@ -18,7 +18,7 @@
 	<properties>
 		<google-cloud-bom.version>0.78.0-alpha</google-cloud-bom.version>
 		<google-auth-library-oauth2-http.version>0.13.0</google-auth-library-oauth2-http.version>
-		<mysql-socket-factory.version>1.0.11</mysql-socket-factory.version>
+		<cloud-sql-socket-factory.version>1.0.12</cloud-sql-socket-factory.version>
 	</properties>
 
 	<dependencyManagement>
@@ -150,13 +150,13 @@
 			<dependency>
 				<groupId>com.google.cloud.sql</groupId>
 				<artifactId>mysql-socket-factory</artifactId>
-				<version>${mysql-socket-factory.version}</version>
+				<version>${cloud-sql-socket-factory.version}</version>
 			</dependency>
 
 			<dependency>
 				<groupId>com.google.cloud.sql</groupId>
 				<artifactId>postgres-socket-factory</artifactId>
-				<version>${mysql-socket-factory.version}</version>
+				<version>${cloud-sql-socket-factory.version}</version>
 			</dependency>
 
 			<!--google-cloud-java BOM-->
