@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.TreeSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -57,7 +58,7 @@ public class DatastoreRepositoryExample {
 					.save(new Singer("singer1", "John", "Doe", new HashSet<Album>()));
 
 			Singer maryJane = new Singer("singer2", "Mary", "Jane",
-					new HashSet<>(Arrays.asList(
+					new TreeSet<>(Arrays.asList(
 							new Album("a", LocalDate.of(2012, Month.JANUARY, 20)),
 							new Album("b", LocalDate.of(2018, Month.FEBRUARY, 12)))));
 			Singer scottSmith = new Singer("singer3", "Scott", "Smith",
