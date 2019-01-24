@@ -42,6 +42,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 import org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtils;
 import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProcessor;
@@ -50,6 +52,10 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.Interleaved;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.PrimaryKey;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterExecuteDmlEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeExecuteDmlEvent;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
@@ -58,6 +64,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -103,8 +110,31 @@ public class SpannerTemplateTests {
 
 	@Test
 	public void executeDmlTest() {
+		ApplicationEventPublisher mockPublisher = mock(ApplicationEventPublisher.class);
+		ApplicationEventPublisher mockBeforePublisher = mock(ApplicationEventPublisher.class);
+		ApplicationEventPublisher mockAfterPublisher = mock(ApplicationEventPublisher.class);
+
+		InOrder inOrder = Mockito.inOrder(mockBeforePublisher, this.databaseClient, mockAfterPublisher);
+
+		doAnswer((invocationOnMock) -> {
+			ApplicationEvent event = invocationOnMock.getArgument(0);
+			if (event instanceof BeforeExecuteDmlEvent) {
+				mockBeforePublisher.publishEvent(event);
+			}
+			else if (event instanceof AfterExecuteDmlEvent) {
+				mockAfterPublisher.publishEvent(event);
+			}
+			return null;
+		}).when(mockPublisher).publishEvent(any());
+
+		when(this.databaseClient.executePartitionedUpdate(eq(DML))).thenReturn(333L);
+
+		this.spannerTemplate.setApplicationEventPublisher(mockPublisher);
 		this.spannerTemplate.executeDmlStatement(DML);
-		verify(this.databaseClient, times(1)).executePartitionedUpdate(eq(DML));
+
+		inOrder.verify(mockBeforePublisher, times(1)).publishEvent(eq(new BeforeExecuteDmlEvent(DML)));
+		inOrder.verify(this.databaseClient, times(1)).executePartitionedUpdate(eq(DML));
+		inOrder.verify(mockAfterPublisher, times(1)).publishEvent(eq(new AfterExecuteDmlEvent(DML, 333L)));
 	}
 
 	@Test

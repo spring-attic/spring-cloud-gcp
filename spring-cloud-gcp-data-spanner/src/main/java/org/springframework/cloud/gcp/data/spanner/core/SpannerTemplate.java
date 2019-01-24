@@ -54,7 +54,12 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterExecuteDmlEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeExecuteDmlEvent;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
 import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -71,7 +76,7 @@ import org.springframework.util.Assert;
  *
  * @since 1.1
  */
-public class SpannerTemplate implements SpannerOperations {
+public class SpannerTemplate implements SpannerOperations, ApplicationEventPublisherAware {
 
 	private static final Log LOGGER = LogFactory.getLog(SpannerTemplate.class);
 
@@ -84,6 +89,8 @@ public class SpannerTemplate implements SpannerOperations {
 	private final SpannerMutationFactory mutationFactory;
 
 	private final SpannerSchemaUtils spannerSchemaUtils;
+
+	private @Nullable ApplicationEventPublisher eventPublisher;
 
 	public SpannerTemplate(DatabaseClient databaseClient,
 			SpannerMappingContext mappingContext,
@@ -106,6 +113,11 @@ public class SpannerTemplate implements SpannerOperations {
 		this.spannerSchemaUtils = spannerSchemaUtils;
 	}
 
+	@Override
+	public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+		this.eventPublisher = applicationEventPublisher;
+	}
+
 	protected ReadContext getReadContext() {
 		return doWithOrWithoutTransactionContext((x) -> x, this.databaseClient::singleUse);
 	}
@@ -125,8 +137,12 @@ public class SpannerTemplate implements SpannerOperations {
 
 	@Override
 	public long executeDmlStatement(Statement statement) {
-		return doWithOrWithoutTransactionContext((x) -> x.executeUpdate(statement),
+		Assert.notNull(statement, "A non-null statement is required.");
+		maybeEmitEvent(new BeforeExecuteDmlEvent(statement));
+		long rowsAffected = doWithOrWithoutTransactionContext((x) -> x.executeUpdate(statement),
 				() -> this.databaseClient.executePartitionedUpdate(statement));
+		maybeEmitEvent(new AfterExecuteDmlEvent(statement, rowsAffected));
+		return rowsAffected;
 	}
 
 	@Override
@@ -515,5 +531,11 @@ public class SpannerTemplate implements SpannerOperations {
 			Supplier<A> funcWithoutTransactionContext) {
 		TransactionContext txContext = getTransactionContext();
 		return (txContext != null) ? funcWithTransactionContext.apply(txContext) : funcWithoutTransactionContext.get();
+	}
+
+	private void maybeEmitEvent(ApplicationEvent event) {
+		if (this.eventPublisher != null) {
+			this.eventPublisher.publishEvent(event);
+		}
 	}
 }
