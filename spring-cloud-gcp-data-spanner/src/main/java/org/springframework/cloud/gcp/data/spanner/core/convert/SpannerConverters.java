@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,13 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 
 import java.sql.Date;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
-import com.google.common.collect.ImmutableSet;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
@@ -196,18 +197,20 @@ public final class SpannerConverters {
 					};
 
 	/** Converters from common types to those used by Spanner. */
-	public static final Collection<Converter> DEFAULT_SPANNER_WRITE_CONVERTERS = ImmutableSet.of(
+	public static final Collection<Converter> DEFAULT_SPANNER_WRITE_CONVERTERS = Collections.unmodifiableCollection(
+			Arrays.asList(
 					JAVA_TO_SPANNER_DATE_CONVERTER,
 					INSTANT_TIMESTAMP_CONVERTER,
 					JAVA_TO_SPANNER_BYTE_ARRAY_CONVERTER,
 					JAVA_TO_SPANNER_TIMESTAMP_CONVERTER,
-					JAVA_SQL_TO_SPANNER_DATE_CONVERTER);
+					JAVA_SQL_TO_SPANNER_DATE_CONVERTER));
 
 	/** Converters from common types to those used by Spanner. */
-	public static final Collection<Converter> DEFAULT_SPANNER_READ_CONVERTERS = ImmutableSet.of(
+	public static final Collection<Converter> DEFAULT_SPANNER_READ_CONVERTERS = Collections.unmodifiableCollection(
+			Arrays.asList(
 					SPANNER_TO_JAVA_DATE_CONVERTER,
 					TIMESTAMP_INSTANT_CONVERTER,
 					SPANNER_TO_JAVA_BYTE_ARRAY_CONVERTER,
 					SPANNER_TO_JAVA_TIMESTAMP_CONVERTER,
-					SPANNER_TO_JAVA_SQL_DATE_CONVERTER);
+					SPANNER_TO_JAVA_SQL_DATE_CONVERTER));
 }

@@ -52,7 +52,7 @@ Here is an example of how to publish a message to a Google Cloud Pub/Sub topic:
 [source,java]
 ----
 public void publishMessage() {
-    this.pubSubTemplate.publish("topic", "your message payload", ImmutableMap.of("key1", "val1"));
+    this.pubSubTemplate.publish("topic", "your message payload", Collections.singletonMap("key1", "val1"));
 }
 ----
 

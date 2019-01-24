@@ -79,6 +79,7 @@ All configurations are optional:
 | `spring.cloud.gcp.trace.max-inbound-size` | Maximum size for inbound messages | No |
 | `spring.cloud.gcp.trace.max-outbound-size` | Maximum size for outbound messages | No |
 | `spring.cloud.gcp.trace.wait-for-ready` | https://github.com/grpc/grpc/blob/master/doc/wait-for-ready.md[Waits for the channel to be ready] in case of a transient failure | No | `false`
+| `spring.cloud.gcp.trace.messageTimeout` | Timeout in seconds before pending spans will be sent in batches to GCP Stackdriver Trace. (previously `spring.zipkin.messageTimeout`) | No | 1
 |===
 
 You can use core Spring Cloud Sleuth properties to control Sleuth’s sampling rate, etc.
@@ -100,6 +101,13 @@ This is required by Stackdriver Trace.
 Span joins will share the span ID between the client and server Spans.
 Stackdriver requires that every Span ID within a Trace to be unique, so Span joins are not supported.
 - Uses `StackdriverHttpClientParser` and `StackdriverHttpServerParser` by default to populate Stackdriver related fields.
+
+=== Overriding the auto-configuration
+
+Spring Cloud Sleuth supports sending traces to multiple tracing systems as of version 2.1.0.
+In order to get this to work, every tracing system needs to have a `Reporter<Span>` and `Sender`.
+If you want to override the provided beans you need to give them a specific name.
+To do this you can use respectively `StackdriverTraceAutoConfiguration.REPORTER_BEAN_NAME` and `StackdriverTraceAutoConfiguration.SENDER_BEAN_NAME`.
 
 === Integration with Logging
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.spanner.core.convert;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.google.cloud.ByteArray;
@@ -23,7 +25,8 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.Code;
-import com.google.common.collect.ImmutableMap;
+
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 
 /**
  * A utility class to map between common Java types and types to use with Spanner.
@@ -42,54 +45,48 @@ public final class SpannerTypeMapper {
 
 	private static final Map<Class, Type.Code> JAVA_TYPE_TO_SPANNER_ARRAY_COLUMN_TYPE_MAPPING;
 
-	// @formatter:off
-	private static final Map<Type.Code, Class> SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING =
-					new ImmutableMap.Builder<Type.Code, Class>()
-					// @formatter:on
-					.put(Type.Code.BOOL, Boolean.class)
-					.put(Type.Code.BYTES, ByteArray.class)
-					.put(Type.Code.DATE, com.google.cloud.Date.class)
-					.put(Type.Code.FLOAT64, Double.class)
-					.put(Type.Code.INT64, Long.class)
-					.put(Type.Code.STRING, String.class)
-					.put(Type.Code.STRUCT, Struct.class)
-					.put(Type.Code.TIMESTAMP, Timestamp.class)
-					.build();
+	private static final Map<Type.Code, Class> SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING = new MapBuilder<Code, Class>()
+			.put(Type.Code.BOOL, Boolean.class)
+			.put(Type.Code.BYTES, ByteArray.class)
+			.put(Type.Code.DATE, com.google.cloud.Date.class)
+			.put(Type.Code.FLOAT64, Double.class)
+			.put(Type.Code.INT64, Long.class)
+			.put(Type.Code.STRING, String.class)
+			.put(Type.Code.STRUCT, Struct.class)
+			.put(Type.Code.TIMESTAMP, Timestamp.class)
+			.build();
 
-	// @formatter:off
-	private static final Map<Type.Code, Class> SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING
-					= new ImmutableMap.Builder<Type.Code, Class>()
-					// @formatter:on
-					.put(Type.Code.BOOL, boolean[].class)
-					.put(Type.Code.BYTES, ByteArray[].class)
-					.put(Type.Code.DATE, com.google.cloud.Date[].class)
-					.put(Type.Code.FLOAT64, double[].class)
-					.put(Type.Code.INT64, long[].class)
-					.put(Type.Code.STRING, String[].class)
-					.put(Type.Code.STRUCT, Struct[].class)
-					.put(Type.Code.TIMESTAMP, Timestamp[].class)
-					.build();
+	private static final Map<Type.Code, Class> SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING = new MapBuilder<Type.Code, Class>()
+			.put(Type.Code.BOOL, boolean[].class)
+			.put(Type.Code.BYTES, ByteArray[].class)
+			.put(Type.Code.DATE, com.google.cloud.Date[].class)
+			.put(Type.Code.FLOAT64, double[].class)
+			.put(Type.Code.INT64, long[].class)
+			.put(Type.Code.STRING, String[].class)
+			.put(Type.Code.STRUCT, Struct[].class)
+			.put(Type.Code.TIMESTAMP, Timestamp[].class)
+			.build();
 
 	static {
-		ImmutableMap.Builder<Class, Type.Code> builder = new ImmutableMap.Builder<>();
+		Map<Class, Type.Code> builderMap = new HashMap<>();
 		SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING
 				.keySet()
 				.stream()
 				.forEach(
-						(type) -> builder.put(SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
-		builder.put(double.class, Code.FLOAT64);
-		builder.put(long.class, Code.INT64);
-		JAVA_TYPE_TO_SPANNER_SIMPLE_COLUMN_TYPE_MAPPING = builder.build();
+						(type) -> builderMap.put(SPANNER_SIMPLE_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
+		builderMap.put(double.class, Code.FLOAT64);
+		builderMap.put(long.class, Code.INT64);
+		JAVA_TYPE_TO_SPANNER_SIMPLE_COLUMN_TYPE_MAPPING = Collections.unmodifiableMap(builderMap);
 	}
 
 	static {
-		ImmutableMap.Builder<Class, Type.Code> builder = new ImmutableMap.Builder<>();
+		HashMap<Class, Type.Code> builderMap = new HashMap();
 		SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING
 				.keySet()
 				.stream()
 				.forEach(
-						(type) -> builder.put(SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
-		JAVA_TYPE_TO_SPANNER_ARRAY_COLUMN_TYPE_MAPPING = builder.build();
+						(type) -> builderMap.put(SPANNER_ARRAY_COLUMN_CODES_TO_JAVA_TYPE_MAPPING.get(type), type));
+		JAVA_TYPE_TO_SPANNER_ARRAY_COLUMN_TYPE_MAPPING = Collections.unmodifiableMap(builderMap);
 	}
 
 	public static Class getSimpleJavaClassFor(Type.Code code) {

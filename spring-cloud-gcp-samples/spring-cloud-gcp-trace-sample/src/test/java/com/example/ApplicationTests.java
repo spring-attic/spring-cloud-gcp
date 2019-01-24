@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.example;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +28,6 @@ import com.google.cloud.logging.LogEntry;
 import com.google.cloud.logging.Logging;
 import com.google.cloud.logging.LoggingOptions;
 import com.google.cloud.logging.Payload.StringPayload;
-import com.google.common.collect.ImmutableList;
 import com.google.devtools.cloudtrace.v1.GetTraceRequest;
 import com.google.devtools.cloudtrace.v1.Trace;
 import com.google.devtools.cloudtrace.v1.TraceServiceGrpc;
@@ -139,8 +139,11 @@ public class ApplicationTests {
 			assertThat(trace.getTraceId()).isEqualTo(uuidString);
 			assertThat(trace.getSpansCount()).isEqualTo(8);
 
-			ImmutableList<LogEntry> logEntries = ImmutableList.copyOf(
-					this.logClient.listLogEntries(Logging.EntryListOption.filter(logFilter)).iterateAll());
+			List<LogEntry> logEntries = new ArrayList<>();
+			this.logClient.listLogEntries(Logging.EntryListOption.filter(logFilter)).iterateAll()
+					.forEach((le) -> {
+						logEntries.add(le);
+					});
 
 			List<String> logContents = logEntries.stream()
 					.map((logEntry) -> ((StringPayload) logEntry.getPayload()).getData())

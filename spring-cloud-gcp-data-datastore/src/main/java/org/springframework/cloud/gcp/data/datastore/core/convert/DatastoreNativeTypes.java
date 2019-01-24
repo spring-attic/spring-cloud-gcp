@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -41,10 +44,8 @@ import com.google.cloud.datastore.NullValue;
 import com.google.cloud.datastore.StringValue;
 import com.google.cloud.datastore.TimestampValue;
 import com.google.cloud.datastore.Value;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.primitives.Booleans;
 
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreDataException;
 import org.springframework.data.mapping.model.SimpleTypeHolder;
 
@@ -75,57 +76,51 @@ public abstract class DatastoreNativeTypes {
 
 	static {
 		//keys are used for type resolution, in order of insertion
-		DATASTORE_TYPE_WRAPPERS = ImmutableMap.<Class<?>, Function<?, Value<?>>>builder()
-				.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of)
-				.put(Boolean.class, (Function<Boolean, Value<?>>) BooleanValue::of)
-				.put(Long.class, (Function<Long, Value<?>>) LongValue::of)
-				.put(Double.class, (Function<Double, Value<?>>) DoubleValue::of)
-				.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of)
-				.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of)
-				.put(String.class, (Function<String, Value<?>>) StringValue::of)
-				.put(Enum.class, (Function<Enum, Value<?>>) (x) -> StringValue.of(x.name()))
-				.put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of)
-				.put(Key.class, (Function<Key, Value<?>>) KeyValue::of)
-				.build();
+		Map<Class<?>, Function<?, Value<?>>> wrappers = new LinkedHashMap<>();
+		wrappers.put(Blob.class, (Function<Blob, Value<?>>) BlobValue::of);
+		wrappers.put(Boolean.class, (Function<Boolean, Value<?>>) BooleanValue::of);
+		wrappers.put(Long.class, (Function<Long, Value<?>>) LongValue::of);
+		wrappers.put(Double.class, (Function<Double, Value<?>>) DoubleValue::of);
+		wrappers.put(LatLng.class, (Function<LatLng, Value<?>>) LatLngValue::of);
+		wrappers.put(Timestamp.class, (Function<Timestamp, Value<?>>) TimestampValue::of);
+		wrappers.put(String.class, (Function<String, Value<?>>) StringValue::of);
+		wrappers.put(Enum.class, (Function<Enum, Value<?>>) (x) -> StringValue.of(x.name()));
+		wrappers.put(Entity.class, (Function<Entity, Value<?>>) EntityValue::of);
+		wrappers.put(Key.class, (Function<Key, Value<?>>) KeyValue::of);
 
+		DATASTORE_TYPE_WRAPPERS = Collections.unmodifiableMap(wrappers);
 
 		//entries are used for type resolution, in order of insertion
-		DATASTORE_NATIVE_TYPES = ImmutableSet.<Class<?>>builder()
-				.addAll(DATASTORE_TYPE_WRAPPERS.keySet())
-				.build();
+		DATASTORE_NATIVE_TYPES = Collections.unmodifiableSet(wrappers.keySet());
 
-		ID_TYPES = ImmutableSet.<Class<?>>builder()
-				.add(String.class)
-				.add(Long.class)
-				.build();
+		ID_TYPES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(String.class, Long.class)));
 
-		GQL_PARAM_BINDING_FUNC_MAP = ImmutableMap
-				.<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>builder()
+		GQL_PARAM_BINDING_FUNC_MAP = new MapBuilder<Class<?>, Function<Builder, BiFunction<String, Object, Builder>>>()
 				.put(Cursor.class, (builder) -> (s, o) -> builder.setBinding(s, (Cursor) o))
 				.put(String.class, (builder) -> (s, o) -> builder.setBinding(s, (String) o))
 				.put(Enum.class,
-						(builder) -> (s, o) -> builder.setBinding(s, ((Enum) o).name()))
+					(builder) -> (s, o) -> builder.setBinding(s, ((Enum) o).name()))
 				.put(String[].class,
-						(builder) -> (s, o) -> builder.setBinding(s, (String[]) o))
+					(builder) -> (s, o) -> builder.setBinding(s, (String[]) o))
 				.put(Long.class, (builder) -> (s, o) -> builder.setBinding(s, (Long) o))
 				.put(Long[].class, (builder) -> (s, o) -> builder.setBinding(s, Stream.of((Long[]) o)
-						.mapToLong(Long::longValue).toArray()))
+					.mapToLong(Long::longValue).toArray()))
 				.put(long[].class, (builder) -> (s, o) -> builder.setBinding(s, (long[]) o))
 				.put(Double.class, (builder) -> (s, o) -> builder.setBinding(s, (Double) o))
 				.put(Double[].class, (builder) -> (s, o) -> builder.setBinding(s, Stream.of((Double[]) o)
-						.mapToDouble(Double::doubleValue).toArray()))
+					.mapToDouble(Double::doubleValue).toArray()))
 				.put(double[].class,
-						(builder) -> (s, o) -> builder.setBinding(s, (double[]) o))
+					(builder) -> (s, o) -> builder.setBinding(s, (double[]) o))
 				.put(Boolean.class,
-						(builder) -> (s, o) -> builder.setBinding(s, (Boolean) o))
+					(builder) -> (s, o) -> builder.setBinding(s, (Boolean) o))
 				.put(Boolean[].class, (builder) -> (s, o) -> builder.setBinding(s,
-						Booleans.toArray(Arrays.asList(((Boolean[]) o)))))
+						wrapperToBooleanArray((Boolean[]) o)))
 				.put(boolean[].class,
-						(builder) -> (s, o) -> builder.setBinding(s, (boolean[]) o))
+					(builder) -> (s, o) -> builder.setBinding(s, (boolean[]) o))
 				.put(Timestamp.class,
-						(builder) -> (s, o) -> builder.setBinding(s, (Timestamp) o))
+					(builder) -> (s, o) -> builder.setBinding(s, (Timestamp) o))
 				.put(Timestamp[].class,
-						(builder) -> (s, o) -> builder.setBinding(s, (Timestamp[]) o))
+					(builder) -> (s, o) -> builder.setBinding(s, (Timestamp[]) o))
 				.put(Key.class, (builder) -> (s, o) -> builder.setBinding(s, (Key) o))
 				.put(Key[].class, (builder) -> (s, o) -> builder.setBinding(s, (Key[]) o))
 				.put(Blob.class, (builder) -> (s, o) -> builder.setBinding(s, (Blob) o))
@@ -189,6 +184,14 @@ public abstract class DatastoreNativeTypes {
 
 	private static Class getTypeForWrappingInDatastoreValue(Object val) {
 		return val.getClass().isEnum() ? Enum.class : val.getClass();
+	}
+
+	private static boolean[] wrapperToBooleanArray(Boolean[] input) {
+		boolean[] output = new boolean[input.length];
+		for (int i = 0; i < input.length; i++) {
+			output[i] = input[i];
+		}
+		return output;
 	}
 
 }

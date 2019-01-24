@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -86,7 +85,6 @@ public abstract class AbstractDatastoreQuery<T> implements RepositoryQuery {
 						: converted.get(0).getClass(), converted.size()));
 	}
 
-	@VisibleForTesting
 	Object processRawObjectForProjection(T object) {
 		return this.queryMethod.getResultProcessor().processResult(object);
 	}

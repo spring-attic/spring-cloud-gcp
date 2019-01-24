@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.data.datastore.repository.query;
 
 import java.lang.reflect.Method;
 
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.DatastoreMappingContext;
@@ -79,7 +78,6 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 				this.datastoreMappingContext, entityType);
 	}
 
-	@VisibleForTesting
 	<T> GqlDatastoreQuery<T> createGqlDatastoreQuery(Class<T> entityType,
 			DatastoreQueryMethod queryMethod, String gql) {
 		return new GqlDatastoreQuery<>(entityType, queryMethod, this.datastoreTemplate,
@@ -87,12 +85,10 @@ public class DatastoreQueryLookupStrategy implements QueryLookupStrategy {
 				this.datastoreMappingContext);
 	}
 
-	@VisibleForTesting
 	Class<?> getEntityType(QueryMethod queryMethod) {
 		return queryMethod.getResultProcessor().getReturnedType().getDomainType();
 	}
 
-	@VisibleForTesting
 	DatastoreQueryMethod createQueryMethod(Method method, RepositoryMetadata metadata,
 			ProjectionFactory factory) {
 		return new DatastoreQueryMethod(method, metadata, factory);

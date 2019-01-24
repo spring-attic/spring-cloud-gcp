@@ -312,7 +312,7 @@ Collection converters need to implement the `org.springframework.core.convert.co
 Example:
 
 Let's improve the Singer class from the previous example.
-Instead of a field of type `Album`, we would like to have a field of type `ImmutableSet<Album>`:
+Instead of a field of type `Album`, we would like to have a field of type `Set<Album>`:
 
 [source, java]
 ----
@@ -324,18 +324,18 @@ public class Singer {
 
 	String name;
 
-	ImmutableSet<Album> albums;
+	Set<Album> albums;
 }
 ----
 
 We have to define a read converter only:
 [source, java]
 ----
-static final Converter<List<?>, ImmutableSet<?>> LIST_IMMUTABLE_SET_CONVERTER =
-			new Converter<List<?>, ImmutableSet<?>>() {
+static final Converter<List<?>, Set<?>> LIST_SET_CONVERTER =
+			new Converter<List<?>, Set<?>>() {
 				@Override
-				public ImmutableSet<?> convert(List<?> source) {
-					return ImmutableSet.copyOf(source);
+				public Set<?> convert(List<?> source) {
+					return Collections.unmodifiableSet(new HashSet<>(source));
 				}
 			};
 ----
@@ -349,8 +349,7 @@ public class ConverterConfiguration {
 	public DatastoreCustomConversions datastoreCustomConversions() {
 		return new DatastoreCustomConversions(
 				Arrays.asList(
-						LIST_IMMUTABLE_SET_CONVERTER,
-
+						LIST_SET_CONVERTER,
 						ALBUM_STRING_CONVERTER,
 						STRING_ALBUM_CONVERTER));
 	}
@@ -688,7 +687,7 @@ Using `DatastoreTemplate` you can execute reads, for example:
 ----
 Trader trader = this.datastoreTemplate.findById("trader1", Trader.class);
 
-List<Trader> traders = this.datastoreTemplate.findAllById(ImmutableList.of("trader1", "trader2"), Trader.class);
+List<Trader> traders = this.datastoreTemplate.findAllById(Arrays.asList("trader1", "trader2"), Trader.class);
 
 List<Trader> allTraders = this.datastoreTemplate.findAll(Trader.class);
 ----

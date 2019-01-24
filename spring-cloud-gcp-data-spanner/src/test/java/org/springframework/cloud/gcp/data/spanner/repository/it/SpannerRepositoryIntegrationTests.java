@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
 package org.springframework.cloud.gcp.data.spanner.repository.it;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Struct;
-import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -215,10 +215,10 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 				"22a", "22b");
 		subTradeComponent22.setCommitTimestamp(Timestamp.ofTimeMicroseconds(22));
 
-		subTrade1.setSubTradeComponentList(ImmutableList.of(subTradeComponent11));
+		subTrade1.setSubTradeComponentList(Arrays.asList(subTradeComponent11));
 		subTrade2.setSubTradeComponentList(
-				ImmutableList.of(subTradeComponent21, subTradeComponent22));
-		someTrade.setSubTrades(ImmutableList.of(subTrade1, subTrade2));
+				Arrays.asList(subTradeComponent21, subTradeComponent22));
+		someTrade.setSubTrades(Arrays.asList(subTrade1, subTrade2));
 
 		this.tradeRepository.save(someTrade);
 

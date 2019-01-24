@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package com.example;
 
 import java.util.List;
+import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
 import org.awaitility.Duration;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -60,9 +61,11 @@ public class PubSubJsonPayloadApplicationTests {
 
 	@Test
 	public void testReceivesJsonPayload() {
-		ImmutableMap<String, String> params = ImmutableMap.of(
-				"name", "Bob",
-				"age", "25");
+		Map<String, String> params = new MapBuilder<String, String>()
+				.put("name", "Bob")
+				.put("age", "25")
+				.build();
+
 		this.testRestTemplate.postForObject(
 				"/createPerson?name={name}&age={age}", null, String.class, params);
 

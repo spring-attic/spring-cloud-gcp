@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
 
 package org.springframework.cloud.gcp.data.datastore.core.convert;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import com.google.common.collect.ImmutableList;
 
 import org.springframework.data.convert.CustomConversions;
 import org.springframework.data.convert.JodaTimeConverters;
@@ -40,11 +39,11 @@ public class DatastoreCustomConversions extends CustomConversions {
 	private static final List<Object> STORE_CONVERTERS;
 
 	static {
-		STORE_CONVERTERS = ImmutableList.builder()
-				.addAll(JodaTimeConverters.getConvertersToRegister())
-				.addAll(Jsr310Converters.getConvertersToRegister())
-				.addAll(ThreeTenBackPortConverters.getConvertersToRegister())
-				.build();
+		ArrayList<Object> converters = new ArrayList<>();
+		converters.addAll(JodaTimeConverters.getConvertersToRegister());
+		converters.addAll(Jsr310Converters.getConvertersToRegister());
+		converters.addAll(ThreeTenBackPortConverters.getConvertersToRegister());
+		STORE_CONVERTERS = Collections.unmodifiableList(converters);
 
 		STORE_CONVERSIONS =
 				StoreConversions.of(DatastoreNativeTypes.HOLDER, STORE_CONVERTERS);
