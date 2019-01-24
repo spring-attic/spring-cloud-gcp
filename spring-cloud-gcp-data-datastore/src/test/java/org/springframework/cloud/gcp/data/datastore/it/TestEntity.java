@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.gcp.data.datastore.it;
 
+import java.util.Objects;
+
 import com.google.cloud.datastore.Blob;
 
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
@@ -93,5 +95,37 @@ public class TestEntity {
 	 */
 	enum Shape {
 		CIRCLE, SQUARE;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		TestEntity that = (TestEntity) o;
+		return Objects.equals(getId(), that.getId()) &&
+				Objects.equals(getColor(), that.getColor()) &&
+				Objects.equals(getSize(), that.getSize()) &&
+				getShape() == that.getShape() &&
+				Objects.equals(getBlobField(), that.getBlobField());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getId(), getColor(), getSize(), getShape(), getBlobField());
+	}
+
+	@Override
+	public String toString() {
+		return "TestEntity{" +
+				"id=" + this.id +
+				", color='" + this.color + '\'' +
+				", size=" + this.size +
+				", shape=" + this.shape +
+				", blobField=" + this.blobField +
+				'}';
 	}
 }

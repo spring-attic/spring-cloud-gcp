@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,15 +21,13 @@ import java.time.Month;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.Example;
 
 /**
  * Sample app for Datastore repository.
@@ -56,15 +54,16 @@ public class DatastoreRepositoryExample {
 			this.singerRepository.deleteAll();
 
 			this.singerRepository
-					.save(new Singer("singer1", "John", "Doe", ImmutableSet.of()));
+					.save(new Singer("singer1", "John", "Doe", new HashSet<Album>()));
 
 			Singer maryJane = new Singer("singer2", "Mary", "Jane",
-					ImmutableSet.of(new Album("a", LocalDate.of(2012, Month.JANUARY, 20)),
-							new Album("b", LocalDate.of(2018, Month.FEBRUARY, 12))));
-			Singer scottSmith = new Singer("singer3", "Scott", "Smith", ImmutableSet
-					.of(new Album("c", LocalDate.of(2000, Month.AUGUST, 31))));
+					new HashSet<>(Arrays.asList(
+							new Album("a", LocalDate.of(2012, Month.JANUARY, 20)),
+							new Album("b", LocalDate.of(2018, Month.FEBRUARY, 12)))));
+			Singer scottSmith = new Singer("singer3", "Scott", "Smith",
+					new HashSet<>(Arrays.asList(new Album("c", LocalDate.of(2000, Month.AUGUST, 31)))));
 
-			this.singerRepository.saveAll(ImmutableList.of(maryJane, scottSmith));
+			this.singerRepository.saveAll(Arrays.asList(maryJane, scottSmith));
 
 			createRelationshipsInTransaction(maryJane, scottSmith);
 
@@ -91,8 +90,13 @@ public class DatastoreRepositoryExample {
 		// Retrieving by keys or querying with a restriction to a single entity group
 		// / family is strongly consistent.
 		this.singerRepository
-				.findAllById(ImmutableList.of("singer1", "singer2", "singer3"))
+				.findAllById(Arrays.asList("singer1", "singer2", "singer3"))
 				.forEach((x) -> System.out.println("retrieved singer: " + x));
+
+		//Query by example: find all singers with the last name "Doe"
+		Iterable<Singer> singers = this.singerRepository.findAll(Example.of(new Singer(null, null, "Doe", null)));
+		System.out.println("Query by example");
+		singers.forEach(System.out::println);
 	}
 
 	private void createRelationshipsInTransaction(Singer maryJane, Singer scottSmith) {
@@ -123,10 +127,6 @@ public class DatastoreRepositoryExample {
 	@Bean
 	public DatastoreCustomConversions datastoreCustomConversions() {
 		return new DatastoreCustomConversions(Arrays.asList(
-				// Converter to read ImmutableSet (List to ImmutableSet)
-				// Note that you don't need a ImmutableSet to List converter
-				ConvertersExample.LIST_IMMUTABLE_SET_CONVERTER,
-
 				// Converters to read and write custom Singer.Album type
 				ConvertersExample.ALBUM_STRING_CONVERTER,
 				ConvertersExample.STRING_ALBUM_CONVERTER));

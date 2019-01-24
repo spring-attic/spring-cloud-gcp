@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import com.google.cloud.datastore.StructuredQuery.Builder;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.Filter;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreQueryOptions;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
@@ -132,12 +131,10 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				((DatastoreQueryMethod) getQueryMethod()).getCollectionReturnType(), false);
 	}
 
-	@VisibleForTesting
 	protected boolean isPageQuery() {
 		return getQueryMethod().isPageQuery();
 	}
 
-	@VisibleForTesting
 	protected boolean isSliceQuery() {
 		return getQueryMethod().isSliceQuery();
 	}
@@ -205,7 +202,6 @@ public class PartTreeDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 		return new SliceImpl(entities, pageable, exceedsLimit);
 	}
 
-	@VisibleForTesting
 	protected Object convertResultCollection(Object result, Class<?> collectionType) {
 		return getDatastoreTemplate().getDatastoreEntityConverter().getConversions()
 				.convertOnRead(result, collectionType, getQueryMethod().getReturnedObjectType());

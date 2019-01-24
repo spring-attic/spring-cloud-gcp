@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import com.google.cloud.datastore.StructuredQuery;
 import com.google.cloud.datastore.StructuredQuery.CompositeFilter;
 import com.google.cloud.datastore.StructuredQuery.OrderBy;
 import com.google.cloud.datastore.StructuredQuery.PropertyFilter;
-import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -533,7 +532,11 @@ public class PartTreeDatastoreQueryTests {
 					: results;
 		});
 		when(this.datastoreTemplate.convertEntitiesForRead(any(), any())).then(
-				(invocation) -> Lists.newArrayList(invocation.<Iterator>getArgument(0))
+				(invocation) -> {
+					List<Object> list = new ArrayList<>();
+					invocation.<Iterator>getArgument(0).forEachRemaining(list::add);
+					return list;
+				}
 		);
 	}
 

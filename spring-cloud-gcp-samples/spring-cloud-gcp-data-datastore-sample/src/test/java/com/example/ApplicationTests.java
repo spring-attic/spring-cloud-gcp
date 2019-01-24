@@ -45,8 +45,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assume.assumeThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 /**
  * These tests verifies that the datastore-sample works. In order to run it, use the
@@ -80,10 +79,10 @@ public class ApplicationTests {
 
 	@BeforeClass
 	public static void checkToRun() {
-		assumeThat(
-				"Datastore-sample integration tests are disabled. Please use '-Dit.datastore=true' "
-						+ "to enable them. ",
-				System.getProperty("it.datastore"), is("true"));
+		assumeThat(System.getProperty("it.datastore"))
+				.as("Datastore sample integration tests are disabled. "
+						+ "Please use '-Dit.datastore=true' to enable them.")
+				.isEqualTo("true");
 		systemOut = System.out;
 		baos = new ByteArrayOutputStream();
 		TeeOutputStream out = new TeeOutputStream(systemOut, baos);
@@ -107,7 +106,8 @@ public class ApplicationTests {
 				.as("Verify DESC order")
 				.containsExactly(scottSmith, maryJane, johnDoe);
 
-		sendRequest("/singers", "{\"firstName\": \"Frodo\", \"lastName\": \"Baggins\"}",
+		sendRequest("/singers", "{\"singerId\": \"singerFrodo\", \"firstName\":" +
+						" \"Frodo\", \"lastName\": \"Baggins\"}",
 				HttpMethod.POST);
 
 		Awaitility.await().atMost(15, TimeUnit.SECONDS)
@@ -156,6 +156,10 @@ public class ApplicationTests {
 				this.singerRepository.findById("singer3").get().getBands().stream()
 						.map(Band::getName).collect(Collectors.toList()))
 								.containsExactlyInAnyOrder("band3", "band2");
+
+		assertThat(baos.toString()).contains("Query by example\n" +
+				"Singer{singerId='singer1', firstName='John', lastName='Doe', " +
+				"albums=[], firstBand=null, bands=, personalInstrument");
 
 		assertThat(baos.toString()).contains("This concludes the sample.");
 	}

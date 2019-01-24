@@ -24,6 +24,8 @@ import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.Key;
 import com.google.cloud.datastore.Query;
 
+import org.springframework.data.domain.Example;
+
 /**
  * An interface of operations that can be done with Cloud Datastore.
  *
@@ -225,4 +227,22 @@ public interface DatastoreOperations {
 	 * @return created key
 	 */
 	Key createKey(String kind, Object id);
+
+	/**
+	 * Run query by example.
+	 * @param <T> the type of probe and resulted entities
+	 * @param example the example
+	 * @param queryOptions the query options
+	 * @return query results, converted to objects of class T
+	 */
+	<T> Iterable<T> queryByExample(Example<T> example, DatastoreQueryOptions queryOptions);
+
+	/**
+	 * Run key query by example.
+	 * @param <T> the type of probe
+	 * @param example the example
+	 * @param queryOptions the query options
+	 * @return result keys
+	 */
+	<T> Iterable<Key> keyQueryByExample(Example<T> example, DatastoreQueryOptions queryOptions);
 }

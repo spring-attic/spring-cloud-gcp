@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -30,7 +31,6 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
-import com.google.common.collect.ImmutableList;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
@@ -110,11 +110,10 @@ public class GcsSpringIntegrationTests {
 					String firstLine = Files.lines(outputFile).findFirst().get();
 					assertThat(firstLine).isEqualTo("Hello World!");
 
-					List<String> blobNamesInOutputBucket = ImmutableList
-							.copyOf(this.storage.list(this.cloudOutputBucket).iterateAll())
-							.stream()
-							.map(Blob::getName)
-							.collect(Collectors.toList());
+					List<String> blobNamesInOutputBucket = new ArrayList<>();
+					this.storage.list(this.cloudOutputBucket).iterateAll()
+							.forEach((b) -> blobNamesInOutputBucket.add(b.getName()));
+
 					assertThat(blobNamesInOutputBucket).contains(TEST_FILE_NAME);
 				});
 	}
