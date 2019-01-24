@@ -31,7 +31,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreCustomConversions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 
 /**
  * Sample app for Datastore repository.
