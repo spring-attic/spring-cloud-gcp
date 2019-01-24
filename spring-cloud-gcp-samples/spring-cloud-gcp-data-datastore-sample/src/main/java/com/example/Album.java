@@ -27,7 +27,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
  * @author Dmitry Solomakha
  */
 @Entity
-public class Album {
+public class Album implements Comparable<Album> {
 	private final String albumName;
 
 	private final LocalDate date;
@@ -67,5 +67,11 @@ public class Album {
 	public String toString() {
 		return "Album{" + "albumName='" + this.albumName + '\'' + ", date=" + this.date
 				+ '}';
+	}
+
+
+	@Override
+	public int compareTo(Album album) {
+		return this.albumName.compareTo(album.albumName);
 	}
 }
