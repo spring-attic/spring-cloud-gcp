@@ -27,7 +27,7 @@ public class BeforeExecuteDmlEvent extends ExecuteDmlEvent {
 	/**
 	 * Constructor.
 	 *
-	 * @param statement the DML statement which is (never {@code null})
+	 * @param statement the DML statement which is never {@code null}
 	 */
 	public BeforeExecuteDmlEvent(Statement statement) {
 		super(statement);
