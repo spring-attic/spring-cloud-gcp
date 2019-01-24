@@ -139,6 +139,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	@Override
 	public long executeDmlStatement(Statement statement) {
+		Assert.notNull(statement, "A non-null statement is required.");
 		maybeEmitEvent(new BeforeExecuteDmlEvent(statement));
 		long rowsAffected = doWithOrWithoutTransactionContext((x) -> x.executeUpdate(statement),
 				() -> this.databaseClient.executePartitionedUpdate(statement));
