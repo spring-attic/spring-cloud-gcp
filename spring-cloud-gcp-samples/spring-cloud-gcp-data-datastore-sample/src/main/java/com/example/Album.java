@@ -27,7 +27,7 @@ import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
  * @author Dmitry Solomakha
  */
 @Entity
-public class Album implements Comparable<Album>{
+public class Album implements Comparable<Album> {
 	private final String albumName;
 
 	private final LocalDate date;
