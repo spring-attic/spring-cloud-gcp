@@ -186,8 +186,7 @@
 							<goal>check</goal>
 						</goals>
 						<configuration>
-							<!-- TODO: remove when it matches https://github.com/spring-cloud/spring-cloud-build/blob/master/spring-cloud-build-tools/src/main/resources/checkstyle.xml -->
-							<configLocation>src/checkstyle/checkstyle.xml</configLocation>
+							<!-- Checkstyle rules inherited from spring-cloud-build -->
 							<suppressionsLocation>src/checkstyle/checkstyle-suppressions.xml</suppressionsLocation>
 							<includeTestSourceDirectory>true</includeTestSourceDirectory>
 							<consoleOutput>true</consoleOutput>
