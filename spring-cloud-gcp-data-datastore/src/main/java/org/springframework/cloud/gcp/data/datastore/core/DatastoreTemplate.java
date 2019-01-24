@@ -61,7 +61,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.support.ExampleMatcherAccessor;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
