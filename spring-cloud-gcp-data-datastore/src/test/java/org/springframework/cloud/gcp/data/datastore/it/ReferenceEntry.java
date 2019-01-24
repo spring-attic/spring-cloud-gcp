@@ -21,8 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Reference;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Reference;
 
 /**
  * A test class that holds references as relationships.

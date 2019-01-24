@@ -579,7 +579,7 @@ General relationships can be stored using the `@Reference` annotation.
 
 [source, java]
 ----
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Reference;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Id;
 
 @Entity

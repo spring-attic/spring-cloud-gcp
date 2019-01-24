@@ -58,9 +58,9 @@ import org.springframework.cloud.gcp.data.datastore.core.util.ValueUtil;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mapping.AssociationHandler;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.data.mapping.PersistentPropertyAccessor;
-import org.springframework.data.mapping.PropertyHandler;
 import org.springframework.data.support.ExampleMatcherAccessor;
 import org.springframework.data.util.ClassTypeInformation;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -335,7 +335,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 	private void saveReferences(Object entity, Builder builder) {
 		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(entity.getClass());
-		datastorePersistentEntity.doWithReferenceProperties((persistentProperty) -> {
+		datastorePersistentEntity.doWithAssociations((AssociationHandler) (association) -> {
+			PersistentProperty persistentProperty = association.getInverse();
 			PersistentPropertyAccessor accessor = datastorePersistentEntity.getPropertyAccessor(entity);
 			Object val = accessor.getProperty(persistentProperty);
 			if (val == null) {
@@ -432,8 +433,10 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	private <T> void resolveReferenceProperties(DatastorePersistentEntity datastorePersistentEntity,
 			BaseEntity entity, T convertedObject) {
-		datastorePersistentEntity.doWithReferenceProperties(
-				(PropertyHandler<DatastorePersistentProperty>) (referencePersistentProperty) -> {
+		datastorePersistentEntity.doWithAssociations(
+				(AssociationHandler) (association) -> {
+					DatastorePersistentProperty referencePersistentProperty = (DatastorePersistentProperty) association
+							.getInverse();
 					Object referenced = findReferenced(entity, referencePersistentProperty);
 					if (referenced != null) {
 						datastorePersistentEntity.getPropertyAccessor(convertedObject)

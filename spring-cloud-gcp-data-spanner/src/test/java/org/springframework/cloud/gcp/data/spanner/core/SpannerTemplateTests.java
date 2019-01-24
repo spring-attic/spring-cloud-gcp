@@ -73,26 +73,18 @@ import static org.mockito.Mockito.when;
 public class SpannerTemplateTests {
 
 	private static final Statement DML = Statement.of("update statement");
-
-	private DatabaseClient databaseClient;
-
-	private SpannerMappingContext mappingContext;
-
-	private SpannerEntityProcessor objectMapper;
-
-	private SpannerMutationFactory mutationFactory;
-
-	private ReadContext readContext;
-
-	private SpannerTemplate spannerTemplate;
-
-	private SpannerSchemaUtils schemaUtils;
-
 	/**
 	 * used for checking exception messages and tests.
 	 */
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
+	private DatabaseClient databaseClient;
+	private SpannerMappingContext mappingContext;
+	private SpannerEntityProcessor objectMapper;
+	private SpannerMutationFactory mutationFactory;
+	private ReadContext readContext;
+	private SpannerTemplate spannerTemplate;
+	private SpannerSchemaUtils schemaUtils;
 
 	@Before
 	public void setUp() {
