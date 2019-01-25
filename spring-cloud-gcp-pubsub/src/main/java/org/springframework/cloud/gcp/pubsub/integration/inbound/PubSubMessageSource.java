@@ -60,13 +60,11 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 	private ArrayDeque<ConvertedAcknowledgeablePubsubMessage> cachedMessages = new ArrayDeque<>();
 
 	public PubSubMessageSource(PubSubSubscriberOperations pubSubSubscriberOperations,
-			String subscriptionName, int maxFetchSize) {
+			String subscriptionName) {
 		Assert.notNull(pubSubSubscriberOperations, "Pub/Sub subscriber template can't be null.");
 		Assert.notNull(subscriptionName, "Pub/Sub subscription name can't be null.");
-		Assert.isTrue(maxFetchSize > 0, "maxFetchSize has to be a positive integer.");
 		this.pubSubSubscriberOperations = pubSubSubscriberOperations;
 		this.subscriptionName = subscriptionName;
-		super.setMaxFetchSize(maxFetchSize);
 	}
 
 	public void setAckMode(AckMode ackMode) {

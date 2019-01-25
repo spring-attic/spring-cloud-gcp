@@ -108,7 +108,8 @@ public MessageHandler messageReceiver() {
 ==== Pollable Message Source (using Pub/Sub Synchronous Pull)
 
 While `PubSubInboundChannelAdapter`, through the underlying Asynchronous Pull Pub/Sub mechanism, provides the best performance for high-volume applications that receive a steady flow of messages, it can create load balancing anomalies due to message caching.
-This behavior is most obvious when publishing a large batch of small messages that take a long time to process individually. It manifests as one subscriber taking up most messages, even if multiple subscribers are available to take on the work.
+This behavior is most obvious when publishing a large batch of small messages that take a long time to process individually.
+It manifests as one subscriber taking up most messages, even if multiple subscribers are available to take on the work.
 For a more detailed explanation of this scenario, see https://cloud.google.com/pubsub/docs/pull#dealing-with-large-backlogs-of-small-messages[GCP Pub/Sub documentation].
 
 In such a scenario, a `PubSubMessageSource` can help spread the load between different subscribers more evenly.
