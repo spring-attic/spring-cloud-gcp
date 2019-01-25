@@ -17,6 +17,8 @@
 package org.springframework.cloud.gcp.data.datastore.it;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.google.api.client.util.Sleeper;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Key;
@@ -36,7 +39,10 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -100,7 +106,7 @@ public class DatastoreIntegrationTests {
 		assumeThat(
 				"Datastore integration tests are disabled. Please use '-Dit.datastore=true' "
 						+ "to enable them. ",
-				System.getProperty("it.datastore"), is("true"));
+				"true", is("true"));
 	}
 
 	@After
@@ -110,6 +116,8 @@ public class DatastoreIntegrationTests {
 		this.datastoreTemplate.deleteAll(AncestorEntity.DescendantEntry.class);
 		this.datastoreTemplate.deleteAll(TreeCollection.class);
 		this.datastoreTemplate.deleteAll(ReferenceEntry.class);
+		this.datastoreTemplate.deleteAll(ParentEntity.class);
+		this.datastoreTemplate.deleteAll(SubEntity.class);
 		this.testEntityRepository.deleteAll();
 		if (this.keyForMap != null) {
 			this.datastore.delete(this.keyForMap);
@@ -392,10 +400,57 @@ public class DatastoreIntegrationTests {
 		assertThat(loadedMap).isEqualTo(map);
 	}
 
+	@Test
+	public void recursiveSave() {
+		SubEntity subEntity1 = new SubEntity();
+		SubEntity subEntity2 = new SubEntity();
+		ParentEntity parentEntity = new ParentEntity(Collections.singletonList(subEntity1), subEntity2);
+		subEntity1.parent = parentEntity;
+		subEntity2.parent = parentEntity;
+		this.datastoreTemplate.save(parentEntity);
+
+		ParentEntity readParentEntity = this.datastoreTemplate.findById(parentEntity.id, ParentEntity.class);
+
+		SubEntity readSubEntity1 = readParentEntity.subEntities.get(0);
+		assertThat(readSubEntity1.parent).isSameAs(readParentEntity);
+		assertThat(readSubEntity1.parent.subEntities.get(0)).isSameAs(readSubEntity1);
+
+		SubEntity readSubEntity2 = readParentEntity.singularSubEntity;
+		assertThat(readSubEntity2.parent).isSameAs(readParentEntity);
+		assertThat(readSubEntity2.parent.singularSubEntity).isSameAs(readSubEntity2);
+	}
+
 	private long waitUntilTrue(Supplier<Boolean> condition) {
 		long startTime = System.currentTimeMillis();
 		Awaitility.await().atMost(QUERY_WAIT_INTERVAL_SECONDS, TimeUnit.SECONDS).until(condition::get);
 
 		return System.currentTimeMillis() - startTime;
 	}
+}
+
+@Entity
+class ParentEntity {
+	@Id
+	Long id;
+
+	@Reference
+	List<SubEntity> subEntities;
+
+	@Reference
+	SubEntity singularSubEntity;
+
+	ParentEntity(List<SubEntity> subEntities, SubEntity singularSubEntity) {
+		this.subEntities = subEntities;
+		this.singularSubEntity = singularSubEntity;
+	}
+}
+
+@Entity
+class SubEntity {
+	@Id
+	Long id;
+
+	@Reference
+	ParentEntity parent;
+
 }
