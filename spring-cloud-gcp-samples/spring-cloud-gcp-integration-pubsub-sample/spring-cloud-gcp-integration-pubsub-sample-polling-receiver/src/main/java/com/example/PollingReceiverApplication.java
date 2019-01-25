@@ -66,7 +66,8 @@ public class PollingReceiverApplication {
 	@Bean
 	@InboundChannelAdapter(channel = "pubsubInputChannel", poller = @Poller(fixedDelay = "100"))
 	public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
-		PubSubMessageSource messageSource = new PubSubMessageSource(pubSubTemplate,  "exampleSubscription", 5);
+		PubSubMessageSource messageSource = new PubSubMessageSource(pubSubTemplate,  "exampleSubscription");
+		messageSource.setMaxFetchSize(5);
 		messageSource.setAckMode(AckMode.MANUAL);
 		messageSource.setPayloadType(String.class);
 		return messageSource;
