@@ -43,7 +43,7 @@ import static org.junit.Assume.assumeThat;
  *
  * @author Dmitry Solomakha
  *
- * @since 1.1
+ * @since 1.2
  */
 
 @RunWith(SpringRunner.class)

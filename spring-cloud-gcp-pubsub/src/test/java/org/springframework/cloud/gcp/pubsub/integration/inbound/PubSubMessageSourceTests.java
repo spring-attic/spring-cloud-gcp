@@ -44,7 +44,7 @@ import static org.mockito.Mockito.when;
  *
  * @author Elena Felder
  *
- * @since 1.1
+ * @since 1.2
  */
 public class PubSubMessageSourceTests {
 
