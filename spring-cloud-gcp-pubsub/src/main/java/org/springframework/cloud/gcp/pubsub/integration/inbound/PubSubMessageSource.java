@@ -101,8 +101,10 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 	@Override
 	protected Object doReceive(int fetchSize) {
 		if (this.cachedMessages.isEmpty()) {
+			Integer maxMessages = (fetchSize > 0) ? fetchSize : 1;
+
 			List<ConvertedAcknowledgeablePubsubMessage> messages
-					= this.pubSubSubscriberOperations.pullAndConvert(this.subscriptionName, fetchSize, !this.blockOnPull, this.payloadType);
+					= this.pubSubSubscriberOperations.pullAndConvert(this.subscriptionName, maxMessages, !this.blockOnPull, this.payloadType);
 			if (messages.isEmpty()) {
 				return null;
 			}

@@ -78,7 +78,8 @@ public class PubSubMessageSourceTests {
 				.thenReturn(Arrays.asList());
 
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
-				this.mockPubSubSubscriberOperations, "sub1", 1);
+				this.mockPubSubSubscriberOperations, "sub1");
+		pubSubMessageSource.setMaxFetchSize(1);
 		pubSubMessageSource.setPayloadType(String.class);
 
 		Object message = pubSubMessageSource.doReceive(1);
@@ -91,7 +92,8 @@ public class PubSubMessageSourceTests {
 		when(this.mockPubSubSubscriberOperations.pullAndConvert("sub1", 3, true, String.class))
 				.thenReturn(Arrays.asList(this.msg1, this.msg2, this.msg3));
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
-				this.mockPubSubSubscriberOperations, "sub1", 3);
+				this.mockPubSubSubscriberOperations, "sub1");
+		pubSubMessageSource.setMaxFetchSize(3);
 		pubSubMessageSource.setPayloadType(String.class);
 
 		Message<String> message1 = (Message<String>) pubSubMessageSource.doReceive(3);
@@ -110,10 +112,41 @@ public class PubSubMessageSourceTests {
 	}
 
 	@Test
+	public void doReceive_pullsOneAtATimeWhenMaxFetchSizeZeroe() {
+		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
+				this.mockPubSubSubscriberOperations, "sub1");
+		pubSubMessageSource.setPayloadType(String.class);
+
+		Message<String> message1 = (Message<String>) pubSubMessageSource.doReceive(0);
+
+		assertThat(message1).isNotNull();
+		assertThat(message1.getPayload()).isEqualTo("msg1");
+
+		verify(this.mockPubSubSubscriberOperations, times(1))
+				.pullAndConvert("sub1", 1, true, String.class);
+	}
+
+	@Test
+	public void doReceive_pullsOneAtATimeWhenMaxFetchSizeNegative() {
+		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
+				this.mockPubSubSubscriberOperations, "sub1");
+		pubSubMessageSource.setPayloadType(String.class);
+
+		Message<String> message1 = (Message<String>) pubSubMessageSource.doReceive(-1);
+
+		assertThat(message1).isNotNull();
+		assertThat(message1.getPayload()).isEqualTo("msg1");
+
+		verify(this.mockPubSubSubscriberOperations, times(1))
+				.pullAndConvert("sub1", 1, true, String.class);
+	}
+
+	@Test
 	public void doReceive_manualAckModeAppliesOriginalMessageHeaderAndDoesNotAck() {
 
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
-				this.mockPubSubSubscriberOperations, "sub1", 1);
+				this.mockPubSubSubscriberOperations, "sub1");
+		pubSubMessageSource.setMaxFetchSize(1);
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setAckMode(AckMode.MANUAL);
 
@@ -130,7 +163,8 @@ public class PubSubMessageSourceTests {
 	public void doReceive_autoModeAcksWithoutAddingOriginalMessageHeader() {
 
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
-				this.mockPubSubSubscriberOperations, "sub1", 1);
+				this.mockPubSubSubscriberOperations, "sub1");
+		pubSubMessageSource.setMaxFetchSize(1);
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setAckMode(AckMode.AUTO);
 		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
@@ -148,7 +182,8 @@ public class PubSubMessageSourceTests {
 	public void doReceive_autoAckModeAcksWithoutAddingOriginalMessageHeader() {
 
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
-				this.mockPubSubSubscriberOperations, "sub1", 1);
+				this.mockPubSubSubscriberOperations, "sub1");
+		pubSubMessageSource.setMaxFetchSize(1);
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setAckMode(AckMode.AUTO_ACK);
 		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
@@ -167,7 +202,8 @@ public class PubSubMessageSourceTests {
 	public void doReceive_autoModeNacksAutomatically() {
 
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
-				this.mockPubSubSubscriberOperations, "sub1", 1);
+				this.mockPubSubSubscriberOperations, "sub1");
+		pubSubMessageSource.setMaxFetchSize(1);
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setAckMode(AckMode.AUTO);
 		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
@@ -184,7 +220,8 @@ public class PubSubMessageSourceTests {
 	public void doReceive_autoAckModeDoesNotNackAutomatically() {
 
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
-				this.mockPubSubSubscriberOperations, "sub1", 1);
+				this.mockPubSubSubscriberOperations, "sub1");
+		pubSubMessageSource.setMaxFetchSize(1);
 		pubSubMessageSource.setPayloadType(String.class);
 		pubSubMessageSource.setAckMode(AckMode.AUTO_ACK);
 		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
@@ -201,7 +238,8 @@ public class PubSubMessageSourceTests {
 	public void blockOnPullSetsReturnImmediatelyToFalse() {
 
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
-				this.mockPubSubSubscriberOperations, "sub1", 1);
+				this.mockPubSubSubscriberOperations, "sub1");
+		pubSubMessageSource.setMaxFetchSize(1);
 		pubSubMessageSource.blockOnPull();
 
 		Object message = pubSubMessageSource.doReceive(1);
