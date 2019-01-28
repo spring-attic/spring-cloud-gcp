@@ -40,7 +40,7 @@ import org.springframework.util.Assert;
  *
  * @author Elena Felder
  *
- * @since 1.1
+ * @since 1.2
  */
 public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Object> {
 
@@ -92,8 +92,6 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 	 * Provides a single polled message.
 	 * <p>Messages are received from Pub/Sub by synchronous pull, in batches determined
 	 * by {@code fetchSize}.
-	 * <p>Cached messages in {@link AckMode#AUTO_ACK} or {@link AckMode#AUTO} are not
-	 * automatically acked until they are taken out of cache.
 	 * @param fetchSize number of messages to fetch from Pub/Sub.
 	 * @return {@link Message} wrapper containing the original message.
 	 */

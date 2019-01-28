@@ -46,7 +46,7 @@ import org.springframework.messaging.handler.annotation.Header;
  *
  * @author Elena Felder
  *
- * @since 1.1
+ * @since 1.2
  */
 @SpringBootApplication
 public class PollingReceiverApplication {

@@ -28,8 +28,6 @@ import org.springframework.integration.acks.AcknowledgmentCallback;
  * <p>{@link AcknowledgmentCallback#noAutoAck()} is not implemented; the correct way to
  * enable manual acking is through configuring {@link PubSubMessageSource}.
  *
- * <p></p>
- *
  * @author Elena Felder
  *
  * @since 1.2
