@@ -26,6 +26,8 @@ import org.springframework.cloud.gcp.pubsub.core.subscriber.PubSubSubscriberOper
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
+import org.springframework.integration.IntegrationMessageHeaderAccessor;
+import org.springframework.integration.acks.AcknowledgmentCallback;
 import org.springframework.integration.endpoint.MessageSourcePollingTemplate;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
@@ -142,7 +144,7 @@ public class PubSubMessageSourceTests {
 	}
 
 	@Test
-	public void doReceive_manualAckModeAppliesOriginalMessageHeaderAndDoesNotAck() {
+	public void doReceive_manualAckModeAppliesAcknowledgmentHeaderAndDoesNotAck() {
 
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
 				this.mockPubSubSubscriberOperations, "sub1");
@@ -155,8 +157,14 @@ public class PubSubMessageSourceTests {
 		assertThat(message1).isNotNull();
 
 		assertThat(message1.getPayload()).isEqualTo("msg1");
-		assertThat(message1.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isSameAs(this.msg1);
+		AcknowledgmentCallback callback = (AcknowledgmentCallback) message1.getHeaders().get(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK);
+		assertThat(callback).isNotNull();
+		assertThat(callback.isAcknowledged()).isFalse();
 		verify(this.msg1, times(0)).ack();
+
+		callback.acknowledge(AcknowledgmentCallback.Status.ACCEPT);
+		verify(this.msg1, times(1)).ack();
+		assertThat(callback.isAcknowledged()).isTrue();
 	}
 
 	@Test

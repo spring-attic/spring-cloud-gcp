@@ -26,7 +26,6 @@ import org.springframework.cloud.gcp.pubsub.integration.PubSubHeaderMapper;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.cloud.gcp.pubsub.support.converter.ConvertedAcknowledgeablePubsubMessage;
 import org.springframework.integration.IntegrationMessageHeaderAccessor;
-import org.springframework.integration.acks.AcknowledgmentCallback;
 import org.springframework.integration.endpoint.AbstractFetchLimitingMessageSource;
 import org.springframework.integration.endpoint.AbstractMessageSource;
 import org.springframework.integration.mapping.HeaderMapper;
@@ -137,21 +136,9 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 		Map<String, Object> messageHeaders =
 				this.headerMapper.toHeaders(message.getPubsubMessage().getAttributesMap());
 
-		if (this.ackMode == AckMode.MANUAL) {
-			// Send the original message downstream so user decides on when to ack/nack.
-			messageHeaders.put(GcpPubSubHeaders.ORIGINAL_MESSAGE, message);
-		}
-		else {
-			AcknowledgmentCallback cb = (status) -> {
-				if (status == AcknowledgmentCallback.Status.ACCEPT) {
-					message.ack();
-				}
-				else if (this.ackMode == AckMode.AUTO) {
-					message.nack();
-				}
-			};
-			messageHeaders.put(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK, cb);
-		}
+		messageHeaders.put(GcpPubSubHeaders.ORIGINAL_MESSAGE, message);
+		messageHeaders.put(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK,
+					new PubSubAcknowledgmentCallback(message, this.ackMode));
 
 		return getMessageBuilderFactory()
 				.withPayload(message.getPayload())
