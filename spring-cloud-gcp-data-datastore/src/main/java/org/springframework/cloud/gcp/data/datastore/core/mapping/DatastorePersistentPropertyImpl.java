@@ -59,12 +59,12 @@ public class DatastorePersistentPropertyImpl
 
 	private void verify() {
 		if (hasFieldAnnotation()
-				&& (isDescendants() || isReference())) {
+				&& (isDescendants() || isAssociation())) {
 			throw new DatastoreDataException(
 					"Property cannot be annotated as @Field if it is annotated @Descendants or @Reference: "
 							+ getFieldName());
 		}
-		if (isDescendants() && isReference()) {
+		if (isDescendants() && isAssociation()) {
 			throw new DatastoreDataException(
 					"Property cannot be annotated both @Descendants and @Reference: "
 							+ getFieldName());
@@ -89,11 +89,6 @@ public class DatastorePersistentPropertyImpl
 	}
 
 	@Override
-	public boolean isReference() {
-		return findAnnotation(Reference.class) != null;
-	}
-
-	@Override
 	public boolean isDescendants() {
 		return findAnnotation(Descendants.class) != null;
 	}
@@ -105,7 +100,7 @@ public class DatastorePersistentPropertyImpl
 
 	@Override
 	public boolean isColumnBacked() {
-		return !isDescendants() && !isReference();
+		return !isDescendants() && !isAssociation();
 	}
 
 	@Override

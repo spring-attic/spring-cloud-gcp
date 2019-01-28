@@ -70,4 +70,13 @@ public @interface Column {
 	 * @return The user-specified column item type.
 	 */
 	TypeCode spannerType() default TypeCode.TYPE_CODE_UNSPECIFIED;
+
+	/**
+	 * This setting takes effect when the entity in which it appears is used to generate
+	 * schema DDL. If {@code true}, then the column corresponding to the annotated property
+	 * will be auto-populated with the latest Cloud Spanner TrueTime commit timestamp of the
+	 * row. {@code false} for all other usage and columns.
+	 * @return {@code true} for auto-populating commit timestamp. {@code false} otherwise.
+	 */
+	boolean spannerCommitTimestamp() default false;
 }

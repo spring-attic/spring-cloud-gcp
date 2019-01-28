@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import com.google.cloud.spanner.Struct;
 import com.google.cloud.spanner.Type;
 import com.google.cloud.spanner.Type.StructField;
 import com.google.cloud.spanner.Value;
-import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,7 +81,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 		Struct outerStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
 				.set("innerTestEntities")
 				.toStructArray(Type.struct(StructField.of("value", Type.string())),
-						ImmutableList.of(innerStruct))
+						Arrays.asList(innerStruct))
 				.build();
 
 		OuterTestEntity result = this.spannerEntityReader.read(OuterTestEntity.class,
@@ -100,7 +99,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 		Struct outerStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
 				.set("innerStructs")
 				.toStructArray(Type.struct(StructField.of("value", Type.string())),
-						ImmutableList.of(innerStruct))
+						Arrays.asList(innerStruct))
 				.build();
 
 		OuterTestHoldingStructsEntity result = this.spannerEntityReader
@@ -144,7 +143,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 		Struct rowStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
 				.set("innerLengths")
 				.toStructArray(Type.struct(StructField.of("string_col", Type.string())),
-						ImmutableList.of(colStruct))
+						Arrays.asList(colStruct))
 				.build();
 
 		new ConverterAwareMappingSpannerEntityReader(new SpannerMappingContext(),
@@ -164,7 +163,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 		Struct rowStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
 				.set("innerLengths")
 				.toStructArray(Type.struct(StructField.of("string_col", Type.string())),
-						ImmutableList.of(colStruct))
+						Arrays.asList(colStruct))
 				.build();
 
 		OuterTestEntityFlat result = new ConverterAwareMappingSpannerEntityReader(
@@ -245,7 +244,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 		Struct outerStruct = Struct.newBuilder().set("id").to(Value.string("key1"))
 				.set("innerTestEntities")
 				.toStructArray(Type.struct(StructField.of("value", Type.string())),
-						ImmutableList.of(innerStruct))
+						Arrays.asList(innerStruct))
 				.build();
 
 		TestEntities.OuterTestEntityWithConstructor result = this.spannerEntityReader
@@ -270,7 +269,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 		Struct row = mock(Struct.class);
 		when(row.getString("id")).thenReturn("1234");
 		when(row.getType()).thenReturn(
-				Type.struct(ImmutableList.of(Type.StructField.of("id", Type.string()))));
+				Type.struct(Arrays.asList(Type.StructField.of("id", Type.string()))));
 		when(row.getColumnType("id")).thenReturn(Type.string());
 
 		TestEntities.SimpleConstructorTester result = this.spannerEntityReader
@@ -297,7 +296,7 @@ public class ConverterAwareMappingSpannerEntityReaderTests {
 		this.expectedEx.expectMessage("in field 'zeroArgsListOfObjects': Unsupported number of " +
 				"type parameters found: 0 Only collections of exactly 1 type parameter are supported.");
 		Struct struct = Struct.newBuilder().set("zeroArgsListOfObjects")
-				.to(Value.stringArray(ImmutableList.of("hello", "world"))).build();
+				.to(Value.stringArray(Arrays.asList("hello", "world"))).build();
 		this.spannerEntityReader
 				.read(TestEntities.TestEntityWithListWithZeroTypeArgs.class, struct);
 	}

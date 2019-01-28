@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
@@ -28,8 +29,8 @@ import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.Mutation.WriteBuilder;
+import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.ValueBinder;
-import com.google.common.collect.ImmutableSet;
 import com.google.spanner.v1.TypeCode;
 import org.junit.Before;
 import org.junit.Rule;
@@ -91,6 +92,10 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		TestEntity t = new TestEntity();
 		t.id = "key1";
 		t.enumField = TestEntity.Color.WHITE;
+
+		// any positive time value will do.
+		t.commitTimestamp = Timestamp.ofTimeMicroseconds(1000);
+
 		t.booleanField = true;
 		t.intField = 123;
 		t.longField = 3L;
@@ -232,6 +237,10 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		when(bytesFieldBinder.to((ByteArray) any())).thenReturn(null);
 		when(writeBuilder.set(eq("bytes"))).thenReturn(bytesFieldBinder);
 
+		ValueBinder<WriteBuilder> commitTimestampBinder = mock(ValueBinder.class);
+		when(commitTimestampBinder.to((Timestamp) any())).thenReturn(null);
+		when(writeBuilder.set(eq("commitTimestamp"))).thenReturn(commitTimestampBinder);
+
 		this.spannerEntityWriter.write(t, writeBuilder::set);
 
 		verify(idBinder, times(1)).to(eq(t.id));
@@ -255,6 +264,11 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		verify(timestampFieldBinder, times(1)).to(eq(t.timestampField));
 		verify(bytesFieldBinder, times(1)).to(eq(t.bytes));
 		verify(instantListFieldBinder, times(1)).toTimestampArray(eq(timestamps));
+
+		// the positive value set earlier must not be passed to Spanner. it must be replaced by
+		// the dummy value.
+		verify(commitTimestampBinder, times(1)).to(eq(Value.COMMIT_TIMESTAMP));
+
 	}
 
 	@Test
@@ -276,7 +290,7 @@ public class ConverterAwareMappingSpannerEntityWriterTests {
 		when(writeBuilder.set(eq("doubleList"))).thenReturn(doubleListFieldBinder);
 
 		this.spannerEntityWriter.write(t, writeBuilder::set,
-				ImmutableSet.of("dateField", "doubleList"));
+				Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("dateField", "doubleList"))));
 		verify(dateFieldBinder, times(1)).to((Date) isNull());
 		verify(doubleListFieldBinder, times(1))
 				.toFloat64Array((Iterable<Double>) isNull());

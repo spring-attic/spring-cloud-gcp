@@ -25,7 +25,7 @@ import com.google.cloud.datastore.DatastoreOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.DefaultGcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
+import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManager;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
@@ -75,7 +75,7 @@ public class DatastoreIntegrationTestConfiguration {
 	public Datastore datastore() {
 		DatastoreOptions.Builder builder = DatastoreOptions.newBuilder()
 				.setProjectId(this.projectId)
-				.setHeaderProvider(new UsageTrackingHeaderProvider(this.getClass()))
+				.setHeaderProvider(new UserAgentHeaderProvider(this.getClass()))
 				.setCredentials(this.credentials);
 		if (this.namespacePrefix != null) {
 			builder.setNamespace(this.namespacePrefix + System.currentTimeMillis());

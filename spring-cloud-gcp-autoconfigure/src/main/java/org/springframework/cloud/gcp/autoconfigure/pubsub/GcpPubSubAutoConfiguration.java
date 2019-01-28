@@ -50,7 +50,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.gcp.autoconfigure.core.GcpContextAutoConfiguration;
 import org.springframework.cloud.gcp.core.DefaultCredentialsProvider;
 import org.springframework.cloud.gcp.core.GcpProjectIdProvider;
-import org.springframework.cloud.gcp.core.UsageTrackingHeaderProvider;
+import org.springframework.cloud.gcp.core.UserAgentHeaderProvider;
 import org.springframework.cloud.gcp.pubsub.PubSubAdmin;
 import org.springframework.cloud.gcp.pubsub.core.PubSubException;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
@@ -86,7 +86,7 @@ public class GcpPubSubAutoConfiguration {
 
 	private final CredentialsProvider finalCredentialsProvider;
 
-	private final HeaderProvider headerProvider = new UsageTrackingHeaderProvider(this.getClass());
+	private final HeaderProvider headerProvider = new UserAgentHeaderProvider(this.getClass());
 
 	public GcpPubSubAutoConfiguration(GcpPubSubProperties gcpPubSubProperties,
 			GcpProjectIdProvider gcpProjectIdProvider,

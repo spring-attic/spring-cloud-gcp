@@ -107,6 +107,9 @@ public class TestEntities {
 			WHITE,
 			BLACK
 		}
+
+		@Column(spannerCommitTimestamp = true)
+		Timestamp commitTimestamp;
 	}
 
 	/**

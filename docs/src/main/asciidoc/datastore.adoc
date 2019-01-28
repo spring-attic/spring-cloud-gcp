@@ -181,8 +181,8 @@ public class Trade {
 ----
 
 
-Datastore has automatic ID allocation.
-If a POJO instance is written to Cloud Datastore with `null` as the ID value, then Spring Data Cloud Datastore will obtain a newly allocated ID value from Cloud Datastore and set that in the POJO for saving.
+Datastore can automatically allocate integer ID values.
+If a POJO instance with a `Long` ID property is written to Cloud Datastore with `null` as the ID value, then Spring Data Cloud Datastore will obtain a newly allocated ID value from Cloud Datastore and set that in the POJO for saving.
 Because primitive `long` ID properties cannot be `null` and default to `0`, keys will not be allocated.
 
 ==== Fields
@@ -312,7 +312,7 @@ Collection converters need to implement the `org.springframework.core.convert.co
 Example:
 
 Let's improve the Singer class from the previous example.
-Instead of a field of type `Album`, we would like to have a field of type `ImmutableSet<Album>`:
+Instead of a field of type `Album`, we would like to have a field of type `Set<Album>`:
 
 [source, java]
 ----
@@ -324,18 +324,18 @@ public class Singer {
 
 	String name;
 
-	ImmutableSet<Album> albums;
+	Set<Album> albums;
 }
 ----
 
 We have to define a read converter only:
 [source, java]
 ----
-static final Converter<List<?>, ImmutableSet<?>> LIST_IMMUTABLE_SET_CONVERTER =
-			new Converter<List<?>, ImmutableSet<?>>() {
+static final Converter<List<?>, Set<?>> LIST_SET_CONVERTER =
+			new Converter<List<?>, Set<?>>() {
 				@Override
-				public ImmutableSet<?> convert(List<?> source) {
-					return ImmutableSet.copyOf(source);
+				public Set<?> convert(List<?> source) {
+					return Collections.unmodifiableSet(new HashSet<>(source));
 				}
 			};
 ----
@@ -349,8 +349,7 @@ public class ConverterConfiguration {
 	public DatastoreCustomConversions datastoreCustomConversions() {
 		return new DatastoreCustomConversions(
 				Arrays.asList(
-						LIST_IMMUTABLE_SET_CONVERTER,
-
+						LIST_SET_CONVERTER,
 						ALBUM_STRING_CONVERTER,
 						STRING_ALBUM_CONVERTER));
 	}
@@ -580,7 +579,7 @@ General relationships can be stored using the `@Reference` annotation.
 
 [source, java]
 ----
-import org.springframework.cloud.gcp.data.datastore.core.mapping.Reference;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.annotation.Id;
 
 @Entity
@@ -688,7 +687,7 @@ Using `DatastoreTemplate` you can execute reads, for example:
 ----
 Trader trader = this.datastoreTemplate.findById("trader1", Trader.class);
 
-List<Trader> traders = this.datastoreTemplate.findAllById(ImmutableList.of("trader1", "trader2"), Trader.class);
+List<Trader> traders = this.datastoreTemplate.findAllById(Arrays.asList("trader1", "trader2"), Trader.class);
 
 List<Trader> allTraders = this.datastoreTemplate.findAll(Trader.class);
 ----
@@ -911,6 +910,28 @@ If a method's return type is `org.springframework.data.domain.Page`, the returne
 NOTE: Methods that return `Page` execute an additional query to compute total number of pages.
 Methods that return `Slice`, on the other hand, don't execute any additional queries and therefore are much more efficient.
 
+==== Query by example
+Query by Example is an alternative querying technique.
+It enables dynamic query generation based on a user-provided object. See https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#query-by-example[Spring Data Documentation] for details.
+
+===== Unsupported features:
+. Currently, only equality queries are supported (no ignore-case matching, regexp matching, etc.).
+. Per-field matchers are not supported.
+. Embedded entities matching is not supported.
+
+For example, if you want to find all users with the last name "Smith", you would use the following code:
+[source, java]
+----
+userRepository.findAll(
+    Example.of(new User(null, null, "Smith"))
+----
+`null` fields are not used in the filter by default. If you want to include them, you would use the following code:
+[source, java]
+----
+userRepository.findAll(
+    Example.of(new User(null, null, "Smith"), ExampleMatcher.matching().withIncludeNullValues())
+----
+
 ==== Custom GQL query methods
 
 Custom GQL queries can be mapped to repository methods in one of two ways:
@@ -1101,6 +1122,18 @@ For example, you can retrieve all `Trade` objects in the repository by using `cu
 You can also write trades using `curl -XPOST -H"Content-Type: application/json" -d@test.json \http://<server>:<port>/trades/` where the file `test.json` holds the JSON representation of a `Trade` object.
 
 To delete trades, you can use `curl -XDELETE \http://<server>:<port>/trades/<trader_id>`
+
+=== Events
+
+Spring Data Cloud Spanner publishes events extending the Spring Framework's `ApplicationEvent` to the context that can be received by `ApplicationListener` beans you register.
+
+[options="header"]
+|===
+| Type| Description | Contents
+| `BeforeExecuteDmlEvent`|Published immediately before DML statements are executed by `SpannerTemplate`| The DML statement to execute.
+| `AfterExecuteDmlEvent`|Published immediately after DML statements are executed by `SpannerTemplate`| The DML statement to execute and the number of rows affected by the operation as reported by Cloud Spanner.
+|===
+
 
 === Sample
 

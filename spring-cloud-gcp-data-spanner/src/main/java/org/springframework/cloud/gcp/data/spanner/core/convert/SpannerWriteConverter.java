@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package org.springframework.cloud.gcp.data.spanner.core.convert;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-
-import com.google.common.collect.ImmutableList;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.GenericConversionService;
@@ -41,11 +41,10 @@ public class SpannerWriteConverter extends SpannerCustomConverter {
 	}
 
 	public SpannerWriteConverter(Collection<Converter> readConverters) {
-		this(getCustomConversions(ImmutableList.<Converter>builder()
-				.addAll(SpannerConverters.DEFAULT_SPANNER_WRITE_CONVERTERS)
-				.addAll(Optional.ofNullable(readConverters)
-						.orElse(Collections.emptyList()))
-				.build()));
+		this(getCustomConversions(Stream.concat(
+					SpannerConverters.DEFAULT_SPANNER_WRITE_CONVERTERS.stream(),
+					Optional.ofNullable(readConverters).orElse(Collections.emptyList()).stream())
+						.collect(Collectors.toList())));
 	}
 
 	public SpannerWriteConverter(CustomConversions customConversions) {

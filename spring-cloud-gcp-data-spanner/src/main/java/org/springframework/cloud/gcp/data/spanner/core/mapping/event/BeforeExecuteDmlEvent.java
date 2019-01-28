@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.gcp.data.datastore.core.mapping;
+package org.springframework.cloud.gcp.data.spanner.core.mapping.event;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.google.cloud.spanner.Statement;
 
 /**
- * Annotation for a property is stored as a key of another entity.
+ * This event is published before a DML statement is executed.
  *
  * @author Chengyuan Zhao
- *
- * @since 1.1
  */
-@Documented
-@Target(ElementType.FIELD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Reference {
-
+public class BeforeExecuteDmlEvent extends ExecuteDmlEvent {
+	/**
+	 * Constructor.
+	 *
+	 * @param statement the DML statement which is never {@code null}
+	 */
+	public BeforeExecuteDmlEvent(Statement statement) {
+		super(statement);
+	}
 }

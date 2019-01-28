@@ -200,7 +200,7 @@ public class PubSubMessageHandler extends AbstractMessageHandler {
 	}
 
 	@Override
-	protected void onInit() throws Exception {
+	protected void onInit()  {
 		super.onInit();
 		this.evaluationContext = ExpressionUtils.createStandardEvaluationContext(getBeanFactory());
 	}

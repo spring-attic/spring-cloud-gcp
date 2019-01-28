@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import com.google.cloud.datastore.BaseEntity;
 import com.google.cloud.datastore.GqlQuery;
 import com.google.cloud.datastore.GqlQuery.Builder;
 import com.google.cloud.datastore.Key;
-import com.google.common.annotations.VisibleForTesting;
 
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreNativeTypes;
@@ -181,7 +180,6 @@ public class GqlDatastoreQuery<T> extends AbstractDatastoreQuery<T> {
 				: this.queryMethod.getResultProcessor().processResult(rawResult.get(0));
 	}
 
-	@VisibleForTesting
 	boolean isNonEntityReturnedType(Class returnedType) {
 		return this.datastoreTemplate.getDatastoreEntityConverter().getConversions()
 				.getDatastoreCompatibleType(returnedType).isPresent();

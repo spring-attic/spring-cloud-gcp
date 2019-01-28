@@ -8,6 +8,8 @@ This application demonstrates the following Spring Cloud GCP integrations:
 - Cloud Pub/Sub (with Spring Integration)
 - Cloud SQL (with Spring Data JPA)
 
+You may also follow the https://codelabs.developers.google.com/codelabs/cloud-spring-cloud-gcp-kotlin[Kotlin Spring Codelab] to build the app step-by-step.
+
 == Setup
 
 1. Configure your credentials and project ID by following link:../../docs/src/main/asciidoc/core.adoc#project-id[these instructions].

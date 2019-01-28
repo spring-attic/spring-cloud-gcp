@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.springframework.cloud.gcp.pubsub.integration.outbound;
 
 import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.cloud.gcp.pubsub.core.PubSubOperations;
 import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.expression.Expression;
@@ -72,7 +72,10 @@ public class PubSubMessageHandlerTests {
 	@Before
 	public void setUp() {
 		this.message = new GenericMessage<byte[]>("testPayload".getBytes(),
-				ImmutableMap.of("key1", "value1", "key2", "value2"));
+				new MapBuilder<String, Object>()
+						.put("key1", "value1")
+						.put("key2", "value2")
+						.build());
 		SettableListenableFuture<String> future = new SettableListenableFuture<>();
 		future.set("benfica");
 		when(this.pubSubTemplate.publish(eq("testTopic"),
@@ -92,8 +95,11 @@ public class PubSubMessageHandlerTests {
 	@Test
 	public void testPublishDynamicTopic() {
 		Message<?> dynamicMessage = new GenericMessage<byte[]>("testPayload".getBytes(),
-						ImmutableMap.of("key1", "value1", "key2", "value2",
-								GcpPubSubHeaders.TOPIC, "dynamicTopic"));
+				new MapBuilder<String, Object>()
+						.put("key1", "value1")
+						.put("key2", "value2")
+						.put(GcpPubSubHeaders.TOPIC, "dynamicTopic")
+						.build());
 		this.adapter.handleMessage(dynamicMessage);
 		verify(this.pubSubTemplate, times(1))
 			.publish(eq("dynamicTopic"),	eq("testPayload".getBytes()), isA(Map.class));

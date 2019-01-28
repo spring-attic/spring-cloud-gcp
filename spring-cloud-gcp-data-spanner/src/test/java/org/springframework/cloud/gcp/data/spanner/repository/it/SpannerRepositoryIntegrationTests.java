@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,11 @@
 package org.springframework.cloud.gcp.data.spanner.repository.it;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Struct;
-import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -204,22 +205,33 @@ public class SpannerRepositoryIntegrationTests extends AbstractSpannerIntegratio
 		SubTradeComponent subTradeComponent11 = new SubTradeComponent(
 				someTrade.getTradeDetail().getId(), someTrade.getTraderId(), "subTrade1",
 				"11a", "11b");
+		subTradeComponent11.setCommitTimestamp(Timestamp.ofTimeMicroseconds(11));
 		SubTradeComponent subTradeComponent21 = new SubTradeComponent(
 				someTrade.getTradeDetail().getId(), someTrade.getTraderId(), "subTrade2",
 				"21a", "21b");
+		subTradeComponent21.setCommitTimestamp(Timestamp.ofTimeMicroseconds(21));
 		SubTradeComponent subTradeComponent22 = new SubTradeComponent(
 				someTrade.getTradeDetail().getId(), someTrade.getTraderId(), "subTrade2",
 				"22a", "22b");
+		subTradeComponent22.setCommitTimestamp(Timestamp.ofTimeMicroseconds(22));
 
-		subTrade1.setSubTradeComponentList(ImmutableList.of(subTradeComponent11));
+		subTrade1.setSubTradeComponentList(Arrays.asList(subTradeComponent11));
 		subTrade2.setSubTradeComponentList(
-				ImmutableList.of(subTradeComponent21, subTradeComponent22));
-		someTrade.setSubTrades(ImmutableList.of(subTrade1, subTrade2));
+				Arrays.asList(subTradeComponent21, subTradeComponent22));
+		someTrade.setSubTrades(Arrays.asList(subTrade1, subTrade2));
 
 		this.tradeRepository.save(someTrade);
 
 		assertThat(this.subTradeRepository.count()).isEqualTo(2);
 		assertThat(this.subTradeComponentRepository.count()).isEqualTo(3);
+
+		List<SubTradeComponent> subTradeComponents = (List) this.subTradeComponentRepository.findAll();
+
+		assertThat(subTradeComponents.get(0).getCommitTimestamp())
+				.isEqualTo(subTradeComponents.get(1).getCommitTimestamp());
+		assertThat(subTradeComponents.get(0).getCommitTimestamp())
+				.isEqualTo(subTradeComponents.get(2).getCommitTimestamp());
+		assertThat(subTradeComponents.get(0).getCommitTimestamp()).isGreaterThan(Timestamp.ofTimeMicroseconds(22));
 
 		this.subTradeRepository.deleteById(this.spannerSchemaUtils.getKey(subTrade1));
 		assertThat(this.subTradeComponentRepository.count()).isEqualTo(2);
