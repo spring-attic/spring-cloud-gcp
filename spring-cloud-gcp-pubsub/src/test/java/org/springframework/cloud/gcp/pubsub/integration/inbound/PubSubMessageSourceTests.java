@@ -168,7 +168,7 @@ public class PubSubMessageSourceTests {
 	}
 
 	@Test
-	public void doReceive_autoModeAcksWithoutAddingOriginalMessageHeader() {
+	public void doReceive_autoModeAcksAndAddsOriginalMessageHeader() {
 
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
 				this.mockPubSubSubscriberOperations, "sub1");
@@ -180,14 +180,14 @@ public class PubSubMessageSourceTests {
 			assertThat(message).isNotNull();
 
 			assertThat(message.getPayload()).isEqualTo("msg1");
-			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isNull();
+			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isEqualTo(this.msg1);
 		});
 
 		verify(this.msg1).ack();
 	}
 
 	@Test
-	public void doReceive_autoAckModeAcksWithoutAddingOriginalMessageHeader() {
+	public void doReceive_autoAckModeAcksAndAddsOriginalMessageHeader() {
 
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
 				this.mockPubSubSubscriberOperations, "sub1");
@@ -199,7 +199,7 @@ public class PubSubMessageSourceTests {
 			assertThat(message).isNotNull();
 
 			assertThat(message.getPayload()).isEqualTo("msg1");
-			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isNull();
+			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isEqualTo(this.msg1);
 		});
 
 		verify(this.msg1).ack();
