@@ -28,9 +28,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubMessageSource;
-import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.context.annotation.Bean;
+import org.springframework.integration.IntegrationMessageHeaderAccessor;
+import org.springframework.integration.acks.AcknowledgmentCallback;
 import org.springframework.integration.annotation.InboundChannelAdapter;
 import org.springframework.integration.annotation.Poller;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -76,13 +76,13 @@ public class PollingReceiverApplication {
 
 	@ServiceActivator(inputChannel = "pubsubInputChannel")
 	public void messageReceiver(String payload,
-			@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) BasicAcknowledgeablePubsubMessage message)
+			@Header(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK) AcknowledgmentCallback callback)
 				throws InterruptedException {
 		LOGGER.info("Message arrived by Synchronous Pull! Payload: " + payload);
 		if (delayAcknoledgement) {
 			Thread.sleep(1000);
 		}
-		message.ack();
+		callback.acknowledge(AcknowledgmentCallback.Status.ACCEPT);
 	}
 
 }

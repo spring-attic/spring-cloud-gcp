@@ -24,7 +24,6 @@ import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage
 import org.springframework.integration.acks.AcknowledgmentCallback;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -42,20 +41,6 @@ public class PubSubAcknowledgmentCallbackTests {
 	@Before
 	public void setUp() {
 		this.mockMessage = mock(AcknowledgeablePubsubMessage.class);
-	}
-
-	@Test
-	public void constructor_nullMessageFailsAssert() {
-		assertThatThrownBy(() -> new PubSubAcknowledgmentCallback(null, AckMode.MANUAL))
-			.isInstanceOf(IllegalArgumentException.class)
-			.hasMessage("message to be acknowledged cannot be null");
-	}
-
-	@Test
-	public void constructor_nullAckModeFailsAssert() {
-		assertThatThrownBy(() -> new PubSubAcknowledgmentCallback(this.mockMessage, null))
-				.isInstanceOf(IllegalArgumentException.class)
-				.hasMessage("ackMode cannot be null");
 	}
 
 	@Test
