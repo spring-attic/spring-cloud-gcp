@@ -3,7 +3,7 @@
 This project makes it easy for Spring users to run their applications on Google Cloud Platform.
 You can check our project website http://cloud.spring.io/spring-cloud-gcp[here].
 
-For a deep dive into the project, refer to the https://docs.spring.io/spring-cloud-gcp/docs/1.0.0.RELEASE/reference/htmlsingle/[Spring Cloud GCP 1.0 Reference Document].
+For a deep dive into the project, refer to the https://docs.spring.io/spring-cloud-gcp/docs/1.1.0.RELEASE/reference/htmlsingle/[Spring Cloud GCP 1.1 Reference Document].
 
 If you prefer to learn by doing, try https://codelabs.developers.google.com/spring[Spring on GCP codelabs].
 
@@ -12,22 +12,22 @@ Currently, this repository provides support for:
 * link:spring-cloud-gcp-pubsub[Spring Cloud GCP Pub/Sub, including Spring Integration Channel Adapters]
 * link:spring-cloud-gcp-pubsub-stream-binder[Spring Cloud GCP Pub/Sub Stream Binder]
 * link:spring-cloud-gcp-storage[Spring Resource Abstraction for Google Cloud Storage, including Spring Integration Channel Adapters]
-* link:spring-cloud-gcp-data-spanner[Spring Data Cloud Spanner] (v1.1)
-* link:spring-cloud-gcp-data-datastore[Spring Data Cloud Datastore] (v1.1)
-* link:spring-cloud-gcp-vision[Google Cloud Vision API Template] (v1.1)
+* link:spring-cloud-gcp-data-spanner[Spring Data Cloud Spanner]
+* link:spring-cloud-gcp-data-datastore[Spring Data Cloud Datastore]
+* link:spring-cloud-gcp-vision[Google Cloud Vision API Template]
 * Spring Boot starters
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter[GCP Support]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-config[Google Cloud Config] (Beta)
-** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Google Cloud Spanner] (v1.1)
-** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Google Cloud Datastore] (v1.1)
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Google Cloud Spanner]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Google Cloud Datastore]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-logging[Google Cloud Logging]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-pubsub[Google Cloud Pub/Sub]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-mysql[Google Cloud SQL MySQL]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-sql-postgresql[Google Cloud SQL PostgreSQL]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-storage[Google Cloud Storage]
 ** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-trace[Stackdriver Trace with Spring Cloud Sleuth]
-** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-iap[Google Cloud IAP Authentication] (v1.1)
-** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-vision[Google Cloud Vision API] (v1.1)
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-security-iap[Google Cloud IAP Authentication]
+** link:spring-cloud-gcp-starters/spring-cloud-gcp-starter-vision[Google Cloud Vision API]
 
 If you have any other ideas, suggestions or bug reports, please use our https://github.com/spring-cloud/spring-cloud-gcp/issues[GitHub issue tracker] and let us know!
 We would love to hear from you.
@@ -55,7 +55,7 @@ This will allow you to not specify versions for any of the Maven dependencies an
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-gcp-dependencies</artifactId>
-            <version>1.0.0.RELEASE</version>
+            <version>1.1.0.RELEASE</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
