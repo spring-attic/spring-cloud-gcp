@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: org.springframework.cloud.gcp.data.spanner.repository.query.SpannerQueryLookupStrategyTests
--------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.042 s - in org.springframework.cloud.gcp.data.spanner.repository.query.SpannerQueryLookupStrategyTests

@@ -1,6 +1,0 @@
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/test/java/org/springframework/cloud/gcp/stream/binder/pubsub/PubSubMessageChannelBinderEmulatorTests.java
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/test/java/org/springframework/cloud/gcp/stream/binder/pubsub/provisioning/PubSubChannelProvisionerTests.java
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/test/java/org/springframework/cloud/gcp/stream/binder/pubsub/properties/PubSubExtendedBindingsPropertiesTests.java
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/test/java/org/springframework/cloud/gcp/stream/binder/pubsub/PubSubEmulator.java
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/test/java/org/springframework/cloud/gcp/stream/binder/pubsub/PubSubTestBinder.java
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-pubsub-stream-binder/src/test/java/org/springframework/cloud/gcp/stream/binder/pubsub/PubSubMessageChannelBinderTests.java

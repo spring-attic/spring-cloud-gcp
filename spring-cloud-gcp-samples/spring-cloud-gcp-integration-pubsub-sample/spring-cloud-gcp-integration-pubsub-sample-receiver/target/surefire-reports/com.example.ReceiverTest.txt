@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.example.ReceiverTest
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.393 s - in com.example.ReceiverTest

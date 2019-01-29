@@ -1,9 +1,0 @@
-#Thu Jan 03 17:51:47 UTC 2019
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample/src/main/java/com/example/PubSubBinderApplication.java=1546537755000
-module-resource*?\:file\:/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample/target/checkstyle-header.txt=5406B79542A0F0AF68419F6CECE454DED3F9D2BB
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample/src/main/java/com/example/SourceExample.java=1546537755000
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample/src/main/java/com/example/UserMessage.java=1546537755000
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample/src/test/java/com/example/SampleAppIntegrationTest.java=1546537755000
-configuration*?=F0E76758B149DD8D04211AF00BD293974DC43C24
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample/src/main/java/com/example/SinkExample.java=1546537755000
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample/src/main/resources/application.properties=1546537755000

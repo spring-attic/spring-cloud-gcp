@@ -1,6 +1,0 @@
-#Thu Jan 03 17:49:55 UTC 2019
-module-resource*?\:file\:/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-vision/target/checkstyle-header.txt=5406B79542A0F0AF68419F6CECE454DED3F9D2BB
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-vision/src/test/java/org/springframework/cloud/gcp/vision/CloudVisionTemplateTests.java=1546537755000
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-vision/src/main/java/org/springframework/cloud/gcp/vision/CloudVisionException.java=1546537755000
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-vision/src/main/java/org/springframework/cloud/gcp/vision/CloudVisionTemplate.java=1546537755000
-configuration*?=0C07562B5C31553817B3405470547F4CC14F7CC4
