@@ -200,28 +200,25 @@ public class DatastoreTemplate implements DatastoreOperations {
 	private <T> Collection<T> findAllById(Iterable<?> ids, Class<T> entityClass, ReadContext context) {
 		List<Key> keys = StreamSupport.stream(ids.spliterator(), false).map((id) -> getKeyFromId(id, entityClass))
 				.collect(Collectors.toList());
-		List<Key> missingKeys = keys.stream().filter(
-				(key) -> !(context.getConvertedEntities().containsKey(key)
-						|| context.getReadEntities().containsKey(key)))
-				.collect(Collectors.toList());
+		List<Key> missingKeys = keys.stream().filter(context::notCached).collect(Collectors.toList());
 
 		if (!missingKeys.isEmpty()) {
 			List<Entity> entities = getDatastoreReadWriter().fetch(missingKeys.toArray(new Key[] {}));
 
 			for (int i = 0; i < missingKeys.size(); i++) {
 				Key key = missingKeys.get(i);
-				context.getReadEntities().put(key, entities.get(i));
+				context.putReadEntity(key, entities.get(i));
 			}
 		}
 
 		ArrayList<T> result = new ArrayList<>();
 		for (Key key : keys) {
 			T convertedEntity;
-			if (context.getConvertedEntities().containsKey(key)) {
-				convertedEntity = (T) context.getConvertedEntities().get(key);
+			if (context.converted(key)) {
+				convertedEntity = (T) context.getConvertedEntity(key);
 			}
 			else {
-				Object entity = context.getReadEntities().get(key);
+				Object entity = context.getReadEntity(key);
 				convertedEntity = convertEntitiesForRead(Collections.singletonList((BaseEntity) entity).iterator(), entityClass,
 						context).get(0);
 			}
@@ -501,14 +498,14 @@ public class DatastoreTemplate implements DatastoreOperations {
 		if (cachedInstance == null) {
 			// the parent entity should be put into context BEFORE referenced and descendant entities
 			// are being resolved to avoid infinite loops
-			context.getConvertedEntities().put(key, convertedObject);
+			context.putConvertedEntity(key, convertedObject);
 		}
 		else {
 			convertedObject = cachedInstance;
 		}
 
 		//raw Datastore entity is no longer needed
-		context.getReadEntities().remove(key);
+		context.removeReadEntity(key);
 
 		resolveDescendantProperties(datastorePersistentEntity, entity, convertedObject, context);
 		resolveReferenceProperties(datastorePersistentEntity, entity, convertedObject, context);
@@ -700,16 +697,36 @@ public class DatastoreTemplate implements DatastoreOperations {
 	 * @author Dmitry Solomakha
 	 */
 	class ReadContext {
-		private Map<Key, Object> convertedEntities = new HashMap<>();
-		private Map<Key, BaseEntity> readEntities = new HashMap<>();
+		private final Map<Key, Object> convertedEntities = new HashMap<>();
+		private final Map<Key, BaseEntity> readEntities = new HashMap<>();
 
-		public Map<Key, Object> getConvertedEntities() {
-			return this.convertedEntities;
+		void putConvertedEntity(Key key, Object entity) {
+			this.convertedEntities.put(key, entity);
 		}
 
-		public Map<Key, BaseEntity> getReadEntities() {
-			return this.readEntities;
+		Object getConvertedEntity(Key key) {
+			return this.convertedEntities.get(key);
 		}
 
+		boolean notCached(Key key) {
+			return !(this.convertedEntities.containsKey(key)
+					|| this.readEntities.containsKey(key));
+		}
+
+		boolean converted(Key key) {
+			return this.convertedEntities.containsKey(key);
+		}
+
+		BaseEntity getReadEntity(Key key) {
+			return this.readEntities.get(key);
+		}
+
+		void putReadEntity(Key key, BaseEntity entity) {
+			this.readEntities.put(key, entity);
+		}
+
+		void removeReadEntity(Key key) {
+			this.readEntities.remove(key);
+		}
 	}
 }
