@@ -16,10 +16,6 @@
 
 package com.example;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,10 +36,6 @@ import org.springframework.messaging.handler.annotation.Header;
 /**
  * Spring Boot Application demonstrating receiving PubSub messages via synchronous pull.
  *
- * Accepts an argument {@code --delay} to slow down acknowledgement of each message by a
- * second, allowing better demonstration of load balancing behavior.
- * <p>Example: mvn spring-boot:run -Dspring-boot.run.arguments=--delay
- *
  * @author Elena Felder
  *
  * @since 1.2
@@ -53,13 +45,8 @@ public class PollingReceiverApplication {
 
 	private static final Log LOGGER = LogFactory.getLog(PollingReceiverApplication.class);
 
-	private static boolean delayAcknoledgement;
 
 	public static void main(String[] args) {
-		Set<String> argSet = Arrays.stream(args).map(String::toLowerCase).collect(Collectors.toSet());
-		delayAcknoledgement = argSet.contains("--delay");
-
-		LOGGER.info("Starting receiver with " + (delayAcknoledgement ? "delay" : "no delay"));
 		SpringApplication.run(PollingReceiverApplication.class, args);
 	}
 
@@ -73,15 +60,12 @@ public class PollingReceiverApplication {
 		return messageSource;
 	}
 
-
 	@ServiceActivator(inputChannel = "pubsubInputChannel")
 	public void messageReceiver(String payload,
 			@Header(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK) AcknowledgmentCallback callback)
 				throws InterruptedException {
 		LOGGER.info("Message arrived by Synchronous Pull! Payload: " + payload);
-		if (delayAcknoledgement) {
-			Thread.sleep(1000);
-		}
+
 		callback.acknowledge(AcknowledgmentCallback.Status.ACCEPT);
 	}
 
