@@ -1,0 +1,1 @@
+Please see the main https://github.com/spring-cloud/spring-cloud-gcp/blob/master/README.adoc[README].
