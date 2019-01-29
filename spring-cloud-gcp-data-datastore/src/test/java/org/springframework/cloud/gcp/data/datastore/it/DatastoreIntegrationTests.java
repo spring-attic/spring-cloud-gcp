@@ -20,13 +20,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.google.api.client.util.Sleeper;
 import com.google.cloud.datastore.Blob;
 import com.google.cloud.datastore.DatastoreReaderWriter;
 import com.google.cloud.datastore.Key;
@@ -39,6 +39,7 @@ import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gcp.data.datastore.core.DatastoreTemplate;
+import org.springframework.cloud.gcp.data.datastore.core.mapping.Descendants;
 import org.springframework.cloud.gcp.data.datastore.core.mapping.Entity;
 import org.springframework.cloud.gcp.data.datastore.it.TestEntity.Shape;
 import org.springframework.data.annotation.Id;
@@ -106,7 +107,7 @@ public class DatastoreIntegrationTests {
 		assumeThat(
 				"Datastore integration tests are disabled. Please use '-Dit.datastore=true' "
 						+ "to enable them. ",
-				"true", is("true"));
+				System.getProperty("it.datastore"), is("true"));
 	}
 
 	@After
@@ -404,9 +405,22 @@ public class DatastoreIntegrationTests {
 	public void recursiveSave() {
 		SubEntity subEntity1 = new SubEntity();
 		SubEntity subEntity2 = new SubEntity();
-		ParentEntity parentEntity = new ParentEntity(Collections.singletonList(subEntity1), subEntity2);
+		SubEntity subEntity3 = new SubEntity();
+		SubEntity subEntity4 = new SubEntity();
+
+		ParentEntity parentEntity = new ParentEntity(Arrays.asList(subEntity1, subEntity2),
+				Collections.singletonList(subEntity4), subEntity3);
 		subEntity1.parent = parentEntity;
 		subEntity2.parent = parentEntity;
+		subEntity3.parent = parentEntity;
+		subEntity4.parent = parentEntity;
+
+		subEntity1.sibling = subEntity2;
+		subEntity2.sibling = subEntity1;
+
+		subEntity3.sibling = subEntity4;
+		subEntity4.sibling = subEntity3;
+
 		this.datastoreTemplate.save(parentEntity);
 
 		ParentEntity readParentEntity = this.datastoreTemplate.findById(parentEntity.id, ParentEntity.class);
@@ -415,9 +429,22 @@ public class DatastoreIntegrationTests {
 		assertThat(readSubEntity1.parent).isSameAs(readParentEntity);
 		assertThat(readSubEntity1.parent.subEntities.get(0)).isSameAs(readSubEntity1);
 
-		SubEntity readSubEntity2 = readParentEntity.singularSubEntity;
-		assertThat(readSubEntity2.parent).isSameAs(readParentEntity);
-		assertThat(readSubEntity2.parent.singularSubEntity).isSameAs(readSubEntity2);
+		SubEntity readSubEntity3 = readParentEntity.singularSubEntity;
+		assertThat(readSubEntity3.parent).isSameAs(readParentEntity);
+		assertThat(readSubEntity3.parent.singularSubEntity).isSameAs(readSubEntity3);
+
+		SubEntity readSubEntity4 = readParentEntity.descendants.get(0);
+		assertThat(readSubEntity4.parent).isSameAs(readParentEntity);
+		assertThat(readSubEntity4.sibling).isSameAs(readSubEntity3);
+		assertThat(readSubEntity3.sibling).isSameAs(readSubEntity4);
+
+		Collection<SubEntity> allById = this.datastoreTemplate.findAllById(Arrays.asList(subEntity1.key, subEntity2.key),
+				SubEntity.class);
+		Iterator<SubEntity> iterator = allById.iterator();
+		readSubEntity1 = iterator.next();
+		SubEntity readSubEntity2 = iterator.next();
+		assertThat(readSubEntity1.sibling).isSameAs(readSubEntity2);
+		assertThat(readSubEntity2.sibling).isSameAs(readSubEntity1);
 	}
 
 	private long waitUntilTrue(Supplier<Boolean> condition) {
@@ -428,6 +455,11 @@ public class DatastoreIntegrationTests {
 	}
 }
 
+/**
+ * Test class.
+ *
+ * @author Dmitry Solomakha
+ */
 @Entity
 class ParentEntity {
 	@Id
@@ -439,18 +471,29 @@ class ParentEntity {
 	@Reference
 	SubEntity singularSubEntity;
 
-	ParentEntity(List<SubEntity> subEntities, SubEntity singularSubEntity) {
+	@Descendants
+	List<SubEntity> descendants;
+
+	ParentEntity(List<SubEntity> subEntities, List<SubEntity> descendants, SubEntity singularSubEntity) {
 		this.subEntities = subEntities;
 		this.singularSubEntity = singularSubEntity;
+		this.descendants = descendants;
 	}
 }
 
+/**
+ * Test class.
+ *
+ * @author Dmitry Solomakha
+ */
 @Entity
 class SubEntity {
 	@Id
-	Long id;
+	Key key;
 
 	@Reference
 	ParentEntity parent;
 
+	@Reference
+	SubEntity sibling;
 }

@@ -16,10 +16,10 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -192,8 +192,7 @@ public class DatastoreTemplateTests {
 		Query childTestEntityQuery = Query.newEntityQueryBuilder().setKind("child_entity")
 				.setFilter(PropertyFilter.hasAncestor(this.key1)).build();
 
-		this.childEntity1 = new ChildEntity();
-		this.childEntity1.id = createFakeKey("child_id");
+		this.childEntity1 = createChildEntity();
 
 		this.ob1.childEntities = new LinkedList<>();
 		this.childEntity2 = new ChildEntity();
@@ -227,8 +226,12 @@ public class DatastoreTemplateTests {
 			return null;
 		}).when(testEntityQueryResults).forEachRemaining(any());
 		setUpConverters(ce1, childTestEntityQuery, childTestEntityQueryResults, testEntityQueryResults);
+	}
 
-
+	private ChildEntity createChildEntity() {
+		ChildEntity e = new ChildEntity();
+		e.id = createFakeKey("key3");
+		return e;
 	}
 
 	private void setUpConverters(Entity ce1, Query childTestEntityQuery,
@@ -240,11 +243,7 @@ public class DatastoreTemplateTests {
 		when(this.datastoreEntityConverter.read(eq(TestEntity.class), eq(this.e2)))
 				.thenReturn(this.ob2);
 		when(this.datastoreEntityConverter.read(eq(ChildEntity.class), same(ce1)))
-				.thenReturn(this.childEntity1);
-
-		when(this.datastoreEntityConverter.read(eq(ChildEntity.class), same(ce1)))
-				.thenReturn(this.childEntity1);
-
+				.thenAnswer(invocationOnMock -> createChildEntity());
 
 		doAnswer((invocation) -> {
 			FullEntity.Builder builder = invocation.getArgument(1);
@@ -271,17 +270,20 @@ public class DatastoreTemplateTests {
 		// case using just thenReturn.
 		doAnswer((invocation) -> {
 			Object key = invocation.getArgument(0);
-			Iterator<Entity> result = null;
+			List<Entity> result = new ArrayList<>();
 			if (key instanceof Key) {
 				if (key == this.key1) {
-					result = Arrays.asList(this.e1).iterator();
+					result.add(this.e1);
 				}
 				else if (key == this.keyChild1) {
-					result = Arrays.asList(ce1).iterator();
+					result.add(ce1);
+				}
+				else {
+					result.add(null);
 				}
 			}
 			return result;
-		}).when(this.datastore).get((Key[]) any());
+		}).when(this.datastore).fetch((Key[]) any());
 
 		when(this.objectToKeyFactory.getKeyFromId(eq(this.key1), any()))
 				.thenReturn(this.key1);
@@ -329,10 +331,9 @@ public class DatastoreTemplateTests {
 			return callable.run(transactionContext);
 		});
 
-		Iterator<Entity> e1 = Collections
-				.singletonList(this.e1)
-				.iterator();
-		when(transactionContext.get(ArgumentMatchers.<Key[]>any())).thenReturn(e1);
+		List<Entity> e1 = Collections
+				.singletonList(this.e1);
+		when(transactionContext.fetch(ArgumentMatchers.<Key[]>any())).thenReturn(e1);
 
 		String finalResult = this.datastoreTemplate
 				.performTransaction((datastoreOperations) -> {
@@ -343,7 +344,7 @@ public class DatastoreTemplateTests {
 
 		assertThat(finalResult).isEqualTo("all done");
 		verify(transactionContext, times(1)).put((FullEntity<?>) any());
-		verify(transactionContext, times(3)).get((Key[]) any());
+		verify(transactionContext, times(2)).fetch((Key[]) any());
 	}
 
 	@Test
@@ -363,16 +364,38 @@ public class DatastoreTemplateTests {
 
 	@Test
 	public void findByIdNotFoundTest() {
-		when(this.datastore.get(ArgumentMatchers.<Key[]>any())).thenReturn(null);
+		when(this.datastore.fetch(ArgumentMatchers.<Key[]>any())).thenReturn(Collections.singletonList(null));
 		assertThat(this.datastoreTemplate.findById(createFakeKey("key0"), TestEntity.class)).isNull();
 	}
 
 	@Test
 	public void findAllByIdTest() {
-		when(this.datastore.get(eq(this.key1), eq(this.key2)))
-				.thenReturn(Arrays.asList(this.e1, this.e2).iterator());
+		when(this.datastore.fetch(eq(this.key1), eq(this.key2)))
+				.thenReturn(Arrays.asList(this.e1, this.e2));
 		List<Key> keys = Arrays.asList(this.key1, this.key2);
 		assertThat(this.datastoreTemplate.findAllById(keys, TestEntity.class)).containsExactly(this.ob1, this.ob2);
+	}
+
+	@Test
+	public void findAllByIdReferenceConsistencyTest() {
+		when(this.objectToKeyFactory.getKeyFromObject(eq(this.childEntity1), any())).thenReturn(this.childEntity1.id);
+
+		when(this.datastore.fetch(eq(this.key1)))
+				.thenReturn(Arrays.asList(this.e1));
+
+		TestEntity parentEntity1 = this.datastoreTemplate.findById(this.key1, TestEntity.class);
+		assertThat(parentEntity1).isSameAs(this.ob1);
+		ChildEntity singularReference1 = parentEntity1.singularReference;
+		ChildEntity childEntity1 = parentEntity1.childEntities.get(0);
+		assertThat(singularReference1).isSameAs(childEntity1);
+
+		TestEntity parentEntity2 = this.datastoreTemplate.findById(this.key1, TestEntity.class);
+		assertThat(parentEntity2).isSameAs(this.ob1);
+		ChildEntity singularReference2 = parentEntity2.singularReference;
+		ChildEntity childEntity2 = parentEntity2.childEntities.get(0);
+		assertThat(singularReference2).isSameAs(childEntity2);
+
+		assertThat(childEntity1).isNotSameAs(childEntity2);
 	}
 
 	@Test

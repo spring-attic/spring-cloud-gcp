@@ -116,12 +116,11 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> T findById(Object id, Class<T> entityClass) {
-		return findById(id, entityClass, new HashMap<>());
+		return findById(id, entityClass, new ReadContext());
 	}
 
-	private  <T> T findById(Object id, Class<T> entityClass, Map<Key, Object> retreivedEntities) {
-		Iterator<T> results = findAllById(Collections.singleton(id), entityClass, retreivedEntities)
-				.iterator();
+	private  <T> T findById(Object id, Class<T> entityClass, ReadContext context) {
+		Iterator<T> results = findAllById(Collections.singleton(id), entityClass, context).iterator();
 		return results.hasNext() ? results.next() : null;
 	}
 
@@ -195,21 +194,40 @@ public class DatastoreTemplate implements DatastoreOperations {
 
 	@Override
 	public <T> Collection<T> findAllById(Iterable<?> ids, Class<T> entityClass) {
-		return findAllById(ids, entityClass, new HashMap<>());
+		return findAllById(ids, entityClass, new ReadContext());
 	}
 
-	private <T> Collection<T> findAllById(Iterable<?> ids, Class<T> entityClass, Map<Key, Object> retrieved) {
-		ArrayList<T> result = new ArrayList<>();
-		for (Object id : ids) {
-			Key key = getKeyFromId(id, entityClass);
-			Object entity = retrieved.get(key);
-			if (entity == null) {
-				T convertedEntity = convertEntitiesForRead(
-						getDatastoreReadWriter().get(new Key[] {key}),
-						entityClass, retrieved).get(0);
-				entity = convertedEntity;
+	private <T> Collection<T> findAllById(Iterable<?> ids, Class<T> entityClass, ReadContext context) {
+		List<Key> keys = StreamSupport.stream(ids.spliterator(), false).map((id) -> getKeyFromId(id, entityClass))
+				.collect(Collectors.toList());
+		List<Key> missingKeys = keys.stream().filter(
+				(key) -> !(context.getConvertedEntities().containsKey(key)
+						|| context.getReadEntities().containsKey(key)))
+				.collect(Collectors.toList());
+
+		if (!missingKeys.isEmpty()) {
+			List<Entity> entities = getDatastoreReadWriter().fetch(missingKeys.toArray(new Key[] {}));
+
+			for (int i = 0; i < missingKeys.size(); i++) {
+				Key key = missingKeys.get(i);
+				context.getReadEntities().put(key, entities.get(i));
 			}
-			result.add((T) entity);
+		}
+
+		ArrayList<T> result = new ArrayList<>();
+		for (Key key : keys) {
+			T convertedEntity;
+			if (context.getConvertedEntities().containsKey(key)) {
+				convertedEntity = (T) context.getConvertedEntities().get(key);
+			}
+			else {
+				Object entity = context.getReadEntities().get(key);
+				convertedEntity = convertEntitiesForRead(Collections.singletonList((BaseEntity) entity).iterator(), entityClass,
+						context).get(0);
+			}
+			if (convertedEntity != null) {
+				result.add(convertedEntity);
+			}
 		}
 		return result;
 	}
@@ -446,43 +464,65 @@ public class DatastoreTemplate implements DatastoreOperations {
 	 * @return a list of converted entities
 	 */
 	public <T> List<T> convertEntitiesForRead(Iterator<? extends BaseEntity> entities, Class<T> entityClass) {
-		return convertEntitiesForRead(entities, entityClass, new HashMap<>());
+		return convertEntitiesForRead(entities, entityClass, new ReadContext());
 	}
 
 	public <T> List<T> convertEntitiesForRead(Iterator<? extends BaseEntity> entities, Class<T> entityClass,
-			Map<Key, Object> resolvedEntities) {
-		List<T> results = new ArrayList<>();
+			ReadContext context) {
 		if (entities == null) {
-			return results;
+			return Collections.emptyList();
 		}
 
 		DatastorePersistentEntity datastorePersistentEntity = this.datastoreMappingContext
 				.getPersistentEntity(entityClass);
 
-		entities.forEachRemaining((entity) -> convertEntityResolveDescendantsAndReferences(
-				entityClass,
-				results, datastorePersistentEntity, entity, resolvedEntities));
+		List<T> results = StreamSupport
+				.stream(((Iterable<BaseEntity>) () -> (Iterator<BaseEntity>) entities).spliterator(), false)
+				.map((entity) -> convertEntityResolveDescendantsAndReferences(entityClass,
+				datastorePersistentEntity,
+				entity,
+				context))
+				.collect(Collectors.toList());
+
 		return results;
 	}
 
-	private <T> void convertEntityResolveDescendantsAndReferences(Class<T> entityClass,
-			List<T> results, DatastorePersistentEntity datastorePersistentEntity,
-			BaseEntity entity, Map<Key, Object> resolvedEntities) {
+	private <T> T convertEntityResolveDescendantsAndReferences(Class<T> entityClass,
+			DatastorePersistentEntity datastorePersistentEntity,
+			BaseEntity entity, ReadContext context) {
 		T convertedObject = this.datastoreEntityConverter.read(entityClass, entity);
-		results.add(convertedObject);
 
-		resolvedEntities.put(getKey(convertedObject, false), convertedObject);
-		resolveDescendantProperties(datastorePersistentEntity, entity, convertedObject, resolvedEntities);
-		resolveReferenceProperties(datastorePersistentEntity, entity, convertedObject, resolvedEntities);
+		if (convertedObject == null) {
+			return null;
+		}
+
+		Key key = getKey(convertedObject, false);
+		T cachedInstance = (T) context.convertedEntities.get(key);
+		if (cachedInstance == null) {
+			// the parent entity should be put into context BEFORE referenced and descendant entities
+			// are being resolved to avoid infinite loops
+			context.getConvertedEntities().put(key, convertedObject);
+		}
+		else {
+			convertedObject = cachedInstance;
+		}
+
+		//raw Datastore entity is no longer needed
+		context.getReadEntities().remove(key);
+
+		resolveDescendantProperties(datastorePersistentEntity, entity, convertedObject, context);
+		resolveReferenceProperties(datastorePersistentEntity, entity, convertedObject, context);
+
+		return convertedObject;
 	}
 
 	private <T> void resolveReferenceProperties(DatastorePersistentEntity datastorePersistentEntity,
-			BaseEntity entity, T convertedObject, Map<Key, Object> resolvedEntities) {
+			BaseEntity entity, T convertedObject, ReadContext context) {
 		datastorePersistentEntity.doWithAssociations(
 				(AssociationHandler) (association) -> {
 					DatastorePersistentProperty referencePersistentProperty = (DatastorePersistentProperty) association
 							.getInverse();
-					Object referenced = findReferenced(entity, referencePersistentProperty, resolvedEntities);
+					Object referenced = findReferenced(entity, referencePersistentProperty, context);
 					if (referenced != null) {
 						datastorePersistentEntity.getPropertyAccessor(convertedObject)
 								.setProperty(referencePersistentProperty, referenced);
@@ -491,7 +531,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 				});
 	}
 
-	private Object findReferenced(BaseEntity entity, DatastorePersistentProperty referencePersistentProperty, Map<Key, Object> resolvedEntities) {
+	private Object findReferenced(BaseEntity entity, DatastorePersistentProperty referencePersistentProperty,
+			ReadContext context) {
 		String fieldName = referencePersistentProperty.getFieldName();
 		try {
 			Object referenced;
@@ -505,16 +546,13 @@ public class DatastoreTemplate implements DatastoreOperations {
 						.convertOnRead(
 								findAllById(
 										keyValues.stream().map(Value::get).collect(Collectors.toList()),
-										referencedType, resolvedEntities),
+										referencedType, context),
 								referencePersistentProperty.getType(),
 								referencedType);
 			}
 			else {
 				Key key = entity.getKey(fieldName);
-				referenced = resolvedEntities.get(key);
-				if (referenced == null) {
-						referenced = findById(key, referencePersistentProperty.getType(), resolvedEntities);
-				}
+				referenced = findById(key, referencePersistentProperty.getType(), context);
 			}
 			return referenced;
 		}
@@ -527,7 +565,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	private <T> void resolveDescendantProperties(DatastorePersistentEntity datastorePersistentEntity,
-			BaseEntity entity, T convertedObject, Map<Key, Object> resolvedEntities) {
+			BaseEntity entity, T convertedObject, ReadContext context) {
 		datastorePersistentEntity
 				.doWithDescendantProperties((descendantPersistentProperty) -> {
 
@@ -539,7 +577,6 @@ public class DatastoreTemplate implements DatastoreOperations {
 									.getPersistentEntity(descendantType).kindName())
 							.setFilter(PropertyFilter.hasAncestor((Key) entity.getKey()))
 							.build();
-
 					datastorePersistentEntity.getPropertyAccessor(convertedObject)
 							.setProperty(descendantPersistentProperty,
 									// Converting the collection type.
@@ -548,9 +585,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 													convertEntitiesForRead(
 															getDatastoreReadWriter()
 																	.run(descendantQuery),
-															descendantType),
-													descendantPersistentProperty
-															.getType(),
+															descendantType, context),
+													descendantPersistentProperty.getType(),
 													descendantType));
 				});
 	}
@@ -656,5 +692,24 @@ public class DatastoreTemplate implements DatastoreOperations {
 		if (matcher.getPropertySpecifiers().hasValues()) {
 			throw new DatastoreDataException("Property matchers are not supported");
 		}
+	}
+
+	/**
+	 * Class to hold caches for read and conversion.
+	 *
+	 * @author Dmitry Solomakha
+	 */
+	class ReadContext {
+		private Map<Key, Object> convertedEntities = new HashMap<>();
+		private Map<Key, BaseEntity> readEntities = new HashMap<>();
+
+		public Map<Key, Object> getConvertedEntities() {
+			return this.convertedEntities;
+		}
+
+		public Map<Key, BaseEntity> getReadEntities() {
+			return this.readEntities;
+		}
+
 	}
 }
