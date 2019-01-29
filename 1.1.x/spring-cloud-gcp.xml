@@ -4,7 +4,7 @@
 <book xmlns="http://docbook.org/ns/docbook" xmlns:xl="http://www.w3.org/1999/xlink" version="5.0" xml:lang="en">
 <info>
 <title>Spring Cloud GCP</title>
-<date>2019-01-03</date>
+<date>2019-01-29</date>
 <authorgroup>
 <author>
 <personname>
@@ -1112,7 +1112,7 @@ However, because it comes last in the list, <link xl:href="https://docs.spring.i
 <simpara>The channel adapters for Google Cloud Storage allow you to read and write files to Google Cloud Storage through <literal>MessageChannels</literal>.</simpara>
 <simpara>Spring Cloud GCP provides two inbound adapters, <literal>GcsInboundFileSynchronizingMessageSource</literal> and <literal>GcsStreamingMessageSource</literal>, and one outbound adapter, <literal>GcsMessageHandler</literal>.</simpara>
 <simpara>The Spring Integration Channel Adapters for Google Cloud Storage are included in the <literal>spring-cloud-gcp-storage</literal> module.</simpara>
-<simpara>To use the Storage portion of Spring Integration for Spring Cloud GCP, you must also provide the <literal>spring-integration-file</literal> dependency, since they aren&#8217;t pulled transitively.</simpara>
+<simpara>To use the Storage portion of Spring Integration for Spring Cloud GCP, you must also provide the <literal>spring-integration-file</literal> dependency, since it isn&#8217;t pulled transitively.</simpara>
 <simpara>Maven coordinates, using Spring Cloud GCP BOM:</simpara>
 <programlisting language="xml" linenumbering="unnumbered">&lt;dependency&gt;
     &lt;groupId&gt;org.springframework.cloud&lt;/groupId&gt;
@@ -1439,7 +1439,6 @@ This allows grouping of log messages by request, for example, in the <link xl:hr
 Instead, you should set the <literal>GOOGLE_CLOUD_PROJECT</literal> and <literal>GOOGLE_APPLICATION_CREDENTIALS</literal> environment variables to the project ID and credentials private key location, respectively.
 You can do this easily if you&#8217;re using the <link xl:href="http://cloud.google.com/sdk">Google Cloud SDK</link>, using the <literal>gcloud config set project [YOUR_PROJECT_ID]</literal> and <literal>gcloud auth application-default login</literal> commands, respectively.</simpara>
 </note>
-<simpara>A <link xl:href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-logging-sample">sample application</link> is available.</simpara>
 <section xml:id="_web_mvc_interceptor">
 <title>Web MVC Interceptor</title>
 <simpara>For use in Web MVC-based applications, <literal>TraceIdLoggingWebMvcInterceptor</literal> is provided that extracts the request trace ID from an HTTP request using a <literal>TraceIdExtractor</literal> and stores it in a thread-local, which can then be used in a logging appender to add the trace ID metadata to log messages.</simpara>
@@ -2098,6 +2097,10 @@ This setting is only used when generating DDL schema statements based on domain 
 <listitem>
 <simpara><literal>spannerType</literal> is the Cloud Spanner column type you can optionally specify.
 If this is not specified then a compatible column type is inferred from the Java property type.</simpara>
+</listitem>
+<listitem>
+<simpara><literal>spannerCommitTimestamp</literal> is a boolean specifying if this property corresponds to an auto-populated commit timestamp column.
+Any value set in this property will be ignored when writing to Cloud Spanner.</simpara>
 </listitem>
 </itemizedlist>
 </section>
@@ -3202,8 +3205,8 @@ public class Trade {
 
 	String symbol;
 }</programlisting>
-<simpara>Datastore has automatic ID allocation.
-If a POJO instance is written to Cloud Datastore with <literal>null</literal> as the ID value, then Spring Data Cloud Datastore will obtain a newly allocated ID value from Cloud Datastore and set that in the POJO for saving.
+<simpara>Datastore can automatically allocate integer ID values.
+If a POJO instance with a <literal>Long</literal> ID property is written to Cloud Datastore with <literal>null</literal> as the ID value, then Spring Data Cloud Datastore will obtain a newly allocated ID value from Cloud Datastore and set that in the POJO for saving.
 Because primitive <literal>long</literal> ID properties cannot be <literal>null</literal> and default to <literal>0</literal>, keys will not be allocated.</simpara>
 </section>
 <section xml:id="_fields">
@@ -4241,5 +4244,38 @@ This includes both MySQL and PostgreSQL bindings to the same app.</simpara>
 You can do so using the <literal>cf set-env &lt;APP&gt; JBP_CONFIG_SPRING_AUTO_RECONFIGURATION '{enabled: false}'</literal> command.
 Otherwise, Cloud Foundry will produce a <literal>DataSource</literal> with an invalid JDBC URL (i.e., <literal>jdbc:mysql://null/null</literal>).</simpara>
 </warning>
+</chapter>
+<chapter xml:id="_kotlin_support">
+<title>Kotlin Support</title>
+<simpara>The latest version of the Spring Framework provides first-class support for Kotlin.
+For Kotlin users of Spring, the Spring Cloud GCP libraries work out-of-the-box and are fully interoperable with Kotlin applications.</simpara>
+<simpara>For more information on building a Spring application in Kotlin, please consult the <link xl:href="https://docs.spring.io/spring/docs/current/spring-framework-reference/languages.html#kotlin">Spring Kotlin documentation</link>.</simpara>
+<section xml:id="_prerequisites_2">
+<title>Prerequisites</title>
+<simpara>Ensure that your Kotlin application is properly set up.
+Based on your build system, you will need to include the correct Kotlin build plugin in your project:</simpara>
+<itemizedlist>
+<listitem>
+<simpara><link xl:href="https://kotlinlang.org/docs/reference/using-maven.html">Kotlin Maven Plugin</link></simpara>
+</listitem>
+<listitem>
+<simpara><link xl:href="https://kotlinlang.org/docs/reference/using-gradle.html">Kotlin Gradle Plugin</link></simpara>
+</listitem>
+</itemizedlist>
+<simpara>Depending on your application&#8217;s needs, you may need to augment your build configuration with compiler plugins:</simpara>
+<itemizedlist>
+<listitem>
+<simpara><link xl:href="https://kotlinlang.org/docs/reference/compiler-plugins.html#spring-support">Kotlin Spring Plugin</link>: Makes your Spring configuration classes/members non-final for convenience.</simpara>
+</listitem>
+<listitem>
+<simpara><link xl:href="https://kotlinlang.org/docs/reference/compiler-plugins.html#jpa-support">Kotlin JPA Plugin</link>: Enables using JPA in Kotlin applications.</simpara>
+</listitem>
+</itemizedlist>
+<simpara>Once your Kotlin project is properly configured, the Spring Cloud GCP libraries will work within your application without any additional setup.</simpara>
+</section>
+</chapter>
+<chapter xml:id="_sample_13">
+<title>Sample</title>
+<simpara>A <link xl:href="https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-kotlin-samples/spring-cloud-gcp-kotlin-app-sample">Kotlin sample application</link> is provided to demonstrate a working Maven setup and various Spring Cloud GCP integrations from within Kotlin.</simpara>
 </chapter>
 </book>
