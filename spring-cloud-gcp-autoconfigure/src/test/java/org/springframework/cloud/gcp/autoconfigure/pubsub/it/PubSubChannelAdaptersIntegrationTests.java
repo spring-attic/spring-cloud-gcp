@@ -116,9 +116,9 @@ public class PubSubChannelAdaptersIntegrationTests {
 				headers.put("static", "lift your skinny fists");
 				headers.put("sleep", "lift your skinny fists");
 
-				context.getBean("inputChannel", MessageChannel.class).send(
-						MessageBuilder.createMessage("I am a message.".getBytes(),
-								new MessageHeaders(headers)));
+				Message originalMessage = MessageBuilder.createMessage("I am a message.".getBytes(),
+						new MessageHeaders(headers));
+				context.getBean("inputChannel", MessageChannel.class).send(originalMessage);
 
 				Message<?> message =
 						context.getBean("outputChannel", PollableChannel.class).receive(5000);
@@ -127,10 +127,11 @@ public class PubSubChannelAdaptersIntegrationTests {
 				String payload = new String((byte[]) message.getPayload());
 				assertThat(payload).isEqualTo("I am a message.");
 
-				assertThat(message.getHeaders().size()).isEqualTo(5);
+				assertThat(message.getHeaders().size()).isEqualTo(6);
 				assertThat(message.getHeaders().get("storm")).isEqualTo("lift your skinny fists");
 				assertThat(message.getHeaders().get("static")).isEqualTo("lift your skinny fists");
 				assertThat(message.getHeaders().get("sleep")).isEqualTo("lift your skinny fists");
+				assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isNotNull();
 			}
 			finally {
 				PubSubAdmin pubSubAdmin = context.getBean(PubSubAdmin.class);

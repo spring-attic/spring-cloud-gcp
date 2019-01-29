@@ -124,7 +124,7 @@ public class StackdriverTraceAutoConfigurationTests {
 
 			MultipleReportersConfig.GcpTraceService gcpTraceService
 					= context.getBean(MultipleReportersConfig.GcpTraceService.class);
-			await().atMost(2, TimeUnit.SECONDS)
+			await().atMost(10, TimeUnit.SECONDS)
 					.pollInterval(Duration.ONE_SECOND)
 					.untilAsserted(() -> {
 						assertThat(gcpTraceService.hasTraceFor(traceId)).isTrue();
@@ -141,7 +141,7 @@ public class StackdriverTraceAutoConfigurationTests {
 
 			MultipleReportersConfig.OtherSender sender
 					= (MultipleReportersConfig.OtherSender) context.getBean("otherSender");
-			await().atMost(5, TimeUnit.SECONDS)
+			await().atMost(10, TimeUnit.SECONDS)
 					.untilAsserted(() -> assertThat(sender.isSpanSent()).isTrue());
 		});
 	}
