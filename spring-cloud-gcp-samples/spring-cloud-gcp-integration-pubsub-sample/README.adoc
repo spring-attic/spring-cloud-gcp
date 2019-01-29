@@ -42,12 +42,3 @@ There is an alternative receiver application that demonstrates receiving message
 1. Verify that the receiver logged the message(s):
 +
 `Message arrived by Synchronous Pull! Payload: [message-entered] (0)`
-
-
-
-NOTE: While `PubSubInboundChannelAdapter`, through the underlying Asynchronous Pull Pub/Sub mechanism, provides the best performance for high-volume applications that receive a steady flow of messages, it can create load balancing anomalies due to message caching.
-You can reproduce this behavior by starting up multiple instances of either receiver sample app, and introducing a processing delay with
- +
- `mvn spring-boot:run -Dspring-boot.run.arguments=--delay`.
-
-

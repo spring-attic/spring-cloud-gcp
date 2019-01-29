@@ -16,10 +16,6 @@
 
 package com.example;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -40,15 +36,11 @@ import org.springframework.messaging.handler.annotation.Header;
 /**
  * Spring Boot Application demonstrating receiving PubSub messages via streaming pull.
  *
- * <p>Accepts an argument {@code --delay} to slow down acknowledgement of each message by
- * a second, allowing better demonstration of load balancing behavior.
- * <p>Example: mvn spring-boot:run -Dspring-boot.run.arguments=--delay
- *
  * @author João André Martins
  * @author Mike Eltsufin
  * @author Dmitry Solomakha
  * @author Chengyuan Zhao
- * @author Elena Felder
+ *
  * @since 1.1
  */
 @SpringBootApplication
@@ -56,13 +48,7 @@ public class ReceiverApplication {
 
 	private static final Log LOGGER = LogFactory.getLog(ReceiverApplication.class);
 
-	private static boolean delayAcknoledgement;
-
 	public static void main(String[] args) {
-		Set<String> argSet = Arrays.stream(args).map(String::toLowerCase).collect(Collectors.toSet());
-		delayAcknoledgement = argSet.contains("--delay");
-
-		LOGGER.info("Starting receiver with " + (delayAcknoledgement ? "delay" : "no delay"));
 		SpringApplication.run(ReceiverApplication.class, args);
 	}
 
@@ -85,12 +71,8 @@ public class ReceiverApplication {
 
 	@ServiceActivator(inputChannel = "pubsubInputChannel")
 	public void messageReceiver(String payload,
-			@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) BasicAcknowledgeablePubsubMessage message)
-				throws InterruptedException {
+			@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) BasicAcknowledgeablePubsubMessage message) {
 		LOGGER.info("Message arrived! Payload: " + payload);
-		if (delayAcknoledgement) {
-			Thread.sleep(1000);
-		}
 		message.ack();
 	}
 
