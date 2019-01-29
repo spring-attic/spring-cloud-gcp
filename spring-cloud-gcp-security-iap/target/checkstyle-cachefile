@@ -1,8 +1,0 @@
-#Thu Jan 03 17:50:00 UTC 2019
-module-resource*?\:file\:/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-security-iap/target/checkstyle-header.txt=5406B79542A0F0AF68419F6CECE454DED3F9D2BB
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-security-iap/src/main/java/org/springframework/cloud/gcp/security/iap/AppEngineAudienceProvider.java=1546537755000
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-security-iap/src/test/java/org/springframework/cloud/gcp/security/iap/AppEngineAudienceProviderTests.java=1546537755000
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-security-iap/src/main/java/org/springframework/cloud/gcp/security/iap/AudienceValidator.java=1546537755000
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-security-iap/src/main/java/org/springframework/cloud/gcp/security/iap/AudienceProvider.java=1546537755000
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-security-iap/src/test/java/org/springframework/cloud/gcp/security/iap/AudienceValidatorTests.java=1546537755000
-configuration*?=3C9D08DC4A2AA53C4C5050F490FF2897ADB15E9A

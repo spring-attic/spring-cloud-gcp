@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManagerTests
--------------------------------------------------------------------------------
-Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.04 s - in org.springframework.cloud.gcp.data.datastore.core.DatastoreTransactionManagerTests

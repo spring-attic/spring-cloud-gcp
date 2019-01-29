@@ -1,7 +1,0 @@
-#Thu Jan 03 17:51:15 UTC 2019
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample/src/main/java/com/example/GcsApplication.java=1546537755000
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample/src/main/java/com/example/WebController.java=1546537755000
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample/src/test/java/com/example/GcsApplicationTests.java=1546537755000
-configuration*?=EE09CA8F4428E74E28997645F6BA404C40EAA161
-module-resource*?\:file\:/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample/target/checkstyle-header.txt=5406B79542A0F0AF68419F6CECE454DED3F9D2BB
-/tmp/releaser77426136284171318/spring-cloud-gcp/spring-cloud-gcp-samples/spring-cloud-gcp-storage-resource-sample/src/main/resources/application.properties=1546537755000

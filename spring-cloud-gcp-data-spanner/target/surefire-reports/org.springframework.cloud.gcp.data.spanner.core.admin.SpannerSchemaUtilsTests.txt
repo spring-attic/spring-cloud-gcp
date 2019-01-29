@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtilsTests
--------------------------------------------------------------------------------
-Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.063 s - in org.springframework.cloud.gcp.data.spanner.core.admin.SpannerSchemaUtilsTests

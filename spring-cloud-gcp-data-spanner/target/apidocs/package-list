@@ -1,8 +1,0 @@
-org.springframework.cloud.gcp.data.spanner.core
-org.springframework.cloud.gcp.data.spanner.core.admin
-org.springframework.cloud.gcp.data.spanner.core.convert
-org.springframework.cloud.gcp.data.spanner.core.mapping
-org.springframework.cloud.gcp.data.spanner.repository
-org.springframework.cloud.gcp.data.spanner.repository.config
-org.springframework.cloud.gcp.data.spanner.repository.query
-org.springframework.cloud.gcp.data.spanner.repository.support

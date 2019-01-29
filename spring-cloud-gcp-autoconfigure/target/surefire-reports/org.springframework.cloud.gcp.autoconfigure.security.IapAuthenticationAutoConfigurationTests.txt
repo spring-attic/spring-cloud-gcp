@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationAutoConfigurationTests
--------------------------------------------------------------------------------
-Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.312 s - in org.springframework.cloud.gcp.autoconfigure.security.IapAuthenticationAutoConfigurationTests

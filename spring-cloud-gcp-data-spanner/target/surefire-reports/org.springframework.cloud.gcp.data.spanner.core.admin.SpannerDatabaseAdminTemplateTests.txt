@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplateTests
--------------------------------------------------------------------------------
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 s - in org.springframework.cloud.gcp.data.spanner.core.admin.SpannerDatabaseAdminTemplateTests
