@@ -115,7 +115,7 @@ In such a scenario, a `PubSubMessageSource` can help spread the load between dif
 
 As with the Inbound Channel Adapter, the message source has a configurable acknowledgement mode, payload type, and header mapping.
 The default behavior is to return from the synchronous pull operation immediately if no messages are present.
-This can be overridden by using `blockOnPull()` method to wait for at least one message to arrive.
+This can be overridden by using `setBlockOnPull()` method to wait for at least one message to arrive.
 
 [source,java]
 ----
@@ -125,7 +125,7 @@ public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
 	PubSubMessageSource messageSource = new PubSubMessageSource(pubSubTemplate,  "exampleSubscription");
 	messageSource.setAckMode(AckMode.MANUAL);
 	messageSource.setPayloadType(String.class);
-	messageSource.blockOnPull();
+	messageSource.setBlockOnPull(true);
 	return messageSource;
 }
 ----
