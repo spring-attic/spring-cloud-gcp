@@ -84,7 +84,7 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 	/**
 	 * Instructs synchronous pull to wait until at least one message is available.
 	 */
-	public void blockOnPull() {
+	public void setBlockOnPull() {
 		this.blockOnPull = true;
 	}
 

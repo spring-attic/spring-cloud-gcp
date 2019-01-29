@@ -248,7 +248,7 @@ public class PubSubMessageSourceTests {
 		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
 				this.mockPubSubSubscriberOperations, "sub1");
 		pubSubMessageSource.setMaxFetchSize(1);
-		pubSubMessageSource.blockOnPull();
+		pubSubMessageSource.setBlockOnPull();
 
 		Object message = pubSubMessageSource.doReceive(1);
 
