@@ -115,8 +115,12 @@ For a more detailed explanation of this scenario, see https://cloud.google.com/p
 In such a scenario, a `PubSubMessageSource` can help spread the load between different subscribers more evenly.
 
 As with the Inbound Channel Adapter, the message source has a configurable acknowledgement mode, payload type, and header mapping.
+
 The default behavior is to return from the synchronous pull operation immediately if no messages are present.
 This can be overridden by using `setBlockOnPull()` method to wait for at least one message to arrive.
+
+By default, `PubSubMessageSource` pulls from the subscription one message at a time.
+To pull a batch of messages on each request, use the `setMaxFetchSize()` method to set the batch size.
 
 [source,java]
 ----
@@ -127,9 +131,26 @@ public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
 	messageSource.setAckMode(AckMode.MANUAL);
 	messageSource.setPayloadType(String.class);
 	messageSource.setBlockOnPull(true);
+	messageSource.setMaxFetchSize(100);
 	return messageSource;
 }
 ----
+
+The `MessageSource` attaches a `AcknowledgeablePubSubMessage` object to the `Message` headers.
+Users can extract the `AcknowledgeablePubSubMessage` using the `GcpPubSubHeaders.ORIGINAL_MESSAGE` key and use it to (n)ack a message.
+
+[source,java]
+----
+@ServiceActivator(inputChannel = "pubsubInputChannel")
+public void messageReceiver(String payload,
+        @Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) AcknowledgeablePubsubMessage message)
+            throws InterruptedException {
+    LOGGER.info("Message arrived by Synchronous Pull! Payload: " + payload);
+    message.ack();
+}
+----
+
+NOTE: `AcknowledgeablePubSubMessage` objects acquired by synchronous pull are aware of their own acknowledgement IDs. Streaming pull does not expose this information due to limitations of the underlying API, and returns `BasicAcknowledgeablePubsubMessage` objects that allow acking/nacking individual messages, but not extracking acknowledgement IDs for future processing.
 
 ==== Outbound channel adapter
 

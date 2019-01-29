@@ -36,8 +36,6 @@ import org.springframework.util.Assert;
  * A <a href="https://cloud.google.com/pubsub/docs/pull#pubsub-pull-messages-sync-java">PubSub Synchronous pull</a>
  * implementation of {@link AbstractMessageSource}.
  *
- * <p>Enables more even load balancing with polling adapters, at the cost of efficiency gained from streaming pull.
- *
  * @author Elena Felder
  *
  * @since 1.2
