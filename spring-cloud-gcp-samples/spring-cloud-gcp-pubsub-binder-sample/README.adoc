@@ -4,7 +4,9 @@ This code sample demonstrates how to use the Spring Cloud Stream binder for Goog
 The sample app prompts a user for a message and their user name.
 That data is added to a `UserMessage` object, together with the time of message creation, and is sent through Google Cloud Pub/Sub to a sink which simply logs the message.
 
-If the topic and subscription for the sink and source don't exist, the binder will automatically create them in Google Cloud Pub/Sub based on the values in link:src/main/resources/application.properties[application.properties].
+If the topic for the sink and source does not exist, the binder will automatically create them in Google Cloud Pub/Sub based on the values in link:src/main/resources/application.properties[application.properties].
+
+If the group is not specified, an anonymous subscription with the name `anonymous.<topicName>.<randomUUID>` will be generated.
 
 == Running the code sample
 
@@ -14,11 +16,10 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 
 2. Set your project ID using the `spring.cloud.gcp.project-id` property in link:src/main/resources/application.properties[application.properties] or use the `gcloud config set project [PROJECT_ID]` Cloud SDK command.
 
-3. Set the topic and subscription name in the link:src/main/resources/application.properties[application.properties] file.
+3. Set the topic and, optionally, group name in the link:src/main/resources/application.properties[application.properties] file.
 +
-If you're relying on the binder automatically creating the topic and subscription for you, they need to have the same name so that the messages are properly routed.
-+
-Alternatively, you can manually create the topic and subscription from the https://console.cloud.google.com/cloudpubsub[Google Cloud Console].
+You can rely on the binder to create the topic and subscription, or you can create them manually from the https://console.cloud.google.com/cloudpubsub[Google Cloud Console].
+If you create the subscription manually, make sure it follows the naming convention of `<topicName>.<consumerGroup>`.
 
 4. Run the `mvn clean spring-boot:run` in the root of the code sample to get the app running.
 
