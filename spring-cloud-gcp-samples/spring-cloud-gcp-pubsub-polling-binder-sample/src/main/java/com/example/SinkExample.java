@@ -34,7 +34,7 @@ import org.springframework.messaging.MessagingException;
 /**
  * Example of a sink for the sample app.
  *
- * @author João André Martins
+ * @author Elena Felder
  */
 @EnableBinding(PollableSink.class)
 public class SinkExample {

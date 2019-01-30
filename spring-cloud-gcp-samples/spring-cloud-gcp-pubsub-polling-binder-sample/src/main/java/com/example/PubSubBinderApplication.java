@@ -22,7 +22,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 /**
  * Sample application for a binder.
  *
- * @author João André Martins
+ * @author Elena Felder
  */
 @SpringBootApplication
 public class PubSubBinderApplication {
