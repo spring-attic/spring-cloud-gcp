@@ -20,10 +20,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
+import org.springframework.cloud.gcp.pubsub.support.GcpPubSubHeaders;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Input;
 import org.springframework.cloud.stream.binder.PollableMessageSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.MessagingException;
 
 /**
  * Example of a sink for the sample app.
@@ -37,36 +43,35 @@ public class SinkExample {
 
 	@Bean
 	public ApplicationRunner poller(PollableMessageSource destIn) {
-		LOGGER.info("&&&&&&&&&&&&&&&&&&&&&& initializing poller: ");
 
+		PolledMessageHandler messageHandler = new PolledMessageHandler();
+
+		// TODO: use https://github.com/spring-cloud/spring-cloud-stream/pull/1591
 		return args -> {
 			while (true) {
 				try {
-					System.out.println("Polling " + destIn);
-					if (!destIn.poll(m -> {
-						LOGGER.info("GAAAAAAH! " + m);
-						// LOGGER.info("New message received from " + userMessage.getUsername() + ": " + userMessage.getBody() +
-						//				" at " + userMessage.getCreatedAt());
-					})) {
-						Thread.sleep(5000);
+					if (!destIn.poll(messageHandler, ParameterizedTypeReference.forType(UserMessage.class))) {
+						Thread.sleep(1000);
 					}
 				}
 				catch (Exception e) {
-					LOGGER.info("WTF!!!!!!!!!!!!!!! ");
+					LOGGER.info("oops", e);
 					break;
 				}
 			}
 		};
 	}
-}
 
-/**
- * Custom interface binding a pollable input.
- *
- * @author Elena Felder
- */
-interface PollableSink {
+	static class PolledMessageHandler implements MessageHandler {
+		@Override
+		public void handleMessage(Message<?> message) throws MessagingException {
+			AcknowledgeablePubsubMessage ackableMessage = (AcknowledgeablePubsubMessage)message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
+			ackableMessage.ack();
 
-	@Input("input")
-	PollableMessageSource input();
+			UserMessage userMessage = (UserMessage)message.getPayload();
+			LOGGER.info("New message received from " + userMessage.getUsername() + ": " + userMessage.getBody() +
+					" at " + userMessage.getCreatedAt());
+		}
+	}
+
 }
