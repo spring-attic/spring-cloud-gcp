@@ -17,10 +17,27 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 3. Still in the same page, locate the newly created topic, click the button with the three vertical dots at the end of the topic's line and click "New subscription".
 Create a new subscription called `exampleSubscription` with all default parameters.
 
-3. In separate terminal windows, start the `spring-cloud-gcp-spring-integration-pubsub-sample-sender` and `spring-cloud-gcp-spring-integration-pubsub-sample-receiver` applications with the `$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
+=== Streaming Pull Based Subscription
 
-4. Go to http://localhost:8080, write a message in the text box and hit the `Submit` button.
+1. In separate terminal windows, start the `spring-cloud-gcp-spring-integration-pubsub-sample-sender` and `spring-cloud-gcp-spring-integration-pubsub-sample-receiver` applications with the `$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
 
-5. Verify that the receiver logged the message you wrote.
+1. Go to http://localhost:8080, write a message in the text box and hit the `Submit` button.
+
+1. Verify that the receiver logged the message you wrote.
 +
 `Message arrived! Payload: [message-entered]`
+
+
+=== Synchronous Pull Based Subscription
+
+There is an alternative receiver application that demonstrates receiving messages through Pub/Sub Synchronous Pull.
+
+1. Start the `spring-cloud-gcp-spring-integration-pubsub-sample-sender` application with the `$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
+
+1. Start the `spring-cloud-gcp-spring-integration-pubsub-sample-polling-receiver` sample app in a separate terminal window.
+
+1. Open http://localhost:8080, write a message in the text box,  update the "times" text box if you'd like multiple messages, and hit send.
+
+1. Verify that the receiver logged the message(s):
++
+`Message arrived by Synchronous Pull! Payload: [message-entered] (0)`

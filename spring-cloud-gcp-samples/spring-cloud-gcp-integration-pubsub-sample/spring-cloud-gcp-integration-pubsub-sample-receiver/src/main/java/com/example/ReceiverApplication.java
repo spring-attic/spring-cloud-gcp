@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,20 +34,23 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.handler.annotation.Header;
 
 /**
- * A sample receiver application.
+ * Spring Boot Application demonstrating receiving PubSub messages via streaming pull.
  *
- * @author Joao Andre Martins
- * @author Elena Felder
+ * @author João André Martins
+ * @author Mike Eltsufin
+ * @author Dmitry Solomakha
  * @author Chengyuan Zhao
+ *
+ * @since 1.1
  */
 @SpringBootApplication
 public class ReceiverApplication {
 
+	private static final Log LOGGER = LogFactory.getLog(ReceiverApplication.class);
+
 	public static void main(String[] args) {
 		SpringApplication.run(ReceiverApplication.class, args);
 	}
-
-	private static final Log LOGGER = LogFactory.getLog(ReceiverApplication.class);
 
 	@Bean
 	public MessageChannel pubsubInputChannel() {
@@ -72,4 +75,5 @@ public class ReceiverApplication {
 		LOGGER.info("Message arrived! Payload: " + payload);
 		message.ack();
 	}
+
 }

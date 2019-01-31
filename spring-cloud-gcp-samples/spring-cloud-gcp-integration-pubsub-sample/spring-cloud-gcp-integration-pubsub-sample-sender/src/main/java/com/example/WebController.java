@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,12 +40,16 @@ public class WebController {
 	 * Posts a message to a Google Cloud Pub/Sub topic, through Spring's messaging gateway, and
 	 * redirects the user to the home page.
 	 *
-	 * @param message the message posted to the Pub/Sub topic
+	 * @param message the message that will be posted to the Pub/Sub topic, with a
+	 *                parenthesized position suffix
+	 * @param numTimes how many copies of the message to send
 	 * @return the redirected view for the request
 	 */
 	@PostMapping("/postMessage")
-	public RedirectView postMessage(@RequestParam("message") String message) {
-		this.messagingGateway.sendToPubSub(message);
+	public RedirectView postMessage(@RequestParam("message") String message, @RequestParam("times") int numTimes) {
+		for (int i = 0; i < numTimes; i++) {
+			this.messagingGateway.sendToPubSub(message + "(" + i + ")");
+		}
 		return new RedirectView("/");
 	}
 }

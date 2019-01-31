@@ -30,7 +30,7 @@ dependencies {
 ----
 
 
-==== Inbound channel adapter
+==== Inbound channel adapter (using Pub/Sub Streaming Pull)
 
 `PubSubInboundChannelAdapter` is the inbound channel adapter for GCP Pub/Sub that listens to a GCP Pub/Sub subscription for new messages.
 It converts new messages to an internal Spring https://docs.spring.io/spring-integration/reference/html/messaging-construction-chapter.html#message[`Message`] and then sends it to the bound output channel.
@@ -103,6 +103,57 @@ public MessageHandler messageReceiver() {
     };
 }
 ----
+
+==== Pollable Message Source (using Pub/Sub Synchronous Pull)
+
+While `PubSubInboundChannelAdapter`, through the underlying Asynchronous Pull Pub/Sub mechanism, provides the best performance for high-volume applications that receive a steady flow of messages, it can create load balancing anomalies due to message caching.
+This behavior is most obvious when publishing a large batch of small messages that take a long time to process individually.
+It manifests as one subscriber taking up most messages, even if multiple subscribers are available to take on the work.
+For a more detailed explanation of this scenario, see https://cloud.google.com/pubsub/docs/pull#dealing-with-large-backlogs-of-small-messages[GCP Pub/Sub documentation].
+
+In such a scenario, a `PubSubMessageSource` can help spread the load between different subscribers more evenly.
+
+As with the Inbound Channel Adapter, the message source has a configurable acknowledgement mode, payload type, and header mapping.
+
+The default behavior is to return from the synchronous pull operation immediately if no messages are present.
+This can be overridden by using `setBlockOnPull()` method to wait for at least one message to arrive.
+
+By default, `PubSubMessageSource` pulls from the subscription one message at a time.
+To pull a batch of messages on each request, use the `setMaxFetchSize()` method to set the batch size.
+
+[source,java]
+----
+@Bean
+@InboundChannelAdapter(channel = "pubsubInputChannel", poller = @Poller(fixedDelay = "100"))
+public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
+	PubSubMessageSource messageSource = new PubSubMessageSource(pubSubTemplate,  "exampleSubscription");
+	messageSource.setAckMode(AckMode.MANUAL);
+	messageSource.setPayloadType(String.class);
+	messageSource.setBlockOnPull(true);
+	messageSource.setMaxFetchSize(100);
+	return messageSource;
+}
+----
+
+The `@InboundChannelAdapter` annotation above ensures that the configured `MessageSource` is polled for messages, which are then available for manipulation with any Spring Integration mechanism on the `pubsubInputChannel` message channel.
+For example, messages can be retrieved in a method annotated with `@ServiceActivator`, as seen below.
+
+For additional flexibility, `PubSubMessageSource` attaches an `AcknowledgeablePubSubMessage` object to the `GcpPubSubHeaders.ORIGINAL_MESSAGE` message header.
+The object can be used for manually (n)acking the message.
+
+[source,java]
+----
+@ServiceActivator(inputChannel = "pubsubInputChannel")
+public void messageReceiver(String payload,
+        @Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) AcknowledgeablePubsubMessage message)
+            throws InterruptedException {
+    LOGGER.info("Message arrived by Synchronous Pull! Payload: " + payload);
+    message.ack();
+}
+----
+
+NOTE: `AcknowledgeablePubSubMessage` objects acquired by synchronous pull are aware of their own acknowledgement IDs.
+Streaming pull does not expose this information due to limitations of the underlying API, and returns `BasicAcknowledgeablePubsubMessage` objects that allow acking/nacking individual messages, but not extracting acknowledgement IDs for future processing.
 
 ==== Outbound channel adapter
 

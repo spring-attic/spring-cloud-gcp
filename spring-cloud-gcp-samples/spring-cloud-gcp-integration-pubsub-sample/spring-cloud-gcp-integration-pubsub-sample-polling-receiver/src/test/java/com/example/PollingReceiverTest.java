@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,15 +42,14 @@ import static org.junit.Assume.assumeThat;
  * Tests for the receiver application.
  *
  * @author Dmitry Solomakha
- * @author Elena Felder
  *
- * @since 1.1
+ * @since 1.2
  */
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @DirtiesContext
-public class ReceiverTest {
+public class PollingReceiverTest {
 	private static PrintStream systemOut;
 
 	private static ByteArrayOutputStream baos;
@@ -79,7 +78,7 @@ public class ReceiverTest {
 	@Test
 	public void testSample() throws Exception {
 		String message = "test message " + UUID.randomUUID();
-		String expectedString = "Message arrived! Payload: " + message;
+		String expectedString = "Message arrived by Synchronous Pull! Payload: " + message;
 
 		this.pubSubTemplate.publish("exampleTopic", message);
 
