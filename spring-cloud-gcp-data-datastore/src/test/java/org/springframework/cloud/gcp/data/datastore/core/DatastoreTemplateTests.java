@@ -50,6 +50,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentMatchers;
 
+import org.springframework.cloud.gcp.core.util.MapBuilder;
 import org.springframework.cloud.gcp.data.datastore.core.convert.DatastoreEntityConverter;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ObjectToKeyFactory;
 import org.springframework.cloud.gcp.data.datastore.core.convert.ReadWriteConversions;
@@ -343,7 +344,7 @@ public class DatastoreTemplateTests {
 				});
 
 		assertThat(finalResult).isEqualTo("all done");
-		verify(transactionContext, times(1)).put((FullEntity<?>) any());
+		verify(transactionContext, times(1)).put(ArgumentMatchers.<FullEntity[]>any());
 		verify(transactionContext, times(2)).fetch((Key[]) any());
 	}
 
@@ -399,25 +400,69 @@ public class DatastoreTemplateTests {
 	}
 
 	@Test
-	public void saveTest() {
-		when(this.datastore.put((FullEntity<?>) any())).thenReturn(this.e1);
-		assertThat(this.datastoreTemplate.save(this.ob1) instanceof TestEntity).isTrue();
+	public void findAllReferenceLoopTest() {
 
+
+		Entity referenceTestDatastoreEntity = Entity.newBuilder(this.key1)
+				.set("sibling", this.key1)
+				.build();
+
+		when(this.datastore.fetch(eq(this.key1)))
+				.thenReturn(Arrays.asList(referenceTestDatastoreEntity));
+
+		when(this.datastoreEntityConverter.read(eq(ReferenceTestEntity.class), same(referenceTestDatastoreEntity)))
+				.thenAnswer(invocationOnMock -> new ReferenceTestEntity());
+
+		ReferenceTestEntity readReferenceTestEntity = this.datastoreTemplate.findById(this.key1, ReferenceTestEntity.class);
+
+		assertThat(readReferenceTestEntity.sibling).isSameAs(readReferenceTestEntity);
+	}
+
+	@Test
+	public void saveReferenceLoopTest() {
+		ReferenceTestEntity referenceTestEntity = new ReferenceTestEntity();
+		referenceTestEntity.id = 1L;
+		referenceTestEntity.sibling = referenceTestEntity;
+		when(this.objectToKeyFactory.getKeyFromObject(eq(referenceTestEntity), any())).thenReturn(this.key1);
+
+		List<Object[]> callsArgs = gatherVarArgCallsArgs(this.datastore.put(ArgumentMatchers.<FullEntity[]>any()),
+				Collections.singletonList(this.e1));
+
+		assertThat(this.datastoreTemplate.save(referenceTestEntity) instanceof ReferenceTestEntity).isTrue();
+
+		Entity writtenEntity = Entity.newBuilder(this.key1)
+				.set("sibling", this.key1)
+				.build();
+
+		assertArgs(callsArgs, new MapBuilder<List, Integer>()
+				.put(Arrays.asList(writtenEntity), 1)
+				.buildModifiable());
+	}
+
+	@Test
+	public void saveTest() {
 		Entity writtenEntity = Entity.newBuilder(this.key1)
 				.set("singularReference", this.childKey4)
 				.set("multipleReference", Arrays.asList(KeyValue.of(this.childKey5), KeyValue.of(this.childKey6)))
 				.build();
-		verify(this.datastore, times(1)).put(eq(writtenEntity));
-
-		Entity writtenChildEntity4 = Entity.newBuilder(this.childKey4).build();
-		verify(this.datastore, times(1)).put(eq(writtenChildEntity4));
 
 		Entity writtenChildEntity2 = Entity.newBuilder(this.childKey2).build();
 		Entity writtenChildEntity3 = Entity.newBuilder(this.childKey3).build();
+		Entity writtenChildEntity4 = Entity.newBuilder(this.childKey4).build();
 		Entity writtenChildEntity5 = Entity.newBuilder(this.childKey5).build();
 		Entity writtenChildEntity6 = Entity.newBuilder(this.childKey6).build();
-		verify(this.datastore, times(1)).put(eq(writtenChildEntity2), eq(writtenChildEntity3));
-		verify(this.datastore, times(1)).put(eq(writtenChildEntity5), eq(writtenChildEntity6));
+
+		List<Object[]> callsArgs = gatherVarArgCallsArgs(this.datastore.put(ArgumentMatchers.<FullEntity[]>any()),
+				Collections.singletonList(this.e1));
+
+		assertThat(this.datastoreTemplate.save(this.ob1) instanceof TestEntity).isTrue();
+
+		assertArgs(callsArgs, new MapBuilder<List, Integer>()
+		.put(Arrays.asList(writtenChildEntity2, writtenChildEntity3), 1)
+		.put(Arrays.asList(writtenChildEntity5, writtenChildEntity6), 1)
+		.put(Arrays.asList(writtenChildEntity4), 1)
+		.put(Arrays.asList(writtenEntity), 1)
+				.buildModifiable());
 
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity2), notNull());
@@ -427,6 +472,22 @@ public class DatastoreTemplateTests {
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity6), notNull());
 	}
 
+	private List<Object[]> gatherVarArgCallsArgs(Object methodCall, List<Entity> returnVal) {
+		List<Object[]> callsArgs = new ArrayList<>();
+		when(methodCall).thenAnswer(invocationOnMock -> {
+			callsArgs.add(invocationOnMock.getArguments());
+			return returnVal;
+		});
+		return callsArgs;
+	}
+
+	private void assertArgs(List<Object[]> callsArgs, Map<List, Integer> expected) {
+		for (Object[] args : callsArgs) {
+			List<Object> key = Arrays.asList(args);
+			expected.put(key, expected.computeIfAbsent(key, k -> 0) - 1);
+		}
+		expected.forEach((key, value) -> assertThat(value).as("Extra calls with argument " + key).isEqualTo(0));
+	}
 
 	@Test
 	public void saveTestNonKeyId() {
@@ -443,7 +504,15 @@ public class DatastoreTemplateTests {
 		assertThat(this.ob2.singularReference).isNull();
 		assertThat(this.ob2.multipleReference).isNull();
 
+
+		List<Object[]> callsArgs = gatherVarArgCallsArgs(this.datastore.put(ArgumentMatchers.<FullEntity[]>any()),
+				Collections.singletonList(this.e1));
+
 		this.datastoreTemplate.save(this.ob2);
+
+		assertArgs(callsArgs, new MapBuilder<List, Integer>()
+				.put(Arrays.asList(Entity.newBuilder(this.key2).build()), 1).buildModifiable());
+
 	}
 
 	@Test
@@ -463,23 +532,41 @@ public class DatastoreTemplateTests {
 		ChildEntity childEntity = new ChildEntity();
 		childEntity.id = keyA;
 		when(this.objectToKeyFactory.getKeyFromObject(eq(childEntity), any())).thenReturn(keyA);
+		List<Object[]> callsArgs = gatherVarArgCallsArgs(this.datastore.put(ArgumentMatchers.<FullEntity[]>any()), Collections.singletonList(this.e1));
+
 		this.datastoreTemplate.save(childEntity, key0);
 
 		Entity writtenChildEntity = Entity.newBuilder(keyA).build();
-		verify(this.datastore, times(1)).put(eq(writtenChildEntity));
+
+		assertArgs(callsArgs, new MapBuilder<List, Integer>()
+				.put(Arrays.asList(writtenChildEntity), 1)
+				.buildModifiable());
 	}
 
 	@Test
 	public void saveAndAllocateIdTest() {
 		when(this.objectToKeyFactory.allocateKeyForObject(same(this.ob1), any()))
 				.thenReturn(this.key1);
-		when(this.datastore.put((FullEntity<?>) any())).thenReturn(this.e1);
+		List<Object[]> callsArgs = gatherVarArgCallsArgs(this.datastore.put(ArgumentMatchers.<FullEntity[]>any()),
+				Collections.singletonList(this.e1));
 		assertThat(this.datastoreTemplate.save(this.ob1) instanceof TestEntity).isTrue();
 		Entity writtenEntity1 = Entity.newBuilder(this.key1)
 				.set("singularReference", this.childKey4)
 				.set("multipleReference", Arrays.asList(KeyValue.of(this.childKey5), KeyValue.of(this.childKey6)))
 				.build();
-		verify(this.datastore, times(1)).put(eq(writtenEntity1));
+
+		Entity writtenChildEntity2 = Entity.newBuilder(this.childKey2).build();
+		Entity writtenChildEntity3 = Entity.newBuilder(this.childKey3).build();
+		Entity writtenChildEntity4 = Entity.newBuilder(this.childKey4).build();
+		Entity writtenChildEntity5 = Entity.newBuilder(this.childKey5).build();
+		Entity writtenChildEntity6 = Entity.newBuilder(this.childKey6).build();
+
+		assertArgs(callsArgs, new MapBuilder<List, Integer>()
+				.put(Arrays.asList(writtenEntity1), 1)
+				.put(Arrays.asList(writtenChildEntity2, writtenChildEntity3), 1)
+				.put(Arrays.asList(writtenChildEntity5, writtenChildEntity6), 1)
+				.put(Arrays.asList(writtenChildEntity4), 1)
+				.buildModifiable());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
 	}
 
@@ -490,8 +577,8 @@ public class DatastoreTemplateTests {
 		when(this.objectToKeyFactory.getKeyFromObject(same(this.ob2), any()))
 				.thenReturn(this.key2);
 
-		when(this.datastore.put(any(), any()))
-				.thenReturn(Arrays.asList(this.e1, this.e2));
+		List<Object[]> callsArgs = gatherVarArgCallsArgs(this.datastore.put(ArgumentMatchers.<FullEntity[]>any()),
+				Collections.singletonList(this.e1));
 
 		this.datastoreTemplate.saveAll(Arrays.asList(this.ob1, this.ob2));
 		Entity writtenEntity1 = Entity.newBuilder(this.key1)
@@ -499,22 +586,21 @@ public class DatastoreTemplateTests {
 				.set("multipleReference", Arrays.asList(KeyValue.of(this.childKey5), KeyValue.of(this.childKey6)))
 				.build();
 		Entity writtenEntity2 = Entity.newBuilder(this.key2).build();
-		verify(this.datastore, times(1)).put(eq(writtenEntity1), eq(writtenEntity2));
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob1), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.ob2), notNull());
 
 		Entity writtenChildEntity2 = Entity.newBuilder(this.childKey2).build();
 		Entity writtenChildEntity3 = Entity.newBuilder(this.childKey3).build();
-		verify(this.datastore, times(1)).put(eq(writtenChildEntity2), eq(writtenChildEntity3));
-
 		Entity writtenChildEntity4 = Entity.newBuilder(this.childKey4).build();
-		verify(this.datastore, times(1)).put(eq(writtenChildEntity4));
-
-
 		Entity writtenChildEntity5 = Entity.newBuilder(this.childKey5).build();
 		Entity writtenChildEntity6 = Entity.newBuilder(this.childKey6).build();
-		verify(this.datastore, times(1)).put(eq(writtenChildEntity2), eq(writtenChildEntity3));
-		verify(this.datastore, times(1)).put(eq(writtenChildEntity5), eq(writtenChildEntity6));
+
+		assertArgs(callsArgs, new MapBuilder<List, Integer>()
+				.put(Arrays.asList(writtenEntity1, writtenEntity2), 1)
+				.put(Arrays.asList(writtenChildEntity2, writtenChildEntity3), 1)
+				.put(Arrays.asList(writtenChildEntity5, writtenChildEntity6), 1)
+				.put(Arrays.asList(writtenChildEntity4), 1)
+				.buildModifiable());
 
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity2), notNull());
 		verify(this.datastoreEntityConverter, times(1)).write(same(this.childEntity3), notNull());
@@ -873,5 +959,13 @@ public class DatastoreTemplateTests {
 
 		@Field(name = "int_field")
 		int intField;
+	}
+
+	class ReferenceTestEntity {
+		@Id
+		Long id;
+
+		@Reference
+		ReferenceTestEntity sibling;
 	}
 }

@@ -116,7 +116,7 @@ public class DatastoreTransactionTemplateTests {
 		verify(this.datastore, times(1)).newTransaction();
 		verify(this.transaction, times(1)).commit();
 		verify(this.transaction, times(0)).rollback();
-		verify(this.transaction, times(3)).put((FullEntity<?>) any());
+		verify(this.transaction, times(3)).put((FullEntity<?>[]) any());
 		verify(this.transaction, times(1)).fetch((Key[]) any());
 		verify(this.transaction, times(1)).delete(any());
 	}
