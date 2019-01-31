@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.integration.inbound;
 
-import java.io.UnsupportedEncodingException;
 import java.util.function.Consumer;
 
 import com.google.pubsub.v1.PubsubMessage;
