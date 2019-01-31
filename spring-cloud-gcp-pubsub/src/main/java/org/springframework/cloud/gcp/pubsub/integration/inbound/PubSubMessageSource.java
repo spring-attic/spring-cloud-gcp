@@ -29,6 +29,7 @@ import org.springframework.integration.IntegrationMessageHeaderAccessor;
 import org.springframework.integration.endpoint.AbstractFetchLimitingMessageSource;
 import org.springframework.integration.endpoint.AbstractMessageSource;
 import org.springframework.integration.mapping.HeaderMapper;
+import org.springframework.integration.support.AbstractIntegrationMessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.util.Assert;
 
@@ -50,7 +51,7 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
-	private Class payloadType = byte[].class;
+	private Class<?> payloadType = byte[].class;
 
 	private boolean blockOnPull;
 
@@ -69,7 +70,7 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 		this.ackMode = ackMode;
 	}
 
-	public void setPayloadType(Class payloadType) {
+	public void setPayloadType(Class<?> payloadType) {
 		Assert.notNull(payloadType, "The payload type cannot be null.");
 		this.payloadType = payloadType;
 	}
@@ -81,9 +82,10 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 
 	/**
 	 * Instructs synchronous pull to wait until at least one message is available.
+	 * @param blockOnPull whether to block until a message is available
 	 */
-	public void setBlockOnPull() {
-		this.blockOnPull = true;
+	public void setBlockOnPull(boolean blockOnPull) {
+		this.blockOnPull = blockOnPull;
 	}
 
 	/**
@@ -98,8 +100,8 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 		if (this.cachedMessages.isEmpty()) {
 			Integer maxMessages = (fetchSize > 0) ? fetchSize : 1;
 
-			List<ConvertedAcknowledgeablePubsubMessage> messages
-					= this.pubSubSubscriberOperations.pullAndConvert(this.subscriptionName, maxMessages, !this.blockOnPull, this.payloadType);
+			List<? extends ConvertedAcknowledgeablePubsubMessage<?>> messages = this.pubSubSubscriberOperations
+					.pullAndConvert(this.subscriptionName, maxMessages, !this.blockOnPull, this.payloadType);
 			if (messages.isEmpty()) {
 				return null;
 			}
@@ -127,7 +129,10 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 	 * @param message source Pub/Sub message.
 	 * @return {@link Message} wrapper containing the original message.
 	 */
-	private Message<Object> processMessage(ConvertedAcknowledgeablePubsubMessage message) {
+	private AbstractIntegrationMessageBuilder<?> processMessage(ConvertedAcknowledgeablePubsubMessage<?> message) {
+		if (message == null) {
+			return null;
+		}
 
 		Map<String, Object> messageHeaders =
 				this.headerMapper.toHeaders(message.getPubsubMessage().getAttributesMap());
@@ -138,8 +143,7 @@ public class PubSubMessageSource extends AbstractFetchLimitingMessageSource<Obje
 
 		return getMessageBuilderFactory()
 				.withPayload(message.getPayload())
-				.copyHeaders(messageHeaders)
-				.build();
+				.copyHeaders(messageHeaders);
 	}
 
 }

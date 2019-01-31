@@ -135,8 +135,11 @@ public MessageSource<Object> pubsubAdapter(PubSubTemplate pubSubTemplate) {
 }
 ----
 
-The `MessageSource` attaches a `AcknowledgeablePubSubMessage` object to the `Message` headers.
-Users can extract the `AcknowledgeablePubSubMessage` using the `GcpPubSubHeaders.ORIGINAL_MESSAGE` key and use it to (n)ack a message.
+The `@InboundChannelAdapter` annotation above ensures that the configured `MessageSource` is polled for messages, which are then available for manipulation with any Spring Integration mechanism on the `pubsubInputChannel` message channel.
+For example, messages can be retrieved in a method annotated with `@ServiceActivator`, as seen below.
+
+For additional flexibility, `PubSubMessageSource` attaches an `AcknowledgeablePubSubMessage` object to the `GcpPubSubHeaders.ORIGINAL_MESSAGE` message header.
+The object can be used for manually (n)acking the message.
 
 [source,java]
 ----
@@ -149,7 +152,8 @@ public void messageReceiver(String payload,
 }
 ----
 
-NOTE: `AcknowledgeablePubSubMessage` objects acquired by synchronous pull are aware of their own acknowledgement IDs. Streaming pull does not expose this information due to limitations of the underlying API, and returns `BasicAcknowledgeablePubsubMessage` objects that allow acking/nacking individual messages, but not extracking acknowledgement IDs for future processing.
+NOTE: `AcknowledgeablePubSubMessage` objects acquired by synchronous pull are aware of their own acknowledgement IDs.
+Streaming pull does not expose this information due to limitations of the underlying API, and returns `BasicAcknowledgeablePubsubMessage` objects that allow acking/nacking individual messages, but not extracting acknowledgement IDs for future processing.
 
 ==== Outbound channel adapter
 
