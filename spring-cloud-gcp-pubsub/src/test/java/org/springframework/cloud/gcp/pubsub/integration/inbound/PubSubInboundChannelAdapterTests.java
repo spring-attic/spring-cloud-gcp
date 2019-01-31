@@ -86,7 +86,7 @@ public class PubSubInboundChannelAdapterTests {
 	public ExpectedException expectedException = ExpectedException.none();
 
 	@Before
-	public void setUp() throws UnsupportedEncodingException {
+	public void setUp() {
 		this.pubSubOperations = mock(PubSubOperations.class);
 		this.pubSubSubscriberOperations = mock(PubSubSubscriberOperations.class);
 		this.messageChannel = mock(MessageChannel.class);
