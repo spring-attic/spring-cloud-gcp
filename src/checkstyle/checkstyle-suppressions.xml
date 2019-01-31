@@ -5,4 +5,5 @@
 <suppressions>
     <suppress files="[\\/]spring-cloud-gcp-samples[\\/]" checks="HideUtilityClassConstructorCheck" />
     <suppress files="package\-info\.java" checks="RegexpHeader" />
+    <suppress files=".*" checks="LineLength" />
 </suppressions>
