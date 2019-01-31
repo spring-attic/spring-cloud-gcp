@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.springframework.cloud.gcp.pubsub.integration.inbound;
 
-import java.io.UnsupportedEncodingException;
 import java.util.function.Consumer;
 
 import com.google.pubsub.v1.PubsubMessage;
@@ -86,7 +85,7 @@ public class PubSubInboundChannelAdapterTests {
 	public ExpectedException expectedException = ExpectedException.none();
 
 	@Before
-	public void setUp() throws UnsupportedEncodingException {
+	public void setUp() {
 		this.pubSubOperations = mock(PubSubOperations.class);
 		this.pubSubSubscriberOperations = mock(PubSubSubscriberOperations.class);
 		this.messageChannel = mock(MessageChannel.class);

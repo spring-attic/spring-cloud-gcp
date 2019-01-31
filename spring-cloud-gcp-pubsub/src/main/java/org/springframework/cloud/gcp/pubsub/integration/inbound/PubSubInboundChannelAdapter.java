@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 
 	private HeaderMapper<Map<String, String>> headerMapper = new PubSubHeaderMapper();
 
-	private Class payloadType = byte[].class;
+	private Class<?> payloadType = byte[].class;
 
 	public PubSubInboundChannelAdapter(PubSubSubscriberOperations pubSubSubscriberOperations, String subscriptionName) {
 		Assert.notNull(pubSubSubscriberOperations, "Pub/Sub subscriber template can't be null.");
@@ -74,7 +74,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 		this.ackMode = ackMode;
 	}
 
-	public Class getPayloadType() {
+	public Class<?> getPayloadType() {
 		return this.payloadType;
 	}
 
@@ -87,7 +87,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	 * @param payloadType the type of the payload of the {@link org.springframework.messaging.Message} produced by the
 	 * 				adapter. Cannot be set to null.
 	 */
-	public void setPayloadType(Class payloadType) {
+	public void setPayloadType(Class<?> payloadType) {
 		Assert.notNull(payloadType, "The payload type cannot be null.");
 		this.payloadType = payloadType;
 	}
@@ -120,7 +120,7 @@ public class PubSubInboundChannelAdapter extends MessageProducerSupport {
 	}
 
 	@SuppressWarnings("deprecation")
-	private void consumeMessage(ConvertedBasicAcknowledgeablePubsubMessage message) {
+	private void consumeMessage(ConvertedBasicAcknowledgeablePubsubMessage<?> message) {
 		Map<String, Object> messageHeaders =
 				this.headerMapper.toHeaders(message.getPubsubMessage().getAttributesMap());
 
