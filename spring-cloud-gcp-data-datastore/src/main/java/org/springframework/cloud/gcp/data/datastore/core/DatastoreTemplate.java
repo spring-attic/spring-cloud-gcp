@@ -539,8 +539,7 @@ public class DatastoreTemplate implements DatastoreOperations {
 								referencedType);
 			}
 			else {
-				Key key = entity.getKey(fieldName);
-				referenced = findById(key, referencePersistentProperty.getType(), context);
+				referenced = findById(entity.getKey(fieldName), referencePersistentProperty.getType(), context);
 			}
 			return referenced;
 		}
