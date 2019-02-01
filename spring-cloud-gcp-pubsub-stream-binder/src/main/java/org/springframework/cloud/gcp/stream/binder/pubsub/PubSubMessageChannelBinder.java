@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,8 +111,11 @@ public class PubSubMessageChannelBinder
 	}
 
 	@Override
-	protected PolledConsumerResources createPolledConsumerResources(String name, String group, ConsumerDestination destination, ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties) {
-		return new PolledConsumerResources(new PubSubMessageSource(this.pubSubTemplate, destination.getName()),
-				registerErrorInfrastructure(destination, group, consumerProperties, true));
+	protected PolledConsumerResources createPolledConsumerResources(String name, String group, ConsumerDestination destination,
+			ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties) {
+		// Disable retry, to avoid triggering error infrastructure access
+		// in AbstractMessageChannelBinder.bindPollableConsumer().
+		consumerProperties.setMaxAttempts(1);
+		return new PolledConsumerResources(new PubSubMessageSource(this.pubSubTemplate, destination.getName()),null);
 	}
 }
