@@ -112,7 +112,6 @@ public class PubSubMessageChannelBinder
 
 	@Override
 	protected PolledConsumerResources createPolledConsumerResources(String name, String group, ConsumerDestination destination, ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties) {
-		System.out.println("Creating PolledConsumer for destinatino " + destination.getName());
 		return new PolledConsumerResources(new PubSubMessageSource(this.pubSubTemplate, destination.getName()),
 				registerErrorInfrastructure(destination, group, consumerProperties, true));
 	}
