@@ -18,13 +18,17 @@ package com.example;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Sample application for a binder.
  *
  * @author Elena Felder
+ *
+ * @since 1.2
  */
 @SpringBootApplication
+@EnableScheduling
 public class PubSubBinderApplication {
 
 	public static void main(String[] args) {

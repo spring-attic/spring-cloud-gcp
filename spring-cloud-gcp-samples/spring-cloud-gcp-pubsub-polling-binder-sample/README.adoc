@@ -26,4 +26,4 @@ Alternatively, you can manually create the topic and subscription from the https
 
 6. Verify in your app's logs that a similar message was posted:
 +
-`New message received from [USERNAME] at [TIME_MESSAGE_SENT]: [MESSAGE]`
+`New message received from [USERNAME] via polling: [MESSAGE] at [TIME_MESSAGE_SENT]`
