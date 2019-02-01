@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 the original author or authors.
+ * Copyright 2017-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,12 @@
 
 package com.example;
 
-import java.util.List;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.UUID;
 
+import org.apache.commons.io.output.TeeOutputStream;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,9 +29,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
-import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
-import org.springframework.cloud.gcp.pubsub.support.BasicAcknowledgeablePubsubMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
@@ -39,21 +39,25 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
+ * These tests verifies that the pubsub-polling-binder-sample works.
+ *
  * @author Dmitry Solomakha
  *
  * @since 1.1
  */
-
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
+		"spring.cloud.stream.bindings.input.destination=sub1",
+		"spring.cloud.stream.bindings.output.destination=sub1" })
 @DirtiesContext
-public class SenderIntegrationTest {
+public class SampleAppIntegrationTest {
 
 	@Autowired
 	private TestRestTemplate restTemplate;
 
-	@Autowired
-	private PubSubTemplate pubSubTemplate;
+	private static PrintStream systemOut;
+
+	private static ByteArrayOutputStream baos;
 
 	@BeforeClass
 	public static void prepare() {
@@ -61,6 +65,16 @@ public class SenderIntegrationTest {
 				"PUB/SUB-sample integration tests are disabled. Please use '-Dit.pubsub=true' "
 						+ "to enable them. ",
 				System.getProperty("it.pubsub"), is("true"));
+
+		systemOut = System.out;
+		baos = new ByteArrayOutputStream();
+		TeeOutputStream out = new TeeOutputStream(systemOut, baos);
+		System.setOut(new PrintStream(out));
+	}
+
+	@AfterClass
+	public static void bringBack() {
+		System.setOut(systemOut);
 	}
 
 	@Test
@@ -68,26 +82,19 @@ public class SenderIntegrationTest {
 		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 		String message = "test message " + UUID.randomUUID();
 
-		map.add("message", message);
-		map.add("times", 1);
+		map.add("messageBody", message);
+		map.add("username", "testUserName");
 
-		this.restTemplate.postForObject("/postMessage", map, String.class);
-
-		List<AcknowledgeablePubsubMessage> messages;
+		this.restTemplate.postForObject("/newMessage", map, String.class);
 
 		boolean messageReceived = false;
 		for (int i = 0; i < 100; i++) {
-			messages = this.pubSubTemplate.pull("exampleSubscription", 10, true);
-			messages.forEach(BasicAcknowledgeablePubsubMessage::ack);
-
-			if (messages.stream()
-					.anyMatch(m -> m.getPubsubMessage().getData().toStringUtf8().startsWith(message))) {
+			if (baos.toString().contains("New message received from testUserName: " + message + " at ")) {
 				messageReceived = true;
 				break;
 			}
 			Thread.sleep(100);
 		}
 		assertThat(messageReceived).isTrue();
-
 	}
 }

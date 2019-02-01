@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.stream.binder.pubsub;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundChannelAdapter;
+import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubMessageSource;
 import org.springframework.cloud.gcp.pubsub.integration.outbound.PubSubMessageHandler;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingProperties;
@@ -107,5 +108,12 @@ public class PubSubMessageChannelBinder
 			ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties) {
 		super.afterUnbindConsumer(destination, group, consumerProperties);
 		this.pubSubChannelProvisioner.afterUnbindConsumer(destination);
+	}
+
+	@Override
+	protected PolledConsumerResources createPolledConsumerResources(String name, String group, ConsumerDestination destination, ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties) {
+		System.out.println("Creating PolledConsumer for destinatino " + destination.getName());
+		return new PolledConsumerResources(new PubSubMessageSource(this.pubSubTemplate, destination.getName()),
+				registerErrorInfrastructure(destination, group, consumerProperties, true));
 	}
 }

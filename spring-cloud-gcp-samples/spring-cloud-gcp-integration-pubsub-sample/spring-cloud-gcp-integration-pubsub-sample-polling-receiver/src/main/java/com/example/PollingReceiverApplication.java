@@ -62,7 +62,8 @@ public class PollingReceiverApplication {
 
 	@ServiceActivator(inputChannel = "pubsubInputChannel")
 	public void messageReceiver(String payload,
-			@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) AcknowledgeablePubsubMessage message) {
+			@Header(GcpPubSubHeaders.ORIGINAL_MESSAGE) AcknowledgeablePubsubMessage message)
+				throws InterruptedException {
 		LOGGER.info("Message arrived by Synchronous Pull! Payload: " + payload);
 		message.ack();
 	}
