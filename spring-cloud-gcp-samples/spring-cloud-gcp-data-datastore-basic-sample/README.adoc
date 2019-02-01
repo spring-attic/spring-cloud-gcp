@@ -2,7 +2,7 @@
 
 This code sample demonstrates how to read and write POJOs from Google Cloud Datastore using the SpringData Cloud Datastore module link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-datastore[Spring Cloud GCP Cloud Datastore Starter].
 
-= Running the example
+== Running the example
 
 . Create a new Cloud Datastore database in your GCP project if this has not already been done to allow Cloud Datastore to create and store entities.
 

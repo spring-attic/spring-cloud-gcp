@@ -53,6 +53,7 @@ NOTE: Core properties, as described in <<spring-cloud-gcp-core,Spring Cloud GCP 
 In other words, if `spring.application.name` is `myapp` and `spring.profiles.active` is `prod`, the configuration should be called `myapp_prod`.
 +
 In order to do that, you should have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, own a Google Cloud Project and run the following command:
++
 [source]
 ----
 gcloud init # if this is your first Google Cloud SDK run.
@@ -94,16 +95,18 @@ When your Spring application starts, the `queueSize` field value will be set to 
 http://cloud.spring.io/spring-cloud-static/docs/1.0.x/spring-cloud.html#_endpoints[Spring Cloud] provides support to have configuration parameters be reloadable with the POST request to `/actuator/refresh` endpoint.
 
 1.  Add the Spring Boot Actuator dependency:
-
++
 Maven coordinates:
++
 ----
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-actuator</artifactId>
 </dependency>
 ----
-
++
 Gradle coordinates:
++
 [source,subs="normal"]
 ----
 dependencies {
