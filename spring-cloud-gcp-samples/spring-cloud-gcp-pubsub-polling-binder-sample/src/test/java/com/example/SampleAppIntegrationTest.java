@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,9 +41,9 @@ import static org.junit.Assume.assumeThat;
 /**
  * These tests verifies that the pubsub-polling-binder-sample works.
  *
- * @author Dmitry Solomakha
+ * @author Elena Felder
  *
- * @since 1.1
+ * @since 1.2
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
@@ -89,7 +89,7 @@ public class SampleAppIntegrationTest {
 
 		boolean messageReceived = false;
 		for (int i = 0; i < 100; i++) {
-			if (baos.toString().contains("New message received from testUserName: " + message + " at ")) {
+			if (baos.toString().contains("New message received from testUserName via polling: " + message + " at ")) {
 				messageReceived = true;
 				break;
 			}

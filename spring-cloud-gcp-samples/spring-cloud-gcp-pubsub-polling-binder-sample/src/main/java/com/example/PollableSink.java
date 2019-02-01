@@ -23,7 +23,8 @@ import org.springframework.cloud.stream.binder.PollableMessageSource;
  * Binds "input" stream to a pollable channel.
  *
  * @author Elena Felder
- * @since 1.1
+ *
+ * @since 1.2
  */
 public interface PollableSink {
 
