@@ -19,8 +19,11 @@ package com.example;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.output.TeeOutputStream;
+import org.awaitility.Awaitility;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -87,14 +90,10 @@ public class SampleAppIntegrationTest {
 
 		this.restTemplate.postForObject("/newMessage", map, String.class);
 
-		boolean messageReceived = false;
-		for (int i = 0; i < 100; i++) {
-			if (baos.toString().contains("New message received from testUserName via polling: " + message + " at ")) {
-				messageReceived = true;
-				break;
-			}
-			Thread.sleep(100);
-		}
-		assertThat(messageReceived).isTrue();
+		Callable<Boolean> logCheck = () -> baos.toString().contains("New message received from testUserName via polling: " + message + " at ");
+		Awaitility.await().atMost(10, TimeUnit.SECONDS)
+				.until(logCheck);
+
+		assertThat(logCheck.call()).isTrue();
 	}
 }

@@ -27,7 +27,6 @@ import org.springframework.cloud.stream.binder.PollableMessageSource;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
-import org.springframework.messaging.MessagingException;
 import org.springframework.scheduling.annotation.Scheduled;
 
 /**
@@ -55,7 +54,7 @@ public class SinkExample {
 
 	static class PolledMessageHandler implements MessageHandler {
 		@Override
-		public void handleMessage(Message<?> message) throws MessagingException {
+		public void handleMessage(Message<?> message) {
 			AcknowledgeablePubsubMessage ackableMessage = (AcknowledgeablePubsubMessage) message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE);
 			ackableMessage.ack();
 

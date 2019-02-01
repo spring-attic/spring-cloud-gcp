@@ -46,23 +46,13 @@ public class UserMessage {
 		return this.body;
 	}
 
-	public void setBody(String body) {
-		this.body = body;
-	}
 
 	public String getUsername() {
 		return this.username;
-	}
-
-	public void setUsername(String username) {
-		this.username = username;
 	}
 
 	public LocalDateTime getCreatedAt() {
 		return this.createdAt;
 	}
 
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
-	}
 }

@@ -27,7 +27,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * An example source for the sample app.
+ * A sample source application that constructs a {@link UserMessage} object based on a
+ * HTTP request, and sends it to a PubSub topic.
  *
  * @author Elena Felder
  *
@@ -43,6 +44,7 @@ public class SourceExample {
 	@PostMapping("/newMessage")
 	public UserMessage sendMessage(@RequestParam("messageBody") String messageBody,
 			@RequestParam("username") String username) {
+
 		UserMessage userMessage = new UserMessage(messageBody, username, LocalDateTime.now());
 		this.source.output().send(new GenericMessage<>(userMessage));
 		return userMessage;
