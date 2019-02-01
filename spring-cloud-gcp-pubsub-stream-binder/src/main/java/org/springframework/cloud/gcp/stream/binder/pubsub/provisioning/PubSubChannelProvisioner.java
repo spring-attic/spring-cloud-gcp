@@ -74,7 +74,6 @@ public class PubSubChannelProvisioner
 
 		String subscriptionName;
 		Subscription subscription;
-		System.out.println("*************** provisioning consumer; Topic name: " + topicName + "; group = " + group + "; props = " + properties);
 		if (StringUtils.hasText(group)) {
 			// Use <topicName>.<group> as subscription name
 			subscriptionName = topicName + "." + group;
