@@ -39,6 +39,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 /**
+ * Integration test for the sender sample app.
+ *
  * @author Dmitry Solomakha
  *
  * @since 1.1
@@ -81,7 +83,7 @@ public class SenderIntegrationTest {
 			messages.forEach(BasicAcknowledgeablePubsubMessage::ack);
 
 			if (messages.stream()
-					.anyMatch(m -> m.getPubsubMessage().getData().toStringUtf8().startsWith(message))) {
+					.anyMatch((m) -> m.getPubsubMessage().getData().toStringUtf8().startsWith(message))) {
 				messageReceived = true;
 				break;
 			}

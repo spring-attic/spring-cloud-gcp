@@ -19,6 +19,7 @@ package org.springframework.cloud.gcp.pubsub.integration.inbound;
 import org.springframework.cloud.gcp.pubsub.integration.AckMode;
 import org.springframework.cloud.gcp.pubsub.support.AcknowledgeablePubsubMessage;
 import org.springframework.integration.acks.AcknowledgmentCallback;
+import org.springframework.util.Assert;
 
 /**
  * Pub/Sub specific implementation of {@link AcknowledgmentCallback}.
@@ -34,13 +35,15 @@ import org.springframework.integration.acks.AcknowledgmentCallback;
  */
 public class PubSubAcknowledgmentCallback implements AcknowledgmentCallback {
 
-	private AcknowledgeablePubsubMessage message;
+	private final AcknowledgeablePubsubMessage message;
 
-	private AckMode ackMode;
+	private final AckMode ackMode;
 
 	private boolean acknowledged;
 
 	public PubSubAcknowledgmentCallback(AcknowledgeablePubsubMessage message, AckMode ackMode) {
+		Assert.notNull(message, "message to be acknowledged cannot be null");
+		Assert.notNull(ackMode, "ackMode cannot be null");
 		this.message = message;
 		this.ackMode = ackMode;
 	}
