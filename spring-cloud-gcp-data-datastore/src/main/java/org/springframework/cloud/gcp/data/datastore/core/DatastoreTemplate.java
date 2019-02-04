@@ -131,8 +131,8 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	private <T> T save(T instance, Set<Key> persisted, Key... ancestors) {
-		Iterable<T> iterable = saveAll(Collections.singletonList(instance), persisted, ancestors);
-		return iterable.iterator().next();
+		saveAll(Collections.singletonList(instance), persisted, ancestors);
+		return instance;
 	}
 
 	@Override
@@ -141,14 +141,13 @@ public class DatastoreTemplate implements DatastoreOperations {
 	}
 
 	private <T> Iterable<T> saveAll(Iterable<T> entities, Set<Key> persisted, Key... ancestors) {
-		List<Entity> entitiesForSave = new ArrayList<>();
+		List<Entity> entitiesForSave = new LinkedList<>();
 		for (T entity : entities) {
 			Key key = getKey(entity, true, ancestors);
-			if (persisted.contains(key)) {
-				continue;
+			if (!persisted.contains(key)) {
+				persisted.add(key);
+				entitiesForSave.add(convertToEntityForSave(entity, persisted, ancestors));
 			}
-			persisted.add(key);
-			entitiesForSave.add(convertToEntityForSave(entity, persisted, ancestors));
 		}
 		if (!entitiesForSave.isEmpty()) {
 			getDatastoreReadWriter().put(entitiesForSave.toArray(new Entity[0]));
