@@ -51,4 +51,8 @@ public final class MapBuilder<K, V> {
 		return Collections.unmodifiableMap(this.map);
 	}
 
+	public Map<K, V> buildModifiable() {
+		return this.map;
+	}
+
 }

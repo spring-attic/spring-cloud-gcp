@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.gcp.data.datastore.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.FullEntity;
 import com.google.cloud.datastore.Key;
@@ -44,6 +47,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -92,6 +96,18 @@ public class DatastoreTransactionTemplateTests {
 		when(this.objectToKeyFactory.getKeyFromObject(any(), any())).thenReturn(this.key);
 		when(this.objectToKeyFactory.allocateKeyForObject(any(), any()))
 				.thenReturn(this.key);
+
+		doAnswer((invocation) -> {
+			List result = new ArrayList<>();
+			result.add(null);
+			return result;
+		}).when(this.transaction).fetch((Key[]) any());
+
+		doAnswer((invocation) -> {
+			List result = new ArrayList<>();
+			result.add(null);
+			return result;
+		}).when(this.datastore).fetch((Key[]) any());
 	}
 
 	@Test
@@ -100,8 +116,8 @@ public class DatastoreTransactionTemplateTests {
 		verify(this.datastore, times(1)).newTransaction();
 		verify(this.transaction, times(1)).commit();
 		verify(this.transaction, times(0)).rollback();
-		verify(this.transaction, times(3)).put((FullEntity<?>) any());
-		verify(this.transaction, times(1)).get((Key[]) any());
+		verify(this.transaction, times(3)).put((FullEntity<?>[]) any());
+		verify(this.transaction, times(1)).fetch((Key[]) any());
 		verify(this.transaction, times(1)).delete(any());
 	}
 
@@ -128,7 +144,7 @@ public class DatastoreTransactionTemplateTests {
 		verify(this.transaction, never()).commit();
 		verify(this.transaction, never()).rollback();
 		verify(this.transaction, never()).put((FullEntity<?>) any());
-		verify(this.transaction, never()).get((Key[]) any());
+		verify(this.transaction, never()).fetch((Key[]) any());
 		verify(this.transaction, never()).delete(any());
 		verify(this.datastore, never()).newTransaction();
 	}

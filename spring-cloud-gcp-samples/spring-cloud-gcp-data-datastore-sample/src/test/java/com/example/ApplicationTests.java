@@ -107,7 +107,7 @@ public class ApplicationTests {
 				.as("Verify DESC order")
 				.containsExactly(scottSmith, maryJane, johnDoe);
 
-		sendRequest("/singers", "{\"firstName\": \"Frodo\", \"lastName\": \"Baggins\"}",
+		sendRequest("/singers", "{\"singerId\": \"frodo\", \"firstName\": \"Frodo\", \"lastName\": \"Baggins\"}",
 				HttpMethod.POST);
 
 		Awaitility.await().atMost(15, TimeUnit.SECONDS)
