@@ -216,6 +216,23 @@ public class PubSubMessageSourceTests {
 		verify(this.msg1).ack();
 	}
 
+	@Test
+	public void doReceive_autoAckModeIsDefault() {
+		PubSubMessageSource pubSubMessageSource = new PubSubMessageSource(
+				this.mockPubSubSubscriberOperations, "sub1");
+		pubSubMessageSource.setMaxFetchSize(1);
+		pubSubMessageSource.setPayloadType(String.class);
+
+		MessageSourcePollingTemplate poller = new MessageSourcePollingTemplate(pubSubMessageSource);
+		poller.poll((message) -> {
+			assertThat(message).isNotNull();
+
+			assertThat(message.getPayload()).isEqualTo("msg1");
+			assertThat(message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE)).isEqualTo(this.msg1);
+		});
+
+		verify(this.msg1).ack();
+	}
 
 	@Test
 	public void doReceive_autoModeNacksAutomatically() {
@@ -273,4 +290,5 @@ public class PubSubMessageSourceTests {
 		verify(this.mockPubSubSubscriberOperations)
 				.pullAndConvert("sub1", 1, false, String.class);
 	}
+
 }
