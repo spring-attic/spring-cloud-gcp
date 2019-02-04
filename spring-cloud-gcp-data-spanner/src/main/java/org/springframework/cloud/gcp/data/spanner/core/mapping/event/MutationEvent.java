@@ -17,6 +17,7 @@
 package org.springframework.cloud.gcp.data.spanner.core.mapping.event;
 
 import java.util.List;
+import java.util.Objects;
 
 import com.google.cloud.spanner.Mutation;
 
@@ -56,5 +57,23 @@ public class MutationEvent extends ApplicationEvent {
 	 */
 	public Iterable getTargetEntities() {
 		return this.targetEntities;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		MutationEvent that = (MutationEvent) o;
+		return getMutations().equals(that.getMutations())
+				&& Objects.equals(getTargetEntities(), that.getTargetEntities());
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(getMutations().hashCode(), getTargetEntities());
 	}
 }
