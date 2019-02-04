@@ -54,7 +54,9 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterExecuteDmlEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeExecuteDmlEvent;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
 import org.springframework.context.ApplicationEvent;
@@ -280,26 +282,38 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	@Override
 	public void delete(Object entity) {
-		applyMutations(Collections.singletonList(this.mutationFactory.delete(entity)));
+		List<Mutation> mutations = Collections.singletonList(this.mutationFactory.delete(entity));
+		Iterable entities = Collections.singletonList(entity);
+		maybeEmitEvent(new BeforeDeleteEvent(mutations, entities, null, null));
+		applyMutations(mutations);
+		maybeEmitEvent(new AfterDeleteEvent(mutations, entities, null, null));
 	}
 
 	@Override
 	public void deleteAll(Iterable objects) {
-		applyMutations(
-				(Collection<Mutation>) StreamSupport.stream(objects.spliterator(), false)
-						.map(this.mutationFactory::delete).collect(Collectors.toList()));
+		List<Mutation> mutations = (List<Mutation>) StreamSupport.stream(objects.spliterator(), false)
+				.map(this.mutationFactory::delete).collect(Collectors.toList());
+		maybeEmitEvent(new BeforeDeleteEvent(mutations, objects, null, null));
+		applyMutations(mutations);
+		maybeEmitEvent(new AfterDeleteEvent(mutations, objects, null, null));
 	}
 
 	@Override
 	public void delete(Class entityClass, Key key) {
-		applyMutations(
-				Collections.singletonList(this.mutationFactory.delete(entityClass, key)));
+		List<Mutation> mutations = Collections.singletonList(this.mutationFactory.delete(entityClass, key));
+		KeySet keys = KeySet.newBuilder().addKey(key).build();
+		maybeEmitEvent(new BeforeDeleteEvent(mutations, null, keys, entityClass));
+		applyMutations(mutations);
+		maybeEmitEvent(new AfterDeleteEvent(mutations, null, keys, entityClass));
 	}
 
 	@Override
 	public void delete(Class entityClass, KeySet keys) {
-		applyMutations(Collections
-				.singletonList(this.mutationFactory.delete(entityClass, keys)));
+		List<Mutation> mutations = Collections
+				.singletonList(this.mutationFactory.delete(entityClass, keys));
+		maybeEmitEvent(new BeforeDeleteEvent(mutations, null, keys, entityClass));
+		applyMutations(mutations);
+		maybeEmitEvent(new AfterDeleteEvent(mutations, null, keys, entityClass));
 	}
 
 	@Override
