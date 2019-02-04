@@ -6,8 +6,8 @@ Starter] to store and group logs by trace ID, with the Google Stackdriver Loggin
 
 == Setup & Configuration
 1. Create a Google Cloud Platform Project
-1. Have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, initialized and logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials].
-1. Check that the https://console.cloud.google.com/apis/library/logging.googleapis.com/?q=logging[Stackdriver Logging API is enabled].
+2. Have the https://cloud.google.com/sdk/[Google Cloud SDK] installed, initialized and logged in with https://developers.google.com/identity/protocols/application-default-credentials[application default credentials].
+3. Check that the https://console.cloud.google.com/apis/library/logging.googleapis.com/?q=logging[Stackdriver Logging API is enabled].
 
 == Running the Example
 Run the sample application from Maven:

@@ -3,7 +3,7 @@
 This code sample demonstrates how to read and write POJOs from Google Cloud Spanner using the Spring
 Data Cloud Spanner module link:../../spring-cloud-gcp-starters/spring-cloud-gcp-starter-data-spanner[Spring Cloud GCP Cloud Spanner Starter].
 
-= Running the example
+== Running the example
 
 
 . Create a new Cloud Spanner instance named "spring-demo".

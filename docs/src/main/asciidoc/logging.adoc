@@ -106,7 +106,7 @@ The following properties are available:
 a| If not set, default value is determined in the following order:
 
 1. `SPRING_CLOUD_GCP_LOGGING_PROJECT_ID` Environmental Variable.
-1. Value of `DefaultGcpProjectIdProvider.getProjectId()`
+2. Value of `DefaultGcpProjectIdProvider.getProjectId()`
 a| This is used to generate fully qualified Stackdriver Trace ID format: `projects/[PROJECT-ID]/traces/[TRACE-ID]`.
 
 This format is required to correlate trace between Stackdriver Trace and Stackdriver Logging.

@@ -21,9 +21,9 @@ Create a new subscription called `exampleSubscription` with all default paramete
 
 1. In separate terminal windows, start the `spring-cloud-gcp-spring-integration-pubsub-sample-sender` and `spring-cloud-gcp-spring-integration-pubsub-sample-receiver` applications with the `$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
 
-1. Go to http://localhost:8080, write a message in the text box and hit the `Submit` button.
+2. Go to http://localhost:8080, write a message in the text box and hit the `Submit` button.
 
-1. Verify that the receiver logged the message you wrote.
+3. Verify that the receiver logged the message you wrote.
 +
 `Message arrived! Payload: [message-entered]`
 
@@ -34,10 +34,10 @@ There is an alternative receiver application that demonstrates receiving message
 
 1. Start the `spring-cloud-gcp-spring-integration-pubsub-sample-sender` application with the `$ mvn spring-boot:run` command in the same folder as the apps' `pom.xml` files.
 
-1. Start the `spring-cloud-gcp-spring-integration-pubsub-sample-polling-receiver` sample app in a separate terminal window.
+2. Start the `spring-cloud-gcp-spring-integration-pubsub-sample-polling-receiver` sample app in a separate terminal window.
 
-1. Open http://localhost:8080, write a message in the text box,  update the "times" text box if you'd like multiple messages, and hit send.
+3. Open http://localhost:8080, write a message in the text box,  update the "times" text box if you'd like multiple messages, and hit send.
 
-1. Verify that the receiver logged the message(s):
+4. Verify that the receiver logged the message(s):
 +
 `Message arrived by Synchronous Pull! Payload: [message-entered] (0)`

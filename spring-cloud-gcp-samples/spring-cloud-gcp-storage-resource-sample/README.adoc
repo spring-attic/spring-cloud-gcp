@@ -5,7 +5,7 @@ Google Cloud Storage using the link:../../spring-cloud-gcp-starters/spring-cloud
 
 This content is also available in the https://codelabs.developers.google.com/codelabs/spring-cloud-gcp-gcs/index.html[Reading and Writing Files with Spring Resource Abstraction] codelab.
 
-= Running the example
+== Running the example
 
 1. Make sure that you have the Cloud SDK configured by following https://cloud.google.com/sdk/docs/[these instructions].
 

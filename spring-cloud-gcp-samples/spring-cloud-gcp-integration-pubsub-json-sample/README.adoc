@@ -14,12 +14,12 @@ Alternatively, if you have the https://cloud.google.com/sdk/[Google Cloud SDK] i
 3. Still in the same page, locate the newly created topic, click the button with the three vertical dots at the end of the topic's line and click "New subscription".
 Create a new subscription called `json-payload-sample-subscription` with all default parameters.
 
-3. In a terminal window, move into this directory (spring-cloud-gcp-integration-pubsub-json-sample) and run: `mvn spring-boot:run`.
+4. In a terminal window, move into this directory (spring-cloud-gcp-integration-pubsub-json-sample) and run: `mvn spring-boot:run`.
 
-4. Go to http://localhost:8080 and create a `Person` by filling out `Name` and `Age` and clicking submit.
+5. Go to http://localhost:8080 and create a `Person` by filling out `Name` and `Age` and clicking submit.
 In the backend, a Person object is created then serialized to JSON and sent to the Pub/Sub topic you created.
 The JSON payload is then received by the subscriber in the application which deserializes it and logs a message of the object that was received.
 
-5. Verify that the receiver logged the message you wrote.
+6. Verify that the receiver logged the message you wrote.
 +
 `Message arrived! Payload: Person{name='xxxxx' age=xx}`
