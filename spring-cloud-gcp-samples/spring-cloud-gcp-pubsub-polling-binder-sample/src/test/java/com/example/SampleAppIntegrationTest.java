@@ -90,7 +90,7 @@ public class SampleAppIntegrationTest {
 
 		this.restTemplate.postForObject("/newMessage", map, String.class);
 
-		Callable<Boolean> logCheck = () -> baos.toString().contains("New message received from testUserName via polling: " + message + " at ");
+		Callable<Boolean> logCheck = () -> baos.toString().contains("New message received from testUserName via polling: " + message);
 		Awaitility.await().atMost(10, TimeUnit.SECONDS)
 				.until(logCheck);
 
