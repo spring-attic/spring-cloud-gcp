@@ -56,7 +56,8 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistent
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterExecuteDmlEvent;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterLoadEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterQueryEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterReadEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeExecuteDmlEvent;
@@ -175,7 +176,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				persistentEntity.columns(), options), entityClass,
 				(options != null) ? options.getIncludeProperties() : null,
 				options != null && options.isAllowPartialRead());
-		maybeEmitEvent(new AfterLoadEvent(entities, null, options, null, keys));
+		maybeEmitEvent(new AfterReadEvent(entities, keys, options));
 		return entities;
 	}
 
@@ -188,7 +189,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				result.add(rowFunc.apply(resultSet.getCurrentRowAsStruct()));
 			}
 		}
-		maybeEmitEvent(new AfterLoadEvent(result, statement, null, options, null));
+		maybeEmitEvent(new AfterQueryEvent(result, statement, options));
 		return result;
 	}
 
@@ -196,7 +197,7 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 	public <T> List<T> query(Class<T> entityClass, Statement statement,
 			SpannerQueryOptions options) {
 		List<T> entitites = queryAndResolveChildren(entityClass, statement, options);
-		maybeEmitEvent(new AfterLoadEvent(entitites, statement, null, options, null));
+		maybeEmitEvent(new AfterQueryEvent(entitites, statement, options));
 		return entitites;
 	}
 

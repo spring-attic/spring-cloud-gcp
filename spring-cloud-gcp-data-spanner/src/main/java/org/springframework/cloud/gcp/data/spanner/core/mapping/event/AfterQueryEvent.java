@@ -18,48 +18,35 @@ package org.springframework.cloud.gcp.data.spanner.core.mapping.event;
 
 import java.util.Objects;
 
-import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Statement;
 
 import org.springframework.cloud.gcp.data.spanner.core.SpannerQueryOptions;
-import org.springframework.cloud.gcp.data.spanner.core.SpannerReadOptions;
-import org.springframework.context.ApplicationEvent;
 
 /**
- * This event is published immediately following a read operation on Cloud Spanner.
+ * This event is published immediately following a read-by-query operation on Cloud
+ * Spanner.
  *
  * @author Chengyuan Zhao
  */
-public class AfterLoadEvent extends ApplicationEvent {
+public class AfterQueryEvent extends LoadEvent {
 
 	private final Statement query;
 
-	private final SpannerReadOptions spannerReadOptions;
-
 	private final SpannerQueryOptions spannerQueryOptions;
-
-	private final KeySet keySet;
 
 	/**
 	 * Constructor.
 	 * @param source The entities that were read from Cloud Spanner.This is never
 	 *     {@code null}.
-	 * @param query the read query that was run. This may be {@code null} if the load
-	 *     operation was not based on a query.
-	 * @param spannerReadOptions the options that were used to conduct the read. This may be
-	 *     {@code null} if the read operation wasn't a key-based read.
+	 * @param query the read query that was run.
 	 * @param spannerQueryOptions the options that were used to conduct the query. This may be
 	 *     {@code null} if the operation was a key-based read.
-	 * @param keySet the keys that were read. This may be {@code null} if the operation was a
-	 *     query-based read.
 	 */
-	public AfterLoadEvent(Iterable source, Statement query, SpannerReadOptions spannerReadOptions,
-			SpannerQueryOptions spannerQueryOptions, KeySet keySet) {
+	public AfterQueryEvent(Iterable source, Statement query,
+			SpannerQueryOptions spannerQueryOptions) {
 		super(source);
 		this.query = query;
-		this.spannerReadOptions = spannerReadOptions;
 		this.spannerQueryOptions = spannerQueryOptions;
-		this.keySet = keySet;
 	}
 
 	/**
@@ -72,18 +59,10 @@ public class AfterLoadEvent extends ApplicationEvent {
 
 	/**
 	 * Get the read query that was run.
-	 * @return This may be {@code null} if the load operation was not based on a query.
+	 * @return the query statement.
 	 */
 	public Statement getQuery() {
 		return this.query;
-	}
-
-	/**
-	 * Get the options that were used to conduct the read.
-	 * @return This may be {@code null} if the read operation wasn't a key-based read.
-	 */
-	public SpannerReadOptions getSpannerReadOptions() {
-		return this.spannerReadOptions;
 	}
 
 	/**
@@ -94,14 +73,6 @@ public class AfterLoadEvent extends ApplicationEvent {
 		return this.spannerQueryOptions;
 	}
 
-	/**
-	 * Get the keys that were read.
-	 * @return This may be {@code null} if the operation was a query-based read.
-	 */
-	public KeySet getKeySet() {
-		return this.keySet;
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -110,17 +81,14 @@ public class AfterLoadEvent extends ApplicationEvent {
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
-		AfterLoadEvent that = (AfterLoadEvent) o;
+		AfterQueryEvent that = (AfterQueryEvent) o;
 		return Objects.equals(getRetrievedEntities(), that.getRetrievedEntities())
 				&& Objects.equals(getQuery(), that.getQuery())
-				&& Objects.equals(getSpannerQueryOptions(), that.getSpannerQueryOptions())
-				&& Objects.equals(getSpannerReadOptions(), that.getSpannerReadOptions())
-				&& Objects.equals(getKeySet(), that.getKeySet());
+				&& Objects.equals(getSpannerQueryOptions(), that.getSpannerQueryOptions());
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getRetrievedEntities(), getQuery(), getSpannerReadOptions(), getSpannerQueryOptions(),
-				getKeySet());
+		return Objects.hash(getRetrievedEntities(), getQuery(), getSpannerQueryOptions());
 	}
 }

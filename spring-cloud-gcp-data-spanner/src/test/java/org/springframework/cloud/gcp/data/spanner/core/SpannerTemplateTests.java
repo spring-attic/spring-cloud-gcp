@@ -55,7 +55,8 @@ import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingCon
 import org.springframework.cloud.gcp.data.spanner.core.mapping.Table;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterExecuteDmlEvent;
-import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterLoadEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterQueryEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterReadEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterSaveEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeExecuteDmlEvent;
@@ -248,7 +249,7 @@ public class SpannerTemplateTests {
 		when(this.readContext.read(any(), any(), any())).thenReturn(null);
 		Key key = Key.of("key");
 		KeySet keys = KeySet.newBuilder().addKey(key).build();
-		verifyAfterEvents(new AfterLoadEvent(Collections.emptyList(), null, null, null, keys),
+		verifyAfterEvents(new AfterReadEvent(Collections.emptyList(), keys, null),
 				() -> assertThat(this.spannerTemplate.read(TestEntity.class, key)).isNull(), x -> {
 				});
 	}
@@ -257,7 +258,7 @@ public class SpannerTemplateTests {
 	public void queryTest() {
 		when(this.readContext.read(any(), any(), any())).thenReturn(null);
 		Statement query = Statement.of("test");
-		verifyAfterEvents(new AfterLoadEvent(Collections.emptyList(), query, null, null, null),
+		verifyAfterEvents(new AfterQueryEvent(Collections.emptyList(), query, null),
 				() -> assertThat(this.spannerTemplate.query(TestEntity.class, query, null)).isEmpty(), x -> {
 				});
 	}
@@ -268,7 +269,7 @@ public class SpannerTemplateTests {
 		when(resultSet.next()).thenReturn(false);
 		Statement query = Statement.of("test");
 		when(this.readContext.executeQuery(eq(query))).thenReturn(resultSet);
-		verifyAfterEvents(new AfterLoadEvent(Collections.emptyList(), query, null, null, null),
+		verifyAfterEvents(new AfterQueryEvent(Collections.emptyList(), query, null),
 				() -> assertThat(this.spannerTemplate.query(x -> null, query, null)).isEmpty(), x -> {
 				});
 	}
@@ -298,7 +299,7 @@ public class SpannerTemplateTests {
 		KeySet keySet = KeySet.singleKey(Key.of("key"));
 		when(this.readContext.read(any(), any(), any(), any())).thenReturn(results);
 
-		verifyAfterEvents(new AfterLoadEvent(Collections.emptyList(), null, options, null, keySet),
+		verifyAfterEvents(new AfterReadEvent(Collections.emptyList(), keySet, options),
 				() -> this.spannerTemplate.read(TestEntity.class, keySet, options), x -> {
 					verify(this.objectMapper, times(1)).mapToList(same(results),
 							eq(TestEntity.class), isNull(), eq(false));
@@ -623,7 +624,7 @@ public class SpannerTemplateTests {
 		// Verify that only a single event containing only the parent p is published.
 		// the recursive resolution of children should NOT give events since there is only one
 		// user-call.
-		verifyAfterEvents(new AfterLoadEvent(Collections.singletonList(p), null, null, null, KeySet.all()), () -> {
+		verifyAfterEvents(new AfterReadEvent(Collections.singletonList(p), KeySet.all(), null), () -> {
 			ParentEntity resultWithoutChildren = this.spannerTemplate
 					.readAll(ParentEntity.class,
 							new SpannerReadOptions()
