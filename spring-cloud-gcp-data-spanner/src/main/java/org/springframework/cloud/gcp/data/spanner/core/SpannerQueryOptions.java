@@ -37,7 +37,7 @@ import org.springframework.util.Assert;
  */
 public class SpannerQueryOptions implements Serializable {
 
-	private List<QueryOption> queryOptions = new ArrayList<>();
+	private transient List<QueryOption> queryOptions = new ArrayList<>();
 
 	private Timestamp timestamp;
 

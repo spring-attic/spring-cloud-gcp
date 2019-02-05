@@ -36,7 +36,7 @@ import org.springframework.util.Assert;
  */
 public class SpannerReadOptions implements Serializable {
 
-	private List<ReadOption> readOptions = new ArrayList<>();
+	private transient List<ReadOption> readOptions = new ArrayList<>();
 
 	private Timestamp timestamp;
 
