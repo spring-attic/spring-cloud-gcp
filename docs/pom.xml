@@ -42,6 +42,11 @@
 						<groupId>org.asciidoctor</groupId>
 						<artifactId>asciidoctor-maven-plugin</artifactId>
 						<inherited>false</inherited>
+						<configuration>
+							<attributes>
+								<project-version>${project.version}</project-version>
+							</attributes>
+						</configuration>
 					</plugin>
 					<plugin>
 						<groupId>com.agilejava.docbkx</groupId>

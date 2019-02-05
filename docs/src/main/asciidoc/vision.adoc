@@ -9,7 +9,7 @@ Spring Cloud GCP provides:
 ** Allows you to easily send images to the API as Spring Resources.
 ** Offers convenience methods for common operations, such as extracting the text from an image.
 
-Maven coordinates, using Spring Cloud GCP BOM:
+Maven coordinates, using <<dependency-management.adoc#_dependency_management, Spring Cloud GCP BOM>>:
 
 [source,xml]
 ----

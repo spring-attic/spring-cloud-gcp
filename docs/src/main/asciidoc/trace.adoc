@@ -8,7 +8,7 @@ Instead of running and maintaining your own Zipkin instance and storage, you can
 
 This Spring Cloud GCP starter can forward Spring Cloud Sleuth traces to Stackdriver Trace without an intermediary Zipkin server.
 
-Maven coordinates, using Spring Cloud GCP BOM:
+Maven coordinates, using <<dependency-management.adoc#_dependency_management, Spring Cloud GCP BOM>>:
 
 [source,xml]
 ----
