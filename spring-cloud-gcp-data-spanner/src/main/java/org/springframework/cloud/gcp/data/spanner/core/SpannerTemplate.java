@@ -223,72 +223,63 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	@Override
 	public void insert(Object object) {
-		List<Mutation> mutations = this.mutationFactory.insert(object);
-		emitSaveEventsApplyMutations(mutations, Collections.singletonList(object), null);
+		applySaveMutations(this.mutationFactory.insert(object), Collections.singletonList(object), null);
 	}
 
 
 	@Override
 	public void insertAll(Iterable objects) {
-		List<Mutation> mutations = getMutationsForMultipleObjects(objects, this.mutationFactory::insert);
-		emitSaveEventsApplyMutations(mutations, objects, null);
+		applySaveMutations(getMutationsForMultipleObjects(objects, this.mutationFactory::insert), objects, null);
 	}
 
 	@Override
 	public void update(Object object) {
-		List<Mutation> mutations = this.mutationFactory.update(object, null);
-		emitSaveEventsApplyMutations(mutations, Collections.singletonList(object), null);
+		applySaveMutations(this.mutationFactory.update(object, null), Collections.singletonList(object), null);
 	}
 
 	@Override
 	public void updateAll(Iterable objects) {
-		List<Mutation> mutations = getMutationsForMultipleObjects(objects,
-				(x) -> this.mutationFactory.update(x, null));
-		emitSaveEventsApplyMutations(mutations, objects, null);
+		applySaveMutations(getMutationsForMultipleObjects(objects,
+				(x) -> this.mutationFactory.update(x, null)), objects, null);
 	}
 
 	@Override
 	public void update(Object object, String... includeProperties) {
 		Set<String> incl = (includeProperties.length == 0) ? null
 				: new HashSet<>(Arrays.asList(includeProperties));
-		List<Mutation> mutations = this.mutationFactory.update(object, incl);
-		emitSaveEventsApplyMutations(mutations, Collections.singletonList(object), incl);
+		applySaveMutations(this.mutationFactory.update(object, incl), Collections.singletonList(object), incl);
 	}
 
 	@Override
 	public void update(Object object, Set<String> includeProperties) {
-		List<Mutation> mutations = this.mutationFactory.update(object, includeProperties);
-		emitSaveEventsApplyMutations(mutations, Collections.singletonList(object), includeProperties);
+		applySaveMutations(this.mutationFactory.update(object, includeProperties), Collections.singletonList(object),
+				includeProperties);
 	}
 
 	@Override
 	public void upsert(Object object) {
-		List<Mutation> mutations = this.mutationFactory.upsert(object, null);
-		emitSaveEventsApplyMutations(mutations, Collections.singletonList(object), null);
+		applySaveMutations(this.mutationFactory.upsert(object, null), Collections.singletonList(object), null);
 	}
 
 	@Override
 	public void upsertAll(Iterable objects) {
-		List<Mutation> mutations =
-				getMutationsForMultipleObjects(objects,
-						(x) -> this.mutationFactory.upsert(x, null));
-		emitSaveEventsApplyMutations(mutations, objects, null);
+		applySaveMutations(getMutationsForMultipleObjects(objects,
+				(x) -> this.mutationFactory.upsert(x, null)), objects, null);
 	}
 
 	@Override
 	public void upsert(Object object, String... includeProperties) {
 		Set<String> incl = (includeProperties.length == 0) ? null : new HashSet<>(Arrays.asList(includeProperties));
-		List<Mutation> mutations = this.mutationFactory.upsert(object, incl);
-		emitSaveEventsApplyMutations(mutations, Collections.singletonList(object), incl);
+		applySaveMutations(this.mutationFactory.upsert(object, incl), Collections.singletonList(object), incl);
 	}
 
 	@Override
 	public void upsert(Object object, Set<String> includeProperties) {
-		List<Mutation> mutations = this.mutationFactory.upsert(object, includeProperties);
-		emitSaveEventsApplyMutations(mutations, Collections.singletonList(object), includeProperties);
+		applySaveMutations(this.mutationFactory.upsert(object, includeProperties), Collections.singletonList(object),
+				includeProperties);
 	}
 
-	private void emitSaveEventsApplyMutations(List<Mutation> mutations, Iterable entities,
+	private void applySaveMutations(List<Mutation> mutations, Iterable entities,
 			Set<String> includeProperties) {
 		maybeEmitEvent(new BeforeSaveEvent(mutations, entities, includeProperties));
 		applyMutations(mutations);
@@ -297,19 +288,17 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	@Override
 	public void delete(Object entity) {
-		List<Mutation> mutations = Collections.singletonList(this.mutationFactory.delete(entity));
-		Iterable entities = Collections.singletonList(entity);
-		emitDeleteEventsApplyMutations(entities, mutations);
+		applyDeleteMutations(Collections.singletonList(entity),
+				Collections.singletonList(this.mutationFactory.delete(entity)));
 	}
 
 	@Override
 	public void deleteAll(Iterable objects) {
-		List<Mutation> mutations = (List<Mutation>) StreamSupport.stream(objects.spliterator(), false)
-				.map(this.mutationFactory::delete).collect(Collectors.toList());
-		emitDeleteEventsApplyMutations(objects, mutations);
+		applyDeleteMutations(objects, (List<Mutation>) StreamSupport.stream(objects.spliterator(), false)
+				.map(this.mutationFactory::delete).collect(Collectors.toList()));
 	}
 
-	private void emitDeleteEventsApplyMutations(Iterable objects, List<Mutation> mutations) {
+	private void applyDeleteMutations(Iterable objects, List<Mutation> mutations) {
 		maybeEmitEvent(new BeforeDeleteEvent(mutations, objects, null, null));
 		applyMutations(mutations);
 		maybeEmitEvent(new AfterDeleteEvent(mutations, objects, null, null));
@@ -317,19 +306,17 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	@Override
 	public void delete(Class entityClass, Key key) {
-		List<Mutation> mutations = Collections.singletonList(this.mutationFactory.delete(entityClass, key));
-		KeySet keys = KeySet.newBuilder().addKey(key).build();
-		emitDeleteEventsApplyMutations(entityClass, keys, mutations);
+		applyDeleteMutations(entityClass, KeySet.newBuilder().addKey(key).build(),
+				Collections.singletonList(this.mutationFactory.delete(entityClass, key)));
 	}
 
 	@Override
 	public void delete(Class entityClass, KeySet keys) {
-		List<Mutation> mutations = Collections
-				.singletonList(this.mutationFactory.delete(entityClass, keys));
-		emitDeleteEventsApplyMutations(entityClass, keys, mutations);
+		applyDeleteMutations(entityClass, keys, Collections
+				.singletonList(this.mutationFactory.delete(entityClass, keys)));
 	}
 
-	private void emitDeleteEventsApplyMutations(Class entityClass, KeySet keys, List<Mutation> mutations) {
+	private void applyDeleteMutations(Class entityClass, KeySet keys, List<Mutation> mutations) {
 		maybeEmitEvent(new BeforeDeleteEvent(mutations, null, keys, entityClass));
 		applyMutations(mutations);
 		maybeEmitEvent(new AfterDeleteEvent(mutations, null, keys, entityClass));
