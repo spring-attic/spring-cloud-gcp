@@ -254,6 +254,26 @@ public class SpannerTemplateTests {
 	}
 
 	@Test
+	public void queryTest() {
+		when(this.readContext.read(any(), any(), any())).thenReturn(null);
+		Statement query = Statement.of("test");
+		verifyAfterEvents(new AfterLoadEvent(Collections.emptyList(), query, null, null, null),
+				() -> assertThat(this.spannerTemplate.query(TestEntity.class, query, null)).isEmpty(), x -> {
+				});
+	}
+
+	@Test
+	public void queryFuncTest() {
+		ResultSet resultSet = mock(ResultSet.class);
+		when(resultSet.next()).thenReturn(false);
+		Statement query = Statement.of("test");
+		when(this.readContext.executeQuery(eq(query))).thenReturn(resultSet);
+		verifyAfterEvents(new AfterLoadEvent(Collections.emptyList(), query, null, null, null),
+				() -> assertThat(this.spannerTemplate.query(x -> null, query, null)).isEmpty(), x -> {
+				});
+	}
+
+	@Test
 	public void findSingleKeyTest() {
 		SpannerTemplate spyTemplate = spy(this.spannerTemplate);
 		spyTemplate.read(TestEntity.class, Key.of("key"));
