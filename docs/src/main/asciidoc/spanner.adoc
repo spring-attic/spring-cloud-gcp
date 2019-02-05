@@ -1253,6 +1253,22 @@ public void createTable(SpannerPersistentEntity entity) {
 
 Schemas can be generated for entire object hierarchies with interleaved relationships and composite keys.
 
+=== Events
+
+Spring Data Cloud Spanner publishes events extending the Spring Framework's `ApplicationEvent` to the context that can be received by `ApplicationListener` beans you register.
+
+[options="header"]
+|===
+| Type| Description | Contents
+| `BeforeExecuteDmlEvent`|Published immediately before DML statements are executed by `SpannerTemplate`| The DML statement to execute.
+| `AfterExecuteDmlEvent`|Published immediately after DML statements are executed by `SpannerTemplate`| The DML statement to execute and the number of rows affected by the operation as reported by Cloud Spanner.
+| `BeforeSaveEvent`|Published immediately before upsert/update/insert operations are executed by `SpannerTemplate`| The mutations to be sent to Cloud Spanner, the entities to be saved, and optionally the properties in those entities to save.
+| `AfterSaveEvent`|Published immediately after upsert/update/insert operations are executed by `SpannerTemplate`| The mutations sent to Cloud Spanner, the entities to be saved, and optionally the properties in those entities to save.
+| `BeforeDeleteEvent`|Published immediately before delete operations are executed by `SpannerTemplate`| The mutations to be sent to Cloud Spanner. The target entities, keys, or entity type originally specified for the delete operation.
+| `AfterDeleteEvent`|Published immediately after delete operations are executed by `SpannerTemplate`| The mutations sent to Cloud Spanner. The target entities, keys, or entity type originally specified for the delete operation.
+|===
+
+
 === Sample
 
 

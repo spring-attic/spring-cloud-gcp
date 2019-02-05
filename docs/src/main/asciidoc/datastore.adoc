@@ -1123,16 +1123,6 @@ You can also write trades using `curl -XPOST -H"Content-Type: application/json" 
 
 To delete trades, you can use `curl -XDELETE \http://<server>:<port>/trades/<trader_id>`
 
-=== Events
-
-Spring Data Cloud Spanner publishes events extending the Spring Framework's `ApplicationEvent` to the context that can be received by `ApplicationListener` beans you register.
-
-[options="header"]
-|===
-| Type| Description | Contents
-| `BeforeExecuteDmlEvent`|Published immediately before DML statements are executed by `SpannerTemplate`| The DML statement to execute.
-| `AfterExecuteDmlEvent`|Published immediately after DML statements are executed by `SpannerTemplate`| The DML statement to execute and the number of rows affected by the operation as reported by Cloud Spanner.
-|===
 
 
 === Sample

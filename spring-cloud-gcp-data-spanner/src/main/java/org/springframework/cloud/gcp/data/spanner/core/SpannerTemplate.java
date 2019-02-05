@@ -54,8 +54,12 @@ import org.springframework.cloud.gcp.data.spanner.core.convert.SpannerEntityProc
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerMappingContext;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentEntity;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.SpannerPersistentProperty;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterExecuteDmlEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.AfterSaveEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeDeleteEvent;
 import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeExecuteDmlEvent;
+import org.springframework.cloud.gcp.data.spanner.core.mapping.event.BeforeSaveEvent;
 import org.springframework.cloud.gcp.data.spanner.repository.query.SpannerStatementQueryExecutor;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -219,87 +223,103 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 
 	@Override
 	public void insert(Object object) {
-		applyMutations(this.mutationFactory.insert(object));
+		applySaveMutations(this.mutationFactory.insert(object), Collections.singletonList(object), null);
 	}
+
 
 	@Override
 	public void insertAll(Iterable objects) {
-		applyMutations(
-				getMutationsForMultipleObjects(objects, this.mutationFactory::insert));
+		applySaveMutations(getMutationsForMultipleObjects(objects, this.mutationFactory::insert), objects, null);
 	}
 
 	@Override
 	public void update(Object object) {
-		applyMutations(this.mutationFactory.update(object, null));
+		applySaveMutations(this.mutationFactory.update(object, null), Collections.singletonList(object), null);
 	}
 
 	@Override
 	public void updateAll(Iterable objects) {
-		applyMutations(
-				getMutationsForMultipleObjects(objects,
-						(x) -> this.mutationFactory.update(x, null)));
+		applySaveMutations(getMutationsForMultipleObjects(objects,
+				(x) -> this.mutationFactory.update(x, null)), objects, null);
 	}
 
 	@Override
 	public void update(Object object, String... includeProperties) {
-		applyMutations(
-				this.mutationFactory.update(object,
-						(includeProperties.length == 0) ? null
-								: new HashSet<>(Arrays.asList(includeProperties))));
+		Set<String> incl = (includeProperties.length == 0) ? null
+				: new HashSet<>(Arrays.asList(includeProperties));
+		applySaveMutations(this.mutationFactory.update(object, incl), Collections.singletonList(object), incl);
 	}
 
 	@Override
 	public void update(Object object, Set<String> includeProperties) {
-		applyMutations(this.mutationFactory.update(object, includeProperties));
+		applySaveMutations(this.mutationFactory.update(object, includeProperties), Collections.singletonList(object),
+				includeProperties);
 	}
 
 	@Override
 	public void upsert(Object object) {
-		applyMutations(this.mutationFactory.upsert(object, null));
+		applySaveMutations(this.mutationFactory.upsert(object, null), Collections.singletonList(object), null);
 	}
 
 	@Override
 	public void upsertAll(Iterable objects) {
-		applyMutations(
-				getMutationsForMultipleObjects(objects,
-						(x) -> this.mutationFactory.upsert(x, null)));
+		applySaveMutations(getMutationsForMultipleObjects(objects,
+				(x) -> this.mutationFactory.upsert(x, null)), objects, null);
 	}
 
 	@Override
 	public void upsert(Object object, String... includeProperties) {
-		applyMutations(
-				this.mutationFactory.upsert(object,
-						(includeProperties.length == 0) ? null
-								: new HashSet<>(Arrays.asList(includeProperties))));
+		Set<String> incl = (includeProperties.length == 0) ? null : new HashSet<>(Arrays.asList(includeProperties));
+		applySaveMutations(this.mutationFactory.upsert(object, incl), Collections.singletonList(object), incl);
 	}
 
 	@Override
 	public void upsert(Object object, Set<String> includeProperties) {
-		applyMutations(this.mutationFactory.upsert(object, includeProperties));
+		applySaveMutations(this.mutationFactory.upsert(object, includeProperties), Collections.singletonList(object),
+				includeProperties);
+	}
+
+	private void applySaveMutations(List<Mutation> mutations, Iterable entities,
+			Set<String> includeProperties) {
+		maybeEmitEvent(new BeforeSaveEvent(mutations, entities, includeProperties));
+		applyMutations(mutations);
+		maybeEmitEvent(new AfterSaveEvent(mutations, entities, includeProperties));
 	}
 
 	@Override
 	public void delete(Object entity) {
-		applyMutations(Collections.singletonList(this.mutationFactory.delete(entity)));
+		applyDeleteMutations(Collections.singletonList(entity),
+				Collections.singletonList(this.mutationFactory.delete(entity)));
 	}
 
 	@Override
 	public void deleteAll(Iterable objects) {
-		applyMutations(
-				(Collection<Mutation>) StreamSupport.stream(objects.spliterator(), false)
-						.map(this.mutationFactory::delete).collect(Collectors.toList()));
+		applyDeleteMutations(objects, (List<Mutation>) StreamSupport.stream(objects.spliterator(), false)
+				.map(this.mutationFactory::delete).collect(Collectors.toList()));
+	}
+
+	private void applyDeleteMutations(Iterable objects, List<Mutation> mutations) {
+		maybeEmitEvent(new BeforeDeleteEvent(mutations, objects, null, null));
+		applyMutations(mutations);
+		maybeEmitEvent(new AfterDeleteEvent(mutations, objects, null, null));
 	}
 
 	@Override
 	public void delete(Class entityClass, Key key) {
-		applyMutations(
+		applyDeleteMutations(entityClass, KeySet.newBuilder().addKey(key).build(),
 				Collections.singletonList(this.mutationFactory.delete(entityClass, key)));
 	}
 
 	@Override
 	public void delete(Class entityClass, KeySet keys) {
-		applyMutations(Collections
+		applyDeleteMutations(entityClass, keys, Collections
 				.singletonList(this.mutationFactory.delete(entityClass, keys)));
+	}
+
+	private void applyDeleteMutations(Class entityClass, KeySet keys, List<Mutation> mutations) {
+		maybeEmitEvent(new BeforeDeleteEvent(mutations, null, keys, entityClass));
+		applyMutations(mutations);
+		maybeEmitEvent(new AfterDeleteEvent(mutations, null, keys, entityClass));
 	}
 
 	@Override
@@ -513,9 +533,9 @@ public class SpannerTemplate implements SpannerOperations, ApplicationEventPubli
 				});
 	}
 
-	private Collection<Mutation> getMutationsForMultipleObjects(Iterable it,
+	private List<Mutation> getMutationsForMultipleObjects(Iterable it,
 			Function<Object, Collection<Mutation>> individualEntityMutationFunc) {
-		return (Collection<Mutation>) StreamSupport.stream(it.spliterator(), false)
+		return (List<Mutation>) StreamSupport.stream(it.spliterator(), false)
 				.flatMap((x) -> individualEntityMutationFunc.apply(x).stream())
 				.collect(Collectors.toList());
 	}
