@@ -23,6 +23,7 @@ import com.google.auth.Credentials;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
 
+import java.util.Optional;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -65,6 +66,8 @@ public class GcpDatastoreAutoConfiguration {
 
 	private final Credentials credentials;
 
+	private final Optional<String> emulatorHost;
+
 	GcpDatastoreAutoConfiguration(GcpDatastoreProperties gcpDatastoreProperties,
 			GcpProjectIdProvider projectIdProvider,
 			CredentialsProvider credentialsProvider) throws IOException {
@@ -75,6 +78,7 @@ public class GcpDatastoreAutoConfiguration {
 				? gcpDatastoreProperties.getProjectId()
 				: projectIdProvider.getProjectId();
 		this.namespace = gcpDatastoreProperties.getNamespace();
+		this.emulatorHost = Optional.ofNullable(gcpDatastoreProperties.getEmulatorHost());
 	}
 
 	@Bean
@@ -87,6 +91,11 @@ public class GcpDatastoreAutoConfiguration {
 		if (this.namespace != null) {
 			builder.setNamespace(this.namespace);
 		}
+
+		if (emulatorHost.isPresent()) {
+			builder.setHost(emulatorHost.get());
+		}
+
 		return builder.build().getService();
 	}
 

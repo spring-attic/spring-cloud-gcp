@@ -64,18 +64,12 @@ The following configuration options are available:
 |===
 | Name | Description | Required | Default value
 | `spring.cloud.gcp.datastore.enabled` | Enables the Cloud Datastore client | No | `true`
-| `spring.cloud.gcp.datastore.project-id` | GCP project ID where the Google Cloud Datastore API is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>>
-| No |
-| `spring.cloud.gcp.datastore.credentials.location` | OAuth2 credentials for authenticating with the
-Google Cloud Datastore API, if different from the ones in the
-<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
-| `spring.cloud.gcp.datastore.credentials.encoded-key` | Base64-encoded OAuth2 credentials for authenticating with the
-Google Cloud Datastore API, if different from the ones in the
-<<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
-| `spring.cloud.gcp.datastore.credentials.scopes` |
-https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP
-Cloud Datastore credentials | No | https://www.googleapis.com/auth/datastore
+| `spring.cloud.gcp.datastore.project-id` | GCP project ID where the Google Cloud Datastore API is hosted, if different from the one in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.datastore.credentials.location` | OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.datastore.credentials.encoded-key` | Base64-encoded OAuth2 credentials for authenticating with the Google Cloud Datastore API, if different from the ones in the <<spring-cloud-gcp-core,Spring Cloud GCP Core Module>> | No |
+| `spring.cloud.gcp.datastore.credentials.scopes` | https://developers.google.com/identity/protocols/googlescopes[OAuth2 scope] for Spring Cloud GCP Cloud Datastore credentials | No | https://www.googleapis.com/auth/datastore
 | `spring.cloud.gcp.datastore.namespace` | The Cloud Datastore namespace to use | No | the Default namespace of Cloud Datastore in your GCP project
+| `spring.cloud.gcp.datastore.emulator-host` | The `hostname:port` of the https://cloud.google.com/datastore/docs/tools/datastore-emulator[Datastore Emulator] to connect to | No |
 |===
 
 ==== Repository settings
