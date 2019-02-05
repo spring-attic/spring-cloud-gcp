@@ -76,6 +76,46 @@ spring.cloud.stream.gcp.pubsub.bindings.events.consumer.auto-create-resources=tr
 spring.cloud.stream.bindings.events.group=consumerGroup1
 ----
 
+=== Streaming vs. Polled Input
+
+Many Spring Cloud Stream applications will use the built-in `Sink` binding, which triggers the _streaming_ input binder creation.
+Messages can then be consumed with an input handler marked by `@StreamListener(Sink.INPUT)` annotation, at whatever rate Pub/Sub sends them.
+
+For more control over the rate of message arrival, a polled input binder can be set up by defining a custom binding interface with an `@Input`-annotated method returning `PollableMessageSource`.
+
+[source,java]
+----
+public interface PollableSink {
+
+	@Input("input")
+	PollableMessageSource input();
+}
+----
+
+The `PollableMessageSource` can then be injected and queried, as needed.
+
+[source,java]
+----
+@EnableBinding(PollableSink.class)
+public class SinkExample {
+
+    @Autowired
+    PollableMessageSource destIn;
+
+    @Bean
+    public ApplicationRunner singlePollRunner() {
+        return args -> {
+            // This will poll only once.
+            // Add a loop or a scheduler to get more messages.
+            destIn.poll((message) -> System.out.println("Message retrieved: " + message));
+        };
+    }
+}
+----
+
 === Sample
 
-A https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[sample application] is available.
+Sample applications are available:
+
+* For https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-binder-sample[streaming input].
+* For https://github.com/spring-cloud/spring-cloud-gcp/tree/master/spring-cloud-gcp-samples/spring-cloud-gcp-pubsub-polling-binder-sample[polled input].

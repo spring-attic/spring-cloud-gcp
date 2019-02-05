@@ -6,6 +6,22 @@ That data is added to a `UserMessage` object, together with the time of message 
 
 If the topic and subscription for the sink and source don't exist, the binder will automatically create them in Google Cloud Pub/Sub based on the values in link:src/main/resources/application.properties[application.properties].
 
+The `SourceExample` in this sample is the same as in link:../spring-cloud-gcp-pubsub-binder-sample/[Streaming PubSub Binder Sample]; there is nothing polling-specific in it.
+`SinkExample`, however, describes a poll-style interaction with a Pub/Sub subscription.
+
+The following code, combined with `@EnableScheduling` annotation in `PubSubBinderApplication`, triggers retrieval of a message every second.
+Note that `destIn` bean is provided by Spring Cloud Stream, using the _spring-cloud-gcp-pubsub-stream-binder_ dependency for the bean implementation.
+
+[source,java]
+----
+@Scheduled(fixedRate = 1000)
+public void poller() {
+
+    destIn.poll(this.messageHandler, ParameterizedTypeReference.forType(UserMessage.class));
+}
+----
+
+
 == Running the code sample
 
 1. Configure your credentials and project ID by following link:../../docs/src/main/asciidoc/core.adoc#project-id[these instructions].
