@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.springframework.cloud.gcp.stream.binder.pubsub;
 
 import org.springframework.cloud.gcp.pubsub.core.PubSubTemplate;
 import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubInboundChannelAdapter;
+import org.springframework.cloud.gcp.pubsub.integration.inbound.PubSubMessageSource;
 import org.springframework.cloud.gcp.pubsub.integration.outbound.PubSubMessageHandler;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubConsumerProperties;
 import org.springframework.cloud.gcp.stream.binder.pubsub.properties.PubSubExtendedBindingProperties;
@@ -108,4 +109,12 @@ public class PubSubMessageChannelBinder
 		super.afterUnbindConsumer(destination, group, consumerProperties);
 		this.pubSubChannelProvisioner.afterUnbindConsumer(destination);
 	}
+
+	@Override
+	protected PolledConsumerResources createPolledConsumerResources(String name, String group, ConsumerDestination destination,
+			ExtendedConsumerProperties<PubSubConsumerProperties> consumerProperties) {
+		return new PolledConsumerResources(new PubSubMessageSource(this.pubSubTemplate, destination.getName()),
+				registerErrorInfrastructure(destination, group, consumerProperties, true));
+	}
+
 }
